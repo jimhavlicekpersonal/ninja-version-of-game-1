@@ -1,0 +1,4 @@
+{
+  "$comment": "Real art for Kagemura. Add { key, url } entries as image files are produced; keys are listed in docs/art/ASSET_KEYS.md and docs/art/ICON_MANIFEST.json. Missing keys fall back to the code-drawn art.",
+  "images": []
+}

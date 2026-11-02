@@ -6,6 +6,7 @@ import { openGameDb } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker } from './backend/pwa/register';
 import { Keys } from './presentation/render/assets';
+import { loadArtManifest } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
 import { App } from './app';
@@ -76,7 +77,7 @@ async function openStorage(): Promise<{ store: SaveStore; events: EventStore }> 
 async function boot(): Promise<void> {
   const debugTime = createDebugTime();
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
-  const { store, events } = await openStorage();
+  const [{ store, events }] = await Promise.all([openStorage(), loadArtManifest()]);
   const analytics = new Analytics(events, clock);
   // Payments: StoreKit on iPhone, nothing yet on Android, a mock store on the web.
   const storeKit = platform() === 'ios' ? new StoreKitPaymentProvider() : null;

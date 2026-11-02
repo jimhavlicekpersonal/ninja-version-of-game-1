@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { queueArt } from './artManifest';
 import type { GameController } from '../../gameplay/control/controller';
 import { buildingDef } from '../../gameplay/sim/data';
 import { canPlace, findFreeSpot } from '../../gameplay/sim/grid';
@@ -98,6 +99,10 @@ export class VillageScene extends Phaser.Scene {
     this.controller = data.controller;
     this.bus = data.bus;
     this.renderScale = data.renderScale;
+  }
+
+  preload(): void {
+    queueArt(this);
   }
 
   create(): void {

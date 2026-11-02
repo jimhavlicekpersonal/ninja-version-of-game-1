@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { queueArt } from './artManifest';
 import { drainEvents, type BattleSession } from '../../gameplay/control/battleSession';
 import { buildingDef } from '../../gameplay/sim/data';
 import { isAbility, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
@@ -71,6 +72,10 @@ export class BattleScene extends Phaser.Scene {
     this.tviews = [];
     this.pviews = new Map();
     this.sviews = new Map();
+  }
+
+  preload(): void {
+    queueArt(this);
   }
 
   create(): void {
