@@ -455,6 +455,8 @@ export interface SocialDef {
   requestLifetimeHours: number;
   maxChat: number;
   requestCooldownMinutes: number;
+  /** Chat messages one player may post per minute on the server. */
+  chatPerMinute: number;
   reinforcementChunkMinutes: number;
   reinforcementChunkHousing: number;
   xpPerHousing: number;
