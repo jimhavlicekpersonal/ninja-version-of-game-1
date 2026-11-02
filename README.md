@@ -1,5 +1,7 @@
 # Kagemura: Ninja Clans
 
+_ninja version of the game on 11/2/2026_
+
 An original ninja-clan base-building and raiding game. Lead a clan, build a hidden mountain village of tiled roofs, stone walls and lanterns, train specialised warriors, scout rival strongholds, and raid them with **Smoke Bombs** and **Saboteurs**. Then climb the endless **Shadow Trials**.
 
 **The loop:** build village → train squad → scout opponent → deploy troops and tactics → resolve raid → collect rewards → return home and upgrade.
