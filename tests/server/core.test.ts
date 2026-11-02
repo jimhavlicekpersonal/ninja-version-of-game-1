@@ -290,7 +290,8 @@ for (const [label, makeRepo] of repoFactories) {
       it('gives a Grove with no free rival a bot Grove whose stars grow during the event', async () => {
         const w = await W();
         const fay = await w.player('Fay', baseAt(2));
-        await fay.createGrove('Lonely Leaf');
+        const g = await fay.createGrove('Lonely Leaf');
+        for (const n of ['Gus', 'Hal', 'Ivy']) await (await w.player(n, baseAt(2, n.length * 7))).joinGrove(g.id);
         const week = w.intoRaid(0.01);
         const early = await fay.raid();
         expect(early.opponent!.kind).toBe('bot');

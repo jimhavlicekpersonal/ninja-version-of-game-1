@@ -21,7 +21,11 @@ export function world(opts: { data?: GameData; repo?: Repo; start?: number } = {
     seed = (seed * 16807) % 2147483647;
     return seed / 2147483647;
   };
-  const core = createCore(nodeContext(repo, data, () => t, random));
+  const ctx = nodeContext(repo, data, () => t, random);
+  // Deterministic ids too (bot Groves are seeded from the Grove id), so every run is the same.
+  let ids = 0;
+  ctx.uuid = () => `00000000-0000-4000-8000-${(++ids).toString(16).padStart(12, '0')}`;
+  const core = createCore(ctx);
   const player = async (name: string, base?: BaseLayout) => {
     const c = new InProcessServerAdapter(core);
     const reg = await c.register(name);
