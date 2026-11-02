@@ -1,8 +1,8 @@
 [
   {
     "id": "green_thumb",
-    "name": "Green Thumb",
-    "text": "Collect {n} Acorns",
+    "name": "Coin Collector",
+    "text": "Collect {n} Coins",
     "stat": "collectedAcorns",
     "tiers": [
       [
@@ -21,8 +21,8 @@
   },
   {
     "id": "dew_gatherer",
-    "name": "Dew Gatherer",
-    "text": "Collect {n} Dew",
+    "name": "Quartermaster",
+    "text": "Collect {n} Provisions",
     "stat": "collectedDew",
     "tiers": [
       [
@@ -41,7 +41,7 @@
   },
   {
     "id": "raider",
-    "name": "Brave Raider",
+    "name": "Night Raider",
     "text": "Win {n} raids",
     "stat": "raidsWon",
     "tiers": [
@@ -61,7 +61,7 @@
   },
   {
     "id": "stargazer",
-    "name": "Stargazer",
+    "name": "Star Strategist",
     "text": "Earn {n} stars",
     "stat": "starsEarned",
     "tiers": [
@@ -81,7 +81,7 @@
   },
   {
     "id": "busy_beaver",
-    "name": "Busy Beaver",
+    "name": "Master Artisan",
     "text": "Finish {n} upgrades",
     "stat": "upgradesDone",
     "tiers": [
@@ -101,7 +101,7 @@
   },
   {
     "id": "lumberjack",
-    "name": "Tidy Kingdom",
+    "name": "Clear Paths",
     "text": "Clear {n} obstacles",
     "stat": "obstaclesCleared",
     "tiers": [
@@ -121,8 +121,8 @@
   },
   {
     "id": "elder",
-    "name": "Wise Elder",
-    "text": "Reach Elder Toadstool {n}",
+    "name": "Clan Elder",
+    "text": "Reach Clan Keep {n}",
     "stat": "hallLevel",
     "tiers": [
       [

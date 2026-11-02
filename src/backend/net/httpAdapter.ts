@@ -174,7 +174,7 @@ export class HttpServerAdapter implements ServerPort {
   /** The server's description; throws version_mismatch when this game and the server cannot talk. */
   async hello(): Promise<HelloResponse> {
     const h = await this.req<HelloResponse>('GET', Routes.hello);
-    if (!h || h.name !== 'toadstool-kingdoms') throw new ServerError(0, 'version_mismatch', 'That address is not a Toadstool Kingdoms server.');
+    if (!h || h.name !== 'toadstool-kingdoms') throw new ServerError(0, 'version_mismatch', 'That address is not a Kagemura: Ninja Clans server.');
     if (h.minProtocol > PROTOCOL_VERSION) throw new ServerError(0, 'version_mismatch', 'This server needs a newer version of the game. Update the game.');
     if (h.protocol < PROTOCOL_VERSION) throw new ServerError(0, 'version_mismatch', 'This server is older than the game and cannot be used yet.');
     return h;

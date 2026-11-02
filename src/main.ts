@@ -219,7 +219,7 @@ async function boot(): Promise<void> {
       analytics.log('session_reminder', { minutes: Math.round(playedMs / 60_000) });
       hud.modal(
         'Time for a break?',
-        Object.assign(document.createElement('p'), { textContent: "You've been playing for an hour. How about a stretch and a glass of water? Your Beaver Builders will keep working while you're away." }),
+        Object.assign(document.createElement('p'), { textContent: "You've been playing for an hour. How about a stretch and a glass of water? Your Village Artisans will keep working while you're away." }),
         [{ label: 'Keep playing', primary: true, onClick: () => hud.closeAllModals() }],
       );
     }

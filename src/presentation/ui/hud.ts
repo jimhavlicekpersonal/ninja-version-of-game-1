@@ -56,7 +56,7 @@ export interface HudDeps {
   connection: Connection;
 }
 
-const RES_LABEL: Record<ResourceKind, string> = { acorns: 'Acorns', dew: 'Dew', nightsap: 'Nightsap', moonstones: 'Moonstones' };
+const RES_LABEL: Record<ResourceKind, string> = { acorns: 'Coins', dew: 'Provisions', nightsap: 'Shadow Ink', moonstones: 'Jade' };
 
 function costChips(cost: Cost, missing: Cost = {}): HTMLElement {
   const wrap = h('span', { class: 'cost' });
@@ -162,14 +162,14 @@ export class Hud {
       this.resEls.set(k, { amt, bar: fill, cap });
     }
     const moonAmt = h('span', { class: 'res-amt' });
-    const moonBtn = h('div', { class: 'res res-moonstones', title: 'Moonstones: tap for the store', role: 'button' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt), h('span', { class: 'res-plus' }, '+'));
+    const moonBtn = h('div', { class: 'res res-moonstones', title: 'Jade: tap for the store', role: 'button' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt), h('span', { class: 'res-plus' }, '+'));
     moonBtn.addEventListener('click', () => this.econ.openStore());
     top.append(moonBtn);
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
     this.buildersEl = h('span', { class: 'res-amt' });
-    top.append(h('div', { class: 'res res-builders', title: 'Free Beaver Builders' }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
+    top.append(h('div', { class: 'res res-builders', title: 'Free Village Artisans' }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
     this.trophiesEl = h('span', { class: 'res-amt' });
-    const trophyBtn = h('div', { class: 'res res-trophies', title: 'Leaf rank', role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
+    const trophyBtn = h('div', { class: 'res res-trophies', title: 'Honor', role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
     trophyBtn.addEventListener('click', () => this.openLeague());
     top.append(trophyBtn);
     this.shieldEl = h('span', { class: 'res-amt' });
@@ -236,7 +236,7 @@ export class Hud {
       railBtn('Store', icons.moonstones, () => this.econ.openStore(activeOffers(this.c.state, this.c.now()).length ? 'offers' : 'moonstones')),
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
-      railBtn('Grove', icons.grove, () => this.grove.open()),
+      railBtn('Alliance', icons.grove, () => this.grove.open()),
     );
     this.rail = rail;
     this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
@@ -285,9 +285,9 @@ export class Hud {
     const live = raidPhase(this.c.now(), gd);
     if (this.deps.groveSource.kind === 'online') {
       const g = this.deps.groveSource.snapshot();
-      set('Grove', g.joined ? (g.raid.phase === 'live' ? g.raid.attacksLeft : 0) + g.requests.length : g.loading ? 0 : 1);
+      set('Alliance', g.joined ? (g.raid.phase === 'live' ? g.raid.attacksLeft : 0) + g.requests.length : g.loading ? 0 : 1);
     } else {
-      set('Grove', s.grove.joined ? (live.phase === 'live' ? attacksLeft(s, live.week, gd) : 0) + s.grove.requests.length : 1);
+      set('Alliance', s.grove.joined ? (live.phase === 'live' ? attacksLeft(s, live.week, gd) : 0) + s.grove.requests.length : 1);
     }
   }
 
@@ -316,9 +316,9 @@ export class Hud {
       const status = h('p', {}, h('span', { class: `net-pill inline ${conn.status}` }, Hud.NET_LABEL[conn.status] ?? conn.status), ' ', conn.enabled ? h('span', { class: 'muted small' }, conn.url) : '');
       wrap.append(h('h3', {}, 'Online play'), status);
       if (!conn.enabled) {
-        wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Grove are friendly bots. Enter a Toadstool Kingdoms server address to raid real players and join real Groves.'));
+        wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Alliance are friendly bots. Enter a Kagemura: Ninja Clans server address to raid real players and join real Alliances.'));
       } else {
-        wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Grove is a real Grove. Your village itself still lives on this device.'));
+        wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
         if (conn.player) {
           const name = h('input', { class: 'text', type: 'text', maxlength: 24, value: conn.player.name }) as HTMLInputElement;
@@ -338,7 +338,7 @@ export class Hud {
             void conn.port.leaderboard(30).then(
               (lb) => {
                 clear(board);
-                for (const p of lb.players) board.append(h('div', { class: `log-row${p.name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${p.rank}. ${p.name}`), h('div', { class: 'muted small' }, `Elder Toadstool ${p.hallLevel}${p.grove ? ` · ${p.grove}` : ''}`)), h('span', { class: 'chip' }, icon(icons.leaf), String(p.trophies))));
+                for (const p of lb.players) board.append(h('div', { class: `log-row${p.name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${p.rank}. ${p.name}`), h('div', { class: 'muted small' }, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${p.grove}` : ''}`)), h('span', { class: 'chip' }, icon(icons.leaf), String(p.trophies))));
                 if (lb.me) board.append(h('p', { class: 'muted small' }, `You are number ${lb.me.rank}.`));
                 if (!lb.players.length) board.append('Nobody is ranked yet.');
               },
@@ -471,10 +471,10 @@ export class Hud {
     clear(this.unlocksEl);
     this.unlocksEl.append(icon(icons.toadstool));
     if (!items.length) {
-      this.unlocksEl.append(h('span', {}, h('b', {}, `Elder Toadstool Lv ${level}`), ' — top level for now'));
+      this.unlocksEl.append(h('span', {}, h('b', {}, `Clan Keep Lv ${level}`), ' — top level for now'));
       return;
     }
-    this.unlocksEl.append(h('span', { class: 'unlock-text' }, h('b', {}, `Elder Toadstool Lv ${level + 1} unlocks: `), this.unlockSummary(items)));
+    this.unlocksEl.append(h('span', { class: 'unlock-text' }, h('b', {}, `Clan Keep Lv ${level + 1} unlocks: `), this.unlockSummary(items)));
   }
 
   private openUnlocks(): void {
@@ -483,17 +483,17 @@ export class Hud {
     const items = hallUnlocks(level, gd);
     const hall = this.c.state.buildings.find((b) => b.type === hallType(gd));
     const body = h('div', { class: 'unlock-list' });
-    if (!items.length) body.append(h('p', {}, 'Your Elder Toadstool is at the highest level available right now.'));
+    if (!items.length) body.append(h('p', {}, 'Your Clan Keep is at the highest level available right now.'));
     else {
-      body.append(h('p', { class: 'muted' }, `Upgrading your Elder Toadstool to level ${level + 1} unlocks:`));
+      body.append(h('p', { class: 'muted' }, `Upgrading your Clan Keep to level ${level + 1} unlocks:`));
       const troops = troopCapUnlock(level, gd);
       body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u))), troops ? h('li', {}, `Troop research: up to level ${troops.to} (now ${troops.from})`) : ''));
       const next = levelDef(gd, hallType(gd), level + 1);
       if (next) body.append(h('p', { class: 'row' }, 'Cost: ', costChips(next.cost, missingFor(this.c.state.resources, next.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(next.buildSeconds * 1000))));
     }
-    const close = this.modal('Elder Toadstool', body, [
+    const close = this.modal('Clan Keep', body, [
       hall && {
-        label: 'Go to Elder Toadstool',
+        label: 'Go to Clan Keep',
         primary: true,
         onClick: () => {
           close();
@@ -548,7 +548,7 @@ export class Hud {
         if (v) stats.append(h('span', { class: 'chip' }, icon(icons[k as 'acorns' | 'dew']), `Stores ${formatNumber(v)}`));
       }
     }
-    if (def.category === 'builder') stats.append(h('span', { class: 'chip' }, icon(icons.beaver), 'Home of 1 Beaver Builder'));
+    if (def.category === 'builder') stats.append(h('span', { class: 'chip' }, icon(icons.beaver), 'Home of 1 Village Artisan'));
     if (ld?.housing) stats.append(h('span', { class: 'chip' }, icon(icons.troops), `Houses ${ld.housing}`));
     if (def.combat && ld?.damage) {
       const dps = (ld.damage * gd.battle.ticksPerSecond) / def.combat.fireIntervalTicks;
@@ -848,7 +848,7 @@ export class Hud {
         );
       }
       body.append(h('h3', {}, 'Train'), list);
-      body.append(h('h3', {}, 'Research'), h('p', { class: 'muted small' }, 'The Burrow Barracks researches one troop at a time, without a builder. A new level makes every troop of that kind stronger, and costs a little more to train. Your Elder Toadstool level sets the highest level.'));
+      body.append(h('h3', {}, 'Research'), h('p', { class: 'muted small' }, 'The Training Dojo researches one troop at a time, without an artisan. A new level makes every troop of that kind stronger, and costs a little more to train. Your Clan Keep level sets the highest level.'));
       const active = s.research.active;
       if (active) {
         const ad = gd.troops[active.troop];
@@ -921,25 +921,25 @@ export class Hud {
     const body = h(
       'div',
       {},
-      h('p', {}, h('b', {}, cur.name), ` · ${s.trophies} leaves`),
-      nxt ? h('p', { class: 'muted' }, `${nxt.min - s.trophies} more leaves to reach ${nxt.name}.`) : h('p', { class: 'muted' }, 'You are in the top league!'),
-      h('p', { class: 'muted' }, `Season ends in ${formatDuration(seasonEndsAt(this.c.now()) - this.c.now())}. At the end of each month you get your league's chest, and leaves above ${gd.ranks.seasonResetFloor} are halved.`),
+      h('p', {}, h('b', {}, cur.name), ` · ${s.trophies} honor`),
+      nxt ? h('p', { class: 'muted' }, `${nxt.min - s.trophies} more honor to reach ${nxt.name}.`) : h('p', { class: 'muted' }, 'You are in the top league!'),
+      h('p', { class: 'muted' }, `Season ends in ${formatDuration(seasonEndsAt(this.c.now()) - this.c.now())}. At the end of each month you get your league's chest, and honor above ${gd.ranks.seasonResetFloor} are halved.`),
       h('h3', {}, 'League chests (fixed contents)'),
-      h('p', { class: 'muted small' }, `Sized for your Elder Toadstool level ${hallLevel(s, gd)}. Won attacks also earn the league bonus (all of it at 3 stars, a third per star).`),
+      h('p', { class: 'muted small' }, `Sized for your Clan Keep level ${hallLevel(s, gd)}. Won attacks also earn the league bonus (all of it at 3 stars, a third per star).`),
     );
     for (const l of gd.ranks.leagues) {
       const bonus = Object.keys(l.winBonus ?? {}).length ? h('div', { class: 'muted small' }, 'Win bonus ', costChips(l.winBonus)) : null;
-      body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, `${l.min}+ leaves`), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
+      body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, `${l.min}+ honor`), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
     }
-    body.append(h('p', { class: 'muted small' }, 'Win raids to earn leaves; lose them when your attacks fail or when raiders beat your village. More leaves bring tougher opponents with more loot.'));
-    this.modal('Leaf rank', body, [], 'normal');
+    body.append(h('p', { class: 'muted small' }, 'Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor bring tougher opponents with more loot.'));
+    this.modal('Honor', body, [], 'normal');
   }
 
   openLog(): void {
     const s = this.c.state;
     const body = h('div', {});
     const attacks = [...s.battleLog, ...s.defenseLog].sort((a, b) => b.at - a.at);
-    if (!attacks.length) body.append(h('p', { class: 'muted' }, 'No battles yet. Tap Attack to raid a neighbouring kingdom!'));
+    if (!attacks.length) body.append(h('p', { class: 'muted' }, 'No battles yet. Tap Attack to raid a neighbouring village!'));
     for (const r of attacks) {
       const stars = h('span', { class: 'stars-mini' });
       for (let i = 0; i < 3; i++) stars.append(h('span', { class: i < r.result.stars ? '' : 'off' }, '★'));
@@ -978,7 +978,7 @@ export class Hud {
     }
     for (const r of s.raids) {
       const lost = RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => `${formatNumber(r.result.loot[k]!)} ${RES_LABEL[k]}`).join(' and ');
-      list.append(h('li', {}, `${r.opponentName} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} leaves).` : '.'));
+      list.append(h('li', {}, `${r.opponentName} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
     }
     if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, this.c.data) > 0)) {
       list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));
@@ -986,7 +986,7 @@ export class Hud {
     for (const sr of s.seasons) {
       list.append(h('li', {}, `The season ended! Your ${this.c.data.ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league} chest: `, costChips(sr.chest)));
     }
-    if (!list.childElementCount) list.append(h('li', {}, 'All quiet in the kingdom.'));
+    if (!list.childElementCount) list.append(h('li', {}, 'All quiet in the village.'));
     body.append(list);
     if (s.raids.length) {
       const btn = h('button', { class: 'btn sky', type: 'button' }, 'See defense replays');
@@ -1102,7 +1102,7 @@ export class Hud {
     body.append(
       h('h3', {}, 'Start over'),
       h('div', { class: 'actions' }, h('button', { class: 'btn danger', type: 'button', onclick: () => this.resetVillage() }, 'Start a new village')),
-      h('p', { class: 'muted small' }, `Toadstool Kingdoms ${this.deps.build.version} · built ${this.deps.build.builtAt}`),
+      h('p', { class: 'muted small' }, `Kagemura: Ninja Clans ${this.deps.build.version} · built ${this.deps.build.builtAt}`),
     );
     this.modal('Settings', body, [], 'wide');
   }
@@ -1164,7 +1164,7 @@ export class Hud {
     await this.c.reset();
     this.closeAllModals();
     this.bus.emit('select', null);
-    this.toast('A fresh kingdom awaits.', 'success');
+    this.toast('A fresh village awaits.', 'success');
   }
 
   // ------------------------------------------------------------ toasts and modals

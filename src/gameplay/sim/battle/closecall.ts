@@ -23,7 +23,7 @@ export function closeCalls(sim: BattleSim, data: GameData): CloseCall[] {
   }
   const hall = sim.buildings.find((b) => b.kind === 'hall');
   if (hall && !hall.destroyed && hall.hp / hall.maxHp <= cfg.hallHpFraction) {
-    out.push({ kind: 'hall', text: `The Elder Toadstool had only ${Math.max(1, Math.round((hall.hp / hall.maxHp) * 100))}% of its health left.` });
+    out.push({ kind: 'hall', text: `The Clan Keep had only ${Math.max(1, Math.round((hall.hp / hall.maxHp) * 100))}% of its health left.` });
   }
   const left = sim.countable - sim.destroyedCount;
   if (left > 0 && left <= cfg.buildingsLeft && d < t.full && d >= cfg.perfectMinDestruction) {

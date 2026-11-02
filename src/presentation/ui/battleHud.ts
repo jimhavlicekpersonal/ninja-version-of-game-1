@@ -73,7 +73,7 @@ export class BattleHud {
             ? `Replay: ${deps.replayOf.opponentName} attacks · loot taken`
             : 'Replay · loot won'
           : deps.grove
-            ? `Grove Raid vs ${deps.grove.enemyName}`
+            ? `Alliance War vs ${deps.grove.enemyName}`
             : 'Loot you can win',
       ),
       deps.grove ? '' : this.lootEl,
@@ -251,8 +251,8 @@ export class BattleHud {
       { class: 'results' },
       starsRow,
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
-      this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Grove Raid.') : h('p', {}, 'Loot: ', lootChips(banked)),
-      this.deps.grove ? '' : h('p', {}, 'Leaf rank: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+      this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Alliance War.') : h('p', {}, 'Loot: ', lootChips(banked)),
+      this.deps.grove ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),

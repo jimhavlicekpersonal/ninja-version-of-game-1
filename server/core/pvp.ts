@@ -42,7 +42,7 @@ export function validateBase(base: BaseLayout, data: GameData): string | null {
     }
     for (const v of Object.values(b.loot ?? {})) if (typeof v !== 'number' || v < 0 || !Number.isFinite(v)) return 'bad loot';
   }
-  if (halls !== 1) return 'base needs exactly one Elder Toadstool';
+  if (halls !== 1) return 'base needs exactly one Clan Keep';
   return null;
 }
 

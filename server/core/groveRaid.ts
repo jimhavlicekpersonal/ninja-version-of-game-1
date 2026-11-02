@@ -55,7 +55,7 @@ async function ensurePairing(ctx: ServerContext, groveId: string, week: number):
     const ourRoster = await rosterOf(ctx, groveId);
     const theirRoster = await rosterOf(ctx, rival.id);
     if (!ourRoster.length || !theirRoster.length) continue;
-    const ourName = me?.name ?? 'Grove';
+    const ourName = me?.name ?? 'Alliance';
     const ok = await ctx.repo.createPairings([
       { week, groveId, opponentGroveId: rival.id, opponentName: rival.name, botSeed: 0, roster: theirRoster, ourSize: ourRoster.length, ourHall: mine.hall, createdAt: t },
       { week, groveId: rival.id, opponentGroveId: groveId, opponentName: ourName, botSeed: 0, roster: ourRoster, ourSize: theirRoster.length, ourHall: theirs.hall, createdAt: t },
@@ -157,11 +157,11 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
   const { grove, joinedAt } = await requireGrove(ctx, me);
   const t = ctx.now();
   const ph = raidPhase(t, ctx.data);
-  if (ph.phase !== 'live') throw new ApiError(409, 'raid_not_live', 'The Grove Raid is not running.');
-  if (!eligible(joinedAt, ph.week, ctx)) throw new ApiError(409, 'no_attacks_left', 'You joined during this Grove Raid; you can take part from next week.');
+  if (ph.phase !== 'live') throw new ApiError(409, 'raid_not_live', 'The Alliance War is not running.');
+  if (!eligible(joinedAt, ph.week, ctx)) throw new ApiError(409, 'no_attacks_left', 'You joined during this Alliance War; you can take part from next week.');
   const pairing = await ensurePairing(ctx, grove.id, ph.week);
   const used = (await ctx.repo.raidAttacks(ph.week, grove.id)).filter((a) => a.attackerId === me.id).length;
-  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Grove Raid attacks.');
+  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   const idx = Math.floor(Number(target));
   const entry = pairing.roster[idx];
   if (!entry) throw new ApiError(404, 'not_found', 'No such enemy base.');
@@ -176,7 +176,7 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   const { army, levels } = checkArmy(sub, me, ctx.data);
   const week = ticket.week!;
   const used = (await ctx.repo.raidAttacks(week, ticket.groveId!)).filter((a) => a.attackerId === me.id).length;
-  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Grove Raid attacks.');
+  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   if (!(await ctx.repo.useTicket(ticket.id))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const { result } = runBattle({ seed: Number(sub.seed) >>> 0, base: ticket.base, army, levels }, deployments, ctx.data, sub.endTick);
@@ -199,10 +199,10 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
     return { week: w, outcome: existing.outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: true };
   }
   const { grove, joinedAt } = await requireGrove(ctx, me);
-  if (ctx.now() < end) throw new ApiError(409, 'raid_not_ended', 'That Grove Raid has not ended yet.');
-  if (!eligible(joinedAt, w, ctx)) throw new ApiError(404, 'not_found', 'You joined your Grove after that Grove Raid started.');
+  if (ctx.now() < end) throw new ApiError(409, 'raid_not_ended', 'That Alliance War has not ended yet.');
+  if (!eligible(joinedAt, w, ctx)) throw new ApiError(404, 'not_found', 'You joined your Alliance after that Alliance War started.');
   const pairing = await ctx.repo.getPairing(w, grove.id);
-  if (!pairing) throw new ApiError(404, 'not_found', 'Your Grove did not take part in that Grove Raid.');
+  if (!pairing) throw new ApiError(404, 'not_found', 'Your Alliance did not take part in that Alliance War.');
   const s = await scores(ctx, pairing, end);
   const outcome = outcomeOf(s.ours, s.theirs);
   const fresh = await ctx.repo.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });

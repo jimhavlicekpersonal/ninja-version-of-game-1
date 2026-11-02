@@ -1,7 +1,7 @@
 {
   "elder_toadstool": {
-    "name": "Elder Toadstool",
-    "description": "The heart of your kingdom. Upgrade it to unlock new buildings and higher levels.",
+    "name": "Clan Keep",
+    "description": "The hidden heart of your clan. Upgrade it to unlock new buildings, warriors and higher levels.",
     "size": 4,
     "category": "hall",
     "inShop": false,
@@ -79,8 +79,8 @@
     ]
   },
   "acorn_orchard": {
-    "name": "Acorn Orchard",
-    "description": "A sturdy oak that drops Acorns every hour. Holds 8 hours of output.",
+    "name": "Coin Mint",
+    "description": "Artisans stamp fresh Coins every hour. Holds 8 hours of output, so collect often.",
     "size": 3,
     "category": "collector",
     "produces": "acorns",
@@ -188,8 +188,8 @@
     ]
   },
   "dewdrop_well": {
-    "name": "Dewdrop Well",
-    "description": "Gathers morning Dew from the meadow. Holds 8 hours of output.",
+    "name": "Rice Paddy",
+    "description": "Terraced paddies that grow Provisions for your warriors. Holds 8 hours of output.",
     "size": 3,
     "category": "collector",
     "produces": "dew",
@@ -297,8 +297,8 @@
     ]
   },
   "acorn_silo": {
-    "name": "Acorn Silo",
-    "description": "Stores Acorns. Bigger silos let you save up for bigger upgrades.",
+    "name": "Treasury",
+    "description": "A locked vault for your Coins. Bigger treasuries let you save for bigger upgrades.",
     "size": 3,
     "category": "storage",
     "inShop": true,
@@ -416,8 +416,8 @@
     ]
   },
   "dew_cistern": {
-    "name": "Dew Cistern",
-    "description": "Stores Dew in a giant glass jar.",
+    "name": "Provision Storehouse",
+    "description": "Stores rice sacks and supplies. Raiders can only carry off part of what is inside.",
     "size": 3,
     "category": "storage",
     "inShop": true,
@@ -535,8 +535,8 @@
     ]
   },
   "beaver_lodge": {
-    "name": "Beaver Lodge",
-    "description": "Home of a Beaver Builder. Each lodge lets you build or upgrade one thing at a time.",
+    "name": "Artisan's Hut",
+    "description": "Home of a Village Artisan. Each hut lets you build or upgrade one thing at a time.",
     "size": 2,
     "category": "builder",
     "inShop": true,
@@ -550,8 +550,8 @@
     ]
   },
   "burrow_barracks": {
-    "name": "Burrow Barracks",
-    "description": "Trains troops. Higher levels unlock new kinds of troops.",
+    "name": "Training Dojo",
+    "description": "Trains warriors and studies battle scrolls to make them stronger. Higher levels unlock new warriors.",
     "size": 3,
     "category": "military",
     "inShop": true,
@@ -607,8 +607,8 @@
     ]
   },
   "army_camp": {
-    "name": "Army Camp",
-    "description": "Houses your trained troops. Each level holds more.",
+    "name": "Squad Courtyard",
+    "description": "Where trained warriors wait for the next raid. Each level houses more.",
     "size": 3,
     "category": "military",
     "inShop": true,
@@ -679,8 +679,8 @@
     ]
   },
   "acorn_cannon": {
-    "name": "Acorn Cannon",
-    "description": "Fires acorns at ground troops. Cannot hit flyers.",
+    "name": "Kunai Tower",
+    "description": "A lookout that throws volleys of kunai at ground troops. Cannot hit flyers.",
     "size": 3,
     "category": "defense",
     "inShop": true,
@@ -758,8 +758,8 @@
     ]
   },
   "pinecone_catapult": {
-    "name": "Pinecone Catapult",
-    "description": "Lobs heavy pinecones that splash a group of ground troops. Slow, and cannot hit troops right next to it.",
+    "name": "Firework Mortar",
+    "description": "Launches bursting fireworks that splash groups of ground troops. Slow, and blind to troops right beside it.",
     "size": 3,
     "category": "defense",
     "inShop": true,
@@ -821,8 +821,8 @@
     ]
   },
   "wasp_nest": {
-    "name": "Wasp Nest",
-    "description": "Angry wasps sting troops on the ground and in the air.",
+    "name": "Shuriken Pagoda",
+    "description": "Spinning shuriken strike troops on the ground and in the air.",
     "size": 2,
     "category": "defense",
     "inShop": true,
@@ -891,8 +891,8 @@
     ]
   },
   "firefly_tower": {
-    "name": "Firefly Tower",
-    "description": "A swarm of fireflies that hits flying troops hard. Ignores ground troops.",
+    "name": "Sky Bow Tower",
+    "description": "Archers with great bows that hit flying troops hard. Ignores ground troops.",
     "size": 2,
     "category": "defense",
     "inShop": true,
@@ -943,8 +943,8 @@
     ]
   },
   "bramble_hedge": {
-    "name": "Bramble Hedge",
-    "description": "A thorny hedge. Troops walk around it or break through it. Builds instantly.",
+    "name": "Stone Wall",
+    "description": "Fitted mountain stone. Troops walk around it or break through it. Higher levels add iron-banded gates. Builds instantly.",
     "size": 1,
     "category": "hedge",
     "inShop": true,
@@ -1000,8 +1000,8 @@
     ]
   },
   "thorn_snare": {
-    "name": "Thorn Snare",
-    "description": "A hidden ring of thorns that bursts when ground troops step close. Unseen by attackers until it goes off.",
+    "name": "Spike Pit",
+    "description": "A hidden pit of bamboo spikes that springs when ground troops step close. Unseen until it goes off.",
     "size": 1,
     "category": "trap",
     "inShop": true,
@@ -1053,8 +1053,8 @@
     ]
   },
   "sap_puddle": {
-    "name": "Sap Puddle",
-    "description": "Hidden sticky sap that slows ground troops to half speed for a few seconds.",
+    "name": "Caltrop Field",
+    "description": "Hidden iron caltrops that slow ground troops to half speed for a few seconds.",
     "size": 1,
     "category": "trap",
     "inShop": true,
@@ -1097,8 +1097,8 @@
     ]
   },
   "flower_bed": {
-    "name": "Flower Bed",
-    "description": "A cheerful patch of flowers. Purely decorative.",
+    "name": "Bonsai Planter",
+    "description": "A carefully shaped little pine. Purely decorative.",
     "size": 1,
     "category": "decor",
     "inShop": true,
@@ -1114,8 +1114,8 @@
     ]
   },
   "lantern_post": {
-    "name": "Lantern Post",
-    "description": "A warm lantern that glows all night. Purely decorative.",
+    "name": "Stone Lantern",
+    "description": "A carved stone lantern that glows through the night. Purely decorative.",
     "size": 1,
     "category": "decor",
     "inShop": true,
@@ -1131,8 +1131,8 @@
     ]
   },
   "mushroom_ring": {
-    "name": "Mushroom Ring",
-    "description": "A ring of tiny dancing mushrooms. Purely decorative.",
+    "name": "Zen Garden",
+    "description": "Raked gravel and three quiet stones. Purely decorative.",
     "size": 2,
     "category": "decor",
     "inShop": true,
@@ -1148,8 +1148,8 @@
     ]
   },
   "mossy_statue": {
-    "name": "Mossy Statue",
-    "description": "A mossy statue of a famous frog. Purely decorative.",
+    "name": "Fox Guardian Statue",
+    "description": "A weathered fox guardian that watches the gate. Purely decorative.",
     "size": 2,
     "category": "decor",
     "inShop": true,
@@ -1165,8 +1165,8 @@
     ]
   },
   "obstacle_bush": {
-    "name": "Berry Bush",
-    "description": "Clear it to make room. You might find Moonstones!",
+    "name": "Bamboo Thicket",
+    "description": "Clear it to make room. You might find Jade!",
     "size": 1,
     "category": "obstacle",
     "inShop": false,
@@ -1187,8 +1187,8 @@
     ]
   },
   "obstacle_stump": {
-    "name": "Old Stump",
-    "description": "Clear it to make room. You might find Moonstones!",
+    "name": "Fallen Cedar",
+    "description": "Clear it to make room. You might find Jade!",
     "size": 2,
     "category": "obstacle",
     "inShop": false,
@@ -1209,8 +1209,8 @@
     ]
   },
   "obstacle_rock": {
-    "name": "Mossy Rock",
-    "description": "Clear it to make room. You might find Moonstones!",
+    "name": "Mountain Boulder",
+    "description": "Clear it to make room. You might find Jade!",
     "size": 2,
     "category": "obstacle",
     "inShop": false,
@@ -1231,8 +1231,8 @@
     ]
   },
   "grove_lodge": {
-    "name": "Grove Lodge",
-    "description": "Your link to your Grove. Holds troops your Grove friends donate to you, ready for your next battle.",
+    "name": "Alliance Lodge",
+    "description": "Your link to your Alliance. Holds the warriors your allies send you, ready for your next raid.",
     "size": 3,
     "category": "social",
     "inShop": true,

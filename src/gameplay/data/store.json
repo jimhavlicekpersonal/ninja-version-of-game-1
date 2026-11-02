@@ -3,37 +3,37 @@
   "packs": [
     {
       "id": "moonstones_1",
-      "name": "Pouch of Moonstones",
+      "name": "Pouch of Jade",
       "usd": 1.99,
       "moonstones": 100
     },
     {
       "id": "moonstones_2",
-      "name": "Bag of Moonstones",
+      "name": "Bag of Jade",
       "usd": 4.99,
       "moonstones": 280
     },
     {
       "id": "moonstones_3",
-      "name": "Sack of Moonstones",
+      "name": "Box of Jade",
       "usd": 9.99,
       "moonstones": 600
     },
     {
       "id": "moonstones_4",
-      "name": "Box of Moonstones",
+      "name": "Chest of Jade",
       "usd": 19.99,
       "moonstones": 1300
     },
     {
       "id": "moonstones_5",
-      "name": "Chest of Moonstones",
+      "name": "Vault of Jade",
       "usd": 49.99,
       "moonstones": 3500
     },
     {
       "id": "moonstones_6",
-      "name": "Vault of Moonstones",
+      "name": "Dragon Hoard of Jade",
       "usd": 99.99,
       "moonstones": 7500
     }

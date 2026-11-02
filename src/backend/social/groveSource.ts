@@ -185,7 +185,7 @@ export class LocalGroveSource implements GroveSource {
     return this.run({ type: 'joinGrove' });
   }
   async leave(): Promise<ActionResult> {
-    return { ok: false, message: 'Offline Groves cannot be left.' };
+    return { ok: false, message: 'Offline Alliances cannot be left.' };
   }
   async send(text: string): Promise<ActionResult> {
     return this.run({ type: 'chat', text });
@@ -200,7 +200,7 @@ export class LocalGroveSource implements GroveSource {
   async raidBattle(target: number): Promise<RaidBattle | { error: string }> {
     const c = this.c;
     const p = raidPhase(c.now(), c.data);
-    if (p.phase !== 'live') return { error: 'The Grove Raid is not running.' };
+    if (p.phase !== 'live') return { error: 'The Alliance War is not running.' };
     const enemy = enemyGrove(c.state.grove.seed, p.week, hallLevel(c.state, c.data), c.data);
     const base = enemy.bases[target];
     if (!base) return { error: 'No such enemy base.' };
@@ -301,8 +301,8 @@ export class RemoteGroveSource implements GroveSource {
     const meId = g?.you.id ?? this.conn.player?.id ?? '';
     const free = reinforcementCapacity(s, gd) - reinforcementHousing(s, gd);
     let ask: GroveSnapshot['ask'] = { ok: true, message: '' };
-    if (reinforcementCapacity(s, gd) <= 0) ask = { ok: false, message: 'Build a Grove Lodge to receive troops.' };
-    else if (free <= 0) ask = { ok: false, message: 'Your Grove Lodge is full.' };
+    if (reinforcementCapacity(s, gd) <= 0) ask = { ok: false, message: 'Build an Alliance Lodge to receive troops.' };
+    else if (free <= 0) ask = { ok: false, message: 'Your Alliance Lodge is full.' };
     else if (this.reqs.some((r) => r.mine)) ask = { ok: false, message: 'Your request is still open.' };
     else if (this.nextRequestAt > now) ask = { ok: false, message: 'You can ask again soon.', readyAt: this.nextRequestAt };
     const rv = this.raidView;
@@ -363,7 +363,7 @@ export class RemoteGroveSource implements GroveSource {
   }
 
   join(id?: string): Promise<ActionResult> {
-    if (!id) return Promise.resolve({ ok: false, message: 'Pick a Grove to join.' });
+    if (!id) return Promise.resolve({ ok: false, message: 'Pick an Alliance to join.' });
     return this.act(async () => {
       await this.port.joinGrove(id);
       await this.conn.sync();
@@ -371,7 +371,7 @@ export class RemoteGroveSource implements GroveSource {
   }
 
   create(name: string): Promise<ActionResult> {
-    if (name.trim().length < 2) return Promise.resolve({ ok: false, message: 'Give your Grove a name.' });
+    if (name.trim().length < 2) return Promise.resolve({ ok: false, message: 'Give your Alliance a name.' });
     return this.act(async () => {
       await this.port.createGrove(name);
       await this.conn.sync();
@@ -418,7 +418,7 @@ export class RemoteGroveSource implements GroveSource {
       const c = this.c;
       const base: BaseLayout = t.base;
       const setup: BattleSetup = { seed: mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data) };
-      const enemyName = this.raidView?.opponent?.name ?? 'Enemy Grove';
+      const enemyName = this.raidView?.opponent?.name ?? 'Enemy Alliance';
       return {
         setup,
         enemyName,

@@ -1,7 +1,7 @@
 {
   "hedgehog_roller": {
-    "name": "Hedgehog Roller",
-    "description": "Rolls into the nearest building. Cheap and quick to train.",
+    "name": "Shinobi",
+    "description": "Fast, cheap melee fighter. Dashes to the nearest building.",
     "housing": 1,
     "attackIntervalTicks": 8,
     "range": 0.6,
@@ -79,8 +79,8 @@
     ]
   },
   "frog_lobber": {
-    "name": "Frog Lobber",
-    "description": "Lobs pebbles from a distance. Fragile, so keep it behind tougher troops.",
+    "name": "Kunai Adept",
+    "description": "Throws kunai from a distance. Fragile, so keep it behind sturdier troops.",
     "housing": 1,
     "attackIntervalTicks": 10,
     "range": 3.5,
@@ -160,8 +160,8 @@
     ]
   },
   "beetle_brute": {
-    "name": "Beetle Brute",
-    "description": "A tough tank that marches straight for defenses.",
+    "name": "Armored Guardian",
+    "description": "A heavily armored frontliner who marches straight for defenses and soaks up their fire.",
     "housing": 5,
     "attackIntervalTicks": 12,
     "range": 0.8,
@@ -239,8 +239,8 @@
     ]
   },
   "owl_bomber": {
-    "name": "Owl Bomber",
-    "description": "Flies over hedges and drops seed bombs on defenses. Watch out for Firefly Towers and Wasp Nests.",
+    "name": "Kite Raider",
+    "description": "Glides over walls on a war kite and drops firebombs on defenses. Sky Bow Towers and Shuriken Pagodas can hit it.",
     "housing": 4,
     "attackIntervalTicks": 15,
     "range": 0.5,
@@ -320,8 +320,8 @@
     ]
   },
   "mole_digger": {
-    "name": "Mole Digger",
-    "description": "Burrows under hedges to reach any building.",
+    "name": "Tunnel Runner",
+    "description": "Digs under walls to reach any building.",
     "housing": 2,
     "attackIntervalTicks": 10,
     "range": 0.6,

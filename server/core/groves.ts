@@ -20,7 +20,7 @@ export function maxReinforcement(hall: number, ctx: ServerContext): number {
 async function requireGrove(ctx: ServerContext, me: Player): Promise<{ grove: Grove; role: MemberView['role']; xp: number; joinedAt: number }> {
   const m = await ctx.repo.getMembership(me.id);
   const grove = m ? await ctx.repo.getGrove(m.groveId) : null;
-  if (!m || !grove) throw new ApiError(404, 'not_in_grove', 'You are not in a Grove.');
+  if (!m || !grove) throw new ApiError(404, 'not_in_grove', 'You are not in an Alliance.');
   return { grove, role: m.role, xp: m.xp, joinedAt: m.joinedAt };
 }
 
@@ -59,27 +59,27 @@ export async function listGroves(ctx: ServerContext, me: Player, query: string):
 }
 
 export async function createGrove(ctx: ServerContext, me: Player, name: unknown): Promise<GroveView> {
-  if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Grove first.');
+  if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
   const clean = cleanName(name, ctx);
   const colors = ctx.data.social.colors;
   const grove: Grove = { id: ctx.uuid(), name: clean, color: colors[Math.floor(ctx.random() * colors.length)], createdAt: ctx.now() };
   await ctx.repo.createGrove(grove);
-  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Leader', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Grove first.');
+  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Leader', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
   await ctx.repo.updatePlayer(me.id, { groveId: grove.id });
   await system(ctx, grove.id, `${me.name} founded ${grove.name}!`);
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }
 
 export async function joinGrove(ctx: ServerContext, me: Player, id: string): Promise<GroveView> {
-  if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Grove first.');
+  if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
   const grove = await ctx.repo.getGrove(String(id));
-  if (!grove) throw new ApiError(404, 'not_found', 'That Grove does not exist.');
+  if (!grove) throw new ApiError(404, 'not_found', 'That Alliance does not exist.');
   const rows = await ctx.repo.members(grove.id);
-  if (!rows.length) throw new ApiError(404, 'not_found', 'That Grove is empty.');
-  if (rows.length >= maxMembers(ctx)) throw new ApiError(409, 'full', 'That Grove is full.');
-  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Member', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Grove first.');
+  if (!rows.length) throw new ApiError(404, 'not_found', 'That Alliance is empty.');
+  if (rows.length >= maxMembers(ctx)) throw new ApiError(409, 'full', 'That Alliance is full.');
+  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Member', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
   await ctx.repo.updatePlayer(me.id, { groveId: grove.id });
-  await system(ctx, grove.id, `${me.name} joined the Grove. Say hello!`);
+  await system(ctx, grove.id, `${me.name} joined the Alliance. Say hello!`);
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }
 
@@ -88,7 +88,7 @@ export async function leaveGrove(ctx: ServerContext, me: Player): Promise<void> 
   await ctx.repo.removeMember(grove.id, me.id);
   await ctx.repo.updatePlayer(me.id, { groveId: null });
   await ctx.repo.closeRequestsOf(me.id);
-  await system(ctx, grove.id, `${me.name} left the Grove.`);
+  await system(ctx, grove.id, `${me.name} left the Alliance.`);
   if (role === 'Leader') {
     // Hand leadership to the longest-serving member.
     const rest = (await ctx.repo.members(grove.id)).sort((a, b) => (a.role === 'Elder' ? 0 : 1) - (b.role === 'Elder' ? 0 : 1) || a.joinedAt - b.joinedAt);
@@ -143,7 +143,7 @@ export async function requestTroops(ctx: ServerContext, me: Player, capacity: un
   const last = await ctx.repo.lastRequestAt(me.id);
   if (last && t < last + ctx.data.social.requestCooldownMinutes * MIN) throw new ApiError(429, 'cooldown', 'You can ask again soon.');
   const size = Math.min(Math.floor(Number(capacity) || 0), maxReinforcement(me.hallLevel, ctx));
-  if (size <= 0) throw new ApiError(400, 'bad_request', 'Build a Grove Lodge with free space first.');
+  if (size <= 0) throw new ApiError(400, 'bad_request', 'Build an Alliance Lodge with free space first.');
   await ctx.repo.closeRequestsOf(me.id);
   const r: TroopRequest = { id: ctx.uuid(), groveId: grove.id, playerId: me.id, name: me.name, at: t, size, filled: 0, open: true };
   await ctx.repo.addRequest(r);

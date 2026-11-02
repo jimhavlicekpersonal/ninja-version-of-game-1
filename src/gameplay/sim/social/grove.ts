@@ -242,9 +242,9 @@ export function donate(state: VillageState, requestId: string, troop: string, co
 
 export function canRequest(state: VillageState, now: number, data: GameData): { ok: boolean; message: string; readyAt?: number } {
   const g = state.grove;
-  if (!g.joined) return { ok: false, message: 'Join a Grove first.' };
-  if (reinforcementCapacity(state, data) <= 0) return { ok: false, message: 'Build a Grove Lodge to receive troops.' };
-  if (reinforcementHousing(state, data) >= reinforcementCapacity(state, data)) return { ok: false, message: 'Your Grove Lodge is full.' };
+  if (!g.joined) return { ok: false, message: 'Join an Alliance first.' };
+  if (reinforcementCapacity(state, data) <= 0) return { ok: false, message: 'Build an Alliance Lodge to receive troops.' };
+  if (reinforcementHousing(state, data) >= reinforcementCapacity(state, data)) return { ok: false, message: 'Your Alliance Lodge is full.' };
   const last = g.myRequest?.at ?? -Infinity;
   const lastAny = g.chat.filter((c) => c.from === -1 && c.kind === 'request').map((c) => c.at).pop() ?? -Infinity;
   const readyAt = Math.max(last, lastAny) + data.social.requestCooldownMinutes * MIN;

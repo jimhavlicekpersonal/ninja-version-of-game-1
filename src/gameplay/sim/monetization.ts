@@ -42,7 +42,7 @@ export function canPurchase(state: VillageState, productId: string, now: number,
   const product = productInfo(data, productId);
   if (!product) return { ok: false, code: 'UNKNOWN_PRODUCT', message: 'That item is not available.' };
   if (state.profile.under18 === null) return { ok: false, code: 'AGE_UNKNOWN', message: 'Please tell us your age group first.' };
-  if (product.kind === 'pass' && state.pass.premium) return { ok: false, code: 'ALREADY_OWNED', message: 'You already have the premium Lantern Pass this season.' };
+  if (product.kind === 'pass' && state.pass.premium) return { ok: false, code: 'ALREADY_OWNED', message: 'You already have the premium Season Scroll this season.' };
   if (product.kind === 'offer') {
     const rule = data.offers.rules.find((o) => o.productId === productId)!;
     const active = state.offers.active.find((a) => a.id === rule.id && a.expiresAt > now);

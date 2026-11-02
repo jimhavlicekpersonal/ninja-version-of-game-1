@@ -74,7 +74,7 @@ export class DailyUi {
           ),
         );
       }
-      body.append(h('h3', {}, "What's inside (exact odds)"), table, h('p', { class: 'muted small' }, `Contents are sized for your Elder Toadstool level ${hall} and streak day ${Math.max(1, step)}. The chest is free and can't be bought or reopened.`));
+      body.append(h('h3', {}, "What's inside (exact odds)"), table, h('p', { class: 'muted small' }, `Contents are sized for your Clan Keep level ${hall} and streak day ${Math.max(1, step)}. The chest is free and can't be bought or reopened.`));
 
       const actions = h('div', { class: 'actions' });
       if (ready) {

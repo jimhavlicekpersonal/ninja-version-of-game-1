@@ -45,12 +45,12 @@ export function researchQuote(state: VillageState, troop: string, hallLevel: num
   const next = troopLevel(data, troop, cur + 1);
   const r = next.research ?? { cost: {}, seconds: 0 };
   const base = { toLevel: next.level, cost: r.cost, seconds: r.seconds };
-  if (barracksLevel(state, data) < def.barracksLevel) return { ok: false, code: 'LOCKED', message: `Needs a level ${def.barracksLevel} Burrow Barracks.`, ...base };
+  if (barracksLevel(state, data) < def.barracksLevel) return { ok: false, code: 'LOCKED', message: `Needs a level ${def.barracksLevel} Training Dojo.`, ...base };
   if (next.level > troopLevelCapAt(hallLevel, data)) {
     const need = data.hall.levels.find((h) => h.troopLevelCap >= next.level)?.level;
-    return { ok: false, code: 'HALL_LEVEL_TOO_LOW', message: need ? `Upgrade your Elder Toadstool to level ${need} to research level ${next.level}.` : `${def.name} is fully researched.`, ...base };
+    return { ok: false, code: 'HALL_LEVEL_TOO_LOW', message: need ? `Upgrade your Clan Keep to level ${need} to research level ${next.level}.` : `${def.name} is fully researched.`, ...base };
   }
-  if (state.research.active) return { ok: false, code: 'BUSY', message: `The Barracks is already researching ${troopDef(data, state.research.active.troop).name}.`, ...base };
+  if (state.research.active) return { ok: false, code: 'BUSY', message: `The Dojo is already researching ${troopDef(data, state.research.active.troop).name}.`, ...base };
   return { ok: true, ...base };
 }
 

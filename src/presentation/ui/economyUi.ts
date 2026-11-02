@@ -91,11 +91,11 @@ export class EconomyUi {
   /** Confirm a Moonstone spend, then run it. */
   async spendMoonstones(title: string, what: string, moonstones: number, run: () => boolean): Promise<void> {
     if (this.c.state.resources.moonstones < moonstones) {
-      const go = await this.kit.confirm('Not enough Moonstones', `${what} costs ${moonstones} Moonstones and you have ${this.c.state.resources.moonstones}.`, 'Visit the store', false, 'Not now');
+      const go = await this.kit.confirm('Not enough Jade', `${what} costs ${moonstones} Jade and you have ${this.c.state.resources.moonstones}.`, 'Visit the store', false, 'Not now');
       if (go) this.openStore('moonstones');
       return;
     }
-    const ok = await this.kit.confirm(title, `${what} for ${moonstones} Moonstones?`, `Spend ${moonstones}`, false, 'Cancel');
+    const ok = await this.kit.confirm(title, `${what} for ${moonstones} Jade?`, `Spend ${moonstones}`, false, 'Cancel');
     if (ok && !run()) this.kit.toast('That did not work. Try again.', 'error');
   }
 
@@ -107,7 +107,7 @@ export class EconomyUi {
     let current = tab;
     const draw = () => {
       clear(body);
-      const tabs: [typeof current, string][] = [['moonstones', 'Moonstones'], ['offers', `Offers${activeOffers(this.c.state, this.c.now()).length ? ' •' : ''}`], ['pass', this.c.data.pass.name], ['looks', 'Looks']];
+      const tabs: [typeof current, string][] = [['moonstones', 'Jade'], ['offers', `Offers${activeOffers(this.c.state, this.c.now()).length ? ' •' : ''}`], ['pass', this.c.data.pass.name], ['looks', 'Looks']];
       body.append(
         h('div', { class: 'shop-tabs' }, ...tabs.map(([id, label]) => {
           const b = h('button', { type: 'button', class: id === current ? 'on' : '' }, label);
@@ -169,7 +169,7 @@ export class EconomyUi {
 
   private passProduct(redraw: () => void): HTMLElement {
     const d = this.c.data;
-    if (this.c.state.pass.premium) return h('p', { class: 'chip good' }, 'You have the premium Lantern Pass this season.');
+    if (this.c.state.pass.premium) return h('p', { class: 'chip good' }, 'You have the premium Season Scroll this season.');
     return h(
       'div',
       { class: 'pass-premium' },
@@ -201,7 +201,7 @@ export class EconomyUi {
           void this.spendMoonstones('Buy this look', `${skin.name} (purely visual)`, skin.moonstones, () => this.c.dispatch({ type: 'buySkin', skin: skin.id }).ok).then(redraw);
         });
       }
-      grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, 'Elder Toadstool look'), action));
+      grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, 'Clan Keep look'), action));
     }
     return grid;
   }
@@ -297,7 +297,7 @@ export class EconomyUi {
           : h('span', { class: 'chip good' }, '★★★');
         btn.addEventListener('click', () => {
           const r = this.c.dispatch({ type: 'claimAchievement', id: v.def.id });
-          if (r.ok) this.kit.toast('Moonstones collected!', 'success');
+          if (r.ok) this.kit.toast('Jade collected!', 'success');
           draw();
         });
         const pct = v.next ? Math.min(100, (v.value / v.next.target) * 100) : 100;
@@ -310,7 +310,7 @@ export class EconomyUi {
           ),
         );
       }
-      body.append(h('p', { class: 'muted small' }, 'Clear forest obstacles around your village for more free Moonstones.'));
+      body.append(h('p', { class: 'muted small' }, 'Clear forest obstacles around your village for more free Jade.'));
     };
     draw();
     this.kit.modal('Goals', body, [], 'wide');

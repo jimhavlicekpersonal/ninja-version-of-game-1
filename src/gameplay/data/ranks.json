@@ -17,7 +17,7 @@
   "leagues": [
     {
       "id": "sprout",
-      "name": "Sprout League",
+      "name": "Bamboo League",
       "min": 0,
       "chest": {
         "acorns": 20000,
@@ -28,7 +28,7 @@
     },
     {
       "id": "fern",
-      "name": "Fern League",
+      "name": "Cedar League",
       "min": 400,
       "chest": {
         "acorns": 60000,
@@ -42,7 +42,7 @@
     },
     {
       "id": "oak",
-      "name": "Oak League",
+      "name": "Iron League",
       "min": 1000,
       "chest": {
         "acorns": 150000,
@@ -56,7 +56,7 @@
     },
     {
       "id": "elder",
-      "name": "Elder League",
+      "name": "Obsidian League",
       "min": 2000,
       "chest": {
         "acorns": 300000,

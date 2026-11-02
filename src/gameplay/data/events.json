@@ -4,8 +4,8 @@
   "schedule": [
     {
       "id": "harvest_moon",
-      "name": "Harvest Moon",
-      "description": "Collecting from Orchards and Wells gives 30% extra.",
+      "name": "Rice Harvest Festival",
+      "description": "Collecting from Coin Mints and Rice Paddies gives 30% extra.",
       "startHour": 0,
       "durationHours": 48,
       "effect": {
@@ -14,7 +14,7 @@
     },
     {
       "id": "raiders_moon",
-      "name": "Raider's Moon",
+      "name": "Night of Raids",
       "description": "Won attacks bring 20% extra loot.",
       "startHour": 84,
       "durationHours": 48,
@@ -24,8 +24,8 @@
     },
     {
       "id": "swift_paws",
-      "name": "Swift Paws",
-      "description": "Training troops costs 25% less Dew.",
+      "name": "Swift Feet Training",
+      "description": "Training warriors costs 25% less Provisions.",
       "startHour": 168,
       "durationHours": 48,
       "effect": {
@@ -34,7 +34,7 @@
     },
     {
       "id": "raiders_moon_2",
-      "name": "Raider's Moon",
+      "name": "Night of Raids",
       "description": "Won attacks bring 20% extra loot.",
       "startHour": 252,
       "durationHours": 48,

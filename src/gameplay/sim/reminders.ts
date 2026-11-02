@@ -27,10 +27,10 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
     if (!b.upgrade || b.upgrade.endsAt <= now) continue;
     const def = buildingDef(data, b.type);
     const title = b.upgrade.toLevel === 0 ? `${def.name} cleared` : b.upgrade.toLevel === 1 ? `${def.name} is built!` : `${def.name} reached level ${b.upgrade.toLevel}!`;
-    out.push({ id: `up-${b.id}`, type: 'builds', at: b.upgrade.endsAt, title, body: 'Your Beaver Builder is free for a new job.' });
+    out.push({ id: `up-${b.id}`, type: 'builds', at: b.upgrade.endsAt, title, body: 'Your Village Artisan is free for a new job.' });
   }
   const r = state.research?.active;
-  if (r && r.endsAt > now) out.push({ id: 'research', type: 'builds', at: r.endsAt, title: `${data.troops[r.troop]?.name ?? 'Troop'} level ${r.toLevel} researched!`, body: 'The Burrow Barracks is free to research again.' });
+  if (r && r.endsAt > now) out.push({ id: 'research', type: 'builds', at: r.endsAt, title: `${data.troops[r.troop]?.name ?? 'Troop'} level ${r.toLevel} researched!`, body: 'The Training Dojo is free to research again.' });
   const last = state.training[state.training.length - 1];
   if (last && last.endsAt > now) out.push({ id: 'training', type: 'army', at: last.endsAt, title: 'Your army is ready', body: 'All troops have finished training. Time to raid!' });
   // Earliest time a collector fills up.
@@ -47,11 +47,11 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
     const start = Math.max(now, b.upgrade ? b.upgrade.endsAt : now);
     fullAt = Math.min(fullAt, start + (left / rate) * 3_600_000);
   }
-  if (Number.isFinite(fullAt)) out.push({ id: 'collectors', type: 'collectors', at: Math.ceil(fullAt), title: 'Collectors are full', body: 'Your Acorns and Dew are waiting to be collected.' });
+  if (Number.isFinite(fullAt)) out.push({ id: 'collectors', type: 'collectors', at: Math.ceil(fullAt), title: 'Collectors are full', body: 'Your Coins and Provisions are waiting to be collected.' });
   if (state.shieldUntil > now) out.push({ id: 'shield', type: 'shield', at: state.shieldUntil, title: 'Your shield has ended', body: 'Raiders can find your village again.' });
   if (state.grove.joined) {
     const p = raidPhase(now, data);
-    if (p.phase !== 'live') out.push({ id: 'grove-raid', type: 'groveRaid', at: p.nextStart, title: 'The Grove Raid has started!', body: 'Use both attacks to win the reward chest.' });
+    if (p.phase !== 'live') out.push({ id: 'grove-raid', type: 'groveRaid', at: p.nextStart, title: 'The Alliance War has started!', body: 'Use both attacks to win the reward chest.' });
   }
   // Tomorrow's free chest, if today's is already open (otherwise it's ready now).
   if (state.daily && !chestReady(state, now, data)) out.push({ id: 'daily-chest', type: 'dailyChest', at: nextChestAt(now, data), title: 'A new daily chest is ready', body: "It's free. See the odds before you open it." });

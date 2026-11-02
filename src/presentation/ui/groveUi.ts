@@ -49,10 +49,10 @@ export class GroveUi {
       const keepFocus = document.activeElement?.matches?.('.grove input.text') ?? false;
       clear(body);
       if (snap.loading) {
-        body.append(h('p', { class: 'muted' }, 'Finding your Grove…'));
+        body.append(h('p', { class: 'muted' }, 'Finding your Alliance…'));
         return;
       }
-      if (snap.error) body.append(h('div', { class: 'note error-note' }, `Can't reach the Grove right now: ${snap.error}`));
+      if (snap.error) body.append(h('div', { class: 'note error-note' }, `Can't reach the Alliance right now: ${snap.error}`));
       if (!snap.joined) {
         this.joinScreen(body, snap, () => draw(true));
         return;
@@ -62,14 +62,14 @@ export class GroveUi {
           'div',
           { class: 'grove-head' },
           h('span', { class: 'grove-badge', style: `background:${snap.color}` }, icon(icons.leaf)),
-          h('div', {}, h('b', {}, snap.name), h('div', { class: 'muted small' }, `${snap.members.length}${snap.kind === 'online' ? `/${snap.maxMembers}` : ''} members · your Grove level ${snap.level} (${formatNumber(snap.xp)} XP)${snap.kind === 'online' ? ' · online' : ''}`)),
+          h('div', {}, h('b', {}, snap.name), h('div', { class: 'muted small' }, `${snap.members.length}${snap.kind === 'online' ? `/${snap.maxMembers}` : ''} members · your Alliance level ${snap.level} (${formatNumber(snap.xp)} XP)${snap.kind === 'online' ? ' · online' : ''}`)),
         ),
       );
       const tabs: [Tab, string][] = [
         ['chat', 'Chat'],
         ['requests', `Troops${snap.requests.length ? ` (${snap.requests.length})` : ''}`],
         ['members', 'Members'],
-        ['raid', 'Grove Raid'],
+        ['raid', 'Alliance War'],
       ];
       body.append(
         h(
@@ -94,7 +94,7 @@ export class GroveUi {
     const timer = window.setInterval(() => draw(), 2000);
     const unsub = this.src.subscribe(() => draw());
     const stopWatch = this.src.watch();
-    this.d.kit.modal('Grove', body, [], 'wide', () => {
+    this.d.kit.modal('Alliance', body, [], 'wide', () => {
       window.clearInterval(timer);
       unsub();
       stopWatch();
@@ -119,23 +119,23 @@ export class GroveUi {
 
   private joinScreen(body: HTMLElement, snap: GroveSnapshot, redraw: () => void): void {
     body.append(
-      h('p', {}, 'Groves are friendly bands of kingdoms. Members chat, share troops and team up for the weekly Grove Raid.'),
+      h('p', {}, 'Alliances are friendly bands of ninja clans. Members chat, share troops and team up for the weekly Alliance War.'),
       h('p', { class: 'muted small' }, 'Chat is always filtered to keep it friendly.'),
     );
     if (snap.kind === 'local') {
-      const btn = h('button', { class: 'btn primary', type: 'button' }, 'Find a Grove and join');
+      const btn = h('button', { class: 'btn primary', type: 'button' }, 'Find an Alliance and join');
       btn.addEventListener('click', () => void this.run(() => this.src.join(), redraw));
       body.append(h('div', { class: 'actions' }, btn));
       return;
     }
     // Online: real Groves to browse, or found a new one.
-    const search = h('input', { class: 'text', type: 'search', maxlength: 24, placeholder: 'Search Groves…' }) as HTMLInputElement;
+    const search = h('input', { class: 'text', type: 'search', maxlength: 24, placeholder: 'Search Alliances…' }) as HTMLInputElement;
     search.addEventListener('keydown', (e) => {
       e.stopPropagation();
       if (e.key === 'Enter') void this.src.search(search.value);
     });
     body.append(h('div', { class: 'chat-input-row' }, search, h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.src.search(search.value) }, 'Search')));
-    if (!snap.listings.length) body.append(h('p', { class: 'muted' }, 'No Groves with free places right now. Found one and invite your friends!'));
+    if (!snap.listings.length) body.append(h('p', { class: 'muted' }, 'No Alliances with free places right now. Found one and invite your friends!'));
     for (const g of snap.listings) {
       const join = h('button', { class: 'btn primary', type: 'button', disabled: this.busy }, 'Join');
       join.addEventListener('click', () => void this.run(() => this.src.join(g.id), redraw, false));
@@ -143,16 +143,16 @@ export class GroveUi {
         h(
           'div',
           { class: 'log-row' },
-          h('div', { class: 'row' }, h('span', { class: 'grove-badge', style: `background:${g.color}` }, icon(icons.leaf)), h('div', {}, h('b', {}, g.name), h('div', { class: 'muted small' }, `${g.members}/${g.maxMembers} members · about ${formatNumber(g.averageTrophies)} leaves`))),
+          h('div', { class: 'row' }, h('span', { class: 'grove-badge', style: `background:${g.color}` }, icon(icons.leaf)), h('div', {}, h('b', {}, g.name), h('div', { class: 'muted small' }, `${g.members}/${g.maxMembers} members · about ${formatNumber(g.averageTrophies)} honor`))),
           join,
         ),
       );
     }
-    const name = h('input', { class: 'text', type: 'text', maxlength: 24, placeholder: 'Grove name' }) as HTMLInputElement;
+    const name = h('input', { class: 'text', type: 'text', maxlength: 24, placeholder: 'Alliance name' }) as HTMLInputElement;
     name.addEventListener('keydown', (e) => e.stopPropagation());
-    const create = h('button', { class: 'btn sky', type: 'button', disabled: this.busy }, 'Found Grove');
+    const create = h('button', { class: 'btn sky', type: 'button', disabled: this.busy }, 'Found Alliance');
     create.addEventListener('click', () => void this.run(() => this.src.create(name.value), redraw, false));
-    body.append(h('h3', {}, 'Found your own Grove'), h('div', { class: 'chat-input-row' }, name, create));
+    body.append(h('h3', {}, 'Found your own Alliance'), h('div', { class: 'chat-input-row' }, name, create));
   }
 
   private chatTab(body: HTMLElement, snap: GroveSnapshot, keep: string, keepFocus: boolean, redraw: () => void): void {
@@ -206,11 +206,11 @@ export class GroveUi {
     const ask = h('button', { class: 'btn sky', type: 'button', disabled: !can.ok || this.busy }, 'Ask for troops');
     ask.addEventListener('click', () => void this.run(() => this.src.ask(), redraw));
     body.append(
-      h('h3', {}, 'Your Grove Lodge'),
-      cap ? h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(used / cap) * 100}%` })), h('span', {}, `${used}/${cap} donated troops`)) : h('p', { class: 'muted' }, 'Build a Grove Lodge (Elder Toadstool 2) to receive troops from friends.'),
+      h('h3', {}, 'Your Alliance Lodge'),
+      cap ? h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(used / cap) * 100}%` })), h('span', {}, `${used}/${cap} donated troops`)) : h('p', { class: 'muted' }, 'Build an Alliance Lodge (Clan Keep 2) to receive troops from friends.'),
       rein,
       h('div', { class: 'actions' }, ask, !can.ok ? h('span', { class: 'note' }, can.readyAt ? `Ask again in ${formatDuration(can.readyAt - now)}` : can.message) : ''),
-      h('p', { class: 'muted small' }, snap.kind === 'online' ? 'Donated troops join your next battle and are used before your own. Every troop you donate earns Grove XP. Troops from friends arrive when they donate.' : 'Donated troops join your next battle and are used before your own. Every troop you donate earns Grove XP, and friends send troops back to fill your Lodge.'),
+      h('p', { class: 'muted small' }, snap.kind === 'online' ? 'Donated troops join your next battle and are used before your own. Every troop you donate earns Alliance XP. Troops from friends arrive when they donate.' : 'Donated troops join your next battle and are used before your own. Every troop you donate earns Alliance XP, and friends send troops back to fill your Lodge.'),
       h('h3', {}, 'Friends asking for troops'),
     );
     if (!snap.requests.length) body.append(h('p', { class: 'muted' }, 'No requests right now.'));
@@ -236,15 +236,15 @@ export class GroveUi {
         h(
           'div',
           { class: `log-row${r.you ? ' current' : ''}` },
-          h('div', {}, h('b', {}, `${i + 1}. ${r.name}`), h('div', { class: 'muted small' }, `${r.role} · Elder Toadstool ${r.hall}`)),
+          h('div', {}, h('b', {}, `${i + 1}. ${r.name}`), h('div', { class: 'muted small' }, `${r.role} · Clan Keep ${r.hall}`)),
           h('div', { class: 'row' }, h('span', { class: `dot ${r.online ? 'on' : ''}` }), h('span', { class: 'chip' }, icon(icons.leaf), String(r.trophies))),
         ),
       );
     });
     if (snap.canLeave) {
-      const leave = h('button', { class: 'btn danger', type: 'button', disabled: this.busy }, 'Leave Grove');
+      const leave = h('button', { class: 'btn danger', type: 'button', disabled: this.busy }, 'Leave Alliance');
       leave.addEventListener('click', async () => {
-        const ok = await this.d.kit.confirm('Leave this Grove?', 'You can join another Grove straight away. Troops in your Grove Lodge stay with you.', 'Leave', true);
+        const ok = await this.d.kit.confirm('Leave this Alliance?', 'You can join another Alliance straight away. Troops in your Alliance Lodge stay with you.', 'Leave', true);
         if (ok) void this.run(() => this.src.leave(), redraw);
       });
       body.append(h('div', { class: 'actions' }, leave));
@@ -258,20 +258,20 @@ export class GroveUi {
     const p = snap.raid;
     const hall = hallLevel(s, gd);
     if (p.phase !== 'live') {
-      body.append(h('p', {}, `The next Grove Raid starts in ${formatDuration(p.nextStart - now)} and lasts ${gd.social.groveRaid.durationHours / 24} days. Every member gets ${gd.social.groveRaid.attacksPerMember} attacks; the best stars on each enemy base add up, and the Grove with more stars wins.`));
-      if (snap.kind === 'online') body.append(h('p', { class: 'muted small' }, 'Your Grove is matched with a real Grove of similar size and strength, or with a band of wild bots when none is free. Only members who were in the Grove when the raid starts take part.'));
+      body.append(h('p', {}, `The next Alliance War starts in ${formatDuration(p.nextStart - now)} and lasts ${gd.social.groveRaid.durationHours / 24} days. Every member gets ${gd.social.groveRaid.attacksPerMember} attacks; the best stars on each enemy base add up, and the Alliance with more stars wins.`));
+      if (snap.kind === 'online') body.append(h('p', { class: 'muted small' }, 'Your Alliance is matched with a real Alliance of similar size and strength, or with a band of wild bots when none is free. Only members who were in the Alliance when the raid starts take part.'));
       const chest = (o: 'win' | 'draw' | 'loss') => {
         const { xp, ...c } = groveRaidChest(o, hall, gd);
         void xp;
         return rewardChips(c);
       };
-      body.append(h('h3', {}, 'Reward chest'), h('p', { class: 'muted small' }, `Sized for your Elder Toadstool level ${hall}.`), h('div', {}, h('div', { class: 'row' }, h('b', {}, 'Win '), chest('win')), h('div', { class: 'row' }, h('b', {}, 'Draw '), chest('draw')), h('div', { class: 'row' }, h('b', {}, 'Loss '), chest('loss'))));
+      body.append(h('h3', {}, 'Reward chest'), h('p', { class: 'muted small' }, `Sized for your Clan Keep level ${hall}.`), h('div', {}, h('div', { class: 'row' }, h('b', {}, 'Win '), chest('win')), h('div', { class: 'row' }, h('b', {}, 'Draw '), chest('draw')), h('div', { class: 'row' }, h('b', {}, 'Loss '), chest('loss'))));
       const last = s.grove.raidHistory[s.grove.raidHistory.length - 1];
-      if (last) body.append(h('h3', {}, 'Last Grove Raid'), h('p', {}, `${last.outcome === 'win' ? 'Victory' : last.outcome === 'draw' ? 'Draw' : 'Defeat'} · ${last.ours} – ${last.theirs} stars. Reward: `, rewardChips(last.reward)));
+      if (last) body.append(h('h3', {}, 'Last Alliance War'), h('p', {}, `${last.outcome === 'win' ? 'Victory' : last.outcome === 'draw' ? 'Draw' : 'Defeat'} · ${last.ours} – ${last.theirs} stars. Reward: `, rewardChips(last.reward)));
       return;
     }
     if (!p.enemyName) {
-      body.append(h('p', { class: 'muted' }, 'Looking for an enemy Grove…'));
+      body.append(h('p', { class: 'muted' }, 'Looking for an enemy Alliance…'));
       return;
     }
     const left = p.attacksLeft;
@@ -288,7 +288,7 @@ export class GroveUi {
         this.d.kit.closeAllModals();
         this.d.onGroveAttack(b.index);
       });
-      body.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `${b.index + 1}. ${b.name}`), h('div', { class: 'row' }, h('span', { class: 'muted small' }, `Elder Toadstool ${b.hall}`), starEl)), atk));
+      body.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `${b.index + 1}. ${b.name}`), h('div', { class: 'row' }, h('span', { class: 'muted small' }, `Clan Keep ${b.hall}`), starEl)), atk));
     }
   }
 }

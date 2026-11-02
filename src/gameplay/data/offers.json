@@ -7,7 +7,7 @@
       "id": "starter_pack",
       "trigger": "first_long_wait",
       "title": "Starter Pack",
-      "description": "A one-time boost for new rulers: Moonstones and resources to speed things up.",
+      "description": "A one-time boost for new rulers: Jade and resources to speed things up.",
       "productId": "offer_starter",
       "usd": 1.99,
       "contents": {
@@ -23,8 +23,8 @@
     {
       "id": "builder_pack",
       "trigger": "all_builders_busy",
-      "title": "Builder's Bundle",
-      "description": "Moonstones to hire another Beaver Builder, plus a little extra.",
+      "title": "Artisan's Bundle",
+      "description": "Jade to hire another Village Artisan, plus a little extra.",
       "productId": "offer_builder",
       "usd": 4.99,
       "contents": {
@@ -38,8 +38,8 @@
     {
       "id": "war_prep_pack",
       "trigger": "grove_raid_soon",
-      "title": "Grove Raid Supplies",
-      "description": "Get ready for the Grove Raid: Dew for troops and Moonstones.",
+      "title": "War Supplies",
+      "description": "Get ready for the Alliance War: Provisions for troops and Jade.",
       "productId": "offer_war_prep",
       "usd": 2.99,
       "contents": {

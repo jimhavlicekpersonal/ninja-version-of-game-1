@@ -3,30 +3,30 @@
   "membersMax": 20,
   "groveNames": {
     "first": [
-      "Mossy",
-      "Whispering",
-      "Sunny",
-      "Dewdrop",
-      "Thistle",
+      "Silent",
+      "Crimson",
+      "Iron",
+      "Jade",
+      "Twin",
+      "Falling",
+      "Rising",
+      "Midnight",
+      "Thunder",
       "Lantern",
-      "Clover",
-      "Hazelnut",
-      "Puddle",
-      "Starlit",
-      "Bramble",
-      "Toadstool"
+      "Hollow",
+      "Mountain"
     ],
     "second": [
-      "Grove",
-      "Hollow",
-      "Glade",
-      "Circle",
-      "Thicket",
-      "Burrow",
-      "Dell",
-      "Meadow",
-      "Patch",
-      "Copse"
+      "Crane",
+      "Lotus",
+      "Tiger",
+      "Fang",
+      "Blossom",
+      "River",
+      "Mask",
+      "Blade",
+      "Ember",
+      "Shadow"
     ]
   },
   "colors": [
@@ -76,45 +76,45 @@
   ],
   "chatLines": {
     "random": [
-      "Morning, everyone!",
-      "Anyone else love the smell of fresh Dew?",
-      "Just finished my Acorn Silo!",
+      "Morning, clan!",
+      "Rice paddies look great after the rain.",
+      "Just finished my Treasury upgrade!",
       "Who wants to raid together later?",
-      "My beavers never sleep, I swear.",
+      "My artisans never sleep, I swear.",
       "Good luck on your upgrades today!",
-      "The Firefly Tower is so pretty at night.",
-      "Remember to collect your Acorns!",
-      "I almost three-starred a base just now!",
-      "Hedgehogs are the best troops. Fight me.",
-      "Owls make everything better.",
-      "Upgrading my Elder Toadstool, see you in a day!",
-      "Back from a raid with full storage!",
-      "Mole Diggers are sneaky, I love them.",
-      "Who has the comfiest village here?",
-      "Taking a nap, defend my village for me!"
+      "The Stone Lanterns look so calm at night.",
+      "Remember to collect your Coins!",
+      "Almost three-starred a fortress just now!",
+      "Shinobi rush is underrated. Fight me.",
+      "Smoke first, then send everything. Works every time.",
+      "Upgrading my Clan Keep, see you in a day!",
+      "Back from a raid with full storehouses!",
+      "Saboteurs on the mortar, then guardians in. Clean.",
+      "Who has the tidiest village here?",
+      "Meditating for a bit, guard my village!"
     ],
     "greet": [
-      "Welcome to the Grove!",
-      "Hi new friend! Happy to have you.",
-      "Welcome! Ask if you need troops.",
-      "Yay, a new member! Welcome!"
+      "Welcome to the Alliance!",
+      "Welcome, new ally! Glad to have you.",
+      "Welcome! Ask if you need warriors.",
+      "A new blade joins us. Welcome!"
     ],
     "thanks": [
       "Thank you so much!",
       "You are the best, thanks!",
-      "Thanks for the troops!",
-      "Much appreciated, friend!",
-      "Woohoo, thanks!"
+      "Thanks for the warriors!",
+      "Much appreciated, ally!",
+      "Honored, thank you!"
     ],
     "raidStart": [
-      "Grove Raid has started! Use both your attacks!",
+      "Alliance War has started! Use both your attacks!",
       "Time to raid! Go for the stars!",
-      "Grove Raid is on, good luck everyone!"
+      "Alliance War is on, good luck everyone!"
     ],
     "raidEnd": [
-      "Great Grove Raid, everyone!",
+      "Great Alliance War, everyone!",
       "That was fun! Same time next week?",
-      "Thanks for raiding, team!"
+      "Thanks for fighting, team!"
     ],
     "reply": [
       "Haha, so true!",
@@ -127,10 +127,10 @@
       ":)"
     ],
     "donated": [
-      "Sent you some troops!",
+      "Sent you some warriors!",
       "Here you go!",
-      "Troops on the way!",
-      "Fresh troops for you!"
+      "Warriors on the way!",
+      "Fresh warriors for you!"
     ]
   },
   "profanity": [

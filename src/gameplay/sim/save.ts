@@ -132,7 +132,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
     } else if (b.level < 1) problems.push(`${b.id} unfinished with no timer`);
     if (Boolean(def.produces) !== Boolean(b.collector)) problems.push(`collector mismatch on ${b.id}`);
   }
-  if (halls !== 1) problems.push('village must have exactly one Elder Toadstool');
+  if (halls !== 1) problems.push('village must have exactly one Clan Keep');
   if (!v.army || typeof v.army !== 'object') problems.push('army missing');
   else for (const [t, n] of Object.entries(v.army)) if (!data.troops[t] || !Number.isInteger(n) || n < 0) problems.push(`bad army entry ${t}`);
   if (!Array.isArray(v.training)) problems.push('training missing');
@@ -143,7 +143,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Number.isFinite(v.shieldUntil) || !Number.isFinite(v.season) || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
   if (!Array.isArray(v.defenseLog)) problems.push('defense log missing');
   if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
-  if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('grove missing');
+  if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('alliance missing');
   if (!v.tutorial) problems.push('tutorial missing');
   if (!v.daily || !Number.isFinite(v.daily.lastDay) || !Number.isFinite(v.daily.step) || !Array.isArray(v.daily.history)) problems.push('daily chest missing');
   if (!v.research || typeof v.research.levels !== 'object') problems.push('research missing');
@@ -205,7 +205,7 @@ export function encodeExportCode(file: SaveFile): string {
 /** Returns the raw save file inside an export code. Throws if the code is mistyped. */
 export function decodeExportCode(code: string): unknown {
   const parts = code.trim().split('.');
-  if (parts.length !== 3 || parts[0] !== EXPORT_PREFIX) throw new Error("That doesn't look like a Toadstool Kingdoms save code.");
+  if (parts.length !== 3 || parts[0] !== EXPORT_PREFIX) throw new Error("That doesn't look like a Kagemura: Ninja Clans save code.");
   const [, payload, sum] = parts;
   if (fnv1a(payload) !== sum) throw new Error('The save code is incomplete or has a typo.');
   try {

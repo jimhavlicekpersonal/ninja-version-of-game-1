@@ -275,7 +275,7 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
   if (def.category === 'builder') {
     const i = have - 2;
     const price = data.economy.builderHutCosts[i];
-    if (price === undefined || i < 0) return fail('LIMIT_REACHED', 'You have all the Beaver Builders you can hire.');
+    if (price === undefined || i < 0) return fail('LIMIT_REACHED', 'You have all the Village Artisans you can hire.');
     cost = { moonstones: price };
   }
   const quote: Quote = { toLevel: 1, cost, seconds: Math.round(first.buildSeconds * buildTimeFactor(s, now, data)) };
@@ -283,16 +283,16 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
   if (have >= lim.count) {
     const need = hallLevelRequiredFor(data, type, (l) => l.count > have);
     return need
-      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Elder Toadstool to level ${need} to build another ${def.name}.`), quote }
+      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} to build another ${def.name}.`), quote }
       : { ...fail('LIMIT_REACHED', `You have the most ${def.name}s allowed.`), quote };
   }
   if (!canAfford(s.resources, cost)) {
     return cost.moonstones && s.resources.moonstones < cost.moonstones
-      ? { ...fail('NOT_ENOUGH_MOONSTONES', `Needs ${cost.moonstones} Moonstones.`), quote }
+      ? { ...fail('NOT_ENOUGH_MOONSTONES', `Needs ${cost.moonstones} Jade.`), quote }
       : { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost)}).`), quote };
   }
   if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
-    return { ...fail('NO_FREE_BUILDER', 'All your Beaver Builders are busy.'), quote };
+    return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
   }
   return { ok: true, quote };
 }
@@ -314,12 +314,12 @@ export function upgradeQuote(state: VillageState, id: string, data: GameData, no
   if (next.level > lim.maxLevel) {
     const need = hallLevelRequiredFor(data, b.type, (l) => l.maxLevel >= next.level);
     return need
-      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Elder Toadstool to level ${need} first.`), quote }
+      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} first.`), quote }
       : { ...fail('MAX_LEVEL', `${def.name} is at its highest level.`), quote };
   }
   if (!canAfford(s.resources, next.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(next.cost)}).`), quote };
   if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
-    return { ...fail('NO_FREE_BUILDER', 'All your Beaver Builders are busy.'), quote };
+    return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
   }
   return { ok: true, quote };
 }
@@ -420,11 +420,11 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'clear':
       return clearObstacle(s, cmd.id, now, data);
     case 'joinGrove':
-      if (s.grove.joined) return fail('ALREADY_CLAIMED', 'You are already in a Grove.');
+      if (s.grove.joined) return fail('ALREADY_CLAIMED', 'You are already in an Alliance.');
       joinGrove(s, now, data);
       return { ok: true, state: s, events: [] };
     case 'chat': {
-      if (!s.grove.joined) return fail('NOT_AVAILABLE', 'Join a Grove first.');
+      if (!s.grove.joined) return fail('NOT_AVAILABLE', 'Join an Alliance first.');
       if (!cmd.text.trim()) return fail('NOT_AVAILABLE', 'Type a message first.');
       sendChat(s, cmd.text, now, data);
       return { ok: true, state: s, events: [] };
@@ -515,7 +515,7 @@ export function skipQuote(state: VillageState, id: string, now: number, data: Ga
 function skip(s: VillageState, id: string, now: number, data: GameData): CommandResult {
   const q = skipQuote(s, id, now, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Moonstones.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
   const b = s.buildings.find((v) => v.id === id)!;
   const finishedAt = now;
@@ -536,7 +536,7 @@ export function researchSkipQuote(state: VillageState, now: number, data: GameDa
 function skipResearch(s: VillageState, now: number, data: GameData): CommandResult {
   const q = researchSkipQuote(s, now, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Moonstones.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
   const what = s.research.active!.troop;
   s.research.active!.endsAt = now;
@@ -554,7 +554,7 @@ export function trainingSkipQuote(state: VillageState, now: number, data: GameDa
 function skipTraining(s: VillageState, now: number, data: GameData): CommandResult {
   const q = trainingSkipQuote(s, now, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Moonstones.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
   for (const item of s.training) item.endsAt = Math.min(item.endsAt, now);
   finishTraining(s, now);
@@ -580,7 +580,7 @@ export function topUpQuote(state: VillageState, cost: Cost, data: GameData): { m
 function topUp(s: VillageState, cost: Cost, data: GameData): CommandResult {
   const q = topUpQuote(s, cost, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing missing, or it would not fit in your storage.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Moonstones.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
   for (const [k, v] of Object.entries(q.missing) as [ResourceKind, number][]) s.resources[k] += v;
   return { ok: true, state: s, events: [] };
@@ -611,8 +611,8 @@ function buySkin(s: VillageState, id: string, data: GameData): CommandResult {
   const skin = data.cosmetics.hallSkins.find((k) => k.id === id);
   if (!skin) return fail('NOT_FOUND', 'Unknown look.');
   if (s.cosmetics.owned.includes(id)) return fail('ALREADY_CLAIMED', 'You already own this look.');
-  if (skin.passOnly) return fail('LOCKED', 'This look comes from the Lantern Pass.');
-  if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Moonstones.`);
+  if (skin.passOnly) return fail('LOCKED', 'This look comes from the Season Scroll.');
+  if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Jade.`);
   s.resources.moonstones -= skin.moonstones;
   s.cosmetics.owned.push(id);
   s.cosmetics.hallSkin = id;
@@ -646,7 +646,7 @@ function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', dat
   const def = data.pass.tiers.find((t) => t.tier === tier);
   if (!def) return fail('NOT_FOUND', 'No such tier.');
   if (tier > unlockedTier(s, data)) return fail('NOT_READY', 'Earn more pass points first.');
-  if (track === 'premium' && !s.pass.premium) return fail('LOCKED', 'Premium rewards need the premium Lantern Pass.');
+  if (track === 'premium' && !s.pass.premium) return fail('LOCKED', 'Premium rewards need the premium Season Scroll.');
   const list = track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium;
   if (list.includes(tier)) return fail('ALREADY_CLAIMED', 'Already claimed.');
   list.push(tier);
@@ -671,7 +671,7 @@ function clearObstacle(s: VillageState, id: string, now: number, data: GameData)
   if (def.category !== 'obstacle' || !def.clear) return fail('NOT_AVAILABLE', 'That cannot be cleared.');
   if (b.upgrade) return fail('BUSY', 'Already being cleared.');
   if (!canAfford(s.resources, def.clear.cost)) return fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.clear.cost)}).`);
-  if (builderStatus(s, data, now).free < 1) return fail('NO_FREE_BUILDER', 'All your Beaver Builders are busy.');
+  if (builderStatus(s, data, now).free < 1) return fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.');
   subtractCost(s.resources, def.clear.cost);
   b.upgrade = { toLevel: 0, startedAt: now, endsAt: now + def.clear.seconds * MS_PER_SECOND, cost: def.clear.cost };
   return { ok: true, state: s, events: [{ kind: 'clear_start', buildingType: b.type, id, seconds: def.clear.seconds }] };
@@ -687,11 +687,11 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
   const cost = discounted(troopLevel(data, troop, level).cost, eventEffect(now, data).trainingDiscount);
   const quote: Quote = { toLevel: level, cost, seconds: def.trainSeconds };
   if (barracksLevel(s, data) < def.barracksLevel) {
-    return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Burrow Barracks.`), quote };
+    return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Training Dojo.`), quote };
   }
   const cap = housingCapacity(s, data);
   if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > cap) {
-    return { ...fail('ARMY_FULL', cap ? 'Your Army Camps are full.' : 'Build an Army Camp to house troops.'), quote };
+    return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards are full.' : 'Build a Squad Courtyard to house troops.'), quote };
   }
   if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost)}).`), quote };
   return { ok: true, quote };
@@ -799,7 +799,7 @@ export function scoutFee(state: VillageState, data: GameData): number {
 function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
   if (!paid && s.scout) return { ok: true, state: s, events: [{ kind: 'scout', seed: s.scout.seed, fee: 0 }] };
   const fee = paid ? scoutFee(s, data) : 0;
-  if (s.resources.acorns < fee) return fail('NOT_ENOUGH_RESOURCES', `Next costs ${fee} acorns.`);
+  if (s.resources.acorns < fee) return fail('NOT_ENOUGH_RESOURCES', `Next costs ${fee} coins.`);
   s.resources.acorns -= fee;
   const seed = mixSeed(s.seed, s.nextSeed++);
   s.scout = { seed };
@@ -891,9 +891,9 @@ export function battleArmy(state: VillageState): Record<string, number> {
 /** A Grove Raid attack: no loot or trophies, best stars per enemy base count. */
 function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   const phase = raidPhase(now, data);
-  if (!s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Grove Raid is not running.');
+  if (!s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Alliance War is not running.');
   const raid = ensureRaid(s, now, data)!;
-  if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Grove Raid attacks.');
+  if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Alliance War attacks.');
   const bad = checkBattleSetup(s, rec.setup, data);
   if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);

@@ -1,5 +1,5 @@
 {
-  "name": "Lantern Pass",
+  "name": "Season Scroll",
   "epoch": 1767225600000,
   "seasonDays": 30,
   "pointsPerTier": 300,
@@ -283,14 +283,14 @@
   "dailyTasks": [
     {
       "id": "collect_acorns",
-      "text": "Collect {n} Acorns",
+      "text": "Collect {n} Coins",
       "stat": "collectedAcorns",
       "base": 2000,
       "perHall": 3000
     },
     {
       "id": "collect_dew",
-      "text": "Collect {n} Dew",
+      "text": "Collect {n} Provisions",
       "stat": "collectedDew",
       "base": 2000,
       "perHall": 3000
