@@ -8,7 +8,9 @@ import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFo
 import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../sim/save';
 import type { Building, Cost, ResourceKind } from '../sim/types';
 import { RESOURCE_KINDS } from '../sim/types';
-import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, upgradeQuote, type QuoteResult } from '../sim/village';
+import { armyHousing, housingCapacity, queueHousing, barracksLevel } from '../sim/army';
+import type { BattleRecord } from '../sim/battle/types';
+import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, trainQuote, upgradeQuote, type QuoteResult } from '../sim/village';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
@@ -25,6 +27,9 @@ export interface HudDeps {
   getFps(): number;
   debugTime: { offsetMs(): number; skip(ms: number): void };
   build: { version: string; builtAt: string };
+  troopThumb(type: string): string | null;
+  onAttack(): void;
+  onReplay(record: BattleRecord): void;
 }
 
 const RES_LABEL: Record<ResourceKind, string> = { acorns: 'Acorns', dew: 'Dew', nightsap: 'Nightsap', moonstones: 'Moonstones' };
@@ -117,8 +122,19 @@ export class Hud {
     this.bottomBar = h(
       'div',
       { class: 'hud-bottom' },
-      h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Settings', onclick: () => this.openSettings() }, icon(icons.gear)),
-      h('button', { class: 'round-btn big build', type: 'button', 'aria-label': 'Build', onclick: () => this.openShop() }, icon(icons.hammer), h('span', {}, 'Build')),
+      h(
+        'div',
+        { class: 'group' },
+        h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Settings', onclick: () => this.openSettings() }, icon(icons.gear)),
+        h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Battle log', onclick: () => this.openLog() }, icon(icons.scroll)),
+        h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Army', onclick: () => this.openTraining() }, icon(icons.troops)),
+      ),
+      h(
+        'div',
+        { class: 'group' },
+        h('button', { class: 'round-btn big attack', type: 'button', 'aria-label': 'Attack', onclick: () => this.deps.onAttack() }, icon(icons.swords), h('span', {}, 'Attack')),
+        h('button', { class: 'round-btn big build', type: 'button', 'aria-label': 'Build', onclick: () => this.openShop() }, icon(icons.hammer), h('span', {}, 'Build')),
+      ),
     );
 
     this.placeOk = h('button', { class: 'round-btn ok', type: 'button', 'aria-label': 'Place here', onclick: () => this.bus.emit('placement:confirm') }, icon(icons.check));
@@ -310,6 +326,14 @@ export class Hud {
       }
     }
     if (def.category === 'builder') stats.append(h('span', { class: 'chip' }, icon(icons.beaver), 'Home of 1 Beaver Builder'));
+    if (ld?.housing) stats.append(h('span', { class: 'chip' }, icon(icons.troops), `Houses ${ld.housing}`));
+    if (def.combat && ld?.damage) {
+      const dps = (ld.damage * gd.battle.ticksPerSecond) / def.combat.fireIntervalTicks;
+      stats.append(h('span', { class: 'chip' }, `${Math.round(dps)} damage/sec`));
+      stats.append(h('span', { class: 'chip' }, `Range ${def.combat.range}`));
+      stats.append(h('span', { class: 'chip' }, def.combat.targets === 'both' ? 'Ground & air' : def.combat.targets === 'air' ? 'Air only' : 'Ground only'));
+    }
+    if (def.category === 'hedge' && ld) stats.append(h('span', { class: 'chip' }, `${formatNumber(ld.hp)} HP`));
     if (stats.childElementCount) this.sheet.append(stats);
 
     // Upgrade in progress
@@ -351,6 +375,9 @@ export class Hud {
       actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.cancelUpgrade(b) }, icon(icons.close), 'Cancel'));
     } else {
       actions.append(this.upgradeButton(b, upgradeQuote(this.c.state, b.id, gd, now)));
+    }
+    if (def.category === 'military' && level >= 1) {
+      actions.append(h('button', { class: 'btn sky', type: 'button', onclick: () => this.openTraining() }, icon(icons.troops), 'Train troops'));
     }
     actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.bus.emit('placement:start', { kind: 'move', id: b.id }) }, icon(icons.move), 'Move'));
     this.sheet.append(actions);
@@ -394,12 +421,42 @@ export class Hud {
 
   // ------------------------------------------------------------ shop
 
+  private shopTab: 'resources' | 'army' | 'defense' | 'decor' = 'resources';
+
   private openShop(): void {
+    const body = h('div', {});
+    const tabs: [typeof this.shopTab, string, string[]][] = [
+      ['resources', 'Resources', ['collector', 'storage', 'builder']],
+      ['army', 'Army', ['military']],
+      ['defense', 'Defense', ['defense', 'hedge', 'trap']],
+      ['decor', 'Decor', ['decor']],
+    ];
+    const visible = tabs.filter(([, , cats]) => Object.values(this.c.data.buildings).some((d) => d.inShop && cats.includes(d.category)));
+    const draw = () => {
+      clear(body);
+      body.append(
+        h('div', { class: 'shop-tabs' }, ...visible.map(([id, label]) => {
+          const b = h('button', { type: 'button', class: id === this.shopTab ? 'on' : '' }, label);
+          b.addEventListener('click', () => {
+            this.shopTab = id;
+            draw();
+          });
+          return b;
+        })),
+      );
+      const cats = (visible.find(([id]) => id === this.shopTab) ?? visible[0])[2];
+      body.append(this.shopGrid(cats, () => close()));
+    };
+    draw();
+    const close = this.modal('Build', body, [], 'wide');
+  }
+
+  private shopGrid(categories: string[], close: () => void): HTMLElement {
     const gd = this.c.data;
     const now = this.c.now();
     const grid = h('div', { class: 'shop-grid' });
     for (const [type, def] of Object.entries(gd.buildings)) {
-      if (!def.inShop) continue;
+      if (!def.inShop || !categories.includes(def.category)) continue;
       const q = placeQuote(this.c.state, gd, type, now);
       const lim = limitFor(this.c.state, gd, type);
       const have = countOfType(this.c.state, type);
@@ -428,7 +485,114 @@ export class Hud {
       );
       grid.append(card);
     }
-    const close = this.modal('Build', grid, [], 'wide');
+    return grid;
+  }
+
+  // ------------------------------------------------------------ army
+
+  openTraining(): void {
+    const body = h('div', { class: 'training' });
+    let lastSig = '';
+    const render = () => {
+      const s = this.c.state;
+      const gd = this.c.data;
+      const now = this.c.now();
+      const sig = JSON.stringify([s.army, s.training.length, s.resources.dew, barracksLevel(s, gd), housingCapacity(s, gd)]);
+      if (sig === lastSig) {
+        // Only refresh timers.
+        body.querySelectorAll<HTMLElement>('[data-ends]').forEach((el) => {
+          el.textContent = formatDuration(Number(el.dataset.ends) - now);
+        });
+        return;
+      }
+      lastSig = sig;
+      clear(body);
+      const cap = housingCapacity(s, gd);
+      const used = armyHousing(s.army, gd);
+      const queued = queueHousing(s.training, gd);
+      body.append(
+        h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${cap ? Math.min(100, ((used + queued) / cap) * 100) : 0}%` })), h('span', {}, `Army ${used}${queued ? ` (+${queued})` : ''} / ${cap}`)),
+      );
+      const army = h('div', { class: 'army-row' });
+      for (const [t, n] of Object.entries(s.army)) {
+        if (n <= 0) continue;
+        const th = this.deps.troopThumb(t);
+        army.append(h('span', { class: 'army-chip' }, th ? h('img', { src: th, alt: '' }) : null, `${gd.troops[t]?.name ?? t} ×${n}`));
+      }
+      if (!army.childElementCount) army.append(h('span', { class: 'muted' }, 'No troops yet.'));
+      body.append(h('h3', {}, 'Ready to attack'), army);
+      if (s.training.length) {
+        const q = h('div', { class: 'queue' });
+        s.training.forEach((item, i) => {
+          const th = this.deps.troopThumb(item.troop);
+          const x = h('button', { class: 'qx', type: 'button', 'aria-label': 'Cancel' }, '×');
+          x.addEventListener('click', () => {
+            const r = this.c.dispatch({ type: 'cancelTraining', index: i });
+            if (!r.ok) this.toast(r.message, 'error');
+            render();
+          });
+          q.append(h('div', { class: 'queue-item' }, th ? h('img', { src: th, alt: '' }) : null, x, h('span', { class: 'qt', 'data-ends': String(item.endsAt) }, formatDuration(item.endsAt - now))));
+        });
+        body.append(h('h3', {}, 'Training'), q);
+      }
+      const list = h('div', { class: 'troop-list' });
+      for (const [t, def] of Object.entries(gd.troops)) {
+        const qr = trainQuote(s, t, now, gd);
+        const th = this.deps.troopThumb(t);
+        const locked = !qr.ok && qr.code === 'LOCKED';
+        const btn = h('button', { class: 'btn primary', type: 'button', disabled: !qr.ok }, '+ Train');
+        btn.addEventListener('click', () => {
+          const r = this.c.dispatch({ type: 'train', troop: t });
+          if (!r.ok) this.toast(r.message, 'error');
+          render();
+        });
+        list.append(
+          h(
+            'div',
+            { class: `troop-row${locked ? ' locked' : ''}` },
+            th ? h('img', { src: th, alt: '' }) : null,
+            h('b', {}, def.name),
+            h('span', { class: 'muted small' }, def.description),
+            h('span', { class: 'row' }, costChips(def.cost, missingFor(s.resources, def.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(def.trainSeconds * 1000)), h('span', { class: 'chip' }, icon(icons.troops), String(def.housing))),
+            btn,
+            !qr.ok ? h('span', { class: 'note' }, qr.message) : null,
+          ),
+        );
+      }
+      body.append(h('h3', {}, 'Train'), list);
+    };
+    render();
+    const timer = window.setInterval(render, 1000);
+    const unsub = this.c.subscribe(() => render());
+    this.modal('Army', body, [], 'wide', () => {
+      window.clearInterval(timer);
+      unsub();
+    });
+  }
+
+  openLog(): void {
+    const s = this.c.state;
+    const body = h('div', {});
+    const attacks = [...s.battleLog].reverse();
+    if (!attacks.length) body.append(h('p', { class: 'muted' }, 'No battles yet. Tap Attack to raid a neighbouring kingdom!'));
+    for (const r of attacks) {
+      const stars = h('span', { class: 'stars-mini' });
+      for (let i = 0; i < 3; i++) stars.append(h('span', { class: i < r.result.stars ? '' : 'off' }, '★'));
+      const replay = h('button', { class: 'btn sky', type: 'button' }, 'Replay');
+      replay.addEventListener('click', () => {
+        this.closeAllModals();
+        this.deps.onReplay(r);
+      });
+      body.append(
+        h(
+          'div',
+          { class: 'log-row' },
+          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}` : `${r.opponentName} raided you`), h('div', { class: 'row' }, stars, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
+          replay,
+        ),
+      );
+    }
+    this.modal('Battle log', body, [], 'wide');
   }
 
   // ------------------------------------------------------------ welcome back

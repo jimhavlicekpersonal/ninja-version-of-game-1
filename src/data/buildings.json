@@ -548,5 +548,455 @@
         "hp": 250
       }
     ]
+  },
+  "burrow_barracks": {
+    "name": "Burrow Barracks",
+    "description": "Trains troops. Higher levels unlock new kinds of troops.",
+    "size": 3,
+    "category": "military",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 200
+        },
+        "buildSeconds": 10,
+        "hp": 250
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 600
+        },
+        "buildSeconds": 22,
+        "hp": 290
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 1500
+        },
+        "buildSeconds": 50,
+        "hp": 330
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 370
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 12000
+        },
+        "buildSeconds": 240,
+        "hp": 420
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 40000
+        },
+        "buildSeconds": 540,
+        "hp": 470
+      }
+    ]
+  },
+  "army_camp": {
+    "name": "Army Camp",
+    "description": "Houses your trained troops. Each level holds more.",
+    "size": 3,
+    "category": "military",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 250
+        },
+        "buildSeconds": 22,
+        "hp": 250,
+        "housing": 20
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 1000
+        },
+        "buildSeconds": 50,
+        "hp": 270,
+        "housing": 30
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 290,
+        "housing": 40
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 15000
+        },
+        "buildSeconds": 240,
+        "hp": 310,
+        "housing": 50
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 50000
+        },
+        "buildSeconds": 540,
+        "hp": 330,
+        "housing": 60
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 120000
+        },
+        "buildSeconds": 1200,
+        "hp": 350,
+        "housing": 70
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 250000
+        },
+        "buildSeconds": 2700,
+        "hp": 370,
+        "housing": 80
+      }
+    ]
+  },
+  "acorn_cannon": {
+    "name": "Acorn Cannon",
+    "description": "Fires acorns at ground troops. Cannot hit flyers.",
+    "size": 3,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 7,
+      "fireIntervalTicks": 8,
+      "projectile": "acorn",
+      "projectileSpeed": 1.2
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 250
+        },
+        "buildSeconds": 22,
+        "hp": 300,
+        "damage": 7
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 50,
+        "hp": 360,
+        "damage": 9
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 420,
+        "damage": 11
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 16000
+        },
+        "buildSeconds": 240,
+        "hp": 500,
+        "damage": 14
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 50000
+        },
+        "buildSeconds": 540,
+        "hp": 600,
+        "damage": 18
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 100000
+        },
+        "buildSeconds": 1200,
+        "hp": 700,
+        "damage": 22
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 200000
+        },
+        "buildSeconds": 2700,
+        "hp": 820,
+        "damage": 27
+      }
+    ]
+  },
+  "pinecone_catapult": {
+    "name": "Pinecone Catapult",
+    "description": "Lobs heavy pinecones that splash a group of ground troops. Slow, and cannot hit troops right next to it.",
+    "size": 3,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 10,
+      "minRange": 3,
+      "fireIntervalTicks": 50,
+      "splashRadius": 1.5,
+      "projectile": "pinecone",
+      "projectileSpeed": 0.6
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 8000
+        },
+        "buildSeconds": 240,
+        "hp": 400,
+        "damage": 20
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 32000
+        },
+        "buildSeconds": 540,
+        "hp": 450,
+        "damage": 25
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 1200,
+        "hp": 500,
+        "damage": 32
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 300000
+        },
+        "buildSeconds": 2700,
+        "hp": 550,
+        "damage": 40
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 600000
+        },
+        "buildSeconds": 6000,
+        "hp": 600,
+        "damage": 50
+      }
+    ]
+  },
+  "wasp_nest": {
+    "name": "Wasp Nest",
+    "description": "Angry wasps sting troops on the ground and in the air.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "both",
+      "range": 6,
+      "fireIntervalTicks": 5,
+      "projectile": "sting",
+      "projectileSpeed": 1.6
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 50,
+        "hp": 300,
+        "damage": 4
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 340,
+        "damage": 5
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 15000
+        },
+        "buildSeconds": 240,
+        "hp": 380,
+        "damage": 6
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 45000
+        },
+        "buildSeconds": 540,
+        "hp": 430,
+        "damage": 8
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 110000
+        },
+        "buildSeconds": 1200,
+        "hp": 490,
+        "damage": 10
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 250000
+        },
+        "buildSeconds": 2700,
+        "hp": 560,
+        "damage": 12
+      }
+    ]
+  },
+  "firefly_tower": {
+    "name": "Firefly Tower",
+    "description": "A swarm of fireflies that hits flying troops hard. Ignores ground troops.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "air",
+      "range": 8,
+      "fireIntervalTicks": 10,
+      "projectile": "spark",
+      "projectileSpeed": 1.4
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 22000
+        },
+        "buildSeconds": 540,
+        "hp": 500,
+        "damage": 40
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 90000
+        },
+        "buildSeconds": 1200,
+        "hp": 580,
+        "damage": 55
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 270000
+        },
+        "buildSeconds": 2700,
+        "hp": 660,
+        "damage": 70
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 540000
+        },
+        "buildSeconds": 6000,
+        "hp": 760,
+        "damage": 90
+      }
+    ]
+  },
+  "bramble_hedge": {
+    "name": "Bramble Hedge",
+    "description": "A thorny hedge. Troops walk around it or break through it. Builds instantly.",
+    "size": 1,
+    "category": "hedge",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 50
+        },
+        "buildSeconds": 0,
+        "hp": 120
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 200
+        },
+        "buildSeconds": 0,
+        "hp": 250
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 800
+        },
+        "buildSeconds": 0,
+        "hp": 400
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 2000
+        },
+        "buildSeconds": 0,
+        "hp": 600
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 5000
+        },
+        "buildSeconds": 0,
+        "hp": 900
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 10000
+        },
+        "buildSeconds": 0,
+        "hp": 1300
+      }
+    ]
   }
 }

@@ -1,6 +1,9 @@
 import buildings from '../data/buildings.json';
 import hall from '../data/hall.json';
 import economy from '../data/economy.json';
+import troops from '../data/troops.json';
+import battle from '../data/battle.json';
+import names from '../data/names.json';
 import type { BuildingDef, BuildingType, GameData, LevelDef } from './types';
 
 /** The game's balance data, straight from src/data/*.json. */
@@ -8,6 +11,9 @@ export const defaultData: GameData = {
   buildings: buildings as unknown as GameData['buildings'],
   hall: hall as unknown as GameData['hall'],
   economy: economy as unknown as GameData['economy'],
+  troops: troops as unknown as GameData['troops'],
+  battle: battle as unknown as GameData['battle'],
+  names: names as unknown as GameData['names'],
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {
@@ -29,4 +35,10 @@ export function hallType(data: GameData): BuildingType {
   const entry = Object.entries(data.buildings).find(([, d]) => d.category === 'hall');
   if (!entry) throw new Error('No hall building defined');
   return entry[0];
+}
+
+export function troopDef(data: GameData, type: string) {
+  const def = data.troops[type];
+  if (!def) throw new Error(`Unknown troop type: ${type}`);
+  return def;
 }

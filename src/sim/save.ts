@@ -2,8 +2,9 @@ import { buildingDef, levelDef, maxDefinedLevel } from './data';
 import { footprint, rectsOverlap } from './grid';
 import type { GameData, VillageState } from './types';
 import { RESOURCE_KINDS } from './types';
+import { mixSeed } from './rng';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -22,8 +23,19 @@ export function migrate(raw: unknown): SaveFile {
   const file = raw as Partial<SaveFile>;
   if (typeof file.version !== 'number') throw new Error('Save data has no version');
   if (file.version > SAVE_VERSION) throw new Error('This save is from a newer version of the game. Update the game first.');
-  // (No older versions exist yet.)
-  return file as SaveFile;
+  const out = structuredClone(file) as SaveFile;
+  const v = out.village as unknown as Record<string, unknown>;
+  if (out.version < 2 && v && typeof v === 'object') {
+    // v1 -> v2: army, training queue, battle log, seeds.
+    v.army = v.army ?? {};
+    v.training = v.training ?? [];
+    v.battleLog = v.battleLog ?? [];
+    const created = Number(v.createdAt) || 0;
+    v.seed = v.seed ?? mixSeed(created >>> 0, Math.floor(created / 4294967296));
+    v.nextSeed = v.nextSeed ?? 1;
+  }
+  out.version = SAVE_VERSION;
+  return out;
 }
 
 export function validateVillage(v: VillageState, data: GameData): string[] {
@@ -57,6 +69,12 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
     if (Boolean(def.produces) !== Boolean(b.collector)) problems.push(`collector mismatch on ${b.id}`);
   }
   if (halls !== 1) problems.push('village must have exactly one Elder Toadstool');
+  if (!v.army || typeof v.army !== 'object') problems.push('army missing');
+  else for (const [t, n] of Object.entries(v.army)) if (!data.troops[t] || !Number.isInteger(n) || n < 0) problems.push(`bad army entry ${t}`);
+  if (!Array.isArray(v.training)) problems.push('training missing');
+  else for (const q of v.training) if (!data.troops[q.troop] || !(q.endsAt >= q.startedAt)) problems.push('bad training item');
+  if (!Array.isArray(v.battleLog)) problems.push('battle log missing');
+  if (!Number.isFinite(v.seed) || !Number.isFinite(v.nextSeed)) problems.push('bad seed');
   for (let i = 0; i < v.buildings.length; i++) {
     for (let j = i + 1; j < v.buildings.length; j++) {
       const a = v.buildings[i];
@@ -101,7 +119,9 @@ function fromBase64Url(b64: string): string {
 }
 
 export function encodeExportCode(file: SaveFile): string {
-  const payload = toBase64Url(JSON.stringify(file));
+  // Replays are left out to keep the code short enough to copy and paste.
+  const slim: SaveFile = { ...file, village: { ...file.village, battleLog: [] } };
+  const payload = toBase64Url(JSON.stringify(slim));
   return `${EXPORT_PREFIX}.${payload}.${fnv1a(payload)}`;
 }
 

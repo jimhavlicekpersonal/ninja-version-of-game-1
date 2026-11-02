@@ -259,3 +259,53 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 @media (hover: hover) {
   .btn:hover:not(:disabled), .round-btn:hover, .shop-card:hover, .unlocks:hover { filter: brightness(1.04); transform: translateY(-1px); }
 }
+
+/* ---------- battle ---------- */
+#battle-hud { position: fixed; inset: 0; pointer-events: none; z-index: 11; }
+#battle-hud button, #battle-hud .modal-backdrop, #battle-hud .panel { pointer-events: auto; }
+.panel { background: rgba(255, 250, 240, 0.94); border-radius: 18px; box-shadow: var(--shadow-soft); padding: 8px 12px; }
+.b-left { position: absolute; top: calc(8px + var(--safe-t)); left: calc(8px + var(--safe-l)); max-width: 62%; }
+.b-name { font-weight: 900; font-size: 16px; display: flex; gap: 6px; align-items: center; }
+.b-loot { margin-top: 4px; }
+.b-right { position: absolute; top: calc(8px + var(--safe-t)); right: calc(8px + var(--safe-r)); text-align: center; min-width: 96px; }
+.b-timer { font: 900 24px var(--font); font-variant-numeric: tabular-nums; color: var(--plum); }
+.b-pct { font-weight: 900; font-size: 15px; }
+.b-stars, .result-stars { display: flex; justify-content: center; gap: 2px; }
+.star { font-size: 20px; color: #ddd3ea; text-shadow: 0 2px 0 rgba(74, 53, 96, .2); transition: color .2s; }
+.star.on { color: var(--sun); text-shadow: 0 2px 0 var(--sun-dark), 0 0 8px rgba(255, 210, 63, .6); }
+.b-stars.bump { animation: pop .35s cubic-bezier(.3, 1.8, .5, 1); }
+.star.big { font-size: 52px; animation: star-in .5s cubic-bezier(.3, 1.8, .5, 1) both; }
+@keyframes star-in { from { transform: scale(0) rotate(-40deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.result-pct { text-align: center; font-weight: 900; font-size: 20px; margin: 4px 0 8px !important; }
+.b-troops {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(76px + var(--safe-b));
+  display: flex; gap: 8px; max-width: calc(100% - 16px); overflow-x: auto; padding: 6px; pointer-events: auto;
+}
+.troop-card {
+  position: relative; width: 64px; height: 70px; flex: none; border: 3px solid #fff; border-radius: 18px; padding: 2px;
+  background: linear-gradient(#ffffff, #efe6fb); box-shadow: 0 4px 0 rgba(74, 53, 96, .22); cursor: pointer;
+}
+.troop-card img { width: 100%; height: 48px; object-fit: contain; }
+.troop-card.on { border-color: var(--sun); background: linear-gradient(#fff6c8, #ffe27a); transform: translateY(-4px); }
+.troop-card.empty { filter: grayscale(1); opacity: .5; }
+.troop-count { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; font-weight: 900; font-size: 14px; color: var(--plum); }
+.b-bottom {
+  position: absolute; left: calc(12px + var(--safe-l)); right: calc(12px + var(--safe-r)); bottom: calc(12px + var(--safe-b));
+  display: flex; justify-content: space-between; gap: 10px; align-items: center;
+}
+.big-attack { min-width: 130px; font-size: 18px; min-height: 54px; }
+.troop-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.troop-row { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px; border-radius: 18px; background: linear-gradient(#ffffff, #f6f0ff); box-shadow: 0 3px 0 rgba(74, 53, 96, .14); text-align: center; }
+.troop-row img { width: 64px; height: 56px; object-fit: contain; }
+.troop-row.locked { opacity: .6; }
+.queue { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 6px 0; }
+.queue-item { position: relative; width: 50px; height: 54px; border-radius: 14px; background: #fff; box-shadow: 0 2px 0 rgba(74, 53, 96, .15); display: grid; place-items: center; }
+.queue-item img { width: 40px; height: 36px; object-fit: contain; }
+.queue-item .qx { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: none; background: var(--berry); color: #fff; font-weight: 900; font-size: 12px; cursor: pointer; padding: 0; line-height: 22px; }
+.queue-item .qt { position: absolute; bottom: -4px; left: 0; right: 0; font-size: 10px; font-weight: 800; text-align: center; color: var(--plum); }
+.army-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.army-chip { display: inline-flex; align-items: center; gap: 4px; background: #fff; border-radius: 14px; padding: 2px 8px 2px 2px; font-weight: 800; box-shadow: 0 2px 0 rgba(74, 53, 96, .12); }
+.army-chip img { width: 30px; height: 28px; object-fit: contain; }
+.log-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #eadff7; flex-wrap: wrap; }
+.log-row .stars-mini { color: var(--sun); font-size: 16px; letter-spacing: 1px; }
+.log-row .stars-mini .off { color: #ddd3ea; }

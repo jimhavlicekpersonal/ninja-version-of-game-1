@@ -1,0 +1,96 @@
+{
+  "hedgehog_roller": {
+    "name": "Hedgehog Roller",
+    "description": "Rolls into the nearest building. Cheap and quick to train.",
+    "housing": 1,
+    "hp": 60,
+    "damage": 8,
+    "attackIntervalTicks": 8,
+    "range": 0.6,
+    "speed": 0.16,
+    "air": false,
+    "prefers": "any",
+    "ignoresHedges": false,
+    "trainSeconds": 20,
+    "cost": {
+      "dew": 25
+    },
+    "barracksLevel": 1
+  },
+  "frog_lobber": {
+    "name": "Frog Lobber",
+    "description": "Lobs pebbles from a distance. Fragile, so keep it behind tougher troops.",
+    "housing": 1,
+    "hp": 30,
+    "damage": 9,
+    "attackIntervalTicks": 10,
+    "range": 3.5,
+    "speed": 0.15,
+    "air": false,
+    "prefers": "any",
+    "ignoresHedges": false,
+    "trainSeconds": 25,
+    "cost": {
+      "dew": 50
+    },
+    "barracksLevel": 2,
+    "projectile": "pebble",
+    "projectileSpeed": 0.9
+  },
+  "beetle_brute": {
+    "name": "Beetle Brute",
+    "description": "A tough tank that marches straight for defenses.",
+    "housing": 5,
+    "hp": 420,
+    "damage": 18,
+    "attackIntervalTicks": 12,
+    "range": 0.8,
+    "speed": 0.1,
+    "air": false,
+    "prefers": "defense",
+    "ignoresHedges": false,
+    "trainSeconds": 90,
+    "cost": {
+      "dew": 250
+    },
+    "barracksLevel": 3
+  },
+  "owl_bomber": {
+    "name": "Owl Bomber",
+    "description": "Flies over hedges and drops seed bombs on defenses. Watch out for Firefly Towers and Wasp Nests.",
+    "housing": 4,
+    "hp": 120,
+    "damage": 36,
+    "attackIntervalTicks": 15,
+    "range": 0.5,
+    "speed": 0.2,
+    "air": true,
+    "prefers": "defense",
+    "ignoresHedges": true,
+    "trainSeconds": 120,
+    "cost": {
+      "dew": 400
+    },
+    "barracksLevel": 4,
+    "projectile": "seedbomb",
+    "projectileSpeed": 0.8
+  },
+  "mole_digger": {
+    "name": "Mole Digger",
+    "description": "Burrows under hedges to reach any building.",
+    "housing": 2,
+    "hp": 90,
+    "damage": 16,
+    "attackIntervalTicks": 10,
+    "range": 0.6,
+    "speed": 0.22,
+    "air": false,
+    "prefers": "any",
+    "ignoresHedges": true,
+    "trainSeconds": 60,
+    "cost": {
+      "dew": 120
+    },
+    "barracksLevel": 5
+  }
+}

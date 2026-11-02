@@ -1,0 +1,52 @@
+{
+  "ticksPerSecond": 10,
+  "durationSeconds": 180,
+  "starThresholds": {
+    "destruction": 50,
+    "full": 100
+  },
+  "deployMarginTiles": 1,
+  "hedgePathCost": 10,
+  "maxReplays": 10,
+  "scoutFeeByHall": [
+    30,
+    60,
+    120,
+    250,
+    500,
+    900
+  ],
+  "generatedLootByHall": [
+    {
+      "min": 800,
+      "max": 1600
+    },
+    {
+      "min": 1500,
+      "max": 3500
+    },
+    {
+      "min": 4000,
+      "max": 9000
+    },
+    {
+      "min": 12000,
+      "max": 26000
+    },
+    {
+      "min": 35000,
+      "max": 70000
+    },
+    {
+      "min": 80000,
+      "max": 150000
+    }
+  ],
+  "lootShares": {
+    "storage": 0.6,
+    "collector": 0.25,
+    "hall": 0.15
+  },
+  "catapultSpread": 0.6,
+  "deploySpread": 0.3
+}

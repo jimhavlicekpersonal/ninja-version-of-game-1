@@ -1,5 +1,9 @@
+import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueHousing, retimeQueue } from './army';
+import { runBattle } from './battle/battle';
+import type { BattleRecord, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
-import { buildingDef, hallType, levelDef, maxDefinedLevel } from './data';
+import { buildingDef, hallType, levelDef, maxDefinedLevel, troopDef } from './data';
+import { mixSeed } from './rng';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState } from './types';
@@ -12,7 +16,11 @@ export type Command =
   | { type: 'move'; id: string; x: number; y: number }
   | { type: 'upgrade'; id: string }
   | { type: 'cancel'; id: string }
-  | { type: 'collect'; id: string };
+  | { type: 'collect'; id: string }
+  | { type: 'train'; troop: string }
+  | { type: 'cancelTraining'; index: number }
+  | { type: 'scout'; paid: boolean }
+  | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> };
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -26,13 +34,20 @@ export type ErrorCode =
   | 'NOT_ENOUGH_RESOURCES'
   | 'NO_FREE_BUILDER'
   | 'NOTHING_TO_COLLECT'
-  | 'STORAGE_FULL';
+  | 'STORAGE_FULL'
+  | 'LOCKED'
+  | 'ARMY_FULL'
+  | 'INVALID_BATTLE';
 
 export type SimEvent =
   | { kind: 'upgrade_start'; buildingType: BuildingType; id: string; toLevel: number; seconds: number; cost: Cost }
   | { kind: 'upgrade_cancel'; buildingType: BuildingType; id: string; toLevel: number; refund: Cost }
   | { kind: 'collect'; buildingType: BuildingType; id: string; resource: ResourceKind; amount: number }
-  | { kind: 'move'; buildingType: BuildingType; id: string };
+  | { kind: 'move'; buildingType: BuildingType; id: string }
+  | { kind: 'train_start'; troop: string; seconds: number; cost: Cost }
+  | { kind: 'train_cancel'; troop: string }
+  | { kind: 'scout'; seed: number; fee: number }
+  | { kind: 'raid_end'; record: BattleRecord };
 
 export type CommandResult =
   | { ok: true; state: VillageState; events: SimEvent[] }
@@ -66,6 +81,11 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     resources: { ...data.economy.startingResources },
     buildings: [],
     nextId: 1,
+    army: {},
+    training: [],
+    battleLog: [],
+    seed: mixSeed(now >>> 0, Math.floor(now / 4294967296)),
+    nextSeed: 1,
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -94,6 +114,7 @@ export function advance(state: VillageState, now: number, _data: GameData): { st
     }
   }
   finished.sort((a, b) => a.at - b.at);
+  finishTraining(next, now);
   return { state: next, finished };
 }
 
@@ -208,8 +229,97 @@ export function applyCommand(state: VillageState, cmd: Command, now: number, dat
       return cancel(s, cmd.id, now, data);
     case 'collect':
       return collect(s, cmd.id, now, data);
+    case 'train':
+      return train(s, cmd.troop, now, data);
+    case 'cancelTraining':
+      return cancelTraining(s, cmd.index, now, data);
+    case 'scout':
+      return scout(s, cmd.paid, data);
+    case 'battleEnd':
+      return battleEnd(s, cmd.record, now, data);
   }
 }
+
+// ---------- Army and raids ----------
+
+export function trainQuote(state: VillageState, troop: string, now: number, data: GameData): QuoteResult {
+  const s = advance(state, now, data).state;
+  const def = data.troops[troop];
+  if (!def) return fail('NOT_FOUND', 'Unknown troop.');
+  const quote: Quote = { toLevel: 1, cost: def.cost, seconds: def.trainSeconds };
+  if (barracksLevel(s, data) < def.barracksLevel) {
+    return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Burrow Barracks.`), quote };
+  }
+  const cap = housingCapacity(s, data);
+  if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > cap) {
+    return { ...fail('ARMY_FULL', cap ? 'Your Army Camps are full.' : 'Build an Army Camp to house troops.'), quote };
+  }
+  if (!canAfford(s.resources, def.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.cost)}).`), quote };
+  return { ok: true, quote };
+}
+
+function train(s: VillageState, troop: string, now: number, data: GameData): CommandResult {
+  const q = trainQuote(s, troop, now, data);
+  if (!q.ok) return q;
+  const def = troopDef(data, troop);
+  subtractCost(s.resources, def.cost);
+  const startedAt = queueEndsAt(s, now);
+  s.training.push({ troop, startedAt, endsAt: startedAt + def.trainSeconds * MS_PER_SECOND, cost: def.cost });
+  return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds: def.trainSeconds, cost: def.cost }] };
+}
+
+function cancelTraining(s: VillageState, index: number, now: number, data: GameData): CommandResult {
+  const item = s.training[index];
+  if (!item) return fail('NOT_FOUND', 'Nothing to cancel.');
+  s.training.splice(index, 1);
+  if (index === 0 && s.training.length) {
+    // The next item starts now.
+    const first = s.training[0];
+    const dur = first.endsAt - first.startedAt;
+    first.startedAt = now;
+    first.endsAt = now + dur;
+  }
+  retimeQueue(s.training, now, data);
+  addCapped(s.resources, item.cost, capacity(s, data));
+  return { ok: true, state: s, events: [{ kind: 'train_cancel', troop: item.troop }] };
+}
+
+export function scoutFee(state: VillageState, data: GameData): number {
+  const fees = data.battle.scoutFeeByHall;
+  return fees[Math.min(fees.length, hallLevel(state, data)) - 1] ?? 0;
+}
+
+/** Pick the next opponent. The first look is free; each "Next" costs a small Acorn fee. */
+function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
+  const fee = paid ? scoutFee(s, data) : 0;
+  if (s.resources.acorns < fee) return fail('NOT_ENOUGH_RESOURCES', `Next costs ${fee} acorns.`);
+  s.resources.acorns -= fee;
+  const seed = mixSeed(s.seed, s.nextSeed++);
+  return { ok: true, state: s, events: [{ kind: 'scout', seed, fee }] };
+}
+
+/**
+ * Apply the result of an attack. The battle is re-simulated from its seed and
+ * deployments, so the loot always matches what really happened.
+ */
+function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  for (const [t, n] of Object.entries(rec.setup.army)) {
+    if (!data.troops[t] || n < 0) return fail('INVALID_BATTLE', 'Unknown troops in battle.');
+  }
+  const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
+  for (const [t, n] of Object.entries(result.used)) {
+    s.army[t] = Math.max(0, (s.army[t] ?? 0) - n);
+    if (s.army[t] === 0) delete s.army[t];
+  }
+  const added = addCapped(s.resources, result.loot, capacity(s, data));
+  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } } };
+  record.result.loot = added;
+  s.battleLog.push(record);
+  while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
+  return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+}
+
+export type { BattleSetup, Deployment };
 
 function place(s: VillageState, type: BuildingType, x: number, y: number, now: number, data: GameData): CommandResult {
   const q = placeQuote(s, data, type, now);

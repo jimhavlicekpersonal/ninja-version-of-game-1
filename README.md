@@ -74,7 +74,8 @@ Placeholder art is drawn in code at startup. To use real art, load an image unde
 
 ## Status
 
-- **Phase 1 – Village core:** done. Grid placement and moving, 6 building types, collectors, storage, 2 builders, upgrade timers, save/load, offline progress.
-- Phases 2–6: see `CLAUDE.md`.
+- **Phase 1 – Village core:** done. Grid placement and moving, collectors, storage, 2 builders, upgrade timers, save/load, offline progress.
+- **Phase 2 – Raiding:** done. Burrow Barracks, Army Camps, 5 troops, 4 defenses, Bramble Hedges, generated opponents with a paid "Next", a fixed-step 10 tps battle with A* pathing, stars, loot and exact replays from seed + deployments.
+- Phases 3–6: see `CLAUDE.md`.
 
 All names, characters, art and sounds are original.

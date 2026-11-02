@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { buildingPainters, paintBubble, paintConstruction, paintGeneric } from './art/buildings';
 import { CLIFF, GROUND_PAD, paintGround, paintWave } from './art/ground';
+import { militaryPainters, paintPuff, paintRubble, paintShadowDisc, paintStar, projectileArt, troopArt } from './art/military';
 import { TILE_H, TILE_W } from './iso';
 
 export { GROUND_PAD };
@@ -24,7 +25,20 @@ export const Keys = {
   construction: (size: number) => `construction.${size}`,
   bubble: (resource: string) => `bubble.${resource}`,
   wave: 'water.wave',
+  rubble: (size: number) => `rubble.${size}`,
+  troop: (type: string) => `troop.${type}`,
+  projectile: (kind: string) => `projectile.${kind}`,
+  puff: 'fx.puff',
+  star: 'fx.star',
+  starGrey: 'fx.star.grey',
+  shadow: 'fx.shadow',
 };
+
+/** Logical (1x) size of a troop texture, so scenes can scale real art the same way. */
+export function troopSize(type: string): { w: number; h: number } {
+  const a = troopArt[type];
+  return a ? { w: a.w, h: a.h } : { w: 40, h: 40 };
+}
 
 /** Pick the most specific texture that exists: per-level art, then per-type art. */
 export function buildingTexture(textures: Phaser.Textures.TextureManager, type: string, level: number, size: number): string {
@@ -77,7 +91,7 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
     }
   }
   for (const { type, size } of buildingTypes) {
-    const p = buildingPainters[type] ?? { extra: size * 20, paint: paintGeneric };
+    const p = buildingPainters[type] ?? militaryPainters[type] ?? { extra: size * 20, paint: paintGeneric };
     const w = size * TILE_W;
     const h = size * TILE_H + p.extra;
     const c = canvasFor(scene, Keys.buildingBase(type), w, h, h - (size * TILE_H) / 2);
@@ -108,4 +122,46 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
     paintWave(wave.ctx);
     wave.done();
   }
+  for (const size of [1, 2, 3, 4]) {
+    const w = size * TILE_W;
+    const h = size * TILE_H + 10;
+    const c = canvasFor(scene, Keys.rubble(size), w, h, h - (size * TILE_H) / 2);
+    if (c) {
+      paintRubble(c.ctx, size);
+      c.done();
+    }
+  }
+  for (const [type, art] of Object.entries(troopArt)) {
+    const c = canvasFor(scene, Keys.troop(type), art.w, art.h, art.h - 6);
+    if (c) {
+      art.paint(c.ctx);
+      c.done();
+    }
+  }
+  for (const [kind, art] of Object.entries(projectileArt)) {
+    const c = canvasFor(scene, Keys.projectile(kind), art.w, art.h, art.h / 2);
+    if (c) {
+      art.paint(c.ctx);
+      c.done();
+    }
+  }
+  const fx: [string, number, number, (ctx: Ctx) => void][] = [
+    [Keys.puff, 40, 34, paintPuff],
+    [Keys.star, 24, 24, (ctx) => paintStar(ctx)],
+    [Keys.starGrey, 24, 24, (ctx) => paintStar(ctx, '#d6cfe4')],
+    [Keys.shadow, 36, 16, paintShadowDisc],
+  ];
+  for (const [key, w, h, paint] of fx) {
+    const c = canvasFor(scene, key, w, h, h / 2);
+    if (c) {
+      paint(c.ctx);
+      c.done();
+    }
+  }
+}
+
+/** Generate everything once per game (both scenes share the texture manager). */
+export function ensureTextures(scene: Phaser.Scene, data: { buildings: Record<string, { size: number }>; economy: { mapSize: number } }): void {
+  if (scene.textures.exists(Keys.shadow)) return;
+  generatePlaceholders(scene, Object.entries(data.buildings).map(([type, d]) => ({ type, size: d.size })), data.economy.mapSize);
 }

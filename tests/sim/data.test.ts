@@ -3,14 +3,19 @@ import { data } from './helpers';
 import { RESOURCE_KINDS } from '../../src/sim/types';
 
 describe('balance data', () => {
-  it('has exactly the six Phase 1 building types', () => {
-    expect(Object.keys(data.buildings).sort()).toEqual(
-      ['acorn_orchard', 'acorn_silo', 'beaver_lodge', 'dew_cistern', 'dewdrop_well', 'elder_toadstool'],
-    );
+  it('includes the village, army and defense buildings', () => {
+    for (const t of ['acorn_orchard', 'acorn_silo', 'beaver_lodge', 'dew_cistern', 'dewdrop_well', 'elder_toadstool',
+      'burrow_barracks', 'army_camp', 'acorn_cannon', 'pinecone_catapult', 'wasp_nest', 'firefly_tower', 'bramble_hedge']) {
+      expect(data.buildings[t], t).toBeDefined();
+    }
   });
 
-  it('building footprints are 2x2 to 4x4', () => {
+  it('building footprints are 2x2 to 4x4; hedges are 1x1', () => {
     for (const def of Object.values(data.buildings)) {
+      if (def.category === 'hedge' || def.category === 'trap' || def.category === 'decor') {
+        expect(def.size).toBeLessThanOrEqual(2);
+        continue;
+      }
       expect(def.size).toBeGreaterThanOrEqual(2);
       expect(def.size).toBeLessThanOrEqual(4);
     }
@@ -25,10 +30,15 @@ describe('balance data', () => {
     }
   });
 
-  it('level 1 of a shop building takes 10 seconds and each level ~2.2x longer', () => {
+  it('collectors and storage start at 10 seconds', () => {
     for (const def of Object.values(data.buildings)) {
-      if (!def.inShop) continue;
-      expect(def.levels[0].buildSeconds).toBe(10);
+      if (def.category === 'collector' || def.category === 'storage') expect(def.levels[0].buildSeconds).toBe(10);
+    }
+  });
+
+  it('timed buildings get ~2.2x longer each level', () => {
+    for (const def of Object.values(data.buildings)) {
+      if (!def.inShop || def.levels[0].buildSeconds === 0 || def.levels.length < 3) continue;
       const ratios: number[] = [];
       for (let i = 1; i < def.levels.length; i++) {
         const r = def.levels[i].buildSeconds / def.levels[i - 1].buildSeconds;

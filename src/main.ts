@@ -7,6 +7,8 @@ import { IdbSaveStore, MemorySaveStore, type SaveStore } from './persist/saveSto
 import { registerServiceWorker } from './pwa/register';
 import { Keys } from './render/assets';
 import { VillageScene, type VillageSceneInit } from './render/VillageScene';
+import { BattleScene } from './render/BattleScene';
+import { App } from './app';
 import { OffsetClock, SystemClock } from './sim/clock';
 import { defaultData } from './sim/data';
 import { Bus, type UiEvents } from './ui/bus';
@@ -87,6 +89,7 @@ async function boot(): Promise<void> {
   });
   const init: VillageSceneInit = { controller, bus, renderScale };
   game.scene.add('village', VillageScene, true, init);
+  game.scene.add('battle', BattleScene, false);
 
   const onResize = () => {
     const s = size();
@@ -96,24 +99,40 @@ async function boot(): Promise<void> {
   window.addEventListener('orientationchange', () => setTimeout(onResize, 250));
 
   const thumbs = new Map<string, string | null>();
+  const thumbOf = (key: string): string | null => {
+    if (!thumbs.has(key)) thumbs.set(key, game.textures.exists(key) ? (game.textures.getBase64(key) as string) : null);
+    return thumbs.get(key) ?? null;
+  };
+  let app: App | null = null;
   const hud = new Hud({
     root: document.getElementById('hud')!,
     controller,
     bus,
     analytics,
     store,
-    thumbnail(type) {
-      if (!thumbs.has(type)) {
-        const key = Keys.buildingBase(type);
-        const url = game.textures.exists(key) ? (game.textures.getBase64(key) as string) : null;
-        thumbs.set(type, url);
-      }
-      return thumbs.get(type) ?? null;
-    },
+    thumbnail: (type) => thumbOf(Keys.buildingBase(type)),
     getFps: () => game.loop.actualFps,
+    troopThumb: (type) => thumbOf(Keys.troop(type)),
+    onAttack: () => app?.scout(false),
+    onReplay: (record) => app?.replay(record),
     debugTime,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
   });
+
+  app = new App({
+    game,
+    controller,
+    hud,
+    hudRoot: document.getElementById('hud')!,
+    battleRoot: document.getElementById('battle-hud')!,
+    renderScale,
+    troopThumb: (type) => thumbOf(Keys.troop(type)),
+  });
+
+  if (new URLSearchParams(location.search).has('debug')) {
+    // Testing hook, only with ?debug in the URL.
+    (window as unknown as Record<string, unknown>).tk = { game, controller, app };
+  }
 
   if (offline) hud.showWelcomeBack(offline);
   if (loadError) hud.toast(`${loadError} A backup was kept and a new village started.`, 'error');

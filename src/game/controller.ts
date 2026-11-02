@@ -4,6 +4,8 @@ import type { Clock } from '../sim/clock';
 import { computeOfflineProgress, type OfflineSummary } from '../sim/offline';
 import { deserialize, serialize } from '../sim/save';
 import type { GameData, VillageState } from '../sim/types';
+import type { BattleRecord, BattleSetup, Deployment } from '../sim/battle/types';
+import type { Cost } from '../sim/types';
 import { advance, applyCommand, createNewVillage, type Command, type CommandResult, type FinishedUpgrade } from '../sim/village';
 
 export interface ControllerDeps {
@@ -87,6 +89,9 @@ export class GameController {
         this.deps.analytics.log('upgrade_cancel', { building: e.buildingType, toLevel: e.toLevel, refund: e.refund });
       } else if (e.kind === 'collect') {
         this.deps.analytics.log('collect', { building: e.buildingType, resource: e.resource, amount: e.amount });
+      } else if (e.kind === 'raid_end') {
+        const r = e.record.result;
+        this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason });
       }
     }
     this.emit([]);
@@ -97,12 +102,30 @@ export class GameController {
   /** Finish any timers that have ended. Call this a few times a second. */
   tick(): FinishedUpgrade[] {
     const now = this.now();
-    if (!this.state.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
+    const trainingDone = this.state.training.length > 0 && this.state.training[0].endsAt <= now;
+    if (!trainingDone && !this.state.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
     const { state, finished } = advance(this.state, now, this.deps.data);
     this.state = state;
     this.emit(finished);
     void this.save();
     return finished;
+  }
+
+  /** Pick an opponent; returns its seed. The first look is free. */
+  scout(paid: boolean): { ok: true; seed: number } | { ok: false; message: string } {
+    const r = this.dispatch({ type: 'scout', paid });
+    if (!r.ok) return { ok: false, message: r.message };
+    const e = r.events.find((x) => x.kind === 'scout');
+    return { ok: true, seed: e && e.kind === 'scout' ? e.seed : 0 };
+  }
+
+  /** Bank an attack's result (re-simulated from its seed and deployments). */
+  finishBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string): { record: BattleRecord; banked: Cost } | null {
+    const r = this.dispatch({ type: 'battleEnd', record: { at: this.now(), opponentName, setup, deployments, endTick } });
+    if (!r.ok) return null;
+    const e = r.events.find((x) => x.kind === 'raid_end');
+    if (!e || e.kind !== 'raid_end') return null;
+    return { record: e.record, banked: e.record.result.loot };
   }
 
   /** Replace the whole village (import or reset). */

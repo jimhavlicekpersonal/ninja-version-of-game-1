@@ -1,0 +1,164 @@
+/** Generated opponent bases for scouting, built deterministically from a seed. */
+import { buildingDef, hallType } from '../data';
+import { createRng, int, next, pick, type Rng } from '../rng';
+import type { Cost, GameData, ResourceKind } from '../types';
+import type { BaseBuilding, BaseLayout } from './types';
+
+interface Occ {
+  size: number;
+  cells: Uint8Array;
+}
+
+function free(o: Occ, x: number, y: number, s: number, gap: number): boolean {
+  if (x < 1 || y < 1 || x + s > o.size - 1 || y + s > o.size - 1) return false;
+  for (let yy = y - gap; yy < y + s + gap; yy++) {
+    for (let xx = x - gap; xx < x + s + gap; xx++) {
+      if (xx < 0 || yy < 0 || xx >= o.size || yy >= o.size) continue;
+      if (o.cells[yy * o.size + xx]) return false;
+    }
+  }
+  return true;
+}
+
+function mark(o: Occ, x: number, y: number, s: number): void {
+  for (let yy = y; yy < y + s; yy++) for (let xx = x; xx < x + s; xx++) o.cells[yy * o.size + xx] = 1;
+}
+
+/** Try random spots in a square ring around the centre. */
+function placeInRing(rng: Rng, o: Occ, s: number, c: number, r1: number, r2: number, gap: number): { x: number; y: number } | null {
+  for (let attempt = 0; attempt < 300; attempt++) {
+    const r = attempt > 200 ? r2 + 4 : r2;
+    const x = int(rng, c - r, c + r) - Math.floor(s / 2);
+    const y = int(rng, c - r, c + r) - Math.floor(s / 2);
+    const cheb = Math.max(Math.abs(x + s / 2 - c), Math.abs(y + s / 2 - c));
+    if (cheb < r1) continue;
+    if (free(o, x, y, s, gap)) return { x, y };
+  }
+  return null;
+}
+
+export function opponentName(rng: Rng, data: GameData): string {
+  return `${pick(rng, data.names.placeFirst)} ${pick(rng, data.names.placeSecond)}`;
+}
+
+export function generateOpponent(seed: number, hallLevel: number, data: GameData): BaseLayout {
+  const rng = createRng(seed);
+  const map = data.economy.mapSize;
+  const hl = Math.max(1, Math.min(hallLevel, data.hall.levels.length));
+  const limits = data.hall.levels[hl - 1].limits;
+  const o: Occ = { size: map, cells: new Uint8Array(map * map) };
+  const buildings: BaseBuilding[] = [];
+  let id = 1;
+  const add = (type: string, level: number, x: number, y: number) => {
+    buildings.push({ id: `o${id++}`, type, level, x, y });
+    mark(o, x, y, buildingDef(data, type).size);
+  };
+  const c = Math.floor(map / 2);
+  const ht = hallType(data);
+  const hallSize = buildingDef(data, ht).size;
+  add(ht, hl, c - hallSize / 2, c - hallSize / 2);
+
+  const levelFor = (type: string) => {
+    const max = limits[type]?.maxLevel ?? 1;
+    return int(rng, Math.max(1, max - 2), max);
+  };
+  const plan: { type: string; r1: number; r2: number }[] = [];
+  for (const [type, lim] of Object.entries(limits)) {
+    const def = buildingDef(data, type);
+    if (def.category === 'hedge' || def.category === 'decor') continue;
+    let count = lim.count;
+    if (def.category === 'builder') count = 2 + int(rng, 0, Math.min(3, lim.count - 2));
+    else if (def.category === 'collector') count = Math.max(1, int(rng, Math.ceil(count / 2), count));
+    for (let i = 0; i < count; i++) {
+      const ring =
+        def.category === 'defense' || def.category === 'trap' ? { r1: 3, r2: 7 } : def.category === 'storage' ? { r1: 2, r2: 6 } : { r1: 8, r2: 13 };
+      plan.push({ type, ...ring });
+    }
+  }
+  // Defenses and storages first so they sit in the core.
+  const order = (t: string) => ({ defense: 0, storage: 1, trap: 2 } as Record<string, number>)[buildingDef(data, t).category] ?? 3;
+  plan.sort((a, b) => order(a.type) - order(b.type));
+  for (const p of plan) {
+    const def = buildingDef(data, p.type);
+    const spot = placeInRing(rng, o, def.size, c, p.r1, p.r2, def.category === 'trap' ? 0 : 1);
+    if (spot) add(p.type, levelFor(p.type), spot.x, spot.y);
+  }
+
+  // A hedge ring around the core, with a few gaps.
+  const hedgeLimit = limits.bramble_hedge;
+  if (hedgeLimit && hedgeLimit.count > 0) {
+    const core = buildings.filter((b) => ['hall', 'defense', 'storage'].includes(buildingDef(data, b.type).category));
+    let x0 = map;
+    let y0 = map;
+    let x1 = 0;
+    let y1 = 0;
+    for (const b of core) {
+      const s = buildingDef(data, b.type).size;
+      x0 = Math.min(x0, b.x);
+      y0 = Math.min(y0, b.y);
+      x1 = Math.max(x1, b.x + s);
+      y1 = Math.max(y1, b.y + s);
+    }
+    x0 -= 2;
+    y0 -= 2;
+    x1 += 1;
+    y1 += 1;
+    const ring: [number, number][] = [];
+    for (let x = x0; x <= x1; x++) ring.push([x, y0], [x, y1]);
+    for (let y = y0 + 1; y < y1; y++) ring.push([x0, y], [x1, y]);
+    const gaps = hl >= 4 ? 1 : hl >= 2 ? 2 : 3;
+    const gapStarts = new Set<number>();
+    for (let g = 0; g < gaps; g++) gapStarts.add(int(rng, 0, ring.length - 1));
+    const skip = new Set<number>();
+    for (const g of gapStarts) {
+      skip.add(g);
+      skip.add((g + 2) % ring.length);
+    }
+    let placed = 0;
+    const lvl = levelFor('bramble_hedge');
+    ring.forEach(([x, y], i) => {
+      if (placed >= hedgeLimit.count || skip.has(i)) return;
+      if (x < 0 || y < 0 || x >= map || y >= map || o.cells[y * map + x]) return;
+      add('bramble_hedge', lvl, x, y);
+      placed++;
+    });
+  }
+
+  // Loot: spread between storages, collectors and the hall.
+  const range = data.battle.generatedLootByHall[hl - 1];
+  const shares = data.battle.lootShares;
+  for (const res of ['acorns', 'dew'] as ResourceKind[]) {
+    const total = int(rng, range.min, range.max);
+    const holders = (cat: string) =>
+      buildings.filter((b) => {
+        const d = buildingDef(data, b.type);
+        if (d.category !== cat) return false;
+        if (cat === 'collector') return d.produces === res;
+        return Object.keys(d.levels[0].storage ?? {}).includes(res);
+      });
+    const give = (bs: BaseBuilding[], amount: number) => {
+      if (!bs.length) return amount;
+      const each = Math.floor(amount / bs.length);
+      for (const b of bs) b.loot = { ...(b.loot ?? {}), [res]: ((b.loot as Cost)?.[res] ?? 0) + each };
+      return amount - each * bs.length;
+    };
+    let rest = 0;
+    rest += give(holders('storage'), Math.floor(total * shares.storage));
+    rest += give(holders('collector'), Math.floor(total * shares.collector));
+    const hall = buildings[0];
+    const hallAmount = total - Math.floor(total * shares.storage) - Math.floor(total * shares.collector) + rest;
+    hall.loot = { ...(hall.loot ?? {}), [res]: ((hall.loot as Cost)?.[res] ?? 0) + hallAmount };
+    // Unused shares (no storages/collectors) also land in the hall.
+    if (!holders('storage').length) hall.loot[res] = (hall.loot[res] ?? 0) + Math.floor(total * shares.storage);
+    if (!holders('collector').length) hall.loot[res] = (hall.loot[res] ?? 0) + Math.floor(total * shares.collector);
+  }
+  void next;
+  return { name: opponentName(rng, data), hallLevel: hl, buildings };
+}
+
+/** Total loot on offer in a base. */
+export function totalLoot(base: BaseLayout): Cost {
+  const out: Cost = {};
+  for (const b of base.buildings) for (const [k, v] of Object.entries(b.loot ?? {}) as [ResourceKind, number][]) out[k] = (out[k] ?? 0) + v;
+  return out;
+}

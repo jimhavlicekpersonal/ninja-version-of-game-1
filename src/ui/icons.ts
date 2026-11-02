@@ -38,6 +38,22 @@ export const icons = {
   check: svg('<path d="M4.5 12.5l5 5 10-11" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'),
   move: svg('<path d="M12 2.5v19M2.5 12h19M12 2.5l-3 3M12 2.5l3 3M12 21.5l-3-3M12 21.5l3-3M2.5 12l3-3M2.5 12l3 3M21.5 12l-3-3M21.5 12l-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'),
   up: svg('<path d="M12 20V5M5.5 11.5L12 5l6.5 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'),
+  swords: svg(
+    '<path d="M4 3l9.5 9.5-2 2L2 5V3z" fill="#e8eef8" stroke="#6b4a6e" stroke-width="1.3" stroke-linejoin="round"/>' +
+      '<path d="M20 3l-9.5 9.5 2 2L22 5V3z" fill="#e8eef8" stroke="#6b4a6e" stroke-width="1.3" stroke-linejoin="round"/>' +
+      '<path d="M5 15l4 4M19 15l-4 4M3.5 20.5l3-3M20.5 20.5l-3-3" stroke="#c98450" stroke-width="2.6" stroke-linecap="round"/>',
+  ),
+  scroll: svg(
+    '<path d="M6 3.5h11a2.5 2.5 0 0 1 0 5H8v10a2.5 2.5 0 0 1-5 0V6a2.5 2.5 0 0 1 3-2.5z" fill="#fff3d6" stroke="#6b4a6e" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<path d="M8 8.5h10v10a2.5 2.5 0 0 1-2.5 2.5h-10A2.5 2.5 0 0 0 8 18.5z" fill="#ffe6b0" stroke="#6b4a6e" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<path d="M10.5 12h5M10.5 15h5" stroke="#b08a5a" stroke-width="1.4" stroke-linecap="round"/>',
+  ),
+  troops: svg(
+    '<path d="M3 13c0-4 3-7 7-7s7 3 7 7z" fill="#8b5a34" stroke="#6b4a6e" stroke-width="1.3"/>' +
+      '<ellipse cx="11" cy="15" rx="5" ry="4" fill="#f6d9b0" stroke="#6b4a6e" stroke-width="1.2"/>' +
+      '<circle cx="9.5" cy="14.5" r=".9" fill="#2b1838"/><circle cx="12.5" cy="14.5" r=".9" fill="#2b1838"/>' +
+      '<ellipse cx="18.5" cy="16" rx="4" ry="3.3" fill="#5fcf4a" stroke="#6b4a6e" stroke-width="1.2"/><circle cx="17" cy="13" r="1.6" fill="#fff" stroke="#6b4a6e" stroke-width=".9"/><circle cx="20" cy="13" r="1.6" fill="#fff" stroke="#6b4a6e" stroke-width=".9"/>',
+  ),
   toadstool: svg(
     '<path d="M9 13h6l.8 7.5H8.2z" fill="#fff4dc" stroke="#6b4a6e" stroke-width="1.4" stroke-linejoin="round"/>' +
       '<path d="M2.5 13c0-5.5 4.3-9 9.5-9s9.5 3.5 9.5 9z" fill="#d9413a" stroke="#6b4a6e" stroke-width="1.5" stroke-linejoin="round"/>' +
