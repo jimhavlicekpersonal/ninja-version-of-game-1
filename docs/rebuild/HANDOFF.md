@@ -2,7 +2,7 @@
 
 ## Repos
 
-- **Source:** `jimhavlicekpersonal/toadstool-kingdoms`. All work is on branch **`ninja-rebuild`** (11 commits on top of `main` @ `2970bf0`). `main` is untouched.
+- **Source:** `jimhavlicekpersonal/toadstool-kingdoms`. All work is on branch **`ninja-rebuild`** (commits on top of `main` @ `2970bf0`; CI green). `main` is untouched.
 - **Target:** `jimhavlicekpersonal/ninja-version-of-game-1`. **Not created yet.** The cloud session that did this work can't create GitHub repositories. To finish:
   1. On GitHub, create an **empty** repository `ninja-version-of-game-1` (no README).
   2. Push the branch as its `main`:
@@ -42,7 +42,7 @@
 | Rewards: no duplicates (trial tier paid once; battle banked once; rapid taps can't double-throw smoke) | Working | tests above + `interrupted.test.ts` |
 | **Interrupted raids** play out on next launch, banked once | Working | `interrupted.test.ts` + browser reload mid-raid |
 | Save v9 → v10 migration; save and reload | Working | `trials.test.ts`, `migration-full.test.ts`, browser reload |
-| Multiplayer server and protocol v3 (abilities) | Kept, working in tests | 52 backend tests (memory repo), contract tests |
+| Multiplayer server and protocol v3 (abilities) | Kept, working in tests | 52 backend tests locally; GitHub CI `server` job (Postgres + contract test) green on this branch |
 | Practice opponents clearly labelled | Done | "Practice target · Generated rival (offline)", "(simulated raider)", "Shadow Trial" |
 | Progression model + 50 warriors + 4 heroes + 34 buildings | Design complete, 6 warriors live | `progression-model.test.ts`: the model reproduces the live troops within 3% |
 | Icon manifest (504 images) + ART AI brief + real-art loader | Done | `npm run docs:progression`; `public/art/manifest.json` loads in game |
@@ -55,7 +55,6 @@
 - Real phones (Pixel 7, iPhone) and 60 fps on a mid-range device: only headless Chromium at phone sizes was used.
 - Sound and music by ear (synthesized; checked only that it compiles and plays without errors).
 - iOS / Android native builds, TestFlight, StoreKit sandbox purchase.
-- Server tests against Postgres (they ran on the in-memory repo; CI runs Postgres when `TEST_DATABASE_URL` is set).
 - GitHub Pages deploy of the new repo (it doesn't exist yet).
 
 ## Unfinished (prioritised)
