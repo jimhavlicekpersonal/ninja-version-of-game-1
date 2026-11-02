@@ -99,3 +99,10 @@ The installed iOS/Android app schedules real local notifications when you leave 
 
 - **Google Play Billing** for the Android app. The `PaymentProvider` interface is ready for a Play Billing provider; purchases are disabled in the Android build until then. Publishing on Google Play also needs a Google Play Console account ($25 one-time).
 - **Cloud saves across devices.** The server handles PvP, Groves and Grove Raids. Your village itself is still saved per device; use Settings → Copy save code / Load from code to move it. Moving the village economy to the server would also stop players from editing their own saves (see "Trust" in `docs/PROTOCOL.md`).
+
+## 6. Kagemura rebuild: identity steps (owner)
+
+- **Repository:** create `ninja-version-of-game-1` and push branch `ninja-rebuild` as its `main` (steps in `docs/rebuild/HANDOFF.md`). Then turn on Pages (Source: GitHub Actions).
+- **Name check:** search trademarks and app stores for "Kagemura" before publishing. The display name lives in `index.html`, `public/manifest.webmanifest`, `capacitor.config.ts`, `android/.../strings.xml` and `ios/App/App/Info.plist`.
+- **New store listings:** the bundle id (`com.toadstoolkingdoms.app`) and the product ids were kept so nothing breaks. For a separate Kagemura app, choose a new reverse-domain id, update `capacitor.config.ts`, the native projects and App Store Connect products, and update `src/gameplay/data/store.json` product ids at the same time.
+- **Server:** deploy the server from this branch (protocol v3). v3 clients refuse v2 servers.
