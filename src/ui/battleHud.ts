@@ -8,6 +8,7 @@ import { RESOURCE_KINDS } from '../sim/types';
 import { clear, h, icon } from './dom';
 import { formatNumber } from './format';
 import { icons } from './icons';
+import { sound } from '../audio/sound';
 
 export interface BattleHudDeps {
   root: HTMLElement;
@@ -193,7 +194,10 @@ export class BattleHud {
     if (stars !== this.lastStars) {
       clear(this.starsEl);
       for (let i = 0; i < 3; i++) this.starsEl.append(h('span', { class: `star${i < stars ? ' on' : ''}` }, '★'));
-      if (this.lastStars >= 0 && stars > this.lastStars) this.starsEl.classList.add('bump');
+      if (this.lastStars >= 0 && stars > this.lastStars) {
+        this.starsEl.classList.add('bump');
+        sound.play('star');
+      }
       window.setTimeout(() => this.starsEl.classList.remove('bump'), 400);
       this.lastStars = stars;
     }
@@ -236,6 +240,7 @@ export class BattleHud {
   }
 
   private showResults(r: BattleResult, banked: Cost, trophies: number): void {
+    sound.play(r.stars > 0 ? 'victory' : 'defeat');
     const starsRow = h('div', { class: 'result-stars' });
     for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
     const used = Object.entries(r.used).map(([t, n]) => `${n} ${this.s.data.troops[t]?.name ?? t}`).join(', ');

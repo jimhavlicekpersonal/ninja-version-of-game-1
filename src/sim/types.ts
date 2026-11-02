@@ -83,6 +83,8 @@ export interface VillageState {
   achievements: Record<string, number>;
   flags: { longWaitSeen: boolean };
   grove: GroveState;
+  /** Guided first steps for new players. */
+  tutorial: { step: number; done: boolean };
 }
 
 export interface ChatMessage {

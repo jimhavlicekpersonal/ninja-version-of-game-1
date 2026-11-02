@@ -48,7 +48,8 @@ export type Command =
   | { type: 'donate'; requestId: string; troop: string; count: number }
   | { type: 'requestTroops' }
   | { type: 'groveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
-  | { type: 'markPrepOffer'; week: number };
+  | { type: 'markPrepOffer'; week: number }
+  | { type: 'tutorial'; step: number; done?: boolean };
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -145,6 +146,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     achievements: {},
     flags: { longWaitSeen: false },
     grove: emptyGrove(),
+    tutorial: { step: 0, done: false },
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -404,6 +406,9 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     }
     case 'groveBattleEnd':
       return groveBattleEnd(s, cmd.target, cmd.record, now, data);
+    case 'tutorial':
+      s.tutorial = { step: cmd.step, done: Boolean(cmd.done) };
+      return { ok: true, state: s, events: [] };
     case 'markPrepOffer':
       s.grove.prepOfferWeek = cmd.week;
       return { ok: true, state: s, events: [] };

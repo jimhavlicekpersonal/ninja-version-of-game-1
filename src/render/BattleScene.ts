@@ -5,6 +5,8 @@ import type { SimBuilding } from '../sim/battle/battle';
 import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
 import { CameraControl } from './cameraControl';
 import { depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
+import { debris } from './fx';
+import { sound } from '../audio/sound';
 
 export interface BattleHooks {
   selectedTroop(): string | null;
@@ -154,6 +156,7 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     this.hooks.deployed();
+    sound.play('deploy');
     const p = tileToWorld(Math.floor(t.tx) + 0.5, Math.floor(t.ty) + 0.5);
     this.puff(p.x, p.y, 0.6);
   }
@@ -225,6 +228,10 @@ export class BattleScene extends Phaser.Scene {
         v.image.setTexture(key).setOrigin(o.x, o.y).setScale(buildingScale(tex, b.size)).setDepth(depthFor(b.x, b.y, b.size) - 5);
         this.puff(c.x, c.y - 10, b.size * 0.9);
         this.stars(c.x, c.y - 20, 5);
+        if (b.kind !== 'hedge') {
+          debris(this, c.x, c.y - 10, b.size, OVER - 18);
+          sound.play('boom');
+        } else sound.play('hit');
         if (b.kind !== 'hedge') this.cameras.main.shake(140, 0.0035 * Math.min(2, b.size / 2));
       } else if (!b.destroyed && b.hp < b.maxHp && b.kind !== 'hedge') {
         const top = v.image.y - v.image.displayHeight * v.image.originY;
@@ -299,6 +306,7 @@ export class BattleScene extends Phaser.Scene {
     const sim = this.session.sim;
     for (const e of drainEvents(this.session)) {
       if (e.k === 'hit') {
+        sound.play('hit');
         const w = tileToWorld(e.x, e.y);
         if (e.splash > 0) {
           this.puff(w.x, w.y, 1 + e.splash);
@@ -320,7 +328,10 @@ export class BattleScene extends Phaser.Scene {
           const sy = v.image.scaleY;
           this.tweens.add({ targets: v.image, scaleY: sy * 0.94, duration: 70, yoyo: true });
         }
+      } else if (e.k === 'deploy' && this.session.mode === 'replay') {
+        sound.play('deploy');
       } else if (e.k === 'trap') {
+        sound.play('boom');
         const b = sim.buildings[e.building];
         const v = this.bviews[e.building];
         v.image.setVisible(true).setAlpha(1);

@@ -39,6 +39,7 @@ type Listener = (finished: FinishedUpgrade[]) => void;
 export class GameController {
   private listeners = new Set<Listener>();
   private offerListeners = new Set<(rule: OfferRule) => void>();
+  private eventListeners = new Set<(events: import('../sim/village').SimEvent[]) => void>();
   private offersThisSession = 0;
   readonly payments: PaymentProvider;
   private saveChain: Promise<void> = Promise.resolve();
@@ -115,8 +116,15 @@ export class GameController {
     }
     this.emit([]);
     void this.save();
+    for (const fn of this.eventListeners) fn(result.events);
     for (const e of result.events) if (e.kind === 'trigger') this.triggerOffer(e.trigger);
     return result;
+  }
+
+  /** Listen to the events of every successful command (sounds, effects). */
+  onEvents(fn: (events: import('../sim/village').SimEvent[]) => void): () => void {
+    this.eventListeners.add(fn);
+    return () => this.eventListeners.delete(fn);
   }
 
   /** 24 hours before a Grove Raid, show the war-prep offer (once per raid). */

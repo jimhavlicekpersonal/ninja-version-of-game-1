@@ -9,6 +9,11 @@ import { Keys } from './render/assets';
 import { VillageScene, type VillageSceneInit } from './render/VillageScene';
 import { BattleScene } from './render/BattleScene';
 import { App } from './app';
+import { sound } from './audio/sound';
+import { prefs } from './platform/prefs';
+import { WebReminders, type ReminderService } from './platform/reminders';
+import { upcomingReminders } from './sim/reminders';
+import { Tutorial } from './ui/tutorial';
 import { OffsetClock, SystemClock } from './sim/clock';
 import { defaultData } from './sim/data';
 import { Bus, type UiEvents } from './ui/bus';
@@ -104,6 +109,8 @@ async function boot(): Promise<void> {
     return thumbs.get(key) ?? null;
   };
   let app: App | null = null;
+  let tutorial: Tutorial | null = null;
+  const reminders: ReminderService = new WebReminders();
   const hud = new Hud({
     root: document.getElementById('hud')!,
     controller,
@@ -116,6 +123,16 @@ async function boot(): Promise<void> {
     onAttack: () => app?.scout(false),
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),
+    prefs,
+    onRemindersEnabled: async () => {
+      const ok = await reminders.enable();
+      if (!ok) {
+        prefs.set('reminders', false);
+        hud.toast('Notifications are blocked. You can allow them in your device settings.', 'error');
+      }
+    },
+    reminderNote: reminders.note,
+    onReplayTutorial: () => tutorial?.restart(),
     debugTime,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
   });
@@ -142,12 +159,56 @@ async function boot(): Promise<void> {
   }
   if (loadError) hud.toast(`${loadError} A backup was kept and a new village started.`, 'error');
   if (!store.persistent) hud.toast('This browser mode cannot save your village.', 'error');
-  if (isNew) hud.toast('Welcome to your kingdom! Tap Build to plant an Acorn Orchard.', 'info');
+  tutorial = new Tutorial(controller, analytics, document.body);
+  tutorial.start();
+
+  // Sound: unlock on the first touch (iOS needs a gesture), tap clicks, event cues, music.
+  document.addEventListener('pointerdown', () => sound.unlock(), { capture: true });
+  document.addEventListener('click', (e) => {
+    if ((e.target as Element | null)?.closest?.('button, [role="button"]')) sound.play('tap');
+  }, { capture: true });
+  controller.onEvents((events) => {
+    for (const e of events) {
+      if (e.kind === 'purchase_granted') sound.play('coin');
+      else if (e.kind === 'skip_used') sound.play('magic');
+      else if (e.kind === 'reward') sound.play('star');
+      else if (e.kind === 'donation') sound.play('collect');
+      else if (e.kind === 'upgrade_start' || e.kind === 'clear_start' || e.kind === 'train_start') sound.play('build');
+    }
+  });
+  controller.onOffer(() => sound.play('notify'));
+  sound.music('village');
+
+  // Healthy play: one friendly break suggestion after an hour of play.
+  let playedMs = 0;
+  let lastTick = performance.now();
+  let breakShown = false;
+  window.setInterval(() => {
+    const t = performance.now();
+    if (document.visibilityState === 'visible') playedMs += t - lastTick;
+    lastTick = t;
+    if (!breakShown && prefs.get('sessionReminder') && playedMs >= 60 * 60_000) {
+      breakShown = true;
+      analytics.log('session_reminder', { minutes: Math.round(playedMs / 60_000) });
+      hud.modal(
+        'Time for a break?',
+        Object.assign(document.createElement('p'), { textContent: "You've been playing for an hour. How about a stretch and a glass of water? Your Beaver Builders will keep working while you're away." }),
+        [{ label: 'Keep playing', primary: true, onClick: () => hud.closeAllModals() }],
+      );
+    }
+  }, 5000);
 
   // Autosave regularly and whenever the app goes to the background or closes.
   window.setInterval(() => void controller.save(), 15_000);
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') void controller.save();
+    const hidden = document.visibilityState === 'hidden';
+    sound.suspend(hidden);
+    if (hidden) {
+      void controller.save();
+      if (prefs.get('reminders')) void reminders.schedule(upcomingReminders(controller.state, controller.now(), controller.data));
+    } else {
+      void reminders.cancelAll();
+    }
   });
   window.addEventListener('pagehide', () => void controller.save());
 

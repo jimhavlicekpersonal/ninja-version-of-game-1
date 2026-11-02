@@ -371,3 +371,26 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .dot.on { background: var(--leaf); box-shadow: 0 0 0 3px rgba(92, 207, 74, .25); }
 .raid-score { display: flex; justify-content: space-around; align-items: center; background: linear-gradient(#fff6c8, #ffe27a); border-radius: 18px; padding: 10px; text-align: center; }
 .raid-score .big { display: block; font: 900 26px var(--font); color: var(--plum); }
+
+/* ---------- tutorial ---------- */
+.tut-bubble {
+  position: fixed; left: 50%; transform: translateX(-50%); top: calc(150px + var(--safe-t)); z-index: 40;
+  width: min(440px, calc(100% - 24px)); display: flex; gap: 10px; align-items: flex-start; pointer-events: none;
+  background: var(--cream); border-radius: 22px; padding: 12px 14px; box-shadow: 0 6px 0 rgba(74, 53, 96, .2), 0 14px 30px rgba(40, 30, 80, .25);
+  border: 3px solid #fff; animation: pop .35s cubic-bezier(.3, 1.6, .5, 1);
+}
+.tut-face { width: 46px; height: 46px; flex: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #ffe7c2); display: grid; place-items: center; }
+.tut-face .icon { width: 34px; height: 34px; }
+.tut-body p { margin: 0 0 8px; font-weight: 700; line-height: 1.35; }
+.tut-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tut-skip { border: none; background: none; color: var(--ink-soft); font: 700 13px var(--font); text-decoration: underline; cursor: pointer; padding: 6px 0; }
+.tut-ring {
+  position: fixed; z-index: 39; pointer-events: none; border-radius: 22px; border: 4px solid var(--sun);
+  box-shadow: 0 0 0 6px rgba(255, 210, 63, .35), 0 0 24px rgba(255, 210, 63, .8); animation: tut-pulse 1s ease-in-out infinite;
+}
+@keyframes tut-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: .8; } }
+
+.tut-bubble button { pointer-events: auto; }
+.tut-bubble.low { top: auto; bottom: calc(12px + var(--safe-b)); padding: 8px 12px; opacity: .97; }
+.tut-bubble.low .tut-face { width: 36px; height: 36px; }
+.tut-bubble.low .tut-body p { font-size: 13px; margin-bottom: 4px; }

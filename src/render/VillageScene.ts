@@ -8,6 +8,8 @@ import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
 import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
+import { confetti, resourceBurst } from './fx';
+import { sound } from '../audio/sound';
 
 export interface VillageSceneInit {
   controller: GameController;
@@ -129,9 +131,13 @@ export class VillageScene extends Phaser.Scene {
       this.controller.subscribe((finished) => {
         this.sync();
         for (const f of finished) {
+          if (f.level === 0) continue; // a cleared obstacle simply disappears
           this.floatText(f.id, f.level === 1 ? 'Done!' : `Level ${f.level}!`, '#fff4b0');
           this.bounce(f.id, 'pop');
+          const v = this.views.get(f.id);
+          if (v) confetti(this, v.image.x, v.image.y - v.image.displayHeight * v.image.originY * 0.5, this.userZoom, OVERLAY_DEPTH + 2);
         }
+        if (finished.some((f) => f.level > 0)) sound.play('levelUp');
       }),
       this.bus.on('placement:start', (p) => (p.kind === 'new' ? this.startPlacement('new', p.buildingType) : this.startPlacement('move', undefined, p.id))),
       this.bus.on('placement:confirm', () => this.confirmPlacement()),
@@ -651,10 +657,14 @@ export class VillageScene extends Phaser.Scene {
       for (const e of r.events) {
         if (e.kind !== 'collect') continue;
         this.floatText(id, `+${formatNumber(e.amount)}`, e.resource === 'dew' ? '#bfeaff' : '#ffd98a');
+        const v = this.views.get(id);
+        if (v) resourceBurst(this, v.image.x, v.image.y - v.image.displayHeight * v.image.originY * 0.6, e.resource, this.userZoom, OVERLAY_DEPTH + 2);
+        sound.play('collect');
         this.bus.emit('collected', { id, resource: e.resource, amount: e.amount });
       }
     } else if (r.code !== 'NOTHING_TO_COLLECT') {
       this.bus.emit('toast', { text: r.message, kind: 'error' });
+      sound.play('error');
     }
   }
 

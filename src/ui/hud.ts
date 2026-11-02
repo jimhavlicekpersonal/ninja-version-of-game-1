@@ -15,6 +15,7 @@ import { achievementViews } from '../sim/achievements';
 import { activeOffers } from '../sim/offers';
 import { currentTasks, unlockedTier } from '../sim/pass';
 import { EconomyUi } from './economyUi';
+import { sound } from '../audio/sound';
 import { GroveUi } from './groveUi';
 import { attacksLeft, raidPhase } from '../sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../sim/village';
@@ -38,6 +39,10 @@ export interface HudDeps {
   onAttack(): void;
   onReplay(record: BattleRecord): void;
   onGroveAttack(target: number): void;
+  prefs: { get(k: 'sessionReminder' | 'reminders'): boolean; set(k: 'sessionReminder' | 'reminders', v: boolean): void };
+  onRemindersEnabled(): Promise<void>;
+  reminderNote: string;
+  onReplayTutorial(): void;
 }
 
 const RES_LABEL: Record<ResourceKind, string> = { acorns: 'Acorns', dew: 'Dew', nightsap: 'Nightsap', moonstones: 'Moonstones' };
@@ -837,7 +842,30 @@ export class Hud {
         /* ignore */
       }
     });
-    body.append(h('h3', {}, 'Display'), h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'));
+    const sfxToggle = h('input', { type: 'checkbox', checked: sound.settings.sfx }) as HTMLInputElement;
+    sfxToggle.addEventListener('change', () => sound.setSfx(sfxToggle.checked));
+    const musicToggle = h('input', { type: 'checkbox', checked: sound.settings.music }) as HTMLInputElement;
+    musicToggle.addEventListener('change', () => sound.setMusic(musicToggle.checked));
+    const prefs = this.deps.prefs;
+    const breakToggle = h('input', { type: 'checkbox', checked: prefs.get('sessionReminder') }) as HTMLInputElement;
+    breakToggle.addEventListener('change', () => prefs.set('sessionReminder', breakToggle.checked));
+    const remindToggle = h('input', { type: 'checkbox', checked: prefs.get('reminders') }) as HTMLInputElement;
+    remindToggle.addEventListener('change', () => {
+      prefs.set('reminders', remindToggle.checked);
+      if (remindToggle.checked) void this.deps.onRemindersEnabled();
+    });
+    body.append(
+      h('h3', {}, 'Sound'),
+      h('label', { class: 'toggle' }, sfxToggle, ' Sound effects'),
+      h('label', { class: 'toggle' }, musicToggle, ' Music'),
+      h('h3', {}, 'Reminders and healthy play'),
+      h('label', { class: 'toggle' }, remindToggle, ' Notify me when builds finish, collectors are full or the Grove Raid starts'),
+      h('label', { class: 'toggle' }, breakToggle, ' Suggest a break after an hour of play'),
+      h('p', { class: 'muted small' }, this.deps.reminderNote),
+      h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, 'Replay the tutorial')),
+      h('h3', {}, 'Display'),
+      h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'),
+    );
 
     // Testing tools
     const offsetText = () => (this.deps.debugTime.offsetMs() ? `Game clock is ${formatDuration(this.deps.debugTime.offsetMs())} ahead of real time.` : 'Game clock matches real time.');
@@ -937,6 +965,7 @@ export class Hud {
   // ------------------------------------------------------------ toasts and modals
 
   toast(text: string, kind: 'info' | 'error' | 'success' = 'info'): void {
+    if (kind === 'error') sound.play('error');
     const t = h('div', { class: `toast ${kind}` }, text);
     this.toasts.append(t);
     while (this.toasts.childElementCount > 3) this.toasts.firstElementChild?.remove();
@@ -953,9 +982,11 @@ export class Hud {
   ): () => void {
     const backdrop = h('div', { class: 'modal-backdrop' });
     let closed = false;
+    sound.play('open');
     const close = () => {
       if (closed) return;
       closed = true;
+      sound.play('close');
       backdrop.remove();
       document.removeEventListener('keydown', onKey);
       this.openModals.delete(close);

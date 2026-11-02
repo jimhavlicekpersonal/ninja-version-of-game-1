@@ -9,7 +9,7 @@ import { seasonOf } from './ranks';
 import { emptyStats } from './types';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -67,6 +67,10 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // v4 -> v5: Grove.
     v.grove = v.grove ?? emptyGrove();
   }
+  if (out.version < 6 && v && typeof v === 'object') {
+    // v5 -> v6: tutorial (existing players have already found their way around).
+    v.tutorial = v.tutorial ?? { step: 99, done: true };
+  }
   out.version = SAVE_VERSION;
   return out;
 }
@@ -114,6 +118,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Array.isArray(v.defenseLog)) problems.push('defense log missing');
   if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
   if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('grove missing');
+  if (!v.tutorial) problems.push('tutorial missing');
   for (let i = 0; i < v.buildings.length; i++) {
     for (let j = i + 1; j < v.buildings.length; j++) {
       const a = v.buildings[i];

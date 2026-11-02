@@ -9,6 +9,7 @@ import { matchTrophies } from './sim/ranks';
 import { battleArmy, hallLevel, scoutFee } from './sim/village';
 import { enemyGrove, raidPhase } from './sim/social/groveRaid';
 import { BattleHud } from './ui/battleHud';
+import { sound } from './audio/sound';
 import type { Hud } from './ui/hud';
 
 export interface AppDeps {
@@ -72,6 +73,7 @@ export class App {
     if (sm.isActive('battle') || sm.isPaused('battle')) sm.stop('battle');
     if (sm.isSleeping('village')) sm.wake('village');
     this.d.hudRoot.hidden = false;
+    sound.music('village');
   }
 
   private open(session: BattleSession, replayOf?: BattleRecord, grove?: { target: number; enemyName: string }): void {
@@ -107,6 +109,7 @@ export class App {
       },
     });
     this.d.hudRoot.hidden = true;
+    sound.music('battle');
     const sm = this.d.game.scene;
     if (sm.isActive('village')) sm.sleep('village');
     const init: BattleSceneInit = { session, hooks: this.battleHud.hooks(), renderScale: this.d.renderScale };
