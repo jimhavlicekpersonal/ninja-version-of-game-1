@@ -176,6 +176,16 @@ async function boot(): Promise<void> {
 
   connection.start();
 
+  // A raid the app closed in the middle of plays out now, so it can't be erased by quitting.
+  const interrupted = controller.resolvePendingBattle();
+  if (interrupted) {
+    const { pending, record } = interrupted;
+    if (pending.ticket) {
+      void connection.report('attack', { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, deployments: pending.deployments });
+    }
+    hud.toast(`Your raid on ${pending.opponentName} was interrupted and has been played out: ${record.result.stars}★, ${record.result.destruction}%. See the battle log.`, 'info');
+  }
+
   if (new URLSearchParams(location.search).has('debug')) {
     // Testing hook, only with ?debug in the URL.
     (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection };

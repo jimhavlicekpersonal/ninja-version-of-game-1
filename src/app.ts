@@ -189,7 +189,28 @@ export class App {
     sound.music('battle');
     const sm = this.d.game.scene;
     if (sm.isActive('village')) sm.sleep('village');
-    const init: BattleSceneInit = { session, hooks: this.battleHud.hooks(), renderScale: this.d.renderScale };
+    const hudHooks = this.battleHud.hooks();
+    let lastTrack = 0;
+    let trackTimer = 0;
+    const ticket = this.ticket ?? undefined;
+    const hooks = {
+      ...hudHooks,
+      deployed: () => {
+        hudHooks.deployed();
+        // Saved from the first deployment, so closing the app mid-raid can't erase it.
+        // Throttled: the first deployment saves at once, later ones at most every 1.5 s.
+        if (session.mode !== 'live' || grove || replayOf) return;
+        const track = () => {
+          trackTimer = 0;
+          lastTrack = Date.now();
+          if (session.sim.ended && !c.state.pendingBattle) return;
+          c.trackBattle({ kind: trialTier !== undefined ? 'trial' : 'raid', tier: trialTier, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: c.now() });
+        };
+        if (!lastTrack) track();
+        else if (!trackTimer) trackTimer = window.setTimeout(track, Math.max(0, 1500 - (Date.now() - lastTrack)));
+      },
+    };
+    const init: BattleSceneInit = { session, hooks, renderScale: this.d.renderScale };
     if (sm.isActive('battle') || sm.isPaused('battle')) sm.stop('battle');
     sm.start('battle', init);
   }

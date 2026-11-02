@@ -3,7 +3,7 @@ import type { SaveStore } from '../../backend/persist/saveStore';
 import type { Clock } from '../sim/clock';
 import { computeOfflineProgress, type OfflineSummary } from '../sim/offline';
 import { deserialize, serialize } from '../sim/save';
-import type { GameData, VillageState } from '../sim/types';
+import type { GameData, VillageState, PendingBattle } from '../sim/types';
 import type { BattleRecord, BattleSetup, Deployment } from '../sim/battle/types';
 import type { Cost, OfferRule, OfferTrigger } from '../sim/types';
 import { canPurchase } from '../sim/monetization';
@@ -223,6 +223,31 @@ export class GameController {
     const e = r.events.find((x) => x.kind === 'raid_end');
     if (!e || e.kind !== 'raid_end') return null;
     return { record: e.record, banked: e.record.result.loot };
+  }
+
+  /** Remember an attack in progress (called on each deployment), or forget it. */
+  trackBattle(pending: PendingBattle | null): void {
+    this.dispatch({ type: 'battleProgress', pending });
+  }
+
+  /**
+   * Resolve a raid the app closed in the middle of: it plays out to the end
+   * from its recorded deployments (deployed troops keep fighting, the rest go
+   * home), and loot, honor or the trial reward apply exactly once.
+   */
+  resolvePendingBattle(): { pending: PendingBattle; record: BattleRecord } | null {
+    const p = this.state.pendingBattle;
+    if (!p) return null;
+    if (p.kind === 'trial' && p.tier !== undefined) {
+      const t = this.finishTrial(p.tier, p.setup, p.deployments, undefined);
+      if (t) return { pending: p, record: t.record };
+    } else {
+      const out = this.finishBattle(p.setup, p.deployments, undefined, p.opponentName);
+      if (out) return { pending: p, record: out.record };
+    }
+    // Could not be banked (for example the army changed): drop it rather than block the game.
+    this.trackBattle(null);
+    return null;
   }
 
   /** Bank a Shadow Trial attack (re-simulated against the tier's own base). */

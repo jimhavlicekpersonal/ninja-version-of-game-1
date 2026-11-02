@@ -21,7 +21,7 @@ import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveR
 import { bindPlayer, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
-import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState } from './types';
+import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState, PendingBattle } from './types';
 import { RESOURCE_KINDS } from './types';
 
 // ---------- Commands ----------
@@ -41,6 +41,7 @@ export type Command =
   | { type: 'scout'; paid: boolean }
   | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'trialEnd'; tier: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  | { type: 'battleProgress'; pending: PendingBattle | null }
   | { type: 'skip'; id: string }
   | { type: 'skipTraining' }
   | { type: 'topUp'; cost: Cost }
@@ -176,6 +177,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     tutorial: { step: 0, done: false },
     daily: emptyDaily(data),
     trials: { best: 0 },
+    pendingBattle: null,
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -397,9 +399,14 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'scout':
       return scout(s, cmd.paid, data);
     case 'battleEnd':
+      s.pendingBattle = null;
       return battleEnd(s, cmd.record, now, data);
     case 'trialEnd':
+      s.pendingBattle = null;
       return trialEnd(s, cmd.tier, cmd.record, now, data);
+    case 'battleProgress':
+      s.pendingBattle = cmd.pending ? structuredClone(cmd.pending) : null;
+      return { ok: true, state: s, events: [] };
     case 'skip':
       return skip(s, cmd.id, now, data);
     case 'skipTraining':

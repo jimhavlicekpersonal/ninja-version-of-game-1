@@ -100,6 +100,11 @@ export interface VillageState {
   tutorial: { step: number; done: boolean };
   /** Shadow Trials: highest tier cleared (rewards are paid once per tier). */
   trials: { best: number };
+  /**
+   * A raid in progress (saved from the first deployment). If the app closes
+   * mid-battle it is resolved on the next launch as if it had played out.
+   */
+  pendingBattle: PendingBattle | null;
   /** Free daily chest and visit streak. */
   daily: DailyState;
 }
@@ -608,4 +613,16 @@ export interface TrialsDef {
   jadeEveryTiers: number;
   jadeReward: number;
   modifiers: TrialModifierDef[];
+}
+
+/** An attack that has started (troops deployed) but not been banked yet. */
+export interface PendingBattle {
+  kind: 'raid' | 'trial';
+  tier?: number;
+  opponentName: string;
+  setup: import('./battle/types').BattleSetup;
+  deployments: import('./battle/types').Deployment[];
+  /** Server ticket for an online raid, so the report can still be sent. */
+  ticket?: string;
+  at: number;
 }

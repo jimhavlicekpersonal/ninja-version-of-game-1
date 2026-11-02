@@ -101,6 +101,7 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // v9 -> v10 (ninja rebuild): Shadow Trials progress. Nothing else changed:
     // internal ids stayed the same, and old replays still play back exactly.
     v.trials = v.trials ?? { best: 0 };
+    v.pendingBattle = v.pendingBattle ?? null;
   }
   out.version = SAVE_VERSION;
   return out;
