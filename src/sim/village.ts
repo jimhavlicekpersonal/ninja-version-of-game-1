@@ -4,6 +4,7 @@ import type { BattleRecord, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
 import { buildingDef, hallType, levelDef, maxDefinedLevel, troopDef } from './data';
 import { mixSeed } from './rng';
+import { lossTrophies, seasonOf, winTrophies } from './ranks';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState } from './types';
@@ -86,6 +87,11 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     battleLog: [],
     seed: mixSeed(now >>> 0, Math.floor(now / 4294967296)),
     nextSeed: 1,
+    trophies: data.ranks.startingTrophies,
+    shieldUntil: now + data.raids.newPlayerShieldHours * 3_600_000,
+    defenseLog: [],
+    season: seasonOf(now),
+    raidCheckAt: now,
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -312,7 +318,12 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
     if (s.army[t] === 0) delete s.army[t];
   }
   const added = addCapped(s.resources, result.loot, capacity(s, data));
-  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } } };
+  const opp = rec.setup.base.trophies ?? s.trophies;
+  const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
+  s.trophies = Math.max(0, s.trophies + trophies);
+  // Attacking ends your shield.
+  s.shieldUntil = Math.min(s.shieldUntil, now);
+  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies };
   record.result.loot = added;
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();

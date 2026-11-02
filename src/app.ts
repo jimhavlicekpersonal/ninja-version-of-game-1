@@ -5,6 +5,7 @@ import type { BattleSceneInit } from './render/BattleScene';
 import { generateOpponent } from './sim/battle/basegen';
 import type { BattleRecord, BattleSetup } from './sim/battle/types';
 import { mixSeed } from './sim/rng';
+import { matchTrophies } from './sim/ranks';
 import { hallLevel, scoutFee } from './sim/village';
 import { BattleHud } from './ui/battleHud';
 import type { Hud } from './ui/hud';
@@ -40,12 +41,13 @@ export class App {
       return;
     }
     const base = generateOpponent(r.seed, hallLevel(c.state, c.data), c.data);
+    base.trophies = matchTrophies(r.seed, c.state.trophies, c.data);
     const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army: { ...c.state.army } };
     this.open(new BattleSession(setup, c.data, 'scout'));
   }
 
   replay(record: BattleRecord): void {
-    this.open(new BattleSession(record.setup, this.d.controller.data, 'replay', record));
+    this.open(new BattleSession(record.setup, this.d.controller.data, 'replay', record), record);
   }
 
   home(): void {
@@ -58,7 +60,7 @@ export class App {
     this.d.hudRoot.hidden = false;
   }
 
-  private open(session: BattleSession): void {
+  private open(session: BattleSession, replayOf?: BattleRecord): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
     this.session = session;
@@ -66,6 +68,8 @@ export class App {
     this.battleHud = new BattleHud({
       root: this.d.battleRoot,
       session,
+      myTrophies: c.state.trophies,
+      replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
       troopThumb: this.d.troopThumb,
       scoutFee: scoutFee(c.state, c.data),
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
@@ -76,7 +80,7 @@ export class App {
         const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name);
         if (!out) return null;
         lastRecord = out.record;
-        return { result: out.record.result, banked: out.banked };
+        return { result: out.record.result, banked: out.banked, trophies: out.record.trophies ?? 0 };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);

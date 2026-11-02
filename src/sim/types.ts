@@ -60,6 +60,16 @@ export interface VillageState {
   /** Per-village seed and counter for deterministic generation (opponents, raids). */
   seed: number;
   nextSeed: number;
+  /** Leaf rank. */
+  trophies: number;
+  /** No raids against this village before this time. */
+  shieldUntil: number;
+  /** Raids against this village, newest last. */
+  defenseLog: import('./battle/types').BattleRecord[];
+  /** Monthly season (UTC year * 12 + month) last processed. */
+  season: number;
+  /** Offline raids have been simulated up to this time. */
+  raidCheckAt: number;
 }
 
 // ---- Balance data (loaded from src/data/*.json) ----
@@ -172,6 +182,35 @@ export interface EconomyDef {
   minCollectAmount: number;
 }
 
+export interface LeagueDef {
+  id: string;
+  name: string;
+  min: number;
+  chest: Cost;
+}
+
+export interface RanksDef {
+  startingTrophies: number;
+  attackWin: { base: number; perTrophyDiff: number; min: number; max: number };
+  attackLoss: { base: number; perTrophyDiff: number; min: number; max: number };
+  matchTrophyRange: number;
+  seasonResetFloor: number;
+  leagues: LeagueDef[];
+}
+
+export interface RaidsDef {
+  newPlayerShieldHours: number;
+  shieldHours: number;
+  shieldDestructionThreshold: number;
+  maxRaids: number;
+  minAwayMinutes: number;
+  raidChancePerHourPerSlot: number;
+  maxChancePerSlot: number;
+  attackerTrophyRange: number;
+  maxDefenseLog: number;
+  botArmies: Record<string, number>[];
+}
+
 export interface GameData {
   buildings: Record<BuildingType, BuildingDef>;
   hall: { levels: HallLevelDef[] };
@@ -179,4 +218,6 @@ export interface GameData {
   troops: Record<string, TroopDef>;
   battle: BattleDef;
   names: NamesDef;
+  ranks: RanksDef;
+  raids: RaidsDef;
 }

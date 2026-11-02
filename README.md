@@ -76,6 +76,7 @@ Placeholder art is drawn in code at startup. To use real art, load an image unde
 
 - **Phase 1 – Village core:** done. Grid placement and moving, collectors, storage, 2 builders, upgrade timers, save/load, offline progress.
 - **Phase 2 – Raiding:** done. Burrow Barracks, Army Camps, 5 troops, 4 defenses, Bramble Hedges, generated opponents with a paid "Next", a fixed-step 10 tps battle with A* pathing, stars, loot and exact replays from seed + deployments.
-- Phases 3–6: see `CLAUDE.md`.
+- **Phase 3 – Defense and progression:** done. 0–3 bot raids against your real village while you are away (20% of storage, 50% of collectors raidable), 12-hour shields after losing 30%+, a 24-hour new-player shield, defense log with replays, hidden traps from Elder Toadstool 3, leaf ranks with Sprout/Fern/Oak/Elder leagues and a monthly chest, and Elder Toadstool 1–6 paced by a model-player test (hall 3 in ~70 minutes of play, hall 6 in ~12 days).
+- Phases 4–6: see `CLAUDE.md`.
 
 All names, characters, art and sounds are original.

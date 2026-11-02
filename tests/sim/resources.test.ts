@@ -12,19 +12,20 @@ function withOrchard() {
 }
 
 describe('storage', () => {
+  const hallStore = data.buildings.elder_toadstool.levels[0].storage!.acorns!;
   it('the Elder Toadstool provides base storage', () => {
     const { state } = newGame();
-    expect(capacity(state, data).acorns).toBe(1500);
-    expect(capacity(state, data).dew).toBe(1500);
+    expect(capacity(state, data).acorns).toBe(hallStore);
+    expect(capacity(state, data).dew).toBe(hallStore);
   });
 
   it('a finished silo adds storage; one under construction does not', () => {
     const { state, clock } = newGame({ dew: 1000 });
     let s = must(state, { type: 'place', buildingType: 'acorn_silo', x: 2, y: 2 }, clock.now());
-    expect(capacity(s, data).acorns).toBe(1500);
+    expect(capacity(s, data).acorns).toBe(hallStore);
     clock.advanceSeconds(10);
     s = advance(s, clock.now(), data).state;
-    expect(capacity(s, data).acorns).toBe(3000);
+    expect(capacity(s, data).acorns).toBe(hallStore + 1500);
   });
 });
 
@@ -54,17 +55,20 @@ describe('collectors', () => {
   });
 
   it('tapping collects into storage up to its capacity and keeps the rest', () => {
-    const { state, clock, id } = withOrchard();
-    clock.advanceHours(8); // 1600 acorns waiting, storage 1500, holding 1000
+    const g = withOrchard();
+    const { clock, id } = g;
+    const cap = capacity(g.state, data).acorns;
+    const state = { ...g.state, resources: { ...g.state.resources, acorns: cap - 500 } };
+    clock.advanceHours(8); // 1600 acorns waiting, room for 500
     const s = must(state, { type: 'collect', id }, clock.now());
-    expect(s.resources.acorns).toBe(1500);
+    expect(s.resources.acorns).toBe(cap);
     const left = collectorAmount(find(s, 'acorn_orchard')[0], clock.now(), data);
     expect(left).toBeCloseTo(1100);
   });
 
   it('reports STORAGE_FULL when there is no room', () => {
     const { state, clock, id } = withOrchard();
-    const full = { ...state, resources: { ...state.resources, acorns: 1500 } };
+    const full = { ...state, resources: { ...state.resources, acorns: capacity(state, data).acorns } };
     clock.advanceHours(1);
     const r = applyCommand(full, { type: 'collect', id }, clock.now(), data);
     expect(r.ok).toBe(false);

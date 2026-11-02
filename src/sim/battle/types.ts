@@ -8,6 +8,8 @@ export interface BaseBuilding {
   y: number;
   /** Resources this building gives the attacker when destroyed. */
   loot?: Cost;
+  /** Defenses being upgraded do not fire. */
+  upgrading?: boolean;
 }
 
 export interface BaseLayout {

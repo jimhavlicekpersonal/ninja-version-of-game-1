@@ -1,6 +1,7 @@
 import type { BattleSession } from '../game/battleSession';
 import type { BattleHooks } from '../render/BattleScene';
 import { totalLoot } from '../sim/battle/basegen';
+import { lossTrophies, winTrophies } from '../sim/ranks';
 import type { BattleResult } from '../sim/battle/types';
 import type { Cost, ResourceKind } from '../sim/types';
 import { RESOURCE_KINDS } from '../sim/types';
@@ -11,6 +12,9 @@ import { icons } from './icons';
 export interface BattleHudDeps {
   root: HTMLElement;
   session: BattleSession;
+  myTrophies: number;
+  /** Set when watching a replay. */
+  replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
   troopThumb(type: string): string | null;
   scoutFee: number;
   canPayFee(): boolean;
@@ -18,7 +22,7 @@ export interface BattleHudDeps {
   onNext(): void;
   onAttack(): void;
   /** Called once when a live battle ends; returns the loot actually banked. */
-  onFinished(): { result: BattleResult; banked: Cost } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number } | null;
   onReplay(): void;
 }
 
@@ -57,8 +61,24 @@ export class BattleHud {
       'div',
       { class: 'panel b-left' },
       h('div', { class: 'b-name' }, baseName, h('span', { class: 'level' }, `Lv ${this.s.setup.base.hallLevel}`)),
-      h('div', { class: 'muted small' }, this.s.mode === 'replay' ? 'Replay' : 'Loot you can win'),
+      h(
+        'div',
+        { class: 'muted small' },
+        this.s.mode === 'replay'
+          ? deps.replayOf?.kind === 'defense'
+            ? `Replay: ${deps.replayOf.opponentName} attacks · loot taken`
+            : 'Replay · loot won'
+          : 'Loot you can win',
+      ),
       this.lootEl,
+      this.s.mode !== 'replay' && this.s.setup.base.trophies !== undefined
+        ? h(
+            'div',
+            { class: 'small b-trophies' },
+            icon(icons.leaf),
+            ` ${this.s.setup.base.trophies} · Win +${winTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)} · Lose −${lossTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)}`,
+          )
+        : null,
     );
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
     root.append(left, right, this.toastEl, this.troopsEl, this.bottomEl, this.modalEl);
@@ -191,7 +211,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked);
+        if (out) this.showResults(out.result, out.banked, out.trophies);
       } else {
         this.toast('Replay finished.');
       }
@@ -209,7 +229,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number): void {
     const starsRow = h('div', { class: 'result-stars' });
     for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
     const used = Object.entries(r.used).map(([t, n]) => `${n} ${this.s.data.troops[t]?.name ?? t}`).join(', ');
@@ -220,6 +240,7 @@ export class BattleHud {
       starsRow,
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
       h('p', {}, 'Loot: ', lootChips(banked)),
+      h('p', {}, 'Leaf rank: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       used ? h('p', { class: 'muted small' }, `Troops used: ${used}`) : null,
       Object.entries(banked).some(([k, v]) => v < (r.loot[k as ResourceKind] ?? 0)) ? h('p', { class: 'note' }, 'Some loot did not fit in your storage.') : null,
     );

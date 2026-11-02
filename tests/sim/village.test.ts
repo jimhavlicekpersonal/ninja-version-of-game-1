@@ -101,7 +101,7 @@ describe('building and upgrading', () => {
   });
 
   it('cancelling refunds part of the cost and frees the builder', () => {
-    const { state, clock } = newGame();
+    const { state, clock } = newGame({ acorns: 1000 });
     const hall = find(state, 'elder_toadstool')[0];
     let s = must(state, { type: 'upgrade', id: hall.id }, clock.now());
     expect(s.resources.acorns).toBe(0);

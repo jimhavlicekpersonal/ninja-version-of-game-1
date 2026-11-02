@@ -10,6 +10,7 @@ import type { Building, Cost, ResourceKind } from '../sim/types';
 import { RESOURCE_KINDS } from '../sim/types';
 import { armyHousing, housingCapacity, queueHousing, barracksLevel } from '../sim/army';
 import type { BattleRecord } from '../sim/battle/types';
+import { leagueFor, nextLeague, seasonEndsAt } from '../sim/ranks';
 import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, trainQuote, upgradeQuote, type QuoteResult } from '../sim/village';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
@@ -53,6 +54,9 @@ export class Hud {
 
   private resEls = new Map<ResourceKind, { amt: HTMLElement; bar: HTMLElement; cap: HTMLElement | null }>();
   private buildersEl!: HTMLElement;
+  private trophiesEl!: HTMLElement;
+  private shieldEl!: HTMLElement;
+  private shieldBox!: HTMLElement;
   private unlocksEl!: HTMLElement;
   private sheet!: HTMLElement;
   private placeBar!: HTMLElement;
@@ -113,6 +117,13 @@ export class Hud {
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
     this.buildersEl = h('span', { class: 'res-amt' });
     top.append(h('div', { class: 'res res-builders', title: 'Free Beaver Builders' }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
+    this.trophiesEl = h('span', { class: 'res-amt' });
+    const trophyBtn = h('div', { class: 'res res-trophies', title: 'Leaf rank', role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
+    trophyBtn.addEventListener('click', () => this.openLeague());
+    top.append(trophyBtn);
+    this.shieldEl = h('span', { class: 'res-amt' });
+    this.shieldBox = h('div', { class: 'res res-shield', title: 'Shield: no raids until it runs out' }, icon(icons.shield, 'res-icon'), h('div', { class: 'res-body' }, this.shieldEl));
+    top.append(this.shieldBox);
 
     this.unlocksEl = h('button', { class: 'unlocks', type: 'button', onclick: () => this.openUnlocks() });
     this.toasts = h('div', { class: 'toasts', 'aria-live': 'polite' });
@@ -156,7 +167,8 @@ export class Hud {
     this.sheet.addEventListener('pointerleave', release);
     this.modalRoot = h('div', { class: 'modal-root' });
 
-    this.root.append(top, this.unlocksEl, this.toasts, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
+    const head = h('div', { class: 'hud-head' }, top, this.unlocksEl, this.toasts);
+    this.root.append(head, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
   }
 
   // ------------------------------------------------------------ refresh
@@ -175,11 +187,20 @@ export class Hud {
     }
     const bs = builderStatus(s, gd, this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
+    this.trophiesEl.textContent = String(s.trophies);
+    this.updateShield();
     this.renderUnlockChip();
     this.renderSheet();
   }
 
+  private updateShield(): void {
+    const left = this.c.state.shieldUntil - this.c.now();
+    this.shieldBox.hidden = left <= 0;
+    if (left > 0) this.shieldEl.textContent = formatDuration(left);
+  }
+
   private everySecond(): void {
+    this.updateShield();
     const s = this.c.state;
     const bs = builderStatus(s, this.c.data, this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
@@ -570,10 +591,30 @@ export class Hud {
     });
   }
 
+  openLeague(): void {
+    const s = this.c.state;
+    const gd = this.c.data;
+    const cur = leagueFor(s.trophies, gd);
+    const nxt = nextLeague(s.trophies, gd);
+    const body = h(
+      'div',
+      {},
+      h('p', {}, h('b', {}, cur.name), ` · ${s.trophies} leaves`),
+      nxt ? h('p', { class: 'muted' }, `${nxt.min - s.trophies} more leaves to reach ${nxt.name}.`) : h('p', { class: 'muted' }, 'You are in the top league!'),
+      h('p', { class: 'muted' }, `Season ends in ${formatDuration(seasonEndsAt(this.c.now()) - this.c.now())}. At the end of each month you get your league's chest, and leaves above ${gd.ranks.seasonResetFloor} are halved.`),
+      h('h3', {}, 'League chests (fixed contents)'),
+    );
+    for (const l of gd.ranks.leagues) {
+      body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, `${l.min}+ leaves`)), costChips(l.chest)));
+    }
+    body.append(h('p', { class: 'muted small' }, 'Win raids to earn leaves; lose them when your attacks fail or when raiders beat your village.'));
+    this.modal('Leaf rank', body, [], 'normal');
+  }
+
   openLog(): void {
     const s = this.c.state;
     const body = h('div', {});
-    const attacks = [...s.battleLog].reverse();
+    const attacks = [...s.battleLog, ...s.defenseLog].sort((a, b) => b.at - a.at);
     if (!attacks.length) body.append(h('p', { class: 'muted' }, 'No battles yet. Tap Attack to raid a neighbouring kingdom!'));
     for (const r of attacks) {
       const stars = h('span', { class: 'stars-mini' });
@@ -587,7 +628,7 @@ export class Hud {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}` : `${r.opponentName} raided you`), h('div', { class: 'row' }, stars, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}` : `${r.opponentName} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
           replay,
         ),
       );
@@ -611,8 +652,26 @@ export class Hud {
         h('li', {}, 'Your collectors gathered ', gains.map((k) => `${formatNumber(s.collectorGains[k]!)} ${RES_LABEL[k]}`).join(' and '), '. Tap the bubbles to collect.'),
       );
     }
+    for (const r of s.raids) {
+      const lost = RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => `${formatNumber(r.result.loot[k]!)} ${RES_LABEL[k]}`).join(' and ');
+      list.append(h('li', {}, `${r.opponentName} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} leaves).` : '.'));
+    }
+    if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => r.result.destruction >= this.c.data.raids.shieldDestructionThreshold)) {
+      list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));
+    }
+    for (const sr of s.seasons) {
+      list.append(h('li', {}, `The season ended! Your ${this.c.data.ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league} chest: `, costChips(sr.chest)));
+    }
     if (!list.childElementCount) list.append(h('li', {}, 'All quiet in the kingdom.'));
     body.append(list);
+    if (s.raids.length) {
+      const btn = h('button', { class: 'btn sky', type: 'button' }, 'See defense replays');
+      btn.addEventListener('click', () => {
+        this.closeAllModals();
+        this.openLog();
+      });
+      body.append(h('div', { class: 'actions' }, btn));
+    }
     const close = this.modal('Welcome back!', body, [{ label: 'Great!', primary: true, onClick: () => close() }]);
   }
 
@@ -661,7 +720,9 @@ export class Hud {
         { class: 'actions' },
         h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.deps.debugTime.skip(3_600_000); offsetEl.textContent = offsetText(); this.c.tick(); this.refresh(); } }, '+1 hour'),
         h('button', { class: 'btn ghost', type: 'button', onclick: () => this.simulateAway(8) }, 'Simulate 8 hours away'),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.dropShield() }, 'Remove shield'),
       ),
+      h('p', { class: 'muted small' }, 'New villages start with a 24-hour shield. Remove it, then simulate time away, to see raiders attack your village.'),
       h('details', {}, h('summary', {}, 'Analytics events (this device)'), events),
     );
     void this.deps.analytics.recent(60).then((list) => {
@@ -725,6 +786,11 @@ export class Hud {
     await this.c.save();
     this.deps.debugTime.skip(hours * 3_600_000);
     location.reload();
+  }
+
+  private async dropShield(): Promise<void> {
+    await this.c.replace({ ...this.c.state, shieldUntil: this.c.now() });
+    this.toast('Shield removed. Raiders can now find your village while you are away.', 'info');
   }
 
   private async resetVillage(): Promise<void> {

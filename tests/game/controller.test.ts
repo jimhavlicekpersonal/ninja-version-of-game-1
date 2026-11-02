@@ -4,7 +4,7 @@ import { GameController } from '../../src/game/controller';
 import { MemorySaveStore } from '../../src/persist/saveStore';
 import { FakeClock } from '../../src/sim/clock';
 import { defaultData as data } from '../../src/sim/data';
-import { collectorAmount } from '../../src/sim/resources';
+import { capacity, collectorAmount } from '../../src/sim/resources';
 
 function deps(clock: FakeClock, store: MemorySaveStore, events: MemoryEventStore) {
   return { clock, store, data, analytics: new Analytics(events, clock, 'test') };
@@ -43,10 +43,11 @@ describe('GameController (save, reload, offline)', () => {
     expect(c2.state.buildings.find((b) => b.type === 'elder_toadstool')!.level).toBe(2);
     const orchard = c2.state.buildings.find((b) => b.type === 'acorn_orchard')!;
     expect(collectorAmount(orchard, clock.now(), data)).toBe(1600);
-    // And collecting works after the reload. Hall 2 stores 3000; we hold 0 acorns after paying 1000.
+    // And collecting works after the reload (up to storage capacity).
+    const before = c2.state.resources.acorns;
     const res = c2.dispatch({ type: 'collect', id: orchard.id });
     expect(res.ok).toBe(true);
-    expect(c2.state.resources.acorns).toBe(1600);
+    expect(c2.state.resources.acorns).toBe(Math.min(capacity(c2.state, data).acorns, before + 1600));
   });
 
   it('logs upgrade_start analytics events', async () => {

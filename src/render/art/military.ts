@@ -347,7 +347,47 @@ const brambleHedge: PainterDef = {
   },
 };
 
+// ---------------------------------------------------------------- Traps (only the owner sees them)
+const thornSnare: PainterDef = {
+  extra: 14,
+  paint(ctx) {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 22, 11, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(120, 80, 50, 0.3)';
+    ctx.fill();
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const x = Math.cos(a) * 14;
+      const y = Math.sin(a) * 7;
+      blob(ctx, { x: x - 3, y: y - 10, w: 6, h: 11 }, '#6fae45', () => {
+        ctx.moveTo(x - 3, y);
+        ctx.lineTo(x, y - 10);
+        ctx.lineTo(x + 3, y);
+        ctx.closePath();
+      }, { line: 0.9 });
+    }
+    blob(ctx, { x: -6, y: -6, w: 12, h: 8 }, '#8a5a30', () => ellipsePath(ctx, 0, -2, 6, 4), { line: 0.9 });
+  },
+};
+
+const sapPuddle: PainterDef = {
+  extra: 8,
+  paint(ctx) {
+    blob(ctx, { x: -22, y: -10, w: 44, h: 20 }, '#f0a63c', () => {
+      ctx.moveTo(-20, 0);
+      ctx.bezierCurveTo(-22, -10, -4, -12, 4, -8);
+      ctx.bezierCurveTo(16, -12, 24, -2, 18, 4);
+      ctx.bezierCurveTo(12, 11, -14, 11, -20, 0);
+      ctx.closePath();
+    }, { light: 0.45, line: 1.2 });
+    gloss(ctx, -6, -3, 7, 2.5, 0, 0.8);
+    gloss(ctx, 9, 2, 3, 1.2, 0, 0.7);
+  },
+};
+
 export const militaryPainters: Record<string, PainterDef> = {
+  thorn_snare: thornSnare,
+  sap_puddle: sapPuddle,
   burrow_barracks: burrowBarracks,
   army_camp: armyCamp,
   acorn_cannon: acornCannon,

@@ -3,8 +3,9 @@ import { footprint, rectsOverlap } from './grid';
 import type { GameData, VillageState } from './types';
 import { RESOURCE_KINDS } from './types';
 import { mixSeed } from './rng';
+import { seasonOf } from './ranks';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -33,6 +34,15 @@ export function migrate(raw: unknown): SaveFile {
     const created = Number(v.createdAt) || 0;
     v.seed = v.seed ?? mixSeed(created >>> 0, Math.floor(created / 4294967296));
     v.nextSeed = v.nextSeed ?? 1;
+  }
+  if (out.version < 3 && v && typeof v === 'object') {
+    // v2 -> v3: leaf rank, shields, defense log, seasons.
+    const last = Number(v.lastSeenAt) || 0;
+    v.trophies = v.trophies ?? 0;
+    v.shieldUntil = v.shieldUntil ?? last + 24 * 3_600_000;
+    v.defenseLog = v.defenseLog ?? [];
+    v.season = v.season ?? seasonOf(last);
+    v.raidCheckAt = v.raidCheckAt ?? last;
   }
   out.version = SAVE_VERSION;
   return out;
@@ -75,6 +85,9 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   else for (const q of v.training) if (!data.troops[q.troop] || !(q.endsAt >= q.startedAt)) problems.push('bad training item');
   if (!Array.isArray(v.battleLog)) problems.push('battle log missing');
   if (!Number.isFinite(v.seed) || !Number.isFinite(v.nextSeed)) problems.push('bad seed');
+  if (!Number.isFinite(v.trophies) || v.trophies < 0) problems.push('bad trophies');
+  if (!Number.isFinite(v.shieldUntil) || !Number.isFinite(v.season) || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
+  if (!Array.isArray(v.defenseLog)) problems.push('defense log missing');
   for (let i = 0; i < v.buildings.length; i++) {
     for (let j = i + 1; j < v.buildings.length; j++) {
       const a = v.buildings[i];
@@ -120,7 +133,7 @@ function fromBase64Url(b64: string): string {
 
 export function encodeExportCode(file: SaveFile): string {
   // Replays are left out to keep the code short enough to copy and paste.
-  const slim: SaveFile = { ...file, village: { ...file.village, battleLog: [] } };
+  const slim: SaveFile = { ...file, village: { ...file.village, battleLog: [], defenseLog: [] } };
   const payload = toBase64Url(JSON.stringify(slim));
   return `${EXPORT_PREFIX}.${payload}.${fnv1a(payload)}`;
 }

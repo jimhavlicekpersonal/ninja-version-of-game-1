@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { armyHousing, housingCapacity } from '../../src/sim/army';
+import { capacity } from '../../src/sim/resources';
 import { generateOpponent } from '../../src/sim/battle/basegen';
 import { migrate } from '../../src/sim/save';
 import { advance, applyCommand } from '../../src/sim/village';
@@ -28,7 +29,7 @@ describe('troop training', () => {
     let s = must(state, { type: 'train', troop: 'hedgehog_roller' }, t0);
     s = must(s, { type: 'train', troop: 'hedgehog_roller' }, t0);
     expect(s.training.map((q) => [q.startedAt - t0, q.endsAt - t0])).toEqual([[0, 20_000], [20_000, 40_000]]);
-    expect(s.resources.dew).toBe(state.resources.dew - 50);
+    expect(s.resources.dew).toBe(state.resources.dew - 2 * data.troops.hedgehog_roller.cost.dew!);
     clock.advanceSeconds(20);
     s = advance(s, clock.now(), data).state;
     expect(s.army.hedgehog_roller).toBe(1);
@@ -89,7 +90,7 @@ describe('scouting and battle results', () => {
     const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
     const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments } }, clock.now());
     expect(s1.army.hedgehog_roller).toBe(8);
-    expect(s1.resources.acorns).toBe(1500); // capped by storage
+    expect(s1.resources.acorns).toBe(capacity(s0, data).acorns); // capped by storage
     expect(s1.resources.dew).toBe(100);
     expect(s1.battleLog).toHaveLength(1);
     expect(s1.battleLog[0].result.stars).toBe(3);

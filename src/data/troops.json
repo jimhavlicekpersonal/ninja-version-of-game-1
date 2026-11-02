@@ -13,7 +13,7 @@
     "ignoresHedges": false,
     "trainSeconds": 20,
     "cost": {
-      "dew": 25
+      "dew": 20
     },
     "barracksLevel": 1
   },

@@ -4,6 +4,8 @@ import economy from '../data/economy.json';
 import troops from '../data/troops.json';
 import battle from '../data/battle.json';
 import names from '../data/names.json';
+import ranks from '../data/ranks.json';
+import raids from '../data/raids.json';
 import type { BuildingDef, BuildingType, GameData, LevelDef } from './types';
 
 /** The game's balance data, straight from src/data/*.json. */
@@ -14,6 +16,8 @@ export const defaultData: GameData = {
   troops: troops as unknown as GameData['troops'],
   battle: battle as unknown as GameData['battle'],
   names: names as unknown as GameData['names'],
+  ranks: ranks as unknown as GameData['ranks'],
+  raids: raids as unknown as GameData['raids'],
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {

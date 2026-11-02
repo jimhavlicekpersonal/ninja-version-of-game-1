@@ -130,7 +130,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       kind,
       destroyed: false,
       loot: { ...(bb.loot ?? {}) },
-      combat: def.combat ? { ...def.combat, damage: ld.damage ?? 0 } : null,
+      combat: def.combat && !bb.upgrading ? { ...def.combat, damage: ld.damage ?? 0 } : null,
       cooldown: 0,
       targetTroop: -1,
       hidden: kind === 'trap',
@@ -318,7 +318,13 @@ function stepTroop(sim: BattleSim, ti: number): void {
       moveToward(t, c.x, c.y, speed);
       return;
     }
-    if (!t.path.length) return;
+  }
+  if (t.path.length === 0 || t.pathPos >= t.path.length) {
+    // Already on a tile next to the target: close the last bit directly.
+    const nx = Math.max(r.x, Math.min(r.x + r.w, t.x));
+    const ny = Math.max(r.y, Math.min(r.y + r.h, t.y));
+    moveToward(t, nx, ny, speed);
+    return;
   }
   const wp = t.path[t.pathPos];
   const cell = sim.grid.cells[wp];

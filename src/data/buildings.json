@@ -12,8 +12,8 @@
         "buildSeconds": 0,
         "hp": 1500,
         "storage": {
-          "acorns": 1500,
-          "dew": 1500
+          "acorns": 3000,
+          "dew": 3000
         }
       },
       {
@@ -24,8 +24,8 @@
         "buildSeconds": 240,
         "hp": 1600,
         "storage": {
-          "acorns": 3000,
-          "dew": 3000
+          "acorns": 5000,
+          "dew": 5000
         }
       },
       {
@@ -33,7 +33,7 @@
         "cost": {
           "acorns": 4000
         },
-        "buildSeconds": 1200,
+        "buildSeconds": 600,
         "hp": 1850,
         "storage": {
           "acorns": 10000,
@@ -43,9 +43,9 @@
       {
         "level": 4,
         "cost": {
-          "acorns": 25000
+          "acorns": 30000
         },
-        "buildSeconds": 13200,
+        "buildSeconds": 21600,
         "hp": 2100,
         "storage": {
           "acorns": 50000,
@@ -57,7 +57,7 @@
         "cost": {
           "acorns": 150000
         },
-        "buildSeconds": 64800,
+        "buildSeconds": 57600,
         "hp": 2400,
         "storage": {
           "acorns": 100000,
@@ -67,9 +67,9 @@
       {
         "level": 6,
         "cost": {
-          "acorns": 500000
+          "acorns": 400000
         },
-        "buildSeconds": 144000,
+        "buildSeconds": 129600,
         "hp": 2800,
         "storage": {
           "acorns": 200000,
@@ -996,6 +996,103 @@
         },
         "buildSeconds": 0,
         "hp": 1300
+      }
+    ]
+  },
+  "thorn_snare": {
+    "name": "Thorn Snare",
+    "description": "A hidden ring of thorns that bursts when ground troops step close. Unseen by attackers until it goes off.",
+    "size": 1,
+    "category": "trap",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 0.9,
+      "splashRadius": 1.6,
+      "fireIntervalTicks": 1,
+      "projectile": "thorns",
+      "projectileSpeed": 1
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 400
+        },
+        "buildSeconds": 110,
+        "hp": 1,
+        "damage": 40
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 1500
+        },
+        "buildSeconds": 240,
+        "hp": 1,
+        "damage": 55
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 6000
+        },
+        "buildSeconds": 540,
+        "hp": 1,
+        "damage": 70
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 20000
+        },
+        "buildSeconds": 1200,
+        "hp": 1,
+        "damage": 90
+      }
+    ]
+  },
+  "sap_puddle": {
+    "name": "Sap Puddle",
+    "description": "Hidden sticky sap that slows ground troops to half speed for a few seconds.",
+    "size": 1,
+    "category": "trap",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 0.9,
+      "splashRadius": 2.2,
+      "fireIntervalTicks": 1,
+      "projectile": "sap",
+      "projectileSpeed": 1
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 800
+        },
+        "buildSeconds": 240,
+        "hp": 1,
+        "damage": 5
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 540,
+        "hp": 1,
+        "damage": 8
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 15000
+        },
+        "buildSeconds": 1200,
+        "hp": 1,
+        "damage": 12
       }
     ]
   }

@@ -54,6 +54,19 @@ export const icons = {
       '<circle cx="9.5" cy="14.5" r=".9" fill="#2b1838"/><circle cx="12.5" cy="14.5" r=".9" fill="#2b1838"/>' +
       '<ellipse cx="18.5" cy="16" rx="4" ry="3.3" fill="#5fcf4a" stroke="#6b4a6e" stroke-width="1.2"/><circle cx="17" cy="13" r="1.6" fill="#fff" stroke="#6b4a6e" stroke-width=".9"/><circle cx="20" cy="13" r="1.6" fill="#fff" stroke="#6b4a6e" stroke-width=".9"/>',
   ),
+  leaf: svg(
+    '<path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z" fill="#7fd85a" stroke="#3f8a35" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<path d="M5 19L15 9M9 15h4M12 12V8" stroke="#3f8a35" stroke-width="1.4" stroke-linecap="round"/>',
+  ),
+  shield: svg(
+    '<path d="M12 2.5l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10v-6z" fill="#8fd3ff" stroke="#1f6fa0" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<path d="M12 5v14c3.2-1.3 5.5-4 5.5-7.5V7z" fill="#5cb8ee"/><path d="M8 8.5c.5-1 1.5-1.8 2.5-2" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>',
+  ),
+  chest: svg(
+    '<path d="M3 10h18v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#e2a764" stroke="#7a4a22" stroke-width="1.4"/>' +
+      '<path d="M3 10a4 4 0 0 1 4-5h10a4 4 0 0 1 4 5z" fill="#c98450" stroke="#7a4a22" stroke-width="1.4"/>' +
+      '<rect x="10" y="9" width="4" height="5" rx="1" fill="#ffd23f" stroke="#7a4a22" stroke-width="1.2"/>',
+  ),
   toadstool: svg(
     '<path d="M9 13h6l.8 7.5H8.2z" fill="#fff4dc" stroke="#6b4a6e" stroke-width="1.4" stroke-linejoin="round"/>' +
       '<path d="M2.5 13c0-5.5 4.3-9 9.5-9s9.5 3.5 9.5 9z" fill="#d9413a" stroke="#6b4a6e" stroke-width="1.5" stroke-linejoin="round"/>' +

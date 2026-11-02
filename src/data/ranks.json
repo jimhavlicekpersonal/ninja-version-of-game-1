@@ -1,0 +1,59 @@
+{
+  "startingTrophies": 0,
+  "attackWin": {
+    "base": 28,
+    "perTrophyDiff": 0.04,
+    "min": 8,
+    "max": 50
+  },
+  "attackLoss": {
+    "base": 16,
+    "perTrophyDiff": 0.03,
+    "min": 4,
+    "max": 36
+  },
+  "matchTrophyRange": 80,
+  "seasonResetFloor": 400,
+  "leagues": [
+    {
+      "id": "sprout",
+      "name": "Sprout League",
+      "min": 0,
+      "chest": {
+        "acorns": 2000,
+        "dew": 2000,
+        "moonstones": 10
+      }
+    },
+    {
+      "id": "fern",
+      "name": "Fern League",
+      "min": 400,
+      "chest": {
+        "acorns": 10000,
+        "dew": 10000,
+        "moonstones": 25
+      }
+    },
+    {
+      "id": "oak",
+      "name": "Oak League",
+      "min": 1000,
+      "chest": {
+        "acorns": 50000,
+        "dew": 50000,
+        "moonstones": 50
+      }
+    },
+    {
+      "id": "elder",
+      "name": "Elder League",
+      "min": 2000,
+      "chest": {
+        "acorns": 150000,
+        "dew": 150000,
+        "moonstones": 100
+      }
+    }
+  ]
+}

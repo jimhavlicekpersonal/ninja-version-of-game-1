@@ -1,0 +1,45 @@
+{
+  "newPlayerShieldHours": 24,
+  "shieldHours": 12,
+  "shieldDestructionThreshold": 30,
+  "maxRaids": 3,
+  "minAwayMinutes": 30,
+  "raidChancePerHourPerSlot": 0.08,
+  "maxChancePerSlot": 0.85,
+  "attackerTrophyRange": 100,
+  "maxDefenseLog": 10,
+  "botArmies": [
+    {
+      "hedgehog_roller": 18
+    },
+    {
+      "hedgehog_roller": 18,
+      "frog_lobber": 10
+    },
+    {
+      "hedgehog_roller": 20,
+      "frog_lobber": 12,
+      "beetle_brute": 2
+    },
+    {
+      "hedgehog_roller": 20,
+      "frog_lobber": 14,
+      "beetle_brute": 3,
+      "owl_bomber": 2
+    },
+    {
+      "hedgehog_roller": 24,
+      "frog_lobber": 16,
+      "beetle_brute": 4,
+      "owl_bomber": 3,
+      "mole_digger": 4
+    },
+    {
+      "hedgehog_roller": 26,
+      "frog_lobber": 20,
+      "beetle_brute": 5,
+      "owl_bomber": 4,
+      "mole_digger": 6
+    }
+  ]
+}
