@@ -7,7 +7,7 @@ export type Resources = Record<ResourceKind, number>;
 export type Cost = Partial<Record<ResourceKind, number>>;
 
 export type BuildingType = string;
-export type BuildingCategory = 'hall' | 'collector' | 'storage' | 'builder' | 'military' | 'defense' | 'hedge' | 'trap' | 'decor';
+export type BuildingCategory = 'hall' | 'collector' | 'storage' | 'builder' | 'military' | 'defense' | 'hedge' | 'trap' | 'decor' | 'obstacle';
 
 export interface UpgradeTimer {
   /** Level the building will have when the timer ends. */
@@ -70,6 +70,38 @@ export interface VillageState {
   season: number;
   /** Offline raids have been simulated up to this time. */
   raidCheckAt: number;
+  /** Lifetime counters used by tasks, achievements and offers. */
+  stats: Stats;
+  /** Real-money purchases (for the spend summary and the minor spending cap). */
+  purchases: PurchaseRecord[];
+  profile: { under18: boolean | null };
+  offers: { active: ActiveOffer[]; lastShown: Record<string, number>; bought: string[] };
+  pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[] };
+  tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[] };
+  cosmetics: { owned: string[]; hallSkin: string };
+  /** Achievement id -> number of tiers claimed. */
+  achievements: Record<string, number>;
+  flags: { longWaitSeen: boolean };
+}
+
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations';
+export type Stats = Record<StatKey, number>;
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations'];
+export function emptyStats(): Stats {
+  return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
+}
+
+export interface PurchaseRecord {
+  id: string;
+  productId: string;
+  usd: number;
+  at: number;
+}
+
+export interface ActiveOffer {
+  id: string;
+  shownAt: number;
+  expiresAt: number;
 }
 
 // ---- Balance data (loaded from src/data/*.json) ----
@@ -149,6 +181,8 @@ export interface BuildingDef {
   produces?: ResourceKind;
   inShop: boolean;
   combat?: CombatDef;
+  /** Forest obstacles: what clearing costs and the Moonstones it gives. */
+  clear?: { cost: Cost; seconds: number; moonstones: number };
   levels: LevelDef[];
 }
 
@@ -180,6 +214,8 @@ export interface EconomyDef {
   welcomeBackMinAwaySeconds: number;
   collectBubbleMinFraction: number;
   minCollectAmount: number;
+  builderHutCosts: number[];
+  obstacles: { count: number; kinds: string[]; keepClearRadius: number };
 }
 
 export interface LeagueDef {
@@ -211,6 +247,90 @@ export interface RaidsDef {
   botArmies: Record<string, number>[];
 }
 
+export interface PackDef {
+  id: string;
+  name: string;
+  usd: number;
+  moonstones: number;
+}
+
+export interface StoreDef {
+  currency: string;
+  packs: PackDef[];
+  skipCurve: [number, number][];
+  topUpCurve: [number, number][];
+  minorMonthlyCapUsd: number;
+}
+
+export type OfferTrigger = 'first_long_wait' | 'all_builders_busy' | 'grove_raid_soon' | 'heavy_defense_loss';
+
+export interface OfferRule {
+  id: string;
+  trigger: OfferTrigger;
+  title: string;
+  description: string;
+  productId: string;
+  usd: number;
+  contents: Cost;
+  durationHours: number;
+  oncePerAccount: boolean;
+  cooldownHours: number;
+  /** Do not show this offer to brand-new players. */
+  minAccountHours?: number;
+}
+
+export interface OffersDef {
+  durationHoursMin: number;
+  durationHoursMax: number;
+  maxPerSession: number;
+  rules: OfferRule[];
+}
+
+export interface PassReward extends Cost {
+  skin?: never;
+}
+
+export interface TaskTemplate {
+  id: string;
+  text: string;
+  stat: StatKey;
+  base: number;
+  perHall: number;
+}
+
+export interface PassDef {
+  name: string;
+  epoch: number;
+  seasonDays: number;
+  pointsPerTier: number;
+  productId: string;
+  usd: number;
+  premiumBuildSpeedBonus: number;
+  tiers: { tier: number; free: Cost & { skin?: string }; premium: Cost & { skin?: string } }[];
+  dailyTaskPoints: number;
+  weeklyChallengePoints: number;
+  dailyTasks: TaskTemplate[];
+  weeklyChallenges: TaskTemplate[];
+  weeklyCount: number;
+}
+
+export interface SkinDef {
+  id: string;
+  name: string;
+  moonstones: number;
+  passOnly?: boolean;
+  cap: string;
+  spots: string;
+}
+
+export interface AchievementDef {
+  id: string;
+  name: string;
+  text: string;
+  stat: StatKey | 'hallLevel';
+  tiers: [number, number][];
+}
+
 export interface GameData {
   buildings: Record<BuildingType, BuildingDef>;
   hall: { levels: HallLevelDef[] };
@@ -220,4 +340,9 @@ export interface GameData {
   names: NamesDef;
   ranks: RanksDef;
   raids: RaidsDef;
+  store: StoreDef;
+  offers: OffersDef;
+  pass: PassDef;
+  cosmetics: { hallSkins: SkinDef[] };
+  achievements: AchievementDef[];
 }

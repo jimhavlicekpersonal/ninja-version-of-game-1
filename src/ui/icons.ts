@@ -67,6 +67,12 @@ export const icons = {
       '<path d="M3 10a4 4 0 0 1 4-5h10a4 4 0 0 1 4 5z" fill="#c98450" stroke="#7a4a22" stroke-width="1.4"/>' +
       '<rect x="10" y="9" width="4" height="5" rx="1" fill="#ffd23f" stroke="#7a4a22" stroke-width="1.2"/>',
   ),
+  lantern: svg(
+    '<path d="M9 3h6M12 3v2" stroke="#6b4a6e" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<rect x="6.5" y="5" width="11" height="14" rx="4.5" fill="#ffe27a" stroke="#c98a13" stroke-width="1.5"/>' +
+      '<rect x="9" y="8" width="6" height="8" rx="3" fill="#fffbe0"/><path d="M8 20.5h8" stroke="#6b4a6e" stroke-width="1.8" stroke-linecap="round"/>',
+  ),
+  star: svg('<path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" fill="#ffd23f" stroke="#c98a13" stroke-width="1.4" stroke-linejoin="round"/><path d="M9.5 8.5l1-1.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>'),
   toadstool: svg(
     '<path d="M9 13h6l.8 7.5H8.2z" fill="#fff4dc" stroke="#6b4a6e" stroke-width="1.4" stroke-linejoin="round"/>' +
       '<path d="M2.5 13c0-5.5 4.3-9 9.5-9s9.5 3.5 9.5 9z" fill="#d9413a" stroke="#6b4a6e" stroke-width="1.5" stroke-linejoin="round"/>' +

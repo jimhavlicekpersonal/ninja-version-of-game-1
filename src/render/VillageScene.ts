@@ -6,7 +6,7 @@ import { collectorAmount, collectorCapacity, effectiveLevel } from '../sim/resou
 import type { Building } from '../sim/types';
 import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
-import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, generatePlaceholders } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
 
 export interface VillageSceneInit {
@@ -101,11 +101,7 @@ export class VillageScene extends Phaser.Scene {
   create(): void {
     const gd = this.controller.data;
     const mapSize = gd.economy.mapSize;
-    generatePlaceholders(
-      this,
-      Object.entries(gd.buildings).map(([type, d]) => ({ type, size: d.size })),
-      mapSize,
-    );
+    ensureTextures(this, gd);
     const mb = mapBounds(mapSize);
     this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setDepth(-10);
     this.addWaves(mapSize);
@@ -161,7 +157,7 @@ export class VillageScene extends Phaser.Scene {
     for (const b of this.controller.state.buildings) {
       seen.add(b.id);
       const size = buildingDef(gd, b.type).size;
-      const key = buildingTexture(this.textures, b.type, b.level, size);
+      const key = villageTexture(this.textures, b.type, b.level, size, this.controller.state.cosmetics.hallSkin);
       let view = this.views.get(b.id);
       let isNew = false;
       if (!view) {

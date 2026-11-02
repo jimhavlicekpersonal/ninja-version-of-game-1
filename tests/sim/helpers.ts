@@ -5,9 +5,11 @@ import type { VillageState } from '../../src/sim/types';
 
 export const data = defaultData;
 
-export function newGame(resources?: Partial<VillageState['resources']>) {
+/** A fresh village without forest obstacles (tests place buildings at fixed spots). */
+export function newGame(resources?: Partial<VillageState['resources']>, opts: { obstacles?: boolean } = {}) {
   const clock = new FakeClock();
   let state = createNewVillage(clock.now(), data);
+  if (!opts.obstacles) state = { ...state, buildings: state.buildings.filter((b) => data.buildings[b.type].category !== 'obstacle') };
   if (resources) state = { ...state, resources: { ...state.resources, ...resources } };
   return { clock, state };
 }

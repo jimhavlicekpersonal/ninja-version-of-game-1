@@ -1,0 +1,142 @@
+[
+  {
+    "id": "green_thumb",
+    "name": "Green Thumb",
+    "text": "Collect {n} Acorns",
+    "stat": "collectedAcorns",
+    "tiers": [
+      [
+        10000,
+        10
+      ],
+      [
+        100000,
+        25
+      ],
+      [
+        1000000,
+        50
+      ]
+    ]
+  },
+  {
+    "id": "dew_gatherer",
+    "name": "Dew Gatherer",
+    "text": "Collect {n} Dew",
+    "stat": "collectedDew",
+    "tiers": [
+      [
+        10000,
+        10
+      ],
+      [
+        100000,
+        25
+      ],
+      [
+        1000000,
+        50
+      ]
+    ]
+  },
+  {
+    "id": "raider",
+    "name": "Brave Raider",
+    "text": "Win {n} raids",
+    "stat": "raidsWon",
+    "tiers": [
+      [
+        5,
+        10
+      ],
+      [
+        25,
+        25
+      ],
+      [
+        100,
+        50
+      ]
+    ]
+  },
+  {
+    "id": "stargazer",
+    "name": "Stargazer",
+    "text": "Earn {n} stars",
+    "stat": "starsEarned",
+    "tiers": [
+      [
+        15,
+        10
+      ],
+      [
+        75,
+        25
+      ],
+      [
+        300,
+        50
+      ]
+    ]
+  },
+  {
+    "id": "busy_beaver",
+    "name": "Busy Beaver",
+    "text": "Start {n} upgrades",
+    "stat": "upgradesStarted",
+    "tiers": [
+      [
+        10,
+        10
+      ],
+      [
+        50,
+        25
+      ],
+      [
+        200,
+        50
+      ]
+    ]
+  },
+  {
+    "id": "lumberjack",
+    "name": "Tidy Kingdom",
+    "text": "Clear {n} obstacles",
+    "stat": "obstaclesCleared",
+    "tiers": [
+      [
+        5,
+        10
+      ],
+      [
+        15,
+        20
+      ],
+      [
+        26,
+        40
+      ]
+    ]
+  },
+  {
+    "id": "elder",
+    "name": "Wise Elder",
+    "text": "Reach Elder Toadstool {n}",
+    "stat": "hallLevel",
+    "tiers": [
+      [
+        3,
+        20
+      ],
+      [
+        5,
+        40
+      ],
+      [
+        6,
+        60
+      ]
+    ]
+  }
+]

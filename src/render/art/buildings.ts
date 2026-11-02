@@ -46,9 +46,14 @@ export function plate(ctx: Ctx, size: number, color: string, inset = 4): void {
 const WOOD = '#c98450';
 
 // ---------------------------------------------------------------- Elder Toadstool
-const elderToadstool: PainterDef = {
-  extra: 145,
-  paint(ctx, size) {
+export function elderToadstoolSkin(capColor: string, spotColor: string): PainterDef {
+  return { extra: 145, paint: (ctx, size) => paintElder(ctx, size, capColor, spotColor) };
+}
+
+const elderToadstool: PainterDef = elderToadstoolSkin('#ff5a4f', '#fffaf2');
+
+function paintElder(ctx: Ctx, size: number, capColor: string, spotColor: string): void {
+  {
     plate(ctx, size, '#f3d9a4');
     softShadow(ctx, 112, 50, 10, 0.32);
     // Stem
@@ -125,12 +130,12 @@ const elderToadstool: PainterDef = {
       ctx.bezierCurveTo(90, -96, -90, -96, -128, -110);
       ctx.closePath();
     };
-    blob(ctx, { x: -128, y: -190, w: 256, h: 96 }, '#ff5a4f', cap, { light: 0.35, dark: 0.3, line: 2.2 });
+    blob(ctx, { x: -128, y: -190, w: 256, h: 96 }, capColor, cap, { light: 0.35, dark: 0.3, line: 2.2 });
     // Spots follow the dome curve
     for (const [x, y, r] of [[-64, -150, 16], [6, -175, 14], [62, -148, 18], [-16, -130, 10], [100, -124, 8], [-104, -126, 8.5], [34, -122, 7]] as const) {
       ctx.beginPath();
       ctx.ellipse(x, y, r, r * 0.78, x * 0.003, 0, Math.PI * 2);
-      shade(ctx, { x: x - r, y: y - r, w: r * 2, h: r * 2 }, '#fffaf2', 0.2, 0.1);
+      shade(ctx, { x: x - r, y: y - r, w: r * 2, h: r * 2 }, spotColor, 0.2, 0.1);
     }
     gloss(ctx, -58, -176, 38, 14, -0.35, 0.55);
     // Sprout on top
@@ -142,8 +147,8 @@ const elderToadstool: PainterDef = {
     ctx.stroke();
     blob(ctx, { x: 0, y: -210, w: 20, h: 12 }, '#7fd85a', () => ctx.ellipse(9, -203, 10, 5.5, -0.5, 0, Math.PI * 2), { line: 1.3 });
     blob(ctx, { x: -16, y: -206, w: 14, h: 9 }, '#7fd85a', () => ctx.ellipse(-8, -200, 7, 4, 0.5, 0, Math.PI * 2), { line: 1.3 });
-  },
-};
+  }
+}
 
 // ---------------------------------------------------------------- Acorn Orchard
 const acornOrchard: PainterDef = {
@@ -431,7 +436,163 @@ const beaverLodge: PainterDef = {
   },
 };
 
+// ---------------------------------------------------------------- Decorations
+const flowerBed: PainterDef = {
+  extra: 18,
+  paint(ctx) {
+    blob(ctx, { x: -24, y: -10, w: 48, h: 22 }, '#b98a5a', () => softDiamondPath(ctx, 26, 13, 0, 0.35), { line: 1.2 });
+    const cols = ['#ff7aa8', '#ffd23f', '#b48cff', '#ffffff', '#ff9a5c'];
+    for (let i = 0; i < 7; i++) {
+      const x = -14 + (i % 4) * 9 + (i > 3 ? 4 : 0);
+      const y = -6 + (i > 3 ? 6 : 0);
+      for (let p = 0; p < 5; p++) {
+        const a = (p / 5) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.ellipse(x + Math.cos(a) * 2.6, y - 4 + Math.sin(a) * 2, 2.2, 1.6, a, 0, Math.PI * 2);
+        ctx.fillStyle = cols[i % cols.length];
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ellipsePath(ctx, x, y - 4, 1.3, 1.3);
+      ctx.fillStyle = '#ffb100';
+      ctx.fill();
+    }
+  },
+};
+
+const lanternPost: PainterDef = {
+  extra: 60,
+  paint(ctx) {
+    softShadow(ctx, 14, 6, 2, 0.3);
+    blob(ctx, { x: -3, y: -60, w: 6, h: 62 }, '#6f5a8f', () => roundRectPath(ctx, -3, -58, 6, 60, 3), { line: 1 });
+    const glow = ctx.createRadialGradient(0, -62, 1, 0, -62, 22);
+    glow.addColorStop(0, 'rgba(255,240,160,0.9)');
+    glow.addColorStop(1, 'rgba(255,230,120,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, -62, 22, 0, Math.PI * 2);
+    ctx.fill();
+    blob(ctx, { x: -9, y: -72, w: 18, h: 20 }, '#fff3b0', () => roundRectPath(ctx, -8, -72, 16, 18, 6), { light: 0.5, line: 1.2 });
+    blob(ctx, { x: -11, y: -78, w: 22, h: 8 }, '#6f5a8f', () => {
+      ctx.moveTo(-11, -72);
+      ctx.quadraticCurveTo(0, -82, 11, -72);
+      ctx.closePath();
+    }, { line: 1 });
+  },
+};
+
+const mushroomRing: PainterDef = {
+  extra: 26,
+  paint(ctx) {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 44, 22, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(120, 200, 90, 0.35)';
+    ctx.fill();
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2;
+      const x = Math.cos(a) * 36;
+      const y = Math.sin(a) * 17;
+      blob(ctx, { x: x - 3, y: y - 10, w: 6, h: 10 }, '#fff3dc', () => roundRectPath(ctx, x - 2.5, y - 9, 5, 9, 2), { line: 0.8 });
+      const capCol = i % 3 === 0 ? '#ff5a4f' : i % 3 === 1 ? '#ffc93d' : '#b48cff';
+      blob(ctx, { x: x - 7, y: y - 16, w: 14, h: 8 }, capCol, () => {
+        ctx.moveTo(x - 7, y - 9);
+        ctx.bezierCurveTo(x - 7, y - 17, x + 7, y - 17, x + 7, y - 9);
+        ctx.closePath();
+      }, { line: 0.9 });
+    }
+  },
+};
+
+const mossyStatue: PainterDef = {
+  extra: 90,
+  paint(ctx, size) {
+    plate(ctx, size, '#d8dcef');
+    softShadow(ctx, 34, 14, 4, 0.3);
+    cylinder(ctx, 26, 11, 2, -18, '#c7c4dc', '#dedbf0');
+    // A frog statue, stone grey with moss
+    blob(ctx, { x: -22, y: -70, w: 44, h: 50 }, '#b8b4cc', () => ctx.ellipse(0, -44, 22, 26, 0, 0, Math.PI * 2), { light: 0.35, line: 1.6 });
+    for (const x of [-11, 11]) {
+      blob(ctx, { x: x - 8, y: -84, w: 16, h: 16 }, '#b8b4cc', () => ellipsePath(ctx, x, -76, 8, 8), { line: 1.3 });
+      ctx.beginPath();
+      ellipsePath(ctx, x, -76, 4, 4);
+      ctx.fillStyle = '#8a86a6';
+      ctx.fill();
+    }
+    ctx.fillStyle = rgba('#6fcf52', 0.8);
+    for (const [x, y, r] of [[-16, -30, 7], [10, -60, 6], [14, -28, 5], [-6, -52, 4]]) {
+      ctx.beginPath();
+      ctx.ellipse(x, y, r, r * 0.7, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(0, -40, 9, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = '#6f6a8a';
+    ctx.stroke();
+  },
+};
+
+// ---------------------------------------------------------------- Forest obstacles
+const obstacleBush: PainterDef = {
+  extra: 24,
+  paint(ctx) {
+    softShadow(ctx, 22, 9, 2, 0.28);
+    for (const [x, y, r] of [[-10, -8, 11], [10, -8, 11], [0, -16, 12], [0, -2, 11]] as const) blob(ctx, { x: x - r, y: y - r, w: r * 2, h: r * 2 }, '#3fae5a', () => ellipsePath(ctx, x, y, r, r * 0.85), { light: 0.35, line: 1.2 });
+    for (const [x, y] of [[-8, -12], [6, -6], [2, -20], [10, -14]]) blob(ctx, { x: x - 3, y: y - 3, w: 6, h: 6 }, '#5a7cff', () => ellipsePath(ctx, x, y, 2.6, 2.6), { line: 0.7 });
+    gloss(ctx, -4, -18, 6, 3, -0.4, 0.4);
+  },
+};
+
+const obstacleStump: PainterDef = {
+  extra: 30,
+  paint(ctx) {
+    softShadow(ctx, 36, 15, 4, 0.28);
+    cylinder(ctx, 26, 11, 4, -22, '#b0703f', '#e8c48c');
+    ctx.strokeStyle = rgba('#a86d3e', 0.6);
+    ctx.lineWidth = 1.2;
+    for (const r of [6, 12, 18]) {
+      ctx.beginPath();
+      ctx.ellipse(0, -22, r, r * 0.42, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    blob(ctx, { x: 14, y: -14, w: 16, h: 9 }, '#ffc93d', () => {
+      ctx.moveTo(14, -6);
+      ctx.bezierCurveTo(14, -15, 30, -15, 30, -6);
+      ctx.closePath();
+    }, { line: 0.9 });
+    blob(ctx, { x: -28, y: -2, w: 18, h: 8 }, '#4fae45', () => ctx.ellipse(-20, 4, 9, 4, 0, 0, Math.PI * 2), { line: 0.9 });
+  },
+};
+
+const obstacleRock: PainterDef = {
+  extra: 34,
+  paint(ctx) {
+    softShadow(ctx, 38, 15, 4, 0.3);
+    blob(ctx, { x: -34, y: -40, w: 68, h: 46 }, '#b6b2cc', () => {
+      ctx.moveTo(-34, 2);
+      ctx.bezierCurveTo(-38, -26, -16, -42, 4, -38);
+      ctx.bezierCurveTo(28, -36, 40, -16, 32, 2);
+      ctx.bezierCurveTo(16, 10, -18, 10, -34, 2);
+      ctx.closePath();
+    }, { light: 0.35, line: 1.6 });
+    ctx.fillStyle = rgba('#6fcf52', 0.85);
+    ctx.beginPath();
+    ctx.moveTo(-26, -24);
+    ctx.bezierCurveTo(-18, -38, 6, -40, 18, -32);
+    ctx.bezierCurveTo(4, -30, -12, -26, -26, -24);
+    ctx.fill();
+    gloss(ctx, -10, -26, 10, 4, -0.3, 0.5);
+  },
+};
+
 export const buildingPainters: Record<string, PainterDef> = {
+  flower_bed: flowerBed,
+  lantern_post: lanternPost,
+  mushroom_ring: mushroomRing,
+  mossy_statue: mossyStatue,
+  obstacle_bush: obstacleBush,
+  obstacle_stump: obstacleStump,
+  obstacle_rock: obstacleRock,
   elder_toadstool: elderToadstool,
   acorn_orchard: acornOrchard,
   dewdrop_well: dewdropWell,

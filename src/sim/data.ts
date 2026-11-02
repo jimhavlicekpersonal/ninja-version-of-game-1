@@ -6,6 +6,11 @@ import battle from '../data/battle.json';
 import names from '../data/names.json';
 import ranks from '../data/ranks.json';
 import raids from '../data/raids.json';
+import store from '../data/store.json';
+import offers from '../data/offers.json';
+import pass from '../data/pass.json';
+import cosmetics from '../data/cosmetics.json';
+import achievements from '../data/achievements.json';
 import type { BuildingDef, BuildingType, GameData, LevelDef } from './types';
 
 /** The game's balance data, straight from src/data/*.json. */
@@ -18,6 +23,11 @@ export const defaultData: GameData = {
   names: names as unknown as GameData['names'],
   ranks: ranks as unknown as GameData['ranks'],
   raids: raids as unknown as GameData['raids'],
+  store: store as unknown as GameData['store'],
+  offers: offers as unknown as GameData['offers'],
+  pass: pass as unknown as GameData['pass'],
+  cosmetics: cosmetics as unknown as GameData['cosmetics'],
+  achievements: achievements as unknown as GameData['achievements'],
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {

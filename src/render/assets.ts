@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { buildingPainters, paintBubble, paintConstruction, paintGeneric } from './art/buildings';
+import { buildingPainters, elderToadstoolSkin, paintBubble, paintConstruction, paintGeneric } from './art/buildings';
 import { CLIFF, GROUND_PAD, paintGround, paintWave } from './art/ground';
 import { militaryPainters, paintPuff, paintRubble, paintShadowDisc, paintStar, projectileArt, troopArt } from './art/military';
 import { TILE_H, TILE_W } from './iso';
@@ -32,6 +32,7 @@ export const Keys = {
   star: 'fx.star',
   starGrey: 'fx.star.grey',
   shadow: 'fx.shadow',
+  hallSkin: (skin: string) => `building.elder_toadstool.skin.${skin}`,
 };
 
 /** Logical (1x) size of a troop texture, so scenes can scale real art the same way. */
@@ -161,7 +162,29 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
 }
 
 /** Generate everything once per game (both scenes share the texture manager). */
-export function ensureTextures(scene: Phaser.Scene, data: { buildings: Record<string, { size: number }>; economy: { mapSize: number } }): void {
-  if (scene.textures.exists(Keys.shadow)) return;
-  generatePlaceholders(scene, Object.entries(data.buildings).map(([type, d]) => ({ type, size: d.size })), data.economy.mapSize);
+export function ensureTextures(
+  scene: Phaser.Scene,
+  data: { buildings: Record<string, { size: number }>; economy: { mapSize: number }; cosmetics?: { hallSkins: { id: string; cap: string; spots: string }[] } },
+): void {
+  if (!scene.textures.exists(Keys.shadow)) {
+    generatePlaceholders(scene, Object.entries(data.buildings).map(([type, d]) => ({ type, size: d.size })), data.economy.mapSize);
+  }
+  const hallSize = data.buildings.elder_toadstool?.size ?? 4;
+  for (const skin of data.cosmetics?.hallSkins ?? []) {
+    if (skin.id === 'classic') continue;
+    const p = elderToadstoolSkin(skin.cap, skin.spots);
+    const w = hallSize * TILE_W;
+    const h = hallSize * TILE_H + p.extra;
+    const c = canvasFor(scene, Keys.hallSkin(skin.id), w, h, h - (hallSize * TILE_H) / 2);
+    if (c) {
+      p.paint(c.ctx, hallSize);
+      c.done();
+    }
+  }
+}
+
+/** Texture for a building, honouring the equipped Elder Toadstool skin. */
+export function villageTexture(textures: Phaser.Textures.TextureManager, type: string, level: number, size: number, hallSkin: string): string {
+  if (type === 'elder_toadstool' && level >= 1 && hallSkin !== 'classic' && textures.exists(Keys.hallSkin(hallSkin))) return Keys.hallSkin(hallSkin);
+  return buildingTexture(textures, type, level, size);
 }

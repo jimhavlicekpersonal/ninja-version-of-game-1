@@ -38,6 +38,22 @@
         "bramble_hedge": {
           "count": 20,
           "maxLevel": 1
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
         }
       }
     },
@@ -83,6 +99,22 @@
         "bramble_hedge": {
           "count": 40,
           "maxLevel": 2
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
         }
       }
     },
@@ -139,6 +171,22 @@
         },
         "sap_puddle": {
           "count": 1,
+          "maxLevel": 1
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
           "maxLevel": 1
         }
       }
@@ -201,6 +249,22 @@
         "sap_puddle": {
           "count": 1,
           "maxLevel": 2
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
         }
       }
     },
@@ -262,6 +326,22 @@
         "sap_puddle": {
           "count": 2,
           "maxLevel": 2
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
         }
       }
     },
@@ -323,6 +403,22 @@
         "sap_puddle": {
           "count": 2,
           "maxLevel": 3
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
         }
       }
     }

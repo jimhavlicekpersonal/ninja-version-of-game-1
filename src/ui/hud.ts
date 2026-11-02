@@ -11,7 +11,11 @@ import { RESOURCE_KINDS } from '../sim/types';
 import { armyHousing, housingCapacity, queueHousing, barracksLevel } from '../sim/army';
 import type { BattleRecord } from '../sim/battle/types';
 import { leagueFor, nextLeague, seasonEndsAt } from '../sim/ranks';
-import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, trainQuote, upgradeQuote, type QuoteResult } from '../sim/village';
+import { achievementViews } from '../sim/achievements';
+import { activeOffers } from '../sim/offers';
+import { currentTasks, unlockedTier } from '../sim/pass';
+import { EconomyUi } from './economyUi';
+import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../sim/village';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
@@ -62,11 +66,14 @@ export class Hud {
   private placeBar!: HTMLElement;
   private placeOk!: HTMLButtonElement;
   private bottomBar!: HTMLElement;
+  private rail!: HTMLElement;
   private toasts!: HTMLElement;
   private modalRoot!: HTMLElement;
   private fpsEl!: HTMLElement;
   private showFps = false;
   private openModals = new Set<() => void>();
+  readonly econ: EconomyUi;
+  private railBadges: Record<string, HTMLElement> = {};
   /** True while a finger/mouse is pressed on the panel: never rebuild it mid-tap. */
   private sheetPressed = false;
   private sheetSig = '';
@@ -80,8 +87,16 @@ export class Hud {
     } catch {
       /* storage blocked: keep default */
     }
+    this.econ = new EconomyUi({
+      c: this.c,
+      modal: (...a) => this.modal(...a),
+      confirm: (...a) => this.confirm(...a),
+      toast: (...a) => this.toast(...a),
+      closeAllModals: () => this.closeAllModals(),
+    });
     this.buildSkeleton();
     this.c.subscribe(() => this.refresh());
+    this.c.onOffer((rule) => this.econ.showOffer(rule));
     this.bus.on('select', (id) => {
       this.selectedId = id;
       this.renderSheet();
@@ -90,6 +105,7 @@ export class Hud {
       this.placementActive = active;
       this.placeBar.hidden = !active;
       this.bottomBar.hidden = active;
+      this.rail.hidden = active;
       this.placeOk.disabled = !valid;
       if (active) this.sheet.hidden = true;
     });
@@ -113,7 +129,9 @@ export class Hud {
       this.resEls.set(k, { amt, bar: fill, cap });
     }
     const moonAmt = h('span', { class: 'res-amt' });
-    top.append(h('div', { class: 'res res-moonstones', title: 'Moonstones' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt)));
+    const moonBtn = h('div', { class: 'res res-moonstones', title: 'Moonstones: tap for the store', role: 'button' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt), h('span', { class: 'res-plus' }, '+'));
+    moonBtn.addEventListener('click', () => this.econ.openStore());
+    top.append(moonBtn);
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
     this.buildersEl = h('span', { class: 'res-amt' });
     top.append(h('div', { class: 'res res-builders', title: 'Free Beaver Builders' }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
@@ -168,7 +186,21 @@ export class Hud {
     this.modalRoot = h('div', { class: 'modal-root' });
 
     const head = h('div', { class: 'hud-head' }, top, this.unlocksEl, this.toasts);
-    this.root.append(head, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
+    const railBtn = (label: string, ic: string, onClick: () => void) => {
+      const badge = h('span', { class: 'badge' });
+      badge.hidden = true;
+      this.railBadges[label] = badge;
+      return h('button', { class: 'round-btn', type: 'button', 'aria-label': label, onclick: onClick }, icon(ic), badge);
+    };
+    const rail = h(
+      'div',
+      { class: 'side-rail' },
+      railBtn('Store', icons.moonstones, () => this.econ.openStore(activeOffers(this.c.state, this.c.now()).length ? 'offers' : 'moonstones')),
+      railBtn('Pass', icons.lantern, () => this.econ.openPass()),
+      railBtn('Goals', icons.star, () => this.econ.openGoals()),
+    );
+    this.rail = rail;
+    this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
   }
 
   // ------------------------------------------------------------ refresh
@@ -189,8 +221,27 @@ export class Hud {
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
     this.trophiesEl.textContent = String(s.trophies);
     this.updateShield();
+    this.updateBadges();
     this.renderUnlockChip();
     this.renderSheet();
+  }
+
+  private updateBadges(): void {
+    const s = this.c.state;
+    const gd = this.c.data;
+    const hl = hallLevel(s, gd);
+    const set = (k: string, n: number) => {
+      const b = this.railBadges[k];
+      if (!b) return;
+      b.hidden = n <= 0;
+      b.textContent = String(n);
+    };
+    set('Store', activeOffers(s, this.c.now()).length);
+    const tier = unlockedTier(s, gd);
+    const tiersReady = gd.pass.tiers.filter((t) => t.tier <= tier && (!s.pass.claimedFree.includes(t.tier) || (s.pass.premium && !s.pass.claimedPremium.includes(t.tier)))).length;
+    const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
+    set('Pass', tiersReady + tasksReady);
+    set('Goals', achievementViews(s, hl, gd).filter((v) => v.claimable).length);
   }
 
   private updateShield(): void {
@@ -327,6 +378,10 @@ export class Hud {
     const level = effectiveLevel(b, now);
     clear(this.sheet);
     this.sheet.hidden = false;
+    if (def.category === 'obstacle' && def.clear) {
+      this.renderObstacleSheet(b, def.name, def.description, def.clear);
+      return;
+    }
 
     const title = h('div', { class: 'sheet-title' }, h('h2', {}, def.name), h('span', { class: 'level' }, level >= 1 ? `Level ${level}` : 'Being built'));
     const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: () => this.bus.emit('select', null) }, icon(icons.close));
@@ -393,15 +448,72 @@ export class Hud {
       );
     }
     if (b.upgrade && now < b.upgrade.endsAt) {
+      const sq = skipQuote(this.c.state, b.id, now, gd);
+      if (sq) {
+        actions.append(
+          h(
+            'button',
+            { class: 'btn gold', type: 'button', onclick: () => void this.econ.spendMoonstones('Finish now', `Finish ${def.name} now`, skipQuote(this.c.state, b.id, this.c.now(), gd)?.moonstones ?? sq.moonstones, () => this.c.dispatch({ type: 'skip', id: b.id }).ok) },
+            'Finish now ',
+            h('span', { class: 'chip' }, icon(icons.moonstones), String(sq.moonstones)),
+          ),
+        );
+      }
       actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.cancelUpgrade(b) }, icon(icons.close), 'Cancel'));
-    } else {
-      actions.append(this.upgradeButton(b, upgradeQuote(this.c.state, b.id, gd, now)));
+    } else if (def.category !== 'decor') {
+      const uq = upgradeQuote(this.c.state, b.id, gd, now);
+      actions.append(this.upgradeButton(b, uq));
+      if (!uq.ok && uq.code === 'NOT_ENOUGH_RESOURCES' && uq.quote) {
+        const tq = topUpQuote(this.c.state, uq.quote.cost, gd);
+        if (tq) {
+          const missing = Object.entries(tq.missing).map(([k, v]) => `${formatNumber(v as number)} ${RES_LABEL[k as ResourceKind]}`).join(' and ');
+          actions.append(
+            h(
+              'button',
+              {
+                class: 'btn gold',
+                type: 'button',
+                onclick: () =>
+                  void this.econ.spendMoonstones('Buy missing resources', `Buy the missing ${missing} and start the upgrade`, tq.moonstones, () => {
+                    const r1 = this.c.dispatch({ type: 'topUp', cost: uq.quote!.cost });
+                    return r1.ok && this.c.dispatch({ type: 'upgrade', id: b.id }).ok;
+                  }),
+              },
+              'Buy missing ',
+              h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)),
+            ),
+          );
+        }
+      }
     }
     if (def.category === 'military' && level >= 1) {
       actions.append(h('button', { class: 'btn sky', type: 'button', onclick: () => this.openTraining() }, icon(icons.troops), 'Train troops'));
     }
     actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.bus.emit('placement:start', { kind: 'move', id: b.id }) }, icon(icons.move), 'Move'));
     this.sheet.append(actions);
+  }
+
+  private renderObstacleSheet(b: Building, name: string, description: string, clr: { cost: Cost; seconds: number; moonstones: number }): void {
+    const now = this.c.now();
+    const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: () => this.bus.emit('select', null) }, icon(icons.close));
+    this.sheet.append(h('div', { class: 'sheet-head' }, h('div', { class: 'sheet-title' }, h('h2', {}, name)), closeBtn), h('p', { class: 'muted desc' }, description));
+    if (b.upgrade && now < b.upgrade.endsAt) {
+      const u = b.upgrade;
+      const pct = Math.min(100, ((now - u.startedAt) / Math.max(1, u.endsAt - u.startedAt)) * 100);
+      this.sheet.append(h('div', { class: 'progress-row', 'data-live': 'upgrade' }, h('div', { class: 'progress' }, h('i', { style: `width:${pct}%` })), h('span', {}, `Clearing · ${formatDuration(u.endsAt - now)} left`)));
+      return;
+    }
+    const btn = h(
+      'button',
+      { class: 'btn primary upgrade', type: 'button' },
+      h('span', { class: 'btn-label' }, 'Clear it'),
+      h('span', { class: 'btn-sub' }, costChips(clr.cost, missingFor(this.c.state.resources, clr.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(clr.seconds * 1000)), h('span', { class: 'chip good' }, '+', icon(icons.moonstones), String(clr.moonstones))),
+    );
+    btn.addEventListener('click', () => {
+      const r = this.c.dispatch({ type: 'clear', id: b.id });
+      if (!r.ok) this.toast(r.message, 'error');
+    });
+    this.sheet.append(h('div', { class: 'actions' }, btn));
   }
 
   private upgradeButton(b: Building, q: QuoteResult): HTMLElement {
@@ -555,6 +667,12 @@ export class Hud {
           q.append(h('div', { class: 'queue-item' }, th ? h('img', { src: th, alt: '' }) : null, x, h('span', { class: 'qt', 'data-ends': String(item.endsAt) }, formatDuration(item.endsAt - now))));
         });
         body.append(h('h3', {}, 'Training'), q);
+        const tsq = trainingSkipQuote(s, now, gd);
+        if (tsq) {
+          const fin = h('button', { class: 'btn gold', type: 'button' }, 'Finish training ', h('span', { class: 'chip' }, icon(icons.moonstones), String(tsq.moonstones)));
+          fin.addEventListener('click', () => void this.econ.spendMoonstones('Finish training', 'Finish all training now', tsq.moonstones, () => this.c.dispatch({ type: 'skipTraining' }).ok).then(() => { lastSig = ''; render(); }));
+          body.append(h('div', { class: 'actions' }, fin));
+        }
       }
       const list = h('div', { class: 'troop-list' });
       for (const [t, def] of Object.entries(gd.troops)) {
@@ -638,7 +756,7 @@ export class Hud {
 
   // ------------------------------------------------------------ welcome back
 
-  showWelcomeBack(s: OfflineSummary): void {
+  showWelcomeBack(s: OfflineSummary, onClose?: () => void): void {
     const gd = this.c.data;
     const body = h('div', { class: 'welcome' }, h('p', {}, `You were away for ${formatDuration(s.awayMs)}.`));
     const list = h('ul', {});
@@ -672,7 +790,7 @@ export class Hud {
       });
       body.append(h('div', { class: 'actions' }, btn));
     }
-    const close = this.modal('Welcome back!', body, [{ label: 'Great!', primary: true, onClick: () => close() }]);
+    const close = this.modal('Welcome back!', body, [{ label: 'Great!', primary: true, onClick: () => close() }], 'normal', onClose);
   }
 
   // ------------------------------------------------------------ settings
@@ -693,6 +811,8 @@ export class Hud {
         h('button', { class: 'btn ghost', type: 'button', onclick: () => this.importSave(codeBox.value) }, 'Load from code'),
       ),
     );
+
+    body.append(this.econ.spendSection());
 
     // Display
     const fpsToggle = h('input', { type: 'checkbox', checked: this.showFps }) as HTMLInputElement;
@@ -812,7 +932,7 @@ export class Hud {
     window.setTimeout(() => t.remove(), 3000);
   }
 
-  private modal(
+  modal(
     title: string,
     body: HTMLElement,
     buttons: (false | undefined | null | { label: string; primary?: boolean; danger?: boolean; onClick: () => void })[] = [],
@@ -854,18 +974,18 @@ export class Hud {
     return close;
   }
 
-  private closeAllModals(): void {
+  closeAllModals(): void {
     for (const close of [...this.openModals]) close();
   }
 
-  private confirm(title: string, message: string, confirmLabel: string, danger = false): Promise<boolean> {
+  confirm(title: string, message: string, confirmLabel: string, danger = false, cancelLabel = 'Keep it'): Promise<boolean> {
     return new Promise((resolve) => {
       let answer = false;
       const close = this.modal(
         title,
         h('p', {}, message),
         [
-          { label: 'Keep it', onClick: () => close() },
+          { label: cancelLabel, onClick: () => close() },
           { label: confirmLabel, primary: !danger, danger, onClick: () => { answer = true; close(); } },
         ],
         'normal',

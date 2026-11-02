@@ -16,7 +16,10 @@ import { advance, hallLevel } from './village';
 /** The player's village as a battle base, with raidable loot on each building. */
 export function villageToBase(state: VillageState, t: number, data: GameData, name = 'Your village'): BaseLayout {
   const e = data.economy;
-  const built = state.buildings.filter((b) => b.level >= 1);
+  const built = state.buildings.filter((b) => {
+    const c = buildingDef(data, b.type).category;
+    return b.level >= 1 && c !== 'obstacle' && c !== 'decor';
+  });
   const caps: Record<string, Cost> = {};
   const totalCap: Cost = {};
   for (const b of built) {

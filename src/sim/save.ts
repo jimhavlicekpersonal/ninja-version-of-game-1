@@ -3,9 +3,12 @@ import { footprint, rectsOverlap } from './grid';
 import type { GameData, VillageState } from './types';
 import { RESOURCE_KINDS } from './types';
 import { mixSeed } from './rng';
+import { scatterObstacles } from './obstacles';
 import { seasonOf } from './ranks';
+import { emptyStats } from './types';
+import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -19,7 +22,7 @@ export function serialize(state: VillageState, now: number): SaveFile {
 }
 
 /** Upgrade an older save file to the current format. Add a step here whenever SAVE_VERSION goes up. */
-export function migrate(raw: unknown): SaveFile {
+export function migrate(raw: unknown, data?: GD): SaveFile {
   if (!raw || typeof raw !== 'object') throw new Error('Save data is not an object');
   const file = raw as Partial<SaveFile>;
   if (typeof file.version !== 'number') throw new Error('Save data has no version');
@@ -43,6 +46,21 @@ export function migrate(raw: unknown): SaveFile {
     v.defenseLog = v.defenseLog ?? [];
     v.season = v.season ?? seasonOf(last);
     v.raidCheckAt = v.raidCheckAt ?? last;
+  }
+  if (out.version < 4 && v && typeof v === 'object') {
+    // v3 -> v4: economy, pass, tasks, cosmetics, achievements, obstacles.
+    const last = Number(v.lastSeenAt) || 0;
+    v.stats = v.stats ?? emptyStats();
+    v.purchases = v.purchases ?? [];
+    v.profile = v.profile ?? { under18: null };
+    v.offers = v.offers ?? { active: [], lastShown: {}, bought: [] };
+    const day = data ? Math.floor((last - data.pass.epoch) / 86_400_000) : 0;
+    v.pass = v.pass ?? { season: data ? Math.floor(day / data.pass.seasonDays) : 0, points: 0, premium: false, claimedFree: [], claimedPremium: [] };
+    v.tasks = v.tasks ?? { day, dayBaseline: emptyStats(), dayClaimed: [], week: Math.floor(day / 7), weekBaseline: emptyStats(), weekClaimed: [] };
+    v.cosmetics = v.cosmetics ?? { owned: ['classic'], hallSkin: 'classic' };
+    v.achievements = v.achievements ?? {};
+    v.flags = v.flags ?? { longWaitSeen: false };
+    if (data) scatterObstacles(v as unknown as VillageState, data);
   }
   out.version = SAVE_VERSION;
   return out;
@@ -73,7 +91,8 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
     }
     if (b.upgrade) {
       const u = b.upgrade;
-      if (u.toLevel !== b.level + 1 || !levelDef(data, b.type, u.toLevel)) problems.push(`bad upgrade on ${b.id}`);
+      const clearing = def.category === 'obstacle' && u.toLevel === 0;
+      if (!clearing && (u.toLevel !== b.level + 1 || !levelDef(data, b.type, u.toLevel))) problems.push(`bad upgrade on ${b.id}`);
       if (!(u.endsAt >= u.startedAt)) problems.push(`bad timer on ${b.id}`);
     } else if (b.level < 1) problems.push(`${b.id} unfinished with no timer`);
     if (Boolean(def.produces) !== Boolean(b.collector)) problems.push(`collector mismatch on ${b.id}`);
@@ -88,6 +107,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Number.isFinite(v.trophies) || v.trophies < 0) problems.push('bad trophies');
   if (!Number.isFinite(v.shieldUntil) || !Number.isFinite(v.season) || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
   if (!Array.isArray(v.defenseLog)) problems.push('defense log missing');
+  if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
   for (let i = 0; i < v.buildings.length; i++) {
     for (let j = i + 1; j < v.buildings.length; j++) {
       const a = v.buildings[i];
@@ -100,7 +120,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
 }
 
 export function deserialize(raw: unknown, data: GameData): VillageState {
-  const file = migrate(raw);
+  const file = migrate(raw, data);
   const problems = validateVillage(file.village, data);
   if (problems.length) throw new Error(`Save data is damaged: ${problems.slice(0, 3).join('; ')}`);
   return structuredClone(file.village);

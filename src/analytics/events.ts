@@ -12,7 +12,13 @@ export type AnalyticsEventName =
   | 'offer_shown'
   | 'purchase'
   | 'save_export'
-  | 'save_import';
+  | 'save_import'
+  | 'moonstone_spend'
+  | 'reward'
+  | 'donation'
+  | 'grove_raid_end'
+  | 'tutorial_step'
+  | 'session_reminder';
 
 export interface AnalyticsEvent {
   name: AnalyticsEventName;

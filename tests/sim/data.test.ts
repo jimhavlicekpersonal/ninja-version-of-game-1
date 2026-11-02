@@ -12,7 +12,7 @@ describe('balance data', () => {
 
   it('building footprints are 2x2 to 4x4; hedges are 1x1', () => {
     for (const def of Object.values(data.buildings)) {
-      if (def.category === 'hedge' || def.category === 'trap' || def.category === 'decor') {
+      if (def.category === 'hedge' || def.category === 'trap' || def.category === 'decor' || def.category === 'obstacle') {
         expect(def.size).toBeLessThanOrEqual(2);
         continue;
       }

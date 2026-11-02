@@ -4,7 +4,7 @@
     "acorns": 2500,
     "dew": 2500,
     "nightsap": 0,
-    "moonstones": 0
+    "moonstones": 500
   },
   "startingLayout": [
     {
@@ -32,5 +32,20 @@
   "cancelRefundFraction": 0.5,
   "welcomeBackMinAwaySeconds": 60,
   "collectBubbleMinFraction": 0.02,
-  "minCollectAmount": 1
+  "minCollectAmount": 1,
+  "builderHutCosts": [
+    250,
+    500,
+    1000
+  ],
+  "obstacles": {
+    "count": 26,
+    "kinds": [
+      "obstacle_bush",
+      "obstacle_bush",
+      "obstacle_stump",
+      "obstacle_rock"
+    ],
+    "keepClearRadius": 7
+  }
 }

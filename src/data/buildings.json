@@ -539,7 +539,7 @@
     "description": "Home of a Beaver Builder. Each lodge lets you build or upgrade one thing at a time.",
     "size": 2,
     "category": "builder",
-    "inShop": false,
+    "inShop": true,
     "levels": [
       {
         "level": 1,
@@ -1093,6 +1093,140 @@
         "buildSeconds": 1200,
         "hp": 1,
         "damage": 12
+      }
+    ]
+  },
+  "flower_bed": {
+    "name": "Flower Bed",
+    "description": "A cheerful patch of flowers. Purely decorative.",
+    "size": 1,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 500
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "lantern_post": {
+    "name": "Lantern Post",
+    "description": "A warm lantern that glows all night. Purely decorative.",
+    "size": 1,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "moonstones": 20
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "mushroom_ring": {
+    "name": "Mushroom Ring",
+    "description": "A ring of tiny dancing mushrooms. Purely decorative.",
+    "size": 2,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "moonstones": 60
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "mossy_statue": {
+    "name": "Mossy Statue",
+    "description": "A mossy statue of a famous frog. Purely decorative.",
+    "size": 2,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "moonstones": 120
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "obstacle_bush": {
+    "name": "Berry Bush",
+    "description": "Clear it to make room. You might find Moonstones!",
+    "size": 1,
+    "category": "obstacle",
+    "inShop": false,
+    "clear": {
+      "cost": {
+        "acorns": 150
+      },
+      "seconds": 10,
+      "moonstones": 2
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "obstacle_stump": {
+    "name": "Old Stump",
+    "description": "Clear it to make room. You might find Moonstones!",
+    "size": 2,
+    "category": "obstacle",
+    "inShop": false,
+    "clear": {
+      "cost": {
+        "dew": 400
+      },
+      "seconds": 30,
+      "moonstones": 4
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "obstacle_rock": {
+    "name": "Mossy Rock",
+    "description": "Clear it to make room. You might find Moonstones!",
+    "size": 2,
+    "category": "obstacle",
+    "inShop": false,
+    "clear": {
+      "cost": {
+        "acorns": 800
+      },
+      "seconds": 60,
+      "moonstones": 6
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 100
       }
     ]
   }

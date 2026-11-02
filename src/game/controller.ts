@@ -5,7 +5,9 @@ import { computeOfflineProgress, type OfflineSummary } from '../sim/offline';
 import { deserialize, serialize } from '../sim/save';
 import type { GameData, VillageState } from '../sim/types';
 import type { BattleRecord, BattleSetup, Deployment } from '../sim/battle/types';
-import type { Cost } from '../sim/types';
+import type { Cost, OfferRule, OfferTrigger } from '../sim/types';
+import { canPurchase } from '../sim/monetization';
+import { MockPaymentProvider, type PaymentProvider } from '../payments/provider';
 import { advance, applyCommand, createNewVillage, type Command, type CommandResult, type FinishedUpgrade } from '../sim/village';
 
 export interface ControllerDeps {
@@ -13,7 +15,10 @@ export interface ControllerDeps {
   store: SaveStore;
   analytics: Analytics;
   data: GameData;
+  payments?: PaymentProvider;
 }
+
+export type PurchaseOutcome = { ok: true; grants: Cost } | { ok: false; code: string; message: string };
 
 export interface StartResult {
   controller: GameController;
@@ -32,12 +37,17 @@ type Listener = (finished: FinishedUpgrade[]) => void;
  */
 export class GameController {
   private listeners = new Set<Listener>();
+  private offerListeners = new Set<(rule: OfferRule) => void>();
+  private offersThisSession = 0;
+  readonly payments: PaymentProvider;
   private saveChain: Promise<void> = Promise.resolve();
 
   private constructor(
     private readonly deps: ControllerDeps,
     public state: VillageState,
-  ) {}
+  ) {
+    this.payments = deps.payments ?? new MockPaymentProvider(() => deps.clock.now());
+  }
 
   static async start(deps: ControllerDeps): Promise<StartResult> {
     const now = deps.clock.now();
@@ -89,6 +99,12 @@ export class GameController {
         this.deps.analytics.log('upgrade_cancel', { building: e.buildingType, toLevel: e.toLevel, refund: e.refund });
       } else if (e.kind === 'collect') {
         this.deps.analytics.log('collect', { building: e.buildingType, resource: e.resource, amount: e.amount });
+      } else if (e.kind === 'skip_used') {
+        this.deps.analytics.log('skip_used', { what: e.what, seconds: e.seconds, moonstones: e.moonstones });
+      } else if (e.kind === 'moonstone_spend') {
+        this.deps.analytics.log('moonstone_spend', { what: e.what, moonstones: e.moonstones });
+      } else if (e.kind === 'reward') {
+        this.deps.analytics.log('reward', { source: e.source, grants: e.grants });
       } else if (e.kind === 'raid_end') {
         const r = e.record.result;
         this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason });
@@ -96,7 +112,48 @@ export class GameController {
     }
     this.emit([]);
     void this.save();
+    for (const e of result.events) if (e.kind === 'trigger') this.triggerOffer(e.trigger);
     return result;
+  }
+
+  // ---------- Offers ----------
+
+  onOffer(fn: (rule: OfferRule) => void): () => void {
+    this.offerListeners.add(fn);
+    return () => this.offerListeners.delete(fn);
+  }
+
+  /** Show an offer for this trigger, at most once per session. */
+  triggerOffer(trigger: OfferTrigger): OfferRule | null {
+    if (this.offersThisSession >= this.deps.data.offers.maxPerSession) return null;
+    const r = applyCommand(this.state, { type: 'triggerOffer', trigger }, this.now(), this.deps.data);
+    if (!r.ok) return null;
+    this.state = r.state;
+    const e = r.events.find((x) => x.kind === 'offer_shown');
+    if (!e || e.kind !== 'offer_shown') return null;
+    this.offersThisSession++;
+    const rule = this.deps.data.offers.rules.find((o) => o.id === e.offerId)!;
+    this.deps.analytics.log('offer_shown', { offerId: rule.id, trigger, usd: rule.usd, expiresAt: e.expiresAt });
+    this.emit([]);
+    void this.save();
+    for (const fn of this.offerListeners) fn(rule);
+    return rule;
+  }
+
+  // ---------- Real-money purchases ----------
+
+  /** Buy a product through the payment provider. The UI must confirm with the player first. */
+  async purchase(productId: string): Promise<PurchaseOutcome> {
+    const check = canPurchase(this.state, productId, this.now(), this.deps.data);
+    if (!check.ok) return { ok: false, code: check.code, message: check.message };
+    if (!this.payments.available()) return { ok: false, code: 'UNAVAILABLE', message: 'Purchases are not available on this device.' };
+    const pay = await this.payments.purchase({ productId, name: check.product.name, usd: check.product.usd });
+    if (!pay.ok) return { ok: false, code: pay.reason, message: pay.message };
+    const r = this.dispatch({ type: 'grantPurchase', productId, transactionId: pay.transactionId });
+    if (!r.ok) return { ok: false, code: r.code, message: r.message };
+    this.deps.analytics.log('purchase', { productId, usd: check.product.usd, kind: check.product.kind, transactionId: pay.transactionId, provider: this.payments.name });
+    await this.save();
+    return { ok: true, grants: check.product.grants };
   }
 
   /** Finish any timers that have ended. Call this a few times a second. */

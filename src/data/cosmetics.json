@@ -1,0 +1,40 @@
+{
+  "hallSkins": [
+    {
+      "id": "classic",
+      "name": "Classic Red",
+      "moonstones": 0,
+      "cap": "#ff5a4f",
+      "spots": "#fffaf2"
+    },
+    {
+      "id": "royal_plum",
+      "name": "Royal Plum",
+      "moonstones": 200,
+      "cap": "#9b5fd6",
+      "spots": "#ffe9a8"
+    },
+    {
+      "id": "sunny_meadow",
+      "name": "Sunny Meadow",
+      "moonstones": 250,
+      "cap": "#ffc93d",
+      "spots": "#ffffff"
+    },
+    {
+      "id": "frosty_cap",
+      "name": "Frosty Cap",
+      "moonstones": 300,
+      "cap": "#7fd3ff",
+      "spots": "#ffffff"
+    },
+    {
+      "id": "lantern_elder",
+      "name": "Lantern Elder",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#ff8a3d",
+      "spots": "#fff3a0"
+    }
+  ]
+}

@@ -134,7 +134,11 @@ async function boot(): Promise<void> {
     (window as unknown as Record<string, unknown>).tk = { game, controller, app };
   }
 
-  if (offline) hud.showWelcomeBack(offline);
+  if (offline) {
+    hud.showWelcomeBack(offline, () => {
+      if (offline.raids.some((r) => r.result.destruction >= 50)) controller.triggerOffer('heavy_defense_loss');
+    });
+  }
   if (loadError) hud.toast(`${loadError} A backup was kept and a new village started.`, 'error');
   if (!store.persistent) hud.toast('This browser mode cannot save your village.', 'error');
   if (isNew) hud.toast('Welcome to your kingdom! Tap Build to plant an Acorn Orchard.', 'info');
