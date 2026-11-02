@@ -1,0 +1,647 @@
+import type { Analytics } from '../analytics/events';
+import type { GameController } from '../game/controller';
+import type { SaveStore } from '../persist/saveStore';
+import { buildingDef, hallType, levelDef } from '../sim/data';
+import type { OfflineSummary } from '../sim/offline';
+import { hallUnlocks, type UnlockItem } from '../sim/preview';
+import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFor } from '../sim/resources';
+import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../sim/save';
+import type { Building, Cost, ResourceKind } from '../sim/types';
+import { RESOURCE_KINDS } from '../sim/types';
+import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, upgradeQuote, type QuoteResult } from '../sim/village';
+import type { UiBus } from './bus';
+import { clear, h, icon } from './dom';
+import { formatCompact, formatDuration, formatNumber } from './format';
+import { icons } from './icons';
+
+export interface HudDeps {
+  root: HTMLElement;
+  controller: GameController;
+  bus: UiBus;
+  analytics: Analytics;
+  store: SaveStore;
+  /** Data URL of a building's art, for the Build menu. */
+  thumbnail(type: string): string | null;
+  getFps(): number;
+  debugTime: { offsetMs(): number; skip(ms: number): void };
+  build: { version: string; builtAt: string };
+}
+
+const RES_LABEL: Record<ResourceKind, string> = { acorns: 'Acorns', dew: 'Dew', nightsap: 'Nightsap', moonstones: 'Moonstones' };
+
+function costChips(cost: Cost, missing: Cost = {}): HTMLElement {
+  const wrap = h('span', { class: 'cost' });
+  const kinds = RESOURCE_KINDS.filter((k) => cost[k]);
+  if (!kinds.length) wrap.append(h('span', { class: 'chip free' }, 'Free'));
+  for (const k of kinds) {
+    wrap.append(h('span', { class: `chip${missing[k] ? ' short' : ''}`, title: RES_LABEL[k] }, icon(icons[k as keyof typeof icons] ?? ''), formatNumber(cost[k]!)));
+  }
+  return wrap;
+}
+
+export class Hud {
+  private readonly c: GameController;
+  private readonly bus: UiBus;
+  private readonly root: HTMLElement;
+  private selectedId: string | null = null;
+  private placementActive = false;
+
+  private resEls = new Map<ResourceKind, { amt: HTMLElement; bar: HTMLElement; cap: HTMLElement | null }>();
+  private buildersEl!: HTMLElement;
+  private unlocksEl!: HTMLElement;
+  private sheet!: HTMLElement;
+  private placeBar!: HTMLElement;
+  private placeOk!: HTMLButtonElement;
+  private bottomBar!: HTMLElement;
+  private toasts!: HTMLElement;
+  private modalRoot!: HTMLElement;
+  private fpsEl!: HTMLElement;
+  private showFps = false;
+  private openModals = new Set<() => void>();
+  /** True while a finger/mouse is pressed on the panel: never rebuild it mid-tap. */
+  private sheetPressed = false;
+  private sheetSig = '';
+
+  constructor(private readonly deps: HudDeps) {
+    this.c = deps.controller;
+    this.bus = deps.bus;
+    this.root = deps.root;
+    try {
+      this.showFps = localStorage.getItem('tk.showFps') === '1';
+    } catch {
+      /* storage blocked: keep default */
+    }
+    this.buildSkeleton();
+    this.c.subscribe(() => this.refresh());
+    this.bus.on('select', (id) => {
+      this.selectedId = id;
+      this.renderSheet();
+    });
+    this.bus.on('placement:changed', ({ active, valid }) => {
+      this.placementActive = active;
+      this.placeBar.hidden = !active;
+      this.bottomBar.hidden = active;
+      this.placeOk.disabled = !valid;
+      if (active) this.sheet.hidden = true;
+    });
+    this.bus.on('toast', ({ text, kind }) => this.toast(text, kind));
+    window.setInterval(() => this.everySecond(), 1000);
+    window.setInterval(() => {
+      if (this.showFps) this.fpsEl.textContent = `${Math.round(this.deps.getFps())} fps`;
+    }, 500);
+    this.refresh();
+  }
+
+  // ------------------------------------------------------------ skeleton
+
+  private buildSkeleton(): void {
+    const top = h('div', { class: 'hud-top' });
+    for (const k of ['acorns', 'dew'] as ResourceKind[]) {
+      const amt = h('span', { class: 'res-amt' });
+      const cap = h('span', { class: 'res-cap' });
+      const fill = h('i');
+      top.append(h('div', { class: `res res-${k}`, title: RES_LABEL[k] }, icon(icons[k as 'acorns' | 'dew'], 'res-icon'), h('div', { class: 'res-body' }, amt, h('div', { class: 'res-bar' }, fill), cap)));
+      this.resEls.set(k, { amt, bar: fill, cap });
+    }
+    const moonAmt = h('span', { class: 'res-amt' });
+    top.append(h('div', { class: 'res res-moonstones', title: 'Moonstones' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt)));
+    this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
+    this.buildersEl = h('span', { class: 'res-amt' });
+    top.append(h('div', { class: 'res res-builders', title: 'Free Beaver Builders' }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
+
+    this.unlocksEl = h('button', { class: 'unlocks', type: 'button', onclick: () => this.openUnlocks() });
+    this.toasts = h('div', { class: 'toasts', 'aria-live': 'polite' });
+    this.fpsEl = h('div', { class: 'fps' });
+    this.fpsEl.hidden = !this.showFps;
+
+    this.bottomBar = h(
+      'div',
+      { class: 'hud-bottom' },
+      h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Settings', onclick: () => this.openSettings() }, icon(icons.gear)),
+      h('button', { class: 'round-btn big build', type: 'button', 'aria-label': 'Build', onclick: () => this.openShop() }, icon(icons.hammer), h('span', {}, 'Build')),
+    );
+
+    this.placeOk = h('button', { class: 'round-btn ok', type: 'button', 'aria-label': 'Place here', onclick: () => this.bus.emit('placement:confirm') }, icon(icons.check));
+    this.placeBar = h(
+      'div',
+      { class: 'place-bar' },
+      h('button', { class: 'round-btn cancel', type: 'button', 'aria-label': 'Cancel', onclick: () => this.bus.emit('placement:cancel') }, icon(icons.close)),
+      h('div', { class: 'place-hint' }, 'Drag the building, or tap where it should go'),
+      this.placeOk,
+    );
+    this.placeBar.hidden = true;
+
+    this.sheet = h('div', { class: 'sheet' });
+    this.sheet.hidden = true;
+    this.sheet.addEventListener('pointerdown', () => (this.sheetPressed = true));
+    const release = () => window.setTimeout(() => (this.sheetPressed = false), 80);
+    this.sheet.addEventListener('pointerup', release);
+    this.sheet.addEventListener('pointercancel', release);
+    this.sheet.addEventListener('pointerleave', release);
+    this.modalRoot = h('div', { class: 'modal-root' });
+
+    this.root.append(top, this.unlocksEl, this.toasts, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
+  }
+
+  // ------------------------------------------------------------ refresh
+
+  private refresh(): void {
+    const s = this.c.state;
+    const gd = this.c.data;
+    const cap = capacity(s, gd);
+    for (const [k, el] of this.resEls) {
+      el.amt.textContent = formatNumber(s.resources[k]);
+      if (el.cap) {
+        el.cap.textContent = `/ ${formatCompact(cap[k])}`;
+        el.bar.style.width = `${Math.min(100, (s.resources[k] / Math.max(1, cap[k])) * 100)}%`;
+        el.bar.parentElement!.classList.toggle('full', s.resources[k] >= cap[k]);
+      }
+    }
+    const bs = builderStatus(s, gd, this.c.now());
+    this.buildersEl.textContent = `${bs.free}/${bs.total}`;
+    this.renderUnlockChip();
+    this.renderSheet();
+  }
+
+  private everySecond(): void {
+    const s = this.c.state;
+    const bs = builderStatus(s, this.c.data, this.c.now());
+    this.buildersEl.textContent = `${bs.free}/${bs.total}`;
+    if (!this.selectedId || this.sheet.hidden) return;
+    if (this.sheetSignature() !== this.sheetSig) this.renderSheet();
+    else this.updateSheetLive();
+  }
+
+  /** Changes to these values need a full rebuild of the panel; everything else updates in place. */
+  private sheetSignature(): string {
+    const b = this.c.state.buildings.find((v) => v.id === this.selectedId);
+    if (!b) return 'none';
+    const now = this.c.now();
+    const busy = Boolean(b.upgrade && now < b.upgrade.endsAt);
+    const q = busy ? null : upgradeQuote(this.c.state, b.id, this.c.data, now);
+    const missing = q && !q.ok && q.quote ? Object.keys(missingFor(this.c.state.resources, q.quote.cost)).join() : '';
+    return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing]);
+  }
+
+  /** Update timers and collector amounts without replacing any buttons. */
+  private updateSheetLive(): void {
+    const b = this.c.state.buildings.find((v) => v.id === this.selectedId);
+    if (!b) return;
+    const gd = this.c.data;
+    const now = this.c.now();
+    const up = this.sheet.querySelector<HTMLElement>('[data-live="upgrade"]');
+    if (up && b.upgrade) {
+      const u = b.upgrade;
+      const pct = Math.min(100, ((now - u.startedAt) / Math.max(1, u.endsAt - u.startedAt)) * 100);
+      (up.querySelector('i') as HTMLElement).style.width = `${pct}%`;
+      up.querySelector('span')!.textContent = `${u.toLevel === 1 ? 'Building' : `Upgrading to Lv ${u.toLevel}`} · ${formatDuration(u.endsAt - now)} left`;
+    }
+    const col = this.sheet.querySelector<HTMLElement>('[data-live="collector"]');
+    if (col) {
+      const level = effectiveLevel(b, now);
+      const amount = Math.floor(collectorAmount(b, now, gd));
+      const cap = collectorCapacity(b, level, gd);
+      (col.querySelector('i') as HTMLElement).style.width = `${Math.min(100, (amount / Math.max(1, cap)) * 100)}%`;
+      col.querySelector('span')!.textContent = `Ready: ${formatNumber(amount)} / ${formatNumber(cap)}`;
+    }
+  }
+
+  // ------------------------------------------------------------ unlock preview
+
+  private unlockText(u: UnlockItem): string {
+    const name = buildingDef(this.c.data, u.type).name;
+    if (u.kind === 'new') return `New: ${name}${u.to > 1 ? ` ×${u.to}` : ''}`;
+    if (u.kind === 'more') return `${name}: build up to ${u.to} (now ${u.from})`;
+    return `${name}: up to level ${u.to} (now ${u.from})`;
+  }
+
+  /** One short line, e.g. "+1 Acorn Orchard, +1 Dewdrop Well, higher levels for 4 buildings". */
+  private unlockSummary(items: UnlockItem[]): string {
+    const gd = this.c.data;
+    const parts: string[] = [];
+    for (const u of items) {
+      const name = buildingDef(gd, u.type).name;
+      if (u.kind === 'new') parts.push(`new ${name}`);
+      else if (u.kind === 'more') parts.push(`+${u.to - u.from} ${name}`);
+    }
+    const capped = new Set(items.filter((u) => u.kind === 'levelCap').map((u) => u.type)).size;
+    const shown = parts.slice(0, 3);
+    if (parts.length > 3) shown.push(`${parts.length - 3} more`);
+    if (capped) shown.push(`higher levels for ${capped} building${capped > 1 ? 's' : ''}`);
+    return shown.join(', ');
+  }
+
+  private renderUnlockChip(): void {
+    const level = hallLevel(this.c.state, this.c.data);
+    const items = hallUnlocks(level, this.c.data);
+    clear(this.unlocksEl);
+    this.unlocksEl.append(icon(icons.toadstool));
+    if (!items.length) {
+      this.unlocksEl.append(h('span', {}, h('b', {}, `Elder Toadstool Lv ${level}`), ' — top level for now'));
+      return;
+    }
+    this.unlocksEl.append(h('span', { class: 'unlock-text' }, h('b', {}, `Elder Toadstool Lv ${level + 1} unlocks: `), this.unlockSummary(items)));
+  }
+
+  private openUnlocks(): void {
+    const gd = this.c.data;
+    const level = hallLevel(this.c.state, gd);
+    const items = hallUnlocks(level, gd);
+    const hall = this.c.state.buildings.find((b) => b.type === hallType(gd));
+    const body = h('div', { class: 'unlock-list' });
+    if (!items.length) body.append(h('p', {}, 'Your Elder Toadstool is at the highest level available right now.'));
+    else {
+      body.append(h('p', { class: 'muted' }, `Upgrading your Elder Toadstool to level ${level + 1} unlocks:`));
+      body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u)))));
+      const next = levelDef(gd, hallType(gd), level + 1);
+      if (next) body.append(h('p', { class: 'row' }, 'Cost: ', costChips(next.cost, missingFor(this.c.state.resources, next.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(next.buildSeconds * 1000))));
+    }
+    const close = this.modal('Elder Toadstool', body, [
+      hall && {
+        label: 'Go to Elder Toadstool',
+        primary: true,
+        onClick: () => {
+          close();
+          this.bus.emit('select', hall.id);
+          this.bus.emit('camera:focus', { id: hall.id });
+        },
+      },
+    ]);
+  }
+
+  // ------------------------------------------------------------ building sheet
+
+  private renderSheet(): void {
+    const b = this.c.state.buildings.find((v) => v.id === this.selectedId);
+    if (!b || this.placementActive) {
+      this.sheet.hidden = true;
+      this.sheetSig = '';
+      return;
+    }
+    if (this.sheetPressed && !this.sheet.hidden && this.sheet.dataset.id === b.id) {
+      window.setTimeout(() => this.renderSheet(), 120);
+      return;
+    }
+    this.sheetSig = this.sheetSignature();
+    this.sheet.dataset.id = b.id;
+    const gd = this.c.data;
+    const now = this.c.now();
+    const def = buildingDef(gd, b.type);
+    const level = effectiveLevel(b, now);
+    clear(this.sheet);
+    this.sheet.hidden = false;
+
+    const title = h('div', { class: 'sheet-title' }, h('h2', {}, def.name), h('span', { class: 'level' }, level >= 1 ? `Level ${level}` : 'Being built'));
+    const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: () => this.bus.emit('select', null) }, icon(icons.close));
+    this.sheet.append(h('div', { class: 'sheet-head' }, title, closeBtn));
+    this.sheet.append(h('p', { class: 'muted desc' }, def.description));
+
+    // Stats
+    const stats = h('div', { class: 'stats' });
+    const ld = levelDef(gd, b.type, Math.max(1, level));
+    if (def.category === 'collector' && def.produces && ld?.ratePerHour) {
+      stats.append(h('span', { class: 'chip' }, icon(icons[def.produces as 'acorns' | 'dew']), `${formatNumber(ld.ratePerHour)}/hour`));
+      stats.append(h('span', { class: 'chip' }, `Holds ${formatNumber(collectorCapacity(b, Math.max(1, level), gd))}`));
+    }
+    if (ld?.storage) {
+      for (const k of RESOURCE_KINDS) {
+        const v = ld.storage[k];
+        if (v) stats.append(h('span', { class: 'chip' }, icon(icons[k as 'acorns' | 'dew']), `Stores ${formatNumber(v)}`));
+      }
+    }
+    if (def.category === 'builder') stats.append(h('span', { class: 'chip' }, icon(icons.beaver), 'Home of 1 Beaver Builder'));
+    if (stats.childElementCount) this.sheet.append(stats);
+
+    // Upgrade in progress
+    if (b.upgrade && now < b.upgrade.endsAt) {
+      const u = b.upgrade;
+      const pct = Math.min(100, ((now - u.startedAt) / Math.max(1, u.endsAt - u.startedAt)) * 100);
+      this.sheet.append(
+        h(
+          'div',
+          { class: 'progress-row', 'data-live': 'upgrade' },
+          h('div', { class: 'progress' }, h('i', { style: `width:${pct}%` })),
+          h('span', {}, `${u.toLevel === 1 ? 'Building' : `Upgrading to Lv ${u.toLevel}`} · ${formatDuration(u.endsAt - now)} left`),
+        ),
+      );
+    }
+
+    // Collector contents
+    if (def.produces && level >= 1) {
+      const amount = Math.floor(collectorAmount(b, now, gd));
+      const cap = collectorCapacity(b, level, gd);
+      this.sheet.append(
+        h(
+          'div',
+          { class: 'progress-row', 'data-live': 'collector' },
+          h('div', { class: `progress ${def.produces}` }, h('i', { style: `width:${Math.min(100, (amount / Math.max(1, cap)) * 100)}%` })),
+          h('span', {}, `Ready: ${formatNumber(amount)} / ${formatNumber(cap)}`),
+        ),
+      );
+    }
+
+    // Actions
+    const actions = h('div', { class: 'actions' });
+    if (def.produces && level >= 1) {
+      actions.append(
+        h('button', { class: 'btn', type: 'button', onclick: () => this.collect(b) }, icon(icons[def.produces as 'acorns' | 'dew']), 'Collect'),
+      );
+    }
+    if (b.upgrade && now < b.upgrade.endsAt) {
+      actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.cancelUpgrade(b) }, icon(icons.close), 'Cancel'));
+    } else {
+      actions.append(this.upgradeButton(b, upgradeQuote(this.c.state, b.id, gd, now)));
+    }
+    actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.bus.emit('placement:start', { kind: 'move', id: b.id }) }, icon(icons.move), 'Move'));
+    this.sheet.append(actions);
+  }
+
+  private upgradeButton(b: Building, q: QuoteResult): HTMLElement {
+    if (!q.ok && !q.quote) return h('div', { class: 'note' }, q.message);
+    const quote = q.ok ? q.quote : q.quote!;
+    const missing = missingFor(this.c.state.resources, quote.cost);
+    const btn = h(
+      'button',
+      {
+        class: 'btn primary upgrade',
+        type: 'button',
+        disabled: !q.ok,
+        onclick: () => {
+          const r = this.c.dispatch({ type: 'upgrade', id: b.id });
+          if (!r.ok) this.toast(r.message, 'error');
+        },
+      },
+      h('span', { class: 'btn-label' }, icon(icons.up), `Upgrade to Lv ${quote.toLevel}`),
+      h('span', { class: 'btn-sub' }, costChips(quote.cost, missing), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(quote.seconds * 1000))),
+    );
+    if (q.ok) return btn;
+    return h('div', { class: 'upgrade-wrap' }, btn, h('div', { class: 'note' }, q.message));
+  }
+
+  private collect(b: Building): void {
+    const r = this.c.dispatch({ type: 'collect', id: b.id });
+    if (!r.ok) this.toast(r.message, r.code === 'NOTHING_TO_COLLECT' ? 'info' : 'error');
+    else for (const e of r.events) if (e.kind === 'collect') this.toast(`+${formatNumber(e.amount)} ${RES_LABEL[e.resource]}`, 'success');
+  }
+
+  private async cancelUpgrade(b: Building): Promise<void> {
+    const pct = Math.round(this.c.data.economy.cancelRefundFraction * 100);
+    const ok = await this.confirm('Cancel?', `You'll get back ${pct}% of what you paid.`, 'Cancel upgrade', true);
+    if (!ok) return;
+    const r = this.c.dispatch({ type: 'cancel', id: b.id });
+    if (!r.ok) this.toast(r.message, 'error');
+  }
+
+  // ------------------------------------------------------------ shop
+
+  private openShop(): void {
+    const gd = this.c.data;
+    const now = this.c.now();
+    const grid = h('div', { class: 'shop-grid' });
+    for (const [type, def] of Object.entries(gd.buildings)) {
+      if (!def.inShop) continue;
+      const q = placeQuote(this.c.state, gd, type, now);
+      const lim = limitFor(this.c.state, gd, type);
+      const have = countOfType(this.c.state, type);
+      const first = def.levels[0];
+      const thumb = this.deps.thumbnail(type);
+      const card = h(
+        'button',
+        {
+          class: `shop-card${q.ok ? '' : ' disabled'}`,
+          type: 'button',
+          'aria-disabled': !q.ok,
+          onclick: () => {
+            if (!q.ok) {
+              this.toast(q.message, 'error');
+              return;
+            }
+            close();
+            this.bus.emit('placement:start', { kind: 'new', buildingType: type });
+          },
+        },
+        thumb ? h('img', { src: thumb, alt: '' }) : h('div', { class: 'thumb-ph' }),
+        h('div', { class: 'shop-name' }, def.name),
+        h('div', { class: 'shop-count' }, `Built ${have}/${lim.count}`),
+        h('div', { class: 'shop-cost' }, costChips(first.cost, missingFor(this.c.state.resources, first.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(first.buildSeconds * 1000))),
+        !q.ok ? h('div', { class: 'shop-why' }, q.message) : null,
+      );
+      grid.append(card);
+    }
+    const close = this.modal('Build', grid, [], 'wide');
+  }
+
+  // ------------------------------------------------------------ welcome back
+
+  showWelcomeBack(s: OfflineSummary): void {
+    const gd = this.c.data;
+    const body = h('div', { class: 'welcome' }, h('p', {}, `You were away for ${formatDuration(s.awayMs)}.`));
+    const list = h('ul', {});
+    for (const f of s.finished) {
+      const name = buildingDef(gd, f.type).name;
+      list.append(h('li', {}, f.level === 1 ? `${name} finished building.` : `${name} reached level ${f.level}.`));
+    }
+    const gains = RESOURCE_KINDS.filter((k) => (s.collectorGains[k] ?? 0) > 0);
+    if (gains.length) {
+      list.append(
+        h('li', {}, 'Your collectors gathered ', gains.map((k) => `${formatNumber(s.collectorGains[k]!)} ${RES_LABEL[k]}`).join(' and '), '. Tap the bubbles to collect.'),
+      );
+    }
+    if (!list.childElementCount) list.append(h('li', {}, 'All quiet in the kingdom.'));
+    body.append(list);
+    const close = this.modal('Welcome back!', body, [{ label: 'Great!', primary: true, onClick: () => close() }]);
+  }
+
+  // ------------------------------------------------------------ settings
+
+  private openSettings(): void {
+    const body = h('div', { class: 'settings' });
+
+    // Save transfer
+    const codeBox = h('textarea', { class: 'code', rows: 4, spellcheck: 'false', autocapitalize: 'off', placeholder: 'Paste a save code here to load a village from another device' }) as HTMLTextAreaElement;
+    body.append(
+      h('h3', {}, 'Your village'),
+      h('p', { class: 'muted' }, this.deps.store.persistent ? 'Your village saves automatically on this device. To move it to another device, copy a save code here and load it there.' : 'This browser mode cannot save. Your village will be lost when you close the page.'),
+      codeBox,
+      h(
+        'div',
+        { class: 'actions' },
+        h('button', { class: 'btn', type: 'button', onclick: () => this.exportSave(codeBox) }, 'Copy save code'),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.importSave(codeBox.value) }, 'Load from code'),
+      ),
+    );
+
+    // Display
+    const fpsToggle = h('input', { type: 'checkbox', checked: this.showFps }) as HTMLInputElement;
+    fpsToggle.addEventListener('change', () => {
+      this.showFps = fpsToggle.checked;
+      this.fpsEl.hidden = !this.showFps;
+      try {
+        localStorage.setItem('tk.showFps', this.showFps ? '1' : '0');
+      } catch {
+        /* ignore */
+      }
+    });
+    body.append(h('h3', {}, 'Display'), h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'));
+
+    // Testing tools
+    const offsetText = () => (this.deps.debugTime.offsetMs() ? `Game clock is ${formatDuration(this.deps.debugTime.offsetMs())} ahead of real time.` : 'Game clock matches real time.');
+    const offsetEl = h('p', { class: 'muted' }, offsetText());
+    const events = h('div', { class: 'events' }, 'Loading…');
+    body.append(
+      h('h3', {}, 'Testing tools'),
+      h('p', { class: 'muted' }, 'Skip time forward to test timers and offline progress. This moves this device’s game clock ahead permanently.'),
+      offsetEl,
+      h(
+        'div',
+        { class: 'actions' },
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.deps.debugTime.skip(3_600_000); offsetEl.textContent = offsetText(); this.c.tick(); this.refresh(); } }, '+1 hour'),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.simulateAway(8) }, 'Simulate 8 hours away'),
+      ),
+      h('details', {}, h('summary', {}, 'Analytics events (this device)'), events),
+    );
+    void this.deps.analytics.recent(60).then((list) => {
+      clear(events);
+      if (!list.length) events.append('No events yet.');
+      for (const e of list) {
+        events.append(h('div', { class: 'event' }, h('b', {}, e.name), ` ${new Date(e.at).toLocaleTimeString()} `, h('code', {}, JSON.stringify(e.props))));
+      }
+    });
+
+    // Reset
+    body.append(
+      h('h3', {}, 'Start over'),
+      h('div', { class: 'actions' }, h('button', { class: 'btn danger', type: 'button', onclick: () => this.resetVillage() }, 'Start a new village')),
+      h('p', { class: 'muted small' }, `Toadstool Kingdoms ${this.deps.build.version} · built ${this.deps.build.builtAt}`),
+    );
+    this.modal('Settings', body, [], 'wide');
+  }
+
+  private exportSave(box: HTMLTextAreaElement): void {
+    void this.c.save();
+    const code = encodeExportCode(serialize(this.c.state, this.c.now()));
+    box.value = code;
+    box.select();
+    this.deps.analytics.log('save_export', { length: code.length });
+    const done = () => this.toast('Save code copied. Paste it on your other device.', 'success');
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(code).then(done, () => this.toast('Select the code and copy it.', 'info'));
+    } else {
+      try {
+        document.execCommand('copy');
+        done();
+      } catch {
+        this.toast('Select the code and copy it.', 'info');
+      }
+    }
+  }
+
+  private async importSave(code: string): Promise<void> {
+    if (!code.trim()) {
+      this.toast('Paste a save code first.', 'info');
+      return;
+    }
+    let village;
+    try {
+      village = deserialize(decodeExportCode(code), this.c.data);
+    } catch (e) {
+      this.toast((e as Error).message, 'error');
+      return;
+    }
+    const ok = await this.confirm('Load this village?', 'It will replace the village on this device. Copy a save code first if you want to keep this one.', 'Replace village', true);
+    if (!ok) return;
+    await this.c.replace(village);
+    this.deps.analytics.log('save_import', {});
+    this.closeAllModals();
+    this.bus.emit('select', null);
+    this.toast('Village loaded!', 'success');
+  }
+
+  private async simulateAway(hours: number): Promise<void> {
+    await this.c.save();
+    this.deps.debugTime.skip(hours * 3_600_000);
+    location.reload();
+  }
+
+  private async resetVillage(): Promise<void> {
+    const ok = await this.confirm('Start a new village?', 'Your current village on this device will be deleted. This cannot be undone.', 'Delete and start over', true);
+    if (!ok) return;
+    await this.c.reset();
+    this.closeAllModals();
+    this.bus.emit('select', null);
+    this.toast('A fresh kingdom awaits.', 'success');
+  }
+
+  // ------------------------------------------------------------ toasts and modals
+
+  toast(text: string, kind: 'info' | 'error' | 'success' = 'info'): void {
+    const t = h('div', { class: `toast ${kind}` }, text);
+    this.toasts.append(t);
+    while (this.toasts.childElementCount > 3) this.toasts.firstElementChild?.remove();
+    window.setTimeout(() => t.classList.add('out'), 2600);
+    window.setTimeout(() => t.remove(), 3000);
+  }
+
+  private modal(
+    title: string,
+    body: HTMLElement,
+    buttons: (false | undefined | null | { label: string; primary?: boolean; danger?: boolean; onClick: () => void })[] = [],
+    size: 'normal' | 'wide' = 'normal',
+    onClose?: () => void,
+  ): () => void {
+    const backdrop = h('div', { class: 'modal-backdrop' });
+    let closed = false;
+    const close = () => {
+      if (closed) return;
+      closed = true;
+      backdrop.remove();
+      document.removeEventListener('keydown', onKey);
+      this.openModals.delete(close);
+      onClose?.();
+    };
+    this.openModals.add(close);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    const footer = h('div', { class: 'modal-foot' });
+    for (const b of buttons) {
+      if (!b) continue;
+      footer.append(h('button', { class: `btn${b.primary ? ' primary' : ''}${b.danger ? ' danger' : ''}`, type: 'button', onclick: b.onClick }, b.label));
+    }
+    const panel = h(
+      'div',
+      { class: `modal ${size}`, role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+      h('div', { class: 'modal-head' }, h('h2', {}, title), h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: close }, icon(icons.close))),
+      h('div', { class: 'modal-body' }, body),
+      footer.childElementCount ? footer : null,
+    );
+    backdrop.append(panel);
+    backdrop.addEventListener('pointerdown', (e) => {
+      if (e.target === backdrop) close();
+    });
+    document.addEventListener('keydown', onKey);
+    this.modalRoot.append(backdrop);
+    return close;
+  }
+
+  private closeAllModals(): void {
+    for (const close of [...this.openModals]) close();
+  }
+
+  private confirm(title: string, message: string, confirmLabel: string, danger = false): Promise<boolean> {
+    return new Promise((resolve) => {
+      let answer = false;
+      const close = this.modal(
+        title,
+        h('p', {}, message),
+        [
+          { label: 'Keep it', onClick: () => close() },
+          { label: confirmLabel, primary: !danger, danger, onClick: () => { answer = true; close(); } },
+        ],
+        'normal',
+        // Closing with X, Escape or the backdrop counts as "no".
+        () => resolve(answer),
+      );
+    });
+  }
+}

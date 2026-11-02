@@ -1,0 +1,119 @@
+import { buildingDef, levelDef, maxDefinedLevel } from './data';
+import { footprint, rectsOverlap } from './grid';
+import type { GameData, VillageState } from './types';
+import { RESOURCE_KINDS } from './types';
+
+export const SAVE_VERSION = 1;
+const EXPORT_PREFIX = 'TK1';
+
+export interface SaveFile {
+  version: number;
+  savedAt: number;
+  village: VillageState;
+}
+
+export function serialize(state: VillageState, now: number): SaveFile {
+  return { version: SAVE_VERSION, savedAt: now, village: { ...structuredClone(state), lastSeenAt: now } };
+}
+
+/** Upgrade an older save file to the current format. Add a step here whenever SAVE_VERSION goes up. */
+export function migrate(raw: unknown): SaveFile {
+  if (!raw || typeof raw !== 'object') throw new Error('Save data is not an object');
+  const file = raw as Partial<SaveFile>;
+  if (typeof file.version !== 'number') throw new Error('Save data has no version');
+  if (file.version > SAVE_VERSION) throw new Error('This save is from a newer version of the game. Update the game first.');
+  // (No older versions exist yet.)
+  return file as SaveFile;
+}
+
+export function validateVillage(v: VillageState, data: GameData): string[] {
+  const problems: string[] = [];
+  if (!v || typeof v !== 'object') return ['village missing'];
+  if (!Number.isFinite(v.createdAt) || !Number.isFinite(v.lastSeenAt)) problems.push('bad timestamps');
+  if (!v.resources) problems.push('resources missing');
+  else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k]) || v.resources[k] < 0) problems.push(`bad ${k}`);
+  if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];
+  const map = data.economy.mapSize;
+  const ids = new Set<string>();
+  let halls = 0;
+  for (const b of v.buildings) {
+    if (!data.buildings[b.type]) {
+      problems.push(`unknown building ${b.type}`);
+      continue;
+    }
+    const def = buildingDef(data, b.type);
+    if (def.category === 'hall') halls++;
+    if (ids.has(b.id)) problems.push(`duplicate id ${b.id}`);
+    ids.add(b.id);
+    if (!Number.isInteger(b.level) || b.level < 0 || b.level > maxDefinedLevel(data, b.type)) problems.push(`bad level on ${b.id}`);
+    if (!Number.isInteger(b.x) || !Number.isInteger(b.y) || b.x < 0 || b.y < 0 || b.x + def.size > map || b.y + def.size > map) {
+      problems.push(`${b.id} is off the map`);
+    }
+    if (b.upgrade) {
+      const u = b.upgrade;
+      if (u.toLevel !== b.level + 1 || !levelDef(data, b.type, u.toLevel)) problems.push(`bad upgrade on ${b.id}`);
+      if (!(u.endsAt >= u.startedAt)) problems.push(`bad timer on ${b.id}`);
+    } else if (b.level < 1) problems.push(`${b.id} unfinished with no timer`);
+    if (Boolean(def.produces) !== Boolean(b.collector)) problems.push(`collector mismatch on ${b.id}`);
+  }
+  if (halls !== 1) problems.push('village must have exactly one Elder Toadstool');
+  for (let i = 0; i < v.buildings.length; i++) {
+    for (let j = i + 1; j < v.buildings.length; j++) {
+      const a = v.buildings[i];
+      const c = v.buildings[j];
+      if (!data.buildings[a.type] || !data.buildings[c.type]) continue;
+      if (rectsOverlap(footprint(a, data), footprint(c, data))) problems.push(`${a.id} overlaps ${c.id}`);
+    }
+  }
+  return problems;
+}
+
+export function deserialize(raw: unknown, data: GameData): VillageState {
+  const file = migrate(raw);
+  const problems = validateVillage(file.village, data);
+  if (problems.length) throw new Error(`Save data is damaged: ${problems.slice(0, 3).join('; ')}`);
+  return structuredClone(file.village);
+}
+
+// ---------- Export / import codes (move a village between devices) ----------
+
+function fnv1a(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
+function toBase64Url(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromBase64Url(b64: string): string {
+  const std = b64.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(std + '='.repeat((4 - (std.length % 4)) % 4));
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+}
+
+export function encodeExportCode(file: SaveFile): string {
+  const payload = toBase64Url(JSON.stringify(file));
+  return `${EXPORT_PREFIX}.${payload}.${fnv1a(payload)}`;
+}
+
+/** Returns the raw save file inside an export code. Throws if the code is mistyped. */
+export function decodeExportCode(code: string): unknown {
+  const parts = code.trim().split('.');
+  if (parts.length !== 3 || parts[0] !== EXPORT_PREFIX) throw new Error("That doesn't look like a Toadstool Kingdoms save code.");
+  const [, payload, sum] = parts;
+  if (fnv1a(payload) !== sum) throw new Error('The save code is incomplete or has a typo.');
+  try {
+    return JSON.parse(fromBase64Url(payload));
+  } catch {
+    throw new Error('The save code could not be read.');
+  }
+}

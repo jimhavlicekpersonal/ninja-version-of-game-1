@@ -1,0 +1,552 @@
+{
+  "elder_toadstool": {
+    "name": "Elder Toadstool",
+    "description": "The heart of your kingdom. Upgrade it to unlock new buildings and higher levels.",
+    "size": 4,
+    "category": "hall",
+    "inShop": false,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 1500,
+        "storage": {
+          "acorns": 1500,
+          "dew": 1500
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 240,
+        "hp": 1600,
+        "storage": {
+          "acorns": 3000,
+          "dew": 3000
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 1200,
+        "hp": 1850,
+        "storage": {
+          "acorns": 10000,
+          "dew": 10000
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 25000
+        },
+        "buildSeconds": 13200,
+        "hp": 2100,
+        "storage": {
+          "acorns": 50000,
+          "dew": 50000
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 150000
+        },
+        "buildSeconds": 64800,
+        "hp": 2400,
+        "storage": {
+          "acorns": 100000,
+          "dew": 100000
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 500000
+        },
+        "buildSeconds": 144000,
+        "hp": 2800,
+        "storage": {
+          "acorns": 200000,
+          "dew": 200000
+        }
+      }
+    ]
+  },
+  "acorn_orchard": {
+    "name": "Acorn Orchard",
+    "description": "A sturdy oak that drops Acorns every hour. Holds 8 hours of output.",
+    "size": 3,
+    "category": "collector",
+    "produces": "acorns",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 150
+        },
+        "buildSeconds": 10,
+        "hp": 400,
+        "ratePerHour": 200
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 300
+        },
+        "buildSeconds": 22,
+        "hp": 440,
+        "ratePerHour": 400
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 700
+        },
+        "buildSeconds": 50,
+        "hp": 480,
+        "ratePerHour": 600
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 1400
+        },
+        "buildSeconds": 110,
+        "hp": 520,
+        "ratePerHour": 800
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 3000
+        },
+        "buildSeconds": 240,
+        "hp": 560,
+        "ratePerHour": 1000
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 7000
+        },
+        "buildSeconds": 540,
+        "hp": 600,
+        "ratePerHour": 1300
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 14000
+        },
+        "buildSeconds": 1200,
+        "hp": 640,
+        "ratePerHour": 1600
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 28000
+        },
+        "buildSeconds": 2700,
+        "hp": 680,
+        "ratePerHour": 1900
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 56000
+        },
+        "buildSeconds": 6000,
+        "hp": 720,
+        "ratePerHour": 2200
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 84000
+        },
+        "buildSeconds": 13200,
+        "hp": 780,
+        "ratePerHour": 2500
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 120000
+        },
+        "buildSeconds": 28800,
+        "hp": 860,
+        "ratePerHour": 3000
+      }
+    ]
+  },
+  "dewdrop_well": {
+    "name": "Dewdrop Well",
+    "description": "Gathers morning Dew from the meadow. Holds 8 hours of output.",
+    "size": 3,
+    "category": "collector",
+    "produces": "dew",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 150
+        },
+        "buildSeconds": 10,
+        "hp": 400,
+        "ratePerHour": 200
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 300
+        },
+        "buildSeconds": 22,
+        "hp": 440,
+        "ratePerHour": 400
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 700
+        },
+        "buildSeconds": 50,
+        "hp": 480,
+        "ratePerHour": 600
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 1400
+        },
+        "buildSeconds": 110,
+        "hp": 520,
+        "ratePerHour": 800
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 3000
+        },
+        "buildSeconds": 240,
+        "hp": 560,
+        "ratePerHour": 1000
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 7000
+        },
+        "buildSeconds": 540,
+        "hp": 600,
+        "ratePerHour": 1300
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 14000
+        },
+        "buildSeconds": 1200,
+        "hp": 640,
+        "ratePerHour": 1600
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 28000
+        },
+        "buildSeconds": 2700,
+        "hp": 680,
+        "ratePerHour": 1900
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 56000
+        },
+        "buildSeconds": 6000,
+        "hp": 720,
+        "ratePerHour": 2200
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 84000
+        },
+        "buildSeconds": 13200,
+        "hp": 780,
+        "ratePerHour": 2500
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 28800,
+        "hp": 860,
+        "ratePerHour": 3000
+      }
+    ]
+  },
+  "acorn_silo": {
+    "name": "Acorn Silo",
+    "description": "Stores Acorns. Bigger silos let you save up for bigger upgrades.",
+    "size": 3,
+    "category": "storage",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 300
+        },
+        "buildSeconds": 10,
+        "hp": 400,
+        "storage": {
+          "acorns": 1500
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 750
+        },
+        "buildSeconds": 22,
+        "hp": 600,
+        "storage": {
+          "acorns": 3000
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 1500
+        },
+        "buildSeconds": 50,
+        "hp": 800,
+        "storage": {
+          "acorns": 6000
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 3000
+        },
+        "buildSeconds": 110,
+        "hp": 1000,
+        "storage": {
+          "acorns": 12000
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 6000
+        },
+        "buildSeconds": 240,
+        "hp": 1200,
+        "storage": {
+          "acorns": 25000
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 12000
+        },
+        "buildSeconds": 540,
+        "hp": 1400,
+        "storage": {
+          "acorns": 45000
+        }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 25000
+        },
+        "buildSeconds": 1200,
+        "hp": 1600,
+        "storage": {
+          "acorns": 100000
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 50000
+        },
+        "buildSeconds": 2700,
+        "hp": 1700,
+        "storage": {
+          "acorns": 225000
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 100000
+        },
+        "buildSeconds": 6000,
+        "hp": 1800,
+        "storage": {
+          "acorns": 450000
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 250000
+        },
+        "buildSeconds": 13200,
+        "hp": 1900,
+        "storage": {
+          "acorns": 850000
+        }
+      }
+    ]
+  },
+  "dew_cistern": {
+    "name": "Dew Cistern",
+    "description": "Stores Dew in a giant glass jar.",
+    "size": 3,
+    "category": "storage",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 300
+        },
+        "buildSeconds": 10,
+        "hp": 400,
+        "storage": {
+          "dew": 1500
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 750
+        },
+        "buildSeconds": 22,
+        "hp": 600,
+        "storage": {
+          "dew": 3000
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 1500
+        },
+        "buildSeconds": 50,
+        "hp": 800,
+        "storage": {
+          "dew": 6000
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 3000
+        },
+        "buildSeconds": 110,
+        "hp": 1000,
+        "storage": {
+          "dew": 12000
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 6000
+        },
+        "buildSeconds": 240,
+        "hp": 1200,
+        "storage": {
+          "dew": 25000
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 12000
+        },
+        "buildSeconds": 540,
+        "hp": 1400,
+        "storage": {
+          "dew": 45000
+        }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 25000
+        },
+        "buildSeconds": 1200,
+        "hp": 1600,
+        "storage": {
+          "dew": 100000
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 50000
+        },
+        "buildSeconds": 2700,
+        "hp": 1700,
+        "storage": {
+          "dew": 225000
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 100000
+        },
+        "buildSeconds": 6000,
+        "hp": 1800,
+        "storage": {
+          "dew": 450000
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 250000
+        },
+        "buildSeconds": 13200,
+        "hp": 1900,
+        "storage": {
+          "dew": 850000
+        }
+      }
+    ]
+  },
+  "beaver_lodge": {
+    "name": "Beaver Lodge",
+    "description": "Home of a Beaver Builder. Each lodge lets you build or upgrade one thing at a time.",
+    "size": 2,
+    "category": "builder",
+    "inShop": false,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 250
+      }
+    ]
+  }
+}

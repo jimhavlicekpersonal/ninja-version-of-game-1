@@ -1,0 +1,36 @@
+{
+  "mapSize": 40,
+  "startingResources": {
+    "acorns": 1000,
+    "dew": 1000,
+    "nightsap": 0,
+    "moonstones": 0
+  },
+  "startingLayout": [
+    {
+      "type": "elder_toadstool",
+      "x": 18,
+      "y": 18,
+      "level": 1
+    },
+    {
+      "type": "beaver_lodge",
+      "x": 14,
+      "y": 19,
+      "level": 1
+    },
+    {
+      "type": "beaver_lodge",
+      "x": 24,
+      "y": 19,
+      "level": 1
+    }
+  ],
+  "collectorHoursCap": 8,
+  "raidableStoredFraction": 0.2,
+  "raidableUncollectedFraction": 0.5,
+  "cancelRefundFraction": 0.5,
+  "welcomeBackMinAwaySeconds": 60,
+  "collectBubbleMinFraction": 0.02,
+  "minCollectAmount": 1
+}
