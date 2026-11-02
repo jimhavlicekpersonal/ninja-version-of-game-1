@@ -17,6 +17,12 @@ export interface BaseLayout {
   hallLevel: number;
   buildings: BaseBuilding[];
   trophies?: number;
+  /** Set on generated practice targets (not a real player): the layout's archetype name. */
+  practice?: string;
+  /** Shadow Trial tier this base was generated for (endless difficulty ladder). */
+  trialTier?: number;
+  /** Multiplier on defense HP and damage (Shadow Trials). Absent = 1. */
+  power?: number;
 }
 
 export interface BattleSetup {

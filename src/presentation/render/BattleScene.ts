@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 import { drainEvents, type BattleSession } from '../../gameplay/control/battleSession';
 import { buildingDef } from '../../gameplay/sim/data';
-import type { SimBuilding } from '../../gameplay/sim/battle/battle';
+import { isAbility, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
 import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
 import { CameraControl } from './cameraControl';
-import { depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
+import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
 import { debris } from './fx';
 import { sound } from '../audio/sound';
 
@@ -25,6 +25,14 @@ interface BView {
   bar: Phaser.GameObjects.Graphics;
   destroyed: boolean;
   lastHp: number;
+  /** Sabotage marker and recovery ring, created on first jam. */
+  jam: Phaser.GameObjects.Image | null;
+  ring: Phaser.GameObjects.Graphics | null;
+}
+
+interface SView {
+  lobes: Phaser.GameObjects.Image[];
+  edge: Phaser.GameObjects.Graphics;
 }
 
 interface TView {
@@ -47,6 +55,7 @@ export class BattleScene extends Phaser.Scene {
   private bviews: BView[] = [];
   private tviews: TView[] = [];
   private pviews = new Map<number, Phaser.GameObjects.Image>();
+  private sviews = new Map<number, SView>();
   private zone!: Phaser.GameObjects.Graphics;
   private zoneFade: Phaser.Tweens.Tween | null = null;
 
@@ -61,6 +70,7 @@ export class BattleScene extends Phaser.Scene {
     this.bviews = [];
     this.tviews = [];
     this.pviews = new Map();
+    this.sviews = new Map();
   }
 
   create(): void {
@@ -111,7 +121,7 @@ export class BattleScene extends Phaser.Scene {
     const image = this.add.image(c.x, c.y, key).setOrigin(o.x, o.y).setScale(buildingScale(tex, b.size)).setDepth(depthFor(b.x, b.y, b.size));
     if (b.hidden) image.setVisible(false);
     const bar = this.add.graphics().setDepth(OVER - 10);
-    return { image, bar, destroyed: false, lastHp: b.hp };
+    return { image, bar, destroyed: false, lastHp: b.hp, jam: null, ring: null };
   }
 
   private drawZone(): void {
@@ -143,10 +153,13 @@ export class BattleScene extends Phaser.Scene {
       if (isTap) this.hooks.deployFailed('none');
       return;
     }
-    if ((s.sim.remaining[troop] ?? 0) <= 0) {
+    const ability = isAbility(s.data, troop);
+    if ((ability ? s.sim.charges[troop] ?? 0 : s.sim.remaining[troop] ?? 0) <= 0) {
       if (isTap) this.hooks.deployFailed('empty');
       return;
     }
+    // A held finger keeps deploying troops, but each ability needs its own tap.
+    if (ability && !isTap) return;
     const t = worldToTile(wx, wy);
     if (!s.tryDeploy(troop, t.tx, t.ty)) {
       if (isTap) {
@@ -156,9 +169,129 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     this.hooks.deployed();
-    sound.play('deploy');
     const p = tileToWorld(Math.floor(t.tx) + 0.5, Math.floor(t.ty) + 0.5);
+    if (ability) {
+      sound.play('smoke');
+      this.puff(p.x, p.y, 2.2);
+      return;
+    }
+    sound.play('deploy');
     this.puff(p.x, p.y, 0.6);
+  }
+
+  /** Smoke clouds: soft lobes inside a dashed boundary that thins as the cloud runs out. */
+  private syncSmoke(): void {
+    const sim = this.session.sim;
+    const live = new Set<number>();
+    for (const c of sim.smokes) {
+      live.add(c.id);
+      let v = this.sviews.get(c.id);
+      if (!v) {
+        v = this.makeSmoke(c);
+        this.sviews.set(c.id, v);
+      }
+      const left = Math.max(0, (c.endsTick - sim.tick - this.session.alpha()) / (c.endsTick - c.startTick));
+      const fade = Math.min(1, left * 4);
+      for (const [i, lobe] of v.lobes.entries()) {
+        lobe.setAlpha(0.78 * fade);
+        lobe.rotation += 0.002 * (i % 2 ? 1 : -1);
+      }
+      this.drawSmokeEdge(v.edge, c, left);
+    }
+    for (const [id, v] of this.sviews) {
+      if (live.has(id)) continue;
+      for (const lobe of v.lobes) this.tweens.add({ targets: lobe, alpha: 0, scale: lobe.scale * 1.2, duration: 500, onComplete: () => lobe.destroy() });
+      v.edge.destroy();
+      this.sviews.delete(id);
+    }
+  }
+
+  private makeSmoke(c: SmokeCloud): SView {
+    const lobes: Phaser.GameObjects.Image[] = [];
+    const rx = (c.radius * TILE_W) / Math.SQRT2;
+    const ry = (c.radius * TILE_H) / Math.SQRT2;
+    const centre = tileToWorld(c.x, c.y);
+    const n = 9;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const r = i === 0 ? 0 : 0.55;
+      const x = centre.x + Math.cos(a) * rx * r;
+      const y = centre.y + Math.sin(a) * ry * r;
+      const img = this.add.image(x, y, Keys.smoke).setDepth(OVER - 40 + y / 1000).setScale(((rx / 30) * 0.9) / TEX_SCALE, ((ry / 30) * 1.2) / TEX_SCALE).setAlpha(0);
+      img.rotation = a;
+      this.tweens.add({ targets: img, alpha: 0.78, duration: 300 });
+      lobes.push(img);
+    }
+    const edge = this.add.graphics().setDepth(OVER - 41);
+    return { lobes, edge };
+  }
+
+  private drawSmokeEdge(g: Phaser.GameObjects.Graphics, c: SmokeCloud, left: number): void {
+    const rx = (c.radius * TILE_W) / Math.SQRT2;
+    const ry = (c.radius * TILE_H) / Math.SQRT2;
+    const centre = tileToWorld(c.x, c.y);
+    g.clear();
+    // Dashed ring marks the exact area; the bright arc shows the time left.
+    g.lineStyle(2 / this.cam.userZoom, 0xe9eef5, 0.55);
+    const dashes = 28;
+    for (let i = 0; i < dashes; i += 2) {
+      const a0 = (i / dashes) * Math.PI * 2;
+      const a1 = ((i + 1) / dashes) * Math.PI * 2;
+      g.beginPath();
+      g.moveTo(centre.x + Math.cos(a0) * rx, centre.y + Math.sin(a0) * ry);
+      g.lineTo(centre.x + Math.cos(a1) * rx, centre.y + Math.sin(a1) * ry);
+      g.strokePath();
+    }
+    g.lineStyle(3.5 / this.cam.userZoom, 0xe9b44c, 0.9);
+    g.beginPath();
+    const steps = Math.max(2, Math.ceil(48 * left));
+    for (let i = 0; i <= steps; i++) {
+      const a = -Math.PI / 2 + (i / 48) * Math.PI * 2;
+      const x = centre.x + Math.cos(a) * rx;
+      const y = centre.y + Math.sin(a) * ry;
+      if (i === 0) g.moveTo(x, y);
+      else g.lineTo(x, y);
+    }
+    g.strokePath();
+  }
+
+  /** Jammed defenses: dimmed, with a jam marker and a ring that fills toward recovery; immune ones show a thin blue ring. */
+  private syncJam(b: SimBuilding, v: BView): void {
+    const sim = this.session.sim;
+    const jammed = !b.destroyed && sim.tick < b.disabledUntil;
+    const immune = !b.destroyed && !jammed && sim.tick < b.immuneUntil;
+    if (!jammed && !immune) {
+      if (v.jam) {
+        v.jam.destroy();
+        v.ring?.destroy();
+        v.jam = null;
+        v.ring = null;
+        v.image.clearTint();
+      }
+      return;
+    }
+    const top = v.image.y - v.image.displayHeight * v.image.originY;
+    const z = this.cam.userZoom;
+    if (!v.jam) {
+      v.jam = this.add.image(v.image.x, top - 14 / z, Keys.jam).setDepth(OVER - 8);
+      v.ring = this.add.graphics().setDepth(OVER - 9);
+    }
+    v.jam.setPosition(v.image.x, top - 16 / z).setScale(1 / TEX_SCALE / z).setVisible(jammed);
+    const g = v.ring!;
+    g.clear();
+    if (jammed) {
+      v.image.setTint(0x8a93a3);
+      const sab = this.session.data.battle.sabotage;
+      const done = 1 - (b.disabledUntil - sim.tick) / sab.disableTicks;
+      g.lineStyle(3 / z, 0x8ad0ff, 1);
+      g.beginPath();
+      g.arc(v.image.x, top - 16 / z, 13 / z, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, done));
+      g.strokePath();
+    } else {
+      v.image.clearTint();
+      g.lineStyle(2 / z, 0x8ad0ff, 0.5);
+      g.strokeCircle(v.image.x, top - 16 / z, 8 / z);
+    }
   }
 
   private makeTroop(type: string, air: boolean): TView {
@@ -211,9 +344,12 @@ export class BattleScene extends Phaser.Scene {
     const sim = s.sim;
     const a = s.alpha();
 
-    // Buildings: health bars and rubble.
+    this.syncSmoke();
+
+    // Buildings: health bars, rubble and sabotage state.
     sim.buildings.forEach((b, i) => {
       const v = this.bviews[i];
+      if (b.kind === 'defense') this.syncJam(b, v);
       if (b.destroyed && !v.destroyed) {
         v.destroyed = true;
         v.bar.clear();
@@ -330,6 +466,16 @@ export class BattleScene extends Phaser.Scene {
         }
       } else if (e.k === 'deploy' && this.session.mode === 'replay') {
         sound.play('deploy');
+      } else if (e.k === 'sabotage') {
+        sound.play('jam');
+        const b = sim.buildings[e.building];
+        const c = footprintCenter(b.x, b.y, b.size);
+        this.stars(c.x, c.y - 30, 6);
+        this.puff(c.x, c.y - 10, 1.2);
+      } else if (e.k === 'recovered') {
+        sound.play('recover');
+      } else if (e.k === 'smoke' && this.session.mode === 'replay') {
+        sound.play('smoke');
       } else if (e.k === 'trap') {
         sound.play('boom');
         const b = sim.buildings[e.building];

@@ -16,16 +16,17 @@ const has = (s: VillageState, type: string) => s.buildings.some((b) => b.type ==
 const hall = (s: VillageState) => s.buildings.find((b) => b.type === 'elder_toadstool')!;
 const armySize = (s: VillageState) => Object.values(s.army).reduce((a, b) => a + b, 0);
 
+// Keep nine steps with these completion checks: saved progress stores the step index.
 const STEPS: Step[] = [
-  { text: "Welcome, young ruler! I'm the Clan Keep. Let's grow your village together.", button: "Let's go!" },
-  { text: 'First, food for the village. Tap Build and place a Coin Mint.', targets: ['.round-btn.ok', '.shop-card', '.round-btn.build'], done: (s) => has(s, 'acorn_orchard') },
-  { text: 'Now upgrade me! Tap the Clan Keep (the big mushroom), then Upgrade.', targets: ['.sheet .btn.upgrade'], done: (s) => Boolean(hall(s).upgrade) || hall(s).level >= 2 },
-  { text: "Upgrades take time, but you have Jade. Tap Finish now to complete it instantly!", targets: ['.modal .btn.primary', '.sheet .btn.gold'], done: (s) => hall(s).level >= 2 },
-  { text: 'Every ruler needs an army. Build a Training Dojo and a Squad Courtyard (Build, then the Army tab).', targets: ['.round-btn.ok', '.shop-tabs button:nth-child(2)', '.round-btn.build'], done: (s) => has(s, 'burrow_barracks') && has(s, 'army_camp') },
-  { text: 'When they are ready, open the Army panel and train some Shinobi.', targets: ['.troop-row .btn.primary', '.round-btn[aria-label="Army"]'], done: (s) => s.training.length > 0 || armySize(s) > 0 },
-  { text: 'Use a few Jade again: tap Finish training.', targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[aria-label="Army"]'], done: (s) => armySize(s) > 0 && s.training.length === 0 },
-  { text: 'Time for adventure! Tap Attack, then Attack! and tap the grass outside the red area to send your troops.', targets: ['.big-attack', '.round-btn.attack'], done: (s) => s.battleLog.length > 0 },
-  { text: 'Wonderful! Collect resources, upgrade, raid, and join an Alliance for friends. Have fun!', button: 'Finish' },
+  { text: "Welcome, young leader. I am Sensei Hoshi. Our clan has found a hidden valley in the mountains. Let's build a village no rival can find.", button: 'I am ready' },
+  { text: 'A clan runs on Coins. Tap Build and place a Coin Mint.', targets: ['.round-btn.ok', '.shop-card', '.round-btn.build'], done: (s) => has(s, 'acorn_orchard') },
+  { text: 'Now strengthen the Clan Keep: tap the castle in the centre, then Upgrade.', targets: ['.sheet .btn.upgrade'], done: (s) => Boolean(hall(s).upgrade) || hall(s).level >= 2 },
+  { text: 'Upgrades take time, but our artisans work faster with Jade. Tap Finish now.', targets: ['.modal .btn.primary', '.sheet .btn.gold'], done: (s) => hall(s).level >= 2 },
+  { text: 'Warriors need a place to train. Build a Training Dojo and a Squad Courtyard (Build, then the Army tab).', targets: ['.round-btn.ok', '.shop-tabs button:nth-child(2)', '.round-btn.build'], done: (s) => has(s, 'burrow_barracks') && has(s, 'army_camp') },
+  { text: 'Open the Army panel and train some Shinobi: fast blades that strike the nearest building.', targets: ['.troop-row .btn.primary', '.round-btn[aria-label="Army"]'], done: (s) => s.training.length > 0 || armySize(s) > 0 },
+  { text: 'Use a little Jade to finish training: tap Finish training.', targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[aria-label="Army"]'], done: (s) => armySize(s) > 0 && s.training.length === 0 },
+  { text: 'Your first raid. Tap Attack and scout the target. Then pick the Smoke Bomb card and tap the Kunai Tower: inside the smoke it can only see close up. Then tap the grass outside the red area to send your Shinobi.', targets: ['.big-attack', '.round-btn.attack'], done: (s) => s.battleLog.length > 0 },
+  { text: 'Well fought. Upgrade the Training Dojo to unlock Saboteurs: they jam a defense for a few seconds. Jam first, smoke the core, then strike. Collect, upgrade, raid, and join an Alliance.', button: 'Finish' },
 ];
 
 /** Guided first steps. Points at buttons and moves on when the player has done each thing. */

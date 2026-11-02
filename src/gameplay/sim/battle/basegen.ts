@@ -41,6 +41,65 @@ export function opponentName(rng: Rng, data: GameData): string {
   return `${pick(rng, data.names.placeFirst)} ${pick(rng, data.names.placeSecond)}`;
 }
 
+/**
+ * A named layout style. Each one asks for a different plan of attack, so
+ * practice targets and Shadow Trials rotate through them.
+ */
+export interface LayoutArchetype {
+  id: string;
+  name: string;
+  /** One-line advice shown when scouting. */
+  tip: string;
+  /** Ring (min, max Chebyshev distance from the centre) per kind of building. */
+  rings: { splash: [number, number]; defense: [number, number]; storage: [number, number]; trap: [number, number]; other: [number, number] };
+  /** Wall rings around the core (0 = none), and gaps per ring (0 = closed). */
+  wallRings: number;
+  wallGaps: number;
+}
+
+export const LAYOUTS: LayoutArchetype[] = [
+  {
+    id: 'kunai_ring',
+    name: 'Kunai Ring',
+    tip: 'Towers in a wide ring cover each other: jam one, smoke the next, break in through the gap.',
+    rings: { splash: [6, 9], defense: [6, 9], storage: [2, 5], trap: [5, 8], other: [10, 14] },
+    wallRings: 0,
+    wallGaps: 0,
+  },
+  {
+    id: 'walled_keep',
+    name: 'Walled Keep',
+    tip: 'Two closed walls: Saboteurs and Tunnel Runners slip in, Guardians break through.',
+    rings: { splash: [2, 5], defense: [2, 6], storage: [2, 6], trap: [6, 8], other: [10, 14] },
+    wallRings: 2,
+    wallGaps: 0,
+  },
+  {
+    id: 'mortar_core',
+    name: 'Mortar Core',
+    tip: 'Firework Mortars guard the centre: jam them before the main force arrives, and spread out.',
+    rings: { splash: [0, 3], defense: [7, 10], storage: [3, 6], trap: [4, 7], other: [11, 14] },
+    wallRings: 1,
+    wallGaps: 2,
+  },
+  {
+    id: 'twin_gates',
+    name: 'Twin Gates',
+    tip: 'Two gates funnel troops onto hidden traps: choose a gate, or go over the wall.',
+    rings: { splash: [3, 6], defense: [3, 7], storage: [2, 6], trap: [7, 9], other: [11, 14] },
+    wallRings: 1,
+    wallGaps: 2,
+  },
+  {
+    id: 'open_court',
+    name: 'Open Courtyard',
+    tip: 'Buildings spread wide with no walls: fast Shinobi and Tunnel Runners clear it quickly.',
+    rings: { splash: [3, 12], defense: [3, 12], storage: [2, 12], trap: [4, 12], other: [6, 15] },
+    wallRings: 0,
+    wallGaps: 0,
+  },
+];
+
 export interface OpponentOptions {
   /**
    * 0..1: how close buildings are to this hall level's caps. 0 = about two
@@ -48,6 +107,8 @@ export interface OpponentOptions {
    * also means a bit more loot. Default 0.5.
    */
   levelBias?: number;
+  /** Arrange the base in a named style instead of the default rings. */
+  layout?: LayoutArchetype;
 }
 
 export function generateOpponent(seed: number, hallLevel: number, data: GameData, opts: OpponentOptions = {}): BaseLayout {
@@ -81,13 +142,30 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
     if (def.category === 'builder') count = 2 + int(rng, 0, Math.min(3, lim.count - 2));
     else if (def.category === 'collector') count = Math.max(1, int(rng, Math.ceil(count / 2), count));
     for (let i = 0; i < count; i++) {
-      const ring =
-        def.category === 'defense' || def.category === 'trap' ? { r1: 3, r2: 7 } : def.category === 'storage' ? { r1: 2, r2: 6 } : { r1: 8, r2: 13 };
+      const L = opts.layout;
+      const pickRing = (r: [number, number]) => ({ r1: r[0], r2: r[1] });
+      const ring = L
+        ? pickRing(
+            def.category === 'defense'
+              ? def.combat?.splashRadius
+                ? L.rings.splash
+                : L.rings.defense
+              : def.category === 'trap'
+                ? L.rings.trap
+                : def.category === 'storage'
+                  ? L.rings.storage
+                  : L.rings.other,
+          )
+        : def.category === 'defense' || def.category === 'trap' ? { r1: 3, r2: 7 } : def.category === 'storage' ? { r1: 2, r2: 6 } : { r1: 8, r2: 13 };
       plan.push({ type, ...ring });
     }
   }
-  // Defenses and storages first so they sit in the core.
-  const order = (t: string) => ({ defense: 0, storage: 1, trap: 2 } as Record<string, number>)[buildingDef(data, t).category] ?? 3;
+  // Defenses and storages first so they sit in the core (splash defenses first in a styled layout).
+  const order = (t: string) => {
+    const d = buildingDef(data, t);
+    if (opts.layout && d.category === 'defense' && d.combat?.splashRadius) return -1;
+    return ({ defense: 0, storage: 1, trap: 2 } as Record<string, number>)[d.category] ?? 3;
+  };
   plan.sort((a, b) => order(a.type) - order(b.type));
   for (const p of plan) {
     const def = buildingDef(data, p.type);
@@ -97,7 +175,9 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
 
   // A hedge ring around the core, with a few gaps.
   const hedgeLimit = limits.bramble_hedge;
-  if (hedgeLimit && hedgeLimit.count > 0) {
+  if (opts.layout) {
+    if (hedgeLimit && hedgeLimit.count > 0 && opts.layout.wallRings > 0) styledWalls(rng, o, buildings, data, hedgeLimit.count, levelFor('bramble_hedge'), opts.layout, add);
+  } else if (hedgeLimit && hedgeLimit.count > 0) {
     const core = buildings.filter((b) => ['hall', 'defense', 'storage'].includes(buildingDef(data, b.type).category));
     let x0 = map;
     let y0 = map;
@@ -163,7 +243,61 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
     if (!holders('storage').length) hall.loot[res] = (hall.loot[res] ?? 0) + Math.floor(total * shares.storage);
     if (!holders('collector').length) hall.loot[res] = (hall.loot[res] ?? 0) + Math.floor(total * shares.collector);
   }
-  return { name: opponentName(rng, data), hallLevel: hl, buildings };
+  const out: BaseLayout = { name: opponentName(rng, data), hallLevel: hl, buildings };
+  if (opts.layout) out.practice = opts.layout.name;
+  return out;
+}
+
+/** Wall rings for a styled layout: rings around the core, `wallGaps` gates in each. */
+function styledWalls(
+  rng: Rng,
+  o: Occ,
+  buildings: BaseBuilding[],
+  data: GameData,
+  limit: number,
+  level: number,
+  layout: LayoutArchetype,
+  add: (type: string, level: number, x: number, y: number) => void,
+): void {
+  const map = o.size;
+  const core = buildings.filter((b) => ['hall', 'defense', 'storage'].includes(buildingDef(data, b.type).category));
+  let x0 = map;
+  let y0 = map;
+  let x1 = 0;
+  let y1 = 0;
+  for (const b of core) {
+    const s = buildingDef(data, b.type).size;
+    x0 = Math.min(x0, b.x);
+    y0 = Math.min(y0, b.y);
+    x1 = Math.max(x1, b.x + s);
+    y1 = Math.max(y1, b.y + s);
+  }
+  let placed = 0;
+  const wallType = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'hedge') ?? 'bramble_hedge';
+  for (let ringNo = 0; ringNo < layout.wallRings; ringNo++) {
+    const pad = 2 + ringNo * 2;
+    const rx0 = x0 - pad;
+    const ry0 = y0 - pad;
+    const rx1 = x1 + pad - 1;
+    const ry1 = y1 + pad - 1;
+    const ring: [number, number][] = [];
+    for (let x = rx0; x <= rx1; x++) ring.push([x, ry0], [x, ry1]);
+    for (let y = ry0 + 1; y < ry1; y++) ring.push([rx0, y], [rx1, y]);
+    const skip = new Set<number>();
+    for (let g = 0; g < layout.wallGaps; g++) {
+      // Gates on opposite sides, two tiles wide.
+      const start = Math.floor(((g + next(rng) * 0.3) * ring.length) / Math.max(1, layout.wallGaps));
+      skip.add(start % ring.length);
+      skip.add((start + 2) % ring.length);
+    }
+    for (let i = 0; i < ring.length; i++) {
+      if (placed >= limit) return;
+      const [x, y] = ring[i];
+      if (skip.has(i) || x < 0 || y < 0 || x >= map || y >= map || o.cells[y * map + x]) continue;
+      add(wallType, level, x, y);
+      placed++;
+    }
+  }
 }
 
 /** Total loot on offer in a base. */

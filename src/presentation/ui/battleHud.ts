@@ -1,6 +1,8 @@
 import type { BattleSession } from '../../gameplay/control/battleSession';
 import type { BattleHooks } from '../render/BattleScene';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
+import { isAbility } from '../../gameplay/sim/battle/battle';
+import { scoutReport } from '../../gameplay/sim/battle/scout';
 import { closeCalls } from '../../gameplay/sim/battle/closecall';
 import { lossTrophies, winTrophies } from '../../gameplay/sim/ranks';
 import type { BattleResult } from '../../gameplay/sim/battle/types';
@@ -88,10 +90,13 @@ export class BattleHud {
     );
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
     root.append(left, right, this.toastEl, this.troopsEl, this.bottomEl, this.modalEl);
-    // Pick the first available troop by default.
-    this.selected = Object.keys(this.s.setup.army).find((t) => (this.s.sim.remaining[t] ?? 0) > 0) ?? null;
+    // Pick the first available troop by default (Saboteurs first: jam, then attack).
+    this.selected = this.firstTroop();
     this.renderBottom();
     this.renderTroops();
+    if (this.s.mode !== 'replay' && !deps.grove && (this.s.setup.army.saboteur ?? 0) > 0) {
+      this.toast('Tactic: send Saboteurs first to jam defenses, throw smoke over the core, then send the main force.');
+    }
     this.tick();
     this.interval = window.setInterval(() => this.tick(), 100);
   }
@@ -107,21 +112,42 @@ export class BattleHud {
       selectedTroop: () => this.selected,
       deployFailed: (reason) => {
         if (reason === 'zone') this.toast('Place troops outside the red area.');
-        else if (reason === 'empty') this.toast('No more of that troop. Pick another.');
+        else if (reason === 'empty') this.toast(this.selected === 'smoke_bomb' ? 'No Smoke Bombs left.' : 'No more of that troop. Pick another.');
         else this.toast('Pick a troop below first.');
       },
       deployed: () => {
+        // After a Smoke Bomb, go back to troops so a second tap never wastes a charge.
+        if (this.selected && isAbility(this.s.data, this.selected)) this.selected = this.lastTroop ?? this.firstTroop();
+        else if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0) this.selected = this.firstTroop();
         if (this.s.mode === 'live') this.renderTroops();
-        if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0) {
-          this.selected = Object.keys(this.s.setup.army).find((t) => (this.s.sim.remaining[t] ?? 0) > 0) ?? null;
-          this.renderTroops();
-        }
       },
     };
   }
 
+  private scoutEl: HTMLElement | null = null;
+
+  /** What scouting reveals: visible defenses, walls and a tactic for this layout. */
+  private renderScout(): void {
+    this.scoutEl?.remove();
+    this.scoutEl = null;
+    if (this.s.mode !== 'scout') return;
+    const r = scoutReport(this.s.setup.base, this.s.data);
+    const chips = Object.entries(r.defenses).map(([t, n]) => h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
+    if (r.walls) chips.push(h('span', { class: 'chip' }, `${r.walls} walls`));
+    const opp = this.s.setup.base;
+    this.scoutEl = h(
+      'div',
+      { class: 'panel scout-report' },
+      h('b', {}, opp.practice ? `Practice target · ${opp.practice}` : 'Scout report'),
+      h('div', { class: 'chips' }, ...chips),
+      ...r.tips.map((t) => h('p', { class: 'small' }, t)),
+    );
+    this.deps.root.append(this.scoutEl);
+  }
+
   private renderBottom(): void {
     clear(this.bottomEl);
+    this.renderScout();
     const mode = this.s.mode;
     if (mode === 'scout') {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
@@ -162,10 +188,39 @@ export class BattleHud {
     }
   }
 
+  private lastTroop: string | null = null;
+
+  private firstTroop(): string | null {
+    const order = Object.keys(this.s.setup.army).sort((a, b) => (a === 'saboteur' ? -1 : b === 'saboteur' ? 1 : 0));
+    return order.find((t) => (this.s.sim.remaining[t] ?? 0) > 0) ?? null;
+  }
+
+  /** Units left for a troop, or charges left for an ability. */
+  private left(type: string): number {
+    return isAbility(this.s.data, type) ? this.s.sim.charges[type] ?? 0 : this.s.sim.remaining[type] ?? 0;
+  }
+
   private renderTroops(): void {
     clear(this.troopsEl);
     if (this.s.mode === 'replay') return;
-    for (const [type, total] of Object.entries(this.s.setup.army)) {
+    if ((this.s.sim.charges.smoke_bomb ?? 0) > 0 || (this.s.sim.abilitiesUsed.smoke_bomb ?? 0) > 0) {
+      const left = this.left('smoke_bomb');
+      const card = h(
+        'button',
+        { class: `troop-card ability${this.selected === 'smoke_bomb' ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': 'smoke_bomb', title: this.s.data.battle.abilities.smoke_bomb.description },
+        icon(icons.smoke),
+        h('span', { class: 'troop-count' }, `×${left}`),
+      );
+      card.addEventListener('click', () => {
+        if (this.left('smoke_bomb') <= 0) return;
+        if (this.selected && !isAbility(this.s.data, this.selected)) this.lastTroop = this.selected;
+        this.selected = 'smoke_bomb';
+        this.toast('Tap the map to throw smoke. Defenses inside it can only see close up.');
+        this.renderTroops();
+      });
+      this.troopsEl.append(card);
+    }
+    for (const [type, total] of Object.entries(this.s.setup.army).sort(([a], [b]) => (a === 'saboteur' ? -1 : b === 'saboteur' ? 1 : 0))) {
       if (total <= 0) continue;
       const left = this.s.sim.remaining[type] ?? 0;
       const thumb = this.deps.troopThumb(type);
@@ -176,8 +231,9 @@ export class BattleHud {
         h('span', { class: 'troop-count' }, `×${left}`),
       );
       card.addEventListener('click', () => {
-        if (left <= 0) return;
+        if (this.left(type) <= 0) return;
         this.selected = type;
+        this.lastTroop = type;
         this.renderTroops();
       });
       this.troopsEl.append(card);
@@ -212,7 +268,7 @@ export class BattleHud {
       // Keep troop counts fresh without rebuilding on every tick.
       this.troopsEl.querySelectorAll<HTMLElement>('.troop-card').forEach((el) => {
         const type = el.getAttribute('aria-label') ?? '';
-        const n = sim.remaining[type] ?? 0;
+        const n = this.left(type);
         const c = el.querySelector('.troop-count');
         if (c && c.textContent !== `×${n}`) c.textContent = `×${n}`;
         el.classList.toggle('empty', n <= 0);
