@@ -9,9 +9,10 @@ import { seasonOf } from './ranks';
 import { emptyStats } from './types';
 import { emptyResearch } from './research';
 import { emptyNet } from './net';
+import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -88,8 +89,13 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     v.defenseLog = [];
   }
   if (out.version < 8 && v && typeof v === 'object') {
-    // v7 -> v8: online bookkeeping (real raids, donations and Grove Raid chests from a server).
+    // v7 -> v8: free daily chest and visit streak.
+    v.daily = v.daily ?? (data ? emptyDaily(data) : { lastDay: -1, step: 0, skipsLeft: 1, skipWeek: -1, history: [] });
+  }
+  if (out.version < 9 && v && typeof v === 'object') {
+    // v8 -> v9: online bookkeeping (real raids, donations and Grove Raid chests from a server).
     v.net = v.net ?? emptyNet();
+    v.daily = v.daily ?? (data ? emptyDaily(data) : { lastDay: -1, step: 0, skipsLeft: 1, skipWeek: -1, history: [] });
   }
   out.version = SAVE_VERSION;
   return out;
@@ -139,6 +145,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
   if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('grove missing');
   if (!v.tutorial) problems.push('tutorial missing');
+  if (!v.daily || !Number.isFinite(v.daily.lastDay) || !Number.isFinite(v.daily.step) || !Array.isArray(v.daily.history)) problems.push('daily chest missing');
   if (!v.research || typeof v.research.levels !== 'object') problems.push('research missing');
   else {
     for (const [t, n] of Object.entries(v.research.levels)) if (!data.troops[t] || !Number.isInteger(n) || n < 1 || n > data.troops[t].levels.length) problems.push(`bad research level ${t}`);

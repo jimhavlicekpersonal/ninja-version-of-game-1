@@ -54,14 +54,17 @@ function connect(w: ReturnType<typeof world>, game: GameLink, kv = memoryKv(), p
   return { conn, port: p, kv };
 }
 
-describe('save v8', () => {
-  it('adds empty online bookkeeping to older saves', () => {
+describe('save v9', () => {
+  it('adds empty online bookkeeping to a v8 save and keeps its daily chest', () => {
     const w = world();
     const v = createNewVillage(w.now(), w.data) as unknown as Record<string, unknown>;
     delete v.net;
-    const out = migrate({ version: 7, savedAt: 0, village: v }, w.data);
+    const daily = { ...(v.daily as object), lastDay: 123, step: 4 };
+    v.daily = daily;
+    const out = migrate({ version: 8, savedAt: 0, village: v }, w.data);
     expect(out.version).toBe(SAVE_VERSION);
     expect(out.village.net).toEqual({ playerId: null, defensesSince: 0, donations: [], raidWeeks: [] });
+    expect(out.village.daily).toEqual(daily);
   });
 });
 

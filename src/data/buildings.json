@@ -55,7 +55,7 @@
       {
         "level": 5,
         "cost": {
-          "acorns": 108000
+          "acorns": 130000
         },
         "buildSeconds": 4320,
         "hp": 3600,
@@ -67,7 +67,7 @@
       {
         "level": 6,
         "cost": {
-          "acorns": 600000
+          "acorns": 850000
         },
         "buildSeconds": 11700,
         "hp": 4200,

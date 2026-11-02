@@ -405,3 +405,25 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .error-note { color: #b23a2c; background: #ffe9e5; border-radius: 12px; padding: 6px 10px; margin-bottom: 8px; }
 @keyframes net-blink { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .net-pill.connecting::before { animation: none; } }
+
+/* Notification type toggles (Settings) */
+.notify-types { margin: 2px 0 8px 26px; }
+.toggle.sub { font-size: 14px; }
+
+/* Close calls after a battle (only shown when true) */
+.close-call { margin: 4px 0; padding: 6px 10px; border-radius: 12px; background: #fff3d6; color: #7a4b00; font-weight: 700; font-size: 14px; }
+
+/* Event countdown chip next to the unlock preview */
+.head-row { display: flex; gap: 6px; align-items: stretch; flex-wrap: wrap; max-width: 100%; }
+.event-chip {
+  pointer-events: auto; display: flex; align-items: center; padding: 6px 12px; border-radius: 16px; border: none;
+  background: rgba(255, 238, 200, 0.95); color: #6a3d00; font: 700 12px var(--font); box-shadow: var(--shadow-soft); cursor: pointer;
+}
+
+/* Daily chest */
+.streak { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.streak-step { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 12px; background: #f6f0ff; font-size: 12px; text-align: center; }
+.streak-step.done { background: #e4f7d8; }
+.streak-step.current { outline: 3px solid var(--sun); }
+.chest-result { margin: 10px 0; padding: 10px 12px; border-radius: 14px; background: #fff6c8; display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 380px) { .streak { grid-template-columns: repeat(4, 1fr); } }

@@ -1,6 +1,7 @@
 import type { BattleSession } from '../game/battleSession';
 import type { BattleHooks } from '../render/BattleScene';
 import { totalLoot } from '../sim/battle/basegen';
+import { closeCalls } from '../sim/battle/closecall';
 import { lossTrophies, winTrophies } from '../sim/ranks';
 import type { BattleResult } from '../sim/battle/types';
 import type { Cost, ResourceKind } from '../sim/types';
@@ -25,7 +26,7 @@ export interface BattleHudDeps {
   onNext(): void;
   onAttack(): void;
   /** Called once when a live battle ends; returns the loot actually banked. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost } | null;
   onReplay(): void;
 }
 
@@ -221,7 +222,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus);
       } else {
         this.toast('Replay finished.');
       }
@@ -239,7 +240,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost): void {
     sound.play(r.stars > 0 ? 'victory' : 'defeat');
     const starsRow = h('div', { class: 'result-stars' });
     for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
@@ -253,8 +254,10 @@ export class BattleHud {
       this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Grove Raid.') : h('p', {}, 'Loot: ', lootChips(banked)),
       this.deps.grove ? '' : h('p', {}, 'Leaf rank: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
+      eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
+      ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),
       used ? h('p', { class: 'muted small' }, `Troops used: ${used}`) : null,
-      Object.entries(banked).some(([k, v]) => v - ((bonus?.[k as ResourceKind]) ?? 0) < (r.loot[k as ResourceKind] ?? 0)) ? h('p', { class: 'note' }, 'Some loot did not fit in your storage.') : null,
+      Object.entries(banked).some(([k, v]) => v - (bonus?.[k as ResourceKind] ?? 0) - (eventBonus?.[k as ResourceKind] ?? 0) < (r.loot[k as ResourceKind] ?? 0)) ? h('p', { class: 'note' }, 'Some loot did not fit in your storage.') : null,
     );
     this.modal(title, body, [
       { label: 'Watch replay', onClick: () => this.deps.onReplay() },

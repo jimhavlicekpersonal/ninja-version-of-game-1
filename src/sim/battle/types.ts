@@ -63,4 +63,6 @@ export interface BattleRecord {
   trophies?: number;
   /** League bonus included in the banked loot of a won attack. */
   leagueBonus?: Cost;
+  /** Limited-time event bonus included in the banked loot. */
+  eventBonus?: Cost;
 }
