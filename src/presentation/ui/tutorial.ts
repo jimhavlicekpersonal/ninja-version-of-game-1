@@ -93,11 +93,23 @@ export class Tutorial {
 
   private tick(): void {
     const t = this.c.state.tutorial;
-    if (t.done) return;
+    if (t.done) {
+      this.bubble.hidden = true;
+      this.ring.hidden = true;
+      return;
+    }
     const step = STEPS[t.step];
     if (!step) return;
     if (step.done?.(this.c.state)) {
       this.go(t.step + 1);
+      return;
+    }
+    // Never cover the battlefield: the step was read before tapping Attack,
+    // and the battle HUD gives its own hints.
+    const inBattle = document.getElementById('battle-hud')?.hidden === false;
+    this.bubble.hidden = inBattle;
+    if (inBattle) {
+      this.ring.hidden = true;
       return;
     }
     // Get out of the way of open panels.
