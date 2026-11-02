@@ -32,9 +32,16 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
   const core: ServerCore = createCore(nodeContext(opts.repo, opts.data, opts.now, opts.random));
   const app = Fastify({ logger: opts.logger ?? false, bodyLimit: 1_000_000 });
 
-  // CORS without an extra dependency.
+  // CORS without an extra dependency. corsOrigin: '*' (default; fine because
+  // auth is a bearer token, not a cookie) or a comma-separated list of origins.
+  const allowed = (opts.corsOrigin ?? '*').split(',').map((s) => s.trim()).filter(Boolean);
   app.addHook('onRequest', async (req, reply) => {
-    reply.header('Access-Control-Allow-Origin', opts.corsOrigin ?? '*');
+    const origin = req.headers.origin;
+    if (allowed.includes('*')) reply.header('Access-Control-Allow-Origin', '*');
+    else if (origin && allowed.includes(origin)) {
+      reply.header('Access-Control-Allow-Origin', origin);
+      reply.header('Vary', 'Origin');
+    }
     reply.header('Access-Control-Allow-Headers', 'authorization, content-type');
     reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     reply.header('Access-Control-Max-Age', '86400');

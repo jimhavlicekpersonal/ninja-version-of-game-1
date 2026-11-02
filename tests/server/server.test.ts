@@ -59,6 +59,14 @@ describe('server HTTP adapter', () => {
     expect(String(r.headers['access-control-allow-headers'])).toMatch(/authorization/);
   });
 
+  it('allows only listed origins when CORS_ORIGIN is a list (web game and native apps)', async () => {
+    const app = buildServer({ repo: new MemoryRepo(), data, corsOrigin: 'https://jimhavlicekpersonal.github.io, capacitor://localhost,https://localhost' });
+    const pre = (origin: string) => app.inject({ method: 'OPTIONS', url: Routes.match, headers: { origin } });
+    expect((await pre('capacitor://localhost')).headers['access-control-allow-origin']).toBe('capacitor://localhost');
+    expect((await pre('https://jimhavlicekpersonal.github.io')).headers['access-control-allow-origin']).toBe('https://jimhavlicekpersonal.github.io');
+    expect((await pre('https://evil.example')).headers['access-control-allow-origin']).toBeUndefined();
+  });
+
   it('registers players, needs a token, renames and stores bases', async () => {
     const s = setup();
     const a = await s.register('Pip');
