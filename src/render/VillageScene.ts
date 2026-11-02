@@ -6,8 +6,8 @@ import { collectorAmount, collectorCapacity, effectiveLevel } from '../sim/resou
 import type { Building } from '../sim/types';
 import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
-import { Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, generatePlaceholders } from './assets';
-import { depthFor, footprintCenter, footprintCorners, mapBounds, worldToTile } from './iso';
+import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, generatePlaceholders } from './assets';
+import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
 
 export interface VillageSceneInit {
   controller: GameController;
@@ -18,14 +18,18 @@ export interface VillageSceneInit {
 
 interface TimerView {
   box: Phaser.GameObjects.Container;
-  fill: Phaser.GameObjects.Rectangle;
+  bar: Phaser.GameObjects.Graphics;
   label: Phaser.GameObjects.Text;
   lastText: string;
+  lastFill: number;
 }
 
 interface BuildingView {
   image: Phaser.GameObjects.Image;
   key: string;
+  /** Scale that makes the art match the tile grid; animations multiply it. */
+  baseScale: number;
+  squash: { sx: number; sy: number };
   bubble: Phaser.GameObjects.Image | null;
   timer: TimerView | null;
 }
@@ -48,6 +52,7 @@ interface DragState {
   startY: number;
   lastX: number;
   lastY: number;
+  lastTime: number;
   startTime: number;
   moved: boolean;
   mode: 'pan' | 'ghost';
@@ -55,8 +60,8 @@ interface DragState {
   grabDy: number;
 }
 
-const TIMER_W = 76;
-const TIMER_H = 10;
+const TIMER_W = 78;
+const TIMER_H = 12;
 const MIN_ZOOM = 0.3;
 const BOUNDS_MARGIN_X = 400;
 const BOUNDS_MARGIN_Y = 400;
@@ -77,6 +82,11 @@ export class VillageScene extends Phaser.Scene {
   private pinch: { startDist: number; startZoom: number } | null = null;
   private lastTickAt = 0;
   private unsubs: (() => void)[] = [];
+  private grid!: Phaser.GameObjects.Graphics;
+  private ready = false;
+  /** Camera glide after a swipe, in world units per ms. */
+  private glide = { vx: 0, vy: 0 };
+  private wheelTarget: { zoom: number; x: number; y: number } | null = null;
 
   constructor() {
     super('village');
@@ -97,7 +107,10 @@ export class VillageScene extends Phaser.Scene {
       mapSize,
     );
     const mb = mapBounds(mapSize);
-    this.add.image(mb.x, mb.y, Keys.ground).setOrigin(0, 0).setDepth(-10);
+    this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setDepth(-10);
+    this.addWaves(mapSize);
+    this.grid = this.add.graphics().setDepth(-5).setAlpha(0);
+    this.drawGrid(mapSize);
 
     this.selection = this.add.graphics().setDepth(OVERLAY_DEPTH - 1);
     const cam = this.cameras.main;
@@ -114,11 +127,15 @@ export class VillageScene extends Phaser.Scene {
     }
 
     this.sync();
+    this.ready = true;
 
     this.unsubs.push(
       this.controller.subscribe((finished) => {
         this.sync();
-        for (const f of finished) this.floatText(f.id, `Level ${f.level}!`, '#fff4b0');
+        for (const f of finished) {
+          this.floatText(f.id, f.level === 1 ? 'Done!' : `Level ${f.level}!`, '#fff4b0');
+          this.bounce(f.id, 'pop');
+        }
       }),
       this.bus.on('placement:start', (p) => (p.kind === 'new' ? this.startPlacement('new', p.buildingType) : this.startPlacement('move', undefined, p.id))),
       this.bus.on('placement:confirm', () => this.confirmPlacement()),
@@ -146,16 +163,21 @@ export class VillageScene extends Phaser.Scene {
       const size = buildingDef(gd, b.type).size;
       const key = buildingTexture(this.textures, b.type, b.level, size);
       let view = this.views.get(b.id);
+      let isNew = false;
       if (!view) {
-        view = { image: this.add.image(0, 0, key), key: '', bubble: null, timer: null };
+        view = { image: this.add.image(0, 0, key), key: '', baseScale: 1, squash: { sx: 1, sy: 1 }, bubble: null, timer: null };
         this.views.set(b.id, view);
+        isNew = true;
       }
       if (view.key !== key) {
         const tex = this.textures.get(key);
         const o = buildingOrigin(tex, size);
-        view.image.setTexture(key).setOrigin(o.x, o.y).setScale(buildingScale(tex, size));
+        view.baseScale = buildingScale(tex, size);
+        view.image.setTexture(key).setOrigin(o.x, o.y);
+        this.applySquash(view);
         view.key = key;
       }
+      if (isNew && this.ready) this.bounce(b.id, 'pop');
       const c = footprintCenter(b.x, b.y, size);
       view.image.setPosition(c.x, c.y).setDepth(depthFor(b.x, b.y, size));
       view.image.setAlpha(this.placement?.id === b.id ? 0.25 : 1);
@@ -183,21 +205,20 @@ export class VillageScene extends Phaser.Scene {
       return;
     }
     if (!view.timer) {
-      const bg = this.add.rectangle(0, 0, TIMER_W, TIMER_H, 0x2b1d12, 0.85).setStrokeStyle(2, 0x2b1d12);
-      const fill = this.add.rectangle(-TIMER_W / 2 + 1, 0, TIMER_W - 2, TIMER_H - 4, 0x8be04e).setOrigin(0, 0.5);
+      const bar = this.add.graphics();
       const label = this.add
-        .text(0, -13, '', {
-          fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-          fontSize: '13px',
+        .text(0, -15, '', {
+          fontFamily: 'ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+          fontSize: '14px',
           fontStyle: 'bold',
           color: '#ffffff',
-          stroke: '#2b1d12',
+          stroke: '#5a3d7a',
           strokeThickness: 4,
           resolution: Math.max(2, this.renderScale),
         })
         .setOrigin(0.5, 0.5);
-      const box = this.add.container(0, 0, [bg, fill, label]).setDepth(OVERLAY_DEPTH);
-      view.timer = { box, fill, label, lastText: '' };
+      const box = this.add.container(0, 0, [bar, label]).setDepth(OVERLAY_DEPTH);
+      view.timer = { box, bar, label, lastText: '', lastFill: -1 };
     }
     const top = view.image.y - view.image.displayHeight * view.image.originY;
     view.timer.box.setPosition(view.image.x, top - 6 / this.userZoom);
@@ -210,12 +231,97 @@ export class VillageScene extends Phaser.Scene {
       if (!view?.timer || !b.upgrade) continue;
       const { startedAt, endsAt } = b.upgrade;
       const t = Phaser.Math.Clamp((now - startedAt) / Math.max(1, endsAt - startedAt), 0, 1);
-      view.timer.fill.width = (TIMER_W - 2) * t;
+      this.drawTimerBar(view.timer, t);
       const text = formatDuration(endsAt - now);
       if (text !== view.timer.lastText) {
         view.timer.label.setText(text);
         view.timer.lastText = text;
       }
+    }
+  }
+
+  private drawTimerBar(timer: TimerView, t: number): void {
+    const fill = Math.round(t * 200) / 200;
+    if (fill === timer.lastFill) return;
+    timer.lastFill = fill;
+    const g = timer.bar;
+    g.clear();
+    g.fillStyle(0x5a3d7a, 0.9);
+    g.fillRoundedRect(-TIMER_W / 2 - 2, -TIMER_H / 2 - 2, TIMER_W + 4, TIMER_H + 4, (TIMER_H + 4) / 2);
+    g.fillStyle(0xfff6e0, 1);
+    g.fillRoundedRect(-TIMER_W / 2, -TIMER_H / 2, TIMER_W, TIMER_H, TIMER_H / 2);
+    const w = Math.max(TIMER_H, TIMER_W * fill);
+    if (fill > 0) {
+      g.fillStyle(0x6fd651, 1);
+      g.fillRoundedRect(-TIMER_W / 2, -TIMER_H / 2, w, TIMER_H, TIMER_H / 2);
+      g.fillStyle(0xb8f59a, 1);
+      g.fillRoundedRect(-TIMER_W / 2 + 3, -TIMER_H / 2 + 2, Math.max(0, w - 6), 3, 1.5);
+    }
+  }
+
+  private applySquash(view: BuildingView): void {
+    view.image.setScale(view.baseScale * view.squash.sx, view.baseScale * view.squash.sy);
+  }
+
+  /** Squash-and-stretch: 'pop' for new/finished buildings, 'tap' for selection. */
+  private bounce(id: string, kind: 'pop' | 'tap'): void {
+    const view = this.views.get(id);
+    if (!view) return;
+    this.tweens.killTweensOf(view.squash);
+    if (kind === 'pop') {
+      view.squash.sx = 0.7;
+      view.squash.sy = 1.3;
+    } else {
+      view.squash.sx = 1.08;
+      view.squash.sy = 0.9;
+    }
+    this.applySquash(view);
+    this.tweens.add({
+      targets: view.squash,
+      sx: 1,
+      sy: 1,
+      duration: kind === 'pop' ? 520 : 320,
+      ease: 'Back.easeOut',
+      easeParams: [kind === 'pop' ? 3 : 2.4],
+      onUpdate: () => this.applySquash(view),
+    });
+  }
+
+  private addWaves(mapSize: number): void {
+    const mb = mapBounds(mapSize);
+    let seed = 4242;
+    const rand = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+    let placed = 0;
+    for (let i = 0; i < 400 && placed < 70; i++) {
+      const x = mb.x - 380 + rand() * (mb.width + 760);
+      const y = mb.y - 380 + rand() * (mb.height + 760);
+      const t = worldToTile(x, y);
+      if (t.tx > -3 && t.ty > -3 && t.tx < mapSize + 4 && t.ty < mapSize + 4) continue; // on or near the island
+      placed++;
+      const w = this.add.image(x, y, Keys.wave).setScale(0.5 + rand() * 0.4).setAlpha(0).setDepth(-20);
+      this.tweens.add({
+        targets: w,
+        alpha: { from: 0, to: 0.85 },
+        x: x + 10,
+        duration: 1600 + rand() * 1800,
+        delay: rand() * 2500,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+  }
+
+  private drawGrid(mapSize: number): void {
+    const g = this.grid;
+    g.lineStyle(1.5, 0xffffff, 0.35);
+    for (let i = 0; i <= mapSize; i++) {
+      const a = tileToWorld(i, 0);
+      const b = tileToWorld(i, mapSize);
+      g.lineBetween(a.x, a.y, b.x, b.y);
+      const c = tileToWorld(0, i);
+      const d = tileToWorld(mapSize, i);
+      g.lineBetween(c.x, c.y, d.x, d.y);
     }
   }
 
@@ -260,8 +366,11 @@ export class VillageScene extends Phaser.Scene {
     if (!b || this.placement) return;
     const size = buildingDef(this.controller.data, b.type).size;
     const pts = footprintCorners(b.x, b.y, size);
+    const v = pts.map((p) => new Phaser.Math.Vector2(p.x, p.y));
+    g.lineStyle(9 / this.userZoom, 0xfff6a8, 0.35);
+    g.strokePoints(v, true);
     g.lineStyle(3 / this.userZoom, 0xffffff, 0.95);
-    g.strokePoints(pts.map((p) => new Phaser.Math.Vector2(p.x, p.y)), true);
+    g.strokePoints(v, true);
     g.setDepth(depthFor(b.x, b.y, size) - 1);
   }
 
@@ -294,7 +403,7 @@ export class VillageScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------ frame
 
-  update(time: number): void {
+  update(time: number, delta: number): void {
     const now = this.controller.now();
     if (time - this.lastTickAt > 250) {
       this.lastTickAt = time;
@@ -304,6 +413,26 @@ export class VillageScene extends Phaser.Scene {
     this.updateTimers(now);
     this.positionBubbles(time);
     this.updatePinch();
+    this.updateGlide(delta);
+    if (this.wheelTarget) {
+      const w = this.wheelTarget;
+      const next = this.userZoom + (w.zoom - this.userZoom) * Math.min(1, delta / 70);
+      this.zoomAt(w.x, w.y, Math.abs(w.zoom - next) < 0.002 ? w.zoom : next);
+      if (this.userZoom === w.zoom || Math.abs(this.userZoom - w.zoom) < 0.002) this.wheelTarget = null;
+    }
+    if (this.selectedId) this.selection.setAlpha(0.75 + Math.sin(time / 260) * 0.25);
+  }
+
+  private updateGlide(delta: number): void {
+    if (this.drag || this.pinch) return;
+    const { vx, vy } = this.glide;
+    if (Math.abs(vx) < 0.005 && Math.abs(vy) < 0.005) return;
+    const cam = this.cameras.main;
+    cam.scrollX -= vx * delta;
+    cam.scrollY -= vy * delta;
+    const decay = Math.pow(0.9, delta / 16.7);
+    this.glide.vx *= decay;
+    this.glide.vy *= decay;
   }
 
   // ------------------------------------------------------------------ camera
@@ -361,7 +490,9 @@ export class VillageScene extends Phaser.Scene {
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onUp(p));
     this.input.on('pointerupoutside', (p: Phaser.Input.Pointer) => this.onUp(p));
     this.input.on('wheel', (p: Phaser.Input.Pointer, _objs: unknown, _dx: number, dy: number) => {
-      this.zoomAt(p.x, p.y, this.userZoom * (dy > 0 ? 0.88 : 1.12));
+      const base = this.wheelTarget?.zoom ?? this.userZoom;
+      const zoom = Phaser.Math.Clamp(base * (dy > 0 ? 0.85 : 1.18), this.minZoom(), MAX_ZOOM);
+      this.wheelTarget = { zoom, x: p.x, y: p.y };
     });
     const kb = this.input.keyboard;
     if (kb) {
@@ -405,7 +536,8 @@ export class VillageScene extends Phaser.Scene {
         grabDy = Math.floor(t.ty) - pl.y;
       }
     }
-    this.drag = { pointerId: p.id, startX: p.x, startY: p.y, lastX: p.x, lastY: p.y, startTime: this.time.now, moved: false, mode, grabDx, grabDy };
+    this.glide = { vx: 0, vy: 0 };
+    this.drag = { pointerId: p.id, startX: p.x, startY: p.y, lastX: p.x, lastY: p.y, lastTime: this.time.now, startTime: this.time.now, moved: false, mode, grabDx, grabDy };
   }
 
   private onMove(p: Phaser.Input.Pointer): void {
@@ -420,11 +552,17 @@ export class VillageScene extends Phaser.Scene {
       this.moveGhost(Math.floor(t.tx) - d.grabDx, Math.floor(t.ty) - d.grabDy);
     } else {
       const cam = this.cameras.main;
-      cam.scrollX -= (p.x - d.lastX) / cam.zoom;
-      cam.scrollY -= (p.y - d.lastY) / cam.zoom;
+      const dx = (p.x - d.lastX) / cam.zoom;
+      const dy = (p.y - d.lastY) / cam.zoom;
+      cam.scrollX -= dx;
+      cam.scrollY -= dy;
+      const dt = Math.max(1, this.time.now - d.lastTime);
+      this.glide.vx = this.glide.vx * 0.6 + (dx / dt) * 0.4;
+      this.glide.vy = this.glide.vy * 0.6 + (dy / dt) * 0.4;
     }
     d.lastX = p.x;
     d.lastY = p.y;
+    d.lastTime = this.time.now;
   }
 
   private onUp(p: Phaser.Input.Pointer): void {
@@ -435,6 +573,7 @@ export class VillageScene extends Phaser.Scene {
     }
     const d = this.drag;
     this.drag = null;
+    if (d && d.moved && (this.time.now - d.lastTime > 80 || d.mode === 'ghost')) this.glide = { vx: 0, vy: 0 };
     if (!d || d.pointerId !== p.id || d.moved) return;
     const w = this.screenToWorld(p.x, p.y);
     this.onTap(w.x, w.y);
@@ -472,6 +611,7 @@ export class VillageScene extends Phaser.Scene {
     if (hit) {
       const def = buildingDef(gd, hit.type);
       if (def.produces && this.views.get(hit.id)?.bubble) this.collect(hit.id);
+      this.bounce(hit.id, 'tap');
       this.selectedId = hit.id;
       this.drawSelection();
       this.bus.emit('select', hit.id);
@@ -556,6 +696,7 @@ export class VillageScene extends Phaser.Scene {
     const ghost = this.add.image(0, 0, key).setOrigin(o.x, o.y).setScale(buildingScale(tex, size)).setAlpha(0.85).setDepth(OVERLAY_DEPTH - 5);
     const outline = this.add.graphics().setDepth(OVERLAY_DEPTH - 6);
     this.placement = { kind, type: type!, id, x, y, size, ghost, outline, valid: false };
+    this.tweens.add({ targets: this.grid, alpha: 1, duration: 200 });
     this.selectedId = null;
     this.bus.emit('select', null);
     this.sync();
@@ -615,6 +756,7 @@ export class VillageScene extends Phaser.Scene {
     this.placement.ghost.destroy();
     this.placement.outline.destroy();
     this.placement = null;
+    this.tweens.add({ targets: this.grid, alpha: 0, duration: 200 });
     this.bus.emit('placement:changed', { active: false, valid: false });
     this.sync();
   }

@@ -8,8 +8,8 @@
   "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
   "orientation": "any",
-  "background_color": "#3d7334",
-  "theme_color": "#3d7334",
+  "background_color": "#6fcdee",
+  "theme_color": "#6fcdee",
   "categories": ["games"],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
