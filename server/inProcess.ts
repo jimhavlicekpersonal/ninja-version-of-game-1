@@ -80,13 +80,8 @@ export class InProcessServerAdapter implements ServerPort {
   leaveGrove() {
     return this.authed((me) => this.core.leaveGrove(me));
   }
-  async myGrove() {
-    try {
-      return await this.authed((me) => this.core.myGrove(me));
-    } catch (e) {
-      if (e instanceof ServerError && e.code === 'not_in_grove') return null;
-      throw e;
-    }
+  myGrove() {
+    return this.authed((me) => this.core.myGrove(me));
   }
   chat(after?: string) {
     return this.authed((me) => this.core.chat(me, after));

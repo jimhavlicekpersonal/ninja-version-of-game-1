@@ -100,9 +100,11 @@ export async function leaveGrove(ctx: ServerContext, me: Player): Promise<void> 
   }
 }
 
-export async function myGrove(ctx: ServerContext, me: Player): Promise<GroveView> {
-  const { grove } = await requireGrove(ctx, me);
-  return groveView(ctx, me, grove);
+/** The player's Grove, or null when they are not in one. */
+export async function myGrove(ctx: ServerContext, me: Player): Promise<GroveView | null> {
+  const m = await ctx.repo.getMembership(me.id);
+  const grove = m ? await ctx.repo.getGrove(m.groveId) : null;
+  return grove ? groveView(ctx, me, grove) : null;
 }
 
 export async function chat(ctx: ServerContext, me: Player, after: string | undefined): Promise<ChatResponse> {

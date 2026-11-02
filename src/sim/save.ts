@@ -8,9 +8,10 @@ import { emptyGrove } from './social/grove';
 import { seasonOf } from './ranks';
 import { emptyStats } from './types';
 import { emptyResearch } from './research';
+import { emptyNet } from './net';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -85,6 +86,10 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // the same way any more: drop them rather than show wrong replays.
     v.battleLog = [];
     v.defenseLog = [];
+  }
+  if (out.version < 8 && v && typeof v === 'object') {
+    // v7 -> v8: online bookkeeping (real raids, donations and Grove Raid chests from a server).
+    v.net = v.net ?? emptyNet();
   }
   out.version = SAVE_VERSION;
   return out;

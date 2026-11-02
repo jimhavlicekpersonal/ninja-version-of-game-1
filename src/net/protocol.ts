@@ -205,6 +205,11 @@ export interface GroveView {
   you: { id: string; role: GroveRole; xp: number };
 }
 
+/** GET /v1/grove: the player's Grove, or null when they are not in one. */
+export interface MyGroveResponse {
+  grove: GroveView | null;
+}
+
 export interface ChatView {
   id: string;
   at: number;
@@ -300,6 +305,12 @@ export interface RaidView {
   result: { outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number } | null;
   /** The player already collected this week's chest. */
   claimed: boolean;
+  /**
+   * Ended Grove Raids (this week and last week) the player took part in, and
+   * whether their chest was claimed. Claiming again is safe and returns the
+   * same outcome, so a client that lost a claim answer can recover it.
+   */
+  chests: { week: number; claimed: boolean }[];
 }
 
 export interface RaidTicketRequest {
@@ -324,6 +335,9 @@ export interface RaidClaimRequest {
 export interface RaidClaimResponse {
   week: number;
   outcome: 'win' | 'draw' | 'loss';
+  /** Final stars for each side. */
+  ours: number;
+  theirs: number;
   /** True when this claim was already made (safe to retry). */
   alreadyClaimed: boolean;
 }

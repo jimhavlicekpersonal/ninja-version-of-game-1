@@ -278,10 +278,12 @@ for (const [label, makeRepo] of repoFactories) {
         w.setTime(w.raidEnd(week) + 1);
         const done = await ann.raid();
         expect(done.result).toMatchObject({ ours: best, theirs: 0, outcome: best > 0 ? 'win' : 'draw' });
+        expect(done.chests).toEqual([{ week, claimed: false }]);
         const claim = await ann.claimRaid(week);
         expect(claim).toMatchObject({ week, outcome: done.result!.outcome, alreadyClaimed: false });
         expect((await ann.claimRaid(week)).alreadyClaimed).toBe(true);
         expect((await ann.raid()).claimed).toBe(true);
+        expect((await ann.raid()).chests).toEqual([{ week, claimed: true }]);
         expect((await cat.claimRaid(week)).outcome).toBe(best > 0 ? 'loss' : 'draw');
       });
 
@@ -312,6 +314,7 @@ for (const [label, makeRepo] of repoFactories) {
         expect(v).toMatchObject({ eligible: false, attacksLeft: 0 });
         expect(await code(eve.raidTicket(0))).toBe('no_attacks_left');
         w.setTime(w.raidEnd(week) + 1);
+        expect((await eve.raid()).chests).toEqual([]);
         expect(await code(eve.claimRaid(week))).toBe('not_found');
         expect((await ann.claimRaid(week)).alreadyClaimed).toBe(false);
       });

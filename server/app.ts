@@ -4,7 +4,7 @@
  * requests, checks the bearer token and turns errors into protocol errors.
  */
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
-import { Routes, type ErrorBody } from '../src/net/protocol';
+import { Routes, type ErrorBody, type MyGroveResponse } from '../src/net/protocol';
 import type { GameData } from '../src/sim/types';
 import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext } from './nodeContext';
@@ -84,7 +84,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
   app.get(Routes.groves, authed(async (me, req) => core.listGroves(me, query(req).q ?? '')));
   app.post(Routes.groves, authed(async (me, req, reply) => reply.code(201).send(await core.createGrove(me, body<{ name: string }>(req).name))));
   app.post('/v1/groves/:id/join', authed(async (me, req) => core.joinGrove(me, param(req, 'id'))));
-  app.get(Routes.grove, authed(async (me) => core.myGrove(me)));
+  app.get(Routes.grove, authed(async (me): Promise<MyGroveResponse> => ({ grove: await core.myGrove(me) })));
   app.post(Routes.groveLeave, authed(async (me) => core.leaveGrove(me)));
   app.get(Routes.groveChat, authed(async (me, req) => core.chat(me, query(req).after)));
   app.post(Routes.groveChat, authed(async (me, req, reply) => reply.code(201).send(await core.postChat(me, body<{ text: string }>(req).text))));

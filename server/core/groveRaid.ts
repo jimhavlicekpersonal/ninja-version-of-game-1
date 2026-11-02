@@ -128,7 +128,14 @@ export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
   const ph = raidPhase(t, ctx.data);
   const per = ctx.data.social.groveRaid.attacksPerMember;
   const ok = eligible(joinedAt, ph.week, ctx);
-  const base: RaidView = { phase: ph.phase, week: ph.week, start: ph.start, end: ph.end, nextStart: ph.nextStart, eligible: ok, opponent: null, ours: 0, theirs: 0, enemyBaseStars: [], attacksLeft: 0, result: null, claimed: false };
+  const chests: RaidView['chests'] = [];
+  for (const w of [ph.week - 1, ph.week]) {
+    if (w < 0 || raidWindow(w, ctx.data).end > t) continue;
+    const claim = await ctx.repo.getClaim(w, me.id);
+    if (claim) chests.push({ week: w, claimed: true });
+    else if (eligible(joinedAt, w, ctx) && (await ctx.repo.getPairing(w, grove.id))) chests.push({ week: w, claimed: false });
+  }
+  const base: RaidView = { phase: ph.phase, week: ph.week, start: ph.start, end: ph.end, nextStart: ph.nextStart, eligible: ok, opponent: null, ours: 0, theirs: 0, enemyBaseStars: [], attacksLeft: 0, result: null, claimed: false, chests };
   const pairing = ph.phase === 'live' ? await ensurePairing(ctx, grove.id, ph.week) : await ctx.repo.getPairing(ph.week, grove.id);
   if (!pairing) return base;
   const s = await scores(ctx, pairing, ph.phase === 'ended' ? ph.end : t);
@@ -183,10 +190,15 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
 export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): Promise<RaidClaimResponse> {
   const w = Math.floor(Number(week));
   if (!Number.isFinite(w)) throw new ApiError(400, 'bad_request', 'week must be a number');
-  const existing = await ctx.repo.getClaim(w, me.id);
-  if (existing) return { week: w, outcome: existing.outcome, alreadyClaimed: true };
-  const { grove, joinedAt } = await requireGrove(ctx, me);
   const { end } = raidWindow(w, ctx.data);
+  const existing = await ctx.repo.getClaim(w, me.id);
+  if (existing) {
+    // Safe to retry, even after leaving the Grove.
+    const p = await ctx.repo.getPairing(w, existing.groveId);
+    const s = p ? await scores(ctx, p, end) : { ours: 0, theirs: 0 };
+    return { week: w, outcome: existing.outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: true };
+  }
+  const { grove, joinedAt } = await requireGrove(ctx, me);
   if (ctx.now() < end) throw new ApiError(409, 'raid_not_ended', 'That Grove Raid has not ended yet.');
   if (!eligible(joinedAt, w, ctx)) throw new ApiError(404, 'not_found', 'You joined your Grove after that Grove Raid started.');
   const pairing = await ctx.repo.getPairing(w, grove.id);
@@ -194,5 +206,5 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
   const s = await scores(ctx, pairing, end);
   const outcome = outcomeOf(s.ours, s.theirs);
   const fresh = await ctx.repo.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });
-  return { week: w, outcome, alreadyClaimed: !fresh };
+  return { week: w, outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: !fresh };
 }

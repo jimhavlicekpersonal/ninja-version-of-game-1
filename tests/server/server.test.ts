@@ -97,13 +97,16 @@ describe('server HTTP adapter', () => {
     expect(defs.body.defenses[0].attackerName).toBe('Attacker');
   });
 
-  it('serves Groves: 404 not_in_grove before joining, 201 on create, chat and requests', async () => {
+  it('serves Groves: no Grove before joining, 201 on create, chat and requests', async () => {
     const s = setup();
     const a = await s.register('Ann');
     const b = await s.register('Ben');
     const none = await s.call('GET', Routes.grove, a.token);
-    expect(none.status).toBe(404);
-    expect(none.body.error).toBe('not_in_grove');
+    expect(none.status).toBe(200);
+    expect(none.body).toEqual({ grove: null });
+    const chatOutside = await s.call('GET', Routes.groveChat, a.token);
+    expect(chatOutside.status).toBe(404);
+    expect(chatOutside.body.error).toBe('not_in_grove');
     const g = await s.call('POST', Routes.groves, a.token, { name: 'Mossy Hollow' });
     expect(g.status).toBe(201);
     expect((await s.call('GET', `${Routes.groves}?q=moss`, b.token)).body.groves).toHaveLength(1);
