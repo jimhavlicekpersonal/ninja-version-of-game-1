@@ -2,28 +2,9 @@
 
 ## Repos
 
-- **Source:** `jimhavlicekpersonal/toadstool-kingdoms`. All work is on branch **`ninja-rebuild`** (commits on top of `main` @ `2970bf0`; CI green). `main` is untouched.
-- **Target:** `jimhavlicekpersonal/ninja-version-of-game-1`. **Not created yet.** The cloud session that did this work can't create GitHub repositories. To finish:
-  1. On GitHub, create an **empty** repository `ninja-version-of-game-1` (no README).
-  2. Push the branch as its `main`:
-
-     ```bash
-     git clone --branch ninja-rebuild https://github.com/jimhavlicekpersonal/toadstool-kingdoms.git ninja-version-of-game-1
-     ```
-
-     ```bash
-     cd ninja-version-of-game-1
-     ```
-
-     ```bash
-     git remote set-url origin https://github.com/jimhavlicekpersonal/ninja-version-of-game-1.git
-     ```
-
-     ```bash
-     git push -u origin ninja-rebuild:main
-     ```
-
-  3. In the new repo: Settings → Pages → Source: **GitHub Actions**. The deploy workflow then publishes the game on every push to `main`.
+- **Home:** `jimhavlicekpersonal/ninja-version-of-game-1`, branch `main`. It holds the full history: the original Toadstool Kingdoms commits, the rebuild commits, and the repo's initial README commit merged in.
+- **Origin:** `jimhavlicekpersonal/toadstool-kingdoms`. Branch `ninja-rebuild` has the same rebuild; its `main` is untouched. Do new work in the ninja repo.
+- **Pages:** in the ninja repo, Settings → Pages → Source: **GitHub Actions**. Then every push to `main` publishes https://jimhavlicekpersonal.github.io/ninja-version-of-game-1/
 
 ## What works (verified)
 
@@ -55,7 +36,7 @@
 - Real phones (Pixel 7, iPhone) and 60 fps on a mid-range device: only headless Chromium at phone sizes was used.
 - Sound and music by ear (synthesized; checked only that it compiles and plays without errors).
 - iOS / Android native builds, TestFlight, StoreKit sandbox purchase.
-- GitHub Pages deploy of the new repo (it doesn't exist yet).
+- GitHub Pages deploy: it depends on the Pages setting above.
 
 ## Unfinished (prioritised)
 
@@ -64,7 +45,7 @@
 3. **Mastery EXP** is in the model and docs but not yet tracked in the live game.
 4. **Scroll-theft mission**: the first alternative objective, now that standard raids work.
 5. **Real art:** hand `docs/art/ART_AI_BRIEF.md` + `ICON_MANIFEST.json` to an ART session. Live items first.
-6. Owner steps: create the repo (above); trademark search for "Kagemura"; new bundle id and store listings when ready (`docs/SHIPPING.md`); host the server; Google Play Billing decision.
+6. Owner steps: turn on Pages (above); trademark search for "Kagemura"; new bundle id and store listings when ready (`docs/SHIPPING.md`); host the server; Google Play Billing decision.
 
 ## Online features: honest status
 

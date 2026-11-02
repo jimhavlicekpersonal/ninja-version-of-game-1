@@ -16,7 +16,7 @@ Rebuilt in place from Toadstool Kingdoms (Phase 6: PWA, Capacitor iOS/Android, S
 | **Pixel 7** | Open the link in Chrome, then **⋮ → Add to Home screen → Install**. |
 | **iPhone** | Open the link in **Safari**, then **Share → Add to Home Screen**. Launch from that icon so Safari keeps your save. |
 
-The link is `https://<owner>.github.io/<repo>/` once Pages is on (Settings → Pages → Source: GitHub Actions).
+The link is https://jimhavlicekpersonal.github.io/ninja-version-of-game-1/ once Pages is on (Settings → Pages → Source: GitHub Actions).
 
 **Controls:** drag to pan; pinch or mouse wheel to zoom; tap or click to select. In battle, pick a card and tap the map: troops go outside the red zone, and a Smoke Bomb can land anywhere. On a laptop, **Esc** cancels and **Enter** confirms placement.
 
