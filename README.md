@@ -78,7 +78,8 @@ Placeholder art is drawn in code at startup. To use real art, load an image unde
 - **Phase 2 – Raiding:** done. Burrow Barracks, Army Camps, 5 troops, 4 defenses, Bramble Hedges, generated opponents with a paid "Next", a fixed-step 10 tps battle with A* pathing, stars, loot and exact replays from seed + deployments.
 - **Phase 3 – Defense and progression:** done. 0–3 bot raids against your real village while you are away (20% of storage, 50% of collectors raidable), 12-hour shields after losing 30%+, a 24-hour new-player shield, defense log with replays, hidden traps from Elder Toadstool 3, leaf ranks with Sprout/Fern/Oak/Elder leagues and a monthly chest, and Elder Toadstool 1–6 paced by a model-player test (hall 3 in ~70 minutes of play, hall 6 in ~12 days).
 - **Phase 4 – Economy and monetization:** done. Moonstones (500 starter grant), skip and top-up prices from curves, a Store with Moonstone packs (the only screen with real prices), mock payments through a `PaymentProvider`, an age check with a monthly cap and extra confirmation for players under 18, Beaver Lodges 3–5 for Moonstones, rule-driven offers from `src/data/offers.json` (at most one per session), the Lantern Pass (free and premium tracks, premium = 20% faster builds), daily tasks and weekly challenges, Elder Toadstool looks, decorations, achievements and forest obstacles for free Moonstones, and a monthly spend summary in Settings.
-- Phases 5–6: see `CLAUDE.md`.
+- **Phase 5 – Social:** done. Join a Grove of 10–20 bot members with names, activity schedules and chat (always filtered); friends ask for troops and you donate for Grove XP, while they fill your Grove Lodge with troops for your next battle; the weekly 2-day Grove Raid against a bot Grove (2 attacks each, best stars per base add up, shared reward chest paid once).
+- Phase 6: see `CLAUDE.md`.
 
 **Test store:** the web build uses a mock store. Purchases complete instantly and **no real money is charged**.
 

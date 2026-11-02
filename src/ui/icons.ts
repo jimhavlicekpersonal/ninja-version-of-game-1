@@ -73,6 +73,10 @@ export const icons = {
       '<rect x="9" y="8" width="6" height="8" rx="3" fill="#fffbe0"/><path d="M8 20.5h8" stroke="#6b4a6e" stroke-width="1.8" stroke-linecap="round"/>',
   ),
   star: svg('<path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" fill="#ffd23f" stroke="#c98a13" stroke-width="1.4" stroke-linejoin="round"/><path d="M9.5 8.5l1-1.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>'),
+  grove: svg(
+    '<circle cx="8" cy="9" r="3.6" fill="#ffd9a8" stroke="#6b4a6e" stroke-width="1.3"/><circle cx="16" cy="9" r="3.6" fill="#c8e8ff" stroke="#6b4a6e" stroke-width="1.3"/>' +
+      '<path d="M2.5 20c0-3.6 2.5-6 5.5-6s5.5 2.4 5.5 6z" fill="#ff9a8c" stroke="#6b4a6e" stroke-width="1.3"/><path d="M10.5 20c0-3.6 2.5-6 5.5-6s5.5 2.4 5.5 6z" fill="#8de86f" stroke="#6b4a6e" stroke-width="1.3"/>',
+  ),
   toadstool: svg(
     '<path d="M9 13h6l.8 7.5H8.2z" fill="#fff4dc" stroke="#6b4a6e" stroke-width="1.4" stroke-linejoin="round"/>' +
       '<path d="M2.5 13c0-5.5 4.3-9 9.5-9s9.5 3.5 9.5 9z" fill="#d9413a" stroke="#6b4a6e" stroke-width="1.5" stroke-linejoin="round"/>' +

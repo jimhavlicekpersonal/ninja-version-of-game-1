@@ -11,6 +11,7 @@ import offers from '../data/offers.json';
 import pass from '../data/pass.json';
 import cosmetics from '../data/cosmetics.json';
 import achievements from '../data/achievements.json';
+import social from '../data/social.json';
 import type { BuildingDef, BuildingType, GameData, LevelDef } from './types';
 
 /** The game's balance data, straight from src/data/*.json. */
@@ -28,6 +29,7 @@ export const defaultData: GameData = {
   pass: pass as unknown as GameData['pass'],
   cosmetics: cosmetics as unknown as GameData['cosmetics'],
   achievements: achievements as unknown as GameData['achievements'],
+  social: social as unknown as GameData['social'],
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {

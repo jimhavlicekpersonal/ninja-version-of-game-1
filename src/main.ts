@@ -115,6 +115,7 @@ async function boot(): Promise<void> {
     troopThumb: (type) => thumbOf(Keys.troop(type)),
     onAttack: () => app?.scout(false),
     onReplay: (record) => app?.replay(record),
+    onGroveAttack: (target) => app?.groveAttack(target),
     debugTime,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
   });

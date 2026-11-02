@@ -15,6 +15,8 @@ export interface BattleHudDeps {
   myTrophies: number;
   /** Set when watching a replay. */
   replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
+  /** Set for Grove Raid attacks (no loot, no Next). */
+  grove?: { enemyName: string };
   troopThumb(type: string): string | null;
   scoutFee: number;
   canPayFee(): boolean;
@@ -68,10 +70,12 @@ export class BattleHud {
           ? deps.replayOf?.kind === 'defense'
             ? `Replay: ${deps.replayOf.opponentName} attacks · loot taken`
             : 'Replay · loot won'
-          : 'Loot you can win',
+          : deps.grove
+            ? `Grove Raid vs ${deps.grove.enemyName}`
+            : 'Loot you can win',
       ),
-      this.lootEl,
-      this.s.mode !== 'replay' && this.s.setup.base.trophies !== undefined
+      deps.grove ? '' : this.lootEl,
+      this.s.mode !== 'replay' && !deps.grove && this.s.setup.base.trophies !== undefined
         ? h(
             'div',
             { class: 'small b-trophies' },
@@ -121,12 +125,14 @@ export class BattleHud {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
         h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, 'Home'),
-        h(
-          'button',
-          { class: 'btn gold', type: 'button', disabled: !this.deps.canPayFee(), onclick: () => this.deps.onNext() },
-          'Next ',
-          h('span', { class: 'chip' }, icon(icons.acorns), formatNumber(this.deps.scoutFee)),
-        ),
+        this.deps.grove
+          ? h('span', {}, '')
+          : h(
+              'button',
+              { class: 'btn gold', type: 'button', disabled: !this.deps.canPayFee(), onclick: () => this.deps.onNext() },
+              'Next ',
+              h('span', { class: 'chip' }, icon(icons.acorns), formatNumber(this.deps.scoutFee)),
+            ),
         h(
           'button',
           {
@@ -239,8 +245,8 @@ export class BattleHud {
       { class: 'results' },
       starsRow,
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
-      h('p', {}, 'Loot: ', lootChips(banked)),
-      h('p', {}, 'Leaf rank: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+      this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Grove Raid.') : h('p', {}, 'Loot: ', lootChips(banked)),
+      this.deps.grove ? '' : h('p', {}, 'Leaf rank: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       used ? h('p', { class: 'muted small' }, `Troops used: ${used}`) : null,
       Object.entries(banked).some(([k, v]) => v < (r.loot[k as ResourceKind] ?? 0)) ? h('p', { class: 'note' }, 'Some loot did not fit in your storage.') : null,
     );

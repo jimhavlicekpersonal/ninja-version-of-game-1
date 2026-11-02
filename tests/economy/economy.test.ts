@@ -223,7 +223,7 @@ describe('save migration v3 -> v4', () => {
     const v3 = { version: 3, savedAt: 1, village: { ...state } as Record<string, unknown> };
     for (const k of ['stats', 'purchases', 'profile', 'offers', 'pass', 'tasks', 'cosmetics', 'achievements', 'flags']) delete v3.village[k];
     const m = migrate(v3, data);
-    expect(m.version).toBe(4);
+    expect(m.version).toBeGreaterThanOrEqual(4);
     expect(m.village.cosmetics.hallSkin).toBe('classic');
     expect(m.village.buildings.some((b) => data.buildings[b.type].category === 'obstacle')).toBe(true);
   });

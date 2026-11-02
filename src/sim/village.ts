@@ -12,6 +12,8 @@ import { scatterObstacles } from './obstacles';
 import { triggerOffer } from './offers';
 import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unlockedTier } from './pass';
 import { emptyStats, type OfferTrigger } from './types';
+import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
+import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState } from './types';
@@ -40,7 +42,13 @@ export type Command =
   | { type: 'claimTier'; tier: number; track: 'free' | 'premium' }
   | { type: 'claimAchievement'; id: string }
   | { type: 'clear'; id: string }
-  | { type: 'triggerOffer'; trigger: OfferTrigger };
+  | { type: 'triggerOffer'; trigger: OfferTrigger }
+  | { type: 'joinGrove' }
+  | { type: 'chat'; text: string }
+  | { type: 'donate'; requestId: string; troop: string; count: number }
+  | { type: 'requestTroops' }
+  | { type: 'groveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  | { type: 'markPrepOffer'; week: number };
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -81,7 +89,9 @@ export type SimEvent =
   | { kind: 'trigger'; trigger: OfferTrigger }
   | { kind: 'offer_shown'; offerId: string; expiresAt: number }
   | { kind: 'reward'; source: string; grants: Cost }
-  | { kind: 'clear_start'; buildingType: BuildingType; id: string; seconds: number };
+  | { kind: 'clear_start'; buildingType: BuildingType; id: string; seconds: number }
+  | { kind: 'donation'; troop: string; count: number; xp: number }
+  | { kind: 'grove_attack'; target: number; stars: number; destruction: number };
 
 export type CommandResult =
   | { ok: true; state: VillageState; events: SimEvent[] }
@@ -134,6 +144,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     cosmetics: { owned: ['classic'], hallSkin: 'classic' },
     achievements: {},
     flags: { longWaitSeen: false },
+    grove: emptyGrove(),
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -174,6 +185,8 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
   finished.sort((a, b) => a.at - b.at);
   finishTraining(next, now);
   rollPeriods(next, now, data);
+  advanceGrove(next, now, data);
+  settleRaids(next, now, hallLevel(next, data), data);
   return { state: next, finished };
 }
 
@@ -368,6 +381,32 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return claimAchievement(s, cmd.id, data);
     case 'clear':
       return clearObstacle(s, cmd.id, now, data);
+    case 'joinGrove':
+      if (s.grove.joined) return fail('ALREADY_CLAIMED', 'You are already in a Grove.');
+      joinGrove(s, now, data);
+      return { ok: true, state: s, events: [] };
+    case 'chat': {
+      if (!s.grove.joined) return fail('NOT_AVAILABLE', 'Join a Grove first.');
+      if (!cmd.text.trim()) return fail('NOT_AVAILABLE', 'Type a message first.');
+      sendChat(s, cmd.text, now, data);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'donate': {
+      const r = donateTroops(s, cmd.requestId, cmd.troop, cmd.count, now, data);
+      if (!r.ok) return fail('NOT_AVAILABLE', r.message);
+      return { ok: true, state: s, events: [{ kind: 'donation', troop: cmd.troop, count: cmd.count, xp: r.xp }] };
+    }
+    case 'requestTroops': {
+      const c = canRequest(s, now, data);
+      if (!c.ok) return fail('NOT_AVAILABLE', c.message);
+      requestTroops(s, now, data);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'groveBattleEnd':
+      return groveBattleEnd(s, cmd.target, cmd.record, now, data);
+    case 'markPrepOffer':
+      s.grove.prepOfferWeek = cmd.week;
+      return { ok: true, state: s, events: [] };
     case 'triggerOffer': {
       const rule = triggerOffer(s, cmd.trigger, now, data);
       if (!rule) return fail('NO_OFFER', 'No offer right now.');
@@ -600,10 +639,7 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
     if (!data.troops[t] || n < 0) return fail('INVALID_BATTLE', 'Unknown troops in battle.');
   }
   const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
-  for (const [t, n] of Object.entries(result.used)) {
-    s.army[t] = Math.max(0, (s.army[t] ?? 0) - n);
-    if (s.army[t] === 0) delete s.army[t];
-  }
+  spendTroops(s, result.used);
   const added = addCapped(s.resources, result.loot, capacity(s, data));
   const opp = rec.setup.base.trophies ?? s.trophies;
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
@@ -615,6 +651,40 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+}
+
+/** Use donated (Grove) troops first, then your own army. Mutates. */
+function spendTroops(s: VillageState, used: Record<string, number>): void {
+  for (const [t, n0] of Object.entries(used)) {
+    let n = n0;
+    const fromGrove = Math.min(n, s.grove.reinforcements[t] ?? 0);
+    if (fromGrove > 0) {
+      s.grove.reinforcements[t] -= fromGrove;
+      if (s.grove.reinforcements[t] <= 0) delete s.grove.reinforcements[t];
+      n -= fromGrove;
+    }
+    s.army[t] = Math.max(0, (s.army[t] ?? 0) - n);
+    if (s.army[t] === 0) delete s.army[t];
+  }
+}
+
+/** Troops available for a battle: your army plus troops your Grove donated. */
+export function battleArmy(state: VillageState): Record<string, number> {
+  const out: Record<string, number> = { ...state.army };
+  for (const [t, n] of Object.entries(state.grove.reinforcements)) out[t] = (out[t] ?? 0) + n;
+  return out;
+}
+
+/** A Grove Raid attack: no loot or trophies, best stars per enemy base count. */
+function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const phase = raidPhase(now, data);
+  if (!s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Grove Raid is not running.');
+  const raid = ensureRaid(s, now, data)!;
+  if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Grove Raid attacks.');
+  const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used);
+  raid.attacks.push({ target, stars: result.stars, destruction: result.destruction, at: now });
+  return { ok: true, state: s, events: [{ kind: 'grove_attack', target, stars: result.stars, destruction: result.destruction }] };
 }
 
 export type { BattleSetup, Deployment };

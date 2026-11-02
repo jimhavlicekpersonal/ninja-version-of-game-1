@@ -349,3 +349,25 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 
 .res-plus { width: 18px; height: 18px; border-radius: 50%; background: var(--leaf); color: #fff; font: 900 14px/18px var(--font); text-align: center; margin-left: 2px; }
 .res-moonstones { cursor: pointer; }
+
+/* ---------- grove ---------- */
+.grove-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.grove-badge { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .15); }
+.grove-badge .icon { width: 26px; height: 26px; }
+.chat-list { max-height: 46vh; overflow: auto; display: flex; flex-direction: column; gap: 6px; padding: 4px 2px; }
+.chat-msg { align-self: flex-start; max-width: 82%; background: #fff; border-radius: 16px 16px 16px 6px; padding: 6px 10px; box-shadow: 0 2px 0 rgba(74, 53, 96, .1); display: flex; flex-direction: column; }
+.chat-msg.mine { align-self: flex-end; background: #e6fbd9; border-radius: 16px 16px 6px 16px; }
+.chat-msg.request { background: #e6f4ff; }
+.chat-msg.donation { background: #fff6c8; }
+.chat-msg.system { align-self: center; background: #f0e8fb; font-weight: 700; text-align: center; }
+.chat-who { font-weight: 900; font-size: 12px; color: var(--plum); }
+.chat-text { font-size: 14px; }
+.chat-time { font-size: 10px; color: var(--ink-soft); align-self: flex-end; }
+.chat-input-row { display: flex; gap: 8px; margin-top: 8px; }
+.chat-input-row input { flex: 1; font-family: var(--font); font-size: 15px; }
+.donate-btn { min-height: 38px; padding: 4px 8px; }
+.donate-btn img { width: 26px; height: 24px; object-fit: contain; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #d6cfe4; display: inline-block; }
+.dot.on { background: var(--leaf); box-shadow: 0 0 0 3px rgba(92, 207, 74, .25); }
+.raid-score { display: flex; justify-content: space-around; align-items: center; background: linear-gradient(#fff6c8, #ffe27a); border-radius: 18px; padding: 10px; text-align: center; }
+.raid-score .big { display: block; font: 900 26px var(--font); color: var(--plum); }

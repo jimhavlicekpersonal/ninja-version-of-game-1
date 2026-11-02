@@ -6,7 +6,8 @@ import { generateOpponent } from './sim/battle/basegen';
 import type { BattleRecord, BattleSetup } from './sim/battle/types';
 import { mixSeed } from './sim/rng';
 import { matchTrophies } from './sim/ranks';
-import { hallLevel, scoutFee } from './sim/village';
+import { battleArmy, hallLevel, scoutFee } from './sim/village';
+import { enemyGrove, raidPhase } from './sim/social/groveRaid';
 import { BattleHud } from './ui/battleHud';
 import type { Hud } from './ui/hud';
 
@@ -42,8 +43,21 @@ export class App {
     }
     const base = generateOpponent(r.seed, hallLevel(c.state, c.data), c.data);
     base.trophies = matchTrophies(r.seed, c.state.trophies, c.data);
-    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army: { ...c.state.army } };
+    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army: battleArmy(c.state) };
     this.open(new BattleSession(setup, c.data, 'scout'));
+  }
+
+  /** Attack an enemy base in the Grove Raid (no loot or trophies). */
+  groveAttack(target: number): void {
+    const c = this.d.controller;
+    const p = raidPhase(c.now(), c.data);
+    if (p.phase !== 'live') return;
+    const enemy = enemyGrove(c.state.grove.seed, p.week, hallLevel(c.state, c.data), c.data);
+    const base = enemy.bases[target];
+    if (!base) return;
+    const done = c.state.grove.raid?.week === p.week ? c.state.grove.raid.attacks.length : 0;
+    const setup: BattleSetup = { seed: mixSeed(c.state.grove.seed, p.week * 1000 + target + done * 97 + 1), base, army: battleArmy(c.state) };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, { target, enemyName: enemy.name });
   }
 
   replay(record: BattleRecord): void {
@@ -60,7 +74,7 @@ export class App {
     this.d.hudRoot.hidden = false;
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord): void {
+  private open(session: BattleSession, replayOf?: BattleRecord, grove?: { target: number; enemyName: string }): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
     this.session = session;
@@ -70,6 +84,7 @@ export class App {
       session,
       myTrophies: c.state.trophies,
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
+      grove: grove ? { enemyName: grove.enemyName } : undefined,
       troopThumb: this.d.troopThumb,
       scoutFee: scoutFee(c.state, c.data),
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
@@ -77,6 +92,11 @@ export class App {
       onNext: () => this.scout(true),
       onAttack: () => session.start(),
       onFinished: () => {
+        if (grove) {
+          const g = c.finishGroveBattle(grove.target, session.setup, session.deployments, session.endTick, session.setup.base.name);
+          if (!g) return null;
+          return { result: session.result(), banked: {}, trophies: 0 };
+        }
         const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name);
         if (!out) return null;
         lastRecord = out.record;

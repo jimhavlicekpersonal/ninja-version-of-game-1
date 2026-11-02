@@ -4,11 +4,12 @@ import type { GameData, VillageState } from './types';
 import { RESOURCE_KINDS } from './types';
 import { mixSeed } from './rng';
 import { scatterObstacles } from './obstacles';
+import { emptyGrove } from './social/grove';
 import { seasonOf } from './ranks';
 import { emptyStats } from './types';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -62,6 +63,10 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     v.flags = v.flags ?? { longWaitSeen: false };
     if (data) scatterObstacles(v as unknown as VillageState, data);
   }
+  if (out.version < 5 && v && typeof v === 'object') {
+    // v4 -> v5: Grove.
+    v.grove = v.grove ?? emptyGrove();
+  }
   out.version = SAVE_VERSION;
   return out;
 }
@@ -108,6 +113,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Number.isFinite(v.shieldUntil) || !Number.isFinite(v.season) || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
   if (!Array.isArray(v.defenseLog)) problems.push('defense log missing');
   if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
+  if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('grove missing');
   for (let i = 0; i < v.buildings.length; i++) {
     for (let j = i + 1; j < v.buildings.length; j++) {
       const a = v.buildings[i];

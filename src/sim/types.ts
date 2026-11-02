@@ -7,7 +7,7 @@ export type Resources = Record<ResourceKind, number>;
 export type Cost = Partial<Record<ResourceKind, number>>;
 
 export type BuildingType = string;
-export type BuildingCategory = 'hall' | 'collector' | 'storage' | 'builder' | 'military' | 'defense' | 'hedge' | 'trap' | 'decor' | 'obstacle';
+export type BuildingCategory = 'hall' | 'collector' | 'storage' | 'builder' | 'military' | 'defense' | 'hedge' | 'trap' | 'decor' | 'obstacle' | 'social';
 
 export interface UpgradeTimer {
   /** Level the building will have when the timer ends. */
@@ -82,6 +82,51 @@ export interface VillageState {
   /** Achievement id -> number of tiers claimed. */
   achievements: Record<string, number>;
   flags: { longWaitSeen: boolean };
+  grove: GroveState;
+}
+
+export interface ChatMessage {
+  at: number;
+  /** Member index, or -1 for the player. */
+  from: number;
+  text: string;
+  kind: 'chat' | 'request' | 'donation' | 'system';
+}
+
+export interface BotRequest {
+  id: string;
+  at: number;
+  member: number;
+  troop: string;
+  /** Housing space requested and donated so far. */
+  size: number;
+  donated: number;
+}
+
+export interface GroveRaidState {
+  week: number;
+  /** Player's attacks: target enemy base index and stars won. */
+  attacks: { target: number; stars: number; destruction: number; at: number }[];
+  paidOut: boolean;
+  result: { ours: number; theirs: number; outcome: 'win' | 'draw' | 'loss' } | null;
+}
+
+export interface GroveState {
+  joined: boolean;
+  seed: number;
+  joinedAt: number;
+  xp: number;
+  chat: ChatMessage[];
+  /** Bot activity has been generated up to this time. */
+  processedAt: number;
+  requests: BotRequest[];
+  myRequest: { at: number; chunks: number } | null;
+  reinforcements: Record<string, number>;
+  raid: GroveRaidState | null;
+  raidHistory: { week: number; ours: number; theirs: number; outcome: 'win' | 'draw' | 'loss'; reward: Cost }[];
+  prepOfferWeek: number;
+  /** Every Grove Raid up to and including this week has been paid out. */
+  settledWeek: number;
 }
 
 export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations';
@@ -117,6 +162,8 @@ export interface LevelDef {
   housing?: number;
   /** Damage per shot for defenses and traps. */
   damage?: number;
+  /** Grove Lodge: housing space for donated troops. */
+  reinforcement?: number;
 }
 
 export type TargetLayer = 'ground' | 'air' | 'both';
@@ -331,6 +378,35 @@ export interface AchievementDef {
   tiers: [number, number][];
 }
 
+export interface SocialDef {
+  membersMin: number;
+  membersMax: number;
+  groveNames: { first: string[]; second: string[] };
+  colors: string[];
+  chatSlotMinutes: number;
+  chatChancePerSlot: number;
+  requestChancePerSlot: number;
+  requestSizes: number[];
+  requestTroops: string[];
+  requestLifetimeHours: number;
+  maxChat: number;
+  requestCooldownMinutes: number;
+  reinforcementChunkMinutes: number;
+  reinforcementChunkHousing: number;
+  xpPerHousing: number;
+  xpLevels: number[];
+  chatLines: Record<'random' | 'greet' | 'thanks' | 'raidStart' | 'raidEnd' | 'reply' | 'donated', string[]>;
+  profanity: string[];
+  groveRaid: {
+    epoch: number;
+    durationHours: number;
+    attacksPerMember: number;
+    prepOfferHours: number;
+    starOdds: { base3: number; base2: number; base1: number; perHallDiff: number };
+    rewards: Record<'win' | 'draw' | 'loss', Cost & { xp: number }>;
+  };
+}
+
 export interface GameData {
   buildings: Record<BuildingType, BuildingDef>;
   hall: { levels: HallLevelDef[] };
@@ -345,4 +421,5 @@ export interface GameData {
   pass: PassDef;
   cosmetics: { hallSkins: SkinDef[] };
   achievements: AchievementDef[];
+  social: SocialDef;
 }

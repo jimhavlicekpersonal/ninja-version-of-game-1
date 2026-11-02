@@ -1229,5 +1229,59 @@
         "hp": 100
       }
     ]
+  },
+  "grove_lodge": {
+    "name": "Grove Lodge",
+    "description": "Your link to your Grove. Holds troops your Grove friends donate to you, ready for your next battle.",
+    "size": 3,
+    "category": "social",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 110,
+        "hp": 600,
+        "reinforcement": 10
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 8000
+        },
+        "buildSeconds": 240,
+        "hp": 700,
+        "reinforcement": 15
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 40000
+        },
+        "buildSeconds": 540,
+        "hp": 800,
+        "reinforcement": 20
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 1200,
+        "hp": 900,
+        "reinforcement": 25
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 300000
+        },
+        "buildSeconds": 2700,
+        "hp": 1000,
+        "reinforcement": 30
+      }
+    ]
   }
 }

@@ -385,7 +385,69 @@ const sapPuddle: PainterDef = {
   },
 };
 
+// ---------------------------------------------------------------- Grove Lodge
+const groveLodge: PainterDef = {
+  extra: 110,
+  paint(ctx, size) {
+    plate(ctx, size, '#e8c48c');
+    softShadow(ctx, 70, 28, 8, 0.3);
+    // Log walls
+    blob(ctx, { x: -56, y: -60, w: 112, h: 74 }, '#c98450', () => roundRectPath(ctx, -56, -58, 112, 70, 14), { line: 1.8 });
+    ctx.strokeStyle = rgba('#7a4a22', 0.35);
+    ctx.lineWidth = 2;
+    for (const y of [-40, -22, -4]) {
+      ctx.beginPath();
+      ctx.moveTo(-54, y);
+      ctx.lineTo(54, y);
+      ctx.stroke();
+    }
+    // Leafy roof
+    const roof = () => {
+      ctx.moveTo(-72, -50);
+      ctx.quadraticCurveTo(-40, -112, 0, -122);
+      ctx.quadraticCurveTo(40, -112, 72, -50);
+      ctx.quadraticCurveTo(0, -38, -72, -50);
+      ctx.closePath();
+    };
+    blob(ctx, { x: -72, y: -122, w: 144, h: 84 }, '#5fc84a', roof, { light: 0.4, line: 1.8 });
+    for (const [x, y] of [[-40, -70], [0, -96], [36, -72], [-16, -60], [20, -54]]) gloss(ctx, x, y, 12, 5, -0.3, 0.35);
+    // Round door and windows
+    blob(ctx, { x: -16, y: -28, w: 32, h: 40 }, '#8f5a2e', () => {
+      ctx.moveTo(-16, 12);
+      ctx.lineTo(-16, -10);
+      ctx.arc(0, -10, 16, Math.PI, 0);
+      ctx.lineTo(16, 12);
+      ctx.closePath();
+    }, { line: 1.4 });
+    for (const x of [-38, 38]) {
+      ctx.beginPath();
+      ellipsePath(ctx, x, -26, 8, 8);
+      ctx.fillStyle = '#ffe58a';
+      ctx.fill();
+      rim(ctx, '#c98450', 1.6);
+    }
+    // Banner with a leaf
+    ctx.beginPath();
+    ctx.moveTo(48, -98);
+    ctx.lineTo(48, -150);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#8a5a30';
+    ctx.stroke();
+    blob(ctx, { x: 48, y: -150, w: 26, h: 34 }, '#47b9f5', () => {
+      ctx.moveTo(49, -150);
+      ctx.lineTo(74, -150);
+      ctx.lineTo(74, -118);
+      ctx.lineTo(61, -126);
+      ctx.lineTo(49, -118);
+      ctx.closePath();
+    }, { line: 1.3 });
+    blob(ctx, { x: 55, y: -146, w: 14, h: 14 }, '#7fd85a', () => ctx.ellipse(62, -139, 6, 4, -0.6, 0, Math.PI * 2), { line: 1 });
+    face(ctx, 0, -78, 0.9);
+  },
+};
+
 export const militaryPainters: Record<string, PainterDef> = {
+  grove_lodge: groveLodge,
   thorn_snare: thornSnare,
   sap_puddle: sapPuddle,
   burrow_barracks: burrowBarracks,

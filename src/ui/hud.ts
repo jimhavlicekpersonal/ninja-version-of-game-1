@@ -15,6 +15,8 @@ import { achievementViews } from '../sim/achievements';
 import { activeOffers } from '../sim/offers';
 import { currentTasks, unlockedTier } from '../sim/pass';
 import { EconomyUi } from './economyUi';
+import { GroveUi } from './groveUi';
+import { attacksLeft, raidPhase } from '../sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../sim/village';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
@@ -35,6 +37,7 @@ export interface HudDeps {
   troopThumb(type: string): string | null;
   onAttack(): void;
   onReplay(record: BattleRecord): void;
+  onGroveAttack(target: number): void;
 }
 
 const RES_LABEL: Record<ResourceKind, string> = { acorns: 'Acorns', dew: 'Dew', nightsap: 'Nightsap', moonstones: 'Moonstones' };
@@ -73,6 +76,7 @@ export class Hud {
   private showFps = false;
   private openModals = new Set<() => void>();
   readonly econ: EconomyUi;
+  readonly grove: GroveUi;
   private railBadges: Record<string, HTMLElement> = {};
   /** True while a finger/mouse is pressed on the panel: never rebuild it mid-tap. */
   private sheetPressed = false;
@@ -93,6 +97,11 @@ export class Hud {
       confirm: (...a) => this.confirm(...a),
       toast: (...a) => this.toast(...a),
       closeAllModals: () => this.closeAllModals(),
+    });
+    this.grove = new GroveUi({
+      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      troopThumb: (t) => this.deps.troopThumb(t),
+      onGroveAttack: (i) => this.deps.onGroveAttack(i),
     });
     this.buildSkeleton();
     this.c.subscribe(() => this.refresh());
@@ -198,6 +207,7 @@ export class Hud {
       railBtn('Store', icons.moonstones, () => this.econ.openStore(activeOffers(this.c.state, this.c.now()).length ? 'offers' : 'moonstones')),
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
+      railBtn('Grove', icons.grove, () => this.grove.open()),
     );
     this.rail = rail;
     this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
@@ -242,6 +252,8 @@ export class Hud {
     const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
     set('Pass', tiersReady + tasksReady);
     set('Goals', achievementViews(s, hl, gd).filter((v) => v.claimable).length);
+    const live = raidPhase(this.c.now(), gd);
+    set('Grove', s.grove.joined ? (live.phase === 'live' ? attacksLeft(s, live.week, gd) : 0) + s.grove.requests.length : 1);
   }
 
   private updateShield(): void {

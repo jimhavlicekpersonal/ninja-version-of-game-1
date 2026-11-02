@@ -7,6 +7,7 @@ import type { GameData, VillageState } from '../sim/types';
 import type { BattleRecord, BattleSetup, Deployment } from '../sim/battle/types';
 import type { Cost, OfferRule, OfferTrigger } from '../sim/types';
 import { canPurchase } from '../sim/monetization';
+import { raidPhase } from '../sim/social/groveRaid';
 import { MockPaymentProvider, type PaymentProvider } from '../payments/provider';
 import { advance, applyCommand, createNewVillage, type Command, type CommandResult, type FinishedUpgrade } from '../sim/village';
 
@@ -105,6 +106,8 @@ export class GameController {
         this.deps.analytics.log('moonstone_spend', { what: e.what, moonstones: e.moonstones });
       } else if (e.kind === 'reward') {
         this.deps.analytics.log('reward', { source: e.source, grants: e.grants });
+      } else if (e.kind === 'donation') {
+        this.deps.analytics.log('donation', { troop: e.troop, count: e.count, xp: e.xp });
       } else if (e.kind === 'raid_end') {
         const r = e.record.result;
         this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason });
@@ -114,6 +117,29 @@ export class GameController {
     void this.save();
     for (const e of result.events) if (e.kind === 'trigger') this.triggerOffer(e.trigger);
     return result;
+  }
+
+  /** 24 hours before a Grove Raid, show the war-prep offer (once per raid). */
+  private checkPrepOffer(now: number): void {
+    const g = this.state.grove;
+    if (!g.joined) return;
+    const p = raidPhase(now, this.deps.data);
+    if (p.phase === 'live') return;
+    const week = p.phase === 'upcoming' ? p.week : p.week + 1;
+    if (g.prepOfferWeek === week || p.nextStart - now > this.deps.data.social.groveRaid.prepOfferHours * 3_600_000) return;
+    const r = applyCommand(this.state, { type: 'markPrepOffer', week }, now, this.deps.data);
+    if (r.ok) this.state = r.state;
+    this.triggerOffer('grove_raid_soon');
+  }
+
+  /** Bank a Grove Raid attack. */
+  finishGroveBattle(target: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string): { stars: number; destruction: number } | null {
+    const r = this.dispatch({ type: 'groveBattleEnd', target, record: { at: this.now(), opponentName, setup, deployments, endTick } });
+    if (!r.ok) return null;
+    const e = r.events.find((x) => x.kind === 'grove_attack');
+    if (!e || e.kind !== 'grove_attack') return null;
+    this.deps.analytics.log('grove_raid_end', { target, stars: e.stars, destruction: e.destruction });
+    return { stars: e.stars, destruction: e.destruction };
   }
 
   // ---------- Offers ----------
@@ -160,7 +186,9 @@ export class GameController {
   tick(): FinishedUpgrade[] {
     const now = this.now();
     const trainingDone = this.state.training.length > 0 && this.state.training[0].endsAt <= now;
-    if (!trainingDone && !this.state.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
+    const groveDue = this.state.grove.joined && now - this.state.grove.processedAt >= 30_000;
+    this.checkPrepOffer(now);
+    if (!trainingDone && !groveDue && !this.state.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
     const { state, finished } = advance(this.state, now, this.deps.data);
     this.state = state;
     this.emit(finished);
