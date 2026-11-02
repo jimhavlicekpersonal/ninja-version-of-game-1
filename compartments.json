@@ -1,0 +1,111 @@
+{
+  "$comment": "Who owns which folder, and which cross-compartment imports are allowed. Enforced by tests/architecture/boundaries.test.ts. Change this file only in an INTEGRATION session (see AGENTS.md).",
+  "compartments": {
+    "art": {
+      "section": "1. Art, GUI and animation",
+      "agent": "ART AI",
+      "brief": "src/presentation/art/CLAUDE.md",
+      "paths": [
+        "src/presentation/art",
+        "src/presentation/audio",
+        "public/art"
+      ],
+      "mayImport": [
+        "art",
+        "gui"
+      ],
+      "contracts": [
+        "src/presentation/art/buildings.ts",
+        "src/presentation/art/military.ts",
+        "src/presentation/art/ground.ts",
+        "src/presentation/art/toolkit.ts",
+        "src/presentation/art/ninja.ts",
+        "src/presentation/audio/sound.ts"
+      ]
+    },
+    "gui": {
+      "section": "1. Art, GUI and animation",
+      "agent": "GUI & USER INTERACTION AI",
+      "brief": "src/presentation/CLAUDE.md",
+      "paths": [
+        "src/presentation/render",
+        "src/presentation/ui"
+      ],
+      "mayImport": [
+        "gui",
+        "art",
+        "gameplay",
+        "control",
+        "backend"
+      ],
+      "contracts": [
+        "src/presentation/render/iso.ts"
+      ]
+    },
+    "gameplay": {
+      "section": "2. Game theory, mechanics and user inputs",
+      "agent": "GAME THEORY AI",
+      "brief": "src/gameplay/CLAUDE.md",
+      "paths": [
+        "src/gameplay/sim",
+        "src/gameplay/data"
+      ],
+      "mayImport": [
+        "gameplay"
+      ],
+      "contracts": "*"
+    },
+    "control": {
+      "section": "2. Game theory, mechanics and user inputs",
+      "agent": "GAME THEORY AI (mechanics and input commands)",
+      "brief": "src/gameplay/CLAUDE.md",
+      "paths": [
+        "src/gameplay/control"
+      ],
+      "mayImport": [
+        "control",
+        "gameplay",
+        "backend"
+      ],
+      "contracts": [
+        "src/gameplay/control/controller.ts",
+        "src/gameplay/control/battleSession.ts"
+      ]
+    },
+    "backend": {
+      "section": "3. Backend: multiplayer, monetization, store compliance",
+      "agent": "BACKEND AI",
+      "brief": "src/backend/CLAUDE.md",
+      "paths": [
+        "src/backend",
+        "server"
+      ],
+      "mayImport": [
+        "backend",
+        "gameplay",
+        "control"
+      ],
+      "contracts": [
+        "src/backend/analytics/events.ts",
+        "src/backend/persist/saveStore.ts",
+        "src/backend/payments/provider.ts",
+        "src/backend/net/connection.ts",
+        "src/backend/net/protocol.ts",
+        "src/backend/social/groveSource.ts"
+      ]
+    },
+    "root": {
+      "section": "Composition root (wires the three sections together)",
+      "agent": "INTEGRATION session only",
+      "brief": "AGENTS.md",
+      "paths": [
+        "src/main.ts",
+        "src/app.ts"
+      ],
+      "mayImport": [
+        "*"
+      ],
+      "contracts": []
+    }
+  }
+}
