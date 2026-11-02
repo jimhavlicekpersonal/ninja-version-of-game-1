@@ -98,6 +98,8 @@ export interface VillageState {
   net: NetState;
   /** Guided first steps for new players. */
   tutorial: { step: number; done: boolean };
+  /** Shadow Trials: highest tier cleared (rewards are paid once per tier). */
+  trials: { best: number };
   /** Free daily chest and visit streak. */
   daily: DailyState;
 }
@@ -583,4 +585,27 @@ export interface GameData {
   daily: DailyDef;
   events: EventsDef;
   notifications: NotificationsDef;
+  trials: TrialsDef;
+}
+
+/** A Shadow Trial modifier (affix) that applies on every `every`-th tier. */
+export interface TrialModifierDef {
+  id: string;
+  every: number;
+  name: string;
+  description: string;
+  power?: number;
+  wallPower?: number;
+}
+
+export interface TrialsDef {
+  tiersPerHall: number;
+  powerGrowthPerTier: number;
+  maxPower: number;
+  starsToClear: number;
+  rewardShareOfRaidLoot: number;
+  rewardLog2Growth: number;
+  jadeEveryTiers: number;
+  jadeReward: number;
+  modifiers: TrialModifierDef[];
 }

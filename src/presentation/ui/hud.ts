@@ -25,6 +25,7 @@ import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, researchSkipQuote, researchStartQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../../gameplay/sim/village';
 import { troopLevelOf } from '../../gameplay/sim/research';
+import { nextTrialTier, trialInfo, trialReward } from '../../gameplay/sim/trials';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
@@ -45,6 +46,8 @@ export interface HudDeps {
   onAttack(): void;
   onReplay(record: BattleRecord): void;
   onGroveAttack(target: number): void;
+  /** Start a Shadow Trial attack on this tier. */
+  onTrial(tier: number): void;
   prefs: { get(k: 'sessionReminder' | 'reminders'): boolean; set(k: 'sessionReminder' | 'reminders', v: boolean): void };
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
@@ -237,6 +240,7 @@ export class Hud {
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => this.grove.open()),
+      railBtn('Trials', icons.leaf, () => this.openTrials()),
     );
     this.rail = rail;
     this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
@@ -952,7 +956,7 @@ export class Hud {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}` : `${r.opponentName} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}${r.setup.base.practice ? ' (practice)' : ''}` : `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
           replay,
         ),
       );
@@ -978,7 +982,7 @@ export class Hud {
     }
     for (const r of s.raids) {
       const lost = RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => `${formatNumber(r.result.loot[k]!)} ${RES_LABEL[k]}`).join(' and ');
-      list.append(h('li', {}, `${r.opponentName} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
+      list.append(h('li', {}, `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
     }
     if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, this.c.data) > 0)) {
       list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));
@@ -1176,6 +1180,37 @@ export class Hud {
     while (this.toasts.childElementCount > 3) this.toasts.firstElementChild?.remove();
     window.setTimeout(() => t.classList.add('out'), 2600);
     window.setTimeout(() => t.remove(), 3000);
+  }
+
+  /** Shadow Trials: the endless practice ladder. Clearly a practice mode, not other players. */
+  openTrials(): void {
+    const gd = this.c.data;
+    const best = this.c.state.trials.best;
+    const next = nextTrialTier(best);
+    const info = trialInfo(next, gd);
+    const body = h('div', {});
+    body.append(
+      h('p', {}, 'An endless ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and there is no top.'),
+      h('p', { class: 'muted small' }, `Practice mode: these are generated fortresses, not other players. Clear a tier with ${gd.trials.starsToClear} or more stars to open the next one. Each tier pays its reward once. Troops you use are spent, as in any raid.`),
+      h(
+        'div',
+        { class: 'log-row current' },
+        h(
+          'div',
+          {},
+          h('b', {}, `Tier ${next} · ${info.layout.name}`),
+          h('div', { class: 'muted small' }, `Clan Keep ${info.hall}${info.power > 1 ? ` · defenses ×${info.power < 100 ? info.power.toFixed(2) : formatCompact(Math.round(info.power))}` : ''}${info.modifiers.length ? ` · ${info.modifiers.map((m) => m.name).join(', ')}` : ''}`),
+          h('div', { class: 'small' }, info.layout.tip),
+          ...info.modifiers.map((m) => h('div', { class: 'small' }, `${m.name}: ${m.description}`)),
+        ),
+        h('div', { class: 'cost' }, ...Object.entries(trialReward(next, gd)).map(([k, v]) => h('span', { class: 'chip good' }, icon(icons[k as 'acorns' | 'dew' | 'moonstones']), formatNumber(v ?? 0)))),
+      ),
+      h('p', { class: 'muted small' }, best > 0 ? `Best: tier ${best}. You can replay any cleared tier for practice (no reward).` : 'You have not cleared a tier yet.'),
+    );
+    const close = this.modal('Shadow Trials', body, [
+      best > 0 && { label: `Replay tier ${best}`, onClick: () => { close(); this.deps.onTrial(best); } },
+      { label: `Scout tier ${next}`, primary: true, onClick: () => { close(); this.deps.onTrial(next); } },
+    ]);
   }
 
   modal(

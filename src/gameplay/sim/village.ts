@@ -1,3 +1,4 @@
+import { nextTrialTier, trialBase, trialReward } from './trials';
 import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueHousing, retimeQueue } from './army';
 import { runBattle } from './battle/battle';
 import type { BattleRecord, BattleSetup, Deployment } from './battle/types';
@@ -39,6 +40,7 @@ export type Command =
   | { type: 'openDailyChest' }
   | { type: 'scout'; paid: boolean }
   | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  | { type: 'trialEnd'; tier: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'skip'; id: string }
   | { type: 'skipTraining' }
   | { type: 'topUp'; cost: Cost }
@@ -104,6 +106,7 @@ export type SimEvent =
   | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number }
   | { kind: 'scout'; seed: number; fee: number }
   | { kind: 'raid_end'; record: BattleRecord }
+  | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost }
   | { kind: 'skip_used'; what: string; seconds: number; moonstones: number }
   | { kind: 'moonstone_spend'; what: string; moonstones: number }
   | { kind: 'purchase_granted'; productId: string; usd: number; grants: Cost }
@@ -172,6 +175,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     net: emptyNet(),
     tutorial: { step: 0, done: false },
     daily: emptyDaily(data),
+    trials: { best: 0 },
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -394,6 +398,8 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return scout(s, cmd.paid, data);
     case 'battleEnd':
       return battleEnd(s, cmd.record, now, data);
+    case 'trialEnd':
+      return trialEnd(s, cmd.tier, cmd.record, now, data);
     case 'skip':
       return skip(s, cmd.id, now, data);
     case 'skipTraining':
@@ -864,6 +870,32 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+}
+
+/**
+ * A Shadow Trial attack: no loot from buildings and no trophies. The base is
+ * rebuilt from the tier (never taken from the client), the battle is
+ * re-simulated, and the reward is paid only on the first clear of the next tier.
+ */
+function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
+  if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`);
+  const setup: BattleSetup = { ...rec.setup, base: trialBase(tier, data) };
+  const bad = checkBattleSetup(s, setup, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used);
+  const cleared = result.stars >= data.trials.starsToClear;
+  const firstClear = cleared && tier === nextTrialTier(s.trials.best);
+  let reward: Cost = {};
+  if (firstClear) {
+    reward = addCapped(s.resources, trialReward(tier, data), capacity(s, data));
+    s.trials.best = tier;
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: reward }, trophies: 0 };
+  s.battleLog.push(record);
+  while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
+  return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward }] };
 }
 
 /** Use donated (Grove) troops first, then your own army. Mutates. */

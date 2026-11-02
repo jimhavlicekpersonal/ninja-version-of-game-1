@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -97,6 +97,11 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     v.net = v.net ?? emptyNet();
     v.daily = v.daily ?? (data ? emptyDaily(data) : { lastDay: -1, step: 0, skipsLeft: 1, skipWeek: -1, history: [] });
   }
+  if (out.version < 10 && v && typeof v === 'object') {
+    // v9 -> v10 (ninja rebuild): Shadow Trials progress. Nothing else changed:
+    // internal ids stayed the same, and old replays still play back exactly.
+    v.trials = v.trials ?? { best: 0 };
+  }
   out.version = SAVE_VERSION;
   return out;
 }
@@ -106,6 +111,7 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v || typeof v !== 'object') return ['village missing'];
   if (!Number.isFinite(v.createdAt) || !Number.isFinite(v.lastSeenAt)) problems.push('bad timestamps');
   if (!v.resources) problems.push('resources missing');
+  if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
   else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k]) || v.resources[k] < 0) problems.push(`bad ${k}`);
   if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];
   const map = data.economy.mapSize;

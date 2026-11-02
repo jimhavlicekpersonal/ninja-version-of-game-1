@@ -23,6 +23,8 @@ export interface BaseLayout {
   trialTier?: number;
   /** Multiplier on defense HP and damage (Shadow Trials). Absent = 1. */
   power?: number;
+  /** Multiplier on wall HP (Shadow Trial modifiers). Absent = 1. */
+  wallPower?: number;
 }
 
 export interface BattleSetup {
@@ -71,4 +73,6 @@ export interface BattleRecord {
   leagueBonus?: Cost;
   /** Limited-time event bonus included in the banked loot. */
   eventBonus?: Cost;
+  /** A raid made up by the offline raid simulation (not a real player). */
+  simulated?: boolean;
 }

@@ -225,6 +225,15 @@ export class GameController {
     return { record: e.record, banked: e.record.result.loot };
   }
 
+  /** Bank a Shadow Trial attack (re-simulated against the tier's own base). */
+  finishTrial(tier: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { record: BattleRecord; cleared: boolean; firstClear: boolean; reward: Cost } | null {
+    const r = this.dispatch({ type: 'trialEnd', tier, record: { at: this.now(), opponentName: setup.base.name, setup, deployments, endTick } });
+    if (!r.ok) return null;
+    const e = r.events.find((x) => x.kind === 'trial_end');
+    if (!e || e.kind !== 'trial_end') return null;
+    return { record: e.record, cleared: e.cleared, firstClear: e.firstClear, reward: e.reward };
+  }
+
   /** Replace the whole village (import or reset). */
   async replace(state: VillageState): Promise<void> {
     this.state = state;

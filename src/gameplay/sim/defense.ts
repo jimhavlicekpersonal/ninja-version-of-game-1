@@ -170,6 +170,7 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
     deployments,
     result: { ...result, loot: sumCosts(fromStorage, fromCollectors) },
     trophies: delta,
+    simulated: true,
   };
   s.defenseLog.push(record);
   while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();

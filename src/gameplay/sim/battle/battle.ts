@@ -179,6 +179,9 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     const ld = levelDef(data, bb.type, bb.level) ?? def.levels[0];
     const kind: SimBuilding['kind'] =
       def.category === 'hall' ? 'hall' : def.category === 'defense' ? 'defense' : def.category === 'hedge' ? 'hedge' : def.category === 'trap' ? 'trap' : 'other';
+    // Shadow Trials scale defenses (and walls) beyond the normal level caps.
+    const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? setup.base.wallPower ?? 1 : 1;
+    const hp = mult === 1 ? ld.hp : ld.hp * mult;
     return {
       id: bb.id,
       type: bb.type,
@@ -186,12 +189,12 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       x: bb.x,
       y: bb.y,
       size: def.size,
-      hp: ld.hp,
-      maxHp: ld.hp,
+      hp,
+      maxHp: hp,
       kind,
       destroyed: false,
       loot: { ...(bb.loot ?? {}) },
-      combat: def.combat && !bb.upgrading ? { ...def.combat, damage: ld.damage ?? 0 } : null,
+      combat: def.combat && !bb.upgrading ? { ...def.combat, damage: kind === 'hedge' || mult === 1 ? ld.damage ?? 0 : (ld.damage ?? 0) * mult } : null,
       cooldown: 0,
       targetTroop: -1,
       hidden: kind === 'trap',

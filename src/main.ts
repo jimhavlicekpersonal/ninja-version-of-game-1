@@ -143,6 +143,7 @@ async function boot(): Promise<void> {
     onAttack: () => app?.scout(false),
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),
+    onTrial: (tier) => app?.trial(tier),
     prefs,
     notifyPrefs,
     onRemindersEnabled: async () => {

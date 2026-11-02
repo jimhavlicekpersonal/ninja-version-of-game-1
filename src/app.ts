@@ -9,6 +9,7 @@ import { opponentFor } from './gameplay/sim/matchmaking';
 import { troopLevels } from './gameplay/sim/research';
 import { mixSeed } from './gameplay/sim/rng';
 import { battleArmy, scoutFee } from './gameplay/sim/village';
+import { nextTrialTier, trialBase, trialInfo, trialReward } from './gameplay/sim/trials';
 import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
 import type { Hud } from './presentation/ui/hud';
@@ -42,7 +43,7 @@ export class App {
 
   private ticket: string | null = null;
   /** The online opponent behind the current scout seed, kept so Home + Attack shows the same base. */
-  private onlineMatch: { seed: number; ticket: string; base: BaseLayout; expiresAt: number } | null = null;
+  private onlineMatch: { seed: number; ticket: string; base: BaseLayout; expiresAt: number; bot: boolean } | null = null;
 
   /** Look for an opponent. `paid` = pressing Next. */
   async scout(paid = false): Promise<void> {
@@ -67,9 +68,11 @@ export class App {
         const kept = this.onlineMatch && this.onlineMatch.seed === r.seed && Date.now() < this.onlineMatch.expiresAt - TICKET_MARGIN_MS ? this.onlineMatch : null;
         const m = kept ?? (await conn.port.match());
         if (m) {
-          this.onlineMatch = kept ?? { seed: r.seed, ticket: m.ticket, base: m.base, expiresAt: m.expiresAt };
+          this.onlineMatch = kept ?? { seed: r.seed, ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
           this.ticket = this.onlineMatch.ticket;
-          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base: structuredClone(this.onlineMatch.base), army, levels };
+          const base = structuredClone(this.onlineMatch.base);
+          if (this.onlineMatch.bot) base.practice = 'Generated rival (no player fitted your rank)';
+          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels };
           this.open(new BattleSession(setup, c.data, 'scout'));
           return;
         }
@@ -79,6 +82,8 @@ export class App {
     }
     // Opponent strength and loot follow the player's trophies (see sim/matchmaking).
     const base = opponentFor(r.seed, c.state, c.data);
+    // Offline, every rival is generated: say so instead of passing it off as a player.
+    base.practice = 'Generated rival (offline)';
     const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels };
     this.open(new BattleSession(setup, c.data, 'scout'));
   }
@@ -91,6 +96,19 @@ export class App {
       return;
     }
     this.open(new BattleSession(battle.setup, this.d.controller.data, 'scout'), undefined, battle);
+  }
+
+  /** Attack a Shadow Trial tier (practice ladder; reward on the first clear only). */
+  trial(tier: number): void {
+    const c = this.d.controller;
+    const army = battleArmy(c.state);
+    if (!Object.values(army).some((n) => n > 0)) {
+      this.d.hud.toast('Train some warriors first.', 'error');
+      return;
+    }
+    const base = trialBase(tier, c.data);
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x7a1a1 + tier * 7919 + c.state.nextSeed), base, army, levels: troopLevels(c.state, c.data) };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, tier);
   }
 
   replay(record: BattleRecord): void {
@@ -108,7 +126,7 @@ export class App {
     sound.music('village');
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle): void {
+  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
     this.session = session;
@@ -119,6 +137,14 @@ export class App {
       myTrophies: c.state.trophies,
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
       grove: grove ? { enemyName: grove.enemyName } : undefined,
+      trial:
+        trialTier !== undefined
+          ? (() => {
+              const info = trialInfo(trialTier, c.data);
+              const firstClear = trialTier === nextTrialTier(c.state.trials.best);
+              return { tier: trialTier, layout: info.layout.name, modifiers: info.modifiers.map((m) => m.name), reward: trialReward(trialTier, c.data), firstClear, starsToClear: c.data.trials.starsToClear };
+            })()
+          : undefined,
       troopThumb: this.d.troopThumb,
       scoutFee: scoutFee(c.state, c.data),
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
@@ -130,6 +156,17 @@ export class App {
           const g = grove.finish(session.deployments, session.endTick);
           if (!g) return null;
           return { result: session.result(), banked: {}, trophies: 0 };
+        }
+        if (trialTier !== undefined) {
+          const t = c.finishTrial(trialTier, session.setup, session.deployments, session.endTick);
+          if (!t) return null;
+          lastRecord = t.record;
+          const note = t.firstClear
+            ? `Shadow Trial ${trialTier} cleared! Trial ${trialTier + 1} is open.`
+            : t.cleared
+              ? 'Cleared again. The reward for this tier was already claimed.'
+              : `Not cleared: you need ${c.data.trials.starsToClear} stars.`;
+          return { result: t.record.result, banked: t.reward, trophies: 0, note };
         }
         const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name);
         if (!out) return null;

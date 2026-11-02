@@ -21,6 +21,8 @@ export interface BattleHudDeps {
   replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
   /** Set for Grove Raid attacks (no loot, no Next). */
   grove?: { enemyName: string };
+  /** Set for Shadow Trials (practice ladder: no loot from buildings, no honor, no Next). */
+  trial?: { tier: number; layout: string; modifiers: string[]; reward: Cost; firstClear: boolean; starsToClear: number };
   troopThumb(type: string): string | null;
   scoutFee: number;
   canPayFee(): boolean;
@@ -28,7 +30,7 @@ export interface BattleHudDeps {
   onNext(): void;
   onAttack(): void;
   /** Called once when a live battle ends; returns the loot actually banked. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; note?: string } | null;
   onReplay(): void;
 }
 
@@ -76,10 +78,14 @@ export class BattleHud {
             : 'Replay · loot won'
           : deps.grove
             ? `Alliance War vs ${deps.grove.enemyName}`
-            : 'Loot you can win',
+            : deps.trial
+              ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
+              : this.s.setup.base.practice
+                ? `Practice target · ${this.s.setup.base.practice} · loot you can win`
+                : 'Loot you can win',
       ),
-      deps.grove ? '' : this.lootEl,
-      this.s.mode !== 'replay' && !deps.grove && this.s.setup.base.trophies !== undefined
+      deps.grove ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
+      this.s.mode !== 'replay' && !deps.grove && !deps.trial && this.s.setup.base.trophies !== undefined
         ? h(
             'div',
             { class: 'small b-trophies' },
@@ -153,7 +159,7 @@ export class BattleHud {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
         h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, 'Home'),
-        this.deps.grove
+        this.deps.grove || this.deps.trial
           ? h('span', {}, '')
           : h(
               'button',
@@ -278,7 +284,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note);
       } else {
         this.toast('Replay finished.');
       }
@@ -296,7 +302,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string): void {
     sound.play(r.stars > 0 ? 'victory' : 'defeat');
     const starsRow = h('div', { class: 'result-stars' });
     for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
@@ -307,8 +313,9 @@ export class BattleHud {
       { class: 'results' },
       starsRow,
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
-      this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Alliance War.') : h('p', {}, 'Loot: ', lootChips(banked)),
-      this.deps.grove ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+      note ? h('p', { class: 'note' }, note) : null,
+      this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Alliance War.') : h('p', {}, this.deps.trial ? 'Reward: ' : 'Loot: ', lootChips(banked)),
+      this.deps.grove || this.deps.trial ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),
