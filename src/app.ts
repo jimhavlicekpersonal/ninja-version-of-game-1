@@ -142,7 +142,7 @@ export class App {
             .catch((e) => console.warn('Could not report the attack to the server', e));
         }
         lastRecord = out.record;
-        return { result: out.record.result, banked: out.banked, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus };
+        return { result: out.record.result, banked: out.banked, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);

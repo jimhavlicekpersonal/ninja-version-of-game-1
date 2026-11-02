@@ -1,0 +1,46 @@
+{
+  "epoch": 1767225600000,
+  "periodDays": 14,
+  "schedule": [
+    {
+      "id": "harvest_moon",
+      "name": "Harvest Moon",
+      "description": "Collecting from Orchards and Wells gives 30% extra.",
+      "startHour": 0,
+      "durationHours": 48,
+      "effect": {
+        "collectBonus": 0.3
+      }
+    },
+    {
+      "id": "raiders_moon",
+      "name": "Raider's Moon",
+      "description": "Won attacks bring 20% extra loot.",
+      "startHour": 84,
+      "durationHours": 48,
+      "effect": {
+        "raidLootBonus": 0.2
+      }
+    },
+    {
+      "id": "swift_paws",
+      "name": "Swift Paws",
+      "description": "Training troops costs 25% less Dew.",
+      "startHour": 168,
+      "durationHours": 48,
+      "effect": {
+        "trainingDiscount": 0.25
+      }
+    },
+    {
+      "id": "raiders_moon_2",
+      "name": "Raider's Moon",
+      "description": "Won attacks bring 20% extra loot.",
+      "startHour": 252,
+      "durationHours": 48,
+      "effect": {
+        "raidLootBonus": 0.2
+      }
+    }
+  ]
+}

@@ -96,6 +96,20 @@ export interface VillageState {
   grove: GroveState;
   /** Guided first steps for new players. */
   tutorial: { step: number; done: boolean };
+  /** Free daily chest and visit streak. */
+  daily: DailyState;
+}
+
+export interface DailyState {
+  /** Day index (pass days) the chest was last opened; -1 = never. */
+  lastDay: number;
+  /** Current step on the streak ladder (0 before the first chest). */
+  step: number;
+  /** Free skips left this week, and the week they belong to. */
+  skipsLeft: number;
+  skipWeek: number;
+  /** Recent chests, newest last. */
+  history: { day: number; outcome: string; step: number; grants: Cost }[];
 }
 
 export interface ChatMessage {
@@ -236,6 +250,8 @@ export interface BattleDef {
   lootShares: { storage: number; collector: number; hall: number };
   catapultSpread: number;
   deploySpread: number;
+  /** When an attack counts as a close call (shown after the battle, only if true). */
+  closeCall: { starMargin: number; hallHpFraction: number; buildingsLeft: number; perfectMinDestruction: number };
 }
 
 export interface NamesDef {
@@ -471,6 +487,35 @@ export interface SocialDef {
   };
 }
 
+export interface DailyDef {
+  chest: { outcomes: { id: string; label: string; weight: number; reward: Cost }[] };
+  streak: { steps: { bonus: number; moonstones?: number }[]; skipsPerWeek: number; stepsLostPerMissedDay: number; historyDays: number };
+}
+
+export interface EventEffect {
+  /** Extra share when collecting from collectors. */
+  collectBonus?: number;
+  /** Extra share of the loot from a won attack. */
+  raidLootBonus?: number;
+  /** Share taken off troop training costs. */
+  trainingDiscount?: number;
+}
+
+export interface EventsDef {
+  /** Schedule start (UTC ms); the schedule repeats every `periodDays`. */
+  epoch: number;
+  periodDays: number;
+  schedule: { id: string; name: string; description: string; startHour: number; durationHours: number; effect: EventEffect }[];
+}
+
+export interface NotificationsDef {
+  maxPerDay: number;
+  /** Local hours; reminders that would land in between wait until `end`. */
+  quietHours: { start: number; end: number };
+  /** In priority order: when a day has too many, the earlier types win. */
+  types: { id: string; label: string; default: boolean }[];
+}
+
 export interface GameData {
   buildings: Record<BuildingType, BuildingDef>;
   hall: { levels: HallLevelDef[] };
@@ -486,4 +531,7 @@ export interface GameData {
   cosmetics: { hallSkins: SkinDef[] };
   achievements: AchievementDef[];
   social: SocialDef;
+  daily: DailyDef;
+  events: EventsDef;
+  notifications: NotificationsDef;
 }

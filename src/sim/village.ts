@@ -6,6 +6,8 @@ import { buildingDef, hallType, levelDef, maxDefinedLevel, troopDef, troopLevel 
 import { mixSeed } from './rng';
 import { leagueFor, lossTrophies, seasonOf, winTrophies } from './ranks';
 import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
+import { chestContents, chestOutcome, emptyDaily, streakAfterClaim } from './daily';
+import { eventEffect } from './events';
 import { achievementViews } from './achievements';
 import { skipCost, topUpCost } from './economy';
 import { canPurchase, productInfo } from './monetization';
@@ -33,6 +35,7 @@ export type Command =
   | { type: 'research'; troop: string }
   | { type: 'cancelResearch' }
   | { type: 'skipResearch' }
+  | { type: 'openDailyChest' }
   | { type: 'scout'; paid: boolean }
   | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'skip'; id: string }
@@ -84,12 +87,13 @@ export type ErrorCode =
 export type SimEvent =
   | { kind: 'upgrade_start'; buildingType: BuildingType; id: string; toLevel: number; seconds: number; cost: Cost }
   | { kind: 'upgrade_cancel'; buildingType: BuildingType; id: string; toLevel: number; refund: Cost }
-  | { kind: 'collect'; buildingType: BuildingType; id: string; resource: ResourceKind; amount: number }
+  | { kind: 'collect'; buildingType: BuildingType; id: string; resource: ResourceKind; amount: number; eventBonus?: number }
   | { kind: 'move'; buildingType: BuildingType; id: string }
   | { kind: 'train_start'; troop: string; seconds: number; cost: Cost }
   | { kind: 'train_cancel'; troop: string }
   | { kind: 'research_start'; troop: string; toLevel: number; seconds: number; cost: Cost }
   | { kind: 'research_cancel'; troop: string; toLevel: number; refund: Cost }
+  | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number }
   | { kind: 'scout'; seed: number; fee: number }
   | { kind: 'raid_end'; record: BattleRecord }
   | { kind: 'skip_used'; what: string; seconds: number; moonstones: number }
@@ -157,6 +161,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     flags: { longWaitSeen: false },
     grove: emptyGrove(),
     tutorial: { step: 0, done: false },
+    daily: emptyDaily(data),
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -373,6 +378,8 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return cancelResearch(s, now, data);
     case 'skipResearch':
       return skipResearch(s, now, data);
+    case 'openDailyChest':
+      return openDailyChest(s, now, data);
     case 'scout':
       return scout(s, cmd.paid, data);
     case 'battleEnd':
@@ -636,7 +643,7 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
   const def = data.troops[troop];
   if (!def) return fail('NOT_FOUND', 'Unknown troop.');
   const level = troopLevelOf(s, troop);
-  const cost = troopLevel(data, troop, level).cost;
+  const cost = discounted(troopLevel(data, troop, level).cost, eventEffect(now, data).trainingDiscount);
   const quote: Quote = { toLevel: level, cost, seconds: def.trainSeconds };
   if (barracksLevel(s, data) < def.barracksLevel) {
     return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Burrow Barracks.`), quote };
@@ -658,6 +665,33 @@ function train(s: VillageState, troop: string, now: number, data: GameData): Com
   const startedAt = queueEndsAt(s, now);
   s.training.push({ troop, startedAt, endsAt: startedAt + def.trainSeconds * MS_PER_SECOND, cost });
   return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds: def.trainSeconds, cost }] };
+}
+
+/** A cost with a share taken off (limited-time events). */
+function discounted(cost: Cost, share: number): Cost {
+  if (share <= 0) return cost;
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(cost) as [ResourceKind, number][]) out[k] = Math.round(v * (1 - share));
+  return out;
+}
+
+/** Open today's free chest. Never costs anything and cannot be reopened or rerolled. */
+function openDailyChest(s: VillageState, now: number, data: GameData): CommandResult {
+  const day = dayIndex(now, data);
+  if (s.daily.lastDay >= day) return fail('ALREADY_CLAIMED', "You've opened today's chest. A new one is ready at the start of the next day (UTC).");
+  const st = streakAfterClaim(s.daily, day, data);
+  const outcome = chestOutcome(s.seed, day, data);
+  const grants = grantReward(s, chestContents(outcome, hallLevel(s, data), st.step, data), data);
+  const history = [...s.daily.history, { day, outcome, step: st.step, grants }].slice(-data.daily.streak.historyDays);
+  s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history };
+  return {
+    ok: true,
+    state: s,
+    events: [
+      { kind: 'daily_chest', outcome, step: st.step, grants, skipped: st.skipped, steppedBack: st.steppedBack },
+      { kind: 'reward', source: `daily_chest:${outcome}`, grants },
+    ],
+  };
 }
 
 /** Research quote including the resource check (for the UI). */
@@ -770,6 +804,12 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   const bonusWanted = leagueWinBonus(s.trophies, result.stars, data);
   const bonus = addCapped(s.resources, bonusWanted, cap);
   for (const [k, v] of Object.entries(bonus) as [ResourceKind, number][]) added[k] = (added[k] ?? 0) + v;
+  // Limited-time event: extra loot on won attacks.
+  const lootBonus = result.stars >= 1 ? eventEffect(now, data).raidLootBonus : 0;
+  const eventWanted: Cost = {};
+  if (lootBonus > 0) for (const [k, v] of Object.entries(result.loot) as [ResourceKind, number][]) if (v > 0) eventWanted[k] = Math.floor(v * lootBonus);
+  const eventBonus = addCapped(s.resources, eventWanted, cap);
+  for (const [k, v] of Object.entries(eventBonus) as [ResourceKind, number][]) added[k] = (added[k] ?? 0) + v;
   const opp = rec.setup.base.trophies ?? s.trophies;
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
@@ -779,6 +819,7 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies };
   record.result.loot = added;
   if (Object.keys(bonus).length) record.leagueBonus = bonus;
+  if (Object.values(eventBonus).some((v) => (v ?? 0) > 0)) record.eventBonus = eventBonus;
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
@@ -903,8 +944,10 @@ function collect(s: VillageState, id: string, now: number, data: GameData): Comm
   const room = Math.max(0, capacity(s, data)[resource] - s.resources[resource]);
   if (room <= 0) return fail('STORAGE_FULL', `Your ${resource} storage is full. Build or upgrade storage.`);
   const take = Math.min(Math.floor(amount), room);
-  s.resources[resource] += take;
+  // Limited-time event: collecting gives extra, as far as storage allows.
+  const extra = Math.min(room - take, Math.floor(take * eventEffect(now, data).collectBonus));
+  s.resources[resource] += take + extra;
   // While an upgrade runs, production stays paused until it ends.
   b.collector = { stored: amount - take, accrueFrom: b.upgrade ? b.upgrade.endsAt : now };
-  return { ok: true, state: s, events: [{ kind: 'collect', buildingType: b.type, id, resource, amount: take }] };
+  return { ok: true, state: s, events: [{ kind: 'collect', buildingType: b.type, id, resource, amount: take + extra, ...(extra > 0 ? { eventBonus: extra } : {}) }] };
 }

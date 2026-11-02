@@ -23,7 +23,8 @@ it('a Phase 1 (v1) save loads in the latest version', () => {
     },
   };
   const village = deserialize(JSON.parse(JSON.stringify(v1)), data);
-  expect(SAVE_VERSION).toBe(7);
+  expect(SAVE_VERSION).toBe(8);
+  expect(village.daily.lastDay).toBe(-1);
   expect(village.research).toEqual({ levels: {}, active: null });
   expect(village.scout).toBeNull();
   expect(village.stats.upgradesDone).toBe(0);

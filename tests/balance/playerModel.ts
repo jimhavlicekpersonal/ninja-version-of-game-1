@@ -4,7 +4,8 @@
  * fake clock. Nothing about loot is assumed: every raid is a real battle.
  *
  * Assumptions (documented so the balance targets mean something):
- * - Each session it collects everything, raids if its army is at least 80%
+ * - Each session it collects everything, opens the daily chest (its streak
+ *   never breaks), raids if its army is at least 80%
  *   full, refills the army, researches, then spends on a priority list (Elder
  *   Toadstool > storage it needs > army buildings > collectors > other
  *   storage > defenses and traps), saving half the next Elder Toadstool's cost
@@ -15,6 +16,7 @@
  *   then attacks with its whole army using the simple bot plan (everything
  *   from one side, toughest troops first). A human usually does better.
  * - The army follows the bot army mix for its hall, using unlocked troops.
+ * - Limited-time events (events.json) apply as they would for a player.
  * - Between sessions, real offline bot raids run against the real layout.
  */
 import { armyHousing, barracksLevel, housingCapacity, queueHousing } from '../../src/sim/army';
@@ -102,6 +104,8 @@ export class ModelPlayer {
     this.state = advance(this.state, this.clock.now(), d).state;
     this.noteHall();
     for (const b of this.state.buildings) if (d.buildings[b.type].produces) this.run({ type: 'collect', id: b.id });
+    // The free daily chest (fails harmlessly once today's is open).
+    this.run({ type: 'openDailyChest' });
     this.raid();
     this.train();
     this.research();

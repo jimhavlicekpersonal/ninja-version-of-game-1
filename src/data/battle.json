@@ -48,5 +48,11 @@
     "hall": 0.15
   },
   "catapultSpread": 0.6,
-  "deploySpread": 0.3
+  "deploySpread": 0.3,
+  "closeCall": {
+    "starMargin": 5,
+    "hallHpFraction": 0.15,
+    "buildingsLeft": 2,
+    "perfectMinDestruction": 80
+  }
 }

@@ -13,12 +13,12 @@ import { OnlineClient } from './online/client';
 import { villageToBase } from './sim/defense';
 import type { BattleRecord } from './sim/battle/types';
 import { sound } from './audio/sound';
-import { prefs } from './platform/prefs';
+import { notifyPrefs, prefs } from './platform/prefs';
 import { WebReminders, type ReminderService } from './platform/reminders';
 import { NativeReminders, isNative, platform } from './platform/native';
 import { MockPaymentProvider, type PaymentProvider } from './payments/provider';
 import { StoreKitPaymentProvider, UnavailablePaymentProvider } from './payments/storekit';
-import { upcomingReminders } from './sim/reminders';
+import { planNotifications, upcomingReminders } from './sim/reminders';
 import { Tutorial } from './ui/tutorial';
 import { OffsetClock, SystemClock } from './sim/clock';
 import { defaultData } from './sim/data';
@@ -141,6 +141,7 @@ async function boot(): Promise<void> {
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),
     prefs,
+    notifyPrefs,
     onRemindersEnabled: async () => {
       const ok = await reminders.enable();
       if (!ok) {
@@ -225,7 +226,12 @@ async function boot(): Promise<void> {
     sound.suspend(hidden);
     if (hidden) {
       void controller.save();
-      if (prefs.get('reminders')) void reminders.schedule(upcomingReminders(controller.state, controller.now(), controller.data));
+      if (prefs.get('reminders')) {
+        // Opt-in only: the player's chosen types, no quiet-hours pings, a daily cap.
+        const gd = controller.data;
+        const planned = planNotifications(upcomingReminders(controller.state, controller.now(), gd), notifyPrefs.enabledSet(gd.notifications.types), controller.now(), new Date().getTimezoneOffset(), gd);
+        void reminders.schedule(planned);
+      }
     } else {
       void reminders.cancelAll();
     }

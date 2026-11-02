@@ -16,6 +16,8 @@ import { achievementViews } from '../sim/achievements';
 import { activeOffers } from '../sim/offers';
 import { currentTasks, unlockedTier } from '../sim/pass';
 import { EconomyUi } from './economyUi';
+import { DailyUi } from './dailyUi';
+import { chestReady } from '../sim/daily';
 import { sound } from '../audio/sound';
 import { GroveUi } from './groveUi';
 import { attacksLeft, raidPhase } from '../sim/social/groveRaid';
@@ -42,6 +44,7 @@ export interface HudDeps {
   onReplay(record: BattleRecord): void;
   onGroveAttack(target: number): void;
   prefs: { get(k: 'sessionReminder' | 'reminders'): boolean; set(k: 'sessionReminder' | 'reminders', v: boolean): void };
+  notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
   reminderNote: string;
   onReplayTutorial(): void;
@@ -84,6 +87,8 @@ export class Hud {
   private openModals = new Set<() => void>();
   readonly econ: EconomyUi;
   readonly grove: GroveUi;
+  readonly daily: DailyUi;
+  private eventChip!: HTMLElement;
   private railBadges: Record<string, HTMLElement> = {};
   /** True while a finger/mouse is pressed on the panel: never rebuild it mid-tap. */
   private sheetPressed = false;
@@ -110,6 +115,7 @@ export class Hud {
       troopThumb: (t) => this.deps.troopThumb(t),
       onGroveAttack: (i) => this.deps.onGroveAttack(i),
     });
+    this.daily = new DailyUi({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() });
     this.buildSkeleton();
     this.c.subscribe(() => this.refresh());
     this.c.onOffer((rule) => this.econ.showOffer(rule));
@@ -160,6 +166,7 @@ export class Hud {
     top.append(this.shieldBox);
 
     this.unlocksEl = h('button', { class: 'unlocks', type: 'button', onclick: () => this.openUnlocks() });
+    this.eventChip = h('button', { class: 'event-chip', type: 'button', 'aria-label': 'Events', onclick: () => this.daily.openEvents() });
     this.toasts = h('div', { class: 'toasts', 'aria-live': 'polite' });
     this.fpsEl = h('div', { class: 'fps' });
     this.fpsEl.hidden = !this.showFps;
@@ -201,7 +208,7 @@ export class Hud {
     this.sheet.addEventListener('pointerleave', release);
     this.modalRoot = h('div', { class: 'modal-root' });
 
-    const head = h('div', { class: 'hud-head' }, top, this.unlocksEl, this.toasts);
+    const head = h('div', { class: 'hud-head' }, top, h('div', { class: 'head-row' }, this.unlocksEl, this.eventChip), this.toasts);
     const railBtn = (label: string, ic: string, onClick: () => void) => {
       const badge = h('span', { class: 'badge' });
       badge.hidden = true;
@@ -211,6 +218,7 @@ export class Hud {
     const rail = h(
       'div',
       { class: 'side-rail' },
+      railBtn('Daily', icons.chest, () => this.daily.openDaily()),
       railBtn('Store', icons.moonstones, () => this.econ.openStore(activeOffers(this.c.state, this.c.now()).length ? 'offers' : 'moonstones')),
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
@@ -254,6 +262,7 @@ export class Hud {
       b.textContent = String(n);
     };
     set('Store', activeOffers(s, this.c.now()).length);
+    set('Daily', chestReady(s, this.c.now(), gd) ? 1 : 0);
     const tier = unlockedTier(s, gd);
     const tiersReady = gd.pass.tiers.filter((t) => t.tier <= tier && (!s.pass.claimedFree.includes(t.tier) || (s.pass.premium && !s.pass.claimedPremium.includes(t.tier)))).length;
     const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
@@ -271,6 +280,8 @@ export class Hud {
 
   private everySecond(): void {
     this.updateShield();
+    this.eventChip.textContent = DailyUi.chipText(this.c.now(), this.c);
+    this.updateBadges();
     const s = this.c.state;
     const bs = builderStatus(s, this.c.data, this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
@@ -914,8 +925,20 @@ export class Hud {
     const breakToggle = h('input', { type: 'checkbox', checked: prefs.get('sessionReminder') }) as HTMLInputElement;
     breakToggle.addEventListener('change', () => prefs.set('sessionReminder', breakToggle.checked));
     const remindToggle = h('input', { type: 'checkbox', checked: prefs.get('reminders') }) as HTMLInputElement;
+    const nd = this.c.data.notifications;
+    const typeBox = h('div', { class: 'notify-types' });
+    const typeToggles: HTMLInputElement[] = [];
+    for (const t of nd.types) {
+      const tg = h('input', { type: 'checkbox', checked: this.deps.notifyPrefs.get(t.id, t.default), disabled: !prefs.get('reminders') }) as HTMLInputElement;
+      tg.addEventListener('change', () => this.deps.notifyPrefs.set(t.id, tg.checked));
+      typeToggles.push(tg);
+      typeBox.append(h('label', { class: 'toggle sub' }, tg, ` ${t.label}`));
+    }
+    const pad = (n: number) => `${String(n).padStart(2, '0')}:00`;
+    typeBox.append(h('p', { class: 'muted small' }, `At most ${nd.maxPerDay} a day, and none between ${pad(nd.quietHours.start)} and ${pad(nd.quietHours.end)} (they wait until morning).`));
     remindToggle.addEventListener('change', () => {
       prefs.set('reminders', remindToggle.checked);
+      for (const tg of typeToggles) tg.disabled = !remindToggle.checked;
       if (remindToggle.checked) void this.deps.onRemindersEnabled();
     });
     body.append(
@@ -923,7 +946,8 @@ export class Hud {
       h('label', { class: 'toggle' }, sfxToggle, ' Sound effects'),
       h('label', { class: 'toggle' }, musicToggle, ' Music'),
       h('h3', {}, 'Reminders and healthy play'),
-      h('label', { class: 'toggle' }, remindToggle, ' Notify me when builds finish, collectors are full or the Grove Raid starts'),
+      h('label', { class: 'toggle' }, remindToggle, ' Send me notifications (off until you turn it on)'),
+      typeBox,
       h('label', { class: 'toggle' }, breakToggle, ' Suggest a break after an hour of play'),
       h('p', { class: 'muted small' }, this.deps.reminderNote),
       h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, 'Replay the tutorial')),

@@ -4,6 +4,7 @@ import { GameController } from '../../src/game/controller';
 import { MemorySaveStore } from '../../src/persist/saveStore';
 import { FakeClock } from '../../src/sim/clock';
 import { defaultData as data } from '../../src/sim/data';
+import { eventEffect } from '../../src/sim/events';
 import { capacity, collectorAmount } from '../../src/sim/resources';
 
 function deps(clock: FakeClock, store: MemorySaveStore, events: MemoryEventStore) {
@@ -47,7 +48,9 @@ describe('GameController (save, reload, offline)', () => {
     const before = c2.state.resources.acorns;
     const res = c2.dispatch({ type: 'collect', id: orchard.id });
     expect(res.ok).toBe(true);
-    expect(c2.state.resources.acorns).toBe(Math.min(capacity(c2.state, data).acorns, before + 1600));
+    // (This test's clock falls in a Harvest Moon event, which adds its bonus on collect.)
+    const bonus = Math.floor(1600 * eventEffect(clock.now(), data).collectBonus);
+    expect(c2.state.resources.acorns).toBe(Math.min(capacity(c2.state, data).acorns, before + 1600 + bonus));
   });
 
   it('logs upgrade_start analytics events', async () => {

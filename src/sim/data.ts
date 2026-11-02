@@ -12,6 +12,9 @@ import pass from '../data/pass.json';
 import cosmetics from '../data/cosmetics.json';
 import achievements from '../data/achievements.json';
 import social from '../data/social.json';
+import daily from '../data/daily.json';
+import events from '../data/events.json';
+import notifications from '../data/notifications.json';
 import type { BuildingDef, BuildingType, GameData, LevelDef, TroopLevelDef } from './types';
 
 /** The game's balance data, straight from src/data/*.json. */
@@ -30,6 +33,9 @@ export const defaultData: GameData = {
   cosmetics: cosmetics as unknown as GameData['cosmetics'],
   achievements: achievements as unknown as GameData['achievements'],
   social: social as unknown as GameData['social'],
+  daily: daily as unknown as GameData['daily'],
+  events: events as unknown as GameData['events'],
+  notifications: notifications as unknown as GameData['notifications'],
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {

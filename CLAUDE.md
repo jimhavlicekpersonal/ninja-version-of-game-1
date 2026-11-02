@@ -25,7 +25,7 @@ How this is met:
 ## Decisions made during Phases 2-6
 
 - Art direction (owner request): smoother, softer, Nintendo-like look. All art is still generated in code (`src/render/art/`).
-- Save format is versioned (`src/sim/save.ts`, currently v7) with a migration step per version. Bump `SAVE_VERSION` and add a step for every state change. (v7 dropped stored replays because troop and defense numbers changed.)
+- Save format is versioned (`src/sim/save.ts`, currently v8) with a migration step per version. Bump `SAVE_VERSION` and add a step for every state change. (v7 dropped stored replays because troop and defense numbers changed; v8 added the daily chest and streak.)
 - Progression pacing is checked by a model-player test (`tests/balance/`) that fights every raid as a real battle through matchmaking and `battleEnd` (no assumed loot share). Rerun it after changing costs, times, loot or combat numbers. `tests/balance/combat.test.ts` and `curves.test.ts` pin the attack/defense balance and the curve shapes.
 - Offers have a `minAccountHours` field so brand-new players are not shown the builder offer in their first minutes.
 - Real prices appear only in the Store and its confirm step (pass and offer popups link to the Store).
@@ -53,7 +53,7 @@ A review against how this genre is usually balanced found 20 game-theory holes a
 | 12 | Raid profit per Dew grew 1.3x → 9.6x | Troop training cost rises with level; ratio stays ~2-4.5x | `curves.test.ts` |
 | 13 | Troops had no levels | Troop research in the Burrow Barracks (`src/sim/research.ts`), capped by `troopLevelCap` in hall.json | `research.test.ts` |
 | 14 | Hall timer jumped 36x at hall 4 | Hall times grow ~2.7x per level (hall 10 would be ~7 days) | `curves.test.ts` |
-| 15 | Hall cost multipliers shrank | 1k → 4k → 20k → 108k → 600k (x4, 5, 5.4, 5.6); the hall stores little | same |
+| 15 | Hall cost multipliers shrank | 1k → 4k → 20k → 130k → 850k (x4, 5, 6.5, 6.5); the hall stores little | same |
 | 16 | Collector payback went up and down | Paybacks rise every level and stay under a week | same |
 | 17 | No cap on loot from storage; no penalty for hitting lower halls | `storageLootCapByHall`; `lootPenaltyByHallDiff` (client, bots and server) | `raids.test.ts`, `matchmaking.test.ts` |
 | 18 | Shield always 12 h | 12/14/16 h at 30/60/90% (`shieldTiers`) | `raids.test.ts` |
@@ -61,6 +61,17 @@ A review against how this genre is usually balanced found 20 game-theory holes a
 | 20 | Buying a hall level was cheap | Steeper skip and top-up curves; rushing hall 5→6 costs >3x the starting Moonstones | `curves.test.ts`, `economy.test.ts` |
 
 Numbers in the spec below that these replaced (skip/top-up curve points, 0-3 raids per absence, 12-hour shield) are superseded by the data files.
+
+## Engagement features (and their limits)
+
+Built to bring players back for good reasons, within App Store rules, FTC guidance and loot-box laws. Keep these rules when changing them:
+
+- **Daily chest** (`src/sim/daily.ts`, `src/data/daily.json`): free, one per UTC day, contents drawn from a weighted table whose exact odds are shown before opening. The draw comes from the village seed + day, so reloading can't reroll it. It is never sold: no Moonstone or real-money way to open, reopen or reroll it. If a paid random item is ever added, its odds must be shown before purchase (App Review Guideline 3.1.1) and the loot-box laws in each target market checked first.
+- **Streak**: one step per day on a 7-step ladder of bigger chests. A missed day never wipes it: a free weekly skip covers one day, otherwise you move back one step per missed day. Skips and streak repairs are never sold.
+- **Limited-time events** (`src/sim/events.ts`, `src/data/events.json`): a fixed schedule repeating every 14 days. Start and end times come only from the schedule; nothing resets or extends them, so every countdown is real. Offers keep their deadline too (tested).
+- **Notifications** (`planNotifications` in `src/sim/reminders.ts`, `src/data/notifications.json`): off until the player turns them on; each type can be switched off; none in quiet hours (they wait until morning); at most `maxPerDay` per local day.
+- **Close calls** (`src/sim/battle/closecall.ts`): "so close" notes after an attack, read from the finished battle and shown only when true. No rigged or faked near-misses, and no "almost" animations on random rewards: a chest only shows what it gave.
+- The model player opens the chest daily and plays through events, so pacing (`tests/balance/progression.test.ts`) includes this income.
 
 ## Stack decisions made during Phase 1
 

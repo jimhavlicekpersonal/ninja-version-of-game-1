@@ -1,0 +1,13 @@
+{
+  "maxPerDay": 4,
+  "quietHours": { "start": 22, "end": 8 },
+  "types": [
+    { "id": "builds", "label": "Builds and research finish", "default": true },
+    { "id": "army", "label": "Army is ready", "default": true },
+    { "id": "groveRaid", "label": "Grove Raid starts", "default": true },
+    { "id": "collectors", "label": "Collectors are full", "default": true },
+    { "id": "dailyChest", "label": "Daily chest is ready", "default": false },
+    { "id": "events", "label": "Limited-time events start", "default": false },
+    { "id": "shield", "label": "Shield runs out", "default": false }
+  ]
+}
