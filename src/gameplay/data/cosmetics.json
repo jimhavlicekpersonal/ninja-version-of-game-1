@@ -2,10 +2,10 @@
   "hallSkins": [
     {
       "id": "classic",
-      "name": "Classic Vermilion",
+      "name": "Classic Slate",
       "moonstones": 0,
-      "cap": "#c8402f",
-      "spots": "#f4e7cf"
+      "cap": "#3d4a5c",
+      "spots": "#c8402f"
     },
     {
       "id": "royal_plum",

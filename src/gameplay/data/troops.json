@@ -397,5 +397,86 @@
         }
       }
     ]
+  },
+  "saboteur": {
+    "name": "Saboteur",
+    "description": "Grapples over walls to the nearest working defense and jams it for 6 seconds. One jam per Saboteur; afterwards it fights weakly. A jammed defense can't be jammed again until 10 seconds after it recovers.",
+    "housing": 2,
+    "attackIntervalTicks": 10,
+    "range": 0.6,
+    "speed": 0.22,
+    "air": false,
+    "prefers": "defense",
+    "ignoresHedges": true,
+    "trainSeconds": 45,
+    "barracksLevel": 2,
+    "ability": "sabotage",
+    "abilityCharges": 1,
+    "levels": [
+      {
+        "level": 1,
+        "hp": 150,
+        "damage": 6,
+        "cost": {
+          "dew": 90
+        }
+      },
+      {
+        "level": 2,
+        "hp": 172,
+        "damage": 7,
+        "cost": {
+          "dew": 115
+        },
+        "research": {
+          "cost": {
+            "dew": 5500
+          },
+          "seconds": 1800
+        }
+      },
+      {
+        "level": 3,
+        "hp": 198,
+        "damage": 8,
+        "cost": {
+          "dew": 150
+        },
+        "research": {
+          "cost": {
+            "dew": 24000
+          },
+          "seconds": 7200
+        }
+      },
+      {
+        "level": 4,
+        "hp": 228,
+        "damage": 9,
+        "cost": {
+          "dew": 195
+        },
+        "research": {
+          "cost": {
+            "dew": 80000
+          },
+          "seconds": 21600
+        }
+      },
+      {
+        "level": 5,
+        "hp": 262,
+        "damage": 11,
+        "cost": {
+          "dew": 250
+        },
+        "research": {
+          "cost": {
+            "dew": 200000
+          },
+          "seconds": 43200
+        }
+      }
+    ]
   }
 }

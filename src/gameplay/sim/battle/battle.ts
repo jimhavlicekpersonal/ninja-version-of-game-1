@@ -26,6 +26,19 @@ export interface SimBuilding {
   targetTroop: number;
   /** Traps stay hidden until they go off. */
   hidden: boolean;
+  /** Sabotage: silent while tick < disabledUntil; cannot be sabotaged again while tick < immuneUntil. */
+  disabledUntil: number;
+  immuneUntil: number;
+}
+
+/** A Smoke Bomb cloud on the map. Active while tick < endsTick. */
+export interface SmokeCloud {
+  id: number;
+  x: number;
+  y: number;
+  radius: number;
+  startTick: number;
+  endsTick: number;
 }
 
 export interface SimTroop {
@@ -50,6 +63,8 @@ export interface SimTroop {
   attacking: boolean;
   facing: 1 | -1;
   slowTicks: number;
+  /** Ability uses left (Saboteur jams). */
+  charges: number;
 }
 
 export interface SimProjectile {
@@ -79,7 +94,11 @@ export type SimEvent =
   | { k: 'buildingHit'; building: number }
   | { k: 'destroyed'; building: number }
   | { k: 'troopDied'; troop: number }
-  | { k: 'trap'; building: number };
+  | { k: 'trap'; building: number }
+  | { k: 'smoke'; smoke: number }
+  | { k: 'smokeEnd'; smoke: number }
+  | { k: 'sabotage'; building: number; troop: number }
+  | { k: 'recovered'; building: number };
 
 export interface BattleSim {
   setup: BattleSetup;
@@ -103,6 +122,45 @@ export interface BattleSim {
   /** 1 where the attacker may deploy. */
   deployable: Uint8Array;
   nextProjectile: number;
+  /** Active Smoke Bomb clouds. */
+  smokes: SmokeCloud[];
+  /** Ability charges left this battle, by ability id. */
+  charges: Record<string, number>;
+  /** Abilities used this battle, by ability id (kept apart from `used`, which counts troops). */
+  abilitiesUsed: Record<string, number>;
+}
+
+/** True when `id` names a tactical ability (battle.json `abilities`) rather than a troop. */
+export function isAbility(data: GameData, id: string): boolean {
+  return Object.prototype.hasOwnProperty.call(data.battle.abilities, id);
+}
+
+/**
+ * Smoke Bomb charges for an army: base + 1 per `housingPerCharge` housing, capped.
+ * Derived from the army alone so the server and every replay agree without storing it.
+ */
+export function smokeCharges(army: Record<string, number>, data: GameData): number {
+  const d = data.battle.abilities.smoke_bomb;
+  let housing = 0;
+  for (const [t, n] of Object.entries(army)) housing += (data.troops[t]?.housing ?? 0) * Math.max(0, n);
+  if (housing <= 0) return 0;
+  return Math.min(d.maxCharges, d.baseCharges + Math.floor(housing / d.housingPerCharge));
+}
+
+/** A defense a Saboteur may jam right now. */
+export function sabotageable(sim: BattleSim, b: SimBuilding): boolean {
+  return !b.destroyed && b.kind === 'defense' && b.combat !== null && sim.tick >= b.immuneUntil;
+}
+
+/** Whether a point is inside an active smoke cloud. */
+export function inSmoke(sim: BattleSim, x: number, y: number): boolean {
+  for (const c of sim.smokes) {
+    if (sim.tick >= c.endsTick) continue;
+    const dx = x - c.x;
+    const dy = y - c.y;
+    if (dx * dx + dy * dy <= c.radius * c.radius) return true;
+  }
+  return false;
 }
 
 const rect = (b: SimBuilding): Rect => ({ x: b.x, y: b.y, w: b.size, h: b.size });
@@ -137,6 +195,8 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       cooldown: 0,
       targetTroop: -1,
       hidden: kind === 'trap',
+      disabledUntil: 0,
+      immuneUntil: 0,
     };
   });
   const cells = new Uint8Array(size * size);
@@ -173,21 +233,47 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     grid: { size, cells },
     deployable,
     nextProjectile: 1,
+    smokes: [],
+    charges: { smoke_bomb: smokeCharges(setup.army, data) },
+    abilitiesUsed: {},
   };
 }
 
 export function canDeploy(sim: BattleSim, troop: string, x: number, y: number): boolean {
-  if (sim.ended || (sim.remaining[troop] ?? 0) <= 0) return false;
+  if (sim.ended) return false;
   const n = sim.grid.size;
   const tx = Math.floor(x);
   const ty = Math.floor(y);
   if (tx < 0 || ty < 0 || tx >= n || ty >= n) return false;
+  // Abilities can be thrown anywhere on the map while charges last.
+  if (isAbility(sim.data, troop)) return (sim.charges[troop] ?? 0) > 0;
+  if ((sim.remaining[troop] ?? 0) <= 0) return false;
   return sim.deployable[ty * n + tx] === 1;
 }
 
-/** Put a troop on the field. Returns false if not allowed. */
+function useAbility(sim: BattleSim, d: Deployment): boolean {
+  if (d.troop !== 'smoke_bomb') return false;
+  const def = sim.data.battle.abilities.smoke_bomb;
+  // Clouds never stack: an overlapping cloud only refreshes coverage, it doesn't deepen the effect.
+  const cloud: SmokeCloud = {
+    id: (sim.abilitiesUsed.smoke_bomb ?? 0) + 1,
+    x: Math.floor(d.x) + 0.5,
+    y: Math.floor(d.y) + 0.5,
+    radius: def.radius,
+    startTick: sim.tick,
+    endsTick: sim.tick + def.durationTicks,
+  };
+  sim.smokes.push(cloud);
+  sim.charges.smoke_bomb -= 1;
+  sim.abilitiesUsed.smoke_bomb = (sim.abilitiesUsed.smoke_bomb ?? 0) + 1;
+  sim.events.push({ k: 'smoke', smoke: cloud.id });
+  return true;
+}
+
+/** Put a troop on the field, or throw an ability. Returns false if not allowed. */
 export function deploy(sim: BattleSim, d: Deployment): boolean {
   if (!canDeploy(sim, d.troop, d.x, d.y)) return false;
+  if (isAbility(sim.data, d.troop)) return useAbility(sim, d);
   const def = troopDef(sim.data, d.troop);
   const stats = troopLevel(sim.data, d.troop, sim.setup.levels?.[d.troop] ?? 1);
   const s = sim.data.battle.deploySpread;
@@ -213,6 +299,7 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
     attacking: false,
     facing: 1,
     slowTicks: 0,
+    charges: def.ability ? def.abilityCharges ?? 1 : 0,
   };
   sim.troops.push(t);
   sim.remaining[d.troop] -= 1;
@@ -266,6 +353,10 @@ function chooseTarget(sim: BattleSim, t: SimTroop): number {
     return best;
   };
   if (def.prefers === 'defense') {
+    if (def.ability === 'sabotage' && t.charges > 0) {
+      const s = pick((b) => sabotageable(sim, b));
+      if (s >= 0) return s;
+    }
     const d = pick((b) => b.kind === 'defense');
     if (d >= 0) return d;
   }
@@ -285,8 +376,29 @@ function stepTroop(sim: BattleSim, ti: number): void {
     t.attacking = false;
     if (t.target < 0) return;
   }
+  const saboteur = def.ability === 'sabotage' && t.charges > 0;
+  if (saboteur && !sabotageable(sim, sim.buildings[t.target])) {
+    // Someone else jammed it (or it is immune): head for another working defense if there is one.
+    const nt = chooseTarget(sim, t);
+    if (nt >= 0 && nt !== t.target && sabotageable(sim, sim.buildings[nt])) {
+      t.target = nt;
+      t.path = null;
+      t.attacking = false;
+    }
+  }
   const target = sim.buildings[t.target];
   const r = rect(target);
+  if (saboteur && sabotageable(sim, target) && distToRect(t.x, t.y, r) <= sim.data.battle.sabotage.rangeTiles) {
+    const sab = sim.data.battle.sabotage;
+    target.disabledUntil = sim.tick + sab.disableTicks;
+    target.immuneUntil = target.disabledUntil + sab.immunityTicks;
+    target.targetTroop = -1;
+    t.charges -= 1;
+    t.attacking = true;
+    t.cooldown = def.attackIntervalTicks;
+    sim.events.push({ k: 'sabotage', building: t.target, troop: ti });
+    return;
+  }
   if (distToRect(t.x, t.y, r) <= def.range) {
     t.attacking = true;
     const c = center(target);
@@ -375,14 +487,24 @@ function stepDefense(sim: BattleSim, bi: number): void {
   const b = sim.buildings[bi];
   const c = b.combat;
   if (b.destroyed || !c || b.kind === 'trap') return;
+  if (b.disabledUntil > 0) {
+    if (sim.tick < b.disabledUntil) {
+      b.targetTroop = -1;
+      return;
+    }
+    if (sim.tick === b.disabledUntil) sim.events.push({ k: 'recovered', building: bi });
+  }
   if (b.cooldown > 0) b.cooldown--;
   const cx = b.x + b.size / 2;
   const cy = b.y + b.size / 2;
+  const smoke = sim.smokes.length ? sim.data.battle.abilities.smoke_bomb : null;
+  const smokedRange = smoke ? Math.max(smoke.minTargetRange, c.range * smoke.rangeFactor) : c.range;
   const ok = (t: SimTroop) => {
     if (t.dead) return false;
     if (t.air ? c.targets === 'ground' : c.targets === 'air') return false;
     const d = dist(cx, cy, t.x, t.y);
-    return d <= c.range && d >= (c.minRange ?? 0);
+    const range = smoke && inSmoke(sim, t.x, t.y) ? smokedRange : c.range;
+    return d <= range && d >= (c.minRange ?? 0);
   };
   if (b.targetTroop < 0 || !ok(sim.troops[b.targetTroop])) {
     b.targetTroop = -1;
@@ -476,6 +598,14 @@ export function step(sim: BattleSim, deployments: Deployment[] = []): void {
   for (let i = 0; i < sim.buildings.length; i++) stepDefense(sim, i);
   stepProjectiles(sim);
   sim.tick++;
+  if (sim.smokes.length) {
+    const left: SmokeCloud[] = [];
+    for (const c of sim.smokes) {
+      if (c.endsTick > sim.tick) left.push(c);
+      else sim.events.push({ k: 'smokeEnd', smoke: c.id });
+    }
+    sim.smokes = left;
+  }
   if (sim.destroyedCount >= sim.countable) end(sim, 'destroyed');
   else if (sim.tick >= sim.duration) end(sim, 'time');
   else if (

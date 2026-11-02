@@ -6,8 +6,8 @@ export const GROUND_PAD = 80;
 /** Height of the dirt cliff under the island's front edges. */
 export const CLIFF = 54;
 
-const GRASS = '#8fdc5c';
-const GRASS_EDGE = '#74c84a';
+const GRASS = '#86b864';
+const GRASS_EDGE = '#6b9c52';
 
 /** Paints the island: shallow-water glow, dirt cliff, soft grass with flowers. Returns the canvas size. */
 export function paintGround(ctx: Ctx, mapSize: number): void {
@@ -29,7 +29,7 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
 
   // Shallow water glow around the island.
   ctx.save();
-  ctx.shadowColor = 'rgba(210, 250, 255, 0.95)';
+  ctx.shadowColor = 'rgba(200, 212, 228, 0.9)';
   ctx.shadowBlur = 60;
   ctx.beginPath();
   ctx.moveTo(top.x, top.y - 10);
@@ -37,7 +37,7 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
   ctx.lineTo(bottom.x, bottom.y + CLIFF + 20);
   ctx.lineTo(left.x - 20, left.y);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(170, 238, 250, 0.9)';
+  ctx.fillStyle = 'rgba(120, 136, 158, 0.75)';
   ctx.fill();
   ctx.restore();
 
@@ -66,12 +66,12 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
     ctx.fillStyle = g;
     ctx.fill();
   };
-  face(left, bottom, '#e0a96c', '#b97a46');
-  face(bottom, right, '#c78a54', '#9c6438');
+  face(left, bottom, '#9aa0aa', '#6f7580');
+  face(bottom, right, '#7d838e', '#585d67');
   // Soft strata stripes and pebbles.
   const rand = artRng(99);
   ctx.lineWidth = 3;
-  for (const [a, b, col] of [[left, bottom, 'rgba(255,230,190,0.35)'], [bottom, right, 'rgba(255,220,180,0.22)']] as const) {
+  for (const [a, b, col] of [[left, bottom, 'rgba(225,232,240,0.35)'], [bottom, right, 'rgba(210,220,232,0.2)']] as const) {
     for (const t of [0.38, 0.7]) {
       ctx.beginPath();
       ctx.moveTo(a.x, a.y + CLIFF * t);
@@ -89,7 +89,7 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
       const y = a.y + (b.y - a.y) * f + 10 + rand() * (CLIFF - 18);
       ctx.beginPath();
       ctx.ellipse(x, y, 3 + rand() * 4, 2 + rand() * 2, 0, 0, Math.PI * 2);
-      ctx.fillStyle = rand() < 0.5 ? 'rgba(255,240,220,0.35)' : 'rgba(110,60,30,0.25)';
+      ctx.fillStyle = rand() < 0.5 ? 'rgba(235,240,245,0.35)' : 'rgba(40,46,56,0.3)';
       ctx.fill();
     }
   }
@@ -115,7 +115,7 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
     const r = 40 + rand() * 110;
     const light = rand() < 0.55;
     const pg = ctx.createRadialGradient(x, y, 0, x, y, r);
-    pg.addColorStop(0, light ? 'rgba(215,255,170,0.26)' : 'rgba(70,150,50,0.07)');
+    pg.addColorStop(0, light ? 'rgba(200,235,170,0.22)' : 'rgba(70,150,50,0.07)');
     pg.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = pg;
     ctx.save();
@@ -144,7 +144,7 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
     }
   }
   // Little details: tufts, clover and flowers.
-  const petals = ['#ffffff', '#fff27a', '#ffb3d1', '#c9b6ff', '#ffd59e'];
+  const petals = ['#ffffff', '#f7c6d4', '#f4b6c8', '#fde7ef', '#f7c6d4'];
   for (let i = 0; i < 520; i++) {
     const tx = rand() * mapSize;
     const ty = rand() * mapSize;
@@ -162,7 +162,7 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
       }
       ctx.beginPath();
       ctx.arc(x, y, 1.3, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffcf3d';
+      ctx.fillStyle = '#e9b44c';
       ctx.fill();
     } else if (kind < 0.55) {
       ctx.fillStyle = 'rgba(80,165,55,0.55)';

@@ -249,6 +249,37 @@ export interface TroopDef {
   projectile?: string;
   projectileSpeed?: number;
   splashRadius?: number;
+  /** Special action the troop performs on reaching a valid target (see BattleDef.sabotage). */
+  ability?: 'sabotage';
+  /** How many times one troop can use its ability per battle. */
+  abilityCharges?: number;
+}
+
+/** A tactical ability the attacker places on the map (Smoke Bomb). */
+export interface SmokeBombDef {
+  name: string;
+  description: string;
+  /** Radius of the cloud, in tiles. */
+  radius: number;
+  /** How long the cloud lasts, in ticks. */
+  durationTicks: number;
+  /** A defense's range against a troop inside the cloud is multiplied by this... */
+  rangeFactor: number;
+  /** ...but never drops below this many tiles (defenses are never fully blind). */
+  minTargetRange: number;
+  /** Charges per battle: base + 1 per `housingPerCharge` housing in the army, up to `maxCharges`. */
+  baseCharges: number;
+  housingPerCharge: number;
+  maxCharges: number;
+}
+
+export interface SabotageDef {
+  /** How close (tiles from the footprint edge) the troop must get. */
+  rangeTiles: number;
+  /** How long a sabotaged defense stays silent, in ticks. */
+  disableTicks: number;
+  /** After it recovers, how long it cannot be sabotaged again, in ticks. */
+  immunityTicks: number;
 }
 
 export interface BattleDef {
@@ -265,6 +296,9 @@ export interface BattleDef {
   deploySpread: number;
   /** When an attack counts as a close call (shown after the battle, only if true). */
   closeCall: { starMargin: number; hallHpFraction: number; buildingsLeft: number; perfectMinDestruction: number };
+  /** Tactical abilities, keyed by the id used in deployments (`Deployment.troop`). */
+  abilities: { smoke_bomb: SmokeBombDef };
+  sabotage: SabotageDef;
 }
 
 export interface NamesDef {

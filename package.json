@@ -23,7 +23,8 @@
     "server:dev": "npm run server:build && npm run server:start",
     "cap:sync": "npm run build && cap sync",
     "cap:ios": "npm run build && cap sync ios && cap open ios",
-    "cap:android": "npm run build && cap sync android && cap open android"
+    "cap:android": "npm run build && cap sync android && cap open android",
+    "art": "vite --open /tools/art-gallery/"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

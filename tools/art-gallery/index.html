@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kagemura art gallery</title>
+    <style>
+      body { margin: 0; padding: 16px; background: #2b3747; color: #f7f0e1; font: 14px system-ui, sans-serif; }
+      h2 { margin: 24px 0 8px; font-size: 16px; }
+      .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+      figure { margin: 0; padding: 8px; background: #3a4a5e; border-radius: 10px; text-align: center; }
+      figcaption { font-size: 11px; margin-top: 4px; opacity: .8; }
+      canvas { display: block; margin: 0 auto; }
+    </style>
+  </head>
+  <body>
+    <h1>Kagemura art gallery</h1>
+    <p>Every generated texture, at every visual tier. Run <code>npm run art</code>, then open <code>/tools/art-gallery/</code>.</p>
+    <div id="out"></div>
+    <script type="module" src="./gallery.ts"></script>
+  </body>
+</html>

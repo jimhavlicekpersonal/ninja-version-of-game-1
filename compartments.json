@@ -15,11 +15,9 @@
         "gui"
       ],
       "contracts": [
-        "src/presentation/art/buildings.ts",
-        "src/presentation/art/military.ts",
+        "src/presentation/art/ninja.ts",
         "src/presentation/art/ground.ts",
         "src/presentation/art/toolkit.ts",
-        "src/presentation/art/ninja.ts",
         "src/presentation/audio/sound.ts"
       ]
     },

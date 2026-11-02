@@ -5,7 +5,7 @@
  */
 export type Sfx =
   | 'tap' | 'open' | 'close' | 'build' | 'collect' | 'coin' | 'levelUp' | 'error' | 'magic'
-  | 'deploy' | 'hit' | 'boom' | 'star' | 'victory' | 'defeat' | 'notify';
+  | 'deploy' | 'hit' | 'boom' | 'star' | 'victory' | 'defeat' | 'notify' | 'smoke' | 'jam' | 'recover';
 
 const NOTE = (n: number) => 440 * Math.pow(2, (n - 69) / 12); // MIDI note -> Hz
 
@@ -191,10 +191,25 @@ class SoundEngine {
         this.tone(NOTE(84), t, 0.12, 'sine', 0.25, out);
         this.tone(NOTE(91), t + 0.1, 0.2, 'sine', 0.25, out);
         break;
+      case 'smoke':
+        // A soft pop and a long hiss.
+        this.tone(220, t, 0.06, 'sine', 0.35, out, 120);
+        this.burst(t + 0.02, 0.9, 0.35, 'bandpass', 1400, out);
+        break;
+      case 'jam':
+        // Metal on metal: a clank and a falling twang.
+        this.burst(t, 0.05, 0.4, 'highpass', 2500, out);
+        this.tone(NOTE(86), t, 0.18, 'square', 0.1, out, NOTE(74));
+        this.tone(NOTE(61), t + 0.05, 0.25, 'triangle', 0.18, out, NOTE(55));
+        break;
+      case 'recover':
+        this.tone(NOTE(67), t, 0.08, 'triangle', 0.15, out);
+        this.tone(NOTE(74), t + 0.06, 0.12, 'triangle', 0.15, out);
+        break;
     }
   }
 
-  /** Background music: a gentle pentatonic loop in the village, a perkier one in battle. */
+  /** Background music: a calm koto-like loop on the Japanese in scale in the village, taiko-driven in battle. */
   music(mode: 'village' | 'battle' | null): void {
     if (this.musicMode === mode) return;
     this.musicMode = mode;
@@ -213,23 +228,26 @@ class SoundEngine {
   private scheduleMusic(): void {
     if (!this.ctx || !this.musicMode) return;
     const battle = this.musicMode === 'battle';
-    const bpm = battle ? 132 : 92;
+    const bpm = battle ? 128 : 84;
     const step = 60 / bpm / 2; // eighth notes
-    // C - A minor - F - G, four bars each pattern.
-    const chords = [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]];
-    const scale = [72, 74, 76, 79, 81, 84];
+    // Drones and melody on the in (miyako-bushi) scale on E: E F A B C.
+    const chords = [[52, 59, 64], [53, 57, 64], [57, 64, 69], [52, 59, 64]];
+    const scale = [76, 77, 81, 83, 84, 88];
     while (this.nextBeat < this.ctx.currentTime + 0.3) {
       const t = this.nextBeat;
       const bar = Math.floor(this.beat / 8) % 4;
       const chord = chords[bar];
       const i = this.beat % 8;
       if (i === 0) for (const n of chord) this.tone(NOTE(n - 12), t, step * 7.5, 'sine', 0.12, this.musicGain);
-      // A soft marimba-like arpeggio with a gentle, repeatable melody.
+      // A plucked, koto-like line: short attack, quick decay, gentle bend down.
       const pattern = battle ? [0, 2, 1, 2, 0, 2, 1, 3] : [0, 1, 2, 1, 3, 2, 1, 2];
+      const rest = !battle && (i === 3 || i === 7) && bar % 2 === 1;
       const note = i % 2 === 0 ? chord[pattern[i] % 3] + 12 : scale[(this.beat * 3 + bar) % scale.length];
-      this.tone(NOTE(note), t, step * 0.9, 'triangle', battle ? 0.1 : 0.08, this.musicGain);
-      if (battle && i % 2 === 0) this.burst(t, 0.04, 0.12, 'highpass', 6000, this.musicGain);
-      if (battle && i % 4 === 0) this.tone(70, t, 0.12, 'sine', 0.25, this.musicGain, 45);
+      if (!rest) this.tone(NOTE(note), t, step * (battle ? 0.8 : 1.6), 'triangle', battle ? 0.1 : 0.09, this.musicGain, NOTE(note) * 0.985);
+      // Taiko: deep hits on the beat in battle, a soft heartbeat at home.
+      if (battle && i % 2 === 0) this.tone(i % 4 === 0 ? 62 : 80, t, 0.18, 'sine', i % 4 === 0 ? 0.35 : 0.18, this.musicGain, 38);
+      if (battle && i === 7) this.burst(t, 0.05, 0.12, 'highpass', 5000, this.musicGain);
+      if (!battle && i === 0 && bar % 2 === 0) this.tone(70, t, 0.25, 'sine', 0.12, this.musicGain, 45);
       this.nextBeat += step;
       this.beat++;
     }

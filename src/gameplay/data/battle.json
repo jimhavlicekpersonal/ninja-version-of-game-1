@@ -54,5 +54,23 @@
     "hallHpFraction": 0.15,
     "buildingsLeft": 2,
     "perfectMinDestruction": 80
+  },
+  "abilities": {
+    "smoke_bomb": {
+      "name": "Smoke Bomb",
+      "description": "Throw anywhere on the map. For 8 seconds, defenses can only target troops inside the cloud from close range.",
+      "radius": 3,
+      "durationTicks": 80,
+      "rangeFactor": 0.4,
+      "minTargetRange": 2,
+      "baseCharges": 1,
+      "housingPerCharge": 40,
+      "maxCharges": 3
+    }
+  },
+  "sabotage": {
+    "rangeTiles": 0.8,
+    "disableTicks": 60,
+    "immunityTicks": 100
   }
 }

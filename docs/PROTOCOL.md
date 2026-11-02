@@ -1,9 +1,13 @@
-# Toadstool Kingdoms multiplayer protocol (version 2)
+# Kagemura multiplayer protocol (version 3)
+
+> Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
+
+**Version 3 (ninja rebuild):** a deployment may name a tactical ability instead of a troop. `{ tick, troop: "smoke_bomb", x, y }` throws a Smoke Bomb. Charges come from the army (`smokeCharges` in `src/gameplay/sim/battle/battle.ts`), so nothing new is sent or stored. A v2 server would ignore smoke and score the battle differently, so v3 clients refuse v2 servers. v3 servers still accept v2 clients (`minProtocol: 2`), because a battle without abilities replays the same.
 
 This is what the game expects from a multiplayer server. Our server in `server/` implements it. A future server can be anything, in any language or on any database, as long as it speaks this protocol and passes the contract tests.
 
-- **Types:** `src/net/protocol.ts` has every route, request and response. This page explains them.
-- **Contract tests:** `tests/contract/protocol.contract.test.ts` checks a running server through the game's own HTTP adapter:
+- **Types:** `src/backend/net/protocol.ts` has every route, request and response. This page explains them.
+- **Contract tests:** `tests/backend/contract/protocol.contract.test.ts` checks a running server through the game's own HTTP adapter:
 
   ```bash
   CONTRACT_URL=https://your-server.example.com npm run test:contract
@@ -25,18 +29,18 @@ This is what the game expects from a multiplayer server. Our server in `server/`
  └───────────────────────────────┘                 └────────────────────────────────────┘
 ```
 
-- **`ServerPort`** (`src/net/ports.ts`) is everything the game needs from a server. The game only talks to this interface.
+- **`ServerPort`** (`src/backend/net/ports.ts`) is everything the game needs from a server. The game only talks to this interface.
   - `HttpServerAdapter` implements it over HTTPS.
   - `InProcessServerAdapter` implements it by calling our server core directly.
-- **`Connection`** (`src/net/connection.ts`) handles registration and status. It brings server results into the village as idempotent commands, and keeps battle reports in an outbox until the server accepts them.
-- **`GroveSource`** (`src/game/groveSource.ts`) gives the Grove screen one view model, whether the Grove is the offline bot Grove or a real Grove on a server.
+- **`Connection`** (`src/backend/net/connection.ts`) handles registration and status. It brings server results into the village as idempotent commands, and keeps battle reports in an outbox until the server accepts them.
+- **`GroveSource`** (`src/backend/social/groveSource.ts`) gives the Grove screen one view model, whether the Grove is the offline bot Grove or a real Grove on a server.
 - **Server core** (`server/core/`) holds every multiplayer rule. It needs two things from outside:
   - a `ServerContext`: clock, ids, token hashing, randomness;
   - a `Repo` storage port.
 
 ### Three ways to build a future server
 
-1. **New database, same rules.** Keep `server/core` and `server/app.ts`, and write a new `Repo` adapter (for example DynamoDB, Firestore or SQLite). Add its factory to `tests/server/pg.ts`, and `tests/server/repo.test.ts` plus `tests/server/core.test.ts` will check it.
+1. **New database, same rules.** Keep `server/core` and `server/app.ts`, and write a new `Repo` adapter (for example DynamoDB, Firestore or SQLite). Add its factory to `tests/backend/server/pg.ts`, and `tests/backend/server/repo.test.ts` plus `tests/backend/server/core.test.ts` will check it.
 2. **New hosting, same rules.** Keep `server/core` and write a new HTTP adapter for another framework or a serverless platform. It should be about as thin as `server/app.ts`. Then run the contract tests against it.
 3. **From scratch.** Implement this document in any language, then run the contract tests against it. The one hard part is battles: the server must replay them exactly like the game (see below).
 
@@ -72,7 +76,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
 
 ## Battles must replay exactly
 
-The client plays a battle locally and sends `{ ticket, seed, army, levels, deployments, endTick }`. The server re-runs it from the ticket's base with `runBattle` from `src/sim/battle/battle.ts`, and the server's result is what counts.
+The client plays a battle locally and sends `{ ticket, seed, army, levels, deployments, endTick }`. The server re-runs it from the ticket's base with `runBattle` from `src/gameplay/sim/battle/battle.ts`, and the server's result is what counts.
 
 - The battle simulation is deterministic: fixed 10 ticks per second, a seeded random generator, and JavaScript number math (IEEE-754 doubles) done in a fixed order. A port must do the same operations in the same order.
 - A server written in another language must either run this TypeScript code (for example a small Node sidecar) or port it exactly.
@@ -82,7 +86,7 @@ Every battle report must also be checked:
 
 - The army fits `maxHousing(attacker hall)`: full Army Camps plus a full Grove Lodge at that hall.
 - Troop levels are at most `troopLevelCap` for the attacker's hall.
-- At most 2,000 deployments.
+- At most 2,000 deployments. A deployment whose `troop` is an ability id (battle.json `abilities`) is an ability use, limited by its charges. Ability uses never count as troops used.
 - Each ticket can be used only once.
 
 ## Endpoints
@@ -109,7 +113,7 @@ Every battle report must also be checked:
 | `GET /v1/defenses?since=` | | `{ defenses: DefenseView[] }` (raids on this player after `since`, oldest first, at most 20) |
 | `GET /v1/leaderboard?limit=` | | `{ players: [{ rank, name, trophies, hallLevel, grove }], me }` |
 
-Rules: these come from the matchmaking design in `src/sim/matchmaking.ts` and the balance data in `src/data/`.
+Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.ts` and the balance data in `src/gameplay/data/`.
 
 - **Base upload:**
   - Refuse impossible bases: unknown buildings, bad levels, buildings off the map or overlapping, anything other than exactly one Elder Toadstool, or bad loot values.
@@ -126,7 +130,7 @@ Rules: these come from the matchmaking design in `src/sim/matchmaking.ts` and th
   - Holds a copy of the base with `lootPenaltyByHallDiff` already applied for the attacker's hall. The client must not apply it again.
   - Lasts 1 hour (`expiresAt`).
 - **Attack results:**
-  - Trophies use `winTrophies`/`lossTrophies` from `src/sim/ranks.ts`, based on both players' trophies. The defender moves by the opposite amount.
+  - Trophies use `winTrophies`/`lossTrophies` from `src/gameplay/sim/ranks.ts`, based on both players' trophies. The defender moves by the opposite amount.
   - Attacking ends the attacker's own shield.
   - A real defender gets the shield from `shieldTiers` for the destruction reached, plus a defense record that includes the replay. Bot opponents get neither.
 
@@ -171,7 +175,7 @@ Rules:
 | `POST /v1/grove/raid/attacks` | `BattleSubmission` | `{ result, stars, ours, theirs }` |
 | `POST /v1/grove/raid/claim` | `{ week }` | `{ week, outcome, ours, theirs, alreadyClaimed }` |
 
-Rules: the same schedule and scoring as the offline Grove Raid in `src/sim/social/groveRaid.ts`.
+Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/sim/social/groveRaid.ts`.
 
 - **Schedule:**
   - Weekly, from `groveRaid.epoch`, lasting `durationHours`.
