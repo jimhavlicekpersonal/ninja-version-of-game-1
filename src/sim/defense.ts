@@ -6,16 +6,42 @@
 import { createBattle, runBattle } from './battle/battle';
 import type { BaseBuilding, BaseLayout, BattleRecord, Deployment } from './battle/types';
 import { MS_PER_HOUR } from './clock';
-import { buildingDef, levelDef, troopDef } from './data';
+import { buildingDef, levelDef, troopDef, troopLevel } from './data';
+import { attackerFor, lootPenalty } from './matchmaking';
 import { lossTrophies, winTrophies } from './ranks';
 import { collectorAmount } from './resources';
 import { createRng, int, mixSeed, next, pick, type Rng } from './rng';
 import type { Cost, GameData, ResourceKind, VillageState } from './types';
 import { advance, hallLevel } from './village';
 
-/** The player's village as a battle base, with raidable loot on each building. */
-export function villageToBase(state: VillageState, t: number, data: GameData, name = 'Your village'): BaseLayout {
+/** Hours of shield a raid with this destruction gives (0 below the first tier). */
+export function shieldHoursFor(destruction: number, data: GameData): number {
+  let hours = 0;
+  for (const tier of data.raids.shieldTiers) if (destruction >= tier.destruction) hours = Math.max(hours, tier.hours);
+  return hours;
+}
+
+/** Lowest destruction that gives a shield. */
+export function shieldThreshold(data: GameData): number {
+  return Math.min(...data.raids.shieldTiers.map((t) => t.destruction));
+}
+
+/** Most of one resource raiders can take from storages at a hall level. */
+export function storageLootCap(hall: number, data: GameData): number {
+  const caps = data.raids.storageLootCapByHall;
+  return caps[Math.max(1, Math.min(caps.length, hall)) - 1] ?? Number.POSITIVE_INFINITY;
+}
+
+/**
+ * The player's village as a battle base, with raidable loot on each building.
+ * Storages give `raidableStoredFraction` of what is stored, but never more than
+ * the hall level's storage loot cap; `lootScale` applies the attacker's
+ * loot penalty when it has a higher Elder Toadstool.
+ */
+export function villageToBase(state: VillageState, t: number, data: GameData, name = 'Your village', lootScale = 1): BaseLayout {
   const e = data.economy;
+  const hl = hallLevel(state, data);
+  const storeCap = storageLootCap(hl, data);
   const built = state.buildings.filter((b) => {
     const c = buildingDef(data, b.type).category;
     return b.level >= 1 && c !== 'obstacle' && c !== 'decor';
@@ -32,20 +58,21 @@ export function villageToBase(state: VillageState, t: number, data: GameData, na
     const def = buildingDef(data, b.type);
     const loot: Cost = {};
     if (def.produces && b.collector) {
-      const amt = Math.floor(collectorAmount(b, t, data) * e.raidableUncollectedFraction);
+      const amt = Math.floor(collectorAmount(b, t, data) * e.raidableUncollectedFraction * lootScale);
       if (amt > 0) loot[def.produces] = amt;
     }
     const cap = caps[b.id];
     if (cap) {
       for (const [k, v] of Object.entries(cap) as [ResourceKind, number][]) {
         const share = totalCap[k] ? v / totalCap[k]! : 0;
-        const amt = Math.floor(Math.min(state.resources[k], totalCap[k] ?? 0) * share * e.raidableStoredFraction);
+        const raidable = Math.min(Math.min(state.resources[k], totalCap[k] ?? 0) * e.raidableStoredFraction, storeCap);
+        const amt = Math.floor(raidable * share * lootScale);
         if (amt > 0) loot[k] = (loot[k] ?? 0) + amt;
       }
     }
     return { id: b.id, type: b.type, level: b.level, x: b.x, y: b.y, loot, upgrading: Boolean(b.upgrade && t < b.upgrade.endsAt) };
   });
-  return { name, hallLevel: hallLevel(state, data), buildings, trophies: state.trophies };
+  return { name, hallLevel: hl, buildings, trophies: state.trophies };
 }
 
 export function botName(rng: Rng, data: GameData): string {
@@ -53,7 +80,7 @@ export function botName(rng: Rng, data: GameData): string {
 }
 
 /** A simple attack plan: pick a side, send tanks first, then the rest in waves. */
-export function botDeployments(deployable: Uint8Array, size: number, army: Record<string, number>, rng: Rng, data: GameData): Deployment[] {
+export function botDeployments(deployable: Uint8Array, size: number, army: Record<string, number>, rng: Rng, data: GameData, levels: Record<string, number> = {}): Deployment[] {
   const side = int(rng, 0, 3);
   const along = next(rng) * size;
   const ex = side === 0 ? along : side === 1 ? size - 1 : side === 2 ? along : 0;
@@ -68,7 +95,10 @@ export function botDeployments(deployable: Uint8Array, size: number, army: Recor
   tiles.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
   const spots = tiles.slice(0, 6);
   if (!spots.length) return [];
-  const order = Object.keys(army).sort((a, b) => troopDef(data, b).hp / troopDef(data, b).housing - troopDef(data, a).hp / troopDef(data, a).housing);
+  const tough = (t: string) => troopLevel(data, t, levels[t] ?? 1).hp / troopDef(data, t).housing;
+  const order = Object.keys(army)
+    .filter((t) => army[t] > 0)
+    .sort((a, b) => tough(b) - tough(a) || (a < b ? -1 : a > b ? 1 : 0));
   const out: Deployment[] = [];
   let tick = 0;
   order.forEach((troop, wave) => {
@@ -89,15 +119,19 @@ export interface RaidOutcome {
   fromCollectors: Cost;
 }
 
-/** Run one bot raid at time `t` against the (already advanced) village. Mutates `s`. */
+/**
+ * Run one bot raid at time `t` against the (already advanced) village. The
+ * raider is matched by the player's trophies and brings a full army for its
+ * hall level, at that hall's troop research levels. Mutates `s`.
+ */
 export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData): RaidOutcome {
-  const base = villageToBase(s, t, data);
-  const attackerTrophies = Math.max(0, s.trophies + int(rng, -data.raids.attackerTrophyRange, data.raids.attackerTrophyRange));
-  const armies = data.raids.botArmies;
-  const army = { ...armies[Math.min(armies.length, base.hallLevel) - 1] };
-  const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army };
+  const attacker = attackerFor(rng, s, data);
+  const base = villageToBase(s, t, data, 'Your village', lootPenalty(attacker.hall, hallLevel(s, data), data));
+  const attackerTrophies = attacker.trophies;
+  const army = attacker.army;
+  const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army, levels: attacker.levels };
   const probe = createBattle(setup, data);
-  const deployments = botDeployments(probe.deployable, probe.grid.size, army, rng, data);
+  const deployments = botDeployments(probe.deployable, probe.grid.size, army, rng, data, attacker.levels);
   const name = botName(rng, data);
   const { result, sim } = runBattle(setup, deployments, data);
   const fromStorage: Cost = {};
@@ -125,7 +159,8 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   if (result.stars >= 1) delta = -winTrophies(attackerTrophies, s.trophies, data);
   else delta = lossTrophies(attackerTrophies, s.trophies, data);
   s.trophies = Math.max(0, s.trophies + delta);
-  if (result.destruction >= data.raids.shieldDestructionThreshold) s.shieldUntil = Math.max(s.shieldUntil, t + data.raids.shieldHours * MS_PER_HOUR);
+  const shield = shieldHoursFor(result.destruction, data);
+  if (shield > 0) s.shieldUntil = Math.max(s.shieldUntil, t + shield * MS_PER_HOUR);
   const record: BattleRecord = {
     id: `d${s.nextSeed++}`,
     at: t,
@@ -148,31 +183,42 @@ function sumCosts(a: Cost, b: Cost): Cost {
 }
 
 /**
- * Simulate 0..maxRaids bot raids during the time the player was away.
- * Returns the village advanced to `now`.
+ * Raid times between `from` and `to`. Slots are fixed on the real clock
+ * (counted from the Unix epoch), and whether a slot holds a raid, and when,
+ * comes from the village seed. So the same village always meets the same
+ * raiders at the same moments, and splitting an absence into many short ones
+ * does not dodge them: only time with the game open (or shielded) is safe.
+ */
+export function raidTimes(seed: number, from: number, to: number, data: GameData): number[] {
+  const r = data.raids;
+  const slot = r.slotMinutes * 60_000;
+  const out: number[] = [];
+  if (to <= from) return out;
+  for (let k = Math.floor(from / slot); k * slot < to; k++) {
+    const rng = createRng(mixSeed(seed, k));
+    if (next(rng) >= r.chancePerSlot) continue;
+    const at = k * slot + Math.floor(next(rng) * slot);
+    if (at >= from && at < to) out.push(at);
+  }
+  return out;
+}
+
+/**
+ * Bot raids during the time the player was away (after a short grace period),
+ * skipping any that fall inside a shield. Returns the village advanced to `now`.
  */
 export function simulateOfflineRaids(state: VillageState, now: number, data: GameData): { state: VillageState; raids: RaidOutcome[] } {
   const r = data.raids;
-  const start = Math.max(state.raidCheckAt, state.lastSeenAt);
+  const start = Math.max(state.raidCheckAt, state.lastSeenAt + r.graceMinutes * 60_000);
   let s = structuredClone(state);
   const raids: RaidOutcome[] = [];
-  const away = now - start;
-  if (away >= r.minAwayMinutes * 60_000) {
-    const rng = createRng(mixSeed(state.seed, Math.floor(start / 60_000)));
-    const p = Math.min(r.maxChancePerSlot, (away / MS_PER_HOUR) * r.raidChancePerHourPerSlot);
-    const times: number[] = [];
-    for (let i = 0; i < r.maxRaids; i++) {
-      const hit = next(rng) < p;
-      const at = start + (r.minAwayMinutes * 60_000) / 2 + next(rng) * (away - (r.minAwayMinutes * 60_000) / 2);
-      if (hit) times.push(Math.floor(at));
-    }
-    times.sort((a, b) => a - b);
-    for (const t of times) {
-      if (s.shieldUntil > t) continue;
-      s = advance(s, t, data).state;
-      raids.push(raidVillage(s, t, rng, data));
-    }
+  for (const t of raidTimes(state.seed, start, now, data)) {
+    if (raids.length >= r.maxRaidsPerCatchUp) break;
+    if (s.shieldUntil > t) continue;
+    s = advance(s, t, data).state;
+    const rng = createRng(mixSeed(state.seed ^ 0x2a1d, Math.floor(t / 1000)));
+    raids.push(raidVillage(s, t, rng, data));
   }
-  s.raidCheckAt = now;
+  s.raidCheckAt = Math.max(state.raidCheckAt, now);
   return { state: s, raids };
 }

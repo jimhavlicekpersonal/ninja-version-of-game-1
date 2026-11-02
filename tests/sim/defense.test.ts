@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { runBattle } from '../../src/sim/battle/battle';
-import { simulateOfflineRaids, villageToBase } from '../../src/sim/defense';
+import { shieldHoursFor, simulateOfflineRaids, villageToBase } from '../../src/sim/defense';
 import { computeOfflineProgress } from '../../src/sim/offline';
-import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies } from '../../src/sim/ranks';
+import { leagueChest, leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies } from '../../src/sim/ranks';
 import { collectorAmount } from '../../src/sim/resources';
 import { migrate } from '../../src/sim/save';
 import { advance } from '../../src/sim/village';
@@ -42,14 +42,13 @@ describe('offline bot raids', () => {
     expect(raids).toHaveLength(0);
   });
 
-  it('0 to 3 raids, deterministic, with losses, trophies, log entries and exact replays', () => {
+  it('raids are deterministic, with losses, trophies, log entries and exact replays', () => {
     const { state, t0 } = raidable();
     const away = { ...state, trophies: 300, lastSeenAt: t0, raidCheckAt: t0 };
     const now = t0 + 10 * 3_600_000;
     const a = simulateOfflineRaids(away, now, data);
     const b = simulateOfflineRaids(away, now, data);
     expect(a.state).toEqual(b.state);
-    expect(a.raids.length).toBeLessThanOrEqual(3);
     // Across many different villages, some get raided.
     let total = 0;
     for (let seed = 1; seed <= 20; seed++) total += simulateOfflineRaids({ ...away, seed }, now, data).raids.length;
@@ -64,7 +63,7 @@ describe('offline bot raids', () => {
     expect(a.state.raidCheckAt).toBe(now);
   });
 
-  it('losing 30% or more grants a 12 hour shield and blocks later raids', () => {
+  it('losing 30% or more grants a shield (longer for heavier damage) and blocks later raids', () => {
     const { state, t0 } = raidable();
     let found = false;
     for (let seed = 1; seed <= 40 && !found; seed++) {
@@ -73,7 +72,7 @@ describe('offline bot raids', () => {
       const big = out.raids.find((r) => r.record.result.destruction >= 30);
       if (!big) continue;
       found = true;
-      expect(out.state.shieldUntil).toBeGreaterThanOrEqual(big.record.at + 12 * 3_600_000);
+      expect(out.state.shieldUntil).toBeGreaterThanOrEqual(big.record.at + shieldHoursFor(big.record.result.destruction, data) * 3_600_000);
       const later = out.raids.filter((r) => r.record.at > big.record.at && r.record.at < big.record.at + 12 * 3_600_000);
       expect(later).toHaveLength(0);
     }
@@ -128,7 +127,10 @@ describe('leaf ranks', () => {
     const rewards = rollSeasons(s, Date.UTC(2026, 2, 2), data);
     expect(rewards).toHaveLength(2);
     expect(rewards[0].league).toBe('oak');
-    expect(rewards[0].chest).toEqual(data.ranks.leagues[2].chest);
+    // Chest resources are sized to the player's Elder Toadstool level (here 1); Moonstones are not.
+    expect(rewards[0].chest).toEqual(leagueChest(data.ranks.leagues[2], 1, data));
+    expect(rewards[0].chest.moonstones).toBe(data.ranks.leagues[2].chest.moonstones);
+    expect(rewards[0].chest.acorns!).toBeLessThan(data.ranks.leagues[2].chest.acorns!);
     expect(rewards[0].trophiesAfter).toBe(400 + 400);
     expect(s.trophies).toBe(400 + 200);
     expect(s.season).toBe(seasonOf(Date.UTC(2026, 2, 2)));

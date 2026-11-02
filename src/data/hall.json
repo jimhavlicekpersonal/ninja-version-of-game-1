@@ -2,6 +2,7 @@
   "levels": [
     {
       "level": 1,
+      "troopLevelCap": 1,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -29,7 +30,7 @@
         },
         "army_camp": {
           "count": 1,
-          "maxLevel": 2
+          "maxLevel": 1
         },
         "acorn_cannon": {
           "count": 1,
@@ -59,6 +60,7 @@
     },
     {
       "level": 2,
+      "troopLevelCap": 2,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -124,6 +126,7 @@
     },
     {
       "level": 3,
+      "troopLevelCap": 2,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -151,7 +154,7 @@
         },
         "army_camp": {
           "count": 2,
-          "maxLevel": 4
+          "maxLevel": 3
         },
         "acorn_cannon": {
           "count": 2,
@@ -201,6 +204,7 @@
     },
     {
       "level": 4,
+      "troopLevelCap": 3,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -282,6 +286,7 @@
     },
     {
       "level": 5,
+      "troopLevelCap": 4,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -309,7 +314,7 @@
         },
         "army_camp": {
           "count": 3,
-          "maxLevel": 6
+          "maxLevel": 5
         },
         "acorn_cannon": {
           "count": 3,
@@ -363,6 +368,7 @@
     },
     {
       "level": 6,
+      "troopLevelCap": 5,
       "limits": {
         "beaver_lodge": {
           "count": 5,

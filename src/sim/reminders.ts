@@ -19,6 +19,8 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
     const title = b.upgrade.toLevel === 0 ? `${def.name} cleared` : b.upgrade.toLevel === 1 ? `${def.name} is built!` : `${def.name} reached level ${b.upgrade.toLevel}!`;
     out.push({ id: `up-${b.id}`, at: b.upgrade.endsAt, title, body: 'Your Beaver Builder is free for a new job.' });
   }
+  const r = state.research?.active;
+  if (r && r.endsAt > now) out.push({ id: 'research', at: r.endsAt, title: `${data.troops[r.troop]?.name ?? 'Troop'} level ${r.toLevel} researched!`, body: 'The Burrow Barracks is free to research again.' });
   const last = state.training[state.training.length - 1];
   if (last && last.endsAt > now) out.push({ id: 'training', at: last.endsAt, title: 'Your army is ready', body: 'All troops have finished training. Time to raid!' });
   // Earliest time a collector fills up.

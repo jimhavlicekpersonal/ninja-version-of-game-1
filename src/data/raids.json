@@ -1,45 +1,68 @@
 {
   "newPlayerShieldHours": 24,
-  "shieldHours": 12,
-  "shieldDestructionThreshold": 30,
-  "maxRaids": 3,
-  "minAwayMinutes": 30,
-  "raidChancePerHourPerSlot": 0.08,
-  "maxChancePerSlot": 0.85,
-  "attackerTrophyRange": 100,
-  "maxDefenseLog": 10,
-  "botArmies": [
+  "shieldTiers": [
     {
-      "hedgehog_roller": 18
+      "destruction": 30,
+      "hours": 12
     },
     {
-      "hedgehog_roller": 18,
-      "frog_lobber": 10
+      "destruction": 60,
+      "hours": 14
     },
     {
-      "hedgehog_roller": 20,
-      "frog_lobber": 12,
-      "beetle_brute": 2
-    },
-    {
-      "hedgehog_roller": 20,
-      "frog_lobber": 14,
-      "beetle_brute": 3,
-      "owl_bomber": 2
-    },
-    {
-      "hedgehog_roller": 24,
-      "frog_lobber": 16,
-      "beetle_brute": 4,
-      "owl_bomber": 3,
-      "mole_digger": 4
-    },
-    {
-      "hedgehog_roller": 26,
-      "frog_lobber": 20,
-      "beetle_brute": 5,
-      "owl_bomber": 4,
-      "mole_digger": 6
+      "destruction": 90,
+      "hours": 16
     }
+  ],
+  "slotMinutes": 60,
+  "chancePerSlot": 0.12,
+  "graceMinutes": 2,
+  "maxRaidsPerCatchUp": 24,
+  "maxDefenseLog": 10,
+  "botArmyMix": [
+    {
+      "hedgehog_roller": 0.7,
+      "frog_lobber": 0.3
+    },
+    {
+      "hedgehog_roller": 0.55,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15
+    },
+    {
+      "hedgehog_roller": 0.45,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.1
+    },
+    {
+      "hedgehog_roller": 0.4,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.08,
+      "mole_digger": 0.07
+    },
+    {
+      "hedgehog_roller": 0.35,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.1,
+      "mole_digger": 0.1
+    },
+    {
+      "hedgehog_roller": 0.35,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.1,
+      "mole_digger": 0.1
+    }
+  ],
+  "storageLootCapByHall": [
+    1500,
+    4000,
+    10000,
+    25000,
+    60000,
+    130000
   ]
 }

@@ -1,5 +1,5 @@
 import { generateGrove, groveLevel, isOnline, reinforcementCapacity, reinforcementHousing, canRequest } from '../sim/social/grove';
-import { attacksLeft, enemyGrove, raidPhase, raidScore } from '../sim/social/groveRaid';
+import { attacksLeft, enemyGrove, groveRaidChest, raidPhase, raidScore } from '../sim/social/groveRaid';
 import { hallLevel } from '../sim/village';
 import { clear, h, icon } from './dom';
 import type { UiKit } from './economyUi';
@@ -189,7 +189,12 @@ export class GroveUi {
     const hall = hallLevel(s, gd);
     if (p.phase !== 'live') {
       body.append(h('p', {}, `The next Grove Raid starts in ${formatDuration(p.nextStart - now)} and lasts 2 days. Every member gets ${gd.social.groveRaid.attacksPerMember} attacks; the best stars on each enemy base add up, and the Grove with more stars wins.`));
-      body.append(h('h3', {}, 'Reward chest'), h('div', {}, h('div', { class: 'row' }, h('b', {}, 'Win '), rewardChips(gd.social.groveRaid.rewards.win)), h('div', { class: 'row' }, h('b', {}, 'Draw '), rewardChips(gd.social.groveRaid.rewards.draw)), h('div', { class: 'row' }, h('b', {}, 'Loss '), rewardChips(gd.social.groveRaid.rewards.loss))));
+      const chest = (o: 'win' | 'draw' | 'loss') => {
+        const { xp, ...c } = groveRaidChest(o, hall, gd);
+        void xp;
+        return rewardChips(c);
+      };
+      body.append(h('h3', {}, 'Reward chest'), h('p', { class: 'muted small' }, `Sized for your Elder Toadstool level ${hall}.`), h('div', {}, h('div', { class: 'row' }, h('b', {}, 'Win '), chest('win')), h('div', { class: 'row' }, h('b', {}, 'Draw '), chest('draw')), h('div', { class: 'row' }, h('b', {}, 'Loss '), chest('loss'))));
       const last = s.grove.raidHistory[s.grove.raidHistory.length - 1];
       if (last) body.append(h('h3', {}, 'Last Grove Raid'), h('p', {}, `${last.outcome === 'win' ? 'Victory' : last.outcome === 'draw' ? 'Draw' : 'Defeat'} · ${last.ours} – ${last.theirs} stars. Reward: `, rewardChips(last.reward)));
       return;

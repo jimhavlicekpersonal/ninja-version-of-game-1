@@ -27,20 +27,20 @@ async function controller() {
 }
 
 describe('Moonstone prices', () => {
-  it('skip cost follows the curve through 1 min=1, 1 h=20, 1 day=260, 1 week=1000', () => {
+  it('skip cost follows the curve through 1 min=1, 1 h=25, 1 day=300, 1 week=1200', () => {
     expect(skipCost(60, data)).toBe(1);
-    expect(skipCost(3600, data)).toBe(20);
-    expect(skipCost(86400, data)).toBe(260);
-    expect(skipCost(604800, data)).toBe(1000);
+    expect(skipCost(3600, data)).toBe(25);
+    expect(skipCost(86400, data)).toBe(300);
+    expect(skipCost(604800, data)).toBe(1200);
     expect(skipCost(10, data)).toBe(1);
     expect(skipCost(0, data)).toBe(0);
     const twoHours = skipCost(7200, data);
-    expect(twoHours).toBeGreaterThan(20);
-    expect(twoHours).toBeLessThan(40);
+    expect(twoHours).toBeGreaterThan(25);
+    expect(twoHours).toBeLessThan(45);
   });
 
-  it('top-up cost follows the curve through 100=1, 1k=5, 10k=25, 100k=125, 1M=600', () => {
-    expect([100, 1000, 10000, 100000, 1000000].map((n) => topUpOne(n, data))).toEqual([1, 5, 25, 125, 600]);
+  it('top-up cost follows the curve through 100=1, 1k=10, 10k=60, 100k=500, 1M=3000', () => {
+    expect([100, 1000, 10000, 100000, 1000000].map((n) => topUpOne(n, data))).toEqual([1, 10, 60, 500, 3000]);
     expect(topUpOne(1, data)).toBe(1);
   });
 
@@ -177,7 +177,7 @@ describe('purchases end to end with the mock provider (all logged in analytics)'
     const shown: string[] = [];
     c.onOffer((rule) => shown.push(rule.id));
     // Build up to an upgrade that takes over an hour.
-    await c.replace({ ...c.state, resources: { ...c.state.resources, acorns: 100000, dew: 100000 }, buildings: c.state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 3 } : b)) });
+    await c.replace({ ...c.state, resources: { ...c.state.resources, acorns: 200000, dew: 200000 }, buildings: c.state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 4 } : b)) });
     const hall = c.state.buildings.find((b) => b.type === 'elder_toadstool')!;
     expect(c.dispatch({ type: 'upgrade', id: hall.id }).ok).toBe(true);
     expect(shown).toEqual(['starter_pack']);

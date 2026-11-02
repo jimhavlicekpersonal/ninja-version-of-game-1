@@ -85,4 +85,18 @@ describe('PvP server', () => {
     const r = await s.call('POST', '/v1/attacks', a.token, { ticket: m.body.ticket, seed: 1, army: { beetle_brute: 500 }, deployments: [] });
     expect(r.status).toBe(400);
   });
+
+  it('refuses troop levels above what the attacker’s hall allows', async () => {
+    const s = setup();
+    const a = await s.register('A');
+    const b = await s.register('B');
+    await s.call('PUT', '/v1/base', b.token, { base: generateOpponent(3, 1, data) });
+    s.advance(25 * 3_600_000);
+    const m = await s.call('GET', '/v1/match', a.token);
+    // A new player is hall 1: troop level 2 is not possible yet.
+    const bad = await s.call('POST', '/v1/attacks', a.token, { ticket: m.body.ticket, seed: 1, army: { hedgehog_roller: 10 }, levels: { hedgehog_roller: 2 }, deployments: [] });
+    expect(bad.status).toBe(400);
+    const ok = await s.call('POST', '/v1/attacks', a.token, { ticket: m.body.ticket, seed: 1, army: { hedgehog_roller: 10 }, levels: { hedgehog_roller: 1 }, deployments: [] });
+    expect(ok.status).toBe(200);
+  });
 });

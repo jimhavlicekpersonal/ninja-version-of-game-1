@@ -1,31 +1,51 @@
 /**
  * A simple model player used to tune progression. It plays through the real
- * game rules (applyCommand, offline raids) with a fake clock.
+ * game rules (applyCommand, matchmaking, real battles, offline raids) with a
+ * fake clock. Nothing about loot is assumed: every raid is a real battle.
  *
  * Assumptions (documented so the balance targets mean something):
- * - Each session it collects everything, raids if its army is at least half
- *   full, refills the army, then spends on a priority list (Elder Toadstool >
- *   storage it needs > army buildings > collectors > other storage >
- *   defenses), saving half the next Elder Toadstool's cost before buying
- *   extras and keeping a builder free when the Elder Toadstool is nearly
- *   affordable.
- * - Each full army raids one generated opponent and wins `lootEfficiency` of
- *   the average loot on offer for its hall level (a typical 1-2 star raid).
+ * - Each session it collects everything, raids if its army is at least 80%
+ *   full, refills the army, researches, then spends on a priority list (Elder
+ *   Toadstool > storage it needs > army buildings > collectors > other
+ *   storage > defenses and traps), saving half the next Elder Toadstool's cost
+ *   before buying extras and keeping a builder free when the Elder Toadstool
+ *   is nearly affordable.
+ * - Raids: it scouts the matched opponent, presses Next (paying the fee) up to
+ *   `maxNext` times while the loot on offer is below average for its hall,
+ *   then attacks with its whole army using the simple bot plan (everything
+ *   from one side, toughest troops first). A human usually does better.
+ * - The army follows the bot army mix for its hall, using unlocked troops.
  * - Between sessions, real offline bot raids run against the real layout.
  */
-import { armyHousing, housingCapacity, queueHousing } from '../../src/sim/army';
+import { armyHousing, barracksLevel, housingCapacity, queueHousing } from '../../src/sim/army';
+import { createBattle } from '../../src/sim/battle/battle';
+import { totalLoot } from '../../src/sim/battle/basegen';
 import { FakeClock } from '../../src/sim/clock';
 import { buildingDef, levelDef } from '../../src/sim/data';
+import { botDeployments } from '../../src/sim/defense';
 import { findFreeSpot } from '../../src/sim/grid';
+import { opponentFor } from '../../src/sim/matchmaking';
 import { computeOfflineProgress } from '../../src/sim/offline';
-import { addCapped, capacity, collectorAmount } from '../../src/sim/resources';
+import { troopLevels } from '../../src/sim/research';
+import { capacity, collectorAmount } from '../../src/sim/resources';
+import { createRng, mixSeed } from '../../src/sim/rng';
 import type { GameData, VillageState } from '../../src/sim/types';
-import { advance, applyCommand, builderStatus, countOfType, createNewVillage, hallLevel, limitFor, type Command } from '../../src/sim/village';
+import { advance, applyCommand, battleArmy, builderStatus, countOfType, createNewVillage, hallLevel, limitFor, researchStartQuote, scoutFee, type Command } from '../../src/sim/village';
 
 export interface ModelOptions {
-  lootEfficiency: number;
   /** Max raids per session (armies permitting). */
   raidsPerSession: number;
+  /** Max paid "Next" presses per raid. */
+  maxNext?: number;
+}
+
+export interface RaidLog {
+  hall: number;
+  opponentHall: number;
+  stars: number;
+  destruction: number;
+  loot: number;
+  trophies: number;
 }
 
 export class ModelPlayer {
@@ -33,6 +53,8 @@ export class ModelPlayer {
   state: VillageState;
   hallReachedAt: Record<number, number> = {};
   raids = 0;
+  raidLog: RaidLog[] = [];
+  defenseLog: { hall: number; stars: number; destruction: number; lost: number }[] = [];
   private readonly t0: number;
 
   constructor(private readonly data: GameData, private readonly opts: ModelOptions) {
@@ -59,7 +81,10 @@ export class ModelPlayer {
   /** Let time pass with the game closed (offline raids apply). */
   away(ms: number): void {
     this.clock.advance(ms);
-    this.state = computeOfflineProgress(this.state, this.clock.now(), this.data).state;
+    const r = computeOfflineProgress(this.state, this.clock.now(), this.data);
+    this.state = r.state;
+    for (const d of r.summary.raids) this.defenseLog.push({ hall: hallLevel(this.state, this.data), stars: d.result.stars, destruction: d.result.destruction, lost: (d.result.loot.acorns ?? 0) + (d.result.loot.dew ?? 0) });
+    this.state.defenseLog = [];
     this.noteHall();
   }
 
@@ -79,6 +104,7 @@ export class ModelPlayer {
     for (const b of this.state.buildings) if (d.buildings[b.type].produces) this.run({ type: 'collect', id: b.id });
     this.raid();
     this.train();
+    this.research();
     this.spend();
     this.train();
     this.state.lastSeenAt = this.clock.now();
@@ -129,7 +155,7 @@ export class ModelPlayer {
       for (const t of ['acorn_silo', 'dew_cistern']) consider(t, storageShort ? 0 : 3);
       for (const t of ['army_camp', 'burrow_barracks']) consider(t, 1);
       for (const t of ['acorn_orchard', 'dewdrop_well']) consider(t, 2);
-      for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower']) consider(t, 4);
+      for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle']) consider(t, 4);
       options.sort((a, b) => a.prio - b.prio);
       let did = false;
       for (const o of options) {
@@ -146,12 +172,52 @@ export class ModelPlayer {
     }
   }
 
+  /** Housing shares to train toward: the bot mix for this hall, using unlocked troops. */
+  private mix(): [string, number][] {
+    const d = this.data;
+    const bl = barracksLevel(this.state, d);
+    const mixes = d.raids.botArmyMix;
+    const want = mixes[Math.min(mixes.length, hallLevel(this.state, d)) - 1];
+    const ok = Object.entries(want).filter(([t]) => d.troops[t].barracksLevel <= bl);
+    const sum = ok.reduce((a, [, v]) => a + v, 0);
+    return ok.map(([t, v]) => [t, v / sum]);
+  }
+
   private train(): void {
     const d = this.data;
-    for (let i = 0; i < 200; i++) {
+    const mix = this.mix();
+    if (!mix.length) return;
+    for (let i = 0; i < 400; i++) {
       const cap = housingCapacity(this.state, d);
-      if (armyHousing(this.state.army, d) + queueHousing(this.state.training, d) >= cap) return;
-      if (!this.run({ type: 'train', troop: 'hedgehog_roller' })) return;
+      const used = armyHousing(this.state.army, d) + queueHousing(this.state.training, d);
+      if (used >= cap) return;
+      // Train the troop furthest below its share; fall back to the cheapest.
+      const have: Record<string, number> = { ...this.state.army };
+      for (const q of this.state.training) have[q.troop] = (have[q.troop] ?? 0) + 1;
+      const order = mix
+        .map(([t, share]) => ({ t, gap: share * cap - (have[t] ?? 0) * d.troops[t].housing }))
+        .sort((a, b) => b.gap - a.gap);
+      let trained = false;
+      for (const o of order) {
+        if (o.gap < d.troops[o.t].housing && o !== order[order.length - 1]) continue;
+        if (this.run({ type: 'train', troop: o.t })) {
+          trained = true;
+          break;
+        }
+      }
+      if (!trained && !this.run({ type: 'train', troop: 'hedgehog_roller' })) return;
+    }
+  }
+
+  /** Research the most used unlocked troop that can go up a level, if it leaves 30% of Dew storage for the rest. */
+  private research(): void {
+    if (this.state.research.active) return;
+    const d = this.data;
+    const reserve = capacity(this.state, d).dew * 0.3;
+    for (const [t] of this.mix().sort((a, b) => b[1] - a[1])) {
+      const q = researchStartQuote(this.state, t, this.clock.now(), d);
+      if (!q.ok || this.state.resources.dew - (q.quote.cost.dew ?? 0) < reserve) continue;
+      if (this.run({ type: 'research', troop: t })) return;
     }
   }
 
@@ -160,16 +226,44 @@ export class ModelPlayer {
     for (let r = 0; r < this.opts.raidsPerSession; r++) {
       const cap = housingCapacity(this.state, d);
       const have = armyHousing(this.state.army, d);
-      if (!cap || have < cap * 0.5) return;
+      if (!cap || have < cap * 0.8) return;
       const hl = hallLevel(this.state, d);
       const range = d.battle.generatedLootByHall[hl - 1];
       const avg = (range.min + range.max) / 2;
-      const loot = Math.floor(avg * this.opts.lootEfficiency * Math.min(1, have / cap));
-      addCapped(this.state.resources, { acorns: loot, dew: loot }, capacity(this.state, d));
-      this.state.army = {};
-      this.state.shieldUntil = Math.min(this.state.shieldUntil, this.clock.now());
+      let seed = this.scout(false);
+      if (seed === null) return;
+      let base = opponentFor(seed, this.state, d);
+      for (let n = 0; n < (this.opts.maxNext ?? 2); n++) {
+        const offer = totalLoot(base);
+        if ((offer.acorns ?? 0) + (offer.dew ?? 0) >= avg * 2 || this.state.resources.acorns < scoutFee(this.state, d) * 3) break;
+        const next = this.scout(true);
+        if (next === null) break;
+        seed = next;
+        base = opponentFor(seed, this.state, d);
+      }
+      const army = battleArmy(this.state);
+      const levels = troopLevels(this.state, d);
+      const setup = { seed: mixSeed(seed, 0xba771e), base, army, levels };
+      const probe = createBattle(setup, d);
+      const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(seed), d, levels);
+      const before = this.state.resources.acorns + this.state.resources.dew;
+      const res = applyCommand(this.state, { type: 'battleEnd', record: { at: this.clock.now(), opponentName: base.name, setup, deployments } }, this.clock.now(), d);
+      if (!res.ok) throw new Error(`battleEnd failed: ${res.message}`);
+      this.state = res.state;
+      const rec = this.state.battleLog[this.state.battleLog.length - 1];
+      this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies });
+      // Replays are not needed here, and cloning them on every command is slow.
+      this.state.battleLog = [];
       this.raids++;
     }
+  }
+
+  private scout(paid: boolean): number | null {
+    const r = applyCommand(this.state, { type: 'scout', paid }, this.clock.now(), this.data);
+    if (!r.ok) return null;
+    this.state = r.state;
+    const e = r.events.find((x) => x.kind === 'scout');
+    return e && e.kind === 'scout' ? e.seed : null;
   }
 
   /** Total resources waiting in collectors (for debugging). */

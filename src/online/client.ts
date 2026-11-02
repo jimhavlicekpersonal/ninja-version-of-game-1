@@ -11,6 +11,7 @@ export interface RemoteDefense {
   attackerName: string;
   seed: number;
   army: Record<string, number>;
+  levels?: Record<string, number>;
   base: BaseLayout;
   deployments: Deployment[];
   endTick?: number;
@@ -77,7 +78,7 @@ export class OnlineClient {
     }
   }
 
-  submitAttack(body: { ticket: string; seed: number; army: Record<string, number>; deployments: Deployment[]; endTick?: number }): Promise<{ result: BattleResult; trophies: number }> {
+  submitAttack(body: { ticket: string; seed: number; army: Record<string, number>; levels?: Record<string, number>; deployments: Deployment[]; endTick?: number }): Promise<{ result: BattleResult; trophies: number }> {
     return this.req('POST', '/v1/attacks', body);
   }
 

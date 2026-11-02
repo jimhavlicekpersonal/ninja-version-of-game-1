@@ -31,12 +31,13 @@ export function barracksLevel(state: VillageState, data: GameData): number {
   return best;
 }
 
-/** Move finished training into the army. Mutates `state`. */
+/** Move finished training into the army. Mutates `state`. Only finished troops count toward tasks. */
 export function finishTraining(state: VillageState, now: number): string[] {
   const done: string[] = [];
   while (state.training.length && state.training[0].endsAt <= now) {
     const item = state.training.shift()!;
     state.army[item.troop] = (state.army[item.troop] ?? 0) + 1;
+    if (state.stats) state.stats.troopsTrained++;
     done.push(item.troop);
   }
   return done;
@@ -61,4 +62,12 @@ export function retimeQueue(queue: TrainingItem[], now: number, data: GameData):
 export function queueEndsAt(state: VillageState, now: number): number {
   const last = state.training[state.training.length - 1];
   return last ? Math.max(now, last.endsAt) : now;
+}
+
+/** Largest Army Camp housing possible at an Elder Toadstool level (every camp at its cap). */
+export function maxHousingAtHall(hallLevel: number, data: GameData): number {
+  const levels = data.hall.levels;
+  const lim = levels[Math.max(1, Math.min(levels.length, hallLevel)) - 1]?.limits.army_camp;
+  if (!lim) return 0;
+  return lim.count * (levelDef(data, 'army_camp', lim.maxLevel)?.housing ?? 0);
 }

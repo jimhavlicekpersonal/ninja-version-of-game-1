@@ -29,7 +29,7 @@ describe('troop training', () => {
     let s = must(state, { type: 'train', troop: 'hedgehog_roller' }, t0);
     s = must(s, { type: 'train', troop: 'hedgehog_roller' }, t0);
     expect(s.training.map((q) => [q.startedAt - t0, q.endsAt - t0])).toEqual([[0, 20_000], [20_000, 40_000]]);
-    expect(s.resources.dew).toBe(state.resources.dew - 2 * data.troops.hedgehog_roller.cost.dew!);
+    expect(s.resources.dew).toBe(state.resources.dew - 2 * data.troops.hedgehog_roller.levels[0].cost.dew!);
     clock.advanceSeconds(20);
     s = advance(s, clock.now(), data).state;
     expect(s.army.hedgehog_roller).toBe(1);

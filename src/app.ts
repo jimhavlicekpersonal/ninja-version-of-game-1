@@ -2,10 +2,10 @@ import type Phaser from 'phaser';
 import { BattleSession } from './game/battleSession';
 import type { GameController } from './game/controller';
 import type { BattleSceneInit } from './render/BattleScene';
-import { generateOpponent } from './sim/battle/basegen';
-import type { BattleRecord, BattleSetup } from './sim/battle/types';
+import type { BaseLayout, BattleRecord, BattleSetup } from './sim/battle/types';
+import { applyLootPenalty, opponentFor } from './sim/matchmaking';
+import { troopLevels } from './sim/research';
 import { mixSeed } from './sim/rng';
-import { matchTrophies } from './sim/ranks';
 import { battleArmy, hallLevel, scoutFee } from './sim/village';
 import { enemyGrove, raidPhase } from './sim/social/groveRaid';
 import { BattleHud } from './ui/battleHud';
@@ -37,6 +37,8 @@ export class App {
   }
 
   private ticket: string | null = null;
+  /** The online opponent behind the current scout seed, kept so Home + Attack shows the same base. */
+  private onlineMatch: { seed: number; ticket: string; base: BaseLayout; at: number } | null = null;
 
   /** Look for an opponent. `paid` = pressing Next. */
   async scout(paid = false): Promise<void> {
@@ -48,13 +50,20 @@ export class App {
       return;
     }
     this.ticket = null;
+    const army = battleArmy(c.state);
+    const levels = troopLevels(c.state, c.data);
     // A real player's base from the server when online; a generated one otherwise.
     if (this.d.online) {
       try {
-        const m = await this.d.online.match();
+        // Same scout seed as last time (Home, then Attack): show the same base
+        // while its ticket is still fresh, so leaving never rerolls for free.
+        const kept = this.onlineMatch && this.onlineMatch.seed === r.seed && c.now() - this.onlineMatch.at < 9 * 60_000 ? this.onlineMatch : null;
+        const m = kept ?? (await this.d.online.match());
         if (m) {
+          const base = kept ? kept.base : applyLootPenalty(m.base, hallLevel(c.state, c.data), c.data);
+          this.onlineMatch = { seed: r.seed, ticket: m.ticket, base, at: kept ? kept.at : c.now() };
           this.ticket = m.ticket;
-          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base: m.base, army: battleArmy(c.state) };
+          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base: structuredClone(base), army, levels };
           this.open(new BattleSession(setup, c.data, 'scout'));
           return;
         }
@@ -62,9 +71,9 @@ export class App {
         console.warn('Online match failed, using a generated opponent', e);
       }
     }
-    const base = generateOpponent(r.seed, hallLevel(c.state, c.data), c.data);
-    base.trophies = matchTrophies(r.seed, c.state.trophies, c.data);
-    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army: battleArmy(c.state) };
+    // Opponent strength and loot follow the player's trophies (see sim/matchmaking).
+    const base = opponentFor(r.seed, c.state, c.data);
+    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels };
     this.open(new BattleSession(setup, c.data, 'scout'));
   }
 
@@ -77,7 +86,7 @@ export class App {
     const base = enemy.bases[target];
     if (!base) return;
     const done = c.state.grove.raid?.week === p.week ? c.state.grove.raid.attacks.length : 0;
-    const setup: BattleSetup = { seed: mixSeed(c.state.grove.seed, p.week * 1000 + target + done * 97 + 1), base, army: battleArmy(c.state) };
+    const setup: BattleSetup = { seed: mixSeed(c.state.grove.seed, p.week * 1000 + target + done * 97 + 1), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data) };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, { target, enemyName: enemy.name });
   }
 
@@ -124,15 +133,16 @@ export class App {
         if (this.d.online && this.ticket) {
           const ticket = this.ticket;
           this.ticket = null;
+          this.onlineMatch = null;
           const online = this.d.online;
           void online
-            .submitAttack({ ticket, seed: session.setup.seed, army: session.setup.army, deployments: session.deployments, endTick: session.endTick })
+            .submitAttack({ ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, deployments: session.deployments, endTick: session.endTick })
             .then(() => online.me())
             .then((me) => c.dispatch({ type: 'syncRank', trophies: me.trophies, shieldUntil: me.shieldUntil }))
             .catch((e) => console.warn('Could not report the attack to the server', e));
         }
         lastRecord = out.record;
-        return { result: out.record.result, banked: out.banked, trophies: out.record.trophies ?? 0 };
+        return { result: out.record.result, banked: out.banked, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);

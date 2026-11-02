@@ -54,7 +54,7 @@ describe('Grove', () => {
     expect(mine[mine.length - 1].text).not.toMatch(/hell/i);
   });
 
-  it('donating gives XP and fills your own reinforcement slot', () => {
+  it('donating costs the troops and gives XP only (no instant troop swap)', () => {
     const { state, clock } = withLodge();
     let s = must({ ...state, army: { hedgehog_roller: 20 } }, { type: 'joinGrove' }, clock.now());
     // Wait until a friend asks for troops.
@@ -68,9 +68,11 @@ describe('Grove', () => {
     expect(s2.army.hedgehog_roller).toBe(15);
     expect(s2.grove.xp).toBe(5 * data.social.xpPerHousing);
     expect(s2.stats.donations).toBe(5);
-    const reinforced = Object.entries(s2.grove.reinforcements).reduce((sum, [k, n]) => sum + data.troops[k].housing * n, 0);
-    expect(reinforced).toBeGreaterThan(0);
-    expect(reinforced).toBeLessThanOrEqual(reinforcementCapacity(s2, data));
+    // Donating used to hand back the same housing as random troops, which let
+    // players turn cheap Hedgehogs into Beetles. Reinforcements now only come
+    // from your own requests.
+    expect(s2.grove.reinforcements).toEqual(s.grove.reinforcements);
+    expect(reinforcementCapacity(s2, data)).toBeGreaterThan(0);
   });
 
   it('asking for troops: friends fill the Grove Lodge over a few minutes, with a cooldown', () => {
@@ -165,5 +167,20 @@ describe('Grove Raid (a full week, fast-forwarded)', () => {
     const after = advance(s, clock.now() + HOUR, data).state;
     expect(after.grove.raidHistory).toHaveLength(0);
     void generateOpponent;
+  });
+});
+
+describe('Grove gifts (#11)', () => {
+  it('friends only send troops your Burrow Barracks has unlocked', () => {
+    const { state, clock } = withLodge();
+    // No barracks at all: only the first (basic) troop can arrive.
+    let s = must(state, { type: 'joinGrove' }, clock.now());
+    for (let i = 0; i < 4; i++) {
+      s = { ...s, grove: { ...s.grove, reinforcements: {} } };
+      const t = clock.now() + i * 2 * HOUR;
+      s = must(s, { type: 'requestTroops' }, t);
+      s = advance(s, t + HOUR, data).state;
+      for (const troop of Object.keys(s.grove.reinforcements)) expect(data.troops[troop].barracksLevel).toBe(1);
+    }
   });
 });

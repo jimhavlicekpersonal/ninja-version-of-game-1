@@ -5,6 +5,7 @@
  */
 import { generateOpponent } from '../battle/basegen';
 import type { BaseLayout } from '../battle/types';
+import { scaleReward } from '../economy';
 import { addCapped, capacity } from '../resources';
 import { createRng, int, mixSeed, next, pick } from '../rng';
 import type { Cost, GameData, GroveRaidState, ResourceKind, VillageState } from '../types';
@@ -31,6 +32,12 @@ export function raidPhase(t: number, data: GameData): { phase: RaidPhase; week: 
   if (t < w.start) return { phase: 'upcoming', week, ...w, nextStart: w.start };
   if (t < w.end) return { phase: 'live', week, ...w, nextStart };
   return { phase: 'ended', week, ...w, nextStart };
+}
+
+/** The Grove Raid chest for an outcome at the player's hall level (resources scale with the hall). */
+export function groveRaidChest(outcome: 'win' | 'draw' | 'loss', hall: number, data: GameData): Cost & { xp: number } {
+  const { xp, ...base } = data.social.groveRaid.rewards[outcome];
+  return { ...scaleReward(base, hall, data), xp };
 }
 
 export interface EnemyGrove {
@@ -161,7 +168,8 @@ export function settleRaids(state: VillageState, now: number, hall: number, data
     const raid: GroveRaidState = g.raid && g.raid.week === week ? g.raid : { week, attacks: [], paidOut: false, result: null };
     const score = raidScore(state, week, end, hall, data);
     const outcome = score.ours > score.theirs ? 'win' : score.ours < score.theirs ? 'loss' : 'draw';
-    const { xp, ...chest } = data.social.groveRaid.rewards[outcome];
+    const { xp, ...base } = data.social.groveRaid.rewards[outcome];
+    const chest = scaleReward(base, hall, data);
     const soft: Cost = {};
     for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) {
       if (k === 'moonstones') state.resources.moonstones += v;

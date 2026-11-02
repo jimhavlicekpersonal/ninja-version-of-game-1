@@ -6,6 +6,7 @@ export type AnalyticsEventName =
   | 'session_start'
   | 'upgrade_start'
   | 'upgrade_cancel'
+  | 'research_start'
   | 'collect'
   | 'skip_used'
   | 'raid_end'

@@ -12,7 +12,7 @@ import pass from '../data/pass.json';
 import cosmetics from '../data/cosmetics.json';
 import achievements from '../data/achievements.json';
 import social from '../data/social.json';
-import type { BuildingDef, BuildingType, GameData, LevelDef } from './types';
+import type { BuildingDef, BuildingType, GameData, LevelDef, TroopLevelDef } from './types';
 
 /** The game's balance data, straight from src/data/*.json. */
 export const defaultData: GameData = {
@@ -57,4 +57,16 @@ export function troopDef(data: GameData, type: string) {
   const def = data.troops[type];
   if (!def) throw new Error(`Unknown troop type: ${type}`);
   return def;
+}
+
+/** Highest level defined for a troop. */
+export function maxTroopLevel(data: GameData, type: string): number {
+  return troopDef(data, type).levels.length;
+}
+
+/** Stats of a troop at a level (clamped to the levels that exist). */
+export function troopLevel(data: GameData, type: string, level = 1): TroopLevelDef {
+  const levels = troopDef(data, type).levels;
+  const i = Math.max(1, Math.min(levels.length, Math.floor(level) || 1)) - 1;
+  return levels[i];
 }

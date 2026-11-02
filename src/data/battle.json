@@ -9,17 +9,17 @@
   "hedgePathCost": 10,
   "maxReplays": 10,
   "scoutFeeByHall": [
-    30,
-    60,
-    120,
+    80,
+    150,
     250,
-    500,
-    900
+    600,
+    1500,
+    3500
   ],
   "generatedLootByHall": [
     {
-      "min": 1500,
-      "max": 2500
+      "min": 2000,
+      "max": 3200
     },
     {
       "min": 3500,

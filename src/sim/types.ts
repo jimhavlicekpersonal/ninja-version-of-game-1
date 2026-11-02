@@ -44,6 +44,13 @@ export interface TrainingItem {
   cost: Cost;
 }
 
+/** Troop research done in the Burrow Barracks (one at a time, no builder needed). */
+export interface ResearchState {
+  /** Researched level per troop type; missing means level 1. */
+  levels: Record<string, number>;
+  active: { troop: string; toLevel: number; startedAt: number; endsAt: number; cost: Cost } | null;
+}
+
 export interface VillageState {
   createdAt: number;
   /** Last time the game was open (used for offline progress). */
@@ -55,6 +62,10 @@ export interface VillageState {
   army: Record<string, number>;
   /** Barracks queue; items finish one after another. */
   training: TrainingItem[];
+  /** Troop levels and the research in progress. */
+  research: ResearchState;
+  /** The opponent found by scouting, kept until it is attacked or the player pays for Next. */
+  scout: { seed: number } | null;
   /** Attacks this player made, newest last (for replays). */
   battleLog: import('./battle/types').BattleRecord[];
   /** Per-village seed and counter for deterministic generation (opponents, raids). */
@@ -131,9 +142,13 @@ export interface GroveState {
   settledWeek: number;
 }
 
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations';
+/**
+ * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
+ * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
+ */
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations';
 export type Stats = Record<StatKey, number>;
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations'];
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }
@@ -180,12 +195,20 @@ export interface CombatDef {
   projectileSpeed: number;
 }
 
+export interface TroopLevelDef {
+  level: number;
+  hp: number;
+  damage: number;
+  /** Training cost per troop at this level. */
+  cost: Cost;
+  /** What researching this level costs (absent on level 1). */
+  research?: { cost: Cost; seconds: number };
+}
+
 export interface TroopDef {
   name: string;
   description: string;
   housing: number;
-  hp: number;
-  damage: number;
   attackIntervalTicks: number;
   range: number;
   /** Tiles per tick. */
@@ -194,8 +217,8 @@ export interface TroopDef {
   prefers: 'any' | 'defense';
   ignoresHedges: boolean;
   trainSeconds: number;
-  cost: Cost;
   barracksLevel: number;
+  levels: TroopLevelDef[];
   projectile?: string;
   projectileSpeed?: number;
   splashRadius?: number;
@@ -242,6 +265,8 @@ export interface BuildingLimit {
 
 export interface HallLevelDef {
   level: number;
+  /** Highest troop level that can be researched at this hall level. */
+  troopLevelCap: number;
   limits: Record<BuildingType, BuildingLimit>;
 }
 
@@ -265,13 +290,22 @@ export interface EconomyDef {
   minCollectAmount: number;
   builderHutCosts: number[];
   obstacles: { count: number; kinds: string[]; keepClearRadius: number };
+  /**
+   * Multiplier on the Acorns and Dew in fixed rewards (league chests, Grove
+   * Raid chests) by the player's Elder Toadstool level, so a reward is worth
+   * about the same share of progress at every hall. Data amounts are for 1.0.
+   */
+  rewardScaleByHall: number[];
 }
 
 export interface LeagueDef {
   id: string;
   name: string;
   min: number;
+  /** Monthly chest; Acorns and Dew are scaled by `rewardScaleByHall`. */
   chest: Cost;
+  /** Extra loot for a won attack in this league (paid in full at 3 stars, a third per star). */
+  winBonus: Cost;
 }
 
 export interface RanksDef {
@@ -281,19 +315,47 @@ export interface RanksDef {
   matchTrophyRange: number;
   seasonResetFloor: number;
   leagues: LeagueDef[];
+  /**
+   * Generated opponents and bot raiders are picked by trophies. Strength is
+   * measured in Elder Toadstool levels: `trophies / trophiesPerHall`, so hall
+   * h covers strength [h-1, h). The fractional part sets how close the base's
+   * buildings are to that hall's caps.
+   */
+  matchmaking: {
+    trophiesPerHall: number;
+    /** Random spread of an opponent's strength around yours (hall levels). */
+    strengthJitter: number;
+    /** Opponents are kept within these many hall levels below / above yours. */
+    hallsBelow: number;
+    hallsAbove: number;
+    /** Random spread of an opponent's trophies around its strength. */
+    trophyJitter: number;
+  };
+  /** Loot multiplier when the target's Elder Toadstool is lower than the attacker's (index = difference). */
+  lootPenaltyByHallDiff: number[];
 }
 
 export interface RaidsDef {
   newPlayerShieldHours: number;
-  shieldHours: number;
-  shieldDestructionThreshold: number;
-  maxRaids: number;
-  minAwayMinutes: number;
-  raidChancePerHourPerSlot: number;
-  maxChancePerSlot: number;
-  attackerTrophyRange: number;
+  /** Shield after a raid, by destruction (highest tier reached wins). */
+  shieldTiers: { destruction: number; hours: number }[];
+  /**
+   * Bot raids are scheduled on the real clock: each slot of `slotMinutes`
+   * (counted from the Unix epoch) holds a raid with `chancePerSlot`, at a time
+   * fixed by the village seed. A raid lands if the game was closed then and no
+   * shield was up, so how often the player checks in does not matter.
+   */
+  slotMinutes: number;
+  chancePerSlot: number;
+  /** No raid in the first minutes after closing the game. */
+  graceMinutes: number;
+  /** Safety cap on raids simulated in one catch-up. */
+  maxRaidsPerCatchUp: number;
   maxDefenseLog: number;
-  botArmies: Record<string, number>[];
+  /** Bot army make-up by attacker hall level: share of housing per troop. */
+  botArmyMix: Record<string, number>[];
+  /** Most of each resource raiders can take from storages, by the defender's hall level. */
+  storageLootCapByHall: number[];
 }
 
 export interface PackDef {

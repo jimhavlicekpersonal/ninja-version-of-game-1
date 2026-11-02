@@ -99,6 +99,8 @@ export class GameController {
     for (const e of result.events) {
       if (e.kind === 'upgrade_start') {
         this.deps.analytics.log('upgrade_start', { building: e.buildingType, toLevel: e.toLevel, seconds: e.seconds, cost: e.cost });
+      } else if (e.kind === 'research_start') {
+        this.deps.analytics.log('research_start', { troop: e.troop, toLevel: e.toLevel, seconds: e.seconds, cost: e.cost });
       } else if (e.kind === 'upgrade_cancel') {
         this.deps.analytics.log('upgrade_cancel', { building: e.buildingType, toLevel: e.toLevel, refund: e.refund });
       } else if (e.kind === 'collect') {

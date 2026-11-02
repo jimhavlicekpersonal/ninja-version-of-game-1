@@ -82,8 +82,8 @@
   {
     "id": "busy_beaver",
     "name": "Busy Beaver",
-    "text": "Start {n} upgrades",
-    "stat": "upgradesStarted",
+    "text": "Finish {n} upgrades",
+    "stat": "upgradesDone",
     "tiers": [
       [
         10,

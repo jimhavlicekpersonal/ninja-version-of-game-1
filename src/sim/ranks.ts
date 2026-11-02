@@ -1,4 +1,5 @@
 /** Leaf ranks: trophies, leagues and monthly seasons. */
+import { scaleReward } from './economy';
 import type { Cost, GameData, LeagueDef, VillageState } from './types';
 
 export function leagueFor(trophies: number, data: GameData): LeagueDef {
@@ -45,28 +46,27 @@ export interface SeasonReward {
   trophiesAfter: number;
 }
 
+/** A league's monthly chest for a player at this Elder Toadstool level. */
+export function leagueChest(league: LeagueDef, hallLevel: number, data: GameData): Cost {
+  return scaleReward(league.chest, hallLevel, data);
+}
+
 /**
  * Close any seasons that ended before `now`: give the league chest (fixed
- * contents, nothing random) and soften trophies above the reset floor. Mutates.
+ * contents, nothing random, sized to the player's hall level) and soften
+ * trophies above the reset floor. Mutates.
  */
 export function rollSeasons(state: VillageState, now: number, data: GameData): SeasonReward[] {
   const out: SeasonReward[] = [];
   const current = seasonOf(now);
+  const hall = Math.max(1, state.buildings.find((b) => data.buildings[b.type]?.category === 'hall')?.level ?? 1);
   while (state.season < current) {
     const league = leagueFor(state.trophies, data);
     const before = state.trophies;
     const floor = data.ranks.seasonResetFloor;
     if (state.trophies > floor) state.trophies = floor + Math.floor((state.trophies - floor) / 2);
-    out.push({ season: state.season, league: league.id, chest: { ...league.chest }, trophiesBefore: before, trophiesAfter: state.trophies });
+    out.push({ season: state.season, league: league.id, chest: leagueChest(league, hall, data), trophiesBefore: before, trophiesAfter: state.trophies });
     state.season++;
   }
   return out;
-}
-
-/** Trophies for a generated opponent, near the player's own rank (from the opponent seed). */
-export function matchTrophies(seed: number, myTrophies: number, data: GameData): number {
-  let h = (seed ^ 0x7f4a7c15) >>> 0;
-  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b) >>> 0;
-  const r = data.ranks.matchTrophyRange;
-  return Math.max(0, myTrophies + ((h % (2 * r + 1)) - r));
 }

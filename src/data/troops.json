@@ -3,8 +3,6 @@
     "name": "Hedgehog Roller",
     "description": "Rolls into the nearest building. Cheap and quick to train.",
     "housing": 1,
-    "hp": 60,
-    "damage": 8,
     "attackIntervalTicks": 8,
     "range": 0.6,
     "speed": 0.16,
@@ -12,17 +10,78 @@
     "prefers": "any",
     "ignoresHedges": false,
     "trainSeconds": 20,
-    "cost": {
-      "dew": 20
-    },
-    "barracksLevel": 1
+    "barracksLevel": 1,
+    "levels": [
+      {
+        "level": 1,
+        "hp": 50,
+        "damage": 7,
+        "cost": {
+          "dew": 20
+        }
+      },
+      {
+        "level": 2,
+        "hp": 58,
+        "damage": 8,
+        "cost": {
+          "dew": 25
+        },
+        "research": {
+          "cost": {
+            "dew": 4000
+          },
+          "seconds": 1800
+        }
+      },
+      {
+        "level": 3,
+        "hp": 67,
+        "damage": 9,
+        "cost": {
+          "dew": 35
+        },
+        "research": {
+          "cost": {
+            "dew": 18000
+          },
+          "seconds": 7200
+        }
+      },
+      {
+        "level": 4,
+        "hp": 78,
+        "damage": 11,
+        "cost": {
+          "dew": 45
+        },
+        "research": {
+          "cost": {
+            "dew": 60000
+          },
+          "seconds": 21600
+        }
+      },
+      {
+        "level": 5,
+        "hp": 91,
+        "damage": 13,
+        "cost": {
+          "dew": 55
+        },
+        "research": {
+          "cost": {
+            "dew": 150000
+          },
+          "seconds": 43200
+        }
+      }
+    ]
   },
   "frog_lobber": {
     "name": "Frog Lobber",
     "description": "Lobs pebbles from a distance. Fragile, so keep it behind tougher troops.",
     "housing": 1,
-    "hp": 30,
-    "damage": 9,
     "attackIntervalTicks": 10,
     "range": 3.5,
     "speed": 0.15,
@@ -30,19 +89,80 @@
     "prefers": "any",
     "ignoresHedges": false,
     "trainSeconds": 25,
-    "cost": {
-      "dew": 50
-    },
     "barracksLevel": 2,
     "projectile": "pebble",
-    "projectileSpeed": 0.9
+    "projectileSpeed": 0.9,
+    "levels": [
+      {
+        "level": 1,
+        "hp": 24,
+        "damage": 10,
+        "cost": {
+          "dew": 50
+        }
+      },
+      {
+        "level": 2,
+        "hp": 28,
+        "damage": 12,
+        "cost": {
+          "dew": 65
+        },
+        "research": {
+          "cost": {
+            "dew": 5000
+          },
+          "seconds": 1800
+        }
+      },
+      {
+        "level": 3,
+        "hp": 32,
+        "damage": 13,
+        "cost": {
+          "dew": 85
+        },
+        "research": {
+          "cost": {
+            "dew": 21500
+          },
+          "seconds": 7200
+        }
+      },
+      {
+        "level": 4,
+        "hp": 37,
+        "damage": 16,
+        "cost": {
+          "dew": 110
+        },
+        "research": {
+          "cost": {
+            "dew": 72000
+          },
+          "seconds": 21600
+        }
+      },
+      {
+        "level": 5,
+        "hp": 43,
+        "damage": 18,
+        "cost": {
+          "dew": 145
+        },
+        "research": {
+          "cost": {
+            "dew": 180000
+          },
+          "seconds": 43200
+        }
+      }
+    ]
   },
   "beetle_brute": {
     "name": "Beetle Brute",
     "description": "A tough tank that marches straight for defenses.",
     "housing": 5,
-    "hp": 420,
-    "damage": 18,
     "attackIntervalTicks": 12,
     "range": 0.8,
     "speed": 0.1,
@@ -50,17 +170,78 @@
     "prefers": "defense",
     "ignoresHedges": false,
     "trainSeconds": 90,
-    "cost": {
-      "dew": 250
-    },
-    "barracksLevel": 3
+    "barracksLevel": 3,
+    "levels": [
+      {
+        "level": 1,
+        "hp": 650,
+        "damage": 20,
+        "cost": {
+          "dew": 250
+        }
+      },
+      {
+        "level": 2,
+        "hp": 755,
+        "damage": 23,
+        "cost": {
+          "dew": 325
+        },
+        "research": {
+          "cost": {
+            "dew": 6000
+          },
+          "seconds": 1800
+        }
+      },
+      {
+        "level": 3,
+        "hp": 875,
+        "damage": 27,
+        "cost": {
+          "dew": 425
+        },
+        "research": {
+          "cost": {
+            "dew": 27000
+          },
+          "seconds": 7200
+        }
+      },
+      {
+        "level": 4,
+        "hp": 1015,
+        "damage": 31,
+        "cost": {
+          "dew": 550
+        },
+        "research": {
+          "cost": {
+            "dew": 90000
+          },
+          "seconds": 21600
+        }
+      },
+      {
+        "level": 5,
+        "hp": 1175,
+        "damage": 36,
+        "cost": {
+          "dew": 715
+        },
+        "research": {
+          "cost": {
+            "dew": 225000
+          },
+          "seconds": 43200
+        }
+      }
+    ]
   },
   "owl_bomber": {
     "name": "Owl Bomber",
     "description": "Flies over hedges and drops seed bombs on defenses. Watch out for Firefly Towers and Wasp Nests.",
     "housing": 4,
-    "hp": 120,
-    "damage": 36,
     "attackIntervalTicks": 15,
     "range": 0.5,
     "speed": 0.2,
@@ -68,19 +249,80 @@
     "prefers": "defense",
     "ignoresHedges": true,
     "trainSeconds": 120,
-    "cost": {
-      "dew": 400
-    },
     "barracksLevel": 4,
     "projectile": "seedbomb",
-    "projectileSpeed": 0.8
+    "projectileSpeed": 0.8,
+    "levels": [
+      {
+        "level": 1,
+        "hp": 150,
+        "damage": 50,
+        "cost": {
+          "dew": 400
+        }
+      },
+      {
+        "level": 2,
+        "hp": 174,
+        "damage": 58,
+        "cost": {
+          "dew": 520
+        },
+        "research": {
+          "cost": {
+            "dew": 7000
+          },
+          "seconds": 1800
+        }
+      },
+      {
+        "level": 3,
+        "hp": 200,
+        "damage": 67,
+        "cost": {
+          "dew": 675
+        },
+        "research": {
+          "cost": {
+            "dew": 32500
+          },
+          "seconds": 7200
+        }
+      },
+      {
+        "level": 4,
+        "hp": 235,
+        "damage": 78,
+        "cost": {
+          "dew": 880
+        },
+        "research": {
+          "cost": {
+            "dew": 108000
+          },
+          "seconds": 21600
+        }
+      },
+      {
+        "level": 5,
+        "hp": 270,
+        "damage": 91,
+        "cost": {
+          "dew": 1140
+        },
+        "research": {
+          "cost": {
+            "dew": 270000
+          },
+          "seconds": 43200
+        }
+      }
+    ]
   },
   "mole_digger": {
     "name": "Mole Digger",
     "description": "Burrows under hedges to reach any building.",
     "housing": 2,
-    "hp": 90,
-    "damage": 16,
     "attackIntervalTicks": 10,
     "range": 0.6,
     "speed": 0.22,
@@ -88,9 +330,72 @@
     "prefers": "any",
     "ignoresHedges": true,
     "trainSeconds": 60,
-    "cost": {
-      "dew": 120
-    },
-    "barracksLevel": 5
+    "barracksLevel": 5,
+    "levels": [
+      {
+        "level": 1,
+        "hp": 100,
+        "damage": 16,
+        "cost": {
+          "dew": 120
+        }
+      },
+      {
+        "level": 2,
+        "hp": 116,
+        "damage": 19,
+        "cost": {
+          "dew": 155
+        },
+        "research": {
+          "cost": {
+            "dew": 6500
+          },
+          "seconds": 1800
+        }
+      },
+      {
+        "level": 3,
+        "hp": 135,
+        "damage": 22,
+        "cost": {
+          "dew": 205
+        },
+        "research": {
+          "cost": {
+            "dew": 29000
+          },
+          "seconds": 7200
+        }
+      },
+      {
+        "level": 4,
+        "hp": 156,
+        "damage": 25,
+        "cost": {
+          "dew": 265
+        },
+        "research": {
+          "cost": {
+            "dew": 96000
+          },
+          "seconds": 21600
+        }
+      },
+      {
+        "level": 5,
+        "hp": 181,
+        "damage": 29,
+        "cost": {
+          "dew": 345
+        },
+        "research": {
+          "cost": {
+            "dew": 240000
+          },
+          "seconds": 43200
+        }
+      }
+    ]
   }
 }

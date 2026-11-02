@@ -25,13 +25,42 @@ How this is met:
 ## Decisions made during Phases 2-6
 
 - Art direction (owner request): smoother, softer, Nintendo-like look. All art is still generated in code (`src/render/art/`).
-- Save format is versioned (`src/sim/save.ts`, currently v6) with a migration step per version. Bump `SAVE_VERSION` and add a step for every state change.
-- Progression pacing is checked by a model-player test (`tests/balance/`). Rerun it after changing costs, times or loot.
+- Save format is versioned (`src/sim/save.ts`, currently v7) with a migration step per version. Bump `SAVE_VERSION` and add a step for every state change. (v7 dropped stored replays because troop and defense numbers changed.)
+- Progression pacing is checked by a model-player test (`tests/balance/`) that fights every raid as a real battle through matchmaking and `battleEnd` (no assumed loot share). Rerun it after changing costs, times, loot or combat numbers. `tests/balance/combat.test.ts` and `curves.test.ts` pin the attack/defense balance and the curve shapes.
 - Offers have a `minAccountHours` field so brand-new players are not shown the builder offer in their first minutes.
 - Real prices appear only in the Store and its confirm step (pass and offer popups link to the Store).
 - Phase 6: Capacitor 8 (iOS + Android). iOS purchases use a local StoreKit 2 plugin (`ios/App/App/TkStorePlugin.swift`, registered in `TkViewController.swift`). **Android purchases are disabled** (`UnavailablePaymentProvider`) until Google Play Billing is added; ask the owner before adding it.
 - PvP server: Fastify 5 + `pg`, bundled with Vite (`vite.server.config.ts`). Online play turns on when the build has `VITE_SERVER_URL`; with it, real raids replace bot raids. The village economy stays on the device.
 - The owner-only steps (Apple account, App Store Connect products, secrets, server hosting) are in `docs/SHIPPING.md`.
+
+## Balance pass (20 fixes)
+
+A review against how this genre is usually balanced found 20 game-theory holes and curve problems. Each fix has a test:
+
+| # | Problem | Fix | Test |
+|---|---|---|---|
+| 1 | Home + Attack rerolled opponents for free | The scouted opponent is kept (`state.scout`) until it is attacked or Next is paid | `tests/sim/matchmaking.test.ts` |
+| 2 | Next fee shrank to <1% of loot | `scoutFeeByHall` is ~3% of a hall's average loot | same |
+| 3 | Trophies didn't affect opponents | `src/sim/matchmaking.ts`: strength = trophies / `trophiesPerHall`; it sets the opponent's hall, building levels and loot, kept within 1 hall below / 1 above | same |
+| 4 | Trophies only went up | Opponents' trophies follow their strength, so running ahead of your hall makes wins pay less and losses cost more; win 24 / loss 20 at parity | same |
+| 5 | Attacks ~100% / 3★ at every hall | Defense damage ×4.5, defense HP ×3, other buildings and hedges ×1.5; full army at matched strength now does ~55-75% | `tests/balance/combat.test.ts` |
+| 6 | Balance test assumed 55% loot | Model player fights real battles | `tests/balance/progression.test.ts` |
+| 7 | Hedgehog best at everything | Re-tuned troop stats; no troop dominates another; mixed armies beat Hedgehog-only | `combat.test.ts`, `curves.test.ts` |
+| 8 | Bot raiders got weaker as you grew | Raiders are matched by your trophies and bring a full army at their hall's research cap (`attackerFor`) | `tests/sim/raids.test.ts` |
+| 9 | Checking in every 29 min avoided all raids | Raids sit at fixed per-hour slots on the clock (`raidTimes`); only time with the game open (plus a 2 min grace) or shielded is safe | same |
+| 10 | Tasks counted started work (train/upgrade then cancel) | `troopsTrained` and new `upgradesDone` count finished work | `tests/sim/research.test.ts` |
+| 11 | Donating swapped cheap troops for expensive ones | Donating gives XP only; gifts are only troops your Barracks has unlocked | `tests/social/social.test.ts` |
+| 12 | Raid profit per Dew grew 1.3x → 9.6x | Troop training cost rises with level; ratio stays ~2-4.5x | `curves.test.ts` |
+| 13 | Troops had no levels | Troop research in the Burrow Barracks (`src/sim/research.ts`), capped by `troopLevelCap` in hall.json | `research.test.ts` |
+| 14 | Hall timer jumped 36x at hall 4 | Hall times grow ~2.7x per level (hall 10 would be ~7 days) | `curves.test.ts` |
+| 15 | Hall cost multipliers shrank | 1k → 4k → 20k → 108k → 600k (x4, 5, 5.4, 5.6); the hall stores little | same |
+| 16 | Collector payback went up and down | Paybacks rise every level and stay under a week | same |
+| 17 | No cap on loot from storage; no penalty for hitting lower halls | `storageLootCapByHall`; `lootPenaltyByHallDiff` (client, bots and server) | `raids.test.ts`, `matchmaking.test.ts` |
+| 18 | Shield always 12 h | 12/14/16 h at 30/60/90% (`shieldTiers`) | `raids.test.ts` |
+| 19 | Grove/league rewards flat across halls | Resources scaled by `rewardScaleByHall` (Moonstones not scaled) | `curves.test.ts` |
+| 20 | Buying a hall level was cheap | Steeper skip and top-up curves; rushing hall 5→6 costs >3x the starting Moonstones | `curves.test.ts`, `economy.test.ts` |
+
+Numbers in the spec below that these replaced (skip/top-up curve points, 0-3 raids per absence, 12-hour shield) are superseded by the data files.
 
 ## Stack decisions made during Phase 1
 

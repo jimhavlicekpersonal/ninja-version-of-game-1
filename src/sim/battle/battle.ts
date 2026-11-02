@@ -3,7 +3,7 @@
  * floating-point functions beyond + - * / and sqrt, so the same setup and
  * deployments replay identically on every device.
  */
-import { buildingDef, levelDef, troopDef } from '../data';
+import { buildingDef, levelDef, troopDef, troopLevel } from '../data';
 import { createRng, next, type Rng } from '../rng';
 import type { CombatDef, Cost, GameData, ResourceKind } from '../types';
 import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from './pathfind';
@@ -33,6 +33,9 @@ export interface SimTroop {
   type: string;
   x: number;
   y: number;
+  /** Researched level the troop fights at, and its damage per hit at that level. */
+  level: number;
+  damage: number;
   /** Position at the start of the tick, for smooth rendering between ticks. */
   px: number;
   py: number;
@@ -186,6 +189,7 @@ export function canDeploy(sim: BattleSim, troop: string, x: number, y: number): 
 export function deploy(sim: BattleSim, d: Deployment): boolean {
   if (!canDeploy(sim, d.troop, d.x, d.y)) return false;
   const def = troopDef(sim.data, d.troop);
+  const stats = troopLevel(sim.data, d.troop, sim.setup.levels?.[d.troop] ?? 1);
   const s = sim.data.battle.deploySpread;
   const x = Math.floor(d.x) + 0.5 + (next(sim.rng) * 2 - 1) * s;
   const y = Math.floor(d.y) + 0.5 + (next(sim.rng) * 2 - 1) * s;
@@ -196,8 +200,10 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
     y,
     px: x,
     py: y,
-    hp: def.hp,
-    maxHp: def.hp,
+    level: stats.level,
+    damage: stats.damage,
+    hp: stats.hp,
+    maxHp: stats.hp,
     air: def.air,
     target: -1,
     path: null,
@@ -292,10 +298,10 @@ function stepTroop(sim: BattleSim, ti: number): void {
         const travel = Math.max(1, Math.ceil(d / (def.projectileSpeed ?? 1)));
         sim.projectiles.push({
           id: sim.nextProjectile++, kind: def.projectile, fromX: t.x, fromY: t.y, toX: c.x, toY: c.y, total: travel, left: travel,
-          damage: def.damage, splash: 0, targetTroop: -1, targetBuilding: t.target, hitsAir: false, hitsGround: false, arc: true,
+          damage: t.damage, splash: 0, targetTroop: -1, targetBuilding: t.target, hitsAir: false, hitsGround: false, arc: true,
         });
       } else {
-        damageBuilding(sim, t.target, def.damage);
+        damageBuilding(sim, t.target, t.damage);
       }
     }
     return;
@@ -337,7 +343,7 @@ function stepTroop(sim: BattleSim, ti: number): void {
       t.attacking = true;
       if (t.cooldown <= 0) {
         t.cooldown = def.attackIntervalTicks;
-        damageBuilding(sim, hi, def.damage);
+        damageBuilding(sim, hi, t.damage);
       }
       return;
     }

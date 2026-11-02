@@ -7,7 +7,10 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { runBattle } from '../src/sim/battle/battle';
 import type { BaseLayout, Deployment } from '../src/sim/battle/types';
-import { buildingDef } from '../src/sim/data';
+import { maxHousingAtHall } from '../src/sim/army';
+import { shieldHoursFor } from '../src/sim/defense';
+import { applyLootPenalty } from '../src/sim/matchmaking';
+import { troopLevelCapAt } from '../src/sim/research';
 import { lossTrophies, winTrophies } from '../src/sim/ranks';
 import type { GameData } from '../src/sim/types';
 import type { Player, Repo } from './repo';
@@ -55,10 +58,21 @@ export function validateBase(base: BaseLayout, data: GameData): string | null {
 
 /** Largest army housing possible at a hall level (camps x their max level). */
 export function maxHousing(hallLevel: number, data: GameData): number {
-  const lim = data.hall.levels[Math.max(0, Math.min(data.hall.levels.length, hallLevel) - 1)]?.limits.army_camp;
-  if (!lim) return 0;
-  const def = buildingDef(data, 'army_camp');
-  return lim.count * (def.levels[lim.maxLevel - 1]?.housing ?? 0) + 60; // + Grove Lodge troops
+  return maxHousingAtHall(hallLevel, data) + 60; // + Grove Lodge troops
+}
+
+/** Troop levels must be ones the attacker's hall level allows. */
+export function validLevels(levels: unknown, hallLevel: number, data: GameData): Record<string, number> | null {
+  if (levels === undefined || levels === null) return {};
+  if (typeof levels !== 'object') return null;
+  const cap = troopLevelCapAt(hallLevel, data);
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(levels as Record<string, unknown>)) {
+    const def = data.troops[k];
+    if (!def || typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > Math.min(cap, def.levels.length)) return null;
+    out[k] = v;
+  }
+  return out;
 }
 
 export function buildServer(opts: ServerOptions): FastifyInstance {
@@ -145,7 +159,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
   app.post('/v1/attacks', async (req, reply) => {
     const me = await auth(req, reply);
     if (!me) return;
-    const body = (req.body ?? {}) as { ticket?: string; seed?: number; army?: Record<string, number>; deployments?: Deployment[]; endTick?: number };
+    const body = (req.body ?? {}) as { ticket?: string; seed?: number; army?: Record<string, number>; levels?: Record<string, number>; deployments?: Deployment[]; endTick?: number };
     const ticket = body.ticket ? await repo.getTicket(body.ticket) : null;
     const t = now();
     if (!ticket || ticket.attackerId !== me.id) return reply.code(404).send({ error: 'unknown ticket' });
@@ -158,10 +172,14 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
       housing += def.housing * n;
     }
     if (housing > maxHousing(me.hallLevel, data)) return reply.code(400).send({ error: 'army too big' });
+    const levels = validLevels(body.levels, me.hallLevel, data);
+    if (!levels) return reply.code(400).send({ error: 'bad troop levels' });
     const deployments = Array.isArray(body.deployments) ? body.deployments.slice(0, 2000) : [];
     if (!(await repo.useTicket(ticket.id))) return reply.code(409).send({ error: 'ticket already used' });
     const seed = Number(body.seed) >>> 0;
-    const { result } = runBattle({ seed, base: ticket.base, army }, deployments, data, body.endTick);
+    // Same loot penalty the client applied when it showed the base.
+    const base = applyLootPenalty(structuredClone(ticket.base), me.hallLevel, data);
+    const { result } = runBattle({ seed, base, army, levels }, deployments, data, body.endTick);
     const defender = await repo.getPlayer(ticket.defenderId);
     const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
     const attackerDelta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
@@ -169,10 +187,11 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
     await repo.updatePlayer(me.id, { trophies: Math.max(0, me.trophies + attackerDelta), shieldUntil: Math.min(me.shieldUntil, t) });
     if (defender) {
       const patch: Partial<Player> = { trophies: Math.max(0, defender.trophies + defenderDelta) };
-      if (result.destruction >= data.raids.shieldDestructionThreshold) patch.shieldUntil = t + data.raids.shieldHours * HOUR;
+      const shield = shieldHoursFor(result.destruction, data);
+      if (shield > 0) patch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
       await repo.updatePlayer(defender.id, patch);
     }
-    const record = { id: randomUUID(), at: t, attackerId: me.id, attackerName: me.name, defenderId: ticket.defenderId, seed, army, base: ticket.base, deployments, endTick: body.endTick, result, attackerTrophies: attackerDelta, defenderTrophies: defenderDelta };
+    const record = { id: randomUUID(), at: t, attackerId: me.id, attackerName: me.name, defenderId: ticket.defenderId, seed, army, levels, base, deployments, endTick: body.endTick, result, attackerTrophies: attackerDelta, defenderTrophies: defenderDelta };
     await repo.addAttack(record);
     return { result, trophies: attackerDelta, attackId: record.id };
   });
@@ -182,7 +201,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
     if (!me) return;
     const since = Number((req.query as { since?: string }).since ?? 0) || 0;
     const list = await repo.defensesFor(me.id, since, 20);
-    return { defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, trophies: a.defenderTrophies })) };
+    return { defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, trophies: a.defenderTrophies })) };
   });
 
   return app;

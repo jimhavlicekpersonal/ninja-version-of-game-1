@@ -1,16 +1,16 @@
 {
   "startingTrophies": 0,
   "attackWin": {
-    "base": 28,
-    "perTrophyDiff": 0.04,
-    "min": 8,
+    "base": 24,
+    "perTrophyDiff": 0.05,
+    "min": 1,
     "max": 50
   },
   "attackLoss": {
-    "base": 16,
-    "perTrophyDiff": 0.03,
-    "min": 4,
-    "max": 36
+    "base": 20,
+    "perTrophyDiff": 0.05,
+    "min": 2,
+    "max": 40
   },
   "matchTrophyRange": 80,
   "seasonResetFloor": 400,
@@ -20,19 +20,24 @@
       "name": "Sprout League",
       "min": 0,
       "chest": {
-        "acorns": 2000,
-        "dew": 2000,
+        "acorns": 20000,
+        "dew": 20000,
         "moonstones": 10
-      }
+      },
+      "winBonus": {}
     },
     {
       "id": "fern",
       "name": "Fern League",
       "min": 400,
       "chest": {
-        "acorns": 10000,
-        "dew": 10000,
+        "acorns": 60000,
+        "dew": 60000,
         "moonstones": 25
+      },
+      "winBonus": {
+        "acorns": 1000,
+        "dew": 1000
       }
     },
     {
@@ -40,9 +45,13 @@
       "name": "Oak League",
       "min": 1000,
       "chest": {
-        "acorns": 50000,
-        "dew": 50000,
+        "acorns": 150000,
+        "dew": 150000,
         "moonstones": 50
+      },
+      "winBonus": {
+        "acorns": 5000,
+        "dew": 5000
       }
     },
     {
@@ -50,10 +59,28 @@
       "name": "Elder League",
       "min": 2000,
       "chest": {
-        "acorns": 150000,
-        "dew": 150000,
+        "acorns": 300000,
+        "dew": 300000,
         "moonstones": 100
+      },
+      "winBonus": {
+        "acorns": 20000,
+        "dew": 20000
       }
     }
+  ],
+  "matchmaking": {
+    "trophiesPerHall": 350,
+    "strengthJitter": 0.35,
+    "hallsBelow": 1,
+    "hallsAbove": 1,
+    "trophyJitter": 30
+  },
+  "lootPenaltyByHallDiff": [
+    1,
+    0.8,
+    0.5,
+    0.25,
+    0.05
   ]
 }

@@ -2,9 +2,10 @@ import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsA
 import { runBattle } from './battle/battle';
 import type { BattleRecord, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
-import { buildingDef, hallType, levelDef, maxDefinedLevel, troopDef } from './data';
+import { buildingDef, hallType, levelDef, maxDefinedLevel, troopDef, troopLevel } from './data';
 import { mixSeed } from './rng';
-import { lossTrophies, seasonOf, winTrophies } from './ranks';
+import { leagueFor, lossTrophies, seasonOf, winTrophies } from './ranks';
+import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
 import { achievementViews } from './achievements';
 import { skipCost, topUpCost } from './economy';
 import { canPurchase, productInfo } from './monetization';
@@ -29,6 +30,9 @@ export type Command =
   | { type: 'collect'; id: string }
   | { type: 'train'; troop: string }
   | { type: 'cancelTraining'; index: number }
+  | { type: 'research'; troop: string }
+  | { type: 'cancelResearch' }
+  | { type: 'skipResearch' }
   | { type: 'scout'; paid: boolean }
   | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'skip'; id: string }
@@ -84,6 +88,8 @@ export type SimEvent =
   | { kind: 'move'; buildingType: BuildingType; id: string }
   | { kind: 'train_start'; troop: string; seconds: number; cost: Cost }
   | { kind: 'train_cancel'; troop: string }
+  | { kind: 'research_start'; troop: string; toLevel: number; seconds: number; cost: Cost }
+  | { kind: 'research_cancel'; troop: string; toLevel: number; refund: Cost }
   | { kind: 'scout'; seed: number; fee: number }
   | { kind: 'raid_end'; record: BattleRecord }
   | { kind: 'skip_used'; what: string; seconds: number; moonstones: number }
@@ -130,6 +136,8 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     nextId: 1,
     army: {},
     training: [],
+    research: emptyResearch(),
+    scout: null,
     battleLog: [],
     seed: mixSeed(now >>> 0, Math.floor(now / 4294967296)),
     nextSeed: 1,
@@ -184,10 +192,13 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
       finished.push({ id: b.id, type: b.type, level: b.upgrade.toLevel, at: b.upgrade.endsAt });
       b.level = b.upgrade.toLevel;
       b.upgrade = null;
+      // Tasks count finished upgrades only, so start-and-cancel earns nothing.
+      next.stats.upgradesDone++;
     }
   }
   finished.sort((a, b) => a.at - b.at);
   finishTraining(next, now);
+  finishResearch(next, now);
   rollPeriods(next, now, data);
   advanceGrove(next, now, data);
   settleRaids(next, now, hallLevel(next, data), data);
@@ -321,13 +332,13 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
       if (e.resource === 'dew') s.stats.collectedDew += e.amount;
     } else if (e.kind === 'upgrade_start') {
       s.stats.upgradesStarted++;
+      // Instant upgrades (hedges) finish right away; timed ones count in advance().
+      if (e.seconds <= 0) s.stats.upgradesDone++;
       if (e.seconds > 3600 && !s.flags.longWaitSeen) {
         s.flags.longWaitSeen = true;
         events.push({ kind: 'trigger', trigger: 'first_long_wait' });
       }
       if (e.seconds > 0 && builderStatus(s, data, now).free === 0) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
-    } else if (e.kind === 'train_start') {
-      s.stats.troopsTrained++;
     } else if (e.kind === 'raid_end' && e.record.kind === 'attack') {
       if (e.record.result.stars >= 1) s.stats.raidsWon++;
       s.stats.starsEarned += e.record.result.stars;
@@ -356,6 +367,12 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return train(s, cmd.troop, now, data);
     case 'cancelTraining':
       return cancelTraining(s, cmd.index, now, data);
+    case 'research':
+      return research(s, cmd.troop, now, data);
+    case 'cancelResearch':
+      return cancelResearch(s, now, data);
+    case 'skipResearch':
+      return skipResearch(s, now, data);
     case 'scout':
       return scout(s, cmd.paid, data);
     case 'battleEnd':
@@ -458,6 +475,25 @@ function skip(s: VillageState, id: string, now: number, data: GameData): Command
   b.upgrade!.endsAt = finishedAt;
   const adv = advance(s, now, data).state;
   return { ok: true, state: adv, events: [{ kind: 'skip_used', what: b.type, seconds: q.seconds, moonstones: q.moonstones }] };
+}
+
+/** Moonstones to finish the running research now. */
+export function researchSkipQuote(state: VillageState, now: number, data: GameData): { seconds: number; moonstones: number } | null {
+  const a = state.research?.active;
+  if (!a || a.endsAt <= now) return null;
+  const seconds = Math.ceil((a.endsAt - now) / 1000);
+  return { seconds, moonstones: skipCost(seconds, data) };
+}
+
+function skipResearch(s: VillageState, now: number, data: GameData): CommandResult {
+  const q = researchSkipQuote(s, now, data);
+  if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Moonstones.`);
+  s.resources.moonstones -= q.moonstones;
+  const what = s.research.active!.troop;
+  s.research.active!.endsAt = now;
+  finishResearch(s, now);
+  return { ok: true, state: s, events: [{ kind: 'skip_used', what: `research:${what}`, seconds: q.seconds, moonstones: q.moonstones }] };
 }
 
 export function trainingSkipQuote(state: VillageState, now: number, data: GameData): { seconds: number; moonstones: number } | null {
@@ -599,7 +635,9 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
   const s = advance(state, now, data).state;
   const def = data.troops[troop];
   if (!def) return fail('NOT_FOUND', 'Unknown troop.');
-  const quote: Quote = { toLevel: 1, cost: def.cost, seconds: def.trainSeconds };
+  const level = troopLevelOf(s, troop);
+  const cost = troopLevel(data, troop, level).cost;
+  const quote: Quote = { toLevel: level, cost, seconds: def.trainSeconds };
   if (barracksLevel(s, data) < def.barracksLevel) {
     return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Burrow Barracks.`), quote };
   }
@@ -607,7 +645,7 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
   if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > cap) {
     return { ...fail('ARMY_FULL', cap ? 'Your Army Camps are full.' : 'Build an Army Camp to house troops.'), quote };
   }
-  if (!canAfford(s.resources, def.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.cost)}).`), quote };
+  if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost)}).`), quote };
   return { ok: true, quote };
 }
 
@@ -615,10 +653,45 @@ function train(s: VillageState, troop: string, now: number, data: GameData): Com
   const q = trainQuote(s, troop, now, data);
   if (!q.ok) return q;
   const def = troopDef(data, troop);
-  subtractCost(s.resources, def.cost);
+  const cost = q.quote.cost;
+  subtractCost(s.resources, cost);
   const startedAt = queueEndsAt(s, now);
-  s.training.push({ troop, startedAt, endsAt: startedAt + def.trainSeconds * MS_PER_SECOND, cost: def.cost });
-  return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds: def.trainSeconds, cost: def.cost }] };
+  s.training.push({ troop, startedAt, endsAt: startedAt + def.trainSeconds * MS_PER_SECOND, cost });
+  return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds: def.trainSeconds, cost }] };
+}
+
+/** Research quote including the resource check (for the UI). */
+export function researchStartQuote(state: VillageState, troop: string, now: number, data: GameData): QuoteResult {
+  const s = advance(state, now, data).state;
+  const q = researchQuote(s, troop, hallLevel(s, data), data);
+  const quote: Quote | undefined = q.toLevel !== undefined ? { toLevel: q.toLevel, cost: q.cost ?? {}, seconds: Math.round((q.seconds ?? 0) * buildTimeFactor(s, now, data)) } : undefined;
+  if (!q.ok) return { ...fail(q.code, q.message), quote };
+  if (!canAfford(s.resources, q.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(q.cost)}).`), quote };
+  return { ok: true, quote: quote! };
+}
+
+function research(s: VillageState, troop: string, now: number, data: GameData): CommandResult {
+  const q = researchStartQuote(s, troop, now, data);
+  if (!q.ok) return q;
+  const { cost, seconds, toLevel } = q.quote;
+  subtractCost(s.resources, cost);
+  startResearch(s, troop, toLevel, cost, seconds, now);
+  finishResearch(s, now);
+  return { ok: true, state: s, events: [{ kind: 'research_start', troop, toLevel, seconds, cost }] };
+}
+
+function cancelResearch(s: VillageState, now: number, data: GameData): CommandResult {
+  const a = s.research.active;
+  if (!a) return fail('NOT_UPGRADING', 'Nothing to cancel.');
+  s.research.active = null;
+  const want: Cost = {};
+  for (const k of RESOURCE_KINDS) {
+    const r = Math.floor((a.cost[k] ?? 0) * data.economy.cancelRefundFraction);
+    if (r > 0) want[k] = r;
+  }
+  const refund = addCapped(s.resources, want, capacity(s, data));
+  void now;
+  return { ok: true, state: s, events: [{ kind: 'research_cancel', troop: a.troop, toLevel: a.toLevel, refund }] };
 }
 
 function cancelTraining(s: VillageState, index: number, now: number, data: GameData): CommandResult {
@@ -642,12 +715,19 @@ export function scoutFee(state: VillageState, data: GameData): number {
   return fees[Math.min(fees.length, hallLevel(state, data)) - 1] ?? 0;
 }
 
-/** Pick the next opponent. The first look is free; each "Next" costs a small Acorn fee. */
+/**
+ * Find an opponent. The first look after each attack is free, and it stays the
+ * same opponent until the player attacks it or pays the Acorn fee for "Next":
+ * leaving and pressing Attack again shows the same base, so rerolling always
+ * costs the fee.
+ */
 function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
+  if (!paid && s.scout) return { ok: true, state: s, events: [{ kind: 'scout', seed: s.scout.seed, fee: 0 }] };
   const fee = paid ? scoutFee(s, data) : 0;
   if (s.resources.acorns < fee) return fail('NOT_ENOUGH_RESOURCES', `Next costs ${fee} acorns.`);
   s.resources.acorns -= fee;
   const seed = mixSeed(s.seed, s.nextSeed++);
+  s.scout = { seed };
   return { ok: true, state: s, events: [{ kind: 'scout', seed, fee }] };
 }
 
@@ -655,20 +735,50 @@ function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
  * Apply the result of an attack. The battle is re-simulated from its seed and
  * deployments, so the loot always matches what really happened.
  */
-function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
-  for (const [t, n] of Object.entries(rec.setup.army)) {
-    if (!data.troops[t] || n < 0) return fail('INVALID_BATTLE', 'Unknown troops in battle.');
+/** Reject a battle that used troops or troop levels the player does not have. */
+function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): string | null {
+  const have = battleArmy(s);
+  for (const [t, n] of Object.entries(setup.army)) {
+    if (!data.troops[t] || !Number.isInteger(n) || n < 0) return 'Unknown troops in battle.';
+    if (n > (have[t] ?? 0)) return 'More troops than your army holds.';
   }
+  for (const [t, lvl] of Object.entries(setup.levels ?? {})) {
+    if (!data.troops[t] || !Number.isInteger(lvl) || lvl < 1 || lvl > troopLevelOf(s, t)) return 'Troop levels do not match your research.';
+  }
+  return null;
+}
+
+/** League bonus for a won attack: the full bonus at 3 stars, a third per star. */
+export function leagueWinBonus(trophies: number, stars: number, data: GameData): Cost {
+  const bonus = leagueFor(trophies, data).winBonus ?? {};
+  const out: Cost = {};
+  if (stars < 1) return out;
+  for (const [k, v] of Object.entries(bonus) as [ResourceKind, number][]) {
+    const amt = Math.floor((v * stars) / 3);
+    if (amt > 0) out[k] = amt;
+  }
+  return out;
+}
+
+function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const bad = checkBattleSetup(s, rec.setup, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used);
-  const added = addCapped(s.resources, result.loot, capacity(s, data));
+  const cap = capacity(s, data);
+  const added = addCapped(s.resources, result.loot, cap);
+  const bonusWanted = leagueWinBonus(s.trophies, result.stars, data);
+  const bonus = addCapped(s.resources, bonusWanted, cap);
+  for (const [k, v] of Object.entries(bonus) as [ResourceKind, number][]) added[k] = (added[k] ?? 0) + v;
   const opp = rec.setup.base.trophies ?? s.trophies;
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
-  // Attacking ends your shield.
+  // Attacking ends your shield, and the next look at an opponent is free again.
   s.shieldUntil = Math.min(s.shieldUntil, now);
+  s.scout = null;
   const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies };
   record.result.loot = added;
+  if (Object.keys(bonus).length) record.leagueBonus = bonus;
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
@@ -702,6 +812,8 @@ function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord,
   if (!s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Grove Raid is not running.');
   const raid = ensureRaid(s, now, data)!;
   if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Grove Raid attacks.');
+  const bad = checkBattleSetup(s, rec.setup, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used);
   raid.attacks.push({ target, stars: result.stars, destruction: result.destruction, at: now });

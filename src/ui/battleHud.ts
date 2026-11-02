@@ -25,7 +25,7 @@ export interface BattleHudDeps {
   onNext(): void;
   onAttack(): void;
   /** Called once when a live battle ends; returns the loot actually banked. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost } | null;
   onReplay(): void;
 }
 
@@ -221,7 +221,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus);
       } else {
         this.toast('Replay finished.');
       }
@@ -239,7 +239,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost): void {
     sound.play(r.stars > 0 ? 'victory' : 'defeat');
     const starsRow = h('div', { class: 'result-stars' });
     for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
@@ -252,8 +252,9 @@ export class BattleHud {
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
       this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Grove Raid.') : h('p', {}, 'Loot: ', lootChips(banked)),
       this.deps.grove ? '' : h('p', {}, 'Leaf rank: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+      bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       used ? h('p', { class: 'muted small' }, `Troops used: ${used}`) : null,
-      Object.entries(banked).some(([k, v]) => v < (r.loot[k as ResourceKind] ?? 0)) ? h('p', { class: 'note' }, 'Some loot did not fit in your storage.') : null,
+      Object.entries(banked).some(([k, v]) => v - ((bonus?.[k as ResourceKind]) ?? 0) < (r.loot[k as ResourceKind] ?? 0)) ? h('p', { class: 'note' }, 'Some loot did not fit in your storage.') : null,
     );
     this.modal(title, body, [
       { label: 'Watch replay', onClick: () => this.deps.onReplay() },

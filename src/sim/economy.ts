@@ -34,3 +34,20 @@ export function topUpCost(missing: Cost, data: GameData): number {
   }
   return total;
 }
+
+/** Reward multiplier for the player's Elder Toadstool level (economy.json `rewardScaleByHall`). */
+export function rewardScale(hallLevel: number, data: GameData): number {
+  const t = data.economy.rewardScaleByHall;
+  return t[Math.max(1, Math.min(t.length, hallLevel)) - 1] ?? 1;
+}
+
+/** Scale the soft resources of a fixed reward to the player's hall level; Moonstones stay as they are. */
+export function scaleReward(reward: Cost, hallLevel: number, data: GameData): Cost {
+  const m = rewardScale(hallLevel, data);
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(reward) as [ResourceKind, number][]) {
+    if (typeof v !== 'number') continue;
+    out[k] = k === 'moonstones' ? v : Math.round(v * m);
+  }
+  return out;
+}

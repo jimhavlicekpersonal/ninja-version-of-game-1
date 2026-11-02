@@ -31,6 +31,8 @@ export interface AttackRecord {
   defenderId: string;
   seed: number;
   army: Record<string, number>;
+  /** Attacker's troop levels (absent on records from before troop research). */
+  levels?: Record<string, number>;
   base: BaseLayout;
   deployments: Deployment[];
   endTick?: number;

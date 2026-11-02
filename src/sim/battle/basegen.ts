@@ -41,8 +41,18 @@ export function opponentName(rng: Rng, data: GameData): string {
   return `${pick(rng, data.names.placeFirst)} ${pick(rng, data.names.placeSecond)}`;
 }
 
-export function generateOpponent(seed: number, hallLevel: number, data: GameData): BaseLayout {
+export interface OpponentOptions {
+  /**
+   * 0..1: how close buildings are to this hall level's caps. 0 = about two
+   * levels below the caps (a fresh arrival at this hall), 1 = maxed. Higher
+   * also means a bit more loot. Default 0.5.
+   */
+  levelBias?: number;
+}
+
+export function generateOpponent(seed: number, hallLevel: number, data: GameData, opts: OpponentOptions = {}): BaseLayout {
   const rng = createRng(seed);
+  const bias = Math.max(0, Math.min(1, opts.levelBias ?? 0.5));
   const map = data.economy.mapSize;
   const hl = Math.max(1, Math.min(hallLevel, data.hall.levels.length));
   const limits = data.hall.levels[hl - 1].limits;
@@ -60,7 +70,8 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
 
   const levelFor = (type: string) => {
     const max = limits[type]?.maxLevel ?? 1;
-    return int(rng, Math.max(1, max - 2), max);
+    const below = Math.max(0, Math.min(3, Math.round((1 - bias) * 2 + next(rng) - 0.5)));
+    return Math.max(1, max - below);
   };
   const plan: { type: string; r1: number; r2: number }[] = [];
   for (const [type, lim] of Object.entries(limits)) {
@@ -128,7 +139,7 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
   const range = data.battle.generatedLootByHall[hl - 1];
   const shares = data.battle.lootShares;
   for (const res of ['acorns', 'dew'] as ResourceKind[]) {
-    const total = int(rng, range.min, range.max);
+    const total = Math.floor(range.min + (range.max - range.min) * (0.5 * next(rng) + 0.5 * bias));
     const holders = (cat: string) =>
       buildings.filter((b) => {
         const d = buildingDef(data, b.type);
@@ -152,7 +163,6 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
     if (!holders('storage').length) hall.loot[res] = (hall.loot[res] ?? 0) + Math.floor(total * shares.storage);
     if (!holders('collector').length) hall.loot[res] = (hall.loot[res] ?? 0) + Math.floor(total * shares.collector);
   }
-  void next;
   return { name: opponentName(rng, data), hallLevel: hl, buildings };
 }
 

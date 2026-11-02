@@ -296,9 +296,9 @@
       "perHall": 3000
     },
     {
-      "id": "start_upgrades",
-      "text": "Start {n} upgrades",
-      "stat": "upgradesStarted",
+      "id": "finish_upgrades",
+      "text": "Finish {n} upgrades",
+      "stat": "upgradesDone",
       "base": 2,
       "perHall": 0
     },
@@ -341,8 +341,8 @@
     },
     {
       "id": "w_upgrades",
-      "text": "Start {n} upgrades this week",
-      "stat": "upgradesStarted",
+      "text": "Finish {n} upgrades this week",
+      "stat": "upgradesDone",
       "base": 10,
       "perHall": 0
     },

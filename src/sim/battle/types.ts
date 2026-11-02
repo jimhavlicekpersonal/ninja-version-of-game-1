@@ -24,6 +24,8 @@ export interface BattleSetup {
   base: BaseLayout;
   /** Troops the attacker brought. */
   army: Record<string, number>;
+  /** The attacker's researched troop levels (missing troops, or a missing map, mean level 1). */
+  levels?: Record<string, number>;
 }
 
 export interface Deployment {
@@ -59,4 +61,6 @@ export interface BattleRecord {
   result: BattleResult;
   /** Trophy change for the player (Phase 3). */
   trophies?: number;
+  /** League bonus included in the banked loot of a won attack. */
+  leagueBonus?: Cost;
 }

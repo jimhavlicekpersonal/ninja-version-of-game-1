@@ -3,6 +3,7 @@
  * requests and donations. All bot activity is generated from the grove seed
  * and the clock, so it is the same every time the save is loaded.
  */
+import { barracksLevel } from '../army';
 import { levelDef } from '../data';
 import { createRng, int, mixSeed, next, pick } from '../rng';
 import type { BotRequest, ChatMessage, GameData, GroveState, VillageState } from '../types';
@@ -99,9 +100,11 @@ function pushChat(g: GroveState, msg: ChatMessage, data: GameData): void {
   if (g.chat.length > data.social.maxChat) g.chat.splice(0, g.chat.length - data.social.maxChat);
 }
 
-/** Troops a member can donate (ones the player could plausibly use). */
-function giftTroop(rng: ReturnType<typeof createRng>, data: GameData): string {
-  return pick(rng, data.social.requestTroops);
+/** Troops a member can donate: ones the player's Burrow Barracks has unlocked. */
+function giftTroop(rng: ReturnType<typeof createRng>, state: VillageState, data: GameData): string {
+  const bl = barracksLevel(state, data);
+  const ok = data.social.requestTroops.filter((t) => (data.troops[t]?.barracksLevel ?? Infinity) <= bl);
+  return ok.length ? pick(rng, ok) : data.social.requestTroops[0];
 }
 
 /** Add donated troops to the player's reinforcements, up to Lodge capacity. Returns housing added. */
@@ -166,7 +169,7 @@ export function advanceGrove(state: VillageState, now: number, data: GameData): 
       const rng = createRng(mixSeed(g.seed, Math.floor(g.myRequest.at / 1000) + k));
       const online = grove.members.map((m, i) => ({ m, i })).filter(({ m }) => isOnline(m, t));
       const giver = online.length ? pick(rng, online).i : int(rng, 0, grove.members.length - 1);
-      const added = addReinforcements(state, giftTroop(rng, data), so.reinforcementChunkHousing, data);
+      const added = addReinforcements(state, giftTroop(rng, state, data), so.reinforcementChunkHousing, data);
       g.myRequest.chunks = k;
       if (added > 0) pushChat(g, { at: t, from: giver, text: pick(rng, so.chatLines.donated), kind: 'donation' }, data);
       if (added <= 0 || k >= 6) g.myRequest = null;
@@ -230,8 +233,9 @@ export function donate(state: VillageState, requestId: string, troop: string, co
   state.stats.donations += n;
   const rng = createRng(mixSeed(g.seed, Math.floor(now / 1000) ^ req.member));
   pushChat(g, { at: now, from: req.member, text: pick(rng, data.social.chatLines.thanks), kind: 'chat' }, data);
-  // Returning the favour: the same housing worth goes into your reinforcements.
-  addReinforcements(state, giftTroop(rng, data), n * def.housing, data);
+  // Donating costs the troops and earns Grove XP only. Your own reinforcements
+  // come from your own requests, so donating can't be used to swap cheap
+  // troops for expensive ones.
   if (req.donated >= req.size) g.requests = g.requests.filter((r) => r.id !== requestId);
   return { ok: true, xp };
 }

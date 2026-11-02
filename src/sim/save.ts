@@ -7,9 +7,10 @@ import { scatterObstacles } from './obstacles';
 import { emptyGrove } from './social/grove';
 import { seasonOf } from './ranks';
 import { emptyStats } from './types';
+import { emptyResearch } from './research';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -71,6 +72,20 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // v5 -> v6: tutorial (existing players have already found their way around).
     v.tutorial = v.tutorial ?? { step: 99, done: true };
   }
+  if (out.version < 7 && v && typeof v === 'object') {
+    // v6 -> v7: troop research, the kept scout opponent, and a counter of
+    // finished upgrades (tasks now count finished work, not started work).
+    v.research = v.research ?? emptyResearch();
+    v.scout = v.scout ?? null;
+    const tasks = v.tasks as { dayBaseline?: Record<string, number>; weekBaseline?: Record<string, number> } | undefined;
+    for (const st of [v.stats, tasks?.dayBaseline, tasks?.weekBaseline] as (Record<string, number> | undefined)[]) {
+      if (st && typeof st === 'object' && st.upgradesDone === undefined) st.upgradesDone = Number(st.upgradesStarted) || 0;
+    }
+    // Troop and defense numbers changed, so old replays would not play back
+    // the same way any more: drop them rather than show wrong replays.
+    v.battleLog = [];
+    v.defenseLog = [];
+  }
   out.version = SAVE_VERSION;
   return out;
 }
@@ -119,6 +134,12 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
   if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('grove missing');
   if (!v.tutorial) problems.push('tutorial missing');
+  if (!v.research || typeof v.research.levels !== 'object') problems.push('research missing');
+  else {
+    for (const [t, n] of Object.entries(v.research.levels)) if (!data.troops[t] || !Number.isInteger(n) || n < 1 || n > data.troops[t].levels.length) problems.push(`bad research level ${t}`);
+    const a = v.research.active;
+    if (a && (!data.troops[a.troop] || !(a.endsAt >= a.startedAt))) problems.push('bad research timer');
+  }
   for (let i = 0; i < v.buildings.length; i++) {
     for (let j = i + 1; j < v.buildings.length; j++) {
       const a = v.buildings[i];

@@ -25,3 +25,11 @@ export function hallUnlocks(level: number, data: GameData): UnlockItem[] {
   }
   return items;
 }
+
+/** The higher troop research cap the next Elder Toadstool level brings, if any. */
+export function troopCapUnlock(level: number, data: GameData): { from: number; to: number } | null {
+  const cur = data.hall.levels[level - 1];
+  const next = data.hall.levels[level];
+  if (!cur || !next || next.troopLevelCap <= cur.troopLevelCap) return null;
+  return { from: cur.troopLevelCap, to: next.troopLevelCap };
+}

@@ -23,7 +23,10 @@ it('a Phase 1 (v1) save loads in the latest version', () => {
     },
   };
   const village = deserialize(JSON.parse(JSON.stringify(v1)), data);
-  expect(SAVE_VERSION).toBe(6);
+  expect(SAVE_VERSION).toBe(7);
+  expect(village.research).toEqual({ levels: {}, active: null });
+  expect(village.scout).toBeNull();
+  expect(village.stats.upgradesDone).toBe(0);
   expect(village.buildings.filter((b) => !b.type.startsWith('obstacle_'))).toHaveLength(5);
   expect(village.tutorial.done).toBe(true); // existing players skip the tutorial
   expect(village.grove.joined).toBe(false);

@@ -177,20 +177,20 @@
     },
     "rewards": {
       "win": {
-        "acorns": 40000,
-        "dew": 40000,
+        "acorns": 150000,
+        "dew": 150000,
         "moonstones": 40,
         "xp": 200
       },
       "draw": {
-        "acorns": 25000,
-        "dew": 25000,
+        "acorns": 90000,
+        "dew": 90000,
         "moonstones": 25,
         "xp": 120
       },
       "loss": {
-        "acorns": 12000,
-        "dew": 12000,
+        "acorns": 40000,
+        "dew": 40000,
         "moonstones": 10,
         "xp": 60
       }

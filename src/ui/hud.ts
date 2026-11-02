@@ -1,16 +1,17 @@
 import type { Analytics } from '../analytics/events';
 import type { GameController } from '../game/controller';
 import type { SaveStore } from '../persist/saveStore';
-import { buildingDef, hallType, levelDef } from '../sim/data';
+import { buildingDef, hallType, levelDef, troopLevel } from '../sim/data';
 import type { OfflineSummary } from '../sim/offline';
-import { hallUnlocks, type UnlockItem } from '../sim/preview';
+import { hallUnlocks, troopCapUnlock, type UnlockItem } from '../sim/preview';
 import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFor } from '../sim/resources';
 import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../sim/save';
 import type { Building, Cost, ResourceKind } from '../sim/types';
 import { RESOURCE_KINDS } from '../sim/types';
 import { armyHousing, housingCapacity, queueHousing, barracksLevel } from '../sim/army';
 import type { BattleRecord } from '../sim/battle/types';
-import { leagueFor, nextLeague, seasonEndsAt } from '../sim/ranks';
+import { shieldHoursFor } from '../sim/defense';
+import { leagueChest, leagueFor, nextLeague, seasonEndsAt } from '../sim/ranks';
 import { achievementViews } from '../sim/achievements';
 import { activeOffers } from '../sim/offers';
 import { currentTasks, unlockedTier } from '../sim/pass';
@@ -18,7 +19,8 @@ import { EconomyUi } from './economyUi';
 import { sound } from '../audio/sound';
 import { GroveUi } from './groveUi';
 import { attacksLeft, raidPhase } from '../sim/social/groveRaid';
-import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../sim/village';
+import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, researchSkipQuote, researchStartQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../sim/village';
+import { troopLevelOf } from '../sim/research';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
@@ -333,6 +335,8 @@ export class Hud {
     const shown = parts.slice(0, 3);
     if (parts.length > 3) shown.push(`${parts.length - 3} more`);
     if (capped) shown.push(`higher levels for ${capped} building${capped > 1 ? 's' : ''}`);
+    const troops = troopCapUnlock(hallLevel(this.c.state, gd), gd);
+    if (troops) shown.push(`troop level ${troops.to}`);
     return shown.join(', ');
   }
 
@@ -357,7 +361,8 @@ export class Hud {
     if (!items.length) body.append(h('p', {}, 'Your Elder Toadstool is at the highest level available right now.'));
     else {
       body.append(h('p', { class: 'muted' }, `Upgrading your Elder Toadstool to level ${level + 1} unlocks:`));
-      body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u)))));
+      const troops = troopCapUnlock(level, gd);
+      body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u))), troops ? h('li', {}, `Troop research: up to level ${troops.to} (now ${troops.from})`) : ''));
       const next = levelDef(gd, hallType(gd), level + 1);
       if (next) body.append(h('p', { class: 'row' }, 'Cost: ', costChips(next.cost, missingFor(this.c.state.resources, next.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(next.buildSeconds * 1000))));
     }
@@ -647,7 +652,7 @@ export class Hud {
       const s = this.c.state;
       const gd = this.c.data;
       const now = this.c.now();
-      const sig = JSON.stringify([s.army, s.training.length, s.resources.dew, barracksLevel(s, gd), housingCapacity(s, gd)]);
+      const sig = JSON.stringify([s.army, s.training.length, s.resources.dew, s.resources.moonstones, barracksLevel(s, gd), housingCapacity(s, gd), s.research, hallLevel(s, gd)]);
       if (sig === lastSig) {
         // Only refresh timers.
         body.querySelectorAll<HTMLElement>('[data-ends]').forEach((el) => {
@@ -696,6 +701,8 @@ export class Hud {
         const qr = trainQuote(s, t, now, gd);
         const th = this.deps.troopThumb(t);
         const locked = !qr.ok && qr.code === 'LOCKED';
+        const lvl = troopLevelOf(s, t);
+        const cost = troopLevel(gd, t, lvl).cost;
         const btn = h('button', { class: 'btn primary', type: 'button', disabled: !qr.ok }, '+ Train');
         btn.addEventListener('click', () => {
           const r = this.c.dispatch({ type: 'train', troop: t });
@@ -707,15 +714,70 @@ export class Hud {
             'div',
             { class: `troop-row${locked ? ' locked' : ''}` },
             th ? h('img', { src: th, alt: '' }) : null,
-            h('b', {}, def.name),
+            h('b', {}, `${def.name} `, h('span', { class: 'muted small' }, `Lv ${lvl}`)),
             h('span', { class: 'muted small' }, def.description),
-            h('span', { class: 'row' }, costChips(def.cost, missingFor(s.resources, def.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(def.trainSeconds * 1000)), h('span', { class: 'chip' }, icon(icons.troops), String(def.housing))),
+            h('span', { class: 'row' }, costChips(cost, missingFor(s.resources, cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(def.trainSeconds * 1000)), h('span', { class: 'chip' }, icon(icons.troops), String(def.housing))),
             btn,
             !qr.ok ? h('span', { class: 'note' }, qr.message) : null,
           ),
         );
       }
       body.append(h('h3', {}, 'Train'), list);
+      body.append(h('h3', {}, 'Research'), h('p', { class: 'muted small' }, 'The Burrow Barracks researches one troop at a time, without a builder. A new level makes every troop of that kind stronger, and costs a little more to train. Your Elder Toadstool level sets the highest level.'));
+      const active = s.research.active;
+      if (active) {
+        const ad = gd.troops[active.troop];
+        const row = h('div', { class: 'progress-row' }, h('span', {}, `${ad?.name ?? active.troop} → level ${active.toLevel}`), h('span', { class: 'chip', 'data-ends': String(active.endsAt) }, formatDuration(active.endsAt - now)));
+        const acts = h('div', { class: 'actions' });
+        const rsq = researchSkipQuote(s, now, gd);
+        if (rsq) {
+          const fin = h('button', { class: 'btn gold', type: 'button' }, 'Finish now ', h('span', { class: 'chip' }, icon(icons.moonstones), String(rsq.moonstones)));
+          fin.addEventListener('click', () => void this.econ.spendMoonstones('Finish research', `Finish ${ad?.name ?? 'research'} level ${active.toLevel} now`, rsq.moonstones, () => this.c.dispatch({ type: 'skipResearch' }).ok).then(() => { lastSig = ''; render(); }));
+          acts.append(fin);
+        }
+        const cancel = h('button', { class: 'btn ghost', type: 'button' }, 'Cancel');
+        cancel.addEventListener('click', () => {
+          void this.confirm('Cancel research?', `You'll get back ${Math.round(gd.economy.cancelRefundFraction * 100)}% of what you paid.`, 'Cancel research', true).then((ok) => {
+            if (!ok) return;
+            const r = this.c.dispatch({ type: 'cancelResearch' });
+            if (!r.ok) this.toast(r.message, 'error');
+            lastSig = '';
+            render();
+          });
+        });
+        acts.append(cancel);
+        body.append(row, acts);
+      }
+      const rlist = h('div', { class: 'troop-list' });
+      for (const [t, def] of Object.entries(gd.troops)) {
+        const lvl = troopLevelOf(s, t);
+        const rq = researchStartQuote(s, t, now, gd);
+        if (!rq.ok && (rq.code === 'LOCKED' || (rq.code === 'MAX_LEVEL' && !rq.quote))) {
+          rlist.append(h('div', { class: 'troop-row locked' }, h('b', {}, `${def.name} `, h('span', { class: 'muted small' }, `Lv ${lvl}`)), h('span', { class: 'note' }, rq.message)));
+          continue;
+        }
+        const cur = troopLevel(gd, t, lvl);
+        const nxt = rq.quote ? troopLevel(gd, t, rq.quote.toLevel) : null;
+        const btn = h('button', { class: 'btn primary', type: 'button', disabled: !rq.ok }, 'Research');
+        btn.addEventListener('click', () => {
+          const r = this.c.dispatch({ type: 'research', troop: t });
+          if (!r.ok) this.toast(r.message, 'error');
+          lastSig = '';
+          render();
+        });
+        rlist.append(
+          h(
+            'div',
+            { class: `troop-row${rq.ok ? '' : ' locked'}` },
+            h('b', {}, `${def.name} `, h('span', { class: 'muted small' }, nxt ? `Lv ${lvl} → ${nxt.level}` : `Lv ${lvl}`)),
+            nxt ? h('span', { class: 'muted small' }, `HP ${cur.hp} → ${nxt.hp} · Damage ${cur.damage} → ${nxt.damage}`) : null,
+            rq.quote ? h('span', { class: 'row' }, costChips(rq.quote.cost, missingFor(s.resources, rq.quote.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(rq.quote.seconds * 1000))) : null,
+            nxt ? btn : null,
+            !rq.ok ? h('span', { class: 'note' }, rq.message) : null,
+          ),
+        );
+      }
+      body.append(rlist);
     };
     render();
     const timer = window.setInterval(render, 1000);
@@ -738,11 +800,13 @@ export class Hud {
       nxt ? h('p', { class: 'muted' }, `${nxt.min - s.trophies} more leaves to reach ${nxt.name}.`) : h('p', { class: 'muted' }, 'You are in the top league!'),
       h('p', { class: 'muted' }, `Season ends in ${formatDuration(seasonEndsAt(this.c.now()) - this.c.now())}. At the end of each month you get your league's chest, and leaves above ${gd.ranks.seasonResetFloor} are halved.`),
       h('h3', {}, 'League chests (fixed contents)'),
+      h('p', { class: 'muted small' }, `Sized for your Elder Toadstool level ${hallLevel(s, gd)}. Won attacks also earn the league bonus (all of it at 3 stars, a third per star).`),
     );
     for (const l of gd.ranks.leagues) {
-      body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, `${l.min}+ leaves`)), costChips(l.chest)));
+      const bonus = Object.keys(l.winBonus ?? {}).length ? h('div', { class: 'muted small' }, 'Win bonus ', costChips(l.winBonus)) : null;
+      body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, `${l.min}+ leaves`), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
     }
-    body.append(h('p', { class: 'muted small' }, 'Win raids to earn leaves; lose them when your attacks fail or when raiders beat your village.'));
+    body.append(h('p', { class: 'muted small' }, 'Win raids to earn leaves; lose them when your attacks fail or when raiders beat your village. More leaves bring tougher opponents with more loot.'));
     this.modal('Leaf rank', body, [], 'normal');
   }
 
@@ -791,7 +855,7 @@ export class Hud {
       const lost = RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => `${formatNumber(r.result.loot[k]!)} ${RES_LABEL[k]}`).join(' and ');
       list.append(h('li', {}, `${r.opponentName} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} leaves).` : '.'));
     }
-    if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => r.result.destruction >= this.c.data.raids.shieldDestructionThreshold)) {
+    if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, this.c.data) > 0)) {
       list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));
     }
     for (const sr of s.seasons) {

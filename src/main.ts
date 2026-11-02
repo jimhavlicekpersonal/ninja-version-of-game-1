@@ -262,7 +262,7 @@ async function startOnline(online: OnlineClient, controller: GameController, hud
     const defenses = await online.defenses(since);
     const me = await online.me();
     for (const d of defenses) {
-      const record: BattleRecord = { id: d.id, at: d.at, kind: 'defense', opponentName: d.attackerName, setup: { seed: d.seed, base: d.base, army: d.army }, deployments: d.deployments, endTick: d.endTick, result: d.result, trophies: d.trophies };
+      const record: BattleRecord = { id: d.id, at: d.at, kind: 'defense', opponentName: d.attackerName, setup: { seed: d.seed, base: d.base, army: d.army, levels: d.levels }, deployments: d.deployments, endTick: d.endTick, result: d.result, trophies: d.trophies };
       controller.dispatch({ type: 'applyDefense', record, lost: d.result.loot, trophies: me.trophies, shieldUntil: me.shieldUntil });
       since = Math.max(since, d.at);
     }
