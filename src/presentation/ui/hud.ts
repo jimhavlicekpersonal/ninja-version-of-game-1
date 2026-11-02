@@ -1,4 +1,4 @@
-import type { Analytics } from '../../backend/analytics/events';
+import { healthReport, type Analytics } from '../../backend/analytics/events';
 import type { GameController } from '../../gameplay/control/controller';
 import type { SaveStore } from '../../backend/persist/saveStore';
 import { buildingDef, hallType, levelDef, troopLevel } from '../../gameplay/sim/data';
@@ -20,6 +20,9 @@ import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
 import { GroveUi } from './groveUi';
+import { WorldUi, type WorldOnlineInfo } from './worldUi';
+import { hallTitle } from '../../gameplay/sim/world/competition';
+import { clanDef } from '../../gameplay/sim/world/villagegen';
 import type { GroveSource } from '../../backend/social/groveSource';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
@@ -48,6 +51,12 @@ export interface HudDeps {
   onGroveAttack(target: number): void;
   /** Start a Shadow Trial attack on this tier. */
   onTrial(tier: number): void;
+  /** Scout a world map settlement. */
+  onSettlement(id: string): void;
+  /** Fight a tournament fortress with a drafted army. */
+  onTournament(index: number, army: Record<string, number>): void;
+  /** Online extras for the World panel (null offline). */
+  worldOnlineInfo(): Promise<WorldOnlineInfo | null>;
   prefs: { get(k: 'sessionReminder' | 'reminders'): boolean; set(k: 'sessionReminder' | 'reminders', v: boolean): void };
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
@@ -98,6 +107,7 @@ export class Hud {
   readonly econ: EconomyUi;
   readonly grove: GroveUi;
   readonly daily: DailyUi;
+  readonly world: WorldUi;
   private eventChip!: HTMLElement;
   private railBadges: Record<string, HTMLElement> = {};
   /** True while a finger/mouse is pressed on the panel: never rebuild it mid-tap. */
@@ -127,6 +137,13 @@ export class Hud {
       onGroveAttack: (i) => this.deps.onGroveAttack(i),
     });
     this.daily = new DailyUi({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() });
+    this.world = new WorldUi({
+      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      onSettlement: (id) => this.deps.onSettlement(id),
+      onTournament: (i, army) => this.deps.onTournament(i, army),
+      troopThumb: (t) => this.deps.troopThumb(t),
+      onlineInfo: () => this.deps.worldOnlineInfo(),
+    });
     this.buildSkeleton();
     this.c.subscribe(() => this.refresh());
     this.deps.connection.subscribe(() => this.updateNet());
@@ -241,6 +258,7 @@ export class Hud {
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => this.grove.open()),
       railBtn('Trials', icons.leaf, () => this.openTrials()),
+      railBtn('World', icons.swords, () => this.world.open()),
     );
     this.rail = rail;
     this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
@@ -475,7 +493,7 @@ export class Hud {
     clear(this.unlocksEl);
     this.unlocksEl.append(icon(icons.toadstool));
     if (!items.length) {
-      this.unlocksEl.append(h('span', {}, h('b', {}, `Clan Keep Lv ${level}`), ' — top level for now'));
+      this.unlocksEl.append(h('span', {}, h('b', {}, `Clan Keep Lv ${level} · ${hallTitle(level, this.c.data).title}`), ' — top level for now'));
       return;
     }
     this.unlocksEl.append(h('span', { class: 'unlock-text' }, h('b', {}, `Clan Keep Lv ${level + 1} unlocks: `), this.unlockSummary(items)));
@@ -487,9 +505,10 @@ export class Hud {
     const items = hallUnlocks(level, gd);
     const hall = this.c.state.buildings.find((b) => b.type === hallType(gd));
     const body = h('div', { class: 'unlock-list' });
+    body.append(h('p', {}, h('b', {}, `Level ${level}: ${hallTitle(level, gd).title}`)));
     if (!items.length) body.append(h('p', {}, 'Your Clan Keep is at the highest level available right now.'));
     else {
-      body.append(h('p', { class: 'muted' }, `Upgrading your Clan Keep to level ${level + 1} unlocks:`));
+      body.append(h('p', { class: 'muted' }, `Upgrading your Clan Keep to level ${level + 1} (${hallTitle(level + 1, gd).title}) unlocks:`));
       const troops = troopCapUnlock(level, gd);
       body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u))), troops ? h('li', {}, `Troop research: up to level ${troops.to} (now ${troops.from})`) : ''));
       const next = levelDef(gd, hallType(gd), level + 1);
@@ -956,7 +975,7 @@ export class Hud {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}${r.setup.base.practice ? ' (practice)' : ''}` : `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}${r.setup.base.human ? ' (player)' : r.setup.base.clan ? ` (${clanDef(this.c.data, r.setup.base.clan).name}, AI)` : r.setup.base.practice ? ' (practice)' : ''}${r.conquered ? ' and took it' : ''}` : `${r.opponentName}${r.simulated ? ' (AI raid)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
           replay,
         ),
       );
@@ -982,7 +1001,7 @@ export class Hud {
     }
     for (const r of s.raids) {
       const lost = RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => `${formatNumber(r.result.loot[k]!)} ${RES_LABEL[k]}`).join(' and ');
-      list.append(h('li', {}, `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
+      list.append(h('li', {}, `${r.opponentName}${r.simulated ? ' (AI raid)' : ''} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
     }
     if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, this.c.data) > 0)) {
       list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));
@@ -1080,6 +1099,7 @@ export class Hud {
     const offsetText = () => (this.deps.debugTime.offsetMs() ? `Game clock is ${formatDuration(this.deps.debugTime.offsetMs())} ahead of real time.` : 'Game clock matches real time.');
     const offsetEl = h('p', { class: 'muted' }, offsetText());
     const events = h('div', { class: 'events' }, 'Loading…');
+    const health = h('div', { class: 'events' }, 'Loading…');
     body.append(
       h('h3', {}, 'Testing tools'),
       h('p', { class: 'muted' }, 'Skip time forward to test timers and offline progress. This moves this device’s game clock ahead permanently.'),
@@ -1093,7 +1113,9 @@ export class Hud {
       ),
       h('p', { class: 'muted small' }, 'New villages start with a 24-hour shield. Remove it, then simulate time away, to see raiders attack your village.'),
       h('details', {}, h('summary', {}, 'Analytics events (this device)'), events),
+      h('details', {}, h('summary', {}, 'Game health (Shadow Clans)'), health),
     );
+    void this.renderHealth(health);
     void this.deps.analytics.recent(60).then((list) => {
       clear(events);
       if (!list.length) events.append('No events yet.');
@@ -1109,6 +1131,33 @@ export class Hud {
       h('p', { class: 'muted small' }, `Kagemura: Ninja Clans ${this.deps.build.version} · built ${this.deps.build.builtAt}`),
     );
     this.modal('Settings', body, [], 'wide');
+  }
+
+  /** Health numbers this device can see, plus the server's matchmaking liquidity when online. */
+  private async renderHealth(el: HTMLElement): Promise<void> {
+    const gd = this.c.data;
+    const r = healthReport(await this.deps.analytics.recent(5000), this.c.now(), gd.competition.health);
+    const pct = (v: number | null) => (v === null ? 'n/a' : `${Math.round(v * 100)}%`);
+    const yn = (v: boolean | null) => (v === null ? 'not yet' : v ? 'yes' : 'no');
+    clear(el);
+    el.append(
+      h('p', { class: 'muted small' }, 'This device only. Retention and fairness across players need the server dashboard.'),
+      h('div', { class: 'event' }, `Tutorial finished: ${yn(r.tutorialDone)} (target ${pct(r.targets.tutorialCompletion)} of players)`),
+      h('div', { class: 'event' }, `Came back on day 1 / 7 / 30: ${yn(r.returned.day1)} / ${yn(r.returned.day7)} / ${yn(r.returned.day30)}`),
+      h('div', { class: 'event' }, `Battles per active day: ${r.battlesPerActiveDay.toFixed(1)} (target ${r.targets.battlesPerDay[0]}-${r.targets.battlesPerDay[1]}) over ${r.activeDays} day${r.activeDays === 1 ? '' : 's'}`),
+      h('div', { class: 'event' }, `Opponent searches that found someone: ${pct(r.searchSuccess)} of ${r.searches} (target ${pct(r.targets.searchSuccess)})`),
+      h('div', { class: 'event' }, `Online searches with a real player available: ${pct(r.humanAvailability)}`),
+      h('div', { class: 'event' }, `Real-player battles: ${r.humanBattles} · started another after the first: ${yn(r.pvpRepeat)}`),
+      h('div', { class: 'event' }, `Came back to raids: ${r.defensesSeen} · returned again within two days: ${r.returnedAfterDefense}`),
+    );
+    try {
+      const m = await this.deps.connection.metrics();
+      if (!m) return;
+      el.append(h('p', { class: 'small' }, h('b', {}, 'Server matchmaking liquidity'), ` · real-player share of matches today ${pct(m.humanShareActual)} (${m.matches24h.human} real / ${m.matches24h.bot} AI) · ${m.attacksPerEligibleDefender.toFixed(1)} attacks per eligible defender`));
+      for (const b of m.bands) el.append(h('div', { class: 'event' }, `Keep ${b.hall}: ${b.eligible} eligible defenders, ${b.active} active, ${b.attackRequestsPerDay} attacks/day expected, real-player share ${pct(b.humanShare)}`));
+    } catch {
+      /* the server view is optional */
+    }
   }
 
   private exportSave(box: HTMLTextAreaElement): void {

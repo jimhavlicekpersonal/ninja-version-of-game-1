@@ -138,3 +138,42 @@ create table if not exists raid_claims (
   at bigint not null,
   primary key (week, player_id)
 );
+
+-- Shadow Clans (protocol 4): PvP onboarding, Shadow Rank, regions, factions, tournaments.
+alter table players add column if not exists pvp_opt_in boolean not null default false;
+alter table players add column if not exists rating integer not null default 1000;
+alter table players add column if not exists defense_rating integer not null default 1000;
+alter table players add column if not exists rated_games integer not null default 0;
+alter table players add column if not exists rating_season integer not null default -1;
+alter table players add column if not exists last_season jsonb;
+alter table players add column if not exists region_id text;
+alter table players add column if not exists faction text;
+create index if not exists players_rating_idx on players (rating desc) where rated_games > 0;
+create index if not exists players_defense_idx on players (defense_rating desc) where rated_games > 0;
+create index if not exists players_region_idx on players (region_id);
+create index if not exists players_faction_idx on players (faction) where faction is not null;
+create index if not exists attacks_at_idx on attacks (at);
+create index if not exists tickets_created_idx on tickets (created_at) where kind = 'pvp';
+
+create table if not exists regions (
+  id text primary key,
+  name text not null,
+  seed bigint not null,
+  created_at bigint not null
+);
+
+create table if not exists faction_terms (
+  clan text not null,
+  season integer not null,
+  player_id text not null,
+  primary key (clan, season)
+);
+
+create table if not exists tournament_scores (
+  tournament integer not null,
+  player_id text not null references players(id),
+  idx integer not null,
+  score integer not null,
+  at bigint not null,
+  primary key (tournament, player_id, idx)
+);

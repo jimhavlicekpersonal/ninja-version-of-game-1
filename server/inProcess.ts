@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, DonateRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, DonateRequest, LeaderboardBoard, MatchRequest, TournamentSubmission, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -65,8 +65,32 @@ export class InProcessServerAdapter implements ServerPort {
   defenses(since: number) {
     return this.authed((me) => this.core.defenses(me, since));
   }
-  leaderboard(limit = 50) {
-    return this.authed((me) => this.core.leaderboard(me, limit));
+  leaderboard(limit = 50, board?: LeaderboardBoard) {
+    return this.authed((me) => this.core.leaderboard(me, limit, board));
+  }
+  candidates() {
+    return this.authed((me) => this.core.candidates(me));
+  }
+  matchWith(req: MatchRequest) {
+    return this.authed((me) => this.core.matchWith(me, wire(req)));
+  }
+  setPvp(optIn: boolean) {
+    return this.authed((me) => this.core.setPvp(me, optIn));
+  }
+  setFaction(clan: string | null) {
+    return this.authed((me) => this.core.setFaction(me, clan));
+  }
+  world() {
+    return this.authed((me) => this.core.world(me));
+  }
+  submitTournament(sub: TournamentSubmission) {
+    return this.authed((me) => this.core.submitTournament(me, wire(sub)));
+  }
+  tournament(limit = 20) {
+    return this.authed((me) => this.core.tournament(me, limit));
+  }
+  metrics() {
+    return this.call(() => this.core.metrics());
   }
   listGroves(query = '') {
     return this.authed((me) => this.core.listGroves(me, query));

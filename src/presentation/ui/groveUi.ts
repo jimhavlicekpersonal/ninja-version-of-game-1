@@ -62,7 +62,7 @@ export class GroveUi {
           'div',
           { class: 'grove-head' },
           h('span', { class: 'grove-badge', style: `background:${snap.color}` }, icon(icons.leaf)),
-          h('div', {}, h('b', {}, snap.name), h('div', { class: 'muted small' }, `${snap.members.length}${snap.kind === 'online' ? `/${snap.maxMembers}` : ''} members · your Alliance level ${snap.level} (${formatNumber(snap.xp)} XP)${snap.kind === 'online' ? ' · online' : ''}`)),
+          h('div', {}, h('b', {}, snap.name), h('div', { class: 'muted small' }, `${snap.members.length}${snap.kind === 'online' ? `/${snap.maxMembers}` : ''} members · your Alliance level ${snap.level} (${formatNumber(snap.xp)} XP)${snap.kind === 'online' ? ' · online' : ' · AI practice Alliance'}`)),
         ),
       );
       const tabs: [Tab, string][] = [
@@ -123,7 +123,8 @@ export class GroveUi {
       h('p', { class: 'muted small' }, 'Chat is always filtered to keep it friendly.'),
     );
     if (snap.kind === 'local') {
-      const btn = h('button', { class: 'btn primary', type: 'button' }, 'Find an Alliance and join');
+      body.append(h('p', { class: 'muted small' }, 'Offline you join an AI practice Alliance: its members are computer-controlled and are marked (AI). Play online to join real players.'));
+      const btn = h('button', { class: 'btn primary', type: 'button' }, 'Join an AI practice Alliance');
       btn.addEventListener('click', () => void this.run(() => this.src.join(), redraw));
       body.append(h('div', { class: 'actions' }, btn));
       return;

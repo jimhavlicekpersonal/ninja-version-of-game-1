@@ -31,6 +31,14 @@ import {
   type RequestView,
   type RequestsResponse,
   type UploadBaseRequest,
+  type CandidatesResponse,
+  type LeaderboardBoard,
+  type MatchRequest,
+  type MetricsResponse,
+  type TournamentResponse,
+  type TournamentScoreResponse,
+  type TournamentSubmission,
+  type WorldResponse,
 } from './protocol';
 
 /** Where this device keeps its player token for a server. */
@@ -212,8 +220,42 @@ export class HttpServerAdapter implements ServerPort {
     return this.req('GET', `${Routes.defenses}?since=${Math.floor(since)}`);
   }
 
-  leaderboard(limit = 50): Promise<LeaderboardResponse> {
-    return this.req('GET', `${Routes.leaderboard}?limit=${limit}`);
+  leaderboard(limit = 50, board?: LeaderboardBoard): Promise<LeaderboardResponse> {
+    return this.req('GET', `${Routes.leaderboard}?limit=${limit}${board ? `&board=${board}` : ''}`);
+  }
+
+  // ---------------------------------------------------------------- Shadow Clans (protocol 4)
+
+  candidates(): Promise<CandidatesResponse> {
+    return this.req('GET', Routes.candidates);
+  }
+
+  matchWith(req: MatchRequest): Promise<MatchResponse> {
+    return this.req('POST', Routes.match, req);
+  }
+
+  setPvp(optIn: boolean): Promise<PlayerView> {
+    return this.req('PUT', Routes.pvp, { optIn });
+  }
+
+  setFaction(clan: string | null): Promise<PlayerView> {
+    return this.req('PUT', Routes.faction, { clan });
+  }
+
+  world(): Promise<WorldResponse> {
+    return this.req('GET', Routes.world);
+  }
+
+  submitTournament(sub: TournamentSubmission): Promise<TournamentScoreResponse> {
+    return this.req('POST', Routes.tournamentScores, sub);
+  }
+
+  tournament(limit = 20): Promise<TournamentResponse> {
+    return this.req('GET', `${Routes.tournament}?limit=${limit}`);
+  }
+
+  metrics(): Promise<MetricsResponse> {
+    return this.req('GET', Routes.metrics);
   }
 
   // ---------------------------------------------------------------- Groves

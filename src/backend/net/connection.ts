@@ -13,7 +13,9 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, HelloResponse, PlayerView } from './protocol';
+import type { BattleSubmission, HelloResponse, MatchRequest, MatchResponse, MetricsResponse, PlayerView, TournamentScoreResponse, TournamentSubmission, WorldResponse } from './protocol';
+import type { RivalCandidate } from '../../gameplay/sim/world/opponents';
+import { defensePower } from '../../gameplay/sim/world/power';
 
 /** What the connection needs from the game. GameController provides it. */
 export interface GameLink {
@@ -121,6 +123,71 @@ export class Connection {
     return this.status === 'online';
   }
 
+  /** The server offers a protocol-4 feature (see protocol.ts Features). */
+  supports(feature: string): boolean {
+    return Boolean(this.server && this.server.protocol >= 4 && this.server.features.includes(feature));
+  }
+
+  /**
+   * Real players for the rivals board, as candidates labelled as players. The
+   * server decides how many, from the eligible villages in this player's band.
+   */
+  async candidates(): Promise<RivalCandidate[]> {
+    if (!this.port || !this.supports('candidates')) return [];
+    const r = await this.port.candidates();
+    return r.candidates.map((c) => ({
+      kind: 'player' as const,
+      source: 'human' as const,
+      clan: null,
+      strength: c.hallLevel - 0.5,
+      base: { ...c.base, human: true },
+      label: `Real player · ${c.shadowRank !== null ? `Shadow Rank ${c.shadowRank}` : 'unranked'}`,
+      defense: defensePower(c.base, this.o.game.data),
+      token: c.token,
+    }));
+  }
+
+  /** A ticket for a candidate: a real player from the board, or an AI clan village the server rebuilds. */
+  async matchWith(req: MatchRequest): Promise<MatchResponse> {
+    if (!this.port) throw new Error('offline');
+    return this.port.matchWith(req);
+  }
+
+  /** Region, real players per faction and the last Shadow Rank season (protocol 4), or null. */
+  async worldInfo(): Promise<WorldResponse | null> {
+    if (!this.port || !this.online || !this.supports('regions')) return null;
+    return this.port.world();
+  }
+
+  /** Matchmaking liquidity per band from the server (protocol 4), or null. */
+  async metrics(): Promise<MetricsResponse | null> {
+    if (!this.port || !this.online || !this.supports('metrics')) return null;
+    return this.port.metrics();
+  }
+
+  /** Report a tournament battle for the online board (best effort; the village already banked it). */
+  async reportTournament(sub: TournamentSubmission): Promise<TournamentScoreResponse | null> {
+    if (!this.port || !this.online || !this.supports('tournaments')) return null;
+    try {
+      return await this.port.submitTournament(sub);
+    } catch (e) {
+      this.log('Online play: tournament report failed', e);
+      return null;
+    }
+  }
+
+  /** Keep the server in step with village choices (PvP opt-in, faction), and bring Shadow Rank in. */
+  private async syncShadow(port: ServerPort): Promise<void> {
+    if (!this.supports('shadow_rank') || !this.player) return;
+    const g = this.o.game;
+    const w = g.state.world;
+    if (Boolean(this.player.pvpOptIn) !== w.pvpOptIn) this.player = await port.setPvp(w.pvpOptIn);
+    if ((this.player.faction ?? null) !== (w.faction.id ?? null)) this.player = await port.setFaction(w.faction.id ?? null);
+    const r = this.player.shadowRank ?? null;
+    const cur = w.rank;
+    if (JSON.stringify(r) !== JSON.stringify(cur)) g.dispatch({ type: 'syncShadowRank', rank: r });
+  }
+
   /** Save a server address chosen in Settings: a URL, '' for the built-in one, or 'off'. Takes effect on reload. */
   static choose(value: string, kv: KeyValue = browserKeyValue): void {
     const v = value.trim();
@@ -218,6 +285,7 @@ export class Connection {
       await this.flush();
       this.player = await port.me();
       g.dispatch({ type: 'syncRank', trophies: this.player.trophies, shieldUntil: this.player.shieldUntil });
+      await this.syncShadow(port);
       this.emit();
     } catch (e) {
       this.handleError(e);

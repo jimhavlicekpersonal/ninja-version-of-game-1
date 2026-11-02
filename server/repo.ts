@@ -19,9 +19,49 @@ export interface Player {
   createdAt: number;
   updatedAt: number;
   lastSeenAt: number;
+  // Shadow Clans (protocol 4). Optional so older rows and fixtures still load; see core/shadow.ts for defaults.
+  /** Real-player battles at the optional Keep level. */
+  pvpOptIn?: boolean;
+  /** Shadow Rank (offensive Elo) and defense rating, real players only. */
+  rating?: number;
+  defenseRating?: number;
+  ratedGames?: number;
+  /** Season the ratings belong to (-1 = never rated). */
+  ratingSeason?: number;
+  lastSeason?: { season: number; rating: number } | null;
+  regionId?: string | null;
+  /** AI faction (clan id). */
+  faction?: string | null;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt'>>;
+export type PlayerPatch = Partial<
+  Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'pvpOptIn' | 'rating' | 'defenseRating' | 'ratedGames' | 'ratingSeason' | 'lastSeason' | 'regionId' | 'faction'>
+>;
+
+/** A regional world instance. */
+export interface Region {
+  id: string;
+  name: string;
+  seed: number;
+  createdAt: number;
+}
+
+/** Defender eligibility rules applied by the database (see sim/world/competition.ts). */
+export interface EligibilityRules {
+  pvpMinHall: number;
+  pvpStandardHall: number;
+  /** Skip defenders that took this many real attacks since `attacksSince`. */
+  maxAttacks: number;
+  attacksSince: number;
+}
+
+export interface TournamentScoreRow {
+  tournament: number;
+  playerId: string;
+  index: number;
+  score: number;
+  at: number;
+}
 
 export interface Ticket {
   id: string;
@@ -173,6 +213,8 @@ export interface OpponentQuery {
   /** Skip players with an unused ticket issued after this time (someone is attacking them). */
   lockedSince: number;
   limit: number;
+  /** Protocol 4: only defenders that may be attacked by real players. */
+  eligibility?: EligibilityRules;
 }
 
 export interface Repo {
@@ -228,6 +270,45 @@ export interface Repo {
   /** False if this player already claimed this week. */
   addClaim(c: RaidClaim): Promise<boolean>;
   getClaim(week: number, playerId: string): Promise<RaidClaim | null>;
+  // Shadow Clans (protocol 4)
+  /** True when someone holds an unused ticket on this defender issued after `since`. */
+  isLocked(defenderId: string, since: number): Promise<boolean>;
+  /** Players `findOpponents` would return, ignoring trophies, exclusions and the limit. */
+  countEligible(q: Pick<OpponentQuery, 'minHall' | 'maxHall' | 'now' | 'lockedSince'> & { eligibility: EligibilityRules }): Promise<number>;
+  /** Players with a village seen since `since`, in a Keep range. */
+  countActive(minHall: number, maxHall: number, since: number): Promise<number>;
+  /** Real-player attacks on one defender since `since`. */
+  attacksOnSince(defenderId: string, since: number): Promise<number>;
+  /** Real-player attacks on anyone since `since`. */
+  attacksSince(since: number): Promise<number>;
+  /** PvP tickets handed out since `since`: real defenders and generated ones. */
+  ticketsSince(since: number): Promise<{ human: number; bot: number }>;
+  /** Top rated players (only players with a rated battle). */
+  ratingBoard(board: 'rank' | 'defense', limit: number): Promise<Player[]>;
+  ratingRankOf(board: 'rank' | 'defense', value: number): Promise<number>;
+  latestRegion(): Promise<Region | null>;
+  createRegion(r: Region): Promise<void>;
+  getRegion(id: string): Promise<Region | null>;
+  regionPlayers(id: string): Promise<number>;
+  factionMembers(clan: string): Promise<Player[]>;
+  /** Real-player attacks with at least one star since `since`, per attacker. */
+  winsSince(playerIds: string[], since: number): Promise<Record<string, number>>;
+  factionTerms(clan: string): Promise<{ season: number; playerId: string }[]>;
+  /** Records the season's leader once (later calls for the same season are ignored). */
+  recordFactionTerm(clan: string, season: number, playerId: string): Promise<void>;
+  /** Keeps the best score per player and fortress; returns the best. */
+  saveTournamentScore(row: TournamentScoreRow): Promise<number>;
+  /** Players by total score (sum of best per fortress). */
+  tournamentTotals(tournament: number, limit: number): Promise<{ playerId: string; name: string; score: number }[]>;
+  tournamentTotal(tournament: number, playerId: string): Promise<number>;
+  /** 1 + players with a higher total. */
+  tournamentRankOf(tournament: number, total: number): Promise<number>;
+}
+
+/** Shared rule check for the memory adapter (Postgres does the same in SQL). */
+function eligible(p: Player, rules: EligibilityRules, attacksOn: number): boolean {
+  const pvp = p.hallLevel >= rules.pvpStandardHall || (p.hallLevel >= rules.pvpMinHall && Boolean(p.pvpOptIn));
+  return pvp && attacksOn < rules.maxAttacks;
 }
 
 const clone = <T>(v: T): T => structuredClone(v);
@@ -244,6 +325,9 @@ export class MemoryRepo implements Repo {
   pairings: RaidPairing[] = [];
   raidAttackRows: RaidAttack[] = [];
   claims: RaidClaim[] = [];
+  regions: Region[] = [];
+  terms: { clan: string; season: number; playerId: string }[] = [];
+  tournamentRows: TournamentScoreRow[] = [];
   private seq = 0;
 
   async createPlayer(p: Player): Promise<void> {
@@ -266,6 +350,7 @@ export class MemoryRepo implements Repo {
     return [...this.players.values()]
       .filter((p) => p.base && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
       .filter((p) => p.hallLevel >= q.minHall && p.hallLevel <= q.maxHall && p.trophies >= q.minTrophies && p.trophies <= q.maxTrophies)
+      .filter((p) => !q.eligibility || eligible(p, q.eligibility, this.attacks.filter((a) => a.defenderId === p.id && a.at > q.eligibility!.attacksSince).length))
       .slice(0, q.limit)
       .map(clone);
   }
@@ -411,5 +496,82 @@ export class MemoryRepo implements Repo {
   async getClaim(week: number, playerId: string): Promise<RaidClaim | null> {
     const c = this.claims.find((x) => x.week === week && x.playerId === playerId);
     return c ? clone(c) : null;
+  }
+  async isLocked(defenderId: string, since: number): Promise<boolean> {
+    return [...this.tickets.values()].some((t) => !t.used && t.defenderId === defenderId && t.createdAt > since);
+  }
+  async countEligible(q: Pick<OpponentQuery, 'minHall' | 'maxHall' | 'now' | 'lockedSince'> & { eligibility: EligibilityRules }): Promise<number> {
+    return (await this.findOpponents({ ...q, excludeIds: [], minTrophies: Number.NEGATIVE_INFINITY, maxTrophies: Number.POSITIVE_INFINITY, limit: Number.MAX_SAFE_INTEGER })).length;
+  }
+  async countActive(minHall: number, maxHall: number, since: number): Promise<number> {
+    return [...this.players.values()].filter((p) => p.base && p.hallLevel >= minHall && p.hallLevel <= maxHall && p.lastSeenAt >= since).length;
+  }
+  async attacksOnSince(defenderId: string, since: number): Promise<number> {
+    return this.attacks.filter((a) => a.defenderId === defenderId && a.at > since).length;
+  }
+  async attacksSince(since: number): Promise<number> {
+    return this.attacks.filter((a) => a.at > since).length;
+  }
+  async ticketsSince(since: number): Promise<{ human: number; bot: number }> {
+    const ts = [...this.tickets.values()].filter((t) => t.kind === 'pvp' && t.createdAt > since);
+    return { human: ts.filter((t) => t.defenderId).length, bot: ts.filter((t) => !t.defenderId).length };
+  }
+  async ratingBoard(board: 'rank' | 'defense', limit: number): Promise<Player[]> {
+    const v = (p: Player) => (board === 'rank' ? p.rating ?? 0 : p.defenseRating ?? 0);
+    return [...this.players.values()].filter((p) => (p.ratedGames ?? 0) > 0).sort((a, b) => v(b) - v(a) || a.createdAt - b.createdAt).slice(0, limit).map(clone);
+  }
+  async ratingRankOf(board: 'rank' | 'defense', value: number): Promise<number> {
+    return 1 + [...this.players.values()].filter((p) => (p.ratedGames ?? 0) > 0 && (board === 'rank' ? p.rating ?? 0 : p.defenseRating ?? 0) > value).length;
+  }
+  async latestRegion(): Promise<Region | null> {
+    const r = [...this.regions].sort((a, b) => b.createdAt - a.createdAt || (a.id < b.id ? 1 : -1))[0];
+    return r ? clone(r) : null;
+  }
+  async createRegion(r: Region): Promise<void> {
+    this.regions.push(clone(r));
+  }
+  async getRegion(id: string): Promise<Region | null> {
+    const r = this.regions.find((x) => x.id === id);
+    return r ? clone(r) : null;
+  }
+  async regionPlayers(id: string): Promise<number> {
+    return [...this.players.values()].filter((p) => p.regionId === id).length;
+  }
+  async factionMembers(clan: string): Promise<Player[]> {
+    return [...this.players.values()].filter((p) => p.faction === clan).map(clone);
+  }
+  async winsSince(playerIds: string[], since: number): Promise<Record<string, number>> {
+    const out: Record<string, number> = {};
+    for (const a of this.attacks) if (a.at > since && a.result.stars >= 1 && playerIds.includes(a.attackerId)) out[a.attackerId] = (out[a.attackerId] ?? 0) + 1;
+    return out;
+  }
+  async factionTerms(clan: string): Promise<{ season: number; playerId: string }[]> {
+    return this.terms.filter((t) => t.clan === clan).map(({ season, playerId }) => ({ season, playerId }));
+  }
+  async recordFactionTerm(clan: string, season: number, playerId: string): Promise<void> {
+    if (!this.terms.some((t) => t.clan === clan && t.season === season)) this.terms.push({ clan, season, playerId });
+  }
+  async saveTournamentScore(row: TournamentScoreRow): Promise<number> {
+    const cur = this.tournamentRows.find((r) => r.tournament === row.tournament && r.playerId === row.playerId && r.index === row.index);
+    if (!cur) this.tournamentRows.push(clone(row));
+    else if (row.score > cur.score) Object.assign(cur, clone(row));
+    return Math.max(row.score, cur?.score ?? 0);
+  }
+  private totals(tournament: number): Map<string, number> {
+    const m = new Map<string, number>();
+    for (const r of this.tournamentRows) if (r.tournament === tournament) m.set(r.playerId, (m.get(r.playerId) ?? 0) + r.score);
+    return m;
+  }
+  async tournamentTotals(tournament: number, limit: number): Promise<{ playerId: string; name: string; score: number }[]> {
+    return [...this.totals(tournament).entries()]
+      .map(([playerId, score]) => ({ playerId, name: this.players.get(playerId)?.name ?? '?', score }))
+      .sort((a, b) => b.score - a.score || (a.playerId < b.playerId ? -1 : 1))
+      .slice(0, limit);
+  }
+  async tournamentTotal(tournament: number, playerId: string): Promise<number> {
+    return this.totals(tournament).get(playerId) ?? 0;
+  }
+  async tournamentRankOf(tournament: number, total: number): Promise<number> {
+    return 1 + [...this.totals(tournament).values()].filter((v) => v > total).length;
   }
 }

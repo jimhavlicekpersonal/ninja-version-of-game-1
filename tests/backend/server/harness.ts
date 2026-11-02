@@ -11,8 +11,16 @@ import type { GameData } from '../../../src/gameplay/sim/types';
 
 export const HOUR = 3_600_000;
 
+/**
+ * The game data with real-player battles open at every Keep level. The older
+ * server tests check matching, loot and shields with small villages, so they
+ * run on this; the shipped onboarding (Keep 1-2 AI only, 3 optional, 4+
+ * standard) is tested with `defaultData` in shadow.test.ts.
+ */
+export const openPvpData: GameData = { ...defaultData, competition: { ...defaultData.competition, pvp: { minHall: 1, standardHall: 1 } } };
+
 export function world(opts: { data?: GameData; repo?: Repo; start?: number } = {}) {
-  const data = opts.data ?? defaultData;
+  const data = opts.data ?? openPvpData;
   const repo = opts.repo ?? new MemoryRepo();
   let t = opts.start ?? Date.UTC(2026, 3, 6, 12);
   let seed = 1;

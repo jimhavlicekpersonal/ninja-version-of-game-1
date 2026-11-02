@@ -124,10 +124,11 @@ export class LocalGroveSource implements GroveSource {
     const now = this.c.now();
     const hl = hallLevel(s, gd);
     const grove = generateGrove(s.grove.seed, gd);
-    const names = grove.members.map((m) => m.name);
+    // The offline Alliance's members are computer-controlled: say so wherever their names appear.
+    const names = grove.members.map((m) => `${m.name} (AI)`);
     const members: GroveMemberRow[] = grove.members.map((m, i) => ({
       id: `m${i}`,
-      name: m.name,
+      name: names[i],
       role: m.role,
       hall: Math.max(1, Math.min(gd.hall.levels.length, hl + m.hallOffset)),
       trophies: Math.max(0, s.trophies + m.trophyOffset),

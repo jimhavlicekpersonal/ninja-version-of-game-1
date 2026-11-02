@@ -9,6 +9,7 @@
 import type {
   AttackResponse,
   BattleSubmission,
+  CandidatesResponse,
   ChatResponse,
   ChatView,
   DefensesResponse,
@@ -19,8 +20,11 @@ import type {
   GrovesResponse,
   HelloResponse,
   InboxResponse,
+  LeaderboardBoard,
   LeaderboardResponse,
+  MatchRequest,
   MatchResponse,
+  MetricsResponse,
   PlayerView,
   RaidAttackResponse,
   RaidClaimResponse,
@@ -29,7 +33,11 @@ import type {
   RegisterResponse,
   RequestView,
   RequestsResponse,
+  TournamentResponse,
+  TournamentScoreResponse,
+  TournamentSubmission,
   UploadBaseRequest,
+  WorldResponse,
 } from './protocol';
 
 /** A failed server call, with the protocol error code. */
@@ -60,7 +68,19 @@ export interface PvpPort {
   match(): Promise<MatchResponse | null>;
   submitAttack(sub: BattleSubmission): Promise<AttackResponse>;
   defenses(since: number): Promise<DefensesResponse>;
-  leaderboard(limit?: number): Promise<LeaderboardResponse>;
+  leaderboard(limit?: number, board?: LeaderboardBoard): Promise<LeaderboardResponse>;
+}
+
+/** Shadow Clans (protocol 4): one opponent-selection system for AI and real villages, rank, world. */
+export interface ShadowClansPort {
+  candidates(): Promise<CandidatesResponse>;
+  matchWith(req: MatchRequest): Promise<MatchResponse>;
+  setPvp(optIn: boolean): Promise<PlayerView>;
+  setFaction(clan: string | null): Promise<PlayerView>;
+  world(): Promise<WorldResponse>;
+  submitTournament(sub: TournamentSubmission): Promise<TournamentScoreResponse>;
+  tournament(limit?: number): Promise<TournamentResponse>;
+  metrics(): Promise<MetricsResponse>;
 }
 
 export interface GrovePort {
@@ -87,7 +107,7 @@ export interface GroveRaidPort {
 }
 
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ShadowClansPort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */

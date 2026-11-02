@@ -85,7 +85,17 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
   app.get(Routes.match, authed(async (me) => core.match(me)));
   app.post(Routes.attacks, authed(async (me, req) => core.attack(me, req.body as never)));
   app.get(Routes.defenses, authed(async (me, req) => core.defenses(me, Number(query(req).since ?? 0))));
-  app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50))));
+  app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50), query(req).board)));
+
+  // Shadow Clans (protocol 4)
+  app.get(Routes.candidates, authed(async (me) => core.candidates(me)));
+  app.post(Routes.match, authed(async (me, req) => core.matchWith(me, req.body as never)));
+  app.put(Routes.pvp, authed(async (me, req) => core.setPvp(me, body<{ optIn: boolean }>(req).optIn)));
+  app.put(Routes.faction, authed(async (me, req) => core.setFaction(me, body<{ clan: string | null }>(req).clan)));
+  app.get(Routes.world, authed(async (me) => core.world(me)));
+  app.post(Routes.tournamentScores, authed(async (me, req) => core.submitTournament(me, req.body as never)));
+  app.get(Routes.tournament, authed(async (me, req) => core.tournament(me, Number(query(req).limit ?? 20))));
+  app.get(Routes.metrics, async () => core.metrics());
 
   // Groves
   app.get(Routes.groves, authed(async (me, req) => core.listGroves(me, query(req).q ?? '')));

@@ -115,7 +115,7 @@ export class GameController {
         this.deps.analytics.log('donation', { troop: e.troop, count: e.count, xp: e.xp });
       } else if (e.kind === 'raid_end') {
         const r = e.record.result;
-        this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason });
+        this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason, human: Boolean(e.record.setup.base.human), clan: e.record.setup.base.clan ?? null });
       }
     }
     this.emit([]);
@@ -217,12 +217,13 @@ export class GameController {
   }
 
   /** Bank an attack's result (re-simulated from its seed and deployments). */
-  finishBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string): { record: BattleRecord; banked: Cost } | null {
+  finishBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string): { record: BattleRecord; banked: Cost; revenge: boolean } | null {
     const r = this.dispatch({ type: 'battleEnd', record: { at: this.now(), opponentName, setup, deployments, endTick } });
     if (!r.ok) return null;
     const e = r.events.find((x) => x.kind === 'raid_end');
     if (!e || e.kind !== 'raid_end') return null;
-    return { record: e.record, banked: e.record.result.loot };
+    const d = r.events.find((x) => x.kind === 'clan_defeated');
+    return { record: e.record, banked: e.record.result.loot, revenge: Boolean(d && d.kind === 'clan_defeated' && d.revenge) };
   }
 
   /** Remember an attack in progress (called on each deployment), or forget it. */

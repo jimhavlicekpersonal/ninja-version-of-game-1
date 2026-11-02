@@ -20,8 +20,8 @@ import { createRng, mixSeed } from '../rng';
 import type { GameData, VillageState } from '../types';
 import { hallLevel } from '../village';
 import { nearestClan } from './clans';
-import { defensePower, matchupLabel, offensePower } from './power';
-import { clanDef, clanVillage, firstRaidBase } from './villagegen';
+import { defensePower, matchupFromDefense, matchupLabel, offensePower } from './power';
+import { clanDef, clanVillage, expectedDefense, firstRaidBase, hallAndBias } from './villagegen';
 
 export type CandidateKind = 'first' | 'matched' | 'rival' | 'challenge' | 'player';
 
@@ -35,8 +35,10 @@ export interface RivalCandidate {
   /** Always says AI clan or real player. */
   label: string;
   defense: number;
-  /** Server ticket or candidate token for real players. */
+  /** Candidate token for real players (the server checks it again on match). */
   token?: string;
+  /** Seed the AI village was built from: a server rebuilds it from clan + seed + strength. */
+  villageSeed?: number;
 }
 
 function trophiesFor(strength: number, data: GameData): number {
@@ -57,7 +59,7 @@ export function aiCandidates(seed: number, state: VillageState, data: GameData):
   const matched = opponentForRank(seed, state.trophies, own, data);
   const ms = matchStrength(createRng(mixSeed(seed, 0x5c0a7)), state.trophies, own, data);
   const mStrength = ms.hall - 1 + ms.bias;
-  out.push({ kind: 'matched', source: 'ai', clan: matched.clan ?? null, strength: mStrength, base: matched, label: `${clanDef(data, matched.clan!).name} · AI clan village`, defense: defensePower(matched, data) });
+  out.push({ kind: 'matched', source: 'ai', clan: matched.clan ?? null, strength: mStrength, villageSeed: seed, base: matched, label: `${clanDef(data, matched.clan!).name} · AI clan village`, defense: defensePower(matched, data) });
   // 2. A persistent clan at its own strength, inside the progression band.
   const b = data.clans.bands;
   const lo = Math.max(0, own - 1 - b.below);
@@ -69,7 +71,7 @@ export function aiCandidates(seed: number, state: VillageState, data: GameData):
     const base = applyLootPenalty(clanVillage(rivalId, mixSeed(seed, 0x2), s, data), own, data);
     base.trophies = trophiesFor(s, data);
     const status = clan.status === 'rebuilding' ? ' (rebuilding)' : clan.status === 'expanding' ? ' (expanding)' : '';
-    out.push({ kind: 'rival', source: 'ai', clan: rivalId, strength: s, base, label: `${clanDef(data, rivalId).name}${status} · AI clan village`, defense: defensePower(base, data) });
+    out.push({ kind: 'rival', source: 'ai', clan: rivalId, strength: s, villageSeed: mixSeed(seed, 0x2), base, label: `${clanDef(data, rivalId).name}${status} · AI clan village`, defense: defensePower(base, data) });
   }
   // 3. An optional challenge above the matched strength.
   const cs = Math.max(own - 0.5, Math.min(Math.min(top, own + b.challengeAbove) - 1e-6, mStrength + c.challengeStrengthAbove));
@@ -80,7 +82,7 @@ export function aiCandidates(seed: number, state: VillageState, data: GameData):
     if (id) {
       const base = applyLootPenalty(clanVillage(id, mixSeed(seed, 0x3), cs, data), own, data);
       base.trophies = trophiesFor(cs, data);
-      out.push({ kind: 'challenge', source: 'ai', clan: id, strength: cs, base, label: `${clanDef(data, id).name} · AI challenge (optional)`, defense: defensePower(base, data) });
+      out.push({ kind: 'challenge', source: 'ai', clan: id, strength: cs, villageSeed: mixSeed(seed, 0x3), base, label: `${clanDef(data, id).name} · AI challenge (optional)`, defense: defensePower(base, data) });
     }
   }
   return out.slice(0, c.count);
@@ -91,7 +93,19 @@ export function mergeCandidates(ai: RivalCandidate[], humans: RivalCandidate[], 
   return [...humans, ...ai].slice(0, data.clans.candidates.count);
 }
 
+/** Offensive power of the army the player would bring now (own warriors plus reinforcements). */
+export function playerOffense(state: VillageState, data: GameData): number {
+  return offensePower(battleArmy(state), troopLevels(state, data), data);
+}
+
 /** Matchup label for the player's current army against a candidate. */
 export function candidateMatchup(state: VillageState, base: BaseLayout, data: GameData): ReturnType<typeof matchupLabel> {
-  return matchupLabel(offensePower(battleArmy(state), troopLevels(state, data), data), base, data);
+  return matchupLabel(playerOffense(state, data), base, data);
+}
+
+/** Matchup label for an AI clan at a strength, from its designed defense (cheap: builds no village). */
+export function strengthMatchup(state: VillageState, clanId: string, strength: number, data: GameData): ReturnType<typeof matchupLabel> {
+  const def = clanDef(data, clanId);
+  const { hall, bias } = hallAndBias(strength, data, def.levelBias);
+  return matchupFromDefense(playerOffense(state, data), expectedDefense(hall, bias, def, data), hall, data);
 }

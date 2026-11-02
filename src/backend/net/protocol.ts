@@ -10,8 +10,12 @@
  */
 import type { BaseLayout, BattleResult, Deployment } from '../../gameplay/sim/battle/types';
 
-/** Bump when a change would break older clients; servers report the oldest they accept. */
-export const PROTOCOL_VERSION = 3;
+/**
+ * Bump when a change would break older clients; servers report the oldest they accept.
+ * 4: Shadow Clans (candidates, targeted and AI matches, Shadow Rank, PvP opt-in,
+ * regions, factions, tournaments, metrics). All additions: v2/v3 clients still work.
+ */
+export const PROTOCOL_VERSION = 4;
 
 export type ErrorCode =
   | 'unauthorized'
@@ -56,6 +60,24 @@ export const Routes = {
   groveRaidTicket: '/v1/grove/raid/ticket',
   groveRaidAttacks: '/v1/grove/raid/attacks',
   groveRaidClaim: '/v1/grove/raid/claim',
+  // Shadow Clans (protocol 4)
+  candidates: '/v1/candidates',
+  pvp: '/v1/pvp',
+  world: '/v1/world',
+  faction: '/v1/faction',
+  tournament: '/v1/tournament',
+  tournamentScores: '/v1/tournament/scores',
+  metrics: '/v1/metrics',
+} as const;
+
+/** Feature names a protocol-4 server lists in /v1/hello. */
+export const Features = {
+  candidates: 'candidates',
+  shadowRank: 'shadow_rank',
+  regions: 'regions',
+  factions: 'factions',
+  tournaments: 'tournaments',
+  metrics: 'metrics',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -78,6 +100,15 @@ export interface RegisterResponse {
   token: string;
 }
 
+export interface ShadowRankView {
+  /** Offensive Elo against real players. */
+  rating: number;
+  /** Defensive Elo (separate leaderboard). */
+  defense: number;
+  games: number;
+  season: number;
+}
+
 export interface PlayerView {
   id: string;
   name: string;
@@ -85,6 +116,16 @@ export interface PlayerView {
   hallLevel: number;
   shieldUntil: number;
   groveId: string | null;
+  // Protocol 4 (absent on older servers):
+  /** Takes part in real-player battles at the optional Keep level. */
+  pvpOptIn?: boolean;
+  /** Null until the first battle against a real player. */
+  shadowRank?: ShadowRankView | null;
+  /** The last finished Shadow Rank season, for its reward. */
+  lastSeason?: { season: number; rating: number } | null;
+  region?: string | null;
+  /** AI faction (clan id) the player serves. */
+  faction?: string | null;
 }
 
 export interface RenameRequest {
@@ -132,6 +173,8 @@ export interface AttackResponse {
   trophies: number;
   /** The attacker's trophies after the attack. */
   playerTrophies: number;
+  /** Protocol 4: Shadow Rank change (0 against generated villages, which never count). */
+  rating?: number;
 }
 
 export interface DefenseView {
@@ -159,10 +202,106 @@ export interface LeaderboardEntry {
   trophies: number;
   hallLevel: number;
   grove: string | null;
+  /** Protocol 4: Shadow Rank and defense rating. */
+  rating?: number;
+  defense?: number;
 }
 export interface LeaderboardResponse {
   players: LeaderboardEntry[];
   me: { rank: number; trophies: number } | null;
+  /** Protocol 4: which board ('honor' = trophies, the default). */
+  board?: LeaderboardBoard;
+}
+
+export type LeaderboardBoard = 'honor' | 'rank' | 'defense';
+
+// ---------------------------------------------------------------- Shadow Clans (protocol 4)
+
+/** A real player offered on the rivals board. */
+export interface CandidateView {
+  /** Pass back in a MatchRequest; the server checks eligibility again. */
+  token: string;
+  name: string;
+  hallLevel: number;
+  trophies: number;
+  /** The village, loot already capped and reduced by the attacker's loot penalty. */
+  base: BaseLayout;
+  shadowRank: number | null;
+}
+
+export interface CandidatesResponse {
+  candidates: CandidateView[];
+  /** Target share of real players for this attacker's band (population transition and capacity). */
+  humanShare: number;
+  /** Eligible real defenders in the band right now. */
+  eligible: number;
+}
+
+/** POST /v1/match: a real player from the board, or an AI clan village the server rebuilds. */
+export interface MatchRequest {
+  target?: string;
+  ai?: { clan: string; seed: number; strength: number };
+}
+
+export interface PvpRequest {
+  optIn: boolean;
+}
+
+export interface FactionRequest {
+  /** Clan id, or null to leave. */
+  clan: string | null;
+}
+
+export interface WorldResponse {
+  region: { id: string; name: string; players: number; capacity: number } | null;
+  /** Real players per AI faction, and the human leader when there is one. */
+  factions: Record<string, { humans: number; leader: string | null }>;
+  lastSeason: { season: number; rating: number } | null;
+}
+
+export interface TournamentSubmission {
+  tournament: number;
+  index: number;
+  seed: number;
+  army: Record<string, number>;
+  deployments: Deployment[];
+  endTick?: number;
+}
+
+export interface TournamentScoreResponse {
+  score: number;
+  best: number;
+  total: number;
+}
+
+export interface TournamentResponse {
+  tournament: number;
+  top: { rank: number; name: string; score: number }[];
+  me: { rank: number; score: number } | null;
+}
+
+export interface MetricsBand {
+  hall: number;
+  /** Real villages that may be attacked right now. */
+  eligible: number;
+  /** Players with a village seen in the last day. */
+  active: number;
+  /** Expected attack requests per day (active x attacks per player). */
+  attackRequestsPerDay: number;
+  /** Target share of real opponents: min(table, capacity). */
+  humanShare: number;
+}
+
+export interface MetricsResponse {
+  at: number;
+  /** One row per attacker Keep level (its matchmaking band). */
+  bands: MetricsBand[];
+  /** Real-player attacks in the last day, and per eligible defender. */
+  attacks24h: number;
+  attacksPerEligibleDefender: number;
+  /** Matches handed out in the last day: real defenders vs generated villages. */
+  matches24h: { human: number; bot: number };
+  humanShareActual: number;
 }
 
 // ---------------------------------------------------------------- Groves

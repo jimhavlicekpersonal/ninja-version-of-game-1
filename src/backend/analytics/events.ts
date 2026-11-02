@@ -125,3 +125,76 @@ export class Analytics {
     return this.store.recent(limit);
   }
 }
+
+// ---------------------------------------------------------------- health view
+
+/** Targets for the health view (competition.json `health`). */
+export interface HealthTargets {
+  tutorialCompletion: number;
+  day1: number;
+  day7: number;
+  day30: number;
+  battlesPerDay: [number, number];
+  searchSuccess: number;
+}
+
+export interface HealthReport {
+  tutorialDone: boolean;
+  /** This device came back on day 1 / 7 / 30 after its first session (null = not that old yet). */
+  returned: { day1: boolean | null; day7: boolean | null; day30: boolean | null };
+  activeDays: number;
+  battlesPerActiveDay: number;
+  searches: number;
+  /** Searches that found at least one opponent (target 99%+). */
+  searchSuccess: number | null;
+  /** Of searches made online with PvP on, the share that found a real player. */
+  humanAvailability: number | null;
+  humanBattles: number;
+  /** After a first real-player battle, did the player start another? */
+  pvpRepeat: boolean | null;
+  /** Times the player came back to raids on their village, and how many of those were followed by another visit within two days. */
+  defensesSeen: number;
+  returnedAfterDefense: number;
+  targets: HealthTargets;
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * The game-health numbers that can be read on one device from its own
+ * analytics events. The full dashboard (retention across players, matchmaking
+ * liquidity per band) needs the server: see /v1/metrics.
+ */
+export function healthReport(events: AnalyticsEvent[], now: number, targets: HealthTargets): HealthReport {
+  const ev = [...events].sort((a, b) => a.at - b.at);
+  const sessions = ev.filter((e) => e.name === 'session_start').map((e) => e.at);
+  const t0 = sessions[0] ?? now;
+  // Day d after the first session: true if there was a session that day, null while it is not over yet.
+  const cameBack = (d: number): boolean | null => {
+    const from = t0 + d * DAY_MS;
+    const to = from + DAY_MS;
+    if (sessions.some((t) => t >= from && t < to)) return true;
+    return now < to ? null : false;
+  };
+  const days = new Set(ev.map((e) => Math.floor(e.at / DAY_MS)));
+  const battles = ev.filter((e) => e.name === 'raid_end' || e.name === 'world_battle').length;
+  const searches = ev.filter((e) => e.name === 'opponent_search');
+  const online = searches.filter((e) => e.props.searched);
+  const human = ev.filter((e) => e.name === 'raid_end' && e.props.human);
+  const defenses = ev.filter((e) => e.name === 'defense_seen');
+  return {
+    tutorialDone: ev.some((e) => e.name === 'tutorial_step' && e.props.done),
+    returned: { day1: cameBack(1), day7: cameBack(7), day30: cameBack(30) },
+    activeDays: days.size,
+    battlesPerActiveDay: days.size ? battles / days.size : 0,
+    searches: searches.length,
+    searchSuccess: searches.length ? searches.filter((e) => e.props.ok).length / searches.length : null,
+    humanAvailability: online.length ? online.filter((e) => Number(e.props.humans) > 0).length / online.length : null,
+    humanBattles: human.length,
+    pvpRepeat: human.length ? human.length > 1 : null,
+    defensesSeen: defenses.length,
+    returnedAfterDefense: defenses.filter((d) => sessions.some((t) => t > d.at + 60_000 && t <= d.at + 2 * DAY_MS)).length,
+    targets,
+  };
+}
+

@@ -435,3 +435,28 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .scout-report { position: absolute; left: calc(8px + var(--safe-l)); right: calc(8px + var(--safe-r)); bottom: calc(150px + var(--safe-b)); max-width: 460px; margin: 0 auto; padding: 8px 12px; background: rgba(247, 240, 225, 0.94); border-radius: 16px; font-size: 13px; }
 .scout-report .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .scout-report p { margin: 2px 0; }
+
+/* ---------- Shadow Clans: rivals board, world map, factions, tournament ---------- */
+.tag { display: inline-block; font: 900 10px var(--font); letter-spacing: .06em; padding: 2px 7px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+.tag-ai { background: #e4e7ee; color: #3b4658; }
+.tag-human { background: #ffe0cc; color: #9e2b1f; }
+.rival-card, .settlement, .clan-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; margin: 8px 0; border-radius: 14px; background: #fffaf0; border: 1px solid #eadcc2; border-left: 6px solid var(--clan, #8a94a6); flex-wrap: wrap; }
+.rival-card.human { border-left-color: var(--berry); background: #fff4ec; }
+.rival-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 220px; }
+.rival-main b { font-size: 16px; }
+.clan-row.current { background: #fff6c8; }
+.settlement.mine { background: #eef9e6; }
+.settlement > div:first-child, .clan-row > div:first-child { min-width: 0; flex: 1 1 200px; }
+.province { margin: 6px 0 12px; padding-left: 8px; border-left: 3px solid var(--clan, #8a94a6); }
+.province h3 { margin: 6px 0 2px; }
+.news { padding: 3px 0; border-bottom: 1px dashed #eadcc2; }
+.chip.match-easy { background: #e3f9d6; color: #2b6a1f; }
+.chip.match-even { background: #fff1c2; color: #6b4300; }
+.chip.match-hard { background: #ffe2dc; color: #9e2b1f; }
+.chip.match-very-hard { background: #c2281f; color: #fff; }
+.draft { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px; }
+.draft-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 12px; background: #fffaf0; border: 1px solid #eadcc2; }
+.draft-row img { width: 36px; height: 36px; object-fit: contain; }
+.draft-row > div { flex: 1; min-width: 0; }
+.draft-row .btn { min-width: 40px; min-height: 40px; padding: 0 10px; justify-content: center; }
+.draft-n { min-width: 26px; text-align: center; font-size: 16px; }

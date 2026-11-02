@@ -16,6 +16,8 @@ import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { attackerPvp, rateAttack, rules, shadowOf } from './shadow';
+import type { LeaderboardBoard } from '../../src/backend/net/protocol';
 
 /** How long a matched base stays reserved for its attacker. */
 export const TICKET_LOCK_MS = 5 * MIN;
@@ -131,6 +133,10 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   if (err) throw new ApiError(400, 'bad_request', err);
   capBaseLoot(base, ctx.data);
   base.name = me.name;
+  // A real player's village: never carries AI clan labels.
+  delete base.clan;
+  delete base.practice;
+  delete base.settlement;
   await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now() });
 }
 
@@ -143,8 +149,11 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
   const exclude = [me.id, ...recent, ...mates];
   let found: Player | null = null;
-  for (const range of [data.ranks.matchTrophyRange, 200, 400, 1_000_000]) {
-    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: t - TICKET_LOCK_MS, limit: 20 });
+  // New-player protection: below the PvP Keep levels (or opted out) only generated villages, and
+  // only defenders that may be attacked by real players (competition.json, sim/world/competition.ts).
+  const ranges = attackerPvp(me, ctx) ? [data.ranks.matchTrophyRange, 200, 400, 1_000_000] : [];
+  for (const range of ranges) {
+    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: t - TICKET_LOCK_MS, limit: 20, eligibility: rules(ctx) });
     if (list.length) {
       found = list[Math.floor(ctx.random() * list.length)];
       break;
@@ -201,10 +210,13 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
     await repo.updatePlayer(defender.id, patch);
   }
   const attackId = ctx.uuid();
+  // Shadow Rank moves only for battles between real players; generated villages never count.
+  let rating = 0;
   if (defender) {
     await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, base: ticket.base, deployments, endTick: sub.endTick, result, attackerTrophies: delta, defenderTrophies: -delta });
+    rating = await rateAttack(ctx, me, defender, result);
   }
-  return { attackId, result, trophies: delta, playerTrophies };
+  return { attackId, result, trophies: delta, playerTrophies, rating };
 }
 
 export async function defenses(ctx: ServerContext, me: Player, since: number): Promise<DefensesResponse> {
@@ -214,8 +226,20 @@ export async function defenses(ctx: ServerContext, me: Player, since: number): P
   };
 }
 
-export async function leaderboard(ctx: ServerContext, me: Player, limit: number): Promise<LeaderboardResponse> {
+export async function leaderboard(ctx: ServerContext, me: Player, limit: number, board?: unknown): Promise<LeaderboardResponse> {
   const n = Math.max(1, Math.min(100, Number(limit) || 50));
+  const which: LeaderboardBoard = board === 'rank' || board === 'defense' ? board : 'honor';
+  if (which !== 'honor') {
+    // Shadow Rank and defense boards: real-player battles only.
+    const rows = await ctx.repo.ratingBoard(which, n);
+    const mine = shadowOf(me, ctx);
+    const value = which === 'rank' ? mine.rating : mine.defense;
+    return {
+      board: which,
+      players: rows.map((p, i) => ({ rank: i + 1, name: p.name, trophies: p.trophies, hallLevel: p.hallLevel, grove: null, rating: shadowOf(p, ctx).rating, defense: shadowOf(p, ctx).defense })),
+      me: mine.games > 0 ? { rank: await ctx.repo.ratingRankOf(which, value), trophies: me.trophies } : null,
+    };
+  }
   const top = await ctx.repo.topPlayers(n);
   const groveNames = new Map<string, string>();
   for (const p of top) {
@@ -224,5 +248,6 @@ export async function leaderboard(ctx: ServerContext, me: Player, limit: number)
   return {
     players: top.map((p, i) => ({ rank: i + 1, name: p.name, trophies: p.trophies, hallLevel: p.hallLevel, grove: p.groveId ? groveNames.get(p.groveId) || null : null })),
     me: me.base ? { rank: await ctx.repo.rankOf(me.trophies), trophies: me.trophies } : null,
+    board: 'honor',
   };
 }

@@ -1,9 +1,10 @@
 import { filterText } from '../../src/gameplay/sim/social/grove';
-import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
+import { Features, PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
+import { assignRegion } from './shadow';
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 
-export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
+export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid', ...Object.values(Features)];
 
 export function hello(ctx: ServerContext): HelloResponse {
   return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: 2, serverTime: ctx.now(), features: FEATURES };
@@ -29,6 +30,7 @@ export async function register(ctx: ServerContext, name: unknown): Promise<Regis
     createdAt: t,
     updatedAt: t,
     lastSeenAt: t,
+    regionId: (await assignRegion(ctx)).id,
   };
   await ctx.repo.createPlayer(player);
   return { playerId: player.id, token };

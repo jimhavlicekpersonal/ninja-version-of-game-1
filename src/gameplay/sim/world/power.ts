@@ -156,8 +156,13 @@ export function playerRatingInputs(state: VillageState, hall: number, data: Game
  * matched fight at that Keep.
  */
 export function matchupLabel(offense: number, base: BaseLayout, data: GameData): { ratio: number; label: 'Easy' | 'Even' | 'Hard' | 'Very hard' } {
-  const fair = maxOffenseAtHall(base.hallLevel, data) / Math.max(1, maxDefenseAtHall(base.hallLevel, data));
-  const ratio = offense / Math.max(1, defensePower(base, data)) / Math.max(1e-9, fair);
+  return matchupFromDefense(offense, defensePower(base, data), base.hallLevel, data);
+}
+
+/** The same label from a defensive power estimate (no village needs to be built). */
+export function matchupFromDefense(offense: number, defense: number, hall: number, data: GameData): { ratio: number; label: 'Easy' | 'Even' | 'Hard' | 'Very hard' } {
+  const fair = maxOffenseAtHall(hall, data) / Math.max(1, maxDefenseAtHall(hall, data));
+  const ratio = offense / Math.max(1, defense) / Math.max(1e-9, fair);
   const t = data.competition.rating.matchTolerance;
   const label = ratio >= 1 + t * 2 ? 'Easy' : ratio >= 1 - t ? 'Even' : ratio >= 1 - t * 2 ? 'Hard' : 'Very hard';
   return { ratio, label };

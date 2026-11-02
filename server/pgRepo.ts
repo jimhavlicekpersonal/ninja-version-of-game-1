@@ -4,6 +4,7 @@ import type {
   AttackRecord,
   ChatRow,
   Donation,
+  EligibilityRules,
   Grove,
   GroveMember,
   GroveSummaryRow,
@@ -13,8 +14,10 @@ import type {
   RaidAttack,
   RaidClaim,
   RaidPairing,
+  Region,
   Repo,
   Ticket,
+  TournamentScoreRow,
   TroopRequest,
 } from './repo';
 
@@ -34,7 +37,24 @@ const toPlayer = (r: Row): Player => ({
   createdAt: num(r.created_at),
   updatedAt: num(r.updated_at),
   lastSeenAt: num(r.last_seen_at),
+  pvpOptIn: Boolean(r.pvp_opt_in),
+  rating: r.rating === undefined ? undefined : num(r.rating),
+  defenseRating: r.defense_rating === undefined ? undefined : num(r.defense_rating),
+  ratedGames: num(r.rated_games),
+  ratingSeason: r.rating_season === undefined ? undefined : num(r.rating_season),
+  lastSeason: (r.last_season as Player['lastSeason']) ?? null,
+  regionId: strOrNull(r.region_id),
+  faction: strOrNull(r.faction),
 });
+
+/** SQL for the defender eligibility rules; `$n` placeholders start at `first`. */
+function eligibilitySql(rules: EligibilityRules, first: number): { sql: string; vals: unknown[] } {
+  return {
+    sql: ` and (p.hall_level >= $${first} or (p.hall_level >= $${first + 1} and p.pvp_opt_in))
+           and (select count(*) from attacks a where a.defender_id = p.id and a.at > $${first + 2}) < $${first + 3}`,
+    vals: [rules.pvpStandardHall, rules.pvpMinHall, rules.attacksSince, rules.maxAttacks],
+  };
+}
 
 const toTicket = (r: Row): Ticket => {
   const t: Ticket = {
@@ -143,9 +163,9 @@ export class PgRepo implements Repo {
 
   async createPlayer(p: Player): Promise<void> {
     await this.pool.query(
-      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt],
+      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, region_id, pvp_opt_in, faction)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.regionId ?? null, Boolean(p.pvpOptIn), p.faction ?? null],
     );
   }
 
@@ -169,13 +189,21 @@ export class PgRepo implements Repo {
       groveId: 'grove_id',
       updatedAt: 'updated_at',
       lastSeenAt: 'last_seen_at',
+      pvpOptIn: 'pvp_opt_in',
+      rating: 'rating',
+      defenseRating: 'defense_rating',
+      ratedGames: 'rated_games',
+      ratingSeason: 'rating_season',
+      lastSeason: 'last_season',
+      regionId: 'region_id',
+      faction: 'faction',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];
     for (const [k, col] of Object.entries(cols)) {
       if (!(k in patch)) continue;
       const v = (patch as Record<string, unknown>)[k];
-      vals.push(k === 'base' && v !== null ? JSON.stringify(v) : v);
+      vals.push((k === 'base' || k === 'lastSeason') && v !== null && v !== undefined ? JSON.stringify(v) : v);
       sets.push(`${col} = $${vals.length}`);
     }
     if (!sets.length) return;
@@ -184,14 +212,15 @@ export class PgRepo implements Repo {
   }
 
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
+    const el = q.eligibility ? eligibilitySql(q.eligibility, 9) : { sql: '', vals: [] };
     const r = await this.rows(
       `select * from players p
        where p.base is not null and p.shield_until <= $1
          and p.hall_level between $2 and $3 and p.trophies between $4 and $5
          and not (p.id = any($6::text[]))
-         and not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7)
+         and not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7)${el.sql}
        order by random() limit $8`,
-      [q.now, q.minHall, q.maxHall, q.minTrophies, q.maxTrophies, q.excludeIds, q.lockedSince, q.limit],
+      [q.now, q.minHall, q.maxHall, Number.isFinite(q.minTrophies) ? q.minTrophies : -2147483648, Number.isFinite(q.maxTrophies) ? q.maxTrophies : 2147483647, q.excludeIds, q.lockedSince, q.limit, ...el.vals],
     );
     return r.map(toPlayer);
   }
@@ -445,5 +474,121 @@ export class PgRepo implements Repo {
   async getClaim(week: number, playerId: string): Promise<RaidClaim | null> {
     const r = await this.rows('select * from raid_claims where week = $1 and player_id = $2', [week, playerId]);
     return r[0] ? toClaim(r[0]) : null;
+  }
+
+  // ------------------------------------------------------------ Shadow Clans (protocol 4)
+
+  async isLocked(defenderId: string, since: number): Promise<boolean> {
+    const r = await this.rows('select 1 from tickets where defender_id = $1 and not used and created_at > $2 limit 1', [defenderId, since]);
+    return r.length > 0;
+  }
+
+  async countEligible(q: Pick<OpponentQuery, 'minHall' | 'maxHall' | 'now' | 'lockedSince'> & { eligibility: EligibilityRules }): Promise<number> {
+    const el = eligibilitySql(q.eligibility, 5);
+    const r = await this.rows(
+      `select count(*) as n from players p
+       where p.base is not null and p.shield_until <= $1 and p.hall_level between $2 and $3
+         and not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $4)${el.sql}`,
+      [q.now, q.minHall, q.maxHall, q.lockedSince, ...el.vals],
+    );
+    return num(r[0]?.n);
+  }
+
+  async countActive(minHall: number, maxHall: number, since: number): Promise<number> {
+    const r = await this.rows('select count(*) as n from players where base is not null and hall_level between $1 and $2 and last_seen_at >= $3', [minHall, maxHall, since]);
+    return num(r[0]?.n);
+  }
+
+  async attacksOnSince(defenderId: string, since: number): Promise<number> {
+    const r = await this.rows('select count(*) as n from attacks where defender_id = $1 and at > $2', [defenderId, since]);
+    return num(r[0]?.n);
+  }
+
+  async attacksSince(since: number): Promise<number> {
+    const r = await this.rows('select count(*) as n from attacks where at > $1', [since]);
+    return num(r[0]?.n);
+  }
+
+  async ticketsSince(since: number): Promise<{ human: number; bot: number }> {
+    const r = await this.rows("select count(*) filter (where defender_id is not null) as human, count(*) filter (where defender_id is null) as bot from tickets where kind = 'pvp' and created_at > $1", [since]);
+    return { human: num(r[0]?.human), bot: num(r[0]?.bot) };
+  }
+
+  async ratingBoard(board: 'rank' | 'defense', limit: number): Promise<Player[]> {
+    const col = board === 'rank' ? 'rating' : 'defense_rating';
+    return (await this.rows(`select * from players where rated_games > 0 order by ${col} desc, created_at asc limit $1`, [limit])).map(toPlayer);
+  }
+
+  async ratingRankOf(board: 'rank' | 'defense', value: number): Promise<number> {
+    const col = board === 'rank' ? 'rating' : 'defense_rating';
+    const r = await this.rows(`select count(*) as n from players where rated_games > 0 and ${col} > $1`, [value]);
+    return 1 + num(r[0]?.n);
+  }
+
+  async latestRegion(): Promise<Region | null> {
+    const r = await this.rows('select * from regions order by created_at desc, id desc limit 1');
+    return r[0] ? { id: String(r[0].id), name: String(r[0].name), seed: num(r[0].seed), createdAt: num(r[0].created_at) } : null;
+  }
+
+  async createRegion(g: Region): Promise<void> {
+    await this.pool.query('insert into regions (id, name, seed, created_at) values ($1,$2,$3,$4) on conflict (id) do nothing', [g.id, g.name, g.seed, g.createdAt]);
+  }
+
+  async getRegion(id: string): Promise<Region | null> {
+    const r = await this.rows('select * from regions where id = $1', [id]);
+    return r[0] ? { id: String(r[0].id), name: String(r[0].name), seed: num(r[0].seed), createdAt: num(r[0].created_at) } : null;
+  }
+
+  async regionPlayers(id: string): Promise<number> {
+    const r = await this.rows('select count(*) as n from players where region_id = $1', [id]);
+    return num(r[0]?.n);
+  }
+
+  async factionMembers(clan: string): Promise<Player[]> {
+    return (await this.rows('select * from players where faction = $1', [clan])).map(toPlayer);
+  }
+
+  async winsSince(playerIds: string[], since: number): Promise<Record<string, number>> {
+    if (!playerIds.length) return {};
+    const r = await this.rows("select attacker_id, count(*) as n from attacks where at > $1 and attacker_id = any($2::text[]) and (record->'result'->>'stars')::int >= 1 group by attacker_id", [since, playerIds]);
+    return Object.fromEntries(r.map((x) => [String(x.attacker_id), num(x.n)]));
+  }
+
+  async factionTerms(clan: string): Promise<{ season: number; playerId: string }[]> {
+    return (await this.rows('select season, player_id from faction_terms where clan = $1', [clan])).map((x) => ({ season: num(x.season), playerId: String(x.player_id) }));
+  }
+
+  async recordFactionTerm(clan: string, season: number, playerId: string): Promise<void> {
+    await this.pool.query('insert into faction_terms (clan, season, player_id) values ($1,$2,$3) on conflict (clan, season) do nothing', [clan, season, playerId]);
+  }
+
+  async saveTournamentScore(row: TournamentScoreRow): Promise<number> {
+    const r = await this.rows(
+      `insert into tournament_scores (tournament, player_id, idx, score, at) values ($1,$2,$3,$4,$5)
+       on conflict (tournament, player_id, idx) do update set score = greatest(tournament_scores.score, excluded.score),
+         at = case when excluded.score > tournament_scores.score then excluded.at else tournament_scores.at end
+       returning score`,
+      [row.tournament, row.playerId, row.index, row.score, row.at],
+    );
+    return num(r[0]?.score);
+  }
+
+  async tournamentTotals(tournament: number, limit: number): Promise<{ playerId: string; name: string; score: number }[]> {
+    const r = await this.rows(
+      `select s.player_id, p.name, sum(s.score) as score from tournament_scores s join players p on p.id = s.player_id
+       where s.tournament = $1 group by s.player_id, p.name order by score desc, s.player_id asc limit $2`,
+      [tournament, limit],
+    );
+    return r.map((x) => ({ playerId: String(x.player_id), name: String(x.name), score: num(x.score) }));
+  }
+
+  async tournamentTotal(tournament: number, playerId: string): Promise<number> {
+    const r = await this.rows('select coalesce(sum(score), 0) as n from tournament_scores where tournament = $1 and player_id = $2', [tournament, playerId]);
+    return num(r[0]?.n);
+  }
+
+  async tournamentRankOf(tournament: number, total: number): Promise<number> {
+    const r = await this.rows('select count(*) as n from (select player_id, sum(score) as t from tournament_scores where tournament = $1 group by player_id) x where x.t > $2', [tournament, total]);
+    return 1 + num(r[0]?.n);
   }
 }

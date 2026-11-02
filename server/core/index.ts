@@ -8,6 +8,7 @@ import * as groves from './groves';
 import * as groveRaid from './groveRaid';
 import * as identity from './identity';
 import * as pvp from './pvp';
+import * as shadow from './shadow';
 
 export type { ServerContext } from './context';
 export { ApiError } from './context';
@@ -18,7 +19,7 @@ export function createCore(ctx: ServerContext) {
     hello: () => identity.hello(ctx),
     register: (name: unknown) => identity.register(ctx, name),
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
-    me: identity.playerView,
+    me: (p: Parameters<typeof shadow.meView>[1]) => shadow.meView(ctx, p),
     rename: identity.rename.bind(null, ctx),
     uploadBase: pvp.uploadBase.bind(null, ctx),
     match: pvp.match.bind(null, ctx),
@@ -41,6 +42,15 @@ export function createCore(ctx: ServerContext) {
     raidTicket: groveRaid.raidTicket.bind(null, ctx),
     raidAttack: groveRaid.raidAttack.bind(null, ctx),
     claimRaid: groveRaid.claimRaid.bind(null, ctx),
+    // Shadow Clans (protocol 4)
+    candidates: shadow.candidates.bind(null, ctx),
+    matchWith: (me: Parameters<typeof shadow.candidates>[1], req: Parameters<typeof shadow.matchWith>[2]) => shadow.matchWith(ctx, me, req, () => pvp.match(ctx, me)),
+    setPvp: shadow.setPvp.bind(null, ctx),
+    setFaction: shadow.setFaction.bind(null, ctx),
+    world: shadow.world.bind(null, ctx),
+    submitTournament: shadow.submitTournament.bind(null, ctx),
+    tournament: shadow.tournament.bind(null, ctx),
+    metrics: () => shadow.metrics(ctx),
   };
 }
 

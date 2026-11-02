@@ -5,7 +5,7 @@ import { capBaseLoot } from '../../../server/core/pvp';
 import { MemoryRepo } from '../../../server/repo';
 import { PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
 import { runBattle } from '../../../src/gameplay/sim/battle/battle';
-import { defaultData as data } from '../../../src/gameplay/sim/data';
+import { openPvpData as data } from './harness';
 import { storageLootCap, villageToBase } from '../../../src/gameplay/sim/defense';
 import { createNewVillage } from '../../../src/gameplay/sim/village';
 import { baseAt, rush } from './harness';

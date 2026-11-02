@@ -10,7 +10,7 @@ import { Connection, type KeyValue } from '../../../src/backend/net/connection';
 import { HttpServerAdapter, memoryTokenStore, normalizeServerUrl } from '../../../src/backend/net/httpAdapter';
 import { ServerError } from '../../../src/backend/net/ports';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
-import { defaultData as data } from '../../../src/gameplay/sim/data';
+import { openPvpData as data } from './harness';
 import { applyCommand, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
 import { rush } from './harness';
 

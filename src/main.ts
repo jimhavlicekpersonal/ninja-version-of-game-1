@@ -145,6 +145,18 @@ async function boot(): Promise<void> {
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),
     onTrial: (tier) => app?.trial(tier),
+    onSettlement: (id) => app?.settlement(id),
+    onTournament: (index, army) => app?.tournament(index, army),
+    worldOnlineInfo: async () => {
+      // Online extras for the World panel; offline (or an older server) shows the local world only.
+      try {
+        const w = await connection.worldInfo();
+        return w ? { region: w.region?.name ?? null, factions: w.factions, lastSeason: w.lastSeason } : null;
+      } catch (e) {
+        console.warn('World info failed', e);
+        return null;
+      }
+    },
     prefs,
     notifyPrefs,
     onRemindersEnabled: async () => {
@@ -172,6 +184,7 @@ async function boot(): Promise<void> {
     troopThumb: (type) => thumbOf(Keys.troop(type)),
     connection,
     groveSource,
+    analytics,
   });
 
   connection.start();
@@ -192,6 +205,8 @@ async function boot(): Promise<void> {
   }
 
   if (offline) {
+    // Defender retention: note raids the player comes back to (the health view compares later sessions).
+    if (offline.raids.length) analytics.log('defense_seen', { raids: offline.raids.length, worst: Math.max(...offline.raids.map((r) => r.result.destruction)), simulated: offline.raids.every((r) => r.simulated) });
     hud.showWelcomeBack(offline, () => {
       if (offline.raids.some((r) => r.result.destruction >= 50)) controller.triggerOffer('heavy_defense_loss');
     });
