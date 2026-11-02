@@ -100,6 +100,34 @@ export const LAYOUTS: LayoutArchetype[] = [
   },
 ];
 
+/**
+ * Extra archetypes used by the AI clans' villages (sim/world/villagegen.ts).
+ * Kept apart from LAYOUTS so the Shadow Trials rotation does not change.
+ */
+export const CLAN_LAYOUTS: LayoutArchetype[] = [
+  {
+    id: 'ambush_alleys',
+    name: 'Ambush Alleys',
+    tip: 'Broken walls make narrow alleys lined with traps: send a cheap troop down an alley first, or go over the top.',
+    rings: { splash: [3, 6], defense: [3, 8], storage: [2, 5], trap: [5, 10], other: [10, 14] },
+    wallRings: 2,
+    wallGaps: 4,
+  },
+  {
+    id: 'moon_veil',
+    name: 'Moon Veil',
+    tip: 'Defenses hide deep behind the storages and traps line the outer paths: scout the edges, then jam the core.',
+    rings: { splash: [1, 4], defense: [2, 5], storage: [5, 8], trap: [6, 11], other: [9, 14] },
+    wallRings: 1,
+    wallGaps: 3,
+  },
+];
+
+/** Any layout archetype by id (Shadow Trials and clan layouts). */
+export function layoutById(id: string): LayoutArchetype | undefined {
+  return LAYOUTS.find((l) => l.id === id) ?? CLAN_LAYOUTS.find((l) => l.id === id);
+}
+
 export interface OpponentOptions {
   /**
    * 0..1: how close buildings are to this hall level's caps. 0 = about two
@@ -109,6 +137,10 @@ export interface OpponentOptions {
   levelBias?: number;
   /** Arrange the base in a named style instead of the default rings. */
   layout?: LayoutArchetype;
+  /** Share of the Keep's wall limit to build (AI clan style). Default 1. */
+  wallShare?: number;
+  /** Share of each trap limit to build (AI clan style). Default 1. */
+  trapShare?: number;
 }
 
 export function generateOpponent(seed: number, hallLevel: number, data: GameData, opts: OpponentOptions = {}): BaseLayout {
@@ -139,6 +171,7 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
     const def = buildingDef(data, type);
     if (def.category === 'hedge' || def.category === 'decor') continue;
     let count = lim.count;
+    if (def.category === 'trap' && opts.trapShare !== undefined && opts.trapShare < 1) count = Math.round(count * Math.max(0, opts.trapShare));
     if (def.category === 'builder') count = 2 + int(rng, 0, Math.min(3, lim.count - 2));
     else if (def.category === 'collector') count = Math.max(1, int(rng, Math.ceil(count / 2), count));
     for (let i = 0; i < count; i++) {
@@ -174,7 +207,8 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
   }
 
   // A hedge ring around the core, with a few gaps.
-  const hedgeLimit = limits.bramble_hedge;
+  const fullHedge = limits.bramble_hedge;
+  const hedgeLimit = fullHedge && opts.wallShare !== undefined && opts.wallShare < 1 ? { ...fullHedge, count: Math.floor(fullHedge.count * Math.max(0, opts.wallShare)) } : fullHedge;
   if (opts.layout) {
     if (hedgeLimit && hedgeLimit.count > 0 && opts.layout.wallRings > 0) styledWalls(rng, o, buildings, data, hedgeLimit.count, levelFor('bramble_hedge'), opts.layout, add);
   } else if (hedgeLimit && hedgeLimit.count > 0) {

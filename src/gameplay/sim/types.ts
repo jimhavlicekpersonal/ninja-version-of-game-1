@@ -107,6 +107,116 @@ export interface VillageState {
   pendingBattle: PendingBattle | null;
   /** Free daily chest and visit streak. */
   daily: DailyState;
+  /** Shadow Clans: AI clans, the world map, factions, rank and tournaments. */
+  world: WorldState;
+}
+
+// ---- Shadow Clans world state (sim/world/*) ----
+
+export type ClanStatus = 'stable' | 'rebuilding' | 'expanding';
+
+/** A persistent AI clan. Simulated only on interaction (event-driven catch-up). */
+export interface ClanState {
+  id: string;
+  /** Strength in Clan Keep units: Keep h covers [h-1, h). */
+  strength: number;
+  status: ClanStatus;
+  /** Simulated up to this time. */
+  simulatedAt: number;
+  /** Rebuilding ends at this time. */
+  rebuildUntil: number;
+  /** The clan's next raid on the player falls in [retaliateAt, retaliateAt + window); 0 = none planned. */
+  retaliateAt: number;
+  /** Times the player beat this clan, and times it beat the player's defenses. */
+  defeats: number;
+  victories: number;
+}
+
+/** A settlement on the world map. */
+export interface SettlementState {
+  id: string;
+  province: string;
+  kind: string;
+  name: string;
+  /** Clan id, or 'player'. */
+  owner: string;
+  /** When it last changed hands. */
+  since: number;
+  /** Changes whenever it changes hands, so the village is rebuilt differently. */
+  variant: number;
+}
+
+export interface WorldNews {
+  at: number;
+  kind: 'conquest' | 'reclaim' | 'expand' | 'retaliation' | 'rebuild' | 'war' | 'faction' | 'grow';
+  text: string;
+}
+
+/** The settlement chosen for an attack, frozen so the battle is rebuilt exactly as scouted. */
+export interface WorldTarget {
+  settlement: string;
+  owner: string;
+  strength: number;
+  variant: number;
+  playerHall: number;
+}
+
+export interface FactionWarRecord {
+  week: number;
+  rival: string;
+  ours: number;
+  theirs: number;
+  outcome: 'win' | 'draw' | 'loss';
+  claimed: boolean;
+}
+
+export interface FactionState {
+  /** Clan id of the AI faction the player belongs to. */
+  id: string | null;
+  joinedAt: number;
+  leftAt: number;
+  reputation: number;
+  /** Mission day (pass day index), counters at its start, and missions claimed that day. */
+  day: number;
+  dayBaseline: Record<string, number>;
+  claimed: string[];
+  /** Day the military support squad was last sent. */
+  supportDay: number;
+  /** This war week's contributions. */
+  war: { week: number; conquests: number; rivalConquests: number; raidWins: number };
+  warHistory: FactionWarRecord[];
+}
+
+export interface ShadowRankState {
+  /** Offensive Elo against real players (from the server). */
+  rating: number;
+  /** Defensive Elo (separate leaderboard). */
+  defense: number;
+  games: number;
+  season: number;
+}
+
+export interface WorldState {
+  seed: number;
+  clans: Record<string, ClanState>;
+  settlements: SettlementState[];
+  news: WorldNews[];
+  target: WorldTarget | null;
+  /** Day index tribute was last claimed. */
+  tributeDay: number;
+  /** Lifetime counters used by faction missions. */
+  counters: { conquests: number; rivalConquests: number; reclaimed: number };
+  faction: FactionState;
+  /** The tutorial raid on the Bamboo Outpost is done. */
+  firstRaidDone: boolean;
+  /** Real-player battles at the optional Keep level. */
+  pvpOptIn: boolean;
+  /** Shadow Rank as last reported by a server; null = unranked (real players only). */
+  rank: ShadowRankState | null;
+  /** Shadow Rank seasons whose reward was claimed. */
+  rankSeasonsClaimed: number[];
+  /** Current tournament: best score per base, and thresholds paid. */
+  tournament: { id: number; best: number[]; claimed: number[] };
 }
 
 export interface DailyState {
@@ -351,6 +461,8 @@ export interface EconomyDef {
   mapSize: number;
   startingResources: Resources;
   startingLayout: StartingBuilding[];
+  /** Warriors a new village starts with, ready for the first raid. */
+  startingArmy?: Record<string, number>;
   collectorHoursCap: number;
   raidableStoredFraction: number;
   raidableUncollectedFraction: number;
@@ -591,6 +703,144 @@ export interface GameData {
   events: EventsDef;
   notifications: NotificationsDef;
   trials: TrialsDef;
+  clans: ClansDef;
+  world: WorldDef;
+  competition: CompetitionDef;
+}
+
+// ---- Shadow Clans data (data/clans.json, world.json, competition.json) ----
+
+export interface ClanDef {
+  id: string;
+  name: string;
+  style: string;
+  defense: string;
+  difficulty: string;
+  /** Keep levels this clan lives at (inclusive). */
+  halls: [number, number];
+  color: string;
+  motto: string;
+  /** Layout archetype ids that express the clan's defensive style. */
+  layouts: string[];
+  /** Share of the Keep's wall and trap limits the clan builds. */
+  wallShare: number;
+  trapShare: number;
+  /** Added to the building level bias of its villages. */
+  levelBias: number;
+  /** Housing share per troop when this clan attacks. */
+  army: Record<string, number>;
+  /** 0..1: how often it retaliates and expands. */
+  aggression: number;
+  rival: string;
+}
+
+export interface ClansDef {
+  clans: ClanDef[];
+  bands: { below: number; above: number; challengeAbove: number };
+  sim: {
+    stepHours: number;
+    growthPerStep: number;
+    maxStepsPerCatchUp: number;
+    defeatStrengthLoss: number;
+    rebuildHours: number;
+    retaliationDelayHours: [number, number];
+    retaliationWindowHours: number;
+    expandChance: number;
+    reclaimChance: number;
+    reclaimMinHeldHours: number;
+    maxNews: number;
+  };
+  generator: { maxAttempts: number; difficultyTolerance: number; variants: number };
+  candidates: { count: number; challengeStrengthAbove: number };
+  /** The tutorial raid; `power` scales its half-built defenses. */
+  firstRaid: { clan: string; name: string; loot: Cost; power: number };
+}
+
+export interface FactionMissionDef {
+  id: string;
+  text: string;
+  stat: string;
+  base: number;
+  perHall: number;
+  reputation: number;
+  reward: Cost;
+}
+
+export interface WorldDef {
+  provinces: { id: string; name: string; clan: string }[];
+  settlementKinds: { id: string; name: string; count: number; strength: number; tribute: boolean }[];
+  conquestStars: number;
+  tribute: { shareOfRaidLoot: number };
+  factions: {
+    switchCooldownHours: number;
+    ranks: { name: string; reputation: number; supportHousing: number }[];
+    missionsPerDay: number;
+    missions: FactionMissionDef[];
+    war: {
+      epoch: number;
+      periodDays: number;
+      aiScore: [number, number];
+      perConquest: number;
+      perRivalConquest: number;
+      perRaidWin: number;
+      minContribution: number;
+      /** War records kept for claiming. */
+      historyWeeks: number;
+      rewards: Record<'win' | 'draw' | 'loss', Cost & { reputation: number }>;
+    };
+  };
+}
+
+export interface CompetitionDef {
+  hallTitles: { level: number; title: string; unlock: string }[];
+  pvp: { minHall: number; standardHall: number };
+  rating: {
+    weights: { defense: number; offense: number; hall: number; skill: number };
+    recentBattles: number;
+    matchTolerance: number;
+    /** A trap counts as a defense with this HP and its damage as DPS. */
+    trapHpEquivalent: number;
+    /** Walls count as wallWeight x sqrt(HP). */
+    wallWeight: number;
+  };
+  population: {
+    humanShareByEligible: { min: number; share: number }[];
+    maxAttacksPerDefenderPerDay: number;
+    attacksPerPlayerPerDay: number;
+    recentOpponentHours: number;
+  };
+  shadowRank: {
+    start: number;
+    k: number;
+    kNew: number;
+    newGames: number;
+    floor: number;
+    epoch: number;
+    seasonDays: number;
+    resetKeep: number;
+    starWeight: number;
+    /** Claimed season ids kept in the save. */
+    keepClaimedSeasons: number;
+    tiers: { name: string; min: number; reward: Cost }[];
+  };
+  tournament: {
+    name: string;
+    epoch: number;
+    periodDays: number;
+    durationDays: number;
+    hall: number;
+    levelBias: number;
+    troopLevel: number;
+    housing: number;
+    bases: number;
+    layouts: string[];
+    thresholds: { score: number; reward: Cost }[];
+  };
+  catchUp: { launchTopHall: number; levelsBehindTop: number; discountPerNewLevel: number; maxDiscount: number };
+  warfare: { formats: { minMembers: number; id: string; name: string; maxWarSize: number }[] };
+  regions: { capacity: number };
+  factionLeadership: { activeDays: number; contributionDays: number; maxTerms: number; minHumans: number };
+  health: { tutorialCompletion: number; day1: number; day7: number; day30: number; battlesPerDay: [number, number]; searchSuccess: number };
 }
 
 /** A Shadow Trial modifier (affix) that applies on every `every`-th tier. */
@@ -617,8 +867,10 @@ export interface TrialsDef {
 
 /** An attack that has started (troops deployed) but not been banked yet. */
 export interface PendingBattle {
-  kind: 'raid' | 'trial';
+  kind: 'raid' | 'trial' | 'world' | 'tournament';
   tier?: number;
+  /** Tournament base index (kind 'tournament'). */
+  index?: number;
   opponentName: string;
   setup: import('./battle/types').BattleSetup;
   deployments: import('./battle/types').Deployment[];

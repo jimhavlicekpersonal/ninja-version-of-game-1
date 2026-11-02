@@ -19,7 +19,12 @@ export type AnalyticsEventName =
   | 'donation'
   | 'grove_raid_end'
   | 'tutorial_step'
-  | 'session_reminder';
+  | 'session_reminder'
+  // Shadow Clans: opponent searches (AI vs human availability), world map and tournaments.
+  | 'opponent_search'
+  | 'world_battle'
+  | 'tournament_end'
+  | 'defense_seen';
 
 export interface AnalyticsEvent {
   name: AnalyticsEventName;

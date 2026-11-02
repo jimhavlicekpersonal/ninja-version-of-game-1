@@ -25,6 +25,14 @@ export interface BaseLayout {
   power?: number;
   /** Multiplier on wall HP (Shadow Trial modifiers). Absent = 1. */
   wallPower?: number;
+  /** AI clan that owns this generated village (always labelled as AI). */
+  clan?: string;
+  /** World map settlement this village stands on. */
+  settlement?: string;
+  /** Normalized tournament: id and base index. */
+  tournament?: { id: number; index: number };
+  /** Set by a server on a real player's village. */
+  human?: boolean;
 }
 
 export interface BattleSetup {
@@ -75,4 +83,10 @@ export interface BattleRecord {
   eventBonus?: Cost;
   /** A raid made up by the offline raid simulation (not a real player). */
   simulated?: boolean;
+  /** AI clan behind a simulated raid; `revenge` when it was a retaliation. */
+  clan?: string;
+  revenge?: boolean;
+  /** World map settlement attacked, and whether it was taken. */
+  settlement?: string;
+  conquered?: boolean;
 }

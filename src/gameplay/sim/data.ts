@@ -16,6 +16,9 @@ import daily from '../data/daily.json';
 import events from '../data/events.json';
 import notifications from '../data/notifications.json';
 import trials from '../data/trials.json';
+import clans from '../data/clans.json';
+import world from '../data/world.json';
+import competition from '../data/competition.json';
 import type { BuildingDef, BuildingType, GameData, LevelDef, TroopLevelDef } from './types';
 
 /** The game's balance data, straight from src/data/*.json. */
@@ -38,6 +41,9 @@ export const defaultData: GameData = {
   events: events as unknown as GameData['events'],
   notifications: notifications as unknown as GameData['notifications'],
   trials: trials as unknown as GameData['trials'],
+  clans: clans as unknown as GameData['clans'],
+  world: world as unknown as GameData['world'],
+  competition: competition as unknown as GameData['competition'],
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {

@@ -1,0 +1,58 @@
+{
+  "$comment": "The living world map and the joinable AI factions (docs/game-theory/SHADOW_CLANS.md). One region per village offline; the server gives each player a regional instance online. Every province starts AI-held. Settlements are persistent AI villages: win with conquestStars to take one, and its clan may take it back later. Settlement battles pay normal loot but never Honor (trophies), so the map can't be used to farm rank.",
+  "provinces": [
+    { "id": "bamboo_vale", "name": "Bamboo Vale", "clan": "bamboo" },
+    { "id": "crimson_gorge", "name": "Crimson Gorge", "clan": "crimson_fang" },
+    { "id": "iron_pass", "name": "Iron Pass", "clan": "iron_serpent" },
+    { "id": "moonlit_terrace", "name": "Moonlit Terrace", "clan": "silent_moon" },
+    { "id": "thunder_peaks", "name": "Thunder Peaks", "clan": "thunder_lotus" },
+    { "id": "dragon_spine", "name": "Dragon Spine", "clan": "black_dragon" },
+    { "id": "emperors_shadow", "name": "Emperor's Shadow", "clan": "shadow_emperor" }
+  ],
+  "settlementKinds": [
+    { "id": "shrine", "name": "Shrine", "count": 1, "strength": -0.3, "tribute": true },
+    { "id": "village", "name": "Village", "count": 2, "strength": 0, "tribute": false },
+    { "id": "fortress", "name": "Fortress", "count": 1, "strength": 0.4, "tribute": false }
+  ],
+  "conquestStars": 2,
+  "tribute": {
+    "$comment": "Each held Shrine pays this share of the player's Keep's minimum raid loot (battle.json generatedLootByHall) once per day, claimed by hand.",
+    "shareOfRaidLoot": 0.12
+  },
+  "factions": {
+    "$comment": "Join one of the great AI clans before player clans exist. AI factions give missions and military support; they never chat or pose as people.",
+    "switchCooldownHours": 72,
+    "ranks": [
+      { "name": "Initiate", "reputation": 0, "supportHousing": 0 },
+      { "name": "Genin", "reputation": 100, "supportHousing": 5 },
+      { "name": "Chunin", "reputation": 400, "supportHousing": 10 },
+      { "name": "Jonin", "reputation": 1200, "supportHousing": 15 },
+      { "name": "Elder", "reputation": 3000, "supportHousing": 20 }
+    ],
+    "missionsPerDay": 3,
+    "missions": [
+      { "id": "win_raids", "text": "Win {n} raids", "stat": "raidsWon", "base": 2, "perHall": 0.5, "reputation": 30, "reward": { "acorns": 6000, "dew": 6000 } },
+      { "id": "earn_stars", "text": "Earn {n} stars in raids", "stat": "starsEarned", "base": 4, "perHall": 1, "reputation": 30, "reward": { "acorns": 6000, "dew": 6000 } },
+      { "id": "train", "text": "Train {n} warriors", "stat": "troopsTrained", "base": 15, "perHall": 8, "reputation": 20, "reward": { "dew": 8000 } },
+      { "id": "collect", "text": "Collect {n} Coins", "stat": "collectedAcorns", "base": 1500, "perHall": 3000, "reputation": 20, "reward": { "acorns": 8000 } },
+      { "id": "conquer", "text": "Take {n} settlements on the world map", "stat": "conquests", "base": 1, "perHall": 0, "reputation": 50, "reward": { "acorns": 10000, "dew": 10000 } },
+      { "id": "rival_conquer", "text": "Take {n} settlement from our rival", "stat": "rivalConquests", "base": 1, "perHall": 0, "reputation": 60, "reward": { "acorns": 12000, "dew": 12000, "moonstones": 2 } }
+    ],
+    "war": {
+      "$comment": "Each week every faction fights its rival. Both sides get a simulated AI score; the player's conquests and wins this week add to their faction's score, so a player can tip the war.",
+      "epoch": 1767571200000,
+      "periodDays": 7,
+      "aiScore": [40, 70],
+      "perConquest": 12,
+      "perRivalConquest": 20,
+      "perRaidWin": 2,
+      "minContribution": 1,
+      "historyWeeks": 8,
+      "rewards": {
+        "win": { "acorns": 30000, "dew": 30000, "moonstones": 10, "reputation": 120 },
+        "draw": { "acorns": 18000, "dew": 18000, "moonstones": 5, "reputation": 60 },
+        "loss": { "acorns": 10000, "dew": 10000, "reputation": 30 }
+      }
+    }
+  }
+}

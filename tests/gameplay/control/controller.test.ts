@@ -26,7 +26,8 @@ describe('GameController (save, reload, offline)', () => {
     const events = new MemoryEventStore();
     const first = await GameController.start(deps(clock, store, events));
     const c1 = first.controller;
-    expect(c1.dispatch({ type: 'place', buildingType: 'acorn_orchard', x: 2, y: 2 }).ok).toBe(true);
+    // A new village starts with a Coin Mint (Shadow Clans starter village).
+    expect(c1.state.buildings.some((b) => b.type === 'acorn_orchard')).toBe(true);
     clock.advanceSeconds(10);
     c1.tick();
     const hall = c1.state.buildings.find((b) => b.type === 'elder_toadstool')!;
@@ -39,7 +40,9 @@ describe('GameController (save, reload, offline)', () => {
     expect(second.isNew).toBe(false);
     expect(second.offline).not.toBeNull();
     expect(second.offline!.finished.map((f) => f.type)).toEqual(['elder_toadstool']);
-    expect(second.offline!.collectorGains.acorns).toBe(1600);
+    // The Mint had 10 seconds of output waiting when the game closed; it fills to its 8-hour cap.
+    expect(second.offline!.collectorGains.acorns).toBeGreaterThanOrEqual(1599);
+    expect(second.offline!.collectorGains.acorns).toBeLessThanOrEqual(1600);
     const c2 = second.controller;
     expect(c2.state.buildings.find((b) => b.type === 'elder_toadstool')!.level).toBe(2);
     const orchard = c2.state.buildings.find((b) => b.type === 'acorn_orchard')!;

@@ -1,0 +1,117 @@
+{
+  "$comment": "Competition rules shared by the client and the server (docs/game-theory/SHADOW_CLANS.md): Keep titles, PvP onboarding, Clan Power and the hidden combat rating, the AI-to-human population transition, Shadow Rank (real players only), normalized tournaments, progression catch-up and clan war formats.",
+  "hallTitles": [
+    { "level": 1, "title": "Ninja Outpost", "unlock": "Shinobi, the Kunai Tower and the first raids" },
+    { "level": 2, "title": "Hidden Village", "unlock": "Shuriken Pagoda, the Alliance Lodge and stronger walls" },
+    { "level": 3, "title": "Ninja Settlement", "unlock": "Traps, the Firework Mortar and optional PvP" },
+    { "level": 4, "title": "Shadow Fortress", "unlock": "The Sky Bow Tower and standard PvP" },
+    { "level": 5, "title": "Warrior Stronghold", "unlock": "Higher warrior research and more defenses" },
+    { "level": 6, "title": "Great Ninja Village", "unlock": "Every live building at its cap; the Shadow Emperor" },
+    { "level": 7, "title": "Shinobi Citadel", "unlock": "Elite warriors (planned)" },
+    { "level": 8, "title": "Shadow Dominion", "unlock": "Territory warfare (planned)" },
+    { "level": 9, "title": "Legendary Fortress", "unlock": "Legendary abilities (planned)" },
+    { "level": 10, "title": "Imperial Ninja Clan", "unlock": "Endgame competition (planned)" }
+  ],
+  "pvp": {
+    "$comment": "New-player protection: Keep 1-2 fight AI only; at Keep 3 real-player battles are optional (opt in); from Keep 4 they are standard.",
+    "minHall": 3,
+    "standardHall": 4
+  },
+  "rating": {
+    "$comment": "Hidden combat rating P = 0.35 D + 0.30 O + 0.20 H + 0.15 S, each input normalised to 0..1000: D and O against a full village and army at the top Keep, H by Keep level, S by recent battle results.",
+    "weights": { "defense": 0.35, "offense": 0.3, "hall": 0.2, "skill": 0.15 },
+    "recentBattles": 10,
+    "matchTolerance": 0.25,
+    "trapHpEquivalent": 1000,
+    "wallWeight": 0.25
+  },
+  "population": {
+    "$comment": "Share of opponents that are real players, by eligible human villages in the attacker's band, then capped by defender capacity: f = min(1, D x C / A).",
+    "humanShareByEligible": [
+      { "min": 0, "share": 0 },
+      { "min": 1, "share": 0.1 },
+      { "min": 10, "share": 0.25 },
+      { "min": 50, "share": 0.5 },
+      { "min": 200, "share": 0.75 },
+      { "min": 1000, "share": 0.9 }
+    ],
+    "maxAttacksPerDefenderPerDay": 4,
+    "attacksPerPlayerPerDay": 6,
+    "recentOpponentHours": 24
+  },
+  "shadowRank": {
+    "$comment": "Elo on expected performance, from battles against real players only. Generated opponents never change it. Seasons last seasonDays; ratings are pulled halfway back to start at each reset.",
+    "start": 1000,
+    "k": 32,
+    "kNew": 48,
+    "newGames": 10,
+    "floor": 100,
+    "epoch": 1767571200000,
+    "seasonDays": 28,
+    "resetKeep": 0.5,
+    "starWeight": 0.7,
+    "keepClaimedSeasons": 24,
+    "tiers": [
+      { "name": "Bronze Kunai", "min": 0, "reward": { "moonstones": 5 } },
+      { "name": "Silver Shuriken", "min": 1100, "reward": { "moonstones": 15 } },
+      { "name": "Gold Katana", "min": 1300, "reward": { "moonstones": 30 } },
+      { "name": "Shadow Master", "min": 1500, "reward": { "moonstones": 50 } },
+      { "name": "Kage", "min": 1700, "reward": { "moonstones": 80 } }
+    ]
+  },
+  "tournament": {
+    "$comment": "Normalized tournaments: everyone gets the same warrior levels and housing; only the army you pick and how you fight matter. Practice battles: no warriors are spent and nothing is lost. Rewards pay once per tournament per threshold and are never sold.",
+    "name": "Shadow Tournament",
+    "epoch": 1767571200000,
+    "periodDays": 14,
+    "durationDays": 3,
+    "hall": 4,
+    "levelBias": 0.6,
+    "troopLevel": 3,
+    "housing": 120,
+    "bases": 3,
+    "layouts": ["kunai_ring", "walled_keep", "mortar_core", "twin_gates", "open_court", "ambush_alleys", "moon_veil"],
+    "thresholds": [
+      { "score": 300, "reward": { "moonstones": 5 } },
+      { "score": 600, "reward": { "moonstones": 10 } },
+      { "score": 900, "reward": { "moonstones": 20 } }
+    ]
+  },
+  "catchUp": {
+    "$comment": "When new Keep levels launch above launchTopHall, every upgrade that belongs to a Keep level at least levelsBehindTop below the new top gets faster and cheaper, so newcomers can catch up.",
+    "launchTopHall": 6,
+    "levelsBehindTop": 3,
+    "discountPerNewLevel": 0.15,
+    "maxDiscount": 0.6
+  },
+  "warfare": {
+    "$comment": "Clan war format by the number of human members; war size is flexible so small clans are never shut out.",
+    "formats": [
+      { "minMembers": 1, "id": "ai_missions", "name": "AI clan missions", "maxWarSize": 1 },
+      { "minMembers": 2, "id": "coop_ai_raids", "name": "Cooperative AI raids", "maxWarSize": 4 },
+      { "minMembers": 5, "id": "small_war", "name": "Small clan war", "maxWarSize": 9 },
+      { "minMembers": 10, "id": "standard_war", "name": "Standard clan war", "maxWarSize": 19 },
+      { "minMembers": 20, "id": "territory_war", "name": "Territory war", "maxWarSize": 50 }
+    ]
+  },
+  "regions": {
+    "$comment": "Online, each player joins a regional world instance; a new one opens when the newest is full.",
+    "capacity": 200
+  },
+  "factionLeadership": {
+    "$comment": "Human leadership of an AI faction: the most active contributor among recently active members leads; inactive leaders lose the seat; nobody leads more than maxTerms seasons in a row.",
+    "activeDays": 7,
+    "contributionDays": 14,
+    "maxTerms": 2,
+    "minHumans": 3
+  },
+  "health": {
+    "$comment": "Targets for the internal health view (illustrative early-testing goals).",
+    "tutorialCompletion": 0.8,
+    "day1": 0.4,
+    "day7": 0.15,
+    "day30": 0.08,
+    "battlesPerDay": [4, 8],
+    "searchSuccess": 0.99
+  }
+}

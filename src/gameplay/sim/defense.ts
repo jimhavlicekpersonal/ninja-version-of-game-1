@@ -13,6 +13,8 @@ import { collectorAmount } from './resources';
 import { createRng, int, mixSeed, next, pick, type Rng } from './rng';
 import type { Cost, GameData, ResourceKind, VillageState } from './types';
 import { advance, hallLevel } from './village';
+import { clanForStrength, pushNews, retaliatingClan } from './world/clans';
+import { clanArmy, clanDef } from './world/villagegen';
 
 /** Hours of shield a raid with this destruction gives (0 below the first tier). */
 export function shieldHoursFor(destruction: number, data: GameData): number {
@@ -128,11 +130,26 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   const attacker = attackerFor(rng, s, data);
   const base = villageToBase(s, t, data, 'Your village', lootPenalty(attacker.hall, hallLevel(s, data), data));
   const attackerTrophies = attacker.trophies;
-  const army = attacker.army;
-  const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army, levels: attacker.levels };
+  // Every simulated raider comes from an AI clan. A clan the player beat may
+  // have sworn revenge: then this raid is theirs, fought in their style.
+  const revenge = s.world ? retaliatingClan(s.world, t, data) : null;
+  const clan = revenge ?? clanForStrength(attacker.hall - 1 + attacker.bias, data, next(createRng(mixSeed(s.seed ^ 0x51a7, Math.floor(t / 1000)))));
+  let army = attacker.army;
+  let levels = attacker.levels;
+  if (revenge) {
+    const styled = clanArmy(revenge, attacker.hall, attacker.bias, data);
+    if (Object.keys(styled).length) {
+      army = styled;
+      levels = Object.fromEntries(Object.keys(army).map((k) => [k, Math.min(attacker.level, troopDef(data, k).levels.length)]));
+    }
+  }
+  const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army, levels };
   const probe = createBattle(setup, data);
-  const deployments = botDeployments(probe.deployable, probe.grid.size, army, rng, data, attacker.levels);
-  const name = botName(rng, data);
+  const deployments = botDeployments(probe.deployable, probe.grid.size, army, rng, data, levels);
+  // Drawn for the dice sequence only: the raider is named after its clan.
+  botName(rng, data);
+  const clanName = clanDef(data, clan).name;
+  const name = revenge ? `${clanName} (revenge)` : `${clanName} raiders`;
   const { result, sim } = runBattle(setup, deployments, data);
   const fromStorage: Cost = {};
   const fromCollectors: Cost = {};
@@ -171,7 +188,15 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
     result: { ...result, loot: sumCosts(fromStorage, fromCollectors) },
     trophies: delta,
     simulated: true,
+    clan,
   };
+  if (revenge) {
+    record.revenge = true;
+    const c = s.world.clans[revenge];
+    c.retaliateAt = 0;
+    if (result.stars >= 1) c.victories++;
+    pushNews(s.world, { at: t, kind: 'retaliation', text: result.stars >= 1 ? `${clanName} took its revenge on your village (${result.destruction}%).` : `You repelled ${clanName}'s revenge raid.` }, data);
+  }
   s.defenseLog.push(record);
   while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();
   return { record, fromStorage, fromCollectors };

@@ -23,6 +23,13 @@ import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState, PendingBattle } from './types';
 import { RESOURCE_KINDS } from './types';
+import { advanceWorld, createWorld } from './world/world';
+import { defeatClan } from './world/clans';
+import { conquer, settlementBase, targetFor, tributeQuote } from './world/territory';
+import { canJoinFaction, factionMissions, factionRank, joinFaction, leaveFaction, supportRoom, supportSquad, warReward, warWeek } from './world/factions';
+import { draftProblem, totalScore, tournamentAt, tournamentBases, tournamentLevels, tournamentScore } from './world/tournament';
+import { catchUpFactor, shadowTier, upgradeHallTier } from './world/competition';
+import type { ShadowRankState } from './types';
 
 // ---------- Commands ----------
 
@@ -69,7 +76,20 @@ export type Command =
   | { type: 'spendDonation'; troop: string; count: number; xp: number }
   | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number }
   | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
-  | { type: 'leaveLocalGrove' };
+  | { type: 'leaveLocalGrove' }
+  // Shadow Clans (sim/world/*).
+  | { type: 'targetSettlement'; id: string }
+  | { type: 'worldBattleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  | { type: 'claimTribute' }
+  | { type: 'joinFaction'; clan: string }
+  | { type: 'leaveFaction' }
+  | { type: 'claimFactionMission'; id: string }
+  | { type: 'claimSupport' }
+  | { type: 'claimFactionWar'; week: number }
+  | { type: 'tournamentEnd'; index: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  | { type: 'setPvpOptIn'; on: boolean }
+  | { type: 'syncShadowRank'; rank: ShadowRankState | null }
+  | { type: 'claimRankSeason'; season: number; rating: number };
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -117,7 +137,10 @@ export type SimEvent =
   | { kind: 'clear_start'; buildingType: BuildingType; id: string; seconds: number }
   | { kind: 'donation'; troop: string; count: number; xp: number }
   | { kind: 'grove_attack'; target: number; stars: number; destruction: number }
-  | { kind: 'reinforcements'; troops: { troop: string; count: number; fromName: string }[] };
+  | { kind: 'reinforcements'; troops: { troop: string; count: number; fromName: string }[] }
+  | { kind: 'world_battle'; record: BattleRecord; conquered: boolean; settlement: string }
+  | { kind: 'tournament_end'; record: BattleRecord; index: number; score: number; best: number; total: number; reward: Cost }
+  | { kind: 'clan_defeated'; clan: string; revenge: boolean };
 
 export type CommandResult =
   | { ok: true; state: VillageState; events: SimEvent[] }
@@ -178,7 +201,11 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     daily: emptyDaily(data),
     trials: { best: 0 },
     pendingBattle: null,
+    world: undefined as unknown as VillageState['world'],
   };
+  state.world = createWorld(state.seed, now, 1, data);
+  // Three warriors stand ready, so the very first thing a new leader can do is raid.
+  for (const [t, n] of Object.entries(data.economy.startingArmy ?? {})) if (data.troops[t] && n > 0) state.army[t] = n;
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
     state.buildings.push({
@@ -223,6 +250,7 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
   rollPeriods(next, now, data);
   advanceGrove(next, now, data);
   settleRaids(next, now, hallLevel(next, data), data);
+  advanceWorld(next, now, hallLevel(next, data), data);
   return { state: next, finished };
 }
 
@@ -262,6 +290,12 @@ export function builderStatus(state: VillageState, data: GameData, now: number):
     if (b.upgrade && b.upgrade.endsAt > now) busy++;
   }
   return { total, busy, free: Math.max(0, total - busy) };
+}
+
+function scaleCost(cost: Cost, f: number): Cost {
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(cost) as [ResourceKind, number][]) out[k] = Math.ceil(v * f);
+  return out;
 }
 
 function costText(cost: Cost): string {
@@ -316,7 +350,9 @@ export function upgradeQuote(state: VillageState, id: string, data: GameData, no
   if (!next || b.level >= maxDefinedLevel(data, b.type) || (def.category === 'hall' && b.level >= lim.maxLevel)) {
     return fail('MAX_LEVEL', `${def.name} is at its highest level.`);
   }
-  const quote: Quote = { toLevel: next.level, cost: next.cost, seconds: Math.round(next.buildSeconds * buildTimeFactor(s, now, data)) };
+  // Progression catch-up: older Keep tiers get cheaper and faster once newer ones launch (1 today).
+  const cu = catchUpFactor(upgradeHallTier(b.type, next.level, data), data);
+  const quote: Quote = { toLevel: next.level, cost: cu === 1 ? next.cost : scaleCost(next.cost, cu), seconds: Math.round(next.buildSeconds * buildTimeFactor(s, now, data) * cu) };
   if (next.level > lim.maxLevel) {
     const need = hallLevelRequiredFor(data, b.type, (l) => l.maxLevel >= next.level);
     return need
@@ -488,6 +524,46 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       const { result } = runBattle(cmd.record.setup, cmd.record.deployments, data, cmd.record.endTick);
       spendTroops(s, result.used);
       return { ok: true, state: s, events: [{ kind: 'grove_attack', target: cmd.target, stars: result.stars, destruction: result.destruction }] };
+    }
+    case 'targetSettlement':
+      return targetSettlement(s, cmd.id, data);
+    case 'worldBattleEnd':
+      s.pendingBattle = null;
+      return worldBattleEnd(s, cmd.record, now, data);
+    case 'claimTribute':
+      return claimTribute(s, now, data);
+    case 'joinFaction': {
+      const c = canJoinFaction(s, cmd.clan, now, data);
+      if (!c.ok) return fail('NOT_AVAILABLE', c.message);
+      joinFaction(s, cmd.clan, now, data);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'leaveFaction':
+      if (!s.world.faction.id) return fail('NOT_AVAILABLE', 'You are not in a faction.');
+      leaveFaction(s, now, data);
+      return { ok: true, state: s, events: [] };
+    case 'claimFactionMission':
+      return claimFactionMission(s, cmd.id, data);
+    case 'claimSupport':
+      return claimSupport(s, now, data);
+    case 'claimFactionWar':
+      return claimFactionWar(s, cmd.week, data);
+    case 'tournamentEnd':
+      s.pendingBattle = null;
+      return tournamentEnd(s, cmd.index, cmd.record, now, data);
+    case 'setPvpOptIn':
+      s.world.pvpOptIn = cmd.on;
+      return { ok: true, state: s, events: [] };
+    case 'syncShadowRank':
+      // From a server (real-player battles only); never computed from AI battles.
+      s.world.rank = cmd.rank ? { ...cmd.rank } : null;
+      return { ok: true, state: s, events: [] };
+    case 'claimRankSeason': {
+      if (s.world.rankSeasonsClaimed.includes(cmd.season)) return fail('ALREADY_CLAIMED', 'That season reward was already collected.');
+      const grants = addCapped(s.resources, shadowTier(cmd.rating, data).reward, capacity(s, data));
+      s.world.rankSeasonsClaimed.push(cmd.season);
+      while (s.world.rankSeasonsClaimed.length > data.competition.shadowRank.keepClaimedSeasons) s.world.rankSeasonsClaimed.shift();
+      return { ok: true, state: s, events: [{ kind: 'reward', source: `shadow_rank:${cmd.season}`, grants }] };
     }
     case 'leaveLocalGrove':
       // Playing online: the real Grove replaces the bot one (XP, Lodge troops and history stay).
@@ -876,7 +952,169 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   if (Object.values(eventBonus).some((v) => (v ?? 0) > 0)) record.eventBonus = eventBonus;
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
-  return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+  const events: SimEvent[] = [{ kind: 'raid_end', record }];
+  afterAttack(s, rec.setup.base.clan, result.stars, now, data, events);
+  return { ok: true, state: s, events };
+}
+
+/** World reactions to a banked attack: the tutorial raid is done, a beaten clan rebuilds, faction war points. Mutates. */
+function afterAttack(s: VillageState, clan: string | undefined, stars: number, now: number, data: GameData, events: SimEvent[]): void {
+  s.world.firstRaidDone = true;
+  if (stars < 1) return;
+  const f = s.world.faction;
+  if (f.id && f.war.week === warWeek(now, data)) f.war.raidWins++;
+  if (clan && s.world.clans[clan]) {
+    const { revenge } = defeatClan(s.world, clan, now, data);
+    events.push({ kind: 'clan_defeated', clan, revenge });
+  }
+}
+
+// ---------- Shadow Clans: world map, factions, tournaments ----------
+
+function targetSettlement(s: VillageState, id: string, data: GameData): CommandResult {
+  const st = s.world.settlements.find((x) => x.id === id);
+  if (!st) return fail('NOT_FOUND', 'Unknown settlement.');
+  if (st.owner === 'player') return fail('NOT_AVAILABLE', `${st.name} is already yours.`);
+  s.world.target = targetFor(st, s.world, hallLevel(s, data), data);
+  return { ok: true, state: s, events: [] };
+}
+
+/**
+ * A world map battle. The village is rebuilt from the frozen target (never
+ * taken from the client) and the battle re-simulated. Normal loot, no Honor;
+ * enough stars takes the settlement.
+ */
+function worldBattleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const t = s.world.target;
+  if (!t) return fail('INVALID_BATTLE', 'Pick a settlement on the world map first.');
+  const st = s.world.settlements.find((x) => x.id === t.settlement);
+  if (!st || st.owner !== t.owner || st.variant !== t.variant) {
+    s.world.target = null;
+    return fail('INVALID_BATTLE', 'That settlement changed hands before the battle ended.');
+  }
+  const setup: BattleSetup = { ...rec.setup, base: settlementBase(t, s.world, data) };
+  const bad = checkBattleSetup(s, setup, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used);
+  const added = addCapped(s.resources, result.loot, capacity(s, data));
+  s.shieldUntil = Math.min(s.shieldUntil, now);
+  s.world.target = null;
+  const conquered = result.stars >= data.world.conquestStars;
+  const events: SimEvent[] = [];
+  if (conquered) {
+    const from = conquer(s.world, st.id, now, data);
+    const f = s.world.faction;
+    if (from && f.id && f.war.week === warWeek(now, data)) {
+      if (data.clans.clans.find((c) => c.id === f.id)?.rival === from) f.war.rivalConquests++;
+      else f.war.conquests++;
+    }
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: added }, trophies: 0, settlement: st.id, conquered };
+  s.battleLog.push(record);
+  while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
+  events.unshift({ kind: 'world_battle', record, conquered, settlement: st.id });
+  afterAttack(s, t.owner, result.stars, now, data, events);
+  // Counted like a raid for tasks and achievements.
+  events.push({ kind: 'raid_end', record });
+  return { ok: true, state: s, events };
+}
+
+function claimTribute(s: VillageState, now: number, data: GameData): CommandResult {
+  const day = dayIndex(now, data);
+  const q = tributeQuote(s, day, hallLevel(s, data), data);
+  if (!q.shrines) return fail('NOT_AVAILABLE', 'Hold a Shrine on the world map to collect tribute.');
+  if (!q.ready) return fail('ALREADY_CLAIMED', 'Tribute was already collected today.');
+  const grants = addCapped(s.resources, q.amount, capacity(s, data));
+  s.world.tributeDay = day;
+  return { ok: true, state: s, events: [{ kind: 'reward', source: 'tribute', grants }] };
+}
+
+function claimFactionMission(s: VillageState, id: string, data: GameData): CommandResult {
+  const m = factionMissions(s, hallLevel(s, data), data).find((x) => x.def.id === id);
+  if (!m) return fail('NOT_FOUND', 'That mission is not on today\'s orders.');
+  if (m.claimed) return fail('ALREADY_CLAIMED', 'Already claimed.');
+  if (!m.done) return fail('NOT_READY', 'The mission is not finished yet.');
+  s.world.faction.claimed.push(id);
+  s.world.faction.reputation += m.def.reputation;
+  const grants = addCapped(s.resources, m.reward, capacity(s, data));
+  return { ok: true, state: s, events: [{ kind: 'reward', source: `faction_mission:${id}`, grants }] };
+}
+
+function claimSupport(s: VillageState, now: number, data: GameData): CommandResult {
+  const f = s.world.faction;
+  if (!f.id) return fail('NOT_AVAILABLE', 'Join a faction first.');
+  const day = dayIndex(now, data);
+  if (f.supportDay === day) return fail('ALREADY_CLAIMED', 'Today\'s support squad has already arrived.');
+  if (factionRank(f.reputation, data).supportHousing <= 0) return fail('LOCKED', `Reach the rank of ${data.world.factions.ranks[1]?.name ?? 'Genin'} to receive a support squad.`);
+  const squad = supportSquad(s, data);
+  let room = supportRoom(s, data);
+  const troops: { troop: string; count: number; fromName: string }[] = [];
+  const from = data.clans.clans.find((c) => c.id === f.id)!.name;
+  for (const [t, n0] of Object.entries(squad)) {
+    const h = data.troops[t].housing;
+    const n = Math.min(n0, Math.floor(room / h));
+    if (n <= 0) continue;
+    s.grove.reinforcements[t] = (s.grove.reinforcements[t] ?? 0) + n;
+    room -= n * h;
+    troops.push({ troop: t, count: n, fromName: `${from} (AI)` });
+  }
+  if (!troops.length) return fail('ARMY_FULL', 'Your reinforcements are full. Use them in a raid first.');
+  f.supportDay = day;
+  return { ok: true, state: s, events: [{ kind: 'reinforcements', troops }] };
+}
+
+function claimFactionWar(s: VillageState, week: number, data: GameData): CommandResult {
+  const rec = s.world.faction.warHistory.find((w) => w.week === week);
+  if (!rec) return fail('NOT_FOUND', 'No reward for that war.');
+  if (rec.claimed) return fail('ALREADY_CLAIMED', 'Already claimed.');
+  rec.claimed = true;
+  const r = warReward(rec.outcome, hallLevel(s, data), data);
+  s.world.faction.reputation += r.reputation;
+  const grants = addCapped(s.resources, r.grants, capacity(s, data));
+  return { ok: true, state: s, events: [{ kind: 'reward', source: `faction_war:${week}`, grants }] };
+}
+
+/**
+ * A tournament battle: the fortress, warrior levels and housing budget are
+ * the same for everyone and rebuilt here (never trusted from the client). It
+ * is practice: no warriors are spent. Thresholds pay once per tournament.
+ */
+function tournamentEnd(s: VillageState, index: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const win = tournamentAt(now, data);
+  // A battle that started in the last minutes of a tournament still counts.
+  const id = rec.setup.base.tournament?.id ?? win.id;
+  if (id !== win.id || !win.live) {
+    const prev = tournamentAt(now - data.battle.durationSeconds * 1000 - 60_000, data);
+    if (!(prev.live && prev.id === id)) return fail('NOT_AVAILABLE', 'No tournament is running.');
+  }
+  const bases = tournamentBases(id, data);
+  if (!Number.isInteger(index) || index < 0 || index >= bases.length) return fail('INVALID_BATTLE', 'Unknown tournament fortress.');
+  const bad = draftProblem(rec.setup.army, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
+  const setup: BattleSetup = { seed: rec.setup.seed, base: bases[index], army: rec.setup.army, levels: tournamentLevels(data) };
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  const t = s.world.tournament;
+  if (t.id !== id) {
+    t.id = id;
+    t.best = [];
+    t.claimed = [];
+  }
+  const score = tournamentScore(result.stars, result.destruction);
+  t.best[index] = Math.max(t.best[index] ?? 0, score);
+  for (let i = 0; i < bases.length; i++) t.best[i] = t.best[i] ?? 0;
+  const total = totalScore(t.best);
+  const reward: Cost = {};
+  data.competition.tournament.thresholds.forEach((th, i) => {
+    if (total < th.score || t.claimed.includes(i)) return;
+    t.claimed.push(i);
+    const got = addCapped(s.resources, th.reward, capacity(s, data));
+    for (const [k, v] of Object.entries(got) as [ResourceKind, number][]) reward[k] = (reward[k] ?? 0) + v;
+  });
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: reward }, trophies: 0 };
+  s.battleLog.push(record);
+  while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
+  return { ok: true, state: s, events: [{ kind: 'tournament_end', record, index, score, best: t.best[index], total, reward }] };
 }
 
 /**

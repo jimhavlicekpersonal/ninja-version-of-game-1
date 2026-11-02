@@ -24,8 +24,23 @@
       "x": 24,
       "y": 19,
       "level": 1
+    },
+    {
+      "type": "acorn_orchard",
+      "x": 18,
+      "y": 23,
+      "level": 1
+    },
+    {
+      "type": "acorn_cannon",
+      "x": 19,
+      "y": 13,
+      "level": 1
     }
   ],
+  "startingArmy": {
+    "hedgehog_roller": 3
+  },
   "collectorHoursCap": 8,
   "raidableStoredFraction": 0.2,
   "raidableUncollectedFraction": 0.5,

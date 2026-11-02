@@ -11,8 +11,10 @@ import { emptyResearch } from './research';
 import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
+import { defaultData } from './data';
+import { createWorld } from './world/world';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -103,6 +105,21 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     v.trials = v.trials ?? { best: 0 };
     v.pendingBattle = v.pendingBattle ?? null;
   }
+  if (out.version < 11 && v && typeof v === 'object') {
+    // v10 -> v11 (Shadow Clans): the persistent AI clans, the world map, factions,
+    // Shadow Rank and tournaments. Nothing existing changes; players who already
+    // raided skip the tutorial outpost.
+    if (!v.world) {
+      const d = data ?? defaultData;
+      const last = Number(v.lastSeenAt) || 0;
+      const hall = Math.max(1, ...((v.buildings as { type: string; level: number }[] | undefined) ?? []).filter((b) => d.buildings[b.type]?.category === 'hall').map((b) => b.level));
+      const world = createWorld(Number(v.seed) || 0, last, hall, d);
+      const stats = v.stats as { raidsWon?: number } | undefined;
+      const tutorial = v.tutorial as { done?: boolean } | undefined;
+      world.firstRaidDone = Boolean(tutorial?.done) || (Array.isArray(v.battleLog) && v.battleLog.length > 0) || (stats?.raidsWon ?? 0) > 0;
+      v.world = world;
+    }
+  }
   out.version = SAVE_VERSION;
   return out;
 }
@@ -153,6 +170,13 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('alliance missing');
   if (!v.tutorial) problems.push('tutorial missing');
   if (!v.daily || !Number.isFinite(v.daily.lastDay) || !Number.isFinite(v.daily.step) || !Array.isArray(v.daily.history)) problems.push('daily chest missing');
+  const w = v.world;
+  if (!w || typeof w !== 'object' || !w.clans || !Array.isArray(w.settlements) || !Array.isArray(w.news) || !w.faction || !w.counters || !w.tournament) problems.push('world missing');
+  else {
+    for (const c of data.clans.clans) if (!w.clans[c.id] || !Number.isFinite(w.clans[c.id].strength)) problems.push(`clan ${c.id} missing`);
+    for (const st of w.settlements) if (st.owner !== 'player' && !w.clans[st.owner]) problems.push(`bad settlement owner ${st.owner}`);
+    if (w.faction.id && !w.clans[w.faction.id]) problems.push('bad faction');
+  }
   if (!v.research || typeof v.research.levels !== 'object') problems.push('research missing');
   else {
     for (const [t, n] of Object.entries(v.research.levels)) if (!data.troops[t] || !Number.isInteger(n) || n < 1 || n > data.troops[t].levels.length) problems.push(`bad research level ${t}`);

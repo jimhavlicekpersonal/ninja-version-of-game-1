@@ -10,12 +10,13 @@
  * pay less and losses cost more: trophies settle where the player wins about
  * as often as the trophy formula demands instead of climbing forever.
  */
-import { generateOpponent } from './battle/basegen';
 import type { BaseLayout } from './battle/types';
 import { maxHousingAtHall } from './army';
 import { troopDef } from './data';
 import { troopLevelCapAt } from './research';
 import { createRng, mixSeed, next, type Rng } from './rng';
+import { clanForStrength } from './world/clans';
+import { clanVillage } from './world/villagegen';
 import type { GameData, ResourceKind, VillageState } from './types';
 import { hallLevel } from './village';
 
@@ -84,8 +85,12 @@ export function opponentFor(seed: number, state: VillageState, data: GameData): 
  * this when no real player fits, so online and offline matchmaking agree.
  */
 export function opponentForRank(seed: number, trophies: number, ownHall: number, data: GameData): BaseLayout {
-  const st = matchStrength(createRng(mixSeed(seed, 0x5c0a7)), trophies, ownHall, data);
-  const base = generateOpponent(seed, st.hall, data, { levelBias: st.bias });
+  const rng = createRng(mixSeed(seed, 0x5c0a7));
+  const st = matchStrength(rng, trophies, ownHall, data);
+  // Every generated rival belongs to an AI clan whose Keep range covers its
+  // strength, and its layout follows that clan's style (sim/world/villagegen).
+  const strength = st.hall - 1 + st.bias;
+  const base = clanVillage(clanForStrength(strength, data, next(rng)), seed, strength, data);
   base.trophies = st.trophies;
   return applyLootPenalty(base, ownHall, data);
 }
@@ -98,6 +103,10 @@ export function hallWindow(ownHall: number, data: GameData): { min: number; max:
 
 export interface BotAttacker {
   hall: number;
+  /** 0..1 inside its hall level. */
+  bias: number;
+  /** Research level its warriors fight at. */
+  level: number;
   trophies: number;
   army: Record<string, number>;
   levels: Record<string, number>;
@@ -136,5 +145,5 @@ export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotA
   const army = botArmy(st.hall, st.bias, data);
   const levels: Record<string, number> = {};
   for (const t of Object.keys(army)) levels[t] = Math.min(lvl, troopDef(data, t).levels.length);
-  return { hall: st.hall, trophies: st.trophies, army, levels };
+  return { hall: st.hall, bias: st.bias, level: lvl, trophies: st.trophies, army, levels };
 }

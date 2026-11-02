@@ -241,6 +241,12 @@ export class GameController {
     if (p.kind === 'trial' && p.tier !== undefined) {
       const t = this.finishTrial(p.tier, p.setup, p.deployments, undefined);
       if (t) return { pending: p, record: t.record };
+    } else if (p.kind === 'world') {
+      const w = this.finishWorldBattle(p.setup, p.deployments, undefined);
+      if (w) return { pending: p, record: w.record };
+    } else if (p.kind === 'tournament' && p.index !== undefined) {
+      const t = this.finishTournament(p.index, p.setup, p.deployments, undefined);
+      if (t) return { pending: p, record: t.record };
     } else {
       const out = this.finishBattle(p.setup, p.deployments, undefined, p.opponentName);
       if (out) return { pending: p, record: out.record };
@@ -257,6 +263,32 @@ export class GameController {
     const e = r.events.find((x) => x.kind === 'trial_end');
     if (!e || e.kind !== 'trial_end') return null;
     return { record: e.record, cleared: e.cleared, firstClear: e.firstClear, reward: e.reward };
+  }
+
+  /** Freeze a world map settlement for an attack; returns false if it can't be attacked. */
+  targetSettlement(id: string): { ok: true } | { ok: false; message: string } {
+    const r = this.dispatch({ type: 'targetSettlement', id });
+    return r.ok ? { ok: true } : { ok: false, message: r.message };
+  }
+
+  /** Bank a world map battle (the settlement is rebuilt from the frozen target). */
+  finishWorldBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { record: BattleRecord; conquered: boolean } | null {
+    const r = this.dispatch({ type: 'worldBattleEnd', record: { at: this.now(), opponentName: setup.base.name, setup, deployments, endTick } });
+    if (!r.ok) return null;
+    const e = r.events.find((x) => x.kind === 'world_battle');
+    if (!e || e.kind !== 'world_battle') return null;
+    this.deps.analytics.log('world_battle', { settlement: e.settlement, stars: e.record.result.stars, destruction: e.record.result.destruction, conquered: e.conquered });
+    return { record: e.record, conquered: e.conquered };
+  }
+
+  /** Bank a tournament battle (practice: no warriors spent). */
+  finishTournament(index: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { record: BattleRecord; score: number; best: number; total: number; reward: Cost } | null {
+    const r = this.dispatch({ type: 'tournamentEnd', index, record: { at: this.now(), opponentName: setup.base.name, setup, deployments, endTick } });
+    if (!r.ok) return null;
+    const e = r.events.find((x) => x.kind === 'tournament_end');
+    if (!e || e.kind !== 'tournament_end') return null;
+    this.deps.analytics.log('tournament_end', { index, score: e.score, total: e.total });
+    return { record: e.record, score: e.score, best: e.best, total: e.total, reward: e.reward };
   }
 
   /** Replace the whole village (import or reset). */
