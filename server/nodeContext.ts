@@ -1,6 +1,6 @@
 /** The server core's environment on Node: real clock, crypto ids and tokens, SHA-256 token hashes. */
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import type { GameData } from '../src/sim/types';
+import type { GameData } from '../src/gameplay/sim/types';
 import type { ServerContext } from './core';
 import type { Repo } from './repo';
 

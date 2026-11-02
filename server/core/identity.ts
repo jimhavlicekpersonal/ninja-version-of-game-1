@@ -1,5 +1,5 @@
-import { filterText } from '../../src/sim/social/grove';
-import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/net/protocol';
+import { filterText } from '../../src/gameplay/sim/social/grove';
+import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 

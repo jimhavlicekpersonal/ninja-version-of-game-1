@@ -1,7 +1,7 @@
 /** Real Groves: membership, filtered chat, troop requests and donations. */
-import { filterText } from '../../src/sim/social/grove';
-import { troopLevelCapAt } from '../../src/sim/research';
-import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummary, GroveView, GrovesResponse, InboxResponse, MemberView, RequestView, RequestsResponse } from '../../src/net/protocol';
+import { filterText } from '../../src/gameplay/sim/social/grove';
+import { troopLevelCapAt } from '../../src/gameplay/sim/research';
+import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummary, GroveView, GrovesResponse, InboxResponse, MemberView, RequestView, RequestsResponse } from '../../src/backend/net/protocol';
 import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { cleanName } from './identity';

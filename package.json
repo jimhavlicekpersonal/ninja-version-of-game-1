@@ -15,7 +15,7 @@
     "preview:lan": "vite preview --host",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:contract": "vitest run tests/contract",
+    "test:contract": "vitest run tests/backend/contract",
     "typecheck": "tsc --noEmit",
     "typecheck:server": "tsc -p server/tsconfig.json --noEmit",
     "server:build": "vite build --config vite.server.config.ts",

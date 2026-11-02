@@ -3,10 +3,10 @@
  * Grove when no rival is free). Same schedule, attack allowance, star scoring
  * and chests as the game's offline Grove Raid (src/sim/social/groveRaid.ts).
  */
-import { runBattle } from '../../src/sim/battle/battle';
-import { createRng, int, mixSeed, next } from '../../src/sim/rng';
-import { enemyGrove, raidPhase, raidWindow } from '../../src/sim/social/groveRaid';
-import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, BattleSubmission } from '../../src/net/protocol';
+import { runBattle } from '../../src/gameplay/sim/battle/battle';
+import { createRng, int, mixSeed, next } from '../../src/gameplay/sim/rng';
+import { enemyGrove, raidPhase, raidWindow } from '../../src/gameplay/sim/social/groveRaid';
+import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, BattleSubmission } from '../../src/backend/net/protocol';
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';

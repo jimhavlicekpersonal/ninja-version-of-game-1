@@ -4,16 +4,16 @@
  * attacker, near their trophies; the loot penalty for hitting lower halls;
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
-import { maxHousingAtHall } from '../../src/sim/army';
-import { runBattle } from '../../src/sim/battle/battle';
-import type { BaseLayout } from '../../src/sim/battle/types';
-import { buildingDef, levelDef } from '../../src/sim/data';
-import { shieldHoursFor, storageLootCap } from '../../src/sim/defense';
-import { applyLootPenalty, hallWindow, opponentForRank } from '../../src/sim/matchmaking';
-import { lossTrophies, winTrophies } from '../../src/sim/ranks';
-import { troopLevelCapAt } from '../../src/sim/research';
-import type { GameData, ResourceKind } from '../../src/sim/types';
-import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/net/protocol';
+import { maxHousingAtHall } from '../../src/gameplay/sim/army';
+import { runBattle } from '../../src/gameplay/sim/battle/battle';
+import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
+import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
+import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
+import { applyLootPenalty, hallWindow, opponentForRank } from '../../src/gameplay/sim/matchmaking';
+import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
+import { troopLevelCapAt } from '../../src/gameplay/sim/research';
+import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
+import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 

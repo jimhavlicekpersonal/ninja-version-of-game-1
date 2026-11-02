@@ -63,7 +63,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck:server
-      - run: npx vitest run tests/server tests/net tests/contract
+      - run: npx vitest run tests/backend/server tests/backend/net tests/backend/contract
       - run: npm run server:build
       - name: Protocol contract against the built server on Postgres
         run: |

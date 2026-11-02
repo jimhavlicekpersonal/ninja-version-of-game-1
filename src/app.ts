@@ -1,17 +1,17 @@
 import type Phaser from 'phaser';
-import { BattleSession } from './game/battleSession';
-import type { GameController } from './game/controller';
-import type { GroveSource, RaidBattle } from './game/groveSource';
-import type { Connection } from './net/connection';
-import type { BattleSceneInit } from './render/BattleScene';
-import type { BaseLayout, BattleRecord, BattleSetup } from './sim/battle/types';
-import { opponentFor } from './sim/matchmaking';
-import { troopLevels } from './sim/research';
-import { mixSeed } from './sim/rng';
-import { battleArmy, scoutFee } from './sim/village';
-import { BattleHud } from './ui/battleHud';
-import { sound } from './audio/sound';
-import type { Hud } from './ui/hud';
+import { BattleSession } from './gameplay/control/battleSession';
+import type { GameController } from './gameplay/control/controller';
+import type { GroveSource, RaidBattle } from './backend/social/groveSource';
+import type { Connection } from './backend/net/connection';
+import type { BattleSceneInit } from './presentation/render/BattleScene';
+import type { BaseLayout, BattleRecord, BattleSetup } from './gameplay/sim/battle/types';
+import { opponentFor } from './gameplay/sim/matchmaking';
+import { troopLevels } from './gameplay/sim/research';
+import { mixSeed } from './gameplay/sim/rng';
+import { battleArmy, scoutFee } from './gameplay/sim/village';
+import { BattleHud } from './presentation/ui/battleHud';
+import { sound } from './presentation/audio/sound';
+import type { Hud } from './presentation/ui/hud';
 
 export interface AppDeps {
   game: Phaser.Game;

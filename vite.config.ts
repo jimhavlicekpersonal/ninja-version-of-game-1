@@ -22,7 +22,7 @@ function serviceWorker(): Plugin {
       const built = Object.keys(bundle).filter((f) => !f.endsWith('.map'));
       const publicFiles = listFiles('public').map((p) => relative('public', p).split('\\').join('/'));
       const files = ['./', ...[...built, ...publicFiles].map((f) => `./${f}`)];
-      const source = readFileSync('src/pwa/sw.template.js', 'utf8')
+      const source = readFileSync('src/backend/pwa/sw.template.js', 'utf8')
         .replace('__BUILD_ID__', Date.now().toString(36))
         .replace('__PRECACHE__', JSON.stringify(files));
       this.emitFile({ type: 'asset', fileName: 'sw.js', source });

@@ -4,8 +4,8 @@
  * adapter (any database) by implementing Repo; tests/server/repo.test.ts runs
  * the same checks against every adapter.
  */
-import type { BaseLayout, BattleResult, Deployment } from '../src/sim/battle/types';
-import type { GroveRole } from '../src/net/protocol';
+import type { BaseLayout, BattleResult, Deployment } from '../src/gameplay/sim/battle/types';
+import type { GroveRole } from '../src/backend/net/protocol';
 
 export interface Player {
   id: string;

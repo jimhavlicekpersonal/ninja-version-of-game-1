@@ -4,8 +4,8 @@
  * requests, checks the bearer token and turns errors into protocol errors.
  */
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
-import { Routes, type ErrorBody, type MyGroveResponse } from '../src/net/protocol';
-import type { GameData } from '../src/sim/types';
+import { Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
+import type { GameData } from '../src/gameplay/sim/types';
 import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext } from './nodeContext';
 import type { Player, Repo } from './repo';

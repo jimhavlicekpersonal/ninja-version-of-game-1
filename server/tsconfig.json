@@ -4,5 +4,5 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node", "vite/client"]
   },
-  "include": ["./**/*.ts", "../src/sim/**/*.ts", "../src/data/*.json"]
+  "include": ["./**/*.ts", "../src/gameplay/sim/**/*.ts", "../src/gameplay/data/*.json", "../src/backend/net/protocol.ts"]
 }

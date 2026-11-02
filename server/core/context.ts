@@ -1,5 +1,5 @@
 /** What the server core needs from its environment (its other ports). */
-import type { GameData } from '../../src/sim/types';
+import type { GameData } from '../../src/gameplay/sim/types';
 import type { Repo } from '../repo';
 
 export interface ServerContext {
@@ -19,7 +19,7 @@ export interface ServerContext {
 export class ApiError extends Error {
   constructor(
     readonly status: number,
-    readonly code: import('../../src/net/protocol').ErrorCode,
+    readonly code: import('../../src/backend/net/protocol').ErrorCode,
     message: string,
   ) {
     super(message);
