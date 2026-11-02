@@ -9,6 +9,7 @@ import { matchTrophies } from './sim/ranks';
 import { battleArmy, hallLevel, scoutFee } from './sim/village';
 import { enemyGrove, raidPhase } from './sim/social/groveRaid';
 import { BattleHud } from './ui/battleHud';
+import type { OnlineClient } from './online/client';
 import { sound } from './audio/sound';
 import type { Hud } from './ui/hud';
 
@@ -20,6 +21,8 @@ export interface AppDeps {
   battleRoot: HTMLElement;
   renderScale: number;
   troopThumb(type: string): string | null;
+  /** Optional PvP server: real opponents instead of generated ones. */
+  online?: OnlineClient | null;
 }
 
 /** Switches between the village and battles (scouting, live attacks, replays). */
@@ -33,14 +36,31 @@ export class App {
     return this.session !== null;
   }
 
+  private ticket: string | null = null;
+
   /** Look for an opponent. `paid` = pressing Next. */
-  scout(paid = false): void {
+  async scout(paid = false): Promise<void> {
     const c = this.d.controller;
     const r = c.scout(paid);
     if (!r.ok) {
       if (this.battleHud) this.battleHud.toast(r.message);
       else this.d.hud.toast(r.message, 'error');
       return;
+    }
+    this.ticket = null;
+    // A real player's base from the server when online; a generated one otherwise.
+    if (this.d.online) {
+      try {
+        const m = await this.d.online.match();
+        if (m) {
+          this.ticket = m.ticket;
+          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base: m.base, army: battleArmy(c.state) };
+          this.open(new BattleSession(setup, c.data, 'scout'));
+          return;
+        }
+      } catch (e) {
+        console.warn('Online match failed, using a generated opponent', e);
+      }
     }
     const base = generateOpponent(r.seed, hallLevel(c.state, c.data), c.data);
     base.trophies = matchTrophies(r.seed, c.state.trophies, c.data);
@@ -101,6 +121,16 @@ export class App {
         }
         const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name);
         if (!out) return null;
+        if (this.d.online && this.ticket) {
+          const ticket = this.ticket;
+          this.ticket = null;
+          const online = this.d.online;
+          void online
+            .submitAttack({ ticket, seed: session.setup.seed, army: session.setup.army, deployments: session.deployments, endTick: session.endTick })
+            .then(() => online.me())
+            .then((me) => c.dispatch({ type: 'syncRank', trophies: me.trophies, shieldUntil: me.shieldUntil }))
+            .catch((e) => console.warn('Could not report the attack to the server', e));
+        }
         lastRecord = out.record;
         return { result: out.record.result, banked: out.banked, trophies: out.record.trophies ?? 0 };
       },

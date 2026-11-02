@@ -17,6 +17,8 @@ export interface ControllerDeps {
   analytics: Analytics;
   data: GameData;
   payments?: PaymentProvider;
+  /** False when the online server provides real raids instead of bots. */
+  botRaids?: boolean;
 }
 
 export type PurchaseOutcome = { ok: true; grants: Cost } | { ok: false; code: string; message: string };
@@ -74,7 +76,7 @@ export class GameController {
       await controller.save();
       return { controller, offline: null, isNew: true, loadError };
     }
-    const { state: caughtUp, summary } = computeOfflineProgress(state, now, deps.data);
+    const { state: caughtUp, summary } = computeOfflineProgress(state, now, deps.data, { botRaids: deps.botRaids });
     const controller = new GameController(deps, caughtUp);
     await controller.save();
     const show = summary.awayMs >= deps.data.economy.welcomeBackMinAwaySeconds * 1000;

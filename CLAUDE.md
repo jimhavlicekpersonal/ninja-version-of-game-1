@@ -22,6 +22,17 @@ How this is met:
 - **Phase 6:** Capacitor for **both iOS and Android**. iOS builds need a Mac or a cloud macOS build (e.g. GitHub Actions macOS runners or Codemagic) plus the Apple Developer Program for TestFlight and StoreKit sandbox. Ask the owner whether to add Google Play Billing behind `PaymentProvider` for Android.
 - Keep npm scripts cross-platform (Windows): no bash-only syntax in `package.json`. `.gitattributes` normalises line endings.
 
+## Decisions made during Phases 2-6
+
+- Art direction (owner request): smoother, softer, Nintendo-like look. All art is still generated in code (`src/render/art/`).
+- Save format is versioned (`src/sim/save.ts`, currently v6) with a migration step per version. Bump `SAVE_VERSION` and add a step for every state change.
+- Progression pacing is checked by a model-player test (`tests/balance/`). Rerun it after changing costs, times or loot.
+- Offers have a `minAccountHours` field so brand-new players are not shown the builder offer in their first minutes.
+- Real prices appear only in the Store and its confirm step (pass and offer popups link to the Store).
+- Phase 6: Capacitor 8 (iOS + Android). iOS purchases use a local StoreKit 2 plugin (`ios/App/App/TkStorePlugin.swift`, registered in `TkViewController.swift`). **Android purchases are disabled** (`UnavailablePaymentProvider`) until Google Play Billing is added; ask the owner before adding it.
+- PvP server: Fastify 5 + `pg`, bundled with Vite (`vite.server.config.ts`). Online play turns on when the build has `VITE_SERVER_URL`; with it, real raids replace bot raids. The village economy stays on the device.
+- The owner-only steps (Apple account, App Store Connect products, secrets, server hosting) are in `docs/SHIPPING.md`.
+
 ## Stack decisions made during Phase 1
 
 - Phaser **3.90** (spec says Phaser 3; Phaser 4 exists but was not adopted).

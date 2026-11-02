@@ -1,0 +1,185 @@
+{
+  "identifier": "5F0A6C2E",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "1.99",
+      "familyShareable": false,
+      "internalID": "60000001",
+      "localizations": [
+        {
+          "description": "100 Moonstones",
+          "displayName": "Pouch of Moonstones",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "moonstones_1",
+      "referenceName": "Pouch of Moonstones",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "60000002",
+      "localizations": [
+        {
+          "description": "280 Moonstones",
+          "displayName": "Bag of Moonstones",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "moonstones_2",
+      "referenceName": "Bag of Moonstones",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "9.99",
+      "familyShareable": false,
+      "internalID": "60000003",
+      "localizations": [
+        {
+          "description": "600 Moonstones",
+          "displayName": "Sack of Moonstones",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "moonstones_3",
+      "referenceName": "Sack of Moonstones",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "19.99",
+      "familyShareable": false,
+      "internalID": "60000004",
+      "localizations": [
+        {
+          "description": "1300 Moonstones",
+          "displayName": "Box of Moonstones",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "moonstones_4",
+      "referenceName": "Box of Moonstones",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "49.99",
+      "familyShareable": false,
+      "internalID": "60000005",
+      "localizations": [
+        {
+          "description": "3500 Moonstones",
+          "displayName": "Chest of Moonstones",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "moonstones_5",
+      "referenceName": "Chest of Moonstones",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "99.99",
+      "familyShareable": false,
+      "internalID": "60000006",
+      "localizations": [
+        {
+          "description": "7500 Moonstones",
+          "displayName": "Vault of Moonstones",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "moonstones_6",
+      "referenceName": "Vault of Moonstones",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "60000007",
+      "localizations": [
+        {
+          "description": "Premium track for the current 30-day season",
+          "displayName": "Lantern Pass Premium",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "lantern_pass",
+      "referenceName": "Lantern Pass Premium",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "1.99",
+      "familyShareable": false,
+      "internalID": "60000008",
+      "localizations": [
+        {
+          "description": "A one-time boost for new rulers: Moonstones and resources to speed things up.",
+          "displayName": "Starter Pack",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "offer_starter",
+      "referenceName": "Starter Pack",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "60000009",
+      "localizations": [
+        {
+          "description": "Moonstones to hire another Beaver Builder, plus a little extra.",
+          "displayName": "Builder's Bundle",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "offer_builder",
+      "referenceName": "Builder's Bundle",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "60000010",
+      "localizations": [
+        {
+          "description": "Get ready for the Grove Raid: Dew for troops and Moonstones.",
+          "displayName": "Grove Raid Supplies",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "offer_war_prep",
+      "referenceName": "Grove Raid Supplies",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "60000011",
+      "localizations": [
+        {
+          "description": "Raiders hit hard. Restock your storage.",
+          "displayName": "Rebuild Kit",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "offer_rebuild",
+      "referenceName": "Rebuild Kit",
+      "type": "Consumable"
+    }
+  ],
+  "settings": {
+    "_applicationInternalID": "",
+    "_developerTeamID": "",
+    "_failTransactionsEnabled": false,
+    "_lastSynchronizedDate": 0,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

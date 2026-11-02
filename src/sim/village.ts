@@ -49,7 +49,9 @@ export type Command =
   | { type: 'requestTroops' }
   | { type: 'groveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'markPrepOffer'; week: number }
-  | { type: 'tutorial'; step: number; done?: boolean };
+  | { type: 'tutorial'; step: number; done?: boolean }
+  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number }
+  | { type: 'syncRank'; trophies: number; shieldUntil?: number };
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -406,6 +408,20 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     }
     case 'groveBattleEnd':
       return groveBattleEnd(s, cmd.target, cmd.record, now, data);
+    case 'applyDefense': {
+      // A real player's raid reported by the server.
+      if (s.defenseLog.some((d) => d.id === cmd.record.id)) return { ok: true, state: s, events: [] };
+      for (const [k, v] of Object.entries(cmd.lost) as [ResourceKind, number][]) s.resources[k] = Math.max(0, s.resources[k] - Math.max(0, v));
+      s.trophies = Math.max(0, cmd.trophies);
+      s.shieldUntil = Math.max(s.shieldUntil, cmd.shieldUntil);
+      s.defenseLog.push(cmd.record);
+      while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();
+      return { ok: true, state: s, events: [] };
+    }
+    case 'syncRank':
+      s.trophies = Math.max(0, cmd.trophies);
+      if (cmd.shieldUntil !== undefined) s.shieldUntil = cmd.shieldUntil;
+      return { ok: true, state: s, events: [] };
     case 'tutorial':
       s.tutorial = { step: cmd.step, done: Boolean(cmd.done) };
       return { ok: true, state: s, events: [] };

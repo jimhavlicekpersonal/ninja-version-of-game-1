@@ -30,13 +30,14 @@ function waiting(state: VillageState, at: number, data: GameData): Partial<Recor
  * Work out everything that happened while the game was closed, from the
  * time elapsed since `state.lastSeenAt`. Bot raids are added in Phase 3.
  */
-export function computeOfflineProgress(state: VillageState, now: number, data: GameData): { state: VillageState; summary: OfflineSummary } {
+export function computeOfflineProgress(state: VillageState, now: number, data: GameData, opts: { botRaids?: boolean } = {}): { state: VillageState; summary: OfflineSummary } {
   const from = state.lastSeenAt;
   const awayMs = Math.max(0, now - from);
   const before = waiting(state, Math.min(from, now), data);
   // Finished timers before raids happen are recorded by comparing levels.
   const levelsBefore = new Map(state.buildings.map((b) => [b.id, b.level]));
-  const raided = simulateOfflineRaids(state, now, data);
+  // With the online server, real players raid you instead of bots.
+  const raided = opts.botRaids === false ? { state: { ...structuredClone(state), raidCheckAt: now }, raids: [] } : simulateOfflineRaids(state, now, data);
   const { state: next } = advance(raided.state, now, data);
   const finished: FinishedUpgrade[] = [];
   for (const b of next.buildings) {

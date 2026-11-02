@@ -9,9 +9,15 @@ import { Keys } from './render/assets';
 import { VillageScene, type VillageSceneInit } from './render/VillageScene';
 import { BattleScene } from './render/BattleScene';
 import { App } from './app';
+import { OnlineClient } from './online/client';
+import { villageToBase } from './sim/defense';
+import type { BattleRecord } from './sim/battle/types';
 import { sound } from './audio/sound';
 import { prefs } from './platform/prefs';
 import { WebReminders, type ReminderService } from './platform/reminders';
+import { NativeReminders, isNative, platform } from './platform/native';
+import { MockPaymentProvider, type PaymentProvider } from './payments/provider';
+import { StoreKitPaymentProvider, UnavailablePaymentProvider } from './payments/storekit';
 import { upcomingReminders } from './sim/reminders';
 import { Tutorial } from './ui/tutorial';
 import { OffsetClock, SystemClock } from './sim/clock';
@@ -73,7 +79,18 @@ async function boot(): Promise<void> {
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   const { store, events } = await openStorage();
   const analytics = new Analytics(events, clock);
-  const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData });
+  // Payments: StoreKit on iPhone, nothing yet on Android, a mock store on the web.
+  const storeKit = platform() === 'ios' ? new StoreKitPaymentProvider() : null;
+  const payments: PaymentProvider = storeKit ?? (platform() === 'android' ? new UnavailablePaymentProvider() : new MockPaymentProvider(() => clock.now()));
+  const serverUrl = (import.meta.env.VITE_SERVER_URL as string | undefined) || '';
+  const online = serverUrl ? new OnlineClient(serverUrl) : null;
+  const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !online });
+  if (storeKit) {
+    void storeKit.listen((productId, transactionId) => {
+      const r = controller.dispatch({ type: 'grantPurchase', productId, transactionId });
+      if (r.ok) analytics.log('purchase', { productId, transactionId, provider: 'storekit', deferred: true });
+    });
+  }
   analytics.log('session_start', { isNew, awayMs: offline?.awayMs ?? 0, platform: platformName(), standalone: matchMedia('(display-mode: standalone)').matches });
 
   const host = document.getElementById('game')!;
@@ -110,7 +127,7 @@ async function boot(): Promise<void> {
   };
   let app: App | null = null;
   let tutorial: Tutorial | null = null;
-  const reminders: ReminderService = new WebReminders();
+  const reminders: ReminderService = isNative() ? new NativeReminders() : new WebReminders();
   const hud = new Hud({
     root: document.getElementById('hud')!,
     controller,
@@ -145,7 +162,10 @@ async function boot(): Promise<void> {
     battleRoot: document.getElementById('battle-hud')!,
     renderScale,
     troopThumb: (type) => thumbOf(Keys.troop(type)),
+    online,
   });
+
+  if (online) void startOnline(online, controller, hud);
 
   if (new URLSearchParams(location.search).has('debug')) {
     // Testing hook, only with ?debug in the URL.
@@ -212,8 +232,54 @@ async function boot(): Promise<void> {
   });
   window.addEventListener('pagehide', () => void controller.save());
 
-  registerServiceWorker((text) => hud.toast(text, 'info'));
+  if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
   document.getElementById('boot')?.classList.add('done');
+}
+
+/** Register with the PvP server, share our base and bring in real raids. */
+async function startOnline(online: OnlineClient, controller: GameController, hud: Hud): Promise<void> {
+  const gd = controller.data;
+  let name = '';
+  try {
+    name = localStorage.getItem('tk.online.name') ?? '';
+    if (!name) {
+      name = `${gd.names.playerFirst[Math.floor(Math.random() * gd.names.playerFirst.length)]} ${gd.names.playerSecond[Math.floor(Math.random() * gd.names.playerSecond.length)]}`;
+      localStorage.setItem('tk.online.name', name);
+    }
+  } catch {
+    name = 'Ruler';
+  }
+  const upload = () => online.uploadBase(villageToBase(controller.state, controller.now(), gd, name), name).catch((e) => console.warn('base upload failed', e));
+  try {
+    await online.ensureRegistered(name);
+    await upload();
+    let since = 0;
+    try {
+      since = Number(localStorage.getItem('tk.online.defensesSince')) || 0;
+    } catch {
+      since = 0;
+    }
+    const defenses = await online.defenses(since);
+    const me = await online.me();
+    for (const d of defenses) {
+      const record: BattleRecord = { id: d.id, at: d.at, kind: 'defense', opponentName: d.attackerName, setup: { seed: d.seed, base: d.base, army: d.army }, deployments: d.deployments, endTick: d.endTick, result: d.result, trophies: d.trophies };
+      controller.dispatch({ type: 'applyDefense', record, lost: d.result.loot, trophies: me.trophies, shieldUntil: me.shieldUntil });
+      since = Math.max(since, d.at);
+    }
+    controller.dispatch({ type: 'syncRank', trophies: me.trophies, shieldUntil: me.shieldUntil });
+    try {
+      localStorage.setItem('tk.online.defensesSince', String(since));
+    } catch {
+      /* ignore */
+    }
+    if (defenses.length) hud.toast(`${defenses.length} player${defenses.length > 1 ? 's' : ''} raided your village. See the battle log.`, 'info');
+  } catch (e) {
+    console.warn('Online features unavailable right now', e);
+  }
+  window.setInterval(upload, 120_000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') void upload();
+  });
 }
 
 boot().catch((e) => {
