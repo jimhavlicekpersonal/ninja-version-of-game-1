@@ -25,6 +25,7 @@ import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, researchSkipQuote, researchStartQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../../gameplay/sim/village';
 import { troopLevelOf } from '../../gameplay/sim/research';
+import { role as roleDef, WARRIORS, warriorUnlockKeep } from '../../gameplay/sim/progression';
 import { nextTrialTier, trialInfo, trialReward } from '../../gameplay/sim/trials';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
@@ -43,6 +44,8 @@ export interface HudDeps {
   debugTime: { offsetMs(): number; skip(ms: number): void };
   build: { version: string; builtAt: string };
   troopThumb(type: string): string | null;
+  /** Data URL of a roster warrior's badge icon, for the Warrior Codex. */
+  warriorIcon(id: string): string | null;
   onAttack(): void;
   onReplay(record: BattleRecord): void;
   onGroveAttack(target: number): void;
@@ -907,6 +910,9 @@ export class Hud {
         );
       }
       body.append(rlist);
+      const codex = h('button', { class: 'btn sky', type: 'button' }, icon(icons.scroll), `Warrior Codex (${WARRIORS.length} classes)`);
+      codex.addEventListener('click', () => this.openCodex());
+      body.append(h('div', { class: 'actions' }, codex));
     };
     render();
     const timer = window.setInterval(render, 1000);
@@ -915,6 +921,29 @@ export class Hud {
       window.clearInterval(timer);
       unsub();
     });
+  }
+
+  /** Every warrior class in the roster, with its icon and ability. Planned ones are marked as such. */
+  openCodex(): void {
+    const gd = this.c.data;
+    const keep = hallLevel(this.c.state, gd);
+    const body = h('div', { class: 'codex' }, h('p', { class: 'muted small' }, `${WARRIORS.filter((w) => w.liveTroop).length} of ${WARRIORS.length} classes are trainable today; the rest are coming as the Clan Keep grows. Pink rings mark the ridiculous ones.`));
+    const list = h('div', { class: 'codex-list' });
+    for (const w of WARRIORS) {
+      const src = this.deps.warriorIcon(w.id);
+      const live = Boolean(w.liveTroop);
+      const status = live ? (warriorUnlockKeep(w, gd) <= keep ? 'Trainable' : `Clan Keep ${warriorUnlockKeep(w, gd)}`) : 'Coming soon';
+      list.append(
+        h(
+          'div',
+          { class: `codex-row${live ? '' : ' planned'}` },
+          src ? h('img', { src, alt: '' }) : null,
+          h('div', {}, h('b', {}, w.name), h('div', { class: 'muted small' }, `${roleDef(w.role).name} · tier ${w.tier} · ${status}`), h('div', { class: 'small' }, h('b', {}, `${w.ability.name}: `), w.ability.text)),
+        ),
+      );
+    }
+    body.append(list);
+    this.modal('Warrior Codex', body, [], 'wide');
   }
 
   openLeague(): void {

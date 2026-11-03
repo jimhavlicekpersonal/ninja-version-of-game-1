@@ -1,5 +1,5 @@
 {
-  "$comment": "Design catalog of every warrior (10 roles x 5 tiers) and hero. Stats are derived from progression.json by src/gameplay/sim/progression.ts. 'liveTroop' marks warriors already playable (their troops.json id).",
+  "$comment": "Design catalog of every warrior (10 roles x 5 tiers) and hero. Stats are derived from progression.json by src/gameplay/sim/progression.ts. 'liveTroop' marks warriors already playable (their troops.json id). Every ability has a unique id and a unique mechanical 'effect' (kind + numbers) for the battle sim to implement. The tier-3 Veterans are the 'ridiculous' ones. Each warrior's icon is code-drawn in src/presentation/art/warriorIcons.ts (key icon.warrior.<id>).",
   "warriors": [
     {
       "id": "shinobi",
@@ -9,7 +9,11 @@
       "ability": {
         "id": "swift_strike",
         "name": "Swift Strike",
-        "text": "Cheap and fast; the first warrior every clan trains."
+        "text": "Cheap and fast; the first warrior every clan trains.",
+        "effect": {
+          "kind": "swift",
+          "note": "live: fast, cheap melee"
+        }
       },
       "look": {
         "gi": "#2f3a4f",
@@ -26,7 +30,12 @@
       "ability": {
         "id": "twin_strike",
         "name": "Twin Strike",
-        "text": "Every hit lands twice, on its target and the next building beside it."
+        "text": "Every hit lands twice: full damage on its target and half on the next building beside it.",
+        "effect": {
+          "kind": "cleave",
+          "secondTargetPct": 0.5,
+          "radius": 1.2
+        }
       },
       "look": {
         "gi": "#3a2f4f",
@@ -35,19 +44,27 @@
       }
     },
     {
-      "id": "wind_step_assassin",
-      "name": "Wind-Step Assassin",
+      "id": "sushi_chef_assassin",
+      "name": "Sushi Chef Assassin",
       "role": "blade",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "wind_step",
-        "name": "Wind Step",
-        "text": "Dashes to a new target; the first hit after each dash deals triple damage."
+        "id": "omakase",
+        "name": "Omakase",
+        "text": "Every fifth slash fillets a chunk off the building and serves it as sashimi. The nearest defense stops firing for 3 seconds to eat it. Chef refuses to explain.",
+        "effect": {
+          "kind": "stun_every_nth",
+          "every": 5,
+          "stunSeconds": 3,
+          "radius": 4
+        }
       },
       "look": {
-        "gi": "#2a3a3a",
-        "accent": "#8ad0ff",
-        "weapon": "straight blade with wind ribbons"
+        "gi": "#f4ead6",
+        "accent": "#c8402f",
+        "weapon": "yanagiba sushi knife",
+        "hat": "tall chef hat"
       }
     },
     {
@@ -58,7 +75,12 @@
       "ability": {
         "id": "moon_cut",
         "name": "Moon Cut",
-        "text": "Every fourth strike is a crescent slash for 2.5x damage."
+        "text": "Every fourth strike is a crescent slash for 2.5x damage.",
+        "effect": {
+          "kind": "crit_every",
+          "every": 4,
+          "mult": 2.5
+        }
       },
       "look": {
         "gi": "#1f2433",
@@ -74,7 +96,13 @@
       "ability": {
         "id": "storm_chain",
         "name": "Storm Chain",
-        "text": "Slashes arc between up to three nearby buildings."
+        "text": "Slashes arc between up to three nearby buildings, each jump at 60% of the last.",
+        "effect": {
+          "kind": "chain_buildings",
+          "jumps": 3,
+          "falloff": 0.6,
+          "radius": 2
+        }
       },
       "look": {
         "gi": "#141a22",
@@ -90,7 +118,11 @@
       "ability": {
         "id": "kunai_volley",
         "name": "Kunai Volley",
-        "text": "Fragile ranged damage from behind the front line."
+        "text": "Fragile ranged damage from behind the front line.",
+        "effect": {
+          "kind": "ranged",
+          "note": "live: fragile ranged damage"
+        }
       },
       "look": {
         "gi": "#5d6672",
@@ -107,7 +139,12 @@
       "ability": {
         "id": "fan_throw",
         "name": "Fan Throw",
-        "text": "Throws three shuriken at once; small splash."
+        "text": "Throws three shuriken at once; each hit splashes half damage in a small circle.",
+        "effect": {
+          "kind": "splash",
+          "radius": 0.8,
+          "pct": 0.5
+        }
       },
       "look": {
         "gi": "#4a5560",
@@ -116,19 +153,25 @@
       }
     },
     {
-      "id": "blowgun_hunter",
-      "name": "Blowgun Hunter",
+      "id": "rubber_duck_sniper",
+      "name": "Rubber Duck Sniper",
       "role": "thrower",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "venom_dart",
-        "name": "Venom Dart",
-        "text": "Darts keep damaging a building for 5 seconds."
+        "id": "squeak_shot",
+        "name": "Squeak Shot",
+        "text": "Fires rubber ducks from a bamboo tube. Every third duck squeaks so loudly that the defense it hits spins around looking for the culprit and loses its target for 1.5 seconds.",
+        "effect": {
+          "kind": "retarget_delay",
+          "every": 3,
+          "seconds": 1.5
+        }
       },
       "look": {
         "gi": "#3f5a3a",
-        "accent": "#9be05a",
-        "weapon": "bamboo blowgun"
+        "accent": "#ffd23c",
+        "weapon": "bamboo duck launcher"
       }
     },
     {
@@ -139,7 +182,12 @@
       "ability": {
         "id": "armor_shred",
         "name": "Armour Shred",
-        "text": "Hits make the target take 20% more damage from everyone."
+        "text": "Hits make the target take 20% more damage from everyone for 4 seconds.",
+        "effect": {
+          "kind": "vulnerability",
+          "pct": 0.2,
+          "seconds": 4
+        }
       },
       "look": {
         "gi": "#3a2a2a",
@@ -155,7 +203,12 @@
       "ability": {
         "id": "needle_rain",
         "name": "Needle Rain",
-        "text": "Very long range and rapid fire; must stay behind cover."
+        "text": "Range 6 and fires twice as fast as a Kunai Adept, but must stay behind cover.",
+        "effect": {
+          "kind": "long_range_rapid",
+          "range": 6,
+          "attackSpeedMult": 2
+        }
       },
       "look": {
         "gi": "#2b2f3a",
@@ -171,7 +224,11 @@
       "ability": {
         "id": "stand_firm",
         "name": "Stand Firm",
-        "text": "Walks straight into defenses and soaks their fire."
+        "text": "Walks straight into defenses and soaks their fire.",
+        "effect": {
+          "kind": "soak",
+          "note": "live: walks into defenses"
+        }
       },
       "look": {
         "gi": "#3a2f2a",
@@ -189,7 +246,12 @@
       "ability": {
         "id": "iron_skin",
         "name": "Iron Skin",
-        "text": "Warriors beside him take 15% less damage."
+        "text": "Warriors within 1.5 tiles take 15% less damage.",
+        "effect": {
+          "kind": "aura_damage_reduction",
+          "radius": 1.5,
+          "pct": 0.15
+        }
       },
       "look": {
         "gi": "#5a4a3a",
@@ -199,20 +261,26 @@
       }
     },
     {
-      "id": "bell_warden",
-      "name": "Bell Warden",
+      "id": "sumo_boulder",
+      "name": "Sumo Boulder",
       "role": "guardian",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "temple_bell",
-        "name": "Temple Bell",
-        "text": "Rings a bell that makes defenses in range target him first."
+        "id": "belly_bounce",
+        "name": "Belly Bounce",
+        "text": "Every fourth shot that hits him boings off his magnificent belly and flies straight back at the defense that fired it. He does a little stomp of triumph every time.",
+        "effect": {
+          "kind": "reflect",
+          "every": 4,
+          "pct": 1
+        }
       },
       "look": {
-        "gi": "#4a3a2a",
-        "accent": "#d9632a",
-        "weapon": "great bell and hammer",
-        "armor": "bronze"
+        "gi": "#e9c9a0",
+        "accent": "#3d4a5c",
+        "weapon": "bare hands",
+        "armor": "mawashi belt"
       }
     },
     {
@@ -223,7 +291,12 @@
       "ability": {
         "id": "great_wall",
         "name": "Great Wall",
-        "text": "Carries a tower shield that absorbs splash for allies behind him."
+        "text": "Carries a tower shield that absorbs half of all splash damage for allies behind him.",
+        "effect": {
+          "kind": "splash_shield",
+          "pct": 0.5,
+          "radius": 1.5
+        }
       },
       "look": {
         "gi": "#3d4a5c",
@@ -239,8 +312,13 @@
       "tier": 5,
       "ability": {
         "id": "oni_smash",
-        "name": "Oni Smash",
-        "text": "Huge health; smashes walls for five times damage."
+        "name": "Ground Pound",
+        "text": "Every third hit is a quake: full damage to every building within 1.5 tiles.",
+        "effect": {
+          "kind": "quake",
+          "every": 3,
+          "radius": 1.5
+        }
       },
       "look": {
         "gi": "#2a1a1a",
@@ -257,7 +335,11 @@
       "ability": {
         "id": "sabotage",
         "name": "Sabotage",
-        "text": "Jams the nearest working defense for 6 seconds (once per Saboteur)."
+        "text": "Jams the nearest working defense for 6 seconds (once per Saboteur).",
+        "effect": {
+          "kind": "jam",
+          "note": "live: 6 s jam, once each"
+        }
       },
       "look": {
         "gi": "#2f4a3a",
@@ -274,7 +356,11 @@
       "ability": {
         "id": "disarm",
         "name": "Disarm",
-        "text": "Finds and disarms hidden traps along the squad's path."
+        "text": "Disarms every hidden trap within 2 tiles of the path it walks.",
+        "effect": {
+          "kind": "disarm_traps",
+          "radius": 2
+        }
       },
       "look": {
         "gi": "#4a4a2f",
@@ -283,19 +369,27 @@
       }
     },
     {
-      "id": "gearbreaker",
-      "name": "Gearbreaker",
+      "id": "karaoke_saboteur",
+      "name": "Karaoke Saboteur",
       "role": "saboteur",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "long_jam",
-        "name": "Long Jam",
-        "text": "Two jams per warrior, each lasting 9 seconds."
+        "id": "off_key_ballad",
+        "name": "Off-Key Ballad",
+        "text": "Grabs a microphone and sings one power ballad, horribly. Every defense within 3 tiles covers its ears and fires 40% slower for 6 seconds. Nobody asked for an encore.",
+        "effect": {
+          "kind": "aura_slow_defenses",
+          "radius": 3,
+          "slowPct": 0.4,
+          "seconds": 6,
+          "uses": 1
+        }
       },
       "look": {
-        "gi": "#2f3f4a",
-        "accent": "#e9b44c",
-        "weapon": "heavy wrench and wedges"
+        "gi": "#5a2f6a",
+        "accent": "#ff6bd5",
+        "weapon": "microphone on a cable"
       }
     },
     {
@@ -306,7 +400,12 @@
       "ability": {
         "id": "delayed_charge",
         "name": "Delayed Charge",
-        "text": "Plants a charge on a defense that explodes after 5 seconds."
+        "text": "Plants a charge on a defense that explodes after 5 seconds for 8x its damage.",
+        "effect": {
+          "kind": "delayed_bomb",
+          "delaySeconds": 5,
+          "damageMult": 8
+        }
       },
       "look": {
         "gi": "#3a2f2f",
@@ -322,7 +421,13 @@
       "ability": {
         "id": "blackout",
         "name": "Blackout",
-        "text": "Briefly jams every defense in a small radius."
+        "text": "Jams every defense within 2 tiles for 3 seconds (once).",
+        "effect": {
+          "kind": "area_jam",
+          "radius": 2,
+          "seconds": 3,
+          "uses": 1
+        }
       },
       "look": {
         "gi": "#1f2a2a",
@@ -338,7 +443,11 @@
       "ability": {
         "id": "tunnel",
         "name": "Tunnel",
-        "text": "Digs under walls to reach any building."
+        "text": "Digs under walls to reach any building.",
+        "effect": {
+          "kind": "tunnel",
+          "note": "live: digs under walls"
+        }
       },
       "look": {
         "gi": "#6b4a2e",
@@ -356,7 +465,11 @@
       "ability": {
         "id": "climb",
         "name": "Climb",
-        "text": "Climbs over walls and goes for storehouses first."
+        "text": "Climbs over walls and goes for storehouses first.",
+        "effect": {
+          "kind": "climb_storage",
+          "prefers": "storage"
+        }
       },
       "look": {
         "gi": "#4a3a2a",
@@ -365,19 +478,26 @@
       }
     },
     {
-      "id": "grapple_raider",
-      "name": "Grapple Raider",
+      "id": "potted_plant_ninja",
+      "name": "Potted Plant Ninja",
       "role": "infiltrator",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "grapple_line",
-        "name": "Grapple Line",
-        "text": "Swings over walls straight to the nearest defense."
+        "id": "totally_a_shrub",
+        "name": "Totally a Shrub",
+        "text": "Disguised as a small bonsai in a pot. Defenses ignore it while it stands still, so it shuffles for one second, freezes for one second, and repeats. Wears the pot as trousers.",
+        "effect": {
+          "kind": "stealth_when_still",
+          "moveSeconds": 1,
+          "stillSeconds": 1
+        }
       },
       "look": {
-        "gi": "#3a3a4a",
-        "accent": "#c8402f",
-        "weapon": "grappling line"
+        "gi": "#4f7a46",
+        "accent": "#b5653a",
+        "weapon": "pruning shears",
+        "hat": "bonsai"
       }
     },
     {
@@ -388,7 +508,11 @@
       "ability": {
         "id": "surface_stun",
         "name": "Surface Stun",
-        "text": "Bursts out of the ground beside a defense, stunning it for 2 seconds."
+        "text": "Bursts out of the ground beside a defense, stunning it for 2 seconds.",
+        "effect": {
+          "kind": "surface_stun",
+          "stunSeconds": 2
+        }
       },
       "look": {
         "gi": "#5a3a1e",
@@ -405,7 +529,12 @@
       "ability": {
         "id": "open_path",
         "name": "Open Path",
-        "text": "Walls near it crumble, opening a path for everyone."
+        "text": "Walls within 1.5 tiles crumble to half health, opening a path for everyone.",
+        "effect": {
+          "kind": "crumble_walls",
+          "radius": 1.5,
+          "pct": 0.5
+        }
       },
       "look": {
         "gi": "#2a2a3a",
@@ -421,7 +550,11 @@
       "ability": {
         "id": "firebomb",
         "name": "Firebomb",
-        "text": "Glides over walls on a war kite and bombs defenses."
+        "text": "Glides over walls on a war kite and bombs defenses.",
+        "effect": {
+          "kind": "firebomb",
+          "note": "live: flies over walls, bombs defenses"
+        }
       },
       "look": {
         "gi": "#3a3f6a",
@@ -438,8 +571,12 @@
       "tier": 2,
       "ability": {
         "id": "swift_glide",
-        "name": "Swift Glide",
-        "text": "Very fast flyer that raids storehouses."
+        "name": "Updraft",
+        "text": "Rides a crane-wing glider so high that the first anti-air shot every 5 seconds misses.",
+        "effect": {
+          "kind": "dodge_anti_air",
+          "everySeconds": 5
+        }
       },
       "look": {
         "gi": "#f4ead6",
@@ -449,20 +586,26 @@
       }
     },
     {
-      "id": "lantern_balloon",
-      "name": "Lantern Balloon",
+      "id": "cannonball_grandma",
+      "name": "Cannonball Grandma",
       "role": "sky",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "ember_drop",
-        "name": "Ember Drop",
-        "text": "Slow balloon that drops burning embers in a wide area."
+        "id": "rocking_chair_launch",
+        "name": "Rocking-Chair Launch",
+        "text": "Grandma Kiyo has her clan catapult her over the walls, still in her rocking chair. She lands on a building for 6x damage in a 1.5-tile splash, then fights on foot with knitting needles. She has done this every week since 1962.",
+        "effect": {
+          "kind": "landing_splash",
+          "radius": 1.5,
+          "damageMult": 6
+        }
       },
       "look": {
-        "gi": "#3a2f2a",
-        "accent": "#ff9a3c",
-        "weapon": "ember pots",
-        "mount": "giant paper lantern balloon"
+        "gi": "#8a4a6a",
+        "accent": "#f4ead6",
+        "weapon": "knitting needles",
+        "mount": "flying rocking chair"
       }
     },
     {
@@ -472,8 +615,14 @@
       "tier": 4,
       "ability": {
         "id": "chain_lightning",
-        "name": "Chain Lightning",
-        "text": "Lightning jumps between up to four defenses."
+        "name": "Lightning Rod",
+        "text": "Every 6 seconds calls lightning on the toughest defense within 4 tiles, stunning it for 1 second.",
+        "effect": {
+          "kind": "periodic_strike",
+          "everySeconds": 6,
+          "range": 4,
+          "stunSeconds": 1
+        }
       },
       "look": {
         "gi": "#1f2433",
@@ -490,7 +639,12 @@
       "ability": {
         "id": "armada",
         "name": "Armada",
-        "text": "A heavy dragon kite carrying a crew of bombers."
+        "text": "When the dragon kite is shot down, three Kite Raiders bail out and keep fighting.",
+        "effect": {
+          "kind": "spawn_on_death",
+          "troop": "kite_raider",
+          "count": 3
+        }
       },
       "look": {
         "gi": "#2a1a1a",
@@ -507,7 +661,12 @@
       "ability": {
         "id": "mend",
         "name": "Mend",
-        "text": "Heals nearby warriors over time."
+        "text": "Heals warriors within 2 tiles for 8% of their health every second.",
+        "effect": {
+          "kind": "heal_aura",
+          "radius": 2,
+          "pctPerSecond": 0.08
+        }
       },
       "look": {
         "gi": "#4f7a46",
@@ -523,7 +682,12 @@
       "ability": {
         "id": "war_drum",
         "name": "War Drum",
-        "text": "Nearby warriors move and attack 25% faster."
+        "text": "Warriors within 2.5 tiles move and attack 25% faster.",
+        "effect": {
+          "kind": "haste_aura",
+          "radius": 2.5,
+          "pct": 0.25
+        }
       },
       "look": {
         "gi": "#7a3f2a",
@@ -532,19 +696,29 @@
       }
     },
     {
-      "id": "mist_weaver",
-      "name": "Mist Weaver",
+      "id": "bubble_tea_alchemist",
+      "name": "Bubble Tea Alchemist",
       "role": "mystic",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "veil",
-        "name": "Veil",
-        "text": "Wraps nearby warriors in thin mist (a small moving smoke cloud)."
+        "id": "boba_barrage",
+        "name": "Boba Barrage",
+        "text": "Every 8 seconds hands out bubble tea. Warriors who drink it get a sugar rush (40% faster for 4 seconds), then a sugar crash (20% slower for 2 seconds). Totally worth it.",
+        "effect": {
+          "kind": "sugar_rush",
+          "everySeconds": 8,
+          "radius": 2,
+          "buffPct": 0.4,
+          "buffSeconds": 4,
+          "crashPct": 0.2,
+          "crashSeconds": 2
+        }
       },
       "look": {
-        "gi": "#9aa0aa",
-        "accent": "#d9dee6",
-        "weapon": "mist fan"
+        "gi": "#c98da8",
+        "accent": "#5a3a2a",
+        "weapon": "giant bubble tea with straw"
       }
     },
     {
@@ -555,7 +729,12 @@
       "ability": {
         "id": "second_wind",
         "name": "Second Wind",
-        "text": "Brings one fallen warrior back to its feet."
+        "text": "Brings one fallen warrior back at half health (once).",
+        "effect": {
+          "kind": "revive",
+          "count": 1,
+          "hpPct": 0.5
+        }
       },
       "look": {
         "gi": "#2f2a4a",
@@ -571,7 +750,14 @@
       "ability": {
         "id": "cloud_shelter",
         "name": "Cloud Shelter",
-        "text": "A big heal and a shield that blocks the next hit for every nearby warrior."
+        "text": "Every warrior within 3 tiles heals 30% and gets a shield that blocks the next hit (once).",
+        "effect": {
+          "kind": "shield_heal",
+          "radius": 3,
+          "healPct": 0.3,
+          "shieldHits": 1,
+          "uses": 1
+        }
       },
       "look": {
         "gi": "#f4ead6",
@@ -587,7 +773,11 @@
       "ability": {
         "id": "battering_ram",
         "name": "Battering Ram",
-        "text": "Four times damage against walls and gates."
+        "text": "Four times damage against walls and gates.",
+        "effect": {
+          "kind": "wall_mult",
+          "mult": 4
+        }
       },
       "look": {
         "gi": "#5e3a22",
@@ -603,7 +793,12 @@
       "ability": {
         "id": "flame_breath",
         "name": "Flame Breath",
-        "text": "Short-range fire that burns a small area of buildings."
+        "text": "Breathes fire in a short cone; buildings in it burn for 3 seconds.",
+        "effect": {
+          "kind": "burn_cone",
+          "length": 1,
+          "burnSeconds": 3
+        }
       },
       "look": {
         "gi": "#7a2e26",
@@ -612,19 +807,25 @@
       }
     },
     {
-      "id": "bomb_carrier",
-      "name": "Bomb Carrier",
+      "id": "mochi_mortar",
+      "name": "Mochi Mortar",
       "role": "siege",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "big_bang",
-        "name": "Big Bang",
-        "text": "Runs to the nearest wall or defense and explodes."
+        "id": "sticky_situation",
+        "name": "Sticky Situation",
+        "text": "Lobs enormous sticky rice cakes. A defense it hits is glued facing its current target for 4 seconds and cannot switch to anyone else. Delicious, but deeply inconvenient.",
+        "effect": {
+          "kind": "target_lock",
+          "seconds": 4
+        }
       },
       "look": {
-        "gi": "#2b2b2b",
-        "accent": "#ff6b3c",
-        "weapon": "giant bomb on back"
+        "gi": "#f1ebdf",
+        "accent": "#e98aa0",
+        "weapon": "giant wooden mallet",
+        "pack": "mochi"
       }
     },
     {
@@ -635,7 +836,11 @@
       "ability": {
         "id": "long_shot",
         "name": "Long Shot",
-        "text": "Artillery that out-ranges every defense but cannot move while firing."
+        "text": "Artillery with range 7 that out-ranges every defense, but cannot move while firing.",
+        "effect": {
+          "kind": "artillery",
+          "range": 7
+        }
       },
       "look": {
         "gi": "#3a3f48",
@@ -651,7 +856,12 @@
       "ability": {
         "id": "eruption",
         "name": "Eruption",
-        "text": "Huge splash that leaves burning ground."
+        "text": "Each shot splashes 1.5 tiles and leaves the ground burning for 4 seconds.",
+        "effect": {
+          "kind": "burning_ground",
+          "radius": 1.5,
+          "burnSeconds": 4
+        }
       },
       "look": {
         "gi": "#2a1a1a",
@@ -667,7 +877,11 @@
       "ability": {
         "id": "unleash",
         "name": "Unleash",
-        "text": "Fights alongside two hunting dogs."
+        "text": "Fights alongside two hunting dogs.",
+        "effect": {
+          "kind": "spawn_companions",
+          "count": 2
+        }
       },
       "look": {
         "gi": "#5a4a3a",
@@ -684,7 +898,12 @@
       "ability": {
         "id": "hawk_harass",
         "name": "Hawk Harass",
-        "text": "Her hawk harries a defense from range, slowing its fire."
+        "text": "Her hawk harries one defense within 4 tiles, making it fire 30% slower while the hawk lives.",
+        "effect": {
+          "kind": "slow_one_defense",
+          "range": 4,
+          "slowPct": 0.3
+        }
       },
       "look": {
         "gi": "#4a3a2a",
@@ -694,20 +913,27 @@
       }
     },
     {
-      "id": "boar_rider",
-      "name": "Boar Rider",
+      "id": "goose_wrangler",
+      "name": "Goose Wrangler",
       "role": "beast",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "charge",
-        "name": "Charge",
-        "text": "Charges through the first wall in its way."
+        "id": "unholy_honk",
+        "name": "Unholy Honk",
+        "text": "Brings one war goose. It is impossible to ignore: every defense within 2.5 tiles must shoot the goose. The goose has triple health, takes no splash damage, and fears nothing.",
+        "effect": {
+          "kind": "taunt",
+          "radius": 2.5,
+          "hpMult": 3,
+          "splashImmune": true
+        }
       },
       "look": {
-        "gi": "#5e3a22",
-        "accent": "#9aa0aa",
-        "weapon": "spear",
-        "mount": "armoured boar"
+        "gi": "#4a3a2a",
+        "accent": "#ff9a3c",
+        "weapon": "loaf of bread",
+        "mount": "war goose"
       }
     },
     {
@@ -718,7 +944,12 @@
       "ability": {
         "id": "rage",
         "name": "Rage",
-        "text": "Hits much harder below half health."
+        "text": "Hits 60% harder below half health.",
+        "effect": {
+          "kind": "rage",
+          "hpBelowPct": 0.5,
+          "damagePct": 0.6
+        }
       },
       "look": {
         "gi": "#3a2a1e",
@@ -734,8 +965,13 @@
       "tier": 5,
       "ability": {
         "id": "pride",
-        "name": "Pride",
-        "text": "Rides a war tiger and calls two more when he arrives."
+        "name": "Roar",
+        "text": "Rides a war tiger. Its arrival roar gives every warrior within 3 tiles 20% more damage for the rest of the battle.",
+        "effect": {
+          "kind": "roar_buff",
+          "radius": 3,
+          "damagePct": 0.2
+        }
       },
       "look": {
         "gi": "#2a2a2a",
@@ -752,7 +988,10 @@
       "ability": {
         "id": "unseen",
         "name": "Unseen",
-        "text": "Cannot be targeted until it attacks for the first time."
+        "text": "Cannot be targeted until it attacks for the first time.",
+        "effect": {
+          "kind": "unseen"
+        }
       },
       "look": {
         "gi": "#141a22",
@@ -768,7 +1007,11 @@
       "ability": {
         "id": "decoy",
         "name": "Decoy",
-        "text": "Leaves a decoy that draws fire for 4 seconds."
+        "text": "Leaves a decoy that draws fire for 4 seconds.",
+        "effect": {
+          "kind": "decoy",
+          "seconds": 4
+        }
       },
       "look": {
         "gi": "#2a2a3a",
@@ -777,19 +1020,27 @@
       }
     },
     {
-      "id": "night_blade",
-      "name": "Night Blade",
+      "id": "mime_ninja",
+      "name": "Mime Ninja",
       "role": "shadow",
       "tier": 3,
+      "ridiculous": true,
       "ability": {
-        "id": "smoke_hunter",
-        "name": "Smoke Hunter",
-        "text": "Deals double damage to buildings inside smoke."
+        "id": "invisible_wall",
+        "name": "Invisible Wall",
+        "text": "Silently mimes a wall. It is a real wall. Defense shots crossing the 1.5-tile line it outlines simply stop, for 5 seconds (once). The mime never explains this either.",
+        "effect": {
+          "kind": "projectile_wall",
+          "width": 1.5,
+          "seconds": 5,
+          "uses": 1
+        }
       },
       "look": {
-        "gi": "#1f2433",
-        "accent": "#c9ced6",
-        "weapon": "black katana"
+        "gi": "#f4ead6",
+        "accent": "#141a22",
+        "weapon": "white gloves",
+        "mask": "white face paint"
       }
     },
     {
@@ -800,7 +1051,11 @@
       "ability": {
         "id": "shadow_step",
         "name": "Shadow Step",
-        "text": "Steps through shadows straight onto its target."
+        "text": "Every 8 seconds steps through the shadows straight onto its next target.",
+        "effect": {
+          "kind": "teleport",
+          "everySeconds": 8
+        }
       },
       "look": {
         "gi": "#0f1218",
@@ -816,7 +1071,12 @@
       "ability": {
         "id": "eclipse",
         "name": "Eclipse",
-        "text": "Unseen, immune to traps, and every hit can be a critical."
+        "text": "Unseen, immune to traps, and deals double damage to buildings inside smoke.",
+        "effect": {
+          "kind": "eclipse",
+          "smokeMult": 2,
+          "trapImmune": true
+        }
       },
       "look": {
         "gi": "#0a0c10",

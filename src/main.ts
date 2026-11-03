@@ -141,6 +141,7 @@ async function boot(): Promise<void> {
     thumbnail: (type) => thumbOf(Keys.buildingBase(type)),
     getFps: () => game.loop.actualFps,
     troopThumb: (type) => thumbOf(Keys.troop(type)),
+    warriorIcon: (id) => thumbOf(Keys.warriorIcon(id)),
     onAttack: () => app?.scout(false),
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),

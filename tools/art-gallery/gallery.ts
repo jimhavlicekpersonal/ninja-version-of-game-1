@@ -1,6 +1,8 @@
 /** Dev-only preview of every painter in src/presentation/art/ninja.ts (ART compartment tool). */
 import buildings from '../../src/gameplay/data/buildings.json';
 import { buildingPainters, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, type Tier } from '../../src/presentation/art/ninja';
+import { ICON_SIZE, warriorIconArt } from '../../src/presentation/art/warriorIcons';
+import roster from '../../src/gameplay/data/roster.json';
 import { TILE_H, TILE_W } from '../../src/presentation/render/iso';
 
 type Ctx = CanvasRenderingContext2D;
@@ -47,6 +49,11 @@ for (const [type, def] of Object.entries(defs)) {
 }
 const troops = section('Warriors (troop.<id>)');
 for (const [type, art] of Object.entries(troopArt)) figure(troops, type, art.w, art.h, art.h - 6, art.paint);
+const icons = section('Warrior icons (icon.warrior.<id>): all 50, pink ring = ridiculous');
+for (const w of roster.warriors) {
+  const art = warriorIconArt[w.id];
+  if (art) figure(icons, `${w.name} - ${w.ability.name}`, art.w, art.h, ICON_SIZE / 2, art.paint);
+}
 const proj = section('Projectiles (projectile.<kind>)');
 for (const [kind, art] of Object.entries(projectileArt)) figure(proj, kind, art.w, art.h, art.h / 2, art.paint);
 const fx = section('Effects');

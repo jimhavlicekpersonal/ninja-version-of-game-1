@@ -24,55 +24,55 @@
 | # | Warrior | Role | Tier | Unlock Keep | Ability | HP / DPS at unlock | Max level | HP / DPS at max | Train cost at max | Live |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | **Shinobi** `shinobi` | Blade | 1 Initiate | 1 | Swift Strike: Cheap and fast; the first warrior every clan trains. | 50 / 9 | 20 | 841 / 148 | 2924 | yes (`hedgehog_roller`) |
-| 2 | **Twin-Fang Dancer** `twin_fang_dancer` | Blade | 2 Adept | 4 | Twin Strike: Every hit lands twice, on its target and the next building beside it. | 70 / 12 | 18 | 875 / 154 | 3460 | planned |
-| 3 | **Wind-Step Assassin** `wind_step_assassin` | Blade | 3 Veteran | 7 | Wind Step: Dashes to a new target; the first hit after each dash deals triple damage. | 132 / 23 | 16 | 911 / 160 | 4095 | planned |
+| 2 | **Twin-Fang Dancer** `twin_fang_dancer` | Blade | 2 Adept | 4 | Twin Strike: Every hit lands twice: full damage on its target and half on the next building beside it. | 70 / 12 | 18 | 875 / 154 | 3460 | planned |
+| 3 | **Sushi Chef Assassin** `sushi_chef_assassin` | Blade | 3 Veteran | 7 | Omakase: Every fifth slash fillets a chunk off the building and serves it as sashimi. The nearest defense stops firing for 3 seconds to eat it. Chef refuses to explain. | 132 / 23 | 16 | 911 / 160 | 4095 | planned |
 | 4 | **Moonblade Master** `moonblade_master` | Blade | 4 Master | 10 | Moon Cut: Every fourth strike is a crescent slash for 2.5x damage. | 249 / 44 | 14 | 947 / 166 | 4846 | planned |
-| 5 | **Storm Sovereign** `storm_sovereign` | Blade | 5 Legend | 13 | Storm Chain: Slashes arc between up to three nearby buildings. | 544 / 95 | 12 | 986 / 173 | 5735 | planned |
+| 5 | **Storm Sovereign** `storm_sovereign` | Blade | 5 Legend | 13 | Storm Chain: Slashes arc between up to three nearby buildings, each jump at 60% of the last. | 544 / 95 | 12 | 986 / 173 | 5735 | planned |
 | 6 | **Kunai Adept** `kunai_adept` | Thrower | 1 Initiate | 1 | Kunai Volley: Fragile ranged damage from behind the front line. | 24 / 10 | 20 | 409 / 171 | 2924 | yes (`frog_lobber`) |
-| 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 34 / 14 | 18 | 426 / 177 | 3460 | planned |
-| 8 | **Blowgun Hunter** `blowgun_hunter` | Thrower | 3 Veteran | 7 | Venom Dart: Darts keep damaging a building for 5 seconds. | 64 / 27 | 16 | 443 / 185 | 4095 | planned |
-| 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armour Shred: Hits make the target take 20% more damage from everyone. | 121 / 51 | 14 | 461 / 192 | 4846 | planned |
-| 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 110 | 12 | 480 / 200 | 5735 | planned |
+| 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; each hit splashes half damage in a small circle. | 34 / 14 | 18 | 426 / 177 | 3460 | planned |
+| 8 | **Rubber Duck Sniper** `rubber_duck_sniper` | Thrower | 3 Veteran | 7 | Squeak Shot: Fires rubber ducks from a bamboo tube. Every third duck squeaks so loudly that the defense it hits spins around looking for the culprit and loses its target for 1.5 seconds. | 64 / 27 | 16 | 443 / 185 | 4095 | planned |
+| 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armour Shred: Hits make the target take 20% more damage from everyone for 4 seconds. | 121 / 51 | 14 | 461 / 192 | 4846 | planned |
+| 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Range 6 and fires twice as fast as a Kunai Adept, but must stay behind cover. | 265 / 110 | 12 | 480 / 200 | 5735 | planned |
 | 11 | **Armored Guardian** `armored_guardian` | Guardian | 1 Initiate | 2 | Stand Firm: Walks straight into defenses and soaks their fire. | 761 / 20 | 20 | 11k / 282 | 15k | yes (`beetle_brute`) |
-| 12 | **Iron Monk** `iron_monk` | Guardian | 2 Adept | 4 | Iron Skin: Warriors beside him take 15% less damage. | 918 / 24 | 18 | 11k / 293 | 17k | planned |
-| 13 | **Bell Warden** `bell_warden` | Guardian | 3 Veteran | 7 | Temple Bell: Rings a bell that makes defenses in range target him first. | 1729 / 44 | 16 | 12k / 305 | 20k | planned |
-| 14 | **Mountain Shield** `mountain_shield` | Guardian | 4 Master | 10 | Great Wall: Carries a tower shield that absorbs splash for allies behind him. | 3258 / 84 | 14 | 12k / 318 | 24k | planned |
-| 15 | **Oni Breaker** `oni_breaker` | Guardian | 5 Legend | 13 | Oni Smash: Huge health; smashes walls for five times damage. | 7119 / 183 | 12 | 13k / 331 | 29k | planned |
+| 12 | **Iron Monk** `iron_monk` | Guardian | 2 Adept | 4 | Iron Skin: Warriors within 1.5 tiles take 15% less damage. | 918 / 24 | 18 | 11k / 293 | 17k | planned |
+| 13 | **Sumo Boulder** `sumo_boulder` | Guardian | 3 Veteran | 7 | Belly Bounce: Every fourth shot that hits him boings off his magnificent belly and flies straight back at the defense that fired it. He does a little stomp of triumph every time. | 1729 / 44 | 16 | 12k / 305 | 20k | planned |
+| 14 | **Mountain Shield** `mountain_shield` | Guardian | 4 Master | 10 | Great Wall: Carries a tower shield that absorbs half of all splash damage for allies behind him. | 3258 / 84 | 14 | 12k / 318 | 24k | planned |
+| 15 | **Oni Breaker** `oni_breaker` | Guardian | 5 Legend | 13 | Ground Pound: Every third hit is a quake: full damage to every building within 1.5 tiles. | 7119 / 183 | 12 | 13k / 331 | 29k | planned |
 | 16 | **Saboteur** `saboteur` | Saboteur | 1 Initiate | 1 | Sabotage: Jams the nearest working defense for 6 seconds (once per Saboteur). | 151 / 6 | 20 | 2537 / 101 | 5848 | yes (`saboteur`) |
-| 17 | **Trap Breaker** `trap_breaker` | Saboteur | 2 Adept | 4 | Disarm: Finds and disarms hidden traps along the squad's path. | 212 / 8 | 18 | 2639 / 106 | 6920 | planned |
-| 18 | **Gearbreaker** `gearbreaker` | Saboteur | 3 Veteran | 7 | Long Jam: Two jams per warrior, each lasting 9 seconds. | 399 / 16 | 16 | 2746 / 110 | 8190 | planned |
-| 19 | **Fuse Master** `fuse_master` | Saboteur | 4 Master | 10 | Delayed Charge: Plants a charge on a defense that explodes after 5 seconds. | 751 / 30 | 14 | 2857 / 114 | 9692 | planned |
-| 20 | **Ghost Engineer** `ghost_engineer` | Saboteur | 5 Legend | 13 | Blackout: Briefly jams every defense in a small radius. | 1642 / 66 | 12 | 2972 / 119 | 11k | planned |
+| 17 | **Trap Breaker** `trap_breaker` | Saboteur | 2 Adept | 4 | Disarm: Disarms every hidden trap within 2 tiles of the path it walks. | 212 / 8 | 18 | 2639 / 106 | 6920 | planned |
+| 18 | **Karaoke Saboteur** `karaoke_saboteur` | Saboteur | 3 Veteran | 7 | Off-Key Ballad: Grabs a microphone and sings one power ballad, horribly. Every defense within 3 tiles covers its ears and fires 40% slower for 6 seconds. Nobody asked for an encore. | 399 / 16 | 16 | 2746 / 110 | 8190 | planned |
+| 19 | **Fuse Master** `fuse_master` | Saboteur | 4 Master | 10 | Delayed Charge: Plants a charge on a defense that explodes after 5 seconds for 8x its damage. | 751 / 30 | 14 | 2857 / 114 | 9692 | planned |
+| 20 | **Ghost Engineer** `ghost_engineer` | Saboteur | 5 Legend | 13 | Blackout: Jams every defense within 2 tiles for 3 seconds (once). | 1642 / 66 | 12 | 2972 / 119 | 11k | planned |
 | 21 | **Tunnel Runner** `tunnel_runner` | Infiltrator | 1 Initiate | 4 | Tunnel: Digs under walls to reach any building. | 134 / 21 | 20 | 1673 / 268 | 5848 | yes (`mole_digger`) |
 | 22 | **Wall Climber** `wall_climber` | Infiltrator | 2 Adept | 5 | Climb: Climbs over walls and goes for storehouses first. | 162 / 26 | 18 | 1741 / 279 | 6920 | planned |
-| 23 | **Grapple Raider** `grapple_raider` | Infiltrator | 3 Veteran | 8 | Grapple Line: Swings over walls straight to the nearest defense. | 305 / 49 | 16 | 1812 / 290 | 8190 | planned |
+| 23 | **Potted Plant Ninja** `potted_plant_ninja` | Infiltrator | 3 Veteran | 8 | Totally a Shrub: Disguised as a small bonsai in a pot. Defenses ignore it while it stands still, so it shuffles for one second, freezes for one second, and repeats. Wears the pot as trousers. | 305 / 49 | 16 | 1812 / 290 | 8190 | planned |
 | 24 | **Mole King** `mole_king` | Infiltrator | 4 Master | 11 | Surface Stun: Bursts out of the ground beside a defense, stunning it for 2 seconds. | 667 / 107 | 14 | 1885 / 302 | 9692 | planned |
-| 25 | **Phantom Gate** `phantom_gate` | Infiltrator | 5 Legend | 14 | Open Path: Walls near it crumble, opening a path for everyone. | 1457 / 233 | 12 | 1961 / 314 | 11k | planned |
+| 25 | **Phantom Gate** `phantom_gate` | Infiltrator | 5 Legend | 14 | Open Path: Walls within 1.5 tiles crumble to half health, opening a path for everyone. | 1457 / 233 | 12 | 1961 / 314 | 11k | planned |
 | 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 176 / 39 | 20 | 2541 / 565 | 12k | yes (`owl_bomber`) |
-| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 246 / 55 | 18 | 2644 / 587 | 14k | planned |
-| 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 463 / 103 | 16 | 2751 / 611 | 16k | planned |
-| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning jumps between up to four defenses. | 1013 / 225 | 14 | 2862 / 636 | 19k | planned |
-| 30 | **Dragon Kite Armada** `dragon_kite_armada` | Sky | 5 Legend | 14 | Armada: A heavy dragon kite carrying a crew of bombers. | 2213 / 492 | 12 | 2978 / 662 | 23k | planned |
-| 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals nearby warriors over time. | 177 / 15 | 20 | 2563 / 214 | 8772 | planned |
-| 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 25% faster. | 248 / 21 | 18 | 2667 / 222 | 10k | planned |
-| 33 | **Mist Weaver** `mist_weaver` | Mystic | 3 Veteran | 8 | Veil: Wraps nearby warriors in thin mist (a small moving smoke cloud). | 467 / 39 | 16 | 2774 / 231 | 12k | planned |
-| 34 | **Spirit Caller** `spirit_caller` | Mystic | 4 Master | 11 | Second Wind: Brings one fallen warrior back to its feet. | 1021 / 85 | 14 | 2886 / 241 | 15k | planned |
-| 35 | **Sage of Clouds** `sage_of_clouds` | Mystic | 5 Legend | 14 | Cloud Shelter: A big heal and a shield that blocks the next hit for every nearby warrior. | 2232 / 186 | 12 | 3003 / 250 | 17k | planned |
+| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Updraft: Rides a crane-wing glider so high that the first anti-air shot every 5 seconds misses. | 246 / 55 | 18 | 2644 / 587 | 14k | planned |
+| 28 | **Cannonball Grandma** `cannonball_grandma` | Sky | 3 Veteran | 8 | Rocking-Chair Launch: Grandma Kiyo has her clan catapult her over the walls, still in her rocking chair. She lands on a building for 6x damage in a 1.5-tile splash, then fights on foot with knitting needles. She has done this every week since 1962. | 463 / 103 | 16 | 2751 / 611 | 16k | planned |
+| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Lightning Rod: Every 6 seconds calls lightning on the toughest defense within 4 tiles, stunning it for 1 second. | 1013 / 225 | 14 | 2862 / 636 | 19k | planned |
+| 30 | **Dragon Kite Armada** `dragon_kite_armada` | Sky | 5 Legend | 14 | Armada: When the dragon kite is shot down, three Kite Raiders bail out and keep fighting. | 2213 / 492 | 12 | 2978 / 662 | 23k | planned |
+| 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals warriors within 2 tiles for 8% of their health every second. | 177 / 15 | 20 | 2563 / 214 | 8772 | planned |
+| 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Warriors within 2.5 tiles move and attack 25% faster. | 248 / 21 | 18 | 2667 / 222 | 10k | planned |
+| 33 | **Bubble Tea Alchemist** `bubble_tea_alchemist` | Mystic | 3 Veteran | 8 | Boba Barrage: Every 8 seconds hands out bubble tea. Warriors who drink it get a sugar rush (40% faster for 4 seconds), then a sugar crash (20% slower for 2 seconds). Totally worth it. | 467 / 39 | 16 | 2774 / 231 | 12k | planned |
+| 34 | **Spirit Caller** `spirit_caller` | Mystic | 4 Master | 11 | Second Wind: Brings one fallen warrior back at half health (once). | 1021 / 85 | 14 | 2886 / 241 | 15k | planned |
+| 35 | **Sage of Clouds** `sage_of_clouds` | Mystic | 5 Legend | 14 | Cloud Shelter: Every warrior within 3 tiles heals 30% and gets a shield that blocks the next hit (once). | 2232 / 186 | 12 | 3003 / 250 | 17k | planned |
 | 36 | **Ram Crew** `ram_crew` | Siege | 1 Initiate | 3 | Battering Ram: Four times damage against walls and gates. | 114 / 38 | 20 | 1648 / 549 | 8772 | planned |
-| 37 | **Fire Monk** `fire_monk` | Siege | 2 Adept | 6 | Flame Breath: Short-range fire that burns a small area of buildings. | 185 / 62 | 18 | 1714 / 571 | 10k | planned |
-| 38 | **Bomb Carrier** `bomb_carrier` | Siege | 3 Veteran | 9 | Big Bang: Runs to the nearest wall or defense and explodes. | 404 / 135 | 16 | 1783 / 594 | 12k | planned |
-| 39 | **Siege Bombardier** `siege_bombardier` | Siege | 4 Master | 12 | Long Shot: Artillery that out-ranges every defense but cannot move while firing. | 762 / 254 | 14 | 1856 / 619 | 15k | planned |
-| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Huge splash that leaves burning ground. | 1931 / 644 | 12 | 1931 / 644 | 17k | planned |
+| 37 | **Fire Monk** `fire_monk` | Siege | 2 Adept | 6 | Flame Breath: Breathes fire in a short cone; buildings in it burn for 3 seconds. | 185 / 62 | 18 | 1714 / 571 | 10k | planned |
+| 38 | **Mochi Mortar** `mochi_mortar` | Siege | 3 Veteran | 9 | Sticky Situation: Lobs enormous sticky rice cakes. A defense it hits is glued facing its current target for 4 seconds and cannot switch to anyone else. Delicious, but deeply inconvenient. | 404 / 135 | 16 | 1783 / 594 | 12k | planned |
+| 39 | **Siege Bombardier** `siege_bombardier` | Siege | 4 Master | 12 | Long Shot: Artillery with range 7 that out-ranges every defense, but cannot move while firing. | 762 / 254 | 14 | 1856 / 619 | 15k | planned |
+| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Each shot splashes 1.5 tiles and leaves the ground burning for 4 seconds. | 1931 / 644 | 12 | 1931 / 644 | 17k | planned |
 | 41 | **Hound Handler** `hound_handler` | Beast | 1 Initiate | 3 | Unleash: Fights alongside two hunting dogs. | 196 / 25 | 20 | 2840 / 355 | 8772 | planned |
-| 42 | **Hawk Tamer** `hawk_tamer` | Beast | 2 Adept | 6 | Hawk Harass: Her hawk harries a defense from range, slowing its fire. | 319 / 40 | 18 | 2955 / 369 | 10k | planned |
-| 43 | **Boar Rider** `boar_rider` | Beast | 3 Veteran | 9 | Charge: Charges through the first wall in its way. | 697 / 87 | 16 | 3074 / 384 | 12k | planned |
-| 44 | **Bear Warrior** `bear_warrior` | Beast | 4 Master | 12 | Rage: Hits much harder below half health. | 1313 / 164 | 14 | 3199 / 400 | 15k | planned |
-| 45 | **Tiger Lord** `tiger_lord` | Beast | 5 Legend | 15 | Pride: Rides a war tiger and calls two more when he arrives. | 3328 / 416 | 12 | 3328 / 416 | 17k | planned |
+| 42 | **Hawk Tamer** `hawk_tamer` | Beast | 2 Adept | 6 | Hawk Harass: Her hawk harries one defense within 4 tiles, making it fire 30% slower while the hawk lives. | 319 / 40 | 18 | 2955 / 369 | 10k | planned |
+| 43 | **Goose Wrangler** `goose_wrangler` | Beast | 3 Veteran | 9 | Unholy Honk: Brings one war goose. It is impossible to ignore: every defense within 2.5 tiles must shoot the goose. The goose has triple health, takes no splash damage, and fears nothing. | 697 / 87 | 16 | 3074 / 384 | 12k | planned |
+| 44 | **Bear Warrior** `bear_warrior` | Beast | 4 Master | 12 | Rage: Hits 60% harder below half health. | 1313 / 164 | 14 | 3199 / 400 | 15k | planned |
+| 45 | **Tiger Lord** `tiger_lord` | Beast | 5 Legend | 15 | Roar: Rides a war tiger. Its arrival roar gives every warrior within 3 tiles 20% more damage for the rest of the battle. | 3328 / 416 | 12 | 3328 / 416 | 17k | planned |
 | 46 | **Shadow Stalker** `shadow_stalker` | Shadow | 1 Initiate | 3 | Unseen: Cannot be targeted until it attacks for the first time. | 78 / 19 | 20 | 1127 / 282 | 5848 | planned |
 | 47 | **Mirage Twin** `mirage_twin` | Shadow | 2 Adept | 6 | Decoy: Leaves a decoy that draws fire for 4 seconds. | 127 / 32 | 18 | 1173 / 293 | 6920 | planned |
-| 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 277 / 69 | 16 | 1220 / 305 | 8190 | planned |
-| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 521 / 130 | 14 | 1270 / 317 | 9692 | planned |
-| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen, immune to traps, and every hit can be a critical. | 1321 / 330 | 12 | 1321 / 330 | 11k | planned |
+| 48 | **Mime Ninja** `mime_ninja` | Shadow | 3 Veteran | 9 | Invisible Wall: Silently mimes a wall. It is a real wall. Defense shots crossing the 1.5-tile line it outlines simply stop, for 5 seconds (once). The mime never explains this either. | 277 / 69 | 16 | 1220 / 305 | 8190 | planned |
+| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Every 8 seconds steps through the shadows straight onto its next target. | 521 / 130 | 14 | 1270 / 317 | 9692 | planned |
+| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen, immune to traps, and deals double damage to buildings inside smoke. | 1321 / 330 | 12 | 1321 / 330 | 11k | planned |
 
 ## Heroes
 
@@ -89,52 +89,52 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Shinobi | 1 | 2 | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Twin-Fang Dancer | · | · | · | 1 | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Wind-Step Assassin | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Sushi Chef Assassin | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Moonblade Master | · | · | · | · | · | · | · | · | · | 5 | 7 | 8 | 10 | 12 | 14 |
 | Storm Sovereign | · | · | · | · | · | · | · | · | · | · | · | · | 8 | 10 | 12 |
 | Kunai Adept | 1 | 2 | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Shuriken Storm | · | · | · | 1 | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Blowgun Hunter | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Rubber Duck Sniper | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Chain-Sickle Reaper | · | · | · | · | · | · | · | · | · | 5 | 7 | 8 | 10 | 12 | 14 |
 | Thousand Needle | · | · | · | · | · | · | · | · | · | · | · | · | 8 | 10 | 12 |
 | Armored Guardian | · | 2 | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Iron Monk | · | · | · | 1 | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Bell Warden | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Sumo Boulder | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Mountain Shield | · | · | · | · | · | · | · | · | · | 5 | 7 | 8 | 10 | 12 | 14 |
 | Oni Breaker | · | · | · | · | · | · | · | · | · | · | · | · | 8 | 10 | 12 |
 | Saboteur | 1 | 2 | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Trap Breaker | · | · | · | 1 | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Gearbreaker | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Karaoke Saboteur | · | · | · | · | · | · | 3 | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Fuse Master | · | · | · | · | · | · | · | · | · | 5 | 7 | 8 | 10 | 12 | 14 |
 | Ghost Engineer | · | · | · | · | · | · | · | · | · | · | · | · | 8 | 10 | 12 |
 | Tunnel Runner | · | · | · | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Wall Climber | · | · | · | · | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Grapple Raider | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Potted Plant Ninja | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Mole King | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 10 | 12 | 14 |
 | Phantom Gate | · | · | · | · | · | · | · | · | · | · | · | · | · | 10 | 12 |
 | Kite Raider | · | · | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Crane Glider | · | · | · | · | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Lantern Balloon | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Cannonball Grandma | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Thunder Kite | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 10 | 12 | 14 |
 | Dragon Kite Armada | · | · | · | · | · | · | · | · | · | · | · | · | · | 10 | 12 |
 | Herbalist | · | 2 | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Drum Monk | · | · | · | · | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Mist Weaver | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Bubble Tea Alchemist | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Spirit Caller | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 10 | 12 | 14 |
 | Sage of Clouds | · | · | · | · | · | · | · | · | · | · | · | · | · | 10 | 12 |
 | Ram Crew | · | · | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Fire Monk | · | · | · | · | · | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Bomb Carrier | · | · | · | · | · | · | · | · | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Mochi Mortar | · | · | · | · | · | · | · | · | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Siege Bombardier | · | · | · | · | · | · | · | · | · | · | · | 8 | 10 | 12 | 14 |
 | Volcano Cannoneer | · | · | · | · | · | · | · | · | · | · | · | · | · | · | 12 |
 | Hound Handler | · | · | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Hawk Tamer | · | · | · | · | · | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Boar Rider | · | · | · | · | · | · | · | · | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Goose Wrangler | · | · | · | · | · | · | · | · | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Bear Warrior | · | · | · | · | · | · | · | · | · | · | · | 8 | 10 | 12 | 14 |
 | Tiger Lord | · | · | · | · | · | · | · | · | · | · | · | · | · | · | 12 |
 | Shadow Stalker | · | · | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Mirage Twin | · | · | · | · | · | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
-| Night Blade | · | · | · | · | · | · | · | · | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
+| Mime Ninja | · | · | · | · | · | · | · | · | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Void Walker | · | · | · | · | · | · | · | · | · | · | · | 8 | 10 | 12 | 14 |
 | Eclipse Ninja | · | · | · | · | · | · | · | · | · | · | · | · | · | · | 12 |
 

@@ -18,7 +18,8 @@
         "src/presentation/art/ninja.ts",
         "src/presentation/art/ground.ts",
         "src/presentation/art/toolkit.ts",
-        "src/presentation/audio/sound.ts"
+        "src/presentation/audio/sound.ts",
+        "src/presentation/art/warriorIcons.ts"
       ]
     },
     "gui": {

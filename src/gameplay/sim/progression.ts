@@ -38,8 +38,11 @@ export interface WarriorEntry {
   name: string;
   role: RoleId;
   tier: number;
-  ability: { id: string; name: string; text: string };
+  /** effect: the mechanic the battle sim implements (unique kind per warrior, numbers inline). */
+  ability: { id: string; name: string; text: string; effect: { kind: string; [param: string]: number | string | boolean } };
   look: Record<string, string>;
+  /** A deliberately absurd class (the tier-3 Veterans). */
+  ridiculous?: boolean;
   /** troops.json id when this warrior is already playable. */
   liveTroop?: string;
 }

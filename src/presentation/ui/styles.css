@@ -305,6 +305,10 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .troop-row { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px; border-radius: 18px; background: linear-gradient(#ffffff, #f6eedd); box-shadow: 0 3px 0 rgba(38, 48, 61, .14); text-align: center; }
 .troop-row img { width: 64px; height: 56px; object-fit: contain; }
 .troop-row.locked { opacity: .6; }
+.codex-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.codex-row { display: flex; align-items: flex-start; gap: 8px; padding: 8px; border-radius: 16px; background: linear-gradient(#ffffff, #f6eedd); box-shadow: 0 3px 0 rgba(38, 48, 61, .14); }
+.codex-row img { width: 48px; height: 48px; flex: none; }
+.codex-row.planned b:first-child { opacity: .85; }
 .queue { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 6px 0; }
 .queue-item { position: relative; width: 50px; height: 54px; border-radius: 14px; background: #fff; box-shadow: 0 2px 0 rgba(38, 48, 61, .15); display: grid; place-items: center; }
 .queue-item img { width: 40px; height: 36px; object-fit: contain; }

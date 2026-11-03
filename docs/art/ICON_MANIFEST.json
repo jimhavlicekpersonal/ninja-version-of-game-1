@@ -133,69 +133,69 @@
       "prompt": "Full-body battle sprite of Twin-Fang Dancer, facing right, feet on the bottom edge, readable at 40 px tall. #3a2f4f outfit, #e9b44c accents, twin short swords."
     },
     {
-      "key": "icon.warrior.wind_step_assassin.s1",
-      "file": "public/art/icons/warriors/wind_step_assassin_s1.png",
+      "key": "icon.warrior.sushi_chef_assassin.s1",
+      "file": "public/art/icons/warriors/sushi_chef_assassin_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Wind-Step Assassin (Blade, Veteran)",
+      "subject": "Sushi Chef Assassin (Blade, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Sushi Chef Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Omakase. #f4ead6 outfit, #c8402f accents, yanagiba sushi knife, tall chef hat. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.wind_step_assassin.s2",
-      "file": "public/art/icons/warriors/wind_step_assassin_s2.png",
+      "key": "icon.warrior.sushi_chef_assassin.s2",
+      "file": "public/art/icons/warriors/sushi_chef_assassin_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Wind-Step Assassin (Blade, Veteran)",
+      "subject": "Sushi Chef Assassin (Blade, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Sushi Chef Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Omakase. #f4ead6 outfit, #c8402f accents, yanagiba sushi knife, tall chef hat. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.wind_step_assassin.s3",
-      "file": "public/art/icons/warriors/wind_step_assassin_s3.png",
+      "key": "icon.warrior.sushi_chef_assassin.s3",
+      "file": "public/art/icons/warriors/sushi_chef_assassin_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Wind-Step Assassin (Blade, Veteran)",
+      "subject": "Sushi Chef Assassin (Blade, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Sushi Chef Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Omakase. #f4ead6 outfit, #c8402f accents, yanagiba sushi knife, tall chef hat. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.wind_step_assassin.s4",
-      "file": "public/art/icons/warriors/wind_step_assassin_s4.png",
+      "key": "icon.warrior.sushi_chef_assassin.s4",
+      "file": "public/art/icons/warriors/sushi_chef_assassin_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Wind-Step Assassin (Blade, Veteran)",
+      "subject": "Sushi Chef Assassin (Blade, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Sushi Chef Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Omakase. #f4ead6 outfit, #c8402f accents, yanagiba sushi knife, tall chef hat. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.wind_step_assassin",
-      "file": "public/art/troops/wind_step_assassin.png",
+      "key": "troop.sushi_chef_assassin",
+      "file": "public/art/troops/sushi_chef_assassin.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Wind-Step Assassin battle sprite",
+      "subject": "Sushi Chef Assassin battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Wind-Step Assassin, facing right, feet on the bottom edge, readable at 40 px tall. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons."
+      "prompt": "Full-body battle sprite of Sushi Chef Assassin, facing right, feet on the bottom edge, readable at 40 px tall. #f4ead6 outfit, #c8402f accents, yanagiba sushi knife, tall chef hat."
     },
     {
       "key": "icon.warrior.moonblade_master.s1",
@@ -458,69 +458,69 @@
       "prompt": "Full-body battle sprite of Shuriken Storm, facing right, feet on the bottom edge, readable at 40 px tall. #4a5560 outfit, #c8402f accents, shuriken fan."
     },
     {
-      "key": "icon.warrior.blowgun_hunter.s1",
-      "file": "public/art/icons/warriors/blowgun_hunter_s1.png",
+      "key": "icon.warrior.rubber_duck_sniper.s1",
+      "file": "public/art/icons/warriors/rubber_duck_sniper_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Blowgun Hunter (Thrower, Veteran)",
+      "subject": "Rubber Duck Sniper (Thrower, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Rubber Duck Sniper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Squeak Shot. #3f5a3a outfit, #ffd23c accents, bamboo duck launcher. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.blowgun_hunter.s2",
-      "file": "public/art/icons/warriors/blowgun_hunter_s2.png",
+      "key": "icon.warrior.rubber_duck_sniper.s2",
+      "file": "public/art/icons/warriors/rubber_duck_sniper_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Blowgun Hunter (Thrower, Veteran)",
+      "subject": "Rubber Duck Sniper (Thrower, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Rubber Duck Sniper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Squeak Shot. #3f5a3a outfit, #ffd23c accents, bamboo duck launcher. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.blowgun_hunter.s3",
-      "file": "public/art/icons/warriors/blowgun_hunter_s3.png",
+      "key": "icon.warrior.rubber_duck_sniper.s3",
+      "file": "public/art/icons/warriors/rubber_duck_sniper_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Blowgun Hunter (Thrower, Veteran)",
+      "subject": "Rubber Duck Sniper (Thrower, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Rubber Duck Sniper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Squeak Shot. #3f5a3a outfit, #ffd23c accents, bamboo duck launcher. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.blowgun_hunter.s4",
-      "file": "public/art/icons/warriors/blowgun_hunter_s4.png",
+      "key": "icon.warrior.rubber_duck_sniper.s4",
+      "file": "public/art/icons/warriors/rubber_duck_sniper_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Blowgun Hunter (Thrower, Veteran)",
+      "subject": "Rubber Duck Sniper (Thrower, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Rubber Duck Sniper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Squeak Shot. #3f5a3a outfit, #ffd23c accents, bamboo duck launcher. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.blowgun_hunter",
-      "file": "public/art/troops/blowgun_hunter.png",
+      "key": "troop.rubber_duck_sniper",
+      "file": "public/art/troops/rubber_duck_sniper.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Blowgun Hunter battle sprite",
+      "subject": "Rubber Duck Sniper battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Blowgun Hunter, facing right, feet on the bottom edge, readable at 40 px tall. #3f5a3a outfit, #9be05a accents, bamboo blowgun."
+      "prompt": "Full-body battle sprite of Rubber Duck Sniper, facing right, feet on the bottom edge, readable at 40 px tall. #3f5a3a outfit, #ffd23c accents, bamboo duck launcher."
     },
     {
       "key": "icon.warrior.chain_sickle_reaper.s1",
@@ -783,69 +783,69 @@
       "prompt": "Full-body battle sprite of Iron Monk, facing right, feet on the bottom edge, readable at 40 px tall. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour."
     },
     {
-      "key": "icon.warrior.bell_warden.s1",
-      "file": "public/art/icons/warriors/bell_warden_s1.png",
+      "key": "icon.warrior.sumo_boulder.s1",
+      "file": "public/art/icons/warriors/sumo_boulder_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bell Warden (Guardian, Veteran)",
+      "subject": "Sumo Boulder (Guardian, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Sumo Boulder, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Belly Bounce. #e9c9a0 outfit, #3d4a5c accents, bare hands, mawashi belt armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.bell_warden.s2",
-      "file": "public/art/icons/warriors/bell_warden_s2.png",
+      "key": "icon.warrior.sumo_boulder.s2",
+      "file": "public/art/icons/warriors/sumo_boulder_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bell Warden (Guardian, Veteran)",
+      "subject": "Sumo Boulder (Guardian, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Sumo Boulder, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Belly Bounce. #e9c9a0 outfit, #3d4a5c accents, bare hands, mawashi belt armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.bell_warden.s3",
-      "file": "public/art/icons/warriors/bell_warden_s3.png",
+      "key": "icon.warrior.sumo_boulder.s3",
+      "file": "public/art/icons/warriors/sumo_boulder_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bell Warden (Guardian, Veteran)",
+      "subject": "Sumo Boulder (Guardian, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Sumo Boulder, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Belly Bounce. #e9c9a0 outfit, #3d4a5c accents, bare hands, mawashi belt armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.bell_warden.s4",
-      "file": "public/art/icons/warriors/bell_warden_s4.png",
+      "key": "icon.warrior.sumo_boulder.s4",
+      "file": "public/art/icons/warriors/sumo_boulder_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bell Warden (Guardian, Veteran)",
+      "subject": "Sumo Boulder (Guardian, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Sumo Boulder, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Belly Bounce. #e9c9a0 outfit, #3d4a5c accents, bare hands, mawashi belt armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.bell_warden",
-      "file": "public/art/troops/bell_warden.png",
+      "key": "troop.sumo_boulder",
+      "file": "public/art/troops/sumo_boulder.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Bell Warden battle sprite",
+      "subject": "Sumo Boulder battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Bell Warden, facing right, feet on the bottom edge, readable at 40 px tall. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour."
+      "prompt": "Full-body battle sprite of Sumo Boulder, facing right, feet on the bottom edge, readable at 40 px tall. #e9c9a0 outfit, #3d4a5c accents, bare hands, mawashi belt armour."
     },
     {
       "key": "icon.warrior.mountain_shield.s1",
@@ -924,7 +924,7 @@
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Ground Pound. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.oni_breaker.s2",
@@ -938,7 +938,7 @@
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Ground Pound. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.oni_breaker.s3",
@@ -952,7 +952,7 @@
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Ground Pound. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.oni_breaker.s4",
@@ -966,7 +966,7 @@
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Ground Pound. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.oni_breaker",
@@ -1108,69 +1108,69 @@
       "prompt": "Full-body battle sprite of Trap Breaker, facing right, feet on the bottom edge, readable at 40 px tall. #4a4a2f outfit, #d9dee6 accents, probe pole."
     },
     {
-      "key": "icon.warrior.gearbreaker.s1",
-      "file": "public/art/icons/warriors/gearbreaker_s1.png",
+      "key": "icon.warrior.karaoke_saboteur.s1",
+      "file": "public/art/icons/warriors/karaoke_saboteur_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Gearbreaker (Saboteur, Veteran)",
+      "subject": "Karaoke Saboteur (Saboteur, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Karaoke Saboteur, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Off-Key Ballad. #5a2f6a outfit, #ff6bd5 accents, microphone on a cable. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.gearbreaker.s2",
-      "file": "public/art/icons/warriors/gearbreaker_s2.png",
+      "key": "icon.warrior.karaoke_saboteur.s2",
+      "file": "public/art/icons/warriors/karaoke_saboteur_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Gearbreaker (Saboteur, Veteran)",
+      "subject": "Karaoke Saboteur (Saboteur, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Karaoke Saboteur, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Off-Key Ballad. #5a2f6a outfit, #ff6bd5 accents, microphone on a cable. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.gearbreaker.s3",
-      "file": "public/art/icons/warriors/gearbreaker_s3.png",
+      "key": "icon.warrior.karaoke_saboteur.s3",
+      "file": "public/art/icons/warriors/karaoke_saboteur_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Gearbreaker (Saboteur, Veteran)",
+      "subject": "Karaoke Saboteur (Saboteur, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Karaoke Saboteur, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Off-Key Ballad. #5a2f6a outfit, #ff6bd5 accents, microphone on a cable. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.gearbreaker.s4",
-      "file": "public/art/icons/warriors/gearbreaker_s4.png",
+      "key": "icon.warrior.karaoke_saboteur.s4",
+      "file": "public/art/icons/warriors/karaoke_saboteur_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Gearbreaker (Saboteur, Veteran)",
+      "subject": "Karaoke Saboteur (Saboteur, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Karaoke Saboteur, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Off-Key Ballad. #5a2f6a outfit, #ff6bd5 accents, microphone on a cable. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.gearbreaker",
-      "file": "public/art/troops/gearbreaker.png",
+      "key": "troop.karaoke_saboteur",
+      "file": "public/art/troops/karaoke_saboteur.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Gearbreaker battle sprite",
+      "subject": "Karaoke Saboteur battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Gearbreaker, facing right, feet on the bottom edge, readable at 40 px tall. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges."
+      "prompt": "Full-body battle sprite of Karaoke Saboteur, facing right, feet on the bottom edge, readable at 40 px tall. #5a2f6a outfit, #ff6bd5 accents, microphone on a cable."
     },
     {
       "key": "icon.warrior.fuse_master.s1",
@@ -1433,69 +1433,69 @@
       "prompt": "Full-body battle sprite of Wall Climber, facing right, feet on the bottom edge, readable at 40 px tall. #4a3a2a outfit, #b8a888 accents, climbing claws."
     },
     {
-      "key": "icon.warrior.grapple_raider.s1",
-      "file": "public/art/icons/warriors/grapple_raider_s1.png",
+      "key": "icon.warrior.potted_plant_ninja.s1",
+      "file": "public/art/icons/warriors/potted_plant_ninja_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Grapple Raider (Infiltrator, Veteran)",
+      "subject": "Potted Plant Ninja (Infiltrator, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Potted Plant Ninja, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Totally a Shrub. #4f7a46 outfit, #b5653a accents, pruning shears, bonsai. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.grapple_raider.s2",
-      "file": "public/art/icons/warriors/grapple_raider_s2.png",
+      "key": "icon.warrior.potted_plant_ninja.s2",
+      "file": "public/art/icons/warriors/potted_plant_ninja_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Grapple Raider (Infiltrator, Veteran)",
+      "subject": "Potted Plant Ninja (Infiltrator, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Potted Plant Ninja, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Totally a Shrub. #4f7a46 outfit, #b5653a accents, pruning shears, bonsai. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.grapple_raider.s3",
-      "file": "public/art/icons/warriors/grapple_raider_s3.png",
+      "key": "icon.warrior.potted_plant_ninja.s3",
+      "file": "public/art/icons/warriors/potted_plant_ninja_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Grapple Raider (Infiltrator, Veteran)",
+      "subject": "Potted Plant Ninja (Infiltrator, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Potted Plant Ninja, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Totally a Shrub. #4f7a46 outfit, #b5653a accents, pruning shears, bonsai. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.grapple_raider.s4",
-      "file": "public/art/icons/warriors/grapple_raider_s4.png",
+      "key": "icon.warrior.potted_plant_ninja.s4",
+      "file": "public/art/icons/warriors/potted_plant_ninja_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Grapple Raider (Infiltrator, Veteran)",
+      "subject": "Potted Plant Ninja (Infiltrator, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Potted Plant Ninja, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Totally a Shrub. #4f7a46 outfit, #b5653a accents, pruning shears, bonsai. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.grapple_raider",
-      "file": "public/art/troops/grapple_raider.png",
+      "key": "troop.potted_plant_ninja",
+      "file": "public/art/troops/potted_plant_ninja.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Grapple Raider battle sprite",
+      "subject": "Potted Plant Ninja battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Grapple Raider, facing right, feet on the bottom edge, readable at 40 px tall. #3a3a4a outfit, #c8402f accents, grappling line."
+      "prompt": "Full-body battle sprite of Potted Plant Ninja, facing right, feet on the bottom edge, readable at 40 px tall. #4f7a46 outfit, #b5653a accents, pruning shears, bonsai."
     },
     {
       "key": "icon.warrior.mole_king.s1",
@@ -1704,7 +1704,7 @@
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Updraft. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.crane_glider.s2",
@@ -1718,7 +1718,7 @@
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Updraft. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.crane_glider.s3",
@@ -1732,7 +1732,7 @@
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Updraft. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.crane_glider.s4",
@@ -1746,7 +1746,7 @@
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Updraft. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.crane_glider",
@@ -1758,69 +1758,69 @@
       "prompt": "Full-body battle sprite of Crane Glider, facing right, feet on the bottom edge, readable at 40 px tall. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Shown airborne."
     },
     {
-      "key": "icon.warrior.lantern_balloon.s1",
-      "file": "public/art/icons/warriors/lantern_balloon_s1.png",
+      "key": "icon.warrior.cannonball_grandma.s1",
+      "file": "public/art/icons/warriors/cannonball_grandma_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Lantern Balloon (Sky, Veteran)",
+      "subject": "Cannonball Grandma (Sky, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Cannonball Grandma, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Rocking-Chair Launch. #8a4a6a outfit, #f4ead6 accents, knitting needles, riding/with flying rocking chair. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.lantern_balloon.s2",
-      "file": "public/art/icons/warriors/lantern_balloon_s2.png",
+      "key": "icon.warrior.cannonball_grandma.s2",
+      "file": "public/art/icons/warriors/cannonball_grandma_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Lantern Balloon (Sky, Veteran)",
+      "subject": "Cannonball Grandma (Sky, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Cannonball Grandma, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Rocking-Chair Launch. #8a4a6a outfit, #f4ead6 accents, knitting needles, riding/with flying rocking chair. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.lantern_balloon.s3",
-      "file": "public/art/icons/warriors/lantern_balloon_s3.png",
+      "key": "icon.warrior.cannonball_grandma.s3",
+      "file": "public/art/icons/warriors/cannonball_grandma_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Lantern Balloon (Sky, Veteran)",
+      "subject": "Cannonball Grandma (Sky, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Cannonball Grandma, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Rocking-Chair Launch. #8a4a6a outfit, #f4ead6 accents, knitting needles, riding/with flying rocking chair. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.lantern_balloon.s4",
-      "file": "public/art/icons/warriors/lantern_balloon_s4.png",
+      "key": "icon.warrior.cannonball_grandma.s4",
+      "file": "public/art/icons/warriors/cannonball_grandma_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Lantern Balloon (Sky, Veteran)",
+      "subject": "Cannonball Grandma (Sky, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Cannonball Grandma, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Rocking-Chair Launch. #8a4a6a outfit, #f4ead6 accents, knitting needles, riding/with flying rocking chair. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.lantern_balloon",
-      "file": "public/art/troops/lantern_balloon.png",
+      "key": "troop.cannonball_grandma",
+      "file": "public/art/troops/cannonball_grandma.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Lantern Balloon battle sprite",
+      "subject": "Cannonball Grandma battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Lantern Balloon, facing right, feet on the bottom edge, readable at 40 px tall. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Shown airborne."
+      "prompt": "Full-body battle sprite of Cannonball Grandma, facing right, feet on the bottom edge, readable at 40 px tall. #8a4a6a outfit, #f4ead6 accents, knitting needles, riding/with flying rocking chair. Shown airborne."
     },
     {
       "key": "icon.warrior.thunder_kite.s1",
@@ -1834,7 +1834,7 @@
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Lightning Rod. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.thunder_kite.s2",
@@ -1848,7 +1848,7 @@
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Lightning Rod. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.thunder_kite.s3",
@@ -1862,7 +1862,7 @@
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Lightning Rod. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.thunder_kite.s4",
@@ -1876,7 +1876,7 @@
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Lightning Rod. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.thunder_kite",
@@ -2083,69 +2083,69 @@
       "prompt": "Full-body battle sprite of Drum Monk, facing right, feet on the bottom edge, readable at 40 px tall. #7a3f2a outfit, #e9b44c accents, taiko drum."
     },
     {
-      "key": "icon.warrior.mist_weaver.s1",
-      "file": "public/art/icons/warriors/mist_weaver_s1.png",
+      "key": "icon.warrior.bubble_tea_alchemist.s1",
+      "file": "public/art/icons/warriors/bubble_tea_alchemist_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mist Weaver (Mystic, Veteran)",
+      "subject": "Bubble Tea Alchemist (Mystic, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Bubble Tea Alchemist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Boba Barrage. #c98da8 outfit, #5a3a2a accents, giant bubble tea with straw. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.mist_weaver.s2",
-      "file": "public/art/icons/warriors/mist_weaver_s2.png",
+      "key": "icon.warrior.bubble_tea_alchemist.s2",
+      "file": "public/art/icons/warriors/bubble_tea_alchemist_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mist Weaver (Mystic, Veteran)",
+      "subject": "Bubble Tea Alchemist (Mystic, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Bubble Tea Alchemist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Boba Barrage. #c98da8 outfit, #5a3a2a accents, giant bubble tea with straw. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.mist_weaver.s3",
-      "file": "public/art/icons/warriors/mist_weaver_s3.png",
+      "key": "icon.warrior.bubble_tea_alchemist.s3",
+      "file": "public/art/icons/warriors/bubble_tea_alchemist_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mist Weaver (Mystic, Veteran)",
+      "subject": "Bubble Tea Alchemist (Mystic, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Bubble Tea Alchemist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Boba Barrage. #c98da8 outfit, #5a3a2a accents, giant bubble tea with straw. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.mist_weaver.s4",
-      "file": "public/art/icons/warriors/mist_weaver_s4.png",
+      "key": "icon.warrior.bubble_tea_alchemist.s4",
+      "file": "public/art/icons/warriors/bubble_tea_alchemist_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mist Weaver (Mystic, Veteran)",
+      "subject": "Bubble Tea Alchemist (Mystic, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Bubble Tea Alchemist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Boba Barrage. #c98da8 outfit, #5a3a2a accents, giant bubble tea with straw. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.mist_weaver",
-      "file": "public/art/troops/mist_weaver.png",
+      "key": "troop.bubble_tea_alchemist",
+      "file": "public/art/troops/bubble_tea_alchemist.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Mist Weaver battle sprite",
+      "subject": "Bubble Tea Alchemist battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Mist Weaver, facing right, feet on the bottom edge, readable at 40 px tall. #9aa0aa outfit, #d9dee6 accents, mist fan."
+      "prompt": "Full-body battle sprite of Bubble Tea Alchemist, facing right, feet on the bottom edge, readable at 40 px tall. #c98da8 outfit, #5a3a2a accents, giant bubble tea with straw."
     },
     {
       "key": "icon.warrior.spirit_caller.s1",
@@ -2408,69 +2408,69 @@
       "prompt": "Full-body battle sprite of Fire Monk, facing right, feet on the bottom edge, readable at 40 px tall. #7a2e26 outfit, #ff9a3c accents, fire gourd."
     },
     {
-      "key": "icon.warrior.bomb_carrier.s1",
-      "file": "public/art/icons/warriors/bomb_carrier_s1.png",
+      "key": "icon.warrior.mochi_mortar.s1",
+      "file": "public/art/icons/warriors/mochi_mortar_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bomb Carrier (Siege, Veteran)",
+      "subject": "Mochi Mortar (Siege, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Mochi Mortar, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Sticky Situation. #f1ebdf outfit, #e98aa0 accents, giant wooden mallet. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.bomb_carrier.s2",
-      "file": "public/art/icons/warriors/bomb_carrier_s2.png",
+      "key": "icon.warrior.mochi_mortar.s2",
+      "file": "public/art/icons/warriors/mochi_mortar_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bomb Carrier (Siege, Veteran)",
+      "subject": "Mochi Mortar (Siege, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Mochi Mortar, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Sticky Situation. #f1ebdf outfit, #e98aa0 accents, giant wooden mallet. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.bomb_carrier.s3",
-      "file": "public/art/icons/warriors/bomb_carrier_s3.png",
+      "key": "icon.warrior.mochi_mortar.s3",
+      "file": "public/art/icons/warriors/mochi_mortar_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bomb Carrier (Siege, Veteran)",
+      "subject": "Mochi Mortar (Siege, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Mochi Mortar, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Sticky Situation. #f1ebdf outfit, #e98aa0 accents, giant wooden mallet. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.bomb_carrier.s4",
-      "file": "public/art/icons/warriors/bomb_carrier_s4.png",
+      "key": "icon.warrior.mochi_mortar.s4",
+      "file": "public/art/icons/warriors/mochi_mortar_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Bomb Carrier (Siege, Veteran)",
+      "subject": "Mochi Mortar (Siege, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Mochi Mortar, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Sticky Situation. #f1ebdf outfit, #e98aa0 accents, giant wooden mallet. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.bomb_carrier",
-      "file": "public/art/troops/bomb_carrier.png",
+      "key": "troop.mochi_mortar",
+      "file": "public/art/troops/mochi_mortar.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Bomb Carrier battle sprite",
+      "subject": "Mochi Mortar battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Bomb Carrier, facing right, feet on the bottom edge, readable at 40 px tall. #2b2b2b outfit, #ff6b3c accents, giant bomb on back."
+      "prompt": "Full-body battle sprite of Mochi Mortar, facing right, feet on the bottom edge, readable at 40 px tall. #f1ebdf outfit, #e98aa0 accents, giant wooden mallet."
     },
     {
       "key": "icon.warrior.siege_bombardier.s1",
@@ -2733,69 +2733,69 @@
       "prompt": "Full-body battle sprite of Hawk Tamer, facing right, feet on the bottom edge, readable at 40 px tall. #4a3a2a outfit, #e9b44c accents, falconry glove, riding/with hawk."
     },
     {
-      "key": "icon.warrior.boar_rider.s1",
-      "file": "public/art/icons/warriors/boar_rider_s1.png",
+      "key": "icon.warrior.goose_wrangler.s1",
+      "file": "public/art/icons/warriors/goose_wrangler_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Boar Rider (Beast, Veteran)",
+      "subject": "Goose Wrangler (Beast, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Goose Wrangler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unholy Honk. #4a3a2a outfit, #ff9a3c accents, loaf of bread, riding/with war goose. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.boar_rider.s2",
-      "file": "public/art/icons/warriors/boar_rider_s2.png",
+      "key": "icon.warrior.goose_wrangler.s2",
+      "file": "public/art/icons/warriors/goose_wrangler_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Boar Rider (Beast, Veteran)",
+      "subject": "Goose Wrangler (Beast, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Goose Wrangler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unholy Honk. #4a3a2a outfit, #ff9a3c accents, loaf of bread, riding/with war goose. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.boar_rider.s3",
-      "file": "public/art/icons/warriors/boar_rider_s3.png",
+      "key": "icon.warrior.goose_wrangler.s3",
+      "file": "public/art/icons/warriors/goose_wrangler_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Boar Rider (Beast, Veteran)",
+      "subject": "Goose Wrangler (Beast, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Goose Wrangler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unholy Honk. #4a3a2a outfit, #ff9a3c accents, loaf of bread, riding/with war goose. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.boar_rider.s4",
-      "file": "public/art/icons/warriors/boar_rider_s4.png",
+      "key": "icon.warrior.goose_wrangler.s4",
+      "file": "public/art/icons/warriors/goose_wrangler_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Boar Rider (Beast, Veteran)",
+      "subject": "Goose Wrangler (Beast, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Goose Wrangler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unholy Honk. #4a3a2a outfit, #ff9a3c accents, loaf of bread, riding/with war goose. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.boar_rider",
-      "file": "public/art/troops/boar_rider.png",
+      "key": "troop.goose_wrangler",
+      "file": "public/art/troops/goose_wrangler.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Boar Rider battle sprite",
+      "subject": "Goose Wrangler battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Boar Rider, facing right, feet on the bottom edge, readable at 40 px tall. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar."
+      "prompt": "Full-body battle sprite of Goose Wrangler, facing right, feet on the bottom edge, readable at 40 px tall. #4a3a2a outfit, #ff9a3c accents, loaf of bread, riding/with war goose."
     },
     {
       "key": "icon.warrior.bear_warrior.s1",
@@ -2874,7 +2874,7 @@
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Roar. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.tiger_lord.s2",
@@ -2888,7 +2888,7 @@
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Roar. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.tiger_lord.s3",
@@ -2902,7 +2902,7 @@
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Roar. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.tiger_lord.s4",
@@ -2916,7 +2916,7 @@
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Roar. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.tiger_lord",
@@ -3058,69 +3058,69 @@
       "prompt": "Full-body battle sprite of Mirage Twin, facing right, feet on the bottom edge, readable at 40 px tall. #2a2a3a outfit, #b48cff accents, mirror blade."
     },
     {
-      "key": "icon.warrior.night_blade.s1",
-      "file": "public/art/icons/warriors/night_blade_s1.png",
+      "key": "icon.warrior.mime_ninja.s1",
+      "file": "public/art/icons/warriors/mime_ninja_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Night Blade (Shadow, Veteran)",
+      "subject": "Mime Ninja (Shadow, Veteran)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": false,
-      "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Mime Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Invisible Wall. #f4ead6 outfit, #141a22 accents, white gloves. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
-      "key": "icon.warrior.night_blade.s2",
-      "file": "public/art/icons/warriors/night_blade_s2.png",
+      "key": "icon.warrior.mime_ninja.s2",
+      "file": "public/art/icons/warriors/mime_ninja_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Night Blade (Shadow, Veteran)",
+      "subject": "Mime Ninja (Shadow, Veteran)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": false,
-      "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Mime Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Invisible Wall. #f4ead6 outfit, #141a22 accents, white gloves. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
-      "key": "icon.warrior.night_blade.s3",
-      "file": "public/art/icons/warriors/night_blade_s3.png",
+      "key": "icon.warrior.mime_ninja.s3",
+      "file": "public/art/icons/warriors/mime_ninja_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Night Blade (Shadow, Veteran)",
+      "subject": "Mime Ninja (Shadow, Veteran)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": false,
-      "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Mime Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Invisible Wall. #f4ead6 outfit, #141a22 accents, white gloves. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
-      "key": "icon.warrior.night_blade.s4",
-      "file": "public/art/icons/warriors/night_blade_s4.png",
+      "key": "icon.warrior.mime_ninja.s4",
+      "file": "public/art/icons/warriors/mime_ninja_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Night Blade (Shadow, Veteran)",
+      "subject": "Mime Ninja (Shadow, Veteran)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": false,
-      "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Mime Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Invisible Wall. #f4ead6 outfit, #141a22 accents, white gloves. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
-      "key": "troop.night_blade",
-      "file": "public/art/troops/night_blade.png",
+      "key": "troop.mime_ninja",
+      "file": "public/art/troops/mime_ninja.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Night Blade battle sprite",
+      "subject": "Mime Ninja battle sprite",
       "live": false,
-      "prompt": "Full-body battle sprite of Night Blade, facing right, feet on the bottom edge, readable at 40 px tall. #1f2433 outfit, #c9ced6 accents, black katana."
+      "prompt": "Full-body battle sprite of Mime Ninja, facing right, feet on the bottom edge, readable at 40 px tall. #f4ead6 outfit, #141a22 accents, white gloves."
     },
     {
       "key": "icon.warrior.void_walker.s1",
@@ -5601,16 +5601,16 @@
       "group": "ability",
       "subject": "Twin Strike",
       "live": false,
-      "prompt": "Ability icon \"Twin Strike\": Every hit lands twice, on its target and the next building beside it. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Twin Strike\": Every hit lands twice: full damage on its target and half on the next building beside it. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.wind_step",
-      "file": "public/art/icons/abilities/wind_step.png",
+      "key": "icon.ability.omakase",
+      "file": "public/art/icons/abilities/omakase.png",
       "size": 128,
       "group": "ability",
-      "subject": "Wind Step",
+      "subject": "Omakase",
       "live": false,
-      "prompt": "Ability icon \"Wind Step\": Dashes to a new target; the first hit after each dash deals triple damage. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Omakase\": Every fifth slash fillets a chunk off the building and serves it as sashimi. The nearest defense stops firing for 3 seconds to eat it. Chef refuses to explain. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.moon_cut",
@@ -5628,7 +5628,7 @@
       "group": "ability",
       "subject": "Storm Chain",
       "live": false,
-      "prompt": "Ability icon \"Storm Chain\": Slashes arc between up to three nearby buildings. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Storm Chain\": Slashes arc between up to three nearby buildings, each jump at 60% of the last. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.kunai_volley",
@@ -5646,16 +5646,16 @@
       "group": "ability",
       "subject": "Fan Throw",
       "live": false,
-      "prompt": "Ability icon \"Fan Throw\": Throws three shuriken at once; small splash. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Fan Throw\": Throws three shuriken at once; each hit splashes half damage in a small circle. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.venom_dart",
-      "file": "public/art/icons/abilities/venom_dart.png",
+      "key": "icon.ability.squeak_shot",
+      "file": "public/art/icons/abilities/squeak_shot.png",
       "size": 128,
       "group": "ability",
-      "subject": "Venom Dart",
+      "subject": "Squeak Shot",
       "live": false,
-      "prompt": "Ability icon \"Venom Dart\": Darts keep damaging a building for 5 seconds. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Squeak Shot\": Fires rubber ducks from a bamboo tube. Every third duck squeaks so loudly that the defense it hits spins around looking for the culprit and loses its target for 1.5 seconds. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.armor_shred",
@@ -5664,7 +5664,7 @@
       "group": "ability",
       "subject": "Armour Shred",
       "live": false,
-      "prompt": "Ability icon \"Armour Shred\": Hits make the target take 20% more damage from everyone. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Armour Shred\": Hits make the target take 20% more damage from everyone for 4 seconds. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.needle_rain",
@@ -5673,7 +5673,7 @@
       "group": "ability",
       "subject": "Needle Rain",
       "live": false,
-      "prompt": "Ability icon \"Needle Rain\": Very long range and rapid fire; must stay behind cover. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Needle Rain\": Range 6 and fires twice as fast as a Kunai Adept, but must stay behind cover. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.stand_firm",
@@ -5691,16 +5691,16 @@
       "group": "ability",
       "subject": "Iron Skin",
       "live": false,
-      "prompt": "Ability icon \"Iron Skin\": Warriors beside him take 15% less damage. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Iron Skin\": Warriors within 1.5 tiles take 15% less damage. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.temple_bell",
-      "file": "public/art/icons/abilities/temple_bell.png",
+      "key": "icon.ability.belly_bounce",
+      "file": "public/art/icons/abilities/belly_bounce.png",
       "size": 128,
       "group": "ability",
-      "subject": "Temple Bell",
+      "subject": "Belly Bounce",
       "live": false,
-      "prompt": "Ability icon \"Temple Bell\": Rings a bell that makes defenses in range target him first. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Belly Bounce\": Every fourth shot that hits him boings off his magnificent belly and flies straight back at the defense that fired it. He does a little stomp of triumph every time. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.great_wall",
@@ -5709,16 +5709,16 @@
       "group": "ability",
       "subject": "Great Wall",
       "live": false,
-      "prompt": "Ability icon \"Great Wall\": Carries a tower shield that absorbs splash for allies behind him. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Great Wall\": Carries a tower shield that absorbs half of all splash damage for allies behind him. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.oni_smash",
       "file": "public/art/icons/abilities/oni_smash.png",
       "size": 128,
       "group": "ability",
-      "subject": "Oni Smash",
+      "subject": "Ground Pound",
       "live": false,
-      "prompt": "Ability icon \"Oni Smash\": Huge health; smashes walls for five times damage. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Ground Pound\": Every third hit is a quake: full damage to every building within 1.5 tiles. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.sabotage",
@@ -5736,16 +5736,16 @@
       "group": "ability",
       "subject": "Disarm",
       "live": false,
-      "prompt": "Ability icon \"Disarm\": Finds and disarms hidden traps along the squad's path. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Disarm\": Disarms every hidden trap within 2 tiles of the path it walks. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.long_jam",
-      "file": "public/art/icons/abilities/long_jam.png",
+      "key": "icon.ability.off_key_ballad",
+      "file": "public/art/icons/abilities/off_key_ballad.png",
       "size": 128,
       "group": "ability",
-      "subject": "Long Jam",
+      "subject": "Off-Key Ballad",
       "live": false,
-      "prompt": "Ability icon \"Long Jam\": Two jams per warrior, each lasting 9 seconds. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Off-Key Ballad\": Grabs a microphone and sings one power ballad, horribly. Every defense within 3 tiles covers its ears and fires 40% slower for 6 seconds. Nobody asked for an encore. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.delayed_charge",
@@ -5754,7 +5754,7 @@
       "group": "ability",
       "subject": "Delayed Charge",
       "live": false,
-      "prompt": "Ability icon \"Delayed Charge\": Plants a charge on a defense that explodes after 5 seconds. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Delayed Charge\": Plants a charge on a defense that explodes after 5 seconds for 8x its damage. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.blackout",
@@ -5763,7 +5763,7 @@
       "group": "ability",
       "subject": "Blackout",
       "live": false,
-      "prompt": "Ability icon \"Blackout\": Briefly jams every defense in a small radius. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Blackout\": Jams every defense within 2 tiles for 3 seconds (once). One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.tunnel",
@@ -5784,13 +5784,13 @@
       "prompt": "Ability icon \"Climb\": Climbs over walls and goes for storehouses first. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.grapple_line",
-      "file": "public/art/icons/abilities/grapple_line.png",
+      "key": "icon.ability.totally_a_shrub",
+      "file": "public/art/icons/abilities/totally_a_shrub.png",
       "size": 128,
       "group": "ability",
-      "subject": "Grapple Line",
+      "subject": "Totally a Shrub",
       "live": false,
-      "prompt": "Ability icon \"Grapple Line\": Swings over walls straight to the nearest defense. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Totally a Shrub\": Disguised as a small bonsai in a pot. Defenses ignore it while it stands still, so it shuffles for one second, freezes for one second, and repeats. Wears the pot as trousers. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.surface_stun",
@@ -5808,7 +5808,7 @@
       "group": "ability",
       "subject": "Open Path",
       "live": false,
-      "prompt": "Ability icon \"Open Path\": Walls near it crumble, opening a path for everyone. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Open Path\": Walls within 1.5 tiles crumble to half health, opening a path for everyone. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.firebomb",
@@ -5824,27 +5824,27 @@
       "file": "public/art/icons/abilities/swift_glide.png",
       "size": 128,
       "group": "ability",
-      "subject": "Swift Glide",
+      "subject": "Updraft",
       "live": false,
-      "prompt": "Ability icon \"Swift Glide\": Very fast flyer that raids storehouses. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Updraft\": Rides a crane-wing glider so high that the first anti-air shot every 5 seconds misses. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.ember_drop",
-      "file": "public/art/icons/abilities/ember_drop.png",
+      "key": "icon.ability.rocking_chair_launch",
+      "file": "public/art/icons/abilities/rocking_chair_launch.png",
       "size": 128,
       "group": "ability",
-      "subject": "Ember Drop",
+      "subject": "Rocking-Chair Launch",
       "live": false,
-      "prompt": "Ability icon \"Ember Drop\": Slow balloon that drops burning embers in a wide area. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Rocking-Chair Launch\": Grandma Kiyo has her clan catapult her over the walls, still in her rocking chair. She lands on a building for 6x damage in a 1.5-tile splash, then fights on foot with knitting needles. She has done this every week since 1962. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.chain_lightning",
       "file": "public/art/icons/abilities/chain_lightning.png",
       "size": 128,
       "group": "ability",
-      "subject": "Chain Lightning",
+      "subject": "Lightning Rod",
       "live": false,
-      "prompt": "Ability icon \"Chain Lightning\": Lightning jumps between up to four defenses. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Lightning Rod\": Every 6 seconds calls lightning on the toughest defense within 4 tiles, stunning it for 1 second. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.armada",
@@ -5853,7 +5853,7 @@
       "group": "ability",
       "subject": "Armada",
       "live": false,
-      "prompt": "Ability icon \"Armada\": A heavy dragon kite carrying a crew of bombers. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Armada\": When the dragon kite is shot down, three Kite Raiders bail out and keep fighting. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.mend",
@@ -5862,7 +5862,7 @@
       "group": "ability",
       "subject": "Mend",
       "live": false,
-      "prompt": "Ability icon \"Mend\": Heals nearby warriors over time. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Mend\": Heals warriors within 2 tiles for 8% of their health every second. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.war_drum",
@@ -5871,16 +5871,16 @@
       "group": "ability",
       "subject": "War Drum",
       "live": false,
-      "prompt": "Ability icon \"War Drum\": Nearby warriors move and attack 25% faster. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"War Drum\": Warriors within 2.5 tiles move and attack 25% faster. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.veil",
-      "file": "public/art/icons/abilities/veil.png",
+      "key": "icon.ability.boba_barrage",
+      "file": "public/art/icons/abilities/boba_barrage.png",
       "size": 128,
       "group": "ability",
-      "subject": "Veil",
+      "subject": "Boba Barrage",
       "live": false,
-      "prompt": "Ability icon \"Veil\": Wraps nearby warriors in thin mist (a small moving smoke cloud). One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Boba Barrage\": Every 8 seconds hands out bubble tea. Warriors who drink it get a sugar rush (40% faster for 4 seconds), then a sugar crash (20% slower for 2 seconds). Totally worth it. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.second_wind",
@@ -5889,7 +5889,7 @@
       "group": "ability",
       "subject": "Second Wind",
       "live": false,
-      "prompt": "Ability icon \"Second Wind\": Brings one fallen warrior back to its feet. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Second Wind\": Brings one fallen warrior back at half health (once). One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.cloud_shelter",
@@ -5898,7 +5898,7 @@
       "group": "ability",
       "subject": "Cloud Shelter",
       "live": false,
-      "prompt": "Ability icon \"Cloud Shelter\": A big heal and a shield that blocks the next hit for every nearby warrior. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Cloud Shelter\": Every warrior within 3 tiles heals 30% and gets a shield that blocks the next hit (once). One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.battering_ram",
@@ -5916,16 +5916,16 @@
       "group": "ability",
       "subject": "Flame Breath",
       "live": false,
-      "prompt": "Ability icon \"Flame Breath\": Short-range fire that burns a small area of buildings. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Flame Breath\": Breathes fire in a short cone; buildings in it burn for 3 seconds. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.big_bang",
-      "file": "public/art/icons/abilities/big_bang.png",
+      "key": "icon.ability.sticky_situation",
+      "file": "public/art/icons/abilities/sticky_situation.png",
       "size": 128,
       "group": "ability",
-      "subject": "Big Bang",
+      "subject": "Sticky Situation",
       "live": false,
-      "prompt": "Ability icon \"Big Bang\": Runs to the nearest wall or defense and explodes. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Sticky Situation\": Lobs enormous sticky rice cakes. A defense it hits is glued facing its current target for 4 seconds and cannot switch to anyone else. Delicious, but deeply inconvenient. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.long_shot",
@@ -5934,7 +5934,7 @@
       "group": "ability",
       "subject": "Long Shot",
       "live": false,
-      "prompt": "Ability icon \"Long Shot\": Artillery that out-ranges every defense but cannot move while firing. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Long Shot\": Artillery with range 7 that out-ranges every defense, but cannot move while firing. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.eruption",
@@ -5943,7 +5943,7 @@
       "group": "ability",
       "subject": "Eruption",
       "live": false,
-      "prompt": "Ability icon \"Eruption\": Huge splash that leaves burning ground. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Eruption\": Each shot splashes 1.5 tiles and leaves the ground burning for 4 seconds. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.unleash",
@@ -5961,16 +5961,16 @@
       "group": "ability",
       "subject": "Hawk Harass",
       "live": false,
-      "prompt": "Ability icon \"Hawk Harass\": Her hawk harries a defense from range, slowing its fire. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Hawk Harass\": Her hawk harries one defense within 4 tiles, making it fire 30% slower while the hawk lives. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.charge",
-      "file": "public/art/icons/abilities/charge.png",
+      "key": "icon.ability.unholy_honk",
+      "file": "public/art/icons/abilities/unholy_honk.png",
       "size": 128,
       "group": "ability",
-      "subject": "Charge",
+      "subject": "Unholy Honk",
       "live": false,
-      "prompt": "Ability icon \"Charge\": Charges through the first wall in its way. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Unholy Honk\": Brings one war goose. It is impossible to ignore: every defense within 2.5 tiles must shoot the goose. The goose has triple health, takes no splash damage, and fears nothing. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.rage",
@@ -5979,16 +5979,16 @@
       "group": "ability",
       "subject": "Rage",
       "live": false,
-      "prompt": "Ability icon \"Rage\": Hits much harder below half health. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Rage\": Hits 60% harder below half health. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.pride",
       "file": "public/art/icons/abilities/pride.png",
       "size": 128,
       "group": "ability",
-      "subject": "Pride",
+      "subject": "Roar",
       "live": false,
-      "prompt": "Ability icon \"Pride\": Rides a war tiger and calls two more when he arrives. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Roar\": Rides a war tiger. Its arrival roar gives every warrior within 3 tiles 20% more damage for the rest of the battle. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.unseen",
@@ -6009,13 +6009,13 @@
       "prompt": "Ability icon \"Decoy\": Leaves a decoy that draws fire for 4 seconds. One bold symbol on a round ink-wash badge."
     },
     {
-      "key": "icon.ability.smoke_hunter",
-      "file": "public/art/icons/abilities/smoke_hunter.png",
+      "key": "icon.ability.invisible_wall",
+      "file": "public/art/icons/abilities/invisible_wall.png",
       "size": 128,
       "group": "ability",
-      "subject": "Smoke Hunter",
+      "subject": "Invisible Wall",
       "live": false,
-      "prompt": "Ability icon \"Smoke Hunter\": Deals double damage to buildings inside smoke. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Invisible Wall\": Silently mimes a wall. It is a real wall. Defense shots crossing the 1.5-tile line it outlines simply stop, for 5 seconds (once). The mime never explains this either. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.shadow_step",
@@ -6024,7 +6024,7 @@
       "group": "ability",
       "subject": "Shadow Step",
       "live": false,
-      "prompt": "Ability icon \"Shadow Step\": Steps through shadows straight onto its target. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Shadow Step\": Every 8 seconds steps through the shadows straight onto its next target. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.eclipse",
@@ -6033,7 +6033,7 @@
       "group": "ability",
       "subject": "Eclipse",
       "live": false,
-      "prompt": "Ability icon \"Eclipse\": Unseen, immune to traps, and every hit can be a critical. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Eclipse\": Unseen, immune to traps, and deals double damage to buildings inside smoke. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.rally",

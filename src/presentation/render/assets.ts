@@ -17,6 +17,7 @@ import {
   troopArt,
   type Tier,
 } from '../art/ninja';
+import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
 import { TILE_H, TILE_W } from './iso';
 
 export { GROUND_PAD };
@@ -45,6 +46,8 @@ export const Keys = {
   wave: 'water.wave',
   rubble: (size: number) => `rubble.${size}`,
   troop: (type: string) => `troop.${type}`,
+  /** Badge icon for a roster warrior (src/gameplay/data/roster.json id). */
+  warriorIcon: (id: string) => `icon.warrior.${id}`,
   projectile: (kind: string) => `projectile.${kind}`,
   puff: 'fx.puff',
   smoke: 'fx.smoke',
@@ -173,6 +176,13 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
   }
   for (const [type, art] of Object.entries(troopArt)) {
     const c = canvasFor(scene, Keys.troop(type), art.w, art.h, art.h - 6);
+    if (c) {
+      art.paint(c.ctx);
+      c.done();
+    }
+  }
+  for (const [id, art] of Object.entries(warriorIconArt)) {
+    const c = canvasFor(scene, Keys.warriorIcon(id), art.w, art.h, ICON_SIZE / 2);
     if (c) {
       art.paint(c.ctx);
       c.done();

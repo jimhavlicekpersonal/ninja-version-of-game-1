@@ -11,6 +11,7 @@ Every image the game draws lives behind a key (`src/presentation/render/assets.t
 | `construction.<1-4>` | scaffolding by footprint size | same |
 | `rubble.<1-4>` | destroyed building | same |
 | `troop.<troopId>` | battle sprite, faces right, feet at bottom | logical size in `ninja.ts` `troopArt` (e.g. 44×50) |
+| `icon.warrior.<rosterId>` | round badge for each of the 50 roster warriors (Warrior Codex) | 56×56 logical, centred; `warriorIcons.ts`. Preview: `docs/art/warrior-icons.png` |
 | `projectile.<kind>` | `acorn` (Kunai Tower kunai), `pebble` (Kunai Adept), `pinecone` (firework shell), `sting` (shuriken), `spark` (arrow), `seedbomb` (firebomb) | centred |
 | `bubble.acorns`, `bubble.dew` | "ready to collect" bubbles | 44×54 |
 | `fx.puff`, `fx.smoke`, `fx.jam`, `fx.star`, `fx.star.grey`, `fx.shadow` | effects | centred |
