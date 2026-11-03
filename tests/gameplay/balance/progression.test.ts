@@ -18,7 +18,10 @@ describe('progression pacing (model player)', () => {
     expect(h3 * 60).toBeLessThanOrEqual(80);
   });
 
-  it('Elder Toadstool 6 takes about two weeks of normal play', { timeout: 120_000 }, () => {
+  // Shadow Clans brief: early levels fast, Keep 6 in days rather than weeks (it proposes
+  // Keep 4 in hours, Keep 5 in a day and Keep 6 in three days). The model player plays
+  // only four short sessions a day and keeps building extras, so it lands a little later.
+  it('Elder Toadstool 6 takes about four days of normal play', { timeout: 120_000 }, () => {
     const p = new ModelPlayer(data, opts);
     activeHour(p, 60, 2);
     normalDays(p, 24);
@@ -46,9 +49,12 @@ describe('progression pacing (model player)', () => {
     // Opponents follow the player's trophies, which follow its hall.
     expect(p.raidLog[p.raidLog.length - 1].opponentHall).toBeGreaterThanOrEqual(5);
     expect(p.state.trophies).toBeLessThan(2600);
+    expect(p.hallReachedAt[4] / 24).toBeLessThanOrEqual(1);
+    expect(p.hallReachedAt[5] / 24).toBeGreaterThanOrEqual(1);
+    expect(p.hallReachedAt[5] / 24).toBeLessThanOrEqual(3);
     const h6 = p.hallReachedAt[6];
     expect(h6).toBeDefined();
-    expect(h6 / 24).toBeGreaterThanOrEqual(11);
-    expect(h6 / 24).toBeLessThanOrEqual(17);
+    expect(h6 / 24).toBeGreaterThanOrEqual(3);
+    expect(h6 / 24).toBeLessThanOrEqual(6);
   });
 });

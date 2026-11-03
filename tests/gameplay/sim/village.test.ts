@@ -101,12 +101,13 @@ describe('building and upgrading', () => {
   });
 
   it('cancelling refunds part of the cost and frees the builder', () => {
-    const { state, clock } = newGame({ acorns: 1000 });
+    const cost = data.buildings.elder_toadstool.levels[1].cost.acorns!;
+    const { state, clock } = newGame({ acorns: cost });
     const hall = find(state, 'elder_toadstool')[0];
     let s = must(state, { type: 'upgrade', id: hall.id }, clock.now());
     expect(s.resources.acorns).toBe(0);
     s = must(s, { type: 'cancel', id: hall.id }, clock.now());
-    expect(s.resources.acorns).toBe(1000 * data.economy.cancelRefundFraction);
+    expect(s.resources.acorns).toBe(cost * data.economy.cancelRefundFraction);
     expect(builderStatus(s, data, clock.now()).busy).toBe(0);
     expect(find(s, 'elder_toadstool')[0].level).toBe(1);
   });

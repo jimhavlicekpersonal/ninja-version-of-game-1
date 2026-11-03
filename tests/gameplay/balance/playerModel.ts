@@ -39,6 +39,12 @@ export interface ModelOptions {
   raidsPerSession: number;
   /** Max paid "Next" presses per raid. */
   maxNext?: number;
+  /**
+   * Share of the next Clan Keep's cost kept back before buying extras
+   * (defenses, traps, other storage). 0.5 = a balanced player (default);
+   * 1 = a player focused on the Keep.
+   */
+  keepReserve?: number;
 }
 
 export interface RaidLog {
@@ -166,7 +172,7 @@ export class ModelPlayer {
         // Extras (army, defenses) only if they leave enough saved for the next Elder Toadstool.
         if (o.prio >= 3) {
           const c = costOf(o.cmd);
-          if (Object.entries(c).some(([k, v]) => res[k] - v < (need[k] ?? 0) * 0.5)) continue;
+          if (Object.entries(c).some(([k, v]) => res[k] - v < (need[k] ?? 0) * (this.opts.keepReserve ?? 0.5))) continue;
         }
         if (!this.run(o.cmd)) continue;
         did = true;

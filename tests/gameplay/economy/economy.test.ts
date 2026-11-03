@@ -39,8 +39,9 @@ describe('Moonstone prices', () => {
     expect(twoHours).toBeLessThan(45);
   });
 
-  it('top-up cost follows the curve through 100=1, 1k=10, 10k=60, 100k=500, 1M=3000', () => {
-    expect([100, 1000, 10000, 100000, 1000000].map((n) => topUpOne(n, data))).toEqual([1, 10, 60, 500, 3000]);
+  it('top-up cost follows the curve through 100=1, 1k=10, 10k=80, 100k=1400, 1M=6000', () => {
+    // Large top-ups got steeper when Clan Keeps got cheaper (pacing), so rushing stays expensive (#20).
+    expect([100, 1000, 10000, 100000, 1000000].map((n) => topUpOne(n, data))).toEqual([1, 10, 80, 1400, 6000]);
     expect(topUpOne(1, data)).toBe(1);
   });
 
@@ -67,12 +68,13 @@ describe('spending Moonstones', () => {
   });
 
   it('top-up buys exactly the missing resources', () => {
+    const cost = data.buildings.elder_toadstool.levels[1].cost.acorns!;
     const { state, clock } = newGame({ acorns: 400 });
     const hall = find(state, 'elder_toadstool')[0];
     expect(applyCommand(state, { type: 'upgrade', id: hall.id }, clock.now(), data).ok).toBe(false);
-    const s = must(state, { type: 'topUp', cost: { acorns: 1000 } }, clock.now());
-    expect(s.resources.acorns).toBe(1000);
-    expect(s.resources.moonstones).toBe(500 - topUpOne(600, data));
+    const s = must(state, { type: 'topUp', cost: { acorns: cost } }, clock.now());
+    expect(s.resources.acorns).toBe(cost);
+    expect(s.resources.moonstones).toBe(500 - topUpOne(cost - 400, data));
     expect(applyCommand(s, { type: 'upgrade', id: hall.id }, clock.now(), data).ok).toBe(true);
   });
 
