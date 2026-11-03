@@ -114,8 +114,8 @@ export interface Rated {
 }
 
 /** Elo expected score of A against B. */
-export function expectedScore(a: number, b: number): number {
-  return 1 / (1 + Math.pow(10, (b - a) / 400));
+export function expectedScore(a: number, b: number, scale = 400): number {
+  return 1 / (1 + Math.pow(10, (b - a) / scale));
 }
 
 /** How well an attack went, 0..1: stars matter most, destruction breaks ties. */
@@ -136,7 +136,7 @@ function kFor(p: Rated, data: GameData): number {
  * beating a weaker one. Only call this for battles between real players.
  */
 export function rateBattle(attacker: Rated, defender: Rated, stars: number, destruction: number, data: GameData): { attacker: number; defender: number } {
-  const e = expectedScore(attacker.rating, defender.rating);
+  const e = expectedScore(attacker.rating, defender.rating, data.competition.shadowRank.eloScale);
   const s = battleScore(stars, destruction, data);
   const floor = data.competition.shadowRank.floor;
   const a = Math.round(kFor(attacker, data) * (s - e));

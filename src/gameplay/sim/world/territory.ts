@@ -9,11 +9,12 @@
  * loot but never Honor (trophies), so the map can't be used to farm rank.
  */
 import type { BaseLayout } from '../battle/types';
-import { applyLootPenalty } from '../matchmaking';
+import { applyLootPenalty, scaleLoot } from '../matchmaking';
 import { createRng, mixSeed, next, pick, type Rng } from '../rng';
 import type { ClanDef, ClanState, Cost, GameData, SettlementState, VillageState, WorldState, WorldTarget } from '../types';
 import { hashId, pushNews } from './clans';
 import { clanDef, clanVillage } from './villagegen';
+import { treasuryLootFactor } from './treasury';
 
 const HOUR = 3_600_000;
 
@@ -27,7 +28,7 @@ export function initialSettlements(seed: number, now: number, data: GameData): S
         // Shrines and Fortresses are named as such; villages take any other place word.
         const seconds = data.names.placeSecond.filter((w) => w !== 'Fortress' && w !== 'Shrine');
         let name = '';
-        for (let tries = 0; tries < 30; tries++) {
+        for (let tries = 0; tries < data.world.nameTries; tries++) {
           name = `${pick(rng, data.names.placeFirst)} ${k.id === 'shrine' ? 'Shrine' : k.id === 'fortress' ? 'Fortress' : pick(rng, seconds)}`;
           if (!used.has(name)) break;
         }
@@ -62,13 +63,17 @@ export function settlementStrength(s: SettlementState, world: WorldState, player
 
 /** Freeze a settlement for an attack, so the battle is rebuilt exactly as scouted. */
 export function targetFor(s: SettlementState, world: WorldState, playerHall: number, data: GameData): WorldTarget {
-  return { settlement: s.id, owner: s.owner, strength: settlementStrength(s, world, playerHall, data), variant: s.variant, playerHall };
+  const clan = world.clans[s.owner];
+  return { settlement: s.id, owner: s.owner, strength: settlementStrength(s, world, playerHall, data), variant: s.variant, playerHall, lootFactor: clan ? treasuryLootFactor(clan, data) : 1 };
 }
 
 /** The battle base for a frozen settlement target (loot already scaled for the attacker's Keep). */
 export function settlementBase(t: WorldTarget, world: WorldState, data: GameData): BaseLayout {
   const s = world.settlements.find((x) => x.id === t.settlement);
-  const base = clanVillage(t.owner, mixSeed(mixSeed(world.seed, hashId(t.settlement)), t.variant), t.strength, data);
+  const province = data.world.provinces.find((p) => p.id === s?.province);
+  const base = clanVillage(t.owner, mixSeed(mixSeed(world.seed, hashId(t.settlement)), t.variant), t.strength, data, { ringScale: province?.ringScale });
+  // The clan's treasury decides how much loot it keeps here (frozen with the target).
+  scaleLoot(base, t.lootFactor ?? 1);
   base.name = s?.name ?? base.name;
   base.settlement = t.settlement;
   base.trophies = 0;

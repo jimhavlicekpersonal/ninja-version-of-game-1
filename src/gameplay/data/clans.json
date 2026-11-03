@@ -3,6 +3,7 @@
   "clans": [
     {
       "id": "bamboo",
+      "signature": "frog_lobber",
       "name": "Bamboo Clan",
       "style": "Basic infantry",
       "defense": "Weak walls",
@@ -20,6 +21,7 @@
     },
     {
       "id": "crimson_fang",
+      "signature": "saboteur",
       "name": "Crimson Fang",
       "style": "Fast assassins",
       "defense": "Traps and ambush alleys",
@@ -37,6 +39,7 @@
     },
     {
       "id": "iron_serpent",
+      "signature": "beetle_brute",
       "name": "Iron Serpent",
       "style": "Heavy warriors",
       "defense": "Reinforced walls",
@@ -54,6 +57,7 @@
     },
     {
       "id": "silent_moon",
+      "signature": "mole_digger",
       "name": "Silent Moon",
       "style": "Stealth ninjas",
       "defense": "Hidden defenses",
@@ -71,6 +75,7 @@
     },
     {
       "id": "thunder_lotus",
+      "signature": "owl_bomber",
       "name": "Thunder Lotus",
       "style": "Lightning strikes",
       "defense": "Area damage",
@@ -88,6 +93,7 @@
     },
     {
       "id": "black_dragon",
+      "signature": "beetle_brute",
       "name": "Black Dragon",
       "style": "Elite ninja warriors",
       "defense": "Advanced fortifications",
@@ -105,6 +111,7 @@
     },
     {
       "id": "shadow_emperor",
+      "signature": "owl_bomber",
       "name": "Shadow Emperor",
       "style": "Legendary units",
       "defense": "Complex defenses",
@@ -129,6 +136,7 @@
   },
   "sim": {
     "stepHours": 12,
+    "startSpread": 0.5,
     "growthPerStep": 0.06,
     "maxStepsPerCatchUp": 120,
     "defeatStrengthLoss": 0.25,
@@ -140,6 +148,14 @@
     "reclaimMinHeldHours": 48,
     "maxNews": 20
   },
+  "treasury": {
+    "$comment": "Each clan keeps Coins and Provisions. A full treasury holds fullRaids x the average raid loot of its Keep; it refills by incomePerStep of that each step. Its rival-clan villages and settlements carry loot x (minLoot..maxLoot) by how full it is, and what the player takes comes out of it. The trophy-matched rival is not affected (balance model).",
+    "fullRaids": 3,
+    "incomePerStep": 0.08,
+    "startFull": 0.5,
+    "minLoot": 0.6,
+    "maxLoot": 1.3
+  },
   "generator": {
     "$comment": "Constrained generation: archetype, defense budget, place, walls, then validate reachability and estimate difficulty; regenerate up to maxAttempts and keep the closest. Defense power is sum of sqrt(HP x DPS) (progression model).",
     "maxAttempts": 5,
@@ -147,15 +163,23 @@
     "variants": 50
   },
   "candidates": {
-    "$comment": "The rivals board: the matched rival (trophy matchmaking), a rival clan at its own persistent strength (inside the band), and an optional challenge challengeStrengthAbove above the matched strength.",
+    "$comment": "The rivals board: the matched rival (trophy matchmaking), the rival clan whose strength is nearest rivalAim inside your Keep, and an optional challenge challengeStrengthAbove above the matched strength. Every card stays inside the matchmaking window (ranks.json hallsBelow / hallsAbove), as the server requires.",
     "count": 3,
+    "rivalAim": 0.5,
     "challengeStrengthAbove": 0.6
   },
   "firstRaid": {
-    "$comment": "The very first attack: a small Bamboo Clan outpost that three Shinobi can beat.",
+    "$comment": "The very first attack: a small, half-built Bamboo Clan outpost (defenses at power x) that three Shinobi can beat from any side.",
     "clan": "bamboo",
     "name": "Bamboo Outpost",
-    "loot": { "acorns": 600, "dew": 600 },
-    "power": 0.15
+    "power": 0.15,
+    "$layout": "Buildings by offset from the map centre (dx, dy) with their loot.",
+    "buildings": [
+      { "type": "elder_toadstool", "level": 1, "dx": -2, "dy": -2, "loot": { "acorns": 200, "dew": 300 } },
+      { "type": "acorn_cannon", "level": 1, "dx": 4, "dy": 4 },
+      { "type": "acorn_orchard", "level": 1, "dx": -7, "dy": -2, "loot": { "acorns": 200 } },
+      { "type": "dewdrop_well", "level": 1, "dx": -2, "dy": -7, "loot": { "dew": 300 } },
+      { "type": "acorn_silo", "level": 1, "dx": 3, "dy": -6, "loot": { "acorns": 200 } }
+    ]
   }
 }

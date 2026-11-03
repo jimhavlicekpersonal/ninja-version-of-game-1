@@ -1,19 +1,21 @@
 {
   "$comment": "The living world map and the joinable AI factions (docs/game-theory/SHADOW_CLANS.md). One region per village offline; the server gives each player a regional instance online. Every province starts AI-held. Settlements are persistent AI villages: win with conquestStars to take one, and its clan may take it back later. Settlement battles pay normal loot but never Honor (trophies), so the map can't be used to farm rank.",
   "provinces": [
-    { "id": "bamboo_vale", "name": "Bamboo Vale", "clan": "bamboo" },
-    { "id": "crimson_gorge", "name": "Crimson Gorge", "clan": "crimson_fang" },
-    { "id": "iron_pass", "name": "Iron Pass", "clan": "iron_serpent" },
-    { "id": "moonlit_terrace", "name": "Moonlit Terrace", "clan": "silent_moon" },
-    { "id": "thunder_peaks", "name": "Thunder Peaks", "clan": "thunder_lotus" },
-    { "id": "dragon_spine", "name": "Dragon Spine", "clan": "black_dragon" },
-    { "id": "emperors_shadow", "name": "Emperor's Shadow", "clan": "shadow_emperor" }
+    { "id": "bamboo_vale", "name": "Bamboo Vale", "clan": "bamboo", "terrain": "Valley", "ringScale": 1.0 },
+    { "id": "crimson_gorge", "name": "Crimson Gorge", "clan": "crimson_fang", "terrain": "Gorge", "ringScale": 0.8 },
+    { "id": "iron_pass", "name": "Iron Pass", "clan": "iron_serpent", "terrain": "Mountain pass", "ringScale": 0.85 },
+    { "id": "moonlit_terrace", "name": "Moonlit Terrace", "clan": "silent_moon", "terrain": "Terraces", "ringScale": 1.1 },
+    { "id": "thunder_peaks", "name": "Thunder Peaks", "clan": "thunder_lotus", "terrain": "Peaks", "ringScale": 0.9 },
+    { "id": "dragon_spine", "name": "Dragon Spine", "clan": "black_dragon", "terrain": "Ridge", "ringScale": 0.85 },
+    { "id": "emperors_shadow", "name": "Emperor's Shadow", "clan": "shadow_emperor", "terrain": "Plateau", "ringScale": 1.15 }
   ],
   "settlementKinds": [
     { "id": "shrine", "name": "Shrine", "count": 1, "strength": -0.3, "tribute": true },
     { "id": "village", "name": "Village", "count": 2, "strength": 0, "tribute": false },
     { "id": "fortress", "name": "Fortress", "count": 1, "strength": 0.4, "tribute": false }
   ],
+  "$terrain": "Terrain shapes a province's settlements: ringScale < 1 packs buildings tighter (gorges, passes), > 1 spreads them out (terraces, plateaus).",
+  "nameTries": 30,
   "conquestStars": 2,
   "tribute": {
     "$comment": "Each held Shrine pays this share of the player's Keep's minimum raid loot (battle.json generatedLootByHall) once per day, claimed by hand.",
@@ -22,6 +24,9 @@
   "factions": {
     "$comment": "Join one of the great AI clans before player clans exist. AI factions give missions and military support; they never chat or pose as people.",
     "switchCooldownHours": 72,
+    "$signature": "From signatureRank the daily squad may include the clan's signature warrior even if your Dojo has not unlocked it (a faction perk; Alliance donations still follow balance rule #11), up to signatureShare of the squad's housing.",
+    "signatureRank": 3,
+    "signatureShare": 0.4,
     "ranks": [
       { "name": "Initiate", "reputation": 0, "supportHousing": 0 },
       { "name": "Genin", "reputation": 100, "supportHousing": 5 },

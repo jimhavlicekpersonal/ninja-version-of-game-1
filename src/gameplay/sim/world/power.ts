@@ -121,12 +121,13 @@ export interface RatingInputs {
 /** Each input on a 0..1000 scale (the top Keep's full village and army = 1000). */
 export function normalizedInputs(i: RatingInputs, data: GameData): RatingInputs {
   const top = data.hall.levels.length;
-  const clamp = (v: number) => Math.max(0, Math.min(1000, v));
+  const k = data.competition.rating.scale;
+  const clamp = (v: number) => Math.max(0, Math.min(k, v));
   return {
-    defense: clamp((1000 * i.defense) / Math.max(1, maxDefenseAtHall(top, data))),
-    offense: clamp((1000 * i.offense) / Math.max(1, maxOffenseAtHall(top, data))),
-    hall: clamp((1000 * i.hall) / top),
-    skill: clamp(1000 * i.skill),
+    defense: clamp((k * i.defense) / Math.max(1, maxDefenseAtHall(top, data))),
+    offense: clamp((k * i.offense) / Math.max(1, maxOffenseAtHall(top, data))),
+    hall: clamp((k * i.hall) / top),
+    skill: clamp(k * i.skill),
   };
 }
 
@@ -141,7 +142,7 @@ export function combatRating(i: RatingInputs, data: GameData): number {
 export function recentSkill(state: VillageState, data: GameData): number {
   const n = data.competition.rating.recentBattles;
   const recent = state.battleLog.filter((r) => r.kind === 'attack').slice(-n);
-  if (!recent.length) return 0.5;
+  if (!recent.length) return data.competition.rating.defaultSkill;
   return recent.reduce((a, r) => a + r.result.stars / 3, 0) / recent.length;
 }
 

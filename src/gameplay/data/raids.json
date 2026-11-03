@@ -19,6 +19,11 @@
   "graceMinutes": 2,
   "maxRaidsPerCatchUp": 24,
   "maxDefenseLog": 10,
+  "botArmyHousing": {
+    "$comment": "A raider fills this share of its Keep's full army housing: base + perBias x bias (0..1 inside the Keep).",
+    "base": 0.85,
+    "perBias": 0.15
+  },
   "botArmyMix": [
     {
       "hedgehog_roller": 0.7,

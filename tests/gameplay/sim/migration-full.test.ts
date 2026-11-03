@@ -23,13 +23,15 @@ it('a Phase 1 (v1) save loads in the latest version', () => {
     },
   };
   const village = deserialize(JSON.parse(JSON.stringify(v1)), data);
-  expect(SAVE_VERSION).toBe(11);
+  expect(SAVE_VERSION).toBe(12);
   expect(village.trials).toEqual({ best: 0 });
   // v11: the Shadow Clans world, with every clan and settlement AI-held.
   expect(Object.keys(village.world.clans)).toHaveLength(data.clans.clans.length);
   expect(village.world.settlements.every((s) => s.owner !== 'player')).toBe(true);
   expect(village.world.firstRaidDone).toBe(true); // existing players skip the tutorial outpost
   expect(village.world.rank).toBeNull();
+  // v12: every clan has a treasury.
+  for (const c of Object.values(village.world.clans)) expect(c.resources.acorns).toBeGreaterThan(0);
   expect(village.daily.lastDay).toBe(-1);
   expect(village.research).toEqual({ levels: {}, active: null });
   expect(village.scout).toBeNull();

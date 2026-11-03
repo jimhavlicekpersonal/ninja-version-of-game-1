@@ -9,12 +9,12 @@
  * can rebuild a village from those three values instead of trusting a client.
  */
 import { maxHousingAtHall } from '../army';
-import { generateOpponent, layoutById, LAYOUTS } from '../battle/basegen';
+import { expectedLevelsBelow, generateOpponent, layoutById, LAYOUTS } from '../battle/basegen';
 import { BLOCKED, HEDGE } from '../battle/pathfind';
 import type { BaseBuilding, BaseLayout } from '../battle/types';
 import { buildingDef, troopDef } from '../data';
-import { mixSeed } from '../rng';
-import type { ClanDef, Cost, GameData, ResourceKind } from '../types';
+import { hashId, mixSeed } from '../rng';
+import type { ClanDef, GameData } from '../types';
 import { buildingPower, defensePower } from './power';
 
 export function clanDef(data: GameData, id: string): ClanDef {
@@ -34,7 +34,7 @@ export function hallAndBias(strength: number, data: GameData, levelBias = 0): { 
 /** The defensive power a clan village at this Keep and bias should have if every building fits. */
 export function expectedDefense(hall: number, bias: number, def: Pick<ClanDef, 'wallShare' | 'trapShare'>, data: GameData): number {
   const lim = data.hall.levels[Math.max(1, Math.min(data.hall.levels.length, hall)) - 1].limits;
-  const below = Math.max(0, Math.min(3, Math.round((1 - bias) * 2)));
+  const below = expectedLevelsBelow(bias);
   let p = 0;
   for (const [type, l] of Object.entries(lim)) {
     const cat = buildingDef(data, type).category;
@@ -43,6 +43,13 @@ export function expectedDefense(hall: number, bias: number, def: Pick<ClanDef, '
     p += count * buildingPower(type, Math.max(1, l.maxLevel - below), data);
   }
   return p;
+}
+
+/** A clan's power rating: the designed defensive power of its villages at its current strength. */
+export function clanPowerRating(clanId: string, strength: number, data: GameData): number {
+  const def = clanDef(data, clanId);
+  const { hall, bias } = hallAndBias(strength, data, def.levelBias);
+  return Math.round(expectedDefense(hall, bias, def, data));
 }
 
 export interface LayoutCheck {
@@ -146,21 +153,30 @@ export function estimateDifficulty(base: BaseLayout, expected: number, data: Gam
   return { defense, expected, ratio: defense / Math.max(1, expected) };
 }
 
+/** Which of a clan's `variants` layouts a village seed uses (0-based). */
+export function layoutVariant(seed: number, data: GameData): number {
+  return (seed >>> 0) % data.clans.generator.variants;
+}
+
 /**
- * A clan's village at a strength. Tries up to `maxAttempts` placements and
- * keeps the legal one whose difficulty is closest to the clan's design; the
- * first within tolerance wins. Always labelled as an AI clan village.
+ * A clan's village at a strength. Each clan has `variants` recognisable
+ * layouts (the seed picks one), shaped by its archetypes and, on the world
+ * map, by the province's terrain (`ringScale`). Tries up to `maxAttempts`
+ * placements and keeps the legal one whose difficulty is closest to the
+ * clan's design; the first within tolerance wins. Always labelled as AI.
  */
-export function clanVillage(clanId: string, seed: number, strength: number, data: GameData): BaseLayout {
+export function clanVillage(clanId: string, seed: number, strength: number, data: GameData, opts: { ringScale?: number } = {}): BaseLayout {
   const def = clanDef(data, clanId);
   const { hall, bias } = hallAndBias(strength, data, def.levelBias);
-  const layout = layoutById(def.layouts[(seed >>> 0) % def.layouts.length]) ?? LAYOUTS[0];
+  const variant = layoutVariant(seed, data);
+  const layoutSeed = mixSeed(hashId(clanId), variant);
+  const layout = layoutById(def.layouts[variant % def.layouts.length]) ?? LAYOUTS[0];
   const expected = expectedDefense(hall, bias, def, data);
   const g = data.clans.generator;
   let best: BaseLayout | null = null;
   let bestErr = Number.POSITIVE_INFINITY;
   for (let i = 0; i < g.maxAttempts; i++) {
-    const base = generateOpponent(mixSeed(seed, 0xc1a0 + i), hall, data, { levelBias: bias, layout, wallShare: def.wallShare, trapShare: def.trapShare });
+    const base = generateOpponent(mixSeed(layoutSeed, 0xc1a0 + i), hall, data, { levelBias: bias, layout, wallShare: def.wallShare, trapShare: def.trapShare, ringScale: opts.ringScale });
     if (!validateLayout(base, data).ok) continue;
     const err = Math.abs(estimateDifficulty(base, expected, data).ratio - 1);
     if (err < bestErr) {
@@ -170,8 +186,9 @@ export function clanVillage(clanId: string, seed: number, strength: number, data
     if (err <= g.difficultyTolerance) break;
   }
   // The plain ring layout always fits; use it if no styled attempt was legal.
-  const out = best ?? generateOpponent(seed, hall, data, { levelBias: bias });
+  const out = best ?? generateOpponent(layoutSeed, hall, data, { levelBias: bias });
   out.clan = clanId;
+  out.layoutVariant = variant;
   out.practice = `${def.name} · AI clan village`;
   return out;
 }
@@ -190,7 +207,7 @@ export function clanArmy(clanId: string, hall: number, bias: number, data: GameD
   const dojo = maxDojoAt(hall, data);
   const mix = Object.entries(def.army).filter(([t]) => data.troops[t] && troopDef(data, t).barracksLevel <= dojo);
   const sum = mix.reduce((a, [, v]) => a + v, 0);
-  const housing = Math.floor(maxHousingAtHall(hall, data) * (0.85 + 0.15 * bias));
+  const housing = Math.floor(maxHousingAtHall(hall, data) * (data.raids.botArmyHousing.base + data.raids.botArmyHousing.perBias * bias));
   const army: Record<string, number> = {};
   if (!mix.length || sum <= 0) return army;
   let used = 0;
@@ -216,22 +233,6 @@ export function firstRaidBase(data: GameData): BaseLayout {
   const fr = data.clans.firstRaid;
   const def = clanDef(data, fr.clan);
   const c = Math.floor(data.economy.mapSize / 2);
-  const buildings: BaseBuilding[] = [
-    { id: 'o1', type: 'elder_toadstool', level: 1, x: c - 2, y: c - 2 },
-    { id: 'o2', type: 'acorn_cannon', level: 1, x: c + 4, y: c + 4 },
-    { id: 'o3', type: 'acorn_orchard', level: 1, x: c - 7, y: c - 2 },
-    { id: 'o4', type: 'dewdrop_well', level: 1, x: c - 2, y: c - 7 },
-    { id: 'o5', type: 'acorn_silo', level: 1, x: c + 3, y: c - 6 },
-  ];
-  const holders: Record<ResourceKind, string[]> = { acorns: ['o3', 'o5', 'o1'], dew: ['o4', 'o1'], nightsap: [], moonstones: [] };
-  for (const [k, total] of Object.entries(fr.loot as Cost) as [ResourceKind, number][]) {
-    const ids = holders[k];
-    if (!ids?.length) continue;
-    const each = Math.floor(total / ids.length);
-    ids.forEach((id, i) => {
-      const b = buildings.find((x) => x.id === id)!;
-      b.loot = { ...(b.loot ?? {}), [k]: each + (i === 0 ? total - each * ids.length : 0) };
-    });
-  }
+  const buildings: BaseBuilding[] = fr.buildings.map((b, i) => ({ id: `o${i + 1}`, type: b.type, level: b.level, x: c + b.dx, y: c + b.dy, ...(b.loot ? { loot: { ...b.loot } } : {}) }));
   return { name: fr.name, hallLevel: 1, buildings, trophies: 0, clan: def.id, practice: `${def.name} · AI training outpost (its tower is half-built)`, power: fr.power };
 }

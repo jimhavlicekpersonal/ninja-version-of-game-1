@@ -33,6 +33,8 @@ export interface BaseLayout {
   tournament?: { id: number; index: number };
   /** Set by a server on a real player's village. */
   human?: boolean;
+  /** Which of its clan's layouts this AI village uses (0-based). */
+  layoutVariant?: number;
 }
 
 export interface BattleSetup {

@@ -13,8 +13,9 @@ import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 import { defaultData } from './data';
 import { createWorld } from './world/world';
+import { startTreasury } from './world/treasury';
 
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -120,6 +121,12 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
       v.world = world;
     }
   }
+  if (out.version < 12 && v && typeof v === 'object') {
+    // v11 -> v12: AI clan treasuries (Coins and Provisions they keep between battles).
+    const d = data ?? defaultData;
+    const w = v.world as { clans?: Record<string, { strength: number; resources?: { acorns: number; dew: number } }> } | undefined;
+    for (const c of Object.values(w?.clans ?? {})) c.resources = c.resources ?? startTreasury(Number(c.strength) || 0, d);
+  }
   out.version = SAVE_VERSION;
   return out;
 }
@@ -173,7 +180,11 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   const w = v.world;
   if (!w || typeof w !== 'object' || !w.clans || !Array.isArray(w.settlements) || !Array.isArray(w.news) || !w.faction || !w.counters || !w.tournament) problems.push('world missing');
   else {
-    for (const c of data.clans.clans) if (!w.clans[c.id] || !Number.isFinite(w.clans[c.id].strength)) problems.push(`clan ${c.id} missing`);
+    for (const c of data.clans.clans) {
+      const cs = w.clans[c.id];
+      if (!cs || !Number.isFinite(cs.strength)) problems.push(`clan ${c.id} missing`);
+      else if (!cs.resources || !Number.isFinite(cs.resources.acorns) || !Number.isFinite(cs.resources.dew)) problems.push(`clan ${c.id} treasury missing`);
+    }
     for (const st of w.settlements) if (st.owner !== 'player' && !w.clans[st.owner]) problems.push(`bad settlement owner ${st.owner}`);
     if (w.faction.id && !w.clans[w.faction.id]) problems.push('bad faction');
   }

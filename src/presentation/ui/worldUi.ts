@@ -18,7 +18,7 @@ import { candidateMatchup, playerOffense, strengthMatchup } from '../../gameplay
 import { clanPower } from '../../gameplay/sim/world/power';
 import { settlementKind, settlementStrength, territoryCounts, tributeQuote } from '../../gameplay/sim/world/territory';
 import { draftProblem, draftStep, suggestedDraft, tournamentAt, tournamentBases, tournamentLevels, totalScore } from '../../gameplay/sim/world/tournament';
-import { clanDef, hallAndBias } from '../../gameplay/sim/world/villagegen';
+import { clanDef, clanPowerRating, hallAndBias } from '../../gameplay/sim/world/villagegen';
 import { clear, h, icon } from './dom';
 import type { UiKit } from './economyUi';
 import { rewardChips } from './economyUi';
@@ -102,7 +102,7 @@ export class WorldUi {
           { class: 'rival-main' },
           h('div', { class: 'row' }, h('span', { class: `tag ${cand.source === 'human' ? 'tag-human' : 'tag-ai'}` }, cand.source === 'human' ? 'PLAYER' : 'AI'), h('span', { class: 'chip' }, kindTag), h('span', { class: `chip match-${m.label.replace(' ', '-').toLowerCase()}` }, m.label)),
           h('b', {}, b.name),
-          h('div', { class: 'muted small' }, `${cand.label} · Clan Keep ${b.hallLevel} (${hallTitle(b.hallLevel, gd).title})`),
+          h('div', { class: 'muted small' }, `${cand.label} · Clan Keep ${b.hallLevel} (${hallTitle(b.hallLevel, gd).title})${b.layoutVariant !== undefined ? ` · layout ${b.layoutVariant + 1} of ${gd.clans.generator.variants}` : ''}`),
           def ? h('div', { class: 'small' }, `${def.style} · ${def.defense}`) : null,
           h(
             'div',
@@ -207,7 +207,7 @@ export class WorldUi {
           ),
         );
       }
-      body.append(h('div', { class: 'province', style: `--clan:${def.color}` }, h('h3', {}, p.name, h('span', { class: 'muted small' }, ` · home of ${def.name}`)), list));
+      body.append(h('div', { class: 'province', style: `--clan:${def.color}` }, h('h3', {}, p.name, h('span', { class: 'muted small' }, ` · ${p.terrain} · home of ${def.name}`)), list));
     }
     if (s.world.news.length) {
       body.append(h('h3', {}, 'World news'));
@@ -239,6 +239,8 @@ export class WorldUi {
               'div',
               { class: 'row small' },
               h('span', { class: 'chip' }, `Keep ${hall}`),
+              h('span', { class: 'chip' }, `Power ${formatNumber(clanPowerRating(def.id, c.strength, gd))}`),
+              h('span', { class: 'chip' }, `Treasury ${formatNumber(c.resources.acorns)} Coins · ${formatNumber(c.resources.dew)} Provisions`),
               h('span', { class: `chip${c.status === 'rebuilding' ? ' good' : ''}` }, c.status === 'rebuilding' ? `Rebuilding ${formatDuration(Math.max(0, c.rebuildUntil - now))}` : c.status === 'expanding' ? 'Expanding' : 'Steady'),
               h('span', { class: 'chip' }, `${counts[def.id] ?? 0} settlements`),
               c.defeats ? h('span', { class: 'chip' }, `Beaten ${c.defeats}×`) : null,

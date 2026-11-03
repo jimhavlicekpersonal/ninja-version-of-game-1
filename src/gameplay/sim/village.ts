@@ -25,6 +25,7 @@ import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKin
 import { RESOURCE_KINDS } from './types';
 import { advanceWorld, createWorld } from './world/world';
 import { defeatClan } from './world/clans';
+import { payFromTreasury } from './world/treasury';
 import { conquer, settlementBase, targetFor, tributeQuote } from './world/territory';
 import { canJoinFaction, factionMissions, factionRank, joinFaction, leaveFaction, supportRoom, supportSquad, warReward, warWeek } from './world/factions';
 import { draftProblem, totalScore, tournamentAt, tournamentBases, tournamentLevels, tournamentScore } from './world/tournament';
@@ -953,13 +954,15 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
   const events: SimEvent[] = [{ kind: 'raid_end', record }];
-  afterAttack(s, rec.setup.base.clan, result.stars, now, data, events);
+  afterAttack(s, rec.setup.base.clan, result.stars, now, data, events, result.loot);
   return { ok: true, state: s, events };
 }
 
 /** World reactions to a banked attack: the tutorial raid is done, a beaten clan rebuilds, faction war points. Mutates. */
-function afterAttack(s: VillageState, clan: string | undefined, stars: number, now: number, data: GameData, events: SimEvent[]): void {
+function afterAttack(s: VillageState, clan: string | undefined, stars: number, now: number, data: GameData, events: SimEvent[], taken: Cost = {}): void {
   s.world.firstRaidDone = true;
+  // Loot taken from an AI clan's village comes out of its treasury.
+  if (clan && s.world.clans[clan]) payFromTreasury(s.world.clans[clan], taken);
   if (stars < 1) return;
   const f = s.world.faction;
   if (f.id && f.war.week === warWeek(now, data)) f.war.raidWins++;
@@ -1014,7 +1017,7 @@ function worldBattleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id'
   s.battleLog.push(record);
   while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
   events.unshift({ kind: 'world_battle', record, conquered, settlement: st.id });
-  afterAttack(s, t.owner, result.stars, now, data, events);
+  afterAttack(s, t.owner, result.stars, now, data, events, result.loot);
   // Counted like a raid for tasks and achievements.
   events.push({ kind: 'raid_end', record });
   return { ok: true, state: s, events };

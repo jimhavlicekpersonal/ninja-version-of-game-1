@@ -40,14 +40,11 @@ import type {
   WorldResponse,
 } from '../../src/backend/net/protocol';
 import type { EligibilityRules, Player, PlayerPatch, Region, Ticket } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { ApiError, HOUR, TICKET_LOCK_MS as LOCK_MS, TICKET_TTL_MS as TTL_MS, type ServerContext } from './context';
 import { capBaseLoot } from './pvp';
 
 const DAY = 24 * HOUR;
 
-/** How long a matched base stays reserved, and how long the attacker has to report (same as pvp.ts). */
-const LOCK_MS = 5 * 60_000;
-const TTL_MS = HOUR;
 
 // ---------------------------------------------------------------- ratings
 

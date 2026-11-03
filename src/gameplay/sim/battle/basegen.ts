@@ -37,6 +37,15 @@ function placeInRing(rng: Rng, o: Occ, s: number, c: number, r1: number, r2: num
   return null;
 }
 
+/** Spread of building levels below a Keep's caps: about (1 - bias) x LEVEL_SPREAD levels, never more than MAX_LEVELS_BELOW. */
+export const LEVEL_SPREAD = 2;
+export const MAX_LEVELS_BELOW = 3;
+
+/** Levels below the cap a generated building gets, before the random wobble (used to estimate a village's design strength). */
+export function expectedLevelsBelow(bias: number): number {
+  return Math.max(0, Math.min(MAX_LEVELS_BELOW, Math.round((1 - bias) * LEVEL_SPREAD)));
+}
+
 export function opponentName(rng: Rng, data: GameData): string {
   return `${pick(rng, data.names.placeFirst)} ${pick(rng, data.names.placeSecond)}`;
 }
@@ -141,6 +150,8 @@ export interface OpponentOptions {
   wallShare?: number;
   /** Share of each trap limit to build (AI clan style). Default 1. */
   trapShare?: number;
+  /** Scales a styled layout's rings (terrain): < 1 packs buildings tighter, > 1 spreads them. Default 1. */
+  ringScale?: number;
 }
 
 export function generateOpponent(seed: number, hallLevel: number, data: GameData, opts: OpponentOptions = {}): BaseLayout {
@@ -163,7 +174,7 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
 
   const levelFor = (type: string) => {
     const max = limits[type]?.maxLevel ?? 1;
-    const below = Math.max(0, Math.min(3, Math.round((1 - bias) * 2 + next(rng) - 0.5)));
+    const below = Math.max(0, Math.min(MAX_LEVELS_BELOW, Math.round((1 - bias) * LEVEL_SPREAD + next(rng) - 0.5)));
     return Math.max(1, max - below);
   };
   const plan: { type: string; r1: number; r2: number }[] = [];
@@ -176,7 +187,8 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
     else if (def.category === 'collector') count = Math.max(1, int(rng, Math.ceil(count / 2), count));
     for (let i = 0; i < count; i++) {
       const L = opts.layout;
-      const pickRing = (r: [number, number]) => ({ r1: r[0], r2: r[1] });
+      const k = opts.ringScale ?? 1;
+      const pickRing = (r: [number, number]) => (k === 1 ? { r1: r[0], r2: r[1] } : { r1: Math.round(r[0] * k), r2: Math.max(Math.round(r[0] * k) + 1, Math.round(r[1] * k)) });
       const ring = L
         ? pickRing(
             def.category === 'defense'

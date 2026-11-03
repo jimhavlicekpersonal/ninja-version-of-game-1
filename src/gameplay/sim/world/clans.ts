@@ -11,9 +11,10 @@
  * range and never rises above the player's Keep + `bands.above`, so it can't
  * become unbeatable because the player stopped playing.
  */
-import { createRng, int, mixSeed, next, type Rng } from '../rng';
+import { createRng, hashId, int, mixSeed, next, type Rng } from '../rng';
 import type { ClanDef, ClanState, GameData, WorldNews, WorldState } from '../types';
 import { clanDef } from './villagegen';
+import { refillTreasury, startTreasury } from './treasury';
 
 const HOUR = 3_600_000;
 
@@ -35,27 +36,21 @@ export function clanCap(def: ClanDef, playerHall: number, data: GameData): numbe
 export function newClanState(def: ClanDef, seed: number, now: number, playerHall: number, data: GameData): ClanState {
   const rng = createRng(mixSeed(seed, hashId(def.id)));
   const { lo } = clanRange(def);
+  const strength = Math.min(clanCap(def, playerHall, data), lo + next(rng) * data.clans.sim.startSpread);
   return {
     id: def.id,
-    strength: Math.min(clanCap(def, playerHall, data), lo + next(rng) * 0.5),
+    strength,
     status: 'stable',
     simulatedAt: Math.floor(now / stepMs(data)) * stepMs(data),
     rebuildUntil: 0,
+    resources: startTreasury(strength, data),
     retaliateAt: 0,
     defeats: 0,
     victories: 0,
   };
 }
 
-/** Stable 32-bit hash of an id (for seeds). */
-export function hashId(id: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < id.length; i++) {
-    h ^= id.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return h >>> 0;
-}
+export { hashId };
 
 export function pushNews(world: WorldState, news: WorldNews, data: GameData): void {
   world.news.push(news);
@@ -114,6 +109,7 @@ function stepClan(world: WorldState, clan: ClanState, def: ClanDef, at: number, 
   }
   // Never above the band, even if the player's Keep was lower when it grew.
   if (clan.strength > cap) clan.strength = cap;
+  refillTreasury(clan, data);
   clan.status = clan.status === 'rebuilding' ? 'rebuilding' : next(rng) < cfg.expandChance * def.aggression ? 'expanding' : 'stable';
 }
 

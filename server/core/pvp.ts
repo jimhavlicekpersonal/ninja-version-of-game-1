@@ -15,14 +15,11 @@ import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
-import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { ApiError, HOUR, TICKET_LOCK_MS, TICKET_TTL_MS, type ServerContext } from './context';
 import { attackerPvp, rateAttack, rules, shadowOf } from './shadow';
 import type { LeaderboardBoard } from '../../src/backend/net/protocol';
 
-/** How long a matched base stays reserved for its attacker. */
-export const TICKET_LOCK_MS = 5 * MIN;
-/** How long the attacker has to report the battle (3 minutes of play plus slack for bad connections). */
-export const TICKET_TTL_MS = HOUR;
+export { TICKET_LOCK_MS, TICKET_TTL_MS };
 
 /** Reject bases that could not exist in the game. */
 export function validateBase(base: BaseLayout, data: GameData): string | null {

@@ -14,7 +14,7 @@
  */
 import { battleArmy } from '../village';
 import type { BaseLayout } from '../battle/types';
-import { applyLootPenalty, matchStrength, opponentForRank } from '../matchmaking';
+import { applyLootPenalty, hallWindow, matchStrength, opponentForRank, scaleLoot } from '../matchmaking';
 import { troopLevels } from '../research';
 import { createRng, mixSeed } from '../rng';
 import type { GameData, VillageState } from '../types';
@@ -22,6 +22,7 @@ import { hallLevel } from '../village';
 import { nearestClan } from './clans';
 import { defensePower, matchupFromDefense, matchupLabel, offensePower } from './power';
 import { clanDef, clanVillage, expectedDefense, firstRaidBase, hallAndBias } from './villagegen';
+import { treasuryLootFactor } from './treasury';
 
 export type CandidateKind = 'first' | 'matched' | 'rival' | 'challenge' | 'player';
 
@@ -60,21 +61,24 @@ export function aiCandidates(seed: number, state: VillageState, data: GameData):
   const ms = matchStrength(createRng(mixSeed(seed, 0x5c0a7)), state.trophies, own, data);
   const mStrength = ms.hall - 1 + ms.bias;
   out.push({ kind: 'matched', source: 'ai', clan: matched.clan ?? null, strength: mStrength, villageSeed: seed, base: matched, label: `${clanDef(data, matched.clan!).name} · AI clan village`, defense: defensePower(matched, data) });
-  // 2. A persistent clan at its own strength, inside the progression band.
-  const b = data.clans.bands;
-  const lo = Math.max(0, own - 1 - b.below);
-  const hi = Math.min(top, own + b.above) - 1e-6;
-  const rivalId = nearestClan(state.world, own - 1 + 0.5, data, matched.clan ? [matched.clan] : []);
+  // Every card stays inside the matchmaking window (balance rule #3), the
+  // same window a server checks before it rebuilds an AI village.
+  const win = hallWindow(own, data);
+  const lo = win.min - 1;
+  const hi = win.max - 1e-6;
+  // 2. A persistent clan at its own strength, with loot from its treasury.
+  const rivalId = nearestClan(state.world, own - 1 + c.rivalAim, data, matched.clan ? [matched.clan] : []);
   if (rivalId) {
     const clan = state.world.clans[rivalId];
     const s = Math.max(lo, Math.min(hi, clan.strength));
-    const base = applyLootPenalty(clanVillage(rivalId, mixSeed(seed, 0x2), s, data), own, data);
+    const base = applyLootPenalty(scaleLoot(clanVillage(rivalId, mixSeed(seed, 0x2), s, data), treasuryLootFactor(clan, data)), own, data);
     base.trophies = trophiesFor(s, data);
     const status = clan.status === 'rebuilding' ? ' (rebuilding)' : clan.status === 'expanding' ? ' (expanding)' : '';
     out.push({ kind: 'rival', source: 'ai', clan: rivalId, strength: s, villageSeed: mixSeed(seed, 0x2), base, label: `${clanDef(data, rivalId).name}${status} · AI clan village`, defense: defensePower(base, data) });
   }
   // 3. An optional challenge above the matched strength.
-  const cs = Math.max(own - 0.5, Math.min(Math.min(top, own + b.challengeAbove) - 1e-6, mStrength + c.challengeStrengthAbove));
+  const b = data.clans.bands;
+  const cs = Math.max(own - 1 + c.rivalAim, Math.min(Math.min(top, own + b.challengeAbove, win.max) - 1e-6, mStrength + c.challengeStrengthAbove));
   if (cs > mStrength + 1e-3) {
     const used = out.map((x) => x.clan!).filter(Boolean);
     const fits = data.clans.clans.filter((d) => cs >= d.halls[0] - 1 && cs < d.halls[1] && !used.includes(d.id));

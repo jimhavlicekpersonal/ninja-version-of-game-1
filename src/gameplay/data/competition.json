@@ -22,6 +22,8 @@
     "weights": { "defense": 0.35, "offense": 0.3, "hall": 0.2, "skill": 0.15 },
     "recentBattles": 10,
     "matchTolerance": 0.25,
+    "scale": 1000,
+    "defaultSkill": 0.5,
     "trapHpEquivalent": 1000,
     "wallWeight": 0.25
   },
@@ -51,6 +53,7 @@
     "seasonDays": 28,
     "resetKeep": 0.5,
     "starWeight": 0.7,
+    "eloScale": 400,
     "keepClaimedSeasons": 24,
     "tiers": [
       { "name": "Bronze Kunai", "min": 0, "reward": { "moonstones": 5 } },

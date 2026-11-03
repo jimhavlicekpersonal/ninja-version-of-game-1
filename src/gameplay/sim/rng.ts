@@ -33,3 +33,13 @@ export function mixSeed(a: number, b: number): number {
   h = Math.imul(h, 0xc2b2ae35) >>> 0;
   return (h ^ (h >>> 16)) >>> 0;
 }
+
+/** Stable 32-bit hash of a string id (FNV-1a), for seeds. */
+export function hashId(id: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}

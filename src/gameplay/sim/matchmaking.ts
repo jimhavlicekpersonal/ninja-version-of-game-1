@@ -75,6 +75,16 @@ export function applyLootPenalty(base: BaseLayout, attackerHall: number, data: G
   return base;
 }
 
+/** Multiply the loot in a base (an AI clan's treasury). Mutates. */
+export function scaleLoot(base: BaseLayout, factor: number): BaseLayout {
+  if (factor === 1) return base;
+  for (const b of base.buildings) {
+    if (!b.loot) continue;
+    for (const k of Object.keys(b.loot) as ResourceKind[]) b.loot[k] = Math.floor((b.loot[k] ?? 0) * factor);
+  }
+  return base;
+}
+
 /** The generated opponent behind a scout seed, for this player. */
 export function opponentFor(seed: number, state: VillageState, data: GameData): BaseLayout {
   return opponentForRank(seed, state.trophies, hallLevel(state, data), data);
@@ -116,7 +126,7 @@ export interface BotAttacker {
 export function botArmy(hall: number, bias: number, data: GameData): Record<string, number> {
   const mixes = data.raids.botArmyMix;
   const mix = mixes[Math.max(1, Math.min(mixes.length, hall)) - 1];
-  const housing = Math.floor(maxHousingAtHall(hall, data) * (0.85 + 0.15 * bias));
+  const housing = Math.floor(maxHousingAtHall(hall, data) * (data.raids.botArmyHousing.base + data.raids.botArmyHousing.perBias * bias));
   const army: Record<string, number> = {};
   let used = 0;
   for (const [troop, share] of Object.entries(mix)) {

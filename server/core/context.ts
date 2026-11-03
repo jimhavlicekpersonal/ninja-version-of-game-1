@@ -28,3 +28,8 @@ export class ApiError extends Error {
 
 export const HOUR = 3_600_000;
 export const MIN = 60_000;
+
+/** How long a matched base stays reserved for its attacker. */
+export const TICKET_LOCK_MS = 5 * MIN;
+/** How long the attacker has to report the battle (3 minutes of play plus slack for bad connections). */
+export const TICKET_TTL_MS = HOUR;

@@ -116,17 +116,29 @@ export function factionMissions(state: VillageState, hall: number, data: GameDat
 export function supportSquad(state: VillageState, data: GameData): Record<string, number> {
   const f = state.world.faction;
   if (!f.id) return {};
-  const housing = factionRank(f.reputation, data).supportHousing;
+  const rank = factionRank(f.reputation, data);
+  const housing = rank.supportHousing;
   const dojo = Math.max(1, barracksLevel(state, data));
-  const mix = Object.entries(clanDef(data, f.id).army).filter(([t]) => data.troops[t] && data.troops[t].barracksLevel <= dojo);
+  const def = clanDef(data, f.id);
+  const mix = Object.entries(def.army).filter(([t]) => data.troops[t] && data.troops[t].barracksLevel <= dojo);
   const sum = mix.reduce((a, [, v]) => a + v, 0);
   const out: Record<string, number> = {};
   if (!housing || !sum) return out;
   let used = 0;
-  for (const [t, share] of mix) {
-    const n = Math.floor((housing * share) / sum / data.troops[t].housing);
+  // Faction perk: the clan's signature warrior, even before your Dojo unlocks it.
+  const sig = def.signature;
+  if (rank.index >= data.world.factions.signatureRank && data.troops[sig] && data.troops[sig].barracksLevel > dojo) {
+    const n = Math.floor((housing * data.world.factions.signatureShare) / data.troops[sig].housing);
     if (n > 0) {
-      out[t] = n;
+      out[sig] = n;
+      used += n * data.troops[sig].housing;
+    }
+  }
+  const rest = housing - used;
+  for (const [t, share] of mix) {
+    const n = Math.floor((rest * share) / sum / data.troops[t].housing);
+    if (n > 0) {
+      out[t] = (out[t] ?? 0) + n;
       used += n * data.troops[t].housing;
     }
   }

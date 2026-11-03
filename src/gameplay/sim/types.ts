@@ -125,6 +125,8 @@ export interface ClanState {
   simulatedAt: number;
   /** Rebuilding ends at this time. */
   rebuildUntil: number;
+  /** The clan's treasury (Coins and Provisions). */
+  resources: { acorns: number; dew: number };
   /** The clan's next raid on the player falls in [retaliateAt, retaliateAt + window); 0 = none planned. */
   retaliateAt: number;
   /** Times the player beat this clan, and times it beat the player's defenses. */
@@ -159,6 +161,8 @@ export interface WorldTarget {
   strength: number;
   variant: number;
   playerHall: number;
+  /** Loot multiplier from the owning clan's treasury when scouted (absent on older saves = 1). */
+  lootFactor?: number;
 }
 
 export interface FactionWarRecord {
@@ -538,6 +542,8 @@ export interface RaidsDef {
   botArmyMix: Record<string, number>[];
   /** Most of each resource raiders can take from storages, by the defender's hall level. */
   storageLootCapByHall: number[];
+  /** Share of a Keep's full army housing a raider brings: base + perBias x bias. */
+  botArmyHousing: { base: number; perBias: number };
 }
 
 export interface PackDef {
@@ -732,6 +738,8 @@ export interface ClanDef {
   /** 0..1: how often it retaliates and expands. */
   aggression: number;
   rival: string;
+  /** Warrior a faction squad may bring before your Dojo unlocks it. */
+  signature: string;
 }
 
 export interface ClansDef {
@@ -739,6 +747,8 @@ export interface ClansDef {
   bands: { below: number; above: number; challengeAbove: number };
   sim: {
     stepHours: number;
+    /** New clans start up to this far above the bottom of their Keep range. */
+    startSpread: number;
     growthPerStep: number;
     maxStepsPerCatchUp: number;
     defeatStrengthLoss: number;
@@ -750,10 +760,12 @@ export interface ClansDef {
     reclaimMinHeldHours: number;
     maxNews: number;
   };
+  /** Distinct layouts per clan: village seeds are taken modulo `variants`, so each clan has a recognisable set. */
   generator: { maxAttempts: number; difficultyTolerance: number; variants: number };
-  candidates: { count: number; challengeStrengthAbove: number };
+  treasury: { fullRaids: number; incomePerStep: number; startFull: number; minLoot: number; maxLoot: number };
+  candidates: { count: number; rivalAim: number; challengeStrengthAbove: number };
   /** The tutorial raid; `power` scales its half-built defenses. */
-  firstRaid: { clan: string; name: string; loot: Cost; power: number };
+  firstRaid: { clan: string; name: string; power: number; buildings: { type: string; level: number; dx: number; dy: number; loot?: Cost }[] };
 }
 
 export interface FactionMissionDef {
@@ -767,12 +779,17 @@ export interface FactionMissionDef {
 }
 
 export interface WorldDef {
-  provinces: { id: string; name: string; clan: string }[];
+  provinces: { id: string; name: string; clan: string; terrain: string; ringScale: number }[];
+  /** Attempts to find an unused settlement name. */
+  nameTries: number;
   settlementKinds: { id: string; name: string; count: number; strength: number; tribute: boolean }[];
   conquestStars: number;
   tribute: { shareOfRaidLoot: number };
   factions: {
     switchCooldownHours: number;
+    /** Rank index from which the squad may include the clan's signature warrior. */
+    signatureRank: number;
+    signatureShare: number;
     ranks: { name: string; reputation: number; supportHousing: number }[];
     missionsPerDay: number;
     missions: FactionMissionDef[];
@@ -796,6 +813,10 @@ export interface CompetitionDef {
   pvp: { minHall: number; standardHall: number };
   rating: {
     weights: { defense: number; offense: number; hall: number; skill: number };
+    /** Each input is normalised to 0..scale. */
+    scale: number;
+    /** Skill with no attack history. */
+    defaultSkill: number;
     recentBattles: number;
     matchTolerance: number;
     /** A trap counts as a defense with this HP and its damage as DPS. */
@@ -821,6 +842,8 @@ export interface CompetitionDef {
     seasonDays: number;
     resetKeep: number;
     starWeight: number;
+    /** Elo scale: a rating gap of this size means 10:1 expected odds. */
+    eloScale: number;
     /** Claimed season ids kept in the save. */
     keepClaimedSeasons: number;
     tiers: { name: string; min: number; reward: Cost }[];
