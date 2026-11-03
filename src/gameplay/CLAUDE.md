@@ -19,7 +19,7 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - `sim/trials.ts` + `data/trials.json`: Shadow Trials, the endless ladder, rewarded once per tier through the `trialEnd` command.
 - `sim/progression.ts` + `data/progression.json` + `data/roster.json`: the power-budget model. All 50 warriors are playable through Keep 15. Four heroes and the non-live buildings remain planned (20 of them carry `counters`/`counteredBy` against the roster; `building-matchups.test.ts`).
 - `sim/battle/warriors.ts`: data-driven warrior abilities (`TroopDef.kit` in `troops.json`). Auras, same-type poison and overlapping same-type burning do not stack. Jams/stuns share recovery immunity. Companions split their owner's stat budget and never consume extra inventory. Per-battle effects reconstruct from seed + deployments.
-- Training checks both `unlockKeep` and Dojo level; research uses each troop's `levelCapOffset`. Keep-indexed economic tables cover 1–15. Preserve all original six-unit stats through level 5.
+- Training checks both `unlockKeep` and Dojo level; research uses each troop's `levelCapOffset`. Keep-indexed economic tables cover 1–15. Preserve all original six-unit stats through level 5, except Kite Raider (`owl_bomber`), which took the air-role cut (0.45× HP, 0.75× damage) with the other flyers.
 - `control/controller.ts`: command dispatch, saving. `control/battleSession.ts`: real-time battle stepping.
 
 ## Invariants with tests (keep them green)

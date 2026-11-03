@@ -13,7 +13,7 @@
 | Guardian (`guardian`) | 5 | 0.8 | 0.1 | defense |  |  | 1 | 39 | Armoured frontliner that walks into defenses and soaks fire. |
 | Saboteur (`saboteur`) | 2 | 0.6 | 0.22 | defense |  | yes | 0.72 | 25 | Specialist that disables defenses for a short time. |
 | Infiltrator (`infiltrator`) | 2 | 0.6 | 0.22 | any |  | yes | 0.95 | 6.25 | Gets past walls by tunnel, rope or rooftop. |
-| Sky (`sky`) | 4 | 0.5 | 0.2 | defense | yes | yes | 0.85 | 4.5 | Flies over everything; only anti-air can touch it. |
+| Sky (`sky`) | 4 | 0.5 | 0.2 | defense | yes | yes | 0.494 | 2.7 | Flies over everything; only anti-air can touch it, so it is fragile and hits lighter. |
 | Mystic (`mystic`) | 3 | 3 | 0.15 | support |  |  | 0.7 | 12 | Supports nearby warriors: heals, haste, shields. |
 | Siege (`siege`) | 3 | 1 | 0.12 | walls |  |  | 0.9 | 3 | Breaks walls and buildings fast; weak against defenses. |
 | Beast (`beast`) | 3 | 0.6 | 0.2 | any |  |  | 0.95 | 8 | Handlers and their animals: numbers and charges. |
@@ -48,11 +48,11 @@
 | 23 | **Grapple Raider** `grapple_raider` | Infiltrator | 3 Veteran | 8 | Grapple Line: Swings over walls straight to the nearest defense. | 305 / 49 | 16 | 1812 / 290 | 25k | yes (`grapple_raider`) |
 | 24 | **Mole King** `mole_king` | Infiltrator | 4 Master | 11 | Surface Stun: Bursts out of the ground beside a defense, stunning it for 2 seconds. | 667 / 107 | 14 | 1885 / 302 | 29k | yes (`mole_king`) |
 | 25 | **Phantom Gate** `phantom_gate` | Infiltrator | 5 Legend | 14 | Open Path: Walls near it crumble, opening a path for everyone. | 1457 / 233 | 12 | 1961 / 314 | 34k | yes (`phantom_gate`) |
-| 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 174 / 39 | 20 | 2516 / 559 | 58k | yes (`owl_bomber`) |
-| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 246 / 55 | 18 | 2644 / 587 | 69k | yes (`crane_glider`) |
-| 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 463 / 103 | 16 | 2751 / 611 | 82k | yes (`lantern_balloon`) |
-| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 45% damage each. | 1013 / 225 | 14 | 2862 / 636 | 97k | yes (`thunder_kite`) |
-| 30 | **Dragon Kite Armada** `dragon_kite_armada` | Sky | 5 Legend | 14 | Armada: A heavy dragon kite carrying a crew of bombers. | 2213 / 492 | 12 | 2978 / 662 | 115k | yes (`dragon_kite_armada`) |
+| 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 78 / 29 | 20 | 1132 / 419 | 58k | yes (`owl_bomber`) |
+| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 111 / 41 | 18 | 1190 / 441 | 69k | yes (`crane_glider`) |
+| 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 208 / 77 | 16 | 1238 / 458 | 82k | yes (`lantern_balloon`) |
+| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 45% damage each. | 456 / 169 | 14 | 1288 / 477 | 97k | yes (`thunder_kite`) |
+| 30 | **Dragon Kite Armada** `dragon_kite_armada` | Sky | 5 Legend | 14 | Armada: A heavy dragon kite carrying a crew of bombers. | 996 / 369 | 12 | 1340 / 496 | 115k | yes (`dragon_kite_armada`) |
 | 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals nearby warriors over time. | 177 / 15 | 20 | 2563 / 214 | 8772 | yes (`herbalist`) |
 | 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack. | 248 / 21 | 18 | 2667 / 222 | 10k | yes (`drum_monk`) |
 | 33 | **Mist Weaver** `mist_weaver` | Mystic | 3 Veteran | 8 | Veil: Wraps nearby warriors in thin mist (a small moving smoke cloud). | 467 / 39 | 16 | 2774 / 231 | 12k | yes (`mist_weaver`) |
@@ -195,7 +195,7 @@
 | **Kunai Tower** `acorn_cannon` | defense | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | 14 | 15 | yes |
 | **Firework Mortar** `pinecone_catapult` | defense | 3 | · | · | 1 | 2 | 3 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | 8 | 8 | 9 | yes |
 | **Shuriken Pagoda** `wasp_nest` | defense | 2 | · | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | yes |
-| **Sky Bow Tower** `firefly_tower` | defense | 4 | · | · | · | 1 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | yes |
+| **Sky Bow Tower** `firefly_tower` | defense | 4 | · | · | · | 1 | 2 | 3 | 4 | 5 | 5 | 6 | 7 | 8 | 8 | 9 | 10 | yes |
 | **Stone Wall** `bramble_hedge` | hedge | 1 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | yes |
 | **Spike Pit** `thorn_snare` | trap | 3 | · | · | 2 | 3 | 3 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | 8 | 8 | 9 | yes |
 | **Caltrop Field** `sap_puddle` | trap | 3 | · | · | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | yes |

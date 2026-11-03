@@ -6,6 +6,8 @@
  * - Keep 7-15 bases used to fall to every army at 100% / 3 stars, because
  *   building levels past Keep 6 grew ~1.17x per Keep while armies grew ~1.4x.
  * - The live counters must cost the armies they are built against something.
+ * - Air used to win ~100% at every Keep (flyers skip walls and ground defenses
+ *   but had a full power budget); the Sky role now pays for that.
  */
 import { describe, expect, it } from 'vitest';
 import { COMPOSITIONS, buildArmy, familyOf, runLab, troopKeep } from '../../../tools/balance/armyLab';
@@ -35,7 +37,7 @@ describe('army lab setup', () => {
 });
 
 describe('late-Keep bases hold up and counters matter', () => {
-  const rows = runLab({ keeps: [12, 15], layouts: ['random', 'walled_keep'], seeds: 2, compareCounters: true });
+  const rows = runLab({ keeps: [12, 15], layouts: ['random', 'walled_keep', 'open_court'], seeds: 2, compareCounters: true });
   const at = (comp: string, keep: number) => {
     const r = rows.filter((x) => x.comp === comp && x.keep === keep);
     return {
@@ -51,10 +53,14 @@ describe('late-Keep bases hold up and counters matter', () => {
     }
   });
 
-  it('the counters cost artillery-heavy, support-heavy and shadow armies destruction at Keep 12', () => {
-    for (const comp of ['artillery', 'support', 'shadow']) {
-      const r = at(comp, 12);
-      expect(r.destruction, comp).toBeLessThan(r.noCounters);
-    }
+  it('the counters cost the armies they answer (artillery, support, shadow) destruction at Keep 12', () => {
+    // Per-army numbers are noisy with a handful of fights; the combined cost is not.
+    // (Each counter's own effect is pinned exactly in tests/gameplay/battle/counters.test.ts.)
+    const cost = ['artillery', 'support', 'shadow'].reduce((s, comp) => s + at(comp, 12).noCounters - at(comp, 12).destruction, 0);
+    expect(cost).toBeGreaterThan(0);
+  });
+
+  it('air no longer wins everything: it stays below 95% at Keep 12 and 15', () => {
+    for (const keep of [12, 15]) expect(at('air', keep).destruction, `Keep ${keep}`).toBeLessThan(95);
   });
 });

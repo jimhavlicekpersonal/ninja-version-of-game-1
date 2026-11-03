@@ -702,7 +702,7 @@
         },
         "firefly_tower": {
           "count": 2,
-          "maxLevel": 4
+          "maxLevel": 5
         },
         "bramble_hedge": {
           "count": 125,
@@ -800,7 +800,7 @@
         },
         "firefly_tower": {
           "count": 2,
-          "maxLevel": 5
+          "maxLevel": 6
         },
         "bramble_hedge": {
           "count": 125,
@@ -897,8 +897,8 @@
           "maxLevel": 7
         },
         "firefly_tower": {
-          "count": 2,
-          "maxLevel": 5
+          "count": 3,
+          "maxLevel": 6
         },
         "bramble_hedge": {
           "count": 125,
@@ -995,8 +995,8 @@
           "maxLevel": 7
         },
         "firefly_tower": {
-          "count": 2,
-          "maxLevel": 6
+          "count": 3,
+          "maxLevel": 7
         },
         "bramble_hedge": {
           "count": 125,
@@ -1097,8 +1097,8 @@
           "maxLevel": 8
         },
         "firefly_tower": {
-          "count": 2,
-          "maxLevel": 6
+          "count": 3,
+          "maxLevel": 8
         },
         "bramble_hedge": {
           "count": 125,
@@ -1199,8 +1199,8 @@
           "maxLevel": 8
         },
         "firefly_tower": {
-          "count": 2,
-          "maxLevel": 7
+          "count": 3,
+          "maxLevel": 9
         },
         "bramble_hedge": {
           "count": 125,
@@ -1301,8 +1301,8 @@
           "maxLevel": 9
         },
         "firefly_tower": {
-          "count": 2,
-          "maxLevel": 7
+          "count": 3,
+          "maxLevel": 10
         },
         "bramble_hedge": {
           "count": 125,

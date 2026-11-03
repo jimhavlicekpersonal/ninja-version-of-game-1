@@ -15,6 +15,7 @@ Every warrior, building, EXP track and difficulty tier is priced in one currency
 ## Why this works
 
 1. **It reproduces the existing balance.** All six live troops (Shinobi, Kunai Adept, Armored Guardian, Saboteur, Tunnel Runner, Kite Raider) land within 3% of the model's HP and DPS at level 1. Their level growth matches 1.16 within 4%. These are tests, so the live game and the design can't drift apart.
+2. **Air pays for flying.** The Sky role's efficiency is 0.494 (HP/DPS 2.7): flyers ignore walls and ground-only defenses, so a full budget let air armies win ~100% at every Keep. Measured with `npm run balance:armies`.
 2. **No dominance inside a tier.** Same tier and level means the same budget per housing (scaled by role efficiency). Warriors differ in *what they do*, not in raw strength. This extends the existing balance fix #7 ("no troop dominates another").
 3. **New tiers excite without making old ones useless.** A newly unlocked tier starts no stronger than the tier below at its cap (tested). At the pinnacle each tier is about 4% stronger than the one below. Legends are about 1.2× Initiates, not 10×.
 4. **Every Keep level brings something new.** Ten roles per tier, spread over 3 Keep levels, so 3–4 warriors unlock at every level from 1 to 15 (tested).

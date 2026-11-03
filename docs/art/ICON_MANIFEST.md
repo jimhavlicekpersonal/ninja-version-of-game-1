@@ -354,11 +354,11 @@
 | `icon.building.wasp_nest.s3` | `public/art/icons/buildings/wasp_nest_s3.png` | 256 | Shuriken Pagoda (defense) | 3 (6-7) | yes |
 | `icon.building.wasp_nest.s4` | `public/art/icons/buildings/wasp_nest_s4.png` | 256 | Shuriken Pagoda (defense) | 4 (8-10) | yes |
 | `icon.building.wasp_nest.s5` | `public/art/icons/buildings/wasp_nest_s5.png` | 256 | Shuriken Pagoda (defense) | 5 (11-13) | yes |
-| `icon.building.firefly_tower.s1` | `public/art/icons/buildings/firefly_tower_s1.png` | 256 | Sky Bow Tower (defense) | 1 (1-1) | yes |
-| `icon.building.firefly_tower.s2` | `public/art/icons/buildings/firefly_tower_s2.png` | 256 | Sky Bow Tower (defense) | 2 (2-2) | yes |
-| `icon.building.firefly_tower.s3` | `public/art/icons/buildings/firefly_tower_s3.png` | 256 | Sky Bow Tower (defense) | 3 (3-4) | yes |
-| `icon.building.firefly_tower.s4` | `public/art/icons/buildings/firefly_tower_s4.png` | 256 | Sky Bow Tower (defense) | 4 (5-5) | yes |
-| `icon.building.firefly_tower.s5` | `public/art/icons/buildings/firefly_tower_s5.png` | 256 | Sky Bow Tower (defense) | 5 (6-7) | yes |
+| `icon.building.firefly_tower.s1` | `public/art/icons/buildings/firefly_tower_s1.png` | 256 | Sky Bow Tower (defense) | 1 (1-2) | yes |
+| `icon.building.firefly_tower.s2` | `public/art/icons/buildings/firefly_tower_s2.png` | 256 | Sky Bow Tower (defense) | 2 (3-4) | yes |
+| `icon.building.firefly_tower.s3` | `public/art/icons/buildings/firefly_tower_s3.png` | 256 | Sky Bow Tower (defense) | 3 (5-6) | yes |
+| `icon.building.firefly_tower.s4` | `public/art/icons/buildings/firefly_tower_s4.png` | 256 | Sky Bow Tower (defense) | 4 (7-8) | yes |
+| `icon.building.firefly_tower.s5` | `public/art/icons/buildings/firefly_tower_s5.png` | 256 | Sky Bow Tower (defense) | 5 (9-10) | yes |
 | `icon.building.bramble_hedge.s1` | `public/art/icons/buildings/bramble_hedge_s1.png` | 256 | Stone Wall (hedge) | 1 (1-2) | yes |
 | `icon.building.bramble_hedge.s2` | `public/art/icons/buildings/bramble_hedge_s2.png` | 256 | Stone Wall (hedge) | 2 (3-5) | yes |
 | `icon.building.bramble_hedge.s3` | `public/art/icons/buildings/bramble_hedge_s3.png` | 256 | Stone Wall (hedge) | 3 (6-7) | yes |
