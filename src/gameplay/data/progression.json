@@ -567,6 +567,498 @@
       "pinnacleMaxLevel": 8,
       "live": false,
       "description": "The keep's last word: enormous damage, very slow."
+    },
+    {
+      "id": "whirling_blade_tower",
+      "name": "Whirling Blade Tower",
+      "category": "defense",
+      "unlockKeep": 4,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back.",
+      "effect": {
+        "kind": "spin_aoe",
+        "radius": 1.2,
+        "groundOnly": true
+      },
+      "counters": [
+        "shinobi",
+        "twin_fang_dancer",
+        "hound_handler",
+        "trap_breaker"
+      ],
+      "counteredBy": [
+        "armored_guardian",
+        "siege_bombardier",
+        "iron_monk"
+      ]
+    },
+    {
+      "id": "paper_lantern_line",
+      "name": "Paper Lantern Line",
+      "category": "trap",
+      "unlockKeep": 5,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Lanterns strung between rooftops. Hidden warriors within 2 tiles of the line are revealed for 4 seconds and take 15% more damage while lit.",
+      "effect": {
+        "kind": "reveal_line",
+        "radius": 2,
+        "seconds": 4,
+        "vulnerablePct": 0.15
+      },
+      "counters": [
+        "shadow_stalker",
+        "potted_plant_ninja",
+        "eclipse_ninja"
+      ],
+      "counteredBy": [
+        "kite_raider",
+        "shuriken_storm",
+        "fire_monk"
+      ]
+    },
+    {
+      "id": "rain_barrel_tower",
+      "name": "Rain Barrel Tower",
+      "category": "defense",
+      "unlockKeep": 5,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Douses fire: burning buildings and burning ground within 2.5 tiles go out after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.",
+      "effect": {
+        "kind": "extinguish",
+        "radius": 2.5,
+        "burnMaxSeconds": 1,
+        "splashCutPct": 0.25
+      },
+      "counters": [
+        "fire_monk",
+        "volcano_cannoneer",
+        "kite_raider"
+      ],
+      "counteredBy": [
+        "thunder_kite",
+        "storm_sovereign",
+        "ram_crew"
+      ]
+    },
+    {
+      "id": "listening_jars",
+      "name": "Listening Jars",
+      "category": "trap",
+      "unlockKeep": 5,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed.",
+      "effect": {
+        "kind": "detect_underground",
+        "radius": 3,
+        "stunSeconds": 1,
+        "revealRadius": 2
+      },
+      "counters": [
+        "tunnel_runner",
+        "mole_king",
+        "shadow_stalker"
+      ],
+      "counteredBy": [
+        "karaoke_saboteur",
+        "trap_breaker",
+        "wall_climber"
+      ]
+    },
+    {
+      "id": "living_bamboo_wall",
+      "name": "Living Bamboo Wall",
+      "category": "hedge",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x).",
+      "effect": {
+        "kind": "regrow_wall",
+        "regenPctPerSecond": 0.03,
+        "wallMultDamp": 0.5,
+        "noClimb": true
+      },
+      "counters": [
+        "ram_crew",
+        "oni_breaker",
+        "phantom_gate",
+        "wall_climber"
+      ],
+      "counteredBy": [
+        "fire_monk",
+        "volcano_cannoneer",
+        "tunnel_runner"
+      ]
+    },
+    {
+      "id": "clockwork_repairer",
+      "name": "Clockwork Repair Crane",
+      "category": "support",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.",
+      "effect": {
+        "kind": "shorten_disables",
+        "radius": 3,
+        "pct": 0.5,
+        "uses": 3
+      },
+      "counters": [
+        "saboteur",
+        "karaoke_saboteur",
+        "ghost_engineer",
+        "mole_king"
+      ],
+      "counteredBy": [
+        "fuse_master",
+        "tunnel_runner",
+        "phantom_gate"
+      ]
+    },
+    {
+      "id": "bitter_incense_burner",
+      "name": "Bitter Incense Burner",
+      "category": "support",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. (The sugar crash is not shortened.)",
+      "effect": {
+        "kind": "anti_heal",
+        "radius": 3,
+        "healCutPct": 0.5,
+        "buffDurationPct": 0.5
+      },
+      "counters": [
+        "herbalist",
+        "bubble_tea_alchemist",
+        "iron_monk",
+        "sage_of_clouds"
+      ],
+      "counteredBy": [
+        "rubber_duck_sniper",
+        "kunai_adept",
+        "dragon_kite_armada"
+      ]
+    },
+    {
+      "id": "straw_scarecrow",
+      "name": "Straw Scarecrow",
+      "category": "trap",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Animals cannot resist it, and birds are terrified of it. Beasts and their companions within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.",
+      "effect": {
+        "kind": "beast_decoy",
+        "radius": 3,
+        "scaresBirds": true
+      },
+      "counters": [
+        "hound_handler",
+        "goose_wrangler",
+        "crane_glider"
+      ],
+      "counteredBy": [
+        "shuriken_storm",
+        "cannonball_grandma",
+        "fire_monk"
+      ]
+    },
+    {
+      "id": "mirror_screen",
+      "name": "Bronze Mirror Screen",
+      "category": "defense",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.",
+      "effect": {
+        "kind": "reflect_projectiles",
+        "every": 3
+      },
+      "counters": [
+        "kunai_adept",
+        "chain_sickle_reaper",
+        "siege_bombardier"
+      ],
+      "counteredBy": [
+        "oni_breaker",
+        "sushi_chef_assassin",
+        "tiger_lord"
+      ]
+    },
+    {
+      "id": "sand_bucket_post",
+      "name": "Sand Bucket Post",
+      "category": "support",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "A bucket crew that smothers explosions: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.",
+      "effect": {
+        "kind": "smother_splash",
+        "radius": 3,
+        "splashCutPct": 0.3,
+        "defuses": 2
+      },
+      "counters": [
+        "fuse_master",
+        "cannonball_grandma",
+        "shuriken_storm"
+      ],
+      "counteredBy": [
+        "hound_handler",
+        "goose_wrangler",
+        "twin_fang_dancer"
+      ]
+    },
+    {
+      "id": "kite_cutter_ballista",
+      "name": "Kite-Cutter Ballista",
+      "category": "defense",
+      "unlockKeep": 8,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.",
+      "effect": {
+        "kind": "ground_flyers",
+        "seconds": 3,
+        "undodgeable": true,
+        "airOnly": true
+      },
+      "counters": [
+        "crane_glider",
+        "thunder_kite",
+        "dragon_kite_armada",
+        "hawk_tamer"
+      ],
+      "counteredBy": [
+        "saboteur",
+        "shadow_stalker",
+        "mole_king"
+      ]
+    },
+    {
+      "id": "discipline_banner",
+      "name": "Discipline Banner",
+      "category": "support",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "A clan banner that keeps nearby defenders focused: defenses within 3 tiles cannot be taunted, glued or distracted by snacks.",
+      "effect": {
+        "kind": "focus_aura",
+        "radius": 3,
+        "ignores": [
+          "taunt",
+          "target_lock",
+          "snack"
+        ]
+      },
+      "counters": [
+        "goose_wrangler",
+        "mochi_mortar",
+        "sushi_chef_assassin"
+      ],
+      "counteredBy": [
+        "karaoke_saboteur",
+        "ghost_engineer",
+        "moonblade_master"
+      ]
+    },
+    {
+      "id": "spotter_perch",
+      "name": "Spotter's Perch",
+      "category": "support",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "A lookout who calls targets: defenses within 3 tiles retarget instantly, cannot lose their target to squeaks or shadow steps, and are not fooled by decoys.",
+      "effect": {
+        "kind": "instant_retarget",
+        "radius": 3
+      },
+      "counters": [
+        "rubber_duck_sniper",
+        "void_walker",
+        "mirage_twin"
+      ],
+      "counteredBy": [
+        "thousand_needle",
+        "mochi_mortar",
+        "mime_ninja"
+      ]
+    },
+    {
+      "id": "steam_vent",
+      "name": "Steam Vent",
+      "category": "defense",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Blasts scalding steam in a 2-tile circle. No projectiles, so nothing can reflect, block or dodge it, and decoys do not fool it.",
+      "effect": {
+        "kind": "no_projectile_aoe",
+        "radius": 2
+      },
+      "counters": [
+        "sumo_boulder",
+        "mime_ninja",
+        "mirage_twin"
+      ],
+      "counteredBy": [
+        "thousand_needle",
+        "kunai_adept",
+        "mountain_shield",
+        "hawk_tamer"
+      ]
+    },
+    {
+      "id": "sleep_dart_tower",
+      "name": "Sleep Dart Tower",
+      "category": "defense",
+      "unlockKeep": 10,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters.",
+      "effect": {
+        "kind": "sleep",
+        "seconds": 2,
+        "oncePerTarget": true
+      },
+      "counters": [
+        "bear_warrior",
+        "oni_breaker",
+        "armored_guardian",
+        "moonblade_master"
+      ],
+      "counteredBy": [
+        "sage_of_clouds",
+        "bubble_tea_alchemist",
+        "drum_monk"
+      ]
+    },
+    {
+      "id": "rolling_log_chute",
+      "name": "Rolling Log Chute",
+      "category": "trap",
+      "unlockKeep": 8,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads.",
+      "effect": {
+        "kind": "line_crush",
+        "width": 1,
+        "length": 6
+      },
+      "counters": [
+        "mountain_shield",
+        "iron_monk",
+        "drum_monk",
+        "tiger_lord"
+      ],
+      "counteredBy": [
+        "crane_glider",
+        "bear_warrior",
+        "spirit_caller"
+      ]
+    },
+    {
+      "id": "moonlit_gravel",
+      "name": "Moonlit Gravel Garden",
+      "category": "trap",
+      "unlockKeep": 12,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Raked gravel that crunches: anything that teleports, lands or drops onto it is stunned for 1.5 seconds.",
+      "effect": {
+        "kind": "arrival_stun",
+        "stunSeconds": 1.5
+      },
+      "counters": [
+        "void_walker",
+        "cannonball_grandma"
+      ],
+      "counteredBy": [
+        "eclipse_ninja",
+        "trap_breaker",
+        "kite_raider"
+      ]
+    },
+    {
+      "id": "ink_seal_post",
+      "name": "Ink Seal Post",
+      "category": "support",
+      "unlockKeep": 12,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.",
+      "effect": {
+        "kind": "no_revive",
+        "radius": 3
+      },
+      "counters": [
+        "spirit_caller",
+        "dragon_kite_armada"
+      ],
+      "counteredBy": [
+        "herbalist",
+        "void_walker",
+        "iron_monk"
+      ]
+    },
+    {
+      "id": "longbow_yagura",
+      "name": "Longbow Yagura",
+      "category": "defense",
+      "unlockKeep": 12,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.",
+      "effect": {
+        "kind": "counter_artillery",
+        "range": 8,
+        "minRange": 2,
+        "prefersBeyond": 4
+      },
+      "counters": [
+        "siege_bombardier",
+        "thousand_needle",
+        "hawk_tamer"
+      ],
+      "counteredBy": [
+        "shinobi",
+        "potted_plant_ninja",
+        "mirage_twin"
+      ]
+    },
+    {
+      "id": "lightning_rod_pagoda",
+      "name": "Lightning Rod Pagoda",
+      "category": "defense",
+      "unlockKeep": 13,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.",
+      "effect": {
+        "kind": "absorb_lightning",
+        "radius": 3
+      },
+      "counters": [
+        "storm_sovereign",
+        "thunder_kite"
+      ],
+      "counteredBy": [
+        "mole_king",
+        "chain_sickle_reaper",
+        "sumo_boulder"
+      ]
     }
   ]
 }

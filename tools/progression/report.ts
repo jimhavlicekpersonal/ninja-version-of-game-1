@@ -166,6 +166,10 @@ export function rosterMarkdown(): string {
   for (const m of [1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100]) L.push(`| ${m} | ${fmt(masteryXpTotal(m))} | +${(masteryBonus(m) * 100).toFixed(1)}% |`);
   L.push('', '## Buildings: max level by Clan Keep level', '', `| Building | Category | Unlock | ${Array.from({ length: K }, (_, i) => i + 1).join(' | ')} | Live |`, `|---|---|---|${'---|'.repeat(K)}---|`);
   for (const b of BUILDINGS) L.push(`| **${b.name}** \`${b.id}\` | ${b.category} | ${b.unlockKeep} | ${Array.from({ length: K }, (_, i) => buildingMaxLevelAt(b, i + 1, data) || '·').join(' | ')} | ${b.live ? 'yes' : 'planned'} |`);
+  const wName = (id: string) => WARRIORS.find((w) => w.id === id)?.name ?? id;
+  const designed = BUILDINGS.filter((b) => b.counters);
+  L.push('', '## Buildings designed against the warriors (planned)', '', 'Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.ts`: each building beats 2-4 warriors from at least 2 roles and is beaten by 2-4 others; every warrior has a building it fears and one it beats; no warrior is countered by more than 2; counters are soft (at most 50%, at most 4 s); a building never unlocks before something can beat it; Keep 4+ warriors meet their first counter within 3 Keep levels.', '', '| Building | Category | Unlock | What it does | Beats | Beaten by |', '|---|---|---|---|---|---|');
+  for (const b of designed) L.push(`| **${b.name}** \`${b.id}\` | ${b.category} | ${b.unlockKeep} | ${b.description} | ${b.counters!.map(wName).join(', ')} | ${b.counteredBy!.map(wName).join(', ')} |`);
   L.push('', '## Expected attack power and Shadow Trial ladder', '', '| Keep | Expected army power | Trial tiers at this Keep | Defense power x | Reward (Coins, first clear) |', '|---|---|---|---|---|');
   for (let k = 1; k <= K; k++) {
     const first = (k - 1) * data.trials.tiersPerHall + 1;

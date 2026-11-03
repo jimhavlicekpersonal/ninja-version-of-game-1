@@ -66,6 +66,10 @@ export interface BuildingEntry {
   pinnacleMaxLevel: number;
   live: boolean;
   description?: string;
+  /** Planned buildings designed against the warrior roster: what they do, whom they beat, who beats them. */
+  effect?: { kind: string; [param: string]: number | string | boolean | string[] };
+  counters?: string[];
+  counteredBy?: string[];
 }
 
 export const MODEL = progression;

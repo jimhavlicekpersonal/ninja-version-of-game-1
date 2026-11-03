@@ -1,6 +1,6 @@
 {
   "generated": "npm run docs:progression",
-  "count": 504,
+  "count": 604,
   "icons": [
     {
       "key": "icon.warrior.shinobi.s1",
@@ -5575,6 +5575,1406 @@
       ],
       "live": false,
       "prompt": "Isometric icon of the Great Dragon Cannon: The keep's last word: enormous damage, very slow.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.whirling_blade_tower.s1",
+      "file": "public/art/icons/buildings/whirling_blade_tower_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Whirling Blade Tower (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Whirling Blade Tower: Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.whirling_blade_tower.s2",
+      "file": "public/art/icons/buildings/whirling_blade_tower_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Whirling Blade Tower (defense)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Whirling Blade Tower: Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.whirling_blade_tower.s3",
+      "file": "public/art/icons/buildings/whirling_blade_tower_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Whirling Blade Tower (defense)",
+      "stage": 3,
+      "levels": [
+        5,
+        7
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Whirling Blade Tower: Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.whirling_blade_tower.s4",
+      "file": "public/art/icons/buildings/whirling_blade_tower_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Whirling Blade Tower (defense)",
+      "stage": 4,
+      "levels": [
+        8,
+        9
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Whirling Blade Tower: Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.whirling_blade_tower.s5",
+      "file": "public/art/icons/buildings/whirling_blade_tower_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Whirling Blade Tower (defense)",
+      "stage": 5,
+      "levels": [
+        10,
+        12
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Whirling Blade Tower: Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.paper_lantern_line.s1",
+      "file": "public/art/icons/buildings/paper_lantern_line_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Paper Lantern Line (trap)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors within 2 tiles of the line are revealed for 4 seconds and take 15% more damage while lit.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.paper_lantern_line.s2",
+      "file": "public/art/icons/buildings/paper_lantern_line_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Paper Lantern Line (trap)",
+      "stage": 2,
+      "levels": [
+        2,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors within 2 tiles of the line are revealed for 4 seconds and take 15% more damage while lit.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.paper_lantern_line.s3",
+      "file": "public/art/icons/buildings/paper_lantern_line_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Paper Lantern Line (trap)",
+      "stage": 3,
+      "levels": [
+        3,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors within 2 tiles of the line are revealed for 4 seconds and take 15% more damage while lit.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.paper_lantern_line.s4",
+      "file": "public/art/icons/buildings/paper_lantern_line_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Paper Lantern Line (trap)",
+      "stage": 4,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors within 2 tiles of the line are revealed for 4 seconds and take 15% more damage while lit.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.paper_lantern_line.s5",
+      "file": "public/art/icons/buildings/paper_lantern_line_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Paper Lantern Line (trap)",
+      "stage": 5,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors within 2 tiles of the line are revealed for 4 seconds and take 15% more damage while lit.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.rain_barrel_tower.s1",
+      "file": "public/art/icons/buildings/rain_barrel_tower_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rain Barrel Tower (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rain Barrel Tower: Douses fire: burning buildings and burning ground within 2.5 tiles go out after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.rain_barrel_tower.s2",
+      "file": "public/art/icons/buildings/rain_barrel_tower_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rain Barrel Tower (defense)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rain Barrel Tower: Douses fire: burning buildings and burning ground within 2.5 tiles go out after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.rain_barrel_tower.s3",
+      "file": "public/art/icons/buildings/rain_barrel_tower_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rain Barrel Tower (defense)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rain Barrel Tower: Douses fire: burning buildings and burning ground within 2.5 tiles go out after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.rain_barrel_tower.s4",
+      "file": "public/art/icons/buildings/rain_barrel_tower_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rain Barrel Tower (defense)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rain Barrel Tower: Douses fire: burning buildings and burning ground within 2.5 tiles go out after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.rain_barrel_tower.s5",
+      "file": "public/art/icons/buildings/rain_barrel_tower_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rain Barrel Tower (defense)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rain Barrel Tower: Douses fire: burning buildings and burning ground within 2.5 tiles go out after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.listening_jars.s1",
+      "file": "public/art/icons/buildings/listening_jars_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Listening Jars (trap)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Listening Jars: Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.listening_jars.s2",
+      "file": "public/art/icons/buildings/listening_jars_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Listening Jars (trap)",
+      "stage": 2,
+      "levels": [
+        2,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Listening Jars: Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.listening_jars.s3",
+      "file": "public/art/icons/buildings/listening_jars_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Listening Jars (trap)",
+      "stage": 3,
+      "levels": [
+        3,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Listening Jars: Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.listening_jars.s4",
+      "file": "public/art/icons/buildings/listening_jars_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Listening Jars (trap)",
+      "stage": 4,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Listening Jars: Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.listening_jars.s5",
+      "file": "public/art/icons/buildings/listening_jars_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Listening Jars (trap)",
+      "stage": 5,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Listening Jars: Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.living_bamboo_wall.s1",
+      "file": "public/art/icons/buildings/living_bamboo_wall_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Living Bamboo Wall (hedge)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Living Bamboo Wall: A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x).. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.living_bamboo_wall.s2",
+      "file": "public/art/icons/buildings/living_bamboo_wall_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Living Bamboo Wall (hedge)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Living Bamboo Wall: A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x).. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.living_bamboo_wall.s3",
+      "file": "public/art/icons/buildings/living_bamboo_wall_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Living Bamboo Wall (hedge)",
+      "stage": 3,
+      "levels": [
+        5,
+        7
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Living Bamboo Wall: A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x).. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.living_bamboo_wall.s4",
+      "file": "public/art/icons/buildings/living_bamboo_wall_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Living Bamboo Wall (hedge)",
+      "stage": 4,
+      "levels": [
+        8,
+        9
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Living Bamboo Wall: A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x).. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.living_bamboo_wall.s5",
+      "file": "public/art/icons/buildings/living_bamboo_wall_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Living Bamboo Wall (hedge)",
+      "stage": 5,
+      "levels": [
+        10,
+        12
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Living Bamboo Wall: A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x).. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.clockwork_repairer.s1",
+      "file": "public/art/icons/buildings/clockwork_repairer_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Clockwork Repair Crane (support)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.clockwork_repairer.s2",
+      "file": "public/art/icons/buildings/clockwork_repairer_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Clockwork Repair Crane (support)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.clockwork_repairer.s3",
+      "file": "public/art/icons/buildings/clockwork_repairer_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Clockwork Repair Crane (support)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.clockwork_repairer.s4",
+      "file": "public/art/icons/buildings/clockwork_repairer_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Clockwork Repair Crane (support)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.clockwork_repairer.s5",
+      "file": "public/art/icons/buildings/clockwork_repairer_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Clockwork Repair Crane (support)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.bitter_incense_burner.s1",
+      "file": "public/art/icons/buildings/bitter_incense_burner_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bitter Incense Burner (support)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. (The sugar crash is not shortened.). Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.bitter_incense_burner.s2",
+      "file": "public/art/icons/buildings/bitter_incense_burner_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bitter Incense Burner (support)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. (The sugar crash is not shortened.). Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.bitter_incense_burner.s3",
+      "file": "public/art/icons/buildings/bitter_incense_burner_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bitter Incense Burner (support)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. (The sugar crash is not shortened.). Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.bitter_incense_burner.s4",
+      "file": "public/art/icons/buildings/bitter_incense_burner_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bitter Incense Burner (support)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. (The sugar crash is not shortened.). Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.bitter_incense_burner.s5",
+      "file": "public/art/icons/buildings/bitter_incense_burner_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bitter Incense Burner (support)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. (The sugar crash is not shortened.). Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.straw_scarecrow.s1",
+      "file": "public/art/icons/buildings/straw_scarecrow_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Straw Scarecrow (trap)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Straw Scarecrow: Animals cannot resist it, and birds are terrified of it. Beasts and their companions within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.straw_scarecrow.s2",
+      "file": "public/art/icons/buildings/straw_scarecrow_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Straw Scarecrow (trap)",
+      "stage": 2,
+      "levels": [
+        2,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Straw Scarecrow: Animals cannot resist it, and birds are terrified of it. Beasts and their companions within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.straw_scarecrow.s3",
+      "file": "public/art/icons/buildings/straw_scarecrow_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Straw Scarecrow (trap)",
+      "stage": 3,
+      "levels": [
+        3,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Straw Scarecrow: Animals cannot resist it, and birds are terrified of it. Beasts and their companions within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.straw_scarecrow.s4",
+      "file": "public/art/icons/buildings/straw_scarecrow_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Straw Scarecrow (trap)",
+      "stage": 4,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Straw Scarecrow: Animals cannot resist it, and birds are terrified of it. Beasts and their companions within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.straw_scarecrow.s5",
+      "file": "public/art/icons/buildings/straw_scarecrow_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Straw Scarecrow (trap)",
+      "stage": 5,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Straw Scarecrow: Animals cannot resist it, and birds are terrified of it. Beasts and their companions within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.mirror_screen.s1",
+      "file": "public/art/icons/buildings/mirror_screen_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bronze Mirror Screen (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.mirror_screen.s2",
+      "file": "public/art/icons/buildings/mirror_screen_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bronze Mirror Screen (defense)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.mirror_screen.s3",
+      "file": "public/art/icons/buildings/mirror_screen_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bronze Mirror Screen (defense)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.mirror_screen.s4",
+      "file": "public/art/icons/buildings/mirror_screen_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bronze Mirror Screen (defense)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.mirror_screen.s5",
+      "file": "public/art/icons/buildings/mirror_screen_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Bronze Mirror Screen (defense)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.sand_bucket_post.s1",
+      "file": "public/art/icons/buildings/sand_bucket_post_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sand Bucket Post (support)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sand Bucket Post: A bucket crew that smothers explosions: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.sand_bucket_post.s2",
+      "file": "public/art/icons/buildings/sand_bucket_post_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sand Bucket Post (support)",
+      "stage": 2,
+      "levels": [
+        2,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sand Bucket Post: A bucket crew that smothers explosions: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.sand_bucket_post.s3",
+      "file": "public/art/icons/buildings/sand_bucket_post_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sand Bucket Post (support)",
+      "stage": 3,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sand Bucket Post: A bucket crew that smothers explosions: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.sand_bucket_post.s4",
+      "file": "public/art/icons/buildings/sand_bucket_post_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sand Bucket Post (support)",
+      "stage": 4,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sand Bucket Post: A bucket crew that smothers explosions: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.sand_bucket_post.s5",
+      "file": "public/art/icons/buildings/sand_bucket_post_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sand Bucket Post (support)",
+      "stage": 5,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sand Bucket Post: A bucket crew that smothers explosions: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.kite_cutter_ballista.s1",
+      "file": "public/art/icons/buildings/kite_cutter_ballista_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Kite-Cutter Ballista (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.kite_cutter_ballista.s2",
+      "file": "public/art/icons/buildings/kite_cutter_ballista_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Kite-Cutter Ballista (defense)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.kite_cutter_ballista.s3",
+      "file": "public/art/icons/buildings/kite_cutter_ballista_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Kite-Cutter Ballista (defense)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.kite_cutter_ballista.s4",
+      "file": "public/art/icons/buildings/kite_cutter_ballista_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Kite-Cutter Ballista (defense)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.kite_cutter_ballista.s5",
+      "file": "public/art/icons/buildings/kite_cutter_ballista_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Kite-Cutter Ballista (defense)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.discipline_banner.s1",
+      "file": "public/art/icons/buildings/discipline_banner_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Discipline Banner (support)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Discipline Banner: A clan banner that keeps nearby defenders focused: defenses within 3 tiles cannot be taunted, glued or distracted by snacks.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.discipline_banner.s2",
+      "file": "public/art/icons/buildings/discipline_banner_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Discipline Banner (support)",
+      "stage": 2,
+      "levels": [
+        2,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Discipline Banner: A clan banner that keeps nearby defenders focused: defenses within 3 tiles cannot be taunted, glued or distracted by snacks.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.discipline_banner.s3",
+      "file": "public/art/icons/buildings/discipline_banner_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Discipline Banner (support)",
+      "stage": 3,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Discipline Banner: A clan banner that keeps nearby defenders focused: defenses within 3 tiles cannot be taunted, glued or distracted by snacks.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.discipline_banner.s4",
+      "file": "public/art/icons/buildings/discipline_banner_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Discipline Banner (support)",
+      "stage": 4,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Discipline Banner: A clan banner that keeps nearby defenders focused: defenses within 3 tiles cannot be taunted, glued or distracted by snacks.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.discipline_banner.s5",
+      "file": "public/art/icons/buildings/discipline_banner_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Discipline Banner (support)",
+      "stage": 5,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Discipline Banner: A clan banner that keeps nearby defenders focused: defenses within 3 tiles cannot be taunted, glued or distracted by snacks.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.spotter_perch.s1",
+      "file": "public/art/icons/buildings/spotter_perch_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Spotter's Perch (support)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Spotter's Perch: A lookout who calls targets: defenses within 3 tiles retarget instantly, cannot lose their target to squeaks or shadow steps, and are not fooled by decoys.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.spotter_perch.s2",
+      "file": "public/art/icons/buildings/spotter_perch_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Spotter's Perch (support)",
+      "stage": 2,
+      "levels": [
+        2,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Spotter's Perch: A lookout who calls targets: defenses within 3 tiles retarget instantly, cannot lose their target to squeaks or shadow steps, and are not fooled by decoys.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.spotter_perch.s3",
+      "file": "public/art/icons/buildings/spotter_perch_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Spotter's Perch (support)",
+      "stage": 3,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Spotter's Perch: A lookout who calls targets: defenses within 3 tiles retarget instantly, cannot lose their target to squeaks or shadow steps, and are not fooled by decoys.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.spotter_perch.s4",
+      "file": "public/art/icons/buildings/spotter_perch_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Spotter's Perch (support)",
+      "stage": 4,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Spotter's Perch: A lookout who calls targets: defenses within 3 tiles retarget instantly, cannot lose their target to squeaks or shadow steps, and are not fooled by decoys.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.spotter_perch.s5",
+      "file": "public/art/icons/buildings/spotter_perch_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Spotter's Perch (support)",
+      "stage": 5,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Spotter's Perch: A lookout who calls targets: defenses within 3 tiles retarget instantly, cannot lose their target to squeaks or shadow steps, and are not fooled by decoys.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.steam_vent.s1",
+      "file": "public/art/icons/buildings/steam_vent_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Steam Vent (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. No projectiles, so nothing can reflect, block or dodge it, and decoys do not fool it.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.steam_vent.s2",
+      "file": "public/art/icons/buildings/steam_vent_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Steam Vent (defense)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. No projectiles, so nothing can reflect, block or dodge it, and decoys do not fool it.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.steam_vent.s3",
+      "file": "public/art/icons/buildings/steam_vent_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Steam Vent (defense)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. No projectiles, so nothing can reflect, block or dodge it, and decoys do not fool it.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.steam_vent.s4",
+      "file": "public/art/icons/buildings/steam_vent_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Steam Vent (defense)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. No projectiles, so nothing can reflect, block or dodge it, and decoys do not fool it.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.steam_vent.s5",
+      "file": "public/art/icons/buildings/steam_vent_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Steam Vent (defense)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. No projectiles, so nothing can reflect, block or dodge it, and decoys do not fool it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.sleep_dart_tower.s1",
+      "file": "public/art/icons/buildings/sleep_dart_tower_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sleep Dart Tower (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sleep Dart Tower: Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.sleep_dart_tower.s2",
+      "file": "public/art/icons/buildings/sleep_dart_tower_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sleep Dart Tower (defense)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sleep Dart Tower: Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.sleep_dart_tower.s3",
+      "file": "public/art/icons/buildings/sleep_dart_tower_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sleep Dart Tower (defense)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sleep Dart Tower: Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.sleep_dart_tower.s4",
+      "file": "public/art/icons/buildings/sleep_dart_tower_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sleep Dart Tower (defense)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sleep Dart Tower: Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.sleep_dart_tower.s5",
+      "file": "public/art/icons/buildings/sleep_dart_tower_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Sleep Dart Tower (defense)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Sleep Dart Tower: Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.rolling_log_chute.s1",
+      "file": "public/art/icons/buildings/rolling_log_chute_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rolling Log Chute (trap)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rolling Log Chute: Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.rolling_log_chute.s2",
+      "file": "public/art/icons/buildings/rolling_log_chute_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rolling Log Chute (trap)",
+      "stage": 2,
+      "levels": [
+        2,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rolling Log Chute: Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.rolling_log_chute.s3",
+      "file": "public/art/icons/buildings/rolling_log_chute_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rolling Log Chute (trap)",
+      "stage": 3,
+      "levels": [
+        3,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rolling Log Chute: Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.rolling_log_chute.s4",
+      "file": "public/art/icons/buildings/rolling_log_chute_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rolling Log Chute (trap)",
+      "stage": 4,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rolling Log Chute: Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.rolling_log_chute.s5",
+      "file": "public/art/icons/buildings/rolling_log_chute_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Rolling Log Chute (trap)",
+      "stage": 5,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Rolling Log Chute: Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.moonlit_gravel.s1",
+      "file": "public/art/icons/buildings/moonlit_gravel_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Moonlit Gravel Garden (trap)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Moonlit Gravel Garden: Raked gravel that crunches: anything that teleports, lands or drops onto it is stunned for 1.5 seconds.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.moonlit_gravel.s2",
+      "file": "public/art/icons/buildings/moonlit_gravel_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Moonlit Gravel Garden (trap)",
+      "stage": 2,
+      "levels": [
+        2,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Moonlit Gravel Garden: Raked gravel that crunches: anything that teleports, lands or drops onto it is stunned for 1.5 seconds.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.moonlit_gravel.s3",
+      "file": "public/art/icons/buildings/moonlit_gravel_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Moonlit Gravel Garden (trap)",
+      "stage": 3,
+      "levels": [
+        3,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Moonlit Gravel Garden: Raked gravel that crunches: anything that teleports, lands or drops onto it is stunned for 1.5 seconds.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.moonlit_gravel.s4",
+      "file": "public/art/icons/buildings/moonlit_gravel_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Moonlit Gravel Garden (trap)",
+      "stage": 4,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Moonlit Gravel Garden: Raked gravel that crunches: anything that teleports, lands or drops onto it is stunned for 1.5 seconds.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.moonlit_gravel.s5",
+      "file": "public/art/icons/buildings/moonlit_gravel_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Moonlit Gravel Garden (trap)",
+      "stage": 5,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Moonlit Gravel Garden: Raked gravel that crunches: anything that teleports, lands or drops onto it is stunned for 1.5 seconds.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.ink_seal_post.s1",
+      "file": "public/art/icons/buildings/ink_seal_post_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Ink Seal Post (support)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.ink_seal_post.s2",
+      "file": "public/art/icons/buildings/ink_seal_post_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Ink Seal Post (support)",
+      "stage": 2,
+      "levels": [
+        2,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.ink_seal_post.s3",
+      "file": "public/art/icons/buildings/ink_seal_post_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Ink Seal Post (support)",
+      "stage": 3,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.ink_seal_post.s4",
+      "file": "public/art/icons/buildings/ink_seal_post_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Ink Seal Post (support)",
+      "stage": 4,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.ink_seal_post.s5",
+      "file": "public/art/icons/buildings/ink_seal_post_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Ink Seal Post (support)",
+      "stage": 5,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.longbow_yagura.s1",
+      "file": "public/art/icons/buildings/longbow_yagura_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Longbow Yagura (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        2
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.longbow_yagura.s2",
+      "file": "public/art/icons/buildings/longbow_yagura_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Longbow Yagura (defense)",
+      "stage": 2,
+      "levels": [
+        3,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.longbow_yagura.s3",
+      "file": "public/art/icons/buildings/longbow_yagura_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Longbow Yagura (defense)",
+      "stage": 3,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.longbow_yagura.s4",
+      "file": "public/art/icons/buildings/longbow_yagura_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Longbow Yagura (defense)",
+      "stage": 4,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.longbow_yagura.s5",
+      "file": "public/art/icons/buildings/longbow_yagura_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Longbow Yagura (defense)",
+      "stage": 5,
+      "levels": [
+        9,
+        10
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+    },
+    {
+      "key": "icon.building.lightning_rod_pagoda.s1",
+      "file": "public/art/icons/buildings/lightning_rod_pagoda_s1.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Lightning Rod Pagoda (defense)",
+      "stage": 1,
+      "levels": [
+        1,
+        1
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 1 of 5: timber and plaster, simple."
+    },
+    {
+      "key": "icon.building.lightning_rod_pagoda.s2",
+      "file": "public/art/icons/buildings/lightning_rod_pagoda_s2.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Lightning Rod Pagoda (defense)",
+      "stage": 2,
+      "levels": [
+        2,
+        3
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 2 of 5: stone base and tiled roof."
+    },
+    {
+      "key": "icon.building.lightning_rod_pagoda.s3",
+      "file": "public/art/icons/buildings/lightning_rod_pagoda_s3.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Lightning Rod Pagoda (defense)",
+      "stage": 3,
+      "levels": [
+        4,
+        4
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 3 of 5: second storey, banners, lacquer trim."
+    },
+    {
+      "key": "icon.building.lightning_rod_pagoda.s4",
+      "file": "public/art/icons/buildings/lightning_rod_pagoda_s4.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Lightning Rod Pagoda (defense)",
+      "stage": 4,
+      "levels": [
+        5,
+        6
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 4 of 5: gold finials, lanterns, carved beams."
+    },
+    {
+      "key": "icon.building.lightning_rod_pagoda.s5",
+      "file": "public/art/icons/buildings/lightning_rod_pagoda_s5.png",
+      "size": 256,
+      "group": "building",
+      "subject": "Lightning Rod Pagoda (defense)",
+      "stage": 5,
+      "levels": [
+        7,
+        8
+      ],
+      "live": false,
+      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.ability.smoke_bomb",

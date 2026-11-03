@@ -15,7 +15,7 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - `sim/battle/battle.ts`: combat, Smoke Bomb (range × 0.4, never below 2 tiles, 8 s, no stacking, charges from army housing), Sabotage (6 s jam, then 10 s immunity after recovery, one jam per Saboteur).
 - `sim/battle/basegen.ts`: generated bases, five layout archetypes. `scout.ts`: what scouting reveals (never hidden traps).
 - `sim/trials.ts` + `data/trials.json`: Shadow Trials, the endless ladder, rewarded once per tier through the `trialEnd` command.
-- `sim/progression.ts` + `data/progression.json` + `data/roster.json`: the power-budget model, the 50 warriors, 4 heroes and 34 buildings.
+- `sim/progression.ts` + `data/progression.json` + `data/roster.json`: the power-budget model, the 50 warriors, 4 heroes and 54 buildings (20 planned ones carry `counters`/`counteredBy` against the roster; `building-matchups.test.ts`).
 - `control/controller.ts`: command dispatch, saving. `control/battleSession.ts`: real-time battle stepping.
 
 ## Invariants with tests (keep them green)
