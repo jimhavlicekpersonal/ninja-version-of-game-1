@@ -282,7 +282,7 @@ export class Connection {
     const known = new Set(g.state.defenseLog.map((x) => x.id));
     let added = 0;
     for (const d of defenses) {
-      const record: BattleRecord = { id: d.id, at: d.at, kind: 'defense', opponentName: d.attackerName, setup: { seed: d.seed, base: d.base, army: d.army, levels: d.levels }, deployments: d.deployments, endTick: d.endTick, result: d.result, trophies: d.trophies };
+      const record: BattleRecord = { id: d.id, at: d.at, kind: 'defense', opponentName: d.attackerName, setup: { seed: d.seed, base: d.base, army: d.army, levels: d.levels, ...(d.infiltration ? { infiltration: true } : {}) }, deployments: d.deployments, endTick: d.endTick, result: d.result, trophies: d.trophies };
       g.dispatch({ type: 'applyDefense', record, lost: d.result.loot, trophies: me.trophies, shieldUntil: me.shieldUntil });
       if (!known.has(d.id)) added++;
     }

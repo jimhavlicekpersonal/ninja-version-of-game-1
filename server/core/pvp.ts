@@ -188,7 +188,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   if (!(await repo.useTicket(ticket.id))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
   const t = ctx.now();
   const seed = Number(sub.seed) >>> 0;
-  const { result } = runBattle({ seed, base: ticket.base, army, levels }, deployments, data, sub.endTick);
+  const { result } = runBattle({ seed, base: ticket.base, army, levels, infiltration: true }, deployments, data, sub.endTick);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
@@ -202,7 +202,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   }
   const attackId = ctx.uuid();
   if (defender) {
-    await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, base: ticket.base, deployments, endTick: sub.endTick, result, attackerTrophies: delta, defenderTrophies: -delta });
+    await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, attackerTrophies: delta, defenderTrophies: -delta });
   }
   return { attackId, result, trophies: delta, playerTrophies };
 }
@@ -210,7 +210,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
 export async function defenses(ctx: ServerContext, me: Player, since: number): Promise<DefensesResponse> {
   const list = await ctx.repo.defensesFor(me.id, Number(since) || 0, 20);
   return {
-    defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, trophies: a.defenderTrophies })),
+    defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, ...(a.infiltration ? { infiltration: true } : {}), trophies: a.defenderTrophies })),
   };
 }
 

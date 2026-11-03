@@ -21,6 +21,9 @@ import { ServerError } from '../../../src/backend/net/ports';
 import { PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
 import { createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
+import { botDeployments } from '../../../src/gameplay/sim/defense';
+import { pointAt } from '../../../src/gameplay/sim/battle/infiltration';
+import { createRng } from '../../../src/gameplay/sim/rng';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 
 let url = process.env.CONTRACT_URL ?? '';
@@ -112,7 +115,7 @@ describe('protocol contract', () => {
     expect(m.expiresAt).toBeGreaterThan(Date.now() + 3 * 60_000);
     const sub = { ticket: m.ticket, seed: 1234, ...rush(25) };
     const r = await a.submitAttack(sub);
-    const local = runBattle({ seed: sub.seed, base: m.base, army: sub.army }, sub.deployments, data).result;
+    const local = runBattle({ seed: sub.seed, base: m.base, army: sub.army, infiltration: true }, sub.deployments, data).result;
     expect(r.result.hash).toBe(local.hash); // same deterministic battle on both sides
     expect(r.result.stars).toBe(local.stars);
     expect((await a.me()).trophies).toBe(r.playerTrophies);
@@ -139,17 +142,22 @@ describe('protocol contract', () => {
     const m = (await a.match())!;
     const army = Object.fromEntries(Object.keys(data.troops).map((id) => [id, 1]));
     const levels = Object.fromEntries(Object.keys(army).map((id) => [id, 1]));
-    // Use tiles the battle marks as deployable along the edge (layouts change with the buildings a Keep has).
-    const probe = createBattle({ seed: 519, base: m.base, army, levels }, data);
+    // The server applies Infiltration Points: deploy through the base's points, a squad per point.
+    const setup = { seed: 519, base: m.base, army, levels, infiltration: true };
+    const probe = createBattle(setup, data);
+    const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(5), data, levels, probe.entry);
+    // One warrior dropped on open ground outside every point is refused by the server, as in the game.
     const n = probe.grid.size;
-    const open: { x: number; y: number }[] = [];
-    for (let y = 0; y < n; y++) for (let x = 0; x < 2; x++) if (probe.deployable[y * n + x]) open.push({ x, y });
-    const deployments = Object.keys(army).map((troop, tick) => ({ troop, tick, ...open[tick % open.length] }));
-    const sub = { ticket: m.ticket, seed: 519, army, levels, deployments };
+    let open = -1;
+    for (let i = 0; i < n * n && open < 0; i++) if (probe.deployable[i] && pointAt(probe.entry!, i % n, Math.floor(i / n)) < 0) open = i;
+    expect(open).toBeGreaterThanOrEqual(0);
+    const offPoint = { tick: 0, troop: 'hedgehog_roller', x: open % n, y: Math.floor(open / n) };
+    const sub = { ticket: m.ticket, seed: 519, army, levels, deployments: [offPoint, ...deployments] };
     const server = await a.submitAttack(sub);
-    const local = runBattle({ seed: sub.seed, base: m.base, army, levels }, deployments, data).result;
+    const local = runBattle(setup, sub.deployments, data).result;
     expect(server.result).toEqual(local);
     expect(Object.keys(server.result.used)).toHaveLength(50);
+    expect(server.result.used.hedgehog_roller).toBe(1);
   });
 
   it('groves: found, find, join, chat (filtered), request and donate troops, inbox, leave', async () => {

@@ -145,6 +145,8 @@ export interface DefenseView {
   deployments: Deployment[];
   endTick?: number;
   result: BattleResult;
+  /** The attack used Infiltration Points (replay with the same rule). Absent on attacks from before protocol v5. */
+  infiltration?: boolean;
   /** Trophy change for the defender. */
   trophies: number;
 }

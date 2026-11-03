@@ -28,9 +28,9 @@ function fight(baseHall: number, bias: number, army: Record<string, number>, lev
   const levels = Object.fromEntries(Object.keys(army).map((t) => [t, level]));
   for (let i = 0; i < n; i++) {
     const base = generateOpponent(1000 + i * 7919, baseHall, data, { levelBias: bias });
-    const setup = { seed: 42 + i, base, army, levels };
+    const setup = { seed: 42 + i, base, army, levels, infiltration: true };
     const probe = createBattle(setup, data);
-    const deps = botDeployments(probe.deployable, probe.grid.size, army, createRng(9 + i), data, levels);
+    const deps = botDeployments(probe.deployable, probe.grid.size, army, createRng(9 + i), data, levels, probe.entry);
     const { result } = runBattle(setup, deps, data);
     d += result.destruction;
     if (result.stars >= 1) one++;

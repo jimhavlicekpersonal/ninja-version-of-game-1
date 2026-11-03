@@ -32,6 +32,11 @@ export interface BattleSetup {
   base: BaseLayout;
   /** Troops the attacker brought. */
   army: Record<string, number>;
+  /**
+   * Infiltration Points rule (sim/battle/infiltration.ts): warriors enter only at the base's
+   * points, each hiding a share of the army. Absent on battles recorded before the rule.
+   */
+  infiltration?: boolean;
   /** The attacker's researched troop levels (missing troops, or a missing map, mean level 1). */
   levels?: Record<string, number>;
 }

@@ -14,6 +14,7 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 
 - `sim/battle/battle.ts`: combat, Smoke Bomb (range × 0.4, never below 2 tiles, 8 s, no stacking, charges from army housing), Sabotage (6 s jam, then 10 s immunity after recovery, one jam per Saboteur).
 - `sim/battle/fortifications.ts`: the five live defensive counters (`BuildingEffect` in `buildings.json`, per-level overrides in `levels[].effect`). Lantern light and ballista grounding live on `SimTroop` (`litUntil`, `groundedUntil`); incense cuts are recomputed every tick. Use `airborne(sim, t)`, not `t.air`, for targeting layers.
+- `sim/battle/infiltration.ts`: Infiltration Points. `planInfiltration` builds the points from the layout (deterministic), `canDeploy` enforces point + cover, `deployBlock` says why a tap failed. Set `infiltration: true` on every new `BattleSetup` (app, Alliance raids, bot raids, server); leave it off only for old records. `botDeployments(..., entry)` deals each troop type round the nearest `minPoints` points.
 - Sim events `ability` / `counter` exist only for on-screen feedback; they never affect the result hash.
 - `sim/battle/basegen.ts`: generated bases, five layout archetypes. `scout.ts`: what scouting reveals (never hidden traps).
 - `sim/trials.ts` + `data/trials.json`: Shadow Trials, the endless ladder, rewarded once per tier through the `trialEnd` command.

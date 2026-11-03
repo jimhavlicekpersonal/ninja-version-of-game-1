@@ -72,7 +72,7 @@ export class App {
           this.ticket = this.onlineMatch.ticket;
           const base = structuredClone(this.onlineMatch.base);
           if (this.onlineMatch.bot) base.practice = 'Generated rival (no player fitted your rank)';
-          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels };
+          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels, infiltration: true };
           this.open(new BattleSession(setup, c.data, 'scout'));
           return;
         }
@@ -84,7 +84,7 @@ export class App {
     const base = opponentFor(r.seed, c.state, c.data);
     // Offline, every rival is generated: say so instead of passing it off as a player.
     base.practice = 'Generated rival (offline)';
-    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels };
+    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels, infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'));
   }
 
@@ -107,7 +107,7 @@ export class App {
       return;
     }
     const base = trialBase(tier, c.data);
-    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x7a1a1 + tier * 7919 + c.state.nextSeed), base, army, levels: troopLevels(c.state, c.data) };
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x7a1a1 + tier * 7919 + c.state.nextSeed), base, army, levels: troopLevels(c.state, c.data), infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, tier);
   }
 

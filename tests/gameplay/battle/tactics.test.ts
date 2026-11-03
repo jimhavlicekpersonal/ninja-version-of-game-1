@@ -88,7 +88,9 @@ describe('Smoke Bomb', () => {
 
 describe('Sabotage', () => {
   it('a Saboteur jams the nearest defense, which stays silent, then recovers', () => {
-    const sim = createBattle({ seed: 7, base: towerBase(), army: { saboteur: 1 } }, data);
+    // A lone level-1 Saboteur no longer survives the walk up to a Kunai Tower (send it with cover);
+    // a researched one does, which is all this timing check needs.
+    const sim = createBattle({ seed: 7, base: towerBase(), army: { saboteur: 1 }, levels: { saboteur: 3 } }, data);
     expect(deploy(sim, { tick: 0, troop: 'saboteur', x: 10, y: 21 })).toBe(true);
     let jamTick = -1;
     let recoveredTick = -1;

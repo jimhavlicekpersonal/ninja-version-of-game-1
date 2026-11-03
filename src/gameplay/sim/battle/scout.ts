@@ -70,3 +70,48 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
   if (mayHaveTraps) tips.push('Spike Pits and Caltrops may be hidden on the paths.');
   return { defenses, counters, walls, coveringPairs, hasAntiAir, hasSplash, mayHaveTraps, tips: tips.slice(0, 3) };
 }
+
+export interface PointIntel {
+  label: string;
+  /** Visible defenses whose range covers the walk from this point to the Keep. */
+  defenses: number;
+  /** Some of them can hit flyers. */
+  antiAir: boolean;
+  /** Some of them splash (bad news for clumped squads). */
+  splash: boolean;
+}
+
+/** Distance from (px, py) to the segment (ax, ay)-(bx, by). */
+function toSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+  const vx = bx - ax;
+  const vy = by - ay;
+  const len2 = vx * vx + vy * vy;
+  const t = len2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / len2)) : 0;
+  const dx = px - (ax + t * vx);
+  const dy = py - (ay + t * vy);
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * What each infiltration point leads into: the visible defenses that can shoot
+ * along the straight walk from the point to the Keep. A central defense covers
+ * several paths; hidden traps are never counted.
+ */
+export function pointIntel(points: { label: string; x: number; y: number }[], base: BaseLayout, data: GameData): PointIntel[] {
+  const hall = base.buildings.find((b) => buildingDef(data, b.type).category === 'hall');
+  const hallSize = hall ? buildingDef(data, hall.type).size : 0;
+  const hx = hall ? hall.x + hallSize / 2 : data.economy.mapSize / 2;
+  const hy = hall ? hall.y + hallSize / 2 : data.economy.mapSize / 2;
+  return points.map((p) => {
+    const out: PointIntel = { label: p.label, defenses: 0, antiAir: false, splash: false };
+    for (const b of base.buildings) {
+      const def = buildingDef(data, b.type);
+      if (def.category !== 'defense' || !def.combat || b.upgrading) continue;
+      if (toSegment(b.x + def.size / 2, b.y + def.size / 2, p.x, p.y, hx, hy) > def.combat.range) continue;
+      out.defenses++;
+      if (def.combat.targets !== 'ground') out.antiAir = true;
+      if (def.combat.splashRadius) out.splash = true;
+    }
+    return out;
+  });
+}

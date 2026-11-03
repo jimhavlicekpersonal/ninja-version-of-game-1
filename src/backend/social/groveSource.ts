@@ -205,7 +205,7 @@ export class LocalGroveSource implements GroveSource {
     const base = enemy.bases[target];
     if (!base) return { error: 'No such enemy base.' };
     const done = c.state.grove.raid?.week === p.week ? c.state.grove.raid.attacks.length : 0;
-    const setup: BattleSetup = { seed: mixSeed(c.state.grove.seed, p.week * 1000 + target + done * 97 + 1), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data) };
+    const setup: BattleSetup = { seed: mixSeed(c.state.grove.seed, p.week * 1000 + target + done * 97 + 1), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data), infiltration: true };
     return { setup, enemyName: enemy.name, finish: (deployments, endTick) => c.finishGroveBattle(target, setup, deployments, endTick, base.name) };
   }
 }
@@ -417,7 +417,7 @@ export class RemoteGroveSource implements GroveSource {
       const t = await this.port.raidTicket(target);
       const c = this.c;
       const base: BaseLayout = t.base;
-      const setup: BattleSetup = { seed: mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data) };
+      const setup: BattleSetup = { seed: mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data), infiltration: true };
       const enemyName = this.raidView?.opponent?.name ?? 'Enemy Alliance';
       return {
         setup,

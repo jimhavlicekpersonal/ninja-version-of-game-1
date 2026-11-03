@@ -1432,8 +1432,8 @@
           "acorns": 250
         },
         "buildSeconds": 22,
-        "hp": 900,
-        "damage": 32
+        "hp": 1035,
+        "damage": 41.6
       },
       {
         "level": 2,
@@ -1441,8 +1441,8 @@
           "acorns": 1000
         },
         "buildSeconds": 50,
-        "hp": 1100,
-        "damage": 40
+        "hp": 1265,
+        "damage": 52.0
       },
       {
         "level": 3,
@@ -1450,8 +1450,8 @@
           "acorns": 4000
         },
         "buildSeconds": 110,
-        "hp": 1250,
-        "damage": 50
+        "hp": 1438,
+        "damage": 65.0
       },
       {
         "level": 4,
@@ -1459,8 +1459,8 @@
           "acorns": 16000
         },
         "buildSeconds": 240,
-        "hp": 1500,
-        "damage": 63
+        "hp": 1725,
+        "damage": 81.9
       },
       {
         "level": 5,
@@ -1468,8 +1468,8 @@
           "acorns": 50000
         },
         "buildSeconds": 540,
-        "hp": 1800,
-        "damage": 81
+        "hp": 2070,
+        "damage": 105.3
       },
       {
         "level": 6,
@@ -1477,8 +1477,8 @@
           "acorns": 100000
         },
         "buildSeconds": 1200,
-        "hp": 2100,
-        "damage": 99
+        "hp": 2415,
+        "damage": 128.7
       },
       {
         "level": 7,
@@ -1486,8 +1486,8 @@
           "acorns": 200000
         },
         "buildSeconds": 2700,
-        "hp": 2450,
-        "damage": 122
+        "hp": 2818,
+        "damage": 158.6
       },
       {
         "level": 8,
@@ -1495,8 +1495,8 @@
           "acorns": 290000
         },
         "buildSeconds": 5940,
-        "hp": 5098,
-        "damage": 253.9
+        "hp": 5863,
+        "damage": 330.07
       },
       {
         "level": 9,
@@ -1504,8 +1504,8 @@
           "acorns": 420500
         },
         "buildSeconds": 13068,
-        "hp": 6802,
-        "damage": 338.69
+        "hp": 7822,
+        "damage": 440.3
       },
       {
         "level": 10,
@@ -1513,8 +1513,8 @@
           "acorns": 609725
         },
         "buildSeconds": 28750,
-        "hp": 9073,
-        "damage": 451.81
+        "hp": 10434,
+        "damage": 587.35
       },
       {
         "level": 11,
@@ -1522,8 +1522,8 @@
           "acorns": 884101
         },
         "buildSeconds": 63249,
-        "hp": 12104,
-        "damage": 602.71
+        "hp": 13920,
+        "damage": 783.52
       },
       {
         "level": 12,
@@ -1531,8 +1531,8 @@
           "acorns": 1281947
         },
         "buildSeconds": 139148,
-        "hp": 18569,
-        "damage": 924.61
+        "hp": 21354,
+        "damage": 1201.99
       },
       {
         "level": 13,
@@ -1540,8 +1540,8 @@
           "acorns": 1858823
         },
         "buildSeconds": 306126,
-        "hp": 24769,
-        "damage": 1233.43
+        "hp": 28484,
+        "damage": 1603.46
       },
       {
         "level": 14,
@@ -1549,8 +1549,8 @@
           "acorns": 2695293
         },
         "buildSeconds": 604800,
-        "hp": 33042,
-        "damage": 1645.4
+        "hp": 37998,
+        "damage": 2139.02
       },
       {
         "level": 15,
@@ -1558,8 +1558,8 @@
           "acorns": 3908175
         },
         "buildSeconds": 604800,
-        "hp": 44080,
-        "damage": 2194.97
+        "hp": 50692,
+        "damage": 2853.46
       }
     ]
   },
@@ -1585,8 +1585,8 @@
           "acorns": 8000
         },
         "buildSeconds": 240,
-        "hp": 1200,
-        "damage": 90
+        "hp": 1380,
+        "damage": 117.0
       },
       {
         "level": 2,
@@ -1594,8 +1594,8 @@
           "acorns": 32000
         },
         "buildSeconds": 540,
-        "hp": 1350,
-        "damage": 112
+        "hp": 1552,
+        "damage": 145.6
       },
       {
         "level": 3,
@@ -1603,8 +1603,8 @@
           "acorns": 120000
         },
         "buildSeconds": 1200,
-        "hp": 1500,
-        "damage": 144
+        "hp": 1725,
+        "damage": 187.2
       },
       {
         "level": 4,
@@ -1612,8 +1612,8 @@
           "acorns": 300000
         },
         "buildSeconds": 2700,
-        "hp": 1650,
-        "damage": 180
+        "hp": 1897,
+        "damage": 234.0
       },
       {
         "level": 5,
@@ -1621,8 +1621,8 @@
           "acorns": 600000
         },
         "buildSeconds": 6000,
-        "hp": 3229,
-        "damage": 394.68
+        "hp": 3713,
+        "damage": 513.08
       },
       {
         "level": 6,
@@ -1630,8 +1630,8 @@
           "acorns": 870000
         },
         "buildSeconds": 13200,
-        "hp": 4955,
-        "damage": 605.48
+        "hp": 5698,
+        "damage": 787.12
       },
       {
         "level": 7,
@@ -1639,8 +1639,8 @@
           "acorns": 1261500
         },
         "buildSeconds": 29040,
-        "hp": 7601,
-        "damage": 928.87
+        "hp": 8741,
+        "damage": 1207.53
       },
       {
         "level": 8,
@@ -1648,8 +1648,8 @@
           "acorns": 1829175
         },
         "buildSeconds": 63888,
-        "hp": 11662,
-        "damage": 1424.96
+        "hp": 13411,
+        "damage": 1852.45
       },
       {
         "level": 9,
@@ -1657,8 +1657,8 @@
           "acorns": 2652304
         },
         "buildSeconds": 140554,
-        "hp": 17885,
-        "damage": 2186.04
+        "hp": 20568,
+        "damage": 2841.85
       }
     ]
   },
@@ -1682,8 +1682,8 @@
           "acorns": 1000
         },
         "buildSeconds": 50,
-        "hp": 900,
-        "damage": 18
+        "hp": 1035,
+        "damage": 23.4
       },
       {
         "level": 2,
@@ -1691,8 +1691,8 @@
           "acorns": 4000
         },
         "buildSeconds": 110,
-        "hp": 1000,
-        "damage": 22
+        "hp": 1150,
+        "damage": 28.6
       },
       {
         "level": 3,
@@ -1700,8 +1700,8 @@
           "acorns": 15000
         },
         "buildSeconds": 240,
-        "hp": 1150,
-        "damage": 27
+        "hp": 1322,
+        "damage": 35.1
       },
       {
         "level": 4,
@@ -1709,8 +1709,8 @@
           "acorns": 45000
         },
         "buildSeconds": 540,
-        "hp": 1300,
-        "damage": 36
+        "hp": 1495,
+        "damage": 46.8
       },
       {
         "level": 5,
@@ -1718,8 +1718,8 @@
           "acorns": 110000
         },
         "buildSeconds": 1200,
-        "hp": 1450,
-        "damage": 45
+        "hp": 1667,
+        "damage": 58.5
       },
       {
         "level": 6,
@@ -1727,8 +1727,8 @@
           "acorns": 250000
         },
         "buildSeconds": 2700,
-        "hp": 1700,
-        "damage": 54
+        "hp": 1955,
+        "damage": 70.2
       },
       {
         "level": 7,
@@ -1736,8 +1736,8 @@
           "acorns": 362500
         },
         "buildSeconds": 5940,
-        "hp": 3538,
-        "damage": 112.38
+        "hp": 4069,
+        "damage": 146.09
       },
       {
         "level": 8,
@@ -1745,8 +1745,8 @@
           "acorns": 525625
         },
         "buildSeconds": 13068,
-        "hp": 4721,
-        "damage": 149.92
+        "hp": 5429,
+        "damage": 194.9
       },
       {
         "level": 9,
@@ -1754,8 +1754,8 @@
           "acorns": 762156
         },
         "buildSeconds": 28750,
-        "hp": 7242,
-        "damage": 229.98
+        "hp": 8328,
+        "damage": 298.97
       },
       {
         "level": 10,
@@ -1763,8 +1763,8 @@
           "acorns": 1105127
         },
         "buildSeconds": 63249,
-        "hp": 9658,
-        "damage": 306.79
+        "hp": 11107,
+        "damage": 398.83
       },
       {
         "level": 11,
@@ -1772,8 +1772,8 @@
           "acorns": 1602434
         },
         "buildSeconds": 139148,
-        "hp": 12886,
-        "damage": 409.25
+        "hp": 14819,
+        "damage": 532.02
       },
       {
         "level": 12,
@@ -1781,8 +1781,8 @@
           "acorns": 2323529
         },
         "buildSeconds": 306126,
-        "hp": 19765,
-        "damage": 627.84
+        "hp": 22730,
+        "damage": 816.19
       },
       {
         "level": 13,
@@ -1790,8 +1790,8 @@
           "acorns": 3369116
         },
         "buildSeconds": 604800,
-        "hp": 26369,
-        "damage": 837.53
+        "hp": 30324,
+        "damage": 1088.79
       }
     ]
   },
@@ -1815,8 +1815,8 @@
           "acorns": 22000
         },
         "buildSeconds": 540,
-        "hp": 2400,
-        "damage": 180
+        "hp": 2760,
+        "damage": 234.0
       },
       {
         "level": 2,
@@ -1824,8 +1824,8 @@
           "acorns": 90000
         },
         "buildSeconds": 1200,
-        "hp": 2800,
-        "damage": 250
+        "hp": 3220,
+        "damage": 325.0
       },
       {
         "level": 3,
@@ -1833,8 +1833,8 @@
           "acorns": 270000
         },
         "buildSeconds": 2700,
-        "hp": 3200,
-        "damage": 320
+        "hp": 3680,
+        "damage": 416.0
       },
       {
         "level": 4,
@@ -1842,8 +1842,8 @@
           "acorns": 540000
         },
         "buildSeconds": 6000,
-        "hp": 7594,
-        "damage": 825.24
+        "hp": 8733,
+        "damage": 1072.81
       },
       {
         "level": 5,
@@ -1851,8 +1851,8 @@
           "acorns": 783000
         },
         "buildSeconds": 13200,
-        "hp": 11646,
-        "damage": 1266.0
+        "hp": 13393,
+        "damage": 1645.8
       },
       {
         "level": 6,
@@ -1860,8 +1860,8 @@
           "acorns": 1135350
         },
         "buildSeconds": 29040,
-        "hp": 17869,
-        "damage": 1942.16
+        "hp": 20549,
+        "damage": 2524.81
       },
       {
         "level": 7,
@@ -1869,8 +1869,8 @@
           "acorns": 1646258
         },
         "buildSeconds": 63888,
-        "hp": 27411,
-        "damage": 2979.49
+        "hp": 31523,
+        "damage": 3873.34
       },
       {
         "level": 8,
@@ -1878,8 +1878,8 @@
           "acorns": 2387100
         },
         "buildSeconds": 140554,
-        "hp": 36566,
-        "damage": 3974.64
+        "hp": 42051,
+        "damage": 5167.03
       },
       {
         "level": 9,
@@ -1887,8 +1887,8 @@
           "acorns": 3461300
         },
         "buildSeconds": 309219,
-        "hp": 48779,
-        "damage": 5302.17
+        "hp": 56096,
+        "damage": 6892.82
       },
       {
         "level": 10,
@@ -1896,8 +1896,8 @@
           "acorns": 5018900
         },
         "buildSeconds": 604800,
-        "hp": 65072,
-        "damage": 7073.09
+        "hp": 74833,
+        "damage": 9195.02
       }
     ]
   },
@@ -2816,8 +2816,8 @@
           "acorns": 400000
         },
         "buildSeconds": 7200,
-        "hp": 5941,
-        "damage": 412.62
+        "hp": 6832,
+        "damage": 536.41
       },
       {
         "level": 2,
@@ -2825,8 +2825,8 @@
           "acorns": 580000
         },
         "buildSeconds": 15840,
-        "hp": 6834,
-        "damage": 474.5
+        "hp": 7859,
+        "damage": 616.85
       },
       {
         "level": 3,
@@ -2834,8 +2834,8 @@
           "acorns": 841000
         },
         "buildSeconds": 34848,
-        "hp": 9035,
-        "damage": 627.54
+        "hp": 10390,
+        "damage": 815.8
       },
       {
         "level": 4,
@@ -2843,8 +2843,8 @@
           "acorns": 1219400
         },
         "buildSeconds": 76666,
-        "hp": 11954,
-        "damage": 829.92
+        "hp": 13747,
+        "damage": 1078.9
       },
       {
         "level": 5,
@@ -2852,8 +2852,8 @@
           "acorns": 1768200
         },
         "buildSeconds": 168664,
-        "hp": 15805,
-        "damage": 1097.57
+        "hp": 18176,
+        "damage": 1426.84
       },
       {
         "level": 6,
@@ -2861,8 +2861,8 @@
           "acorns": 2563900
         },
         "buildSeconds": 371062,
-        "hp": 20899,
-        "damage": 1451.53
+        "hp": 24034,
+        "damage": 1886.99
       },
       {
         "level": 7,
@@ -2870,8 +2870,8 @@
           "acorns": 3717600
         },
         "buildSeconds": 604800,
-        "hp": 27646,
-        "damage": 1919.65
+        "hp": 31793,
+        "damage": 2495.55
       },
       {
         "level": 8,
@@ -2879,8 +2879,8 @@
           "acorns": 5390600
         },
         "buildSeconds": 604800,
-        "hp": 36558,
-        "damage": 2538.74
+        "hp": 42042,
+        "damage": 3300.36
       },
       {
         "level": 9,
@@ -2888,8 +2888,8 @@
           "acorns": 7816400
         },
         "buildSeconds": 604800,
-        "hp": 48346,
-        "damage": 3357.49
+        "hp": 55598,
+        "damage": 4364.74
       },
       {
         "level": 10,
@@ -2897,8 +2897,8 @@
           "acorns": 11333700
         },
         "buildSeconds": 604800,
-        "hp": 55600,
-        "damage": 3861.17
+        "hp": 63940,
+        "damage": 5019.52
       }
     ]
   },
@@ -2927,8 +2927,8 @@
           "acorns": 1500000
         },
         "buildSeconds": 28800,
-        "hp": 9022,
-        "damage": 1190.76
+        "hp": 10375,
+        "damage": 1547.99
       },
       {
         "level": 2,
@@ -2936,8 +2936,8 @@
           "acorns": 1950000
         },
         "buildSeconds": 63360,
-        "hp": 10374,
-        "damage": 1369.38
+        "hp": 11930,
+        "damage": 1780.19
       },
       {
         "level": 3,
@@ -2945,8 +2945,8 @@
           "acorns": 2535000
         },
         "buildSeconds": 139392,
-        "hp": 11929,
-        "damage": 1574.77
+        "hp": 13718,
+        "damage": 2047.2
       },
       {
         "level": 4,
@@ -2954,8 +2954,8 @@
           "acorns": 3295500
         },
         "buildSeconds": 306662,
-        "hp": 15776,
-        "damage": 2082.66
+        "hp": 18142,
+        "damage": 2707.46
       },
       {
         "level": 5,
@@ -2963,8 +2963,8 @@
           "acorns": 4284200
         },
         "buildSeconds": 604800,
-        "hp": 18146,
-        "damage": 2395.03
+        "hp": 20868,
+        "damage": 3113.54
       },
       {
         "level": 6,
@@ -2972,8 +2972,8 @@
           "acorns": 5569400
         },
         "buildSeconds": 604800,
-        "hp": 23994,
-        "damage": 3167.47
+        "hp": 27593,
+        "damage": 4117.71
       },
       {
         "level": 7,
@@ -2981,8 +2981,8 @@
           "acorns": 7240200
         },
         "buildSeconds": 604800,
-        "hp": 27596,
-        "damage": 3642.56
+        "hp": 31735,
+        "damage": 4735.33
       },
       {
         "level": 8,
@@ -2990,8 +2990,8 @@
           "acorns": 9412300
         },
         "buildSeconds": 604800,
-        "hp": 36494,
-        "damage": 4817.33
+        "hp": 41968,
+        "damage": 6262.53
       },
       {
         "level": 9,
@@ -2999,8 +2999,8 @@
           "acorns": 12236000
         },
         "buildSeconds": 604800,
-        "hp": 41971,
-        "damage": 5539.92
+        "hp": 48267,
+        "damage": 7201.9
       },
       {
         "level": 10,
@@ -3008,8 +3008,8 @@
           "acorns": 15906700
         },
         "buildSeconds": 604800,
-        "hp": 48266,
-        "damage": 6370.88
+        "hp": 55506,
+        "damage": 8282.14
       }
     ]
   }

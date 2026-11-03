@@ -9,6 +9,7 @@ import type { BuildingEffect, CombatDef, Cost, GameData, ResourceKind } from '..
 import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from './pathfind';
 import type { BattleResult, BattleSetup, Deployment, EndReason } from './types';
 import { stepFortifications } from './fortifications';
+import { coverLeft, planInfiltration, pointAt, type InfiltrationPlan } from './infiltration';
 import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isHidden, resolveWarriorHit, stepWarriorEffects, type WarriorEffect } from './warriors';
 
 export interface SimBuilding {
@@ -156,8 +157,10 @@ export interface BattleSim {
   endReason: EndReason | null;
   events: SimEvent[];
   grid: PathGrid;
-  /** 1 where the attacker may deploy. */
+  /** 1 where the attacker may deploy (outside buildings and their margin). */
   deployable: Uint8Array;
+  /** Infiltration Points, when the setup uses them (null = deploy anywhere on `deployable`). */
+  entry: InfiltrationPlan | null;
   nextProjectile: number;
   /** Active Smoke Bomb clouds. */
   smokes: SmokeCloud[];
@@ -265,6 +268,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
   return {
     setup,
     data,
+    entry: planInfiltration(setup, deployable, size, data),
     tick: 0,
     duration: data.battle.durationSeconds * data.battle.ticksPerSecond,
     rng: createRng(setup.seed),
@@ -300,7 +304,22 @@ export function canDeploy(sim: BattleSim, troop: string, x: number, y: number): 
   // Abilities can be thrown anywhere on the map while charges last.
   if (isAbility(sim.data, troop)) return (sim.charges[troop] ?? 0) > 0;
   if ((sim.remaining[troop] ?? 0) <= 0) return false;
-  return sim.deployable[ty * n + tx] === 1;
+  if (sim.deployable[ty * n + tx] !== 1) return false;
+  if (!sim.entry) return true;
+  // Infiltration Points: only inside a point, and only while that path still has cover.
+  const p = pointAt(sim.entry, tx, ty);
+  return p >= 0 && coverLeft(sim.entry, p) >= (sim.data.troops[troop]?.housing ?? 0);
+}
+
+/** Why a troop can't be placed at a tile: 'zone' (not a deploy spot) or 'full' (that point's cover is used up). Null if it can. */
+export function deployBlock(sim: BattleSim, troop: string, x: number, y: number): 'zone' | 'full' | null {
+  if (canDeploy(sim, troop, x, y)) return null;
+  if (!sim.entry || isAbility(sim.data, troop)) return 'zone';
+  const n = sim.grid.size;
+  const tx = Math.floor(x);
+  const ty = Math.floor(y);
+  if (tx < 0 || ty < 0 || tx >= n || ty >= n || sim.deployable[ty * n + tx] !== 1) return 'zone';
+  return pointAt(sim.entry, tx, ty) >= 0 ? 'full' : 'zone';
 }
 
 function useAbility(sim: BattleSim, d: Deployment): boolean {
@@ -357,6 +376,7 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
     litUntil: 0, litBonus: 0, groundedUntil: 0, groundImmuneUntil: 0, healCut: 0, auraCut: 0,
   };
   sim.troops.push(t);
+  if (sim.entry) sim.entry.points[pointAt(sim.entry, d.x, d.y)].used += def.housing;
   sim.remaining[d.troop] -= 1;
   sim.used[d.troop] = (sim.used[d.troop] ?? 0) + 1;
   sim.events.push({ k: 'deploy', troop: t.id });

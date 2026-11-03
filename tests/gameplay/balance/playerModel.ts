@@ -247,9 +247,9 @@ export class ModelPlayer {
       }
       const army = battleArmy(this.state);
       const levels = troopLevels(this.state, d);
-      const setup = { seed: mixSeed(seed, 0xba771e), base, army, levels };
+      const setup = { seed: mixSeed(seed, 0xba771e), base, army, levels, infiltration: true };
       const probe = createBattle(setup, d);
-      const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(seed), d, levels);
+      const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(seed), d, levels, probe.entry);
       const before = this.state.resources.acorns + this.state.resources.dew;
       const res = applyCommand(this.state, { type: 'battleEnd', record: { at: this.clock.now(), opponentName: base.name, setup, deployments } }, this.clock.now(), d);
       if (!res.ok) throw new Error(`battleEnd failed: ${res.message}`);

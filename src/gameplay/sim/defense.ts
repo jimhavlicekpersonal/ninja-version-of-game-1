@@ -5,6 +5,7 @@
  */
 import { createBattle, runBattle } from './battle/battle';
 import type { BaseBuilding, BaseLayout, BattleRecord, Deployment } from './battle/types';
+import type { InfiltrationPlan } from './battle/infiltration';
 import { MS_PER_HOUR } from './clock';
 import { buildingDef, levelDef, troopDef, troopLevel } from './data';
 import { attackerFor, lootPenalty } from './matchmaking';
@@ -80,11 +81,42 @@ export function botName(rng: Rng, data: GameData): string {
 }
 
 /** A simple attack plan: pick a side, send tanks first, then the rest in waves. */
-export function botDeployments(deployable: Uint8Array, size: number, army: Record<string, number>, rng: Rng, data: GameData, levels: Record<string, number> = {}): Deployment[] {
+export function botDeployments(deployable: Uint8Array, size: number, army: Record<string, number>, rng: Rng, data: GameData, levels: Record<string, number> = {}, entry: InfiltrationPlan | null = null): Deployment[] {
   const side = int(rng, 0, 3);
   const along = next(rng) * size;
   const ex = side === 0 ? along : side === 1 ? size - 1 : side === 2 ? along : 0;
   const ey = side === 0 ? 0 : side === 1 ? along : side === 2 ? size - 1 : along;
+  const tough = (t: string) => troopLevel(data, t, levels[t] ?? 1).hp / troopDef(data, t).housing;
+  const order = Object.keys(army)
+    .filter((t) => army[t] > 0)
+    .sort((a, b) => tough(b) - tough(a) || (a < b ? -1 : a > b ? 1 : 0));
+  const out: Deployment[] = [];
+  if (entry) {
+    // Infiltration Points: the points nearest the chosen side, one squad each.
+    // Every troop type is dealt round the squads, so each squad has a front line and damage.
+    const ranked = entry.points
+      .map((p, i) => ({ i, d: (p.x - ex) * (p.x - ex) + (p.y - ey) * (p.y - ey) }))
+      .sort((a, b) => a.d - b.d || a.i - b.i)
+      .map((r) => r.i);
+    const used = entry.points.map((p) => p.used);
+    let tick = 0;
+    order.forEach((troop) => {
+      const h = troopDef(data, troop).housing;
+      for (let k = 0; k < army[troop]; k++) {
+        // The least-used of the nearest `minPoints` points that still has cover; overflow goes to the next nearest.
+        const fits = (i: number) => used[i] + h <= entry.cover;
+        let pick = -1;
+        for (const i of ranked.slice(0, data.battle.infiltration.minPoints)) if (fits(i) && (pick < 0 || used[i] < used[pick])) pick = i;
+        if (pick < 0) pick = ranked.find(fits) ?? -1;
+        if (pick < 0) break;
+        used[pick] += h;
+        const p = entry.points[pick];
+        out.push({ tick: tick + Math.floor(k / 2), troop, x: Math.floor(p.x), y: Math.floor(p.y) });
+      }
+      tick += Math.ceil(army[troop] / 2) + 10;
+    });
+    return out;
+  }
   const tiles: { x: number; y: number; d: number }[] = [];
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -95,11 +127,6 @@ export function botDeployments(deployable: Uint8Array, size: number, army: Recor
   tiles.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
   const spots = tiles.slice(0, 6);
   if (!spots.length) return [];
-  const tough = (t: string) => troopLevel(data, t, levels[t] ?? 1).hp / troopDef(data, t).housing;
-  const order = Object.keys(army)
-    .filter((t) => army[t] > 0)
-    .sort((a, b) => tough(b) - tough(a) || (a < b ? -1 : a > b ? 1 : 0));
-  const out: Deployment[] = [];
   let tick = 0;
   order.forEach((troop, wave) => {
     const n = army[troop];
@@ -129,9 +156,9 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   const base = villageToBase(s, t, data, 'Your village', lootPenalty(attacker.hall, hallLevel(s, data), data));
   const attackerTrophies = attacker.trophies;
   const army = attacker.army;
-  const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army, levels: attacker.levels };
+  const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army, levels: attacker.levels, infiltration: true };
   const probe = createBattle(setup, data);
-  const deployments = botDeployments(probe.deployable, probe.grid.size, army, rng, data, attacker.levels);
+  const deployments = botDeployments(probe.deployable, probe.grid.size, army, rng, data, attacker.levels, probe.entry);
   const name = botName(rng, data);
   const { result, sim } = runBattle(setup, deployments, data);
   const fromStorage: Cost = {};

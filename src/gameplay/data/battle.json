@@ -118,6 +118,13 @@
     "disableTicks": 60,
     "immunityTicks": 100
   },
+  "infiltration": {
+    "points": 6,
+    "insetTiles": 1.5,
+    "radius": 2.5,
+    "minPoints": 3,
+    "minCover": 15
+  },
   "warriorRules": {
     "supportIntervalTicks": 10,
     "defaultAuraRadius": 3,

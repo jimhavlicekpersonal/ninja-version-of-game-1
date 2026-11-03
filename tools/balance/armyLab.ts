@@ -4,7 +4,8 @@
  * and the server run). Used by tests/gameplay/balance/army-lab.test.ts and
  * by `npm run balance:armies`, which writes docs/game-theory/ARMY_BALANCE.md.
  *
- * Every army uses the bot deployment plan (one side, toughest first), so the
+ * Every army uses the bot deployment plan (the three Infiltration Points
+ * nearest one side, a mixed squad through each, toughest first), so the
  * numbers compare compositions, not player skill.
  */
 import { maxHousingAtHall } from '../../src/gameplay/sim/army';
@@ -125,9 +126,9 @@ export function runLab(opts: LabOptions): LabRow[] {
         for (let i = 0; i < opts.seeds; i++) {
           const base = generateOpponent(5000 + i * 7919 + keep * 131, keep, data, { levelBias: 0.5, layout });
           const fight = (b: BaseLayout) => {
-            const setup = { seed: 77 + i, base: b, army, levels };
+            const setup = { seed: 77 + i, base: b, army, levels, infiltration: true };
             const probe = createBattle(setup, data);
-            const deps = botDeployments(probe.deployable, probe.grid.size, army, createRng(13 + i), data, levels);
+            const deps = botDeployments(probe.deployable, probe.grid.size, army, createRng(13 + i), data, levels, probe.entry);
             return runBattle(setup, deps, data).result;
           };
           const r = fight(base);

@@ -55,6 +55,8 @@ export interface AttackRecord {
   deployments: Deployment[];
   endTick?: number;
   result: BattleResult;
+  /** Infiltration Points were in force (protocol v5+); absent on older records. */
+  infiltration?: boolean;
   attackerTrophies: number;
   defenderTrophies: number;
 }

@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { queueArt } from './artManifest';
 import { drainEvents, type BattleSession } from '../../gameplay/control/battleSession';
 import { buildingDef } from '../../gameplay/sim/data';
-import { airborne, isAbility, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
+import { airborne, deployBlock, isAbility, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
+import { coverLeft, pointAt } from '../../gameplay/sim/battle/infiltration';
 import { WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
 import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
@@ -13,7 +14,7 @@ import { sound } from '../audio/sound';
 
 export interface BattleHooks {
   selectedTroop(): string | null;
-  deployFailed(reason: 'zone' | 'none' | 'empty'): void;
+  deployFailed(reason: 'zone' | 'full' | 'none' | 'empty'): void;
   deployed(): void;
 }
 
@@ -66,6 +67,10 @@ export class BattleScene extends Phaser.Scene {
   private pviews = new Map<number, Phaser.GameObjects.Image>();
   private sviews = new Map<number, SView>();
   private zone!: Phaser.GameObjects.Graphics;
+  /** Infiltration Points: circles on the ground and a label (letter + space left) over each. */
+  private entryGfx: Phaser.GameObjects.Graphics | null = null;
+  private entryLabels: Phaser.GameObjects.Text[] = [];
+  private entrySig = '';
   private zoneFade: Phaser.Tweens.Tween | null = null;
 
   constructor() {
@@ -80,6 +85,10 @@ export class BattleScene extends Phaser.Scene {
     this.tviews = [];
     this.pviews = new Map();
     this.sviews = new Map();
+    this.entryGfx = null;
+    this.entryLabels = [];
+    this.entrySig = '';
+    this.lastCallout = new Map();
   }
 
   preload(): void {
@@ -108,6 +117,7 @@ export class BattleScene extends Phaser.Scene {
     for (const b of this.session.sim.buildings) this.bviews.push(this.makeBuilding(b));
     this.zone = this.add.graphics().setDepth(-4).setAlpha(0);
     this.drawZone();
+    this.drawEntry();
     if (this.session.mode !== 'replay') this.flashZone(2500);
   }
 
@@ -145,11 +155,51 @@ export class BattleScene extends Phaser.Scene {
     g.fillStyle(0xff5a6a, 0.22);
     for (let y = 0; y < n; y++) {
       for (let x = 0; x < n; x++) {
-        if (sim.deployable[y * n + x]) continue;
+        if (sim.deployable[y * n + x] && (!sim.entry || pointAt(sim.entry, x, y) >= 0)) continue;
         const p = [tileToWorld(x, y), tileToWorld(x + 1, y), tileToWorld(x + 1, y + 1), tileToWorld(x, y + 1)];
         g.fillPoints(p.map((q) => new Phaser.Math.Vector2(q.x, q.y)), true);
       }
     }
+  }
+
+  /**
+   * Infiltration Points on the map: a glowing ring per point, its letter and the
+   * warrior space it still hides. Spent points go grey. Redrawn when usage changes.
+   */
+  private drawEntry(): void {
+    const entry = this.session.sim.entry;
+    if (!entry) return;
+    const sig = entry.points.map((p) => p.used).join(',');
+    if (sig === this.entrySig && this.entryGfx) return;
+    this.entrySig = sig;
+    if (!this.entryGfx) {
+      this.entryGfx = this.add.graphics().setDepth(-3);
+      this.entryLabels = entry.points.map(() =>
+        this.add
+          .text(0, 0, '', { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#fff6c8', stroke: '#26303d', strokeThickness: 4, align: 'center' })
+          .setOrigin(0.5, 1)
+          .setDepth(OVER - 50),
+      );
+    }
+    const g = this.entryGfx;
+    g.clear();
+    // A circle of radius r on the tiles is an ellipse on screen (iso: x-y across, x+y down).
+    const rx = (entry.radius * TILE_W) / Math.SQRT2;
+    const ry = (entry.radius * TILE_H) / Math.SQRT2;
+    entry.points.forEach((p, i) => {
+      const left = coverLeft(entry, i);
+      const open = left > 0;
+      const c = tileToWorld(p.x, p.y);
+      g.fillStyle(open ? 0xffd23f : 0x9aa0aa, open ? 0.16 : 0.1);
+      g.fillEllipse(c.x, c.y, rx * 2, ry * 2);
+      g.lineStyle(3, open ? 0xffd23f : 0x9aa0aa, open ? 0.9 : 0.5);
+      g.strokeEllipse(c.x, c.y, rx * 2, ry * 2);
+      this.entryLabels[i]
+        .setText(`${p.label} · ${open ? left : 'full'}`)
+        .setPosition(c.x, c.y - ry - 4)
+        .setScale(1 / this.cam.userZoom)
+        .setAlpha(open ? 1 : 0.6);
+    });
   }
 
   private flashZone(ms: number): void {
@@ -176,8 +226,9 @@ export class BattleScene extends Phaser.Scene {
     const t = worldToTile(wx, wy);
     if (!s.tryDeploy(troop, t.tx, t.ty)) {
       if (isTap) {
-        this.flashZone(1200);
-        this.hooks.deployFailed('zone');
+        const why = deployBlock(s.sim, troop, t.tx, t.ty) ?? 'zone';
+        if (why === 'zone') this.flashZone(1200);
+        this.hooks.deployFailed(why);
       }
       return;
     }
@@ -349,7 +400,8 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private rescaleOverlays(): void {
-    // Bars are redrawn every frame using the current zoom.
+    // Bars are redrawn every frame using the current zoom; point labels keep a constant size on screen.
+    for (const l of this.entryLabels) l.setScale(1 / this.cam.userZoom);
   }
 
   private drawBar(g: Phaser.GameObjects.Graphics, x: number, y: number, frac: number, color: number): void {
@@ -370,6 +422,7 @@ export class BattleScene extends Phaser.Scene {
     this.handleEvents();
     const sim = s.sim;
     const a = s.alpha();
+    this.drawEntry();
 
     this.syncSmoke();
 

@@ -2,6 +2,8 @@
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
+**Version 5 (defensive counters, Infiltration Points):** the server re-simulates every attack with the five live counter buildings and with Infiltration Points on (`BattleSetup.infiltration: true`): warriors only enter inside the base's points, each hiding about a third of the army; off-point deployments are dropped, exactly as in the game. `DefenseView.infiltration` is `true` on attacks recorded under this rule, so replays use it. The server advertises `minProtocol: 5` and the `defense-counters` feature.
+
 **Version 4 (playable roster):** all 50 warriors and Keep levels 1–15 are supported. The server advertises `minProtocol: 4` and the `warriors-50` feature. Deployments still use `{ tick, troop, x, y }`; new troop IDs are listed in `troops.json`. Summons, auras, poison, burning, resurrection, shields and defense control reconstruct from seed + deployments using the shared simulation. Summons never appear in submitted inventory. Army validation checks `unlockKeep`; research validation subtracts each troop's `levelCapOffset`. Clients and servers must upgrade together.
 
 Version 3 introduced tactical ability deployments: `{ tick, troop: "smoke_bomb", x, y }` throws a Smoke Bomb. Charges are derived from the submitted army.

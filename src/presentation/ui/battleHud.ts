@@ -2,7 +2,7 @@ import type { BattleSession } from '../../gameplay/control/battleSession';
 import type { BattleHooks } from '../render/BattleScene';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
 import { isAbility } from '../../gameplay/sim/battle/battle';
-import { scoutReport } from '../../gameplay/sim/battle/scout';
+import { pointIntel, scoutReport } from '../../gameplay/sim/battle/scout';
 import { closeCalls } from '../../gameplay/sim/battle/closecall';
 import { lossTrophies, winTrophies } from '../../gameplay/sim/ranks';
 import type { BattleResult } from '../../gameplay/sim/battle/types';
@@ -117,7 +117,8 @@ export class BattleHud {
     return {
       selectedTroop: () => this.selected,
       deployFailed: (reason) => {
-        if (reason === 'zone') this.toast('Place troops outside the red area.');
+        if (reason === 'zone') this.toast(this.s.sim.entry ? 'Send warriors in through a glowing infiltration point.' : 'Place troops outside the red area.');
+        else if (reason === 'full') this.toast(`That path is full: each point hides ${this.s.sim.entry?.cover ?? 0} space of warriors. Use another point.`);
         else if (reason === 'empty') this.toast(this.selected === 'smoke_bomb' ? 'No Smoke Bombs left.' : 'No more of that troop. Pick another.');
         else this.toast('Pick a troop below first.');
       },
@@ -147,9 +148,23 @@ export class BattleHud {
       { class: 'panel scout-report' },
       h('b', {}, opp.practice ? `Practice target · ${opp.practice}` : 'Scout report'),
       h('div', { class: 'chips' }, ...chips),
+      ...this.entryIntel(),
       ...r.tips.map((t) => h('p', { class: 'small' }, t)),
     );
     this.deps.root.append(this.scoutEl);
+  }
+
+  /** Infiltration Points in the scout report: the rule in one line, and what each point leads into. */
+  private entryIntel(): HTMLElement[] {
+    const entry = this.s.sim.entry;
+    if (!entry || !entry.points.length) return [];
+    const intel = pointIntel(entry.points, this.s.setup.base, this.s.data);
+    const chip = (p: (typeof intel)[number]) =>
+      h('span', { class: `chip point-chip${p.defenses === 0 ? ' quiet' : ''}` }, h('b', {}, p.label), ` ${p.defenses}${p.antiAir ? ' · AA' : ''}${p.splash ? ' · splash' : ''}`);
+    return [
+      h('p', { class: 'small' }, h('b', {}, `${entry.points.length} infiltration points. `), `Each hides ${entry.cover} space of warriors, so split your army into squads. Defenses covering each path to the Keep:`),
+      h('div', { class: 'chips' }, ...intel.map(chip)),
+    ];
   }
 
   private renderBottom(): void {
@@ -214,7 +229,7 @@ export class BattleHud {
       const left = this.left('smoke_bomb');
       const card = h(
         'button',
-        { class: `troop-card ability${this.selected === 'smoke_bomb' ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': 'smoke_bomb', title: this.s.data.battle.abilities.smoke_bomb.description },
+        { class: `troop-card ability${this.selected === 'smoke_bomb' ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.battle.abilities.smoke_bomb.name, 'data-type': 'smoke_bomb', title: this.s.data.battle.abilities.smoke_bomb.description },
         icon(icons.smoke),
         h('span', { class: 'troop-count' }, `×${left}`),
       );
@@ -233,7 +248,7 @@ export class BattleHud {
       const thumb = this.deps.troopThumb(type);
       const card = h(
         'button',
-        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.troops[type]?.name ?? type, title: this.s.data.troops[type]?.description ?? type },
+        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.troops[type]?.name ?? type, 'data-type': type, title: this.s.data.troops[type]?.description ?? type },
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('span', { class: 'troop-count' }, `×${left}`),
       );
@@ -274,7 +289,8 @@ export class BattleHud {
     if (this.s.mode === 'live') {
       // Keep troop counts fresh without rebuilding on every tick.
       this.troopsEl.querySelectorAll<HTMLElement>('.troop-card').forEach((el) => {
-        const type = el.getAttribute('aria-label') ?? '';
+        // The troop id, not the aria-label: that is the display name, which used to make every count read ×0.
+        const type = el.dataset.type ?? '';
         const n = this.left(type);
         const c = el.querySelector('.troop-count');
         if (c && c.textContent !== `×${n}`) c.textContent = `×${n}`;

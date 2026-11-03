@@ -388,6 +388,19 @@ export interface BattleDef {
   /** Tactical abilities, keyed by the id used in deployments (`Deployment.troop`). */
   abilities: { smoke_bomb: SmokeBombDef };
   sabotage: SabotageDef;
+  /** Infiltration Points (sim/battle/infiltration.ts): where warriors may enter, and how many each path hides. */
+  infiltration: {
+    /** Points per base (out of 8 compass approaches). */
+    points: number;
+    /** How far in from the map edge each approach is anchored. */
+    insetTiles: number;
+    /** Tiles from a point's centre that count as that point. */
+    radius: number;
+    /** Each point hides 1/minPoints of the army's housing, so a full army needs this many points. */
+    minPoints: number;
+    /** Every point hides at least this much housing (keeps tiny early armies simple). */
+    minCover: number;
+  };
 }
 
 export interface NamesDef {

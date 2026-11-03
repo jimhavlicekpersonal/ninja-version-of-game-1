@@ -117,7 +117,7 @@ for (const [label, makeRepo] of repoFactories) {
         expect(m.opponent.name).toBe('Dot');
         const { army, deployments } = rush(20);
         const r = await a.submitAttack({ ticket: m.ticket, seed: 5, army, deployments });
-        const local = runBattle({ seed: 5, base: m.base, army }, deployments, w.data).result;
+        const local = runBattle({ seed: 5, base: m.base, army, infiltration: true }, deployments, w.data).result;
         expect(r.result.hash).toBe(local.hash);
         expect((await a.me()).trophies).toBe(r.playerTrophies);
         const dp = await d.me();

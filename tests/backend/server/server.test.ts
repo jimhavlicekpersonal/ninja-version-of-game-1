@@ -96,7 +96,7 @@ describe('server HTTP adapter', () => {
     const { army, deployments } = rush(20);
     const atk = await s.call('POST', Routes.attacks, attacker.token, { ticket: m.body.ticket, seed: 5, army, deployments });
     expect(atk.status).toBe(200);
-    expect(atk.body.result.hash).toBe(runBattle({ seed: 5, base: m.body.base, army }, deployments, data).result.hash);
+    expect(atk.body.result.hash).toBe(runBattle({ seed: 5, base: m.body.base, army, infiltration: true }, deployments, data).result.hash);
     const again = await s.call('POST', Routes.attacks, attacker.token, { ticket: m.body.ticket, seed: 5, army, deployments });
     expect(again.status).toBe(409);
     expect(again.body.error).toBe('conflict');

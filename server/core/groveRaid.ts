@@ -179,7 +179,7 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   if (!(await ctx.repo.useTicket(ticket.id))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const { result } = runBattle({ seed: Number(sub.seed) >>> 0, base: ticket.base, army, levels }, deployments, ctx.data, sub.endTick);
+  const { result } = runBattle({ seed: Number(sub.seed) >>> 0, base: ticket.base, army, levels, infiltration: true }, deployments, ctx.data, sub.endTick);
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
   await ctx.repo.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
   const pairing = (await ctx.repo.getPairing(week, ticket.groveId!))!;

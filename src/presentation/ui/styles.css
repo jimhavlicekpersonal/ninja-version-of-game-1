@@ -452,3 +452,5 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .codex-row.locked img { filter: grayscale(.7); opacity: .75; }
 .codex-status { font-weight: 700; color: #a0522d; }
 .codex-status.ok { color: #3c7d2c; }
+.point-chip b { color: var(--plum); }
+.point-chip.quiet { color: var(--leaf-dark); }
