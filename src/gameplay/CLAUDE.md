@@ -16,6 +16,7 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - `sim/battle/basegen.ts`: generated bases, five layout archetypes. `scout.ts`: what scouting reveals (never hidden traps).
 - `sim/trials.ts` + `data/trials.json`: Shadow Trials, the endless ladder, rewarded once per tier through the `trialEnd` command.
 - `sim/progression.ts` + `data/progression.json` + `data/roster.json`: the power-budget model, the 50 warriors, 4 heroes and 34 buildings.
+- `sim/world/` (Shadow Clans, `docs/game-theory/SHADOW_CLANS.md`): `clans.ts` (persistent AI clans, event-driven steps, bands, revenge), `villagegen.ts` (constrained clan villages: archetype, budget, reachability, difficulty, regenerate; the first-raid outpost; clan armies), `opponents.ts` (the rivals board), `power.ts` (Clan Power, combat rating, matchups), `territory.ts` (world map, conquest, tribute, reclaim), `factions.ts` (missions, support, wars), `competition.ts` (PvP gates, population transition, eligibility, Shadow Rank, war formats, catch-up, leadership), `tournament.ts`. Data: `clans.json`, `world.json`, `competition.json`. Generated rivals (`opponentForRank`) are clan villages; simulated raiders belong to clans.
 - `control/controller.ts`: command dispatch, saving. `control/battleSession.ts`: real-time battle stepping.
 
 ## Invariants with tests (keep them green)
@@ -23,7 +24,8 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - The 20-item balance pass (see root `CLAUDE.md`) and `tests/gameplay/balance/*`. Rerun the model player after changing costs, times, loot or combat numbers.
 - `progression-model.test.ts`: the live roster matches the model, no dominance inside a tier, every Keep level unlocks warriors, costs outgrow power.
 - `tactics.test.ts`: smoke and sabotage limits and exact replays. `trials.test.ts`: ladder growth, no tier skipping, rewards paid once, forged bases ignored.
-- **Save format:** bump `SAVE_VERSION` (`sim/save.ts`, now 10) and add a migration step for every state change. Never drop player progress.
+- `tests/gameplay/world/*`: clan villages legal and reachable, first raid beatable, clan steps independent of cadence and inside bands, revenge raids, conquest without Honor, forged settlements ignored, population table and capacity formula, eligibility, Shadow Rank only from real players, factions, tournaments, catch-up.
+- **Save format:** bump `SAVE_VERSION` (`sim/save.ts`, now 11) and add a migration step for every state change. Never drop player progress.
 - **Ids are stable** (`docs/rebuild/ID_MAP.md`). Change display names in data only.
 - If a rule change affects online battles, tell BACKEND (`docs/backend/REQUESTS.md`): the server must run the same version, and `PROTOCOL_VERSION` may need a bump.
 

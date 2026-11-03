@@ -1,4 +1,4 @@
-# Handoff: Kagemura rebuild (2026-11-02)
+# Handoff: Kagemura rebuild (2026-11-02, Shadow Clans 2026-11-03)
 
 ## Repos
 
@@ -29,7 +29,10 @@
 | Icon manifest (504 images) + ART AI brief + real-art loader | Done | `npm run docs:progression`; `public/art/manifest.json` loads in game |
 | Mobile sizes | Checked | 390×844, 360×640, 844×390 screenshots |
 
-**Checks:** `npm test`: 42 files, 286 tests, all passing. `npm run build`, `npm run typecheck:server` and `npm run server:build` all pass.
+| **Shadow Clans** (`docs/game-theory/SHADOW_CLANS.md`): 7 persistent AI clans, rivals board (AI and real players, labelled), world map with conquest and tribute, AI factions (missions, support squad, weekly war), Shadow Rank (real players only), normalized tournaments, catch-up, war formats, health view | Working offline; server parts in tests | `tests/gameplay/world/*` (46), `tests/backend/server/shadow.test.ts` (14, memory and Postgres), connection and health tests; browser walk-through at 390×844, 360×640 and 844×390 (first raid, rivals board, every World tab, a tournament battle, a settlement conquest), 0 console errors |
+| Save v10 → v11 (world state) and protocol 4 (additions; v2/v3 clients still work) | Working | `migration-full.test.ts`, `shadow.test.ts` |
+
+**Checks:** `npm test`: 49 files, 349 tests, all passing (106 backend tests also pass against Postgres 16 with `TEST_DATABASE_URL`). `npm run build`, `npm run typecheck:server` and `npm run server:build` all pass. Model-player pacing with clan villages: Keep 3 at 54 min, Keep 6 at 13.6 days.
 
 ## Not verified here (needs your devices or accounts)
 
@@ -40,6 +43,8 @@
 
 ## Unfinished (prioritised)
 
+0. **Shadow Clans next steps** (details in `docs/game-theory/SHADOW_CLANS.md`): shared territory per region on the server (today each player's map is their own), powers for human faction leaders, storing the combat rating server-side, cross-player retention analytics, and the proposed faster pacing for Keep 5-6 (not adopted: 20 balance tests pin today's curve).
+
 1. **Make more warriors live.** 44 of 50 are design-only. Each needs `troops.json` stats from `warriorStats()`, Dojo/Keep gating, and its ability in the battle sim with a test. Suggested next five: Herbalist (heal), Ram Crew (wall bonus), Shadow Stalker (stealth), Hound Handler (summons), Twin-Fang Dancer (cleave).
 2. **Keep levels 7–15**, Shadow Ink, the new buildings (Scroll Library first) and heroes (**Shadow Captain**). There is no hero system yet. Each needs a save migration.
 3. **Mastery EXP** is in the model and docs but not yet tracked in the live game.
@@ -49,7 +54,7 @@
 
 ## Online features: honest status
 
-Real PvP, real Alliances and Alliance Wars work **only with a hosted server** (`VITE_SERVER_URL` or Settings → Online play). Without one, everything social is bot-driven and labelled as practice. Smoke Bombs work online (protocol v3), but the server must be deployed from this branch: a v2 server would score smoke battles differently, so v3 clients refuse it.
+Real PvP, real Alliances, Alliance Wars, Shadow Rank, regions, faction membership and tournament boards work **only with a hosted server** (`VITE_SERVER_URL` or Settings → Online play). Without one, everything social is bot-driven and labelled as practice. Smoke Bombs work online (protocol v3), but the server must be deployed from this branch: a v2 server would score smoke battles differently, so v3 clients refuse it.
 
 ## Next sessions
 

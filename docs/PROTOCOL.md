@@ -1,6 +1,8 @@
-# Kagemura multiplayer protocol (version 3)
+# Kagemura multiplayer protocol (version 4)
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
+
+**Version 4 (Shadow Clans):** additions only, so v2 and v3 clients keep working (`minProtocol: 2`). A v4 server lists the features `candidates`, `shadow_rank`, `regions`, `factions`, `tournaments` and `metrics` in `/v1/hello`; a v4 client uses them only when listed and otherwise falls back to the v3 flow (one opponent from `GET /v1/match`). New-player protection now also applies to `GET /v1/match`: Keep 1-2 only get generated villages and are never offered to others. See "Shadow Clans" below and `docs/game-theory/SHADOW_CLANS.md`.
 
 **Version 3 (ninja rebuild):** a deployment may name a tactical ability instead of a troop. `{ tick, troop: "smoke_bomb", x, y }` throws a Smoke Bomb. Charges come from the army (`smokeCharges` in `src/gameplay/sim/battle/battle.ts`), so nothing new is sent or stored. A v2 server would ignore smoke and score the battle differently, so v3 clients refuse v2 servers. v3 servers still accept v2 clients (`minProtocol: 2`), because a battle without abilities replays the same.
 
@@ -192,6 +194,26 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
   - Allowed after the raid ends, once per player per week. Repeating a claim is safe: it returns `alreadyClaimed: true` with the same outcome.
   - `RaidView.chests` lists this week's and last week's ended raids the player took part in, with whether each chest was claimed. The game claims every listed week it has not received yet.
   - The chest's contents are `groveRaidChest(outcome, hall)`, added by the game.
+
+### Shadow Clans (protocol 4)
+
+All rules come from `src/gameplay/sim/world/` and `src/gameplay/data/competition.json`, so the client and the server agree.
+
+| Route | What it does |
+|---|---|
+| `GET /v1/candidates?offense=N` | Real players for the rivals board. Each of the board's slots (3) is a real player with probability `humanShare` = min(table by eligible villages in the attacker's band, defender capacity D×C/A). Only eligible defenders: Keep in the attacker's window, PvP on (Keep 4+, or Keep 3 opted in), not shielded, fewer than `maxAttacksPerDefenderPerDay` real attacks in 24 h, not a recent target, not an Alliance mate, not reserved. `offense` (optional) orders them by the fairest matchup. Each candidate has a `token`, the village (loot capped and penalised, `human: true`) and its Shadow Rank. Empty when the attacker's own PvP is off. |
+| `POST /v1/match` `{ target }` | A ticket for a real player from the board. Eligibility is checked again: `404` if the attacker or defender may not take part, `409` if the defender is shielded, busy, a recent target, an Alliance mate or reserved. |
+| `POST /v1/match` `{ ai: { clan, seed, strength } }` | A ticket for an AI clan village. The server rebuilds it with `clanVillage(clan, seed, strength)` and applies the loot penalty; `strength` must be inside the attacker's Keep window (`400` otherwise). `opponent.kind` is `bot`. |
+| `POST /v1/match` `{}` | Same as `GET /v1/match`. |
+| `PUT /v1/pvp` `{ optIn }` | Real-player battles at the optional Keep level. Returns `PlayerView`. |
+| `PUT /v1/faction` `{ clan \| null }` | The AI faction the player serves (counts real members; leadership). |
+| `GET /v1/world` | The player's region (`players` / `capacity`), real players and the human leader per AI faction (fewer than `minHumans` active members: the AI leads; inactive leaders and anyone who led `maxTerms` seasons in a row step aside), and the last finished Shadow Rank season. |
+| `POST /v1/tournament/scores` | A tournament battle `{ tournament, index, seed, army, deployments, endTick? }`. Re-simulated against the tournament's fortress at standard levels; the draft must fit the housing budget and the tournament must be live (a battle started in its last minutes still counts). Returns `{ score, best, total }`. |
+| `GET /v1/tournament?limit=` | The current tournament's top totals and the player's rank. |
+| `GET /v1/metrics` | No auth, aggregates only: per attacker Keep band, eligible defenders, active players, expected attack requests and the target real-player share; real attacks per eligible defender and real vs generated matches in the last day. |
+| `GET /v1/leaderboard?board=rank\|defense` | Shadow Rank or defense rating boards (players with a rated battle only). `board=honor` (default) is the trophy board. |
+
+`PlayerView` gains `pvpOptIn`, `shadowRank` (`null` until the first battle against a real player), `lastSeason`, `region` and `faction`. `AttackResponse` gains `rating`: the Shadow Rank change, always `0` against a generated village. Shadow Rank compares the attacker's rating with the defender's **defense** rating (Elo, `rateBattle`); four-week seasons pull both halfway back to 1000.
 
 ## Trust
 

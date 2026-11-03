@@ -226,8 +226,8 @@ export class HttpServerAdapter implements ServerPort {
 
   // ---------------------------------------------------------------- Shadow Clans (protocol 4)
 
-  candidates(): Promise<CandidatesResponse> {
-    return this.req('GET', Routes.candidates);
+  candidates(offense?: number): Promise<CandidatesResponse> {
+    return this.req('GET', offense !== undefined ? `${Routes.candidates}?offense=${Math.round(offense)}` : Routes.candidates);
   }
 
   matchWith(req: MatchRequest): Promise<MatchResponse> {

@@ -26,6 +26,7 @@ import {
 } from '../../src/gameplay/sim/world/competition';
 import { draftProblem, tournamentAt, tournamentBases, tournamentLevels, tournamentScore } from '../../src/gameplay/sim/world/tournament';
 import { clanVillage } from '../../src/gameplay/sim/world/villagegen';
+import { defensePower, matchupFromDefense } from '../../src/gameplay/sim/world/power';
 import type {
   CandidatesResponse,
   MatchRequest,
@@ -149,7 +150,7 @@ async function band(ctx: ServerContext, hall: number): Promise<{ eligible: numbe
  * Real players for the rivals board. Each of the board's slots is a real
  * player with probability `humanShare`; the rest are left to AI villages.
  */
-export async function candidates(ctx: ServerContext, me: Player): Promise<CandidatesResponse> {
+export async function candidates(ctx: ServerContext, me: Player, offense?: unknown): Promise<CandidatesResponse> {
   if (!attackerPvp(me, ctx) || !me.base) return { candidates: [], humanShare: 0, eligible: 0 };
   const t = ctx.now();
   const { data, repo } = ctx;
@@ -159,9 +160,12 @@ export async function candidates(ctx: ServerContext, me: Player): Promise<Candid
   const win = hallWindow(me.hallLevel, data);
   const recent = await repo.recentTargets(me.id, t - data.competition.population.recentOpponentHours * HOUR);
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
+  // Look at a few more eligible players than needed, then keep the fairest matchups:
+  // the defender's defensive power against the attacker's offensive power.
+  const pool = want * data.competition.population.candidatePool;
   const found: Player[] = [];
   for (const range of [data.ranks.matchTrophyRange, 200, 400, 1_000_000]) {
-    if (found.length >= want) break;
+    if (found.length >= pool) break;
     const more = await repo.findOpponents({
       excludeIds: [me.id, ...recent, ...mates, ...found.map((p) => p.id)],
       minHall: win.min,
@@ -170,11 +174,17 @@ export async function candidates(ctx: ServerContext, me: Player): Promise<Candid
       maxTrophies: me.trophies + range,
       now: t,
       lockedSince: t - LOCK_MS,
-      limit: want - found.length,
+      limit: pool - found.length,
       eligibility: rules(ctx),
     });
     found.push(...more);
   }
+  const off = Number(offense);
+  if (Number.isFinite(off) && off > 0) {
+    const fairness = (p: Player) => Math.abs(Math.log(matchupFromDefense(off, defensePower(p.base!, data), p.hallLevel, data).ratio));
+    found.sort((a, b) => fairness(a) - fairness(b));
+  }
+  found.splice(want);
   const out = [];
   for (const p of found) {
     const r = shadowOf(p, ctx);

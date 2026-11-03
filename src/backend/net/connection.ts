@@ -14,7 +14,7 @@ import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
 import type { BattleSubmission, HelloResponse, MatchRequest, MatchResponse, MetricsResponse, PlayerView, TournamentScoreResponse, TournamentSubmission, WorldResponse } from './protocol';
-import type { RivalCandidate } from '../../gameplay/sim/world/opponents';
+import { playerOffense, type RivalCandidate } from '../../gameplay/sim/world/opponents';
 import { defensePower } from '../../gameplay/sim/world/power';
 
 /** What the connection needs from the game. GameController provides it. */
@@ -134,7 +134,7 @@ export class Connection {
    */
   async candidates(): Promise<RivalCandidate[]> {
     if (!this.port || !this.supports('candidates')) return [];
-    const r = await this.port.candidates();
+    const r = await this.port.candidates(playerOffense(this.o.game.state, this.o.game.data));
     return r.candidates.map((c) => ({
       kind: 'player' as const,
       source: 'human' as const,

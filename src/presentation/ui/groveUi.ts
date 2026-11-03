@@ -7,6 +7,7 @@ import type { GroveSnapshot, GroveSource } from '../../backend/social/groveSourc
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
 import { groveRaidChest } from '../../gameplay/sim/social/groveRaid';
 import { hallLevel } from '../../gameplay/sim/village';
+import { warFormat } from '../../gameplay/sim/world/competition';
 import { clear, h, icon } from './dom';
 import type { UiKit } from './economyUi';
 import { rewardChips } from './economyUi';
@@ -258,6 +259,12 @@ export class GroveUi {
     const now = this.c.now();
     const p = snap.raid;
     const hall = hallLevel(s, gd);
+    if (snap.kind === 'online') {
+      // Clan war format grows with the number of real members; the war size is flexible.
+      const humans = snap.members.length;
+      const f = warFormat(humans, gd);
+      body.append(h('p', { class: 'small' }, h('b', {}, `${f.name}`), ` for ${humans} member${humans === 1 ? '' : 's'} (war size up to ${f.warSize}). Small Alliances fight AI clans or Alliances of their own size.`));
+    }
     if (p.phase !== 'live') {
       body.append(h('p', {}, `The next Alliance War starts in ${formatDuration(p.nextStart - now)} and lasts ${gd.social.groveRaid.durationHours / 24} days. Every member gets ${gd.social.groveRaid.attacksPerMember} attacks; the best stars on each enemy base add up, and the Alliance with more stars wins.`));
       if (snap.kind === 'online') body.append(h('p', { class: 'muted small' }, 'Your Alliance is matched with a real Alliance of similar size and strength, or with a band of wild bots when none is free. Only members who were in the Alliance when the raid starts take part.'));

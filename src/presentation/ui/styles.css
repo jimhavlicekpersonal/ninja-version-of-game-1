@@ -463,3 +463,10 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .draft-row > div { flex: 1; min-width: 0; }
 .draft-row .btn { min-width: 40px; min-height: 40px; padding: 0 10px; justify-content: center; }
 .draft-n { min-width: 26px; text-align: center; font-size: 16px; }
+
+/* Short screens (phones in landscape): the side rail wraps into a second column so it never reaches the bottom bar. */
+@media (max-height: 560px) {
+  .side-rail { gap: 6px; max-height: calc(100% - 180px - var(--safe-b) - var(--safe-t)); flex-wrap: wrap-reverse; align-content: flex-start; }
+  .side-rail .round-btn { width: 42px; height: 42px; }
+  .side-rail .round-btn .icon { width: 24px; height: 24px; }
+}

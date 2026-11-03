@@ -75,9 +75,15 @@ export class App {
     const ai = aiCandidates(r.seed, c.state, gd);
     const pvp = pvpEnabled(hallLevel(c.state, gd), c.state.world.pvpOptIn, gd) && c.state.world.firstRaidDone;
     const online = conn.online && Boolean(conn.port);
+    if (online && !conn.supports('candidates') && c.state.world.firstRaidDone) {
+      // An older server (protocol 3) owns Honor and picks one opponent itself, as before
+      // (the tutorial outpost stays local so the first raid is always winnable).
+      await this.legacyOnlineScout(r.seed);
+      return;
+    }
     let humans: RivalCandidate[] = [];
     let searched = false;
-    if (online && pvp && conn.supports('candidates')) {
+    if (online && pvp) {
       const kept = this.humanBoard && this.humanBoard.seed === r.seed && Date.now() - this.humanBoard.at < 10 * 60_000 ? this.humanBoard.list : null;
       try {
         humans = kept ?? (await conn.candidates());
@@ -86,10 +92,6 @@ export class App {
       } catch (e) {
         console.warn('Online candidates failed, showing AI rivals', e);
       }
-    } else if (online && pvp && !conn.supports('candidates')) {
-      // An older server (protocol 3): one opponent picked by the server, as before.
-      await this.legacyOnlineScout(r.seed);
-      return;
     }
     const board = mergeCandidates(ai, humans, gd);
     this.d.analytics.log('opponent_search', { ok: board.length > 0, humans: humans.length, ai: board.length - humans.length, online, searched, paid });

@@ -1,8 +1,10 @@
 # Kagemura: Ninja Clans (project instructions)
 
-An original ninja-clan base-building and raiding game. You lead a clan, build a hidden mountain village, train specialised warriors, scout rivals, raid with smoke and sabotage, and climb the endless Shadow Trials. It was rebuilt in place from **Toadstool Kingdoms**: every working system was kept, internal ids stayed stable, and saves migrate (v9 to v10).
+An original ninja-clan base-building and raiding game. You lead a clan, build a hidden mountain village, train specialised warriors, scout rivals, raid with smoke and sabotage, and climb the endless Shadow Trials. It was rebuilt in place from **Toadstool Kingdoms**: every working system was kept, internal ids stayed stable, and saves migrate (now v11).
 
-**Start here:** `AGENTS.md` (one AI session per compartment), `docs/rebuild/HANDOFF.md` (state of the build), `docs/rebuild/01-REBUILD-ANALYSIS.md` (pitfalls), `docs/rebuild/02-ARCHITECTURE.md` (structure and research).
+**Shadow Clans** (`docs/game-theory/SHADOW_CLANS.md`) makes it a complete single-player game that real players gradually join: seven persistent AI clans, a rivals board shared by AI and real villages, a world map, joinable AI factions, Shadow Rank (real players only), normalized tournaments, and server matchmaking by the population transition and defender capacity.
+
+**Start here:** `AGENTS.md` (one AI session per compartment), `docs/rebuild/HANDOFF.md` (state of the build), `docs/game-theory/SHADOW_CLANS.md` (AI clans to PvP), `docs/rebuild/01-REBUILD-ANALYSIS.md` (pitfalls), `docs/rebuild/02-ARCHITECTURE.md` (structure and research).
 
 ## Compartments (each has its own CLAUDE.md)
 
@@ -27,12 +29,12 @@ An original ninja-clan base-building and raiding game. You lead a clan, build a 
 
 - **Identity:** display names come from `src/gameplay/data/*.json`. Internal ids are unchanged (`docs/rebuild/ID_MAP.md`). The app display name is "Kagemura". The bundle id and product ids are still the old ones until new store listings exist (owner step).
 - **Art:** all art is still generated in code (`src/presentation/art/ninja.ts`), with three visual tiers per building. Real images override any asset key through `public/art/manifest.json`. `npm run art` shows a gallery. ART AI brief: `docs/art/ART_AI_BRIEF.md`.
-- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v10**: Shadow Trials progress), with a migration step per version. Bump `SAVE_VERSION` for every state change.
-- **Protocol** is v3 (abilities in deployments). Servers accept v2 clients.
+- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v11**: the Shadow Clans world), with a migration step per version. Bump `SAVE_VERSION` for every state change.
+- **Protocol** is v4 (Shadow Clans: candidates, targeted and AI matches, Shadow Rank, PvP opt-in, regions, factions, tournaments, metrics). Additions only: servers accept v2 and v3 clients, and v4 clients fall back to the v3 flow on older servers.
 - **Ninja tactics:** Smoke Bomb (defense range × 0.4 inside the cloud, never below 2 tiles, 8 s, 1 + 1 per 40 housing charges, max 3, no stacking). Sabotage (Saboteur jams a defense 6 s; it is then immune for 10 s after recovering; one jam each). All numbers are in `battle.json` and `troops.json`.
 - **Endless difficulty:** Shadow Trials (`src/gameplay/sim/trials.ts`, `trials.json`), paid once per tier and never farmable.
 - **Progression model:** `docs/game-theory/PROGRESSION_MODEL.md`. 50 warriors + 4 heroes + 34 buildings in `roster.json` / `progression.json`. Six warriors are live today.
-- **Honesty:** generated opponents and simulated raids are always labelled as such.
+- **Honesty:** generated opponents and simulated raids are always labelled as such. Every AI clan village, raider, faction squad and offline Alliance member says AI; real players say PLAYER. AI never chats or poses as a person.
 - Progression pacing is checked by a model-player test (`tests/gameplay/balance/`) that fights every raid as a real battle. Rerun it after changing costs, times, loot or combat numbers.
 - Offers have `minAccountHours`. Real prices appear only in the Store and its confirm step.
 - Owner-only steps (store accounts, products, secrets, server hosting, creating the new repo) are in `docs/SHIPPING.md` and `docs/rebuild/HANDOFF.md`.
@@ -65,6 +67,18 @@ A review against how this genre is usually balanced found 20 game-theory holes a
 | 20 | Buying a hall level was cheap | Steeper skip and top-up curves; rushing hall 5→6 costs >3x the starting Jade (`moonstones`) | `curves.test.ts`, `economy.test.ts` |
 
 Numbers in the spec below that these replaced (skip/top-up curve points, 0-3 raids per absence, 12-hour shield) are superseded by the data files.
+
+## Shadow Clans (and their limits)
+
+Spec, mapping and next steps: `docs/game-theory/SHADOW_CLANS.md`. Keep these rules when changing it:
+
+- **One battle pipeline** for AI and real villages. AI villages come from `clanVillage(clan, seed, strength)` so a server can rebuild them; every online match is a ticket and every attack is re-simulated.
+- **AI clans** (`clans.json`, `sim/world/clans.ts`) are simulated only on interaction, in fixed 12-hour steps from the epoch with dice from the world seed (so the result does not depend on how often the player looks), and stay inside the band (never above the player's Keep + 2).
+- **New-player protection:** Keep 1-2 AI only, Keep 3 opt-in, Keep 4+ standard (`competition.json` `pvp`), on every server route.
+- **Human share** = min(table by eligible villages in the band, defender capacity D×C/A). Eligibility: band, PvP on, no shield, under the daily cap, not self / recent / Alliance mate.
+- **Shadow Rank** moves only for battles between real players. World map battles pay loot but never Honor. Tournament battles spend nothing.
+- **First raid:** new villages start with a Coin Mint, a Kunai Tower and three Shinobi; the first attack is the half-built Bamboo Outpost (beatable from any side, tested).
+- Catch-up (`competition.json` `catchUp`) is inactive until Keep levels above 6 exist.
 
 ## Engagement features (and their limits)
 

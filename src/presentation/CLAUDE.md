@@ -13,7 +13,8 @@ You are the **GUI & INTERACTION AI**. You own `src/presentation/render/` (Phaser
 
 - Windows 11 laptop (mouse, wheel, Esc/Enter), Pixel 7 Chrome, iPhone Safari. Touch first: drag to pan, pinch to zoom, tap. Respect safe areas; portrait and landscape; check 360×640, 390×844 and 844×390.
 - Readable silhouettes and clear combat on a phone: smoke shows its exact area and time left; jammed defenses dim with a jam marker and recovery ring; immune defenses show a thin ring.
-- Generated or simulated opponents are always labelled ("Practice target", "Generated rival (offline)", "(simulated raider)", "Shadow Trial"). Never present them as real players.
+- Generated or simulated opponents are always labelled ("Practice target", "AI clan village", "(AI raid)", "Shadow Trial", "(AI)" on offline Alliance members). Real players are labelled PLAYER. Never present AI as real players.
+- Shadow Clans screens: `ui/worldUi.ts` (rivals board from Attack; the World rail button with Map, Clans, Faction, Tournament and Rank). The side rail wraps into two columns on short screens.
 - Real prices appear only in the Store and its confirm step. Every purchase has a clear confirm step, and no buy button sits where a stray tap lands. Under-18 spending cap and confirmation stay.
 - The tutorial (`ui/tutorial.ts`) keeps nine steps: saves store the step index. It hides during battles.
 

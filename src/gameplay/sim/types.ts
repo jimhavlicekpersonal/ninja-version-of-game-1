@@ -808,6 +808,8 @@ export interface CompetitionDef {
     maxAttacksPerDefenderPerDay: number;
     attacksPerPlayerPerDay: number;
     recentOpponentHours: number;
+    /** The server looks at this many eligible players per real-player slot and keeps the fairest matchups. */
+    candidatePool: number;
   };
   shadowRank: {
     start: number;

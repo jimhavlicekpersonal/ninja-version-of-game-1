@@ -88,7 +88,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
   app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50), query(req).board)));
 
   // Shadow Clans (protocol 4)
-  app.get(Routes.candidates, authed(async (me) => core.candidates(me)));
+  app.get(Routes.candidates, authed(async (me, req) => core.candidates(me, query(req).offense === undefined ? undefined : Number(query(req).offense))));
   app.post(Routes.match, authed(async (me, req) => core.matchWith(me, req.body as never)));
   app.put(Routes.pvp, authed(async (me, req) => core.setPvp(me, body<{ optIn: boolean }>(req).optIn)));
   app.put(Routes.faction, authed(async (me, req) => core.setFaction(me, body<{ clan: string | null }>(req).clan)));

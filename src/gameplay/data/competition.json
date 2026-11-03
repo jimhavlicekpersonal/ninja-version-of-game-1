@@ -37,7 +37,8 @@
     ],
     "maxAttacksPerDefenderPerDay": 4,
     "attacksPerPlayerPerDay": 6,
-    "recentOpponentHours": 24
+    "recentOpponentHours": 24,
+    "candidatePool": 3
   },
   "shadowRank": {
     "$comment": "Elo on expected performance, from battles against real players only. Generated opponents never change it. Seasons last seasonDays; ratings are pulled halfway back to start at each reset.",

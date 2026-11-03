@@ -13,6 +13,7 @@ import type { GameData } from '../../../src/gameplay/sim/types';
 import { shadowSeason } from '../../../src/gameplay/sim/world/competition';
 import { tournamentAt, tournamentBases, tournamentLevels } from '../../../src/gameplay/sim/world/tournament';
 import { clanVillage } from '../../../src/gameplay/sim/world/villagegen';
+import { maxOffenseAtHall } from '../../../src/gameplay/sim/world/power';
 import { HOUR, baseAt, rush, world } from './harness';
 import { repoFactories } from './pg';
 
@@ -83,6 +84,20 @@ describe('the rivals board on the server', () => {
       expect(c.base.clan).toBeUndefined();
       expect(c.shadowRank).toBeNull();
     }
+  });
+
+  it('puts the fairest matchup first: defense measured against the attacker\'s offense', async () => {
+    const allHuman: GameData = { ...defaultData, competition: { ...defaultData.competition, population: { ...defaultData.competition.population, humanShareByEligible: [{ min: 0, share: 1 }] } } };
+    const w = await W(allHuman);
+    const a = await w.player('Ann', baseAt(4));
+    const low = await w.player('Low', baseAt(3, 31));
+    await low.setPvp(true);
+    await w.player('High', baseAt(5, 51));
+    w.pastShields();
+    const weak = await a.candidates(maxOffenseAtHall(3, defaultData));
+    expect(weak.candidates.map((c) => c.name)[0]).toBe('Low');
+    const strong = await a.candidates(maxOffenseAtHall(5, defaultData));
+    expect(strong.candidates.map((c) => c.name)[0]).toBe('High');
   });
 
   it('a defender who took the day\'s share of real attacks is no longer offered', async () => {

@@ -68,8 +68,8 @@ export class InProcessServerAdapter implements ServerPort {
   leaderboard(limit = 50, board?: LeaderboardBoard) {
     return this.authed((me) => this.core.leaderboard(me, limit, board));
   }
-  candidates() {
-    return this.authed((me) => this.core.candidates(me));
+  candidates(offense?: number) {
+    return this.authed((me) => this.core.candidates(me, offense));
   }
   matchWith(req: MatchRequest) {
     return this.authed((me) => this.core.matchWith(me, wire(req)));

@@ -73,7 +73,8 @@ export interface PvpPort {
 
 /** Shadow Clans (protocol 4): one opponent-selection system for AI and real villages, rank, world. */
 export interface ShadowClansPort {
-  candidates(): Promise<CandidatesResponse>;
+  /** `offense`: the attacker's offensive power, so the server can prefer fair matchups. */
+  candidates(offense?: number): Promise<CandidatesResponse>;
   matchWith(req: MatchRequest): Promise<MatchResponse>;
   setPvp(optIn: boolean): Promise<PlayerView>;
   setFaction(clan: string | null): Promise<PlayerView>;
