@@ -30,9 +30,10 @@
 | Mobile sizes | Checked | 390×844, 360×640, 844×390 screenshots |
 
 | **Shadow Clans** (`docs/game-theory/SHADOW_CLANS.md`): 7 persistent AI clans, rivals board (AI and real players, labelled), world map with conquest and tribute, AI factions (missions, support squad, weekly war), Shadow Rank (real players only), normalized tournaments, catch-up, war formats, health view | Working offline; server parts in tests | `tests/gameplay/world/*` (46), `tests/backend/server/shadow.test.ts` (14, memory and Postgres), connection and health tests; browser walk-through at 390×844, 360×640 and 844×390 (first raid, rivals board, every World tab, a tournament battle, a settlement conquest), 0 console errors |
-| Save v10 → v11 (world state) and protocol 4 (additions; v2/v3 clients still work) | Working | `migration-full.test.ts`, `shadow.test.ts` |
+| Save v10 → v11 (world state) → v12 (clan treasuries) and protocol 4 (additions; v2/v3 clients still work) | Working | `migration-full.test.ts`, `shadow.test.ts`, contract tests |
+| Shadow Clans completion pass: rivals board inside the matchmaking window, clan treasuries, 50 layouts per clan, terrain, signature warriors, data-driven constants; online shared territory, leaders' war targets, war formats in Alliance War pairing, Alliance board, install keys, measured demand, stored combat rating, army snapshots, fairness and participation metrics; pacing (Keep 6 in ~4.2 days, was ~14) | Working | `tests/gameplay/world/*`, `tests/backend/server/shadow.test.ts` (memory and Postgres), `tests/backend/contract/` (protocol 4), `progression.test.ts` |
 
-**Checks:** `npm test`: 49 files, 349 tests, all passing (106 backend tests also pass against Postgres 16 with `TEST_DATABASE_URL`). `npm run build`, `npm run typecheck:server` and `npm run server:build` all pass. Model-player pacing with clan villages: Keep 3 at 54 min, Keep 6 at 13.6 days.
+**Checks:** `npm test`: 51 files, 379 tests, all passing (the backend suites also pass against Postgres 16 with `TEST_DATABASE_URL`). `npm run build`, `npm run typecheck:server` and `npm run server:build` all pass. Model-player pacing: Keep 3 at about 1 hour, Keep 4 within the first day, Keep 5 at about 2.2 days, Keep 6 at about 4.2 days.
 
 ## Not verified here (needs your devices or accounts)
 
@@ -43,7 +44,7 @@
 
 ## Unfinished (prioritised)
 
-0. **Shadow Clans next steps** (details in `docs/game-theory/SHADOW_CLANS.md`): shared territory per region on the server (today each player's map is their own), powers for human faction leaders, storing the combat rating server-side, cross-player retention analytics, and the proposed faster pacing for Keep 5-6 (not adopted: 20 balance tests pin today's curve).
+0. **Shadow Clans still open** (`docs/game-theory/SHADOW_CLANS.md`): a server-authoritative village economy (today tickets carry an army snapshot and battles are re-simulated, but resources and research live on the device), Keep levels 7-10, cross-player retention analytics on a hosted server.
 
 1. **Make more warriors live.** 44 of 50 are design-only. Each needs `troops.json` stats from `warriorStats()`, Dojo/Keep gating, and its ability in the battle sim with a test. Suggested next five: Herbalist (heal), Ram Crew (wall bonus), Shadow Stalker (stealth), Hound Handler (summons), Twin-Fang Dancer (cleave).
 2. **Keep levels 7–15**, Shadow Ink, the new buildings (Scroll Library first) and heroes (**Shadow Captain**). There is no hero system yet. Each needs a save migration.

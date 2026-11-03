@@ -23,6 +23,10 @@ Kagemura is split so that each part can be upgraded by a **new, separate Claude 
 4. **Before you finish:** `npm test` (includes the boundary test) and `npm run build`, plus `npm run typecheck:server` for backend work. Update your compartment's `CLAUDE.md` if you changed how things work.
 5. **Integration session** merges the branches into `main`, applies requested contract changes (edit the contract file, then update every caller), bumps `SAVE_VERSION` / `PROTOCOL_VERSION` if needed, and runs every check.
 
+## Note: Shadow Clans was an integration session
+
+The Shadow Clans work (November 2026) was done in one INTEGRATION session across all three compartments on a single branch (`claude/loving-ptolemy-630bk2`), because it changed contracts in every compartment at once (sim state and commands, protocol 4, ports, Connection, analytics, the World screens). The boundary test stayed green throughout. Go back to one session per compartment for follow-up work.
+
 ## Contract files (changing these needs INTEGRATION)
 
 Listed per compartment in `compartments.json` → `contracts`. In short: `art/ninja.ts` exports (painter registries), `render/iso.ts`, `gameplay/control/controller.ts` + `battleSession.ts` (the command surface), everything in `gameplay/sim` is readable by others (but only GAME THEORY edits it), and the backend ports: `analytics/events.ts`, `persist/saveStore.ts`, `payments/provider.ts`, `net/connection.ts`, `net/protocol.ts`, `social/groveSource.ts`.

@@ -1,6 +1,6 @@
 # Kagemura: Ninja Clans (project instructions)
 
-An original ninja-clan base-building and raiding game. You lead a clan, build a hidden mountain village, train specialised warriors, scout rivals, raid with smoke and sabotage, and climb the endless Shadow Trials. It was rebuilt in place from **Toadstool Kingdoms**: every working system was kept, internal ids stayed stable, and saves migrate (now v11).
+An original ninja-clan base-building and raiding game. You lead a clan, build a hidden mountain village, train specialised warriors, scout rivals, raid with smoke and sabotage, and climb the endless Shadow Trials. It was rebuilt in place from **Toadstool Kingdoms**: every working system was kept, internal ids stayed stable, and saves migrate (now v12).
 
 **Shadow Clans** (`docs/game-theory/SHADOW_CLANS.md`) makes it a complete single-player game that real players gradually join: seven persistent AI clans, a rivals board shared by AI and real villages, a world map, joinable AI factions, Shadow Rank (real players only), normalized tournaments, and server matchmaking by the population transition and defender capacity.
 
@@ -29,8 +29,8 @@ An original ninja-clan base-building and raiding game. You lead a clan, build a 
 
 - **Identity:** display names come from `src/gameplay/data/*.json`. Internal ids are unchanged (`docs/rebuild/ID_MAP.md`). The app display name is "Kagemura". The bundle id and product ids are still the old ones until new store listings exist (owner step).
 - **Art:** all art is still generated in code (`src/presentation/art/ninja.ts`), with three visual tiers per building. Real images override any asset key through `public/art/manifest.json`. `npm run art` shows a gallery. ART AI brief: `docs/art/ART_AI_BRIEF.md`.
-- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v11**: the Shadow Clans world), with a migration step per version. Bump `SAVE_VERSION` for every state change.
-- **Protocol** is v4 (Shadow Clans: candidates, targeted and AI matches, Shadow Rank, PvP opt-in, regions, factions, tournaments, metrics). Additions only: servers accept v2 and v3 clients, and v4 clients fall back to the v3 flow on older servers.
+- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v12**: v11 the Shadow Clans world, v12 AI clan treasuries), with a migration step per version. Bump `SAVE_VERSION` for every state change.
+- **Protocol** is v4 (Shadow Clans: candidates, targeted and AI matches, army snapshots, Shadow Rank, PvP opt-in, install keys, regions and shared territory, factions and leaders' war targets, tournaments, the Alliance board, metrics). Additions only: servers accept v2 and v3 clients, and v4 clients fall back to the v3 flow on older servers.
 - **Ninja tactics:** Smoke Bomb (defense range × 0.4 inside the cloud, never below 2 tiles, 8 s, 1 + 1 per 40 housing charges, max 3, no stacking). Sabotage (Saboteur jams a defense 6 s; it is then immune for 10 s after recovering; one jam each). All numbers are in `battle.json` and `troops.json`.
 - **Endless difficulty:** Shadow Trials (`src/gameplay/sim/trials.ts`, `trials.json`), paid once per tier and never farmable.
 - **Progression model:** `docs/game-theory/PROGRESSION_MODEL.md`. 50 warriors + 4 heroes + 34 buildings in `roster.json` / `progression.json`. Six warriors are live today.
@@ -59,23 +59,28 @@ A review against how this genre is usually balanced found 20 game-theory holes a
 | 12 | Raid profit per Dew grew 1.3x → 9.6x | Troop training cost rises with level; ratio stays ~2-4.5x | `curves.test.ts` |
 | 13 | Troops had no levels | Troop research in the Training Dojo (`burrow_barracks`) (`src/gameplay/sim/research.ts`), capped by `troopLevelCap` in hall.json | `research.test.ts` |
 | 14 | Hall timer jumped 36x at hall 4 | Hall times grow ~2.7x per level (hall 10 would be ~7 days) | `curves.test.ts` |
-| 15 | Hall cost multipliers shrank | 1k → 4k → 20k → 130k → 850k (x4, 5, 6.5, 6.5); the hall stores little | same |
+| 15 | Hall cost multipliers shrank | 1.3k → 4k → 12.4k → 38.5k → 120k (×3.1 each, never shrinking; was 1k … 850k before the Shadow Clans pacing change); the hall stores little | same |
 | 16 | Collector payback went up and down | Paybacks rise every level and stay under a week | same |
 | 17 | No cap on loot from storage; no penalty for hitting lower halls | `storageLootCapByHall`; `lootPenaltyByHallDiff` (client, bots and server) | `raids.test.ts`, `matchmaking.test.ts` |
 | 18 | Shield always 12 h | 12/14/16 h at 30/60/90% (`shieldTiers`) | `raids.test.ts` |
 | 19 | Alliance/league rewards flat across halls | Resources scaled by `rewardScaleByHall` (Jade (`moonstones`) not scaled) | `curves.test.ts` |
-| 20 | Buying a hall level was cheap | Steeper skip and top-up curves; rushing hall 5→6 costs >3x the starting Jade (`moonstones`) | `curves.test.ts`, `economy.test.ts` |
+| 20 | Buying a hall level was cheap | Steeper skip and top-up curves (large top-ups steepened again when Keeps got cheaper); rushing hall 5→6 costs >3x the starting Jade (`moonstones`) | `curves.test.ts`, `economy.test.ts` |
 
 Numbers in the spec below that these replaced (skip/top-up curve points, 0-3 raids per absence, 12-hour shield) are superseded by the data files.
+
+**Pacing** (Shadow Clans brief: early levels fast, Keep 6 in days): the model player reaches Keep 3 in about an hour, Keep 4 within the first day, Keep 5 in about 2.2 days and Keep 6 in about 4.2 days (`progression.test.ts`; it was about 14 days). Shields (12/14/16 h) and loot protection (20% of storage raidable) were kept: they protect defenders more than the brief's suggested 2/4/6 h and 30%.
 
 ## Shadow Clans (and their limits)
 
 Spec, mapping and next steps: `docs/game-theory/SHADOW_CLANS.md`. Keep these rules when changing it:
 
-- **One battle pipeline** for AI and real villages. AI villages come from `clanVillage(clan, seed, strength)` so a server can rebuild them; every online match is a ticket and every attack is re-simulated.
+- **One battle pipeline** for AI and real villages. AI villages come from `clanVillage(clan, seed, strength)` so a server can rebuild them; every online match is a ticket (with the attacker's army snapshot) and every attack is re-simulated.
+- **Clan identity:** each clan has 50 layouts (seed modulo `variants`), its own archetypes, wall and trap shares, army style and signature warrior; province terrain shapes settlements; each clan keeps a treasury that scales the loot in its own villages and pays out what the player takes (the trophy-matched rival is unaffected).
 - **AI clans** (`clans.json`, `sim/world/clans.ts`) are simulated only on interaction, in fixed 12-hour steps from the epoch with dice from the world seed (so the result does not depend on how often the player looks), and stay inside the band (never above the player's Keep + 2).
 - **New-player protection:** Keep 1-2 AI only, Keep 3 opt-in, Keep 4+ standard (`competition.json` `pvp`), on every server route.
-- **Human share** = min(table by eligible villages in the band, defender capacity D×C/A). Eligibility: band, PvP on, no shield, under the daily cap, not self / recent / Alliance mate.
+- **Human share** = min(table by eligible villages in the band, defender capacity D×C/A), where A is the larger of searches measured in the last day and active players × 6. Eligibility: band, PvP on, no shield, under the daily cap, not self (or another account from the same install) / recent / Alliance mate. Real candidates in the attacker's combat-rating band come first, then the fairest offense-vs-defense matchup.
+- **Every card on the rivals board stays inside the matchmaking window** (rule #3), the window the server checks.
+- **Shared territory:** online, the first real player in a region to take a settlement holds it; others win it in a real-player battle. Human faction leaders choose the weekly war target. Alliance War formats follow Alliance size (under five members fight AI clan war bands).
 - **Shadow Rank** moves only for battles between real players. World map battles pay loot but never Honor. Tournament battles spend nothing.
 - **First raid:** new villages start with a Coin Mint, a Kunai Tower and three Shinobi; the first attack is the half-built Bamboo Outpost (beatable from any side, tested).
 - Catch-up (`competition.json` `catchUp`) is inactive until Keep levels above 6 exist.
