@@ -8,7 +8,7 @@ import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFo
 import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../../gameplay/sim/save';
 import type { Building, Cost, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
-import { armyHousing, housingCapacity, queueHousing, barracksLevel } from '../../gameplay/sim/army';
+import { armyHousing, housingCapacity, queueHousing, barracksLevel, troopUnlock } from '../../gameplay/sim/army';
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { shieldHoursFor } from '../../gameplay/sim/defense';
 import { leagueChest, leagueFor, nextLeague, seasonEndsAt } from '../../gameplay/sim/ranks';
@@ -716,7 +716,7 @@ export class Hud {
     const tabs: [typeof this.shopTab, string, string[]][] = [
       ['resources', 'Resources', ['collector', 'storage', 'builder']],
       ['army', 'Army', ['military']],
-      ['defense', 'Defense', ['defense', 'hedge', 'trap']],
+      ['defense', 'Defense', ['defense', 'support', 'hedge', 'trap']],
       ['decor', 'Decor', ['decor']],
     ];
     const visible = tabs.filter(([, , cats]) => Object.values(this.c.data.buildings).some((d) => d.inShop && cats.includes(d.category)));
@@ -782,12 +782,13 @@ export class Hud {
     const body = h('div', { class: 'training' });
     let tierFilter = 0;
     let roleFilter = '';
+    let onlyUnlocked = true;
     let lastSig = '';
     const render = () => {
       const s = this.c.state;
       const gd = this.c.data;
       const now = this.c.now();
-      const sig = JSON.stringify([tierFilter, roleFilter, s.army, s.training.length, s.resources.dew, s.resources.moonstones, barracksLevel(s, gd), housingCapacity(s, gd), s.research, hallLevel(s, gd)]);
+      const sig = JSON.stringify([tierFilter, roleFilter, onlyUnlocked, s.army, s.training.length, s.resources.dew, s.resources.moonstones, barracksLevel(s, gd), housingCapacity(s, gd), s.research, hallLevel(s, gd)]);
       if (sig === lastSig) {
         // Only refresh timers.
         body.querySelectorAll<HTMLElement>('[data-ends]').forEach((el) => {
@@ -837,9 +838,14 @@ export class Hud {
       roleSelect.value = roleFilter;
       tierSelect.addEventListener('change', () => { tierFilter = Number(tierSelect.value); render(); });
       roleSelect.addEventListener('change', () => { roleFilter = roleSelect.value; render(); });
-      body.append(h('div', { class: 'actions' }, tierSelect, roleSelect));
+      const unlockedCount = Object.keys(gd.troops).filter((t) => troopUnlock(s, t, gd).unlocked).length;
+      const scope = h('select', { 'aria-label': 'Show unlocked or all warriors' }, h('option', { value: '1' }, `Unlocked (${unlockedCount})`), h('option', { value: '0' }, `All (${Object.keys(gd.troops).length})`));
+      scope.value = onlyUnlocked ? '1' : '0';
+      scope.addEventListener('change', () => { onlyUnlocked = scope.value === '1'; render(); });
+      body.append(h('div', { class: 'actions' }, scope, tierSelect, roleSelect));
       const visible = (id: string) => {
         const warrior = WARRIORS.find((w) => w.liveTroop === id);
+        if (onlyUnlocked && !troopUnlock(s, id, gd).unlocked) return false;
         return (!tierFilter || warrior?.tier === tierFilter) && (!roleFilter || warrior?.role === roleFilter);
       };
       const list = h('div', { class: 'troop-list' });
@@ -939,27 +945,78 @@ export class Hud {
     });
   }
 
-  /** Every warrior class in the roster, with its icon and ability. Planned ones are marked as such. */
+  /**
+   * Every warrior class in the roster, with its icon and ability. "Unlocked"
+   * means trainable now: both the Clan Keep gate and the Training Dojo level
+   * are met (the same check the Train button uses).
+   */
   openCodex(): void {
     const gd = this.c.data;
-    const keep = hallLevel(this.c.state, gd);
-    const body = h('div', { class: 'codex' }, h('p', { class: 'muted small' }, `All ${WARRIORS.length} classes. New ones unlock as your Clan Keep and Training Dojo grow; the ring colour shows the tier.`));
-    const list = h('div', { class: 'codex-list' });
-    for (const w of WARRIORS) {
-      const src = this.deps.warriorIcon(w.id);
-      const live = Boolean(w.liveTroop);
-      const status = !live ? 'Coming soon' : warriorUnlockKeep(w, gd) <= keep ? 'Unlocked' : `Clan Keep ${warriorUnlockKeep(w, gd)}`;
-      list.append(
-        h(
-          'div',
-          { class: `codex-row${live ? '' : ' planned'}` },
-          src ? h('img', { src, alt: '' }) : null,
-          h('div', {}, h('b', {}, w.name), h('div', { class: 'muted small' }, `${roleDef(w.role).name} · tier ${w.tier} · ${status}`), h('div', { class: 'small' }, h('b', {}, `${w.ability.name}: `), w.ability.text)),
-        ),
-      );
-    }
-    body.append(list);
-    this.modal('Warrior Codex', body, [], 'wide');
+    let tierFilter = 0;
+    let roleFilter = '';
+    let statusFilter: '' | 'unlocked' | 'locked' = '';
+    const body = h('div', { class: 'codex' });
+    const render = () => {
+      const s = this.c.state;
+      clear(body);
+      const rows = WARRIORS.map((w) => {
+        const u = w.liveTroop && gd.troops[w.liveTroop] ? troopUnlock(s, w.liveTroop, gd) : null;
+        let status = 'Coming soon';
+        if (u?.unlocked) status = 'Unlocked';
+        else if (u) {
+          const need: string[] = [];
+          if (u.needsKeep) need.push(`Clan Keep ${u.keep}`);
+          if (u.needsDojo) need.push(`Training Dojo ${u.dojo}`);
+          status = `Needs ${need.join(' + ')}`;
+        }
+        return { w, u, status, keep: u ? u.earliestKeep : warriorUnlockKeep(w, gd) };
+      });
+      const unlockedCount = rows.filter((r) => r.u?.unlocked).length;
+      const nextUp = rows.filter((r) => r.u && !r.u.unlocked).sort((a, b) => a.keep - b.keep || a.w.tier - b.w.tier)[0];
+      body.append(h('p', { class: 'muted small' }, `${unlockedCount} of ${WARRIORS.length} classes unlocked. A class unlocks when your Clan Keep and Training Dojo both reach its level; the ring colour shows the tier.`));
+      if (nextUp) body.append(h('p', { class: 'small' }, h('b', {}, 'Next: '), `${nextUp.w.name} (${nextUp.status.replace('Needs ', 'needs ')}).`));
+      const tierSelect = h('select', { 'aria-label': 'Filter classes by tier' }, h('option', { value: '0' }, 'All tiers'), ...MODEL.tiers.map((tier) => h('option', { value: String(tier.tier) }, tier.name)));
+      tierSelect.value = String(tierFilter);
+      const roleSelect = h('select', { 'aria-label': 'Filter classes by role' }, h('option', { value: '' }, 'All roles'), ...Object.entries(MODEL.roles).map(([id, r]) => h('option', { value: id }, r.name)));
+      roleSelect.value = roleFilter;
+      const statusSelect = h('select', { 'aria-label': 'Filter classes by status' }, h('option', { value: '' }, 'All'), h('option', { value: 'unlocked' }, 'Unlocked'), h('option', { value: 'locked' }, 'Locked'));
+      statusSelect.value = statusFilter;
+      tierSelect.addEventListener('change', () => { tierFilter = Number(tierSelect.value); render(); });
+      roleSelect.addEventListener('change', () => { roleFilter = roleSelect.value; render(); });
+      statusSelect.addEventListener('change', () => { statusFilter = statusSelect.value as typeof statusFilter; render(); });
+      body.append(h('div', { class: 'actions' }, tierSelect, roleSelect, statusSelect));
+      const list = h('div', { class: 'codex-list' });
+      const shown = rows
+        .filter((r) => (!tierFilter || r.w.tier === tierFilter) && (!roleFilter || r.w.role === roleFilter))
+        .filter((r) => !statusFilter || (statusFilter === 'unlocked') === Boolean(r.u?.unlocked))
+        .sort((a, b) => Number(Boolean(b.u?.unlocked)) - Number(Boolean(a.u?.unlocked)) || a.keep - b.keep || a.w.tier - b.w.tier);
+      for (const { w, u, status } of shown) {
+        const src = this.deps.warriorIcon(w.id);
+        const def = w.liveTroop ? gd.troops[w.liveTroop] : undefined;
+        const lvl = w.liveTroop ? troopLevelOf(s, w.liveTroop) : 0;
+        list.append(
+          h(
+            'div',
+            { class: `codex-row${u ? (u.unlocked ? ' unlocked' : ' locked') : ' planned'}` },
+            src ? h('img', { src, alt: '' }) : null,
+            h(
+              'div',
+              {},
+              h('b', {}, w.name),
+              h('div', { class: 'muted small' }, `${roleDef(w.role).name} · tier ${w.tier}${u?.unlocked ? ` · Lv ${lvl}` : ''}`),
+              h('div', { class: `small codex-status${u?.unlocked ? ' ok' : ''}` }, status),
+              h('div', { class: 'small' }, h('b', {}, `${w.ability.name}: `), w.ability.text),
+              def ? h('div', { class: 'muted small' }, `${def.air ? 'Flies' : 'Ground'} · range ${def.range} · ${def.housing} space`) : null,
+            ),
+          ),
+        );
+      }
+      if (!shown.length) list.append(h('p', { class: 'muted' }, 'No classes match these filters.'));
+      body.append(list);
+    };
+    render();
+    const unsub = this.c.subscribe(() => render());
+    this.modal('Warrior Codex', body, [], 'wide', () => unsub());
   }
 
   openLeague(): void {

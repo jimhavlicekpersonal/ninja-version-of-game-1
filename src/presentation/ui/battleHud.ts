@@ -139,6 +139,7 @@ export class BattleHud {
     if (this.s.mode !== 'scout') return;
     const r = scoutReport(this.s.setup.base, this.s.data);
     const chips = Object.entries(r.defenses).map(([t, n]) => h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
+    for (const [t, n] of Object.entries(r.counters)) if (!r.defenses[t]) chips.push(h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
     if (r.walls) chips.push(h('span', { class: 'chip' }, `${r.walls} walls`));
     const opp = this.s.setup.base;
     this.scoutEl = h(

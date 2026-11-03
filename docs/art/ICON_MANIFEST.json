@@ -5657,8 +5657,8 @@
         1,
         1
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors and moving mist within 2 tiles of the line are lit up for 4 seconds, and lit warriors take 15% more damage.. Stage 1 of 5: timber and plaster, simple."
+      "live": true,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.paper_lantern_line.s2",
@@ -5671,8 +5671,8 @@
         2,
         2
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors and moving mist within 2 tiles of the line are lit up for 4 seconds, and lit warriors take 15% more damage.. Stage 2 of 5: stone base and tiled roof."
+      "live": true,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.paper_lantern_line.s3",
@@ -5685,8 +5685,8 @@
         3,
         3
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors and moving mist within 2 tiles of the line are lit up for 4 seconds, and lit warriors take 15% more damage.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "live": true,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.paper_lantern_line.s4",
@@ -5699,8 +5699,8 @@
         4,
         4
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors and moving mist within 2 tiles of the line are lit up for 4 seconds, and lit warriors take 15% more damage.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "live": true,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.paper_lantern_line.s5",
@@ -5713,8 +5713,8 @@
         5,
         6
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung between rooftops. Hidden warriors and moving mist within 2 tiles of the line are lit up for 4 seconds, and lit warriors take 15% more damage.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "live": true,
+      "prompt": "Isometric icon of the Paper Lantern Line: Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.rain_barrel_tower.s1",
@@ -5937,8 +5937,8 @@
         1,
         2
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 1 of 5: timber and plaster, simple."
+      "live": true,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.clockwork_repairer.s2",
@@ -5951,8 +5951,8 @@
         3,
         4
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 2 of 5: stone base and tiled roof."
+      "live": true,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.clockwork_repairer.s3",
@@ -5965,8 +5965,8 @@
         5,
         6
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "live": true,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.clockwork_repairer.s4",
@@ -5979,8 +5979,8 @@
         7,
         8
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "live": true,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.clockwork_repairer.s5",
@@ -5993,8 +5993,8 @@
         9,
         10
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "live": true,
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.bitter_incense_burner.s1",
@@ -6007,8 +6007,8 @@
         1,
         2
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long.. Stage 1 of 5: timber and plaster, simple."
+      "live": true,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.bitter_incense_burner.s2",
@@ -6021,8 +6021,8 @@
         3,
         4
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long.. Stage 2 of 5: stone base and tiled roof."
+      "live": true,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.bitter_incense_burner.s3",
@@ -6035,8 +6035,8 @@
         5,
         6
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "live": true,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.bitter_incense_burner.s4",
@@ -6049,8 +6049,8 @@
         7,
         8
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "live": true,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.bitter_incense_burner.s5",
@@ -6063,8 +6063,8 @@
         9,
         10
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "live": true,
+      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.straw_scarecrow.s1",
@@ -6287,8 +6287,8 @@
         1,
         2
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 1 of 5: timber and plaster, simple."
+      "live": true,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.kite_cutter_ballista.s2",
@@ -6301,8 +6301,8 @@
         3,
         4
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 2 of 5: stone base and tiled roof."
+      "live": true,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.kite_cutter_ballista.s3",
@@ -6315,8 +6315,8 @@
         5,
         6
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "live": true,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.kite_cutter_ballista.s4",
@@ -6329,8 +6329,8 @@
         7,
         8
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "live": true,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.kite_cutter_ballista.s5",
@@ -6343,8 +6343,8 @@
         9,
         10
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "live": true,
+      "prompt": "Isometric icon of the Kite-Cutter Ballista: Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.discipline_banner.s1",
@@ -6847,8 +6847,8 @@
         1,
         2
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 1 of 5: timber and plaster, simple."
+      "live": true,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.longbow_yagura.s2",
@@ -6861,8 +6861,8 @@
         3,
         4
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 2 of 5: stone base and tiled roof."
+      "live": true,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.longbow_yagura.s3",
@@ -6875,8 +6875,8 @@
         5,
         6
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "live": true,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.longbow_yagura.s4",
@@ -6889,8 +6889,8 @@
         7,
         8
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "live": true,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.longbow_yagura.s5",
@@ -6903,8 +6903,8 @@
         9,
         10
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "live": true,
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.lightning_rod_pagoda.s1",

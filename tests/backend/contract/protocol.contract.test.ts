@@ -19,7 +19,7 @@ import { MemoryRepo } from '../../../server/repo';
 import { HttpServerAdapter, memoryTokenStore } from '../../../src/backend/net/httpAdapter';
 import { ServerError } from '../../../src/backend/net/ports';
 import { PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
-import { runBattle } from '../../../src/gameplay/sim/battle/battle';
+import { createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 
@@ -139,7 +139,12 @@ describe('protocol contract', () => {
     const m = (await a.match())!;
     const army = Object.fromEntries(Object.keys(data.troops).map((id) => [id, 1]));
     const levels = Object.fromEntries(Object.keys(army).map((id) => [id, 1]));
-    const deployments = Object.keys(army).map((troop, tick) => ({ troop, tick, x: 1, y: 1 + tick % 35 }));
+    // Use tiles the battle marks as deployable along the edge (layouts change with the buildings a Keep has).
+    const probe = createBattle({ seed: 519, base: m.base, army, levels }, data);
+    const n = probe.grid.size;
+    const open: { x: number; y: number }[] = [];
+    for (let y = 0; y < n; y++) for (let x = 0; x < 2; x++) if (probe.deployable[y * n + x]) open.push({ x, y });
+    const deployments = Object.keys(army).map((troop, tick) => ({ troop, tick, ...open[tick % open.length] }));
     const sub = { ticket: m.ticket, seed: 519, army, levels, deployments };
     const server = await a.submitAttack(sub);
     const local = runBattle({ seed: sub.seed, base: m.base, army, levels }, deployments, data).result;

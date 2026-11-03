@@ -1,5 +1,5 @@
 import { MS_PER_SECOND } from './clock';
-import { buildingDef, levelDef, troopDef } from './data';
+import { buildingDef, hallType, levelDef, troopDef } from './data';
 import type { GameData, TrainingItem, VillageState } from './types';
 
 /** Total Army Camp space in finished camps. */
@@ -70,4 +70,34 @@ export function maxHousingAtHall(hallLevel: number, data: GameData): number {
   const lim = levels[Math.max(1, Math.min(levels.length, hallLevel)) - 1]?.limits.army_camp;
   if (!lim) return 0;
   return lim.count * (levelDef(data, 'army_camp', lim.maxLevel)?.housing ?? 0);
+}
+
+export interface TroopUnlock {
+  /** True when this village can train the troop right now. */
+  unlocked: boolean;
+  /** Clan Keep level the troop needs (1 when it has no Keep gate). */
+  keep: number;
+  /** Training Dojo level the troop needs. */
+  dojo: number;
+  /** Which requirements are still missing. */
+  needsKeep: boolean;
+  needsDojo: boolean;
+  /** Lowest Keep level whose limits allow the needed Dojo level (and the troop's own Keep gate). */
+  earliestKeep: number;
+}
+
+/**
+ * Whether a troop is unlocked: both its Clan Keep gate and its Training Dojo
+ * level must be met. Training, research and the Warrior Codex all read this,
+ * so a troop is never called "Unlocked" while the Train button is still locked.
+ */
+export function troopUnlock(state: VillageState, troop: string, data: GameData): TroopUnlock {
+  const def = troopDef(data, troop);
+  const keep = def.unlockKeep ?? 1;
+  const dojo = def.barracksLevel;
+  const hall = Math.max(1, state.buildings.find((b) => b.type === hallType(data))?.level ?? 1);
+  const needsKeep = hall < keep;
+  const needsDojo = barracksLevel(state, data) < dojo;
+  const dojoKeep = data.hall.levels.findIndex((l) => (l.limits.burrow_barracks?.maxLevel ?? 0) >= dojo) + 1 || data.hall.levels.length;
+  return { unlocked: !needsKeep && !needsDojo, keep, dojo, needsKeep, needsDojo, earliestKeep: Math.max(keep, dojoKeep) };
 }

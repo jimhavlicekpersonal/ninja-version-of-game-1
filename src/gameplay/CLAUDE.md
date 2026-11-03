@@ -13,6 +13,8 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 ## Key systems
 
 - `sim/battle/battle.ts`: combat, Smoke Bomb (range × 0.4, never below 2 tiles, 8 s, no stacking, charges from army housing), Sabotage (6 s jam, then 10 s immunity after recovery, one jam per Saboteur).
+- `sim/battle/fortifications.ts`: the five live defensive counters (`BuildingEffect` in `buildings.json`, per-level overrides in `levels[].effect`). Lantern light and ballista grounding live on `SimTroop` (`litUntil`, `groundedUntil`); incense cuts are recomputed every tick. Use `airborne(sim, t)`, not `t.air`, for targeting layers.
+- Sim events `ability` / `counter` exist only for on-screen feedback; they never affect the result hash.
 - `sim/battle/basegen.ts`: generated bases, five layout archetypes. `scout.ts`: what scouting reveals (never hidden traps).
 - `sim/trials.ts` + `data/trials.json`: Shadow Trials, the endless ladder, rewarded once per tier through the `trialEnd` command.
 - `sim/progression.ts` + `data/progression.json` + `data/roster.json`: the power-budget model. All 50 warriors are playable through Keep 15. Four heroes and the non-live buildings remain planned (20 of them carry `counters`/`counteredBy` against the roster; `building-matchups.test.ts`).
@@ -31,4 +33,4 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 
 ## After changing numbers
 
-`npm test`, then `npm run docs:progression` to regenerate `docs/game-theory/ROSTER.md` and the icon manifest.
+`npm test`, `npm run balance:armies` for combat changes (equal-housing armies × Keeps × layouts → `docs/game-theory/ARMY_BALANCE.md`), then `npm run docs:progression` to regenerate `docs/game-theory/ROSTER.md` and the icon manifest.

@@ -11,7 +11,7 @@
 import type { BaseLayout, BattleResult, Deployment } from '../../gameplay/sim/battle/types';
 
 /** Bump when a change would break older clients; servers report the oldest they accept. */
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 
 export type ErrorCode =
   | 'unauthorized'

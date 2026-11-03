@@ -726,6 +726,125 @@ const allianceLodge: PainterDef = {
   },
 };
 
+
+// --- Defensive counters (Paper Lantern Line, Repair Crane, Incense Burner, Kite-Cutter Ballista, Longbow Yagura)
+
+const paperLanternLine: PainterDef = {
+  extra: 40,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#b3a688', 6);
+    // Two bamboo posts with a sagging cord of paper lanterns.
+    const a = { x: -hw * 0.55, y: 0 };
+    const b = { x: hw * 0.55, y: 0 };
+    line(ctx, [a, { x: a.x, y: a.y - 30 }], BAMBOO, 2.4);
+    line(ctx, [b, { x: b.x, y: b.y - 30 }], BAMBOO, 2.4);
+    line(ctx, [{ x: a.x, y: -28 }, { x: 0, y: -20 }, { x: b.x, y: -28 }], '#3a2a1e', 1);
+    const n = 2 + tier;
+    for (let i = 0; i < n; i++) {
+      const f = (i + 1) / (n + 1);
+      const x = a.x + (b.x - a.x) * f;
+      const y = -28 + 8 * (1 - Math.abs(f - 0.5) * 2) + 4;
+      lantern(ctx, x, y, 0.55, i % 2 ? '#e8a23a' : VERMILION);
+    }
+    void hh;
+  },
+};
+
+const repairCrane: PainterDef = {
+  extra: 90,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#a9a08c');
+    const y = stoneBase(ctx, hw * 0.45, hh * 0.45, 2, 10);
+    // Mast and a long jib with a hook and a big gear.
+    line(ctx, [{ x: -6, y }, { x: -6, y: y - 58 }], WOOD_DARK, 4);
+    line(ctx, [{ x: -10, y: y - 54 }, { x: hw * 0.75, y: y - 62 }], WOOD, 3);
+    line(ctx, [{ x: -6, y: y - 30 }, { x: hw * 0.4, y: y - 59 }], WOOD, 1.4);
+    line(ctx, [{ x: hw * 0.7, y: y - 61 }, { x: hw * 0.7, y: y - 30 }], '#5d636e', 1);
+    line(ctx, [{ x: hw * 0.7 - 3, y: y - 30 }, { x: hw * 0.7, y: y - 26 }, { x: hw * 0.7 + 3, y: y - 30 }], '#5d636e', 1.6);
+    const gx = -hw * 0.35;
+    const gy = y - 18;
+    for (let i = 0; i < 8; i++) {
+      const ang = (i / 8) * Math.PI * 2;
+      circle(ctx, gx + Math.cos(ang) * 10, gy + Math.sin(ang) * 10, 2.6, tier >= 3 ? GOLD : '#b8862f', 0.8);
+    }
+    circle(ctx, gx, gy, 9, tier >= 3 ? GOLD : '#b8862f', 1.2);
+    circle(ctx, gx, gy, 3, INK, 0);
+    if (tier >= 2) banner(ctx, hw * 0.45, hh * 0.35, 34, '#3f6fa0');
+  },
+};
+
+const incenseBurner: PainterDef = {
+  extra: 80,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#a69c88');
+    const y = stoneBase(ctx, hw * 0.5, hh * 0.5, 2, 8);
+    // Bronze cauldron on three legs, a lid with a finial and a sickly green smoke plume.
+    for (const x of [-12, 0, 12]) line(ctx, [{ x, y: y - 2 }, { x, y: y - 10 }], '#4a3f30', 2.4);
+    ctx.beginPath();
+    ctx.ellipse(0, y - 18, 18, 12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = tier >= 3 ? '#b88a3e' : '#7a6a52';
+    ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    poly(ctx, [{ x: -12, y: y - 26 }, { x: 0, y: y - 34 }, { x: 12, y: y - 26 }], tier >= 2 ? GOLD : '#5e5040', 1.2);
+    circle(ctx, 0, y - 36, 2.5, tier >= 2 ? GOLD : '#5e5040', 0.8);
+    for (let i = 0; i < 3 + tier; i++) circle(ctx, Math.sin(i * 1.7) * 6, y - 44 - i * 9, 5 + i, rgba('#9bb07a', 0.55 - i * 0.06), 0);
+    void hh;
+  },
+};
+
+const kiteCutterBallista: PainterDef = {
+  extra: 70,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#a9a08c');
+    const y = stoneBase(ctx, hw * 0.55, hh * 0.55, 2, 12);
+    // Upward-pointing bow on a turntable, with a weighted bolas ready.
+    const deck = block(ctx, hw * 0.4, hh * 0.4, y, 8, WOOD);
+    ctx.save();
+    ctx.translate(0, deck - 8);
+    ctx.rotate(-0.9);
+    line(ctx, [{ x: -6, y: 0 }, { x: 30, y: 0 }], WOOD_DARK, 4);
+    ctx.beginPath();
+    ctx.arc(16, 0, 18, -Math.PI / 2 - 0.9, -Math.PI / 2 + 0.9);
+    ctx.strokeStyle = tier >= 3 ? GOLD : WOOD;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
+    circle(ctx, -hw * 0.45, hh * 0.25, 3.5, '#5d636e', 1);
+    circle(ctx, -hw * 0.3, hh * 0.4, 3.5, '#5d636e', 1);
+    line(ctx, [{ x: -hw * 0.45, y: hh * 0.25 }, { x: -hw * 0.3, y: hh * 0.4 }], '#3a2a1e', 1);
+    if (tier >= 2) banner(ctx, hw * 0.55, hh * 0.2, 40, '#3f6fa0');
+  },
+};
+
+const longbowYagura: PainterDef = {
+  extra: 150,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#a9a08c');
+    const y = stoneBase(ctx, hw * 0.6, hh * 0.6, 2, tier >= 2 ? 20 : 14);
+    // A tall, narrow watchtower: four long legs, a covered loft and a strung longbow on the rail.
+    const lh = 64;
+    const lw = hw * 0.38;
+    for (const [x, yy] of [[-lw, y], [lw, y], [0, y + lw / 2], [0, y - lw / 2]] as const) line(ctx, [{ x, y: yy }, { x: x * 0.8, y: yy - lh }], WOOD_DARK, 3);
+    line(ctx, [{ x: -lw, y }, { x: lw * 0.8, y: y - lh * 0.6 }], WOOD, 1.4);
+    line(ctx, [{ x: lw, y }, { x: -lw * 0.8, y: y - lh * 0.6 }], WOOD, 1.4);
+    const top = storey(ctx, lw + 4, (lw + 4) / 2, y - lh, 14, PLASTER, { window: true });
+    roof(ctx, lw + 14, (lw + 14) / 2, top + 2, 22, tier >= 3 ? '#6b3f2a' : ROOF, { finial: tier >= 3 ? GOLD : undefined });
+    ctx.beginPath();
+    ctx.arc(lw + 8, y - lh - 6, 14, -1.2, 1.2);
+    ctx.strokeStyle = WOOD;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    if (tier >= 2) banner(ctx, -hw * 0.6, hh * 0.3, 50);
+  },
+};
+
 /** Every building type, keyed by its stable internal id. */
 export const buildingPainters: Record<string, PainterDef> = {
   elder_toadstool: keepSkin('#3d4a5c', VERMILION),
@@ -751,6 +870,11 @@ export const buildingPainters: Record<string, PainterDef> = {
   obstacle_stump: fallenCedar,
   obstacle_rock: boulder,
   grove_lodge: allianceLodge,
+  paper_lantern_line: paperLanternLine,
+  clockwork_repairer: repairCrane,
+  bitter_incense_burner: incenseBurner,
+  kite_cutter_ballista: kiteCutterBallista,
+  longbow_yagura: longbowYagura,
 };
 
 /** Visual tier for a level: the level range is split into thirds. */
@@ -1037,6 +1161,26 @@ export const projectileArt: Record<string, { w: number; h: number; paint: (ctx: 
   },
   sap: { w: 10, h: 10, paint: (ctx) => circle(ctx, 0, 0, 3, '#5d636e', 0.8) },
   thorns: { w: 10, h: 10, paint: (ctx) => poly(ctx, [{ x: -3, y: 3 }, { x: 0, y: -4 }, { x: 3, y: 3 }], BAMBOO, 0.8) },
+  /** Kite-Cutter Ballista: two weights joined by a cord. */
+  bolas: {
+    w: 20,
+    h: 12,
+    paint(ctx) {
+      line(ctx, [{ x: -6, y: -2 }, { x: 0, y: 2 }, { x: 6, y: -2 }], '#3a2a1e', 1);
+      circle(ctx, -6, -2, 3, '#5d636e', 0.8);
+      circle(ctx, 6, -2, 3, '#5d636e', 0.8);
+    },
+  },
+  /** Longbow Yagura: a long fletched arrow. */
+  arrow: {
+    w: 34,
+    h: 8,
+    paint(ctx) {
+      line(ctx, [{ x: -15, y: 0 }, { x: 11, y: 0 }], WOOD, 1.4);
+      poly(ctx, [{ x: 11, y: -2.2 }, { x: 16, y: 0 }, { x: 11, y: 2.2 }], '#c9ced6', 0.7);
+      poly(ctx, [{ x: -16, y: -3 }, { x: -11, y: 0 }, { x: -16, y: 3 }], VERMILION, 0.6);
+    },
+  },
 };
 
 /** Grey-white smoke puff (deploys, hits, destruction). */

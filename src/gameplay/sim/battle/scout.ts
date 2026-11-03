@@ -16,12 +16,15 @@ export interface ScoutReport {
   hasSplash: boolean;
   /** Traps unlock at this hall; the report only says they may exist. */
   mayHaveTraps: boolean;
+  /** Visible counter buildings (support buildings and counter defenses) by type. Hidden traps are not listed. */
+  counters: Record<string, number>;
   /** Short tactical advice, most important first (at most 3). */
   tips: string[];
 }
 
 export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
   const defenses: Record<string, number> = {};
+  const counters: Record<string, number> = {};
   const centres: { type: string; x: number; y: number; range: number }[] = [];
   let walls = 0;
   let hasAntiAir = false;
@@ -31,6 +34,7 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
     const def = buildingDef(data, b.type);
     if (def.category === 'hedge') walls++;
     if (def.category === 'trap') trapsUnlocked = true;
+    if (def.effect && def.category !== 'trap') counters[b.type] = (counters[b.type] ?? 0) + 1;
     if (def.category !== 'defense' || !def.combat) continue;
     defenses[b.type] = (defenses[b.type] ?? 0) + 1;
     if (def.combat.targets !== 'ground') hasAntiAir = true;
@@ -51,6 +55,12 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
   }
   const tips: string[] = [];
   const total = centres.length;
+  // Counter buildings change which warriors work, so they come first.
+  const has = (kind: string) => Object.keys(counters).some((t) => data.buildings[t].effect?.kind === kind);
+  if (has('counter_artillery')) tips.push('A Longbow Yagura outranges siege warriors but is blind up close: rush it with melee first.');
+  if (has('ground_flyers')) tips.push('A Kite-Cutter Ballista grounds flyers: take it out before sending kites.');
+  if (has('shorten_disables')) tips.push('A Repair Crane cuts jams short: destroy it, or jam defenses out of its reach.');
+  if (has('anti_heal')) tips.push('Bitter Incense weakens healing and auras near it: fight away from it, or break it first.');
   if (total === 0) tips.push('No working defenses: any squad will do.');
   if (coveringPairs >= 2) tips.push('Defenses cover each other: jam one with a Saboteur, then smoke the rest.');
   else if (total > 0 && coveringPairs === 0) tips.push('Defenses stand alone: pick them off one at a time.');
@@ -58,5 +68,5 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
   if (walls >= 20) tips.push('Thick walls: Saboteurs and Tunnel Runners slip past; Guardians break through.');
   if (!hasAntiAir && total > 0) tips.push('No anti-air: Kite Raiders fly in safely.');
   if (mayHaveTraps) tips.push('Spike Pits and Caltrops may be hidden on the paths.');
-  return { defenses, walls, coveringPairs, hasAntiAir, hasSplash, mayHaveTraps, tips: tips.slice(0, 3) };
+  return { defenses, counters, walls, coveringPairs, hasAntiAir, hasSplash, mayHaveTraps, tips: tips.slice(0, 3) };
 }

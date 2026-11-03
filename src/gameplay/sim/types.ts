@@ -7,7 +7,7 @@ export type Resources = Record<ResourceKind, number>;
 export type Cost = Partial<Record<ResourceKind, number>>;
 
 export type BuildingType = string;
-export type BuildingCategory = 'hall' | 'collector' | 'storage' | 'builder' | 'military' | 'defense' | 'hedge' | 'trap' | 'decor' | 'obstacle' | 'social';
+export type BuildingCategory = 'hall' | 'collector' | 'storage' | 'builder' | 'military' | 'defense' | 'hedge' | 'trap' | 'support' | 'decor' | 'obstacle' | 'social';
 
 export interface UpgradeTimer {
   /** Level the building will have when the timer ends. */
@@ -215,6 +215,32 @@ export interface LevelDef {
   damage?: number;
   /** Grove Lodge: housing space for donated troops. */
   reinforcement?: number;
+  /** Counter buildings: values that override the building's base `effect` at this level. */
+  effect?: Partial<BuildingEffect>;
+}
+
+/**
+ * A defensive counter's rule (buildings.json `effect`, per-level overrides in
+ * `levels[].effect`). Each kind answers one family of warrior abilities.
+ */
+export interface BuildingEffect {
+  kind: 'reveal_line' | 'shorten_disables' | 'anti_heal' | 'ground_flyers' | 'counter_artillery';
+  /** Tiles from the building's centre the effect reaches. */
+  radius?: number;
+  /** reveal_line: seconds a warrior stays lit. ground_flyers: seconds a flyer stays grounded. */
+  seconds?: number;
+  /** reveal_line: extra damage lit warriors take. */
+  vulnerablePct?: number;
+  /** shorten_disables: share of a jam's remaining time removed, and repairs per battle. */
+  pct?: number;
+  uses?: number;
+  /** anti_heal: healing cut, and the cut to heal/haste/resist auras and shelter shields. */
+  healCutPct?: number;
+  auraCutPct?: number;
+  /** ground_flyers: seconds a flyer can't be grounded again after breaking free. */
+  immuneSeconds?: number;
+  /** counter_artillery: preferred targets are warriors with at least this attack range. */
+  prefersBeyond?: number;
 }
 
 export type TargetLayer = 'ground' | 'air' | 'both';
@@ -379,6 +405,8 @@ export interface BuildingDef {
   produces?: ResourceKind;
   inShop: boolean;
   combat?: CombatDef;
+  /** Defensive counter rule (see BuildingEffect). */
+  effect?: BuildingEffect;
   /** Forest obstacles: what clearing costs and the Moonstones it gives. */
   clear?: { cost: Cost; seconds: number; moonstones: number };
   levels: LevelDef[];

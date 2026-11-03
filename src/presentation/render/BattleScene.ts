@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { queueArt } from './artManifest';
 import { drainEvents, type BattleSession } from '../../gameplay/control/battleSession';
 import { buildingDef } from '../../gameplay/sim/data';
-import { isAbility, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
+import { airborne, isAbility, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
+import { WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
 import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
 import { CameraControl } from './cameraControl';
@@ -47,6 +48,11 @@ interface TView {
 }
 
 const OVER = 1_000_000;
+/** Ability names by live troop id, for the floating callouts. */
+const ABILITY_NAME = new Map(WARRIORS.filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.ability.name]));
+const COUNTER_LABEL: Record<string, string> = { lit: 'Lit up!', repair: 'Repaired!', grounded: 'Grounded!' };
+/** Milliseconds between callouts over the same troop or building, so a fight stays readable. */
+const CALLOUT_GAP_MS = 1400;
 const AIR_HEIGHT = 46;
 
 export class BattleScene extends Phaser.Scene {
@@ -56,6 +62,7 @@ export class BattleScene extends Phaser.Scene {
   private cam!: CameraControl;
   private bviews: BView[] = [];
   private tviews: TView[] = [];
+  private lastCallout = new Map<string, number>();
   private pviews = new Map<number, Phaser.GameObjects.Image>();
   private sviews = new Map<number, SView>();
   private zone!: Phaser.GameObjects.Graphics;
@@ -314,6 +321,20 @@ export class BattleScene extends Phaser.Scene {
     return { image, shadow, bar, dead: false, baseScale, lastHp: -1 };
   }
 
+  /** Short floating label over a troop or building (ability names, counter effects). Throttled per key. */
+  private callout(key: string, x: number, y: number, text: string, color: string): void {
+    const now = this.time.now;
+    if (now - (this.lastCallout.get(key) ?? -Infinity) < CALLOUT_GAP_MS) return;
+    this.lastCallout.set(key, now);
+    const zoom = this.cam.userZoom;
+    const label = this.add
+      .text(x, y, text, { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4 })
+      .setOrigin(0.5, 1)
+      .setScale(1 / zoom)
+      .setDepth(OVER);
+    this.tweens.add({ targets: label, y: y - 26 / zoom, alpha: { from: 1, to: 0 }, duration: 1100, ease: 'Cubic.easeOut', onComplete: () => label.destroy() });
+  }
+
   private puff(x: number, y: number, scale: number): void {
     const p = this.add.image(x, y, Keys.puff).setScale((scale * 0.5) / TEX_SCALE).setDepth(OVER - 20).setAlpha(0.95);
     this.tweens.add({ targets: p, scale: (scale * 1.3) / TEX_SCALE, alpha: 0, y: y - 14, duration: 450, ease: 'Cubic.easeOut', onComplete: () => p.destroy() });
@@ -410,11 +431,16 @@ export class BattleScene extends Phaser.Scene {
       const y = t.py + (t.y - t.py) * a;
       const w = tileToWorld(x, y);
       const moving = t.x !== t.px || t.y !== t.py;
-      const bob = t.air ? Math.sin(now / 220 + i) * 4 : moving ? -Math.abs(Math.sin(now / 90 + i)) * 3 : 0;
-      const lift = t.air ? AIR_HEIGHT : 0;
+      const flying = airborne(sim, t);
+      const bob = flying ? Math.sin(now / 220 + i) * 4 : moving ? -Math.abs(Math.sin(now / 90 + i)) * 3 : 0;
+      // A grounded flyer (Kite-Cutter Ballista) drops most of the way down while it is tangled.
+      const lift = flying ? AIR_HEIGHT : t.air ? AIR_HEIGHT * 0.25 : 0;
       v.image.setPosition(w.x, w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
       v.image.setFlipX(t.facing < 0);
       v.image.setAlpha(t.decoyUntil ? 0.45 : isHidden(sim, t) ? 0.6 : 1);
+      if (t.litUntil > sim.tick) v.image.setTint(0xfff0b0);
+      else if (t.air && !flying) v.image.setTint(0xc8c8c8);
+      else v.image.clearTint();
       if (t.attacking && !t.air) v.image.setScale(v.baseScale * (1 + Math.max(0, Math.sin(now / 60)) * 0.08), v.baseScale * (1 - Math.max(0, Math.sin(now / 60)) * 0.06));
       else if (v.image.scaleX !== v.baseScale && !this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale);
       v.shadow.setPosition(w.x, w.y + 1);
@@ -443,7 +469,8 @@ export class BattleScene extends Phaser.Scene {
       const arc = p.arc ? 4 * 70 * prog * (1 - prog) : 0;
       img.setPosition(w.x, w.y - startH * (1 - prog) - arc - 8);
       if (p.kind === 'pinecone' || p.kind === 'acorn' || p.kind === 'seedbomb') img.setAngle(prog * 360);
-      if (p.kind === 'sting') {
+      if (p.kind === 'bolas') img.setAngle(prog * 720);
+      if (p.kind === 'sting' || p.kind === 'arrow') {
         const to = tileToWorld(p.toX, p.toY);
         img.setRotation(Math.atan2(to.y - w.y, to.x - w.x));
       }
@@ -493,6 +520,22 @@ export class BattleScene extends Phaser.Scene {
         sound.play('recover');
       } else if (e.k === 'smoke' && this.session.mode === 'replay') {
         sound.play('smoke');
+      } else if (e.k === 'ability') {
+        const t = sim.troops[e.troop];
+        const name = ABILITY_NAME.get(t.type);
+        if (name) {
+          const w = tileToWorld(t.x, t.y);
+          this.callout(`t${e.troop}`, w.x, w.y - (t.air ? AIR_HEIGHT : 0) - 44, name, '#ffe08a');
+        }
+      } else if (e.k === 'counter') {
+        const label = COUNTER_LABEL[e.what];
+        if (e.what === 'lit') this.bviews[e.building]?.image.setVisible(true).setAlpha(1);
+        if (label) {
+          const at = e.troop >= 0 ? sim.troops[e.troop] : null;
+          const b = sim.buildings[e.target >= 0 ? e.target : e.building];
+          const w = at ? tileToWorld(at.x, at.y) : footprintCenter(b.x, b.y, b.size);
+          this.callout(`c${e.building}:${e.troop}:${e.target}`, w.x, w.y - (at ? 44 : 60), `${buildingDef(this.session.data, sim.buildings[e.building].type).name}: ${label}`, '#9fd8ff');
+        }
       } else if (e.k === 'trap') {
         sound.play('boom');
         const b = sim.buildings[e.building];

@@ -43,11 +43,13 @@ export function auraStrength(sim: BattleSim, target: SimTroop, aura: WarriorKit[
       value = Math.max(value, kit.strength ?? 1);
     }
   }
+  // Bitter Incense Burner weakens haste and toughness auras on the warriors it reaches.
+  if (value > 0 && (aura === 'haste' || aura === 'resist')) value *= 1 - target.auraCut;
   return value;
 }
 
 export function isHidden(sim: BattleSim, t: SimTroop): boolean {
-  return Boolean(kitOf(sim, t).stealth && !t.revealed);
+  return Boolean(kitOf(sim, t).stealth && !t.revealed && !(t.litUntil > sim.tick));
 }
 
 function addCompanion(sim: BattleSim, parent: SimTroop, x: number, y: number, share: number, decoyTicks = 0): void {
@@ -60,6 +62,7 @@ function addCompanion(sim: BattleSim, parent: SimTroop, x: number, y: number, sh
     summoned: true, revealed: true, firstHit: false,
     decoyUntil: decoyTicks ? sim.tick + decoyTicks : 0,
     abilityReady: 0, shieldUntil: 0, shieldReady: 0, revived: false,
+    litUntil: 0, litBonus: 0, groundedUntil: 0, groundImmuneUntil: 0, healCut: 0, auraCut: 0,
   };
   sim.troops.push(companion);
   sim.events.push({ k: 'deploy', troop: companion.id });
@@ -79,6 +82,7 @@ export function initializeWarrior(sim: BattleSim, t: SimTroop): void {
     }
     t.maxHp = t.hp = hp * (1 - kit.summons * share);
     t.damage = damage * (1 - kit.summons * share);
+    sim.events.push({ k: 'ability', troop: t.id, what: 'summon' });
   }
   if (kit.decoyTicks) {
     addCompanion(sim, t, t.x, t.y, sim.data.battle.warriorRules.decoyHpMultiplier, kit.decoyTicks);
@@ -88,6 +92,7 @@ export function initializeWarrior(sim: BattleSim, t: SimTroop): void {
       if (!b.destroyed && b.combat && b.kind === 'defense' && b.combat.targets !== 'air' && distance(b.x + b.size / 2, b.y + b.size / 2, t.x, t.y) <= b.combat.range) b.targetTroop = index;
     }
     t.x = Math.max(0, Math.min(sim.grid.size - offset, t.x + offset));
+    sim.events.push({ k: 'ability', troop: t.id, what: 'decoy' });
   }
 }
 
@@ -143,7 +148,7 @@ export function stepWarriorEffects(sim: BattleSim, actions: Actions): void {
     const seconds = sim.data.battle.warriorRules.supportIntervalTicks / sim.data.battle.ticksPerSecond;
     for (const t of sim.troops) {
       if (t.dead || t.decoyUntil) continue;
-      const heal = auraStrength(sim, t, 'heal');
+      const heal = auraStrength(sim, t, 'heal') * (1 - t.healCut);
       if (heal > 0) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * heal * seconds);
     }
   }
@@ -162,6 +167,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
         b.hidden = false;
         actions.damageBuilding(sim, i, b.hp);
         sim.events.push({ k: 'hit', x: b.x, y: b.y, kind: 'pebble', splash: 0 });
+        sim.events.push({ k: 'ability', troop: t.id, what: 'disarm' });
       }
     });
   }
@@ -172,7 +178,10 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
         actions.damageBuilding(sim, i, b.hp); opened = true;
       }
     });
-    if (opened) t.abilityReady = sim.tick + (kit.cooldownTicks ?? rules.abilityCooldownTicks);
+    if (opened) {
+      t.abilityReady = sim.tick + (kit.cooldownTicks ?? rules.abilityCooldownTicks);
+      sim.events.push({ k: 'ability', troop: t.id, what: 'openWalls' });
+    }
   }
   if (kit.revive && t.charges > 0) {
     const fallen = sim.troops.find((ally) => ally.dead && !ally.summoned && !ally.revived && ally.id !== t.id && distance(t.x, t.y, ally.x, ally.y) <= radius);
@@ -181,19 +190,21 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
       fallen.target = -1; fallen.path = null; fallen.shieldUntil = 0;
       // Rendering rebuilds the sprite through the same deploy event used for reinforcements.
       sim.events.push({ k: 'deploy', troop: fallen.id }); t.charges--;
+      sim.events.push({ k: 'ability', troop: t.id, what: 'revive' });
     }
   }
   if (kit.shelter && t.charges > 0) {
     const allies = sim.troops.filter((ally) => !ally.dead && !ally.decoyUntil && sim.tick >= ally.shieldReady && distance(t.x, t.y, ally.x, ally.y) <= radius);
     if (allies.some((ally) => ally.hp < ally.maxHp)) {
       for (const ally of allies) {
-        ally.hp = Math.min(ally.maxHp, ally.hp + ally.maxHp * kit.shelter);
+        ally.hp = Math.min(ally.maxHp, ally.hp + ally.maxHp * kit.shelter * (1 - ally.healCut));
         if (sim.tick >= ally.shieldReady) {
-          ally.shieldUntil = sim.tick + (kit.shieldTicks ?? 0);
+          ally.shieldUntil = sim.tick + (kit.shieldTicks ?? 0) * (1 - ally.auraCut);
           ally.shieldReady = sim.tick + rules.shieldCooldownTicks;
         }
       }
       t.charges--;
+      sim.events.push({ k: 'ability', troop: t.id, what: 'shelter' });
     }
   }
   if (kit.teleport && t.target >= 0 && !sim.buildings[t.target].destroyed && sim.tick >= t.abilityReady) {
@@ -204,6 +215,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
       actions.moveToward(t, tx, ty, rules.teleportDistance);
       t.path = null; t.abilityReady = sim.tick + (kit.cooldownTicks ?? rules.abilityCooldownTicks);
       sim.events.push({ k: 'hit', x: t.x, y: t.y, kind: 'pebble', splash: 0 });
+      sim.events.push({ k: 'ability', troop: t.id, what: 'teleport' });
     }
   }
   if (def.prefers !== 'support' || t.summoned) return false;
@@ -229,11 +241,12 @@ export function attackDamage(sim: BattleSim, t: SimTroop, target: SimBuilding): 
   let damage = t.damage;
   t.hits++;
   t.revealed = true;
-  if (t.firstHit) damage *= kit.firstHitMultiplier ?? 1;
+  const flash = (what: string) => sim.events.push({ k: 'ability', troop: t.id, what });
+  if (t.firstHit && kit.firstHitMultiplier) { damage *= kit.firstHitMultiplier; flash('firstHit'); }
   t.firstHit = false;
-  if (kit.every && t.hits % kit.every === 0) damage *= kit.hitMultiplier ?? 1;
+  if (kit.every && t.hits % kit.every === 0) { damage *= kit.hitMultiplier ?? 1; flash('every'); }
   if (kit.rageMultiplier && t.hp < t.maxHp / 2) damage *= kit.rageMultiplier;
-  if (kit.critChance && next(sim.rng) < kit.critChance) damage *= kit.critMultiplier ?? 1;
+  if (kit.critChance && next(sim.rng) < kit.critChance) { damage *= kit.critMultiplier ?? 1; flash('crit'); }
   if (kit.smokeMultiplier && sim.smokes.some((c) => sim.tick < c.endsTick && distToRect(c.x, c.y, shape(target)) <= c.radius)) damage *= kit.smokeMultiplier;
   if (target.kind === 'hedge') {
     // Boar Rider gets one charge; Ram Crew and Oni Breaker keep their wall bonus.
@@ -268,6 +281,7 @@ export function resolveWarriorHit(sim: BattleSim, t: SimTroop, bi: number, damag
     const base = { source: t.id, target: bi, x: cx, y: cy, radius: kit.radius ?? 0 };
     if (kit.chargeDelay && t.charges > 0 && target.kind === 'defense') {
       effect(sim, { ...base, kind: 'charge', damage: t.damage * (kit.chargeMultiplier ?? 1), endsTick: sim.tick + kit.chargeDelay }); t.charges--;
+      sim.events.push({ k: 'ability', troop: t.id, what: 'charge' });
     }
     if (kit.poisonTicks) effect(sim, { ...base, kind: 'poison', damage: t.damage * (kit.poisonFraction ?? 0), endsTick: sim.tick + kit.poisonTicks });
     if (kit.burnTicks) effect(sim, { ...base, kind: 'burn', damage: t.damage * (kit.burnFraction ?? 0), endsTick: sim.tick + kit.burnTicks });

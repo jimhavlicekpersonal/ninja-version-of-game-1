@@ -219,16 +219,16 @@
 | **Ninja Watch Post** `ninja_watch_post` | defense | 12 | · | · | · | · | · | · | · | · | · | · | · | 1 | 4 | 7 | 10 | planned |
 | **Great Dragon Cannon** `great_dragon_cannon` | defense | 13 | · | · | · | · | · | · | · | · | · | · | · | · | 1 | 5 | 8 | planned |
 | **Whirling Blade Tower** `whirling_blade_tower` | defense | 4 | · | · | · | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | planned |
-| **Paper Lantern Line** `paper_lantern_line` | trap | 5 | · | · | · | · | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | planned |
+| **Paper Lantern Line** `paper_lantern_line` | trap | 5 | · | · | · | · | 1 | 2 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | yes |
 | **Rain Barrel Tower** `rain_barrel_tower` | defense | 5 | · | · | · | · | 1 | 2 | 3 | 4 | 5 | 6 | 6 | 7 | 8 | 9 | 10 | planned |
 | **Listening Jars** `listening_jars` | trap | 5 | · | · | · | · | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | planned |
 | **Living Bamboo Wall** `living_bamboo_wall` | hedge | 6 | · | · | · | · | · | 1 | 2 | 3 | 5 | 6 | 7 | 8 | 10 | 11 | 12 | planned |
-| **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | · | · | · | · | · | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | planned |
-| **Bitter Incense Burner** `bitter_incense_burner` | support | 6 | · | · | · | · | · | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | planned |
+| **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | · | · | · | · | · | 2 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | yes |
+| **Bitter Incense Burner** `bitter_incense_burner` | support | 6 | · | · | · | · | · | 2 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | yes |
 | **Straw Scarecrow** `straw_scarecrow` | trap | 6 | · | · | · | · | · | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | planned |
 | **Bronze Mirror Screen** `mirror_screen` | defense | 7 | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | planned |
 | **Sand Bucket Post** `sand_bucket_post` | support | 7 | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 5 | 5 | 6 | 7 | 8 | planned |
-| **Kite-Cutter Ballista** `kite_cutter_ballista` | defense | 8 | · | · | · | · | · | · | · | 1 | 2 | 4 | 5 | 6 | 7 | 9 | 10 | planned |
+| **Kite-Cutter Ballista** `kite_cutter_ballista` | defense | 8 | · | · | · | · | · | · | · | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | yes |
 | **Discipline Banner** `discipline_banner` | support | 9 | · | · | · | · | · | · | · | · | 1 | 2 | 3 | 5 | 6 | 7 | 8 | planned |
 | **Spotter's Perch** `spotter_perch` | support | 9 | · | · | · | · | · | · | · | · | 1 | 2 | 3 | 5 | 6 | 7 | 8 | planned |
 | **Steam Vent** `steam_vent` | defense | 9 | · | · | · | · | · | · | · | · | 1 | 3 | 4 | 6 | 7 | 9 | 10 | planned |
@@ -236,7 +236,7 @@
 | **Rolling Log Chute** `rolling_log_chute` | trap | 8 | · | · | · | · | · | · | · | 1 | 2 | 2 | 3 | 4 | 5 | 5 | 6 | planned |
 | **Moonlit Gravel Garden** `moonlit_gravel` | trap | 12 | · | · | · | · | · | · | · | · | · | · | · | 1 | 3 | 4 | 6 | planned |
 | **Ink Seal Post** `ink_seal_post` | support | 12 | · | · | · | · | · | · | · | · | · | · | · | 1 | 3 | 6 | 8 | planned |
-| **Longbow Yagura** `longbow_yagura` | defense | 12 | · | · | · | · | · | · | · | · | · | · | · | 1 | 4 | 7 | 10 | planned |
+| **Longbow Yagura** `longbow_yagura` | defense | 12 | · | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 9 | 10 | yes |
 | **Lightning Rod Pagoda** `lightning_rod_pagoda` | defense | 13 | · | · | · | · | · | · | · | · | · | · | · | · | 1 | 5 | 8 | planned |
 
 ## Buildings designed against the warriors (planned)
@@ -246,16 +246,16 @@ Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.t
 | Building | Category | Unlock | What it does | Beats | Beaten by |
 |---|---|---|---|---|---|
 | **Whirling Blade Tower** `whirling_blade_tower` | defense | 4 | Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back. | Shinobi, Twin-Fang Dancer, Hound Handler, Trap Breaker | Armored Guardian, Siege Bombardier, Iron Monk |
-| **Paper Lantern Line** `paper_lantern_line` | trap | 5 | Lanterns strung between rooftops. Hidden warriors and moving mist within 2 tiles of the line are lit up for 4 seconds, and lit warriors take 15% more damage. | Shadow Stalker, Mist Weaver, Eclipse Ninja | Kite Raider, Shuriken Storm, Fire Monk |
+| **Paper Lantern Line** `paper_lantern_line` | trap | 5 | Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden. | Shadow Stalker, Mist Weaver, Eclipse Ninja | Kite Raider, Shuriken Storm, Fire Monk |
 | **Rain Barrel Tower** `rain_barrel_tower` | defense | 5 | Douses fire and rinses venom: burning and poison on buildings within 2.5 tiles end after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though. | Fire Monk, Volcano Cannoneer, Kite Raider, Blowgun Hunter | Thunder Kite, Storm Sovereign, Ram Crew |
 | **Listening Jars** `listening_jars` | trap | 5 | Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed. | Tunnel Runner, Mole King, Shadow Stalker | Lantern Balloon, Trap Breaker, Wall Climber |
 | **Living Bamboo Wall** `living_bamboo_wall` | hedge | 6 | A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x). | Ram Crew, Oni Breaker, Phantom Gate, Wall Climber | Fire Monk, Volcano Cannoneer, Tunnel Runner |
-| **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles end 50% sooner. Three repairs per battle. | Saboteur, Gearbreaker, Ghost Engineer, Mole King | Fuse Master, Tunnel Runner, Phantom Gate |
-| **Bitter Incense Burner** `bitter_incense_burner` | support | 6 | Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. | Herbalist, Drum Monk, Iron Monk, Sage of Clouds | Blowgun Hunter, Kunai Adept, Dragon Kite Armada |
+| **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle. | Saboteur, Gearbreaker, Ghost Engineer, Mole King | Fuse Master, Tunnel Runner, Phantom Gate |
+| **Bitter Incense Burner** `bitter_incense_burner` | support | 6 | Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them. | Herbalist, Drum Monk, Iron Monk, Sage of Clouds | Blowgun Hunter, Kunai Adept, Dragon Kite Armada |
 | **Straw Scarecrow** `straw_scarecrow` | trap | 6 | Animals cannot resist it, and birds are terrified of it. Beasts, their companions and charging mounts within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable. | Hound Handler, Boar Rider, Crane Glider | Shuriken Storm, Lantern Balloon, Fire Monk |
 | **Bronze Mirror Screen** `mirror_screen` | defense | 7 | Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it. | Kunai Adept, Chain-Sickle Reaper, Siege Bombardier | Oni Breaker, Wind-Step Assassin, Tiger Lord |
 | **Sand Bucket Post** `sand_bucket_post` | support | 7 | A bucket crew that smothers explosions and embers: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle. | Fuse Master, Bomb Carrier, Shuriken Storm, Lantern Balloon | Hound Handler, Boar Rider, Twin-Fang Dancer |
-| **Kite-Cutter Ballista** `kite_cutter_ballista` | defense | 8 | Air only. Fires a spinning bolas that cannot be dodged and tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where every defense can reach it. | Crane Glider, Thunder Kite, Dragon Kite Armada, Hawk Tamer | Saboteur, Shadow Stalker, Mole King |
+| **Kite-Cutter Ballista** `kite_cutter_ballista` | defense | 8 | Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds. | Crane Glider, Thunder Kite, Dragon Kite Armada, Hawk Tamer | Saboteur, Shadow Stalker, Mole King |
 | **Discipline Banner** `discipline_banner` | support | 9 | A clan banner that keeps nearby defenders focused: defenses within 3 tiles ignore taunting bells and decoys. | Bell Warden, Mirage Twin | Gearbreaker, Ghost Engineer, Moonblade Master |
 | **Spotter's Perch** `spotter_perch` | support | 9 | A lookout who calls targets: defenses within 3 tiles retarget instantly onto warriors that dash, swing or shadow-step into range. | Void Walker, Wind-Step Assassin, Grapple Raider | Thousand Needle, Bomb Carrier, Night Blade |
 | **Steam Vent** `steam_vent` | defense | 9 | Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged. | Eclipse Ninja, Night Blade, Wind-Step Assassin | Thousand Needle, Kunai Adept, Mountain Shield, Hawk Tamer |
@@ -263,7 +263,7 @@ Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.t
 | **Rolling Log Chute** `rolling_log_chute` | trap | 8 | Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads. | Mountain Shield, Iron Monk, Drum Monk, Tiger Lord | Crane Glider, Bear Warrior, Spirit Caller |
 | **Moonlit Gravel Garden** `moonlit_gravel` | trap | 12 | Raked gravel that crunches: anything that teleports, lands or rushes onto it is stunned for 1.5 seconds. | Void Walker, Grapple Raider, Bomb Carrier | Eclipse Ninja, Trap Breaker, Kite Raider |
 | **Ink Seal Post** `ink_seal_post` | support | 12 | Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them. | Spirit Caller, Dragon Kite Armada | Herbalist, Void Walker, Iron Monk |
-| **Longbow Yagura** `longbow_yagura` | defense | 12 | A tall archery tower with range 8 that prefers warriors firing from beyond 4 tiles, but cannot hit anything closer than 2 tiles. | Siege Bombardier, Thousand Needle, Hawk Tamer | Shinobi, Grapple Raider, Mirage Twin |
+| **Longbow Yagura** `longbow_yagura` | defense | 12 | A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles. | Siege Bombardier, Thousand Needle, Hawk Tamer | Shinobi, Grapple Raider, Mirage Twin |
 | **Lightning Rod Pagoda** `lightning_rod_pagoda` | defense | 13 | Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back. | Storm Sovereign, Thunder Kite | Mole King, Chain-Sickle Reaper, Bell Warden |
 
 ## Expected attack power and Shadow Trial ladder

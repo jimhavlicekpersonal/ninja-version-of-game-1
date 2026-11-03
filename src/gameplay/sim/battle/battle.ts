@@ -5,9 +5,10 @@
  */
 import { buildingDef, levelDef, troopDef, troopLevel } from '../data';
 import { createRng, next, type Rng } from '../rng';
-import type { CombatDef, Cost, GameData, ResourceKind } from '../types';
+import type { BuildingEffect, CombatDef, Cost, GameData, ResourceKind } from '../types';
 import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from './pathfind';
 import type { BattleResult, BattleSetup, Deployment, EndReason } from './types';
+import { stepFortifications } from './fortifications';
 import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isHidden, resolveWarriorHit, stepWarriorEffects, type WarriorEffect } from './warriors';
 
 export interface SimBuilding {
@@ -34,6 +35,12 @@ export interface SimBuilding {
   vulnerability: number;
   slowedUntil: number;
   fireSlow: number;
+  /** Defensive counter rule at this level (null for ordinary buildings). */
+  effect: BuildingEffect | null;
+  /** Clockwork Repair Crane: repairs left this battle. */
+  uses: number;
+  /** The jam end tick a crane already shortened, so one jam is repaired once. */
+  repairedUntil: number;
 }
 
 /** A Smoke Bomb cloud on the map. Active while tick < endsTick. */
@@ -79,6 +86,15 @@ export interface SimTroop {
   shieldUntil: number;
   shieldReady: number;
   revived: boolean;
+  /** Paper Lantern Line: visible to defenses while tick < litUntil, taking `litBonus` extra damage. */
+  litUntil: number;
+  litBonus: number;
+  /** Kite-Cutter Ballista: a flyer is on the ground while tick < groundedUntil, and can't be grounded again before groundImmuneUntil. */
+  groundedUntil: number;
+  groundImmuneUntil: number;
+  /** Bitter Incense Burner (recomputed every tick): healing cut and heal/haste/resist aura cut on this troop. */
+  healCut: number;
+  auraCut: number;
 }
 
 export interface SimProjectile {
@@ -99,6 +115,8 @@ export interface SimProjectile {
   /** Fired from height (towers) or from the ground (troops). */
   arc: boolean;
   sourceTroop?: number;
+  /** The defense that fired it (for on-hit counter effects). */
+  sourceBuilding?: number;
 }
 
 export type SimEvent =
@@ -113,7 +131,11 @@ export type SimEvent =
   | { k: 'smoke'; smoke: number }
   | { k: 'smokeEnd'; smoke: number }
   | { k: 'sabotage'; building: number; troop: number }
-  | { k: 'recovered'; building: number };
+  | { k: 'recovered'; building: number }
+  /** A warrior ability went off (for on-screen feedback; `what` names the kit rule). */
+  | { k: 'ability'; troop: number; what: string }
+  /** A defensive counter acted: `building` is the counter, `troop`/`target` what it affected (-1 if none). */
+  | { k: 'counter'; building: number; troop: number; target: number; what: string };
 
 export interface BattleSim {
   setup: BattleSetup;
@@ -169,6 +191,11 @@ export function sabotageable(sim: BattleSim, b: SimBuilding): boolean {
   return !b.destroyed && b.kind === 'defense' && b.combat !== null && sim.tick >= b.immuneUntil;
 }
 
+/** A flyer that is in the air right now (a grounded flyer counts as on the ground). */
+export function airborne(sim: BattleSim, t: SimTroop): boolean {
+  return t.air && !(t.groundedUntil > sim.tick);
+}
+
 /** Whether a point is inside an active smoke cloud. */
 export function inSmoke(sim: BattleSim, x: number, y: number): boolean {
   for (const c of sim.smokes) {
@@ -199,6 +226,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     // Shadow Trials scale defenses (and walls) beyond the normal level caps.
     const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? setup.base.wallPower ?? 1 : 1;
     const hp = mult === 1 ? ld.hp : ld.hp * mult;
+    const effect: BuildingEffect | null = def.effect ? { ...def.effect, ...(ld.effect ?? {}) } : null;
     return {
       id: bb.id,
       type: bb.type,
@@ -218,6 +246,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       disabledUntil: 0,
       immuneUntil: 0,
       vulnerableUntil: 0, vulnerability: 0, slowedUntil: 0, fireSlow: 0,
+      effect, uses: effect?.uses ?? 0, repairedUntil: -1,
     };
   });
   const cells = new Uint8Array(size * size);
@@ -325,6 +354,7 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
     charges: def.ability ? def.abilityCharges ?? 1 : 0,
     hits: 0, firstHit: true, revealed: false, summoned: false, decoyUntil: 0,
     abilityReady: 0, shieldUntil: 0, shieldReady: 0, revived: false,
+    litUntil: 0, litBonus: 0, groundedUntil: 0, groundImmuneUntil: 0, healCut: 0, auraCut: 0,
   };
   sim.troops.push(t);
   sim.remaining[d.troop] -= 1;
@@ -358,6 +388,7 @@ function damageTroop(sim: BattleSim, ti: number, amount: number, splash = false,
     amount = Math.max(0, amount - t.maxHp * sim.data.battle.warriorRules.shieldMaximumDamage);
   }
   amount *= 1 - auraStrength(sim, t, 'resist');
+  if (t.litUntil > sim.tick) amount *= 1 + t.litBonus;
   if (splash) amount *= 1 - auraStrength(sim, t, 'splash', origin);
   t.hp -= amount;
   sim.events.push({ k: 'troopHit', troop: ti });
@@ -462,6 +493,8 @@ function stepTroop(sim: BattleSim, ti: number): void {
     return;
   }
   t.attacking = false;
+  // A tangled flyer can still strike what it reaches, but can't fly anywhere.
+  if (t.air && t.groundedUntil > sim.tick) return;
   const speed = def.speed * (t.slowTicks > 0 ? 0.5 : 1) * (1 + auraStrength(sim, t, 'haste')) * (t.firstHit ? def.kit?.dashSpeed ?? 1 : 1);
   if (t.slowTicks > 0) t.slowTicks--;
   if (t.air) {
@@ -544,9 +577,10 @@ function stepDefense(sim: BattleSim, bi: number): void {
   const smokedRange = Math.max(smoke.minTargetRange, c.range * smoke.rangeFactor);
   const ok = (t: SimTroop) => {
     if (t.dead || isHidden(sim, t)) return false;
-    if (t.air ? c.targets === 'ground' : c.targets === 'air') return false;
+    if (airborne(sim, t) ? c.targets === 'ground' : c.targets === 'air') return false;
     const d = dist(cx, cy, t.x, t.y);
-    const range = (smoke && inSmoke(sim, t.x, t.y)) || auraStrength(sim, t, 'veil') > 0 ? smokedRange : c.range;
+    const veiled = t.litUntil <= sim.tick && auraStrength(sim, t, 'veil') > 0;
+    const range = (smoke && inSmoke(sim, t.x, t.y)) || veiled ? smokedRange : c.range;
     return d <= range && d >= (c.minRange ?? 0);
   };
   const taunt = sim.supportTroops.find((index) => {
@@ -554,14 +588,19 @@ function stepDefense(sim: BattleSim, bi: number): void {
     return sim.data.troops[t.type].kit?.aura === 'taunt' && ok(t) && dist(cx, cy, t.x, t.y) <= (sim.data.troops[t.type].kit?.radius ?? 0);
   }) ?? -1;
   if (taunt >= 0) b.targetTroop = taunt;
-  if (b.targetTroop < 0 || !ok(sim.troops[b.targetTroop])) {
+  // Longbow Yagura: re-picks each shot, preferring warriors that attack from long range.
+  const longReach = taunt < 0 && b.effect?.kind === 'counter_artillery' && b.cooldown <= 0 ? b.effect.prefersBeyond ?? 0 : 0;
+  if (longReach > 0 || b.targetTroop < 0 || !ok(sim.troops[b.targetTroop])) {
     b.targetTroop = -1;
     let bestD = Infinity;
+    let bestLong = false;
     sim.troops.forEach((t, i) => {
       if (!ok(t)) return;
       const d = dist(cx, cy, t.x, t.y);
-      if (d < bestD) {
+      const long = longReach > 0 && sim.data.troops[t.type].range >= longReach;
+      if ((long && !bestLong) || (long === bestLong && d < bestD)) {
         bestD = d;
+        bestLong = long;
         b.targetTroop = i;
       }
     });
@@ -581,7 +620,7 @@ function stepDefense(sim: BattleSim, bi: number): void {
   sim.projectiles.push({
     id: sim.nextProjectile++, kind: c.projectile, fromX: cx, fromY: cy, toX, toY, total: travel, left: travel,
     damage: c.damage, splash: c.splashRadius ?? 0, targetTroop: c.splashRadius ? -1 : b.targetTroop, targetBuilding: -1,
-    hitsAir: c.targets !== 'ground', hitsGround: c.targets !== 'air', arc: Boolean(c.splashRadius),
+    hitsAir: c.targets !== 'ground', hitsGround: c.targets !== 'air', arc: Boolean(c.splashRadius), sourceBuilding: bi,
   });
   sim.events.push({ k: 'fire', building: bi });
 }
@@ -623,7 +662,7 @@ function stepProjectiles(sim: BattleSim): void {
       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: 0 });
     } else if (p.splash > 0) {
       sim.troops.forEach((t, ti) => {
-        if (t.dead || (t.air ? !p.hitsAir : !p.hitsGround)) return;
+        if (t.dead || (airborne(sim, t) ? !p.hitsAir : !p.hitsGround)) return;
         if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, p.damage, true, { x: p.fromX, y: p.fromY });
       });
       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: p.splash });
@@ -631,6 +670,7 @@ function stepProjectiles(sim: BattleSim): void {
       const t = sim.troops[p.targetTroop];
       if (!t.dead) {
         damageTroop(sim, p.targetTroop, p.damage);
+        if (p.sourceBuilding !== undefined) groundFlyer(sim, p.sourceBuilding, p.targetTroop);
         sim.events.push({ k: 'hit', x: t.x, y: t.y, kind: p.kind, splash: 0 });
       }
     }
@@ -638,11 +678,24 @@ function stepProjectiles(sim: BattleSim): void {
   sim.projectiles = keep;
 }
 
+/** Kite-Cutter Ballista hit: tangle a flyer (once it has been free for the immunity window). */
+function groundFlyer(sim: BattleSim, bi: number, ti: number): void {
+  const e = sim.buildings[bi].effect;
+  const t = sim.troops[ti];
+  if (e?.kind !== 'ground_flyers' || t.dead || !t.air || t.groundedUntil > sim.tick || sim.tick < t.groundImmuneUntil) return;
+  const tps = sim.data.battle.ticksPerSecond;
+  t.groundedUntil = sim.tick + (e.seconds ?? 0) * tps;
+  t.groundImmuneUntil = t.groundedUntil + (e.immuneSeconds ?? 0) * tps;
+  t.path = null;
+  sim.events.push({ k: 'counter', building: bi, troop: ti, target: -1, what: 'grounded' });
+}
+
 /** Advance one tick, applying `deployments` (all for this tick) first. */
 export function step(sim: BattleSim, deployments: Deployment[] = []): void {
   if (sim.ended) return;
   sim.events = [];
   for (const d of deployments) deploy(sim, d);
+  stepFortifications(sim);
   stepWarriorEffects(sim, warriorActions);
   for (let i = 0; i < sim.troops.length; i++) stepTroop(sim, i);
   stepTraps(sim);

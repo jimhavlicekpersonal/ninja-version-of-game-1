@@ -38,6 +38,20 @@
 - iOS / Android native builds, TestFlight, StoreKit sandbox purchase.
 - GitHub Pages deploy: it depends on the Pages setting above.
 
+## Defensive depth and clarity pass (2026-11-03)
+
+Roadmap: 1 clarify systems → 2 five defensive counters → 3 measure army balance → 4 progression flow → 5 external playtest. Steps 1–3 are done; 4–5 are next.
+
+1. **Clarity.** The Codex said "Unlocked" from the Keep level alone. `troopUnlock()` (`sim/army.ts`) now checks Keep and Dojo, and the Codex and Army list both use it. The Codex has tier/role/status filters, an "N of 50 unlocked" count and a "Next:" line. The Army list shows unlocked warriors by default. In battle, abilities and counters show short floating callouts.
+2. **Five counters live in combat** (`sim/battle/fortifications.ts`): Paper Lantern Line (stealth detection), Clockwork Repair Crane (jam recovery), Bitter Incense Burner (anti-healing), Kite-Cutter Ballista (anti-air control), Longbow Yagura (artillery counter). The Yagura's designed range of 8 could never reach a Siege Bombardier (range 11), so its range is now 13. Code-drawn art, scout chips and tips are included. Protocol is now **v5** (the server must be redeployed). Tests: `counters.test.ts` (21).
+3. **Army balance.** `npm run balance:armies` writes `docs/game-theory/ARMY_BALANCE.md` (7 equal-housing compositions × Keeps 4–15 × 6 layouts × 3 seeds, with and without counters). Findings:
+   - **Fixed:** from Keep 9 every composition scored 100% / 3★. Building levels past Keep 6 grew ~1.17×/Keep while armies grew ~1.4×. Levels first unlocked after Keep 6 now get HP and damage × 1.56 × 1.15^(Keep − 6). Keep 1–6 numbers are unchanged.
+   - **Open: Air wins at every Keep** (≈100%, Keep 4 included, before any of these changes). Flyers have the same power per housing slot as ground troops but skip walls and every ground-only defense. This needs a design decision: an air-role power discount in the model, or more/stronger anti-air at Keeps 4–7.
+   - **Open: artillery-heavy is the strongest ground army** (84–99%), mostly 3.5-range skirmishers (Shuriken Storm cleave) behind a front line. The Yagura only prefers range ≥ 4 and arrives at Keep 12. Options: Mortar splash/coverage earlier, or `prefersBeyond: 3.5`.
+   - Support-heavy (42–74%) and Shadow (41–76%) are the weakest. The counters cost them the most at Keeps 8–15 (Incense 5–15 points, Lantern 5–9).
+4. **Next (progression flow):** retrain presets (save the last army; needs a `SAVE_VERSION` bump), a clearer next objective on the HUD, teaching Trials (one counter per tier with a hint), and extending the model player's pacing check through Keep 15 (with the new late-Keep curve).
+5. **Next (external playtest):** real-phone performance (Pixel 7 / iPhone), interrupted battles on protocol v5, save recovery from a corrupt slot, update flow for the service worker, and a hosted server verified end to end.
+
 ## Unfinished (prioritised)
 
 1. **Make more warriors live.** 44 of 50 are design-only. Each needs `troops.json` stats from `warriorStats()`, Dojo/Keep gating, and its ability in the battle sim with a test. Suggested next five: Herbalist (heal), Ram Crew (wall bonus), Shadow Stalker (stealth), Hound Handler (summons), Twin-Fang Dancer (cleave).

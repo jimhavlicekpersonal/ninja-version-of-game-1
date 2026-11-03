@@ -9,7 +9,7 @@
 | warrior | 200 | 200 |
 | sprite | 50 | 50 |
 | hero | 16 | 0 |
-| building | 250 | 80 |
+| building | 250 | 105 |
 | ability | 55 | 51 |
 | currency | 4 | 3 |
 | league | 4 | 4 |
@@ -458,11 +458,11 @@
 | `icon.building.whirling_blade_tower.s3` | `public/art/icons/buildings/whirling_blade_tower_s3.png` | 256 | Whirling Blade Tower (defense) | 3 (5-7) |  |
 | `icon.building.whirling_blade_tower.s4` | `public/art/icons/buildings/whirling_blade_tower_s4.png` | 256 | Whirling Blade Tower (defense) | 4 (8-9) |  |
 | `icon.building.whirling_blade_tower.s5` | `public/art/icons/buildings/whirling_blade_tower_s5.png` | 256 | Whirling Blade Tower (defense) | 5 (10-12) |  |
-| `icon.building.paper_lantern_line.s1` | `public/art/icons/buildings/paper_lantern_line_s1.png` | 256 | Paper Lantern Line (trap) | 1 (1-1) |  |
-| `icon.building.paper_lantern_line.s2` | `public/art/icons/buildings/paper_lantern_line_s2.png` | 256 | Paper Lantern Line (trap) | 2 (2-2) |  |
-| `icon.building.paper_lantern_line.s3` | `public/art/icons/buildings/paper_lantern_line_s3.png` | 256 | Paper Lantern Line (trap) | 3 (3-3) |  |
-| `icon.building.paper_lantern_line.s4` | `public/art/icons/buildings/paper_lantern_line_s4.png` | 256 | Paper Lantern Line (trap) | 4 (4-4) |  |
-| `icon.building.paper_lantern_line.s5` | `public/art/icons/buildings/paper_lantern_line_s5.png` | 256 | Paper Lantern Line (trap) | 5 (5-6) |  |
+| `icon.building.paper_lantern_line.s1` | `public/art/icons/buildings/paper_lantern_line_s1.png` | 256 | Paper Lantern Line (trap) | 1 (1-1) | yes |
+| `icon.building.paper_lantern_line.s2` | `public/art/icons/buildings/paper_lantern_line_s2.png` | 256 | Paper Lantern Line (trap) | 2 (2-2) | yes |
+| `icon.building.paper_lantern_line.s3` | `public/art/icons/buildings/paper_lantern_line_s3.png` | 256 | Paper Lantern Line (trap) | 3 (3-3) | yes |
+| `icon.building.paper_lantern_line.s4` | `public/art/icons/buildings/paper_lantern_line_s4.png` | 256 | Paper Lantern Line (trap) | 4 (4-4) | yes |
+| `icon.building.paper_lantern_line.s5` | `public/art/icons/buildings/paper_lantern_line_s5.png` | 256 | Paper Lantern Line (trap) | 5 (5-6) | yes |
 | `icon.building.rain_barrel_tower.s1` | `public/art/icons/buildings/rain_barrel_tower_s1.png` | 256 | Rain Barrel Tower (defense) | 1 (1-2) |  |
 | `icon.building.rain_barrel_tower.s2` | `public/art/icons/buildings/rain_barrel_tower_s2.png` | 256 | Rain Barrel Tower (defense) | 2 (3-4) |  |
 | `icon.building.rain_barrel_tower.s3` | `public/art/icons/buildings/rain_barrel_tower_s3.png` | 256 | Rain Barrel Tower (defense) | 3 (5-6) |  |
@@ -478,16 +478,16 @@
 | `icon.building.living_bamboo_wall.s3` | `public/art/icons/buildings/living_bamboo_wall_s3.png` | 256 | Living Bamboo Wall (hedge) | 3 (5-7) |  |
 | `icon.building.living_bamboo_wall.s4` | `public/art/icons/buildings/living_bamboo_wall_s4.png` | 256 | Living Bamboo Wall (hedge) | 4 (8-9) |  |
 | `icon.building.living_bamboo_wall.s5` | `public/art/icons/buildings/living_bamboo_wall_s5.png` | 256 | Living Bamboo Wall (hedge) | 5 (10-12) |  |
-| `icon.building.clockwork_repairer.s1` | `public/art/icons/buildings/clockwork_repairer_s1.png` | 256 | Clockwork Repair Crane (support) | 1 (1-2) |  |
-| `icon.building.clockwork_repairer.s2` | `public/art/icons/buildings/clockwork_repairer_s2.png` | 256 | Clockwork Repair Crane (support) | 2 (3-4) |  |
-| `icon.building.clockwork_repairer.s3` | `public/art/icons/buildings/clockwork_repairer_s3.png` | 256 | Clockwork Repair Crane (support) | 3 (5-6) |  |
-| `icon.building.clockwork_repairer.s4` | `public/art/icons/buildings/clockwork_repairer_s4.png` | 256 | Clockwork Repair Crane (support) | 4 (7-8) |  |
-| `icon.building.clockwork_repairer.s5` | `public/art/icons/buildings/clockwork_repairer_s5.png` | 256 | Clockwork Repair Crane (support) | 5 (9-10) |  |
-| `icon.building.bitter_incense_burner.s1` | `public/art/icons/buildings/bitter_incense_burner_s1.png` | 256 | Bitter Incense Burner (support) | 1 (1-2) |  |
-| `icon.building.bitter_incense_burner.s2` | `public/art/icons/buildings/bitter_incense_burner_s2.png` | 256 | Bitter Incense Burner (support) | 2 (3-4) |  |
-| `icon.building.bitter_incense_burner.s3` | `public/art/icons/buildings/bitter_incense_burner_s3.png` | 256 | Bitter Incense Burner (support) | 3 (5-6) |  |
-| `icon.building.bitter_incense_burner.s4` | `public/art/icons/buildings/bitter_incense_burner_s4.png` | 256 | Bitter Incense Burner (support) | 4 (7-8) |  |
-| `icon.building.bitter_incense_burner.s5` | `public/art/icons/buildings/bitter_incense_burner_s5.png` | 256 | Bitter Incense Burner (support) | 5 (9-10) |  |
+| `icon.building.clockwork_repairer.s1` | `public/art/icons/buildings/clockwork_repairer_s1.png` | 256 | Clockwork Repair Crane (support) | 1 (1-2) | yes |
+| `icon.building.clockwork_repairer.s2` | `public/art/icons/buildings/clockwork_repairer_s2.png` | 256 | Clockwork Repair Crane (support) | 2 (3-4) | yes |
+| `icon.building.clockwork_repairer.s3` | `public/art/icons/buildings/clockwork_repairer_s3.png` | 256 | Clockwork Repair Crane (support) | 3 (5-6) | yes |
+| `icon.building.clockwork_repairer.s4` | `public/art/icons/buildings/clockwork_repairer_s4.png` | 256 | Clockwork Repair Crane (support) | 4 (7-8) | yes |
+| `icon.building.clockwork_repairer.s5` | `public/art/icons/buildings/clockwork_repairer_s5.png` | 256 | Clockwork Repair Crane (support) | 5 (9-10) | yes |
+| `icon.building.bitter_incense_burner.s1` | `public/art/icons/buildings/bitter_incense_burner_s1.png` | 256 | Bitter Incense Burner (support) | 1 (1-2) | yes |
+| `icon.building.bitter_incense_burner.s2` | `public/art/icons/buildings/bitter_incense_burner_s2.png` | 256 | Bitter Incense Burner (support) | 2 (3-4) | yes |
+| `icon.building.bitter_incense_burner.s3` | `public/art/icons/buildings/bitter_incense_burner_s3.png` | 256 | Bitter Incense Burner (support) | 3 (5-6) | yes |
+| `icon.building.bitter_incense_burner.s4` | `public/art/icons/buildings/bitter_incense_burner_s4.png` | 256 | Bitter Incense Burner (support) | 4 (7-8) | yes |
+| `icon.building.bitter_incense_burner.s5` | `public/art/icons/buildings/bitter_incense_burner_s5.png` | 256 | Bitter Incense Burner (support) | 5 (9-10) | yes |
 | `icon.building.straw_scarecrow.s1` | `public/art/icons/buildings/straw_scarecrow_s1.png` | 256 | Straw Scarecrow (trap) | 1 (1-1) |  |
 | `icon.building.straw_scarecrow.s2` | `public/art/icons/buildings/straw_scarecrow_s2.png` | 256 | Straw Scarecrow (trap) | 2 (2-2) |  |
 | `icon.building.straw_scarecrow.s3` | `public/art/icons/buildings/straw_scarecrow_s3.png` | 256 | Straw Scarecrow (trap) | 3 (3-3) |  |
@@ -503,11 +503,11 @@
 | `icon.building.sand_bucket_post.s3` | `public/art/icons/buildings/sand_bucket_post_s3.png` | 256 | Sand Bucket Post (support) | 3 (4-4) |  |
 | `icon.building.sand_bucket_post.s4` | `public/art/icons/buildings/sand_bucket_post_s4.png` | 256 | Sand Bucket Post (support) | 4 (5-6) |  |
 | `icon.building.sand_bucket_post.s5` | `public/art/icons/buildings/sand_bucket_post_s5.png` | 256 | Sand Bucket Post (support) | 5 (7-8) |  |
-| `icon.building.kite_cutter_ballista.s1` | `public/art/icons/buildings/kite_cutter_ballista_s1.png` | 256 | Kite-Cutter Ballista (defense) | 1 (1-2) |  |
-| `icon.building.kite_cutter_ballista.s2` | `public/art/icons/buildings/kite_cutter_ballista_s2.png` | 256 | Kite-Cutter Ballista (defense) | 2 (3-4) |  |
-| `icon.building.kite_cutter_ballista.s3` | `public/art/icons/buildings/kite_cutter_ballista_s3.png` | 256 | Kite-Cutter Ballista (defense) | 3 (5-6) |  |
-| `icon.building.kite_cutter_ballista.s4` | `public/art/icons/buildings/kite_cutter_ballista_s4.png` | 256 | Kite-Cutter Ballista (defense) | 4 (7-8) |  |
-| `icon.building.kite_cutter_ballista.s5` | `public/art/icons/buildings/kite_cutter_ballista_s5.png` | 256 | Kite-Cutter Ballista (defense) | 5 (9-10) |  |
+| `icon.building.kite_cutter_ballista.s1` | `public/art/icons/buildings/kite_cutter_ballista_s1.png` | 256 | Kite-Cutter Ballista (defense) | 1 (1-2) | yes |
+| `icon.building.kite_cutter_ballista.s2` | `public/art/icons/buildings/kite_cutter_ballista_s2.png` | 256 | Kite-Cutter Ballista (defense) | 2 (3-4) | yes |
+| `icon.building.kite_cutter_ballista.s3` | `public/art/icons/buildings/kite_cutter_ballista_s3.png` | 256 | Kite-Cutter Ballista (defense) | 3 (5-6) | yes |
+| `icon.building.kite_cutter_ballista.s4` | `public/art/icons/buildings/kite_cutter_ballista_s4.png` | 256 | Kite-Cutter Ballista (defense) | 4 (7-8) | yes |
+| `icon.building.kite_cutter_ballista.s5` | `public/art/icons/buildings/kite_cutter_ballista_s5.png` | 256 | Kite-Cutter Ballista (defense) | 5 (9-10) | yes |
 | `icon.building.discipline_banner.s1` | `public/art/icons/buildings/discipline_banner_s1.png` | 256 | Discipline Banner (support) | 1 (1-1) |  |
 | `icon.building.discipline_banner.s2` | `public/art/icons/buildings/discipline_banner_s2.png` | 256 | Discipline Banner (support) | 2 (2-3) |  |
 | `icon.building.discipline_banner.s3` | `public/art/icons/buildings/discipline_banner_s3.png` | 256 | Discipline Banner (support) | 3 (4-4) |  |
@@ -543,11 +543,11 @@
 | `icon.building.ink_seal_post.s3` | `public/art/icons/buildings/ink_seal_post_s3.png` | 256 | Ink Seal Post (support) | 3 (4-4) |  |
 | `icon.building.ink_seal_post.s4` | `public/art/icons/buildings/ink_seal_post_s4.png` | 256 | Ink Seal Post (support) | 4 (5-6) |  |
 | `icon.building.ink_seal_post.s5` | `public/art/icons/buildings/ink_seal_post_s5.png` | 256 | Ink Seal Post (support) | 5 (7-8) |  |
-| `icon.building.longbow_yagura.s1` | `public/art/icons/buildings/longbow_yagura_s1.png` | 256 | Longbow Yagura (defense) | 1 (1-2) |  |
-| `icon.building.longbow_yagura.s2` | `public/art/icons/buildings/longbow_yagura_s2.png` | 256 | Longbow Yagura (defense) | 2 (3-4) |  |
-| `icon.building.longbow_yagura.s3` | `public/art/icons/buildings/longbow_yagura_s3.png` | 256 | Longbow Yagura (defense) | 3 (5-6) |  |
-| `icon.building.longbow_yagura.s4` | `public/art/icons/buildings/longbow_yagura_s4.png` | 256 | Longbow Yagura (defense) | 4 (7-8) |  |
-| `icon.building.longbow_yagura.s5` | `public/art/icons/buildings/longbow_yagura_s5.png` | 256 | Longbow Yagura (defense) | 5 (9-10) |  |
+| `icon.building.longbow_yagura.s1` | `public/art/icons/buildings/longbow_yagura_s1.png` | 256 | Longbow Yagura (defense) | 1 (1-2) | yes |
+| `icon.building.longbow_yagura.s2` | `public/art/icons/buildings/longbow_yagura_s2.png` | 256 | Longbow Yagura (defense) | 2 (3-4) | yes |
+| `icon.building.longbow_yagura.s3` | `public/art/icons/buildings/longbow_yagura_s3.png` | 256 | Longbow Yagura (defense) | 3 (5-6) | yes |
+| `icon.building.longbow_yagura.s4` | `public/art/icons/buildings/longbow_yagura_s4.png` | 256 | Longbow Yagura (defense) | 4 (7-8) | yes |
+| `icon.building.longbow_yagura.s5` | `public/art/icons/buildings/longbow_yagura_s5.png` | 256 | Longbow Yagura (defense) | 5 (9-10) | yes |
 | `icon.building.lightning_rod_pagoda.s1` | `public/art/icons/buildings/lightning_rod_pagoda_s1.png` | 256 | Lightning Rod Pagoda (defense) | 1 (1-1) |  |
 | `icon.building.lightning_rod_pagoda.s2` | `public/art/icons/buildings/lightning_rod_pagoda_s2.png` | 256 | Lightning Rod Pagoda (defense) | 2 (2-3) |  |
 | `icon.building.lightning_rod_pagoda.s3` | `public/art/icons/buildings/lightning_rod_pagoda_s3.png` | 256 | Lightning Rod Pagoda (defense) | 3 (4-4) |  |
