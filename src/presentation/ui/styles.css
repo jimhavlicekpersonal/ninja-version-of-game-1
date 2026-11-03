@@ -446,7 +446,9 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .rival-main b { font-size: 16px; }
 .clan-row.current { background: #fff6c8; }
 .settlement.mine { background: #eef9e6; }
-.settlement > div:first-child, .clan-row > div:first-child { min-width: 0; flex: 1 1 200px; }
+.settlement > div:first-child, .clan-row > div:first-child { min-width: 0; flex: 1 1 140px; }
+.settlement { flex-wrap: nowrap; }
+.settlement .row { flex-wrap: nowrap; }
 .province { margin: 6px 0 12px; padding-left: 8px; border-left: 3px solid var(--clan, #8a94a6); }
 .province h3 { margin: 6px 0 2px; }
 .news { padding: 3px 0; border-bottom: 1px dashed #eadcc2; }
@@ -454,6 +456,7 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .chip.match-even { background: #fff1c2; color: #6b4300; }
 .chip.match-hard { background: #ffe2dc; color: #9e2b1f; }
 .chip.match-very-hard { background: #c2281f; color: #fff; }
+.chip.match-train-warriors { background: #e4e7ee; color: #3b4658; }
 .draft { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px; }
 .draft-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 12px; background: #fffaf0; border: 1px solid #eadcc2; }
 .draft-row img { width: 36px; height: 36px; object-fit: contain; }

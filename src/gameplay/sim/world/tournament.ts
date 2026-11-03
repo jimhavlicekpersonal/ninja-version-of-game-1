@@ -8,6 +8,8 @@
  * Reward thresholds pay once per tournament and are never sold.
  */
 import { generateOpponent, layoutById, LAYOUTS } from '../battle/basegen';
+import { botArmy } from '../matchmaking';
+import { armyHousing } from '../army';
 import type { BaseLayout } from '../battle/types';
 import { mixSeed } from '../rng';
 import type { GameData } from '../types';
@@ -70,6 +72,30 @@ export function draftProblem(army: Record<string, number>, data: GameData): stri
   if (housing <= 0) return 'Pick at least one warrior.';
   if (housing > data.competition.tournament.housing) return `The draft holds at most ${data.competition.tournament.housing} housing.`;
   return null;
+}
+
+/** A balanced starting draft: the raider mix for the tournament's Keep, scaled to the housing budget. */
+export function suggestedDraft(data: GameData): Record<string, number> {
+  const t = data.competition.tournament;
+  const mix = botArmy(t.hall, 1, data);
+  const scale = t.housing / Math.max(1, armyHousing(mix, data));
+  const out: Record<string, number> = {};
+  let used = 0;
+  for (const [k, n] of Object.entries(mix)) {
+    const c = Math.floor(n * scale);
+    if (c > 0) {
+      out[k] = c;
+      used += c * data.troops[k].housing;
+    }
+  }
+  const filler = Object.keys(out).sort((a, b) => data.troops[a].housing - data.troops[b].housing)[0];
+  if (filler) out[filler] += Math.floor((t.housing - used) / data.troops[filler].housing);
+  return out;
+}
+
+/** How many warriors one tap of + or − adds in the draft (about 10 housing). */
+export function draftStep(troop: string, data: GameData): number {
+  return Math.max(1, Math.floor(data.competition.tournament.draftStepHousing / data.troops[troop].housing));
 }
 
 export function tournamentScore(stars: number, destruction: number): number {

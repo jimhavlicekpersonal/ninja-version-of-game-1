@@ -832,6 +832,8 @@ export interface CompetitionDef {
     levelBias: number;
     troopLevel: number;
     housing: number;
+    /** Housing one tap of + or − adds in the draft. */
+    draftStepHousing: number;
     bases: number;
     layouts: string[];
     thresholds: { score: number; reward: Cost }[];

@@ -108,7 +108,7 @@ export function factionMissions(state: VillageState, hall: number, data: GameDat
   return picked.map((def) => {
     const target = Math.max(1, Math.round(def.base + def.perHall * (hall - 1)));
     const progress = Math.max(0, factionStat(state, def.stat) - (f.dayBaseline[def.stat] ?? 0));
-    return { def, text: def.text.replace('{n}', String(target)), target, progress: Math.min(target, progress), done: progress >= target, claimed: f.claimed.includes(def.id), reward: scaleReward(def.reward, hall, data) };
+    return { def, text: def.text.replace('{n}', target.toLocaleString('en-US')).replace('{s}', target === 1 ? '' : 's'), target, progress: Math.min(target, progress), done: progress >= target, claimed: f.claimed.includes(def.id), reward: scaleReward(def.reward, hall, data) };
   });
 }
 

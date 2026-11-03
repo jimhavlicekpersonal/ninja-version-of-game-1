@@ -203,3 +203,55 @@ describe('Connection', () => {
     expect(restarted.outbox()).toHaveLength(0);
   });
 });
+
+describe('Shadow Clans online (protocol 4)', () => {
+  it('syncs PvP opt-in and faction to the server, and brings Shadow Rank in only from real battles', async () => {
+    const w = world();
+    const g = village(w, (s) => {
+      s.buildings.find((b) => b.type === 'elder_toadstool')!.level = 3;
+      s.world.pvpOptIn = true;
+      s.world.faction.id = 'silent_moon';
+    });
+    const { conn, port } = connect(w, g);
+    await conn.sync();
+    expect(conn.online).toBe(true);
+    expect(conn.supports('candidates')).toBe(true);
+    const me = await port.me();
+    expect(me.pvpOptIn).toBe(true);
+    expect(me.faction).toBe('silent_moon');
+    expect(g.state.world.rank).toBeNull();
+    // A rated battle on the server reaches the village on the next sync.
+    await w.repo.updatePlayer(me.id, { rating: 1111, defenseRating: 990, ratedGames: 3, ratingSeason: -1 });
+    await conn.sync();
+    expect(g.state.world.rank).toMatchObject({ rating: 1111, defense: 990, games: 3 });
+    const info = await conn.worldInfo();
+    expect(info?.region?.players).toBe(1);
+    expect(info?.factions.silent_moon.humans).toBe(1);
+  });
+
+  it('offers real players as labelled candidates and gets tickets for them and for AI villages', async () => {
+    const w = world();
+    const others = [];
+    for (let i = 0; i < 6; i++) others.push(await w.player(`Rival${i}`, baseAt(4, 400 + i)));
+    const g = village(w, (s) => {
+      s.buildings.find((b) => b.type === 'elder_toadstool')!.level = 4;
+      s.world.firstRaidDone = true;
+    });
+    const { conn } = connect(w, g);
+    await conn.sync();
+    w.pastShields();
+    let found: Awaited<ReturnType<typeof conn.candidates>> = [];
+    for (let i = 0; i < 10 && !found.length; i++) found = await conn.candidates();
+    expect(found.length).toBeGreaterThan(0);
+    for (const c of found) {
+      expect(c.source).toBe('human');
+      expect(c.label).toMatch(/Real player/);
+      expect(c.base.human).toBe(true);
+    }
+    const m = await conn.matchWith({ target: found[0].token! });
+    expect(m.opponent.kind).toBe('player');
+    const ai = await conn.matchWith({ ai: { clan: 'thunder_lotus', seed: 77, strength: 3.6 } });
+    expect(ai.opponent.kind).toBe('bot');
+    expect(ai.base.clan).toBe('thunder_lotus');
+  });
+});

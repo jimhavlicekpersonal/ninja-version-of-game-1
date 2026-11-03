@@ -14,10 +14,10 @@ import { hallLevel } from '../../gameplay/sim/village';
 import { hallTitle, pvpStatus, shadowSeason, shadowSeasonEndsAt, shadowTier } from '../../gameplay/sim/world/competition';
 import { currentWar, factionMissions, factionRank, supportSquad } from '../../gameplay/sim/world/factions';
 import type { RivalCandidate } from '../../gameplay/sim/world/opponents';
-import { candidateMatchup, strengthMatchup } from '../../gameplay/sim/world/opponents';
+import { candidateMatchup, playerOffense, strengthMatchup } from '../../gameplay/sim/world/opponents';
 import { clanPower } from '../../gameplay/sim/world/power';
 import { settlementKind, settlementStrength, territoryCounts, tributeQuote } from '../../gameplay/sim/world/territory';
-import { draftProblem, tournamentAt, tournamentBases, tournamentLevels, totalScore } from '../../gameplay/sim/world/tournament';
+import { draftProblem, draftStep, suggestedDraft, tournamentAt, tournamentBases, tournamentLevels, totalScore } from '../../gameplay/sim/world/tournament';
 import { clanDef, hallAndBias } from '../../gameplay/sim/world/villagegen';
 import { clear, h, icon } from './dom';
 import type { UiKit } from './economyUi';
@@ -87,7 +87,7 @@ export class WorldUi {
       const b = cand.base;
       const def = cand.clan ? clanDef(gd, cand.clan) : null;
       const loot = totalLoot(b);
-      const m = candidateMatchup(s, b, gd);
+      const m = playerOffense(s, gd) > 0 ? candidateMatchup(s, b, gd) : { label: 'Train warriors' };
       const kindTag = cand.kind === 'player' ? 'Real player' : cand.kind === 'first' ? 'Training raid' : cand.kind === 'challenge' ? 'Challenge (optional)' : cand.kind === 'rival' ? 'Rival clan' : 'Matched rival';
       const pick = h('button', { class: 'btn primary', type: 'button' }, 'Scout');
       pick.addEventListener('click', () => {
@@ -181,12 +181,14 @@ export class WorldUi {
       h(
         'div',
         { class: 'log-row current' },
-        h('div', {}, h('b', {}, `Your territory: ${counts.player ?? 0}`), h('div', { class: 'muted small' }, q.shrines ? `${q.shrines} Shrine${q.shrines > 1 ? 's' : ''} pay tribute once a day.` : 'Hold a Shrine to collect daily tribute.')),
+        h('div', {}, h('b', {}, `Your territory: ${counts.player ?? 0}`), h('div', { class: 'muted small' }, q.shrines ? `${q.shrines} Shrine${q.shrines > 1 ? 's pay' : ' pays'} tribute once a day.` : 'Hold a Shrine to collect daily tribute.')),
         q.shrines
           ? h('button', { class: 'btn gold', type: 'button', disabled: !q.ready, onclick: () => { if (this.run({ type: 'claimTribute' }, 'Tribute collected.')) redraw(); } }, q.ready ? 'Collect ' : 'Collected today', q.ready ? rewardChips(q.amount) : '')
           : null,
       ),
     );
+    // Difficulty is judged against the army the player would bring now; with no army there is nothing to judge.
+    const armed = playerOffense(s, gd) > 0;
     for (const p of gd.world.provinces) {
       const def = clanDef(gd, p.clan);
       const list = h('div', { class: 'province-list' });
@@ -195,7 +197,7 @@ export class WorldUi {
         const mine = st.owner === 'player';
         const owner = mine ? null : clanDef(gd, st.owner);
         const strength = mine ? 0 : settlementStrength(st, s.world, hall, gd);
-        const label = mine ? null : strengthMatchup(s, st.owner, strength, gd).label;
+        const label = mine ? null : armed ? strengthMatchup(s, st.owner, strength, gd).label : 'Train warriors';
         list.append(
           h(
             'div',
@@ -342,12 +344,23 @@ export class WorldUi {
     const grid = h('div', { class: 'draft' });
     for (const [id, def] of Object.entries(gd.troops)) {
       const n = this.draft[id] ?? 0;
+      const step = draftStep(id, gd);
+      const room = Math.floor((t.housing - used) / def.housing);
       const thumb = this.d.troopThumb(id);
-      const minus = h('button', { class: 'btn ghost', type: 'button', disabled: n <= 0, 'aria-label': `Fewer ${def.name}`, onclick: () => { this.draft[id] = Math.max(0, n - 1); redraw(); } }, '−');
-      const plus = h('button', { class: 'btn ghost', type: 'button', disabled: used + def.housing > t.housing, 'aria-label': `More ${def.name}`, onclick: () => { this.draft[id] = n + 1; redraw(); } }, '+');
+      const minus = h('button', { class: 'btn ghost', type: 'button', disabled: n <= 0, 'aria-label': `Fewer ${def.name}`, onclick: () => { this.draft[id] = Math.max(0, n - step); redraw(); } }, `−${step > 1 ? step : ''}`);
+      const plus = h('button', { class: 'btn ghost', type: 'button', disabled: room <= 0, 'aria-label': `More ${def.name}`, onclick: () => { this.draft[id] = n + Math.min(step, room); redraw(); } }, `+${step > 1 ? step : ''}`);
       grid.append(h('div', { class: 'draft-row' }, thumb ? h('img', { src: thumb, alt: '' }) : null, h('div', {}, h('b', {}, def.name), h('div', { class: 'muted small' }, `Lv ${levels[id]} · ${def.housing} housing`)), minus, h('b', { class: 'draft-n' }, String(n)), plus));
     }
-    body.append(grid, h('p', { class: 'small' }, `Housing ${used} / ${t.housing}`));
+    body.append(
+      grid,
+      h(
+        'div',
+        { class: 'row' },
+        h('span', { class: 'small' }, `Housing ${used} / ${t.housing}`),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.draft = suggestedDraft(gd); redraw(); } }, 'Suggested army'),
+        h('button', { class: 'btn ghost', type: 'button', disabled: used === 0, onclick: () => { this.draft = {}; redraw(); } }, 'Clear'),
+      ),
+    );
     const problem = draftProblem(this.draft, gd);
     const bases = tournamentBases(win.id, gd);
     bases.forEach((b, i) => {

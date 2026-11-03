@@ -146,3 +146,13 @@ describe('normalized tournaments', () => {
     expect(applyCommand(s, { type: 'tournamentEnd', index: 0, record: { at: w.endsAt + DAY, opponentName: base.name, setup, deployments } }, w.endsAt + DAY, data).ok).toBe(false);
   });
 });
+
+describe('tournament draft helpers', () => {
+  it('suggests a full, legal draft', async () => {
+    const { suggestedDraft } = await import('../../../src/gameplay/sim/world/tournament');
+    const d = suggestedDraft(data);
+    expect(draftProblem(d, data)).toBeNull();
+    const housing = Object.entries(d).reduce((a, [k, n]) => a + data.troops[k].housing * n, 0);
+    expect(housing).toBeGreaterThan(data.competition.tournament.housing * 0.9);
+  });
+});

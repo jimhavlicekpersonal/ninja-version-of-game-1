@@ -26,6 +26,8 @@ export interface BattleHudDeps {
   /** World map and tournament battles: a label line, no Next, and (tournaments) no building loot. */
   practice?: { line: string; noNext: true; noLoot?: boolean };
   troopThumb(type: string): string | null;
+  /** No Next button (the tutorial outpost: there is nothing else to look at yet). */
+  hideNext?: boolean;
   scoutFee: number;
   canPayFee(): boolean;
   onHome(): void;
@@ -165,7 +167,7 @@ export class BattleHud {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
         h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, 'Home'),
-        this.deps.grove || this.deps.trial || this.deps.practice
+        this.deps.grove || this.deps.trial || this.deps.practice || this.deps.hideNext
           ? h('span', {}, '')
           : h(
               'button',

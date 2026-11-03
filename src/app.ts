@@ -129,7 +129,7 @@ export class App {
       base.practice = `${cand.clan ? clanDef(c.data, cand.clan).name : 'Generated rival'} · AI clan village (offline)`;
     }
     const setup: BattleSetup = { seed: battleSeed, base, army, levels };
-    this.open(new BattleSession(setup, c.data, 'scout'));
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, cand.kind === 'first' ? { kind: 'first' } : undefined);
   }
 
   /** Protocol-3 servers: the server picks one opponent (a real player or a generated one). */
@@ -226,7 +226,7 @@ export class App {
     sound.music('village');
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, extra?: { kind: 'world' } | { kind: 'tournament'; index: number }): void {
+  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, extra?: { kind: 'world' } | { kind: 'tournament'; index: number } | { kind: 'first' }): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
     this.session = session;
@@ -247,6 +247,7 @@ export class App {
           : undefined,
       practice: extra?.kind === 'world' ? { line: session.setup.base.practice ?? 'World map settlement', noNext: true } : extra?.kind === 'tournament' ? { line: `${c.data.competition.tournament.name} · standard levels · nothing is spent`, noNext: true, noLoot: true } : undefined,
       troopThumb: this.d.troopThumb,
+      hideNext: extra?.kind === 'first',
       scoutFee: scoutFee(c.state, c.data),
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
       onHome: () => this.home(),
@@ -322,7 +323,7 @@ export class App {
           trackTimer = 0;
           lastTrack = Date.now();
           if (session.sim.ended && !c.state.pendingBattle) return;
-          c.trackBattle({ kind: extra ? extra.kind : trialTier !== undefined ? 'trial' : 'raid', tier: trialTier, index: extra?.kind === 'tournament' ? extra.index : undefined, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: c.now() });
+          c.trackBattle({ kind: extra && extra.kind !== 'first' ? extra.kind : trialTier !== undefined ? 'trial' : 'raid', tier: trialTier, index: extra?.kind === 'tournament' ? extra.index : undefined, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: c.now() });
         };
         if (!lastTrack) track();
         else if (!trackTimer) trackTimer = window.setTimeout(track, Math.max(0, 1500 - (Date.now() - lastTrack)));

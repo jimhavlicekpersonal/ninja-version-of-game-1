@@ -31,12 +31,12 @@
     ],
     "missionsPerDay": 3,
     "missions": [
-      { "id": "win_raids", "text": "Win {n} raids", "stat": "raidsWon", "base": 2, "perHall": 0.5, "reputation": 30, "reward": { "acorns": 6000, "dew": 6000 } },
-      { "id": "earn_stars", "text": "Earn {n} stars in raids", "stat": "starsEarned", "base": 4, "perHall": 1, "reputation": 30, "reward": { "acorns": 6000, "dew": 6000 } },
-      { "id": "train", "text": "Train {n} warriors", "stat": "troopsTrained", "base": 15, "perHall": 8, "reputation": 20, "reward": { "dew": 8000 } },
+      { "id": "win_raids", "text": "Win {n} raid{s}", "stat": "raidsWon", "base": 2, "perHall": 0.5, "reputation": 30, "reward": { "acorns": 6000, "dew": 6000 } },
+      { "id": "earn_stars", "text": "Earn {n} star{s} in raids", "stat": "starsEarned", "base": 4, "perHall": 1, "reputation": 30, "reward": { "acorns": 6000, "dew": 6000 } },
+      { "id": "train", "text": "Train {n} warrior{s}", "stat": "troopsTrained", "base": 15, "perHall": 8, "reputation": 20, "reward": { "dew": 8000 } },
       { "id": "collect", "text": "Collect {n} Coins", "stat": "collectedAcorns", "base": 1500, "perHall": 3000, "reputation": 20, "reward": { "acorns": 8000 } },
-      { "id": "conquer", "text": "Take {n} settlements on the world map", "stat": "conquests", "base": 1, "perHall": 0, "reputation": 50, "reward": { "acorns": 10000, "dew": 10000 } },
-      { "id": "rival_conquer", "text": "Take {n} settlement from our rival", "stat": "rivalConquests", "base": 1, "perHall": 0, "reputation": 60, "reward": { "acorns": 12000, "dew": 12000, "moonstones": 2 } }
+      { "id": "conquer", "text": "Take {n} settlement{s} on the world map", "stat": "conquests", "base": 1, "perHall": 0, "reputation": 50, "reward": { "acorns": 10000, "dew": 10000 } },
+      { "id": "rival_conquer", "text": "Take {n} settlement{s} from our rival", "stat": "rivalConquests", "base": 1, "perHall": 0, "reputation": 60, "reward": { "acorns": 12000, "dew": 12000, "moonstones": 2 } }
     ],
     "war": {
       "$comment": "Each week every faction fights its rival. Both sides get a simulated AI score; the player's conquests and wins this week add to their faction's score, so a player can tip the war.",

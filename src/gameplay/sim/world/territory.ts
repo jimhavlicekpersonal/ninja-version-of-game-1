@@ -24,9 +24,11 @@ export function initialSettlements(seed: number, now: number, data: GameData): S
   for (const p of data.world.provinces) {
     for (const k of data.world.settlementKinds) {
       for (let i = 0; i < k.count; i++) {
+        // Shrines and Fortresses are named as such; villages take any other place word.
+        const seconds = data.names.placeSecond.filter((w) => w !== 'Fortress' && w !== 'Shrine');
         let name = '';
         for (let tries = 0; tries < 30; tries++) {
-          name = `${pick(rng, data.names.placeFirst)} ${pick(rng, data.names.placeSecond)}`;
+          name = `${pick(rng, data.names.placeFirst)} ${k.id === 'shrine' ? 'Shrine' : k.id === 'fortress' ? 'Fortress' : pick(rng, seconds)}`;
           if (!used.has(name)) break;
         }
         used.add(name);

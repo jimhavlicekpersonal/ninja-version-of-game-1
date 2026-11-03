@@ -69,6 +69,7 @@
     "levelBias": 0.6,
     "troopLevel": 3,
     "housing": 120,
+    "draftStepHousing": 10,
     "bases": 3,
     "layouts": ["kunai_ring", "walled_keep", "mortar_core", "twin_gates", "open_court", "ambush_alleys", "moon_veil"],
     "thresholds": [
