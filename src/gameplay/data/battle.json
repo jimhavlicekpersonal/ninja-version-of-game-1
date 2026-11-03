@@ -14,7 +14,16 @@
     250,
     600,
     1500,
-    3500
+    3500,
+    5985,
+    8273,
+    14813,
+    24056,
+    40660,
+    54623,
+    114846,
+    203553,
+    360007
   ],
   "generatedLootByHall": [
     {
@@ -40,6 +49,42 @@
     {
       "min": 80000,
       "max": 150000
+    },
+    {
+      "min": 159588,
+      "max": 239382
+    },
+    {
+      "min": 220608,
+      "max": 330912
+    },
+    {
+      "min": 395014,
+      "max": 592520
+    },
+    {
+      "min": 641498,
+      "max": 962248
+    },
+    {
+      "min": 1084277,
+      "max": 1626415
+    },
+    {
+      "min": 1456603,
+      "max": 2184905
+    },
+    {
+      "min": 3062556,
+      "max": 4593834
+    },
+    {
+      "min": 5428078,
+      "max": 8142116
+    },
+    {
+      "min": 9600185,
+      "max": 14400277
     }
   ],
   "lootShares": {
@@ -72,5 +117,15 @@
     "rangeTiles": 0.8,
     "disableTicks": 60,
     "immunityTicks": 100
+  },
+  "warriorRules": {
+    "supportIntervalTicks": 10,
+    "defaultAuraRadius": 3,
+    "abilityCooldownTicks": 60,
+    "shieldCooldownTicks": 100,
+    "shieldMaximumDamage": 0.5,
+    "teleportDistance": 6,
+    "summonOffset": 0.5,
+    "decoyHpMultiplier": 2
   }
 }

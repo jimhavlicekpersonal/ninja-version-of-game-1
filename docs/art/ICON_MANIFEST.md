@@ -6,11 +6,11 @@
 
 | Group | Count | Live now |
 |---|---|---|
-| warrior | 200 | 24 |
-| sprite | 50 | 6 |
+| warrior | 200 | 200 |
+| sprite | 50 | 50 |
 | hero | 16 | 0 |
 | building | 150 | 80 |
-| ability | 55 | 7 |
+| ability | 55 | 51 |
 | currency | 4 | 3 |
 | league | 4 | 4 |
 | tier | 5 | 0 |
@@ -26,257 +26,257 @@
 | `icon.warrior.shinobi.s2` | `public/art/icons/warriors/shinobi_s2.png` | 256 | Shinobi (Blade, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.shinobi.s3` | `public/art/icons/warriors/shinobi_s3.png` | 256 | Shinobi (Blade, Initiate) | 3 (11-15) | yes |
 | `icon.warrior.shinobi.s4` | `public/art/icons/warriors/shinobi_s4.png` | 256 | Shinobi (Blade, Initiate) | 4 (16-20) | yes |
-| `icon.warrior.twin_fang_dancer.s1` | `public/art/icons/warriors/twin_fang_dancer_s1.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 1 (1-5) |  |
-| `icon.warrior.twin_fang_dancer.s2` | `public/art/icons/warriors/twin_fang_dancer_s2.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 2 (6-10) |  |
-| `icon.warrior.twin_fang_dancer.s3` | `public/art/icons/warriors/twin_fang_dancer_s3.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 3 (11-15) |  |
-| `icon.warrior.twin_fang_dancer.s4` | `public/art/icons/warriors/twin_fang_dancer_s4.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 4 (16-20) |  |
-| `icon.warrior.wind_step_assassin.s1` | `public/art/icons/warriors/wind_step_assassin_s1.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 1 (1-5) |  |
-| `icon.warrior.wind_step_assassin.s2` | `public/art/icons/warriors/wind_step_assassin_s2.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 2 (6-10) |  |
-| `icon.warrior.wind_step_assassin.s3` | `public/art/icons/warriors/wind_step_assassin_s3.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 3 (11-15) |  |
-| `icon.warrior.wind_step_assassin.s4` | `public/art/icons/warriors/wind_step_assassin_s4.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 4 (16-20) |  |
-| `icon.warrior.moonblade_master.s1` | `public/art/icons/warriors/moonblade_master_s1.png` | 256 | Moonblade Master (Blade, Master) | 1 (1-5) |  |
-| `icon.warrior.moonblade_master.s2` | `public/art/icons/warriors/moonblade_master_s2.png` | 256 | Moonblade Master (Blade, Master) | 2 (6-10) |  |
-| `icon.warrior.moonblade_master.s3` | `public/art/icons/warriors/moonblade_master_s3.png` | 256 | Moonblade Master (Blade, Master) | 3 (11-15) |  |
-| `icon.warrior.moonblade_master.s4` | `public/art/icons/warriors/moonblade_master_s4.png` | 256 | Moonblade Master (Blade, Master) | 4 (16-20) |  |
-| `icon.warrior.storm_sovereign.s1` | `public/art/icons/warriors/storm_sovereign_s1.png` | 256 | Storm Sovereign (Blade, Legend) | 1 (1-5) |  |
-| `icon.warrior.storm_sovereign.s2` | `public/art/icons/warriors/storm_sovereign_s2.png` | 256 | Storm Sovereign (Blade, Legend) | 2 (6-10) |  |
-| `icon.warrior.storm_sovereign.s3` | `public/art/icons/warriors/storm_sovereign_s3.png` | 256 | Storm Sovereign (Blade, Legend) | 3 (11-15) |  |
-| `icon.warrior.storm_sovereign.s4` | `public/art/icons/warriors/storm_sovereign_s4.png` | 256 | Storm Sovereign (Blade, Legend) | 4 (16-20) |  |
+| `icon.warrior.twin_fang_dancer.s1` | `public/art/icons/warriors/twin_fang_dancer_s1.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 1 (1-5) | yes |
+| `icon.warrior.twin_fang_dancer.s2` | `public/art/icons/warriors/twin_fang_dancer_s2.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 2 (6-10) | yes |
+| `icon.warrior.twin_fang_dancer.s3` | `public/art/icons/warriors/twin_fang_dancer_s3.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 3 (11-15) | yes |
+| `icon.warrior.twin_fang_dancer.s4` | `public/art/icons/warriors/twin_fang_dancer_s4.png` | 256 | Twin-Fang Dancer (Blade, Adept) | 4 (16-20) | yes |
+| `icon.warrior.wind_step_assassin.s1` | `public/art/icons/warriors/wind_step_assassin_s1.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.wind_step_assassin.s2` | `public/art/icons/warriors/wind_step_assassin_s2.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.wind_step_assassin.s3` | `public/art/icons/warriors/wind_step_assassin_s3.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.wind_step_assassin.s4` | `public/art/icons/warriors/wind_step_assassin_s4.png` | 256 | Wind-Step Assassin (Blade, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.moonblade_master.s1` | `public/art/icons/warriors/moonblade_master_s1.png` | 256 | Moonblade Master (Blade, Master) | 1 (1-5) | yes |
+| `icon.warrior.moonblade_master.s2` | `public/art/icons/warriors/moonblade_master_s2.png` | 256 | Moonblade Master (Blade, Master) | 2 (6-10) | yes |
+| `icon.warrior.moonblade_master.s3` | `public/art/icons/warriors/moonblade_master_s3.png` | 256 | Moonblade Master (Blade, Master) | 3 (11-15) | yes |
+| `icon.warrior.moonblade_master.s4` | `public/art/icons/warriors/moonblade_master_s4.png` | 256 | Moonblade Master (Blade, Master) | 4 (16-20) | yes |
+| `icon.warrior.storm_sovereign.s1` | `public/art/icons/warriors/storm_sovereign_s1.png` | 256 | Storm Sovereign (Blade, Legend) | 1 (1-5) | yes |
+| `icon.warrior.storm_sovereign.s2` | `public/art/icons/warriors/storm_sovereign_s2.png` | 256 | Storm Sovereign (Blade, Legend) | 2 (6-10) | yes |
+| `icon.warrior.storm_sovereign.s3` | `public/art/icons/warriors/storm_sovereign_s3.png` | 256 | Storm Sovereign (Blade, Legend) | 3 (11-15) | yes |
+| `icon.warrior.storm_sovereign.s4` | `public/art/icons/warriors/storm_sovereign_s4.png` | 256 | Storm Sovereign (Blade, Legend) | 4 (16-20) | yes |
 | `icon.warrior.kunai_adept.s1` | `public/art/icons/warriors/kunai_adept_s1.png` | 256 | Kunai Adept (Thrower, Initiate) | 1 (1-5) | yes |
 | `icon.warrior.kunai_adept.s2` | `public/art/icons/warriors/kunai_adept_s2.png` | 256 | Kunai Adept (Thrower, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.kunai_adept.s3` | `public/art/icons/warriors/kunai_adept_s3.png` | 256 | Kunai Adept (Thrower, Initiate) | 3 (11-15) | yes |
 | `icon.warrior.kunai_adept.s4` | `public/art/icons/warriors/kunai_adept_s4.png` | 256 | Kunai Adept (Thrower, Initiate) | 4 (16-20) | yes |
-| `icon.warrior.shuriken_storm.s1` | `public/art/icons/warriors/shuriken_storm_s1.png` | 256 | Shuriken Storm (Thrower, Adept) | 1 (1-5) |  |
-| `icon.warrior.shuriken_storm.s2` | `public/art/icons/warriors/shuriken_storm_s2.png` | 256 | Shuriken Storm (Thrower, Adept) | 2 (6-10) |  |
-| `icon.warrior.shuriken_storm.s3` | `public/art/icons/warriors/shuriken_storm_s3.png` | 256 | Shuriken Storm (Thrower, Adept) | 3 (11-15) |  |
-| `icon.warrior.shuriken_storm.s4` | `public/art/icons/warriors/shuriken_storm_s4.png` | 256 | Shuriken Storm (Thrower, Adept) | 4 (16-20) |  |
-| `icon.warrior.blowgun_hunter.s1` | `public/art/icons/warriors/blowgun_hunter_s1.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 1 (1-5) |  |
-| `icon.warrior.blowgun_hunter.s2` | `public/art/icons/warriors/blowgun_hunter_s2.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 2 (6-10) |  |
-| `icon.warrior.blowgun_hunter.s3` | `public/art/icons/warriors/blowgun_hunter_s3.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 3 (11-15) |  |
-| `icon.warrior.blowgun_hunter.s4` | `public/art/icons/warriors/blowgun_hunter_s4.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 4 (16-20) |  |
-| `icon.warrior.chain_sickle_reaper.s1` | `public/art/icons/warriors/chain_sickle_reaper_s1.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 1 (1-5) |  |
-| `icon.warrior.chain_sickle_reaper.s2` | `public/art/icons/warriors/chain_sickle_reaper_s2.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 2 (6-10) |  |
-| `icon.warrior.chain_sickle_reaper.s3` | `public/art/icons/warriors/chain_sickle_reaper_s3.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 3 (11-15) |  |
-| `icon.warrior.chain_sickle_reaper.s4` | `public/art/icons/warriors/chain_sickle_reaper_s4.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 4 (16-20) |  |
-| `icon.warrior.thousand_needle.s1` | `public/art/icons/warriors/thousand_needle_s1.png` | 256 | Thousand Needle (Thrower, Legend) | 1 (1-5) |  |
-| `icon.warrior.thousand_needle.s2` | `public/art/icons/warriors/thousand_needle_s2.png` | 256 | Thousand Needle (Thrower, Legend) | 2 (6-10) |  |
-| `icon.warrior.thousand_needle.s3` | `public/art/icons/warriors/thousand_needle_s3.png` | 256 | Thousand Needle (Thrower, Legend) | 3 (11-15) |  |
-| `icon.warrior.thousand_needle.s4` | `public/art/icons/warriors/thousand_needle_s4.png` | 256 | Thousand Needle (Thrower, Legend) | 4 (16-20) |  |
+| `icon.warrior.shuriken_storm.s1` | `public/art/icons/warriors/shuriken_storm_s1.png` | 256 | Shuriken Storm (Thrower, Adept) | 1 (1-5) | yes |
+| `icon.warrior.shuriken_storm.s2` | `public/art/icons/warriors/shuriken_storm_s2.png` | 256 | Shuriken Storm (Thrower, Adept) | 2 (6-10) | yes |
+| `icon.warrior.shuriken_storm.s3` | `public/art/icons/warriors/shuriken_storm_s3.png` | 256 | Shuriken Storm (Thrower, Adept) | 3 (11-15) | yes |
+| `icon.warrior.shuriken_storm.s4` | `public/art/icons/warriors/shuriken_storm_s4.png` | 256 | Shuriken Storm (Thrower, Adept) | 4 (16-20) | yes |
+| `icon.warrior.blowgun_hunter.s1` | `public/art/icons/warriors/blowgun_hunter_s1.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.blowgun_hunter.s2` | `public/art/icons/warriors/blowgun_hunter_s2.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.blowgun_hunter.s3` | `public/art/icons/warriors/blowgun_hunter_s3.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.blowgun_hunter.s4` | `public/art/icons/warriors/blowgun_hunter_s4.png` | 256 | Blowgun Hunter (Thrower, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.chain_sickle_reaper.s1` | `public/art/icons/warriors/chain_sickle_reaper_s1.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 1 (1-5) | yes |
+| `icon.warrior.chain_sickle_reaper.s2` | `public/art/icons/warriors/chain_sickle_reaper_s2.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 2 (6-10) | yes |
+| `icon.warrior.chain_sickle_reaper.s3` | `public/art/icons/warriors/chain_sickle_reaper_s3.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 3 (11-15) | yes |
+| `icon.warrior.chain_sickle_reaper.s4` | `public/art/icons/warriors/chain_sickle_reaper_s4.png` | 256 | Chain-Sickle Reaper (Thrower, Master) | 4 (16-20) | yes |
+| `icon.warrior.thousand_needle.s1` | `public/art/icons/warriors/thousand_needle_s1.png` | 256 | Thousand Needle (Thrower, Legend) | 1 (1-5) | yes |
+| `icon.warrior.thousand_needle.s2` | `public/art/icons/warriors/thousand_needle_s2.png` | 256 | Thousand Needle (Thrower, Legend) | 2 (6-10) | yes |
+| `icon.warrior.thousand_needle.s3` | `public/art/icons/warriors/thousand_needle_s3.png` | 256 | Thousand Needle (Thrower, Legend) | 3 (11-15) | yes |
+| `icon.warrior.thousand_needle.s4` | `public/art/icons/warriors/thousand_needle_s4.png` | 256 | Thousand Needle (Thrower, Legend) | 4 (16-20) | yes |
 | `icon.warrior.armored_guardian.s1` | `public/art/icons/warriors/armored_guardian_s1.png` | 256 | Armored Guardian (Guardian, Initiate) | 1 (1-5) | yes |
 | `icon.warrior.armored_guardian.s2` | `public/art/icons/warriors/armored_guardian_s2.png` | 256 | Armored Guardian (Guardian, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.armored_guardian.s3` | `public/art/icons/warriors/armored_guardian_s3.png` | 256 | Armored Guardian (Guardian, Initiate) | 3 (11-15) | yes |
 | `icon.warrior.armored_guardian.s4` | `public/art/icons/warriors/armored_guardian_s4.png` | 256 | Armored Guardian (Guardian, Initiate) | 4 (16-20) | yes |
-| `icon.warrior.iron_monk.s1` | `public/art/icons/warriors/iron_monk_s1.png` | 256 | Iron Monk (Guardian, Adept) | 1 (1-5) |  |
-| `icon.warrior.iron_monk.s2` | `public/art/icons/warriors/iron_monk_s2.png` | 256 | Iron Monk (Guardian, Adept) | 2 (6-10) |  |
-| `icon.warrior.iron_monk.s3` | `public/art/icons/warriors/iron_monk_s3.png` | 256 | Iron Monk (Guardian, Adept) | 3 (11-15) |  |
-| `icon.warrior.iron_monk.s4` | `public/art/icons/warriors/iron_monk_s4.png` | 256 | Iron Monk (Guardian, Adept) | 4 (16-20) |  |
-| `icon.warrior.bell_warden.s1` | `public/art/icons/warriors/bell_warden_s1.png` | 256 | Bell Warden (Guardian, Veteran) | 1 (1-5) |  |
-| `icon.warrior.bell_warden.s2` | `public/art/icons/warriors/bell_warden_s2.png` | 256 | Bell Warden (Guardian, Veteran) | 2 (6-10) |  |
-| `icon.warrior.bell_warden.s3` | `public/art/icons/warriors/bell_warden_s3.png` | 256 | Bell Warden (Guardian, Veteran) | 3 (11-15) |  |
-| `icon.warrior.bell_warden.s4` | `public/art/icons/warriors/bell_warden_s4.png` | 256 | Bell Warden (Guardian, Veteran) | 4 (16-20) |  |
-| `icon.warrior.mountain_shield.s1` | `public/art/icons/warriors/mountain_shield_s1.png` | 256 | Mountain Shield (Guardian, Master) | 1 (1-5) |  |
-| `icon.warrior.mountain_shield.s2` | `public/art/icons/warriors/mountain_shield_s2.png` | 256 | Mountain Shield (Guardian, Master) | 2 (6-10) |  |
-| `icon.warrior.mountain_shield.s3` | `public/art/icons/warriors/mountain_shield_s3.png` | 256 | Mountain Shield (Guardian, Master) | 3 (11-15) |  |
-| `icon.warrior.mountain_shield.s4` | `public/art/icons/warriors/mountain_shield_s4.png` | 256 | Mountain Shield (Guardian, Master) | 4 (16-20) |  |
-| `icon.warrior.oni_breaker.s1` | `public/art/icons/warriors/oni_breaker_s1.png` | 256 | Oni Breaker (Guardian, Legend) | 1 (1-5) |  |
-| `icon.warrior.oni_breaker.s2` | `public/art/icons/warriors/oni_breaker_s2.png` | 256 | Oni Breaker (Guardian, Legend) | 2 (6-10) |  |
-| `icon.warrior.oni_breaker.s3` | `public/art/icons/warriors/oni_breaker_s3.png` | 256 | Oni Breaker (Guardian, Legend) | 3 (11-15) |  |
-| `icon.warrior.oni_breaker.s4` | `public/art/icons/warriors/oni_breaker_s4.png` | 256 | Oni Breaker (Guardian, Legend) | 4 (16-20) |  |
+| `icon.warrior.iron_monk.s1` | `public/art/icons/warriors/iron_monk_s1.png` | 256 | Iron Monk (Guardian, Adept) | 1 (1-5) | yes |
+| `icon.warrior.iron_monk.s2` | `public/art/icons/warriors/iron_monk_s2.png` | 256 | Iron Monk (Guardian, Adept) | 2 (6-10) | yes |
+| `icon.warrior.iron_monk.s3` | `public/art/icons/warriors/iron_monk_s3.png` | 256 | Iron Monk (Guardian, Adept) | 3 (11-15) | yes |
+| `icon.warrior.iron_monk.s4` | `public/art/icons/warriors/iron_monk_s4.png` | 256 | Iron Monk (Guardian, Adept) | 4 (16-20) | yes |
+| `icon.warrior.bell_warden.s1` | `public/art/icons/warriors/bell_warden_s1.png` | 256 | Bell Warden (Guardian, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.bell_warden.s2` | `public/art/icons/warriors/bell_warden_s2.png` | 256 | Bell Warden (Guardian, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.bell_warden.s3` | `public/art/icons/warriors/bell_warden_s3.png` | 256 | Bell Warden (Guardian, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.bell_warden.s4` | `public/art/icons/warriors/bell_warden_s4.png` | 256 | Bell Warden (Guardian, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.mountain_shield.s1` | `public/art/icons/warriors/mountain_shield_s1.png` | 256 | Mountain Shield (Guardian, Master) | 1 (1-5) | yes |
+| `icon.warrior.mountain_shield.s2` | `public/art/icons/warriors/mountain_shield_s2.png` | 256 | Mountain Shield (Guardian, Master) | 2 (6-10) | yes |
+| `icon.warrior.mountain_shield.s3` | `public/art/icons/warriors/mountain_shield_s3.png` | 256 | Mountain Shield (Guardian, Master) | 3 (11-15) | yes |
+| `icon.warrior.mountain_shield.s4` | `public/art/icons/warriors/mountain_shield_s4.png` | 256 | Mountain Shield (Guardian, Master) | 4 (16-20) | yes |
+| `icon.warrior.oni_breaker.s1` | `public/art/icons/warriors/oni_breaker_s1.png` | 256 | Oni Breaker (Guardian, Legend) | 1 (1-5) | yes |
+| `icon.warrior.oni_breaker.s2` | `public/art/icons/warriors/oni_breaker_s2.png` | 256 | Oni Breaker (Guardian, Legend) | 2 (6-10) | yes |
+| `icon.warrior.oni_breaker.s3` | `public/art/icons/warriors/oni_breaker_s3.png` | 256 | Oni Breaker (Guardian, Legend) | 3 (11-15) | yes |
+| `icon.warrior.oni_breaker.s4` | `public/art/icons/warriors/oni_breaker_s4.png` | 256 | Oni Breaker (Guardian, Legend) | 4 (16-20) | yes |
 | `icon.warrior.saboteur.s1` | `public/art/icons/warriors/saboteur_s1.png` | 256 | Saboteur (Saboteur, Initiate) | 1 (1-5) | yes |
 | `icon.warrior.saboteur.s2` | `public/art/icons/warriors/saboteur_s2.png` | 256 | Saboteur (Saboteur, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.saboteur.s3` | `public/art/icons/warriors/saboteur_s3.png` | 256 | Saboteur (Saboteur, Initiate) | 3 (11-15) | yes |
 | `icon.warrior.saboteur.s4` | `public/art/icons/warriors/saboteur_s4.png` | 256 | Saboteur (Saboteur, Initiate) | 4 (16-20) | yes |
-| `icon.warrior.trap_breaker.s1` | `public/art/icons/warriors/trap_breaker_s1.png` | 256 | Trap Breaker (Saboteur, Adept) | 1 (1-5) |  |
-| `icon.warrior.trap_breaker.s2` | `public/art/icons/warriors/trap_breaker_s2.png` | 256 | Trap Breaker (Saboteur, Adept) | 2 (6-10) |  |
-| `icon.warrior.trap_breaker.s3` | `public/art/icons/warriors/trap_breaker_s3.png` | 256 | Trap Breaker (Saboteur, Adept) | 3 (11-15) |  |
-| `icon.warrior.trap_breaker.s4` | `public/art/icons/warriors/trap_breaker_s4.png` | 256 | Trap Breaker (Saboteur, Adept) | 4 (16-20) |  |
-| `icon.warrior.gearbreaker.s1` | `public/art/icons/warriors/gearbreaker_s1.png` | 256 | Gearbreaker (Saboteur, Veteran) | 1 (1-5) |  |
-| `icon.warrior.gearbreaker.s2` | `public/art/icons/warriors/gearbreaker_s2.png` | 256 | Gearbreaker (Saboteur, Veteran) | 2 (6-10) |  |
-| `icon.warrior.gearbreaker.s3` | `public/art/icons/warriors/gearbreaker_s3.png` | 256 | Gearbreaker (Saboteur, Veteran) | 3 (11-15) |  |
-| `icon.warrior.gearbreaker.s4` | `public/art/icons/warriors/gearbreaker_s4.png` | 256 | Gearbreaker (Saboteur, Veteran) | 4 (16-20) |  |
-| `icon.warrior.fuse_master.s1` | `public/art/icons/warriors/fuse_master_s1.png` | 256 | Fuse Master (Saboteur, Master) | 1 (1-5) |  |
-| `icon.warrior.fuse_master.s2` | `public/art/icons/warriors/fuse_master_s2.png` | 256 | Fuse Master (Saboteur, Master) | 2 (6-10) |  |
-| `icon.warrior.fuse_master.s3` | `public/art/icons/warriors/fuse_master_s3.png` | 256 | Fuse Master (Saboteur, Master) | 3 (11-15) |  |
-| `icon.warrior.fuse_master.s4` | `public/art/icons/warriors/fuse_master_s4.png` | 256 | Fuse Master (Saboteur, Master) | 4 (16-20) |  |
-| `icon.warrior.ghost_engineer.s1` | `public/art/icons/warriors/ghost_engineer_s1.png` | 256 | Ghost Engineer (Saboteur, Legend) | 1 (1-5) |  |
-| `icon.warrior.ghost_engineer.s2` | `public/art/icons/warriors/ghost_engineer_s2.png` | 256 | Ghost Engineer (Saboteur, Legend) | 2 (6-10) |  |
-| `icon.warrior.ghost_engineer.s3` | `public/art/icons/warriors/ghost_engineer_s3.png` | 256 | Ghost Engineer (Saboteur, Legend) | 3 (11-15) |  |
-| `icon.warrior.ghost_engineer.s4` | `public/art/icons/warriors/ghost_engineer_s4.png` | 256 | Ghost Engineer (Saboteur, Legend) | 4 (16-20) |  |
+| `icon.warrior.trap_breaker.s1` | `public/art/icons/warriors/trap_breaker_s1.png` | 256 | Trap Breaker (Saboteur, Adept) | 1 (1-5) | yes |
+| `icon.warrior.trap_breaker.s2` | `public/art/icons/warriors/trap_breaker_s2.png` | 256 | Trap Breaker (Saboteur, Adept) | 2 (6-10) | yes |
+| `icon.warrior.trap_breaker.s3` | `public/art/icons/warriors/trap_breaker_s3.png` | 256 | Trap Breaker (Saboteur, Adept) | 3 (11-15) | yes |
+| `icon.warrior.trap_breaker.s4` | `public/art/icons/warriors/trap_breaker_s4.png` | 256 | Trap Breaker (Saboteur, Adept) | 4 (16-20) | yes |
+| `icon.warrior.gearbreaker.s1` | `public/art/icons/warriors/gearbreaker_s1.png` | 256 | Gearbreaker (Saboteur, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.gearbreaker.s2` | `public/art/icons/warriors/gearbreaker_s2.png` | 256 | Gearbreaker (Saboteur, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.gearbreaker.s3` | `public/art/icons/warriors/gearbreaker_s3.png` | 256 | Gearbreaker (Saboteur, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.gearbreaker.s4` | `public/art/icons/warriors/gearbreaker_s4.png` | 256 | Gearbreaker (Saboteur, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.fuse_master.s1` | `public/art/icons/warriors/fuse_master_s1.png` | 256 | Fuse Master (Saboteur, Master) | 1 (1-5) | yes |
+| `icon.warrior.fuse_master.s2` | `public/art/icons/warriors/fuse_master_s2.png` | 256 | Fuse Master (Saboteur, Master) | 2 (6-10) | yes |
+| `icon.warrior.fuse_master.s3` | `public/art/icons/warriors/fuse_master_s3.png` | 256 | Fuse Master (Saboteur, Master) | 3 (11-15) | yes |
+| `icon.warrior.fuse_master.s4` | `public/art/icons/warriors/fuse_master_s4.png` | 256 | Fuse Master (Saboteur, Master) | 4 (16-20) | yes |
+| `icon.warrior.ghost_engineer.s1` | `public/art/icons/warriors/ghost_engineer_s1.png` | 256 | Ghost Engineer (Saboteur, Legend) | 1 (1-5) | yes |
+| `icon.warrior.ghost_engineer.s2` | `public/art/icons/warriors/ghost_engineer_s2.png` | 256 | Ghost Engineer (Saboteur, Legend) | 2 (6-10) | yes |
+| `icon.warrior.ghost_engineer.s3` | `public/art/icons/warriors/ghost_engineer_s3.png` | 256 | Ghost Engineer (Saboteur, Legend) | 3 (11-15) | yes |
+| `icon.warrior.ghost_engineer.s4` | `public/art/icons/warriors/ghost_engineer_s4.png` | 256 | Ghost Engineer (Saboteur, Legend) | 4 (16-20) | yes |
 | `icon.warrior.tunnel_runner.s1` | `public/art/icons/warriors/tunnel_runner_s1.png` | 256 | Tunnel Runner (Infiltrator, Initiate) | 1 (1-5) | yes |
 | `icon.warrior.tunnel_runner.s2` | `public/art/icons/warriors/tunnel_runner_s2.png` | 256 | Tunnel Runner (Infiltrator, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.tunnel_runner.s3` | `public/art/icons/warriors/tunnel_runner_s3.png` | 256 | Tunnel Runner (Infiltrator, Initiate) | 3 (11-15) | yes |
 | `icon.warrior.tunnel_runner.s4` | `public/art/icons/warriors/tunnel_runner_s4.png` | 256 | Tunnel Runner (Infiltrator, Initiate) | 4 (16-20) | yes |
-| `icon.warrior.wall_climber.s1` | `public/art/icons/warriors/wall_climber_s1.png` | 256 | Wall Climber (Infiltrator, Adept) | 1 (1-5) |  |
-| `icon.warrior.wall_climber.s2` | `public/art/icons/warriors/wall_climber_s2.png` | 256 | Wall Climber (Infiltrator, Adept) | 2 (6-10) |  |
-| `icon.warrior.wall_climber.s3` | `public/art/icons/warriors/wall_climber_s3.png` | 256 | Wall Climber (Infiltrator, Adept) | 3 (11-15) |  |
-| `icon.warrior.wall_climber.s4` | `public/art/icons/warriors/wall_climber_s4.png` | 256 | Wall Climber (Infiltrator, Adept) | 4 (16-20) |  |
-| `icon.warrior.grapple_raider.s1` | `public/art/icons/warriors/grapple_raider_s1.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 1 (1-5) |  |
-| `icon.warrior.grapple_raider.s2` | `public/art/icons/warriors/grapple_raider_s2.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 2 (6-10) |  |
-| `icon.warrior.grapple_raider.s3` | `public/art/icons/warriors/grapple_raider_s3.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 3 (11-15) |  |
-| `icon.warrior.grapple_raider.s4` | `public/art/icons/warriors/grapple_raider_s4.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 4 (16-20) |  |
-| `icon.warrior.mole_king.s1` | `public/art/icons/warriors/mole_king_s1.png` | 256 | Mole King (Infiltrator, Master) | 1 (1-5) |  |
-| `icon.warrior.mole_king.s2` | `public/art/icons/warriors/mole_king_s2.png` | 256 | Mole King (Infiltrator, Master) | 2 (6-10) |  |
-| `icon.warrior.mole_king.s3` | `public/art/icons/warriors/mole_king_s3.png` | 256 | Mole King (Infiltrator, Master) | 3 (11-15) |  |
-| `icon.warrior.mole_king.s4` | `public/art/icons/warriors/mole_king_s4.png` | 256 | Mole King (Infiltrator, Master) | 4 (16-20) |  |
-| `icon.warrior.phantom_gate.s1` | `public/art/icons/warriors/phantom_gate_s1.png` | 256 | Phantom Gate (Infiltrator, Legend) | 1 (1-5) |  |
-| `icon.warrior.phantom_gate.s2` | `public/art/icons/warriors/phantom_gate_s2.png` | 256 | Phantom Gate (Infiltrator, Legend) | 2 (6-10) |  |
-| `icon.warrior.phantom_gate.s3` | `public/art/icons/warriors/phantom_gate_s3.png` | 256 | Phantom Gate (Infiltrator, Legend) | 3 (11-15) |  |
-| `icon.warrior.phantom_gate.s4` | `public/art/icons/warriors/phantom_gate_s4.png` | 256 | Phantom Gate (Infiltrator, Legend) | 4 (16-20) |  |
+| `icon.warrior.wall_climber.s1` | `public/art/icons/warriors/wall_climber_s1.png` | 256 | Wall Climber (Infiltrator, Adept) | 1 (1-5) | yes |
+| `icon.warrior.wall_climber.s2` | `public/art/icons/warriors/wall_climber_s2.png` | 256 | Wall Climber (Infiltrator, Adept) | 2 (6-10) | yes |
+| `icon.warrior.wall_climber.s3` | `public/art/icons/warriors/wall_climber_s3.png` | 256 | Wall Climber (Infiltrator, Adept) | 3 (11-15) | yes |
+| `icon.warrior.wall_climber.s4` | `public/art/icons/warriors/wall_climber_s4.png` | 256 | Wall Climber (Infiltrator, Adept) | 4 (16-20) | yes |
+| `icon.warrior.grapple_raider.s1` | `public/art/icons/warriors/grapple_raider_s1.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.grapple_raider.s2` | `public/art/icons/warriors/grapple_raider_s2.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.grapple_raider.s3` | `public/art/icons/warriors/grapple_raider_s3.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.grapple_raider.s4` | `public/art/icons/warriors/grapple_raider_s4.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.mole_king.s1` | `public/art/icons/warriors/mole_king_s1.png` | 256 | Mole King (Infiltrator, Master) | 1 (1-5) | yes |
+| `icon.warrior.mole_king.s2` | `public/art/icons/warriors/mole_king_s2.png` | 256 | Mole King (Infiltrator, Master) | 2 (6-10) | yes |
+| `icon.warrior.mole_king.s3` | `public/art/icons/warriors/mole_king_s3.png` | 256 | Mole King (Infiltrator, Master) | 3 (11-15) | yes |
+| `icon.warrior.mole_king.s4` | `public/art/icons/warriors/mole_king_s4.png` | 256 | Mole King (Infiltrator, Master) | 4 (16-20) | yes |
+| `icon.warrior.phantom_gate.s1` | `public/art/icons/warriors/phantom_gate_s1.png` | 256 | Phantom Gate (Infiltrator, Legend) | 1 (1-5) | yes |
+| `icon.warrior.phantom_gate.s2` | `public/art/icons/warriors/phantom_gate_s2.png` | 256 | Phantom Gate (Infiltrator, Legend) | 2 (6-10) | yes |
+| `icon.warrior.phantom_gate.s3` | `public/art/icons/warriors/phantom_gate_s3.png` | 256 | Phantom Gate (Infiltrator, Legend) | 3 (11-15) | yes |
+| `icon.warrior.phantom_gate.s4` | `public/art/icons/warriors/phantom_gate_s4.png` | 256 | Phantom Gate (Infiltrator, Legend) | 4 (16-20) | yes |
 | `icon.warrior.kite_raider.s1` | `public/art/icons/warriors/kite_raider_s1.png` | 256 | Kite Raider (Sky, Initiate) | 1 (1-5) | yes |
 | `icon.warrior.kite_raider.s2` | `public/art/icons/warriors/kite_raider_s2.png` | 256 | Kite Raider (Sky, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.kite_raider.s3` | `public/art/icons/warriors/kite_raider_s3.png` | 256 | Kite Raider (Sky, Initiate) | 3 (11-15) | yes |
 | `icon.warrior.kite_raider.s4` | `public/art/icons/warriors/kite_raider_s4.png` | 256 | Kite Raider (Sky, Initiate) | 4 (16-20) | yes |
-| `icon.warrior.crane_glider.s1` | `public/art/icons/warriors/crane_glider_s1.png` | 256 | Crane Glider (Sky, Adept) | 1 (1-5) |  |
-| `icon.warrior.crane_glider.s2` | `public/art/icons/warriors/crane_glider_s2.png` | 256 | Crane Glider (Sky, Adept) | 2 (6-10) |  |
-| `icon.warrior.crane_glider.s3` | `public/art/icons/warriors/crane_glider_s3.png` | 256 | Crane Glider (Sky, Adept) | 3 (11-15) |  |
-| `icon.warrior.crane_glider.s4` | `public/art/icons/warriors/crane_glider_s4.png` | 256 | Crane Glider (Sky, Adept) | 4 (16-20) |  |
-| `icon.warrior.lantern_balloon.s1` | `public/art/icons/warriors/lantern_balloon_s1.png` | 256 | Lantern Balloon (Sky, Veteran) | 1 (1-5) |  |
-| `icon.warrior.lantern_balloon.s2` | `public/art/icons/warriors/lantern_balloon_s2.png` | 256 | Lantern Balloon (Sky, Veteran) | 2 (6-10) |  |
-| `icon.warrior.lantern_balloon.s3` | `public/art/icons/warriors/lantern_balloon_s3.png` | 256 | Lantern Balloon (Sky, Veteran) | 3 (11-15) |  |
-| `icon.warrior.lantern_balloon.s4` | `public/art/icons/warriors/lantern_balloon_s4.png` | 256 | Lantern Balloon (Sky, Veteran) | 4 (16-20) |  |
-| `icon.warrior.thunder_kite.s1` | `public/art/icons/warriors/thunder_kite_s1.png` | 256 | Thunder Kite (Sky, Master) | 1 (1-5) |  |
-| `icon.warrior.thunder_kite.s2` | `public/art/icons/warriors/thunder_kite_s2.png` | 256 | Thunder Kite (Sky, Master) | 2 (6-10) |  |
-| `icon.warrior.thunder_kite.s3` | `public/art/icons/warriors/thunder_kite_s3.png` | 256 | Thunder Kite (Sky, Master) | 3 (11-15) |  |
-| `icon.warrior.thunder_kite.s4` | `public/art/icons/warriors/thunder_kite_s4.png` | 256 | Thunder Kite (Sky, Master) | 4 (16-20) |  |
-| `icon.warrior.dragon_kite_armada.s1` | `public/art/icons/warriors/dragon_kite_armada_s1.png` | 256 | Dragon Kite Armada (Sky, Legend) | 1 (1-5) |  |
-| `icon.warrior.dragon_kite_armada.s2` | `public/art/icons/warriors/dragon_kite_armada_s2.png` | 256 | Dragon Kite Armada (Sky, Legend) | 2 (6-10) |  |
-| `icon.warrior.dragon_kite_armada.s3` | `public/art/icons/warriors/dragon_kite_armada_s3.png` | 256 | Dragon Kite Armada (Sky, Legend) | 3 (11-15) |  |
-| `icon.warrior.dragon_kite_armada.s4` | `public/art/icons/warriors/dragon_kite_armada_s4.png` | 256 | Dragon Kite Armada (Sky, Legend) | 4 (16-20) |  |
-| `icon.warrior.herbalist.s1` | `public/art/icons/warriors/herbalist_s1.png` | 256 | Herbalist (Mystic, Initiate) | 1 (1-5) |  |
-| `icon.warrior.herbalist.s2` | `public/art/icons/warriors/herbalist_s2.png` | 256 | Herbalist (Mystic, Initiate) | 2 (6-10) |  |
-| `icon.warrior.herbalist.s3` | `public/art/icons/warriors/herbalist_s3.png` | 256 | Herbalist (Mystic, Initiate) | 3 (11-15) |  |
-| `icon.warrior.herbalist.s4` | `public/art/icons/warriors/herbalist_s4.png` | 256 | Herbalist (Mystic, Initiate) | 4 (16-20) |  |
-| `icon.warrior.drum_monk.s1` | `public/art/icons/warriors/drum_monk_s1.png` | 256 | Drum Monk (Mystic, Adept) | 1 (1-5) |  |
-| `icon.warrior.drum_monk.s2` | `public/art/icons/warriors/drum_monk_s2.png` | 256 | Drum Monk (Mystic, Adept) | 2 (6-10) |  |
-| `icon.warrior.drum_monk.s3` | `public/art/icons/warriors/drum_monk_s3.png` | 256 | Drum Monk (Mystic, Adept) | 3 (11-15) |  |
-| `icon.warrior.drum_monk.s4` | `public/art/icons/warriors/drum_monk_s4.png` | 256 | Drum Monk (Mystic, Adept) | 4 (16-20) |  |
-| `icon.warrior.mist_weaver.s1` | `public/art/icons/warriors/mist_weaver_s1.png` | 256 | Mist Weaver (Mystic, Veteran) | 1 (1-5) |  |
-| `icon.warrior.mist_weaver.s2` | `public/art/icons/warriors/mist_weaver_s2.png` | 256 | Mist Weaver (Mystic, Veteran) | 2 (6-10) |  |
-| `icon.warrior.mist_weaver.s3` | `public/art/icons/warriors/mist_weaver_s3.png` | 256 | Mist Weaver (Mystic, Veteran) | 3 (11-15) |  |
-| `icon.warrior.mist_weaver.s4` | `public/art/icons/warriors/mist_weaver_s4.png` | 256 | Mist Weaver (Mystic, Veteran) | 4 (16-20) |  |
-| `icon.warrior.spirit_caller.s1` | `public/art/icons/warriors/spirit_caller_s1.png` | 256 | Spirit Caller (Mystic, Master) | 1 (1-5) |  |
-| `icon.warrior.spirit_caller.s2` | `public/art/icons/warriors/spirit_caller_s2.png` | 256 | Spirit Caller (Mystic, Master) | 2 (6-10) |  |
-| `icon.warrior.spirit_caller.s3` | `public/art/icons/warriors/spirit_caller_s3.png` | 256 | Spirit Caller (Mystic, Master) | 3 (11-15) |  |
-| `icon.warrior.spirit_caller.s4` | `public/art/icons/warriors/spirit_caller_s4.png` | 256 | Spirit Caller (Mystic, Master) | 4 (16-20) |  |
-| `icon.warrior.sage_of_clouds.s1` | `public/art/icons/warriors/sage_of_clouds_s1.png` | 256 | Sage of Clouds (Mystic, Legend) | 1 (1-5) |  |
-| `icon.warrior.sage_of_clouds.s2` | `public/art/icons/warriors/sage_of_clouds_s2.png` | 256 | Sage of Clouds (Mystic, Legend) | 2 (6-10) |  |
-| `icon.warrior.sage_of_clouds.s3` | `public/art/icons/warriors/sage_of_clouds_s3.png` | 256 | Sage of Clouds (Mystic, Legend) | 3 (11-15) |  |
-| `icon.warrior.sage_of_clouds.s4` | `public/art/icons/warriors/sage_of_clouds_s4.png` | 256 | Sage of Clouds (Mystic, Legend) | 4 (16-20) |  |
-| `icon.warrior.ram_crew.s1` | `public/art/icons/warriors/ram_crew_s1.png` | 256 | Ram Crew (Siege, Initiate) | 1 (1-5) |  |
-| `icon.warrior.ram_crew.s2` | `public/art/icons/warriors/ram_crew_s2.png` | 256 | Ram Crew (Siege, Initiate) | 2 (6-10) |  |
-| `icon.warrior.ram_crew.s3` | `public/art/icons/warriors/ram_crew_s3.png` | 256 | Ram Crew (Siege, Initiate) | 3 (11-15) |  |
-| `icon.warrior.ram_crew.s4` | `public/art/icons/warriors/ram_crew_s4.png` | 256 | Ram Crew (Siege, Initiate) | 4 (16-20) |  |
-| `icon.warrior.fire_monk.s1` | `public/art/icons/warriors/fire_monk_s1.png` | 256 | Fire Monk (Siege, Adept) | 1 (1-5) |  |
-| `icon.warrior.fire_monk.s2` | `public/art/icons/warriors/fire_monk_s2.png` | 256 | Fire Monk (Siege, Adept) | 2 (6-10) |  |
-| `icon.warrior.fire_monk.s3` | `public/art/icons/warriors/fire_monk_s3.png` | 256 | Fire Monk (Siege, Adept) | 3 (11-15) |  |
-| `icon.warrior.fire_monk.s4` | `public/art/icons/warriors/fire_monk_s4.png` | 256 | Fire Monk (Siege, Adept) | 4 (16-20) |  |
-| `icon.warrior.bomb_carrier.s1` | `public/art/icons/warriors/bomb_carrier_s1.png` | 256 | Bomb Carrier (Siege, Veteran) | 1 (1-5) |  |
-| `icon.warrior.bomb_carrier.s2` | `public/art/icons/warriors/bomb_carrier_s2.png` | 256 | Bomb Carrier (Siege, Veteran) | 2 (6-10) |  |
-| `icon.warrior.bomb_carrier.s3` | `public/art/icons/warriors/bomb_carrier_s3.png` | 256 | Bomb Carrier (Siege, Veteran) | 3 (11-15) |  |
-| `icon.warrior.bomb_carrier.s4` | `public/art/icons/warriors/bomb_carrier_s4.png` | 256 | Bomb Carrier (Siege, Veteran) | 4 (16-20) |  |
-| `icon.warrior.siege_bombardier.s1` | `public/art/icons/warriors/siege_bombardier_s1.png` | 256 | Siege Bombardier (Siege, Master) | 1 (1-5) |  |
-| `icon.warrior.siege_bombardier.s2` | `public/art/icons/warriors/siege_bombardier_s2.png` | 256 | Siege Bombardier (Siege, Master) | 2 (6-10) |  |
-| `icon.warrior.siege_bombardier.s3` | `public/art/icons/warriors/siege_bombardier_s3.png` | 256 | Siege Bombardier (Siege, Master) | 3 (11-15) |  |
-| `icon.warrior.siege_bombardier.s4` | `public/art/icons/warriors/siege_bombardier_s4.png` | 256 | Siege Bombardier (Siege, Master) | 4 (16-20) |  |
-| `icon.warrior.volcano_cannoneer.s1` | `public/art/icons/warriors/volcano_cannoneer_s1.png` | 256 | Volcano Cannoneer (Siege, Legend) | 1 (1-5) |  |
-| `icon.warrior.volcano_cannoneer.s2` | `public/art/icons/warriors/volcano_cannoneer_s2.png` | 256 | Volcano Cannoneer (Siege, Legend) | 2 (6-10) |  |
-| `icon.warrior.volcano_cannoneer.s3` | `public/art/icons/warriors/volcano_cannoneer_s3.png` | 256 | Volcano Cannoneer (Siege, Legend) | 3 (11-15) |  |
-| `icon.warrior.volcano_cannoneer.s4` | `public/art/icons/warriors/volcano_cannoneer_s4.png` | 256 | Volcano Cannoneer (Siege, Legend) | 4 (16-20) |  |
-| `icon.warrior.hound_handler.s1` | `public/art/icons/warriors/hound_handler_s1.png` | 256 | Hound Handler (Beast, Initiate) | 1 (1-5) |  |
-| `icon.warrior.hound_handler.s2` | `public/art/icons/warriors/hound_handler_s2.png` | 256 | Hound Handler (Beast, Initiate) | 2 (6-10) |  |
-| `icon.warrior.hound_handler.s3` | `public/art/icons/warriors/hound_handler_s3.png` | 256 | Hound Handler (Beast, Initiate) | 3 (11-15) |  |
-| `icon.warrior.hound_handler.s4` | `public/art/icons/warriors/hound_handler_s4.png` | 256 | Hound Handler (Beast, Initiate) | 4 (16-20) |  |
-| `icon.warrior.hawk_tamer.s1` | `public/art/icons/warriors/hawk_tamer_s1.png` | 256 | Hawk Tamer (Beast, Adept) | 1 (1-5) |  |
-| `icon.warrior.hawk_tamer.s2` | `public/art/icons/warriors/hawk_tamer_s2.png` | 256 | Hawk Tamer (Beast, Adept) | 2 (6-10) |  |
-| `icon.warrior.hawk_tamer.s3` | `public/art/icons/warriors/hawk_tamer_s3.png` | 256 | Hawk Tamer (Beast, Adept) | 3 (11-15) |  |
-| `icon.warrior.hawk_tamer.s4` | `public/art/icons/warriors/hawk_tamer_s4.png` | 256 | Hawk Tamer (Beast, Adept) | 4 (16-20) |  |
-| `icon.warrior.boar_rider.s1` | `public/art/icons/warriors/boar_rider_s1.png` | 256 | Boar Rider (Beast, Veteran) | 1 (1-5) |  |
-| `icon.warrior.boar_rider.s2` | `public/art/icons/warriors/boar_rider_s2.png` | 256 | Boar Rider (Beast, Veteran) | 2 (6-10) |  |
-| `icon.warrior.boar_rider.s3` | `public/art/icons/warriors/boar_rider_s3.png` | 256 | Boar Rider (Beast, Veteran) | 3 (11-15) |  |
-| `icon.warrior.boar_rider.s4` | `public/art/icons/warriors/boar_rider_s4.png` | 256 | Boar Rider (Beast, Veteran) | 4 (16-20) |  |
-| `icon.warrior.bear_warrior.s1` | `public/art/icons/warriors/bear_warrior_s1.png` | 256 | Bear Warrior (Beast, Master) | 1 (1-5) |  |
-| `icon.warrior.bear_warrior.s2` | `public/art/icons/warriors/bear_warrior_s2.png` | 256 | Bear Warrior (Beast, Master) | 2 (6-10) |  |
-| `icon.warrior.bear_warrior.s3` | `public/art/icons/warriors/bear_warrior_s3.png` | 256 | Bear Warrior (Beast, Master) | 3 (11-15) |  |
-| `icon.warrior.bear_warrior.s4` | `public/art/icons/warriors/bear_warrior_s4.png` | 256 | Bear Warrior (Beast, Master) | 4 (16-20) |  |
-| `icon.warrior.tiger_lord.s1` | `public/art/icons/warriors/tiger_lord_s1.png` | 256 | Tiger Lord (Beast, Legend) | 1 (1-5) |  |
-| `icon.warrior.tiger_lord.s2` | `public/art/icons/warriors/tiger_lord_s2.png` | 256 | Tiger Lord (Beast, Legend) | 2 (6-10) |  |
-| `icon.warrior.tiger_lord.s3` | `public/art/icons/warriors/tiger_lord_s3.png` | 256 | Tiger Lord (Beast, Legend) | 3 (11-15) |  |
-| `icon.warrior.tiger_lord.s4` | `public/art/icons/warriors/tiger_lord_s4.png` | 256 | Tiger Lord (Beast, Legend) | 4 (16-20) |  |
-| `icon.warrior.shadow_stalker.s1` | `public/art/icons/warriors/shadow_stalker_s1.png` | 256 | Shadow Stalker (Shadow, Initiate) | 1 (1-5) |  |
-| `icon.warrior.shadow_stalker.s2` | `public/art/icons/warriors/shadow_stalker_s2.png` | 256 | Shadow Stalker (Shadow, Initiate) | 2 (6-10) |  |
-| `icon.warrior.shadow_stalker.s3` | `public/art/icons/warriors/shadow_stalker_s3.png` | 256 | Shadow Stalker (Shadow, Initiate) | 3 (11-15) |  |
-| `icon.warrior.shadow_stalker.s4` | `public/art/icons/warriors/shadow_stalker_s4.png` | 256 | Shadow Stalker (Shadow, Initiate) | 4 (16-20) |  |
-| `icon.warrior.mirage_twin.s1` | `public/art/icons/warriors/mirage_twin_s1.png` | 256 | Mirage Twin (Shadow, Adept) | 1 (1-5) |  |
-| `icon.warrior.mirage_twin.s2` | `public/art/icons/warriors/mirage_twin_s2.png` | 256 | Mirage Twin (Shadow, Adept) | 2 (6-10) |  |
-| `icon.warrior.mirage_twin.s3` | `public/art/icons/warriors/mirage_twin_s3.png` | 256 | Mirage Twin (Shadow, Adept) | 3 (11-15) |  |
-| `icon.warrior.mirage_twin.s4` | `public/art/icons/warriors/mirage_twin_s4.png` | 256 | Mirage Twin (Shadow, Adept) | 4 (16-20) |  |
-| `icon.warrior.night_blade.s1` | `public/art/icons/warriors/night_blade_s1.png` | 256 | Night Blade (Shadow, Veteran) | 1 (1-5) |  |
-| `icon.warrior.night_blade.s2` | `public/art/icons/warriors/night_blade_s2.png` | 256 | Night Blade (Shadow, Veteran) | 2 (6-10) |  |
-| `icon.warrior.night_blade.s3` | `public/art/icons/warriors/night_blade_s3.png` | 256 | Night Blade (Shadow, Veteran) | 3 (11-15) |  |
-| `icon.warrior.night_blade.s4` | `public/art/icons/warriors/night_blade_s4.png` | 256 | Night Blade (Shadow, Veteran) | 4 (16-20) |  |
-| `icon.warrior.void_walker.s1` | `public/art/icons/warriors/void_walker_s1.png` | 256 | Void Walker (Shadow, Master) | 1 (1-5) |  |
-| `icon.warrior.void_walker.s2` | `public/art/icons/warriors/void_walker_s2.png` | 256 | Void Walker (Shadow, Master) | 2 (6-10) |  |
-| `icon.warrior.void_walker.s3` | `public/art/icons/warriors/void_walker_s3.png` | 256 | Void Walker (Shadow, Master) | 3 (11-15) |  |
-| `icon.warrior.void_walker.s4` | `public/art/icons/warriors/void_walker_s4.png` | 256 | Void Walker (Shadow, Master) | 4 (16-20) |  |
-| `icon.warrior.eclipse_ninja.s1` | `public/art/icons/warriors/eclipse_ninja_s1.png` | 256 | Eclipse Ninja (Shadow, Legend) | 1 (1-5) |  |
-| `icon.warrior.eclipse_ninja.s2` | `public/art/icons/warriors/eclipse_ninja_s2.png` | 256 | Eclipse Ninja (Shadow, Legend) | 2 (6-10) |  |
-| `icon.warrior.eclipse_ninja.s3` | `public/art/icons/warriors/eclipse_ninja_s3.png` | 256 | Eclipse Ninja (Shadow, Legend) | 3 (11-15) |  |
-| `icon.warrior.eclipse_ninja.s4` | `public/art/icons/warriors/eclipse_ninja_s4.png` | 256 | Eclipse Ninja (Shadow, Legend) | 4 (16-20) |  |
+| `icon.warrior.crane_glider.s1` | `public/art/icons/warriors/crane_glider_s1.png` | 256 | Crane Glider (Sky, Adept) | 1 (1-5) | yes |
+| `icon.warrior.crane_glider.s2` | `public/art/icons/warriors/crane_glider_s2.png` | 256 | Crane Glider (Sky, Adept) | 2 (6-10) | yes |
+| `icon.warrior.crane_glider.s3` | `public/art/icons/warriors/crane_glider_s3.png` | 256 | Crane Glider (Sky, Adept) | 3 (11-15) | yes |
+| `icon.warrior.crane_glider.s4` | `public/art/icons/warriors/crane_glider_s4.png` | 256 | Crane Glider (Sky, Adept) | 4 (16-20) | yes |
+| `icon.warrior.lantern_balloon.s1` | `public/art/icons/warriors/lantern_balloon_s1.png` | 256 | Lantern Balloon (Sky, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.lantern_balloon.s2` | `public/art/icons/warriors/lantern_balloon_s2.png` | 256 | Lantern Balloon (Sky, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.lantern_balloon.s3` | `public/art/icons/warriors/lantern_balloon_s3.png` | 256 | Lantern Balloon (Sky, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.lantern_balloon.s4` | `public/art/icons/warriors/lantern_balloon_s4.png` | 256 | Lantern Balloon (Sky, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.thunder_kite.s1` | `public/art/icons/warriors/thunder_kite_s1.png` | 256 | Thunder Kite (Sky, Master) | 1 (1-5) | yes |
+| `icon.warrior.thunder_kite.s2` | `public/art/icons/warriors/thunder_kite_s2.png` | 256 | Thunder Kite (Sky, Master) | 2 (6-10) | yes |
+| `icon.warrior.thunder_kite.s3` | `public/art/icons/warriors/thunder_kite_s3.png` | 256 | Thunder Kite (Sky, Master) | 3 (11-15) | yes |
+| `icon.warrior.thunder_kite.s4` | `public/art/icons/warriors/thunder_kite_s4.png` | 256 | Thunder Kite (Sky, Master) | 4 (16-20) | yes |
+| `icon.warrior.dragon_kite_armada.s1` | `public/art/icons/warriors/dragon_kite_armada_s1.png` | 256 | Dragon Kite Armada (Sky, Legend) | 1 (1-5) | yes |
+| `icon.warrior.dragon_kite_armada.s2` | `public/art/icons/warriors/dragon_kite_armada_s2.png` | 256 | Dragon Kite Armada (Sky, Legend) | 2 (6-10) | yes |
+| `icon.warrior.dragon_kite_armada.s3` | `public/art/icons/warriors/dragon_kite_armada_s3.png` | 256 | Dragon Kite Armada (Sky, Legend) | 3 (11-15) | yes |
+| `icon.warrior.dragon_kite_armada.s4` | `public/art/icons/warriors/dragon_kite_armada_s4.png` | 256 | Dragon Kite Armada (Sky, Legend) | 4 (16-20) | yes |
+| `icon.warrior.herbalist.s1` | `public/art/icons/warriors/herbalist_s1.png` | 256 | Herbalist (Mystic, Initiate) | 1 (1-5) | yes |
+| `icon.warrior.herbalist.s2` | `public/art/icons/warriors/herbalist_s2.png` | 256 | Herbalist (Mystic, Initiate) | 2 (6-10) | yes |
+| `icon.warrior.herbalist.s3` | `public/art/icons/warriors/herbalist_s3.png` | 256 | Herbalist (Mystic, Initiate) | 3 (11-15) | yes |
+| `icon.warrior.herbalist.s4` | `public/art/icons/warriors/herbalist_s4.png` | 256 | Herbalist (Mystic, Initiate) | 4 (16-20) | yes |
+| `icon.warrior.drum_monk.s1` | `public/art/icons/warriors/drum_monk_s1.png` | 256 | Drum Monk (Mystic, Adept) | 1 (1-5) | yes |
+| `icon.warrior.drum_monk.s2` | `public/art/icons/warriors/drum_monk_s2.png` | 256 | Drum Monk (Mystic, Adept) | 2 (6-10) | yes |
+| `icon.warrior.drum_monk.s3` | `public/art/icons/warriors/drum_monk_s3.png` | 256 | Drum Monk (Mystic, Adept) | 3 (11-15) | yes |
+| `icon.warrior.drum_monk.s4` | `public/art/icons/warriors/drum_monk_s4.png` | 256 | Drum Monk (Mystic, Adept) | 4 (16-20) | yes |
+| `icon.warrior.mist_weaver.s1` | `public/art/icons/warriors/mist_weaver_s1.png` | 256 | Mist Weaver (Mystic, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.mist_weaver.s2` | `public/art/icons/warriors/mist_weaver_s2.png` | 256 | Mist Weaver (Mystic, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.mist_weaver.s3` | `public/art/icons/warriors/mist_weaver_s3.png` | 256 | Mist Weaver (Mystic, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.mist_weaver.s4` | `public/art/icons/warriors/mist_weaver_s4.png` | 256 | Mist Weaver (Mystic, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.spirit_caller.s1` | `public/art/icons/warriors/spirit_caller_s1.png` | 256 | Spirit Caller (Mystic, Master) | 1 (1-5) | yes |
+| `icon.warrior.spirit_caller.s2` | `public/art/icons/warriors/spirit_caller_s2.png` | 256 | Spirit Caller (Mystic, Master) | 2 (6-10) | yes |
+| `icon.warrior.spirit_caller.s3` | `public/art/icons/warriors/spirit_caller_s3.png` | 256 | Spirit Caller (Mystic, Master) | 3 (11-15) | yes |
+| `icon.warrior.spirit_caller.s4` | `public/art/icons/warriors/spirit_caller_s4.png` | 256 | Spirit Caller (Mystic, Master) | 4 (16-20) | yes |
+| `icon.warrior.sage_of_clouds.s1` | `public/art/icons/warriors/sage_of_clouds_s1.png` | 256 | Sage of Clouds (Mystic, Legend) | 1 (1-5) | yes |
+| `icon.warrior.sage_of_clouds.s2` | `public/art/icons/warriors/sage_of_clouds_s2.png` | 256 | Sage of Clouds (Mystic, Legend) | 2 (6-10) | yes |
+| `icon.warrior.sage_of_clouds.s3` | `public/art/icons/warriors/sage_of_clouds_s3.png` | 256 | Sage of Clouds (Mystic, Legend) | 3 (11-15) | yes |
+| `icon.warrior.sage_of_clouds.s4` | `public/art/icons/warriors/sage_of_clouds_s4.png` | 256 | Sage of Clouds (Mystic, Legend) | 4 (16-20) | yes |
+| `icon.warrior.ram_crew.s1` | `public/art/icons/warriors/ram_crew_s1.png` | 256 | Ram Crew (Siege, Initiate) | 1 (1-5) | yes |
+| `icon.warrior.ram_crew.s2` | `public/art/icons/warriors/ram_crew_s2.png` | 256 | Ram Crew (Siege, Initiate) | 2 (6-10) | yes |
+| `icon.warrior.ram_crew.s3` | `public/art/icons/warriors/ram_crew_s3.png` | 256 | Ram Crew (Siege, Initiate) | 3 (11-15) | yes |
+| `icon.warrior.ram_crew.s4` | `public/art/icons/warriors/ram_crew_s4.png` | 256 | Ram Crew (Siege, Initiate) | 4 (16-20) | yes |
+| `icon.warrior.fire_monk.s1` | `public/art/icons/warriors/fire_monk_s1.png` | 256 | Fire Monk (Siege, Adept) | 1 (1-5) | yes |
+| `icon.warrior.fire_monk.s2` | `public/art/icons/warriors/fire_monk_s2.png` | 256 | Fire Monk (Siege, Adept) | 2 (6-10) | yes |
+| `icon.warrior.fire_monk.s3` | `public/art/icons/warriors/fire_monk_s3.png` | 256 | Fire Monk (Siege, Adept) | 3 (11-15) | yes |
+| `icon.warrior.fire_monk.s4` | `public/art/icons/warriors/fire_monk_s4.png` | 256 | Fire Monk (Siege, Adept) | 4 (16-20) | yes |
+| `icon.warrior.bomb_carrier.s1` | `public/art/icons/warriors/bomb_carrier_s1.png` | 256 | Bomb Carrier (Siege, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.bomb_carrier.s2` | `public/art/icons/warriors/bomb_carrier_s2.png` | 256 | Bomb Carrier (Siege, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.bomb_carrier.s3` | `public/art/icons/warriors/bomb_carrier_s3.png` | 256 | Bomb Carrier (Siege, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.bomb_carrier.s4` | `public/art/icons/warriors/bomb_carrier_s4.png` | 256 | Bomb Carrier (Siege, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.siege_bombardier.s1` | `public/art/icons/warriors/siege_bombardier_s1.png` | 256 | Siege Bombardier (Siege, Master) | 1 (1-5) | yes |
+| `icon.warrior.siege_bombardier.s2` | `public/art/icons/warriors/siege_bombardier_s2.png` | 256 | Siege Bombardier (Siege, Master) | 2 (6-10) | yes |
+| `icon.warrior.siege_bombardier.s3` | `public/art/icons/warriors/siege_bombardier_s3.png` | 256 | Siege Bombardier (Siege, Master) | 3 (11-15) | yes |
+| `icon.warrior.siege_bombardier.s4` | `public/art/icons/warriors/siege_bombardier_s4.png` | 256 | Siege Bombardier (Siege, Master) | 4 (16-20) | yes |
+| `icon.warrior.volcano_cannoneer.s1` | `public/art/icons/warriors/volcano_cannoneer_s1.png` | 256 | Volcano Cannoneer (Siege, Legend) | 1 (1-5) | yes |
+| `icon.warrior.volcano_cannoneer.s2` | `public/art/icons/warriors/volcano_cannoneer_s2.png` | 256 | Volcano Cannoneer (Siege, Legend) | 2 (6-10) | yes |
+| `icon.warrior.volcano_cannoneer.s3` | `public/art/icons/warriors/volcano_cannoneer_s3.png` | 256 | Volcano Cannoneer (Siege, Legend) | 3 (11-15) | yes |
+| `icon.warrior.volcano_cannoneer.s4` | `public/art/icons/warriors/volcano_cannoneer_s4.png` | 256 | Volcano Cannoneer (Siege, Legend) | 4 (16-20) | yes |
+| `icon.warrior.hound_handler.s1` | `public/art/icons/warriors/hound_handler_s1.png` | 256 | Hound Handler (Beast, Initiate) | 1 (1-5) | yes |
+| `icon.warrior.hound_handler.s2` | `public/art/icons/warriors/hound_handler_s2.png` | 256 | Hound Handler (Beast, Initiate) | 2 (6-10) | yes |
+| `icon.warrior.hound_handler.s3` | `public/art/icons/warriors/hound_handler_s3.png` | 256 | Hound Handler (Beast, Initiate) | 3 (11-15) | yes |
+| `icon.warrior.hound_handler.s4` | `public/art/icons/warriors/hound_handler_s4.png` | 256 | Hound Handler (Beast, Initiate) | 4 (16-20) | yes |
+| `icon.warrior.hawk_tamer.s1` | `public/art/icons/warriors/hawk_tamer_s1.png` | 256 | Hawk Tamer (Beast, Adept) | 1 (1-5) | yes |
+| `icon.warrior.hawk_tamer.s2` | `public/art/icons/warriors/hawk_tamer_s2.png` | 256 | Hawk Tamer (Beast, Adept) | 2 (6-10) | yes |
+| `icon.warrior.hawk_tamer.s3` | `public/art/icons/warriors/hawk_tamer_s3.png` | 256 | Hawk Tamer (Beast, Adept) | 3 (11-15) | yes |
+| `icon.warrior.hawk_tamer.s4` | `public/art/icons/warriors/hawk_tamer_s4.png` | 256 | Hawk Tamer (Beast, Adept) | 4 (16-20) | yes |
+| `icon.warrior.boar_rider.s1` | `public/art/icons/warriors/boar_rider_s1.png` | 256 | Boar Rider (Beast, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.boar_rider.s2` | `public/art/icons/warriors/boar_rider_s2.png` | 256 | Boar Rider (Beast, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.boar_rider.s3` | `public/art/icons/warriors/boar_rider_s3.png` | 256 | Boar Rider (Beast, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.boar_rider.s4` | `public/art/icons/warriors/boar_rider_s4.png` | 256 | Boar Rider (Beast, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.bear_warrior.s1` | `public/art/icons/warriors/bear_warrior_s1.png` | 256 | Bear Warrior (Beast, Master) | 1 (1-5) | yes |
+| `icon.warrior.bear_warrior.s2` | `public/art/icons/warriors/bear_warrior_s2.png` | 256 | Bear Warrior (Beast, Master) | 2 (6-10) | yes |
+| `icon.warrior.bear_warrior.s3` | `public/art/icons/warriors/bear_warrior_s3.png` | 256 | Bear Warrior (Beast, Master) | 3 (11-15) | yes |
+| `icon.warrior.bear_warrior.s4` | `public/art/icons/warriors/bear_warrior_s4.png` | 256 | Bear Warrior (Beast, Master) | 4 (16-20) | yes |
+| `icon.warrior.tiger_lord.s1` | `public/art/icons/warriors/tiger_lord_s1.png` | 256 | Tiger Lord (Beast, Legend) | 1 (1-5) | yes |
+| `icon.warrior.tiger_lord.s2` | `public/art/icons/warriors/tiger_lord_s2.png` | 256 | Tiger Lord (Beast, Legend) | 2 (6-10) | yes |
+| `icon.warrior.tiger_lord.s3` | `public/art/icons/warriors/tiger_lord_s3.png` | 256 | Tiger Lord (Beast, Legend) | 3 (11-15) | yes |
+| `icon.warrior.tiger_lord.s4` | `public/art/icons/warriors/tiger_lord_s4.png` | 256 | Tiger Lord (Beast, Legend) | 4 (16-20) | yes |
+| `icon.warrior.shadow_stalker.s1` | `public/art/icons/warriors/shadow_stalker_s1.png` | 256 | Shadow Stalker (Shadow, Initiate) | 1 (1-5) | yes |
+| `icon.warrior.shadow_stalker.s2` | `public/art/icons/warriors/shadow_stalker_s2.png` | 256 | Shadow Stalker (Shadow, Initiate) | 2 (6-10) | yes |
+| `icon.warrior.shadow_stalker.s3` | `public/art/icons/warriors/shadow_stalker_s3.png` | 256 | Shadow Stalker (Shadow, Initiate) | 3 (11-15) | yes |
+| `icon.warrior.shadow_stalker.s4` | `public/art/icons/warriors/shadow_stalker_s4.png` | 256 | Shadow Stalker (Shadow, Initiate) | 4 (16-20) | yes |
+| `icon.warrior.mirage_twin.s1` | `public/art/icons/warriors/mirage_twin_s1.png` | 256 | Mirage Twin (Shadow, Adept) | 1 (1-5) | yes |
+| `icon.warrior.mirage_twin.s2` | `public/art/icons/warriors/mirage_twin_s2.png` | 256 | Mirage Twin (Shadow, Adept) | 2 (6-10) | yes |
+| `icon.warrior.mirage_twin.s3` | `public/art/icons/warriors/mirage_twin_s3.png` | 256 | Mirage Twin (Shadow, Adept) | 3 (11-15) | yes |
+| `icon.warrior.mirage_twin.s4` | `public/art/icons/warriors/mirage_twin_s4.png` | 256 | Mirage Twin (Shadow, Adept) | 4 (16-20) | yes |
+| `icon.warrior.night_blade.s1` | `public/art/icons/warriors/night_blade_s1.png` | 256 | Night Blade (Shadow, Veteran) | 1 (1-5) | yes |
+| `icon.warrior.night_blade.s2` | `public/art/icons/warriors/night_blade_s2.png` | 256 | Night Blade (Shadow, Veteran) | 2 (6-10) | yes |
+| `icon.warrior.night_blade.s3` | `public/art/icons/warriors/night_blade_s3.png` | 256 | Night Blade (Shadow, Veteran) | 3 (11-15) | yes |
+| `icon.warrior.night_blade.s4` | `public/art/icons/warriors/night_blade_s4.png` | 256 | Night Blade (Shadow, Veteran) | 4 (16-20) | yes |
+| `icon.warrior.void_walker.s1` | `public/art/icons/warriors/void_walker_s1.png` | 256 | Void Walker (Shadow, Master) | 1 (1-5) | yes |
+| `icon.warrior.void_walker.s2` | `public/art/icons/warriors/void_walker_s2.png` | 256 | Void Walker (Shadow, Master) | 2 (6-10) | yes |
+| `icon.warrior.void_walker.s3` | `public/art/icons/warriors/void_walker_s3.png` | 256 | Void Walker (Shadow, Master) | 3 (11-15) | yes |
+| `icon.warrior.void_walker.s4` | `public/art/icons/warriors/void_walker_s4.png` | 256 | Void Walker (Shadow, Master) | 4 (16-20) | yes |
+| `icon.warrior.eclipse_ninja.s1` | `public/art/icons/warriors/eclipse_ninja_s1.png` | 256 | Eclipse Ninja (Shadow, Legend) | 1 (1-5) | yes |
+| `icon.warrior.eclipse_ninja.s2` | `public/art/icons/warriors/eclipse_ninja_s2.png` | 256 | Eclipse Ninja (Shadow, Legend) | 2 (6-10) | yes |
+| `icon.warrior.eclipse_ninja.s3` | `public/art/icons/warriors/eclipse_ninja_s3.png` | 256 | Eclipse Ninja (Shadow, Legend) | 3 (11-15) | yes |
+| `icon.warrior.eclipse_ninja.s4` | `public/art/icons/warriors/eclipse_ninja_s4.png` | 256 | Eclipse Ninja (Shadow, Legend) | 4 (16-20) | yes |
 
 ## sprite
 
 | Key | File | Size | Subject | Stage (levels) | Live |
 |---|---|---|---|---|---|
 | `troop.hedgehog_roller` | `public/art/troops/shinobi.png` | 128 | Shinobi battle sprite |  | yes |
-| `troop.twin_fang_dancer` | `public/art/troops/twin_fang_dancer.png` | 128 | Twin-Fang Dancer battle sprite |  |  |
-| `troop.wind_step_assassin` | `public/art/troops/wind_step_assassin.png` | 128 | Wind-Step Assassin battle sprite |  |  |
-| `troop.moonblade_master` | `public/art/troops/moonblade_master.png` | 128 | Moonblade Master battle sprite |  |  |
-| `troop.storm_sovereign` | `public/art/troops/storm_sovereign.png` | 128 | Storm Sovereign battle sprite |  |  |
+| `troop.twin_fang_dancer` | `public/art/troops/twin_fang_dancer.png` | 128 | Twin-Fang Dancer battle sprite |  | yes |
+| `troop.wind_step_assassin` | `public/art/troops/wind_step_assassin.png` | 128 | Wind-Step Assassin battle sprite |  | yes |
+| `troop.moonblade_master` | `public/art/troops/moonblade_master.png` | 128 | Moonblade Master battle sprite |  | yes |
+| `troop.storm_sovereign` | `public/art/troops/storm_sovereign.png` | 128 | Storm Sovereign battle sprite |  | yes |
 | `troop.frog_lobber` | `public/art/troops/kunai_adept.png` | 128 | Kunai Adept battle sprite |  | yes |
-| `troop.shuriken_storm` | `public/art/troops/shuriken_storm.png` | 128 | Shuriken Storm battle sprite |  |  |
-| `troop.blowgun_hunter` | `public/art/troops/blowgun_hunter.png` | 128 | Blowgun Hunter battle sprite |  |  |
-| `troop.chain_sickle_reaper` | `public/art/troops/chain_sickle_reaper.png` | 128 | Chain-Sickle Reaper battle sprite |  |  |
-| `troop.thousand_needle` | `public/art/troops/thousand_needle.png` | 128 | Thousand Needle battle sprite |  |  |
+| `troop.shuriken_storm` | `public/art/troops/shuriken_storm.png` | 128 | Shuriken Storm battle sprite |  | yes |
+| `troop.blowgun_hunter` | `public/art/troops/blowgun_hunter.png` | 128 | Blowgun Hunter battle sprite |  | yes |
+| `troop.chain_sickle_reaper` | `public/art/troops/chain_sickle_reaper.png` | 128 | Chain-Sickle Reaper battle sprite |  | yes |
+| `troop.thousand_needle` | `public/art/troops/thousand_needle.png` | 128 | Thousand Needle battle sprite |  | yes |
 | `troop.beetle_brute` | `public/art/troops/armored_guardian.png` | 128 | Armored Guardian battle sprite |  | yes |
-| `troop.iron_monk` | `public/art/troops/iron_monk.png` | 128 | Iron Monk battle sprite |  |  |
-| `troop.bell_warden` | `public/art/troops/bell_warden.png` | 128 | Bell Warden battle sprite |  |  |
-| `troop.mountain_shield` | `public/art/troops/mountain_shield.png` | 128 | Mountain Shield battle sprite |  |  |
-| `troop.oni_breaker` | `public/art/troops/oni_breaker.png` | 128 | Oni Breaker battle sprite |  |  |
+| `troop.iron_monk` | `public/art/troops/iron_monk.png` | 128 | Iron Monk battle sprite |  | yes |
+| `troop.bell_warden` | `public/art/troops/bell_warden.png` | 128 | Bell Warden battle sprite |  | yes |
+| `troop.mountain_shield` | `public/art/troops/mountain_shield.png` | 128 | Mountain Shield battle sprite |  | yes |
+| `troop.oni_breaker` | `public/art/troops/oni_breaker.png` | 128 | Oni Breaker battle sprite |  | yes |
 | `troop.saboteur` | `public/art/troops/saboteur.png` | 128 | Saboteur battle sprite |  | yes |
-| `troop.trap_breaker` | `public/art/troops/trap_breaker.png` | 128 | Trap Breaker battle sprite |  |  |
-| `troop.gearbreaker` | `public/art/troops/gearbreaker.png` | 128 | Gearbreaker battle sprite |  |  |
-| `troop.fuse_master` | `public/art/troops/fuse_master.png` | 128 | Fuse Master battle sprite |  |  |
-| `troop.ghost_engineer` | `public/art/troops/ghost_engineer.png` | 128 | Ghost Engineer battle sprite |  |  |
+| `troop.trap_breaker` | `public/art/troops/trap_breaker.png` | 128 | Trap Breaker battle sprite |  | yes |
+| `troop.gearbreaker` | `public/art/troops/gearbreaker.png` | 128 | Gearbreaker battle sprite |  | yes |
+| `troop.fuse_master` | `public/art/troops/fuse_master.png` | 128 | Fuse Master battle sprite |  | yes |
+| `troop.ghost_engineer` | `public/art/troops/ghost_engineer.png` | 128 | Ghost Engineer battle sprite |  | yes |
 | `troop.mole_digger` | `public/art/troops/tunnel_runner.png` | 128 | Tunnel Runner battle sprite |  | yes |
-| `troop.wall_climber` | `public/art/troops/wall_climber.png` | 128 | Wall Climber battle sprite |  |  |
-| `troop.grapple_raider` | `public/art/troops/grapple_raider.png` | 128 | Grapple Raider battle sprite |  |  |
-| `troop.mole_king` | `public/art/troops/mole_king.png` | 128 | Mole King battle sprite |  |  |
-| `troop.phantom_gate` | `public/art/troops/phantom_gate.png` | 128 | Phantom Gate battle sprite |  |  |
+| `troop.wall_climber` | `public/art/troops/wall_climber.png` | 128 | Wall Climber battle sprite |  | yes |
+| `troop.grapple_raider` | `public/art/troops/grapple_raider.png` | 128 | Grapple Raider battle sprite |  | yes |
+| `troop.mole_king` | `public/art/troops/mole_king.png` | 128 | Mole King battle sprite |  | yes |
+| `troop.phantom_gate` | `public/art/troops/phantom_gate.png` | 128 | Phantom Gate battle sprite |  | yes |
 | `troop.owl_bomber` | `public/art/troops/kite_raider.png` | 128 | Kite Raider battle sprite |  | yes |
-| `troop.crane_glider` | `public/art/troops/crane_glider.png` | 128 | Crane Glider battle sprite |  |  |
-| `troop.lantern_balloon` | `public/art/troops/lantern_balloon.png` | 128 | Lantern Balloon battle sprite |  |  |
-| `troop.thunder_kite` | `public/art/troops/thunder_kite.png` | 128 | Thunder Kite battle sprite |  |  |
-| `troop.dragon_kite_armada` | `public/art/troops/dragon_kite_armada.png` | 128 | Dragon Kite Armada battle sprite |  |  |
-| `troop.herbalist` | `public/art/troops/herbalist.png` | 128 | Herbalist battle sprite |  |  |
-| `troop.drum_monk` | `public/art/troops/drum_monk.png` | 128 | Drum Monk battle sprite |  |  |
-| `troop.mist_weaver` | `public/art/troops/mist_weaver.png` | 128 | Mist Weaver battle sprite |  |  |
-| `troop.spirit_caller` | `public/art/troops/spirit_caller.png` | 128 | Spirit Caller battle sprite |  |  |
-| `troop.sage_of_clouds` | `public/art/troops/sage_of_clouds.png` | 128 | Sage of Clouds battle sprite |  |  |
-| `troop.ram_crew` | `public/art/troops/ram_crew.png` | 128 | Ram Crew battle sprite |  |  |
-| `troop.fire_monk` | `public/art/troops/fire_monk.png` | 128 | Fire Monk battle sprite |  |  |
-| `troop.bomb_carrier` | `public/art/troops/bomb_carrier.png` | 128 | Bomb Carrier battle sprite |  |  |
-| `troop.siege_bombardier` | `public/art/troops/siege_bombardier.png` | 128 | Siege Bombardier battle sprite |  |  |
-| `troop.volcano_cannoneer` | `public/art/troops/volcano_cannoneer.png` | 128 | Volcano Cannoneer battle sprite |  |  |
-| `troop.hound_handler` | `public/art/troops/hound_handler.png` | 128 | Hound Handler battle sprite |  |  |
-| `troop.hawk_tamer` | `public/art/troops/hawk_tamer.png` | 128 | Hawk Tamer battle sprite |  |  |
-| `troop.boar_rider` | `public/art/troops/boar_rider.png` | 128 | Boar Rider battle sprite |  |  |
-| `troop.bear_warrior` | `public/art/troops/bear_warrior.png` | 128 | Bear Warrior battle sprite |  |  |
-| `troop.tiger_lord` | `public/art/troops/tiger_lord.png` | 128 | Tiger Lord battle sprite |  |  |
-| `troop.shadow_stalker` | `public/art/troops/shadow_stalker.png` | 128 | Shadow Stalker battle sprite |  |  |
-| `troop.mirage_twin` | `public/art/troops/mirage_twin.png` | 128 | Mirage Twin battle sprite |  |  |
-| `troop.night_blade` | `public/art/troops/night_blade.png` | 128 | Night Blade battle sprite |  |  |
-| `troop.void_walker` | `public/art/troops/void_walker.png` | 128 | Void Walker battle sprite |  |  |
-| `troop.eclipse_ninja` | `public/art/troops/eclipse_ninja.png` | 128 | Eclipse Ninja battle sprite |  |  |
+| `troop.crane_glider` | `public/art/troops/crane_glider.png` | 128 | Crane Glider battle sprite |  | yes |
+| `troop.lantern_balloon` | `public/art/troops/lantern_balloon.png` | 128 | Lantern Balloon battle sprite |  | yes |
+| `troop.thunder_kite` | `public/art/troops/thunder_kite.png` | 128 | Thunder Kite battle sprite |  | yes |
+| `troop.dragon_kite_armada` | `public/art/troops/dragon_kite_armada.png` | 128 | Dragon Kite Armada battle sprite |  | yes |
+| `troop.herbalist` | `public/art/troops/herbalist.png` | 128 | Herbalist battle sprite |  | yes |
+| `troop.drum_monk` | `public/art/troops/drum_monk.png` | 128 | Drum Monk battle sprite |  | yes |
+| `troop.mist_weaver` | `public/art/troops/mist_weaver.png` | 128 | Mist Weaver battle sprite |  | yes |
+| `troop.spirit_caller` | `public/art/troops/spirit_caller.png` | 128 | Spirit Caller battle sprite |  | yes |
+| `troop.sage_of_clouds` | `public/art/troops/sage_of_clouds.png` | 128 | Sage of Clouds battle sprite |  | yes |
+| `troop.ram_crew` | `public/art/troops/ram_crew.png` | 128 | Ram Crew battle sprite |  | yes |
+| `troop.fire_monk` | `public/art/troops/fire_monk.png` | 128 | Fire Monk battle sprite |  | yes |
+| `troop.bomb_carrier` | `public/art/troops/bomb_carrier.png` | 128 | Bomb Carrier battle sprite |  | yes |
+| `troop.siege_bombardier` | `public/art/troops/siege_bombardier.png` | 128 | Siege Bombardier battle sprite |  | yes |
+| `troop.volcano_cannoneer` | `public/art/troops/volcano_cannoneer.png` | 128 | Volcano Cannoneer battle sprite |  | yes |
+| `troop.hound_handler` | `public/art/troops/hound_handler.png` | 128 | Hound Handler battle sprite |  | yes |
+| `troop.hawk_tamer` | `public/art/troops/hawk_tamer.png` | 128 | Hawk Tamer battle sprite |  | yes |
+| `troop.boar_rider` | `public/art/troops/boar_rider.png` | 128 | Boar Rider battle sprite |  | yes |
+| `troop.bear_warrior` | `public/art/troops/bear_warrior.png` | 128 | Bear Warrior battle sprite |  | yes |
+| `troop.tiger_lord` | `public/art/troops/tiger_lord.png` | 128 | Tiger Lord battle sprite |  | yes |
+| `troop.shadow_stalker` | `public/art/troops/shadow_stalker.png` | 128 | Shadow Stalker battle sprite |  | yes |
+| `troop.mirage_twin` | `public/art/troops/mirage_twin.png` | 128 | Mirage Twin battle sprite |  | yes |
+| `troop.night_blade` | `public/art/troops/night_blade.png` | 128 | Night Blade battle sprite |  | yes |
+| `troop.void_walker` | `public/art/troops/void_walker.png` | 128 | Void Walker battle sprite |  | yes |
+| `troop.eclipse_ninja` | `public/art/troops/eclipse_ninja.png` | 128 | Eclipse Ninja battle sprite |  | yes |
 
 ## hero
 
@@ -460,55 +460,55 @@
 |---|---|---|---|---|---|
 | `icon.ability.smoke_bomb` | `public/art/icons/abilities/smoke_bomb.png` | 128 | Smoke Bomb |  | yes |
 | `icon.ability.swift_strike` | `public/art/icons/abilities/swift_strike.png` | 128 | Swift Strike |  | yes |
-| `icon.ability.twin_strike` | `public/art/icons/abilities/twin_strike.png` | 128 | Twin Strike |  |  |
-| `icon.ability.wind_step` | `public/art/icons/abilities/wind_step.png` | 128 | Wind Step |  |  |
-| `icon.ability.moon_cut` | `public/art/icons/abilities/moon_cut.png` | 128 | Moon Cut |  |  |
-| `icon.ability.storm_chain` | `public/art/icons/abilities/storm_chain.png` | 128 | Storm Chain |  |  |
+| `icon.ability.twin_strike` | `public/art/icons/abilities/twin_strike.png` | 128 | Twin Strike |  | yes |
+| `icon.ability.wind_step` | `public/art/icons/abilities/wind_step.png` | 128 | Wind Step |  | yes |
+| `icon.ability.moon_cut` | `public/art/icons/abilities/moon_cut.png` | 128 | Moon Cut |  | yes |
+| `icon.ability.storm_chain` | `public/art/icons/abilities/storm_chain.png` | 128 | Storm Chain |  | yes |
 | `icon.ability.kunai_volley` | `public/art/icons/abilities/kunai_volley.png` | 128 | Kunai Volley |  | yes |
-| `icon.ability.fan_throw` | `public/art/icons/abilities/fan_throw.png` | 128 | Fan Throw |  |  |
-| `icon.ability.venom_dart` | `public/art/icons/abilities/venom_dart.png` | 128 | Venom Dart |  |  |
-| `icon.ability.armor_shred` | `public/art/icons/abilities/armor_shred.png` | 128 | Armour Shred |  |  |
-| `icon.ability.needle_rain` | `public/art/icons/abilities/needle_rain.png` | 128 | Needle Rain |  |  |
+| `icon.ability.fan_throw` | `public/art/icons/abilities/fan_throw.png` | 128 | Fan Throw |  | yes |
+| `icon.ability.venom_dart` | `public/art/icons/abilities/venom_dart.png` | 128 | Venom Dart |  | yes |
+| `icon.ability.armor_shred` | `public/art/icons/abilities/armor_shred.png` | 128 | Armour Shred |  | yes |
+| `icon.ability.needle_rain` | `public/art/icons/abilities/needle_rain.png` | 128 | Needle Rain |  | yes |
 | `icon.ability.stand_firm` | `public/art/icons/abilities/stand_firm.png` | 128 | Stand Firm |  | yes |
-| `icon.ability.iron_skin` | `public/art/icons/abilities/iron_skin.png` | 128 | Iron Skin |  |  |
-| `icon.ability.temple_bell` | `public/art/icons/abilities/temple_bell.png` | 128 | Temple Bell |  |  |
-| `icon.ability.great_wall` | `public/art/icons/abilities/great_wall.png` | 128 | Great Wall |  |  |
-| `icon.ability.oni_smash` | `public/art/icons/abilities/oni_smash.png` | 128 | Oni Smash |  |  |
+| `icon.ability.iron_skin` | `public/art/icons/abilities/iron_skin.png` | 128 | Iron Skin |  | yes |
+| `icon.ability.temple_bell` | `public/art/icons/abilities/temple_bell.png` | 128 | Temple Bell |  | yes |
+| `icon.ability.great_wall` | `public/art/icons/abilities/great_wall.png` | 128 | Great Wall |  | yes |
+| `icon.ability.oni_smash` | `public/art/icons/abilities/oni_smash.png` | 128 | Oni Smash |  | yes |
 | `icon.ability.sabotage` | `public/art/icons/abilities/sabotage.png` | 128 | Sabotage |  | yes |
-| `icon.ability.disarm` | `public/art/icons/abilities/disarm.png` | 128 | Disarm |  |  |
-| `icon.ability.long_jam` | `public/art/icons/abilities/long_jam.png` | 128 | Long Jam |  |  |
-| `icon.ability.delayed_charge` | `public/art/icons/abilities/delayed_charge.png` | 128 | Delayed Charge |  |  |
-| `icon.ability.blackout` | `public/art/icons/abilities/blackout.png` | 128 | Blackout |  |  |
+| `icon.ability.disarm` | `public/art/icons/abilities/disarm.png` | 128 | Disarm |  | yes |
+| `icon.ability.long_jam` | `public/art/icons/abilities/long_jam.png` | 128 | Long Jam |  | yes |
+| `icon.ability.delayed_charge` | `public/art/icons/abilities/delayed_charge.png` | 128 | Delayed Charge |  | yes |
+| `icon.ability.blackout` | `public/art/icons/abilities/blackout.png` | 128 | Blackout |  | yes |
 | `icon.ability.tunnel` | `public/art/icons/abilities/tunnel.png` | 128 | Tunnel |  | yes |
-| `icon.ability.climb` | `public/art/icons/abilities/climb.png` | 128 | Climb |  |  |
-| `icon.ability.grapple_line` | `public/art/icons/abilities/grapple_line.png` | 128 | Grapple Line |  |  |
-| `icon.ability.surface_stun` | `public/art/icons/abilities/surface_stun.png` | 128 | Surface Stun |  |  |
-| `icon.ability.open_path` | `public/art/icons/abilities/open_path.png` | 128 | Open Path |  |  |
+| `icon.ability.climb` | `public/art/icons/abilities/climb.png` | 128 | Climb |  | yes |
+| `icon.ability.grapple_line` | `public/art/icons/abilities/grapple_line.png` | 128 | Grapple Line |  | yes |
+| `icon.ability.surface_stun` | `public/art/icons/abilities/surface_stun.png` | 128 | Surface Stun |  | yes |
+| `icon.ability.open_path` | `public/art/icons/abilities/open_path.png` | 128 | Open Path |  | yes |
 | `icon.ability.firebomb` | `public/art/icons/abilities/firebomb.png` | 128 | Firebomb |  | yes |
-| `icon.ability.swift_glide` | `public/art/icons/abilities/swift_glide.png` | 128 | Swift Glide |  |  |
-| `icon.ability.ember_drop` | `public/art/icons/abilities/ember_drop.png` | 128 | Ember Drop |  |  |
-| `icon.ability.chain_lightning` | `public/art/icons/abilities/chain_lightning.png` | 128 | Chain Lightning |  |  |
-| `icon.ability.armada` | `public/art/icons/abilities/armada.png` | 128 | Armada |  |  |
-| `icon.ability.mend` | `public/art/icons/abilities/mend.png` | 128 | Mend |  |  |
-| `icon.ability.war_drum` | `public/art/icons/abilities/war_drum.png` | 128 | War Drum |  |  |
-| `icon.ability.veil` | `public/art/icons/abilities/veil.png` | 128 | Veil |  |  |
-| `icon.ability.second_wind` | `public/art/icons/abilities/second_wind.png` | 128 | Second Wind |  |  |
-| `icon.ability.cloud_shelter` | `public/art/icons/abilities/cloud_shelter.png` | 128 | Cloud Shelter |  |  |
-| `icon.ability.battering_ram` | `public/art/icons/abilities/battering_ram.png` | 128 | Battering Ram |  |  |
-| `icon.ability.flame_breath` | `public/art/icons/abilities/flame_breath.png` | 128 | Flame Breath |  |  |
-| `icon.ability.big_bang` | `public/art/icons/abilities/big_bang.png` | 128 | Big Bang |  |  |
-| `icon.ability.long_shot` | `public/art/icons/abilities/long_shot.png` | 128 | Long Shot |  |  |
-| `icon.ability.eruption` | `public/art/icons/abilities/eruption.png` | 128 | Eruption |  |  |
-| `icon.ability.unleash` | `public/art/icons/abilities/unleash.png` | 128 | Unleash |  |  |
-| `icon.ability.hawk_harass` | `public/art/icons/abilities/hawk_harass.png` | 128 | Hawk Harass |  |  |
-| `icon.ability.charge` | `public/art/icons/abilities/charge.png` | 128 | Charge |  |  |
-| `icon.ability.rage` | `public/art/icons/abilities/rage.png` | 128 | Rage |  |  |
-| `icon.ability.pride` | `public/art/icons/abilities/pride.png` | 128 | Pride |  |  |
-| `icon.ability.unseen` | `public/art/icons/abilities/unseen.png` | 128 | Unseen |  |  |
-| `icon.ability.decoy` | `public/art/icons/abilities/decoy.png` | 128 | Decoy |  |  |
-| `icon.ability.smoke_hunter` | `public/art/icons/abilities/smoke_hunter.png` | 128 | Smoke Hunter |  |  |
-| `icon.ability.shadow_step` | `public/art/icons/abilities/shadow_step.png` | 128 | Shadow Step |  |  |
-| `icon.ability.eclipse` | `public/art/icons/abilities/eclipse.png` | 128 | Eclipse |  |  |
+| `icon.ability.swift_glide` | `public/art/icons/abilities/swift_glide.png` | 128 | Swift Glide |  | yes |
+| `icon.ability.ember_drop` | `public/art/icons/abilities/ember_drop.png` | 128 | Ember Drop |  | yes |
+| `icon.ability.chain_lightning` | `public/art/icons/abilities/chain_lightning.png` | 128 | Chain Lightning |  | yes |
+| `icon.ability.armada` | `public/art/icons/abilities/armada.png` | 128 | Armada |  | yes |
+| `icon.ability.mend` | `public/art/icons/abilities/mend.png` | 128 | Mend |  | yes |
+| `icon.ability.war_drum` | `public/art/icons/abilities/war_drum.png` | 128 | War Drum |  | yes |
+| `icon.ability.veil` | `public/art/icons/abilities/veil.png` | 128 | Veil |  | yes |
+| `icon.ability.second_wind` | `public/art/icons/abilities/second_wind.png` | 128 | Second Wind |  | yes |
+| `icon.ability.cloud_shelter` | `public/art/icons/abilities/cloud_shelter.png` | 128 | Cloud Shelter |  | yes |
+| `icon.ability.battering_ram` | `public/art/icons/abilities/battering_ram.png` | 128 | Battering Ram |  | yes |
+| `icon.ability.flame_breath` | `public/art/icons/abilities/flame_breath.png` | 128 | Flame Breath |  | yes |
+| `icon.ability.big_bang` | `public/art/icons/abilities/big_bang.png` | 128 | Big Bang |  | yes |
+| `icon.ability.long_shot` | `public/art/icons/abilities/long_shot.png` | 128 | Long Shot |  | yes |
+| `icon.ability.eruption` | `public/art/icons/abilities/eruption.png` | 128 | Eruption |  | yes |
+| `icon.ability.unleash` | `public/art/icons/abilities/unleash.png` | 128 | Unleash |  | yes |
+| `icon.ability.hawk_harass` | `public/art/icons/abilities/hawk_harass.png` | 128 | Hawk Harass |  | yes |
+| `icon.ability.charge` | `public/art/icons/abilities/charge.png` | 128 | Charge |  | yes |
+| `icon.ability.rage` | `public/art/icons/abilities/rage.png` | 128 | Rage |  | yes |
+| `icon.ability.pride` | `public/art/icons/abilities/pride.png` | 128 | Pride |  | yes |
+| `icon.ability.unseen` | `public/art/icons/abilities/unseen.png` | 128 | Unseen |  | yes |
+| `icon.ability.decoy` | `public/art/icons/abilities/decoy.png` | 128 | Decoy |  | yes |
+| `icon.ability.smoke_hunter` | `public/art/icons/abilities/smoke_hunter.png` | 128 | Smoke Hunter |  | yes |
+| `icon.ability.shadow_step` | `public/art/icons/abilities/shadow_step.png` | 128 | Shadow Step |  | yes |
+| `icon.ability.eclipse` | `public/art/icons/abilities/eclipse.png` | 128 | Eclipse |  | yes |
 | `icon.ability.rally` | `public/art/icons/abilities/rally.png` | 128 | Rally |  |  |
 | `icon.ability.bulwark` | `public/art/icons/abilities/bulwark.png` | 128 | Bulwark |  |  |
 | `icon.ability.squall` | `public/art/icons/abilities/squall.png` | 128 | Squall |  |  |

@@ -160,7 +160,7 @@ export async function donate(ctx: ServerContext, me: Player, requestId: string, 
   const count = Math.floor(Number(req?.count) || 0);
   const level = Math.floor(Number(req?.level) || 1);
   if (!def || count <= 0) throw new ApiError(400, 'bad_request', 'Pick a troop to donate.');
-  if (level < 1 || level > Math.min(troopLevelCapAt(me.hallLevel, ctx.data), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop level');
+  if (me.hallLevel < (def.unlockKeep ?? 1) || level < 1 || level > Math.min(troopLevelCapAt(me.hallLevel, ctx.data, req!.troop), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop level');
   const housing = def.housing * count;
   const updated = await ctx.repo.fillRequest(r.id, housing);
   if (!updated) throw new ApiError(409, 'full', 'That request does not have room for those troops.');

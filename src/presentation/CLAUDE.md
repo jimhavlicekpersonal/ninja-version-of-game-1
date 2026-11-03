@@ -19,4 +19,6 @@ You are the **GUI & INTERACTION AI**. You own `src/presentation/render/` (Phaser
 
 ## Checks
 
+The Army screen filters all 50 warriors by tier and role. `render/assets.ts` registers catalog metadata through `registerWarriorArt`; the art compartment does not import gameplay data. Summoned pets use `.companion` texture keys. Battle rendering rebuilds resurrected sprites and shows stealth/decoy transparency and shield rings.
+
 `npm test` (includes `tests/presentation/` and the boundary test), `npm run build`, and look at it: `npm run dev` (append `?debug` to get `window.tk` for scripted checks).

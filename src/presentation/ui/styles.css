@@ -435,3 +435,13 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .scout-report { position: absolute; left: calc(8px + var(--safe-l)); right: calc(8px + var(--safe-r)); bottom: calc(150px + var(--safe-b)); max-width: 460px; margin: 0 auto; padding: 8px 12px; background: rgba(247, 240, 225, 0.94); border-radius: 16px; font-size: 13px; }
 .scout-report .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .scout-report p { margin: 2px 0; }
+/* Keep the expanded roster filters comfortable to use on phones. */
+.training .actions select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #c9bea4;
+  border-radius: 10px;
+  background: #fffaf0;
+  color: #302a24;
+  font: inherit;
+}

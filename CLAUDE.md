@@ -27,11 +27,11 @@ An original ninja-clan base-building and raiding game. You lead a clan, build a 
 
 - **Identity:** display names come from `src/gameplay/data/*.json`. Internal ids are unchanged (`docs/rebuild/ID_MAP.md`). The app display name is "Kagemura". The bundle id and product ids are still the old ones until new store listings exist (owner step).
 - **Art:** all art is still generated in code (`src/presentation/art/ninja.ts`), with three visual tiers per building. Real images override any asset key through `public/art/manifest.json`. `npm run art` shows a gallery. ART AI brief: `docs/art/ART_AI_BRIEF.md`.
-- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v10**: Shadow Trials progress), with a migration step per version. Bump `SAVE_VERSION` for every state change.
-- **Protocol** is v3 (abilities in deployments). Servers accept v2 clients.
+- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v11**: all 50 warriors and Keep 1–15), with a migration step per version. Bump `SAVE_VERSION` for every state change.
+- **Protocol** is v4 (expanded roster and combat). Servers require v4 clients.
 - **Ninja tactics:** Smoke Bomb (defense range × 0.4 inside the cloud, never below 2 tiles, 8 s, 1 + 1 per 40 housing charges, max 3, no stacking). Sabotage (Saboteur jams a defense 6 s; it is then immune for 10 s after recovering; one jam each). All numbers are in `battle.json` and `troops.json`.
 - **Endless difficulty:** Shadow Trials (`src/gameplay/sim/trials.ts`, `trials.json`), paid once per tier and never farmable.
-- **Progression model:** `docs/game-theory/PROGRESSION_MODEL.md`. 50 warriors + 4 heroes + 34 buildings in `roster.json` / `progression.json`. Six warriors are live today.
+- **Progression model:** `docs/game-theory/PROGRESSION_MODEL.md`. All 50 warriors are live through Keep 15. Four heroes and non-live catalog buildings remain planned. Ability mechanics and balance limits are in `docs/game-theory/PLAYABLE_ROSTER.md`.
 - **Honesty:** generated opponents and simulated raids are always labelled as such.
 - Progression pacing is checked by a model-player test (`tests/gameplay/balance/`) that fights every raid as a real battle. Rerun it after changing costs, times, loot or combat numbers.
 - Offers have `minAccountHours`. Real prices appear only in the Store and its confirm step.

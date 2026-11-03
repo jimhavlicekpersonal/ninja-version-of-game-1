@@ -699,6 +699,9 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
   const level = troopLevelOf(s, troop);
   const cost = discounted(troopLevel(data, troop, level).cost, eventEffect(now, data).trainingDiscount);
   const quote: Quote = { toLevel: level, cost, seconds: def.trainSeconds };
+  if (hallLevel(s, data) < (def.unlockKeep ?? 1)) {
+    return { ...fail('LOCKED', `Needs a level ${def.unlockKeep} Clan Keep.`), quote };
+  }
   if (barracksLevel(s, data) < def.barracksLevel) {
     return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Training Dojo.`), quote };
   }

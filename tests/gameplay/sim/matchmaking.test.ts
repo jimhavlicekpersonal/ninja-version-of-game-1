@@ -95,7 +95,7 @@ describe('matchmaking by trophies (#3)', () => {
         for (let i = 0; i < 15; i++) {
           const m = matchStrength(createRng(i * 31 + trophies), trophies, hall, data);
           expect(m.hall).toBeGreaterThanOrEqual(Math.max(1, hall - 1));
-          expect(m.hall).toBeLessThanOrEqual(Math.min(6, hall + 1));
+          expect(m.hall).toBeLessThanOrEqual(Math.min(data.hall.levels.length, hall + 1));
           const s = m.hall - 1 + m.bias;
           expect(Math.abs(m.trophies - s * data.ranks.matchmaking.trophiesPerHall)).toBeLessThanOrEqual(data.ranks.matchmaking.trophyJitter + 1);
         }

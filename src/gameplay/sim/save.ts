@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -102,6 +102,12 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // internal ids stayed the same, and old replays still play back exactly.
     v.trials = v.trials ?? { best: 0 };
     v.pendingBattle = v.pendingBattle ?? null;
+  }
+  if (out.version < 11 && v && typeof v === 'object') {
+    // v10 -> v11: all 50 troop ids and Keep levels 7–15 are valid. Existing
+    // inventory, research, queues, trials and six-unit replays remain intact.
+    // New per-warrior battle effects are reconstructed from deployments.
+    v.research = v.research ?? emptyResearch();
   }
   out.version = SAVE_VERSION;
   return out;

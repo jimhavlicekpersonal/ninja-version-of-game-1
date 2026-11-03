@@ -1,9 +1,11 @@
 /** Dev-only preview of every painter in src/presentation/art/ninja.ts (ART compartment tool). */
 import buildings from '../../src/gameplay/data/buildings.json';
-import { buildingPainters, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, type Tier } from '../../src/presentation/art/ninja';
+import { buildingPainters, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, registerWarriorArt, type Tier } from '../../src/presentation/art/ninja';
+import { WARRIORS } from '../../src/gameplay/sim/progression';
 import { TILE_H, TILE_W } from '../../src/presentation/render/iso';
 
 type Ctx = CanvasRenderingContext2D;
+registerWarriorArt(WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })));
 const out = document.getElementById('out')!;
 const S = 1.5;
 

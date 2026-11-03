@@ -248,18 +248,64 @@ export interface TroopDef {
   /** Tiles per tick. */
   speed: number;
   air: boolean;
-  prefers: 'any' | 'defense';
+  prefers: 'any' | 'defense' | 'storage' | 'walls' | 'breach' | 'support';
   ignoresHedges: boolean;
   trainSeconds: number;
   barracksLevel: number;
+  unlockKeep?: number;
+  levelCapOffset?: number;
   levels: TroopLevelDef[];
   projectile?: string;
   projectileSpeed?: number;
   splashRadius?: number;
   /** Special action the troop performs on reaching a valid target (see BattleDef.sabotage). */
-  ability?: 'sabotage';
+  ability?: string;
+  /** Data-driven warrior mechanics; all durations are battle ticks. */
+  kit?: WarriorKit;
   /** How many times one troop can use its ability per battle. */
   abilityCharges?: number;
+}
+
+export interface WarriorKit {
+  extraTargets?: number;
+  radius?: number;
+  secondaryDamage?: number;
+  every?: number;
+  hitMultiplier?: number;
+  dashSpeed?: number;
+  firstHitMultiplier?: number;
+  poisonTicks?: number;
+  poisonFraction?: number;
+  shred?: number;
+  durationTicks?: number;
+  jamTicks?: number;
+  jamTargets?: number;
+  disarm?: boolean;
+  chargeDelay?: number;
+  chargeMultiplier?: number;
+  stunTicks?: number;
+  wallMultiplier?: number;
+  openWalls?: boolean;
+  aura?: 'heal' | 'haste' | 'veil' | 'resist' | 'splash' | 'taunt';
+  strength?: number;
+  cooldownTicks?: number;
+  revive?: number;
+  shelter?: number;
+  shieldTicks?: number;
+  summons?: number;
+  summonShare?: number;
+  stealth?: boolean;
+  decoyTicks?: number;
+  smokeMultiplier?: number;
+  teleport?: boolean;
+  trapImmune?: boolean;
+  critChance?: number;
+  critMultiplier?: number;
+  rageMultiplier?: number;
+  burnTicks?: number;
+  burnFraction?: number;
+  suicide?: boolean;
+  defenseSlow?: number;
 }
 
 /** A tactical ability the attacker places on the map (Smoke Bomb). */
@@ -290,6 +336,16 @@ export interface SabotageDef {
 }
 
 export interface BattleDef {
+  warriorRules: {
+    supportIntervalTicks: number;
+    defaultAuraRadius: number;
+    abilityCooldownTicks: number;
+    shieldCooldownTicks: number;
+    shieldMaximumDamage: number;
+    teleportDistance: number;
+    summonOffset: number;
+    decoyHpMultiplier: number;
+  };
   ticksPerSecond: number;
   durationSeconds: number;
   starThresholds: { destruction: number; full: number };

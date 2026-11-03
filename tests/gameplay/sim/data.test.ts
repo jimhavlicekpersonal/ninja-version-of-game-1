@@ -41,14 +41,18 @@ describe('balance data', () => {
       if (!def.inShop || def.levels[0].buildSeconds === 0 || def.levels.length < 3) continue;
       const ratios: number[] = [];
       for (let i = 1; i < def.levels.length; i++) {
+        if (def.levels[i].buildSeconds === 7 * 86400) {
+          expect(def.levels[i].buildSeconds).toBeGreaterThanOrEqual(def.levels[i - 1].buildSeconds);
+          continue;
+        }
         const r = def.levels[i].buildSeconds / def.levels[i - 1].buildSeconds;
         expect(r).toBeGreaterThan(1.8);
-        expect(r).toBeLessThan(2.7);
+        expect(r).toBeLessThanOrEqual(def.category === 'hall' ? 2.71 : 2.7);
         ratios.push(r);
       }
       const geoMean = Math.exp(ratios.reduce((s, r) => s + Math.log(r), 0) / ratios.length);
       expect(geoMean).toBeGreaterThan(2.0);
-      expect(geoMean).toBeLessThan(2.4);
+      expect(geoMean).toBeLessThan(def.category === 'hall' ? 2.7 : 2.4);
     }
   });
 

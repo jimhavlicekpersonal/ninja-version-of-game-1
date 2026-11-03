@@ -925,6 +925,68 @@ export const troopArt: Record<string, TroopArt> = {
 // Projectiles and effects
 // ---------------------------------------------------------------------------
 
+/** Register code-drawn catalog warriors. Rendering supplies metadata across the art contract. */
+export function registerWarriorArt(warriors: { id: string; role: string; tier: number; look: Record<string, string> }[]): void {
+  for (const w of warriors) {
+    if (troopArt[w.id]) continue;
+    const role = w.role;
+    const large = role === 'guardian';
+    const flying = role === 'sky';
+    troopArt[w.id] = {
+      w: flying ? 76 : large || role === 'beast' ? 66 : 54,
+      h: flying ? 76 : large ? 68 : 58,
+      paint(ctx) {
+        const accent = w.look.accent;
+        if (flying) {
+          poly(ctx, [{ x: -34, y: -43 }, { x: 0, y: -68 }, { x: 34, y: -43 }, { x: 0, y: -29 }], accent, 1.4);
+          line(ctx, [{ x: -34, y: -43 }, { x: 34, y: -43 }], WOOD_DARK, 1.4);
+          crest(ctx, 0, -49, 7, WASHI);
+        }
+        ctx.save();
+        if (flying) ctx.translate(0, -12);
+        ninja(ctx, {
+          gi: w.look.gi, band: accent, scale: large ? 1.25 : flying ? 0.85 : 1,
+          weapon: role === 'thrower' ? 'kunai' : role === 'guardian' || role === 'mystic' ? 'club' : role === 'saboteur' ? 'grapple' : role === 'infiltrator' ? 'shovel' : role === 'siege' || flying ? 'none' : 'katana',
+          armor: large ? accent : undefined, hat: large ? 'helm' : role === 'mystic' ? 'kasa' : null,
+          pack: role === 'siege' || flying ? 'bombs' : role === 'thrower' || role === 'saboteur' ? 'satchel' : null,
+        });
+        ctx.restore();
+        if (role === 'mystic') {
+          circle(ctx, 17, -28, 5, accent, 1.2);
+          line(ctx, [{ x: 17, y: -23 }, { x: 17, y: -4 }], WOOD, 2);
+        }
+        if (role === 'siege') {
+          poly(ctx, [{ x: 6, y: -22 }, { x: 23, y: -28 }, { x: 26, y: -18 }, { x: 9, y: -12 }], '#5d636e', 1.4);
+          circle(ctx, 13, -7, 5, WOOD_DARK, 1);
+        }
+        if (role === 'beast') {
+          ctx.beginPath();
+          ctx.ellipse(-19, -7, 10, 6, 0, 0, Math.PI * 2);
+          ctx.fillStyle = accent; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.stroke();
+          circle(ctx, -24, -14, 5, accent, 1);
+          poly(ctx, [{ x: -28, y: -17 }, { x: -27, y: -23 }, { x: -23, y: -18 }], accent, 1);
+        }
+        // Tier dots make similarly equipped warriors distinguishable at thumbnail size.
+        for (let i = 0; i < w.tier; i++) circle(ctx, -8 + i * 4, -2, 1.3, accent, 0);
+      },
+    };
+    if (role === 'beast') troopArt[`${w.id}.companion`] = {
+      w: 40, h: 32,
+      paint(ctx) {
+        const fur = w.tier === 5 ? '#f4ead6' : '#b88750';
+        ctx.beginPath(); ctx.ellipse(0, -10, 13, 7, 0, 0, Math.PI * 2);
+        ctx.fillStyle = fur; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.stroke();
+        circle(ctx, 11, -18, 7, fur, 1.4);
+        poly(ctx, [{ x: 7, y: -23 }, { x: 7, y: -29 }, { x: 12, y: -24 }], fur, 1);
+        for (const x of [-9, -3, 5, 10]) line(ctx, [{ x, y: -8 }, { x: x + 1, y: -2 }], fur, 3);
+        line(ctx, [{ x: -12, y: -11 }, { x: -18, y: -19 }], fur, 3);
+        circle(ctx, 14, -19, 1, INK, 0);
+        line(ctx, [{ x: 6, y: -14 }, { x: 13, y: -12 }], w.look.accent, 2.5);
+      },
+    };
+  }
+}
+
 const kunai = (ctx: Ctx, s: number) => {
   poly(ctx, [{ x: -6 * s, y: 0 }, { x: 2 * s, y: -2.4 * s }, { x: 7 * s, y: 0 }, { x: 2 * s, y: 2.4 * s }], '#c9ced6', 0.9);
   line(ctx, [{ x: -6 * s, y: 0 }, { x: -10 * s, y: 0 }], INK, 1.6 * s);

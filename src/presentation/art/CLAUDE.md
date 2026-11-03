@@ -5,6 +5,7 @@ You are the **ART AI**. You own `src/presentation/art/`, `src/presentation/audio
 ## What lives here
 
 - `ninja.ts`: all code-drawn art. Buildings take a tier (1–3) so upgrades show. Troops are chibi ninja (`ninja()`, facing right, feet at y = 0). Also projectiles, smoke, the jam marker and other effects. Registries: `buildingPainters`, `troopArt`, `projectileArt`.
+- `registerWarriorArt` accepts catalog metadata from rendering to populate all 50 warrior textures without importing game data into art. Beast companions use `troop.<warriorId>.companion`; original six texture keys remain unchanged.
 - `ground.ts`: the mountain plateau and mist. `toolkit.ts`: colour and shading helpers.
 - `../audio/sound.ts`: synthesized SFX and music (koto/taiko loop on the Japanese *in* scale). No audio files.
 - `public/art/manifest.json`: real image files, keyed by asset key. Loaded by `render/artManifest.ts`. A listed image replaces the code art with the same key.

@@ -15,7 +15,9 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - `sim/battle/battle.ts`: combat, Smoke Bomb (range × 0.4, never below 2 tiles, 8 s, no stacking, charges from army housing), Sabotage (6 s jam, then 10 s immunity after recovery, one jam per Saboteur).
 - `sim/battle/basegen.ts`: generated bases, five layout archetypes. `scout.ts`: what scouting reveals (never hidden traps).
 - `sim/trials.ts` + `data/trials.json`: Shadow Trials, the endless ladder, rewarded once per tier through the `trialEnd` command.
-- `sim/progression.ts` + `data/progression.json` + `data/roster.json`: the power-budget model, the 50 warriors, 4 heroes and 34 buildings.
+- `sim/progression.ts` + `data/progression.json` + `data/roster.json`: the power-budget model. All 50 warriors are playable through Keep 15. Four heroes and the non-live buildings remain planned.
+- `sim/battle/warriors.ts`: data-driven warrior abilities (`TroopDef.kit` in `troops.json`). Auras, same-type poison and overlapping same-type burning do not stack. Jams/stuns share recovery immunity. Companions split their owner's stat budget and never consume extra inventory. Per-battle effects reconstruct from seed + deployments.
+- Training checks both `unlockKeep` and Dojo level; research uses each troop's `levelCapOffset`. Keep-indexed economic tables cover 1–15. Preserve all original six-unit stats through level 5.
 - `control/controller.ts`: command dispatch, saving. `control/battleSession.ts`: real-time battle stepping.
 
 ## Invariants with tests (keep them green)
@@ -23,7 +25,7 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - The 20-item balance pass (see root `CLAUDE.md`) and `tests/gameplay/balance/*`. Rerun the model player after changing costs, times, loot or combat numbers.
 - `progression-model.test.ts`: the live roster matches the model, no dominance inside a tier, every Keep level unlocks warriors, costs outgrow power.
 - `tactics.test.ts`: smoke and sabotage limits and exact replays. `trials.test.ts`: ladder growth, no tier skipping, rewards paid once, forged bases ignored.
-- **Save format:** bump `SAVE_VERSION` (`sim/save.ts`, now 10) and add a migration step for every state change. Never drop player progress.
+- **Save format:** bump `SAVE_VERSION` (`sim/save.ts`, now 11) and add a migration step for every state change. Never drop player progress.
 - **Ids are stable** (`docs/rebuild/ID_MAP.md`). Change display names in data only.
 - If a rule change affects online battles, tell BACKEND (`docs/backend/REQUESTS.md`): the server must run the same version, and `PROTOCOL_VERSION` may need a bump.
 

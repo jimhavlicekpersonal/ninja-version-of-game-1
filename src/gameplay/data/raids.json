@@ -55,6 +55,60 @@
       "beetle_brute": 0.15,
       "owl_bomber": 0.1,
       "mole_digger": 0.1
+    },
+    {
+      "wind_step_assassin": 0.35,
+      "blowgun_hunter": 0.25,
+      "bell_warden": 0.3,
+      "gearbreaker": 0.1
+    },
+    {
+      "wind_step_assassin": 0.35,
+      "blowgun_hunter": 0.25,
+      "bell_warden": 0.3,
+      "gearbreaker": 0.1
+    },
+    {
+      "wind_step_assassin": 0.35,
+      "blowgun_hunter": 0.25,
+      "bell_warden": 0.3,
+      "gearbreaker": 0.1
+    },
+    {
+      "moonblade_master": 0.35,
+      "chain_sickle_reaper": 0.25,
+      "mountain_shield": 0.3,
+      "fuse_master": 0.1
+    },
+    {
+      "moonblade_master": 0.35,
+      "chain_sickle_reaper": 0.25,
+      "mountain_shield": 0.3,
+      "fuse_master": 0.1
+    },
+    {
+      "moonblade_master": 0.35,
+      "chain_sickle_reaper": 0.25,
+      "mountain_shield": 0.3,
+      "fuse_master": 0.1
+    },
+    {
+      "storm_sovereign": 0.35,
+      "thousand_needle": 0.25,
+      "oni_breaker": 0.3,
+      "ghost_engineer": 0.1
+    },
+    {
+      "storm_sovereign": 0.35,
+      "thousand_needle": 0.25,
+      "oni_breaker": 0.3,
+      "ghost_engineer": 0.1
+    },
+    {
+      "storm_sovereign": 0.35,
+      "thousand_needle": 0.25,
+      "oni_breaker": 0.3,
+      "ghost_engineer": 0.1
     }
   ],
   "storageLootCapByHall": [
@@ -63,6 +117,15 @@
     10000,
     25000,
     60000,
-    130000
+    130000,
+    159588,
+    220608,
+    395014,
+    641498,
+    1084277,
+    1456603,
+    3062556,
+    5428078,
+    9600185
   ]
 }

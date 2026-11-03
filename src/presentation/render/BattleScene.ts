@@ -3,6 +3,7 @@ import { queueArt } from './artManifest';
 import { drainEvents, type BattleSession } from '../../gameplay/control/battleSession';
 import { buildingDef } from '../../gameplay/sim/data';
 import { isAbility, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
+import { isHidden } from '../../gameplay/sim/battle/warriors';
 import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
 import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
@@ -384,11 +385,16 @@ export class BattleScene extends Phaser.Scene {
     // Troops: create, interpolate, bob.
     while (this.tviews.length < sim.troops.length) {
       const t = sim.troops[this.tviews.length];
-      this.tviews.push(this.makeTroop(t.type, t.air));
+      this.tviews.push(this.makeTroop(t.summoned && !t.decoyUntil ? `${t.type}.companion` : t.type, t.air));
     }
     const now = this.time.now;
     sim.troops.forEach((t, i) => {
-      const v = this.tviews[i];
+      let v = this.tviews[i];
+      if (!t.dead && v.dead) {
+        this.tweens.killTweensOf([v.image, v.shadow]);
+        v.image.destroy(); v.shadow.destroy(); v.bar.destroy();
+        v = this.tviews[i] = this.makeTroop(t.type, t.air);
+      }
       if (t.dead) {
         if (!v.dead) {
           v.dead = true;
@@ -408,10 +414,16 @@ export class BattleScene extends Phaser.Scene {
       const lift = t.air ? AIR_HEIGHT : 0;
       v.image.setPosition(w.x, w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
       v.image.setFlipX(t.facing < 0);
+      v.image.setAlpha(t.decoyUntil ? 0.45 : isHidden(sim, t) ? 0.6 : 1);
       if (t.attacking && !t.air) v.image.setScale(v.baseScale * (1 + Math.max(0, Math.sin(now / 60)) * 0.08), v.baseScale * (1 - Math.max(0, Math.sin(now / 60)) * 0.06));
       else if (v.image.scaleX !== v.baseScale && !this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale);
       v.shadow.setPosition(w.x, w.y + 1);
       if (t.hp < t.maxHp) this.drawBar(v.bar, w.x, w.y - lift - 34, t.hp / t.maxHp, 0xffd23f);
+      else v.bar.clear();
+      if (t.shieldUntil > sim.tick) {
+        v.bar.lineStyle(2 / this.cam.userZoom, 0x8ad0ff, 0.8);
+        v.bar.strokeCircle(w.x, w.y - lift - 18, 24);
+      }
     });
 
     // Projectiles.

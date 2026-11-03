@@ -447,6 +447,744 @@
           "maxLevel": 5
         }
       }
+    },
+    {
+      "level": 7,
+      "troopLevelCap": 7,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 12
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 12
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 11
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 11
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 7
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 8
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 8
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 7
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 5
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 3
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 7
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 5
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 3
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 6
+        }
+      }
+    },
+    {
+      "level": 8,
+      "troopLevelCap": 8,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 14
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 14
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 13
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 13
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 8
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 9
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 9
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 8
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 5
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 4
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 8
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 5
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 4
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 6
+        }
+      }
+    },
+    {
+      "level": 9,
+      "troopLevelCap": 10,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 15
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 15
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 14
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 14
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 8
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 10
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 10
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 8
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 6
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 4
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 8
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 6
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 4
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 7
+        }
+      }
+    },
+    {
+      "level": 10,
+      "troopLevelCap": 11,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 17
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 17
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 15
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 15
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 9
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 11
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 11
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 9
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 6
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 5
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 9
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 6
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 5
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 8
+        }
+      }
+    },
+    {
+      "level": 11,
+      "troopLevelCap": 13,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 18
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 18
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 17
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 17
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 10
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 11
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 11
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 10
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 7
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 5
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 10
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 7
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 5
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 8
+        }
+      }
+    },
+    {
+      "level": 12,
+      "troopLevelCap": 14,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 20
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 20
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 18
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 18
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 11
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 12
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 12
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 11
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 7
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 6
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 11
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 7
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 6
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 9
+        }
+      }
+    },
+    {
+      "level": 13,
+      "troopLevelCap": 16,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 21
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 21
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 19
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 19
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 11
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 13
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 13
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 11
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 8
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 6
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 11
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 8
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 6
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 10
+        }
+      }
+    },
+    {
+      "level": 14,
+      "troopLevelCap": 18,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 23
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 23
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 21
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 21
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 12
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 14
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 14
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 12
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 8
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 7
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 12
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 8
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 7
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 10
+        }
+      }
+    },
+    {
+      "level": 15,
+      "troopLevelCap": 20,
+      "limits": {
+        "beaver_lodge": {
+          "count": 5,
+          "maxLevel": 1
+        },
+        "acorn_orchard": {
+          "count": 6,
+          "maxLevel": 24
+        },
+        "dewdrop_well": {
+          "count": 6,
+          "maxLevel": 24
+        },
+        "acorn_silo": {
+          "count": 3,
+          "maxLevel": 22
+        },
+        "dew_cistern": {
+          "count": 3,
+          "maxLevel": 22
+        },
+        "burrow_barracks": {
+          "count": 1,
+          "maxLevel": 13
+        },
+        "army_camp": {
+          "count": 3,
+          "maxLevel": 15
+        },
+        "acorn_cannon": {
+          "count": 4,
+          "maxLevel": 15
+        },
+        "wasp_nest": {
+          "count": 3,
+          "maxLevel": 13
+        },
+        "pinecone_catapult": {
+          "count": 2,
+          "maxLevel": 9
+        },
+        "firefly_tower": {
+          "count": 2,
+          "maxLevel": 7
+        },
+        "bramble_hedge": {
+          "count": 125,
+          "maxLevel": 13
+        },
+        "thorn_snare": {
+          "count": 4,
+          "maxLevel": 9
+        },
+        "sap_puddle": {
+          "count": 2,
+          "maxLevel": 7
+        },
+        "flower_bed": {
+          "count": 20,
+          "maxLevel": 1
+        },
+        "lantern_post": {
+          "count": 10,
+          "maxLevel": 1
+        },
+        "mushroom_ring": {
+          "count": 4,
+          "maxLevel": 1
+        },
+        "mossy_statue": {
+          "count": 2,
+          "maxLevel": 1
+        },
+        "grove_lodge": {
+          "count": 1,
+          "maxLevel": 11
+        }
+      }
     }
   ]
 }

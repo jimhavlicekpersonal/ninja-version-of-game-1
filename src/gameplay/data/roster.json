@@ -32,7 +32,8 @@
         "gi": "#3a2f4f",
         "accent": "#e9b44c",
         "weapon": "twin short swords"
-      }
+      },
+      "liveTroop": "twin_fang_dancer"
     },
     {
       "id": "wind_step_assassin",
@@ -48,7 +49,8 @@
         "gi": "#2a3a3a",
         "accent": "#8ad0ff",
         "weapon": "straight blade with wind ribbons"
-      }
+      },
+      "liveTroop": "wind_step_assassin"
     },
     {
       "id": "moonblade_master",
@@ -64,7 +66,8 @@
         "gi": "#1f2433",
         "accent": "#d9dee6",
         "weapon": "long curved blade with crescent guard"
-      }
+      },
+      "liveTroop": "moonblade_master"
     },
     {
       "id": "storm_sovereign",
@@ -80,7 +83,8 @@
         "gi": "#141a22",
         "accent": "#7fd3ff",
         "weapon": "lightning-etched katana"
-      }
+      },
+      "liveTroop": "storm_sovereign"
     },
     {
       "id": "kunai_adept",
@@ -113,7 +117,8 @@
         "gi": "#4a5560",
         "accent": "#c8402f",
         "weapon": "shuriken fan"
-      }
+      },
+      "liveTroop": "shuriken_storm"
     },
     {
       "id": "blowgun_hunter",
@@ -129,7 +134,8 @@
         "gi": "#3f5a3a",
         "accent": "#9be05a",
         "weapon": "bamboo blowgun"
-      }
+      },
+      "liveTroop": "blowgun_hunter"
     },
     {
       "id": "chain_sickle_reaper",
@@ -145,7 +151,8 @@
         "gi": "#3a2a2a",
         "accent": "#c9ced6",
         "weapon": "sickle on a chain"
-      }
+      },
+      "liveTroop": "chain_sickle_reaper"
     },
     {
       "id": "thousand_needle",
@@ -161,7 +168,8 @@
         "gi": "#2b2f3a",
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
-      }
+      },
+      "liveTroop": "thousand_needle"
     },
     {
       "id": "armored_guardian",
@@ -196,7 +204,8 @@
         "accent": "#e9b44c",
         "weapon": "iron staff",
         "armor": "bronze bracers"
-      }
+      },
+      "liveTroop": "iron_monk"
     },
     {
       "id": "bell_warden",
@@ -213,7 +222,8 @@
         "accent": "#d9632a",
         "weapon": "great bell and hammer",
         "armor": "bronze"
-      }
+      },
+      "liveTroop": "bell_warden"
     },
     {
       "id": "mountain_shield",
@@ -230,7 +240,8 @@
         "accent": "#9aa0aa",
         "weapon": "tower shield",
         "armor": "stone-grey plates"
-      }
+      },
+      "liveTroop": "mountain_shield"
     },
     {
       "id": "oni_breaker",
@@ -247,7 +258,8 @@
         "accent": "#c8402f",
         "weapon": "giant spiked club",
         "armor": "black lacquer with horned helm"
-      }
+      },
+      "liveTroop": "oni_breaker"
     },
     {
       "id": "saboteur",
@@ -280,7 +292,8 @@
         "gi": "#4a4a2f",
         "accent": "#d9dee6",
         "weapon": "probe pole"
-      }
+      },
+      "liveTroop": "trap_breaker"
     },
     {
       "id": "gearbreaker",
@@ -296,7 +309,8 @@
         "gi": "#2f3f4a",
         "accent": "#e9b44c",
         "weapon": "heavy wrench and wedges"
-      }
+      },
+      "liveTroop": "gearbreaker"
     },
     {
       "id": "fuse_master",
@@ -312,7 +326,8 @@
         "gi": "#3a2f2f",
         "accent": "#ff9a3c",
         "weapon": "satchel charges"
-      }
+      },
+      "liveTroop": "fuse_master"
     },
     {
       "id": "ghost_engineer",
@@ -322,13 +337,14 @@
       "ability": {
         "id": "blackout",
         "name": "Blackout",
-        "text": "Briefly jams every defense in a small radius."
+        "text": "Once per battle, jams up to three defenses within 3 tiles for 4 seconds. Shares jam immunity with other specialists."
       },
       "look": {
         "gi": "#1f2a2a",
         "accent": "#8ad0ff",
         "weapon": "lantern of silence"
-      }
+      },
+      "liveTroop": "ghost_engineer"
     },
     {
       "id": "tunnel_runner",
@@ -362,7 +378,8 @@
         "gi": "#4a3a2a",
         "accent": "#b8a888",
         "weapon": "climbing claws"
-      }
+      },
+      "liveTroop": "wall_climber"
     },
     {
       "id": "grapple_raider",
@@ -378,7 +395,8 @@
         "gi": "#3a3a4a",
         "accent": "#c8402f",
         "weapon": "grappling line"
-      }
+      },
+      "liveTroop": "grapple_raider"
     },
     {
       "id": "mole_king",
@@ -395,7 +413,8 @@
         "accent": "#e9b44c",
         "weapon": "iron digging claws",
         "hat": "miner helm"
-      }
+      },
+      "liveTroop": "mole_king"
     },
     {
       "id": "phantom_gate",
@@ -411,7 +430,8 @@
         "gi": "#2a2a3a",
         "accent": "#b48cff",
         "weapon": "key-shaped staff"
-      }
+      },
+      "liveTroop": "phantom_gate"
     },
     {
       "id": "kite_raider",
@@ -446,7 +466,8 @@
         "accent": "#2f3a4f",
         "weapon": "hooked pole",
         "mount": "white crane-wing glider"
-      }
+      },
+      "liveTroop": "crane_glider"
     },
     {
       "id": "lantern_balloon",
@@ -463,7 +484,8 @@
         "accent": "#ff9a3c",
         "weapon": "ember pots",
         "mount": "giant paper lantern balloon"
-      }
+      },
+      "liveTroop": "lantern_balloon"
     },
     {
       "id": "thunder_kite",
@@ -473,14 +495,15 @@
       "ability": {
         "id": "chain_lightning",
         "name": "Chain Lightning",
-        "text": "Lightning jumps between up to four defenses."
+        "text": "Lightning hits a defense and up to three nearby defenses for 45% damage each."
       },
       "look": {
         "gi": "#1f2433",
         "accent": "#7fd3ff",
         "weapon": "lightning rod",
         "mount": "storm-blue kite"
-      }
+      },
+      "liveTroop": "thunder_kite"
     },
     {
       "id": "dragon_kite_armada",
@@ -497,7 +520,8 @@
         "accent": "#e9b44c",
         "weapon": "bomb racks",
         "mount": "long dragon kite"
-      }
+      },
+      "liveTroop": "dragon_kite_armada"
     },
     {
       "id": "herbalist",
@@ -513,7 +537,8 @@
         "gi": "#4f7a46",
         "accent": "#f4ead6",
         "weapon": "herb satchel"
-      }
+      },
+      "liveTroop": "herbalist"
     },
     {
       "id": "drum_monk",
@@ -523,13 +548,14 @@
       "ability": {
         "id": "war_drum",
         "name": "War Drum",
-        "text": "Nearby warriors move and attack 25% faster."
+        "text": "Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack."
       },
       "look": {
         "gi": "#7a3f2a",
         "accent": "#e9b44c",
         "weapon": "taiko drum"
-      }
+      },
+      "liveTroop": "drum_monk"
     },
     {
       "id": "mist_weaver",
@@ -545,7 +571,8 @@
         "gi": "#9aa0aa",
         "accent": "#d9dee6",
         "weapon": "mist fan"
-      }
+      },
+      "liveTroop": "mist_weaver"
     },
     {
       "id": "spirit_caller",
@@ -561,7 +588,8 @@
         "gi": "#2f2a4a",
         "accent": "#b48cff",
         "weapon": "spirit bell"
-      }
+      },
+      "liveTroop": "spirit_caller"
     },
     {
       "id": "sage_of_clouds",
@@ -571,13 +599,14 @@
       "ability": {
         "id": "cloud_shelter",
         "name": "Cloud Shelter",
-        "text": "A big heal and a shield that blocks the next hit for every nearby warrior."
+        "text": "Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds."
       },
       "look": {
         "gi": "#f4ead6",
         "accent": "#7fd3ff",
         "weapon": "cloud staff"
-      }
+      },
+      "liveTroop": "sage_of_clouds"
     },
     {
       "id": "ram_crew",
@@ -593,7 +622,8 @@
         "gi": "#5e3a22",
         "accent": "#9aa0aa",
         "weapon": "log ram"
-      }
+      },
+      "liveTroop": "ram_crew"
     },
     {
       "id": "fire_monk",
@@ -609,7 +639,8 @@
         "gi": "#7a2e26",
         "accent": "#ff9a3c",
         "weapon": "fire gourd"
-      }
+      },
+      "liveTroop": "fire_monk"
     },
     {
       "id": "bomb_carrier",
@@ -625,7 +656,8 @@
         "gi": "#2b2b2b",
         "accent": "#ff6b3c",
         "weapon": "giant bomb on back"
-      }
+      },
+      "liveTroop": "bomb_carrier"
     },
     {
       "id": "siege_bombardier",
@@ -635,13 +667,14 @@
       "ability": {
         "id": "long_shot",
         "name": "Long Shot",
-        "text": "Artillery that out-ranges every defense but cannot move while firing."
+        "text": "Artillery with 11-tile range. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing."
       },
       "look": {
         "gi": "#3a3f48",
         "accent": "#e9b44c",
         "weapon": "bronze hand-mortar"
-      }
+      },
+      "liveTroop": "siege_bombardier"
     },
     {
       "id": "volcano_cannoneer",
@@ -657,7 +690,8 @@
         "gi": "#2a1a1a",
         "accent": "#ff4a2a",
         "weapon": "volcanic cannon"
-      }
+      },
+      "liveTroop": "volcano_cannoneer"
     },
     {
       "id": "hound_handler",
@@ -667,14 +701,15 @@
       "ability": {
         "id": "unleash",
         "name": "Unleash",
-        "text": "Fights alongside two hunting dogs."
+        "text": "Fights alongside two hunting dogs. The handler and dogs share one health and damage budget."
       },
       "look": {
         "gi": "#5a4a3a",
         "accent": "#c8402f",
         "weapon": "leash and short sword",
         "mount": "two shiba-like hounds"
-      }
+      },
+      "liveTroop": "hound_handler"
     },
     {
       "id": "hawk_tamer",
@@ -691,7 +726,8 @@
         "accent": "#e9b44c",
         "weapon": "falconry glove",
         "mount": "hawk"
-      }
+      },
+      "liveTroop": "hawk_tamer"
     },
     {
       "id": "boar_rider",
@@ -708,7 +744,8 @@
         "accent": "#9aa0aa",
         "weapon": "spear",
         "mount": "armoured boar"
-      }
+      },
+      "liveTroop": "boar_rider"
     },
     {
       "id": "bear_warrior",
@@ -725,7 +762,8 @@
         "accent": "#c8402f",
         "weapon": "bear-claw gauntlets",
         "armor": "fur mantle"
-      }
+      },
+      "liveTroop": "bear_warrior"
     },
     {
       "id": "tiger_lord",
@@ -735,14 +773,15 @@
       "ability": {
         "id": "pride",
         "name": "Pride",
-        "text": "Rides a war tiger and calls two more when he arrives."
+        "text": "Arrives with two war tigers. Rider and tigers share one health and damage budget."
       },
       "look": {
         "gi": "#2a2a2a",
         "accent": "#e9b44c",
         "weapon": "glaive",
         "mount": "white war tiger"
-      }
+      },
+      "liveTroop": "tiger_lord"
     },
     {
       "id": "shadow_stalker",
@@ -758,7 +797,8 @@
         "gi": "#141a22",
         "accent": "#5f6b78",
         "weapon": "tanto"
-      }
+      },
+      "liveTroop": "shadow_stalker"
     },
     {
       "id": "mirage_twin",
@@ -774,7 +814,8 @@
         "gi": "#2a2a3a",
         "accent": "#b48cff",
         "weapon": "mirror blade"
-      }
+      },
+      "liveTroop": "mirage_twin"
     },
     {
       "id": "night_blade",
@@ -790,7 +831,8 @@
         "gi": "#1f2433",
         "accent": "#c9ced6",
         "weapon": "black katana"
-      }
+      },
+      "liveTroop": "night_blade"
     },
     {
       "id": "void_walker",
@@ -806,7 +848,8 @@
         "gi": "#0f1218",
         "accent": "#7a4aff",
         "weapon": "twin kama"
-      }
+      },
+      "liveTroop": "void_walker"
     },
     {
       "id": "eclipse_ninja",
@@ -816,13 +859,14 @@
       "ability": {
         "id": "eclipse",
         "name": "Eclipse",
-        "text": "Unseen, immune to traps, and every hit can be a critical."
+        "text": "Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit."
       },
       "look": {
         "gi": "#0a0c10",
         "accent": "#e9b44c",
         "weapon": "eclipse ring blade"
-      }
+      },
+      "liveTroop": "eclipse_ninja"
     }
   ],
   "heroes": [

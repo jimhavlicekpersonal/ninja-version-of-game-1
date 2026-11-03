@@ -78,7 +78,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Twin-Fang Dancer, a blade warrior (fast melee that strikes the nearest building.) Signature: Twin Strike. #3a2f4f outfit, #e9b44c accents, twin short swords. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -92,7 +92,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Twin-Fang Dancer, a blade warrior (fast melee that strikes the nearest building.) Signature: Twin Strike. #3a2f4f outfit, #e9b44c accents, twin short swords. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -106,7 +106,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Twin-Fang Dancer, a blade warrior (fast melee that strikes the nearest building.) Signature: Twin Strike. #3a2f4f outfit, #e9b44c accents, twin short swords. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -120,7 +120,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Twin-Fang Dancer, a blade warrior (fast melee that strikes the nearest building.) Signature: Twin Strike. #3a2f4f outfit, #e9b44c accents, twin short swords. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -129,7 +129,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Twin-Fang Dancer battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Twin-Fang Dancer, facing right, feet on the bottom edge, readable at 40 px tall. #3a2f4f outfit, #e9b44c accents, twin short swords."
     },
     {
@@ -143,7 +143,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -157,7 +157,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -171,7 +171,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -185,7 +185,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wind-Step Assassin, a blade warrior (fast melee that strikes the nearest building.) Signature: Wind Step. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -194,7 +194,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Wind-Step Assassin battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Wind-Step Assassin, facing right, feet on the bottom edge, readable at 40 px tall. #2a3a3a outfit, #8ad0ff accents, straight blade with wind ribbons."
     },
     {
@@ -208,7 +208,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Moonblade Master, a blade warrior (fast melee that strikes the nearest building.) Signature: Moon Cut. #1f2433 outfit, #d9dee6 accents, long curved blade with crescent guard. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -222,7 +222,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Moonblade Master, a blade warrior (fast melee that strikes the nearest building.) Signature: Moon Cut. #1f2433 outfit, #d9dee6 accents, long curved blade with crescent guard. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -236,7 +236,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Moonblade Master, a blade warrior (fast melee that strikes the nearest building.) Signature: Moon Cut. #1f2433 outfit, #d9dee6 accents, long curved blade with crescent guard. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -250,7 +250,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Moonblade Master, a blade warrior (fast melee that strikes the nearest building.) Signature: Moon Cut. #1f2433 outfit, #d9dee6 accents, long curved blade with crescent guard. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -259,7 +259,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Moonblade Master battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Moonblade Master, facing right, feet on the bottom edge, readable at 40 px tall. #1f2433 outfit, #d9dee6 accents, long curved blade with crescent guard."
     },
     {
@@ -273,7 +273,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Storm Sovereign, a blade warrior (fast melee that strikes the nearest building.) Signature: Storm Chain. #141a22 outfit, #7fd3ff accents, lightning-etched katana. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -287,7 +287,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Storm Sovereign, a blade warrior (fast melee that strikes the nearest building.) Signature: Storm Chain. #141a22 outfit, #7fd3ff accents, lightning-etched katana. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -301,7 +301,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Storm Sovereign, a blade warrior (fast melee that strikes the nearest building.) Signature: Storm Chain. #141a22 outfit, #7fd3ff accents, lightning-etched katana. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -315,7 +315,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Storm Sovereign, a blade warrior (fast melee that strikes the nearest building.) Signature: Storm Chain. #141a22 outfit, #7fd3ff accents, lightning-etched katana. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -324,7 +324,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Storm Sovereign battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Storm Sovereign, facing right, feet on the bottom edge, readable at 40 px tall. #141a22 outfit, #7fd3ff accents, lightning-etched katana."
     },
     {
@@ -403,7 +403,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shuriken Storm, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Fan Throw. #4a5560 outfit, #c8402f accents, shuriken fan. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -417,7 +417,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shuriken Storm, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Fan Throw. #4a5560 outfit, #c8402f accents, shuriken fan. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -431,7 +431,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shuriken Storm, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Fan Throw. #4a5560 outfit, #c8402f accents, shuriken fan. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -445,7 +445,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shuriken Storm, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Fan Throw. #4a5560 outfit, #c8402f accents, shuriken fan. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -454,7 +454,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Shuriken Storm battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Shuriken Storm, facing right, feet on the bottom edge, readable at 40 px tall. #4a5560 outfit, #c8402f accents, shuriken fan."
     },
     {
@@ -468,7 +468,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -482,7 +482,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -496,7 +496,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -510,7 +510,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Blowgun Hunter, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Venom Dart. #3f5a3a outfit, #9be05a accents, bamboo blowgun. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -519,7 +519,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Blowgun Hunter battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Blowgun Hunter, facing right, feet on the bottom edge, readable at 40 px tall. #3f5a3a outfit, #9be05a accents, bamboo blowgun."
     },
     {
@@ -533,7 +533,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -547,7 +547,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -561,7 +561,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -575,7 +575,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -584,7 +584,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Chain-Sickle Reaper battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Chain-Sickle Reaper, facing right, feet on the bottom edge, readable at 40 px tall. #3a2a2a outfit, #c9ced6 accents, sickle on a chain."
     },
     {
@@ -598,7 +598,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thousand Needle, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Needle Rain. #2b2f3a outfit, #f4ead6 accents, needle quiver and launcher. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -612,7 +612,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thousand Needle, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Needle Rain. #2b2f3a outfit, #f4ead6 accents, needle quiver and launcher. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -626,7 +626,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thousand Needle, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Needle Rain. #2b2f3a outfit, #f4ead6 accents, needle quiver and launcher. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -640,7 +640,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thousand Needle, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Needle Rain. #2b2f3a outfit, #f4ead6 accents, needle quiver and launcher. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -649,7 +649,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Thousand Needle battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Thousand Needle, facing right, feet on the bottom edge, readable at 40 px tall. #2b2f3a outfit, #f4ead6 accents, needle quiver and launcher."
     },
     {
@@ -728,7 +728,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -742,7 +742,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -756,7 +756,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -770,7 +770,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -779,7 +779,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Iron Monk battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Iron Monk, facing right, feet on the bottom edge, readable at 40 px tall. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour."
     },
     {
@@ -793,7 +793,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -807,7 +807,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -821,7 +821,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -835,7 +835,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -844,7 +844,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Bell Warden battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Bell Warden, facing right, feet on the bottom edge, readable at 40 px tall. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour."
     },
     {
@@ -858,7 +858,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -872,7 +872,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -886,7 +886,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -900,7 +900,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -909,7 +909,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Mountain Shield battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Mountain Shield, facing right, feet on the bottom edge, readable at 40 px tall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour."
     },
     {
@@ -923,7 +923,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -937,7 +937,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -951,7 +951,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -965,7 +965,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -974,7 +974,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Oni Breaker battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Oni Breaker, facing right, feet on the bottom edge, readable at 40 px tall. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour."
     },
     {
@@ -1053,7 +1053,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Trap Breaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Disarm. #4a4a2f outfit, #d9dee6 accents, probe pole. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1067,7 +1067,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Trap Breaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Disarm. #4a4a2f outfit, #d9dee6 accents, probe pole. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1081,7 +1081,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Trap Breaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Disarm. #4a4a2f outfit, #d9dee6 accents, probe pole. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1095,7 +1095,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Trap Breaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Disarm. #4a4a2f outfit, #d9dee6 accents, probe pole. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1104,7 +1104,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Trap Breaker battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Trap Breaker, facing right, feet on the bottom edge, readable at 40 px tall. #4a4a2f outfit, #d9dee6 accents, probe pole."
     },
     {
@@ -1118,7 +1118,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1132,7 +1132,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1146,7 +1146,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1160,7 +1160,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Gearbreaker, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Long Jam. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1169,7 +1169,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Gearbreaker battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Gearbreaker, facing right, feet on the bottom edge, readable at 40 px tall. #2f3f4a outfit, #e9b44c accents, heavy wrench and wedges."
     },
     {
@@ -1183,7 +1183,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fuse Master, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Delayed Charge. #3a2f2f outfit, #ff9a3c accents, satchel charges. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1197,7 +1197,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fuse Master, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Delayed Charge. #3a2f2f outfit, #ff9a3c accents, satchel charges. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1211,7 +1211,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fuse Master, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Delayed Charge. #3a2f2f outfit, #ff9a3c accents, satchel charges. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1225,7 +1225,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fuse Master, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Delayed Charge. #3a2f2f outfit, #ff9a3c accents, satchel charges. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1234,7 +1234,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Fuse Master battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Fuse Master, facing right, feet on the bottom edge, readable at 40 px tall. #3a2f2f outfit, #ff9a3c accents, satchel charges."
     },
     {
@@ -1248,7 +1248,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ghost Engineer, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Blackout. #1f2a2a outfit, #8ad0ff accents, lantern of silence. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1262,7 +1262,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ghost Engineer, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Blackout. #1f2a2a outfit, #8ad0ff accents, lantern of silence. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1276,7 +1276,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ghost Engineer, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Blackout. #1f2a2a outfit, #8ad0ff accents, lantern of silence. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1290,7 +1290,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ghost Engineer, a saboteur warrior (specialist that disables defenses for a short time.) Signature: Blackout. #1f2a2a outfit, #8ad0ff accents, lantern of silence. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1299,7 +1299,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Ghost Engineer battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Ghost Engineer, facing right, feet on the bottom edge, readable at 40 px tall. #1f2a2a outfit, #8ad0ff accents, lantern of silence."
     },
     {
@@ -1378,7 +1378,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wall Climber, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Climb. #4a3a2a outfit, #b8a888 accents, climbing claws. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1392,7 +1392,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wall Climber, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Climb. #4a3a2a outfit, #b8a888 accents, climbing claws. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1406,7 +1406,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wall Climber, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Climb. #4a3a2a outfit, #b8a888 accents, climbing claws. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1420,7 +1420,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Wall Climber, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Climb. #4a3a2a outfit, #b8a888 accents, climbing claws. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1429,7 +1429,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Wall Climber battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Wall Climber, facing right, feet on the bottom edge, readable at 40 px tall. #4a3a2a outfit, #b8a888 accents, climbing claws."
     },
     {
@@ -1443,7 +1443,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1457,7 +1457,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1471,7 +1471,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1485,7 +1485,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Grapple Raider, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Grapple Line. #3a3a4a outfit, #c8402f accents, grappling line. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1494,7 +1494,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Grapple Raider battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Grapple Raider, facing right, feet on the bottom edge, readable at 40 px tall. #3a3a4a outfit, #c8402f accents, grappling line."
     },
     {
@@ -1508,7 +1508,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1522,7 +1522,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1536,7 +1536,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1550,7 +1550,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1559,7 +1559,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Mole King battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Mole King, facing right, feet on the bottom edge, readable at 40 px tall. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm."
     },
     {
@@ -1573,7 +1573,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1587,7 +1587,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1601,7 +1601,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1615,7 +1615,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1624,7 +1624,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Phantom Gate battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Phantom Gate, facing right, feet on the bottom edge, readable at 40 px tall. #2a2a3a outfit, #b48cff accents, key-shaped staff."
     },
     {
@@ -1703,7 +1703,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1717,7 +1717,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1731,7 +1731,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1745,7 +1745,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Crane Glider, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Swift Glide. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1754,7 +1754,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Crane Glider battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Crane Glider, facing right, feet on the bottom edge, readable at 40 px tall. #f4ead6 outfit, #2f3a4f accents, hooked pole, riding/with white crane-wing glider. Shown airborne."
     },
     {
@@ -1768,7 +1768,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1782,7 +1782,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1796,7 +1796,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1810,7 +1810,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Lantern Balloon, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Ember Drop. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1819,7 +1819,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Lantern Balloon battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Lantern Balloon, facing right, feet on the bottom edge, readable at 40 px tall. #3a2f2a outfit, #ff9a3c accents, ember pots, riding/with giant paper lantern balloon. Shown airborne."
     },
     {
@@ -1833,7 +1833,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1847,7 +1847,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1861,7 +1861,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1875,7 +1875,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Thunder Kite, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Chain Lightning. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1884,7 +1884,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Thunder Kite battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Thunder Kite, facing right, feet on the bottom edge, readable at 40 px tall. #1f2433 outfit, #7fd3ff accents, lightning rod, riding/with storm-blue kite. Shown airborne."
     },
     {
@@ -1898,7 +1898,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1912,7 +1912,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1926,7 +1926,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -1940,7 +1940,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -1949,7 +1949,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Dragon Kite Armada battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Dragon Kite Armada, facing right, feet on the bottom edge, readable at 40 px tall. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Shown airborne."
     },
     {
@@ -1963,7 +1963,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Herbalist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Mend. #4f7a46 outfit, #f4ead6 accents, herb satchel. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -1977,7 +1977,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Herbalist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Mend. #4f7a46 outfit, #f4ead6 accents, herb satchel. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -1991,7 +1991,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Herbalist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Mend. #4f7a46 outfit, #f4ead6 accents, herb satchel. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2005,7 +2005,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Herbalist, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Mend. #4f7a46 outfit, #f4ead6 accents, herb satchel. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2014,7 +2014,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Herbalist battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Herbalist, facing right, feet on the bottom edge, readable at 40 px tall. #4f7a46 outfit, #f4ead6 accents, herb satchel."
     },
     {
@@ -2028,7 +2028,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Drum Monk, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: War Drum. #7a3f2a outfit, #e9b44c accents, taiko drum. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2042,7 +2042,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Drum Monk, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: War Drum. #7a3f2a outfit, #e9b44c accents, taiko drum. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2056,7 +2056,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Drum Monk, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: War Drum. #7a3f2a outfit, #e9b44c accents, taiko drum. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2070,7 +2070,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Drum Monk, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: War Drum. #7a3f2a outfit, #e9b44c accents, taiko drum. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2079,7 +2079,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Drum Monk battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Drum Monk, facing right, feet on the bottom edge, readable at 40 px tall. #7a3f2a outfit, #e9b44c accents, taiko drum."
     },
     {
@@ -2093,7 +2093,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2107,7 +2107,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2121,7 +2121,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2135,7 +2135,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mist Weaver, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Veil. #9aa0aa outfit, #d9dee6 accents, mist fan. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2144,7 +2144,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Mist Weaver battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Mist Weaver, facing right, feet on the bottom edge, readable at 40 px tall. #9aa0aa outfit, #d9dee6 accents, mist fan."
     },
     {
@@ -2158,7 +2158,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Spirit Caller, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Second Wind. #2f2a4a outfit, #b48cff accents, spirit bell. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2172,7 +2172,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Spirit Caller, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Second Wind. #2f2a4a outfit, #b48cff accents, spirit bell. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2186,7 +2186,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Spirit Caller, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Second Wind. #2f2a4a outfit, #b48cff accents, spirit bell. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2200,7 +2200,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Spirit Caller, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Second Wind. #2f2a4a outfit, #b48cff accents, spirit bell. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2209,7 +2209,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Spirit Caller battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Spirit Caller, facing right, feet on the bottom edge, readable at 40 px tall. #2f2a4a outfit, #b48cff accents, spirit bell."
     },
     {
@@ -2223,7 +2223,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Sage of Clouds, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Cloud Shelter. #f4ead6 outfit, #7fd3ff accents, cloud staff. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2237,7 +2237,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Sage of Clouds, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Cloud Shelter. #f4ead6 outfit, #7fd3ff accents, cloud staff. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2251,7 +2251,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Sage of Clouds, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Cloud Shelter. #f4ead6 outfit, #7fd3ff accents, cloud staff. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2265,7 +2265,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Sage of Clouds, a mystic warrior (supports nearby warriors: heals, haste, shields.) Signature: Cloud Shelter. #f4ead6 outfit, #7fd3ff accents, cloud staff. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2274,7 +2274,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Sage of Clouds battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Sage of Clouds, facing right, feet on the bottom edge, readable at 40 px tall. #f4ead6 outfit, #7fd3ff accents, cloud staff."
     },
     {
@@ -2288,7 +2288,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ram Crew, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Battering Ram. #5e3a22 outfit, #9aa0aa accents, log ram. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2302,7 +2302,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ram Crew, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Battering Ram. #5e3a22 outfit, #9aa0aa accents, log ram. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2316,7 +2316,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ram Crew, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Battering Ram. #5e3a22 outfit, #9aa0aa accents, log ram. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2330,7 +2330,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Ram Crew, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Battering Ram. #5e3a22 outfit, #9aa0aa accents, log ram. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2339,7 +2339,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Ram Crew battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Ram Crew, facing right, feet on the bottom edge, readable at 40 px tall. #5e3a22 outfit, #9aa0aa accents, log ram."
     },
     {
@@ -2353,7 +2353,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fire Monk, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Flame Breath. #7a2e26 outfit, #ff9a3c accents, fire gourd. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2367,7 +2367,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fire Monk, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Flame Breath. #7a2e26 outfit, #ff9a3c accents, fire gourd. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2381,7 +2381,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fire Monk, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Flame Breath. #7a2e26 outfit, #ff9a3c accents, fire gourd. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2395,7 +2395,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Fire Monk, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Flame Breath. #7a2e26 outfit, #ff9a3c accents, fire gourd. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2404,7 +2404,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Fire Monk battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Fire Monk, facing right, feet on the bottom edge, readable at 40 px tall. #7a2e26 outfit, #ff9a3c accents, fire gourd."
     },
     {
@@ -2418,7 +2418,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2432,7 +2432,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2446,7 +2446,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2460,7 +2460,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bomb Carrier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Big Bang. #2b2b2b outfit, #ff6b3c accents, giant bomb on back. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2469,7 +2469,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Bomb Carrier battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Bomb Carrier, facing right, feet on the bottom edge, readable at 40 px tall. #2b2b2b outfit, #ff6b3c accents, giant bomb on back."
     },
     {
@@ -2483,7 +2483,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Siege Bombardier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Long Shot. #3a3f48 outfit, #e9b44c accents, bronze hand-mortar. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2497,7 +2497,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Siege Bombardier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Long Shot. #3a3f48 outfit, #e9b44c accents, bronze hand-mortar. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2511,7 +2511,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Siege Bombardier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Long Shot. #3a3f48 outfit, #e9b44c accents, bronze hand-mortar. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2525,7 +2525,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Siege Bombardier, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Long Shot. #3a3f48 outfit, #e9b44c accents, bronze hand-mortar. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2534,7 +2534,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Siege Bombardier battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Siege Bombardier, facing right, feet on the bottom edge, readable at 40 px tall. #3a3f48 outfit, #e9b44c accents, bronze hand-mortar."
     },
     {
@@ -2548,7 +2548,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Volcano Cannoneer, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Eruption. #2a1a1a outfit, #ff4a2a accents, volcanic cannon. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2562,7 +2562,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Volcano Cannoneer, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Eruption. #2a1a1a outfit, #ff4a2a accents, volcanic cannon. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2576,7 +2576,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Volcano Cannoneer, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Eruption. #2a1a1a outfit, #ff4a2a accents, volcanic cannon. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2590,7 +2590,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Volcano Cannoneer, a siege warrior (breaks walls and buildings fast; weak against defenses.) Signature: Eruption. #2a1a1a outfit, #ff4a2a accents, volcanic cannon. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2599,7 +2599,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Volcano Cannoneer battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Volcano Cannoneer, facing right, feet on the bottom edge, readable at 40 px tall. #2a1a1a outfit, #ff4a2a accents, volcanic cannon."
     },
     {
@@ -2613,7 +2613,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hound Handler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unleash. #5a4a3a outfit, #c8402f accents, leash and short sword, riding/with two shiba-like hounds. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2627,7 +2627,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hound Handler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unleash. #5a4a3a outfit, #c8402f accents, leash and short sword, riding/with two shiba-like hounds. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2641,7 +2641,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hound Handler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unleash. #5a4a3a outfit, #c8402f accents, leash and short sword, riding/with two shiba-like hounds. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2655,7 +2655,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hound Handler, a beast warrior (handlers and their animals: numbers and charges.) Signature: Unleash. #5a4a3a outfit, #c8402f accents, leash and short sword, riding/with two shiba-like hounds. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2664,7 +2664,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Hound Handler battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Hound Handler, facing right, feet on the bottom edge, readable at 40 px tall. #5a4a3a outfit, #c8402f accents, leash and short sword, riding/with two shiba-like hounds."
     },
     {
@@ -2678,7 +2678,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hawk Tamer, a beast warrior (handlers and their animals: numbers and charges.) Signature: Hawk Harass. #4a3a2a outfit, #e9b44c accents, falconry glove, riding/with hawk. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2692,7 +2692,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hawk Tamer, a beast warrior (handlers and their animals: numbers and charges.) Signature: Hawk Harass. #4a3a2a outfit, #e9b44c accents, falconry glove, riding/with hawk. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2706,7 +2706,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hawk Tamer, a beast warrior (handlers and their animals: numbers and charges.) Signature: Hawk Harass. #4a3a2a outfit, #e9b44c accents, falconry glove, riding/with hawk. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2720,7 +2720,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Hawk Tamer, a beast warrior (handlers and their animals: numbers and charges.) Signature: Hawk Harass. #4a3a2a outfit, #e9b44c accents, falconry glove, riding/with hawk. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2729,7 +2729,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Hawk Tamer battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Hawk Tamer, facing right, feet on the bottom edge, readable at 40 px tall. #4a3a2a outfit, #e9b44c accents, falconry glove, riding/with hawk."
     },
     {
@@ -2743,7 +2743,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2757,7 +2757,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2771,7 +2771,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2785,7 +2785,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Boar Rider, a beast warrior (handlers and their animals: numbers and charges.) Signature: Charge. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2794,7 +2794,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Boar Rider battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Boar Rider, facing right, feet on the bottom edge, readable at 40 px tall. #5e3a22 outfit, #9aa0aa accents, spear, riding/with armoured boar."
     },
     {
@@ -2808,7 +2808,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bear Warrior, a beast warrior (handlers and their animals: numbers and charges.) Signature: Rage. #3a2a1e outfit, #c8402f accents, bear-claw gauntlets, fur mantle armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2822,7 +2822,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bear Warrior, a beast warrior (handlers and their animals: numbers and charges.) Signature: Rage. #3a2a1e outfit, #c8402f accents, bear-claw gauntlets, fur mantle armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2836,7 +2836,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bear Warrior, a beast warrior (handlers and their animals: numbers and charges.) Signature: Rage. #3a2a1e outfit, #c8402f accents, bear-claw gauntlets, fur mantle armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2850,7 +2850,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Bear Warrior, a beast warrior (handlers and their animals: numbers and charges.) Signature: Rage. #3a2a1e outfit, #c8402f accents, bear-claw gauntlets, fur mantle armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2859,7 +2859,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Bear Warrior battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Bear Warrior, facing right, feet on the bottom edge, readable at 40 px tall. #3a2a1e outfit, #c8402f accents, bear-claw gauntlets, fur mantle armour."
     },
     {
@@ -2873,7 +2873,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2887,7 +2887,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2901,7 +2901,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2915,7 +2915,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Tiger Lord, a beast warrior (handlers and their animals: numbers and charges.) Signature: Pride. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2924,7 +2924,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Tiger Lord battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Tiger Lord, facing right, feet on the bottom edge, readable at 40 px tall. #2a2a2a outfit, #e9b44c accents, glaive, riding/with white war tiger."
     },
     {
@@ -2938,7 +2938,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shadow Stalker, a shadow warrior (stealth: unseen until it strikes.) Signature: Unseen. #141a22 outfit, #5f6b78 accents, tanto. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -2952,7 +2952,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shadow Stalker, a shadow warrior (stealth: unseen until it strikes.) Signature: Unseen. #141a22 outfit, #5f6b78 accents, tanto. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -2966,7 +2966,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shadow Stalker, a shadow warrior (stealth: unseen until it strikes.) Signature: Unseen. #141a22 outfit, #5f6b78 accents, tanto. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -2980,7 +2980,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Shadow Stalker, a shadow warrior (stealth: unseen until it strikes.) Signature: Unseen. #141a22 outfit, #5f6b78 accents, tanto. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -2989,7 +2989,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Shadow Stalker battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Shadow Stalker, facing right, feet on the bottom edge, readable at 40 px tall. #141a22 outfit, #5f6b78 accents, tanto."
     },
     {
@@ -3003,7 +3003,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mirage Twin, a shadow warrior (stealth: unseen until it strikes.) Signature: Decoy. #2a2a3a outfit, #b48cff accents, mirror blade. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -3017,7 +3017,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mirage Twin, a shadow warrior (stealth: unseen until it strikes.) Signature: Decoy. #2a2a3a outfit, #b48cff accents, mirror blade. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -3031,7 +3031,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mirage Twin, a shadow warrior (stealth: unseen until it strikes.) Signature: Decoy. #2a2a3a outfit, #b48cff accents, mirror blade. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -3045,7 +3045,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Mirage Twin, a shadow warrior (stealth: unseen until it strikes.) Signature: Decoy. #2a2a3a outfit, #b48cff accents, mirror blade. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -3054,7 +3054,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Mirage Twin battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Mirage Twin, facing right, feet on the bottom edge, readable at 40 px tall. #2a2a3a outfit, #b48cff accents, mirror blade."
     },
     {
@@ -3068,7 +3068,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -3082,7 +3082,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -3096,7 +3096,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -3110,7 +3110,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Night Blade, a shadow warrior (stealth: unseen until it strikes.) Signature: Smoke Hunter. #1f2433 outfit, #c9ced6 accents, black katana. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -3119,7 +3119,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Night Blade battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Night Blade, facing right, feet on the bottom edge, readable at 40 px tall. #1f2433 outfit, #c9ced6 accents, black katana."
     },
     {
@@ -3133,7 +3133,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Void Walker, a shadow warrior (stealth: unseen until it strikes.) Signature: Shadow Step. #0f1218 outfit, #7a4aff accents, twin kama. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -3147,7 +3147,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Void Walker, a shadow warrior (stealth: unseen until it strikes.) Signature: Shadow Step. #0f1218 outfit, #7a4aff accents, twin kama. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -3161,7 +3161,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Void Walker, a shadow warrior (stealth: unseen until it strikes.) Signature: Shadow Step. #0f1218 outfit, #7a4aff accents, twin kama. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -3175,7 +3175,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Void Walker, a shadow warrior (stealth: unseen until it strikes.) Signature: Shadow Step. #0f1218 outfit, #7a4aff accents, twin kama. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -3184,7 +3184,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Void Walker battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Void Walker, facing right, feet on the bottom edge, readable at 40 px tall. #0f1218 outfit, #7a4aff accents, twin kama."
     },
     {
@@ -3198,7 +3198,7 @@
         1,
         5
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Eclipse Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Eclipse. #0a0c10 outfit, #e9b44c accents, eclipse ring blade. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
@@ -3212,7 +3212,7 @@
         6,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Eclipse Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Eclipse. #0a0c10 outfit, #e9b44c accents, eclipse ring blade. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
@@ -3226,7 +3226,7 @@
         11,
         15
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Eclipse Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Eclipse. #0a0c10 outfit, #e9b44c accents, eclipse ring blade. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
@@ -3240,7 +3240,7 @@
         16,
         20
       ],
-      "live": false,
+      "live": true,
       "prompt": "Portrait icon of Eclipse Ninja, a shadow warrior (stealth: unseen until it strikes.) Signature: Eclipse. #0a0c10 outfit, #e9b44c accents, eclipse ring blade. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
@@ -3249,7 +3249,7 @@
       "size": 128,
       "group": "sprite",
       "subject": "Eclipse Ninja battle sprite",
-      "live": false,
+      "live": true,
       "prompt": "Full-body battle sprite of Eclipse Ninja, facing right, feet on the bottom edge, readable at 40 px tall. #0a0c10 outfit, #e9b44c accents, eclipse ring blade."
     },
     {
@@ -5600,7 +5600,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Twin Strike",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Twin Strike\": Every hit lands twice, on its target and the next building beside it. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5609,7 +5609,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Wind Step",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Wind Step\": Dashes to a new target; the first hit after each dash deals triple damage. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5618,7 +5618,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Moon Cut",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Moon Cut\": Every fourth strike is a crescent slash for 2.5x damage. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5627,7 +5627,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Storm Chain",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Storm Chain\": Slashes arc between up to three nearby buildings. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5645,7 +5645,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Fan Throw",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Fan Throw\": Throws three shuriken at once; small splash. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5654,7 +5654,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Venom Dart",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Venom Dart\": Darts keep damaging a building for 5 seconds. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5663,7 +5663,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Armour Shred",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Armour Shred\": Hits make the target take 20% more damage from everyone. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5672,7 +5672,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Needle Rain",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Needle Rain\": Very long range and rapid fire; must stay behind cover. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5690,7 +5690,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Iron Skin",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Iron Skin\": Warriors beside him take 15% less damage. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5699,7 +5699,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Temple Bell",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Temple Bell\": Rings a bell that makes defenses in range target him first. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5708,7 +5708,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Great Wall",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Great Wall\": Carries a tower shield that absorbs splash for allies behind him. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5717,7 +5717,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Oni Smash",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Oni Smash\": Huge health; smashes walls for five times damage. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5735,7 +5735,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Disarm",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Disarm\": Finds and disarms hidden traps along the squad's path. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5744,7 +5744,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Long Jam",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Long Jam\": Two jams per warrior, each lasting 9 seconds. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5753,7 +5753,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Delayed Charge",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Delayed Charge\": Plants a charge on a defense that explodes after 5 seconds. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5762,8 +5762,8 @@
       "size": 128,
       "group": "ability",
       "subject": "Blackout",
-      "live": false,
-      "prompt": "Ability icon \"Blackout\": Briefly jams every defense in a small radius. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"Blackout\": Once per battle, jams up to three defenses within 3 tiles for 4 seconds. Shares jam immunity with other specialists. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.tunnel",
@@ -5780,7 +5780,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Climb",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Climb\": Climbs over walls and goes for storehouses first. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5789,7 +5789,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Grapple Line",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Grapple Line\": Swings over walls straight to the nearest defense. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5798,7 +5798,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Surface Stun",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Surface Stun\": Bursts out of the ground beside a defense, stunning it for 2 seconds. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5807,7 +5807,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Open Path",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Open Path\": Walls near it crumble, opening a path for everyone. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5825,7 +5825,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Swift Glide",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Swift Glide\": Very fast flyer that raids storehouses. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5834,7 +5834,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Ember Drop",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Ember Drop\": Slow balloon that drops burning embers in a wide area. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5843,8 +5843,8 @@
       "size": 128,
       "group": "ability",
       "subject": "Chain Lightning",
-      "live": false,
-      "prompt": "Ability icon \"Chain Lightning\": Lightning jumps between up to four defenses. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"Chain Lightning\": Lightning hits a defense and up to three nearby defenses for 45% damage each. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.armada",
@@ -5852,7 +5852,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Armada",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Armada\": A heavy dragon kite carrying a crew of bombers. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5861,7 +5861,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Mend",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Mend\": Heals nearby warriors over time. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5870,8 +5870,8 @@
       "size": 128,
       "group": "ability",
       "subject": "War Drum",
-      "live": false,
-      "prompt": "Ability icon \"War Drum\": Nearby warriors move and attack 25% faster. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"War Drum\": Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.veil",
@@ -5879,7 +5879,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Veil",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Veil\": Wraps nearby warriors in thin mist (a small moving smoke cloud). One bold symbol on a round ink-wash badge."
     },
     {
@@ -5888,7 +5888,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Second Wind",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Second Wind\": Brings one fallen warrior back to its feet. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5897,8 +5897,8 @@
       "size": 128,
       "group": "ability",
       "subject": "Cloud Shelter",
-      "live": false,
-      "prompt": "Ability icon \"Cloud Shelter\": A big heal and a shield that blocks the next hit for every nearby warrior. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"Cloud Shelter\": Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.battering_ram",
@@ -5906,7 +5906,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Battering Ram",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Battering Ram\": Four times damage against walls and gates. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5915,7 +5915,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Flame Breath",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Flame Breath\": Short-range fire that burns a small area of buildings. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5924,7 +5924,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Big Bang",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Big Bang\": Runs to the nearest wall or defense and explodes. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5933,8 +5933,8 @@
       "size": 128,
       "group": "ability",
       "subject": "Long Shot",
-      "live": false,
-      "prompt": "Ability icon \"Long Shot\": Artillery that out-ranges every defense but cannot move while firing. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"Long Shot\": Artillery with 11-tile range. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.eruption",
@@ -5942,7 +5942,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Eruption",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Eruption\": Huge splash that leaves burning ground. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5951,8 +5951,8 @@
       "size": 128,
       "group": "ability",
       "subject": "Unleash",
-      "live": false,
-      "prompt": "Ability icon \"Unleash\": Fights alongside two hunting dogs. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"Unleash\": Fights alongside two hunting dogs. The handler and dogs share one health and damage budget. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.hawk_harass",
@@ -5960,7 +5960,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Hawk Harass",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Hawk Harass\": Her hawk harries a defense from range, slowing its fire. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5969,7 +5969,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Charge",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Charge\": Charges through the first wall in its way. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5978,7 +5978,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Rage",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Rage\": Hits much harder below half health. One bold symbol on a round ink-wash badge."
     },
     {
@@ -5987,8 +5987,8 @@
       "size": 128,
       "group": "ability",
       "subject": "Pride",
-      "live": false,
-      "prompt": "Ability icon \"Pride\": Rides a war tiger and calls two more when he arrives. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"Pride\": Arrives with two war tigers. Rider and tigers share one health and damage budget. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.unseen",
@@ -5996,7 +5996,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Unseen",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Unseen\": Cannot be targeted until it attacks for the first time. One bold symbol on a round ink-wash badge."
     },
     {
@@ -6005,7 +6005,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Decoy",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Decoy\": Leaves a decoy that draws fire for 4 seconds. One bold symbol on a round ink-wash badge."
     },
     {
@@ -6014,7 +6014,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Smoke Hunter",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Smoke Hunter\": Deals double damage to buildings inside smoke. One bold symbol on a round ink-wash badge."
     },
     {
@@ -6023,7 +6023,7 @@
       "size": 128,
       "group": "ability",
       "subject": "Shadow Step",
-      "live": false,
+      "live": true,
       "prompt": "Ability icon \"Shadow Step\": Steps through shadows straight onto its target. One bold symbol on a round ink-wash badge."
     },
     {
@@ -6032,8 +6032,8 @@
       "size": 128,
       "group": "ability",
       "subject": "Eclipse",
-      "live": false,
-      "prompt": "Ability icon \"Eclipse\": Unseen, immune to traps, and every hit can be a critical. One bold symbol on a round ink-wash badge."
+      "live": true,
+      "prompt": "Ability icon \"Eclipse\": Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.rally",

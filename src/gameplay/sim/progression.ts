@@ -98,6 +98,7 @@ export function warriorStats(w: WarriorEntry, level: number): { hp: number; dps:
  */
 export function warriorUnlockKeep(w: WarriorEntry, data?: GameData): number {
   if (w.liveTroop && data?.troops[w.liveTroop]) {
+    if (data.troops[w.liveTroop].unlockKeep) return data.troops[w.liveTroop].unlockKeep!;
     const need = data.troops[w.liveTroop].barracksLevel;
     const keep = data.hall.levels.findIndex((l) => (l.limits.burrow_barracks?.maxLevel ?? 0) >= need) + 1;
     if (keep > 0) return keep;

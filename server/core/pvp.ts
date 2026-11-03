@@ -99,11 +99,10 @@ export function maxHousing(hallLevel: number, data: GameData): number {
 export function validLevels(levels: unknown, hallLevel: number, data: GameData): Record<string, number> | null {
   if (levels === undefined || levels === null) return {};
   if (typeof levels !== 'object') return null;
-  const cap = troopLevelCapAt(hallLevel, data);
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(levels as Record<string, unknown>)) {
     const def = data.troops[k];
-    if (!def || typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > Math.min(cap, def.levels.length)) return null;
+    if (!def || typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > Math.min(troopLevelCapAt(hallLevel, data, k), def.levels.length)) return null;
     out[k] = v;
   }
   return out;
@@ -117,6 +116,7 @@ export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { 
   for (const [k, n] of Object.entries(army)) {
     const def = data.troops[k];
     if (!def || !Number.isInteger(n) || n < 0) throw new ApiError(400, 'bad_request', 'bad army');
+    if (n > 0 && me.hallLevel < (def.unlockKeep ?? 1)) throw new ApiError(400, 'bad_request', 'troop not unlocked');
     housing += def.housing * n;
   }
   if (housing > maxHousing(me.hallLevel, data)) throw new ApiError(400, 'bad_request', 'army too big');

@@ -34,7 +34,8 @@ describe('Shadow Trials ladder', () => {
   it('walks every Clan Keep level, then keeps growing without end', () => {
     expect(trialInfo(1, data).hall).toBe(1);
     expect(trialInfo(lastHallTier, data).hall).toBe(data.hall.levels.length);
-    expect(trialInfo(lastHallTier, data).power).toBe(1);
+    const last = trialInfo(lastHallTier, data);
+    expect(last.power).toBe(last.modifiers.reduce((m, x) => m * (x.power ?? 1), 1));
     for (let t = 1; t < 300; t++) {
       const a = trialInfo(t, data);
       const b = trialInfo(t + 1, data);

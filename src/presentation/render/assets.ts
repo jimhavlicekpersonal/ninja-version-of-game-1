@@ -15,9 +15,13 @@ import {
   projectileArt,
   tierFor,
   troopArt,
+  registerWarriorArt,
   type Tier,
 } from '../art/ninja';
 import { TILE_H, TILE_W } from './iso';
+import { WARRIORS } from '../../gameplay/sim/progression';
+
+registerWarriorArt(WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })));
 
 export { GROUND_PAD };
 
