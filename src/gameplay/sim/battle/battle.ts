@@ -5,7 +5,7 @@
  */
 import { buildingDef, levelDef, troopDef, troopLevel } from '../data';
 import { createRng, next, type Rng } from '../rng';
-import type { BuildingEffect, CombatDef, Cost, GameData, ResourceKind } from '../types';
+import { RESOURCE_KINDS, type BuildingEffect, type CombatDef, type Cost, type GameData, type ResourceKind } from '../types';
 import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from './pathfind';
 import type { BattleResult, BattleSetup, Deployment, EndReason } from './types';
 import { stepFortifications } from './fortifications';
@@ -772,7 +772,9 @@ export function stateHash(sim: BattleSim): string {
   const parts: string[] = [String(sim.tick)];
   for (const b of sim.buildings) parts.push(b.hp.toFixed(3));
   for (const t of sim.troops) parts.push(`${t.hp.toFixed(3)},${t.x.toFixed(4)},${t.y.toFixed(4)}`);
-  parts.push(JSON.stringify(sim.loot));
+  // Fixed resource order: loot keys arrive in whatever order the base's objects had, and a base
+  // stored in Postgres (jsonb) comes back with its keys reordered. The hash must not depend on that.
+  parts.push(RESOURCE_KINDS.map((k) => `${k}:${sim.loot[k] ?? 0}`).join(','));
   return fnv(parts.join('|'));
 }
 

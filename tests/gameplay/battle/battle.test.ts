@@ -183,3 +183,29 @@ describe('generated opponents', () => {
     expect(b.buildings.some((x) => x.type === 'bramble_hedge')).toBe(true);
   });
 });
+
+describe('battle fingerprint', () => {
+  // Postgres jsonb returns object keys reordered (shorter first, then bytewise). The server
+  // simulates on that copy, the client on the original, and both must agree.
+  const jsonbOrder = (v: unknown): unknown =>
+    Array.isArray(v)
+      ? v.map(jsonbOrder)
+      : v && typeof v === 'object'
+        ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.length - b.length || (a < b ? -1 : a > b ? 1 : 0)).map(([k, x]) => [k, jsonbOrder(x)]))
+        : v;
+
+  it('does not depend on the key order of the stored base', { timeout: 60_000 }, () => {
+    // Seeds 1-40 include bases whose old fingerprint changed after a jsonb round trip.
+    for (let s = 1; s < 40; s++) {
+      for (const hall of [1, 2, 3]) {
+        const base = generateOpponent(s * 31, hall, data, { levelBias: 0.5 });
+        const deps = Array.from({ length: 25 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 1, y: 1 + i }));
+        for (const infiltration of [undefined, true]) {
+          const a = runBattle({ seed: 1234, base, army: { hedgehog_roller: 25 }, infiltration }, deps, data).result;
+          const b = runBattle({ seed: 1234, base: jsonbOrder(structuredClone(base)) as typeof base, army: { hedgehog_roller: 25 }, infiltration }, deps, data).result;
+          expect(b.hash, `seed ${s} hall ${hall}`).toBe(a.hash);
+        }
+      }
+    }
+  });
+});
