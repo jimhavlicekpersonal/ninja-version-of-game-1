@@ -119,3 +119,38 @@ describe('the world map', () => {
     expect(w3.counters.reclaimed).toBe(0);
   });
 });
+
+describe('shared territory (online region claims)', () => {
+  it('marks settlements other players hold, returns ones the server gave to someone else, and takes them back on a confirmed win', () => {
+    const g = newGame({}, { starter: true });
+    let s = g.state;
+    const now = g.clock.now();
+    const a = s.world.settlements[0];
+    const b = s.world.settlements[1];
+    b.owner = 'player';
+    s = (applyCommand(s, { type: 'syncRegionClaims', claims: [{ settlement: a.id, playerId: 'p2', name: 'Kaito' }, { settlement: b.id, playerId: 'p3', name: 'Rin' }], me: 'me' }, now, data) as { state: VillageState }).state;
+    const sa = s.world.settlements.find((x) => x.id === a.id)!;
+    const sb = s.world.settlements.find((x) => x.id === b.id)!;
+    expect(sa.heldBy).toEqual({ id: 'p2', name: 'Kaito' });
+    expect(sb.heldBy).toEqual({ id: 'p3', name: 'Rin' });
+    expect(sb.owner).not.toBe('player');
+    // An AI battle can't be started on a player-held settlement.
+    expect(applyCommand(s, { type: 'targetSettlement', id: a.id }, now, data).ok).toBe(false);
+    // The server confirms a won real-player battle: the settlement is ours, once.
+    const before = s.world.counters.conquests;
+    s = (applyCommand(s, { type: 'claimSettlement', id: a.id }, now, data) as { state: VillageState }).state;
+    s = (applyCommand(s, { type: 'claimSettlement', id: a.id }, now, data) as { state: VillageState }).state;
+    expect(s.world.settlements.find((x) => x.id === a.id)).toMatchObject({ owner: 'player', heldBy: null });
+    expect(s.world.counters.conquests).toBe(before + 1);
+    // Claims for this player never mark settlements as someone else's.
+    s = (applyCommand(s, { type: 'syncRegionClaims', claims: [{ settlement: a.id, playerId: 'me', name: 'Me' }], me: 'me' }, now, data) as { state: VillageState }).state;
+    expect(s.world.settlements.find((x) => x.id === a.id)).toMatchObject({ owner: 'player', heldBy: null });
+  });
+
+  it('settlement ids are the same in every region and validated', async () => {
+    const { isSettlementId } = await import('../../../src/gameplay/sim/world/territory');
+    const g = newGame({}, { starter: true });
+    for (const st of g.state.world.settlements) expect(isSettlementId(st.id, data)).toBe(true);
+    for (const bad of ['', 'bamboo_vale', 'bamboo_vale:shrine2', 'nowhere:village1', 'bamboo_vale:village0']) expect(isSettlementId(bad, data)).toBe(false);
+  });
+});

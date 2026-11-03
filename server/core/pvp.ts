@@ -16,7 +16,7 @@ import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
 import { ApiError, HOUR, TICKET_LOCK_MS, TICKET_TTL_MS, type ServerContext } from './context';
-import { attackerPvp, rateAttack, rules, shadowOf } from './shadow';
+import { attackerPvp, rateAttack, rules, settleTerritory, shadowOf, storedCombatRating } from './shadow';
 import type { LeaderboardBoard } from '../../src/backend/net/protocol';
 
 export { TICKET_LOCK_MS, TICKET_TTL_MS };
@@ -134,7 +134,9 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   delete base.clan;
   delete base.practice;
   delete base.settlement;
-  await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now() });
+  delete base.layoutVariant;
+  const combatRating = await storedCombatRating(ctx, me, base, req?.offense);
+  await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), combatRating });
 }
 
 /** Find someone to attack: a real player if one fits the rules, otherwise a generated base of matched strength. */
@@ -148,9 +150,10 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   let found: Player | null = null;
   // New-player protection: below the PvP Keep levels (or opted out) only generated villages, and
   // only defenders that may be attacked by real players (competition.json, sim/world/competition.ts).
+  await repo.addSearch(me.id, me.hallLevel, t);
   const ranges = attackerPvp(me, ctx) ? [data.ranks.matchTrophyRange, 200, 400, 1_000_000] : [];
   for (const range of ranges) {
-    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: t - TICKET_LOCK_MS, limit: 20, eligibility: rules(ctx) });
+    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: t - TICKET_LOCK_MS, limit: 20, eligibility: rules(ctx), excludeOwnerKey: me.ownerKey ?? null });
     if (list.length) {
       found = list[Math.floor(ctx.random() * list.length)];
       break;
@@ -190,6 +193,11 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const { data, repo } = ctx;
   const ticket = await takeTicket(ctx, me, sub?.ticket, 'pvp');
   const { army, levels } = checkArmy(sub, me, data);
+  // Protocol 4: the report may not bring more warriors, or higher levels, than the snapshot taken at match time.
+  if (ticket.armyCap) {
+    for (const [k, n] of Object.entries(army)) if (n > (ticket.armyCap.army[k] ?? 0)) throw new ApiError(400, 'bad_request', 'More warriors than the army you were matched with.');
+    for (const [k, l] of Object.entries(levels)) if (l > (ticket.armyCap.levels[k] ?? 1)) throw new ApiError(400, 'bad_request', 'Higher warrior levels than when you were matched.');
+  }
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   if (!(await repo.useTicket(ticket.id))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
   const t = ctx.now();
@@ -209,11 +217,14 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const attackId = ctx.uuid();
   // Shadow Rank moves only for battles between real players; generated villages never count.
   let rating = 0;
+  let settlement: AttackResponse['settlement'];
   if (defender) {
-    await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, base: ticket.base, deployments, endTick: sub.endTick, result, attackerTrophies: delta, defenderTrophies: -delta });
-    rating = await rateAttack(ctx, me, defender, result);
+    const rated = await rateAttack(ctx, me, defender, result);
+    rating = rated.delta;
+    await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, base: ticket.base, deployments, endTick: sub.endTick, result, attackerTrophies: delta, defenderTrophies: -delta, expected: rated.expected, score: rated.score });
+    settlement = await settleTerritory(ctx, me, ticket, result);
   }
-  return { attackId, result, trophies: delta, playerTrophies, rating };
+  return { attackId, result, trophies: delta, playerTrophies, rating, ...(settlement ? { settlement } : {}) };
 }
 
 export async function defenses(ctx: ServerContext, me: Player, since: number): Promise<DefensesResponse> {

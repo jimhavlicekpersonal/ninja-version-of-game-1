@@ -255,3 +255,31 @@ describe('Shadow Clans online (protocol 4)', () => {
     expect(ai.base.clan).toBe('thunder_lotus');
   });
 });
+
+describe('shared territory and install keys (protocol 4)', () => {
+  it('claims settlements taken here, marks ones others hold, and registers with an install key', async () => {
+    const w = world();
+    const other = await w.player('Rin');
+    await other.claimSettlement('iron_pass:village1');
+    const kv = memoryKv();
+    const g = village(w, (s) => {
+      s.world.settlements.find((x) => x.id === 'bamboo_vale:shrine1')!.owner = 'player';
+      s.world.settlements.find((x) => x.id === 'iron_pass:village1')!.owner = 'player';
+    });
+    const { conn, port } = connect(w, g, kv);
+    await conn.sync();
+    expect(kv.map.get('tk.net.install')).toBeTruthy();
+    const me = await port.me();
+    const claims = (await port.world()).claims!;
+    expect(claims.find((c) => c.settlement === 'bamboo_vale:shrine1')?.playerId).toBe(me.id);
+    // Rin got there first: here it goes back to its clan and shows as Rin's.
+    expect(claims.find((c) => c.settlement === 'iron_pass:village1')?.playerId).toBe(other.id);
+    const held = g.state.world.settlements.find((x) => x.id === 'iron_pass:village1')!;
+    expect(held.heldBy).toEqual({ id: other.id, name: 'Rin' });
+    expect(held.owner).toBe('iron_serpent');
+    // An AI clan takes the shrine back here: the claim is released on the next sync.
+    g.state.world.settlements.find((x) => x.id === 'bamboo_vale:shrine1')!.owner = 'bamboo';
+    await conn.sync();
+    expect((await port.world()).claims!.some((c) => c.playerId === me.id)).toBe(false);
+  });
+});

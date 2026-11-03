@@ -6,6 +6,9 @@
 import { runBattle } from '../../src/gameplay/sim/battle/battle';
 import { createRng, int, mixSeed, next } from '../../src/gameplay/sim/rng';
 import { enemyGrove, raidPhase, raidWindow } from '../../src/gameplay/sim/social/groveRaid';
+import { warFormat } from '../../src/gameplay/sim/world/competition';
+import { clanForStrength } from '../../src/gameplay/sim/world/clans';
+import { clanDef } from '../../src/gameplay/sim/world/villagegen';
 import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, BattleSubmission } from '../../src/backend/net/protocol';
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
@@ -40,20 +43,28 @@ async function sideInfo(ctx: ServerContext, groveId: string): Promise<{ size: nu
   return { size: Math.max(1, members.length), hall: Math.max(1, Math.round(halls / Math.max(1, members.length))) };
 }
 
-/** Pair a Grove for the week: the closest active unpaired Grove, or a bot Grove. */
+/**
+ * Pair a Grove for the week by its war format (competition.json `warfare`):
+ * small Alliances (AI-only formats) fight an AI clan war band; larger ones
+ * meet the closest active unpaired Alliance of the same format, or an AI war
+ * band when none is free. Each side fields up to the format's war size.
+ */
 async function ensurePairing(ctx: ServerContext, groveId: string, week: number): Promise<RaidPairing> {
   const existing = await ctx.repo.getPairing(week, groveId);
   if (existing) return existing;
   const t = ctx.now();
   const me = (await ctx.repo.listGroves('', 1000)).find((g) => g.id === groveId);
   const mine = await sideInfo(ctx, groveId);
-  const candidates = (await ctx.repo.unpairedGroves(week, t - ACTIVE_WINDOW_MS, 200)).filter((g) => g.id !== groveId && Math.abs(g.members - mine.size) <= 5);
+  const format = warFormat(mine.size, ctx.data);
+  const aiOnly = ctx.data.competition.warfare.aiOnly.includes(format.id);
+  const candidates = aiOnly ? [] : (await ctx.repo.unpairedGroves(week, t - ACTIVE_WINDOW_MS, 200)).filter((g) => g.id !== groveId && warFormat(g.members, ctx.data).id === format.id);
   const avg = me?.averageTrophies ?? 0;
   candidates.sort((a: GroveSummaryRow, b: GroveSummaryRow) => Math.abs(a.averageTrophies - avg) - Math.abs(b.averageTrophies - avg));
   for (const rival of candidates.slice(0, 5)) {
     const theirs = await sideInfo(ctx, rival.id);
-    const ourRoster = await rosterOf(ctx, groveId);
-    const theirRoster = await rosterOf(ctx, rival.id);
+    const size = Math.min(format.warSize, warFormat(theirs.size, ctx.data).warSize);
+    const ourRoster = (await rosterOf(ctx, groveId)).sort((a, b) => b.trophies - a.trophies).slice(0, size).map((r, i) => ({ ...r, index: i }));
+    const theirRoster = (await rosterOf(ctx, rival.id)).sort((a, b) => b.trophies - a.trophies).slice(0, size).map((r, i) => ({ ...r, index: i }));
     if (!ourRoster.length || !theirRoster.length) continue;
     const ourName = me?.name ?? 'Alliance';
     const ok = await ctx.repo.createPairings([
@@ -62,12 +73,13 @@ async function ensurePairing(ctx: ServerContext, groveId: string, week: number):
     ]);
     if (ok) return (await ctx.repo.getPairing(week, groveId))!;
   }
-  // No rival free: a bot Grove generated from this Grove's id, sized to match.
+  // No rival free (or a small Alliance): an AI clan war band generated from this Grove's id, sized to the war.
   const seed = mixSeed(hashString(groveId), week);
   const enemy = enemyGrove(seed, week, mine.hall, ctx.data);
-  const count = Math.max(1, mine.size);
-  const roster: RosterEntry[] = enemy.bases.slice(0, Math.max(count, 1)).map((b, i) => ({ index: i, name: enemy.members[i] ?? b.name, hallLevel: b.hallLevel, trophies: b.trophies ?? 0, base: b, playerId: null }));
-  await ctx.repo.createPairings([{ week, groveId, opponentGroveId: null, opponentName: enemy.name, botSeed: seed, roster, ourSize: count, ourHall: mine.hall, createdAt: t }]);
+  const count = Math.max(1, Math.min(mine.size, format.warSize));
+  const clan = clanDef(ctx.data, clanForStrength(mine.hall - 0.5, ctx.data, next(createRng(seed))));
+  const roster: RosterEntry[] = enemy.bases.slice(0, count).map((b, i) => ({ index: i, name: `${clan.name} warrior ${i + 1} (AI)`, hallLevel: b.hallLevel, trophies: b.trophies ?? 0, base: { ...b, clan: clan.id }, playerId: null }));
+  await ctx.repo.createPairings([{ week, groveId, opponentGroveId: null, opponentName: `${clan.name} war band (AI)`, botSeed: seed, roster, ourSize: count, ourHall: mine.hall, createdAt: t }]);
   return (await ctx.repo.getPairing(week, groveId))!;
 }
 

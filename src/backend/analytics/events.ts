@@ -24,7 +24,8 @@ export type AnalyticsEventName =
   | 'opponent_search'
   | 'world_battle'
   | 'tournament_end'
-  | 'defense_seen';
+  | 'defense_seen'
+  | 'battle_start';
 
 export interface AnalyticsEvent {
   name: AnalyticsEventName;
@@ -155,10 +156,22 @@ export interface HealthReport {
   /** Times the player came back to raids on their village, and how many of those were followed by another visit within two days. */
   defensesSeen: number;
   returnedAfterDefense: number;
+  /** Battles finished per battle started, against AI and against real players (null with none started). */
+  completion: { ai: number | null; human: number | null };
   targets: HealthTargets;
 }
 
 const DAY_MS = 86_400_000;
+
+/** Finished / started battles by opponent type (trials have their own events and are left out). */
+function completionRates(ev: AnalyticsEvent[]): { ai: number | null; human: number | null } {
+  const starts = ev.filter((e) => e.name === 'battle_start' && e.props.kind !== 'trial');
+  const aiStarted = starts.filter((e) => !e.props.human).length;
+  const humanStarted = starts.filter((e) => e.props.human).length;
+  const aiDone = ev.filter((e) => (e.name === 'raid_end' && !e.props.human && e.props.kind === 'attack') || e.name === 'world_battle' || e.name === 'tournament_end').length;
+  const humanDone = ev.filter((e) => e.name === 'raid_end' && e.props.human).length;
+  return { ai: aiStarted ? Math.min(1, aiDone / aiStarted) : null, human: humanStarted ? Math.min(1, humanDone / humanStarted) : null };
+}
 
 /**
  * The game-health numbers that can be read on one device from its own
@@ -194,6 +207,7 @@ export function healthReport(events: AnalyticsEvent[], now: number, targets: Hea
     pvpRepeat: human.length ? human.length > 1 : null,
     defensesSeen: defenses.length,
     returnedAfterDefense: defenses.filter((d) => sessions.some((t) => t > d.at + 60_000 && t <= d.at + 2 * DAY_MS)).length,
+    completion: completionRates(ev),
     targets,
   };
 }

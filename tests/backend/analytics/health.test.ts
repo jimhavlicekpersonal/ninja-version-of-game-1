@@ -13,7 +13,10 @@ describe('health report', () => {
       e('session_start', t0),
       e('tutorial_step', t0 + 60_000, { step: 9, done: true }),
       e('opponent_search', t0 + 120_000, { ok: true, humans: 0, searched: false }),
-      e('raid_end', t0 + 300_000, { human: false }),
+      e('battle_start', t0 + 200_000, { human: false, kind: 'raid' }),
+      e('raid_end', t0 + 300_000, { human: false, kind: 'attack' }),
+      e('battle_start', t0 + 400_000, { human: false, kind: 'raid' }),
+      e('battle_start', t0 + DAY + 3750_000, { human: true, kind: 'raid' }),
       e('session_start', t0 + DAY + 3600_000),
       e('opponent_search', t0 + DAY + 3700_000, { ok: true, humans: 1, searched: true }),
       e('raid_end', t0 + DAY + 3800_000, { human: true }),
@@ -33,6 +36,8 @@ describe('health report', () => {
     expect(r.pvpRepeat).toBe(true);
     expect(r.defensesSeen).toBe(1);
     expect(r.returnedAfterDefense).toBe(1);
+    // One of two AI battles finished; the one real-player battle started was finished (two reports, capped at 100%).
+    expect(r.completion).toEqual({ ai: 0.5, human: 1 });
     // A device that never came back on day 1.
     expect(healthReport([e('session_start', t0)], t0 + 3 * DAY, defaultData.competition.health).returned.day1).toBe(false);
   });

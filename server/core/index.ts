@@ -17,7 +17,7 @@ export function createCore(ctx: ServerContext) {
   return {
     ctx,
     hello: () => identity.hello(ctx),
-    register: (name: unknown) => identity.register(ctx, name),
+    register: (name: unknown, device?: unknown) => identity.register(ctx, name, device),
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
     me: (p: Parameters<typeof shadow.meView>[1]) => shadow.meView(ctx, p),
     rename: identity.rename.bind(null, ctx),
@@ -51,6 +51,10 @@ export function createCore(ctx: ServerContext) {
     submitTournament: shadow.submitTournament.bind(null, ctx),
     tournament: shadow.tournament.bind(null, ctx),
     metrics: () => shadow.metrics(ctx),
+    claimSettlement: shadow.claimSettlement.bind(null, ctx),
+    releaseSettlement: shadow.releaseSettlement.bind(null, ctx),
+    setFactionTarget: shadow.setFactionTarget.bind(null, ctx),
+    allianceBoard: shadow.allianceBoard.bind(null, ctx),
   };
 }
 

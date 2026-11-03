@@ -76,7 +76,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
   app.get(Routes.hello, async () => core.hello());
 
   // Identity
-  app.post(Routes.players, async (req, reply) => reply.code(201).send(await core.register(body<{ name: string }>(req).name)));
+  app.post(Routes.players, async (req, reply) => reply.code(201).send(await core.register(body<{ name: string }>(req).name, body<{ device: string }>(req).device)));
   app.get(Routes.me, authed(async (me) => core.me(me)));
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
 
@@ -96,6 +96,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance {
   app.post(Routes.tournamentScores, authed(async (me, req) => core.submitTournament(me, req.body as never)));
   app.get(Routes.tournament, authed(async (me, req) => core.tournament(me, Number(query(req).limit ?? 20))));
   app.get(Routes.metrics, async () => core.metrics());
+  app.post(Routes.regionClaims, authed(async (me, req) => core.claimSettlement(me, body<{ settlement: string }>(req).settlement)));
+  app.post(Routes.regionRelease, authed(async (me, req) => core.releaseSettlement(me, body<{ settlement: string }>(req).settlement)));
+  app.put(Routes.factionTarget, authed(async (me, req) => core.setFactionTarget(me, body<{ target: string }>(req).target)));
+  app.get(Routes.allianceBoard, authed(async (me, req) => core.allianceBoard(me, query(req).limit)));
 
   // Groves
   app.get(Routes.groves, authed(async (me, req) => core.listGroves(me, query(req).q ?? '')));

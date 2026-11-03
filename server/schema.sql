@@ -177,3 +177,35 @@ create table if not exists tournament_scores (
   at bigint not null,
   primary key (tournament, player_id, idx)
 );
+
+-- Shadow Clans fixes: alternate accounts, stored combat rating, measured demand, shared territory,
+-- faction leaders' war targets, army snapshots on tickets.
+alter table players add column if not exists owner_key text;
+alter table players add column if not exists combat_rating integer;
+create index if not exists players_owner_idx on players (owner_key) where owner_key is not null;
+alter table tickets add column if not exists settlement text;
+alter table tickets add column if not exists army_cap jsonb;
+
+create table if not exists searches (
+  player_id text not null,
+  hall integer not null,
+  at bigint not null
+);
+create index if not exists searches_at_idx on searches (at, hall);
+
+create table if not exists region_claims (
+  region_id text not null,
+  settlement text not null,
+  player_id text not null references players(id),
+  name text not null,
+  since bigint not null,
+  primary key (region_id, settlement)
+);
+
+create table if not exists faction_targets (
+  clan text not null,
+  week integer not null,
+  target text not null,
+  by_player text not null,
+  primary key (clan, week)
+);

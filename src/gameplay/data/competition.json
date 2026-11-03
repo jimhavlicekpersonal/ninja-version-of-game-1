@@ -40,7 +40,9 @@
     "maxAttacksPerDefenderPerDay": 4,
     "attacksPerPlayerPerDay": 6,
     "recentOpponentHours": 24,
-    "candidatePool": 3
+    "candidatePool": 3,
+    "$ratingBand": "Real candidates whose stored combat rating P is within ratingBand of the attacker's come first (broad progression band); fairness of offense vs defense orders them after that.",
+    "ratingBand": 150
   },
   "shadowRank": {
     "$comment": "Elo on expected performance, from battles against real players only. Generated opponents never change it. Seasons last seasonDays; ratings are pulled halfway back to start at each reset.",
@@ -89,8 +91,17 @@
     "discountPerNewLevel": 0.15,
     "maxDiscount": 0.6
   },
+  "allianceBoard": {
+    "$comment": "Alliance (player clan) ranking over the last `weeks` Alliance Wars: points per win against a real Alliance, per win against an AI clan war band, per draw, plus points per region settlement its members hold.",
+    "weeks": 8,
+    "win": 3,
+    "winVsAi": 2,
+    "draw": 1,
+    "perSettlement": 1
+  },
   "warfare": {
-    "$comment": "Clan war format by the number of human members; war size is flexible so small clans are never shut out.",
+    "$comment": "Clan war format by the number of human members; war size is flexible so small clans are never shut out. Formats in aiOnly fight an AI clan war band (cooperative AI raids); the others meet Alliances of the same format, or an AI war band when none is free.",
+    "aiOnly": ["ai_missions", "coop_ai_raids"],
     "formats": [
       { "minMembers": 1, "id": "ai_missions", "name": "AI clan missions", "maxWarSize": 1 },
       { "minMembers": 2, "id": "coop_ai_raids", "name": "Cooperative AI raids", "maxWarSize": 4 },

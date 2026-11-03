@@ -15,6 +15,7 @@ import { tournamentAt, tournamentBases, tournamentLevels } from '../../../src/ga
 import { clanVillage } from '../../../src/gameplay/sim/world/villagegen';
 import { maxOffenseAtHall } from '../../../src/gameplay/sim/world/power';
 import { HOUR, baseAt, rush, world } from './harness';
+import { InProcessServerAdapter } from '../../../server/inProcess';
 import { repoFactories } from './pg';
 
 const DAY = 24 * HOUR;
@@ -214,7 +215,7 @@ describe('regions, factions and the world', () => {
     await ps[0].setFaction('crimson_fang');
     await ps[1].setFaction('crimson_fang');
     let info = await ps[0].world();
-    expect(info.factions.crimson_fang).toEqual({ humans: 2, leader: null });
+    expect(info.factions.crimson_fang).toMatchObject({ humans: 2, leader: null });
     await ps[2].setFaction('crimson_fang');
     // Ben wins a real battle (recorded directly): the only contributor, so Ben leads.
     const won = { stars: 2, destruction: 70, hallDestroyed: true, loot: {}, used: {}, ticks: 100, endReason: 'time' as const, hash: 'x' };
@@ -273,6 +274,170 @@ describe('matchmaking liquidity metrics', () => {
     expect(b4.humanShare).toBeCloseTo(0.1, 6);
     expect(m.bands.find((b) => b.hall === 1)!.eligible).toBe(0);
     expect(m.matches24h.bot).toBe(1);
+  });
+});
+
+describe('alternate accounts', () => {
+  it('accounts registered from one install never meet in PvP', async () => {
+    const w = await W();
+    const reg = async (name: string, device: string, seed: number) => {
+      const c = new InProcessServerAdapter(w.core);
+      const r = await c.register(name, device);
+      await c.uploadBase({ base: baseAt(4, seed) });
+      return Object.assign(c, { id: r.playerId });
+    };
+    const main = await reg('Main', 'install-aaaaaaaa', 1);
+    const alt = await reg('Alt', 'install-aaaaaaaa', 2);
+    await reg('Other', 'install-bbbbbbbb', 3);
+    w.pastShields();
+    expect(await code(main.matchWith({ target: alt.id }))).toBe('conflict');
+    for (let i = 0; i < 5; i++) {
+      const m = await main.match();
+      expect(m!.opponent.name).not.toBe('Alt');
+    }
+  });
+});
+
+describe('measured demand, stored combat rating and army snapshots', () => {
+  it('counts searches per band and uses them when they exceed the estimate', async () => {
+    const w = await W();
+    const a = await w.player('Ann', baseAt(4));
+    w.pastShields();
+    const per = defaultData.competition.population.attacksPerPlayerPerDay;
+    for (let i = 0; i < per * 3; i++) await a.candidates();
+    const b4 = (await a.metrics()).bands.find((b) => b.hall === 4)!;
+    expect(b4.searches24h).toBe(per * 3);
+    expect(b4.attackRequestsPerDay).toBe(per * 3);
+  });
+
+  it('stores a combat rating from the uploaded village and army, and prefers candidates in its band', async () => {
+    const allHuman: GameData = { ...defaultData, competition: { ...defaultData.competition, population: { ...defaultData.competition.population, humanShareByEligible: [{ min: 0, share: 1 }], ratingBand: 30 } } };
+    const w = await W(allHuman);
+    const a = await w.player('Ann');
+    await a.uploadBase({ base: baseAt(4, 41), offense: maxOffenseAtHall(4, defaultData) });
+    const near = await w.player('Near');
+    await near.uploadBase({ base: baseAt(4, 42), offense: maxOffenseAtHall(4, defaultData) });
+    const far = await w.player('Far');
+    await far.uploadBase({ base: baseAt(5, 43), offense: maxOffenseAtHall(6, defaultData) });
+    w.pastShields();
+    const ra = (await w.repo.getPlayer(a.id))!.combatRating!;
+    const rf = (await w.repo.getPlayer(far.id))!.combatRating!;
+    expect(ra).toBeGreaterThan(0);
+    expect(rf).toBeGreaterThan(ra);
+    const r = await a.candidates();
+    expect(r.candidates[0].name).toBe('Near');
+  });
+
+  it('a report may not bring more warriors than the army snapshot taken at match time', async () => {
+    const w = await W();
+    const a = await w.player('Ann', baseAt(4));
+    const m = await a.matchWith({ ai: { clan: 'iron_serpent', seed: 3, strength: 3.5 }, army: { hedgehog_roller: 10 }, levels: { hedgehog_roller: 1 } });
+    expect(await code(a.submitAttack({ ticket: m.ticket, seed: 1, ...rush(20) }))).toBe('bad_request');
+    const m2 = await a.matchWith({ ai: { clan: 'iron_serpent', seed: 3, strength: 3.5 }, army: { hedgehog_roller: 20 }, levels: { hedgehog_roller: 1 } });
+    expect(await code(a.submitAttack({ ticket: m2.ticket, seed: 1, ...rush(20) }))).toBe('ok');
+  });
+});
+
+describe('shared territory in a region', () => {
+  it('the first real player to take a settlement holds it; others can win it in a real-player battle', async () => {
+    const w = await W();
+    const a = await w.player('Ann', baseAt(4));
+    const b = await w.player('Ben', baseAt(4, 9));
+    w.pastShields();
+    expect((await a.claimSettlement('bamboo_vale:shrine1')).holder.name).toBe('Ann');
+    expect((await b.claimSettlement('bamboo_vale:shrine1')).holder.name).toBe('Ann');
+    expect(await code(b.claimSettlement('nowhere:shrine9'))).toBe('bad_request');
+    const info = await b.world();
+    expect(info.claims).toEqual([{ settlement: 'bamboo_vale:shrine1', playerId: a.id, name: 'Ann', since: expect.any(Number) }]);
+    expect(await code(b.matchWith({ target: a.id, settlement: 'iron_pass:village1' }))).toBe('not_found');
+    const m = await b.matchWith({ target: a.id, settlement: 'bamboo_vale:shrine1' });
+    const r = await b.submitAttack({ ticket: m.ticket, seed: 1, ...rush(80) });
+    expect(r.settlement?.id).toBe('bamboo_vale:shrine1');
+    if (r.result.stars >= defaultData.world.conquestStars) {
+      expect(r.settlement?.conquered).toBe(true);
+      expect((await a.world()).claims?.[0]).toMatchObject({ playerId: b.id, name: 'Ben' });
+    } else {
+      expect(r.settlement?.conquered).toBe(false);
+    }
+    // Releasing (an AI clan took it back in the holder's world) frees it.
+    const holder = (await a.world()).claims![0].playerId === a.id ? a : b;
+    await holder.releaseSettlement('bamboo_vale:shrine1');
+    expect((await a.world()).claims).toEqual([]);
+  });
+});
+
+describe('faction leaders choose the war target', () => {
+  it('only the current human leader can set it, and the world shows it', async () => {
+    const w = await W();
+    const ps = [];
+    for (const n of ['Aki', 'Ben', 'Cal']) {
+      const p = await w.player(n, baseAt(4, n.charCodeAt(0)));
+      await p.setFaction('iron_serpent');
+      ps.push(p);
+    }
+    const won = { stars: 2, destruction: 70, hallDestroyed: true, loot: {}, used: {}, ticks: 100, endReason: 'time' as const, hash: 'x' };
+    await w.repo.addAttack({ id: 'w1', at: w.now(), attackerId: ps[0].id, attackerName: 'Aki', defenderId: ps[1].id, seed: 1, army: {}, base: baseAt(4), deployments: [], result: won, attackerTrophies: 20, defenderTrophies: -20 });
+    expect(await code(ps[1].setFactionTarget('thunder_lotus'))).toBe('conflict');
+    expect(await code(ps[0].setFactionTarget('iron_serpent'))).toBe('bad_request');
+    const info = await ps[0].setFactionTarget('thunder_lotus');
+    expect(info.factions.iron_serpent).toMatchObject({ leader: 'Aki', leaderId: ps[0].id, target: 'thunder_lotus' });
+  });
+});
+
+describe('war formats and the Alliance board', () => {
+  it('small Alliances fight an AI clan war band; Alliances of five or more meet each other', async () => {
+    const w = await W();
+    const small = [await w.player('S1', baseAt(4, 1)), await w.player('S2', baseAt(4, 2))];
+    const g1 = await small[0].createGrove('Small Leaf');
+    await small[1].joinGrove(g1.id);
+    const bigA = [];
+    const bigB = [];
+    for (let i = 0; i < 5; i++) bigA.push(await w.player(`A${i}`, baseAt(4, 10 + i)));
+    for (let i = 0; i < 5; i++) bigB.push(await w.player(`B${i}`, baseAt(4, 20 + i)));
+    const ga = await bigA[0].createGrove('Hidden Mist');
+    for (const p of bigA.slice(1)) await p.joinGrove(ga.id);
+    const gb = await bigB[0].createGrove('Iron Lotus');
+    for (const p of bigB.slice(1)) await p.joinGrove(gb.id);
+    w.intoRaid(1);
+    // Both big Alliances were seen recently (pairing only considers active Alliances).
+    await bigB[0].me();
+    const r1 = await small[0].raid();
+    expect(r1.opponent).toMatchObject({ kind: 'bot' });
+    expect(r1.opponent!.name).toMatch(/\(AI\)$/);
+    expect(r1.opponent!.members.every((m) => /\(AI\)$/.test(m.name))).toBe(true);
+    const r2 = await bigA[0].raid();
+    expect(r2.opponent).toMatchObject({ kind: 'grove', name: 'Iron Lotus' });
+    expect(r2.opponent!.members).toHaveLength(5);
+  });
+
+  it('ranks Alliances by war results and territory', async () => {
+    const w = await W();
+    const a = await w.player('Ann', baseAt(4));
+    const g = await a.createGrove('Moon Veil');
+    await a.claimSettlement('iron_pass:village1');
+    const board = await a.allianceBoard();
+    expect(board.weeks).toBe(defaultData.competition.allianceBoard.weeks);
+    expect(board.alliances[0]).toMatchObject({ name: 'Moon Veil', territory: 1, points: defaultData.competition.allianceBoard.perSettlement });
+    expect(board.mine).toEqual({ rank: 1, points: defaultData.competition.allianceBoard.perSettlement });
+    expect(g.id).toBeTruthy();
+  });
+});
+
+describe('fairness and participation metrics', () => {
+  it('reports expected vs actual scores of rated battles and clan participation', async () => {
+    const w = await W();
+    const a = await w.player('Ann', baseAt(4));
+    const b = await w.player('Ben', baseAt(4, 77));
+    w.pastShields();
+    await a.setFaction('bamboo');
+    const m = await a.matchWith({ target: b.id });
+    await a.submitAttack({ ticket: m.ticket, seed: 1, ...rush(60) });
+    const met = await a.metrics();
+    expect(met.fairness!.battles).toBe(1);
+    expect(met.fairness!.meanExpected).toBeCloseTo(0.5, 6);
+    expect(met.fairness!.buckets.reduce((x, k) => x + k.battles, 0)).toBe(1);
+    expect(met.participation!.active).toBeGreaterThanOrEqual(1);
+    expect(met.participation!.factionShare).toBeGreaterThan(0);
   });
 });
 });

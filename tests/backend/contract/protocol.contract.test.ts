@@ -18,7 +18,7 @@ import { buildServer } from '../../../server/app';
 import { MemoryRepo } from '../../../server/repo';
 import { HttpServerAdapter, memoryTokenStore } from '../../../src/backend/net/httpAdapter';
 import { ServerError } from '../../../src/backend/net/ports';
-import { PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
+import { Features, PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
 import { runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
@@ -180,5 +180,62 @@ describe('protocol contract', () => {
     } else {
       expect(await errorOf(lead.raidTicket(0))).toMatchObject({ status: 409, code: 'raid_not_live' });
     }
+  });
+
+  // ---------------------------------------------------------------- protocol 4 (Shadow Clans)
+
+  it('hello: a protocol-4 server lists the Shadow Clans features', async () => {
+    const h = await client().hello();
+    if (h.protocol < 4) return; // an older server is still a valid v3 server
+    for (const f of Object.values(Features)) expect(h.features).toContain(f);
+  });
+
+  it('candidates, AI matches and army snapshots', async () => {
+    const a = await player('Cand', 4);
+    const c = await a.candidates(1000);
+    expect(Array.isArray(c.candidates)).toBe(true);
+    expect(c.humanShare).toBeGreaterThanOrEqual(0);
+    expect(c.humanShare).toBeLessThanOrEqual(1);
+    for (const x of c.candidates) expect(x.base.human).toBe(true);
+    const m = await a.matchWith({ ai: { clan: 'iron_serpent', seed: 7, strength: 3.5 }, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 1 } });
+    expect(m.opponent.kind).toBe('bot');
+    expect(m.base.clan).toBe('iron_serpent');
+    expect((await errorOf(a.submitAttack({ ticket: m.ticket, seed: 1, ...rush(10) }))).code).toBe('bad_request');
+    expect((await errorOf(a.matchWith({ ai: { clan: 'iron_serpent', seed: 7, strength: 5.9 } }))).code).toBe('bad_request');
+    const ok = await a.matchWith({ ai: { clan: 'iron_serpent', seed: 7, strength: 3.5 } });
+    const r = await a.submitAttack({ ticket: ok.ticket, seed: 1, ...rush(5) });
+    expect(r.rating ?? 0).toBe(0); // AI battles never move Shadow Rank
+  });
+
+  it('PvP opt-in, faction, world and region claims', async () => {
+    const a = await player('World', 3);
+    expect((await a.setPvp(true)).pvpOptIn).toBe(true);
+    expect((await a.setFaction('crimson_fang')).faction).toBe('crimson_fang');
+    expect((await errorOf(a.setFaction('not_a_clan'))).code).toBe('bad_request');
+    const w = await a.world();
+    expect(w.region?.capacity).toBeGreaterThan(0);
+    expect(w.factions.crimson_fang.humans).toBeGreaterThanOrEqual(1);
+    const id = `moonlit_terrace:village${1 + (tag.charCodeAt(0) % 2)}`;
+    const held = await a.claimSettlement(id);
+    expect(held.holder.settlement).toBe(id);
+    expect((await errorOf(a.claimSettlement('nowhere:shrine1'))).code).toBe('bad_request');
+    if (held.holder.playerId === a.id) await a.releaseSettlement(id);
+    expect((await errorOf(a.setFactionTarget('thunder_lotus'))).code).toBe('conflict'); // not the leader
+    expect((await a.setFaction(null)).faction).toBeNull();
+  });
+
+  it('boards, tournament and metrics', async () => {
+    const a = await player('Boards', 4);
+    const rank = await a.leaderboard(10, 'rank');
+    expect(rank.board).toBe('rank');
+    const alliances = await a.allianceBoard();
+    expect(alliances.weeks).toBeGreaterThan(0);
+    expect(Array.isArray(alliances.alliances)).toBe(true);
+    const t = await a.tournament();
+    expect(Number.isInteger(t.tournament)).toBe(true);
+    const m = await a.metrics();
+    expect(m.bands.length).toBe(data.hall.levels.length);
+    for (const b of m.bands) expect(b.humanShare).toBeGreaterThanOrEqual(0);
+    expect(m.matches24h.human + m.matches24h.bot).toBeGreaterThanOrEqual(0);
   });
 });

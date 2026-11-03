@@ -146,6 +146,8 @@ export interface SettlementState {
   since: number;
   /** Changes whenever it changes hands, so the village is rebuilt differently. */
   variant: number;
+  /** Online: another real player in the region holds it (shared territory); null or absent otherwise. */
+  heldBy?: { id: string; name: string } | null;
 }
 
 export interface WorldNews {
@@ -188,6 +190,8 @@ export interface FactionState {
   supportDay: number;
   /** This war week's contributions. */
   war: { week: number; conquests: number; rivalConquests: number; raidWins: number };
+  /** Online: the war target a human faction leader chose for a week (otherwise the clan's rival). */
+  warTarget?: { week: number; rival: string } | null;
   warHistory: FactionWarRecord[];
 }
 
@@ -831,7 +835,10 @@ export interface CompetitionDef {
     recentOpponentHours: number;
     /** The server looks at this many eligible players per real-player slot and keeps the fairest matchups. */
     candidatePool: number;
+    /** Real candidates within this stored combat rating of the attacker come first. */
+    ratingBand: number;
   };
+  allianceBoard: { weeks: number; win: number; winVsAi: number; draw: number; perSettlement: number };
   shadowRank: {
     start: number;
     k: number;
@@ -864,7 +871,7 @@ export interface CompetitionDef {
     thresholds: { score: number; reward: Cost }[];
   };
   catchUp: { launchTopHall: number; levelsBehindTop: number; discountPerNewLevel: number; maxDiscount: number };
-  warfare: { formats: { minMembers: number; id: string; name: string; maxWarSize: number }[] };
+  warfare: { aiOnly: string[]; formats: { minMembers: number; id: string; name: string; maxWarSize: number }[] };
   regions: { capacity: number };
   factionLeadership: { activeDays: number; contributionDays: number; maxTerms: number; minHumans: number };
   health: { tutorialCompletion: number; day1: number; day7: number; day30: number; battlesPerDay: [number, number]; searchSuccess: number };

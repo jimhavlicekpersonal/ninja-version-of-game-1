@@ -7,7 +7,9 @@ import { ServerError, type ServerPort } from './ports';
 import {
   PROTOCOL_VERSION,
   Routes,
+  type AllianceBoardResponse,
   type AttackResponse,
+  type ClaimResponse,
   type BattleSubmission,
   type ChatResponse,
   type ChatView,
@@ -188,8 +190,8 @@ export class HttpServerAdapter implements ServerPort {
     return h;
   }
 
-  async register(name: string): Promise<RegisterResponse> {
-    const r = await this.req<RegisterResponse>('POST', Routes.players, { name });
+  async register(name: string, device?: string): Promise<RegisterResponse> {
+    const r = await this.req<RegisterResponse>('POST', Routes.players, device ? { name, device } : { name });
     this.tokens.set(r.token);
     return r;
   }
@@ -256,6 +258,22 @@ export class HttpServerAdapter implements ServerPort {
 
   metrics(): Promise<MetricsResponse> {
     return this.req('GET', Routes.metrics);
+  }
+
+  claimSettlement(settlement: string): Promise<ClaimResponse> {
+    return this.req('POST', Routes.regionClaims, { settlement });
+  }
+
+  releaseSettlement(settlement: string): Promise<void> {
+    return this.req('POST', Routes.regionRelease, { settlement });
+  }
+
+  setFactionTarget(target: string): Promise<WorldResponse> {
+    return this.req('PUT', Routes.factionTarget, { target });
+  }
+
+  allianceBoard(limit = 50): Promise<AllianceBoardResponse> {
+    return this.req('GET', `${Routes.allianceBoard}?limit=${limit}`);
   }
 
   // ---------------------------------------------------------------- Groves

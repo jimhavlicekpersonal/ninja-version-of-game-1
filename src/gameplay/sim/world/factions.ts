@@ -154,6 +154,12 @@ export function supportRoom(state: VillageState, data: GameData): number {
   return Math.max(reinforcementCapacity(state, data), housing) - reinforcementHousing(state, data);
 }
 
+/** The faction's enemy in a war week: a human leader's chosen target, else the clan's rival. */
+export function warRival(f: FactionState, week: number, data: GameData): string {
+  if (f.warTarget && f.warTarget.week === week && f.warTarget.rival !== f.id && data.clans.clans.some((c) => c.id === f.warTarget!.rival)) return f.warTarget.rival;
+  return clanDef(data, f.id!).rival;
+}
+
 export function warWeek(now: number, data: GameData): number {
   const w = data.world.factions.war;
   return Math.floor((now - w.epoch) / (w.periodDays * DAY));
@@ -180,7 +186,7 @@ export function currentWar(state: VillageState, now: number, data: GameData): { 
   const f = state.world.faction;
   if (!f.id) return null;
   const week = warWeek(now, data);
-  const rival = clanDef(data, f.id).rival;
+  const rival = warRival(f, week, data);
   const contribution = f.war.week === week ? warContribution(f.war, data) : 0;
   return { week, rival, ours: warAiScore(state.world.seed, week, f.id, data) + contribution, theirs: warAiScore(state.world.seed, week, rival, data), contribution, endsAt: warEndsAt(week, data) };
 }
@@ -193,7 +199,7 @@ export function settleFactionWars(state: VillageState, now: number, data: GameDa
   if (f.war.week >= 0 && f.war.week < week) {
     const contribution = warContribution(f.war, data);
     if (contribution >= data.world.factions.war.minContribution) {
-      const rival = clanDef(data, f.id).rival;
+      const rival = warRival(f, f.war.week, data);
       const ours = warAiScore(state.world.seed, f.war.week, f.id, data) + contribution;
       const theirs = warAiScore(state.world.seed, f.war.week, rival, data);
       const outcome = ours > theirs ? 'win' : ours === theirs ? 'draw' : 'loss';

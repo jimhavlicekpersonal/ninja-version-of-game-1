@@ -151,7 +151,7 @@ async function boot(): Promise<void> {
       // Online extras for the World panel; offline (or an older server) shows the local world only.
       try {
         const w = await connection.worldInfo();
-        return w ? { region: w.region?.name ?? null, factions: w.factions, lastSeason: w.lastSeason } : null;
+        return w ? { region: w.region?.name ?? null, factions: w.factions, lastSeason: w.lastSeason, meId: connection.player?.id ?? null } : null;
       } catch (e) {
         console.warn('World info failed', e);
         return null;

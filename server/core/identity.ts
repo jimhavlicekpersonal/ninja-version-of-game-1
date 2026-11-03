@@ -15,8 +15,10 @@ export function cleanName(raw: unknown, ctx: ServerContext): string {
   return s.length >= 2 ? s : 'Ruler';
 }
 
-export async function register(ctx: ServerContext, name: unknown): Promise<RegisterResponse> {
+export async function register(ctx: ServerContext, name: unknown, device?: unknown): Promise<RegisterResponse> {
   const token = ctx.newToken();
+  // Accounts registered from one install never meet each other in PvP.
+  const ownerKey = typeof device === 'string' && device.length >= 8 && device.length <= 128 ? await ctx.hash(`install:${device}`) : null;
   const t = ctx.now();
   const player: Player = {
     id: ctx.uuid(),
@@ -31,6 +33,7 @@ export async function register(ctx: ServerContext, name: unknown): Promise<Regis
     updatedAt: t,
     lastSeenAt: t,
     regionId: (await assignRegion(ctx)).id,
+    ownerKey,
   };
   await ctx.repo.createPlayer(player);
   return { playerId: player.id, token };

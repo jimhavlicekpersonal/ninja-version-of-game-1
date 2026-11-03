@@ -156,3 +156,19 @@ describe('tournament draft helpers', () => {
     expect(housing).toBeGreaterThan(data.competition.tournament.housing * 0.9);
   });
 });
+
+describe('a human leader\'s war target', () => {
+  it('replaces the clan rival for that week only, and conquests from it count as rival conquests', async () => {
+    const { warRival } = await import('../../../src/gameplay/sim/world/factions');
+    const g = newGame({}, { starter: true });
+    const t0 = data.world.factions.war.epoch + 6 * 7 * DAY + HOUR;
+    let s = must(g.state, { type: 'joinFaction', clan: 'iron_serpent' }, t0);
+    const week = warWeek(t0, data);
+    expect(warRival(s.world.faction, week, data)).toBe('silent_moon');
+    s = must(s, { type: 'setFactionWarTarget', week, rival: 'thunder_lotus' }, t0);
+    expect(currentWar(s, t0, data)!.rival).toBe('thunder_lotus');
+    expect(warRival(s.world.faction, week + 1, data)).toBe('silent_moon');
+    s = must(s, { type: 'setFactionWarTarget', week, rival: null }, t0);
+    expect(currentWar(s, t0, data)!.rival).toBe('silent_moon');
+  });
+});

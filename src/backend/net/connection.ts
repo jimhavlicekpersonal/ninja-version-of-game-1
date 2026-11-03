@@ -13,8 +13,12 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, HelloResponse, MatchRequest, MatchResponse, MetricsResponse, PlayerView, TournamentScoreResponse, TournamentSubmission, WorldResponse } from './protocol';
+import type { AllianceBoardResponse, BattleSubmission, HelloResponse, MatchRequest, MatchResponse, MetricsResponse, PlayerView, TournamentScoreResponse, TournamentSubmission, WorldResponse } from './protocol';
 import { playerOffense, type RivalCandidate } from '../../gameplay/sim/world/opponents';
+import { armyPotential } from '../../gameplay/sim/world/power';
+import { warWeek } from '../../gameplay/sim/world/factions';
+import { troopLevels } from '../../gameplay/sim/research';
+import { battleArmy } from '../../gameplay/sim/village';
 import { defensePower } from '../../gameplay/sim/world/power';
 
 /** What the connection needs from the game. GameController provides it. */
@@ -68,6 +72,14 @@ export interface OutboxItem {
 
 const SERVER_KEY = 'tk.net.server';
 const NAME_KEY = 'tk.net.name';
+/** A random id of this install, sent on registration so its accounts never meet each other in PvP. */
+const INSTALL_KEY = 'tk.net.install';
+
+function randomId(): string {
+  const c = globalThis.crypto as Crypto | undefined;
+  if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+  return `i-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e12).toString(36)}`;
+}
 
 /**
  * The server address: the one chosen in Settings, else the one built into
@@ -150,7 +162,62 @@ export class Connection {
   /** A ticket for a candidate: a real player from the board, or an AI clan village the server rebuilds. */
   async matchWith(req: MatchRequest): Promise<MatchResponse> {
     if (!this.port) throw new Error('offline');
-    return this.port.matchWith(req);
+    // The army snapshot: the report for this ticket may not bring more than this.
+    const g = this.o.game;
+    return this.port.matchWith({ ...req, army: battleArmy(g.state), levels: troopLevels(g.state, g.data) });
+  }
+
+  /** A human faction leader picks this week's war target (protocol 4). */
+  async setFactionTarget(target: string): Promise<WorldResponse | null> {
+    if (!this.port || !this.online || !this.supports('faction_targets')) return null;
+    const w = await this.port.setFactionTarget(target);
+    this.applyWorld(w);
+    return w;
+  }
+
+  /** Alliances ranked by war results and territory (protocol 4), or null. */
+  async allianceBoard(): Promise<AllianceBoardResponse | null> {
+    if (!this.port || !this.online || !this.supports('alliance_board')) return null;
+    return this.port.allianceBoard();
+  }
+
+  /** Bring region claims and the faction's war target into the village. */
+  private applyWorld(w: WorldResponse): void {
+    const g = this.o.game;
+    if (this.player && w.claims) g.dispatch({ type: 'syncRegionClaims', claims: w.claims, me: this.player.id });
+    const f = g.state.world.faction;
+    if (f.id) {
+      const target = w.factions[f.id]?.target ?? null;
+      const week = warWeek(g.now(), g.data);
+      const cur = f.warTarget && f.warTarget.week === week ? f.warTarget.rival : null;
+      if (target !== cur) g.dispatch({ type: 'setFactionWarTarget', week, rival: target });
+    }
+  }
+
+  /**
+   * Shared territory: settlements this village took from AI clans are claimed
+   * in the region (the first real player to hold one keeps it); ones an AI
+   * clan took back here are released; settlements other players hold are
+   * marked as theirs.
+   */
+  private async syncTerritory(port: ServerPort): Promise<void> {
+    if (!this.supports('territory') || !this.player) return;
+    const g = this.o.game;
+    let w = await port.world();
+    const me = this.player.id;
+    let changed = false;
+    for (const s of g.state.world.settlements) {
+      const claim = w.claims?.find((c) => c.settlement === s.id);
+      if (s.owner === 'player' && !s.heldBy && !claim) {
+        await port.claimSettlement(s.id);
+        changed = true;
+      } else if (s.owner !== 'player' && claim?.playerId === me) {
+        await port.releaseSettlement(s.id);
+        changed = true;
+      }
+    }
+    if (changed) w = await port.world();
+    this.applyWorld(w);
   }
 
   /** Region, real players per faction and the last Shadow Rank season (protocol 4), or null. */
@@ -215,6 +282,16 @@ export class Connection {
 
   private log(msg: string, err?: unknown): void {
     (this.o.log ?? ((m, e) => console.warn(m, e ?? '')))(msg, err);
+  }
+
+  /** This install's random id (created once, kept in local storage). */
+  get installId(): string {
+    let id = this.kv.get(INSTALL_KEY);
+    if (!id) {
+      id = randomId();
+      this.kv.set(INSTALL_KEY, id);
+    }
+    return id;
   }
 
   /** The name other players see. */
@@ -286,6 +363,7 @@ export class Connection {
       this.player = await port.me();
       g.dispatch({ type: 'syncRank', trophies: this.player.trophies, shieldUntil: this.player.shieldUntil });
       await this.syncShadow(port);
+      await this.syncTerritory(port);
       this.emit();
     } catch (e) {
       this.handleError(e);
@@ -325,7 +403,7 @@ export class Connection {
         // The server forgot us (new database): start a new player there.
       }
     }
-    await port.register(this.name);
+    await port.register(this.name, this.installId);
     this.player = await port.me();
     this.kv.set(NAME_KEY, this.player.name);
   }
@@ -335,7 +413,7 @@ export class Connection {
     if (!this.port || !this.player) return;
     const g = this.o.game;
     try {
-      await this.port.uploadBase({ base: villageToBase(g.state, g.now(), g.data, this.player.name), name: this.player.name });
+      await this.port.uploadBase({ base: villageToBase(g.state, g.now(), g.data, this.player.name), name: this.player.name, offense: armyPotential(g.state, g.data) });
     } catch (e) {
       this.log('Online play: base upload failed', e);
     }
@@ -436,6 +514,8 @@ export class Connection {
         if (item.kind === 'attack') {
           const r = await port.submitAttack(item.sub);
           this.o.game.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
+          // A region settlement taken from another player.
+          if (r.settlement?.conquered) this.o.game.dispatch({ type: 'claimSettlement', id: r.settlement.id });
         } else {
           await port.submitRaidAttack(item.sub);
         }

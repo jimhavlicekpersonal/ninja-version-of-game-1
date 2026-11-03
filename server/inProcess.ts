@@ -42,8 +42,8 @@ export class InProcessServerAdapter implements ServerPort {
   hello() {
     return this.call(() => this.core.hello());
   }
-  async register(name: string) {
-    const r = await this.call(() => this.core.register(name));
+  async register(name: string, device?: string) {
+    const r = await this.call(() => this.core.register(name, device));
     this.token = r.token;
     return r;
   }
@@ -91,6 +91,18 @@ export class InProcessServerAdapter implements ServerPort {
   }
   metrics() {
     return this.call(() => this.core.metrics());
+  }
+  claimSettlement(settlement: string) {
+    return this.authed((me) => this.core.claimSettlement(me, settlement));
+  }
+  releaseSettlement(settlement: string) {
+    return this.authed((me) => this.core.releaseSettlement(me, settlement));
+  }
+  setFactionTarget(target: string) {
+    return this.authed((me) => this.core.setFactionTarget(me, target));
+  }
+  allianceBoard(limit = 50) {
+    return this.authed((me) => this.core.allianceBoard(me, limit));
   }
   listGroves(query = '') {
     return this.authed((me) => this.core.listGroves(me, query));

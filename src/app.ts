@@ -165,6 +165,11 @@ export class App {
       this.d.hud.toast('Train some warriors first.', 'error');
       return;
     }
+    const st = c.state.world.settlements.find((x) => x.id === id);
+    if (st?.heldBy) {
+      void this.challengeHolder(id, st.heldBy);
+      return;
+    }
     const t = c.targetSettlement(id);
     if (!t.ok) {
       this.d.hud.toast(t.message, 'error');
@@ -174,6 +179,30 @@ export class App {
     base.practice = `${clanDef(c.data, base.clan!).name} · AI-held settlement · win ${c.data.world.conquestStars}★ to take it`;
     const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x3a1d + c.state.nextSeed), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data) };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, { kind: 'world' });
+  }
+
+  /**
+   * A settlement another real player holds in the region: a real-player
+   * battle against their village (Honor, Shadow Rank, loot), and enough stars
+   * take the settlement on the server.
+   */
+  private async challengeHolder(id: string, holder: { id: string; name: string }): Promise<void> {
+    const c = this.d.controller;
+    const conn = this.d.connection;
+    if (!conn.online || !conn.supports('territory')) {
+      this.d.hud.toast(`Held by ${holder.name} (player). Play online to challenge them.`, 'error');
+      return;
+    }
+    try {
+      const m = await conn.matchWith({ target: holder.id, settlement: id });
+      this.ticket = m.ticket;
+      const base = structuredClone(m.base);
+      base.practice = undefined;
+      const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x5e771e + c.state.nextSeed), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data) };
+      this.open(new BattleSession(setup, c.data, 'scout'));
+    } catch {
+      this.d.hud.toast(`${holder.name} (player) cannot be attacked right now (shield, daily limit or out of your band).`, 'error');
+    }
   }
 
   /** Fight a tournament fortress with a drafted army at standard levels (practice: nothing is spent). */
@@ -254,7 +283,11 @@ export class App {
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
       onHome: () => this.home(),
       onNext: () => this.scout(true),
-      onAttack: () => session.start(),
+      onAttack: () => {
+        session.start();
+        // Engagement by opponent type (health view): battles started vs finished, AI vs real players.
+        if (!replayOf && !grove) this.d.analytics.log('battle_start', { human: Boolean(session.setup.base.human), clan: session.setup.base.clan ?? null, kind: extra?.kind ?? (trialTier !== undefined ? 'trial' : 'raid') });
+      },
       onFinished: () => {
         if (grove) {
           const g = grove.finish(session.deployments, session.endTick);

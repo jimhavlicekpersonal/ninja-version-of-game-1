@@ -143,6 +143,8 @@ export class Hud {
       onTournament: (i, army) => this.deps.onTournament(i, army),
       troopThumb: (t) => this.deps.troopThumb(t),
       onlineInfo: () => this.deps.worldOnlineInfo(),
+      onFactionTarget: async (target) => Boolean(await this.deps.connection.setFactionTarget(target).catch(() => null)),
+      allianceBoard: () => this.deps.connection.allianceBoard().catch(() => null),
     });
     this.buildSkeleton();
     this.c.subscribe(() => this.refresh());
@@ -1149,12 +1151,15 @@ export class Hud {
       h('div', { class: 'event' }, `Online searches with a real player available: ${pct(r.humanAvailability)}`),
       h('div', { class: 'event' }, `Real-player battles: ${r.humanBattles} · started another after the first: ${yn(r.pvpRepeat)}`),
       h('div', { class: 'event' }, `Came back to raids: ${r.defensesSeen} · returned again within two days: ${r.returnedAfterDefense}`),
+      h('div', { class: 'event' }, `Battles finished once started: AI ${pct(r.completion.ai)} · real players ${pct(r.completion.human)}`),
     );
     try {
       const m = await this.deps.connection.metrics();
       if (!m) return;
       el.append(h('p', { class: 'small' }, h('b', {}, 'Server matchmaking liquidity'), ` · real-player share of matches today ${pct(m.humanShareActual)} (${m.matches24h.human} real / ${m.matches24h.bot} AI) · ${m.attacksPerEligibleDefender.toFixed(1)} attacks per eligible defender`));
-      for (const b of m.bands) el.append(h('div', { class: 'event' }, `Keep ${b.hall}: ${b.eligible} eligible defenders, ${b.active} active, ${b.attackRequestsPerDay} attacks/day expected, real-player share ${pct(b.humanShare)}`));
+      for (const b of m.bands) el.append(h('div', { class: 'event' }, `Keep ${b.hall}: ${b.eligible} eligible defenders, ${b.active} active, ${b.searches24h ?? 0} searches today, ${b.attackRequestsPerDay} attacks/day used, real-player share ${pct(b.humanShare)}`));
+      if (m.fairness) el.append(h('div', { class: 'event' }, `Shadow Rank fairness (7 days): ${m.fairness.battles} rated battles, expected ${pct(m.fairness.meanExpected)} vs actual ${pct(m.fairness.meanActual)}`));
+      if (m.participation) el.append(h('div', { class: 'event' }, `Clan participation: ${pct(m.participation.allianceShare)} of ${m.participation.active} active players in an Alliance, ${pct(m.participation.factionShare)} in a faction`));
     } catch {
       /* the server view is optional */
     }

@@ -68,6 +68,10 @@ export const Routes = {
   tournament: '/v1/tournament',
   tournamentScores: '/v1/tournament/scores',
   metrics: '/v1/metrics',
+  regionClaims: '/v1/region/claims',
+  regionRelease: '/v1/region/release',
+  factionTarget: '/v1/faction/target',
+  allianceBoard: '/v1/leaderboard/alliances',
 } as const;
 
 /** Feature names a protocol-4 server lists in /v1/hello. */
@@ -78,6 +82,10 @@ export const Features = {
   factions: 'factions',
   tournaments: 'tournaments',
   metrics: 'metrics',
+  /** Shared territory in a region, faction war targets, the Alliance board, army snapshots, install keys. */
+  territory: 'territory',
+  factionTargets: 'faction_targets',
+  allianceBoard: 'alliance_board',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -94,6 +102,8 @@ export interface HelloResponse {
 
 export interface RegisterRequest {
   name: string;
+  /** Protocol 4: a random id of this install; accounts from one install never meet in PvP. */
+  device?: string;
 }
 export interface RegisterResponse {
   playerId: string;
@@ -137,6 +147,8 @@ export interface RenameRequest {
 export interface UploadBaseRequest {
   base: BaseLayout;
   name?: string;
+  /** Protocol 4: the army's offensive power, for the stored combat rating. */
+  offense?: number;
 }
 
 export interface OpponentView {
@@ -175,6 +187,8 @@ export interface AttackResponse {
   playerTrophies: number;
   /** Protocol 4: Shadow Rank change (0 against generated villages, which never count). */
   rating?: number;
+  /** Protocol 4: a region settlement battle, and whether it was taken. */
+  settlement?: { id: string; conquered: boolean };
 }
 
 export interface DefenseView {
@@ -241,6 +255,11 @@ export interface CandidatesResponse {
 export interface MatchRequest {
   target?: string;
   ai?: { clan: string; seed: number; strength: number };
+  /** With `target`: a region settlement that player holds (won on enough stars). */
+  settlement?: string;
+  /** The army and levels the attacker brings; the report may not exceed them. */
+  army?: Record<string, number>;
+  levels?: Record<string, number>;
 }
 
 export interface PvpRequest {
@@ -252,11 +271,48 @@ export interface FactionRequest {
   clan: string | null;
 }
 
+export interface RegionClaimView {
+  settlement: string;
+  playerId: string;
+  name: string;
+  since: number;
+}
+
 export interface WorldResponse {
   region: { id: string; name: string; players: number; capacity: number } | null;
-  /** Real players per AI faction, and the human leader when there is one. */
-  factions: Record<string, { humans: number; leader: string | null }>;
+  /** Real players per AI faction, the human leader when there is one, and the leader's war target this week. */
+  factions: Record<string, { humans: number; leader: string | null; leaderId?: string | null; target?: string | null }>;
   lastSeason: { season: number; rating: number } | null;
+  /** Protocol 4 (territory): settlements in the region held by real players. */
+  claims?: RegionClaimView[];
+}
+
+export interface ClaimRequest {
+  settlement: string;
+}
+
+export interface ClaimResponse {
+  /** Who holds it now (the caller, or the player who already held it). */
+  holder: RegionClaimView;
+}
+
+export interface FactionTargetRequest {
+  target: string;
+}
+
+export interface AllianceBoardEntry {
+  rank: number;
+  name: string;
+  members: number;
+  points: number;
+  wins: number;
+  territory: number;
+}
+
+export interface AllianceBoardResponse {
+  weeks: number;
+  alliances: AllianceBoardEntry[];
+  mine: { rank: number; points: number } | null;
 }
 
 export interface TournamentSubmission {
@@ -286,8 +342,10 @@ export interface MetricsBand {
   eligible: number;
   /** Players with a village seen in the last day. */
   active: number;
-  /** Expected attack requests per day (active x attacks per player). */
+  /** Attack requests per day: the larger of searches measured in the last day and active x attacks per player. */
   attackRequestsPerDay: number;
+  /** Rivals boards and matches requested in the last day by this band. */
+  searches24h?: number;
   /** Target share of real opponents: min(table, capacity). */
   humanShare: number;
 }
@@ -296,6 +354,10 @@ export interface MetricsResponse {
   at: number;
   /** One row per attacker Keep level (its matchmaking band). */
   bands: MetricsBand[];
+  /** Expected vs actual results of rated battles in the last week (Shadow Rank fairness). */
+  fairness?: { battles: number; meanExpected: number; meanActual: number; buckets: { from: number; to: number; battles: number; expected: number; actual: number }[] };
+  /** Players seen in the last day, and the shares in an Alliance and in an AI faction. */
+  participation?: { active: number; allianceShare: number; factionShare: number };
   /** Real-player attacks in the last day, and per eligible defender. */
   attacks24h: number;
   attacksPerEligibleDefender: number;

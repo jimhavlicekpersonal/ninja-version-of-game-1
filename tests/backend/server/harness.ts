@@ -13,11 +13,19 @@ export const HOUR = 3_600_000;
 
 /**
  * The game data with real-player battles open at every Keep level. The older
- * server tests check matching, loot and shields with small villages, so they
- * run on this; the shipped onboarding (Keep 1-2 AI only, 3 optional, 4+
+ * server tests check matching, loot, shields and Alliance War scoring with
+ * small villages and small Alliances, so they run on this; the shipped onboarding (Keep 1-2 AI only, 3 optional, 4+
  * standard) is tested with `defaultData` in shadow.test.ts.
  */
-export const openPvpData: GameData = { ...defaultData, competition: { ...defaultData.competition, pvp: { minHall: 1, standardHall: 1 } } };
+export const openPvpData: GameData = {
+  ...defaultData,
+  competition: {
+    ...defaultData.competition,
+    pvp: { minHall: 1, standardHall: 1 },
+    // Real Alliance Wars at any size (the shipped formats send Alliances under 5 members to AI war bands).
+    warfare: { aiOnly: [], formats: [{ minMembers: 1, id: 'open_war', name: 'Open war', maxWarSize: 50 }] },
+  },
+};
 
 export function world(opts: { data?: GameData; repo?: Repo; start?: number } = {}) {
   const data = opts.data ?? openPvpData;

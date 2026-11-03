@@ -446,6 +446,7 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .rival-main b { font-size: 16px; }
 .clan-row.current { background: #fff6c8; }
 .settlement.mine { background: #eef9e6; }
+.settlement.held { border-left-color: var(--berry); background: #fff4ec; }
 .settlement > div:first-child, .clan-row > div:first-child { min-width: 0; flex: 1 1 140px; }
 .settlement { flex-wrap: nowrap; }
 .settlement .row { flex-wrap: nowrap; }

@@ -7,7 +7,9 @@
  *     directly, for tests and local sandboxes.
  */
 import type {
+  AllianceBoardResponse,
   AttackResponse,
+  ClaimResponse,
   BattleSubmission,
   CandidatesResponse,
   ChatResponse,
@@ -57,7 +59,8 @@ export class ServerError extends Error {
 
 export interface IdentityPort {
   hello(): Promise<HelloResponse>;
-  register(name: string): Promise<RegisterResponse>;
+  /** `device`: a random id of this install (protocol 4), so its accounts never meet in PvP. */
+  register(name: string, device?: string): Promise<RegisterResponse>;
   me(): Promise<PlayerView>;
   rename(name: string): Promise<PlayerView>;
 }
@@ -82,6 +85,10 @@ export interface ShadowClansPort {
   submitTournament(sub: TournamentSubmission): Promise<TournamentScoreResponse>;
   tournament(limit?: number): Promise<TournamentResponse>;
   metrics(): Promise<MetricsResponse>;
+  claimSettlement(settlement: string): Promise<ClaimResponse>;
+  releaseSettlement(settlement: string): Promise<void>;
+  setFactionTarget(target: string): Promise<WorldResponse>;
+  allianceBoard(limit?: number): Promise<AllianceBoardResponse>;
 }
 
 export interface GrovePort {

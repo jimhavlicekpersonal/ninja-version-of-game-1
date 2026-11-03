@@ -28,9 +28,22 @@ import { icons } from './icons';
 /** Extra facts a server can add (real players per faction, the player's region). */
 export interface WorldOnlineInfo {
   region: string | null;
-  factions: Record<string, { humans: number; leader: string | null }>;
+  /** Real players per faction, the human leader (and their id) and the war target the leader chose. */
+  factions: Record<string, { humans: number; leader: string | null; leaderId?: string | null; target?: string | null }>;
   /** A finished Shadow Rank season whose reward can be collected. */
   lastSeason: { season: number; rating: number } | null;
+  /** This player's server id (to know whether they lead their faction). */
+  meId: string | null;
+}
+
+/** An Alliance on the online board. */
+export interface AllianceRow {
+  rank: number;
+  name: string;
+  members: number;
+  points: number;
+  wins: number;
+  territory: number;
 }
 
 export interface WorldUiDeps {
@@ -42,6 +55,10 @@ export interface WorldUiDeps {
   troopThumb(type: string): string | null;
   /** Online extras, or null when playing offline. */
   onlineInfo(): Promise<WorldOnlineInfo | null>;
+  /** A human faction leader picks this week's war target (online). */
+  onFactionTarget(target: string): Promise<boolean>;
+  /** Alliances ranked by war results and territory (online), or null. */
+  allianceBoard(): Promise<{ weeks: number; alliances: AllianceRow[]; mine: { rank: number; points: number } | null } | null>;
 }
 
 type Tab = 'map' | 'clans' | 'faction' | 'tournament' | 'rank';
@@ -194,6 +211,19 @@ export class WorldUi {
       const list = h('div', { class: 'province-list' });
       for (const st of s.world.settlements.filter((x) => x.province === p.id)) {
         const kind = settlementKind(gd, st.kind);
+        const scout = h('button', { class: 'btn sky', type: 'button', onclick: () => { this.d.kit.closeAllModals(); this.d.onSettlement(st.id); } }, 'Scout');
+        if (st.heldBy) {
+          // Shared territory: another real player in the region holds it.
+          list.append(
+            h(
+              'div',
+              { class: 'settlement held' },
+              h('div', {}, h('b', {}, st.name), h('div', { class: 'muted small' }, `${kind.name}${kind.tribute ? ' (tribute)' : ''} · held by ${st.heldBy.name}`)),
+              h('div', { class: 'row' }, h('span', { class: 'tag tag-human' }, 'PLAYER'), scout),
+            ),
+          );
+          continue;
+        }
         const mine = st.owner === 'player';
         const owner = mine ? null : clanDef(gd, st.owner);
         const strength = mine ? 0 : settlementStrength(st, s.world, hall, gd);
@@ -203,7 +233,7 @@ export class WorldUi {
             'div',
             { class: `settlement${mine ? ' mine' : ''}`, style: owner ? `--clan:${owner.color}` : '' },
             h('div', {}, h('b', {}, st.name), h('div', { class: 'muted small' }, `${kind.name}${kind.tribute ? ' (tribute)' : ''} · ${mine ? `yours for ${formatDuration(now - st.since)}` : `${owner!.name} (AI) · Keep ${keepOf(strength)}`}`)),
-            mine ? h('span', { class: 'chip good' }, 'Yours') : h('div', { class: 'row' }, h('span', { class: `chip match-${label!.replace(' ', '-').toLowerCase()}` }, label!), h('button', { class: 'btn sky', type: 'button', onclick: () => { this.d.kit.closeAllModals(); this.d.onSettlement(st.id); } }, 'Scout')),
+            mine ? h('span', { class: 'chip good' }, 'Yours') : h('div', { class: 'row' }, h('span', { class: `chip match-${label!.replace(' ', '-').toLowerCase()}` }, label!), scout),
           ),
         );
       }
@@ -306,10 +336,24 @@ export class WorldUi {
     );
     const war = currentWar(s, now, gd);
     if (war) {
+      const chosen = info?.target ? `${info.leader ?? 'The leader'} (player) chose this target.` : 'The clan command (AI) chose this target.';
       body.append(
         h('h3', {}, `War with ${clanDef(gd, war.rival).name}`),
-        h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `${war.ours} – ${war.theirs}`), h('div', { class: 'muted small' }, `Ends in ${formatDuration(war.endsAt - now)}. Your part: ${war.contribution} points. Take settlements (more for the rival's) and win raids to add to it.`))),
+        h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `${war.ours} – ${war.theirs}`), h('div', { class: 'muted small' }, `Ends in ${formatDuration(war.endsAt - now)}. Your part: ${war.contribution} points. Take settlements (more for the enemy's) and win raids to add to it. ${chosen}`))),
       );
+      // A human leader decides the faction's strategy: this week's war target.
+      if (this.online && info?.leaderId && info.leaderId === this.online.meId) {
+        const pick = h('select', { class: 'text', 'aria-label': 'War target' }) as HTMLSelectElement;
+        for (const c of gd.clans.clans) if (c.id !== f.id) pick.append(h('option', { value: c.id, selected: c.id === war.rival }, c.name));
+        const set = h('button', { class: 'btn primary', type: 'button' }, 'Set war target');
+        set.addEventListener('click', async () => {
+          const ok = await this.d.onFactionTarget(pick.value);
+          this.d.kit.toast(ok ? 'War target set for this week.' : 'Could not set the war target.', ok ? 'success' : 'error');
+          if (ok) this.online = await this.d.onlineInfo();
+          redraw();
+        });
+        body.append(h('p', { class: 'small' }, 'You lead this faction: choose whom it fights this week.'), h('div', { class: 'chat-input-row' }, pick, set));
+      }
     }
     for (const w of f.warHistory.filter((x) => !x.claimed)) {
       const reward = gd.world.factions.war.rewards[w.outcome];
@@ -393,6 +437,19 @@ export class WorldUi {
     const last = this.online?.lastSeason;
     if (last && !s.world.rankSeasonsClaimed.includes(last.season)) {
       body.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `Season ${last.season + 1} finished at ${last.rating}`), h('div', { class: 'muted small' }, shadowTier(last.rating, gd).name)), h('button', { class: 'btn gold', type: 'button', onclick: () => { if (this.run({ type: 'claimRankSeason', season: last.season, rating: last.rating }, 'Season reward collected.')) redraw(); } }, 'Collect ', rewardChips(shadowTier(last.rating, gd).reward as Cost))));
+    }
+    if (this.online) {
+      const board = h('div', {}, h('p', { class: 'muted small' }, 'Loading the Alliance board…'));
+      body.append(h('h3', {}, 'Alliance board'), board);
+      void this.d.allianceBoard().then((b) => {
+        clear(board);
+        if (!b || !b.alliances.length) {
+          board.append(h('p', { class: 'muted small' }, 'No Alliance has scored yet.'));
+          return;
+        }
+        board.append(h('p', { class: 'muted small' }, `Last ${b.weeks} Alliance Wars: wins against Alliances and AI clans, draws, and settlements the members hold.${b.mine ? ` Yours: #${b.mine.rank}, ${b.mine.points} points.` : ''}`));
+        for (const a of b.alliances.slice(0, 10)) board.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `#${a.rank} ${a.name}`), h('div', { class: 'muted small' }, `${a.members} members · ${a.wins} wins · ${a.territory} settlements`)), h('span', { class: 'chip' }, `${a.points} pts`)));
+      });
     }
     body.append(h('h3', {}, 'Real-player battles'));
     if (status === 'locked') body.append(h('p', { class: 'small' }, `Protected: until Clan Keep ${gd.competition.pvp.minHall} you only meet AI clans, and no real player can attack you.`));

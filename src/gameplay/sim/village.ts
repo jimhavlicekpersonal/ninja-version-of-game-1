@@ -26,8 +26,8 @@ import { RESOURCE_KINDS } from './types';
 import { advanceWorld, createWorld } from './world/world';
 import { defeatClan } from './world/clans';
 import { payFromTreasury } from './world/treasury';
-import { conquer, settlementBase, targetFor, tributeQuote } from './world/territory';
-import { canJoinFaction, factionMissions, factionRank, joinFaction, leaveFaction, supportRoom, supportSquad, warReward, warWeek } from './world/factions';
+import { applyRegionClaims, conquer, conquerFromPlayer, settlementBase, targetFor, tributeQuote } from './world/territory';
+import { canJoinFaction, factionMissions, factionRank, joinFaction, leaveFaction, supportRoom, supportSquad, warReward, warRival, warWeek } from './world/factions';
 import { draftProblem, totalScore, tournamentAt, tournamentBases, tournamentLevels, tournamentScore } from './world/tournament';
 import { catchUpFactor, shadowTier, upgradeHallTier } from './world/competition';
 import type { ShadowRankState } from './types';
@@ -90,7 +90,11 @@ export type Command =
   | { type: 'tournamentEnd'; index: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'setPvpOptIn'; on: boolean }
   | { type: 'syncShadowRank'; rank: ShadowRankState | null }
-  | { type: 'claimRankSeason'; season: number; rating: number };
+  | { type: 'claimRankSeason'; season: number; rating: number }
+  // Online shared territory and faction leadership (server results; each is safe to apply twice).
+  | { type: 'syncRegionClaims'; claims: { settlement: string; playerId: string; name: string }[]; me: string }
+  | { type: 'claimSettlement'; id: string }
+  | { type: 'setFactionWarTarget'; week: number; rival: string | null };
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -566,6 +570,17 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       while (s.world.rankSeasonsClaimed.length > data.competition.shadowRank.keepClaimedSeasons) s.world.rankSeasonsClaimed.shift();
       return { ok: true, state: s, events: [{ kind: 'reward', source: `shadow_rank:${cmd.season}`, grants }] };
     }
+    case 'syncRegionClaims':
+      applyRegionClaims(s.world, cmd.claims, cmd.me, now, data);
+      return { ok: true, state: s, events: [] };
+    case 'claimSettlement': {
+      const f = s.world.faction;
+      if (conquerFromPlayer(s.world, cmd.id, now, data) && f.id && f.war.week === warWeek(now, data)) f.war.conquests++;
+      return { ok: true, state: s, events: [] };
+    }
+    case 'setFactionWarTarget':
+      s.world.faction.warTarget = cmd.rival ? { week: cmd.week, rival: cmd.rival } : null;
+      return { ok: true, state: s, events: [] };
     case 'leaveLocalGrove':
       // Playing online: the real Grove replaces the bot one (XP, Lodge troops and history stay).
       s.grove.joined = false;
@@ -977,6 +992,7 @@ function afterAttack(s: VillageState, clan: string | undefined, stars: number, n
 function targetSettlement(s: VillageState, id: string, data: GameData): CommandResult {
   const st = s.world.settlements.find((x) => x.id === id);
   if (!st) return fail('NOT_FOUND', 'Unknown settlement.');
+  if (st.heldBy) return fail('NOT_AVAILABLE', `${st.name} is held by ${st.heldBy.name} (player): challenge them online.`);
   if (st.owner === 'player') return fail('NOT_AVAILABLE', `${st.name} is already yours.`);
   s.world.target = targetFor(st, s.world, hallLevel(s, data), data);
   return { ok: true, state: s, events: [] };
@@ -1009,7 +1025,7 @@ function worldBattleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id'
     const from = conquer(s.world, st.id, now, data);
     const f = s.world.faction;
     if (from && f.id && f.war.week === warWeek(now, data)) {
-      if (data.clans.clans.find((c) => c.id === f.id)?.rival === from) f.war.rivalConquests++;
+      if (warRival(f, f.war.week, data) === from) f.war.rivalConquests++;
       else f.war.conquests++;
     }
   }

@@ -32,11 +32,27 @@ export interface Player {
   regionId?: string | null;
   /** AI faction (clan id). */
   faction?: string | null;
+  /** Hash of the install that registered the account (keeps alternate accounts apart). */
+  ownerKey?: string | null;
+  /** Hidden combat rating P (0..scale), from the uploaded village and army. */
+  combatRating?: number | null;
 }
 
 export type PlayerPatch = Partial<
-  Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'pvpOptIn' | 'rating' | 'defenseRating' | 'ratedGames' | 'ratingSeason' | 'lastSeason' | 'regionId' | 'faction'>
+  Pick<
+    Player,
+    'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'pvpOptIn' | 'rating' | 'defenseRating' | 'ratedGames' | 'ratingSeason' | 'lastSeason' | 'regionId' | 'faction' | 'ownerKey' | 'combatRating'
+  >
 >;
+
+/** A settlement in a region held by a real player (shared territory). */
+export interface RegionClaim {
+  regionId: string;
+  settlement: string;
+  playerId: string;
+  name: string;
+  since: number;
+}
 
 /** A regional world instance. */
 export interface Region {
@@ -79,6 +95,10 @@ export interface Ticket {
   week?: number;
   groveId?: string;
   target?: number;
+  /** Protocol 4: a region settlement this battle is for (taken on enough stars). */
+  settlement?: string;
+  /** Protocol 4: the army and levels the attacker had when matched; the report may not exceed them. */
+  armyCap?: { army: Record<string, number>; levels: Record<string, number> };
 }
 
 export interface AttackRecord {
@@ -97,6 +117,9 @@ export interface AttackRecord {
   result: BattleResult;
   attackerTrophies: number;
   defenderTrophies: number;
+  /** Rated battles: the attacker's expected score and actual score (for the fairness metric). */
+  expected?: number;
+  score?: number;
 }
 
 export interface Grove {
@@ -215,6 +238,8 @@ export interface OpponentQuery {
   limit: number;
   /** Protocol 4: only defenders that may be attacked by real players. */
   eligibility?: EligibilityRules;
+  /** Protocol 4: skip accounts registered from this install (alternate accounts). */
+  excludeOwnerKey?: string | null;
 }
 
 export interface Repo {
@@ -303,6 +328,28 @@ export interface Repo {
   tournamentTotal(tournament: number, playerId: string): Promise<number>;
   /** 1 + players with a higher total. */
   tournamentRankOf(tournament: number, total: number): Promise<number>;
+  /** Opponent searches (rivals boards and matches), for measured demand per band. */
+  addSearch(playerId: string, hall: number, at: number): Promise<void>;
+  searchesSince(minHall: number, maxHall: number, since: number): Promise<number>;
+  regionClaims(regionId: string): Promise<RegionClaim[]>;
+  /** Inserts the claim when the settlement is free; returns whoever holds it afterwards. */
+  claimSettlement(c: RegionClaim): Promise<RegionClaim>;
+  /** Moves a claim from one player to another; false if `fromId` no longer holds it. */
+  transferClaim(regionId: string, settlement: string, fromId: string, to: { playerId: string; name: string; since: number }): Promise<boolean>;
+  releaseClaim(regionId: string, settlement: string, playerId: string): Promise<void>;
+  /** A human faction leader's war target for a week. */
+  setFactionTarget(clan: string, week: number, target: string, by: string): Promise<void>;
+  factionTarget(clan: string, week: number): Promise<string | null>;
+  /** Stars of a player's most recent real-player attacks, newest first. */
+  recentStars(playerId: string, limit: number): Promise<number[]>;
+  /** Rated battles since `since`: expected and actual scores. */
+  ratedSince(since: number): Promise<{ expected: number; score: number }[]>;
+  /** Players seen since `since`, and how many of them are in an Alliance or an AI faction. */
+  participation(since: number): Promise<{ active: number; inAlliance: number; inFaction: number }>;
+  /** Alliance War claims for weeks >= `week` (one row per player). */
+  claimsFromWeek(week: number): Promise<RaidClaim[]>;
+  /** Region settlements held by any of these players. */
+  territoryOf(playerIds: string[]): Promise<number>;
 }
 
 /** Shared rule check for the memory adapter (Postgres does the same in SQL). */
@@ -328,6 +375,9 @@ export class MemoryRepo implements Repo {
   regions: Region[] = [];
   terms: { clan: string; season: number; playerId: string }[] = [];
   tournamentRows: TournamentScoreRow[] = [];
+  searches: { playerId: string; hall: number; at: number }[] = [];
+  claimsRegion: RegionClaim[] = [];
+  targets: { clan: string; week: number; target: string; by: string }[] = [];
   private seq = 0;
 
   async createPlayer(p: Player): Promise<void> {
@@ -351,6 +401,7 @@ export class MemoryRepo implements Repo {
       .filter((p) => p.base && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
       .filter((p) => p.hallLevel >= q.minHall && p.hallLevel <= q.maxHall && p.trophies >= q.minTrophies && p.trophies <= q.maxTrophies)
       .filter((p) => !q.eligibility || eligible(p, q.eligibility, this.attacks.filter((a) => a.defenderId === p.id && a.at > q.eligibility!.attacksSince).length))
+      .filter((p) => !q.excludeOwnerKey || p.ownerKey !== q.excludeOwnerKey)
       .slice(0, q.limit)
       .map(clone);
   }
@@ -573,5 +624,52 @@ export class MemoryRepo implements Repo {
   }
   async tournamentRankOf(tournament: number, total: number): Promise<number> {
     return 1 + [...this.totals(tournament).values()].filter((v) => v > total).length;
+  }
+  async addSearch(playerId: string, hall: number, at: number): Promise<void> {
+    this.searches.push({ playerId, hall, at });
+  }
+  async searchesSince(minHall: number, maxHall: number, since: number): Promise<number> {
+    return this.searches.filter((x) => x.at > since && x.hall >= minHall && x.hall <= maxHall).length;
+  }
+  async regionClaims(regionId: string): Promise<RegionClaim[]> {
+    return this.claimsRegion.filter((c) => c.regionId === regionId).map(clone);
+  }
+  async claimSettlement(c: RegionClaim): Promise<RegionClaim> {
+    const cur = this.claimsRegion.find((x) => x.regionId === c.regionId && x.settlement === c.settlement);
+    if (cur) return clone(cur);
+    this.claimsRegion.push(clone(c));
+    return clone(c);
+  }
+  async transferClaim(regionId: string, settlement: string, fromId: string, to: { playerId: string; name: string; since: number }): Promise<boolean> {
+    const cur = this.claimsRegion.find((x) => x.regionId === regionId && x.settlement === settlement && x.playerId === fromId);
+    if (!cur) return false;
+    Object.assign(cur, to);
+    return true;
+  }
+  async releaseClaim(regionId: string, settlement: string, playerId: string): Promise<void> {
+    this.claimsRegion = this.claimsRegion.filter((x) => !(x.regionId === regionId && x.settlement === settlement && x.playerId === playerId));
+  }
+  async setFactionTarget(clan: string, week: number, target: string, by: string): Promise<void> {
+    this.targets = this.targets.filter((x) => !(x.clan === clan && x.week === week));
+    this.targets.push({ clan, week, target, by });
+  }
+  async factionTarget(clan: string, week: number): Promise<string | null> {
+    return this.targets.find((x) => x.clan === clan && x.week === week)?.target ?? null;
+  }
+  async recentStars(playerId: string, limit: number): Promise<number[]> {
+    return this.attacks.filter((a) => a.attackerId === playerId).sort((a, b) => b.at - a.at).slice(0, limit).map((a) => a.result.stars);
+  }
+  async ratedSince(since: number): Promise<{ expected: number; score: number }[]> {
+    return this.attacks.filter((a) => a.at > since && typeof a.expected === 'number' && typeof a.score === 'number').map((a) => ({ expected: a.expected!, score: a.score! }));
+  }
+  async participation(since: number): Promise<{ active: number; inAlliance: number; inFaction: number }> {
+    const active = [...this.players.values()].filter((p) => p.lastSeenAt >= since);
+    return { active: active.length, inAlliance: active.filter((p) => p.groveId).length, inFaction: active.filter((p) => p.faction).length };
+  }
+  async claimsFromWeek(week: number): Promise<RaidClaim[]> {
+    return this.claims.filter((c) => c.week >= week).map(clone);
+  }
+  async territoryOf(playerIds: string[]): Promise<number> {
+    return this.claimsRegion.filter((c) => playerIds.includes(c.playerId)).length;
   }
 }

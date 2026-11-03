@@ -13,6 +13,7 @@ import { applyLootPenalty, scaleLoot } from '../matchmaking';
 import { createRng, mixSeed, next, pick, type Rng } from '../rng';
 import type { ClanDef, ClanState, Cost, GameData, SettlementState, VillageState, WorldState, WorldTarget } from '../types';
 import { hashId, pushNews } from './clans';
+import { warRival, warWeek } from './factions';
 import { clanDef, clanVillage } from './villagegen';
 import { treasuryLootFactor } from './treasury';
 
@@ -38,6 +39,14 @@ export function initialSettlements(seed: number, now: number, data: GameData): S
     }
   }
   return out;
+}
+
+/** True for a settlement id the world map can contain (`province:kindN`), the same in every region. */
+export function isSettlementId(id: string, data: GameData): boolean {
+  const m = /^([a-z_]+):([a-z]+)(\d+)$/.exec(String(id));
+  if (!m) return false;
+  const k = data.world.settlementKinds.find((x) => x.id === m[2]);
+  return Boolean(k && data.world.provinces.some((p) => p.id === m[1]) && Number(m[3]) >= 1 && Number(m[3]) <= k.count);
 }
 
 export function settlementKind(data: GameData, id: string) {
@@ -88,10 +97,44 @@ export function conquer(world: WorldState, id: string, now: number, data: GameDa
   s.owner = 'player';
   s.since = now;
   s.variant++;
+  s.heldBy = null;
   world.counters.conquests++;
-  if (world.faction.id && clanDef(data, world.faction.id).rival === from) world.counters.rivalConquests++;
+  if (world.faction.id && warRival(world.faction, warWeek(now, data), data) === from) world.counters.rivalConquests++;
   pushNews(world, { at: now, kind: 'conquest', text: `You took ${s.name} from ${clanDef(data, from).name}.` }, data);
   return from;
+}
+
+/**
+ * Shared territory (online): settlements other real players in the region
+ * hold. A settlement another player holds is shown as theirs; if this world
+ * thought it was ours, the server's record wins and it returns to its clan
+ * here. Mutates.
+ */
+export function applyRegionClaims(world: WorldState, claims: { settlement: string; playerId: string; name: string }[], meId: string, now: number, data: GameData): void {
+  for (const s of world.settlements) {
+    const other = claims.find((c) => c.settlement === s.id && c.playerId !== meId);
+    s.heldBy = other ? { id: other.playerId, name: other.name } : null;
+    if (other && s.owner === 'player') {
+      s.owner = provinceOf(data, s.province).clan;
+      s.since = now;
+      s.variant++;
+      pushNews(world, { at: now, kind: 'conquest', text: `${other.name} (player) holds ${s.name}.` }, data);
+    }
+  }
+}
+
+/** A settlement taken from another real player, confirmed by the server. Safe to apply twice. Mutates. */
+export function conquerFromPlayer(world: WorldState, id: string, now: number, data: GameData): boolean {
+  const s = world.settlements.find((x) => x.id === id);
+  if (!s || (s.owner === 'player' && !s.heldBy)) return false;
+  const from = s.heldBy?.name ?? 'a rival player';
+  s.owner = 'player';
+  s.since = now;
+  s.variant++;
+  s.heldBy = null;
+  world.counters.conquests++;
+  pushNews(world, { at: now, kind: 'conquest', text: `You took ${s.name} from ${from} (player).` }, data);
+  return true;
 }
 
 /** Clan step hook: an expanding clan retakes its land from the player, or takes land from its rival. Mutates. */
@@ -99,7 +142,7 @@ export function expandStep(world: WorldState, clan: ClanState, def: ClanDef, at:
   if (clan.status !== 'expanding') return;
   const cfg = data.clans.sim;
   const home = data.world.provinces.find((p) => p.clan === def.id)?.id;
-  const mine = world.settlements.filter((s) => s.owner === 'player' && s.province === home && at - s.since >= cfg.reclaimMinHeldHours * HOUR);
+  const mine = world.settlements.filter((s) => s.owner === 'player' && !s.heldBy && s.province === home && at - s.since >= cfg.reclaimMinHeldHours * HOUR);
   if (mine.length && next(rng) < cfg.reclaimChance) {
     const s = mine[Math.floor(next(rng) * mine.length)];
     s.owner = def.id;
