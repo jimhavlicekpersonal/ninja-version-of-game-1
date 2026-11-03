@@ -20,12 +20,13 @@ import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
 import { GroveUi } from './groveUi';
+import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, researchSkipQuote, researchStartQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../../gameplay/sim/village';
 import { troopLevelOf } from '../../gameplay/sim/research';
-import { role as roleDef, WARRIORS, warriorUnlockKeep } from '../../gameplay/sim/progression';
+import { role as roleDef, warriorUnlockKeep } from '../../gameplay/sim/progression';
 import { nextTrialTier, trialInfo, trialReward } from '../../gameplay/sim/trials';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
@@ -779,12 +780,14 @@ export class Hud {
 
   openTraining(): void {
     const body = h('div', { class: 'training' });
+    let tierFilter = 0;
+    let roleFilter = '';
     let lastSig = '';
     const render = () => {
       const s = this.c.state;
       const gd = this.c.data;
       const now = this.c.now();
-      const sig = JSON.stringify([s.army, s.training.length, s.resources.dew, s.resources.moonstones, barracksLevel(s, gd), housingCapacity(s, gd), s.research, hallLevel(s, gd)]);
+      const sig = JSON.stringify([tierFilter, roleFilter, s.army, s.training.length, s.resources.dew, s.resources.moonstones, barracksLevel(s, gd), housingCapacity(s, gd), s.research, hallLevel(s, gd)]);
       if (sig === lastSig) {
         // Only refresh timers.
         body.querySelectorAll<HTMLElement>('[data-ends]').forEach((el) => {
@@ -828,8 +831,20 @@ export class Hud {
           body.append(h('div', { class: 'actions' }, fin));
         }
       }
+      const tierSelect = h('select', { 'aria-label': 'Filter warriors by tier' }, h('option', { value: '0' }, 'All tiers'), ...MODEL.tiers.map((tier) => h('option', { value: String(tier.tier) }, tier.name)));
+      tierSelect.value = String(tierFilter);
+      const roleSelect = h('select', { 'aria-label': 'Filter warriors by role' }, h('option', { value: '' }, 'All roles'), ...Object.entries(MODEL.roles).map(([id, role]) => h('option', { value: id }, role.name)));
+      roleSelect.value = roleFilter;
+      tierSelect.addEventListener('change', () => { tierFilter = Number(tierSelect.value); render(); });
+      roleSelect.addEventListener('change', () => { roleFilter = roleSelect.value; render(); });
+      body.append(h('div', { class: 'actions' }, tierSelect, roleSelect));
+      const visible = (id: string) => {
+        const warrior = WARRIORS.find((w) => w.liveTroop === id);
+        return (!tierFilter || warrior?.tier === tierFilter) && (!roleFilter || warrior?.role === roleFilter);
+      };
       const list = h('div', { class: 'troop-list' });
       for (const [t, def] of Object.entries(gd.troops)) {
+        if (!visible(t)) continue;
         const qr = trainQuote(s, t, now, gd);
         const th = this.deps.troopThumb(t);
         const locked = !qr.ok && qr.code === 'LOCKED';
@@ -882,6 +897,7 @@ export class Hud {
       }
       const rlist = h('div', { class: 'troop-list' });
       for (const [t, def] of Object.entries(gd.troops)) {
+        if (!visible(t)) continue;
         const lvl = troopLevelOf(s, t);
         const rq = researchStartQuote(s, t, now, gd);
         if (!rq.ok && (rq.code === 'LOCKED' || (rq.code === 'MAX_LEVEL' && !rq.quote))) {
@@ -927,12 +943,12 @@ export class Hud {
   openCodex(): void {
     const gd = this.c.data;
     const keep = hallLevel(this.c.state, gd);
-    const body = h('div', { class: 'codex' }, h('p', { class: 'muted small' }, `${WARRIORS.filter((w) => w.liveTroop).length} of ${WARRIORS.length} classes are trainable today; the rest are coming as the Clan Keep grows. Pink rings mark the ridiculous ones.`));
+    const body = h('div', { class: 'codex' }, h('p', { class: 'muted small' }, `All ${WARRIORS.length} classes. New ones unlock as your Clan Keep and Training Dojo grow; the ring colour shows the tier.`));
     const list = h('div', { class: 'codex-list' });
     for (const w of WARRIORS) {
       const src = this.deps.warriorIcon(w.id);
       const live = Boolean(w.liveTroop);
-      const status = live ? (warriorUnlockKeep(w, gd) <= keep ? 'Trainable' : `Clan Keep ${warriorUnlockKeep(w, gd)}`) : 'Coming soon';
+      const status = !live ? 'Coming soon' : warriorUnlockKeep(w, gd) <= keep ? 'Unlocked' : `Clan Keep ${warriorUnlockKeep(w, gd)}`;
       list.append(
         h(
           'div',

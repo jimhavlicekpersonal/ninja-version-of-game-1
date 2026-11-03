@@ -65,6 +65,8 @@ describe('protocol contract', () => {
     expect(h.name).toBe('toadstool-kingdoms');
     expect(h.minProtocol).toBeLessThanOrEqual(PROTOCOL_VERSION);
     expect(h.protocol).toBeGreaterThanOrEqual(PROTOCOL_VERSION);
+    expect(h.minProtocol).toBeGreaterThanOrEqual(4);
+    expect(h.features).toContain('warriors-50');
     expect(Math.abs(h.serverTime - Date.now())).toBeLessThan(5 * 60_000);
     expect(h.features).toEqual(expect.arrayContaining(['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid']));
   });
@@ -130,6 +132,19 @@ describe('protocol contract', () => {
     const lb = await a.leaderboard(5);
     expect(lb.players.length).toBeLessThanOrEqual(5);
     for (const p of lb.players) expect(p).toEqual(expect.objectContaining({ rank: expect.any(Number), name: expect.any(String), trophies: expect.any(Number), hallLevel: expect.any(Number) }));
+  });
+
+  it('pvp: all fifty warriors reproduce the same result over HTTP', async () => {
+    const a = await player('Full roster', 15);
+    const m = (await a.match())!;
+    const army = Object.fromEntries(Object.keys(data.troops).map((id) => [id, 1]));
+    const levels = Object.fromEntries(Object.keys(army).map((id) => [id, 1]));
+    const deployments = Object.keys(army).map((troop, tick) => ({ troop, tick, x: 1, y: 1 + tick % 35 }));
+    const sub = { ticket: m.ticket, seed: 519, army, levels, deployments };
+    const server = await a.submitAttack(sub);
+    const local = runBattle({ seed: sub.seed, base: m.base, army, levels }, deployments, data).result;
+    expect(server.result).toEqual(local);
+    expect(Object.keys(server.result.used)).toHaveLength(50);
   });
 
   it('groves: found, find, join, chat (filtered), request and donate troops, inbox, leave', async () => {

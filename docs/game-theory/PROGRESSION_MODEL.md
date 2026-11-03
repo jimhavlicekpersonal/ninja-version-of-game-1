@@ -2,6 +2,12 @@
 
 Owner: GAME THEORY compartment (`src/gameplay/`). Constants: `src/gameplay/data/progression.json`. Code: `src/gameplay/sim/progression.ts`. Tests: `tests/gameplay/balance/progression-model.test.ts`. Generated tables: `ROSTER.md` (run `npm run docs:progression`).
 
+## Playable roster release
+
+All 50 warriors now have live troop definitions, training/research unlocks, combat behavior and code-drawn sprites. Keep levels 7–15 extend the existing buildings to their catalog caps; the four heroes and non-live buildings remain planned. `liveKeepLevels: 6` is the original calibration/interpolation pivot, not the current playable maximum (read `data.hall.levels.length` for that).
+
+`troops.json` is authoritative for playable stats, prices, range, attack intervals and ability kits. Role formulas set baseline budgets; specialized ranges and abilities require battle tests beyond the budget equality test. Original six-warrior levels 1–5 remain unchanged. New tiers use the original role's entry training price where one exists, then tier and level multipliers. Late Keep costs grow ×1.45 to remain reachable; Keep timers grow ×2.7 to a seven-day cap. Collector payback continues increasing toward 167 hours. Late loot and fixed rewards are calibrated to tier-capped bot armies. See `PLAYABLE_ROSTER.md` for implemented mechanics and limits.
+
 ## The method in one paragraph
 
 Every warrior, building, EXP track and difficulty tier is priced in one currency: **combat power = √(HP × DPS)** (Lanchester's square law: a unit's fighting value is the geometric mean of how long it lasts and how hard it hits). A warrior's power is a fixed **budget per housing** × its **role efficiency** (range, flight and abilities cost budget) × **1.4 per tier** × **1.16 per level**. The role then decides how the budget is split between HP and DPS. Costs grow faster than power (×1.3 training, ×1.55 research per level), so each level is worth less per Coin than the last: a long tail with no wall. Times grow ×1.9–2.2 per level up to a 7-day cap. Mastery EXP grows ×1.35 per level forever, while its bonus approaches +30%: there is always another level, but no runaway power creep. Defenses use the same 1.16 level growth, so attack and defense stay in step at every Keep level. The endless Shadow Trials ladder grows defense power +6% per tier past the last Keep level.

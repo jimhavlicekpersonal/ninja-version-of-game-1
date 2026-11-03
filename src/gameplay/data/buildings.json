@@ -75,6 +75,114 @@
           "acorns": 10000,
           "dew": 10000
         }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1232500
+        },
+        "buildSeconds": 31590,
+        "hp": 4872,
+        "storage": {
+          "acorns": 15500,
+          "dew": 15500
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 1787125
+        },
+        "buildSeconds": 85293,
+        "hp": 5652,
+        "storage": {
+          "acorns": 24025,
+          "dew": 24025
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 2591331
+        },
+        "buildSeconds": 230291,
+        "hp": 6556,
+        "storage": {
+          "acorns": 37239,
+          "dew": 37239
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 3757430
+        },
+        "buildSeconds": 604800,
+        "hp": 7605,
+        "storage": {
+          "acorns": 57720,
+          "dew": 57720
+        }
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 5448274
+        },
+        "buildSeconds": 604800,
+        "hp": 8821,
+        "storage": {
+          "acorns": 89466,
+          "dew": 89466
+        }
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 7899997
+        },
+        "buildSeconds": 604800,
+        "hp": 10233,
+        "storage": {
+          "acorns": 138672,
+          "dew": 138672
+        }
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 11454996
+        },
+        "buildSeconds": 604800,
+        "hp": 11870,
+        "storage": {
+          "acorns": 214942,
+          "dew": 214942
+        }
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 16609744
+        },
+        "buildSeconds": 604800,
+        "hp": 13769,
+        "storage": {
+          "acorns": 333161,
+          "dew": 333161
+        }
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 24084129
+        },
+        "buildSeconds": 604800,
+        "hp": 15972,
+        "storage": {
+          "acorns": 516399,
+          "dew": 516399
+        }
       }
     ]
   },
@@ -184,6 +292,123 @@
         "buildSeconds": 28800,
         "hp": 1300,
         "ratePerHour": 4300
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 174000
+        },
+        "buildSeconds": 63360,
+        "hp": 1508,
+        "ratePerHour": 5450
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 252300
+        },
+        "buildSeconds": 139392,
+        "hp": 1749,
+        "ratePerHour": 7104
+      },
+      {
+        "level": 14,
+        "cost": {
+          "dew": 365835
+        },
+        "buildSeconds": 306662,
+        "hp": 2029,
+        "ratePerHour": 9481
+      },
+      {
+        "level": 15,
+        "cost": {
+          "dew": 530461
+        },
+        "buildSeconds": 604800,
+        "hp": 2354,
+        "ratePerHour": 12899
+      },
+      {
+        "level": 16,
+        "cost": {
+          "dew": 769168
+        },
+        "buildSeconds": 604800,
+        "hp": 2730,
+        "ratePerHour": 17813
+      },
+      {
+        "level": 17,
+        "cost": {
+          "dew": 1115294
+        },
+        "buildSeconds": 604800,
+        "hp": 3167,
+        "ratePerHour": 24879
+      },
+      {
+        "level": 18,
+        "cost": {
+          "dew": 1617176
+        },
+        "buildSeconds": 604800,
+        "hp": 3674,
+        "ratePerHour": 35041
+      },
+      {
+        "level": 19,
+        "cost": {
+          "dew": 2344905
+        },
+        "buildSeconds": 604800,
+        "hp": 4262,
+        "ratePerHour": 49655
+      },
+      {
+        "level": 20,
+        "cost": {
+          "dew": 3400112
+        },
+        "buildSeconds": 604800,
+        "hp": 4944,
+        "ratePerHour": 70674
+      },
+      {
+        "level": 21,
+        "cost": {
+          "dew": 4930163
+        },
+        "buildSeconds": 604800,
+        "hp": 5735,
+        "ratePerHour": 100907
+      },
+      {
+        "level": 22,
+        "cost": {
+          "dew": 7148736
+        },
+        "buildSeconds": 604800,
+        "hp": 6652,
+        "ratePerHour": 144395
+      },
+      {
+        "level": 23,
+        "cost": {
+          "dew": 10365667
+        },
+        "buildSeconds": 604800,
+        "hp": 7717,
+        "ratePerHour": 206955
+      },
+      {
+        "level": 24,
+        "cost": {
+          "dew": 15030218
+        },
+        "buildSeconds": 604800,
+        "hp": 8952,
+        "ratePerHour": 296957
       }
     ]
   },
@@ -293,6 +518,123 @@
         "buildSeconds": 28800,
         "hp": 1300,
         "ratePerHour": 4300
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 174000
+        },
+        "buildSeconds": 63360,
+        "hp": 1508,
+        "ratePerHour": 5450
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 252300
+        },
+        "buildSeconds": 139392,
+        "hp": 1749,
+        "ratePerHour": 7104
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 365835
+        },
+        "buildSeconds": 306662,
+        "hp": 2029,
+        "ratePerHour": 9481
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 530461
+        },
+        "buildSeconds": 604800,
+        "hp": 2354,
+        "ratePerHour": 12899
+      },
+      {
+        "level": 16,
+        "cost": {
+          "acorns": 769168
+        },
+        "buildSeconds": 604800,
+        "hp": 2730,
+        "ratePerHour": 17813
+      },
+      {
+        "level": 17,
+        "cost": {
+          "acorns": 1115294
+        },
+        "buildSeconds": 604800,
+        "hp": 3167,
+        "ratePerHour": 24879
+      },
+      {
+        "level": 18,
+        "cost": {
+          "acorns": 1617176
+        },
+        "buildSeconds": 604800,
+        "hp": 3674,
+        "ratePerHour": 35041
+      },
+      {
+        "level": 19,
+        "cost": {
+          "acorns": 2344905
+        },
+        "buildSeconds": 604800,
+        "hp": 4262,
+        "ratePerHour": 49655
+      },
+      {
+        "level": 20,
+        "cost": {
+          "acorns": 3400112
+        },
+        "buildSeconds": 604800,
+        "hp": 4944,
+        "ratePerHour": 70674
+      },
+      {
+        "level": 21,
+        "cost": {
+          "acorns": 4930163
+        },
+        "buildSeconds": 604800,
+        "hp": 5735,
+        "ratePerHour": 100907
+      },
+      {
+        "level": 22,
+        "cost": {
+          "acorns": 7148736
+        },
+        "buildSeconds": 604800,
+        "hp": 6652,
+        "ratePerHour": 144395
+      },
+      {
+        "level": 23,
+        "cost": {
+          "acorns": 10365667
+        },
+        "buildSeconds": 604800,
+        "hp": 7717,
+        "ratePerHour": 206955
+      },
+      {
+        "level": 24,
+        "cost": {
+          "acorns": 15030218
+        },
+        "buildSeconds": 604800,
+        "hp": 8952,
+        "ratePerHour": 296957
       }
     ]
   },
@@ -411,6 +753,138 @@
         "hp": 2850,
         "storage": {
           "acorns": 850000
+        }
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 362500
+        },
+        "buildSeconds": 29040,
+        "hp": 3306,
+        "storage": {
+          "acorns": 1317500
+        }
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 525625
+        },
+        "buildSeconds": 63888,
+        "hp": 3835,
+        "storage": {
+          "acorns": 2042125
+        }
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 762156
+        },
+        "buildSeconds": 140554,
+        "hp": 4449,
+        "storage": {
+          "acorns": 3165294
+        }
+      },
+      {
+        "level": 14,
+        "cost": {
+          "dew": 1105127
+        },
+        "buildSeconds": 309218,
+        "hp": 5160,
+        "storage": {
+          "acorns": 4906205
+        }
+      },
+      {
+        "level": 15,
+        "cost": {
+          "dew": 1602434
+        },
+        "buildSeconds": 604800,
+        "hp": 5986,
+        "storage": {
+          "acorns": 7604618
+        }
+      },
+      {
+        "level": 16,
+        "cost": {
+          "dew": 2323529
+        },
+        "buildSeconds": 604800,
+        "hp": 6944,
+        "storage": {
+          "acorns": 11787158
+        }
+      },
+      {
+        "level": 17,
+        "cost": {
+          "dew": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 8055,
+        "storage": {
+          "acorns": 18270095
+        }
+      },
+      {
+        "level": 18,
+        "cost": {
+          "dew": 4885219
+        },
+        "buildSeconds": 604800,
+        "hp": 9343,
+        "storage": {
+          "acorns": 28318648
+        }
+      },
+      {
+        "level": 19,
+        "cost": {
+          "dew": 7083567
+        },
+        "buildSeconds": 604800,
+        "hp": 10838,
+        "storage": {
+          "acorns": 43893904
+        }
+      },
+      {
+        "level": 20,
+        "cost": {
+          "dew": 10271173
+        },
+        "buildSeconds": 604800,
+        "hp": 12573,
+        "storage": {
+          "acorns": 68035551
+        }
+      },
+      {
+        "level": 21,
+        "cost": {
+          "dew": 14893200
+        },
+        "buildSeconds": 604800,
+        "hp": 14584,
+        "storage": {
+          "acorns": 105455104
+        }
+      },
+      {
+        "level": 22,
+        "cost": {
+          "dew": 21595141
+        },
+        "buildSeconds": 604800,
+        "hp": 16918,
+        "storage": {
+          "acorns": 163455412
         }
       }
     ]
@@ -531,6 +1005,138 @@
         "storage": {
           "dew": 850000
         }
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 362500
+        },
+        "buildSeconds": 29040,
+        "hp": 3306,
+        "storage": {
+          "dew": 1317500
+        }
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 525625
+        },
+        "buildSeconds": 63888,
+        "hp": 3835,
+        "storage": {
+          "dew": 2042125
+        }
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 762156
+        },
+        "buildSeconds": 140554,
+        "hp": 4449,
+        "storage": {
+          "dew": 3165294
+        }
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 1105127
+        },
+        "buildSeconds": 309218,
+        "hp": 5160,
+        "storage": {
+          "dew": 4906205
+        }
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 1602434
+        },
+        "buildSeconds": 604800,
+        "hp": 5986,
+        "storage": {
+          "dew": 7604618
+        }
+      },
+      {
+        "level": 16,
+        "cost": {
+          "acorns": 2323529
+        },
+        "buildSeconds": 604800,
+        "hp": 6944,
+        "storage": {
+          "dew": 11787158
+        }
+      },
+      {
+        "level": 17,
+        "cost": {
+          "acorns": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 8055,
+        "storage": {
+          "dew": 18270095
+        }
+      },
+      {
+        "level": 18,
+        "cost": {
+          "acorns": 4885219
+        },
+        "buildSeconds": 604800,
+        "hp": 9343,
+        "storage": {
+          "dew": 28318648
+        }
+      },
+      {
+        "level": 19,
+        "cost": {
+          "acorns": 7083567
+        },
+        "buildSeconds": 604800,
+        "hp": 10838,
+        "storage": {
+          "dew": 43893904
+        }
+      },
+      {
+        "level": 20,
+        "cost": {
+          "acorns": 10271173
+        },
+        "buildSeconds": 604800,
+        "hp": 12573,
+        "storage": {
+          "dew": 68035551
+        }
+      },
+      {
+        "level": 21,
+        "cost": {
+          "acorns": 14893200
+        },
+        "buildSeconds": 604800,
+        "hp": 14584,
+        "storage": {
+          "dew": 105455104
+        }
+      },
+      {
+        "level": 22,
+        "cost": {
+          "acorns": 21595141
+        },
+        "buildSeconds": 604800,
+        "hp": 16918,
+        "storage": {
+          "dew": 163455412
+        }
       }
     ]
   },
@@ -603,6 +1209,62 @@
         },
         "buildSeconds": 540,
         "hp": 700
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 58000
+        },
+        "buildSeconds": 1188,
+        "hp": 812
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 84100
+        },
+        "buildSeconds": 2614,
+        "hp": 942
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 121945
+        },
+        "buildSeconds": 5750,
+        "hp": 1093
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 176820
+        },
+        "buildSeconds": 12650,
+        "hp": 1267
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 256389
+        },
+        "buildSeconds": 27830,
+        "hp": 1470
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 371765
+        },
+        "buildSeconds": 61225,
+        "hp": 1705
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 539059
+        },
+        "buildSeconds": 134695,
+        "hp": 1978
       }
     ]
   },
@@ -675,6 +1337,78 @@
         "buildSeconds": 2700,
         "hp": 560,
         "housing": 80
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 362500
+        },
+        "buildSeconds": 5940,
+        "hp": 650,
+        "housing": 85
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 525625
+        },
+        "buildSeconds": 13068,
+        "hp": 754,
+        "housing": 90
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 762156
+        },
+        "buildSeconds": 28750,
+        "hp": 874,
+        "housing": 95
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 1105127
+        },
+        "buildSeconds": 63249,
+        "hp": 1014,
+        "housing": 100
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 1602434
+        },
+        "buildSeconds": 139148,
+        "hp": 1176,
+        "housing": 105
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 2323529
+        },
+        "buildSeconds": 306126,
+        "hp": 1364,
+        "housing": 110
+      },
+      {
+        "level": 14,
+        "cost": {
+          "dew": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 1583,
+        "housing": 115
+      },
+      {
+        "level": 15,
+        "cost": {
+          "dew": 4885219
+        },
+        "buildSeconds": 604800,
+        "hp": 1836,
+        "housing": 120
       }
     ]
   },
@@ -754,6 +1488,78 @@
         "buildSeconds": 2700,
         "hp": 2450,
         "damage": 122
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 290000
+        },
+        "buildSeconds": 5940,
+        "hp": 2842,
+        "damage": 141.52
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 420500
+        },
+        "buildSeconds": 13068,
+        "hp": 3297,
+        "damage": 164.163
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 609725
+        },
+        "buildSeconds": 28750,
+        "hp": 3824,
+        "damage": 190.429
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 884101
+        },
+        "buildSeconds": 63249,
+        "hp": 4436,
+        "damage": 220.898
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 1281947
+        },
+        "buildSeconds": 139148,
+        "hp": 5146,
+        "damage": 256.242
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 1858823
+        },
+        "buildSeconds": 306126,
+        "hp": 5969,
+        "damage": 297.24
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 2695293
+        },
+        "buildSeconds": 604800,
+        "hp": 6924,
+        "damage": 344.799
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 3908175
+        },
+        "buildSeconds": 604800,
+        "hp": 8032,
+        "damage": 399.967
       }
     ]
   },
@@ -817,6 +1623,42 @@
         "buildSeconds": 6000,
         "hp": 1800,
         "damage": 220
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 870000
+        },
+        "buildSeconds": 13200,
+        "hp": 2088,
+        "damage": 255.2
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1261500
+        },
+        "buildSeconds": 29040,
+        "hp": 2422,
+        "damage": 296.032
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 1829175
+        },
+        "buildSeconds": 63888,
+        "hp": 2810,
+        "damage": 343.397
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 2652304
+        },
+        "buildSeconds": 140554,
+        "hp": 3259,
+        "damage": 398.341
       }
     ]
   },
@@ -887,6 +1729,69 @@
         "buildSeconds": 2700,
         "hp": 1700,
         "damage": 54
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 362500
+        },
+        "buildSeconds": 5940,
+        "hp": 1972,
+        "damage": 62.64
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 525625
+        },
+        "buildSeconds": 13068,
+        "hp": 2288,
+        "damage": 72.662
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 762156
+        },
+        "buildSeconds": 28750,
+        "hp": 2654,
+        "damage": 84.288
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 1105127
+        },
+        "buildSeconds": 63249,
+        "hp": 3078,
+        "damage": 97.775
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 1602434
+        },
+        "buildSeconds": 139148,
+        "hp": 3571,
+        "damage": 113.418
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 2323529
+        },
+        "buildSeconds": 306126,
+        "hp": 4142,
+        "damage": 131.565
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 4805,
+        "damage": 152.616
       }
     ]
   },
@@ -939,6 +1844,33 @@
         "buildSeconds": 6000,
         "hp": 2300,
         "damage": 400
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 783000
+        },
+        "buildSeconds": 13200,
+        "hp": 2668,
+        "damage": 464.0
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 1135350
+        },
+        "buildSeconds": 29040,
+        "hp": 3095,
+        "damage": 538.24
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1646258
+        },
+        "buildSeconds": 63888,
+        "hp": 3590,
+        "damage": 624.358
       }
     ]
   },
@@ -996,6 +1928,62 @@
         },
         "buildSeconds": 0,
         "hp": 1950
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 14500
+        },
+        "buildSeconds": 0,
+        "hp": 2262
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 21025
+        },
+        "buildSeconds": 0,
+        "hp": 2624
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 30486
+        },
+        "buildSeconds": 0,
+        "hp": 3044
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 44205
+        },
+        "buildSeconds": 0,
+        "hp": 3531
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 64097
+        },
+        "buildSeconds": 0,
+        "hp": 4096
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 92941
+        },
+        "buildSeconds": 0,
+        "hp": 4751
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 134765
+        },
+        "buildSeconds": 0,
+        "hp": 5511
       }
     ]
   },
@@ -1049,6 +2037,51 @@
         "buildSeconds": 1200,
         "hp": 1,
         "damage": 400
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 29000
+        },
+        "buildSeconds": 2640,
+        "hp": 1,
+        "damage": 464.0
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 42050
+        },
+        "buildSeconds": 5808,
+        "hp": 1,
+        "damage": 538.24
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 60972
+        },
+        "buildSeconds": 12778,
+        "hp": 2,
+        "damage": 624.358
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 88410
+        },
+        "buildSeconds": 28111,
+        "hp": 2,
+        "damage": 724.256
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 128195
+        },
+        "buildSeconds": 61844,
+        "hp": 2,
+        "damage": 840.137
       }
     ]
   },
@@ -1093,6 +2126,42 @@
         "buildSeconds": 1200,
         "hp": 1,
         "damage": 54
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 21750
+        },
+        "buildSeconds": 2640,
+        "hp": 1,
+        "damage": 62.64
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 31538
+        },
+        "buildSeconds": 5808,
+        "hp": 1,
+        "damage": 72.662
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 45729
+        },
+        "buildSeconds": 12778,
+        "hp": 2,
+        "damage": 84.288
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 66308
+        },
+        "buildSeconds": 28111,
+        "hp": 2,
+        "damage": 97.775
       }
     ]
   },
@@ -1281,6 +2350,60 @@
         "buildSeconds": 2700,
         "hp": 1500,
         "reinforcement": 30
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 435000
+        },
+        "buildSeconds": 5940,
+        "hp": 1740,
+        "reinforcement": 32
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 630750
+        },
+        "buildSeconds": 13068,
+        "hp": 2018,
+        "reinforcement": 34
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 914588
+        },
+        "buildSeconds": 28750,
+        "hp": 2341,
+        "reinforcement": 36
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 1326152
+        },
+        "buildSeconds": 63249,
+        "hp": 2716,
+        "reinforcement": 38
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 1922920
+        },
+        "buildSeconds": 139148,
+        "hp": 3151,
+        "reinforcement": 40
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 2788234
+        },
+        "buildSeconds": 306126,
+        "hp": 3655,
+        "reinforcement": 42
       }
     ]
   }

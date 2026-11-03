@@ -4,7 +4,7 @@ You are the **BACKEND AI**. You own `src/backend/` (net, social, payments, platf
 
 ## Multiplayer (ports and adapters)
 
-- `net/protocol.ts`: routes, types, error codes and `PROTOCOL_VERSION` (now **3**: a deployment may be a Smoke Bomb). Bump it for any change that would break older clients, and update `docs/PROTOCOL.md` and `tests/backend/contract/` with it. Servers report `minProtocol: 2` because battles without abilities replay the same.
+- `net/protocol.ts`: routes, types, error codes and `PROTOCOL_VERSION` (now **4**: all 50 warriors and Keep 1–15). Servers report `minProtocol: 4` because old clients cannot simulate new defenders' bases or warrior abilities. `checkArmy`, `validLevels` and donations enforce troop unlocks and tier-adjusted research caps. Bump the protocol for incompatible simulation changes and update `docs/PROTOCOL.md` and contract tests.
 - `net/ports.ts` → `ServerPort`; adapters `httpAdapter.ts` and `server/inProcess.ts`. `net/connection.ts` brings server results in only through idempotent commands, deduplicated by `state.net`. Battle reports go through a persisted outbox.
 - `social/groveSource.ts`: `LocalGroveSource` (bot Alliance) and `RemoteGroveSource` (server).
 - `server/core/` holds every server rule, with no HTTP or DB code. It reaches the outside only through `ServerContext` and the `Repo` port (`MemoryRepo`, `PgRepo`). `server/app.ts` is a thin Fastify adapter. `schema.sql` is idempotent.

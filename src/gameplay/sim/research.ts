@@ -27,9 +27,10 @@ export function troopLevels(state: VillageState, data: GameData): Record<string,
 }
 
 /** Highest troop level research can reach at an Elder Toadstool level. */
-export function troopLevelCapAt(hallLevel: number, data: GameData): number {
+export function troopLevelCapAt(hallLevel: number, data: GameData, troop?: string): number {
   const levels = data.hall.levels;
-  return levels[Math.max(1, Math.min(levels.length, hallLevel)) - 1]?.troopLevelCap ?? 1;
+  const cap = levels[Math.max(1, Math.min(levels.length, hallLevel)) - 1]?.troopLevelCap ?? 1;
+  return Math.max(1, cap - (troop ? data.troops[troop]?.levelCapOffset ?? 0 : 0));
 }
 
 export type ResearchQuote =
@@ -45,9 +46,10 @@ export function researchQuote(state: VillageState, troop: string, hallLevel: num
   const next = troopLevel(data, troop, cur + 1);
   const r = next.research ?? { cost: {}, seconds: 0 };
   const base = { toLevel: next.level, cost: r.cost, seconds: r.seconds };
+  if (hallLevel < (def.unlockKeep ?? 1)) return { ok: false, code: 'LOCKED', message: `Needs a level ${def.unlockKeep} Clan Keep.`, ...base };
   if (barracksLevel(state, data) < def.barracksLevel) return { ok: false, code: 'LOCKED', message: `Needs a level ${def.barracksLevel} Training Dojo.`, ...base };
-  if (next.level > troopLevelCapAt(hallLevel, data)) {
-    const need = data.hall.levels.find((h) => h.troopLevelCap >= next.level)?.level;
+  if (next.level > troopLevelCapAt(hallLevel, data, troop)) {
+    const need = data.hall.levels.find((h) => h.troopLevelCap >= next.level + (def.levelCapOffset ?? 0))?.level;
     return { ok: false, code: 'HALL_LEVEL_TOO_LOW', message: need ? `Upgrade your Clan Keep to level ${need} to research level ${next.level}.` : `${def.name} is fully researched.`, ...base };
   }
   if (state.research.active) return { ok: false, code: 'BUSY', message: `The Dojo is already researching ${troopDef(data, state.research.active.troop).name}.`, ...base };

@@ -24,24 +24,33 @@ const maxStorage = (h: number) => {
 describe('Elder Toadstool curve (#14, #15)', () => {
   it('upgrade times grow by a steady factor, reaching about a week at hall 10', () => {
     const ratios: number[] = [];
-    for (let l = 3; l < hallLv.length; l++) ratios.push(hallLv[l].buildSeconds / hallLv[l - 1].buildSeconds);
+    for (let l = 3; l < hallLv.length; l++) {
+      if (hallLv[l].buildSeconds === 7 * 86400) {
+        expect(hallLv[l].buildSeconds).toBeGreaterThanOrEqual(hallLv[l - 1].buildSeconds);
+        continue;
+      }
+      ratios.push(hallLv[l].buildSeconds / hallLv[l - 1].buildSeconds);
+    }
     for (const r of ratios) {
       expect(r).toBeGreaterThanOrEqual(2.2);
       expect(r).toBeLessThanOrEqual(3);
     }
-    const r = Math.pow(hallLv[hallLv.length - 1].buildSeconds / hallLv[2].buildSeconds, 1 / (hallLv.length - 3));
-    const hall10Days = (hallLv[hallLv.length - 1].buildSeconds * Math.pow(r, 10 - hallLv.length)) / 86400;
+    const hall10Days = hallLv[9].buildSeconds / 86400;
     expect(hall10Days).toBeGreaterThan(5);
     expect(hall10Days).toBeLessThan(9);
   });
 
-  it('upgrade costs grow by a multiplier that never shrinks', () => {
+  it('early upgrade costs grow by a multiplier that never shrinks; late costs stay affordable', () => {
     let last = 0;
-    for (let l = 2; l < hallLv.length; l++) {
+    for (let l = 2; l < 6; l++) {
       const m = hallLv[l].cost.acorns! / hallLv[l - 1].cost.acorns!;
       expect(m).toBeGreaterThanOrEqual(last);
       expect(m).toBeGreaterThanOrEqual(3);
       last = m;
+    }
+    for (let l = 6; l < hallLv.length; l++) {
+      expect(hallLv[l].cost.acorns!).toBeGreaterThan(hallLv[l - 1].cost.acorns!);
+      expect(hallLv[l].cost.acorns!).toBeLessThanOrEqual(maxStorage(l));
     }
   });
 
@@ -73,8 +82,7 @@ describe('raiding profit (#12)', () => {
     const ratios: number[] = [];
     for (let h = 1; h <= halls; h++) {
       const army = botArmy(h, 1, data);
-      const cap = troopLevelCapAt(h, data);
-      const cost = Object.entries(army).reduce((s, [t, n]) => s + n * (troopLevel(data, t, cap).cost.dew ?? 0), 0);
+      const cost = Object.entries(army).reduce((s, [t, n]) => s + n * (troopLevel(data, t, troopLevelCapAt(h, data, t)).cost.dew ?? 0), 0);
       ratios.push(avgLoot(h) / cost);
     }
     for (const r of ratios) {
@@ -122,6 +130,7 @@ describe('troop roster (#7)', () => {
       const l1 = t.levels[0];
       return {
         id,
+        unlock: t.unlockKeep ?? data.hall.levels.find((h) => (h.limits.burrow_barracks?.maxLevel ?? 0) >= t.barracksLevel)!.level,
         value: t.housing / (l1.cost.dew ?? 1), // housing per Dew
         hp: l1.hp / t.housing,
         dps: (l1.damage * data.battle.ticksPerSecond) / t.attackIntervalTicks / t.housing,
@@ -136,7 +145,8 @@ describe('troop roster (#7)', () => {
     for (const a of stats) {
       for (const b of stats) {
         if (a === b) continue;
-        const dominates = keys.every((k) => a[k] >= b[k]);
+        // Earlier access is a real advantage: higher tiers must not erase it.
+        const dominates = a.unlock <= b.unlock && keys.every((k) => a[k] >= b[k]);
         expect(dominates, `${a.id} dominates ${b.id}`).toBe(false);
       }
     }

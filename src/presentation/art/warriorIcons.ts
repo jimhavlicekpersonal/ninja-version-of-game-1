@@ -6,8 +6,7 @@
  *
  * Every badge = role-coloured disc + tier ring + the warrior's chibi ninja +
  * a signature prop that shows its ability at 48 px. The ring is iron, bronze,
- * silver, gold or violet by tier; the "ridiculous" Veterans (tier 3) get a
- * dashed pink ring and a sparkle. No two warriors share a prop.
+ * silver, gold or violet by tier. No two warriors share a prop.
  *
  * Painters work in the ninja's local space (facing right, feet at y = 0,
  * head centre at y = -31, hand near (8, -17)).
@@ -24,7 +23,6 @@ type Paint = (ctx: Ctx) => void;
 export interface WarriorIconDef {
   role: string;
   tier: number;
-  ridiculous?: boolean;
   look: NinjaLook;
   /** One-line description of the signature prop (also used to check props are unique). */
   prop: string;
@@ -125,11 +123,6 @@ function bolt(ctx: Ctx, x: number, y: number, s: number, color: string): void {
   poly(ctx, [{ x, y }, { x: x - 3 * s, y: y + 6 * s }, { x: x, y: y + 6 * s }, { x: x - 2 * s, y: y + 12 * s }, { x: x + 4 * s, y: y + 4 * s }, { x: x + 1 * s, y: y + 4 * s }, { x: x + 3 * s, y }], color, 0.8);
 }
 
-function note(ctx: Ctx, x: number, y: number, color: string): void {
-  ellipse(ctx, x, y, 2, 1.5, color, 0);
-  line(ctx, [{ x: x + 1.8, y }, { x: x + 1.8, y: y - 6 }, { x: x + 4.5, y: y - 4.5 }], color, 1);
-}
-
 function speedLines(ctx: Ctx, x: number, y: number, color: string): void {
   for (const [dy, len] of [[0, 9], [5, 12], [10, 8]] as const) line(ctx, [{ x, y: y + dy }, { x: x - len, y: y + dy }], color, 1.4);
 }
@@ -163,20 +156,30 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       for (const p of [{ x: 4, y: -14 }, { x: 4, y: -28 }]) circle(ctx, p.x, p.y, 2, GOLD, 0.8);
     },
   },
-  sushi_chef_assassin: {
-    role: 'blade', tier: 3, ridiculous: true, prop: 'chef hat, sushi knife and a nigiri',
-    look: { gi: WASHI, band: VERMILION, mask: WASHI, weapon: 'none' },
+  wind_step_assassin: {
+    role: 'blade', tier: 3, prop: 'straight blade trailing wind ribbons in a dash',
+    look: { gi: '#2a3a3a', band: '#8ad0ff', weapon: 'none' },
+    back(ctx) {
+      for (const [y, len] of [[-34, 14], [-24, 18], [-14, 12]] as const) {
+        ctx.beginPath();
+        ctx.moveTo(-10, y);
+        ctx.quadraticCurveTo(-10 - len / 2, y - 4, -10 - len, y + 1);
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = rgba('#8ad0ff', 0.85);
+        ctx.stroke();
+      }
+    },
     front(ctx) {
-      // Toque
-      poly(ctx, [{ x: -8, y: -39 }, { x: 8, y: -39 }, { x: 8, y: -44 }, { x: -8, y: -44 }], '#ffffff', 1);
-      for (const x of [-6, 0, 6]) circle(ctx, x, -48, 5, '#ffffff', 1);
-      // Yanagiba knife
-      line(ctx, [{ x: 8, y: -17 }, { x: 25, y: -27 }], STEEL, 2.6);
-      line(ctx, [{ x: 5, y: -15 }, { x: 9, y: -18 }], WOOD, 3);
-      // Nigiri in the other hand
-      ellipse(ctx, -14, -15, 6, 3, '#ffffff', 0.9);
-      ellipse(ctx, -14, -18, 6.5, 2.4, '#ff8a5c', 0.9);
-      line(ctx, [{ x: -18, y: -18.5 }, { x: -11, y: -18 }], '#ffd0b8', 0.8);
+      line(ctx, [{ x: 6, y: -18 }, { x: 28, y: -22 }], STEEL, 2.2);
+      line(ctx, [{ x: 4, y: -17 }, { x: 9, y: -18.5 }], INK, 3);
+      for (const d of [0, 3]) {
+        ctx.beginPath();
+        ctx.moveTo(4, -17 + d);
+        ctx.quadraticCurveTo(-4, -10 + d, -12, -12 + d * 2);
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = '#8ad0ff';
+        ctx.stroke();
+      }
     },
   },
   moonblade_master: {
@@ -219,18 +222,16 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       star(ctx, 15, -10, 5, 4, STEEL);
     },
   },
-  rubber_duck_sniper: {
-    role: 'thrower', tier: 3, ridiculous: true, prop: 'bamboo tube firing a rubber duck',
-    look: { gi: '#3f5a3a', band: '#ffd23c', weapon: 'none' },
+  blowgun_hunter: {
+    role: 'thrower', tier: 3, prop: 'bamboo blowgun puffing a green venom dart',
+    look: { gi: '#3f5a3a', band: '#9be05a', weapon: 'none' },
     front(ctx) {
-      line(ctx, [{ x: -2, y: -22 }, { x: 18, y: -26 }], '#9cc46a', 4);
-      line(ctx, [{ x: 6, y: -24.5 }, { x: 6.4, y: -22 }], darken('#9cc46a', 0.4), 1);
-      // Duck in flight
-      ellipse(ctx, 26, -30, 5, 3.6, '#ffd23c', 0.9);
-      circle(ctx, 29, -35, 2.8, '#ffd23c', 0.9);
-      poly(ctx, [{ x: 31.5, y: -35.5 }, { x: 35, y: -34.5 }, { x: 31.5, y: -33.5 }], '#ff8a2c', 0.6);
-      circle(ctx, 29.6, -35.8, 0.6, INK, 0);
-      for (const a of [-0.5, 0, 0.5]) line(ctx, [{ x: 30 + Math.cos(a - 1.2) * 7, y: -37 + Math.sin(a - 1.2) * 7 }, { x: 30 + Math.cos(a - 1.2) * 10, y: -37 + Math.sin(a - 1.2) * 10 }], '#fff4b0', 1);
+      line(ctx, [{ x: 6, y: -30 }, { x: 26, y: -32 }], '#9cc46a', 3.2);
+      for (const x of [12, 19]) line(ctx, [{ x, y: -32.2 }, { x, y: -29.8 }], darken('#9cc46a', 0.4), 0.9);
+      hand(ctx, 9, -27);
+      line(ctx, [{ x: 30, y: -32.5 }, { x: 36, y: -33 }], STEEL, 1.1);
+      poly(ctx, [{ x: 28, y: -34.5 }, { x: 31, y: -32.6 }, { x: 28, y: -30.8 }], '#9be05a', 0.5);
+      for (const [x, y, r] of [[22, -24, 1.8], [26, -20, 1.4], [18, -21, 1.2]] as const) circle(ctx, x, y, r, rgba('#9be05a', 0.8), 0);
     },
   },
   chain_sickle_reaper: {
@@ -274,18 +275,29 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       hand(ctx, 11, -18);
     },
   },
-  sumo_boulder: {
-    role: 'guardian', tier: 3, ridiculous: true, prop: 'enormous belly bouncing an arrow back',
-    look: { gi: '#e9c9a0', band: '#3d4a5c', mask: '#e9c9a0', skin: '#e9c9a0', weapon: 'none', scale: 1.1 },
+  bell_warden: {
+    role: 'guardian', tier: 3, prop: 'great bronze bell and hammer ringing out',
+    look: { gi: '#4a3a2a', band: '#d9632a', armor: '#a8743a', weapon: 'none', scale: 1.05 },
+    back(ctx) {
+      for (const r of [16, 21]) arc(ctx, 18, -22, r, -0.9, 0.9, rgba('#ffd27a', 0.7), 1.2);
+    },
     front(ctx) {
-      circle(ctx, 0, -46, 3.4, INK, 0); // topknot
-      ellipse(ctx, 1, -15, 11, 9, '#f0d0a8', 1);
-      arc(ctx, 1, -13, 2, 0, Math.PI * 2, darken('#f0d0a8', 0.3), 0.8);
-      poly(ctx, [{ x: -10, y: -10 }, { x: 12, y: -10 }, { x: 11, y: -6 }, { x: -9, y: -6 }], '#3d4a5c', 1);
-      // Arrow pinging off
-      line(ctx, [{ x: 14, y: -16 }, { x: 26, y: -26 }], WOOD, 1.4);
-      poly(ctx, [{ x: 26, y: -26 }, { x: 22, y: -26 }, { x: 25, y: -22 }], IRON, 0.6);
-      for (const a of [-0.8, 0, 0.8]) line(ctx, [{ x: 13 + Math.cos(a) * 3, y: -15 + Math.sin(a) * 3 }, { x: 13 + Math.cos(a) * 6, y: -15 + Math.sin(a) * 6 }], '#fff4b0', 1.1);
+      line(ctx, [{ x: 10, y: -36 }, { x: 22, y: -36 }], WOOD_DARK, 1.6);
+      ctx.beginPath();
+      ctx.moveTo(12, -34);
+      ctx.quadraticCurveTo(11, -22, 8, -12);
+      ctx.lineTo(24, -12);
+      ctx.quadraticCurveTo(21, -22, 20, -34);
+      ctx.closePath();
+      ctx.fillStyle = '#c98d38';
+      ctx.fill();
+      ctx.lineWidth = 1.1;
+      ctx.strokeStyle = INK;
+      ctx.stroke();
+      line(ctx, [{ x: 9, y: -16 }, { x: 23, y: -16 }], '#8a5a20', 1);
+      circle(ctx, 16, -10, 1.8, '#8a5a20', 0.6);
+      line(ctx, [{ x: 2, y: -16 }, { x: -4, y: -28 }], WOOD, 1.8);
+      poly(ctx, [{ x: -8, y: -31 }, { x: -1, y: -31 }, { x: -1, y: -27 }, { x: -8, y: -27 }], WOOD_DARK, 0.9);
     },
   },
   mountain_shield: {
@@ -325,24 +337,23 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       line(ctx, [{ x: 29, y: -6 }, { x: 19, y: 4 }], '#5fd36a', 1.8);
     },
   },
-  karaoke_saboteur: {
-    role: 'saboteur', tier: 3, ridiculous: true, prop: 'microphone, cable and flying music notes',
-    look: { gi: '#5a2f6a', band: '#ff6bd5', weapon: 'none' },
+  gearbreaker: {
+    role: 'saboteur', tier: 3, prop: 'heavy wrench jammed into a cracked gear',
+    look: { gi: '#2f3f4a', band: GOLD, weapon: 'none', pack: 'satchel' },
     front(ctx) {
-      ctx.beginPath();
-      ctx.moveTo(10, -22);
-      ctx.bezierCurveTo(16, -6, 0, -4, -10, 2);
-      ctx.lineWidth = 1.2;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      line(ctx, [{ x: 9, y: -20 }, { x: 13, y: -28 }], '#26303d', 3);
-      circle(ctx, 14, -31, 3.6, '#c9ced6', 1);
-      hand(ctx, 9, -21);
-      // Mouth wide open, mid-ballad
-      ellipse(ctx, 8, -29.5, 1.6, 1.2, '#7a2e26', 0);
-      note(ctx, 22, -38, '#ff6bd5');
-      note(ctx, 28, -28, '#ffd23c');
-      note(ctx, -16, -42, '#ff6bd5');
+      ctx.save();
+      ctx.translate(20, -12);
+      for (let i = 0; i < 8; i++) {
+        ctx.rotate(Math.PI / 4);
+        poly(ctx, [{ x: -1.8, y: -9 }, { x: 1.8, y: -9 }, { x: 1.8, y: -6 }, { x: -1.8, y: -6 }], IRON, 0.6);
+      }
+      ctx.restore();
+      circle(ctx, 20, -12, 6.5, IRON, 1);
+      circle(ctx, 20, -12, 2.4, '#2f3f4a', 0.8);
+      line(ctx, [{ x: 17, y: -18 }, { x: 21, y: -13 }, { x: 19, y: -9 }], INK, 1);
+      line(ctx, [{ x: 6, y: -18 }, { x: 18, y: -30 }], '#c9ced6', 3);
+      arc(ctx, 20, -32, 3.6, Math.PI * 0.2, Math.PI * 1.6, '#c9ced6', 2.6);
+      poly(ctx, [{ x: 24, y: -6 }, { x: 30, y: -6 }, { x: 27, y: -2 }], '#b8a888', 0.7);
     },
   },
   fuse_master: {
@@ -404,21 +415,23 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       for (const d of [-2, 0, 2]) line(ctx, [{ x: 11, y: -22 + d }, { x: 15, y: -24 + d * 1.4 }], STEEL, 1);
     },
   },
-  potted_plant_ninja: {
-    role: 'infiltrator', tier: 3, ridiculous: true, prop: 'terracotta pot trousers and a bonsai hat',
-    look: { gi: '#4f7a46', band: '#b5653a', weapon: 'none' },
+  grapple_raider: {
+    role: 'infiltrator', tier: 3, prop: 'grapple line swinging over a wall top',
+    look: { gi: '#3a3a4a', band: VERMILION, weapon: 'none' },
+    back(ctx) {
+      poly(ctx, [{ x: -26, y: -10 }, { x: -12, y: -10 }, { x: -12, y: 4 }, { x: -26, y: 4 }], '#9aa0aa', 1);
+      line(ctx, [{ x: -26, y: -3 }, { x: -12, y: -3 }], darken('#9aa0aa', 0.35), 0.7);
+    },
     front(ctx) {
-      // The pot, worn as trousers.
-      poly(ctx, [{ x: -12, y: -16 }, { x: 12, y: -16 }, { x: 9, y: 0 }, { x: -9, y: 0 }], '#c87a4a', 1.2);
-      poly(ctx, [{ x: -13, y: -18 }, { x: 13, y: -18 }, { x: 13, y: -14 }, { x: -13, y: -14 }], '#b5653a', 1.1);
-      // Bonsai on the head.
-      line(ctx, [{ x: 0, y: -40 }, { x: -2, y: -46 }, { x: 3, y: -50 }], WOOD_DARK, 2);
-      for (const [x, y, r] of [[-6, -49, 4.5], [3, -53, 5], [9, -48, 4]] as const) circle(ctx, x, y, r, LEAF, 0.9);
-      // Pruning shears
-      line(ctx, [{ x: 13, y: -22 }, { x: 22, y: -28 }], STEEL, 1.6);
-      line(ctx, [{ x: 13, y: -26 }, { x: 22, y: -24 }], STEEL, 1.6);
-      circle(ctx, 12, -22, 1.8, VERMILION, 0.6);
-      circle(ctx, 12, -26, 1.8, VERMILION, 0.6);
+      hand(ctx, 8, -24);
+      ctx.beginPath();
+      ctx.moveTo(8, -24);
+      ctx.quadraticCurveTo(18, -30, 24, -44);
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = '#b8a888';
+      ctx.stroke();
+      for (const a of [-0.7, 0, 0.7]) line(ctx, [{ x: 24, y: -44 }, { x: 24 + Math.cos(a - 1.6) * 5, y: -44 + Math.sin(a - 1.6) * 5 }], IRON, 1.6);
+      speedLines(ctx, -14, -30, rgba(WASHI, 0.7));
     },
   },
   mole_king: {
@@ -467,25 +480,25 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       circle(ctx, 0, -46, 2.6, VERMILION, 0); // crane crown
     },
   },
-  cannonball_grandma: {
-    role: 'sky', tier: 3, ridiculous: true, prop: 'flying rocking chair, hair bun and knitting',
-    look: { gi: '#8a4a6a', band: '#f4ead6', mask: '#c9ced6', weapon: 'none' },
+  lantern_balloon: {
+    role: 'sky', tier: 3, prop: 'giant paper lantern balloon dropping embers',
+    look: { gi: '#3a2f2a', band: '#ff9a3c', weapon: 'none', scale: 0.85 },
     back(ctx) {
-      // Rocking chair
-      line(ctx, [{ x: -12, y: -30 }, { x: -12, y: -6 }, { x: 10, y: -6 }, { x: 10, y: 2 }], WOOD, 2.4);
-      line(ctx, [{ x: -12, y: -6 }, { x: -12, y: 2 }], WOOD, 2.4);
-      arc(ctx, -1, -18, 22, Math.PI * 0.3, Math.PI * 0.7, WOOD_DARK, 2.4);
-      speedLines(ctx, -16, -36, rgba(WASHI, 0.85));
+      const g = ctx.createRadialGradient(0, -52, 2, 0, -50, 16);
+      g.addColorStop(0, '#ffe08a');
+      g.addColorStop(1, '#e0602a');
+      ellipse(ctx, 0, -50, 15, 13, '#e0602a', 1.2);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(0, -50, 14, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      for (const x of [-8, 0, 8]) line(ctx, [{ x, y: -62 }, { x: x * 1.1, y: -38 }], rgba('#7a2e16', 0.6), 0.8);
+      line(ctx, [{ x: -9, y: -39 }, { x: -6, y: -30 }], WOOD_DARK, 0.9);
+      line(ctx, [{ x: 9, y: -39 }, { x: 6, y: -30 }], WOOD_DARK, 0.9);
     },
     front(ctx) {
-      circle(ctx, -2, -42, 4.4, '#d9dee6', 1); // bun
-      line(ctx, [{ x: -6, y: -44 }, { x: 2, y: -40 }], WOOD_DARK, 0.9);
-      circle(ctx, 7, -31.5, 2.2, 'rgba(0,0,0,0)', 0.8); // spectacles
-      // Knitting needles and yarn
-      line(ctx, [{ x: 6, y: -16 }, { x: 18, y: -28 }], STEEL, 1.2);
-      line(ctx, [{ x: 10, y: -14 }, { x: 22, y: -24 }], STEEL, 1.2);
-      circle(ctx, 20, -12, 4, VERMILION, 0.9);
-      arc(ctx, 20, -12, 2.4, 0.4, 2.8, darken(VERMILION, 0.4), 0.7);
+      for (const [x, y, r] of [[18, -12, 2.4], [22, -4, 1.8], [14, -2, 1.6]] as const) circle(ctx, x, y, r, '#ff9a3c', 0.6, '#a02a1a');
+      poly(ctx, [{ x: 8, y: -22 }, { x: 14, y: -22 }, { x: 13, y: -16 }, { x: 9, y: -16 }], '#6b4a2e', 0.8);
     },
   },
   thunder_kite: {
@@ -528,15 +541,27 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       line(ctx, [{ x: 0, y: -22 }, { x: 8, y: -12 }], WOOD, 1.8);
     },
   },
-  bubble_tea_alchemist: {
-    role: 'mystic', tier: 3, ridiculous: true, prop: 'giant bubble tea with boba and a fat straw',
-    look: { gi: '#c98da8', band: '#5a3a2a', weapon: 'none' },
+  mist_weaver: {
+    role: 'mystic', tier: 3, prop: 'folding fan wafting a veil of mist',
+    look: { gi: '#9aa0aa', band: '#d9dee6', weapon: 'none' },
+    back(ctx) {
+      for (const [x, y, r] of [[-14, -10, 8], [-6, -4, 9], [8, -4, 8], [-18, -22, 6]] as const) circle(ctx, x, y, r, 'rgba(236,240,245,0.55)', 0);
+    },
     front(ctx) {
-      poly(ctx, [{ x: 8, y: -32 }, { x: 24, y: -32 }, { x: 22, y: -6 }, { x: 10, y: -6 }], 'rgba(240,210,180,0.92)', 1.1);
-      ellipse(ctx, 16, -32, 8, 2, '#ffe9d6', 1);
-      for (const [x, y] of [[12, -9], [15, -10], [18, -9], [21, -10], [13.5, -12.5], [17, -13], [20, -12.5]] as const) circle(ctx, x, y, 1.4, '#3a2420', 0);
-      line(ctx, [{ x: 18, y: -18 }, { x: 22, y: -42 }], '#ff6bd5', 2.6);
-      hand(ctx, 9, -18);
+      ctx.beginPath();
+      ctx.moveTo(10, -18);
+      ctx.arc(10, -18, 13, -Math.PI * 0.55, -Math.PI * 0.05);
+      ctx.closePath();
+      ctx.fillStyle = WASHI;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = INK;
+      ctx.stroke();
+      for (let i = 1; i < 5; i++) {
+        const a = -Math.PI * 0.55 + (i * Math.PI * 0.5) / 5;
+        line(ctx, [{ x: 10, y: -18 }, { x: 10 + Math.cos(a) * 13, y: -18 + Math.sin(a) * 13 }], '#9aa0aa', 0.7);
+      }
+      for (const [x, y] of [[26, -26], [28, -16]] as const) circle(ctx, x, y, 3.4, 'rgba(236,240,245,0.85)', 0);
     },
   },
   spirit_caller: {
@@ -586,19 +611,24 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       circle(ctx, -10, -20, 2.6, '#d9a84c', 0.9);
     },
   },
-  mochi_mortar: {
-    role: 'siege', tier: 3, ridiculous: true, prop: 'giant mochi mallet and a sticky rice cake',
-    look: { gi: '#f1ebdf', band: '#e98aa0', weapon: 'none' },
+  bomb_carrier: {
+    role: 'siege', tier: 3, prop: 'giant round bomb on its back with a sparking fuse',
+    look: { gi: '#2b2b2b', band: '#ff6b3c', weapon: 'none' },
+    back(ctx) {
+      circle(ctx, -10, -26, 13, '#1f1f24', 1.2, '#000000');
+      circle(ctx, -14, -31, 3, 'rgba(255,255,255,0.25)', 0);
+      poly(ctx, [{ x: -13, y: -40 }, { x: -7, y: -40 }, { x: -7, y: -37 }, { x: -13, y: -37 }], IRON, 0.8);
+      ctx.beginPath();
+      ctx.moveTo(-10, -40);
+      ctx.quadraticCurveTo(-6, -48, -2, -46);
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = '#b8a888';
+      ctx.stroke();
+      star(ctx, -1, -47, 3.6, 5, '#ffcf3c');
+    },
     front(ctx) {
-      line(ctx, [{ x: 4, y: -12 }, { x: 14, y: -34 }], WOOD, 2.2);
-      poly(ctx, [{ x: 6, y: -38 }, { x: 22, y: -40 }, { x: 23, y: -32 }, { x: 7, y: -30 }], '#b07a4a', 1.1);
-      // The mochi, with a little face.
-      ellipse(ctx, 22, -8, 8, 6, '#ffffff', 1);
-      ellipse(ctx, 22, -11, 4, 1.6, '#ffd0dc', 0);
-      circle(ctx, 20, -8, 0.7, INK, 0);
-      circle(ctx, 24, -8, 0.7, INK, 0);
-      arc(ctx, 22, -7, 1.4, 0.3, 2.8, INK, 0.6);
-      for (const x of [16, 28]) line(ctx, [{ x, y: -4 }, { x, y: 1 }], 'rgba(255,255,255,0.9)', 1.2); // sticky strands
+      line(ctx, [{ x: -8, y: -22 }, { x: 6, y: -16 }], '#6b4a2e', 1.4);
+      speedLines(ctx, -22, -12, rgba(WASHI, 0.7));
     },
   },
   siege_bombardier: {
@@ -648,30 +678,22 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       poly(ctx, [{ x: 13, y: -36 }, { x: 4, y: -44 }, { x: 14, y: -30 }], '#5e3a22', 0.9);
     },
   },
-  goose_wrangler: {
-    role: 'beast', tier: 3, ridiculous: true, prop: 'honking war goose and a loaf of bread',
-    look: { gi: '#4a3a2a', band: '#ff9a3c', weapon: 'none' },
+  boar_rider: {
+    role: 'beast', tier: 3, prop: 'charging armoured boar with tusks and a spear',
+    look: { gi: '#5e3a22', band: '#9aa0aa', weapon: 'none', scale: 0.85 },
+    back(ctx) {
+      ellipse(ctx, 2, -4, 16, 8, '#6b4a2e', 1.1);
+      poly(ctx, [{ x: -10, y: -11 }, { x: 10, y: -11 }, { x: 12, y: -4 }, { x: -12, y: -4 }], '#9aa0aa', 1);
+      circle(ctx, 18, -6, 6, '#6b4a2e', 1);
+      ellipse(ctx, 23, -5, 2.4, 2, '#c99a7a', 0.7);
+      poly(ctx, [{ x: 20, y: -3 }, { x: 25, y: -9 }, { x: 22, y: -2 }], WASHI, 0.6);
+      circle(ctx, 19, -8, 0.8, INK, 0);
+      for (const x of [-8, 0, 8]) line(ctx, [{ x, y: 2 }, { x, y: 6 }], '#4a3020', 2);
+      speedLines(ctx, -16, -8, rgba(WASHI, 0.7));
+    },
     front(ctx) {
-      // Bread, held high as a peace offering that did not work.
-      ellipse(ctx, -12, -24, 5, 3, '#d9a05c', 0.9);
-      for (const x of [-14, -11]) line(ctx, [{ x, y: -26 }, { x: x + 1.5, y: -22.5 }], '#a0703a', 0.7);
-      // The goose
-      ellipse(ctx, 18, -6, 9, 6, '#ffffff', 1.1);
-      ctx.beginPath();
-      ctx.moveTo(23, -9);
-      ctx.quadraticCurveTo(28, -18, 24, -28);
-      ctx.lineWidth = 3.6;
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      ctx.lineWidth = 2.4;
-      ctx.strokeStyle = '#ffffff';
-      ctx.stroke();
-      circle(ctx, 24, -29, 3.2, '#ffffff', 1);
-      poly(ctx, [{ x: 26.5, y: -30.5 }, { x: 32, y: -31 }, { x: 26.5, y: -27.5 }], '#ff9a3c', 0.7);
-      poly(ctx, [{ x: 26.5, y: -29 }, { x: 31, y: -27 }, { x: 26.5, y: -27.5 }], '#ff9a3c', 0.5);
-      line(ctx, [{ x: 23, y: -31 }, { x: 25.5, y: -30 }], INK, 1); // angry brow
-      for (const a of [-0.6, 0, 0.6]) line(ctx, [{ x: 33 + Math.cos(a) * 1, y: -29 + Math.sin(a) * 3 }, { x: 36 + Math.cos(a) * 1, y: -29 + Math.sin(a) * 6 }], '#ffd23c', 1.2);
-      for (const x of [15, 20]) line(ctx, [{ x, y: 0 }, { x, y: 3 }], '#ff9a3c', 1.4);
+      line(ctx, [{ x: 0, y: -12 }, { x: 30, y: -30 }], WOOD, 1.6);
+      poly(ctx, [{ x: 30, y: -30 }, { x: 25, y: -29 }, { x: 28, y: -26 }], STEEL, 0.7);
     },
   },
   bear_warrior: {
@@ -735,24 +757,17 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
       line(ctx, [{ x: 9, y: -20 }, { x: 17, y: -27 }], '#ffffff', 1);
     },
   },
-  mime_ninja: {
-    role: 'shadow', tier: 3, ridiculous: true, prop: 'white face paint, stripes and gloves on an invisible wall',
-    look: { gi: WASHI, band: '#141a22', mask: '#141a22', skin: '#ffffff', weapon: 'none' },
+  night_blade: {
+    role: 'shadow', tier: 3, prop: 'black katana striking out of a smoke cloud',
+    look: { gi: '#1f2433', band: '#c9ced6', weapon: 'none' },
     back(ctx) {
-      ctx.save();
-      ctx.setLineDash([3, 3]);
-      line(ctx, [{ x: 16, y: -44 }, { x: 16, y: 4 }], rgba('#bfe9ff', 0.9), 1.4);
-      ctx.restore();
+      for (const [x, y, r] of [[-12, -16, 9], [-2, -6, 10], [10, -12, 8], [-14, -30, 7], [4, -28, 8]] as const) circle(ctx, x, y, r, 'rgba(196,204,214,0.7)', 0);
     },
     front(ctx) {
-      for (const y of [-20, -17, -14, -10]) line(ctx, [{ x: -8.5, y }, { x: 8.5, y }], '#141a22', 1.3);
-      for (const y of [-26, -16]) {
-        circle(ctx, 13, y, 3, '#ffffff', 1);
-        for (const d of [-1.6, 0, 1.6]) line(ctx, [{ x: 15, y: y + d }, { x: 16, y: y + d }], '#ffffff', 1);
-      }
-      ellipse(ctx, 5.5, -29.5, 1.6, 0.8, '#c8402f', 0); // tiny red mime smile
-      line(ctx, [{ x: 3, y: -33.5 }, { x: 3, y: -30.5 }], '#141a22', 0.6);
-      line(ctx, [{ x: 7.8, y: -33.5 }, { x: 7.8, y: -30.5 }], '#141a22', 0.6);
+      line(ctx, [{ x: 6, y: -18 }, { x: 24, y: -36 }], '#1a1d24', 2.6);
+      line(ctx, [{ x: 8, y: -20 }, { x: 22, y: -34 }], '#5f6b78', 0.7);
+      line(ctx, [{ x: 4, y: -16 }, { x: 8, y: -19 }], '#8a2e26', 3);
+      for (const a of [-0.4, 0.3, 1]) line(ctx, [{ x: 26 + Math.cos(a - 1) * 3, y: -38 + Math.sin(a - 1) * 3 }, { x: 26 + Math.cos(a - 1) * 6, y: -38 + Math.sin(a - 1) * 6 }], '#c9ced6', 1);
     },
   },
   void_walker: {
@@ -825,15 +840,7 @@ function badge(ctx: Ctx, def: WarriorIconDef): void {
 function ring(ctx: Ctx, def: WarriorIconDef): void {
   const color = TIER_RINGS[def.tier - 1] ?? IRON;
   arc(ctx, 0, 0, R, 0, Math.PI * 2, darken(color, 0.45), 4);
-  if (def.ridiculous) {
-    ctx.save();
-    ctx.setLineDash([4, 3]);
-    arc(ctx, 0, 0, R, 0, Math.PI * 2, '#ff6bd5', 2.6);
-    ctx.restore();
-    star(ctx, R - 5, -R + 5, 4.5, 4, '#fff4b0', 0.35);
-  } else {
-    arc(ctx, 0, 0, R, 0, Math.PI * 2, color, 2.4);
-  }
+  arc(ctx, 0, 0, R, 0, Math.PI * 2, color, 2.4);
   // Tier pips along the bottom.
   for (let i = 0; i < def.tier; i++) circle(ctx, (i - (def.tier - 1) / 2) * 5, R - 4, 1.6, color, 0.6, darken(color, 0.5));
 }

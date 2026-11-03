@@ -30,7 +30,6 @@ describe('warrior icons', () => {
       const d = warriorIconDefs[w.id];
       expect(d.role, w.id).toBe(w.role);
       expect(d.tier, w.id).toBe(w.tier);
-      expect(Boolean(d.ridiculous), w.id).toBe(Boolean((w as { ridiculous?: boolean }).ridiculous));
     }
   });
 

@@ -232,7 +232,7 @@ export class BattleHud {
       const thumb = this.deps.troopThumb(type);
       const card = h(
         'button',
-        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': type },
+        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.troops[type]?.name ?? type, title: this.s.data.troops[type]?.description ?? type },
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('span', { class: 'troop-count' }, `×${left}`),
       );

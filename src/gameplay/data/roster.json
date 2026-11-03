@@ -1,5 +1,5 @@
 {
-  "$comment": "Design catalog of every warrior (10 roles x 5 tiers) and hero. Stats are derived from progression.json by src/gameplay/sim/progression.ts. 'liveTroop' marks warriors already playable (their troops.json id). Every ability has a unique id and a unique mechanical 'effect' (kind + numbers) for the battle sim to implement. The tier-3 Veterans are the 'ridiculous' ones. Each warrior's icon is code-drawn in src/presentation/art/warriorIcons.ts (key icon.warrior.<id>).",
+  "$comment": "Design catalog of every warrior (10 roles x 5 tiers) and hero. Stats are derived from progression.json by src/gameplay/sim/progression.ts. 'liveTroop' marks warriors already playable (their troops.json id).",
   "warriors": [
     {
       "id": "shinobi",
@@ -9,11 +9,7 @@
       "ability": {
         "id": "swift_strike",
         "name": "Swift Strike",
-        "text": "Cheap and fast; the first warrior every clan trains.",
-        "effect": {
-          "kind": "swift",
-          "note": "live: fast, cheap melee"
-        }
+        "text": "Cheap and fast; the first warrior every clan trains."
       },
       "look": {
         "gi": "#2f3a4f",
@@ -30,42 +26,31 @@
       "ability": {
         "id": "twin_strike",
         "name": "Twin Strike",
-        "text": "Every hit lands twice: full damage on its target and half on the next building beside it.",
-        "effect": {
-          "kind": "cleave",
-          "secondTargetPct": 0.5,
-          "radius": 1.2
-        }
+        "text": "Every hit lands twice, on its target and the next building beside it."
       },
       "look": {
         "gi": "#3a2f4f",
         "accent": "#e9b44c",
         "weapon": "twin short swords"
-      }
+      },
+      "liveTroop": "twin_fang_dancer"
     },
     {
-      "id": "sushi_chef_assassin",
-      "name": "Sushi Chef Assassin",
+      "id": "wind_step_assassin",
+      "name": "Wind-Step Assassin",
       "role": "blade",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "omakase",
-        "name": "Omakase",
-        "text": "Every fifth slash fillets a chunk off the building and serves it as sashimi. The nearest defense stops firing for 3 seconds to eat it. Chef refuses to explain.",
-        "effect": {
-          "kind": "stun_every_nth",
-          "every": 5,
-          "stunSeconds": 3,
-          "radius": 4
-        }
+        "id": "wind_step",
+        "name": "Wind Step",
+        "text": "Dashes to a new target; the first hit after each dash deals triple damage."
       },
       "look": {
-        "gi": "#f4ead6",
-        "accent": "#c8402f",
-        "weapon": "yanagiba sushi knife",
-        "hat": "tall chef hat"
-      }
+        "gi": "#2a3a3a",
+        "accent": "#8ad0ff",
+        "weapon": "straight blade with wind ribbons"
+      },
+      "liveTroop": "wind_step_assassin"
     },
     {
       "id": "moonblade_master",
@@ -75,18 +60,14 @@
       "ability": {
         "id": "moon_cut",
         "name": "Moon Cut",
-        "text": "Every fourth strike is a crescent slash for 2.5x damage.",
-        "effect": {
-          "kind": "crit_every",
-          "every": 4,
-          "mult": 2.5
-        }
+        "text": "Every fourth strike is a crescent slash for 2.5x damage."
       },
       "look": {
         "gi": "#1f2433",
         "accent": "#d9dee6",
         "weapon": "long curved blade with crescent guard"
-      }
+      },
+      "liveTroop": "moonblade_master"
     },
     {
       "id": "storm_sovereign",
@@ -96,19 +77,14 @@
       "ability": {
         "id": "storm_chain",
         "name": "Storm Chain",
-        "text": "Slashes arc between up to three nearby buildings, each jump at 60% of the last.",
-        "effect": {
-          "kind": "chain_buildings",
-          "jumps": 3,
-          "falloff": 0.6,
-          "radius": 2
-        }
+        "text": "Slashes arc between up to three nearby buildings."
       },
       "look": {
         "gi": "#141a22",
         "accent": "#7fd3ff",
         "weapon": "lightning-etched katana"
-      }
+      },
+      "liveTroop": "storm_sovereign"
     },
     {
       "id": "kunai_adept",
@@ -118,11 +94,7 @@
       "ability": {
         "id": "kunai_volley",
         "name": "Kunai Volley",
-        "text": "Fragile ranged damage from behind the front line.",
-        "effect": {
-          "kind": "ranged",
-          "note": "live: fragile ranged damage"
-        }
+        "text": "Fragile ranged damage from behind the front line."
       },
       "look": {
         "gi": "#5d6672",
@@ -139,40 +111,31 @@
       "ability": {
         "id": "fan_throw",
         "name": "Fan Throw",
-        "text": "Throws three shuriken at once; each hit splashes half damage in a small circle.",
-        "effect": {
-          "kind": "splash",
-          "radius": 0.8,
-          "pct": 0.5
-        }
+        "text": "Throws three shuriken at once; small splash."
       },
       "look": {
         "gi": "#4a5560",
         "accent": "#c8402f",
         "weapon": "shuriken fan"
-      }
+      },
+      "liveTroop": "shuriken_storm"
     },
     {
-      "id": "rubber_duck_sniper",
-      "name": "Rubber Duck Sniper",
+      "id": "blowgun_hunter",
+      "name": "Blowgun Hunter",
       "role": "thrower",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "squeak_shot",
-        "name": "Squeak Shot",
-        "text": "Fires rubber ducks from a bamboo tube. Every third duck squeaks so loudly that the defense it hits spins around looking for the culprit and loses its target for 1.5 seconds.",
-        "effect": {
-          "kind": "retarget_delay",
-          "every": 3,
-          "seconds": 1.5
-        }
+        "id": "venom_dart",
+        "name": "Venom Dart",
+        "text": "Darts keep damaging a building for 5 seconds."
       },
       "look": {
         "gi": "#3f5a3a",
-        "accent": "#ffd23c",
-        "weapon": "bamboo duck launcher"
-      }
+        "accent": "#9be05a",
+        "weapon": "bamboo blowgun"
+      },
+      "liveTroop": "blowgun_hunter"
     },
     {
       "id": "chain_sickle_reaper",
@@ -182,18 +145,14 @@
       "ability": {
         "id": "armor_shred",
         "name": "Armour Shred",
-        "text": "Hits make the target take 20% more damage from everyone for 4 seconds.",
-        "effect": {
-          "kind": "vulnerability",
-          "pct": 0.2,
-          "seconds": 4
-        }
+        "text": "Hits make the target take 20% more damage from everyone."
       },
       "look": {
         "gi": "#3a2a2a",
         "accent": "#c9ced6",
         "weapon": "sickle on a chain"
-      }
+      },
+      "liveTroop": "chain_sickle_reaper"
     },
     {
       "id": "thousand_needle",
@@ -203,18 +162,14 @@
       "ability": {
         "id": "needle_rain",
         "name": "Needle Rain",
-        "text": "Range 6 and fires twice as fast as a Kunai Adept, but must stay behind cover.",
-        "effect": {
-          "kind": "long_range_rapid",
-          "range": 6,
-          "attackSpeedMult": 2
-        }
+        "text": "Very long range and rapid fire; must stay behind cover."
       },
       "look": {
         "gi": "#2b2f3a",
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
-      }
+      },
+      "liveTroop": "thousand_needle"
     },
     {
       "id": "armored_guardian",
@@ -224,11 +179,7 @@
       "ability": {
         "id": "stand_firm",
         "name": "Stand Firm",
-        "text": "Walks straight into defenses and soaks their fire.",
-        "effect": {
-          "kind": "soak",
-          "note": "live: walks into defenses"
-        }
+        "text": "Walks straight into defenses and soaks their fire."
       },
       "look": {
         "gi": "#3a2f2a",
@@ -246,42 +197,33 @@
       "ability": {
         "id": "iron_skin",
         "name": "Iron Skin",
-        "text": "Warriors within 1.5 tiles take 15% less damage.",
-        "effect": {
-          "kind": "aura_damage_reduction",
-          "radius": 1.5,
-          "pct": 0.15
-        }
+        "text": "Warriors beside him take 15% less damage."
       },
       "look": {
         "gi": "#5a4a3a",
         "accent": "#e9b44c",
         "weapon": "iron staff",
         "armor": "bronze bracers"
-      }
+      },
+      "liveTroop": "iron_monk"
     },
     {
-      "id": "sumo_boulder",
-      "name": "Sumo Boulder",
+      "id": "bell_warden",
+      "name": "Bell Warden",
       "role": "guardian",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "belly_bounce",
-        "name": "Belly Bounce",
-        "text": "Every fourth shot that hits him boings off his magnificent belly and flies straight back at the defense that fired it. He does a little stomp of triumph every time.",
-        "effect": {
-          "kind": "reflect",
-          "every": 4,
-          "pct": 1
-        }
+        "id": "temple_bell",
+        "name": "Temple Bell",
+        "text": "Rings a bell that makes defenses in range target him first."
       },
       "look": {
-        "gi": "#e9c9a0",
-        "accent": "#3d4a5c",
-        "weapon": "bare hands",
-        "armor": "mawashi belt"
-      }
+        "gi": "#4a3a2a",
+        "accent": "#d9632a",
+        "weapon": "great bell and hammer",
+        "armor": "bronze"
+      },
+      "liveTroop": "bell_warden"
     },
     {
       "id": "mountain_shield",
@@ -291,19 +233,15 @@
       "ability": {
         "id": "great_wall",
         "name": "Great Wall",
-        "text": "Carries a tower shield that absorbs half of all splash damage for allies behind him.",
-        "effect": {
-          "kind": "splash_shield",
-          "pct": 0.5,
-          "radius": 1.5
-        }
+        "text": "Carries a tower shield that absorbs splash for allies behind him."
       },
       "look": {
         "gi": "#3d4a5c",
         "accent": "#9aa0aa",
         "weapon": "tower shield",
         "armor": "stone-grey plates"
-      }
+      },
+      "liveTroop": "mountain_shield"
     },
     {
       "id": "oni_breaker",
@@ -312,20 +250,16 @@
       "tier": 5,
       "ability": {
         "id": "oni_smash",
-        "name": "Ground Pound",
-        "text": "Every third hit is a quake: full damage to every building within 1.5 tiles.",
-        "effect": {
-          "kind": "quake",
-          "every": 3,
-          "radius": 1.5
-        }
+        "name": "Oni Smash",
+        "text": "Huge health; smashes walls for five times damage."
       },
       "look": {
         "gi": "#2a1a1a",
         "accent": "#c8402f",
         "weapon": "giant spiked club",
         "armor": "black lacquer with horned helm"
-      }
+      },
+      "liveTroop": "oni_breaker"
     },
     {
       "id": "saboteur",
@@ -335,11 +269,7 @@
       "ability": {
         "id": "sabotage",
         "name": "Sabotage",
-        "text": "Jams the nearest working defense for 6 seconds (once per Saboteur).",
-        "effect": {
-          "kind": "jam",
-          "note": "live: 6 s jam, once each"
-        }
+        "text": "Jams the nearest working defense for 6 seconds (once per Saboteur)."
       },
       "look": {
         "gi": "#2f4a3a",
@@ -356,41 +286,31 @@
       "ability": {
         "id": "disarm",
         "name": "Disarm",
-        "text": "Disarms every hidden trap within 2 tiles of the path it walks.",
-        "effect": {
-          "kind": "disarm_traps",
-          "radius": 2
-        }
+        "text": "Finds and disarms hidden traps along the squad's path."
       },
       "look": {
         "gi": "#4a4a2f",
         "accent": "#d9dee6",
         "weapon": "probe pole"
-      }
+      },
+      "liveTroop": "trap_breaker"
     },
     {
-      "id": "karaoke_saboteur",
-      "name": "Karaoke Saboteur",
+      "id": "gearbreaker",
+      "name": "Gearbreaker",
       "role": "saboteur",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "off_key_ballad",
-        "name": "Off-Key Ballad",
-        "text": "Grabs a microphone and sings one power ballad, horribly. Every defense within 3 tiles covers its ears and fires 40% slower for 6 seconds. Nobody asked for an encore.",
-        "effect": {
-          "kind": "aura_slow_defenses",
-          "radius": 3,
-          "slowPct": 0.4,
-          "seconds": 6,
-          "uses": 1
-        }
+        "id": "long_jam",
+        "name": "Long Jam",
+        "text": "Two jams per warrior, each lasting 9 seconds."
       },
       "look": {
-        "gi": "#5a2f6a",
-        "accent": "#ff6bd5",
-        "weapon": "microphone on a cable"
-      }
+        "gi": "#2f3f4a",
+        "accent": "#e9b44c",
+        "weapon": "heavy wrench and wedges"
+      },
+      "liveTroop": "gearbreaker"
     },
     {
       "id": "fuse_master",
@@ -400,18 +320,14 @@
       "ability": {
         "id": "delayed_charge",
         "name": "Delayed Charge",
-        "text": "Plants a charge on a defense that explodes after 5 seconds for 8x its damage.",
-        "effect": {
-          "kind": "delayed_bomb",
-          "delaySeconds": 5,
-          "damageMult": 8
-        }
+        "text": "Plants a charge on a defense that explodes after 5 seconds."
       },
       "look": {
         "gi": "#3a2f2f",
         "accent": "#ff9a3c",
         "weapon": "satchel charges"
-      }
+      },
+      "liveTroop": "fuse_master"
     },
     {
       "id": "ghost_engineer",
@@ -421,19 +337,14 @@
       "ability": {
         "id": "blackout",
         "name": "Blackout",
-        "text": "Jams every defense within 2 tiles for 3 seconds (once).",
-        "effect": {
-          "kind": "area_jam",
-          "radius": 2,
-          "seconds": 3,
-          "uses": 1
-        }
+        "text": "Once per battle, jams up to three defenses within 3 tiles for 4 seconds. Shares jam immunity with other specialists."
       },
       "look": {
         "gi": "#1f2a2a",
         "accent": "#8ad0ff",
         "weapon": "lantern of silence"
-      }
+      },
+      "liveTroop": "ghost_engineer"
     },
     {
       "id": "tunnel_runner",
@@ -443,11 +354,7 @@
       "ability": {
         "id": "tunnel",
         "name": "Tunnel",
-        "text": "Digs under walls to reach any building.",
-        "effect": {
-          "kind": "tunnel",
-          "note": "live: digs under walls"
-        }
+        "text": "Digs under walls to reach any building."
       },
       "look": {
         "gi": "#6b4a2e",
@@ -465,40 +372,31 @@
       "ability": {
         "id": "climb",
         "name": "Climb",
-        "text": "Climbs over walls and goes for storehouses first.",
-        "effect": {
-          "kind": "climb_storage",
-          "prefers": "storage"
-        }
+        "text": "Climbs over walls and goes for storehouses first."
       },
       "look": {
         "gi": "#4a3a2a",
         "accent": "#b8a888",
         "weapon": "climbing claws"
-      }
+      },
+      "liveTroop": "wall_climber"
     },
     {
-      "id": "potted_plant_ninja",
-      "name": "Potted Plant Ninja",
+      "id": "grapple_raider",
+      "name": "Grapple Raider",
       "role": "infiltrator",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "totally_a_shrub",
-        "name": "Totally a Shrub",
-        "text": "Disguised as a small bonsai in a pot. Defenses ignore it while it stands still, so it shuffles for one second, freezes for one second, and repeats. Wears the pot as trousers.",
-        "effect": {
-          "kind": "stealth_when_still",
-          "moveSeconds": 1,
-          "stillSeconds": 1
-        }
+        "id": "grapple_line",
+        "name": "Grapple Line",
+        "text": "Swings over walls straight to the nearest defense."
       },
       "look": {
-        "gi": "#4f7a46",
-        "accent": "#b5653a",
-        "weapon": "pruning shears",
-        "hat": "bonsai"
-      }
+        "gi": "#3a3a4a",
+        "accent": "#c8402f",
+        "weapon": "grappling line"
+      },
+      "liveTroop": "grapple_raider"
     },
     {
       "id": "mole_king",
@@ -508,18 +406,15 @@
       "ability": {
         "id": "surface_stun",
         "name": "Surface Stun",
-        "text": "Bursts out of the ground beside a defense, stunning it for 2 seconds.",
-        "effect": {
-          "kind": "surface_stun",
-          "stunSeconds": 2
-        }
+        "text": "Bursts out of the ground beside a defense, stunning it for 2 seconds."
       },
       "look": {
         "gi": "#5a3a1e",
         "accent": "#e9b44c",
         "weapon": "iron digging claws",
         "hat": "miner helm"
-      }
+      },
+      "liveTroop": "mole_king"
     },
     {
       "id": "phantom_gate",
@@ -529,18 +424,14 @@
       "ability": {
         "id": "open_path",
         "name": "Open Path",
-        "text": "Walls within 1.5 tiles crumble to half health, opening a path for everyone.",
-        "effect": {
-          "kind": "crumble_walls",
-          "radius": 1.5,
-          "pct": 0.5
-        }
+        "text": "Walls near it crumble, opening a path for everyone."
       },
       "look": {
         "gi": "#2a2a3a",
         "accent": "#b48cff",
         "weapon": "key-shaped staff"
-      }
+      },
+      "liveTroop": "phantom_gate"
     },
     {
       "id": "kite_raider",
@@ -550,11 +441,7 @@
       "ability": {
         "id": "firebomb",
         "name": "Firebomb",
-        "text": "Glides over walls on a war kite and bombs defenses.",
-        "effect": {
-          "kind": "firebomb",
-          "note": "live: flies over walls, bombs defenses"
-        }
+        "text": "Glides over walls on a war kite and bombs defenses."
       },
       "look": {
         "gi": "#3a3f6a",
@@ -571,42 +458,34 @@
       "tier": 2,
       "ability": {
         "id": "swift_glide",
-        "name": "Updraft",
-        "text": "Rides a crane-wing glider so high that the first anti-air shot every 5 seconds misses.",
-        "effect": {
-          "kind": "dodge_anti_air",
-          "everySeconds": 5
-        }
+        "name": "Swift Glide",
+        "text": "Very fast flyer that raids storehouses."
       },
       "look": {
         "gi": "#f4ead6",
         "accent": "#2f3a4f",
         "weapon": "hooked pole",
         "mount": "white crane-wing glider"
-      }
+      },
+      "liveTroop": "crane_glider"
     },
     {
-      "id": "cannonball_grandma",
-      "name": "Cannonball Grandma",
+      "id": "lantern_balloon",
+      "name": "Lantern Balloon",
       "role": "sky",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "rocking_chair_launch",
-        "name": "Rocking-Chair Launch",
-        "text": "Grandma Kiyo has her clan catapult her over the walls, still in her rocking chair. She lands on a building for 6x damage in a 1.5-tile splash, then fights on foot with knitting needles. She has done this every week since 1962.",
-        "effect": {
-          "kind": "landing_splash",
-          "radius": 1.5,
-          "damageMult": 6
-        }
+        "id": "ember_drop",
+        "name": "Ember Drop",
+        "text": "Slow balloon that drops burning embers in a wide area."
       },
       "look": {
-        "gi": "#8a4a6a",
-        "accent": "#f4ead6",
-        "weapon": "knitting needles",
-        "mount": "flying rocking chair"
-      }
+        "gi": "#3a2f2a",
+        "accent": "#ff9a3c",
+        "weapon": "ember pots",
+        "mount": "giant paper lantern balloon"
+      },
+      "liveTroop": "lantern_balloon"
     },
     {
       "id": "thunder_kite",
@@ -615,21 +494,16 @@
       "tier": 4,
       "ability": {
         "id": "chain_lightning",
-        "name": "Lightning Rod",
-        "text": "Every 6 seconds calls lightning on the toughest defense within 4 tiles, stunning it for 1 second.",
-        "effect": {
-          "kind": "periodic_strike",
-          "everySeconds": 6,
-          "range": 4,
-          "stunSeconds": 1
-        }
+        "name": "Chain Lightning",
+        "text": "Lightning hits a defense and up to three nearby defenses for 45% damage each."
       },
       "look": {
         "gi": "#1f2433",
         "accent": "#7fd3ff",
         "weapon": "lightning rod",
         "mount": "storm-blue kite"
-      }
+      },
+      "liveTroop": "thunder_kite"
     },
     {
       "id": "dragon_kite_armada",
@@ -639,19 +513,15 @@
       "ability": {
         "id": "armada",
         "name": "Armada",
-        "text": "When the dragon kite is shot down, three Kite Raiders bail out and keep fighting.",
-        "effect": {
-          "kind": "spawn_on_death",
-          "troop": "kite_raider",
-          "count": 3
-        }
+        "text": "A heavy dragon kite carrying a crew of bombers."
       },
       "look": {
         "gi": "#2a1a1a",
         "accent": "#e9b44c",
         "weapon": "bomb racks",
         "mount": "long dragon kite"
-      }
+      },
+      "liveTroop": "dragon_kite_armada"
     },
     {
       "id": "herbalist",
@@ -661,18 +531,14 @@
       "ability": {
         "id": "mend",
         "name": "Mend",
-        "text": "Heals warriors within 2 tiles for 8% of their health every second.",
-        "effect": {
-          "kind": "heal_aura",
-          "radius": 2,
-          "pctPerSecond": 0.08
-        }
+        "text": "Heals nearby warriors over time."
       },
       "look": {
         "gi": "#4f7a46",
         "accent": "#f4ead6",
         "weapon": "herb satchel"
-      }
+      },
+      "liveTroop": "herbalist"
     },
     {
       "id": "drum_monk",
@@ -682,44 +548,31 @@
       "ability": {
         "id": "war_drum",
         "name": "War Drum",
-        "text": "Warriors within 2.5 tiles move and attack 25% faster.",
-        "effect": {
-          "kind": "haste_aura",
-          "radius": 2.5,
-          "pct": 0.25
-        }
+        "text": "Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack."
       },
       "look": {
         "gi": "#7a3f2a",
         "accent": "#e9b44c",
         "weapon": "taiko drum"
-      }
+      },
+      "liveTroop": "drum_monk"
     },
     {
-      "id": "bubble_tea_alchemist",
-      "name": "Bubble Tea Alchemist",
+      "id": "mist_weaver",
+      "name": "Mist Weaver",
       "role": "mystic",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "boba_barrage",
-        "name": "Boba Barrage",
-        "text": "Every 8 seconds hands out bubble tea. Warriors who drink it get a sugar rush (40% faster for 4 seconds), then a sugar crash (20% slower for 2 seconds). Totally worth it.",
-        "effect": {
-          "kind": "sugar_rush",
-          "everySeconds": 8,
-          "radius": 2,
-          "buffPct": 0.4,
-          "buffSeconds": 4,
-          "crashPct": 0.2,
-          "crashSeconds": 2
-        }
+        "id": "veil",
+        "name": "Veil",
+        "text": "Wraps nearby warriors in thin mist (a small moving smoke cloud)."
       },
       "look": {
-        "gi": "#c98da8",
-        "accent": "#5a3a2a",
-        "weapon": "giant bubble tea with straw"
-      }
+        "gi": "#9aa0aa",
+        "accent": "#d9dee6",
+        "weapon": "mist fan"
+      },
+      "liveTroop": "mist_weaver"
     },
     {
       "id": "spirit_caller",
@@ -729,18 +582,14 @@
       "ability": {
         "id": "second_wind",
         "name": "Second Wind",
-        "text": "Brings one fallen warrior back at half health (once).",
-        "effect": {
-          "kind": "revive",
-          "count": 1,
-          "hpPct": 0.5
-        }
+        "text": "Brings one fallen warrior back to its feet."
       },
       "look": {
         "gi": "#2f2a4a",
         "accent": "#b48cff",
         "weapon": "spirit bell"
-      }
+      },
+      "liveTroop": "spirit_caller"
     },
     {
       "id": "sage_of_clouds",
@@ -750,20 +599,14 @@
       "ability": {
         "id": "cloud_shelter",
         "name": "Cloud Shelter",
-        "text": "Every warrior within 3 tiles heals 30% and gets a shield that blocks the next hit (once).",
-        "effect": {
-          "kind": "shield_heal",
-          "radius": 3,
-          "healPct": 0.3,
-          "shieldHits": 1,
-          "uses": 1
-        }
+        "text": "Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds."
       },
       "look": {
         "gi": "#f4ead6",
         "accent": "#7fd3ff",
         "weapon": "cloud staff"
-      }
+      },
+      "liveTroop": "sage_of_clouds"
     },
     {
       "id": "ram_crew",
@@ -773,17 +616,14 @@
       "ability": {
         "id": "battering_ram",
         "name": "Battering Ram",
-        "text": "Four times damage against walls and gates.",
-        "effect": {
-          "kind": "wall_mult",
-          "mult": 4
-        }
+        "text": "Four times damage against walls and gates."
       },
       "look": {
         "gi": "#5e3a22",
         "accent": "#9aa0aa",
         "weapon": "log ram"
-      }
+      },
+      "liveTroop": "ram_crew"
     },
     {
       "id": "fire_monk",
@@ -793,40 +633,31 @@
       "ability": {
         "id": "flame_breath",
         "name": "Flame Breath",
-        "text": "Breathes fire in a short cone; buildings in it burn for 3 seconds.",
-        "effect": {
-          "kind": "burn_cone",
-          "length": 1,
-          "burnSeconds": 3
-        }
+        "text": "Short-range fire that burns a small area of buildings."
       },
       "look": {
         "gi": "#7a2e26",
         "accent": "#ff9a3c",
         "weapon": "fire gourd"
-      }
+      },
+      "liveTroop": "fire_monk"
     },
     {
-      "id": "mochi_mortar",
-      "name": "Mochi Mortar",
+      "id": "bomb_carrier",
+      "name": "Bomb Carrier",
       "role": "siege",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "sticky_situation",
-        "name": "Sticky Situation",
-        "text": "Lobs enormous sticky rice cakes. A defense it hits is glued facing its current target for 4 seconds and cannot switch to anyone else. Delicious, but deeply inconvenient.",
-        "effect": {
-          "kind": "target_lock",
-          "seconds": 4
-        }
+        "id": "big_bang",
+        "name": "Big Bang",
+        "text": "Runs to the nearest wall or defense and explodes."
       },
       "look": {
-        "gi": "#f1ebdf",
-        "accent": "#e98aa0",
-        "weapon": "giant wooden mallet",
-        "pack": "mochi"
-      }
+        "gi": "#2b2b2b",
+        "accent": "#ff6b3c",
+        "weapon": "giant bomb on back"
+      },
+      "liveTroop": "bomb_carrier"
     },
     {
       "id": "siege_bombardier",
@@ -836,17 +667,14 @@
       "ability": {
         "id": "long_shot",
         "name": "Long Shot",
-        "text": "Artillery with range 7 that out-ranges every defense, but cannot move while firing.",
-        "effect": {
-          "kind": "artillery",
-          "range": 7
-        }
+        "text": "Artillery with 11-tile range. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing."
       },
       "look": {
         "gi": "#3a3f48",
         "accent": "#e9b44c",
         "weapon": "bronze hand-mortar"
-      }
+      },
+      "liveTroop": "siege_bombardier"
     },
     {
       "id": "volcano_cannoneer",
@@ -856,18 +684,14 @@
       "ability": {
         "id": "eruption",
         "name": "Eruption",
-        "text": "Each shot splashes 1.5 tiles and leaves the ground burning for 4 seconds.",
-        "effect": {
-          "kind": "burning_ground",
-          "radius": 1.5,
-          "burnSeconds": 4
-        }
+        "text": "Huge splash that leaves burning ground."
       },
       "look": {
         "gi": "#2a1a1a",
         "accent": "#ff4a2a",
         "weapon": "volcanic cannon"
-      }
+      },
+      "liveTroop": "volcano_cannoneer"
     },
     {
       "id": "hound_handler",
@@ -877,18 +701,15 @@
       "ability": {
         "id": "unleash",
         "name": "Unleash",
-        "text": "Fights alongside two hunting dogs.",
-        "effect": {
-          "kind": "spawn_companions",
-          "count": 2
-        }
+        "text": "Fights alongside two hunting dogs. The handler and dogs share one health and damage budget."
       },
       "look": {
         "gi": "#5a4a3a",
         "accent": "#c8402f",
         "weapon": "leash and short sword",
         "mount": "two shiba-like hounds"
-      }
+      },
+      "liveTroop": "hound_handler"
     },
     {
       "id": "hawk_tamer",
@@ -898,43 +719,33 @@
       "ability": {
         "id": "hawk_harass",
         "name": "Hawk Harass",
-        "text": "Her hawk harries one defense within 4 tiles, making it fire 30% slower while the hawk lives.",
-        "effect": {
-          "kind": "slow_one_defense",
-          "range": 4,
-          "slowPct": 0.3
-        }
+        "text": "Her hawk harries a defense from range, slowing its fire."
       },
       "look": {
         "gi": "#4a3a2a",
         "accent": "#e9b44c",
         "weapon": "falconry glove",
         "mount": "hawk"
-      }
+      },
+      "liveTroop": "hawk_tamer"
     },
     {
-      "id": "goose_wrangler",
-      "name": "Goose Wrangler",
+      "id": "boar_rider",
+      "name": "Boar Rider",
       "role": "beast",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "unholy_honk",
-        "name": "Unholy Honk",
-        "text": "Brings one war goose. It is impossible to ignore: every defense within 2.5 tiles must shoot the goose. The goose has triple health, takes no splash damage, and fears nothing.",
-        "effect": {
-          "kind": "taunt",
-          "radius": 2.5,
-          "hpMult": 3,
-          "splashImmune": true
-        }
+        "id": "charge",
+        "name": "Charge",
+        "text": "Charges through the first wall in its way."
       },
       "look": {
-        "gi": "#4a3a2a",
-        "accent": "#ff9a3c",
-        "weapon": "loaf of bread",
-        "mount": "war goose"
-      }
+        "gi": "#5e3a22",
+        "accent": "#9aa0aa",
+        "weapon": "spear",
+        "mount": "armoured boar"
+      },
+      "liveTroop": "boar_rider"
     },
     {
       "id": "bear_warrior",
@@ -944,19 +755,15 @@
       "ability": {
         "id": "rage",
         "name": "Rage",
-        "text": "Hits 60% harder below half health.",
-        "effect": {
-          "kind": "rage",
-          "hpBelowPct": 0.5,
-          "damagePct": 0.6
-        }
+        "text": "Hits much harder below half health."
       },
       "look": {
         "gi": "#3a2a1e",
         "accent": "#c8402f",
         "weapon": "bear-claw gauntlets",
         "armor": "fur mantle"
-      }
+      },
+      "liveTroop": "bear_warrior"
     },
     {
       "id": "tiger_lord",
@@ -965,20 +772,16 @@
       "tier": 5,
       "ability": {
         "id": "pride",
-        "name": "Roar",
-        "text": "Rides a war tiger. Its arrival roar gives every warrior within 3 tiles 20% more damage for the rest of the battle.",
-        "effect": {
-          "kind": "roar_buff",
-          "radius": 3,
-          "damagePct": 0.2
-        }
+        "name": "Pride",
+        "text": "Arrives with two war tigers. Rider and tigers share one health and damage budget."
       },
       "look": {
         "gi": "#2a2a2a",
         "accent": "#e9b44c",
         "weapon": "glaive",
         "mount": "white war tiger"
-      }
+      },
+      "liveTroop": "tiger_lord"
     },
     {
       "id": "shadow_stalker",
@@ -988,16 +791,14 @@
       "ability": {
         "id": "unseen",
         "name": "Unseen",
-        "text": "Cannot be targeted until it attacks for the first time.",
-        "effect": {
-          "kind": "unseen"
-        }
+        "text": "Cannot be targeted until it attacks for the first time."
       },
       "look": {
         "gi": "#141a22",
         "accent": "#5f6b78",
         "weapon": "tanto"
-      }
+      },
+      "liveTroop": "shadow_stalker"
     },
     {
       "id": "mirage_twin",
@@ -1007,41 +808,31 @@
       "ability": {
         "id": "decoy",
         "name": "Decoy",
-        "text": "Leaves a decoy that draws fire for 4 seconds.",
-        "effect": {
-          "kind": "decoy",
-          "seconds": 4
-        }
+        "text": "Leaves a decoy that draws fire for 4 seconds."
       },
       "look": {
         "gi": "#2a2a3a",
         "accent": "#b48cff",
         "weapon": "mirror blade"
-      }
+      },
+      "liveTroop": "mirage_twin"
     },
     {
-      "id": "mime_ninja",
-      "name": "Mime Ninja",
+      "id": "night_blade",
+      "name": "Night Blade",
       "role": "shadow",
       "tier": 3,
-      "ridiculous": true,
       "ability": {
-        "id": "invisible_wall",
-        "name": "Invisible Wall",
-        "text": "Silently mimes a wall. It is a real wall. Defense shots crossing the 1.5-tile line it outlines simply stop, for 5 seconds (once). The mime never explains this either.",
-        "effect": {
-          "kind": "projectile_wall",
-          "width": 1.5,
-          "seconds": 5,
-          "uses": 1
-        }
+        "id": "smoke_hunter",
+        "name": "Smoke Hunter",
+        "text": "Deals double damage to buildings inside smoke."
       },
       "look": {
-        "gi": "#f4ead6",
-        "accent": "#141a22",
-        "weapon": "white gloves",
-        "mask": "white face paint"
-      }
+        "gi": "#1f2433",
+        "accent": "#c9ced6",
+        "weapon": "black katana"
+      },
+      "liveTroop": "night_blade"
     },
     {
       "id": "void_walker",
@@ -1051,17 +842,14 @@
       "ability": {
         "id": "shadow_step",
         "name": "Shadow Step",
-        "text": "Every 8 seconds steps through the shadows straight onto its next target.",
-        "effect": {
-          "kind": "teleport",
-          "everySeconds": 8
-        }
+        "text": "Steps through shadows straight onto its target."
       },
       "look": {
         "gi": "#0f1218",
         "accent": "#7a4aff",
         "weapon": "twin kama"
-      }
+      },
+      "liveTroop": "void_walker"
     },
     {
       "id": "eclipse_ninja",
@@ -1071,18 +859,14 @@
       "ability": {
         "id": "eclipse",
         "name": "Eclipse",
-        "text": "Unseen, immune to traps, and deals double damage to buildings inside smoke.",
-        "effect": {
-          "kind": "eclipse",
-          "smokeMult": 2,
-          "trapImmune": true
-        }
+        "text": "Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit."
       },
       "look": {
         "gi": "#0a0c10",
         "accent": "#e9b44c",
         "weapon": "eclipse ring blade"
-      }
+      },
+      "liveTroop": "eclipse_ninja"
     }
   ],
   "heroes": [

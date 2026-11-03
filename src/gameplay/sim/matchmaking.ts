@@ -135,6 +135,6 @@ export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotA
   const lvl = Math.max(1, cap - (st.bias < 0.5 ? 1 : 0));
   const army = botArmy(st.hall, st.bias, data);
   const levels: Record<string, number> = {};
-  for (const t of Object.keys(army)) levels[t] = Math.min(lvl, troopDef(data, t).levels.length);
+  for (const t of Object.keys(army)) levels[t] = Math.min(lvl, troopLevelCapAt(st.hall, data, t), troopDef(data, t).levels.length);
   return { hall: st.hall, trophies: st.trophies, army, levels };
 }

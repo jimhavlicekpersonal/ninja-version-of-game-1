@@ -26,19 +26,19 @@
   ],
   "armyHousingByKeep": [
     20,
-    45,
-    70,
-    100,
-    135,
-    170,
-    200,
-    220,
+    40,
+    80,
+    120,
+    180,
     240,
-    260,
-    280,
+    255,
+    270,
+    285,
     300,
-    320,
-    340,
+    300,
+    315,
+    330,
+    345,
     360
   ],
   "tiers": [
@@ -600,7 +600,7 @@
       "unlockKeep": 5,
       "pinnacleMaxLevel": 6,
       "live": false,
-      "description": "Lanterns strung between rooftops. Hidden warriors within 2 tiles of the line are revealed for 4 seconds and take 15% more damage while lit.",
+      "description": "Lanterns strung between rooftops. Hidden warriors and moving mist within 2 tiles of the line are lit up for 4 seconds, and lit warriors take 15% more damage.",
       "effect": {
         "kind": "reveal_line",
         "radius": 2,
@@ -609,7 +609,7 @@
       },
       "counters": [
         "shadow_stalker",
-        "potted_plant_ninja",
+        "mist_weaver",
         "eclipse_ninja"
       ],
       "counteredBy": [
@@ -625,7 +625,7 @@
       "unlockKeep": 5,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Douses fire: burning buildings and burning ground within 2.5 tiles go out after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.",
+      "description": "Douses fire and rinses venom: burning and poison on buildings within 2.5 tiles end after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.",
       "effect": {
         "kind": "extinguish",
         "radius": 2.5,
@@ -635,7 +635,8 @@
       "counters": [
         "fire_monk",
         "volcano_cannoneer",
-        "kite_raider"
+        "kite_raider",
+        "blowgun_hunter"
       ],
       "counteredBy": [
         "thunder_kite",
@@ -663,7 +664,7 @@
         "shadow_stalker"
       ],
       "counteredBy": [
-        "karaoke_saboteur",
+        "lantern_balloon",
         "trap_breaker",
         "wall_climber"
       ]
@@ -710,7 +711,7 @@
       },
       "counters": [
         "saboteur",
-        "karaoke_saboteur",
+        "gearbreaker",
         "ghost_engineer",
         "mole_king"
       ],
@@ -727,7 +728,7 @@
       "unlockKeep": 6,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long. (The sugar crash is not shortened.)",
+      "description": "Burns foul incense: warriors within 3 tiles receive 50% less healing, and their buffs and auras last half as long.",
       "effect": {
         "kind": "anti_heal",
         "radius": 3,
@@ -736,12 +737,12 @@
       },
       "counters": [
         "herbalist",
-        "bubble_tea_alchemist",
+        "drum_monk",
         "iron_monk",
         "sage_of_clouds"
       ],
       "counteredBy": [
-        "rubber_duck_sniper",
+        "blowgun_hunter",
         "kunai_adept",
         "dragon_kite_armada"
       ]
@@ -753,7 +754,7 @@
       "unlockKeep": 6,
       "pinnacleMaxLevel": 6,
       "live": false,
-      "description": "Animals cannot resist it, and birds are terrified of it. Beasts and their companions within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.",
+      "description": "Animals cannot resist it, and birds are terrified of it. Beasts, their companions and charging mounts within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.",
       "effect": {
         "kind": "beast_decoy",
         "radius": 3,
@@ -761,12 +762,12 @@
       },
       "counters": [
         "hound_handler",
-        "goose_wrangler",
+        "boar_rider",
         "crane_glider"
       ],
       "counteredBy": [
         "shuriken_storm",
-        "cannonball_grandma",
+        "lantern_balloon",
         "fire_monk"
       ]
     },
@@ -789,7 +790,7 @@
       ],
       "counteredBy": [
         "oni_breaker",
-        "sushi_chef_assassin",
+        "wind_step_assassin",
         "tiger_lord"
       ]
     },
@@ -800,7 +801,7 @@
       "unlockKeep": 7,
       "pinnacleMaxLevel": 8,
       "live": false,
-      "description": "A bucket crew that smothers explosions: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.",
+      "description": "A bucket crew that smothers explosions and embers: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.",
       "effect": {
         "kind": "smother_splash",
         "radius": 3,
@@ -809,12 +810,13 @@
       },
       "counters": [
         "fuse_master",
-        "cannonball_grandma",
-        "shuriken_storm"
+        "bomb_carrier",
+        "shuriken_storm",
+        "lantern_balloon"
       ],
       "counteredBy": [
         "hound_handler",
-        "goose_wrangler",
+        "boar_rider",
         "twin_fang_dancer"
       ]
     },
@@ -851,23 +853,21 @@
       "unlockKeep": 9,
       "pinnacleMaxLevel": 8,
       "live": false,
-      "description": "A clan banner that keeps nearby defenders focused: defenses within 3 tiles cannot be taunted, glued or distracted by snacks.",
+      "description": "A clan banner that keeps nearby defenders focused: defenses within 3 tiles ignore taunting bells and decoys.",
       "effect": {
         "kind": "focus_aura",
         "radius": 3,
         "ignores": [
           "taunt",
-          "target_lock",
-          "snack"
+          "decoy"
         ]
       },
       "counters": [
-        "goose_wrangler",
-        "mochi_mortar",
-        "sushi_chef_assassin"
+        "bell_warden",
+        "mirage_twin"
       ],
       "counteredBy": [
-        "karaoke_saboteur",
+        "gearbreaker",
         "ghost_engineer",
         "moonblade_master"
       ]
@@ -879,20 +879,20 @@
       "unlockKeep": 9,
       "pinnacleMaxLevel": 8,
       "live": false,
-      "description": "A lookout who calls targets: defenses within 3 tiles retarget instantly, cannot lose their target to squeaks or shadow steps, and are not fooled by decoys.",
+      "description": "A lookout who calls targets: defenses within 3 tiles retarget instantly onto warriors that dash, swing or shadow-step into range.",
       "effect": {
         "kind": "instant_retarget",
         "radius": 3
       },
       "counters": [
-        "rubber_duck_sniper",
         "void_walker",
-        "mirage_twin"
+        "wind_step_assassin",
+        "grapple_raider"
       ],
       "counteredBy": [
         "thousand_needle",
-        "mochi_mortar",
-        "mime_ninja"
+        "bomb_carrier",
+        "night_blade"
       ]
     },
     {
@@ -902,15 +902,16 @@
       "unlockKeep": 9,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Blasts scalding steam in a 2-tile circle. No projectiles, so nothing can reflect, block or dodge it, and decoys do not fool it.",
+      "description": "Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.",
       "effect": {
         "kind": "no_projectile_aoe",
-        "radius": 2
+        "radius": 2,
+        "clearsSmoke": true
       },
       "counters": [
-        "sumo_boulder",
-        "mime_ninja",
-        "mirage_twin"
+        "eclipse_ninja",
+        "night_blade",
+        "wind_step_assassin"
       ],
       "counteredBy": [
         "thousand_needle",
@@ -940,7 +941,7 @@
       ],
       "counteredBy": [
         "sage_of_clouds",
-        "bubble_tea_alchemist",
+        "mist_weaver",
         "drum_monk"
       ]
     },
@@ -976,14 +977,15 @@
       "unlockKeep": 12,
       "pinnacleMaxLevel": 6,
       "live": false,
-      "description": "Raked gravel that crunches: anything that teleports, lands or drops onto it is stunned for 1.5 seconds.",
+      "description": "Raked gravel that crunches: anything that teleports, lands or rushes onto it is stunned for 1.5 seconds.",
       "effect": {
         "kind": "arrival_stun",
         "stunSeconds": 1.5
       },
       "counters": [
         "void_walker",
-        "cannonball_grandma"
+        "grapple_raider",
+        "bomb_carrier"
       ],
       "counteredBy": [
         "eclipse_ninja",
@@ -1034,7 +1036,7 @@
       ],
       "counteredBy": [
         "shinobi",
-        "potted_plant_ninja",
+        "grapple_raider",
         "mirage_twin"
       ]
     },
@@ -1057,7 +1059,7 @@
       "counteredBy": [
         "mole_king",
         "chain_sickle_reaper",
-        "sumo_boulder"
+        "bell_warden"
       ]
     }
   ]

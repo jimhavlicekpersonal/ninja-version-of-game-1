@@ -104,7 +104,7 @@ describe('the 50-warrior design', () => {
   });
 
   it('a newly unlocked tier starts no stronger than the tier below at its cap', () => {
-    for (const w of WARRIORS.filter((x) => x.tier > 1 && !x.liveTroop)) {
+    for (const w of WARRIORS.filter((x) => x.tier > 1)) {
       const k = warriorUnlockKeep(w);
       const below = WARRIORS.find((x) => x.role === w.role && x.tier === w.tier - 1)!;
       expect(warriorPower(w, warriorLevelCap(w, k))).toBeLessThanOrEqual(warriorPower(below, warriorLevelCap(below, k)) * 1.05);

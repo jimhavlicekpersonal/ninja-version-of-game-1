@@ -38,11 +38,9 @@ export interface WarriorEntry {
   name: string;
   role: RoleId;
   tier: number;
-  /** effect: the mechanic the battle sim implements (unique kind per warrior, numbers inline). */
-  ability: { id: string; name: string; text: string; effect: { kind: string; [param: string]: number | string | boolean } };
+  /** Display text; the mechanic and its numbers are the troop's `kit` in troops.json. */
+  ability: { id: string; name: string; text: string };
   look: Record<string, string>;
-  /** A deliberately absurd class (the tier-3 Veterans). */
-  ridiculous?: boolean;
   /** troops.json id when this warrior is already playable. */
   liveTroop?: string;
 }
@@ -105,6 +103,7 @@ export function warriorStats(w: WarriorEntry, level: number): { hp: number; dps:
  */
 export function warriorUnlockKeep(w: WarriorEntry, data?: GameData): number {
   if (w.liveTroop && data?.troops[w.liveTroop]) {
+    if (data.troops[w.liveTroop].unlockKeep) return data.troops[w.liveTroop].unlockKeep!;
     const need = data.troops[w.liveTroop].barracksLevel;
     const keep = data.hall.levels.findIndex((l) => (l.limits.burrow_barracks?.maxLevel ?? 0) >= need) + 1;
     if (keep > 0) return keep;

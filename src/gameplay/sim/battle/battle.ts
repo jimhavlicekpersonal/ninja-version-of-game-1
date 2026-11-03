@@ -8,6 +8,7 @@ import { createRng, next, type Rng } from '../rng';
 import type { CombatDef, Cost, GameData, ResourceKind } from '../types';
 import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from './pathfind';
 import type { BattleResult, BattleSetup, Deployment, EndReason } from './types';
+import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isHidden, resolveWarriorHit, stepWarriorEffects, type WarriorEffect } from './warriors';
 
 export interface SimBuilding {
   id: string;
@@ -29,6 +30,10 @@ export interface SimBuilding {
   /** Sabotage: silent while tick < disabledUntil; cannot be sabotaged again while tick < immuneUntil. */
   disabledUntil: number;
   immuneUntil: number;
+  vulnerableUntil: number;
+  vulnerability: number;
+  slowedUntil: number;
+  fireSlow: number;
 }
 
 /** A Smoke Bomb cloud on the map. Active while tick < endsTick. */
@@ -65,6 +70,15 @@ export interface SimTroop {
   slowTicks: number;
   /** Ability uses left (Saboteur jams). */
   charges: number;
+  hits: number;
+  firstHit: boolean;
+  revealed: boolean;
+  summoned: boolean;
+  decoyUntil: number;
+  abilityReady: number;
+  shieldUntil: number;
+  shieldReady: number;
+  revived: boolean;
 }
 
 export interface SimProjectile {
@@ -84,6 +98,7 @@ export interface SimProjectile {
   hitsGround: boolean;
   /** Fired from height (towers) or from the ground (troops). */
   arc: boolean;
+  sourceTroop?: number;
 }
 
 export type SimEvent =
@@ -128,6 +143,8 @@ export interface BattleSim {
   charges: Record<string, number>;
   /** Abilities used this battle, by ability id (kept apart from `used`, which counts troops). */
   abilitiesUsed: Record<string, number>;
+  warriorEffects: WarriorEffect[];
+  supportTroops: number[];
 }
 
 /** True when `id` names a tactical ability (battle.json `abilities`) rather than a troop. */
@@ -200,6 +217,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       hidden: kind === 'trap',
       disabledUntil: 0,
       immuneUntil: 0,
+      vulnerableUntil: 0, vulnerability: 0, slowedUntil: 0, fireSlow: 0,
     };
   });
   const cells = new Uint8Array(size * size);
@@ -239,6 +257,8 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     smokes: [],
     charges: { smoke_bomb: smokeCharges(setup.army, data) },
     abilitiesUsed: {},
+    warriorEffects: [],
+    supportTroops: [],
   };
 }
 
@@ -303,18 +323,21 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
     facing: 1,
     slowTicks: 0,
     charges: def.ability ? def.abilityCharges ?? 1 : 0,
+    hits: 0, firstHit: true, revealed: false, summoned: false, decoyUntil: 0,
+    abilityReady: 0, shieldUntil: 0, shieldReady: 0, revived: false,
   };
   sim.troops.push(t);
   sim.remaining[d.troop] -= 1;
   sim.used[d.troop] = (sim.used[d.troop] ?? 0) + 1;
   sim.events.push({ k: 'deploy', troop: t.id });
+  initializeWarrior(sim, t);
   return true;
 }
 
 function damageBuilding(sim: BattleSim, bi: number, amount: number): void {
   const b = sim.buildings[bi];
   if (b.destroyed) return;
-  b.hp -= amount;
+  b.hp -= amount * (sim.tick < b.vulnerableUntil ? 1 + b.vulnerability : 1);
   sim.events.push({ k: 'buildingHit', building: bi });
   if (b.hp > 0) return;
   b.hp = 0;
@@ -327,9 +350,15 @@ function damageBuilding(sim: BattleSim, bi: number, amount: number): void {
   sim.events.push({ k: 'destroyed', building: bi });
 }
 
-function damageTroop(sim: BattleSim, ti: number, amount: number): void {
+function damageTroop(sim: BattleSim, ti: number, amount: number, splash = false, origin?: { x: number; y: number }): void {
   const t = sim.troops[ti];
   if (t.dead) return;
+  if (t.shieldUntil > sim.tick) {
+    t.shieldUntil = 0;
+    amount = Math.max(0, amount - t.maxHp * sim.data.battle.warriorRules.shieldMaximumDamage);
+  }
+  amount *= 1 - auraStrength(sim, t, 'resist');
+  if (splash) amount *= 1 - auraStrength(sim, t, 'splash', origin);
   t.hp -= amount;
   sim.events.push({ k: 'troopHit', troop: ti });
   if (t.hp <= 0) {
@@ -339,6 +368,8 @@ function damageTroop(sim: BattleSim, ti: number, amount: number): void {
   }
 }
 
+const warriorActions = { damageBuilding, damageTroop, moveToward };
+
 /** Nearest standing building this troop wants, by its preference. */
 function chooseTarget(sim: BattleSim, t: SimTroop): number {
   const def = troopDef(sim.data, t.type);
@@ -346,7 +377,7 @@ function chooseTarget(sim: BattleSim, t: SimTroop): number {
     let best = -1;
     let bestD = Infinity;
     sim.buildings.forEach((b, i) => {
-      if (b.destroyed || b.kind === 'hedge' || b.kind === 'trap' || !filter(b)) return;
+      if (b.destroyed || b.kind === 'trap' || (b.kind === 'hedge' && def.prefers !== 'walls' && def.prefers !== 'breach') || !filter(b)) return;
       const d = distToRect(t.x, t.y, rect(b));
       if (d < bestD) {
         bestD = d;
@@ -355,8 +386,20 @@ function chooseTarget(sim: BattleSim, t: SimTroop): number {
     });
     return best;
   };
+  if (def.prefers === 'storage') {
+    const storage = pick((b) => buildingDef(sim.data, b.type).category === 'storage');
+    if (storage >= 0) return storage;
+  }
+  if (def.prefers === 'walls') {
+    const wall = pick((b) => b.kind === 'hedge');
+    if (wall >= 0) return wall;
+  }
+  if (def.prefers === 'breach') {
+    const breach = pick((b) => b.kind === 'hedge' || b.kind === 'defense');
+    if (breach >= 0) return breach;
+  }
   if (def.prefers === 'defense') {
-    if (def.ability === 'sabotage' && t.charges > 0) {
+    if ((def.ability === 'sabotage' || def.kit?.jamTicks) && t.charges > 0) {
       const s = pick((b) => sabotageable(sim, b));
       if (s >= 0) return s;
     }
@@ -372,14 +415,17 @@ function stepTroop(sim: BattleSim, ti: number): void {
   t.px = t.x;
   t.py = t.y;
   const def = troopDef(sim.data, t.type);
-  if (t.cooldown > 0) t.cooldown--;
+  if (t.cooldown > 0) t.cooldown -= 1 + auraStrength(sim, t, 'haste');
+  if (t.decoyUntil > 0) { t.attacking = false; return; }
+  if (beforeWarriorAction(sim, t, warriorActions)) return;
   if (t.target < 0 || sim.buildings[t.target].destroyed) {
     t.target = chooseTarget(sim, t);
     t.path = null;
     t.attacking = false;
+    t.firstHit = true;
     if (t.target < 0) return;
   }
-  const saboteur = def.ability === 'sabotage' && t.charges > 0;
+  const saboteur = (def.ability === 'sabotage' || Boolean(def.kit?.jamTicks)) && t.charges > 0;
   if (saboteur && !sabotageable(sim, sim.buildings[t.target])) {
     // Someone else jammed it (or it is immune): head for another working defense if there is one.
     const nt = chooseTarget(sim, t);
@@ -392,14 +438,7 @@ function stepTroop(sim: BattleSim, ti: number): void {
   const target = sim.buildings[t.target];
   const r = rect(target);
   if (saboteur && sabotageable(sim, target) && distToRect(t.x, t.y, r) <= sim.data.battle.sabotage.rangeTiles) {
-    const sab = sim.data.battle.sabotage;
-    target.disabledUntil = sim.tick + sab.disableTicks;
-    target.immuneUntil = target.disabledUntil + sab.immunityTicks;
-    target.targetTroop = -1;
-    t.charges -= 1;
-    t.attacking = true;
-    t.cooldown = def.attackIntervalTicks;
-    sim.events.push({ k: 'sabotage', building: t.target, troop: ti });
+    resolveWarriorHit(sim, t, t.target, 0, warriorActions);
     return;
   }
   if (distToRect(t.x, t.y, r) <= def.range) {
@@ -408,21 +447,22 @@ function stepTroop(sim: BattleSim, ti: number): void {
     t.facing = c.x - c.y >= t.x - t.y ? 1 : -1;
     if (t.cooldown <= 0) {
       t.cooldown = def.attackIntervalTicks;
+      const damage = attackDamage(sim, t, target);
       if (def.projectile) {
         const d = dist(t.x, t.y, c.x, c.y);
         const travel = Math.max(1, Math.ceil(d / (def.projectileSpeed ?? 1)));
         sim.projectiles.push({
           id: sim.nextProjectile++, kind: def.projectile, fromX: t.x, fromY: t.y, toX: c.x, toY: c.y, total: travel, left: travel,
-          damage: t.damage, splash: 0, targetTroop: -1, targetBuilding: t.target, hitsAir: false, hitsGround: false, arc: true,
+          damage, splash: def.splashRadius ?? 0, targetTroop: -1, targetBuilding: t.target, hitsAir: false, hitsGround: false, arc: true, sourceTroop: ti,
         });
       } else {
-        damageBuilding(sim, t.target, t.damage);
+        resolveWarriorHit(sim, t, t.target, damage, warriorActions);
       }
     }
     return;
   }
   t.attacking = false;
-  const speed = t.slowTicks > 0 ? def.speed * 0.5 : def.speed;
+  const speed = def.speed * (t.slowTicks > 0 ? 0.5 : 1) * (1 + auraStrength(sim, t, 'haste')) * (t.firstHit ? def.kit?.dashSpeed ?? 1 : 1);
   if (t.slowTicks > 0) t.slowTicks--;
   if (t.air) {
     const c = center(target);
@@ -458,7 +498,7 @@ function stepTroop(sim: BattleSim, ti: number): void {
       t.attacking = true;
       if (t.cooldown <= 0) {
         t.cooldown = def.attackIntervalTicks;
-        damageBuilding(sim, hi, t.damage);
+        resolveWarriorHit(sim, t, hi, attackDamage(sim, t, sim.buildings[hi]), warriorActions);
       }
       return;
     }
@@ -500,15 +540,20 @@ function stepDefense(sim: BattleSim, bi: number): void {
   if (b.cooldown > 0) b.cooldown--;
   const cx = b.x + b.size / 2;
   const cy = b.y + b.size / 2;
-  const smoke = sim.smokes.length ? sim.data.battle.abilities.smoke_bomb : null;
-  const smokedRange = smoke ? Math.max(smoke.minTargetRange, c.range * smoke.rangeFactor) : c.range;
+  const smoke = sim.data.battle.abilities.smoke_bomb;
+  const smokedRange = Math.max(smoke.minTargetRange, c.range * smoke.rangeFactor);
   const ok = (t: SimTroop) => {
-    if (t.dead) return false;
+    if (t.dead || isHidden(sim, t)) return false;
     if (t.air ? c.targets === 'ground' : c.targets === 'air') return false;
     const d = dist(cx, cy, t.x, t.y);
-    const range = smoke && inSmoke(sim, t.x, t.y) ? smokedRange : c.range;
+    const range = (smoke && inSmoke(sim, t.x, t.y)) || auraStrength(sim, t, 'veil') > 0 ? smokedRange : c.range;
     return d <= range && d >= (c.minRange ?? 0);
   };
+  const taunt = sim.supportTroops.find((index) => {
+    const t = sim.troops[index];
+    return sim.data.troops[t.type].kit?.aura === 'taunt' && ok(t) && dist(cx, cy, t.x, t.y) <= (sim.data.troops[t.type].kit?.radius ?? 0);
+  }) ?? -1;
+  if (taunt >= 0) b.targetTroop = taunt;
   if (b.targetTroop < 0 || !ok(sim.troops[b.targetTroop])) {
     b.targetTroop = -1;
     let bestD = Infinity;
@@ -523,7 +568,7 @@ function stepDefense(sim: BattleSim, bi: number): void {
   }
   if (b.targetTroop < 0 || b.cooldown > 0) return;
   const t = sim.troops[b.targetTroop];
-  b.cooldown = c.fireIntervalTicks;
+  b.cooldown = c.fireIntervalTicks * (sim.tick < b.slowedUntil ? 1 + b.fireSlow : 1);
   const d = dist(cx, cy, t.x, t.y);
   const travel = Math.max(1, Math.ceil(d / c.projectileSpeed));
   let toX = t.x;
@@ -548,16 +593,17 @@ function stepTraps(sim: BattleSim): void {
     if (!c) return;
     const cx = b.x + b.size / 2;
     const cy = b.y + b.size / 2;
-    const triggered = sim.troops.some((t) => !t.dead && !t.air && dist(cx, cy, t.x, t.y) <= c.range);
+    const vulnerable = (t: SimTroop) => !t.dead && !t.air && !sim.data.troops[t.type].kit?.trapImmune;
+    const triggered = sim.troops.some((t) => vulnerable(t) && dist(cx, cy, t.x, t.y) <= c.range);
     if (!triggered) return;
     b.hidden = false;
     b.destroyed = true;
     sim.events.push({ k: 'trap', building: bi });
     const radius = c.splashRadius ?? c.range;
     sim.troops.forEach((t, ti) => {
-      if (t.dead || t.air || dist(cx, cy, t.x, t.y) > radius) return;
+      if (!vulnerable(t) || dist(cx, cy, t.x, t.y) > radius) return;
       if (c.projectile === 'sap') t.slowTicks = 40;
-      if (c.damage > 0) damageTroop(sim, ti, c.damage);
+      if (c.damage > 0) damageTroop(sim, ti, c.damage, true, { x: cx, y: cy });
     });
     sim.events.push({ k: 'hit', x: cx, y: cy, kind: c.projectile, splash: radius });
   });
@@ -572,12 +618,13 @@ function stepProjectiles(sim: BattleSim): void {
       continue;
     }
     if (p.targetBuilding >= 0) {
-      damageBuilding(sim, p.targetBuilding, p.damage);
+      if (p.sourceTroop !== undefined) resolveWarriorHit(sim, sim.troops[p.sourceTroop], p.targetBuilding, p.damage, warriorActions);
+      else damageBuilding(sim, p.targetBuilding, p.damage);
       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: 0 });
     } else if (p.splash > 0) {
       sim.troops.forEach((t, ti) => {
         if (t.dead || (t.air ? !p.hitsAir : !p.hitsGround)) return;
-        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, p.damage);
+        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, p.damage, true, { x: p.fromX, y: p.fromY });
       });
       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: p.splash });
     } else if (p.targetTroop >= 0) {
@@ -596,6 +643,7 @@ export function step(sim: BattleSim, deployments: Deployment[] = []): void {
   if (sim.ended) return;
   sim.events = [];
   for (const d of deployments) deploy(sim, d);
+  stepWarriorEffects(sim, warriorActions);
   for (let i = 0; i < sim.troops.length; i++) stepTroop(sim, i);
   stepTraps(sim);
   for (let i = 0; i < sim.buildings.length; i++) stepDefense(sim, i);
@@ -615,7 +663,8 @@ export function step(sim: BattleSim, deployments: Deployment[] = []): void {
     sim.troops.length > 0 &&
     sim.troops.every((t) => t.dead) &&
     Object.values(sim.remaining).every((v) => v <= 0) &&
-    sim.projectiles.length === 0
+    sim.projectiles.length === 0 &&
+    sim.warriorEffects.length === 0
   ) {
     end(sim, 'no_troops');
   }

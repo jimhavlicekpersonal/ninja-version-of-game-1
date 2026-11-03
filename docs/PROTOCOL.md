@@ -1,8 +1,10 @@
-# Kagemura multiplayer protocol (version 3)
+# Kagemura multiplayer protocol (version 4)
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
-**Version 3 (ninja rebuild):** a deployment may name a tactical ability instead of a troop. `{ tick, troop: "smoke_bomb", x, y }` throws a Smoke Bomb. Charges come from the army (`smokeCharges` in `src/gameplay/sim/battle/battle.ts`), so nothing new is sent or stored. A v2 server would ignore smoke and score the battle differently, so v3 clients refuse v2 servers. v3 servers still accept v2 clients (`minProtocol: 2`), because a battle without abilities replays the same.
+**Version 4 (playable roster):** all 50 warriors and Keep levels 1–15 are supported. The server advertises `minProtocol: 4` and the `warriors-50` feature. Deployments still use `{ tick, troop, x, y }`; new troop IDs are listed in `troops.json`. Summons, auras, poison, burning, resurrection, shields and defense control reconstruct from seed + deployments using the shared simulation. Summons never appear in submitted inventory. Army validation checks `unlockKeep`; research validation subtracts each troop's `levelCapOffset`. Clients and servers must upgrade together.
+
+Version 3 introduced tactical ability deployments: `{ tick, troop: "smoke_bomb", x, y }` throws a Smoke Bomb. Charges are derived from the submitted army.
 
 This is what the game expects from a multiplayer server. Our server in `server/` implements it. A future server can be anything, in any language or on any database, as long as it speaks this protocol and passes the contract tests.
 

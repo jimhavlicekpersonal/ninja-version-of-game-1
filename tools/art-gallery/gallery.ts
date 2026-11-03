@@ -1,11 +1,12 @@
 /** Dev-only preview of every painter in src/presentation/art/ninja.ts (ART compartment tool). */
 import buildings from '../../src/gameplay/data/buildings.json';
-import { buildingPainters, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, type Tier } from '../../src/presentation/art/ninja';
+import { buildingPainters, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, registerWarriorArt, type Tier } from '../../src/presentation/art/ninja';
+import { WARRIORS } from '../../src/gameplay/sim/progression';
 import { ICON_SIZE, warriorIconArt } from '../../src/presentation/art/warriorIcons';
-import roster from '../../src/gameplay/data/roster.json';
 import { TILE_H, TILE_W } from '../../src/presentation/render/iso';
 
 type Ctx = CanvasRenderingContext2D;
+registerWarriorArt(WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })));
 const out = document.getElementById('out')!;
 const S = 1.5;
 
@@ -49,8 +50,8 @@ for (const [type, def] of Object.entries(defs)) {
 }
 const troops = section('Warriors (troop.<id>)');
 for (const [type, art] of Object.entries(troopArt)) figure(troops, type, art.w, art.h, art.h - 6, art.paint);
-const icons = section('Warrior icons (icon.warrior.<id>): all 50, pink ring = ridiculous');
-for (const w of roster.warriors) {
+const icons = section('Warrior icons (icon.warrior.<id>): all 50');
+for (const w of WARRIORS) {
   const art = warriorIconArt[w.id];
   if (art) figure(icons, `${w.name} - ${w.ability.name}`, art.w, art.h, ICON_SIZE / 2, art.paint);
 }
