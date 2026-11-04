@@ -616,6 +616,13 @@ export interface StoreDef {
   skipCurve: [number, number][];
   topUpCurve: [number, number][];
   minorMonthlyCapUsd: number;
+  /**
+   * The id each product has in App Store Connect and the Play Console, by the
+   * game's own product id (pack ids, `pass.productId`, offer `productId`). The
+   * game's ids stay stable (they are in saves); only these change with a new
+   * store listing. A product missing here uses its own id.
+   */
+  storeProductIds?: Record<string, string>;
 }
 
 export type OfferTrigger = 'first_long_wait' | 'all_builders_busy' | 'grove_raid_soon' | 'heavy_defense_loss';

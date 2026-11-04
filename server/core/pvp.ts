@@ -408,6 +408,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   if (defender) {
     if (defender.base) await ctx.board.set(defender.id, defPatch.trophies, defender.createdAt);
     await ctx.locks.release(defender.id, me.id);
+    ctx.push.notify(defender.id, { type: 'raided', title: `${me.name} raided your village`, body: `${result.stars} star${result.stars === 1 ? '' : 's'}, ${Math.round(result.destruction)}% destroyed. See the replay in your defense log.` });
   }
   return response;
 }

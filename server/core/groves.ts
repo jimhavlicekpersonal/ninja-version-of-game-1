@@ -192,6 +192,7 @@ export async function donate(ctx: ServerContext, me: Player, requestId: string, 
     if (to) await applyServerResult(tx, ctx, to, [{ cmd: { type: 'receiveDonations', items: [{ id: donationId, troop: req.troop, count, fromName: me.name, level }] }, reason: 'donation:received' }], donationId);
     return filled;
   });
+  ctx.push.notify(r.playerId, { type: 'donations', title: 'Warriors arrived', body: `${me.name} sent you ${count} ${def.name}${count > 1 ? 's' : ''}.` });
   return { request: requestView(updated, me), xp };
 }
 

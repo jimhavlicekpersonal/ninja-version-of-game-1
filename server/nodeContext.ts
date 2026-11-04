@@ -6,6 +6,9 @@ import type { Repo } from './repo';
 import { noIdentity, type IdentityVerifier } from './identity/verify';
 import { noMetrics, type Metrics } from './observability';
 import { RepoLeaderboard, TicketLocks, type Leaderboard, type MatchLocks } from './shared';
+import type { AppleVerifier } from './payments/apple';
+import type { GoogleVerifier } from './payments/google';
+import { noPush, type Pusher } from './push/push';
 
 /**
  * Optional shared stores (Redis, roadmap step 16; without them the database
@@ -16,6 +19,8 @@ export interface SharedStores {
   locks?: MatchLocks;
   metrics?: Metrics;
   identity?: IdentityVerifier;
+  payments?: { apple?: AppleVerifier | null; google?: GoogleVerifier | null };
+  push?: Pusher;
   log?: (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
 }
 
@@ -27,6 +32,8 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     locks: shared.locks ?? new TicketLocks(),
     metrics: shared.metrics ?? noMetrics,
     identity: shared.identity ?? noIdentity,
+    payments: { apple: shared.payments?.apple ?? null, google: shared.payments?.google ?? null },
+    push: shared.push ?? noPush,
     log: shared.log ?? (() => undefined),
     now,
     uuid: () => randomUUID(),

@@ -6,9 +6,9 @@ import { deserialize, NewerSaveError, serialize } from '../sim/save';
 import type { GameData, VillageState, PendingBattle } from '../sim/types';
 import type { BattleRecord, BattleSetup, Deployment } from '../sim/battle/types';
 import type { Cost, OfferRule, OfferTrigger } from '../sim/types';
-import { canPurchase } from '../sim/monetization';
+import { canPurchase, productForStoreId, productInfo, storeProductId } from '../sim/monetization';
 import { raidPhase } from '../sim/social/groveRaid';
-import { MockPaymentProvider, type PaymentProvider } from '../../backend/payments/provider';
+import { MockPaymentProvider, type PaymentProvider, type PurchaseVerifier, type StoreReceipt } from '../../backend/payments/provider';
 import { advance, applyCommand, createNewVillage, hallLevel, type Command, type CommandResult, type FinishedUpgrade, type SimEvent } from '../sim/village';
 import { dayIndex, passSeason } from '../sim/pass';
 import { seasonOf } from '../sim/ranks';
@@ -59,6 +59,12 @@ export class GameController {
   private commandListeners = new Set<(cmd: Command, at: number) => void>();
   private offersThisSession = 0;
   readonly payments: PaymentProvider;
+  /**
+   * The server that checks store receipts (roadmap Phase 4), or null to trust
+   * the store on this device (no server, or one that does not check them for a
+   * village kept on the device). Set by main.ts from the Connection.
+   */
+  purchaseVerifier: () => PurchaseVerifier | null = () => null;
   private saveChain: Promise<void> = Promise.resolve();
   private saveErrorListeners = new Set<(e: Error) => void>();
   /** Another tab or window took this village over: nothing here may be saved any more. */
@@ -245,18 +251,105 @@ export class GameController {
 
   // ---------- Real-money purchases ----------
 
-  /** Buy a product through the payment provider. The UI must confirm with the player first. */
+  /**
+   * Buy a product through the payment provider. The UI must confirm with the player first.
+   * With a server that checks receipts: ask it first (age cap; nothing is
+   * charged if it says no), pay, send the receipt, deliver what it confirmed,
+   * then finish the store transaction. A paid purchase the server could not
+   * be reached for stays unfinished in the store and is delivered later
+   * (`deliverUnfinished`).
+   */
   async purchase(productId: string): Promise<PurchaseOutcome> {
     const check = canPurchase(this.state, productId, this.now(), this.deps.data);
     if (!check.ok) return { ok: false, code: check.code, message: check.message };
     if (!this.payments.available()) return { ok: false, code: 'UNAVAILABLE', message: 'Purchases are not available on this device.' };
-    const pay = await this.payments.purchase({ productId, name: check.product.name, usd: check.product.usd });
-    if (!pay.ok) return { ok: false, code: pay.reason, message: pay.message };
+    const verifier = this.payments.store ? this.purchaseVerifier() : null;
+    let ask = { accountToken: undefined as string | undefined, storeProductId: storeProductId(this.deps.data, productId) };
+    if (verifier && this.payments.store) {
+      try {
+        ask = await verifier.intent(this.payments.store, productId, this.state.profile.under18);
+      } catch (e) {
+        return { ok: false, code: 'REFUSED', message: (e as Error).message };
+      }
+    }
+    const pay = await this.payments.purchase({ productId, name: check.product.name, usd: check.product.usd, storeProductId: ask.storeProductId, accountToken: ask.accountToken });
+    if (!pay.ok) return { ok: false, code: pay.reason, message: pay.reason === 'pending' ? 'The purchase is waiting for approval. It will be delivered once it is approved.' : pay.message };
+    if (verifier && pay.receipt) return this.deliverVerified(pay.receipt, verifier);
     const r = this.dispatch({ type: 'grantPurchase', productId, transactionId: pay.transactionId });
     if (!r.ok) return { ok: false, code: r.code, message: r.message };
     this.deps.analytics.log('purchase', { productId, usd: check.product.usd, kind: check.product.kind, transactionId: pay.transactionId, provider: this.payments.name });
     await this.save();
+    if (pay.receipt) await this.payments.finish?.(pay.receipt).catch(() => undefined);
     return { ok: true, grants: check.product.grants };
+  }
+
+  /** Send a store receipt to the server, deliver what it confirmed, then finish the store transaction. */
+  private async deliverVerified(receipt: StoreReceipt, verifier: PurchaseVerifier): Promise<PurchaseOutcome> {
+    let r;
+    try {
+      r = await verifier.redeem(receipt);
+    } catch (e) {
+      const err = e as Error & { retryable?: boolean };
+      // Paid, but not confirmed yet: the store keeps it unfinished and it is delivered later.
+      if (err.retryable !== false) return { ok: false, code: 'PENDING', message: 'Your purchase went through. It will be delivered as soon as the server can be reached.' };
+      return { ok: false, code: 'REFUSED', message: err.message };
+    }
+    const product = productInfo(this.deps.data, r.productId);
+    if (!product) return { ok: false, code: 'UNKNOWN_PRODUCT', message: 'That item is not available.' };
+    // A server-held village already has it; the game applies the same grant (not sent as a command).
+    if (!this.state.purchases.some((p) => p.id === r.transactionId)) {
+      const g = this.dispatch({ type: 'grantPurchase', productId: r.productId, transactionId: r.transactionId, verified: true });
+      if (!g.ok) return { ok: false, code: g.code, message: g.message };
+      this.deps.analytics.log('purchase', { productId: r.productId, usd: r.usd, kind: product.kind, transactionId: r.transactionId, provider: this.payments.name, verified: true });
+    }
+    await this.save();
+    await this.payments.finish?.(receipt).catch(() => undefined);
+    return { ok: true, grants: product.grants };
+  }
+
+  /** Deliver one receipt the store gave outside a purchase call (Ask to Buy approved, a pending payment completed). */
+  async deliverReceipt(receipt: StoreReceipt): Promise<PurchaseOutcome> {
+    const verifier = this.purchaseVerifier();
+    if (verifier) return this.deliverVerified(receipt, verifier);
+    // No server checks receipts: trusted on this device, as before Phase 4.
+    const product = productForStoreId(this.deps.data, receipt.storeProductId);
+    if (!product) return { ok: false, code: 'UNKNOWN_PRODUCT', message: 'That item is not available.' };
+    const id = `${receipt.store}:${receipt.storeTransactionId}`;
+    if (!this.state.purchases.some((p) => p.id === id)) {
+      const g = this.dispatch({ type: 'grantPurchase', productId: product.id, transactionId: id, verified: true });
+      if (!g.ok) return { ok: false, code: g.code, message: g.message };
+      await this.save();
+    }
+    await this.payments.finish?.(receipt).catch(() => undefined);
+    return { ok: true, grants: product.grants };
+  }
+
+  /** Deliver purchases the store says are paid but not finished (call at start and from Restore purchases). Returns how many were delivered. */
+  async deliverUnfinished(): Promise<number> {
+    let n = 0;
+    for (const receipt of (await this.payments.unfinished?.().catch(() => [])) ?? []) if ((await this.deliverReceipt(receipt)).ok) n++;
+    return n;
+  }
+
+  /**
+   * Restore purchases (App Store rule for anything not consumable): deliver
+   * unfinished store purchases, and give this season's premium Season Scroll
+   * back if the server says this player bought it (a new device, a new village).
+   */
+  async restorePurchases(): Promise<{ delivered: number; restored: number }> {
+    const delivered = await this.deliverUnfinished();
+    let restored = 0;
+    const verifier = this.purchaseVerifier();
+    if (verifier) {
+      const season = passSeason(this.now(), this.deps.data);
+      for (const p of await verifier.history()) {
+        if (p.status !== 'credited' || p.productId !== this.deps.data.pass.productId || passSeason(p.at, this.deps.data) !== season) continue;
+        if (this.state.pass.premium || this.state.purchases.some((x) => x.id === p.transactionId)) continue;
+        if (this.dispatch({ type: 'grantPurchase', productId: p.productId, transactionId: p.transactionId, verified: true }).ok) restored++;
+      }
+      if (restored) await this.save();
+    }
+    return { delivered, restored };
   }
 
   /**

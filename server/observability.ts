@@ -33,6 +33,9 @@ export const METRIC_HELP: Record<string, string> = {
   tk_village_commands_total: 'Village commands replayed, by result (ok, refused).',
   tk_village_corrections_total: 'Command batches answered with a correction (client and server disagreed).',
   tk_client_requests_total: 'Requests by game build and battle rules version (from the protocol 7 headers).',
+  tk_purchases_total: 'Store purchases credited, by store and environment (Production, Sandbox, Test).',
+  tk_refunds_total: 'Purchases refunded or revoked, by store and reason.',
+  tk_push_total: 'Server pushes, by type and result (sent, quiet, limit, off, invalid, failed).',
 };
 
 const DEFAULT_BUCKETS = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];

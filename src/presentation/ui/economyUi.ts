@@ -86,7 +86,7 @@ export class EconomyUi {
     }
     const r = await this.c.purchase(productId);
     if (r.ok) this.kit.toast('Thank you! Your purchase has been delivered.', 'success');
-    else this.kit.toast(r.message, 'error');
+    else this.kit.toast(r.message, r.code === 'PENDING' || r.code === 'pending' ? 'info' : 'error');
   }
 
   /** Confirm a Moonstone spend, then run it. */
@@ -125,6 +125,26 @@ export class EconomyUi {
       else body.append(this.looksGrid(draw));
       if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, 'Sandbox test store: purchases complete instantly, no real money is charged, and nothing leaves this practice village.'));
       else if (!this.c.payments.available()) body.append(h('p', { class: 'muted small store-note' }, 'Purchases are not available in this version of the game yet. Everything here can also be earned by playing.'));
+      if (this.c.payments.store && this.c.payments.available()) {
+        // App Store rule: a way to get back what was bought (this season's Scroll, purchases paid but not delivered).
+        const restore = h('button', { class: 'btn ghost', type: 'button' }, 'Restore purchases') as HTMLButtonElement;
+        restore.addEventListener('click', () => {
+          restore.disabled = true;
+          void this.c.restorePurchases().then(
+            (r) => {
+              restore.disabled = false;
+              const n = r.delivered + r.restored;
+              this.kit.toast(n ? `Restored ${n} purchase${n === 1 ? '' : 's'}.` : 'Nothing to restore: everything you bought is already here.', n ? 'success' : 'info');
+              draw();
+            },
+            (e: Error) => {
+              restore.disabled = false;
+              this.kit.toast(e.message, 'error');
+            },
+          );
+        });
+        body.append(h('div', { class: 'actions store-note' }, restore));
+      }
     };
     draw();
     this.kit.modal('Store', body, [], 'wide');

@@ -39,6 +39,16 @@
       "id": "shield",
       "label": "Shield runs out",
       "default": false
+    },
+    {
+      "id": "raided",
+      "label": "Your village was raided (online)",
+      "default": true
+    },
+    {
+      "id": "donations",
+      "label": "Warriors arrive from your Alliance (online)",
+      "default": false
     }
   ]
 }

@@ -86,8 +86,9 @@ export function economyHash(s: VillageState): string {
  * server makes itself (attacks, defenses, donations, war chests, honor:
  * `battleEnd`, `settleOnlineAttack`, `applyDefense`, `spendDonation`, …),
  * device-only bookkeeping (tutorial, presets, battle progress, offers), or
- * the offline bot Alliance. `grantPurchase` stays trusted until the server
- * verifies store receipts (roadmap Phase 4); the ledger marks it unverified.
+ * the offline bot Alliance. Purchases are not here: the server checks the
+ * store's receipt and delivers them itself (`grantPurchase` with `verified`,
+ * roadmap Phase 4), and takes refunds back (`revokePurchase`).
  */
 export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['type']>([
   'place',
@@ -111,7 +112,6 @@ export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['ty
   'trialEnd',
   'trialAlternate',
   'abandonBattle',
-  'grantPurchase',
   'setProfile',
   'buySkin',
   'claimTask',

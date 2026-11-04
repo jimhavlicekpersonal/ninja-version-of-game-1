@@ -21,6 +21,8 @@ import { WebReminders, type ReminderService } from './backend/platform/reminders
 import { NativeReminders, isNative, platform } from './backend/platform/native';
 import { MockPaymentProvider, type PaymentProvider } from './backend/payments/provider';
 import { StoreKitPaymentProvider, UnavailablePaymentProvider } from './backend/payments/storekit';
+import { PlayBillingPaymentProvider } from './backend/payments/playBilling';
+import { pushDevice } from './backend/platform/push';
 import { choosePaymentProvider, isSandbox, paymentPath } from './backend/payments/select';
 import { planNotifications, upcomingReminders } from './gameplay/sim/reminders';
 import { Tutorial } from './presentation/ui/tutorial';
@@ -102,12 +104,15 @@ async function boot(): Promise<void> {
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   const [{ store, events }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
   const analytics = new Analytics(events, clock);
-  // Payments: StoreKit on iPhone; nothing yet on Android or the public web build;
-  // the instant mock store only in the sandbox (clearly labelled there).
-  const path = paymentPath(platform(), sandbox);
+  // Payments: StoreKit on iPhone; Google Play Billing on Android only in builds made with
+  // VITE_PLAY_BILLING=1; none on the public web build; the instant mock store only in the
+  // sandbox (clearly labelled there).
+  const path = paymentPath(platform(), sandbox, import.meta.env.VITE_PLAY_BILLING === '1');
   const storeKit = path === 'storekit' ? new StoreKitPaymentProvider() : null;
+  const play = path === 'play' ? new PlayBillingPaymentProvider() : null;
   const payments: PaymentProvider = choosePaymentProvider(path, {
     storekit: () => storeKit!,
+    play: () => play!,
     mock: () => new MockPaymentProvider(() => clock.now()),
     unavailable: () => new UnavailablePaymentProvider(),
   });
@@ -118,12 +123,28 @@ async function boot(): Promise<void> {
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl });
   const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true });
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
-  if (storeKit) {
-    void storeKit.listen((productId, transactionId) => {
-      const r = controller.dispatch({ type: 'grantPurchase', productId, transactionId });
-      if (r.ok) analytics.log('purchase', { productId, transactionId, provider: 'storekit', deferred: true });
+  // Store receipts go to the server when it checks them (roadmap Phase 4).
+  controller.purchaseVerifier = () => (payments.store ? connection.purchaseVerifier(payments.store) : null);
+  // Purchases approved later (Ask to Buy, pending payments), and paid ones not yet delivered.
+  const deliverLater = (receipt: Parameters<GameController['deliverReceipt']>[0]) =>
+    void controller.deliverReceipt(receipt).then((r) => {
+      if (r.ok) hud?.toast('Your purchase has been delivered.', 'success');
     });
-  }
+  if (storeKit) void storeKit.listen(deliverLater);
+  if (play) void play.listen(deliverLater);
+  let deliveredOnline = false;
+  connection.subscribe(() => {
+    if (!connection.online || deliveredOnline) return;
+    deliveredOnline = true;
+    void controller.deliverUnfinished();
+    void syncPush();
+  });
+  if (!connection.enabled) void controller.deliverUnfinished();
+  // Server push (step 40): the types switched on in Settings, only while notifications are on.
+  const syncPush = () =>
+    connection
+      .syncPush(prefs.get('reminders') ? [...notifyPrefs.enabledSet(controller.data.notifications.types)] : [], new Date().getTimezoneOffset(), pushDevice)
+      .catch((e) => console.warn('push registration failed', e));
   analytics.log('session_start', { isNew, awayMs: offline?.awayMs ?? 0, platform: platformName(), standalone: matchMedia('(display-mode: standalone)').matches });
 
   await loadInterfaceFonts();
@@ -191,7 +212,9 @@ async function boot(): Promise<void> {
         prefs.set('reminders', false);
         hud.toast('Notifications are blocked. You can allow them in your device settings.', 'error');
       }
+      void syncPush();
     },
+    onNotificationsChanged: () => void syncPush(),
     reminderNote: reminders.note,
     onReplayTutorial: () => tutorial?.restart(),
     debugTime,
@@ -301,7 +324,10 @@ async function boot(): Promise<void> {
       if (prefs.get('reminders')) {
         // Opt-in only: the player's chosen types, no quiet-hours pings, a daily cap.
         const gd = controller.data;
-        const planned = planNotifications(upcomingReminders(controller.state, controller.now(), gd), notifyPrefs.enabledSet(gd.notifications.types), controller.now(), new Date().getTimezoneOffset(), gd);
+        // A type the server pushes (the Alliance War) is not also scheduled on the device.
+        const enabled = notifyPrefs.enabledSet(gd.notifications.types);
+        for (const t of connection.pushTypes) enabled.delete(t);
+        const planned = planNotifications(upcomingReminders(controller.state, controller.now(), gd), enabled, controller.now(), new Date().getTimezoneOffset(), gd);
         void reminders.schedule(planned);
       }
     } else {

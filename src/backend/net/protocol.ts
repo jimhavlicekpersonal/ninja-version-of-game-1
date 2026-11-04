@@ -55,7 +55,9 @@ export type ErrorCode =
   /** 403: a moderator muted this player's chat for a while (the message says until when). */
   | 'muted'
   /** 404: this player's village is not kept on the server (it lives on the device). */
-  | 'no_village';
+  | 'no_village'
+  /** 403: the purchase is not allowed (the under-18 monthly cap, or purchases not set up on this server); nothing was charged. */
+  | 'purchase_refused';
 
 export interface ErrorBody {
   error: ErrorCode;
@@ -101,6 +103,16 @@ export const Routes = {
   deletionRequests: '/v1/account/deletion-requests',
   /** GET (HTML): the web account-deletion page to link from store listings. Not part of the game's API. */
   deletionPage: '/account/delete',
+  /** POST: ask before paying (age cap); returns the token the store purchase carries back. */
+  purchaseIntent: '/v1/purchases/intent',
+  /** POST: redeem a store receipt (verified, credited once); GET: purchase history. */
+  purchases: '/v1/purchases',
+  /** POST, no token: App Store Server Notifications v2 (signed by Apple). */
+  appleNotifications: '/v1/webhooks/apple',
+  /** POST, no token: Google Play Real-time Developer Notifications (Pub/Sub push, OIDC-signed). */
+  googleNotifications: '/v1/webhooks/google',
+  /** PUT: this device's push token and choices; DELETE (?token=): stop pushing to it. */
+  pushTokens: '/v1/push/tokens',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -113,6 +125,8 @@ export interface HelloResponse {
   /** Server clock (epoch ms), so all players agree on Grove Raid times. */
   serverTime: number;
   features: string[];
+  /** 'staging' or 'development' on a test server (the game says so in Settings); absent or 'production' otherwise. */
+  environment?: string;
 }
 
 export interface RegisterRequest {
@@ -583,3 +597,64 @@ export interface RaidClaimResponse {
   /** True when this claim was already made (safe to retry). */
   alreadyClaimed: boolean;
 }
+
+// ---------------------------------------------------------------- purchases (roadmap Phase 4)
+
+export type PurchaseStore = 'apple' | 'google';
+
+export interface PurchaseIntentRequest {
+  store: PurchaseStore;
+  /** The game's product id (store.json packs, pass.json, offers.json). */
+  productId: string;
+  /** The player's age group from the game; ignored when the server holds the village (it knows). */
+  under18: boolean | null;
+}
+export interface PurchaseIntentResponse {
+  /** A UUID: Apple appAccountToken / Google obfuscatedAccountId. */
+  accountToken: string;
+  /** The product's id in that store. */
+  storeProductId: string;
+}
+
+export interface RedeemRequest {
+  store: PurchaseStore;
+  /** The product's id in that store (Google needs it to look the token up). */
+  storeProductId: string;
+  /** Apple: the transaction's JWS (jwsRepresentation). Google: the purchase token. */
+  receipt: string;
+}
+export interface RedeemResponse {
+  /** The id the village records the purchase under ("apple:…", "google:…"). */
+  transactionId: string;
+  /** The game's product id. */
+  productId: string;
+  usd: number;
+  /** The server delivered it into the village it holds; otherwise the game delivers it. */
+  heldOnServer: boolean;
+  /** It was redeemed before (a retry): nothing new was credited. */
+  already: boolean;
+}
+
+export interface PurchaseView {
+  transactionId: string;
+  store: PurchaseStore;
+  productId: string;
+  usd: number;
+  at: number;
+  status: 'credited' | 'refunded';
+}
+export interface PurchaseHistoryResponse {
+  purchases: PurchaseView[];
+}
+
+// ---------------------------------------------------------------- push (roadmap step 40)
+
+export interface PushTokenRequest {
+  token: string;
+  platform: 'ios' | 'android';
+  /** Notification types this device switched on (notifications.json ids). */
+  types: string[];
+  /** Date#getTimezoneOffset on the device, for quiet hours and the daily limit. */
+  tzOffsetMinutes: number;
+}
+

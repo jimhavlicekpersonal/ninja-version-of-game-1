@@ -19,6 +19,9 @@ import type {
   PlayerPatch,
   PruneCutoffs,
   PruneResult,
+  PurchaseIntent,
+  PurchaseRow,
+  PushToken,
   RaidAttack,
   RaidClaim,
   LedgerEntry,
@@ -307,6 +310,105 @@ export class PgRepo implements Repo {
     await this.db.query('delete from identity_links where player_id = $1 and provider = $2', [playerId, provider]);
   }
 
+  /**
+   * The deployment this database belongs to (step 42): written by the first
+   * server that starts on it, returned as stored afterwards.
+   */
+  async claimEnvironment(deploy: string): Promise<string> {
+    await this.db.query(`insert into server_meta (key, value) values ('environment', $1) on conflict (key) do nothing`, [deploy]);
+    const r = await this.rows(`select value from server_meta where key = 'environment'`, []);
+    return String(r[0].value);
+  }
+
+  // ------------------------------------------------------------ purchases (Phase 4)
+
+  async addPurchase(p: PurchaseRow): Promise<boolean> {
+    const r = await this.db.query(
+      `insert into purchases (store, transaction_id, player_id, product_id, cents, at, environment, status, refunded_at, ref, held_on_server)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) on conflict do nothing`,
+      [p.store, p.transactionId, p.playerId, p.productId, p.cents, p.at, p.environment, p.status, p.refundedAt, p.ref, p.heldOnServer],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null> {
+    const r = await this.rows('select * from purchases where store = $1 and transaction_id = $2', [store, transactionId]);
+    return r[0] ? toPurchase(r[0]) : null;
+  }
+
+  async purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null> {
+    const r = await this.rows('select * from purchases where store = $1 and ref = $2 order by at limit 1', [store, ref]);
+    return r[0] ? toPurchase(r[0]) : null;
+  }
+
+  async purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]> {
+    return (await this.rows('select * from purchases where player_id = $1 order by at desc limit $2', [playerId, limit])).map(toPurchase);
+  }
+
+  async setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean> {
+    const r = await this.db.query(
+      `update purchases set status = $3, refunded_at = case when $3 = 'refunded' then $4::bigint else null end where store = $1 and transaction_id = $2 and status <> $3`,
+      [store, transactionId, status, at],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async spentCents(playerId: string, since: number, intentsSince: number): Promise<number> {
+    const r = await this.rows(
+      `select coalesce((select sum(cents) from purchases where player_id = $1 and status = 'credited' and at >= $2), 0)
+            + coalesce((select sum(cents) from purchase_intents where player_id = $1 and not used and at >= $3), 0) as cents`,
+      [playerId, since, intentsSince],
+    );
+    return num(r[0]?.cents);
+  }
+
+  async addIntent(i: PurchaseIntent): Promise<void> {
+    await this.db.query('insert into purchase_intents (id, player_id, product_id, cents, at, used) values ($1,$2,$3,$4,$5,$6)', [i.id, i.playerId, i.productId, i.cents, i.at, i.used]);
+  }
+
+  async getIntent(id: string): Promise<PurchaseIntent | null> {
+    const r = await this.rows('select * from purchase_intents where id = $1', [id]);
+    return r[0] ? { id: String(r[0].id), playerId: String(r[0].player_id), productId: String(r[0].product_id), cents: num(r[0].cents), at: num(r[0].at), used: Boolean(r[0].used) } : null;
+  }
+
+  async useIntent(id: string): Promise<void> {
+    await this.db.query('update purchase_intents set used = true where id = $1', [id]);
+  }
+
+  // ------------------------------------------------------------ push (step 40)
+
+  async putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void> {
+    await this.db.query(
+      `insert into push_tokens (token, player_id, platform, types, tz_offset_minutes, updated_at) values ($1,$2,$3,$4,$5,$6)
+       on conflict (token) do update set player_id = excluded.player_id, platform = excluded.platform, types = excluded.types,
+         tz_offset_minutes = excluded.tz_offset_minutes, updated_at = excluded.updated_at,
+         day = case when push_tokens.player_id = excluded.player_id then push_tokens.day else 0 end,
+         sent = case when push_tokens.player_id = excluded.player_id then push_tokens.sent else 0 end`,
+      [t.token, t.playerId, t.platform, t.types, t.tzOffsetMinutes, t.updatedAt],
+    );
+  }
+
+  async pushTokensOf(playerId: string): Promise<PushToken[]> {
+    return (await this.rows('select * from push_tokens where player_id = $1 order by updated_at', [playerId])).map((r) => ({
+      token: String(r.token),
+      playerId: String(r.player_id),
+      platform: String(r.platform) as PushToken['platform'],
+      types: (r.types as string[] | null) ?? [],
+      tzOffsetMinutes: num(r.tz_offset_minutes),
+      updatedAt: num(r.updated_at),
+      day: num(r.day),
+      sent: num(r.sent),
+    }));
+  }
+
+  async removePushToken(token: string): Promise<void> {
+    await this.db.query('delete from push_tokens where token = $1', [token]);
+  }
+
+  async countPush(token: string, day: number): Promise<void> {
+    await this.db.query('update push_tokens set sent = case when day = $2 then sent + 1 else 1 end, day = $2 where token = $1', [token, day]);
+  }
+
   async getPlayer(id: string): Promise<Player | null> {
     const r = await this.rows('select * from players where id = $1', [id]);
     return r[0] ? toPlayer(r[0]) : null;
@@ -455,6 +557,7 @@ export class PgRepo implements Repo {
     const reports = c.resolvedReportsBefore === undefined ? null : await this.db.query(`delete from reports where status <> 'open' and resolved_at < $1`, [c.resolvedReportsBefore]);
     const commands = c.commandsBefore === undefined ? null : await this.db.query('delete from command_log where at < $1', [c.commandsBefore]);
     const idem = c.idempotencyBefore === undefined ? null : await this.db.query('delete from idempotency_keys where created_at < $1', [c.idempotencyBefore]);
+    if (c.intentsBefore !== undefined) await this.db.query('delete from purchase_intents where at < $1', [c.intentsBefore]);
     return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
   }
 
@@ -517,6 +620,10 @@ export class PgRepo implements Repo {
       await q('delete from villages where player_id = $1', [id]);
       await q('delete from player_tokens where player_id = $1', [id]);
       await q('delete from identity_links where player_id = $1', [id]);
+      await q('delete from purchase_intents where player_id = $1', [id]);
+      await q('delete from push_tokens where player_id = $1', [id]);
+      // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
+      await q('update purchases set player_id = $2 where player_id = $1', [id, D.id]);
       await q('delete from ledger where player_id = $1', [id]);
       await q('delete from command_log where player_id = $1', [id]);
       await q('delete from players where id = $1', [id]);
@@ -862,4 +969,20 @@ export class PgRepo implements Repo {
     const r = await this.rows('select * from raid_claims where week = $1 and player_id = $2', [week, playerId]);
     return r[0] ? toClaim(r[0]) : null;
   }
+}
+
+function toPurchase(r: Record<string, unknown>): PurchaseRow {
+  return {
+    store: String(r.store) as PurchaseRow['store'],
+    transactionId: String(r.transaction_id),
+    playerId: String(r.player_id),
+    productId: String(r.product_id),
+    cents: num(r.cents),
+    at: num(r.at),
+    environment: String(r.environment),
+    status: String(r.status) as PurchaseRow['status'],
+    refundedAt: r.refunded_at == null ? null : num(r.refunded_at),
+    ref: String(r.ref),
+    heldOnServer: Boolean(r.held_on_server),
+  };
 }

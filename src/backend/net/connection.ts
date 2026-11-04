@@ -13,7 +13,8 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, HelloResponse, LinkCredential, LinkProvider, PlayerView } from './protocol';
+import type { BattleSubmission, HelloResponse, LinkCredential, LinkProvider, PlayerView, PurchaseStore } from './protocol';
+import type { PurchaseVerifier } from '../payments/provider';
 import { VillageSync, type SyncGame } from './villageSync';
 
 /** What the connection needs from the game. GameController provides it. */
@@ -151,6 +152,62 @@ export class Connection {
       if (e instanceof ServerError && !e.retryable) this.kv.set(`tk.net.villageMoveRefused:${this.url}`, e.message);
       else throw e;
     }
+  }
+
+  /**
+   * The server's side of purchases from `store` (roadmap Phase 4), or null to
+   * trust the store on this device (no server, or a server that does not check
+   * that store while the village lives on the device). A village kept on the
+   * server buys only through a server that checks the store: otherwise the
+   * purchase is refused before anything is charged.
+   */
+  purchaseVerifier(store: PurchaseStore): PurchaseVerifier | null {
+    if (!this.port) return null;
+    const checks = Boolean(this.server?.features.includes(`purchases-${store}`));
+    if (!checks && !this.serverVillage) return null;
+    const ready = async () => {
+      if (!checks) throw new ServerError(403, 'purchase_refused', 'Purchases are not set up on this server yet. Nothing was charged.');
+      if (!this.port || !this.online) throw new ServerError(0, 'network', 'Connect to the internet to buy.');
+      // The server reads the age group from a village it keeps: send what is queued first.
+      await this.village?.flush().catch(() => undefined);
+      return this.port;
+    };
+    return {
+      intent: async (s, productId, under18) => (await ready()).purchaseIntent({ store: s, productId, under18 }),
+      redeem: async (r) => (await ready()).redeem({ store: r.store, storeProductId: r.storeProductId, receipt: r.receipt }),
+      history: async () => (checks && this.port && this.online ? (await this.port.purchaseHistory()).purchases : []),
+    };
+  }
+
+  /** Notification types this device gets as server push (roadmap step 40); empty when none. */
+  get pushTypes(): string[] {
+    const saved = this.kv.get(`tk.net.push:${this.url}`);
+    return saved && this.server?.features.includes('push') ? ((JSON.parse(saved) as { types?: string[] }).types ?? []) : [];
+  }
+
+  /**
+   * Tell the server where to push and what (roadmap step 40), or stop when no
+   * type is switched on. `device` asks the platform for a token (and the
+   * permission) only when something is switched on.
+   */
+  async syncPush(types: string[], tzOffsetMinutes: number, device: () => Promise<{ token: string; platform: 'ios' | 'android' } | null>): Promise<void> {
+    if (!this.port || !this.online || !this.server?.features.includes('push')) return;
+    const key = `tk.net.push:${this.url}`;
+    const saved = this.kv.get(key);
+    const prev = saved ? (JSON.parse(saved) as { token: string; sig: string; types: string[] }) : null;
+    if (!types.length) {
+      if (prev) {
+        await this.port.deletePushToken(prev.token).catch(() => undefined);
+        this.kv.set(key, null);
+      }
+      return;
+    }
+    const d = await device();
+    if (!d) return;
+    const sig = JSON.stringify([d.platform, [...types].sort(), tzOffsetMinutes]);
+    if (prev?.token === d.token && prev.sig === sig) return;
+    await this.port.putPushToken({ token: d.token, platform: d.platform, types, tzOffsetMinutes });
+    this.kv.set(key, JSON.stringify({ token: d.token, sig, types }));
   }
 
   /** The server keeps this player's village (its economy is the truth). */

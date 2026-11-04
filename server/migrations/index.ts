@@ -14,6 +14,9 @@ import m0006 from './0006_server_economy.sql?raw';
 import m0007 from './0007_identity_links.sql?raw';
 import m0008 from './0008_idempotency.sql?raw';
 import m0009 from './0009_ratings.sql?raw';
+import m0010 from './0010_purchases.sql?raw';
+import m0011 from './0011_push_tokens.sql?raw';
+import m0012 from './0012_server_meta.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -25,4 +28,7 @@ export const migrations = loadMigrations({
   '0007_identity_links.sql': m0007,
   '0008_idempotency.sql': m0008,
   '0009_ratings.sql': m0009,
+  '0010_purchases.sql': m0010,
+  '0011_push_tokens.sql': m0011,
+  '0012_server_meta.sql': m0012,
 });

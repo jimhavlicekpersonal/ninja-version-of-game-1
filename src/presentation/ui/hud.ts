@@ -67,6 +67,8 @@ export interface HudDeps {
   signIn?: import('../../backend/platform/auth').SignInSource;
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
+  /** Notifications switched on or off, or a type changed (server push follows the choices). */
+  onNotificationsChanged?(): void;
   reminderNote: string;
   onReplayTutorial(): void;
   /** Where the Grove screen gets its Grove: the bot Grove offline, a real one online. */
@@ -1361,7 +1363,10 @@ export class Hud {
     const typeToggles: HTMLInputElement[] = [];
     for (const t of nd.types) {
       const tg = h('input', { type: 'checkbox', checked: this.deps.notifyPrefs.get(t.id, t.default), disabled: !prefs.get('reminders') }) as HTMLInputElement;
-      tg.addEventListener('change', () => this.deps.notifyPrefs.set(t.id, tg.checked));
+      tg.addEventListener('change', () => {
+        this.deps.notifyPrefs.set(t.id, tg.checked);
+        this.deps.onNotificationsChanged?.();
+      });
       typeToggles.push(tg);
       typeBox.append(h('label', { class: 'toggle sub' }, tg, ` ${t.label}`));
     }
@@ -1371,6 +1376,7 @@ export class Hud {
       prefs.set('reminders', remindToggle.checked);
       for (const tg of typeToggles) tg.disabled = !remindToggle.checked;
       if (remindToggle.checked) void this.deps.onRemindersEnabled();
+      else this.deps.onNotificationsChanged?.();
     });
     body.append(
       h('h3', {}, 'Sound'),

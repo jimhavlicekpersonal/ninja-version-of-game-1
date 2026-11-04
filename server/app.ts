@@ -56,6 +56,8 @@ export interface ServerOptions {
   version?: string;
   /** Dependencies GET /readyz checks (the database is always checked). */
   readiness?: Record<string, () => Promise<unknown>>;
+  /** DEPLOY_ENV (step 42): told to the game in /v1/hello so a test server says so. */
+  environment?: string;
 }
 
 const sameSecret = (got: string | undefined, want: Buffer) => timingSafeEqual(createHash('sha256').update(got ?? '').digest(), want);
@@ -246,7 +248,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       return reply.type('text/plain; version=0.0.4').send(metrics.render());
     });
   }
-  app.get(Routes.hello, async () => core.hello());
+  app.get(Routes.hello, async () => (opts.environment ? { ...core.hello(), environment: opts.environment } : core.hello()));
 
   // Identity
   const rate = (r: keyof RateLimits): { config: RateConfig } => ({ config: { rate: r } });
@@ -267,6 +269,23 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.villageImport, { bodyLimit: BODY_LIMITS.battle * 4 }, authed(async (me, req) => core.importVillage(me, req.body as never)));
   app.post(Routes.villageCommands, { ...rate('commands'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.villageCommands(me, req.body as never)));
   app.get(Routes.villageLedger, authed(async (me, req) => core.ledger(me, query(req).limit)));
+
+  // Purchases (roadmap Phase 4): ask, redeem once, history; store notifications carry their own signatures.
+  app.post(Routes.purchaseIntent, rate('moderation'), authed(async (me, req) => core.purchaseIntent(me, req.body as never)));
+  app.post(Routes.purchases, { ...rate('moderation'), bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.redeem(me, req.body as never)));
+  app.get(Routes.purchases, authed(async (me) => core.purchaseHistory(me)));
+  app.post(Routes.appleNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
+    await core.appleNotification(req.body as never);
+    return { ok: true };
+  });
+  app.post(Routes.googleNotifications, { bodyLimit: BODY_LIMITS.base }, async (req, reply) => {
+    await core.googleNotification(req.headers.authorization, req.body);
+    return reply.code(204).send();
+  });
+
+  // Server push (step 40): this device's token and choices.
+  app.put(Routes.pushTokens, rate('moderation'), authed(async (me, req) => core.putPushToken(me, req.body as never)));
+  app.delete(Routes.pushTokens, authed(async (me, req) => core.deletePushToken(me, query(req).token)));
 
   // Reports and blocks
   app.post(Routes.reports, rate('moderation'), authed(async (me, req, reply) => reply.code(201).send(await core.report(me, req.body as never))));

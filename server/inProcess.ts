@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, LinkCredential, LinkProvider, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -144,6 +144,21 @@ export class InProcessServerAdapter implements ServerPort {
   }
   ledger(limit = 50) {
     return this.authed((me) => this.core.ledger(me, limit));
+  }
+  purchaseIntent(req: PurchaseIntentRequest) {
+    return this.authed((me) => this.core.purchaseIntent(me, wire(req)));
+  }
+  redeem(req: RedeemRequest) {
+    return this.authed((me) => this.core.redeem(me, wire(req)));
+  }
+  purchaseHistory() {
+    return this.authed((me) => this.core.purchaseHistory(me));
+  }
+  async putPushToken(req: PushTokenRequest) {
+    await this.authed((me) => this.core.putPushToken(me, wire(req)));
+  }
+  async deletePushToken(token: string) {
+    await this.authed((me) => this.core.deletePushToken(me, token));
   }
   report(req: ReportRequest) {
     return this.authed((me) => this.core.report(me, wire(req)));

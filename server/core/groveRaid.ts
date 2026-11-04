@@ -75,15 +75,25 @@ async function ensurePairing(ctx: ServerContext, groveId: string, week: number):
       { week, groveId, opponentGroveId: rival.id, opponentName: rival.name, botSeed: 0, roster: theirRoster, ourSize: size, ourHall: mine.hall, createdAt: t },
       { week, groveId: rival.id, opponentGroveId: groveId, opponentName: ourName, botSeed: 0, roster: ourRoster, ourSize: size, ourHall: theirs.hall, createdAt: t },
     ]);
-    if (ok) return (await ctx.repo.getPairing(week, groveId))!;
+    if (ok) {
+      await warFound(ctx, groveId, rival.name);
+      await warFound(ctx, rival.id, ourName);
+      return (await ctx.repo.getPairing(week, groveId))!;
+    }
   }
   // No rival free: a bot Grove generated from this Grove's id, sized to match.
   const seed = mixSeed(hashString(groveId), week);
   const enemy = enemyGrove(seed, week, mine.hall, ctx.data);
   const count = Math.max(1, mine.size);
   const roster: RosterEntry[] = enemy.bases.slice(0, Math.max(count, 1)).map((b, i) => ({ index: i, name: enemy.members[i] ?? b.name, hallLevel: b.hallLevel, trophies: b.trophies ?? 0, base: b, playerId: null }));
-  await ctx.repo.createPairings([{ week, groveId, opponentGroveId: null, opponentName: enemy.name, botSeed: seed, roster, ourSize: count, ourHall: mine.hall, createdAt: t }]);
+  if (await ctx.repo.createPairings([{ week, groveId, opponentGroveId: null, opponentName: enemy.name, botSeed: seed, roster, ourSize: count, ourHall: mine.hall, createdAt: t }])) await warFound(ctx, groveId, `${enemy.name} (generated)`);
   return (await ctx.repo.getPairing(week, groveId))!;
+}
+
+/** Push to every member: the war has an opponent (roadmap step 40). */
+async function warFound(ctx: ServerContext, groveId: string, opponent: string): Promise<void> {
+  if (!ctx.push.enabled) return;
+  for (const m of await ctx.repo.members(groveId)) ctx.push.notify(m.playerId, { type: 'groveRaid', title: 'The Alliance War has started!', body: `Your Alliance faces ${opponent}. Use both attacks to win the reward chest.` });
 }
 
 /** Stars the bot Grove has taken from our side by time `t` (deterministic). */

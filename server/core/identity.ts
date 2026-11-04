@@ -2,6 +2,7 @@ import { filterText } from '../../src/gameplay/sim/social/grove';
 import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { purchaseFeatures } from './purchases';
 
 /** The oldest game this server serves (protocol 7: villages kept on the server, client headers, idempotent writes). */
 export const MIN_PROTOCOL = 7;
@@ -9,7 +10,7 @@ export const MIN_PROTOCOL = 7;
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking'] };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])] };
 }
 
 export function cleanName(raw: unknown, ctx: ServerContext): string {

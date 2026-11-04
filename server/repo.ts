@@ -268,6 +268,51 @@ export interface IdentityLink {
   linkedAt: number;
 }
 
+/** A store purchase the server checked (roadmap steps 35-37): each store transaction once. */
+export interface PurchaseRow {
+  store: 'apple' | 'google';
+  /** Apple's transactionId, Google's order id (or a hash of the token). */
+  transactionId: string;
+  playerId: string;
+  /** The game's product id. */
+  productId: string;
+  /** The game's USD price, in cents (for the under-18 cap and refund rates; the store's own price may differ). */
+  cents: number;
+  at: number;
+  /** 'Production', 'Sandbox' (Apple), 'Test' (Google license testers). */
+  environment: string;
+  status: 'credited' | 'refunded';
+  refundedAt: number | null;
+  /** What refund notices name: Apple's originalTransactionId, Google's purchase token. */
+  ref: string;
+  /** Delivered into a village the server holds (else the device delivered it). */
+  heldOnServer: boolean;
+}
+
+/** Asked before paying: the age cap was checked, and the store purchase carries this id back (Apple appAccountToken, Google obfuscatedAccountId). */
+export interface PurchaseIntent {
+  id: string;
+  playerId: string;
+  productId: string;
+  cents: number;
+  at: number;
+  used: boolean;
+}
+
+/** A device that receives server push (roadmap step 40). */
+export interface PushToken {
+  token: string;
+  playerId: string;
+  platform: 'ios' | 'android';
+  /** Notification types this device switched on, and its time zone (Date#getTimezoneOffset). */
+  types: string[];
+  tzOffsetMinutes: number;
+  updatedAt: number;
+  /** Pushes sent on local day `day` (for `maxPerDay`). */
+  day: number;
+  sent: number;
+}
+
 /** How a deleted player appears in what other players keep (their defense replays, war rosters, donation notes). */
 export const DELETED_PLAYER = { id: 'deleted', name: 'Deleted player' } as const;
 
@@ -301,6 +346,8 @@ export interface PruneCutoffs {
   commandsBefore?: number;
   /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
   idempotencyBefore?: number;
+  /** Purchase intents from before this time are forgotten (a purchase that comes later is still credited, without the age-cap reservation). */
+  intentsBefore?: number;
 }
 export interface PruneResult {
   attacks: number;
@@ -345,6 +392,27 @@ export interface Repo {
   /** False if that sign-in is linked to someone, or this player already has one from that provider. */
   addLink(l: IdentityLink): Promise<boolean>;
   removeLink(playerId: string, provider: string): Promise<void>;
+  // purchases (roadmap Phase 4)
+  /** False (nothing stored) if that store transaction is already recorded. */
+  addPurchase(p: PurchaseRow): Promise<boolean>;
+  getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null>;
+  purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null>;
+  /** Newest first. */
+  purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]>;
+  /** False if it already had that status. */
+  setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
+  /** Cents of credited purchases since `since`, plus open intents asked since `intentsSince` (reserved by the age cap). */
+  spentCents(playerId: string, since: number, intentsSince: number): Promise<number>;
+  addIntent(i: PurchaseIntent): Promise<void>;
+  getIntent(id: string): Promise<PurchaseIntent | null>;
+  useIntent(id: string): Promise<void>;
+  // push (roadmap step 40)
+  /** Adds or refreshes a device (a token that moved to another player now belongs to them). */
+  putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void>;
+  pushTokensOf(playerId: string): Promise<PushToken[]>;
+  removePushToken(token: string): Promise<void>;
+  /** Count one push sent on local day `day`. */
+  countPush(token: string, day: number): Promise<void>;
   /** Players by id, in the order asked (missing ones left out). */
   playersByIds(ids: string[]): Promise<Player[]>;
   /** The Power Ranking (step 31): players with a base and at least `minBattles` rated attacks, by attack rating + beta x (Keep - 1). */
@@ -498,6 +566,9 @@ export class MemoryRepo implements Repo {
   villageRows = new Map<string, VillageRow>();
   tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
   linkRows: IdentityLink[] = [];
+  purchaseRows: PurchaseRow[] = [];
+  intentRows: PurchaseIntent[] = [];
+  pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
   commandRows: CommandLogRow[] = [];
   idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number }>();
@@ -605,6 +676,66 @@ export class MemoryRepo implements Repo {
   async removeLink(playerId: string, provider: string): Promise<void> {
     this.linkRows = this.linkRows.filter((l) => !(l.playerId === playerId && l.provider === provider));
   }
+  async addPurchase(p: PurchaseRow): Promise<boolean> {
+    if (this.purchaseRows.some((x) => x.store === p.store && x.transactionId === p.transactionId)) return false;
+    this.purchaseRows.push(clone(p));
+    return true;
+  }
+  async getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null> {
+    const p = this.purchaseRows.find((x) => x.store === store && x.transactionId === transactionId);
+    return p ? clone(p) : null;
+  }
+  async purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null> {
+    const p = this.purchaseRows.find((x) => x.store === store && x.ref === ref);
+    return p ? clone(p) : null;
+  }
+  async purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]> {
+    return this.purchaseRows
+      .filter((p) => p.playerId === playerId)
+      .sort((a, b) => b.at - a.at)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean> {
+    const p = this.purchaseRows.find((x) => x.store === store && x.transactionId === transactionId);
+    if (!p || p.status === status) return false;
+    p.status = status;
+    p.refundedAt = status === 'refunded' ? at : null;
+    return true;
+  }
+  async spentCents(playerId: string, since: number, intentsSince: number): Promise<number> {
+    const bought = this.purchaseRows.filter((p) => p.playerId === playerId && p.status === 'credited' && p.at >= since).reduce((s, p) => s + p.cents, 0);
+    const held = this.intentRows.filter((i) => i.playerId === playerId && !i.used && i.at >= intentsSince).reduce((s, i) => s + i.cents, 0);
+    return bought + held;
+  }
+  async addIntent(i: PurchaseIntent): Promise<void> {
+    this.intentRows.push(clone(i));
+  }
+  async getIntent(id: string): Promise<PurchaseIntent | null> {
+    const i = this.intentRows.find((x) => x.id === id);
+    return i ? clone(i) : null;
+  }
+  async useIntent(id: string): Promise<void> {
+    const i = this.intentRows.find((x) => x.id === id);
+    if (i) i.used = true;
+  }
+  async putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void> {
+    const old = this.pushRows.find((x) => x.token === t.token);
+    this.pushRows = this.pushRows.filter((x) => x.token !== t.token);
+    this.pushRows.push({ ...clone(t), day: old?.playerId === t.playerId ? old.day : 0, sent: old?.playerId === t.playerId ? old.sent : 0 });
+  }
+  async pushTokensOf(playerId: string): Promise<PushToken[]> {
+    return this.pushRows.filter((t) => t.playerId === playerId).map(clone);
+  }
+  async removePushToken(token: string): Promise<void> {
+    this.pushRows = this.pushRows.filter((t) => t.token !== token);
+  }
+  async countPush(token: string, day: number): Promise<void> {
+    const t = this.pushRows.find((x) => x.token === token);
+    if (!t) return;
+    if (t.day !== day) Object.assign(t, { day, sent: 0 });
+    t.sent++;
+  }
   async getPlayer(id: string): Promise<Player | null> {
     const p = this.players.get(id);
     return p ? clone(p) : null;
@@ -710,6 +841,8 @@ export class MemoryRepo implements Repo {
     const commands = this.commandRows.length;
     const cmdBefore = c.commandsBefore;
     if (cmdBefore !== undefined) this.commandRows = this.commandRows.filter((r) => r.at >= cmdBefore);
+    const intentsBefore = c.intentsBefore;
+    if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
     let idempotency = 0;
     const idemBefore = c.idempotencyBefore;
     if (idemBefore !== undefined) {
@@ -749,6 +882,10 @@ export class MemoryRepo implements Repo {
     this.villageRows.delete(id);
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
     this.linkRows = this.linkRows.filter((l) => l.playerId !== id);
+    this.intentRows = this.intentRows.filter((i) => i.playerId !== id);
+    this.pushRows = this.pushRows.filter((t) => t.playerId !== id);
+    // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
+    for (const p of this.purchaseRows) if (p.playerId === id) p.playerId = D.id;
     this.ledgerRows = this.ledgerRows.filter((l) => l.playerId !== id);
     this.commandRows = this.commandRows.filter((c) => c.playerId !== id);
     this.reportRows = this.reportRows.filter((r) => r.reporterId !== id);

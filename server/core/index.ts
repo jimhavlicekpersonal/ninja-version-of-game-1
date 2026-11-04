@@ -10,6 +10,8 @@ import * as groveRaid from './groveRaid';
 import * as identity from './identity';
 import * as links from './links';
 import * as moderation from './moderation';
+import * as purchases from './purchases';
+import * as pushTokens from './pushTokens';
 import * as pvp from './pvp';
 import * as retention from './retention';
 import * as village from './village';
@@ -41,6 +43,15 @@ export function createCore(ctx: ServerContext) {
     unblock: moderation.unblock.bind(null, ctx),
     blocks: moderation.blocks.bind(null, ctx),
     requestDeletion: account.requestDeletion.bind(null, ctx),
+    purchaseIntent: purchases.purchaseIntent.bind(null, ctx),
+    redeem: purchases.redeem.bind(null, ctx),
+    purchaseHistory: purchases.purchaseHistory.bind(null, ctx),
+    appleNotification: purchases.appleNotification.bind(null, ctx),
+    googleNotification: purchases.googleNotification.bind(null, ctx),
+    /** Hourly: Google's Voided Purchases API since `since`. */
+    pollVoided: purchases.pollVoided.bind(null, ctx),
+    putPushToken: pushTokens.putPushToken.bind(null, ctx),
+    deletePushToken: pushTokens.deletePushToken.bind(null, ctx),
     uploadBase: pvp.uploadBase.bind(null, ctx),
     match: pvp.match.bind(null, ctx),
     attack: pvp.attack.bind(null, ctx),

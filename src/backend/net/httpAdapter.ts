@@ -15,6 +15,12 @@ import {
   type CommandBatch,
   type CommandBatchResponse,
   type LedgerResponse,
+  type PurchaseHistoryResponse,
+  type PurchaseIntentRequest,
+  type PurchaseIntentResponse,
+  type PushTokenRequest,
+  type RedeemRequest,
+  type RedeemResponse,
   type LinkCredential,
   type LinkProvider,
   type LinksResponse,
@@ -345,6 +351,28 @@ export class HttpServerAdapter implements ServerPort {
 
   ledger(limit = 50): Promise<LedgerResponse> {
     return this.req('GET', `${Routes.villageLedger}?limit=${limit}`);
+  }
+
+  // ---------------------------------------------------------------- purchases and push
+
+  purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse> {
+    return this.req('POST', Routes.purchaseIntent, req);
+  }
+
+  redeem(req: RedeemRequest): Promise<RedeemResponse> {
+    return this.req('POST', Routes.purchases, req);
+  }
+
+  purchaseHistory(): Promise<PurchaseHistoryResponse> {
+    return this.req('GET', Routes.purchases);
+  }
+
+  async putPushToken(req: PushTokenRequest): Promise<void> {
+    await this.req('PUT', Routes.pushTokens, req);
+  }
+
+  async deletePushToken(token: string): Promise<void> {
+    await this.req('DELETE', `${Routes.pushTokens}?token=${encodeURIComponent(token)}`);
   }
 
   // ---------------------------------------------------------------- reports and blocks

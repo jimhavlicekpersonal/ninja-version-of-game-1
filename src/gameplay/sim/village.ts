@@ -61,7 +61,15 @@ export type Command =
   | { type: 'skip'; id: string }
   | { type: 'skipTraining' }
   | { type: 'topUp'; cost: Cost }
-  | { type: 'grantPurchase'; productId: string; transactionId: string }
+  /**
+   * Deliver a real-money purchase. `verified`: the server checked the store's
+   * receipt (roadmap step 35-37), so the purchase is delivered even if the
+   * offer has since ended or the age check would now refuse it (the player has
+   * paid); only an unknown product or a repeated transaction is refused.
+   */
+  | { type: 'grantPurchase'; productId: string; transactionId: string; verified?: boolean }
+  /** A purchase the store refunded: take back what it gave, as far as it is still there (server only). */
+  | { type: 'revokePurchase'; transactionId: string }
   | { type: 'setProfile'; under18: boolean }
   | { type: 'buySkin'; skin: string }
   | { type: 'equipSkin'; skin: string }
@@ -444,7 +452,7 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
     }
   }
   const spent = moonBefore - s.resources.moonstones;
-  if (spent > 0 && cmd.type !== 'grantPurchase') {
+  if (spent > 0 && cmd.type !== 'grantPurchase' && cmd.type !== 'revokePurchase') {
     s.stats.moonstonesSpent += spent;
     events.push({ kind: 'moonstone_spend', what: cmd.type === 'place' ? cmd.buildingType : cmd.type, moonstones: spent });
   }
@@ -516,7 +524,9 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'topUp':
       return topUp(s, cmd.cost, data);
     case 'grantPurchase':
-      return grantPurchase(s, cmd.productId, cmd.transactionId, now, data);
+      return grantPurchase(s, cmd.productId, cmd.transactionId, now, data, cmd.verified === true);
+    case 'revokePurchase':
+      return revokePurchase(s, cmd.transactionId, now, data);
     case 'setProfile':
       s.profile.under18 = cmd.under18;
       return { ok: true, state: s, events: [] };
@@ -727,11 +737,14 @@ function topUp(s: VillageState, cost: Cost, data: GameData): CommandResult {
   return { ok: true, state: s, events: [] };
 }
 
-function grantPurchase(s: VillageState, productId: string, transactionId: string, now: number, data: GameData): CommandResult {
+function grantPurchase(s: VillageState, productId: string, transactionId: string, now: number, data: GameData, verified: boolean): CommandResult {
   if (s.purchases.some((p) => p.id === transactionId)) return fail('ALREADY_CLAIMED', 'This purchase was already delivered.');
-  const check = canPurchase(s, productId, now, data);
-  if (!check.ok) return fail('PURCHASE_REFUSED', check.message);
-  const product = productInfo(data, productId)!;
+  if (!verified) {
+    const check = canPurchase(s, productId, now, data);
+    if (!check.ok) return fail('PURCHASE_REFUSED', check.message);
+  }
+  const product = productInfo(data, productId);
+  if (!product) return fail('PURCHASE_REFUSED', 'That item is not available.');
   s.purchases.push({ id: transactionId, productId, usd: product.usd, at: now });
   const grants = { ...product.grants };
   if (product.kind === 'pass') {
@@ -740,12 +753,30 @@ function grantPurchase(s: VillageState, productId: string, transactionId: string
   }
   if (product.kind === 'offer') {
     const rule = data.offers.rules.find((o) => o.productId === productId)!;
-    s.offers.bought.push(rule.id);
+    if (!s.offers.bought.includes(rule.id)) s.offers.bought.push(rule.id);
     s.offers.active = s.offers.active.filter((a) => a.id !== rule.id);
   }
   // Bought resources are always delivered in full, even beyond storage.
   for (const [k, v] of Object.entries(grants) as [ResourceKind, number][]) s.resources[k] += v;
   return { ok: true, state: s, events: [{ kind: 'purchase_granted', productId, usd: product.usd, grants }] };
+}
+
+/**
+ * Take back a refunded purchase: what it gave, as far as it is still there
+ * (spent Jade cannot be taken back; the ledger shows what was), and the
+ * premium Season Scroll if it was this season's. The purchase stays listed so
+ * the same transaction can never be delivered again.
+ */
+function revokePurchase(s: VillageState, transactionId: string, now: number, data: GameData): CommandResult {
+  const p = s.purchases.find((x) => x.id === transactionId);
+  if (!p) return fail('NOT_FOUND', 'No such purchase in this village.');
+  const product = productInfo(data, p.productId);
+  if (!product) return { ok: true, state: s, events: [] };
+  for (const [k, v] of Object.entries(product.grants) as [ResourceKind, number][]) {
+    if (v > 0) s.resources[k] = Math.max(0, s.resources[k] - v);
+  }
+  if (product.kind === 'pass' && passSeason(p.at, data) === passSeason(now, data)) s.pass.premium = false;
+  return { ok: true, state: s, events: [] };
 }
 
 function buySkin(s: VillageState, id: string, data: GameData): CommandResult {

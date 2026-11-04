@@ -31,6 +31,12 @@ import type {
   MatchResponse,
   PlayerView,
   PowerLeaderboardResponse,
+  PurchaseHistoryResponse,
+  PurchaseIntentRequest,
+  PurchaseIntentResponse,
+  PushTokenRequest,
+  RedeemRequest,
+  RedeemResponse,
   RaidAttackResponse,
   RaidClaimResponse,
   RaidTicketResponse,
@@ -123,6 +129,19 @@ export interface VillagePort {
   ledger(limit?: number): Promise<LedgerResponse>;
 }
 
+/** Store purchases checked by the server (roadmap Phase 4; features `purchases-apple`, `purchases-google`). */
+export interface PurchasePort {
+  purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse>;
+  redeem(req: RedeemRequest): Promise<RedeemResponse>;
+  purchaseHistory(): Promise<PurchaseHistoryResponse>;
+}
+
+/** Server-sent push (roadmap step 40; feature `push`). */
+export interface PushPort {
+  putPushToken(req: PushTokenRequest): Promise<void>;
+  deletePushToken(token: string): Promise<void>;
+}
+
 /** Reports and blocks (Apple 1.2). */
 export interface ModerationPort {
   report(req: ReportRequest): Promise<ReportResponse>;
@@ -132,7 +151,7 @@ export interface ModerationPort {
 }
 
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */

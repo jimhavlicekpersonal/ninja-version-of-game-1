@@ -4,6 +4,9 @@ import type { Repo } from '../repo';
 import type { IdentityVerifier } from '../identity/verify';
 import type { Metrics } from '../observability';
 import type { Leaderboard, MatchLocks } from '../shared';
+import type { AppleVerifier } from '../payments/apple';
+import type { GoogleVerifier } from '../payments/google';
+import type { Pusher } from '../push/push';
 
 export interface ServerContext {
   repo: Repo;
@@ -27,6 +30,10 @@ export interface ServerContext {
   metrics: Metrics;
   /** Checks sign-ins from Apple, Google, Game Center and Play Games (account linking). */
   identity: IdentityVerifier;
+  /** Store receipt checkers (roadmap Phase 4); null for a store this server is not set up for. */
+  payments: { apple: AppleVerifier | null; google: GoogleVerifier | null };
+  /** Server-sent push (roadmap step 40); a no-op without APNs/FCM keys. */
+  push: Pusher;
   /** A structured log line (the request's logger in the HTTP adapter). */
   log(level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>): void;
 }

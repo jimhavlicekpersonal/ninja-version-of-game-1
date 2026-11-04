@@ -144,9 +144,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
           r = { ok: false, code: 'INVALID_BATTLE', message: 'That command could not be read.' };
         }
         if (r.ok) {
-          // Purchases are trusted from the game until the server checks store receipts (Phase 4).
-          const reason = type === 'grantPurchase' ? 'purchase:unverified' : `command:${type}`;
-          ledger.push(...ledgerDiff(me.id, state.resources, r.state.resources, when, reason, String(c.seq)));
+          ledger.push(...ledgerDiff(me.id, state.resources, r.state.resources, when, `command:${type}`, String(c.seq)));
           state = r.state;
         } else error = r.code;
       }
