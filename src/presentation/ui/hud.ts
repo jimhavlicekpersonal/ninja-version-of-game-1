@@ -372,6 +372,7 @@ export class Hud {
             );
           });
           wrap.append(details);
+          if (conn.canKeepVillage || conn.serverVillage) wrap.append(this.villageBlock());
           wrap.append(this.accountBlock());
         }
         const retry = h('button', { class: 'btn ghost', type: 'button' }, 'Connect now');
@@ -409,6 +410,57 @@ export class Hud {
     });
     window.setTimeout(() => obs.observe(document.body, { childList: true, subtree: true }), 0);
     return wrap;
+  }
+
+  /** Settings → Online play → Village on the server (beta, roadmap Phase 2). */
+  private villageBlock(): HTMLElement {
+    const conn = this.deps.connection;
+    const sync = conn.village!;
+    const box = h('div', { class: 'village-server' }, h('h3', {}, 'Village on the server (beta)'));
+    if (sync.active) {
+      box.append(
+        h('p', { class: 'muted small' }, 'Your village is kept on the server: every change to its resources, buildings, army and research is checked there, so it cannot be lost with this device. What you do is sent as you play; while offline it waits and goes when you reconnect.'),
+        h('p', { class: 'small' }, sync.pending ? `${sync.pending} action${sync.pending === 1 ? '' : 's'} waiting to send.` : 'Everything is sent.'),
+      );
+      const list = h('div', { class: 'events' }, 'Loading…');
+      const ledger = h('details', {}, h('summary', {}, 'Recent changes'), list);
+      ledger.addEventListener('toggle', () => {
+        if (!ledger.open || !conn.port) return;
+        void conn.port.ledger(30).then(
+          ({ entries }) => {
+            clear(list);
+            if (!entries.length) list.append('Nothing yet.');
+            for (const e of entries) list.append(h('div', { class: 'event' }, h('b', {}, `${e.delta > 0 ? '+' : ''}${formatNumber(e.delta)} ${e.resource}`), ` ${new Date(e.at).toLocaleString()} `, h('code', {}, e.reason)));
+          },
+          (e: Error) => {
+            list.textContent = e.message;
+          },
+        );
+      });
+      box.append(ledger);
+      return box;
+    }
+    const start = h('button', { class: 'btn ghost', type: 'button' }, 'Start a village on the server');
+    start.addEventListener('click', () => {
+      void this.confirm(
+        'Start a village on the server?',
+        'This starts a new village that is kept on the server. Bringing this village over comes in a later update: it stays on this device as a backup you can restore in Settings.',
+        'Start on the server',
+        false,
+        'Not now',
+      ).then(async (ok) => {
+        if (!ok) return;
+        try {
+          await sync.enable();
+          this.toast('Your new village is kept on the server.', 'success');
+          this.closeAllModals();
+        } catch (e) {
+          this.toast((e as Error).message, 'error');
+        }
+      });
+    });
+    box.append(h('p', { class: 'muted small' }, 'Keep your village on the server, so it cannot be lost with this device and every change is checked there.'), h('div', { class: 'actions' }, start));
+    return box;
   }
 
   /**

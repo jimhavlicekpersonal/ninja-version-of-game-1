@@ -59,6 +59,13 @@ export class App {
   /** Look for an opponent. `paid` = pressing Next. */
   async scout(paid = false): Promise<void> {
     const c = this.d.controller;
+    // A village the server keeps raids only through the server (offline loot could not be checked).
+    if (this.d.connection.serverVillage && !this.d.connection.online) {
+      const msg = 'Your village is kept on the server, so attacks need a connection. Try again when you are online.';
+      if (this.battleHud) this.battleHud.toast(msg);
+      else this.d.hud.toast(msg, 'error');
+      return;
+    }
     const r = c.scout(paid);
     if (!r.ok) {
       if (this.battleHud) this.battleHud.toast(r.message);
@@ -89,6 +96,10 @@ export class App {
         }
       } catch (e) {
         console.warn('Online match failed, using a generated opponent', e);
+      }
+      if (conn.serverVillage) {
+        this.d.hud.toast('Could not reach the server to find an opponent. Try again in a moment.', 'error');
+        return;
       }
     }
     // Opponent strength and loot follow the player's trophies (see sim/matchmaking).

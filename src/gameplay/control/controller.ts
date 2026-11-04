@@ -13,6 +13,7 @@ import { advance, applyCommand, createNewVillage, hallLevel, type Command, type 
 import { dayIndex, passSeason } from '../sim/pass';
 import { seasonOf } from '../sim/ranks';
 import { trainingReady } from '../sim/army';
+import { withEconomy, type Economy } from '../sim/serverEconomy';
 
 export interface ControllerDeps {
   clock: Clock;
@@ -55,6 +56,7 @@ export class GameController {
   private listeners = new Set<Listener>();
   private offerListeners = new Set<(rule: OfferRule) => void>();
   private eventListeners = new Set<(events: SimEvent[]) => void>();
+  private commandListeners = new Set<(cmd: Command, at: number) => void>();
   private offersThisSession = 0;
   readonly payments: PaymentProvider;
   private saveChain: Promise<void> = Promise.resolve();
@@ -144,9 +146,40 @@ export class GameController {
     }
     this.emit([]);
     void this.save();
+    // Right after the change, so a listener sees the village this command made (the server-economy queue hashes it).
+    for (const fn of this.commandListeners) fn(cmd, now);
     for (const fn of this.eventListeners) fn(result.events);
     for (const e of result.events) if (e.kind === 'trigger') this.triggerOffer(e.trigger);
     return result;
+  }
+
+  /** Hear every successful command and the time it was applied at (the server-owned village queues them). */
+  onCommand(fn: (cmd: Command, at: number) => void): () => void {
+    this.commandListeners.add(fn);
+    return () => this.commandListeners.delete(fn);
+  }
+
+  /**
+   * The server's economy is the truth (roadmap step 21): put it in place, then
+   * replay the commands still waiting for the server on top of it, at their
+   * own times. Anything the replay refuses is simply dropped (the server will
+   * refuse it too).
+   */
+  adoptEconomy(economy: Economy, replay: { command: Command; t: number }[]): void {
+    let s = withEconomy(this.state, economy);
+    for (const r of replay) {
+      const x = applyCommand(s, r.command, r.t, this.deps.data);
+      if (x.ok) s = x.state;
+    }
+    this.state = s;
+    this.emit([]);
+    void this.save();
+  }
+
+  /** Swap in a village from the server; the one here is kept as a backup (Settings lists it). */
+  async adoptVillage(village: VillageState): Promise<void> {
+    await this.deps.store.backupDamaged(serialize(this.state, this.now()));
+    await this.replace(village);
   }
 
   /** Listen to the events of every successful command (sounds, effects). */

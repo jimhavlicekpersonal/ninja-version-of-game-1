@@ -14,6 +14,7 @@ import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
 import type { BattleSubmission, HelloResponse, PlayerView } from './protocol';
+import { VillageSync, type SyncGame } from './villageSync';
 
 /** What the connection needs from the game. GameController provides it. */
 export interface GameLink {
@@ -21,6 +22,10 @@ export interface GameLink {
   readonly state: VillageState;
   now(): number;
   dispatch(cmd: Command): CommandResult;
+  /** For a village kept on the server (roadmap step 21); without them the village always stays on the device. */
+  onCommand?: SyncGame['onCommand'];
+  adoptEconomy?: SyncGame['adoptEconomy'];
+  adoptVillage?: SyncGame['adoptVillage'];
 }
 
 /** Small key-value storage (localStorage in the browser). */
@@ -96,6 +101,8 @@ export class Connection {
   player: PlayerView | null = null;
   port: ServerPort | null = null;
   readonly url: string;
+  /** The server-owned village queue (roadmap step 21); null when the game cannot keep one on a server. */
+  readonly village: VillageSync | null = null;
 
   private readonly kv: KeyValue;
   private readonly listeners = new Set<() => void>();
@@ -111,7 +118,22 @@ export class Connection {
     if (this.url) {
       this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u)))(this.url);
       this.status = 'connecting';
+      const g = o.game;
+      if (g.onCommand && g.adoptEconomy && g.adoptVillage) {
+        this.village = new VillageSync(g as GameLink & SyncGame, () => this.port, this.kv, `tk.net.village:${this.url}`);
+        this.village.onChange = () => this.emit();
+      }
     }
+  }
+
+  /** The server keeps this player's village (its economy is the truth). */
+  get serverVillage(): boolean {
+    return Boolean(this.village?.active);
+  }
+
+  /** The server offers keeping villages (feature `server-economy`). */
+  get canKeepVillage(): boolean {
+    return Boolean(this.village && this.online && this.server?.features.includes('server-economy'));
   }
 
   /** A server is configured (real raids replace bot raids, the real Grove replaces the bot Grove). */
@@ -183,6 +205,8 @@ export class Connection {
     if (!this.port) return;
     await this.port.deleteAccount();
     this.stop();
+    this.village?.reset();
+    this.village?.stop();
     const g = this.o.game;
     for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'account_deleted' });
     this.saveOutbox([]);
@@ -198,6 +222,8 @@ export class Connection {
     void this.sync();
     this.timers.push(setInterval(() => void this.sync(), 60_000));
     this.timers.push(setInterval(() => void this.uploadBase(), 120_000));
+    // A server-held village: send waiting actions every 15 s.
+    this.timers.push(setInterval(() => void this.village?.flush().catch((e) => this.handleError(e)), 15_000));
   }
 
   stop(): void {
@@ -230,6 +256,8 @@ export class Connection {
         // The real Grove replaces the bot Grove while playing online.
         if (g.state.grove.joined) g.dispatch({ type: 'leaveLocalGrove' });
         await this.uploadBase();
+        // Learn whether the server keeps this village, and reconcile with it.
+        if (this.server.features.includes('server-economy')) await this.village?.connect();
         this.retryDelay = 15_000;
         this.setStatus('online');
       } else {
@@ -288,7 +316,8 @@ export class Connection {
 
   /** Share the village layout so other players can attack it. */
   async uploadBase(): Promise<void> {
-    if (!this.port || !this.player) return;
+    // A village the server keeps is its own base there.
+    if (!this.port || !this.player || this.serverVillage) return;
     const g = this.o.game;
     try {
       await this.port.uploadBase({ base: villageToBase(g.state, g.now(), g.data, this.player.name), name: this.player.name });
@@ -304,6 +333,11 @@ export class Connection {
    */
   async ensureFreshBase(): Promise<void> {
     if (!this.port || !this.player) return;
+    // A server-held village: the server needs our latest actions (the troops we will attack with, a new Keep).
+    if (this.serverVillage) {
+      await this.village!.flush();
+      return;
+    }
     const g = this.o.game;
     const hall = villageToBase(g.state, g.now(), g.data).hallLevel;
     if (hall === this.player.hallLevel) return;
@@ -406,6 +440,8 @@ export class Connection {
   private async runFlush(): Promise<void> {
     const port = this.port!;
     const g = this.o.game;
+    // Actions first: an attack's troops must be on the server before its report.
+    await this.village?.flush();
     this.requeuePending();
     for (const item of this.outbox()) {
       try {
