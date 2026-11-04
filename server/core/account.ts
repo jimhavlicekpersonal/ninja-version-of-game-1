@@ -4,6 +4,7 @@
  * form (GET /account/delete) that staff verify and carry out through the admin
  * API, for players who can no longer open the game.
  */
+import { leaveGang } from './squads';
 import type { DeletionRequestBody, DeletionRequestResponse } from '../../src/backend/net/protocol';
 import type { DeletionRequest, Player } from '../repo';
 import { ApiError, type ServerContext } from './context';
@@ -12,6 +13,7 @@ import { leaveGrove } from './groves';
 /** Delete the caller's online account. Leaves their Alliance first (handing over leadership), without naming them. */
 export async function deleteAccount(ctx: ServerContext, me: Player): Promise<void> {
   if (await ctx.repo.getMembership(me.id)) await leaveGrove(ctx, me, { quiet: true });
+  if (await ctx.repo.squadOf(me.id)) await leaveGang(ctx, me, { quiet: true });
   await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
   await ctx.board.remove(me.id);
 }

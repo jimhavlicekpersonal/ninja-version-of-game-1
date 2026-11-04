@@ -31,6 +31,13 @@ import type {
   MatchResponse,
   PlayerView,
   PowerLeaderboardResponse,
+  ChallengeView,
+  DuelResponse,
+  DuelsResponse,
+  DuelSubmission,
+  DuelTicketRequest,
+  DuelTicketResponse,
+  MyGangResponse,
   FriendImportRequest,
   FriendRequestRequest,
   FriendRequestResult,
@@ -160,6 +167,30 @@ export interface FriendsPort {
   importFriends(req: FriendImportRequest): Promise<SuggestionsResponse>;
 }
 
+/** Friendly Duels (step 62; feature `duels`) and Gangs (step 63; feature `gangs`). */
+export interface DuelsPort {
+  duelTicket(req: DuelTicketRequest): Promise<DuelTicketResponse>;
+  submitDuel(sub: DuelSubmission): Promise<DuelResponse>;
+  duels(): Promise<DuelsResponse>;
+  challengeFriend(friendId: string): Promise<ChallengeView>;
+  /** null clears it. */
+  setDuelLayout(base: unknown): Promise<void>;
+}
+
+export interface GangsPort {
+  myGang(): Promise<MyGangResponse>;
+  createGang(name: string): Promise<MyGangResponse>;
+  inviteToGang(friendId: string): Promise<MyGangResponse>;
+  answerGangInvite(id: string, accept: boolean): Promise<MyGangResponse>;
+  leaveGang(): Promise<MyGangResponse>;
+  handOverGang(playerId: string): Promise<MyGangResponse>;
+  gangChat(after?: string): Promise<ChatResponse>;
+  postGangChat(text: string): Promise<ChatView>;
+  gangRequests(): Promise<RequestsResponse>;
+  gangRequestTroops(capacity: number): Promise<RequestView>;
+  gangDonate(requestId: string, req: DonateRequest): Promise<DonateResponse>;
+}
+
 /** Server-sent push (roadmap step 40; feature `push`). */
 export interface PushPort {
   putPushToken(req: PushTokenRequest): Promise<void>;
@@ -175,7 +206,7 @@ export interface ModerationPort {
 }
 
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort, FriendsPort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort, FriendsPort, DuelsPort, GangsPort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */

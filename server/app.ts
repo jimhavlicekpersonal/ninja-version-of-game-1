@@ -284,6 +284,26 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.friendSuggestions, authed(async (me) => core.friendSuggestions(me)));
   app.post(Routes.friendImport, rate('friends'), authed(async (me, req) => core.importFriends(me, req.body as never)));
   app.put(Routes.privacy, authed(async (me, req) => core.setPrivacy(me, req.body as never)));
+
+  // Friendly Duels (step 62): re-simulated like PvP, never ranked.
+  app.post(Routes.duelTicket, rate('match'), authed(async (me, req) => core.duelTicket(me, req.body as never)));
+  app.post(Routes.duels, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.submitDuel(me, req.body as never)));
+  app.get(Routes.duels, authed(async (me) => core.duels(me)));
+  app.post(Routes.duelChallenges, rate('friends'), authed(async (me, req, reply) => reply.code(201).send(await core.challengeFriend(me, body<{ friendId: string }>(req).friendId))));
+  app.put(Routes.duelLayout, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.setDuelLayout(me, req.body as never)));
+
+  // Gangs (step 63)
+  app.get(Routes.squad, authed(async (me) => core.myGang(me)));
+  app.post(Routes.squads, rate('friends'), authed(async (me, req, reply) => reply.code(201).send(await core.createGang(me, body<{ name: string }>(req).name))));
+  app.post(Routes.squadInvites, rate('friends'), authed(async (me, req) => core.inviteToGang(me, body<{ friendId: string }>(req).friendId)));
+  app.post('/v1/squads/invites/:id', rate('friends'), authed(async (me, req) => core.answerGangInvite(me, param(req, 'id'), req.body as never)));
+  app.post(Routes.squadLeave, authed(async (me) => core.leaveGang(me)));
+  app.post(Routes.squadLeader, authed(async (me, req) => core.handOverGang(me, body<{ playerId: string }>(req).playerId)));
+  app.get(Routes.squadChat, authed(async (me, req) => core.gangChat(me, query(req).after)));
+  app.post(Routes.squadChat, authed(async (me, req, reply) => reply.code(201).send(await core.postGangChat(me, body<{ text: string }>(req).text))));
+  app.get(Routes.squadRequests, authed(async (me) => core.gangRequests(me)));
+  app.post(Routes.squadRequests, authed(async (me, req, reply) => reply.code(201).send(await core.gangRequestTroops(me, body<{ capacity: number }>(req).capacity))));
+  app.post('/v1/squad/requests/:id/donate', authed(async (me, req) => core.gangDonate(me, param(req, 'id'), req.body as never)));
   app.get('/f/:code', async (req, reply) => {
     const code = normalizeCode(param(req, 'code'));
     const target = shareTarget(opts.gameUrl, code);

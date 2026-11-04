@@ -6,6 +6,7 @@
 import * as account from './account';
 import * as admin from './admin';
 import type { ServerContext } from './context';
+import * as duels from './duels';
 import * as friends from './friends';
 import * as groves from './groves';
 import * as groveRaid from './groveRaid';
@@ -18,6 +19,7 @@ import * as pvp from './pvp';
 import * as retention from './retention';
 import * as review from './review';
 import * as seasons from './seasons';
+import * as squads from './squads';
 import * as village from './village';
 import * as villageImport from './villageImport';
 
@@ -44,6 +46,22 @@ export function createCore(ctx: ServerContext) {
     setPrivacy: friends.setPrivacy.bind(null, ctx),
     friendSuggestions: friends.suggestions.bind(null, ctx),
     importFriends: friends.importFriends.bind(null, ctx),
+    duelTicket: duels.duelTicket.bind(null, ctx),
+    submitDuel: duels.submitDuel.bind(null, ctx),
+    duels: duels.duels.bind(null, ctx),
+    challengeFriend: duels.challenge.bind(null, ctx),
+    setDuelLayout: duels.setDuelLayout.bind(null, ctx),
+    myGang: squads.myGang.bind(null, ctx),
+    createGang: squads.createGang.bind(null, ctx),
+    inviteToGang: squads.invite.bind(null, ctx),
+    answerGangInvite: squads.answerInvite.bind(null, ctx),
+    leaveGang: (me: Parameters<typeof squads.leaveGang>[1]) => squads.leaveGang(ctx, me),
+    handOverGang: squads.handOver.bind(null, ctx),
+    gangChat: squads.gangChat.bind(null, ctx),
+    postGangChat: squads.postGangChat.bind(null, ctx),
+    gangRequests: squads.gangRequests.bind(null, ctx),
+    gangRequestTroops: squads.gangRequestTroops.bind(null, ctx),
+    gangDonate: squads.gangDonate.bind(null, ctx),
     /** Start-up: name keys and friend codes for players from before step 59. */
     migrateNames: () => friends.migrateNames(ctx),
     signIn: links.signIn.bind(null, ctx),

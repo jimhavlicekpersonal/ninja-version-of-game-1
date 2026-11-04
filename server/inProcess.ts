@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, FriendImportRequest, FriendRequestRequest, LinkCredential, LinkProvider, PrivacyRequest, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, DuelSubmission, DuelTicketRequest, FriendImportRequest, FriendRequestRequest, LinkCredential, LinkProvider, PrivacyRequest, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -171,6 +171,54 @@ export class InProcessServerAdapter implements ServerPort {
   }
   importFriends(req: FriendImportRequest) {
     return this.authed((me) => this.core.importFriends(me, wire(req)));
+  }
+  duelTicket(req: DuelTicketRequest) {
+    return this.authed((me) => this.core.duelTicket(me, wire(req)));
+  }
+  submitDuel(sub: DuelSubmission) {
+    return this.authed((me) => this.core.submitDuel(me, wire(sub)));
+  }
+  duels() {
+    return this.authed((me) => this.core.duels(me));
+  }
+  challengeFriend(friendId: string) {
+    return this.authed((me) => this.core.challengeFriend(me, friendId));
+  }
+  async setDuelLayout(base: unknown) {
+    await this.authed((me) => this.core.setDuelLayout(me, wire({ base })));
+  }
+  myGang() {
+    return this.authed((me) => this.core.myGang(me));
+  }
+  createGang(name: string) {
+    return this.authed((me) => this.core.createGang(me, name));
+  }
+  inviteToGang(friendId: string) {
+    return this.authed((me) => this.core.inviteToGang(me, friendId));
+  }
+  answerGangInvite(id: string, accept: boolean) {
+    return this.authed((me) => this.core.answerGangInvite(me, id, { accept }));
+  }
+  leaveGang() {
+    return this.authed((me) => this.core.leaveGang(me));
+  }
+  handOverGang(playerId: string) {
+    return this.authed((me) => this.core.handOverGang(me, playerId));
+  }
+  gangChat(after?: string) {
+    return this.authed((me) => this.core.gangChat(me, after));
+  }
+  postGangChat(text: string) {
+    return this.authed((me) => this.core.postGangChat(me, text));
+  }
+  gangRequests() {
+    return this.authed((me) => this.core.gangRequests(me));
+  }
+  gangRequestTroops(capacity: number) {
+    return this.authed((me) => this.core.gangRequestTroops(me, capacity));
+  }
+  gangDonate(requestId: string, req: DonateRequest) {
+    return this.authed((me) => this.core.gangDonate(me, requestId, wire(req)));
   }
   purchaseIntent(req: PurchaseIntentRequest) {
     return this.authed((me) => this.core.purchaseIntent(me, wire(req)));

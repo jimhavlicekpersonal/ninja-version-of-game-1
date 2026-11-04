@@ -91,6 +91,54 @@ export interface FriendRequest {
   status: 'open' | 'accepted' | 'declined' | 'cancelled' | 'expired';
 }
 
+/** A Friendly Duel (roadmap step 62): the replay with its base, never ranked. */
+export interface DuelRecord {
+  id: string;
+  at: number;
+  attackerId: string;
+  defenderId: string;
+  challengeId: string | null;
+  record: {
+    attackerName: string;
+    defenderName: string;
+    layout: 'live' | 'duel';
+    seed: number;
+    base: BaseLayout;
+    army: Record<string, number>;
+    levels: Record<string, number>;
+    reinforcements?: Record<string, { count: number; level: number }>;
+    deployments: Deployment[];
+    endTick?: number;
+    result: BattleResult;
+    rules: number;
+  };
+}
+
+/** The tally between two friends (a < b). */
+export interface Rivalry {
+  a: string;
+  b: string;
+  duels: number;
+  aWins: number;
+  bWins: number;
+  aBest: number;
+  bBest: number;
+  lastAt: number;
+}
+
+export interface DuelChallenge {
+  id: string;
+  /** The challenger. */
+  a: string;
+  b: string;
+  createdAt: number;
+  endsAt: number;
+  aDuel: string | null;
+  bDuel: string | null;
+  winner: string | null;
+  status: 'open' | 'done' | 'expired';
+}
+
 /** A Gang (roadmap step 63): 2-4 friends. Internal id `squad`. */
 export interface Squad {
   id: string;
@@ -155,7 +203,7 @@ export interface StaffAction {
 
 export interface Ticket {
   id: string;
-  kind: 'pvp' | 'raid';
+  kind: 'pvp' | 'raid' | 'duel';
   attackerId: string;
   /** Null for a server-generated (bot) opponent. */
   defenderId: string | null;
@@ -541,6 +589,19 @@ export interface Repo {
   addFriendship(a: string, b: string, since: number): Promise<boolean>;
   removeFriendship(a: string, b: string): Promise<void>;
   friendsOf(playerId: string): Promise<{ id: string; since: number }[]>;
+  // Friendly Duels (roadmap step 62)
+  addDuel(d: DuelRecord): Promise<void>;
+  /** Duels the player fought or defended since `since`, newest first. */
+  duelsOf(playerId: string, since: number, limit: number): Promise<DuelRecord[]>;
+  /** Count one duel: the attacker's stars, and whether they won (2+ stars or more destruction than half). */
+  addToRivalry(attackerId: string, defenderId: string, stars: number, won: boolean, at: number): Promise<void>;
+  rivalriesOf(playerId: string): Promise<Rivalry[]>;
+  getDuelLayout(playerId: string): Promise<BaseLayout | null>;
+  setDuelLayout(playerId: string, base: BaseLayout | null, at: number): Promise<void>;
+  addChallenge(c: DuelChallenge): Promise<void>;
+  getChallenge(id: string): Promise<DuelChallenge | null>;
+  challengesOf(playerId: string, since: number): Promise<DuelChallenge[]>;
+  updateChallenge(id: string, patch: Partial<Pick<DuelChallenge, 'aDuel' | 'bDuel' | 'winner' | 'status'>>): Promise<void>;
   // Gangs (roadmap step 63)
   /** False if the leader is already in a Gang (nothing stored). */
   createSquad(s: Squad, leader: SquadMember): Promise<boolean>;
@@ -766,6 +827,10 @@ export class MemoryRepo implements Repo {
   friendRequestRows: FriendRequest[] = [];
   friendshipRows: { a: string; b: string; since: number }[] = [];
   squadRows = new Map<string, Squad>();
+  duelRows: DuelRecord[] = [];
+  rivalryRows: Rivalry[] = [];
+  duelLayoutRows = new Map<string, BaseLayout>();
+  challengeRows: DuelChallenge[] = [];
   squadMemberRows: SquadMember[] = [];
   squadInviteRows: SquadInvite[] = [];
   intentRows: PurchaseIntent[] = [];
@@ -948,6 +1013,58 @@ export class MemoryRepo implements Repo {
   }
   async friendsOf(playerId: string): Promise<{ id: string; since: number }[]> {
     return this.friendshipRows.filter((f) => f.a === playerId || f.b === playerId).map((f) => ({ id: f.a === playerId ? f.b : f.a, since: f.since }));
+  }
+  async addDuel(d: DuelRecord): Promise<void> {
+    this.duelRows.push(clone(d));
+  }
+  async duelsOf(playerId: string, since: number, limit: number): Promise<DuelRecord[]> {
+    return this.duelRows
+      .filter((d) => (d.attackerId === playerId || d.defenderId === playerId) && d.at >= since)
+      .sort((a, b) => b.at - a.at)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addToRivalry(attackerId: string, defenderId: string, stars: number, won: boolean, at: number): Promise<void> {
+    const [a, b] = attackerId < defenderId ? [attackerId, defenderId] : [defenderId, attackerId];
+    let r = this.rivalryRows.find((x) => x.a === a && x.b === b);
+    if (!r) {
+      r = { a, b, duels: 0, aWins: 0, bWins: 0, aBest: 0, bBest: 0, lastAt: at };
+      this.rivalryRows.push(r);
+    }
+    r.duels++;
+    r.lastAt = at;
+    if (attackerId === a) {
+      if (won) r.aWins++;
+      r.aBest = Math.max(r.aBest, stars);
+    } else {
+      if (won) r.bWins++;
+      r.bBest = Math.max(r.bBest, stars);
+    }
+  }
+  async rivalriesOf(playerId: string): Promise<Rivalry[]> {
+    return this.rivalryRows.filter((r) => r.a === playerId || r.b === playerId).map(clone);
+  }
+  async getDuelLayout(playerId: string): Promise<BaseLayout | null> {
+    const b = this.duelLayoutRows.get(playerId);
+    return b ? clone(b) : null;
+  }
+  async setDuelLayout(playerId: string, base: BaseLayout | null): Promise<void> {
+    if (base) this.duelLayoutRows.set(playerId, clone(base));
+    else this.duelLayoutRows.delete(playerId);
+  }
+  async addChallenge(c: DuelChallenge): Promise<void> {
+    this.challengeRows.push(clone(c));
+  }
+  async getChallenge(id: string): Promise<DuelChallenge | null> {
+    const c = this.challengeRows.find((x) => x.id === id);
+    return c ? clone(c) : null;
+  }
+  async challengesOf(playerId: string, since: number): Promise<DuelChallenge[]> {
+    return this.challengeRows.filter((c) => (c.a === playerId || c.b === playerId) && c.createdAt >= since).sort((x, y) => y.createdAt - x.createdAt).map(clone);
+  }
+  async updateChallenge(id: string, patch: Partial<Pick<DuelChallenge, 'aDuel' | 'bDuel' | 'winner' | 'status'>>): Promise<void> {
+    const c = this.challengeRows.find((x) => x.id === id);
+    if (c) Object.assign(c, patch);
   }
   async createSquad(s: Squad, leader: SquadMember): Promise<boolean> {
     if (this.squadMemberRows.some((m) => m.playerId === leader.playerId)) return false;
@@ -1228,6 +1345,7 @@ export class MemoryRepo implements Repo {
   async prune(c: PruneCutoffs): Promise<PruneResult> {
     const attacks = this.attacks.length;
     this.attacks = this.attacks.filter((a) => a.at >= c.recordsBefore);
+    this.duelRows = this.duelRows.filter((d) => d.at >= c.recordsBefore);
     let tickets = 0;
     for (const [id, t] of this.tickets) {
       if (t.createdAt < c.recordsBefore || (!t.used && t.expiresAt < c.staleBefore)) {
@@ -1296,6 +1414,10 @@ export class MemoryRepo implements Repo {
     this.friendRequestRows = this.friendRequestRows.filter((r) => r.fromId !== id && r.toId !== id);
     this.friendshipRows = this.friendshipRows.filter((f) => f.a !== id && f.b !== id);
     this.squadMemberRows = this.squadMemberRows.filter((m) => m.playerId !== id);
+    this.duelRows = this.duelRows.filter((d) => d.attackerId !== id && d.defenderId !== id);
+    this.rivalryRows = this.rivalryRows.filter((r) => r.a !== id && r.b !== id);
+    this.duelLayoutRows.delete(id);
+    this.challengeRows = this.challengeRows.filter((c) => c.a !== id && c.b !== id);
     this.squadInviteRows = this.squadInviteRows.filter((i) => i.fromId !== id && i.toId !== id);
     for (const [k, h] of this.nameHoldRows) if (h.playerId === id) this.nameHoldRows.delete(k);
     this.pushRows = this.pushRows.filter((t) => t.playerId !== id);

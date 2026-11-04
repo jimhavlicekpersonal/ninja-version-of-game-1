@@ -40,6 +40,13 @@ import {
   type MyGroveResponse,
   type PlayerView,
   type PowerLeaderboardResponse,
+  type ChallengeView,
+  type DuelResponse,
+  type DuelsResponse,
+  type DuelSubmission,
+  type DuelTicketRequest,
+  type DuelTicketResponse,
+  type MyGangResponse,
   type FriendImportRequest,
   type FriendRequestRequest,
   type FriendRequestResult,
@@ -397,6 +404,72 @@ export class HttpServerAdapter implements ServerPort {
 
   importFriends(req: FriendImportRequest): Promise<SuggestionsResponse> {
     return this.req('POST', Routes.friendImport, req);
+  }
+
+  // ---------------------------------------------------------------- duels and Gangs
+
+  duelTicket(req: DuelTicketRequest): Promise<DuelTicketResponse> {
+    return this.req('POST', Routes.duelTicket, req);
+  }
+
+  submitDuel(sub: DuelSubmission): Promise<DuelResponse> {
+    return this.req('POST', Routes.duels, sub);
+  }
+
+  duels(): Promise<DuelsResponse> {
+    return this.req('GET', Routes.duels);
+  }
+
+  challengeFriend(friendId: string): Promise<ChallengeView> {
+    return this.req('POST', Routes.duelChallenges, { friendId });
+  }
+
+  async setDuelLayout(base: unknown): Promise<void> {
+    await this.req('PUT', Routes.duelLayout, { base });
+  }
+
+  myGang(): Promise<MyGangResponse> {
+    return this.req('GET', Routes.squad);
+  }
+
+  createGang(name: string): Promise<MyGangResponse> {
+    return this.req('POST', Routes.squads, { name });
+  }
+
+  inviteToGang(friendId: string): Promise<MyGangResponse> {
+    return this.req('POST', Routes.squadInvites, { friendId });
+  }
+
+  answerGangInvite(id: string, accept: boolean): Promise<MyGangResponse> {
+    return this.req('POST', Routes.squadInvite(id), { accept });
+  }
+
+  leaveGang(): Promise<MyGangResponse> {
+    return this.req('POST', Routes.squadLeave);
+  }
+
+  handOverGang(playerId: string): Promise<MyGangResponse> {
+    return this.req('POST', Routes.squadLeader, { playerId });
+  }
+
+  gangChat(after?: string): Promise<ChatResponse> {
+    return this.req('GET', `${Routes.squadChat}${after ? `?after=${encodeURIComponent(after)}` : ''}`);
+  }
+
+  postGangChat(text: string): Promise<ChatView> {
+    return this.req('POST', Routes.squadChat, { text });
+  }
+
+  gangRequests(): Promise<RequestsResponse> {
+    return this.req('GET', Routes.squadRequests);
+  }
+
+  gangRequestTroops(capacity: number): Promise<RequestView> {
+    return this.req('POST', Routes.squadRequests, { capacity });
+  }
+
+  gangDonate(requestId: string, req: DonateRequest): Promise<DonateResponse> {
+    return this.req('POST', Routes.squadDonate(requestId), req);
   }
 
   // ---------------------------------------------------------------- purchases and push

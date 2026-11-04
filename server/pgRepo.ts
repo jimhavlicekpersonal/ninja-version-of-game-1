@@ -1,5 +1,6 @@
 /** Postgres storage adapter for the Repo port (tables in server/migrations/). Bases and battle records are JSONB. */
 import pg from 'pg';
+import type { BaseLayout } from '../src/gameplay/sim/battle/types';
 import { contentHash } from './contentHash';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
@@ -24,6 +25,9 @@ import type {
   PushToken,
   FriendRequest,
   RaidAttack,
+  DuelChallenge,
+  DuelRecord,
+  Rivalry,
   ReviewStats,
   Squad,
   SquadInvite,
@@ -84,7 +88,7 @@ const toPlayer = (r: Row): Player => ({
 const toTicket = (r: Row): Ticket => {
   const t: Ticket = {
     id: String(r.id),
-    kind: r.kind === 'raid' ? 'raid' : 'pvp',
+    kind: r.kind === 'raid' || r.kind === 'duel' ? r.kind : 'pvp',
     attackerId: String(r.attacker_id),
     defenderId: strOrNull(r.defender_id),
     defenderName: String(r.defender_name ?? ''),
@@ -434,6 +438,85 @@ export class PgRepo implements Repo {
 
   async friendsOf(playerId: string): Promise<{ id: string; since: number }[]> {
     return (await this.rows('select case when a = $1 then b else a end as id, since from friendships where a = $1 or b = $1', [playerId])).map((r) => ({ id: String(r.id), since: num(r.since) }));
+  }
+
+  // ------------------------------------------------------------ Friendly Duels (step 62)
+
+  async addDuel(d: DuelRecord): Promise<void> {
+    await this.db.query('insert into duels (id, at, attacker_id, defender_id, challenge_id, record) values ($1,$2,$3,$4,$5,$6)', [d.id, d.at, d.attackerId, d.defenderId, d.challengeId, JSON.stringify(d.record)]);
+  }
+
+  async duelsOf(playerId: string, since: number, limit: number): Promise<DuelRecord[]> {
+    return (await this.rows('select * from duels where (attacker_id = $1 or defender_id = $1) and at >= $2 order by at desc limit $3', [playerId, since, limit])).map((r) => ({
+      id: String(r.id),
+      at: num(r.at),
+      attackerId: String(r.attacker_id),
+      defenderId: String(r.defender_id),
+      challengeId: strOrNull(r.challenge_id),
+      record: r.record as DuelRecord['record'],
+    }));
+  }
+
+  async addToRivalry(attackerId: string, defenderId: string, stars: number, won: boolean, at: number): Promise<void> {
+    const first = attackerId < defenderId;
+    const [a, b] = first ? [attackerId, defenderId] : [defenderId, attackerId];
+    const w = won ? 1 : 0;
+    await this.db.query(
+      `insert into rivalries (a, b, duels, a_wins, b_wins, a_best, b_best, last_at) values ($1, $2, 1, $3, $4, $5, $6, $7)
+       on conflict (a, b) do update set duels = rivalries.duels + 1, a_wins = rivalries.a_wins + $3, b_wins = rivalries.b_wins + $4,
+         a_best = greatest(rivalries.a_best, $5), b_best = greatest(rivalries.b_best, $6), last_at = $7`,
+      [a, b, first ? w : 0, first ? 0 : w, first ? stars : 0, first ? 0 : stars, at],
+    );
+  }
+
+  async rivalriesOf(playerId: string): Promise<Rivalry[]> {
+    return (await this.rows('select * from rivalries where a = $1 or b = $1', [playerId])).map((r) => ({
+      a: String(r.a),
+      b: String(r.b),
+      duels: num(r.duels),
+      aWins: num(r.a_wins),
+      bWins: num(r.b_wins),
+      aBest: num(r.a_best),
+      bBest: num(r.b_best),
+      lastAt: num(r.last_at),
+    }));
+  }
+
+  async getDuelLayout(playerId: string): Promise<BaseLayout | null> {
+    const r = await this.rows('select base from duel_layouts where player_id = $1', [playerId]);
+    return r[0] ? (r[0].base as BaseLayout) : null;
+  }
+
+  async setDuelLayout(playerId: string, base: BaseLayout | null, at: number): Promise<void> {
+    if (!base) await this.db.query('delete from duel_layouts where player_id = $1', [playerId]);
+    else await this.db.query('insert into duel_layouts (player_id, base, updated_at) values ($1,$2,$3) on conflict (player_id) do update set base = excluded.base, updated_at = excluded.updated_at', [playerId, JSON.stringify(base), at]);
+  }
+
+  async addChallenge(c: DuelChallenge): Promise<void> {
+    await this.db.query('insert into duel_challenges (id, a, b, created_at, ends_at, a_duel, b_duel, winner, status) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)', [c.id, c.a, c.b, c.createdAt, c.endsAt, c.aDuel, c.bDuel, c.winner, c.status]);
+  }
+
+  async getChallenge(id: string): Promise<DuelChallenge | null> {
+    const r = await this.rows('select * from duel_challenges where id = $1', [id]);
+    return r[0] ? toChallenge(r[0]) : null;
+  }
+
+  async challengesOf(playerId: string, since: number): Promise<DuelChallenge[]> {
+    return (await this.rows('select * from duel_challenges where (a = $1 or b = $1) and created_at >= $2 order by created_at desc', [playerId, since])).map(toChallenge);
+  }
+
+  async updateChallenge(id: string, patch: Partial<Pick<DuelChallenge, 'aDuel' | 'bDuel' | 'winner' | 'status'>>): Promise<void> {
+    const cols: Record<string, string> = { aDuel: 'a_duel', bDuel: 'b_duel', winner: 'winner', status: 'status' };
+    const sets: string[] = [];
+    const vals: unknown[] = [];
+    for (const [k, col] of Object.entries(cols)) {
+      if (!(k in patch)) continue;
+      vals.push((patch as Record<string, unknown>)[k]);
+      sets.push(`${col} = $${vals.length}`);
+    }
+    if (!sets.length) return;
+    vals.push(id);
+    await this.db.query(`update duel_challenges set ${sets.join(', ')} where id = $${vals.length}`, vals);
   }
 
   // ------------------------------------------------------------ Gangs (step 63)
@@ -840,6 +923,7 @@ export class PgRepo implements Repo {
 
   async prune(c: PruneCutoffs): Promise<PruneResult> {
     const attacks = await this.db.query('delete from attacks where at < $1', [c.recordsBefore]);
+    await this.db.query('delete from duels where at < $1', [c.recordsBefore]);
     const tickets = await this.db.query('delete from tickets where created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.staleBefore]);
     // last_used_at guards a base that a new ticket is referring to right now (its insert refreshes it).
     const bases = await this.db.query(
@@ -1310,4 +1394,8 @@ function toSquad(r: Record<string, unknown>): Squad {
 
 function toSquadInvite(r: Record<string, unknown>): SquadInvite {
   return { id: String(r.id), squadId: String(r.squad_id), fromId: String(r.from_id), toId: String(r.to_id), at: num(r.at), status: String(r.status) as SquadInvite['status'] };
+}
+
+function toChallenge(r: Record<string, unknown>): DuelChallenge {
+  return { id: String(r.id), a: String(r.a), b: String(r.b), createdAt: num(r.created_at), endsAt: num(r.ends_at), aDuel: strOrNull(r.a_duel), bDuel: strOrNull(r.b_duel), winner: strOrNull(r.winner), status: String(r.status) as DuelChallenge['status'] };
 }

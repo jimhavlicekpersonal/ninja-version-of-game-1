@@ -34,9 +34,11 @@ export async function report(ctx: ServerContext, me: Player, req: ReportRequest 
   let r: Report;
   if (req?.kind === 'chat') {
     const membership = await ctx.repo.getMembership(me.id);
+    const gang = await ctx.repo.squadOf(me.id);
     const c = req.messageId ? await ctx.repo.getChat(String(req.messageId)) : null;
-    // Only messages the reporter can see: their own Alliance's chat, written by a player.
-    if (!c || !membership || c.groveId !== membership.groveId || !c.playerId) throw new ApiError(404, 'not_found', 'That message is gone.');
+    // Only messages the reporter can see: their own Alliance's or Gang's chat (step 63), written by a player.
+    const mine = (scope: string) => scope === membership?.groveId || (gang !== null && scope === `squad:${gang.id}`);
+    if (!c || !mine(c.groveId) || !c.playerId) throw new ApiError(404, 'not_found', 'That message is gone.');
     if (c.playerId === me.id) throw new ApiError(400, 'bad_request', 'You cannot report your own message.');
     r = { ...base, kind: 'chat', targetId: c.playerId, targetName: c.name ?? '', messageId: c.id, groveId: c.groveId, text: c.text };
   } else if (req?.kind === 'player') {

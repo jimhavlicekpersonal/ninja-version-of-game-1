@@ -21,6 +21,7 @@ import m0013 from './0013_staff_tools.sql?raw';
 import m0014 from './0014_seasons.sql?raw';
 import m0015 from './0015_friends.sql?raw';
 import m0016 from './0016_gangs.sql?raw';
+import m0017 from './0017_duels.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -39,4 +40,5 @@ export const migrations = loadMigrations({
   '0014_seasons.sql': m0014,
   '0015_friends.sql': m0015,
   '0016_gangs.sql': m0016,
+  '0017_duels.sql': m0017,
 });

@@ -137,6 +137,30 @@ export const Routes = {
   friendImport: '/v1/friends/import',
   /** PUT { findable?, hideOnline? }. */
   privacy: '/v1/me/privacy',
+  /** POST { friendId, layout? }: a Friendly Duel ticket for a friend's base (roadmap step 62). */
+  duelTicket: '/v1/duels/ticket',
+  /** POST DuelSubmission: report a duel (never ranked). GET: my duels, rivalries and challenges. */
+  duels: '/v1/duels',
+  /** PUT { base } / DELETE: the separate layout friends may duel against. */
+  duelLayout: '/v1/duels/layout',
+  /** POST { friendId }: challenge a friend: both attack each other's base within 24 hours. */
+  duelChallenges: '/v1/duels/challenges',
+  /** POST { name }: start a Gang (roadmap step 63). */
+  squads: '/v1/squads',
+  /** POST { friendId }: the leader invites a friend. */
+  squadInvites: '/v1/squads/invites',
+  /** POST { accept }: answer an invite (or, the leader, withdraw it). */
+  squadInvite: (id: string) => `/v1/squads/invites/${encodeURIComponent(id)}`,
+  /** GET: my Gang and invites to me. */
+  squad: '/v1/squad',
+  squadLeave: '/v1/squad/leave',
+  /** POST { playerId }: hand leadership over. */
+  squadLeader: '/v1/squad/leader',
+  /** GET ?after= / POST { text }: Gang chat (filtered, like Alliance chat). */
+  squadChat: '/v1/squad/chat',
+  /** GET / POST { capacity }: troop requests inside the Gang. */
+  squadRequests: '/v1/squad/requests',
+  squadDonate: (id: string) => `/v1/squad/requests/${encodeURIComponent(id)}/donate`,
   /** GET (HTML): a share link that opens the game with this friend code. Not part of the game's API. */
   shareLink: (code: string) => `/f/${encodeURIComponent(code)}`,
   /** PUT: this device's push token and choices; DELETE (?token=): stop pushing to it. */
@@ -770,5 +794,111 @@ export interface FriendImportRequest {
   provider: 'gamecenter' | 'playgames';
   /** The platform's ids of the player's friends (Game Center teamPlayerID, Play Games player id). */
   ids: string[];
+}
+
+// ---------------------------------------------------------------- Gangs (roadmap step 63)
+
+export interface GangMemberView {
+  id: string;
+  name: string;
+  role: 'leader' | 'member';
+  hallLevel: number;
+  honor: number;
+  /** Null when they hide when they were last online. */
+  lastSeen: number | null;
+  staff: boolean;
+}
+
+export interface GangView {
+  id: string;
+  name: string;
+  members: GangMemberView[];
+  you: { role: 'leader' | 'member' };
+  /** Invites the Gang sent that are still open. */
+  invites: { id: string; at: number; player: ProfileCard }[];
+  max: number;
+}
+
+export interface GangInviteView {
+  id: string;
+  at: number;
+  gang: { id: string; name: string; members: number };
+  from: string;
+}
+
+export interface MyGangResponse {
+  gang: GangView | null;
+  invites: GangInviteView[];
+  /** After leaving a Gang: when the player may join or start another (0: now). */
+  canJoinAt: number;
+}
+
+// ---------------------------------------------------------------- Friendly Duels (roadmap step 62)
+
+export interface DuelTicketRequest {
+  friendId: string;
+  /** Their live base (default) or the duel layout they set. */
+  layout?: 'live' | 'duel';
+}
+export interface DuelTicketResponse {
+  ticket: string;
+  seed: number;
+  base: BaseLayout;
+  expiresAt: number;
+  opponent: { id: string; name: string };
+  /** Which base this is ('duel' only when they set a duel layout). */
+  layout: 'live' | 'duel';
+}
+
+/** A duel report: the same shape as a PvP report, plus the challenge it answers. */
+export type DuelSubmission = BattleSubmission & { challengeId?: string };
+
+export interface RivalryView {
+  friendId: string;
+  name: string;
+  duels: number;
+  myWins: number;
+  theirWins: number;
+  myBest: number;
+  theirBest: number;
+}
+
+export interface ChallengeView {
+  id: string;
+  with: { id: string; name: string };
+  startedByMe: boolean;
+  endsAt: number;
+  myDone: boolean;
+  theirDone: boolean;
+  /** 'me' or 'them' (more stars, then destruction), 'draw', or null while open. */
+  winner: 'me' | 'them' | 'draw' | null;
+  status: 'open' | 'done' | 'expired';
+}
+
+export interface DuelResponse {
+  duelId: string;
+  result: BattleResult;
+  rivalry: RivalryView;
+  challenge: ChallengeView | null;
+}
+
+export interface DuelView {
+  id: string;
+  at: number;
+  attacker: { id: string; name: string };
+  defender: { id: string; name: string };
+  /** I attacked (else I defended). */
+  mine: boolean;
+  layout: 'live' | 'duel';
+  challengeId: string | null;
+  result: { stars: number; destruction: number };
+  replay: { seed: number; base: BaseLayout; army: Record<string, number>; levels: Record<string, number>; reinforcements?: Record<string, { count: number; level: number }>; deployments: Deployment[]; endTick?: number; rules: number };
+}
+
+export interface DuelsResponse {
+  duels: DuelView[];
+  rivalries: RivalryView[];
+  challenges: ChallengeView[];
+  hasDuelLayout: boolean;
 }
 

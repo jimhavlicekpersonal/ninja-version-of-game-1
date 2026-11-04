@@ -246,7 +246,10 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   const win = hallWindow(me.hallLevel, data);
   const recent = await repo.recentTargets(me.id, t - HOUR);
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
-  const exclude = [me.id, ...recent, ...mates];
+  // Gang mates are never matched against each other either (roadmap 5.1).
+  const gang = await repo.squadOf(me.id);
+  const gangMates = gang ? (await repo.squadMembers(gang.id)).map((m) => m.playerId) : [];
+  const exclude = [me.id, ...recent, ...mates, ...gangMates];
   let found: Player | null = null;
   const locks = ctx.locks;
   for (const range of [data.ranks.matchTrophyRange, 200, 400, 1_000_000]) {
@@ -295,7 +298,7 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
  * answer (`answered`), so a client retrying a report it never got the answer
  * to gets the same result instead of an error, and nothing is applied twice.
  */
-async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined, kind: Ticket['kind']): Promise<{ ticket: Ticket; answered?: unknown }> {
+export async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined, kind: Ticket['kind']): Promise<{ ticket: Ticket; answered?: unknown }> {
   const ticket = id ? await ctx.repo.getTicket(String(id)) : null;
   if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw new ApiError(404, 'not_found', 'Unknown ticket.');
   if (ticket.used) {
@@ -306,13 +309,11 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
   return { ticket };
 }
 
-export { takeTicket };
-
 /**
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): Promise<ResimOutput> {
+export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): Promise<ResimOutput> {
   const out = await ctx.resim.run({ setup, deployments, endTick: sub.endTick });
   ctx.metrics.observe('tk_resim_ms', out.ms, { kind });
   ctx.metrics.observe('tk_resim_wait_ms', out.waitMs, { kind });
