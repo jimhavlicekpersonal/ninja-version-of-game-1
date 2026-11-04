@@ -2,11 +2,11 @@
 
 > **For AI sessions.** This is the agreed design and plan for the online PvP backend, including Friends and Gangs (section 5), the most important system in the game ("the crown jewel"). Read it before changing `server/`, `src/backend/net/`, payments, or ranking. Owner: BACKEND compartment (`src/backend/CLAUDE.md`), with rating math in `src/gameplay/sim/` (GAMEPLAY).
 >
-> Status (2026-11-04): **steps 10–23 are done** (Phase 1, and Phase 2 up to donations; each is marked `[x]` with where it lives and its tests). Phase 0 is the owner's; Phase 1.5 and everything from step 24 on are still design. When you finish a step, mark it `[x]` here in the same commit.
+> Status (2026-11-04): **steps marked `[x]` are done**, each with where it lives and its tests (Phases 1–3 so far). [Owner] steps stay unticked, with what was prepared for them. When you finish a step, mark it `[x]` here in the same commit.
 >
 > Tags: **[Owner]** = needs the human owner (accounts, money, legal). **[Code]** = can be done in the repo.
 
-## 0. Current state (facts from the code, protocol v6)
+## 0. Current state (facts from the code, protocol v7)
 
 - Server: `server/core/*` (rules, no HTTP/DB), `server/app.ts` (Fastify adapter), `Repo` port with `MemoryRepo` / `PgRepo`, versioned migrations in `server/migrations/` (applied by `npm run server:migrate` as a release step; step 12). Stateless API; all state in Postgres.
 - Battles are played on the device; the server re-simulates every attack with `runBattle` (10 ticks/s, ≤1,800 ticks) and its result is authoritative. Tickets are single-use and idempotent (`tickets.response`).

@@ -75,5 +75,5 @@ Each compartment has a `CLAUDE.md` brief, so a **separate AI session** can upgra
 - `docs/rebuild/02-ARCHITECTURE.md`: structure, dependency rules and research sources
 - `docs/game-theory/PROGRESSION_MODEL.md` and `ROSTER.md`: one power budget for all 50 warriors, buildings, EXP and difficulty
 - `docs/art/ART_AI_BRIEF.md` and `ICON_MANIFEST.md`: instructions and the full list of icons for an ART AI
-- `docs/PROTOCOL.md` (v6) and `docs/SHIPPING.md`: multiplayer protocol and store and hosting steps
-- `docs/backend/PVP_ROADMAP.md`: the PvP server plan and step list (steps 10–23 done)
+- `docs/PROTOCOL.md` (v7) and `docs/SHIPPING.md`: multiplayer protocol and store and hosting steps
+- `docs/backend/PVP_ROADMAP.md`: the PvP server plan and step list (each finished step is marked)

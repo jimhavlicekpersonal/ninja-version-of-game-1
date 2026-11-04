@@ -72,12 +72,14 @@ Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. Wh
 
 ## PvP server roadmap progress (2026-11-04)
 
-`docs/backend/PVP_ROADMAP.md` steps 10–23 are done, on protocol 6 (each addition is a `/v1/hello` feature), each with tests (`tests/backend/`):
+`docs/backend/PVP_ROADMAP.md` marks each finished step (protocol 7 since step 26), each with tests (`tests/backend/`, `tests/gameplay/`):
 
 - **Phase 1, hardening (10–18):** server-issued battle seeds; each base stored once by content hash, 30-day replay retention; versioned migrations as a release step (`npm run server:migrate`); rate and body limits; account deletion in Settings and on the web (`/account/delete`) with a staff queue; chat report/block, auto-hide after 3 reporters, mutes and a moderation queue (`ADMIN_TOKEN`); optional Redis for the leaderboard, match locks and shared rate limits; JSON logs with request ids, Sentry (server and game, no SDK), `/healthz` + `/readyz`, Prometheus metrics; `npm run server:bench`.
 - **Phase 2, server-owned village (19–23, beta, opt-in):** `villages`, an append-only `ledger` and `command_log`; the command endpoint replays the game's own commands with the shared simulation and corrects the game when the economy hashes differ; the game queues its commands and takes the server's economy; attacks, war attacks, war chests and gifts settle server-held villages in one transaction with the result.
 - **Measured:** re-simulating one battle takes 5 ms at Keep 1 and up to ~0.45 s (p95) at Keeps 8–15 on a 2.1 GHz vCPU, which blocks an instance's event loop: a re-sim worker pool (step 57) should come before real load.
-- **Next:** 24 (account linking = cloud save), 25 (moving an existing village to the server, with sanity limits), 26 (protocol 7), and Phase 1.5 (keeping old app builds working across balance patches) before the first store release.
+- **Phase 2 completed (24–26):** linked sign-ins = cloud save (Apple, Google, Game Center, Play Games checks; iPhone plugin; web sign-in), moving a device village to the server with sanity limits per Keep, protocol 7 (client headers, idempotent writes, the game keeps its village on the server).
+- **Phase 3, ranking (27–32):** hidden Attack/Base Ratings, matchmaking by expected score, daily honor-loss cap, Base Rating reset on a rebuilt layout, Power Ranking and its Settings tab, a convergence simulation.
+- **Owner steps** (Phase 0, 33, 34, 39, 41, store submission) stay unticked; the roadmap says what was prepared for each.
 - **Hosting checklist:** `docs/SHIPPING.md` (pre-deploy `server:migrate`, `TRUST_PROXY`, `REDIS_URL`, `ADMIN_TOKEN`, `SENTRY_DSN`, `METRICS_TOKEN`, health checks, the deletion URL for Google Play).
 
 Further checks from the audit, now handled: the last deployments are saved at once when the app is hidden or closed; a failed save shows a warning; a flyer grounded by a Ballista can set off traps; the Ballista's catalog matchups list only flyers, and the Repair Crane really answers the Hawk Tamer (it cuts the slowing short). Not yet covered: an automated check that every Infiltration Point is reachable on unusually dense player bases.
