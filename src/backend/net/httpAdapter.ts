@@ -310,6 +310,10 @@ export class HttpServerAdapter implements ServerPort {
     return this.req('POST', Routes.village, {});
   }
 
+  importVillage(file: unknown): Promise<VillageResponse> {
+    return this.req('POST', Routes.villageImport, { file });
+  }
+
   sendCommands(batch: CommandBatch): Promise<CommandBatchResponse> {
     return this.req('POST', Routes.villageCommands, batch);
   }

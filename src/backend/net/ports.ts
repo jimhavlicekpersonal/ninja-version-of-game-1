@@ -114,6 +114,8 @@ export interface VillagePort {
   getVillage(): Promise<VillageResponse | null>;
   /** Start keeping a (new) village on the server, or get the one there. */
   startVillage(): Promise<VillageResponse>;
+  /** Move this device's village to the server (once; refused if it could not exist at its Keep). */
+  importVillage(file: unknown): Promise<VillageResponse>;
   sendCommands(batch: CommandBatch): Promise<CommandBatchResponse>;
   ledger(limit?: number): Promise<LedgerResponse>;
 }

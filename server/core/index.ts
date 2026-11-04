@@ -13,6 +13,7 @@ import * as moderation from './moderation';
 import * as pvp from './pvp';
 import * as retention from './retention';
 import * as village from './village';
+import * as villageImport from './villageImport';
 
 export type { ServerContext } from './context';
 export { ApiError } from './context';
@@ -32,6 +33,7 @@ export function createCore(ctx: ServerContext) {
     signIn: links.signIn.bind(null, ctx),
     getVillage: village.getVillage.bind(null, ctx),
     startVillage: village.startVillage.bind(null, ctx),
+    importVillage: villageImport.importVillage.bind(null, ctx),
     villageCommands: village.applyCommands.bind(null, ctx),
     ledger: village.ledger.bind(null, ctx),
     report: moderation.report.bind(null, ctx),

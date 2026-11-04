@@ -71,6 +71,8 @@ export const Routes = {
   sessions: '/v1/sessions',
   village: '/v1/village',
   villageCommands: '/v1/village/commands',
+  /** POST { file }: move this device's village to the server (once, with sanity limits for its Keep). */
+  villageImport: '/v1/village/import',
   villageLedger: '/v1/village/ledger',
   reports: '/v1/reports',
   blocks: '/v1/blocks',

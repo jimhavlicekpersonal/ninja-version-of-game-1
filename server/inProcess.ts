@@ -133,6 +133,9 @@ export class InProcessServerAdapter implements ServerPort {
   startVillage() {
     return this.authed((me) => this.core.startVillage(me));
   }
+  importVillage(file: unknown) {
+    return this.authed((me) => this.core.importVillage(me, wire({ file })));
+  }
   sendCommands(batch: CommandBatch) {
     return this.authed((me) => this.core.villageCommands(me, wire(batch)));
   }

@@ -161,4 +161,19 @@ describe('server-owned village: the game side', () => {
     expect(economyHash(phone.controller.state)).toBe(economyHash(laptop.controller.state));
     expect(await phone.store.listBackups()).toHaveLength(1); // the phone's own village is kept
   });
+
+  it('moves the village on this device to the server as it is (no backup, nothing replaced)', async () => {
+    const s = await setup();
+    placeCollector(s.controller);
+    const before = economyHash(s.controller.state);
+    await s.conn.village!.enable('move');
+    expect(s.conn.serverVillage).toBe(true);
+    expect(economyHash(s.controller.state)).toBe(before);
+    expect(await serverHash(s)).toBe(before);
+    expect(await s.store.listBackups()).toHaveLength(0);
+    placeCollector(s.controller, 'dew');
+    await s.conn.village!.flush();
+    expect(s.conn.village!.corrections).toBe(0);
+  });
 });
+

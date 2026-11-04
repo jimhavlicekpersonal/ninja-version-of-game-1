@@ -254,6 +254,7 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
 |---|---|---|
 | `GET /v1/village` | | `VillageResponse` `{ file, revision, seq, at, stateHash }`, or `404 no_village` |
 | `POST /v1/village` | `{}` | `VillageResponse` (a new village; the one already there if any) |
+| `POST /v1/village/import` | `{ file }` (a save file) | `VillageResponse` (this device's village, kept as it is), `409 conflict` if one is already there, `400 bad_request` naming what its Keep could not hold |
 | `POST /v1/village/commands` | `CommandBatch` `{ stateHash, commands: [{ seq, t, command }] }` | `CommandBatchResponse` `{ ackSeq, revision, stateHash, results: [{ seq, ok, error? }], corrections? }` |
 | `GET /v1/village/ledger?limit=` | | `{ entries: [{ at, resource, delta, balance, reason }] }` (newest first) |
 

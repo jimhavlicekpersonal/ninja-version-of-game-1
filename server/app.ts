@@ -222,6 +222,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Server-owned village (roadmap Phase 2)
   app.get(Routes.village, authed(async (me) => core.getVillage(me)));
   app.post(Routes.village, authed(async (me) => core.startVillage(me)));
+  app.post(Routes.villageImport, { bodyLimit: BODY_LIMITS.battle * 4 }, authed(async (me, req) => core.importVillage(me, req.body as never)));
   app.post(Routes.villageCommands, { ...rate('commands'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.villageCommands(me, req.body as never)));
   app.get(Routes.villageLedger, authed(async (me, req) => core.ledger(me, query(req).limit)));
 

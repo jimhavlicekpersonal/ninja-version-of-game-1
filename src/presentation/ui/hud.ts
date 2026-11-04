@@ -481,26 +481,31 @@ export class Hud {
       box.append(ledger);
       return box;
     }
-    const start = h('button', { class: 'btn ghost', type: 'button' }, 'Start a village on the server');
-    start.addEventListener('click', () => {
-      void this.confirm(
-        'Start a village on the server?',
-        'This starts a new village that is kept on the server. Bringing this village over comes in a later update: it stays on this device as a backup you can restore in Settings.',
-        'Start on the server',
+    const go = (how: 'new' | 'move') => async () => {
+      const ok = await this.confirm(
+        how === 'move' ? 'Move this village to the server?' : 'Start a new village on the server?',
+        how === 'move'
+          ? 'Your village moves to the server as it is, if it is a village its Keep could really have. From then on every change is checked there, and you can play it on other devices by linking a sign-in.'
+          : 'This starts a new village that is kept on the server. The village on this device stays as a backup you can restore in Settings.',
+        how === 'move' ? 'Move it' : 'Start a new one',
         false,
         'Not now',
-      ).then(async (ok) => {
-        if (!ok) return;
-        try {
-          await sync.enable();
-          this.toast('Your new village is kept on the server.', 'success');
-          this.closeAllModals();
-        } catch (e) {
-          this.toast((e as Error).message, 'error');
-        }
-      });
-    });
-    box.append(h('p', { class: 'muted small' }, 'Keep your village on the server, so it cannot be lost with this device and every change is checked there.'), h('div', { class: 'actions' }, start));
+      );
+      if (!ok) return;
+      try {
+        await sync.enable(how);
+        this.toast(how === 'move' ? 'Your village is now kept on the server.' : 'Your new village is kept on the server.', 'success');
+        this.closeAllModals();
+      } catch (e) {
+        this.toast((e as Error).message, 'error');
+      }
+    };
+    const canMove = Boolean(conn.server?.features.includes('village-import'));
+    const move = h('button', { class: 'btn primary', type: 'button' }, 'Move this village to the server');
+    move.addEventListener('click', () => void go('move')());
+    const start = h('button', { class: 'btn ghost', type: 'button' }, canMove ? 'Start a new one there' : 'Start a village on the server');
+    start.addEventListener('click', () => void go('new')());
+    box.append(h('p', { class: 'muted small' }, 'Keep your village on the server, so it cannot be lost with this device and every change is checked there.'), h('div', { class: 'actions' }, canMove ? move : null, start));
     return box;
   }
 

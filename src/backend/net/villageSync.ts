@@ -10,7 +10,7 @@
  * differs, its answer wins (`adoptEconomy`), and anything queued since is
  * replayed on top of it.
  */
-import { deserialize } from '../../gameplay/sim/save';
+import { deserialize, serialize } from '../../gameplay/sim/save';
 import { economyHash, economyOf, PLAYER_COMMANDS, type Economy } from '../../gameplay/sim/serverEconomy';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import type { Command } from '../../gameplay/sim/village';
@@ -116,9 +116,17 @@ export class VillageSync {
    * an existing village over is roadmap step 25), and the village here is
    * kept as a backup.
    */
-  async enable(): Promise<void> {
+  async enable(how: 'new' | 'move' = 'new'): Promise<void> {
     const port = this.port();
     if (!port) throw new Error('No server configured.');
+    if (how === 'move') {
+      // This village goes to the server (roadmap step 25); its economy is unchanged, so there is nothing to adopt.
+      const v = await port.importVillage(serialize(this.game.state, this.game.state.lastSeenAt));
+      this.stored = { active: true, seq: v.seq, queue: [] };
+      if (economyHash(this.game.state) !== v.stateHash) this.adopt(economyOf(deserialize(v.file, this.game.data)));
+      this.persist();
+      return;
+    }
     const v = await port.startVillage();
     await this.game.adoptVillage(deserialize(v.file, this.game.data));
     this.stored = { active: true, seq: v.seq, queue: [] };
