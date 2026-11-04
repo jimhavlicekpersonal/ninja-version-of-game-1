@@ -53,11 +53,37 @@ groups:
 
       - alert: DesyncsRising
         expr: |
-          sum(rate(tk_desyncs_total[30m])) / clamp_min(sum(rate(tk_battles_total[30m])), 1e-9) > 0.01
+          sum by (rules) (rate(tk_desyncs_total[30m])) / clamp_min(sum by (rules) (rate(tk_battles_total[30m])), 1e-9) > 0.01
         for: 15m
         labels: { severity: warn }
         annotations:
-          summary: 'More than 1% of battles desync between game and server (a release with different rules?).'
+          summary: 'More than 1% of battles under battle rules {{ $labels.rules }} desync between game and server (right after a release: data or rules shipped out of order?).'
+
+      # Roadmap step 78: version trouble after a release.
+      - alert: VersionMismatchReports
+        expr: |
+          sum(rate(tk_refused_reports_total{reason=~"rules_mismatch|data_mismatch|seed_mismatch|rules_retired"}[30m]))
+            / clamp_min(sum(rate(tk_battles_total[30m])), 1e-9) > 0.02
+        for: 15m
+        labels: { severity: warn }
+        annotations:
+          summary: 'More than 2% of battle reports are refused for a version mismatch (a release out of order, or a version retired too early).'
+
+      - alert: UnknownDataVersions
+        expr: sum by (rules) (rate(tk_unknown_data_total[1h])) > 0.05
+        for: 1h
+        labels: { severity: info }
+        annotations:
+          summary: 'Games on battle rules {{ $labels.rules }} send a data version this server does not know (a build with other numbers): expect desyncs.'
+
+      - alert: OldRulesCanRetire
+        expr: |
+          sum by (rules) (rate(tk_client_requests_total[1d]))
+            / ignoring(rules) group_left sum(rate(tk_client_requests_total[1d])) < 0.02
+        for: 3d
+        labels: { severity: info }
+        annotations:
+          summary: 'Battle rules {{ $labels.rules }} carry under 2% of traffic: they can be retired (docs/SHIPPING.md, "Release order").'
 
       - alert: RateLimitStorm
         expr: sum(rate(tk_rate_limited_total[5m])) > 5

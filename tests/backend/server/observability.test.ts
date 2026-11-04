@@ -193,6 +193,24 @@ describe('gauges and the operators notice (roadmap step 47)', () => {
     for (const name of used) expect(Object.keys(METRIC_HELP), name).toContain(name);
   });
 
+  it('the versions dashboard (step 78) is valid and charts only metrics the server records', async () => {
+    const { readFileSync } = await import('node:fs');
+    const dash = JSON.parse(readFileSync(new URL('../../../ops/grafana/versions-dashboard.json', import.meta.url), 'utf8')) as { panels: { targets: { expr: string }[] }[] };
+    const exprs = dash.panels.flatMap((p) => p.targets.map((t) => t.expr)).join('\n');
+    const used = new Set([...exprs.matchAll(/\b(tk_[a-z_]+?)(?:_bucket|_sum|_count)?\b/g)].map((x) => x[1]));
+    const { METRIC_HELP } = await import('../../../server/observability');
+    for (const name of used) expect(Object.keys(METRIC_HELP), name).toContain(name);
+    for (const m of ['tk_client_requests_total', 'tk_desyncs_total', 'tk_refused_reports_total']) expect(used.has(m), m).toBe(true);
+  });
+
+  it('counts refused battle reports by reason (step 78)', async () => {
+    const metrics = new PromMetrics();
+    const app = buildServer({ repo: new MemoryRepo(), data, metrics });
+    const reg = (await app.inject({ method: 'POST', url: Routes.players, payload: { name: 'Ann' } })).json() as { token: string };
+    await app.inject({ method: 'POST', url: Routes.attacks, headers: { authorization: `Bearer ${reg.token}` }, payload: { ticket: 'nope', seed: 1, army: {}, deployments: [] } });
+    expect(metrics.value('tk_refused_reports_total', { reason: 'unknown_ticket' })).toBe(1);
+  });
+
   it('tells every player the operators notice in /v1/hello', async () => {
     const app = buildServer({ repo: new MemoryRepo(), data, notice: 'Maintenance at 02:00 UTC for 20 minutes.' });
     expect((await app.inject({ method: 'GET', url: Routes.hello })).json().notice).toBe('Maintenance at 02:00 UTC for 20 minutes.');

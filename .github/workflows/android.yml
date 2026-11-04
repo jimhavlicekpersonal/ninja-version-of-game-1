@@ -25,6 +25,9 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
+      # Release order, server first (roadmap step 74): the production server must keep this build's battle rules.
+      - name: Production keeps this build's battle rules
+        run: node tools/release/check-rules.mjs "${{ vars.VITE_SERVER_URL }}"
       - run: npm run build
         env:
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
