@@ -1,0 +1,3029 @@
+{
+  "elder_toadstool": {
+    "name": "Clan Keep",
+    "description": "The hidden heart of your clan. Upgrade it to unlock new buildings, warriors and higher levels.",
+    "size": 4,
+    "category": "hall",
+    "inShop": false,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 2250,
+        "storage": {
+          "acorns": 3000,
+          "dew": 3000
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 240,
+        "hp": 2400,
+        "storage": {
+          "acorns": 4000,
+          "dew": 4000
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 600,
+        "hp": 2800,
+        "storage": {
+          "acorns": 5000,
+          "dew": 5000
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 20000
+        },
+        "buildSeconds": 1620,
+        "hp": 3150,
+        "storage": {
+          "acorns": 6000,
+          "dew": 6000
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 130000
+        },
+        "buildSeconds": 4320,
+        "hp": 3600,
+        "storage": {
+          "acorns": 8000,
+          "dew": 8000
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 850000
+        },
+        "buildSeconds": 11700,
+        "hp": 4200,
+        "storage": {
+          "acorns": 10000,
+          "dew": 10000
+        }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1232500
+        },
+        "buildSeconds": 31590,
+        "hp": 8741,
+        "storage": {
+          "acorns": 15500,
+          "dew": 15500
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 1787125
+        },
+        "buildSeconds": 85293,
+        "hp": 11662,
+        "storage": {
+          "acorns": 24025,
+          "dew": 24025
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 2591331
+        },
+        "buildSeconds": 230291,
+        "hp": 15554,
+        "storage": {
+          "acorns": 37239,
+          "dew": 37239
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 3757430
+        },
+        "buildSeconds": 604800,
+        "hp": 20749,
+        "storage": {
+          "acorns": 57720,
+          "dew": 57720
+        }
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 5448274
+        },
+        "buildSeconds": 604800,
+        "hp": 27678,
+        "storage": {
+          "acorns": 89466,
+          "dew": 89466
+        }
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 7899997
+        },
+        "buildSeconds": 604800,
+        "hp": 36925,
+        "storage": {
+          "acorns": 138672,
+          "dew": 138672
+        }
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 11454996
+        },
+        "buildSeconds": 604800,
+        "hp": 49255,
+        "storage": {
+          "acorns": 214942,
+          "dew": 214942
+        }
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 16609744
+        },
+        "buildSeconds": 604800,
+        "hp": 65707,
+        "storage": {
+          "acorns": 333161,
+          "dew": 333161
+        }
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 24084129
+        },
+        "buildSeconds": 604800,
+        "hp": 87653,
+        "storage": {
+          "acorns": 516399,
+          "dew": 516399
+        }
+      }
+    ]
+  },
+  "acorn_orchard": {
+    "name": "Coin Mint",
+    "description": "Artisans stamp fresh Coins every hour. Holds 8 hours of output, so collect often.",
+    "size": 3,
+    "category": "collector",
+    "produces": "acorns",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 150
+        },
+        "buildSeconds": 10,
+        "hp": 600,
+        "ratePerHour": 200
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 300
+        },
+        "buildSeconds": 22,
+        "hp": 660,
+        "ratePerHour": 400
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 700
+        },
+        "buildSeconds": 50,
+        "hp": 720,
+        "ratePerHour": 600
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 1400
+        },
+        "buildSeconds": 110,
+        "hp": 780,
+        "ratePerHour": 800
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 3000
+        },
+        "buildSeconds": 240,
+        "hp": 840,
+        "ratePerHour": 1000
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 7000
+        },
+        "buildSeconds": 540,
+        "hp": 900,
+        "ratePerHour": 1300
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 14000
+        },
+        "buildSeconds": 1200,
+        "hp": 960,
+        "ratePerHour": 1700
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 28000
+        },
+        "buildSeconds": 2700,
+        "hp": 1000,
+        "ratePerHour": 2200
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 56000
+        },
+        "buildSeconds": 6000,
+        "hp": 1100,
+        "ratePerHour": 2800
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 84000
+        },
+        "buildSeconds": 13200,
+        "hp": 1150,
+        "ratePerHour": 3500
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 120000
+        },
+        "buildSeconds": 28800,
+        "hp": 1300,
+        "ratePerHour": 4300
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 174000
+        },
+        "buildSeconds": 63360,
+        "hp": 2705,
+        "ratePerHour": 5450
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 252300
+        },
+        "buildSeconds": 139392,
+        "hp": 3608,
+        "ratePerHour": 7104
+      },
+      {
+        "level": 14,
+        "cost": {
+          "dew": 365835
+        },
+        "buildSeconds": 306662,
+        "hp": 4186,
+        "ratePerHour": 9481
+      },
+      {
+        "level": 15,
+        "cost": {
+          "dew": 530461
+        },
+        "buildSeconds": 604800,
+        "hp": 5585,
+        "ratePerHour": 12899
+      },
+      {
+        "level": 16,
+        "cost": {
+          "dew": 769168
+        },
+        "buildSeconds": 604800,
+        "hp": 7450,
+        "ratePerHour": 17813
+      },
+      {
+        "level": 17,
+        "cost": {
+          "dew": 1115294
+        },
+        "buildSeconds": 604800,
+        "hp": 8641,
+        "ratePerHour": 24879
+      },
+      {
+        "level": 18,
+        "cost": {
+          "dew": 1617176
+        },
+        "buildSeconds": 604800,
+        "hp": 11528,
+        "ratePerHour": 35041
+      },
+      {
+        "level": 19,
+        "cost": {
+          "dew": 2344905
+        },
+        "buildSeconds": 604800,
+        "hp": 15378,
+        "ratePerHour": 49655
+      },
+      {
+        "level": 20,
+        "cost": {
+          "dew": 3400112
+        },
+        "buildSeconds": 604800,
+        "hp": 17840,
+        "ratePerHour": 70674
+      },
+      {
+        "level": 21,
+        "cost": {
+          "dew": 4930163
+        },
+        "buildSeconds": 604800,
+        "hp": 23798,
+        "ratePerHour": 100907
+      },
+      {
+        "level": 22,
+        "cost": {
+          "dew": 7148736
+        },
+        "buildSeconds": 604800,
+        "hp": 31745,
+        "ratePerHour": 144395
+      },
+      {
+        "level": 23,
+        "cost": {
+          "dew": 10365667
+        },
+        "buildSeconds": 604800,
+        "hp": 36826,
+        "ratePerHour": 206955
+      },
+      {
+        "level": 24,
+        "cost": {
+          "dew": 15030218
+        },
+        "buildSeconds": 604800,
+        "hp": 49128,
+        "ratePerHour": 296957
+      }
+    ]
+  },
+  "dewdrop_well": {
+    "name": "Rice Paddy",
+    "description": "Terraced paddies that grow Provisions for your warriors. Holds 8 hours of output.",
+    "size": 3,
+    "category": "collector",
+    "produces": "dew",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 150
+        },
+        "buildSeconds": 10,
+        "hp": 600,
+        "ratePerHour": 200
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 300
+        },
+        "buildSeconds": 22,
+        "hp": 660,
+        "ratePerHour": 400
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 700
+        },
+        "buildSeconds": 50,
+        "hp": 720,
+        "ratePerHour": 600
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 1400
+        },
+        "buildSeconds": 110,
+        "hp": 780,
+        "ratePerHour": 800
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 3000
+        },
+        "buildSeconds": 240,
+        "hp": 840,
+        "ratePerHour": 1000
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 7000
+        },
+        "buildSeconds": 540,
+        "hp": 900,
+        "ratePerHour": 1300
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 14000
+        },
+        "buildSeconds": 1200,
+        "hp": 960,
+        "ratePerHour": 1700
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 28000
+        },
+        "buildSeconds": 2700,
+        "hp": 1000,
+        "ratePerHour": 2200
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 56000
+        },
+        "buildSeconds": 6000,
+        "hp": 1100,
+        "ratePerHour": 2800
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 84000
+        },
+        "buildSeconds": 13200,
+        "hp": 1150,
+        "ratePerHour": 3500
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 28800,
+        "hp": 1300,
+        "ratePerHour": 4300
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 174000
+        },
+        "buildSeconds": 63360,
+        "hp": 2705,
+        "ratePerHour": 5450
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 252300
+        },
+        "buildSeconds": 139392,
+        "hp": 3608,
+        "ratePerHour": 7104
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 365835
+        },
+        "buildSeconds": 306662,
+        "hp": 4186,
+        "ratePerHour": 9481
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 530461
+        },
+        "buildSeconds": 604800,
+        "hp": 5585,
+        "ratePerHour": 12899
+      },
+      {
+        "level": 16,
+        "cost": {
+          "acorns": 769168
+        },
+        "buildSeconds": 604800,
+        "hp": 7450,
+        "ratePerHour": 17813
+      },
+      {
+        "level": 17,
+        "cost": {
+          "acorns": 1115294
+        },
+        "buildSeconds": 604800,
+        "hp": 8641,
+        "ratePerHour": 24879
+      },
+      {
+        "level": 18,
+        "cost": {
+          "acorns": 1617176
+        },
+        "buildSeconds": 604800,
+        "hp": 11528,
+        "ratePerHour": 35041
+      },
+      {
+        "level": 19,
+        "cost": {
+          "acorns": 2344905
+        },
+        "buildSeconds": 604800,
+        "hp": 15378,
+        "ratePerHour": 49655
+      },
+      {
+        "level": 20,
+        "cost": {
+          "acorns": 3400112
+        },
+        "buildSeconds": 604800,
+        "hp": 17840,
+        "ratePerHour": 70674
+      },
+      {
+        "level": 21,
+        "cost": {
+          "acorns": 4930163
+        },
+        "buildSeconds": 604800,
+        "hp": 23798,
+        "ratePerHour": 100907
+      },
+      {
+        "level": 22,
+        "cost": {
+          "acorns": 7148736
+        },
+        "buildSeconds": 604800,
+        "hp": 31745,
+        "ratePerHour": 144395
+      },
+      {
+        "level": 23,
+        "cost": {
+          "acorns": 10365667
+        },
+        "buildSeconds": 604800,
+        "hp": 36826,
+        "ratePerHour": 206955
+      },
+      {
+        "level": 24,
+        "cost": {
+          "acorns": 15030218
+        },
+        "buildSeconds": 604800,
+        "hp": 49128,
+        "ratePerHour": 296957
+      }
+    ]
+  },
+  "acorn_silo": {
+    "name": "Treasury",
+    "description": "A locked vault for your Coins. Bigger treasuries let you save for bigger upgrades.",
+    "size": 3,
+    "category": "storage",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 300
+        },
+        "buildSeconds": 10,
+        "hp": 600,
+        "storage": {
+          "acorns": 1500
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 750
+        },
+        "buildSeconds": 22,
+        "hp": 900,
+        "storage": {
+          "acorns": 3000
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 1500
+        },
+        "buildSeconds": 50,
+        "hp": 1200,
+        "storage": {
+          "acorns": 6000
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 3000
+        },
+        "buildSeconds": 110,
+        "hp": 1500,
+        "storage": {
+          "acorns": 12000
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 6000
+        },
+        "buildSeconds": 240,
+        "hp": 1800,
+        "storage": {
+          "acorns": 25000
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 12000
+        },
+        "buildSeconds": 540,
+        "hp": 2100,
+        "storage": {
+          "acorns": 45000
+        }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 25000
+        },
+        "buildSeconds": 1200,
+        "hp": 2400,
+        "storage": {
+          "acorns": 100000
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 50000
+        },
+        "buildSeconds": 2700,
+        "hp": 2550,
+        "storage": {
+          "acorns": 225000
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 100000
+        },
+        "buildSeconds": 6000,
+        "hp": 2700,
+        "storage": {
+          "acorns": 450000
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 250000
+        },
+        "buildSeconds": 13200,
+        "hp": 2850,
+        "storage": {
+          "acorns": 850000
+        }
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 362500
+        },
+        "buildSeconds": 29040,
+        "hp": 5932,
+        "storage": {
+          "acorns": 1317500
+        }
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 525625
+        },
+        "buildSeconds": 63888,
+        "hp": 7913,
+        "storage": {
+          "acorns": 2042125
+        }
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 762156
+        },
+        "buildSeconds": 140554,
+        "hp": 9179,
+        "storage": {
+          "acorns": 3165294
+        }
+      },
+      {
+        "level": 14,
+        "cost": {
+          "dew": 1105127
+        },
+        "buildSeconds": 309218,
+        "hp": 12242,
+        "storage": {
+          "acorns": 4906205
+        }
+      },
+      {
+        "level": 15,
+        "cost": {
+          "dew": 1602434
+        },
+        "buildSeconds": 604800,
+        "hp": 16333,
+        "storage": {
+          "acorns": 7604618
+        }
+      },
+      {
+        "level": 16,
+        "cost": {
+          "dew": 2323529
+        },
+        "buildSeconds": 604800,
+        "hp": 21788,
+        "storage": {
+          "acorns": 11787158
+        }
+      },
+      {
+        "level": 17,
+        "cost": {
+          "dew": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 25273,
+        "storage": {
+          "acorns": 18270095
+        }
+      },
+      {
+        "level": 18,
+        "cost": {
+          "dew": 4885219
+        },
+        "buildSeconds": 604800,
+        "hp": 33713,
+        "storage": {
+          "acorns": 28318648
+        }
+      },
+      {
+        "level": 19,
+        "cost": {
+          "dew": 7083567
+        },
+        "buildSeconds": 604800,
+        "hp": 44974,
+        "storage": {
+          "acorns": 43893904
+        }
+      },
+      {
+        "level": 20,
+        "cost": {
+          "dew": 10271173
+        },
+        "buildSeconds": 604800,
+        "hp": 59999,
+        "storage": {
+          "acorns": 68035551
+        }
+      },
+      {
+        "level": 21,
+        "cost": {
+          "dew": 14893200
+        },
+        "buildSeconds": 604800,
+        "hp": 69596,
+        "storage": {
+          "acorns": 105455104
+        }
+      },
+      {
+        "level": 22,
+        "cost": {
+          "dew": 21595141
+        },
+        "buildSeconds": 604800,
+        "hp": 92844,
+        "storage": {
+          "acorns": 163455412
+        }
+      }
+    ]
+  },
+  "dew_cistern": {
+    "name": "Provision Storehouse",
+    "description": "Stores rice sacks and supplies. Raiders can only carry off part of what is inside.",
+    "size": 3,
+    "category": "storage",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 300
+        },
+        "buildSeconds": 10,
+        "hp": 600,
+        "storage": {
+          "dew": 1500
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 750
+        },
+        "buildSeconds": 22,
+        "hp": 900,
+        "storage": {
+          "dew": 3000
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 1500
+        },
+        "buildSeconds": 50,
+        "hp": 1200,
+        "storage": {
+          "dew": 6000
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 3000
+        },
+        "buildSeconds": 110,
+        "hp": 1500,
+        "storage": {
+          "dew": 12000
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 6000
+        },
+        "buildSeconds": 240,
+        "hp": 1800,
+        "storage": {
+          "dew": 25000
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 12000
+        },
+        "buildSeconds": 540,
+        "hp": 2100,
+        "storage": {
+          "dew": 45000
+        }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 25000
+        },
+        "buildSeconds": 1200,
+        "hp": 2400,
+        "storage": {
+          "dew": 100000
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 50000
+        },
+        "buildSeconds": 2700,
+        "hp": 2550,
+        "storage": {
+          "dew": 225000
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 100000
+        },
+        "buildSeconds": 6000,
+        "hp": 2700,
+        "storage": {
+          "dew": 450000
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 250000
+        },
+        "buildSeconds": 13200,
+        "hp": 2850,
+        "storage": {
+          "dew": 850000
+        }
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 362500
+        },
+        "buildSeconds": 29040,
+        "hp": 5932,
+        "storage": {
+          "dew": 1317500
+        }
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 525625
+        },
+        "buildSeconds": 63888,
+        "hp": 7913,
+        "storage": {
+          "dew": 2042125
+        }
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 762156
+        },
+        "buildSeconds": 140554,
+        "hp": 9179,
+        "storage": {
+          "dew": 3165294
+        }
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 1105127
+        },
+        "buildSeconds": 309218,
+        "hp": 12242,
+        "storage": {
+          "dew": 4906205
+        }
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 1602434
+        },
+        "buildSeconds": 604800,
+        "hp": 16333,
+        "storage": {
+          "dew": 7604618
+        }
+      },
+      {
+        "level": 16,
+        "cost": {
+          "acorns": 2323529
+        },
+        "buildSeconds": 604800,
+        "hp": 21788,
+        "storage": {
+          "dew": 11787158
+        }
+      },
+      {
+        "level": 17,
+        "cost": {
+          "acorns": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 25273,
+        "storage": {
+          "dew": 18270095
+        }
+      },
+      {
+        "level": 18,
+        "cost": {
+          "acorns": 4885219
+        },
+        "buildSeconds": 604800,
+        "hp": 33713,
+        "storage": {
+          "dew": 28318648
+        }
+      },
+      {
+        "level": 19,
+        "cost": {
+          "acorns": 7083567
+        },
+        "buildSeconds": 604800,
+        "hp": 44974,
+        "storage": {
+          "dew": 43893904
+        }
+      },
+      {
+        "level": 20,
+        "cost": {
+          "acorns": 10271173
+        },
+        "buildSeconds": 604800,
+        "hp": 59999,
+        "storage": {
+          "dew": 68035551
+        }
+      },
+      {
+        "level": 21,
+        "cost": {
+          "acorns": 14893200
+        },
+        "buildSeconds": 604800,
+        "hp": 69596,
+        "storage": {
+          "dew": 105455104
+        }
+      },
+      {
+        "level": 22,
+        "cost": {
+          "acorns": 21595141
+        },
+        "buildSeconds": 604800,
+        "hp": 92844,
+        "storage": {
+          "dew": 163455412
+        }
+      }
+    ]
+  },
+  "beaver_lodge": {
+    "name": "Artisan's Hut",
+    "description": "Home of a Village Artisan. Each hut lets you build or upgrade one thing at a time.",
+    "size": 2,
+    "category": "builder",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 380
+      }
+    ]
+  },
+  "burrow_barracks": {
+    "name": "Training Dojo",
+    "description": "Trains warriors and studies battle scrolls to make them stronger. Higher levels unlock new warriors.",
+    "size": 3,
+    "category": "military",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 200
+        },
+        "buildSeconds": 10,
+        "hp": 380,
+        "trainingSpeed": 1
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 600
+        },
+        "buildSeconds": 22,
+        "hp": 440,
+        "trainingSpeed": 1
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 1500
+        },
+        "buildSeconds": 50,
+        "hp": 500,
+        "trainingSpeed": 1
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 560,
+        "trainingSpeed": 1
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 12000
+        },
+        "buildSeconds": 240,
+        "hp": 630,
+        "trainingSpeed": 1.2
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 40000
+        },
+        "buildSeconds": 540,
+        "hp": 700,
+        "trainingSpeed": 1.4
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 58000
+        },
+        "buildSeconds": 1188,
+        "hp": 1457,
+        "trainingSpeed": 1.6
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 84100
+        },
+        "buildSeconds": 2614,
+        "hp": 1944,
+        "trainingSpeed": 2
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 121945
+        },
+        "buildSeconds": 5750,
+        "hp": 2983,
+        "trainingSpeed": 2.5
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 176820
+        },
+        "buildSeconds": 12650,
+        "hp": 3974,
+        "trainingSpeed": 3
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 256389
+        },
+        "buildSeconds": 27830,
+        "hp": 5304,
+        "trainingSpeed": 3.5
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 371765
+        },
+        "buildSeconds": 61225,
+        "hp": 8137,
+        "trainingSpeed": 4
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 539059
+        },
+        "buildSeconds": 134695,
+        "hp": 10854,
+        "trainingSpeed": 4.5
+      }
+    ]
+  },
+  "army_camp": {
+    "name": "Squad Courtyard",
+    "description": "Where trained warriors wait for the next raid. Each level houses more.",
+    "size": 3,
+    "category": "military",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 250
+        },
+        "buildSeconds": 22,
+        "hp": 380,
+        "housing": 20
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 1000
+        },
+        "buildSeconds": 50,
+        "hp": 400,
+        "housing": 30
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 440,
+        "housing": 40
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 15000
+        },
+        "buildSeconds": 240,
+        "hp": 460,
+        "housing": 50
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 50000
+        },
+        "buildSeconds": 540,
+        "hp": 500,
+        "housing": 60
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 120000
+        },
+        "buildSeconds": 1200,
+        "hp": 520,
+        "housing": 70
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 250000
+        },
+        "buildSeconds": 2700,
+        "hp": 560,
+        "housing": 80
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 362500
+        },
+        "buildSeconds": 5940,
+        "hp": 1165,
+        "housing": 85
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 525625
+        },
+        "buildSeconds": 13068,
+        "hp": 1555,
+        "housing": 90
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 762156
+        },
+        "buildSeconds": 28750,
+        "hp": 2074,
+        "housing": 95
+      },
+      {
+        "level": 11,
+        "cost": {
+          "dew": 1105127
+        },
+        "buildSeconds": 63249,
+        "hp": 2766,
+        "housing": 100
+      },
+      {
+        "level": 12,
+        "cost": {
+          "dew": 1602434
+        },
+        "buildSeconds": 139148,
+        "hp": 4243,
+        "housing": 105
+      },
+      {
+        "level": 13,
+        "cost": {
+          "dew": 2323529
+        },
+        "buildSeconds": 306126,
+        "hp": 5659,
+        "housing": 110
+      },
+      {
+        "level": 14,
+        "cost": {
+          "dew": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 7554,
+        "housing": 115
+      },
+      {
+        "level": 15,
+        "cost": {
+          "dew": 4885219
+        },
+        "buildSeconds": 604800,
+        "hp": 10076,
+        "housing": 120
+      }
+    ]
+  },
+  "acorn_cannon": {
+    "name": "Kunai Tower",
+    "description": "A lookout that throws volleys of kunai at ground troops. Cannot hit flyers.",
+    "size": 3,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 7,
+      "fireIntervalTicks": 8,
+      "projectile": "acorn",
+      "projectileSpeed": 1.2
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 250
+        },
+        "buildSeconds": 22,
+        "hp": 1035,
+        "damage": 41.6
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 50,
+        "hp": 1265,
+        "damage": 52
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 1438,
+        "damage": 65
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 16000
+        },
+        "buildSeconds": 240,
+        "hp": 1725,
+        "damage": 81.9
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 50000
+        },
+        "buildSeconds": 540,
+        "hp": 2070,
+        "damage": 105.3
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 100000
+        },
+        "buildSeconds": 1200,
+        "hp": 2608,
+        "damage": 139
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 200000
+        },
+        "buildSeconds": 2700,
+        "hp": 4862,
+        "damage": 273.58
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 290000
+        },
+        "buildSeconds": 5940,
+        "hp": 7036,
+        "damage": 396.08
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 420500
+        },
+        "buildSeconds": 13068,
+        "hp": 9386,
+        "damage": 528.36
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 609725
+        },
+        "buildSeconds": 28750,
+        "hp": 12103,
+        "damage": 681.33
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 884101
+        },
+        "buildSeconds": 63249,
+        "hp": 15590,
+        "damage": 877.54
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 1281947
+        },
+        "buildSeconds": 139148,
+        "hp": 22208,
+        "damage": 1250.07
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 1858823
+        },
+        "buildSeconds": 306126,
+        "hp": 30193,
+        "damage": 1699.67
+      },
+      {
+        "level": 14,
+        "cost": {
+          "acorns": 2695293
+        },
+        "buildSeconds": 604800,
+        "hp": 40278,
+        "damage": 2267.36
+      },
+      {
+        "level": 15,
+        "cost": {
+          "acorns": 3908175
+        },
+        "buildSeconds": 604800,
+        "hp": 53734,
+        "damage": 3024.67
+      }
+    ]
+  },
+  "pinecone_catapult": {
+    "name": "Firework Mortar",
+    "description": "Launches bursting fireworks that splash groups of ground troops. Slow, and blind to troops right beside it.",
+    "size": 3,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 10,
+      "minRange": 3,
+      "fireIntervalTicks": 50,
+      "splashRadius": 1.5,
+      "projectile": "pinecone",
+      "projectileSpeed": 0.6
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 8000
+        },
+        "buildSeconds": 240,
+        "hp": 1380,
+        "damage": 117
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 32000
+        },
+        "buildSeconds": 540,
+        "hp": 1552,
+        "damage": 145.6
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 1200,
+        "hp": 1863,
+        "damage": 202.18
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 300000
+        },
+        "buildSeconds": 2700,
+        "hp": 2182,
+        "damage": 269.1
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 600000
+        },
+        "buildSeconds": 6000,
+        "hp": 4456,
+        "damage": 615.7
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 870000
+        },
+        "buildSeconds": 13200,
+        "hp": 6610,
+        "damage": 913.06
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1261500
+        },
+        "buildSeconds": 29040,
+        "hp": 9440,
+        "damage": 1304.13
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 1829175
+        },
+        "buildSeconds": 63888,
+        "hp": 14216,
+        "damage": 1963.6
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 2652304
+        },
+        "buildSeconds": 140554,
+        "hp": 21802,
+        "damage": 3012.36
+      }
+    ]
+  },
+  "wasp_nest": {
+    "name": "Shuriken Pagoda",
+    "description": "Spinning shuriken strike troops on the ground and in the air.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "both",
+      "range": 6,
+      "fireIntervalTicks": 5,
+      "projectile": "sting",
+      "projectileSpeed": 1.6
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 50,
+        "hp": 1035,
+        "damage": 23.4
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 110,
+        "hp": 1150,
+        "damage": 28.6
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 15000
+        },
+        "buildSeconds": 240,
+        "hp": 1322,
+        "damage": 35.1
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 45000
+        },
+        "buildSeconds": 540,
+        "hp": 1495,
+        "damage": 46.8
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 110000
+        },
+        "buildSeconds": 1200,
+        "hp": 1800,
+        "damage": 63.18
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 250000
+        },
+        "buildSeconds": 2700,
+        "hp": 3372,
+        "damage": 121.1
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 362500
+        },
+        "buildSeconds": 5940,
+        "hp": 4883,
+        "damage": 175.31
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 525625
+        },
+        "buildSeconds": 13068,
+        "hp": 6515,
+        "damage": 233.88
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 762156
+        },
+        "buildSeconds": 28750,
+        "hp": 9327,
+        "damage": 334.85
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 1105127
+        },
+        "buildSeconds": 63249,
+        "hp": 11996,
+        "damage": 430.74
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 1602434
+        },
+        "buildSeconds": 139148,
+        "hp": 15412,
+        "damage": 553.3
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 2323529
+        },
+        "buildSeconds": 306126,
+        "hp": 24094,
+        "damage": 865.16
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 3369116
+        },
+        "buildSeconds": 604800,
+        "hp": 32143,
+        "damage": 1154.12
+      }
+    ]
+  },
+  "firefly_tower": {
+    "name": "Sky Bow Tower",
+    "description": "Archers with great bows that hit flying troops hard. Ignores ground troops.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "air",
+      "range": 8,
+      "fireIntervalTicks": 10,
+      "projectile": "spark",
+      "projectileSpeed": 1.4
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 22000
+        },
+        "buildSeconds": 540,
+        "hp": 2760,
+        "damage": 234
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 90000
+        },
+        "buildSeconds": 1200,
+        "hp": 3478,
+        "damage": 351
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 270000
+        },
+        "buildSeconds": 2700,
+        "hp": 4232,
+        "damage": 478.4
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 540000
+        },
+        "buildSeconds": 6000,
+        "hp": 10480,
+        "damage": 1287.37
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 783000
+        },
+        "buildSeconds": 13200,
+        "hp": 15536,
+        "damage": 1909.13
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 1135350
+        },
+        "buildSeconds": 29040,
+        "hp": 23015,
+        "damage": 2827.79
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1646258
+        },
+        "buildSeconds": 63888,
+        "hp": 32784,
+        "damage": 4028.27
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 2387100
+        },
+        "buildSeconds": 140554,
+        "hp": 44574,
+        "damage": 5477.05
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 3461300
+        },
+        "buildSeconds": 309219,
+        "hp": 59462,
+        "damage": 7306.39
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 5018900
+        },
+        "buildSeconds": 604800,
+        "hp": 79323,
+        "damage": 9746.72
+      }
+    ]
+  },
+  "bramble_hedge": {
+    "name": "Stone Wall",
+    "description": "Fitted mountain stone. Troops walk around it or break through it. Higher levels add iron-banded gates. Builds instantly.",
+    "size": 1,
+    "category": "hedge",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 50
+        },
+        "buildSeconds": 0,
+        "hp": 180
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 200
+        },
+        "buildSeconds": 0,
+        "hp": 380
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 800
+        },
+        "buildSeconds": 0,
+        "hp": 600
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 2000
+        },
+        "buildSeconds": 0,
+        "hp": 900
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 5000
+        },
+        "buildSeconds": 0,
+        "hp": 1350
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 10000
+        },
+        "buildSeconds": 0,
+        "hp": 1950
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 14500
+        },
+        "buildSeconds": 0,
+        "hp": 4057
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 21025
+        },
+        "buildSeconds": 0,
+        "hp": 5413
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 30486
+        },
+        "buildSeconds": 0,
+        "hp": 8305
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 44205
+        },
+        "buildSeconds": 0,
+        "hp": 11080
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 64097
+        },
+        "buildSeconds": 0,
+        "hp": 14779
+      },
+      {
+        "level": 12,
+        "cost": {
+          "acorns": 92941
+        },
+        "buildSeconds": 0,
+        "hp": 22672
+      },
+      {
+        "level": 13,
+        "cost": {
+          "acorns": 134765
+        },
+        "buildSeconds": 0,
+        "hp": 30244
+      }
+    ]
+  },
+  "thorn_snare": {
+    "name": "Spike Pit",
+    "description": "A hidden pit of bamboo spikes that springs when ground troops step close. Unseen until it goes off.",
+    "size": 1,
+    "category": "trap",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 0.9,
+      "splashRadius": 1.6,
+      "fireIntervalTicks": 1,
+      "projectile": "thorns",
+      "projectileSpeed": 1
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 400
+        },
+        "buildSeconds": 110,
+        "hp": 1,
+        "damage": 180
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 1500
+        },
+        "buildSeconds": 240,
+        "hp": 1,
+        "damage": 250
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 6000
+        },
+        "buildSeconds": 540,
+        "hp": 1,
+        "damage": 320
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 20000
+        },
+        "buildSeconds": 1200,
+        "hp": 1,
+        "damage": 400
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 29000
+        },
+        "buildSeconds": 2640,
+        "hp": 1,
+        "damage": 832.42
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 42050
+        },
+        "buildSeconds": 5808,
+        "hp": 1,
+        "damage": 1277.02
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 60972
+        },
+        "buildSeconds": 12778,
+        "hp": 6,
+        "damage": 1959.06
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 88410
+        },
+        "buildSeconds": 28111,
+        "hp": 7,
+        "damage": 3005.4
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 128195
+        },
+        "buildSeconds": 61844,
+        "hp": 11,
+        "damage": 4610.58
+      }
+    ]
+  },
+  "sap_puddle": {
+    "name": "Caltrop Field",
+    "description": "Hidden iron caltrops that slow ground troops to half speed for a few seconds.",
+    "size": 1,
+    "category": "trap",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 0.9,
+      "splashRadius": 2.2,
+      "fireIntervalTicks": 1,
+      "projectile": "sap",
+      "projectileSpeed": 1
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 800
+        },
+        "buildSeconds": 240,
+        "hp": 1,
+        "damage": 22
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 4000
+        },
+        "buildSeconds": 540,
+        "hp": 1,
+        "damage": 36
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 15000
+        },
+        "buildSeconds": 1200,
+        "hp": 1,
+        "damage": 54
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 21750
+        },
+        "buildSeconds": 2640,
+        "hp": 1,
+        "damage": 129.23
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 31538
+        },
+        "buildSeconds": 5808,
+        "hp": 1,
+        "damage": 198.26
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 45729
+        },
+        "buildSeconds": 12778,
+        "hp": 7,
+        "damage": 304.14
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 66308
+        },
+        "buildSeconds": 28111,
+        "hp": 10,
+        "damage": 466.6
+      }
+    ]
+  },
+  "flower_bed": {
+    "name": "Bonsai Planter",
+    "description": "A carefully shaped little pine. Purely decorative.",
+    "size": 1,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 500
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "lantern_post": {
+    "name": "Stone Lantern",
+    "description": "A carved stone lantern that glows through the night. Purely decorative.",
+    "size": 1,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "moonstones": 20
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "mushroom_ring": {
+    "name": "Zen Garden",
+    "description": "Raked gravel and three quiet stones. Purely decorative.",
+    "size": 2,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "moonstones": 60
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "mossy_statue": {
+    "name": "Fox Guardian Statue",
+    "description": "A weathered fox guardian that watches the gate. Purely decorative.",
+    "size": 2,
+    "category": "decor",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "moonstones": 120
+        },
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "obstacle_bush": {
+    "name": "Bamboo Thicket",
+    "description": "Clear it to make room. You might find Jade!",
+    "size": 1,
+    "category": "obstacle",
+    "inShop": false,
+    "clear": {
+      "cost": {
+        "acorns": 150
+      },
+      "seconds": 10,
+      "moonstones": 2
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "obstacle_stump": {
+    "name": "Fallen Cedar",
+    "description": "Clear it to make room. You might find Jade!",
+    "size": 2,
+    "category": "obstacle",
+    "inShop": false,
+    "clear": {
+      "cost": {
+        "dew": 400
+      },
+      "seconds": 30,
+      "moonstones": 4
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "obstacle_rock": {
+    "name": "Mountain Boulder",
+    "description": "Clear it to make room. You might find Jade!",
+    "size": 2,
+    "category": "obstacle",
+    "inShop": false,
+    "clear": {
+      "cost": {
+        "acorns": 800
+      },
+      "seconds": 60,
+      "moonstones": 6
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {},
+        "buildSeconds": 0,
+        "hp": 100
+      }
+    ]
+  },
+  "grove_lodge": {
+    "name": "Alliance Lodge",
+    "description": "Your link to your Alliance. Holds the warriors your allies send you, ready for your next raid.",
+    "size": 3,
+    "category": "social",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 1000
+        },
+        "buildSeconds": 110,
+        "hp": 900,
+        "reinforcement": 10
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 8000
+        },
+        "buildSeconds": 240,
+        "hp": 1050,
+        "reinforcement": 15
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 40000
+        },
+        "buildSeconds": 540,
+        "hp": 1200,
+        "reinforcement": 20
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 1200,
+        "hp": 1350,
+        "reinforcement": 25
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 300000
+        },
+        "buildSeconds": 2700,
+        "hp": 1500,
+        "reinforcement": 30
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 435000
+        },
+        "buildSeconds": 5940,
+        "hp": 3121,
+        "reinforcement": 32
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 630750
+        },
+        "buildSeconds": 13068,
+        "hp": 4788,
+        "reinforcement": 34
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 914588
+        },
+        "buildSeconds": 28750,
+        "hp": 6386,
+        "reinforcement": 36
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 1326152
+        },
+        "buildSeconds": 63249,
+        "hp": 9800,
+        "reinforcement": 38
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 1922920
+        },
+        "buildSeconds": 139148,
+        "hp": 13076,
+        "reinforcement": 40
+      },
+      {
+        "level": 11,
+        "cost": {
+          "acorns": 2788234
+        },
+        "buildSeconds": 306126,
+        "hp": 20058,
+        "reinforcement": 42
+      }
+    ]
+  },
+  "paper_lantern_line": {
+    "name": "Paper Lantern Line",
+    "description": "Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.",
+    "size": 1,
+    "category": "trap",
+    "inShop": true,
+    "effect": {
+      "kind": "reveal_line",
+      "radius": 2,
+      "seconds": 3,
+      "vulnerablePct": 0.1
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 30000
+        },
+        "buildSeconds": 1800,
+        "hp": 1,
+        "effect": {
+          "seconds": 3,
+          "vulnerablePct": 0.1
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 43500
+        },
+        "buildSeconds": 3960,
+        "hp": 1,
+        "effect": {
+          "seconds": 3.2,
+          "vulnerablePct": 0.11
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 63100
+        },
+        "buildSeconds": 8712,
+        "hp": 1,
+        "effect": {
+          "seconds": 3.4,
+          "vulnerablePct": 0.12
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 91500
+        },
+        "buildSeconds": 19166,
+        "hp": 1,
+        "effect": {
+          "seconds": 3.6,
+          "vulnerablePct": 0.13
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 132600
+        },
+        "buildSeconds": 42166,
+        "hp": 1,
+        "effect": {
+          "seconds": 3.8,
+          "vulnerablePct": 0.14
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 192300
+        },
+        "buildSeconds": 92765,
+        "hp": 1,
+        "effect": {
+          "seconds": 4,
+          "vulnerablePct": 0.15
+        }
+      }
+    ]
+  },
+  "clockwork_repairer": {
+    "name": "Clockwork Repair Crane",
+    "description": "A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.",
+    "size": 2,
+    "category": "support",
+    "inShop": true,
+    "effect": {
+      "kind": "shorten_disables",
+      "radius": 3,
+      "pct": 0.3,
+      "uses": 2
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 3600,
+        "hp": 1500,
+        "effect": {
+          "pct": 0.3,
+          "uses": 2
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 174000
+        },
+        "buildSeconds": 7920,
+        "hp": 1725,
+        "effect": {
+          "pct": 0.322,
+          "uses": 2
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 252300
+        },
+        "buildSeconds": 17424,
+        "hp": 3560,
+        "effect": {
+          "pct": 0.344,
+          "uses": 2
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 365800
+        },
+        "buildSeconds": 38333,
+        "hp": 4706,
+        "effect": {
+          "pct": 0.367,
+          "uses": 2
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 530500
+        },
+        "buildSeconds": 84332,
+        "hp": 6226,
+        "effect": {
+          "pct": 0.389,
+          "uses": 2
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 769200
+        },
+        "buildSeconds": 185531,
+        "hp": 8232,
+        "effect": {
+          "pct": 0.411,
+          "uses": 3
+        }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1115300
+        },
+        "buildSeconds": 408168,
+        "hp": 10888,
+        "effect": {
+          "pct": 0.433,
+          "uses": 3
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 1617200
+        },
+        "buildSeconds": 604800,
+        "hp": 14398,
+        "effect": {
+          "pct": 0.456,
+          "uses": 3
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 2344900
+        },
+        "buildSeconds": 604800,
+        "hp": 21899,
+        "effect": {
+          "pct": 0.478,
+          "uses": 3
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 3400100
+        },
+        "buildSeconds": 604800,
+        "hp": 28960,
+        "effect": {
+          "pct": 0.5,
+          "uses": 3
+        }
+      }
+    ]
+  },
+  "bitter_incense_burner": {
+    "name": "Bitter Incense Burner",
+    "description": "Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.",
+    "size": 2,
+    "category": "support",
+    "inShop": true,
+    "effect": {
+      "kind": "anti_heal",
+      "radius": 3,
+      "healCutPct": 0.3,
+      "auraCutPct": 0.3
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 120000
+        },
+        "buildSeconds": 3600,
+        "hp": 1400,
+        "effect": {
+          "healCutPct": 0.3,
+          "auraCutPct": 0.3
+        }
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 174000
+        },
+        "buildSeconds": 7920,
+        "hp": 1610,
+        "effect": {
+          "healCutPct": 0.322,
+          "auraCutPct": 0.322
+        }
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 252300
+        },
+        "buildSeconds": 17424,
+        "hp": 3322,
+        "effect": {
+          "healCutPct": 0.344,
+          "auraCutPct": 0.344
+        }
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 365800
+        },
+        "buildSeconds": 38333,
+        "hp": 4393,
+        "effect": {
+          "healCutPct": 0.367,
+          "auraCutPct": 0.367
+        }
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 530500
+        },
+        "buildSeconds": 84332,
+        "hp": 5810,
+        "effect": {
+          "healCutPct": 0.389,
+          "auraCutPct": 0.389
+        }
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 769200
+        },
+        "buildSeconds": 185531,
+        "hp": 7682,
+        "effect": {
+          "healCutPct": 0.411,
+          "auraCutPct": 0.411
+        }
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 1115300
+        },
+        "buildSeconds": 408168,
+        "hp": 10160,
+        "effect": {
+          "healCutPct": 0.433,
+          "auraCutPct": 0.433
+        }
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 1617200
+        },
+        "buildSeconds": 604800,
+        "hp": 13438,
+        "effect": {
+          "healCutPct": 0.456,
+          "auraCutPct": 0.456
+        }
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 2344900
+        },
+        "buildSeconds": 604800,
+        "hp": 20440,
+        "effect": {
+          "healCutPct": 0.478,
+          "auraCutPct": 0.478
+        }
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 3400100
+        },
+        "buildSeconds": 604800,
+        "hp": 27029,
+        "effect": {
+          "healCutPct": 0.5,
+          "auraCutPct": 0.5
+        }
+      }
+    ]
+  },
+  "kite_cutter_ballista": {
+    "name": "Kite-Cutter Ballista",
+    "description": "Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "air",
+      "range": 7,
+      "fireIntervalTicks": 20,
+      "projectile": "bolas",
+      "projectileSpeed": 1.2
+    },
+    "effect": {
+      "kind": "ground_flyers",
+      "seconds": 3,
+      "immuneSeconds": 3
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 400000
+        },
+        "buildSeconds": 7200,
+        "hp": 8198,
+        "damage": 115.87
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 580000
+        },
+        "buildSeconds": 15840,
+        "hp": 9431,
+        "damage": 133.24
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 841000
+        },
+        "buildSeconds": 34848,
+        "hp": 12052,
+        "damage": 170.33
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 1219400
+        },
+        "buildSeconds": 76666,
+        "hp": 15397,
+        "damage": 217.51
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 1768200
+        },
+        "buildSeconds": 168664,
+        "hp": 19630,
+        "damage": 277.38
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 2563900
+        },
+        "buildSeconds": 371062,
+        "hp": 24995,
+        "damage": 353.25
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 3717600
+        },
+        "buildSeconds": 604800,
+        "hp": 33701,
+        "damage": 476.16
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 5390600
+        },
+        "buildSeconds": 604800,
+        "hp": 44565,
+        "damage": 629.71
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 7816400
+        },
+        "buildSeconds": 604800,
+        "hp": 58934,
+        "damage": 832.79
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 11333700
+        },
+        "buildSeconds": 604800,
+        "hp": 67776,
+        "damage": 957.72
+      }
+    ]
+  },
+  "longbow_yagura": {
+    "name": "Longbow Yagura",
+    "description": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 13,
+      "minRange": 2,
+      "fireIntervalTicks": 20,
+      "projectile": "arrow",
+      "projectileSpeed": 1.8
+    },
+    "effect": {
+      "kind": "counter_artillery",
+      "prefersBeyond": 3.5
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 1500000
+        },
+        "buildSeconds": 28800,
+        "hp": 10790,
+        "damage": 1609.91
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 1950000
+        },
+        "buildSeconds": 63360,
+        "hp": 12407,
+        "damage": 1851.4
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 2535000
+        },
+        "buildSeconds": 139392,
+        "hp": 14267,
+        "damage": 2129.09
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 3295500
+        },
+        "buildSeconds": 306662,
+        "hp": 19231,
+        "damage": 2869.91
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 4284200
+        },
+        "buildSeconds": 604800,
+        "hp": 22120,
+        "damage": 3300.35
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 5569400
+        },
+        "buildSeconds": 604800,
+        "hp": 29249,
+        "damage": 4364.77
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 7240200
+        },
+        "buildSeconds": 604800,
+        "hp": 33639,
+        "damage": 5019.45
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 9412300
+        },
+        "buildSeconds": 604800,
+        "hp": 44486,
+        "damage": 6638.28
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 12236000
+        },
+        "buildSeconds": 604800,
+        "hp": 51163,
+        "damage": 7634.01
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 15906700
+        },
+        "buildSeconds": 604800,
+        "hp": 58836,
+        "damage": 8779.07
+      }
+    ]
+  }
+}

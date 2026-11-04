@@ -11,6 +11,7 @@ import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
+import { buildOlderThan } from '../src/backend/net/clientVersion';
 import { MIN_PROTOCOL } from './core/identity';
 import type { GameData } from '../src/gameplay/sim/types';
 import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
@@ -18,7 +19,7 @@ import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext, type SharedStores } from './nodeContext';
 import { PromMetrics, type ServerSentry } from './observability';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
-import type { Player, Repo } from './repo';
+import type { ClientInfo, Player, Repo } from './repo';
 
 export { maxHousing, validateBase, validLevels } from './core/pvp';
 export { nodeContext } from './nodeContext';
@@ -64,6 +65,8 @@ export interface ServerOptions {
   environment?: string;
   /** SERVER_NOTICE (step 47): a message for every player in /v1/hello (maintenance, an incident). */
   notice?: string;
+  /** MIN_CLIENT_BUILD (step 75): the oldest game version allowed online ("0.2.0"); older games are told to update. */
+  minClientBuild?: string;
   /** Where friend share links send people (step 59): the web game's address (GAME_URL). */
   gameUrl?: string;
   /** The support page (step 56): SUPPORT_EMAIL and PRIVACY_URL. */
@@ -143,6 +146,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     }
     const build = req.headers[ClientHeaders.clientBuild];
     if (typeof build === 'string') metrics.count('tk_client_requests_total', { build: build.slice(0, 40), rules: String(req.headers[ClientHeaders.simRules] ?? '?').slice(0, 8) });
+    // Step 75: a game older than MIN_CLIENT_BUILD is told to update (it shows "Update Kagemura"; offline play goes on).
+    if (opts.minClientBuild && typeof build === 'string' && req.url.startsWith('/v1/') && req.url !== Routes.hello && buildOlderThan(build, opts.minClientBuild)) {
+      metrics.count('tk_errors_total', { code: 'version_mismatch' });
+      const body: ErrorBody = { error: 'version_mismatch', message: `Kagemura ${opts.minClientBuild} or newer is needed online. Update the game to keep playing online.` };
+      return reply.code(426).send(body);
+    }
   });
 
   // Idempotent writes (protocol 7): the same Idempotency-Key from the same caller gets the first answer back.
@@ -213,6 +222,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.setErrorHandler((err, req, reply) => {
     if (err instanceof ApiError) {
       metrics.count('tk_errors_total', { code: err.code });
+      // Step 78: refused battle reports by reason (rules or data mismatch, seed, illegal army, expired, …).
+      if (err.details?.reason && req.method === 'POST') metrics.count('tk_refused_reports_total', { reason: err.details.reason });
       req.log.info({ code: err.code, status: err.status }, err.message);
       const body: ErrorBody = { error: err.code, message: err.message, ...err.details };
       return reply.code(err.status).send(body);
@@ -230,8 +241,15 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
 
   type Handler = (me: Player, req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
   /** A route that needs a registered player. Undefined results become 204. */
+  /** What the request says about the game that sent it (step 72); kept on `me` for this request only. */
+  const clientOf = (req: FastifyRequest): ClientInfo => {
+    const rules = Number(req.headers[ClientHeaders.simRules]);
+    const dv = req.headers[ClientHeaders.dataVersion];
+    const build = req.headers[ClientHeaders.clientBuild];
+    return { ...(Number.isInteger(rules) && rules > 0 ? { rules } : {}), ...(typeof dv === 'string' && dv ? { dataVersion: dv.slice(0, 40) } : {}), ...(typeof build === 'string' ? { build: build.slice(0, 40) } : {}) };
+  };
   const authed = (h: Handler) => async (req: FastifyRequest, reply: FastifyReply) => {
-    const me = await core.authenticate(bearer(req));
+    const me = { ...(await core.authenticate(bearer(req))), client: clientOf(req) };
     const out = await h(me, req, reply);
     if (out === undefined) return reply.code(204).send();
     return out;
@@ -266,7 +284,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       return reply.type('text/plain; version=0.0.4').send(metrics.render());
     });
   }
-  app.get(Routes.hello, async () => ({ ...core.hello(), ...(opts.environment ? { environment: opts.environment } : {}), ...(opts.notice ? { notice: opts.notice } : {}) }));
+  app.get(Routes.hello, async () => ({ ...core.hello(), ...(opts.environment ? { environment: opts.environment } : {}), ...(opts.notice ? { notice: opts.notice } : {}), ...(opts.minClientBuild ? { minClientBuild: opts.minClientBuild } : {}) }));
 
   // Identity
   const rate = (...r: (keyof RateLimits)[]): { config: RateConfig } => ({ config: { rate: r } });

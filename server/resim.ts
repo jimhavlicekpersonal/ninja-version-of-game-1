@@ -8,14 +8,16 @@
  * on the calling thread (tests, custom game data, RESIM_WORKERS=0).
  */
 import { Worker } from 'node:worker_threads';
-import { endDamage, runBattle } from '../src/gameplay/sim/battle/battle';
 import type { BattleResult, BattleSetup, Deployment } from '../src/gameplay/sim/battle/types';
 import type { Cost, GameData } from '../src/gameplay/sim/types';
+import { ruleSet } from './rules';
 
 export interface ResimJob {
   setup: BattleSetup;
   deployments: Deployment[];
   endTick?: number;
+  /** The battle rules to run it with (the ticket's; roadmap step 73). Absent: the live rules. */
+  rules?: number;
 }
 
 export interface ResimOutput {
@@ -36,11 +38,13 @@ export interface Resimulator {
   close(): Promise<void>;
 }
 
-/** One battle, exactly as the game runs it. */
+/** One battle, exactly as the game (of the job's rules version) runs it. `data`: the live rules' data. */
 export function resimOnce(job: ResimJob, data: GameData): Omit<ResimOutput, 'waitMs'> {
+  const set = ruleSet(job.rules, data);
+  if (!set) throw new Error(`Battle rules ${job.rules} are not kept on this server.`);
   const t0 = performance.now();
-  const out = runBattle(job.setup, job.deployments, data, job.endTick);
-  return { result: out.result, fallen: out.sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } })), damage: endDamage(out.sim), ms: performance.now() - t0 };
+  const out = set.resim(job);
+  return { ...out, ms: performance.now() - t0 };
 }
 
 export class InlineResimulator implements Resimulator {

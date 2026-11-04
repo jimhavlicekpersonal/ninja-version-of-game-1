@@ -1,0 +1,40 @@
+{
+  "hallSkins": [
+    {
+      "id": "classic",
+      "name": "Classic Slate",
+      "moonstones": 0,
+      "cap": "#3d4a5c",
+      "spots": "#c8402f"
+    },
+    {
+      "id": "royal_plum",
+      "name": "Royal Plum",
+      "moonstones": 200,
+      "cap": "#6e3f8f",
+      "spots": "#f1d48a"
+    },
+    {
+      "id": "sunny_meadow",
+      "name": "Golden Dawn",
+      "moonstones": 250,
+      "cap": "#d99a1e",
+      "spots": "#fff3d6"
+    },
+    {
+      "id": "frosty_cap",
+      "name": "Winter Snow",
+      "moonstones": 300,
+      "cap": "#3f6f93",
+      "spots": "#ffffff"
+    },
+    {
+      "id": "lantern_elder",
+      "name": "Lantern Festival",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#d9632a",
+      "spots": "#ffe9a0"
+    }
+  ]
+}

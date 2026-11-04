@@ -47,7 +47,7 @@ export class ApiError extends Error {
     readonly code: import('../../src/backend/net/protocol').ErrorCode,
     message: string,
     /** Extra fields for the error body (e.g. name suggestions). */
-    readonly details?: { suggestions?: string[] },
+    readonly details?: { suggestions?: string[]; /** Why a battle report was refused (metrics `tk_refused_reports_total`, roadmap step 78). */ reason?: string },
   ) {
     super(message);
   }

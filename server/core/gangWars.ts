@@ -19,7 +19,6 @@
  */
 import type { GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarSideView, GangWarTicketResponse, GangWarView } from '../../src/backend/net/protocol';
 import type { BattleSubmission } from '../../src/backend/net/protocol';
-import { SIM_RULES } from '../../src/gameplay/sim/battle/battle';
 import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { scaleReward } from '../../src/gameplay/sim/economy';
@@ -29,7 +28,7 @@ import { armyShare } from '../../src/gameplay/sim/social/gangWar';
 import { contentHash } from '../contentHash';
 import type { Player, Repo, Squad, SquadWar, SquadWarAttack, WarRosterEntry } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
-import { battleSeed, checkArmy, normalizeBase, resimulate, takeTicket } from './pvp';
+import { battleSeed, checkArmy, normalizeBase, resimulate, takeTicket, ticketVersion } from './pvp';
 import { applyServerResult } from './village';
 
 const TICKET_MS = 10 * MIN;
@@ -379,6 +378,9 @@ export async function warTicket(ctx: ServerContext, me: Player, body: { target?:
   const now = ctx.now();
   const target = Number(body?.target);
   const relay = body?.relay === true;
+  const version = ticketVersion(ctx, me);
+  // Relay strikes start from earlier damage: battle rules 3 and later (roadmap step 64).
+  if (relay && version.set.rules < 3) throw new ApiError(426, 'version_mismatch', 'Relay strikes need a newer Kagemura. Update the game, or strike solo.', { reason: 'rules_unsupported' });
   return ctx.repo.transaction(async (tx) => {
     const cur = await currentWar(tx, gang.id, now);
     const war = cur ? await tx.getSquadWar(cur.id, { forUpdate: true }) : null;
@@ -396,7 +398,7 @@ export async function warTicket(ctx: ServerContext, me: Player, body: { target?:
     // A relay's strikes share one army budget (a half-army opener plus the main force).
     const maxShare = relay ? Math.min(1, rules(ctx).relayHousingShare - (chain?.share ?? 0)) : 1;
     if (relay && maxShare < 0.1) throw new ApiError(409, 'no_attacks_left', 'This base\'s relay has used its army budget. Attack it solo, or pick another base.');
-    const ticket = { id: ctx.uuid(), kind: 'gangwar' as const, attackerId: me.id, defenderId: enemy.playerId, defenderName: enemy.name, base: enemy.base, defenderTrophies: 0, createdAt: now, expiresAt: now + TICKET_MS, used: false, seed: ctx.newSeed(), groveId: war.id, target };
+    const ticket = { id: ctx.uuid(), kind: 'gangwar' as const, attackerId: me.id, defenderId: enemy.playerId, defenderName: enemy.name, base: enemy.base, defenderTrophies: 0, createdAt: now, expiresAt: now + TICKET_MS, used: false, seed: ctx.newSeed(), groveId: war.id, target, ...version.stamp };
     await tx.createTicket(ticket);
     war.doc.pending[ticket.id] = { side, target, relay, playerId: me.id, ...(startDamage ? { startDamage } : {}), maxShare, expiresAt: ticket.expiresAt };
     await tx.saveSquadWar(war);
@@ -405,19 +407,19 @@ export async function warTicket(ctx: ServerContext, me: Player, body: { target?:
 }
 
 export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<GangWarAttackResponse> {
-  const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'gangwar');
+  const { ticket, answered, set } = await takeTicket(ctx, me, sub, 'gangwar');
   if (answered) return answered as GangWarAttackResponse;
   const war0 = await ctx.repo.getSquadWar(ticket.groveId!);
   const pend = war0?.doc.pending[ticket.id];
   if (!war0 || !pend) throw new ApiError(404, 'not_found', 'That war ticket is gone.');
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, ctx.data);
+  const { army, levels, reinforcements } = checkArmy(sub, me, set.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   // `army` already counts the Lodge's warriors (`reinforcements` is the part of it that was donated).
   const share = armyShare(army, me.hallLevel, ctx.data);
   if (pend.relay && share > (pend.maxShare ?? 1) + 1e-9) throw new ApiError(400, 'bad_request', `This relay strike may bring at most ${Math.round((pend.maxShare ?? 1) * 100)}% of a full army.`);
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(pend.relay && pend.startDamage ? { startDamage: pend.startDamage } : {}) };
-  const { result, damage } = await resimulate(ctx, 'gangwar', setup, deployments, sub);
+  const { result, damage } = await resimulate(ctx, 'gangwar', setup, deployments, sub, set.rules);
   const t = ctx.now();
   const side = pend.side;
   const key = `${side}:${pend.target}`;
@@ -433,7 +435,7 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
       at: t,
       stars: result.stars,
       destruction: result.destruction,
-      record: { attackerName: me.name, seed, base: ticket.base, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), ...(setup.startDamage ? { startDamage: setup.startDamage } : {}), deployments, endTick: sub.endTick, result, rules: SIM_RULES },
+      record: { attackerName: me.name, seed, base: ticket.base, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), ...(setup.startDamage ? { startDamage: setup.startDamage } : {}), deployments, endTick: sub.endTick, result, rules: set.rules },
     });
     if (pend.relay) {
       const prev = war.doc.relay[key];

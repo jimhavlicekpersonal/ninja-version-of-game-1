@@ -1,0 +1,103 @@
+{
+  "currency": "USD",
+  "packs": [
+    {
+      "id": "moonstones_1",
+      "name": "Pouch of Jade",
+      "usd": 1.99,
+      "moonstones": 100
+    },
+    {
+      "id": "moonstones_2",
+      "name": "Bag of Jade",
+      "usd": 4.99,
+      "moonstones": 280
+    },
+    {
+      "id": "moonstones_3",
+      "name": "Box of Jade",
+      "usd": 9.99,
+      "moonstones": 600
+    },
+    {
+      "id": "moonstones_4",
+      "name": "Chest of Jade",
+      "usd": 19.99,
+      "moonstones": 1300
+    },
+    {
+      "id": "moonstones_5",
+      "name": "Vault of Jade",
+      "usd": 49.99,
+      "moonstones": 3500
+    },
+    {
+      "id": "moonstones_6",
+      "name": "Dragon Hoard of Jade",
+      "usd": 99.99,
+      "moonstones": 7500
+    }
+  ],
+  "skipCurve": [
+    [
+      0,
+      0
+    ],
+    [
+      60,
+      1
+    ],
+    [
+      3600,
+      25
+    ],
+    [
+      86400,
+      300
+    ],
+    [
+      604800,
+      1200
+    ]
+  ],
+  "topUpCurve": [
+    [
+      0,
+      0
+    ],
+    [
+      100,
+      1
+    ],
+    [
+      1000,
+      10
+    ],
+    [
+      10000,
+      60
+    ],
+    [
+      100000,
+      500
+    ],
+    [
+      1000000,
+      3000
+    ]
+  ],
+  "minorMonthlyCapUsd": 50,
+  "storeProductIds": {
+    "moonstones_1": "jade_pouch",
+    "moonstones_2": "jade_bag",
+    "moonstones_3": "jade_box",
+    "moonstones_4": "jade_chest",
+    "moonstones_5": "jade_vault",
+    "moonstones_6": "jade_hoard",
+    "lantern_pass": "season_scroll",
+    "offer_starter": "offer_starter",
+    "offer_builder": "offer_builder",
+    "offer_war_prep": "offer_war_prep",
+    "offer_rebuild": "offer_rebuild"
+  }
+}

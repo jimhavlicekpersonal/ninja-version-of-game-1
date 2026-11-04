@@ -114,6 +114,8 @@ export interface HttpAdapterOptions {
   retryDelayMs?: number;
   /** The game's version and platform for X-Client-Build, e.g. "0.1.0+ios". */
   build?: string;
+  /** The game's data version for X-Data-Version (protocol 8; `dataVersion` in sim/version.ts). */
+  dataVersion?: string;
 }
 
 /** A fresh id for an Idempotency-Key. */
@@ -139,6 +141,7 @@ export class HttpServerAdapter implements ServerPort {
   private readonly retries: number;
   private readonly retryDelayMs: number;
   private readonly build: string;
+  private readonly dataVersion: string;
 
   constructor(
     readonly baseUrl: string,
@@ -152,6 +155,12 @@ export class HttpServerAdapter implements ServerPort {
     this.retries = opts.retries ?? 2;
     this.retryDelayMs = opts.retryDelayMs ?? 600;
     this.build = opts.build ?? 'unknown';
+    this.dataVersion = opts.dataVersion ?? '';
+  }
+
+  /** A battle report says which game played it (protocol 8, step 72); one queued earlier keeps what it was played with. */
+  private stamped<T extends BattleSubmission>(sub: T): T {
+    return { ...sub, rules: sub.rules ?? SIM_RULES, ...(sub.dataVersion || this.dataVersion ? { dataVersion: sub.dataVersion ?? this.dataVersion } : {}) };
   }
 
   hasIdentity(): boolean {
@@ -177,6 +186,7 @@ export class HttpServerAdapter implements ServerPort {
           [ClientHeaders.protocol]: String(PROTOCOL_VERSION),
           [ClientHeaders.simRules]: String(SIM_RULES),
           [ClientHeaders.clientBuild]: this.build,
+          ...(this.dataVersion ? { [ClientHeaders.dataVersion]: this.dataVersion } : {}),
           ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: newKey() } : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
@@ -285,7 +295,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   submitAttack(sub: BattleSubmission): Promise<AttackResponse> {
-    return this.req('POST', Routes.attacks, sub);
+    return this.req('POST', Routes.attacks, this.stamped(sub));
   }
 
   defenses(since: number): Promise<DefensesResponse> {
@@ -417,7 +427,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   submitDuel(sub: DuelSubmission): Promise<DuelResponse> {
-    return this.req('POST', Routes.duels, sub);
+    return this.req('POST', Routes.duels, this.stamped(sub));
   }
 
   duels(): Promise<DuelsResponse> {
@@ -453,7 +463,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   gangWarAttack(sub: BattleSubmission): Promise<GangWarAttackResponse> {
-    return this.req('POST', Routes.squadWarAttacks, sub);
+    return this.req('POST', Routes.squadWarAttacks, this.stamped(sub));
   }
 
   claimGangWar(): Promise<GangWarClaimResponse> {
@@ -555,7 +565,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   submitRaidAttack(sub: BattleSubmission): Promise<RaidAttackResponse> {
-    return this.req('POST', Routes.groveRaidAttacks, sub);
+    return this.req('POST', Routes.groveRaidAttacks, this.stamped(sub));
   }
 
   claimRaid(week: number): Promise<RaidClaimResponse> {

@@ -23,6 +23,7 @@ import m0015 from './0015_friends.sql?raw';
 import m0016 from './0016_gangs.sql?raw';
 import m0017 from './0017_duels.sql?raw';
 import m0018 from './0018_gang_wars.sql?raw';
+import m0019 from './0019_rule_versions.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -43,4 +44,5 @@ export const migrations = loadMigrations({
   '0016_gangs.sql': m0016,
   '0017_duels.sql': m0017,
   '0018_gang_wars.sql': m0018,
+  '0019_rule_versions.sql': m0019,
 });

@@ -18,9 +18,15 @@ import type { Cost } from '../../gameplay/sim/types';
  * Bump when a change would break older clients; servers report the oldest
  * they accept. 7 (roadmap step 26): the server owns the economy (villages are
  * kept on the server), every request says which game it comes from
- * (`ClientHeaders`), and writes carry an Idempotency-Key.
+ * (`ClientHeaders`), and writes carry an Idempotency-Key. 8 (roadmap steps
+ * 64-75): Gang War routes and relay tickets (`startDamage`, battle rules 3);
+ * every request also sends `X-Data-Version`; battle reports carry `rules` and
+ * `dataVersion`, which must match their ticket; `/v1/hello` lists
+ * `supportedRules` and `minClientBuild`, and a game outside them shows
+ * "Update Kagemura". Protocol 7 games keep working (the server keeps their
+ * battle rules), so `minProtocol` stays 7.
  */
-export const PROTOCOL_VERSION = 7;
+export const PROTOCOL_VERSION = 8;
 
 /** Headers the game sends with every request (protocol 7). */
 export const ClientHeaders = {
@@ -28,7 +34,7 @@ export const ClientHeaders = {
   protocol: 'x-protocol',
   /** SIM_RULES the game simulates battles with. */
   simRules: 'x-sim-rules',
-  /** Hash of the game's balance data (src/gameplay/data), so a server can tell builds apart. */
+  /** Fingerprint of the game's balance data (`dataVersion` in sim/version.ts; protocol 8), stored on each ticket. */
   dataVersion: 'x-data-version',
   /** The game's version and platform, e.g. "0.1.0+ios". */
   clientBuild: 'x-client-build',
@@ -71,6 +77,8 @@ export interface ErrorBody {
   message: string;
   /** With `name_taken` and `bad_name`: names that are free and fit the rules. */
   suggestions?: string[];
+  /** A refused battle report: why, in one word (`rules_mismatch`, `data_mismatch`, `seed_mismatch`, `illegal_army`, …). */
+  reason?: string;
 }
 
 export const Routes = {
@@ -194,6 +202,14 @@ export interface HelloResponse {
   environment?: string;
   /** A message from the operators for every player (maintenance, an incident), shown in Settings → Online play. */
   notice?: string;
+  /**
+   * Battle rules (`SIM_RULES`) this server re-simulates (protocol 8, roadmap
+   * steps 73 and 75): the live ones and the 1-2 before. A game whose rules are
+   * not listed shows "Update Kagemura" and pauses online play.
+   */
+  supportedRules?: number[];
+  /** Oldest game version (the "0.1.0" in `X-Client-Build`) still allowed online; older ones are asked to update. */
+  minClientBuild?: string;
 }
 
 export interface RegisterRequest {
@@ -294,6 +310,15 @@ export interface BattleSubmission {
    * desyncs (counted and logged by the server); never trusted.
    */
   clientHash?: string;
+  /**
+   * Protocol 8 (roadmap step 72): the battle rules (`SIM_RULES`) and data
+   * version the battle was played with. They must match the ticket's (issued
+   * under the request's `X-Sim-Rules` / `X-Data-Version`); otherwise the report
+   * is refused with `bad_request` and the game asks the player to update.
+   * Absent (protocol 7): the request headers stand in.
+   */
+  rules?: number;
+  dataVersion?: string;
 }
 
 export interface AttackResponse {

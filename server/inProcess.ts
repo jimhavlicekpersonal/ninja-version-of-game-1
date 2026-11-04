@@ -7,6 +7,7 @@
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
 import type { BattleSubmission, CommandBatch, DonateRequest, DuelSubmission, DuelTicketRequest, FriendImportRequest, FriendRequestRequest, LinkCredential, LinkProvider, PrivacyRequest, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
+import type { ClientInfo } from './repo';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
 
@@ -15,6 +16,8 @@ export class InProcessServerAdapter implements ServerPort {
   constructor(
     private readonly core: ServerCore,
     private token: string | null = null,
+    /** What this "game" would send in its headers (step 72): an older game's rules, say. None by default. */
+    private readonly client: ClientInfo = {},
   ) {}
 
   hasIdentity(): boolean {
@@ -36,7 +39,7 @@ export class InProcessServerAdapter implements ServerPort {
   }
 
   private authed<T>(fn: (me: Awaited<ReturnType<ServerCore['authenticate']>>) => Promise<T> | T): Promise<T> {
-    return this.call(async () => fn(await this.core.authenticate(this.token ?? undefined)));
+    return this.call(async () => fn({ ...(await this.core.authenticate(this.token ?? undefined)), client: { ...this.client } }));
   }
 
   hello() {

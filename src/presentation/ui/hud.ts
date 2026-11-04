@@ -61,6 +61,8 @@ export interface HudDeps {
   onDuel?(friend: { id: string; name: string }, layout: 'live' | 'duel', challengeId?: string): void;
   /** A Gang War strike (roadmap step 67). */
   onGangWarAttack?(target: number, relay: boolean, generated: boolean): void;
+  /** Where "Update Kagemura" sends the player (the App Store, Google Play, or a reload on the web); step 75. */
+  updateLink?(): { label: string; open(): void } | null;
   /** Game Center friends' ids, when this device can ask (step 61). */
   gameCenterFriends?: () => Promise<string[]>;
   onGroveAttack(target: number): void;
@@ -340,8 +342,32 @@ export class Hud {
 
   private static readonly NET_LABEL: Record<string, string> = { off: 'Offline play', connecting: 'Connecting…', online: 'Online', offline: 'No connection', incompatible: 'Update needed', suspended: 'Suspended' };
 
+  private updateShown = false;
+
+  /**
+   * "Update Kagemura" (roadmap step 75): the server no longer plays this
+   * game's battle rules or version, so online play is paused; the village is
+   * still playable offline. Shown once a session; Settings keeps the status.
+   */
+  private showUpdateNeeded(): void {
+    this.updateShown = true;
+    const conn = this.deps.connection;
+    const link = this.deps.updateLink?.();
+    const body = h(
+      'div',
+      {},
+      h('p', {}, conn.lastError || 'The server needs a newer Kagemura.'),
+      h('p', { class: 'muted' }, 'Online play is paused until you update, so no raid, war or duel gets a result your game could not show correctly. Your village is still yours: keep building and training offline.'),
+    );
+    const close = this.modal('Update Kagemura', body, [
+      link && { label: link.label, primary: true, onClick: () => { close(); link.open(); } },
+      { label: 'Later', onClick: () => close() },
+    ]);
+  }
+
   private updateNet(): void {
     const conn = this.deps.connection;
+    if (conn.status === 'incompatible' && !this.updateShown) this.showUpdateNeeded();
     this.netPill.hidden = !conn.enabled;
     this.netPill.className = `net-pill ${conn.status}`;
     this.netPill.textContent = Hud.NET_LABEL[conn.status] ?? conn.status;

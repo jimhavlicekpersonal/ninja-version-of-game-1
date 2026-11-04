@@ -19,7 +19,7 @@ import { MemoryRepo } from '../../../server/repo';
 import { HttpServerAdapter, memoryTokenStore } from '../../../src/backend/net/httpAdapter';
 import { ServerError } from '../../../src/backend/net/ports';
 import { PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
-import { createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
+import { createBattle, runBattle, SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { botDeployments } from '../../../src/gameplay/sim/defense';
 import { pointAt } from '../../../src/gameplay/sim/battle/infiltration';
@@ -311,6 +311,43 @@ describe('protocol contract', () => {
       await a.leaveGang();
     }
     await a.removeFriend(b.id);
+  });
+
+  it('protocol 8: kept battle rules in hello; a report from another game version is refused; Gang War routes', async () => {
+    const hello = await client().hello();
+    if (hello.features.includes('rule-versions')) {
+      expect(hello.supportedRules).toContain(SIM_RULES);
+      expect(hello.supportedRules!.length).toBeLessThanOrEqual(3);
+      // Bea's base exists, so Ann gets a ticket; a report saying other rules than the ticket's is refused.
+      await player('Vb', 1);
+      const a = await player('Va', 1);
+      const m = (await a.match())!;
+      expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(5), rules: SIM_RULES + 1 }))).toMatchObject({ code: 'bad_request' });
+      expect((await a.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(5) })).result.hash).toMatch(/./);
+    }
+    if (hello.features.includes('gang-wars')) {
+      const a = await player('Wa', 2);
+      const b = await player('Wb', 2);
+      await a.requestFriend({ code: (await b.friends()).code });
+      await b.answerFriendRequest((await b.friends()).incoming[0].id, true);
+      await a.createGang(`W${tag}`);
+      await a.inviteToGang(b.id);
+      await b.answerGangInvite((await b.myGang()).invites[0].id, true);
+      expect(await errorOf(b.queueGangWar())).toMatchObject({ code: 'bad_request' }); // only the leader
+      const q = await a.queueGangWar();
+      expect(q.queued ?? q.war).toBeTruthy();
+      if (q.queued) {
+        expect(await errorOf(b.leaveGang())).toMatchObject({ status: 409, code: 'conflict' }); // the roster is locked while queued
+        expect((await a.leaveGangWarQueue()).queued).toBeNull();
+      }
+      const v = await a.gangWar();
+      if (!v.war) {
+        expect(await errorOf(a.gangWarTicket(0, false))).toMatchObject({ code: 'raid_not_live' });
+        expect(await errorOf(a.claimGangWar())).toMatchObject({ code: 'raid_not_ended' });
+        await b.leaveGang();
+        await a.leaveGang();
+      }
+    }
   });
 
   it('purchases and push: a store the server does not check is refused before paying; forged receipts are refused; push tokens are checked', async () => {

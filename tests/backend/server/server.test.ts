@@ -303,7 +303,7 @@ describe('server HTTP adapter', () => {
     it('tells a game older than minProtocol to update, but still says hello', async () => {
       const s = setup();
       const a = await s.register('Ann');
-      expect((await s.call('GET', Routes.hello)).body).toMatchObject({ protocol: 7, minProtocol: 7 });
+      expect((await s.call('GET', Routes.hello)).body).toMatchObject({ protocol: 8, minProtocol: 7 });
       const old = await s.call('GET', Routes.me, a.token, undefined, { headers: { 'x-protocol': '6' } });
       expect(old.status).toBe(426);
       expect(old.body).toMatchObject({ error: 'version_mismatch' });

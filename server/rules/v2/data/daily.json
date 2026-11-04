@@ -1,0 +1,78 @@
+{
+  "chest": {
+    "outcomes": [
+      {
+        "id": "acorn_pouch",
+        "label": "Pouch of Coins",
+        "weight": 30,
+        "reward": {
+          "acorns": 20000
+        }
+      },
+      {
+        "id": "dew_flask",
+        "label": "Rice Sack",
+        "weight": 30,
+        "reward": {
+          "dew": 20000
+        }
+      },
+      {
+        "id": "harvest_basket",
+        "label": "Supply Crate",
+        "weight": 20,
+        "reward": {
+          "acorns": 25000,
+          "dew": 25000
+        }
+      },
+      {
+        "id": "moonstone_trio",
+        "label": "Three Jade",
+        "weight": 15,
+        "reward": {
+          "moonstones": 3
+        }
+      },
+      {
+        "id": "great_harvest",
+        "label": "Great Supply Cart",
+        "weight": 5,
+        "reward": {
+          "acorns": 80000,
+          "dew": 80000,
+          "moonstones": 10
+        }
+      }
+    ]
+  },
+  "streak": {
+    "steps": [
+      {
+        "bonus": 1
+      },
+      {
+        "bonus": 1.1
+      },
+      {
+        "bonus": 1.2
+      },
+      {
+        "bonus": 1.3
+      },
+      {
+        "bonus": 1.4
+      },
+      {
+        "bonus": 1.5
+      },
+      {
+        "bonus": 1.6,
+        "moonstones": 5
+      }
+    ],
+    "skipsPerWeek": 1,
+    "stepsLostPerMissedDay": 1,
+    "historyDays": 7
+  }
+}

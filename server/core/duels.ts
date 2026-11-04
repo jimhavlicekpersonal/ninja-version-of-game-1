@@ -12,7 +12,7 @@ import { SIM_RULES } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import type { DuelChallenge, Player, Repo, Rivalry } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
-import { battleSeed, checkArmy, normalizeBase, resimulate, takeTicket } from './pvp';
+import { battleSeed, checkArmy, normalizeBase, resimulate, takeTicket, ticketVersion } from './pvp';
 
 const DUEL_TICKET_MS = 15 * MIN;
 const CHALLENGE_MS = 24 * HOUR;
@@ -50,7 +50,7 @@ export async function duelTicket(ctx: ServerContext, me: Player, req: Partial<Du
   if (!source) throw new ApiError(409, 'conflict', `${friend.name} has no base to duel yet.`);
   const t = ctx.now();
   const base = duelBase(source, friend.name, Boolean(layout));
-  const ticket = { id: ctx.uuid(), kind: 'duel' as const, attackerId: me.id, defenderId: friend.id, defenderName: friend.name, base, defenderTrophies: 0, createdAt: t, expiresAt: t + DUEL_TICKET_MS, used: false, seed: ctx.newSeed() };
+  const ticket = { id: ctx.uuid(), kind: 'duel' as const, attackerId: me.id, defenderId: friend.id, defenderName: friend.name, base, defenderTrophies: 0, createdAt: t, expiresAt: t + DUEL_TICKET_MS, used: false, seed: ctx.newSeed(), ...ticketVersion(ctx, me).stamp };
   await ctx.repo.createTicket(ticket);
   return { ticket: ticket.id, seed: ticket.seed, base, expiresAt: ticket.expiresAt, opponent: { id: friend.id, name: friend.name }, layout: layout ? 'duel' : 'live' };
 }
@@ -62,14 +62,14 @@ function rivalryView(r: Rivalry | undefined, me: string, friendId: string, name:
 }
 
 export async function submitDuel(ctx: ServerContext, me: Player, sub: DuelSubmission): Promise<DuelResponse> {
-  const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'duel');
+  const { ticket, answered, set } = await takeTicket(ctx, me, sub, 'duel');
   if (answered) return answered as DuelResponse;
   const friend = await requireFriend(ctx, me, ticket.defenderId);
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, ctx.data);
+  const { army, levels, reinforcements } = checkArmy(sub, me, set.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { result } = await resimulate(ctx, 'duel', setup, deployments, sub);
+  const { result } = await resimulate(ctx, 'duel', setup, deployments, sub, set.rules);
   const t = ctx.now();
   const duelId = ctx.uuid();
   // A challenge this duel answers: open, between these two, and not yet answered by me.

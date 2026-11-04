@@ -5,6 +5,7 @@
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
 import type { ResimOutput } from '../resim';
+import { ruleSet, type RuleSet } from '../rules';
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
 import { runBattle, SIM_RULES } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
@@ -192,32 +193,32 @@ export function validLevels(levels: unknown, hallLevel: number, data: GameData):
  */
 export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number>; reinforcements: Record<string, { count: number; level: number }> } {
   const army = sub.army ?? {};
-  if (typeof army !== 'object') throw new ApiError(400, 'bad_request', 'bad army');
+  if (typeof army !== 'object') throw new ApiError(400, 'bad_request', 'bad army', { reason: 'illegal_army' });
   const reinforcements: Record<string, { count: number; level: number }> = {};
   const lodge = sub.reinforcements ?? {};
-  if (typeof lodge !== 'object') throw new ApiError(400, 'bad_request', 'bad reinforcements');
+  if (typeof lodge !== 'object') throw new ApiError(400, 'bad_request', 'bad reinforcements', { reason: 'illegal_army' });
   const topKeep = data.hall.levels.length;
   let lodgeHousing = 0;
   for (const [k, r] of Object.entries(lodge)) {
     const def = data.troops[k];
     const count = Number(r?.count);
     const level = Number(r?.level);
-    if (!def || !Number.isInteger(count) || count < 0 || count > (army[k] ?? 0)) throw new ApiError(400, 'bad_request', 'bad reinforcements');
-    if (!Number.isInteger(level) || level < 1 || level > Math.min(troopLevelCapAt(topKeep, data, k), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop levels');
+    if (!def || !Number.isInteger(count) || count < 0 || count > (army[k] ?? 0)) throw new ApiError(400, 'bad_request', 'bad reinforcements', { reason: 'illegal_army' });
+    if (!Number.isInteger(level) || level < 1 || level > Math.min(troopLevelCapAt(topKeep, data, k), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop levels', { reason: 'illegal_army' });
     if (count > 0) reinforcements[k] = { count, level };
     lodgeHousing += def.housing * count;
   }
   let ownHousing = 0;
   for (const [k, n] of Object.entries(army)) {
     const def = data.troops[k];
-    if (!def || !Number.isInteger(n) || n < 0) throw new ApiError(400, 'bad_request', 'bad army');
+    if (!def || !Number.isInteger(n) || n < 0) throw new ApiError(400, 'bad_request', 'bad army', { reason: 'illegal_army' });
     const own = n - (reinforcements[k]?.count ?? 0);
-    if (own > 0 && me.hallLevel < troopEarliestKeep(k, data)) throw new ApiError(400, 'bad_request', 'troop not unlocked');
+    if (own > 0 && me.hallLevel < troopEarliestKeep(k, data)) throw new ApiError(400, 'bad_request', 'troop not unlocked', { reason: 'illegal_army' });
     ownHousing += def.housing * own;
   }
-  if (ownHousing > maxHousingAtHall(me.hallLevel, data) || lodgeHousing > maxReinforcementAt(me.hallLevel, data)) throw new ApiError(400, 'bad_request', 'army too big');
+  if (ownHousing > maxHousingAtHall(me.hallLevel, data) || lodgeHousing > maxReinforcementAt(me.hallLevel, data)) throw new ApiError(400, 'bad_request', 'army too big', { reason: 'illegal_army' });
   const levels = validLevels(sub.levels, me.hallLevel, data);
-  if (!levels) throw new ApiError(400, 'bad_request', 'bad troop levels');
+  if (!levels) throw new ApiError(400, 'bad_request', 'bad troop levels', { reason: 'illegal_army' });
   return { army, levels, reinforcements };
 }
 
@@ -228,12 +229,14 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
     await ctx.board.set(me.id, me.trophies, me.createdAt);
     return;
   }
-  const n = normalizeBase(structuredClone(req?.base), ctx.data);
+  // Legal for the game's own rules version (roadmap step 73); matchmaking re-checks it for players on another version.
+  const set = clientRuleSet(ctx, me);
+  const n = normalizeBase(structuredClone(req?.base), set.data);
   if ('error' in n) throw new ApiError(400, 'bad_request', n.error);
   const base = n.base;
-  capBaseLoot(base, ctx.data);
+  capBaseLoot(base, set.data);
   base.name = me.name;
-  await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), ...layoutReset(ctx, me, base) });
+  await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), baseRules: set.rules, ...layoutReset(ctx, me, base) });
   // A player is ranked once they have a base.
   await ctx.board.set(me.id, me.trophies, me.createdAt);
 }
@@ -241,7 +244,11 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
 /** Find someone to attack: a real player if one fits the rules, otherwise a generated base of matched strength. */
 export async function match(ctx: ServerContext, me: Player): Promise<MatchResponse> {
   const t = ctx.now();
-  const { data, repo } = ctx;
+  const { repo } = ctx;
+  // Bases, loot caps and the battle follow the game's own rules version (roadmap steps 72-73).
+  const version = ticketVersion(ctx, me);
+  const set = version.set;
+  const data = set.data;
   const win = hallWindow(me.hallLevel, data);
   const recent = await repo.recentTargets(me.id, t - HOUR);
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
@@ -262,6 +269,8 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
     const rotated = [...free.slice(start), ...free.slice(0, start)];
     const order = orderByRating(ratingsOf(me, t, ctx).attack, me.hallLevel, rotated.map((p) => ({ item: p, base: ratingsOf(p, t, ctx).base, power: p.hallLevel })), t, data.ranks.rating);
     for (const p of order) {
+      // A base uploaded under other battle rules must be legal under this game's too.
+      if (!baseLegalFor(p, set, ctx)) continue;
       if (await locks.acquire(p.id, me.id, TICKET_LOCK_MS)) {
         found = p;
         break;
@@ -272,7 +281,7 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   let ticket: Ticket;
   if (found?.base) {
     const base = applyLootPenalty(capBaseLoot({ ...structuredClone(found.base), name: found.name, trophies: found.trophies }, data), me.hallLevel, data);
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed() };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), ...version.stamp };
   } else {
     // Nobody fits: a generated base with the same matchmaking math the game uses offline.
     const seed = Math.floor(ctx.random() * 4294967296) >>> 0;
@@ -280,7 +289,7 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
     const base = opponentForRank(seed, me.trophies, me.hallLevel, data, me.hallLevel - 0.5 - data.ranks.matchmaking.powerSlack);
     const names = data.names;
     base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed() };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), ...version.stamp };
   }
   await repo.createTicket(ticket);
   return {
@@ -297,29 +306,70 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
  * answer (`answered`), so a client retrying a report it never got the answer
  * to gets the same result instead of an error, and nothing is applied twice.
  */
-export async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined, kind: Ticket['kind']): Promise<{ ticket: Ticket; answered?: unknown }> {
+export async function takeTicket(ctx: ServerContext, me: Player, sub: BattleSubmission | undefined, kind: Ticket['kind']): Promise<{ ticket: Ticket; answered?: unknown; set: RuleSet }> {
+  const id = sub?.ticket;
   const ticket = id ? await ctx.repo.getTicket(String(id)) : null;
-  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw new ApiError(404, 'not_found', 'Unknown ticket.');
+  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw new ApiError(404, 'not_found', 'Unknown ticket.', { reason: 'unknown_ticket' });
+  const set = ruleSet(ticket.rules, ctx.data);
   if (ticket.used) {
-    if (ticket.response !== undefined) return { ticket, answered: ticket.response };
-    throw new ApiError(409, 'conflict', 'This battle was already reported.');
+    if (ticket.response !== undefined) return { ticket, answered: ticket.response, set: set ?? ruleSet(undefined, ctx.data)! };
+    throw new ApiError(409, 'conflict', 'This battle was already reported.', { reason: 'already_reported' });
   }
-  if (ctx.now() > ticket.expiresAt) throw new ApiError(410, 'expired', 'This battle took too long to report.');
-  return { ticket };
+  if (ctx.now() > ticket.expiresAt) throw new ApiError(410, 'expired', 'This battle took too long to report.', { reason: 'expired' });
+  // Step 72: the report must come from the game version the ticket was issued to.
+  const rules = sub?.rules ?? me.client?.rules;
+  if (ticket.rules !== undefined && rules !== undefined && rules !== null && Number(rules) !== ticket.rules) {
+    throw new ApiError(400, 'bad_request', 'This battle was played with other battle rules than the ones it was started with (the game was updated in between). Update Kagemura and start a new battle.', { reason: 'rules_mismatch' });
+  }
+  const dv = sub?.dataVersion ?? me.client?.dataVersion;
+  if (ticket.dataVersion !== undefined && typeof dv === 'string' && dv !== ticket.dataVersion) {
+    throw new ApiError(400, 'bad_request', 'This battle was played with other game data than the one it was started with (the game was updated in between). Update Kagemura and start a new battle.', { reason: 'data_mismatch' });
+  }
+  if (!set) throw new ApiError(426, 'version_mismatch', 'This battle was played with battle rules the server no longer keeps. Update Kagemura to keep playing online.', { reason: 'rules_retired' });
+  return { ticket, set };
+}
+
+/** The live rules, or the game's own (its `X-Sim-Rules`) when this server keeps them. */
+function clientRuleSet(ctx: ServerContext, me: Player): RuleSet {
+  const set = ruleSet(me.client?.rules, ctx.data);
+  if (!set) throw new ApiError(426, 'version_mismatch', 'This version of Kagemura plays by battle rules the server no longer keeps. Update the game to keep playing online.', { reason: 'rules_unsupported' });
+  return set;
+}
+
+/**
+ * What a new ticket is issued under (roadmap step 72): the game's rules
+ * version (refused with 426 when this server no longer keeps it) and data
+ * version. A data version the server does not know for those rules is
+ * allowed (a build with other numbers) but counted, since its battles may
+ * desync.
+ */
+export function ticketVersion(ctx: ServerContext, me: Player): { set: RuleSet; stamp: Pick<Ticket, 'rules' | 'dataVersion'> } {
+  const set = clientRuleSet(ctx, me);
+  const dv = typeof me.client?.dataVersion === 'string' ? me.client.dataVersion.slice(0, 40) : undefined;
+  if (dv && dv !== set.dataVersion) ctx.metrics.count('tk_unknown_data_total', { rules: String(set.rules) });
+  return { set, stamp: { rules: set.rules, ...(dv ? { dataVersion: dv } : {}) } };
+}
+
+/** A defender's base is legal under the attacker's rules version (re-checked only when they differ). */
+function baseLegalFor(p: Player, set: RuleSet, ctx: ServerContext): boolean {
+  if (!p.base || (p.baseRules ?? ruleSet(undefined, ctx.data)!.rules) === set.rules) return true;
+  return !('error' in normalizeBase(structuredClone(p.base), set.data));
 }
 
 /**
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel' | 'gangwar', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): Promise<ResimOutput> {
-  const out = await ctx.resim.run({ setup, deployments, endTick: sub.endTick });
+export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel' | 'gangwar', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission, rules: number = SIM_RULES): Promise<ResimOutput> {
+  // Run with the ticket's rules version (roadmap step 73): the live code, or a kept snapshot.
+  const out = await ctx.resim.run({ setup, deployments, endTick: sub.endTick, ...(rules !== SIM_RULES ? { rules } : {}) });
+  const r = String(rules);
   ctx.metrics.observe('tk_resim_ms', out.ms, { kind });
   ctx.metrics.observe('tk_resim_wait_ms', out.waitMs, { kind });
-  ctx.metrics.count('tk_battles_total', { kind });
+  ctx.metrics.count('tk_battles_total', { kind, rules: r });
   if (typeof sub.clientHash === 'string' && sub.clientHash !== out.result.hash) {
-    ctx.metrics.count('tk_desyncs_total', { kind });
-    ctx.log('warn', 'battle desync', { kind, ticket: sub.ticket, rules: SIM_RULES, client: sub.clientHash, server: out.result.hash });
+    ctx.metrics.count('tk_desyncs_total', { kind, rules: r });
+    ctx.log('warn', 'battle desync', { kind, ticket: sub.ticket, rules, client: sub.clientHash, server: out.result.hash });
   }
   return out;
 }
@@ -334,7 +384,7 @@ export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'due
 export function battleSeed(ticket: Ticket, sub: BattleSubmission): number {
   if (ticket.seed === undefined) return Number(sub.seed) >>> 0;
   if (sub.seed !== undefined && sub.seed !== null && Number(sub.seed) >>> 0 !== ticket.seed) {
-    throw new ApiError(400, 'bad_request', 'This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.');
+    throw new ApiError(400, 'bad_request', 'This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.', { reason: 'seed_mismatch' });
   }
   return ticket.seed;
 }
@@ -349,14 +399,15 @@ export function battleSeed(ticket: Ticket, sub: BattleSubmission): number {
  */
 export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<AttackResponse> {
   const { data, repo } = ctx;
-  const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
+  const { ticket, answered, set } = await takeTicket(ctx, me, sub, 'pvp');
   if (answered) return answered as AttackResponse;
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, data);
+  // The army is checked and the battle re-run under the ticket's rules version; honor and ratings are the server's.
+  const { army, levels, reinforcements } = checkArmy(sub, me, set.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { fallen, result } = await resimulate(ctx, 'pvp', setup, deployments, sub);
+  const { fallen, result } = await resimulate(ctx, 'pvp', setup, deployments, sub, set.rules);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
@@ -395,7 +446,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
-      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -defLoss, ...(typeof sub.clientHash === 'string' && sub.clientHash !== result.hash ? { desync: true } : {}) });
+      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: set.rules, attackerTrophies: delta, defenderTrophies: -defLoss, ...(typeof sub.clientHash === 'string' && sub.clientHash !== result.hash ? { desync: true } : {}) });
     }
     return true;
   });

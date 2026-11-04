@@ -230,7 +230,9 @@ describe('F18: replays are tied to the battle rules they were fought under', () 
   it('new records carry the current rules; old ones are not offered for replay', () => {
     expect(replayable({ rules: SIM_RULES })).toBe(true);
     expect(replayable({})).toBe(false);
-    expect(replayable({ rules: SIM_RULES - 1 })).toBe(false);
+    // Rules 3 only added relay start damage, so rules 2 records still replay exactly; rules 1 do not.
+    expect(replayable({ rules: 2 })).toBe(true);
+    expect(replayable({ rules: 1 })).toBe(false);
   });
 });
 

@@ -165,6 +165,7 @@ async function main(): Promise<void> {
     metrics,
     environment: config.deploy === 'production' ? undefined : config.deploy,
     notice: process.env.SERVER_NOTICE?.slice(0, 300) || undefined,
+    minClientBuild: process.env.MIN_CLIENT_BUILD || undefined,
     support: { email: process.env.SUPPORT_EMAIL || undefined, privacyUrl: process.env.PRIVACY_URL || undefined },
     gameUrl: process.env.GAME_URL || undefined,
   });

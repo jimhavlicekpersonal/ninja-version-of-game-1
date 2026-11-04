@@ -1,0 +1,379 @@
+{
+  "name": "Season Scroll",
+  "epoch": 1767225600000,
+  "seasonDays": 30,
+  "pointsPerTier": 300,
+  "productId": "lantern_pass",
+  "usd": 4.99,
+  "premiumBuildSpeedBonus": 0.2,
+  "tiers": [
+    {
+      "tier": 1,
+      "free": {
+        "dew": 500
+      },
+      "premium": {
+        "acorns": 1500
+      }
+    },
+    {
+      "tier": 2,
+      "free": {
+        "acorns": 1000
+      },
+      "premium": {
+        "dew": 3000
+      }
+    },
+    {
+      "tier": 3,
+      "free": {
+        "dew": 1500
+      },
+      "premium": {
+        "acorns": 4500
+      }
+    },
+    {
+      "tier": 4,
+      "free": {
+        "acorns": 2000
+      },
+      "premium": {
+        "dew": 6000
+      }
+    },
+    {
+      "tier": 5,
+      "free": {
+        "moonstones": 10
+      },
+      "premium": {
+        "acorns": 7500
+      }
+    },
+    {
+      "tier": 6,
+      "free": {
+        "acorns": 3000
+      },
+      "premium": {
+        "dew": 9000
+      }
+    },
+    {
+      "tier": 7,
+      "free": {
+        "dew": 3500
+      },
+      "premium": {
+        "acorns": 10500
+      }
+    },
+    {
+      "tier": 8,
+      "free": {
+        "acorns": 4000
+      },
+      "premium": {
+        "dew": 12000
+      }
+    },
+    {
+      "tier": 9,
+      "free": {
+        "dew": 4500
+      },
+      "premium": {
+        "acorns": 13500
+      }
+    },
+    {
+      "tier": 10,
+      "free": {
+        "moonstones": 15
+      },
+      "premium": {
+        "moonstones": 60
+      }
+    },
+    {
+      "tier": 11,
+      "free": {
+        "dew": 5500
+      },
+      "premium": {
+        "acorns": 16500
+      }
+    },
+    {
+      "tier": 12,
+      "free": {
+        "acorns": 6000
+      },
+      "premium": {
+        "dew": 18000
+      }
+    },
+    {
+      "tier": 13,
+      "free": {
+        "dew": 6500
+      },
+      "premium": {
+        "acorns": 19500
+      }
+    },
+    {
+      "tier": 14,
+      "free": {
+        "acorns": 7000
+      },
+      "premium": {
+        "dew": 21000
+      }
+    },
+    {
+      "tier": 15,
+      "free": {
+        "moonstones": 20
+      },
+      "premium": {
+        "skin": "lantern_elder"
+      }
+    },
+    {
+      "tier": 16,
+      "free": {
+        "acorns": 8000
+      },
+      "premium": {
+        "dew": 24000
+      }
+    },
+    {
+      "tier": 17,
+      "free": {
+        "dew": 8500
+      },
+      "premium": {
+        "acorns": 25500
+      }
+    },
+    {
+      "tier": 18,
+      "free": {
+        "acorns": 9000
+      },
+      "premium": {
+        "dew": 27000
+      }
+    },
+    {
+      "tier": 19,
+      "free": {
+        "dew": 9500
+      },
+      "premium": {
+        "acorns": 28500
+      }
+    },
+    {
+      "tier": 20,
+      "free": {
+        "moonstones": 25
+      },
+      "premium": {
+        "moonstones": 60
+      }
+    },
+    {
+      "tier": 21,
+      "free": {
+        "dew": 10500
+      },
+      "premium": {
+        "acorns": 31500
+      }
+    },
+    {
+      "tier": 22,
+      "free": {
+        "acorns": 11000
+      },
+      "premium": {
+        "dew": 33000
+      }
+    },
+    {
+      "tier": 23,
+      "free": {
+        "dew": 11500
+      },
+      "premium": {
+        "acorns": 34500
+      }
+    },
+    {
+      "tier": 24,
+      "free": {
+        "acorns": 12000
+      },
+      "premium": {
+        "dew": 36000
+      }
+    },
+    {
+      "tier": 25,
+      "free": {
+        "moonstones": 30
+      },
+      "premium": {
+        "acorns": 37500
+      }
+    },
+    {
+      "tier": 26,
+      "free": {
+        "acorns": 13000
+      },
+      "premium": {
+        "dew": 39000
+      }
+    },
+    {
+      "tier": 27,
+      "free": {
+        "dew": 13500
+      },
+      "premium": {
+        "acorns": 40500
+      }
+    },
+    {
+      "tier": 28,
+      "free": {
+        "acorns": 14000
+      },
+      "premium": {
+        "dew": 42000
+      }
+    },
+    {
+      "tier": 29,
+      "free": {
+        "dew": 14500
+      },
+      "premium": {
+        "acorns": 43500
+      }
+    },
+    {
+      "tier": 30,
+      "free": {
+        "moonstones": 50
+      },
+      "premium": {
+        "moonstones": 60
+      }
+    }
+  ],
+  "dailyTaskPoints": 100,
+  "weeklyChallengePoints": 400,
+  "dailyTasks": [
+    {
+      "id": "collect_acorns",
+      "text": "Collect {n} Coins",
+      "stat": "collectedAcorns",
+      "base": 2000,
+      "perHall": 3000
+    },
+    {
+      "id": "collect_dew",
+      "text": "Collect {n} Provisions",
+      "stat": "collectedDew",
+      "base": 2000,
+      "perHall": 3000
+    },
+    {
+      "id": "finish_upgrades",
+      "text": "Finish {n} upgrades",
+      "stat": "upgradesDone",
+      "base": 2,
+      "perHall": 0
+    },
+    {
+      "id": "train_troops",
+      "text": "Train {n} troops",
+      "stat": "troopsTrained",
+      "base": 15,
+      "perHall": 5
+    },
+    {
+      "id": "win_raids",
+      "text": "Win {n} raids",
+      "stat": "raidsWon",
+      "base": 2,
+      "perHall": 0
+    },
+    {
+      "id": "earn_stars",
+      "text": "Earn {n} stars in raids",
+      "stat": "starsEarned",
+      "base": 3,
+      "perHall": 0
+    },
+    {
+      "id": "finish_research",
+      "text": "Finish {n} research",
+      "stat": "researchDone",
+      "base": 1,
+      "perHall": 0
+    }
+  ],
+  "weeklyChallenges": [
+    {
+      "id": "w_win_raids",
+      "text": "Win {n} raids this week",
+      "stat": "raidsWon",
+      "base": 12,
+      "perHall": 0
+    },
+    {
+      "id": "w_stars",
+      "text": "Earn {n} stars this week",
+      "stat": "starsEarned",
+      "base": 25,
+      "perHall": 0
+    },
+    {
+      "id": "w_upgrades",
+      "text": "Finish {n} upgrades this week",
+      "stat": "upgradesDone",
+      "base": 10,
+      "perHall": 0
+    },
+    {
+      "id": "w_clear",
+      "text": "Clear {n} obstacles this week",
+      "stat": "obstaclesCleared",
+      "base": 3,
+      "perHall": 0
+    },
+    {
+      "id": "w_research",
+      "text": "Finish {n} research this week",
+      "stat": "researchDone",
+      "base": 4,
+      "perHall": 0
+    },
+    {
+      "id": "w_trials",
+      "text": "Clear {n} new Shadow Trial tiers this week",
+      "stat": "trialsCleared",
+      "base": 2,
+      "perHall": 0
+    }
+  ],
+  "weeklyCount": 3
+}

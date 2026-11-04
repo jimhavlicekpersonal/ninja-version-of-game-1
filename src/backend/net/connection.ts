@@ -9,6 +9,9 @@
  */
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { villageToBase } from '../../gameplay/sim/defense';
+import { SIM_RULES } from '../../gameplay/sim/battle/battle';
+import { dataVersion } from '../../gameplay/sim/version';
+import { updateReason } from './clientVersion';
 import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
@@ -127,7 +130,7 @@ export class Connection {
     this.kv = o.kv ?? browserKeyValue;
     this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl);
     if (this.url) {
-      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build })))(this.url);
+      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build, dataVersion: dataVersion(o.game.data) })))(this.url);
       this.status = 'connecting';
       const g = o.game;
       if (g.onCommand && g.adoptEconomy && g.adoptVillage) {
@@ -363,6 +366,13 @@ export class Connection {
       if (!this.online) {
         if (this.status !== 'connecting') this.setStatus('connecting');
         this.server = await port.hello();
+        // Step 75: a server that no longer plays this game's battle rules (or this version) pauses online play
+        // with "Update Kagemura" instead of giving results the game cannot reproduce. Offline play goes on.
+        const why = updateReason(this.server, SIM_RULES, this.o.build ?? '');
+        if (why) {
+          this.setStatus('incompatible', why);
+          return;
+        }
         await this.ensurePlayer(port);
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
         // The real Grove replaces the bot Grove while playing online.
@@ -558,7 +568,9 @@ export class Connection {
   /** Queue a finished battle for the server and try to send it now. */
   report(kind: OutboxItem['kind'], sub: BattleSubmission): Promise<void> {
     const items = this.outbox();
-    if (!items.some((i) => i.sub.ticket === sub.ticket)) items.push({ id: sub.ticket, kind, sub, at: this.o.game.now() });
+    // Stamped with the rules and data it was played with (step 72): an update before it is sent can't change that.
+    const stamped: BattleSubmission = { ...sub, rules: sub.rules ?? SIM_RULES, dataVersion: sub.dataVersion ?? dataVersion(this.o.game.data) };
+    if (!items.some((i) => i.sub.ticket === sub.ticket)) items.push({ id: sub.ticket, kind, sub: stamped, at: this.o.game.now() });
     this.saveOutbox(items);
     return this.flush().catch((e) => this.handleError(e));
   }
@@ -617,7 +629,7 @@ export class Connection {
     let added = false;
     for (const r of this.o.game.state.battleLog) {
       if (r.settlement !== 'pending' || !r.ticket || queued.has(r.ticket)) continue;
-      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick, clientHash: r.result.hash } });
+      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick, clientHash: r.result.hash, ...(r.rules !== undefined ? { rules: r.rules } : {}) } });
       added = true;
     }
     if (added) this.saveOutbox(items);

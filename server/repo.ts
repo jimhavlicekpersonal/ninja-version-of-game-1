@@ -49,6 +49,17 @@ export interface Player {
   staff?: boolean;
   /** When the player last left a Gang (24 hours before joining another). */
   squadLeftAt?: number;
+  /** Battle rules the base was uploaded under (roadmap step 73); absent: uploaded before step 73. */
+  baseRules?: number;
+  /** The game this request came from (its headers; roadmap step 72). Set per request by the adapter, never stored. */
+  client?: ClientInfo;
+}
+
+/** What a request says about the game that sent it (`X-Sim-Rules`, `X-Data-Version`, `X-Client-Build`). */
+export interface ClientInfo {
+  rules?: number;
+  dataVersion?: string;
+  build?: string;
 }
 
 export type Findable = 'everyone' | 'friends_of_friends' | 'nobody';
@@ -78,6 +89,7 @@ export type PlayerPatch = Partial<
     | 'findable'
     | 'hideOnline'
     | 'staff'
+    | 'baseRules'
     | 'squadLeftAt'
   >
 >;
@@ -291,6 +303,9 @@ export interface Ticket {
   target?: number;
   /** The answer given when the ticket was used, so a repeated report gets the same answer (idempotent). */
   response?: unknown;
+  /** Battle rules and data version the ticket was issued under (roadmap steps 72-73); the report must match, and it is re-simulated with these rules. */
+  rules?: number;
+  dataVersion?: string;
 }
 
 export interface AttackRecord {

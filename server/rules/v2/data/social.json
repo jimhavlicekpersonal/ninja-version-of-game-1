@@ -1,0 +1,200 @@
+{
+  "membersMin": 10,
+  "membersMax": 20,
+  "groveNames": {
+    "first": [
+      "Silent",
+      "Crimson",
+      "Iron",
+      "Jade",
+      "Twin",
+      "Falling",
+      "Rising",
+      "Midnight",
+      "Thunder",
+      "Lantern",
+      "Hollow",
+      "Mountain"
+    ],
+    "second": [
+      "Crane",
+      "Lotus",
+      "Tiger",
+      "Fang",
+      "Blossom",
+      "River",
+      "Mask",
+      "Blade",
+      "Ember",
+      "Shadow"
+    ]
+  },
+  "colors": [
+    "#ff6b5b",
+    "#47b9f5",
+    "#5ccf4a",
+    "#ffd23f",
+    "#9b5fd6",
+    "#ff8a3d"
+  ],
+  "chatSlotMinutes": 20,
+  "chatChancePerSlot": 0.3,
+  "requestChancePerSlot": 0.12,
+  "requestSizes": [
+    5,
+    10,
+    15
+  ],
+  "requestTroops": [
+    "hedgehog_roller",
+    "frog_lobber",
+    "beetle_brute"
+  ],
+  "requestLifetimeHours": 8,
+  "maxChat": 80,
+  "requestCooldownMinutes": 30,
+  "chatPerMinute": 12,
+  "reinforcementChunkMinutes": 2,
+  "reinforcementChunkHousing": 5,
+  "xpPerHousing": 2,
+  "xpLevels": [
+    0,
+    50,
+    150,
+    300,
+    500,
+    800,
+    1200,
+    1700,
+    2300,
+    3000,
+    4000,
+    5200,
+    6600,
+    8200,
+    10000
+  ],
+  "chatLines": {
+    "random": [
+      "Morning, clan!",
+      "Rice paddies look great after the rain.",
+      "Just finished my Treasury upgrade!",
+      "Who wants to raid together later?",
+      "My artisans never sleep, I swear.",
+      "Good luck on your upgrades today!",
+      "The Stone Lanterns look so calm at night.",
+      "Remember to collect your Coins!",
+      "Almost three-starred a fortress just now!",
+      "Shinobi rush is underrated. Fight me.",
+      "Smoke first, then send everything. Works every time.",
+      "Upgrading my Clan Keep, see you in a day!",
+      "Back from a raid with full storehouses!",
+      "Saboteurs on the mortar, then guardians in. Clean.",
+      "Who has the tidiest village here?",
+      "Meditating for a bit, guard my village!"
+    ],
+    "greet": [
+      "Welcome to the Alliance!",
+      "Welcome, new ally! Glad to have you.",
+      "Welcome! Ask if you need warriors.",
+      "A new blade joins us. Welcome!"
+    ],
+    "thanks": [
+      "Thank you so much!",
+      "You are the best, thanks!",
+      "Thanks for the warriors!",
+      "Much appreciated, ally!",
+      "Honored, thank you!"
+    ],
+    "raidStart": [
+      "Alliance War has started! Use both your attacks!",
+      "Time to raid! Go for the stars!",
+      "Alliance War is on, good luck everyone!"
+    ],
+    "raidEnd": [
+      "Great Alliance War, everyone!",
+      "That was fun! Same time next week?",
+      "Thanks for fighting, team!"
+    ],
+    "reply": [
+      "Haha, so true!",
+      "Agreed!",
+      "Love that!",
+      "Good luck!",
+      "Same here!",
+      "Nice one!",
+      "You got this!",
+      ":)"
+    ],
+    "donated": [
+      "Sent you some warriors!",
+      "Here you go!",
+      "Warriors on the way!",
+      "Fresh warriors for you!"
+    ]
+  },
+  "profanity": [
+    "damn",
+    "hell",
+    "crap",
+    "stupid",
+    "idiot",
+    "dumb",
+    "loser",
+    "shut up",
+    "suck",
+    "sucks",
+    "jerk",
+    "moron",
+    "fool",
+    "hate you",
+    "ugly",
+    "kill yourself",
+    "kys",
+    "wtf",
+    "stfu",
+    "ass",
+    "bitch",
+    "bastard",
+    "shit",
+    "fuck",
+    "dick",
+    "piss",
+    "slut",
+    "whore",
+    "retard",
+    "cunt"
+  ],
+  "groveRaid": {
+    "epoch": 1767398400000,
+    "durationHours": 48,
+    "attacksPerMember": 2,
+    "prepOfferHours": 24,
+    "starOdds": {
+      "base3": 0.2,
+      "base2": 0.35,
+      "base1": 0.25,
+      "perHallDiff": 0.12
+    },
+    "rewards": {
+      "win": {
+        "acorns": 150000,
+        "dew": 150000,
+        "moonstones": 40,
+        "xp": 200
+      },
+      "draw": {
+        "acorns": 90000,
+        "dew": 90000,
+        "moonstones": 25,
+        "xp": 120
+      },
+      "loss": {
+        "acorns": 40000,
+        "dew": 40000,
+        "moonstones": 10,
+        "xp": 60
+      }
+    }
+  }
+}

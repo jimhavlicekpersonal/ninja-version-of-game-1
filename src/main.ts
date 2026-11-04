@@ -209,6 +209,13 @@ async function boot(): Promise<void> {
     onPractice: (army) => app?.practice(army),
     onDuel: (friend, layout, challengeId) => void app?.duel(friend, layout, challengeId),
     onGangWarAttack: (target, relay, generated) => void app?.gangWar(target, relay, generated),
+    updateLink: () => {
+      // The store page of this app when the build knows it; on the web a reload fetches the new version.
+      const store = isNative() ? (platform() === 'ios' ? import.meta.env.VITE_APP_STORE_URL : import.meta.env.VITE_PLAY_STORE_URL) : undefined;
+      if (store) return { label: platform() === 'ios' ? 'Open the App Store' : 'Open Google Play', open: () => window.open(store, '_blank') };
+      if (isNative()) return null;
+      return { label: 'Reload to update', open: () => location.reload() };
+    },
     gameCenterFriends: gameCenterFriends() ?? undefined,
     prefs,
     notifyPrefs,

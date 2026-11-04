@@ -1,0 +1,59 @@
+{
+  "maxPerDay": 4,
+  "quietHours": {
+    "start": 22,
+    "end": 8
+  },
+  "types": [
+    {
+      "id": "builds",
+      "label": "Builds and research finish",
+      "default": true
+    },
+    {
+      "id": "army",
+      "label": "Army is ready",
+      "default": true
+    },
+    {
+      "id": "groveRaid",
+      "label": "Alliance War starts",
+      "default": true
+    },
+    {
+      "id": "collectors",
+      "label": "Collectors are full",
+      "default": true
+    },
+    {
+      "id": "dailyChest",
+      "label": "Daily chest is ready",
+      "default": false
+    },
+    {
+      "id": "events",
+      "label": "Limited-time events start",
+      "default": false
+    },
+    {
+      "id": "shield",
+      "label": "Shield runs out",
+      "default": false
+    },
+    {
+      "id": "raided",
+      "label": "Your village was raided (online)",
+      "default": true
+    },
+    {
+      "id": "donations",
+      "label": "Warriors arrive from your Alliance (online)",
+      "default": false
+    },
+    {
+      "id": "friends",
+      "label": "Friend requests and Gang invites (online)",
+      "default": true
+    }
+  ]
+}
