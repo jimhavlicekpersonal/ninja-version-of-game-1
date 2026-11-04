@@ -10,7 +10,7 @@ import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevel
 import { chestContents, chestOutcome, emptyDaily, streakAfterClaim } from './daily';
 import { eventEffect } from './events';
 import { achievementViews } from './achievements';
-import { scaleReward, skipCost, topUpCost } from './economy';
+import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
 import { canPurchase, productInfo } from './monetization';
 import { scatterObstacles } from './obstacles';
 import { triggerOffer } from './offers';
@@ -685,7 +685,7 @@ export function trainingSkipQuote(state: VillageState, now: number, data: GameDa
   const doneAt = armyReadyAt(state, data);
   if (doneAt === null || doneAt <= now) return null;
   const seconds = Math.ceil((doneAt - now) / 1000);
-  return { seconds, moonstones: skipCost(seconds, data) };
+  return { seconds, moonstones: trainingSkipCost(seconds, hallLevel(state, data), data) };
 }
 
 function skipTraining(s: VillageState, now: number, data: GameData): CommandResult {

@@ -16,6 +16,10 @@
 // costs more at every Keep (balance fix #20). Idempotent: run it again after
 // changing loot, Keep costs or the curves.
 //
+// It also writes `trainingSkipScaleByHall` (the same scale, at least 1) for
+// finishing army training with Jade, so skip-and-raid farming is no longer a
+// far cheaper route from Jade to resources than a top-up.
+//
 //   node tools/balance/topup.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -51,6 +55,10 @@ for (let k = 2; k < keep.length; k++) {
 }
 
 store.topUpScaleByHall = scales;
+// Finishing army training with Jade is the other way to turn Jade into resources (skip, raid,
+// repeat). At a flat time price a Keep 15 army cost ~37 Jade to finish and looted what a top-up
+// sells for ~2,400, so it scales the same way, never below the plain price.
+store.trainingSkipScaleByHall = scales.map((v) => Math.max(1, v));
 writeFileSync('src/gameplay/data/store.json', `${JSON.stringify(store, null, 2)}\n`);
 console.log('Keep | scale | Jade per raid | rush next Keep');
 for (let k = 1; k <= loot.length; k++) {

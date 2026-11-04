@@ -158,6 +158,7 @@ export class Hud {
       if (active) this.sheet.hidden = true;
     });
     this.bus.on('toast', ({ text, kind }) => this.toast(text, kind));
+    this.bus.on('placement:buy', (p) => void this.buyAndPlace(p.buildingType, p.x, p.y));
     window.setInterval(() => this.everySecond(), 1000);
     window.setInterval(() => {
       if (this.showFps) this.fpsEl.textContent = `${Math.round(this.deps.getFps())} fps`;
@@ -751,6 +752,29 @@ export class Hud {
     const close = this.modal('Build', body, [], 'wide');
   }
 
+  /** Confirm the Jade, then buy what the building is missing and place it in one step. */
+  private async buyAndPlace(type: string, x: number, y: number): Promise<void> {
+    const gd = this.c.data;
+    const action = { type: 'place', buildingType: type, x, y } as const;
+    const placed = (r: ReturnType<typeof this.c.dispatch>) => {
+      if (!r.ok) {
+        this.toast(r.message, 'error');
+        return false;
+      }
+      this.bus.emit('placement:cancel');
+      this.bus.emit('select', r.state.buildings[r.state.buildings.length - 1].id);
+      return true;
+    };
+    const tq = topUpQuote(this.c.state, action, this.c.now(), gd);
+    // Collected enough meanwhile: no Jade needed.
+    if (!tq) {
+      placed(this.c.dispatch(action));
+      return;
+    }
+    const missing = Object.entries(tq.missing).map(([k, v]) => `${formatNumber(v as number)} ${RES_LABEL[k as ResourceKind]}`).join(' and ');
+    await this.econ.spendMoonstones('Buy missing resources', `Buy the missing ${missing} and build ${gd.buildings[type].name} here`, tq.moonstones, () => placed(this.c.dispatch({ type: 'topUp', then: action })));
+  }
+
   private shopGrid(categories: string[], close: () => void): HTMLElement {
     const gd = this.c.data;
     const now = this.c.now();
@@ -758,6 +782,8 @@ export class Hud {
     for (const [type, def] of Object.entries(gd.buildings)) {
       if (!def.inShop || !categories.includes(def.category)) continue;
       const q = placeQuote(this.c.state, gd, type, now);
+      // Short only of resources: offer to buy them with Jade when the spot is confirmed.
+      const tq = !q.ok && q.code === 'NOT_ENOUGH_RESOURCES' ? topUpQuote(this.c.state, { type: 'place', buildingType: type, x: 0, y: 0 }, now, gd) : null;
       const lim = limitFor(this.c.state, gd, type);
       const have = countOfType(this.c.state, type);
       const first = def.levels[0];
@@ -765,23 +791,27 @@ export class Hud {
       const card = h(
         'button',
         {
-          class: `shop-card${q.ok ? '' : ' disabled'}`,
+          class: `shop-card${q.ok || tq ? '' : ' disabled'}`,
           type: 'button',
-          'aria-disabled': !q.ok,
+          'aria-disabled': !q.ok && !tq,
           onclick: () => {
-            if (!q.ok) {
+            if (!q.ok && !tq) {
               this.toast(q.message, 'error');
               return;
             }
             close();
-            this.bus.emit('placement:start', { kind: 'new', buildingType: type });
+            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !q.ok });
           },
         },
         thumb ? h('img', { src: thumb, alt: '' }) : h('div', { class: 'thumb-ph' }),
         h('div', { class: 'shop-name' }, def.name),
         h('div', { class: 'shop-count' }, `Built ${have}/${lim.count}`),
         h('div', { class: 'shop-cost' }, costChips(first.cost, missingFor(this.c.state.resources, first.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(first.buildSeconds * 1000))),
-        !q.ok ? h('div', { class: 'shop-why' }, q.message) : null,
+        tq
+          ? h('div', { class: 'shop-buy' }, 'Buy missing ', h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)))
+          : !q.ok
+            ? h('div', { class: 'shop-why' }, q.message)
+            : null,
       );
       grid.append(card);
     }

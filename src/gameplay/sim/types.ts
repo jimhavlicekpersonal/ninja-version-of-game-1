@@ -588,6 +588,8 @@ export interface StoreDef {
   topUpCurve: [number, number][];
   /** Amounts are divided by this (per Keep, 1-15) before `topUpCurve` prices them (tools/balance/topup.mjs). */
   topUpScaleByHall: number[];
+  /** Multiplies the time price of finishing army training with Jade (per Keep, 1-15; tools/balance/topup.mjs). */
+  trainingSkipScaleByHall: number[];
   minorMonthlyCapUsd: number;
 }
 

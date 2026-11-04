@@ -49,6 +49,8 @@ interface Placement {
   ghost: Phaser.GameObjects.Image;
   outline: Phaser.GameObjects.Graphics;
   valid: boolean;
+  /** Buy the missing resources with Jade on confirm (the HUD asks first). */
+  buy?: boolean;
 }
 
 interface DragState {
@@ -146,7 +148,7 @@ export class VillageScene extends Phaser.Scene {
         }
         if (finished.some((f) => f.level > 0)) sound.play('levelUp');
       }),
-      this.bus.on('placement:start', (p) => (p.kind === 'new' ? this.startPlacement('new', p.buildingType) : this.startPlacement('move', undefined, p.id))),
+      this.bus.on('placement:start', (p) => (p.kind === 'new' ? this.startPlacement('new', p.buildingType, undefined, p.buy) : this.startPlacement('move', undefined, p.id))),
       this.bus.on('placement:confirm', () => this.confirmPlacement()),
       this.bus.on('placement:cancel', () => this.endPlacement()),
       this.bus.on('select', (id) => {
@@ -668,7 +670,7 @@ export class VillageScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------ placement
 
-  private startPlacement(kind: 'new' | 'move', type?: string, id?: string): void {
+  private startPlacement(kind: 'new' | 'move', type?: string, id?: string, buy = false): void {
     this.endPlacement();
     const gd = this.controller.data;
     const state = this.controller.state;
@@ -699,7 +701,7 @@ export class VillageScene extends Phaser.Scene {
     const o = buildingOrigin(tex, size);
     const ghost = this.add.image(0, 0, key).setOrigin(o.x, o.y).setScale(buildingScale(tex, size)).setAlpha(0.85).setDepth(OVERLAY_DEPTH - 5);
     const outline = this.add.graphics().setDepth(OVERLAY_DEPTH - 6);
-    this.placement = { kind, type: type!, id, x, y, size, ghost, outline, valid: false };
+    this.placement = { kind, type: type!, id, x, y, size, ghost, outline, valid: false, buy };
     this.tweens.add({ targets: this.grid, alpha: 1, duration: 200 });
     this.selectedId = null;
     this.bus.emit('select', null);
@@ -750,6 +752,11 @@ export class VillageScene extends Phaser.Scene {
     if (!pl) return;
     if (!pl.valid) {
       this.bus.emit('toast', { text: "That spot isn't free.", kind: 'error' });
+      return;
+    }
+    if (pl.kind === 'new' && pl.buy) {
+      // Spending Jade needs the HUD's confirm step; it places the building and ends the placement.
+      this.bus.emit('placement:buy', { buildingType: pl.type, x: pl.x, y: pl.y });
       return;
     }
     const r =

@@ -21,6 +21,18 @@ export function skipCost(seconds: number, data: GameData): number {
 }
 
 /**
+ * Moonstones to finish `seconds` of army training at a Keep. Skipping training and raiding again
+ * turns Jade into loot, so it is priced on the same Keep scale as a top-up (store.json
+ * `trainingSkipScaleByHall`), never below the plain time price.
+ */
+export function trainingSkipCost(seconds: number, hallLevel: number, data: GameData): number {
+  if (seconds <= 0) return 0;
+  const t = data.store.trainingSkipScaleByHall;
+  const scale = Math.max(1, t[Math.max(1, Math.min(t.length, hallLevel)) - 1] ?? 1);
+  return Math.max(1, Math.ceil(interpolate(data.store.skipCurve, seconds) * scale));
+}
+
+/**
  * How much the buyer's Keep stretches the top-up curve (store.json `topUpScaleByHall`).
  * The curve is priced for Keep 5 (scale 1); later Keeps buy more per Jade, earlier ones less,
  * so a raid's worth of loot costs a similar share of a Keep's economy everywhere.

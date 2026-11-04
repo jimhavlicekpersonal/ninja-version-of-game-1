@@ -38,9 +38,30 @@ The scale is `(average loot at Keep / average loot at Keep 5) ^ 0.5`, lowered wh
 - The starting Jade buys under 8 raids at Keep 2.
 - From Keep 6 on, a raid's worth costs at most 100× a two-hour training skip.
 - Rushing the next Keep costs more at every Keep, rush(4) is more than the starting Jade, and rush(5) is at least 3× it.
+- Finishing a two-hour army costs the plain price up to Keep 5, more after, and stays 1–10× cheaper than buying the same loot.
 - Nothing is charged when the action can't happen, when nothing is missing, or beyond storage. Top-ups pay only for upgrade, place, train and research.
 
-## Left open
+## Skip training, then raid
 
-- **Skip training, then raid.** Skipping training and raiding is still the cheapest way to turn Jade into resources (about 37 Jade per two-hour army). It is bounded by battle length and the Next fee, but deserves its own look.
-- **Model player.** The model player doesn't buy, so pacing tests are unchanged.
+The other way to turn Jade into resources is to finish army training with Jade and raid again. At the flat time price, a two-hour army cost ~37 Jade to finish at every Keep. At Keep 15 its raid then looted what a top-up sells for ~2,428 Jade: a 65× discount, which made the top-up price meaningless to big spenders.
+
+Finishing training now costs the time price × `trainingSkipScaleByHall[keep]`: the top-up scale, never below 1, written by the same tool. Building and research skips keep the plain time price, because they don't feed a loot loop.
+
+| Keep | Finish a 2 h army | One raid's loot by top-up | Top-up ÷ skip-and-raid |
+|---|---|---|---|
+| 1–5 | 37 | 69–268 | 1.9–7.2 |
+| 6 | 55 | 391 | 7.1 |
+| 10 | 145 | 793 | 5.5 |
+| 15 | 559 | 2,428 | 4.3 |
+
+Time stays the better buy at every Keep: the tests require a ratio between 1 and 10.
+
+## Where players see it
+
+- **Building sheet:** "Buy missing" starts the upgrade.
+- **Build menu:** a card short only of resources shows "Buy missing" with its Jade price. The player picks a spot; on confirm, the HUD asks before spending (`placement:buy`), then buys and places in one step.
+- **Army panel, Train tab:** "Buy & Fill N" (or "Buy & Next N"), full width below the normal buttons.
+- **Army panel, Research tab:** "Buy missing".
+- **Every buy** goes through the Jade confirm step, which names what is bought and the price.
+
+The model player doesn't buy, so the pacing tests are unchanged.

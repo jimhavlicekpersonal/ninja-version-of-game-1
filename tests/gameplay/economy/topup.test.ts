@@ -5,8 +5,8 @@
  * theory behind that (see docs/game-theory/TOP_UP.md).
  */
 import { describe, expect, it } from 'vitest';
-import { advance, applyCommand, topUpQuote, type Command } from '../../../src/gameplay/sim/village';
-import { skipCost, topUpOne, topUpScale } from '../../../src/gameplay/sim/economy';
+import { advance, applyCommand, topUpQuote, trainingSkipQuote, type Command } from '../../../src/gameplay/sim/village';
+import { skipCost, topUpOne, topUpScale, trainingSkipCost } from '../../../src/gameplay/sim/economy';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { data, find, must, newGame } from '../sim/helpers';
 
@@ -160,5 +160,44 @@ describe('top-up for warriors and research', () => {
     expect(q).toBeTruthy();
     const s = must(state, { type: 'topUp', then: action }, clock.now());
     expect(s.research.active.some((a) => a.troop === SHINOBI)).toBe(true);
+  });
+});
+
+describe('finishing training is priced like a top-up (skip-and-raid farming)', () => {
+  /** Jade to finish a two-hour army (the refill target) at Keep `k`. */
+  const finishArmy = (k: number) => trainingSkipCost(7200, k, data);
+
+  it('never costs less than the plain time price, and the same up to Keep 5', () => {
+    for (let k = 1; k <= halls; k++) expect(finishArmy(k)).toBeGreaterThanOrEqual(skipCost(7200, data));
+    for (let k = 1; k <= 5; k++) expect(finishArmy(k)).toBe(skipCost(7200, data));
+  });
+
+  it('skip-and-raid is at most 10x cheaper than a top-up for the same loot at every Keep (was ~65x at Keep 15)', () => {
+    for (let k = 1; k <= halls; k++) {
+      const ratio = raidPrice(k) / finishArmy(k);
+      expect(ratio, `Keep ${k}`).toBeLessThanOrEqual(10);
+      // Time stays the cheaper thing to buy: finishing an army never costs more than buying its loot.
+      expect(ratio, `Keep ${k}`).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('the Army panel quote and the command charge the Keep price', () => {
+    const g = newGame({ acorns: 1500, dew: 100_000, moonstones: 5000 });
+    let s = must(g.state, { type: 'place', buildingType: 'burrow_barracks', x: 2, y: 2 }, g.clock.now());
+    s = must(s, { type: 'place', buildingType: 'army_camp', x: 6, y: 2 }, g.clock.now());
+    g.clock.advanceSeconds(3600);
+    s = advance(s, g.clock.now(), data).state;
+    // Pretend a Keep 12 village: the same queue costs more Jade to finish.
+    const late = { ...s, buildings: s.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 12 } : b)) };
+    const t0 = g.clock.now();
+    const q1 = must(s, { type: 'train', troop: 'hedgehog_roller', count: 20 }, t0);
+    const q12 = must(late, { type: 'train', troop: 'hedgehog_roller', count: 20 }, t0);
+    const k1 = trainingSkipQuote(q1, t0, data)!;
+    const k12 = trainingSkipQuote(q12, t0, data)!;
+    expect(k12.seconds).toBe(k1.seconds);
+    expect(k12.moonstones).toBe(trainingSkipCost(k12.seconds, 12, data));
+    expect(k12.moonstones).toBeGreaterThan(k1.moonstones);
+    const done = must(q12, { type: 'skipTraining' }, t0);
+    expect(q12.resources.moonstones - done.resources.moonstones).toBe(k12.moonstones);
   });
 });
