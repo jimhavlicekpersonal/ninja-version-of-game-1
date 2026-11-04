@@ -233,6 +233,8 @@ async function boot(): Promise<void> {
     signIn: platformSignIn({ googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined, appleServicesId: import.meta.env.VITE_APPLE_SERVICES_ID as string | undefined }),
     groveSource,
     connection,
+    // Friend links (step 59): the web game's own address; in the apps, VITE_PUBLIC_URL (the web game) if set.
+    friendLinkBase: () => (isNative() ? (env.VITE_PUBLIC_URL ?? null) || null : `${location.origin}${location.pathname}`),
   });
 
   app = new App({
@@ -248,6 +250,16 @@ async function boot(): Promise<void> {
   });
 
   connection.start();
+
+  // A friend link (?friend=KAGE-XXXXXX) opens Friends on that player once the game is online.
+  const friendParam = new URLSearchParams(location.search).get('friend');
+  if (friendParam && !sandbox) {
+    const stop = connection.subscribe(() => {
+      if (!connection.canFriends) return;
+      stop();
+      hud.openFriends(friendParam);
+    });
+  }
 
   // A raid the app closed in the middle of plays out now, so it can't be erased by quitting.
   const interrupted = controller.resolvePendingBattle();

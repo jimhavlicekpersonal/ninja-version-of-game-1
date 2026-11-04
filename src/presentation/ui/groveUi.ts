@@ -23,7 +23,7 @@ export interface GroveUiDeps {
 
 type Tab = 'chat' | 'requests' | 'members' | 'raid';
 
-const REASON_LABELS: Record<ReportReason, string> = {
+export const REASON_LABELS: Record<ReportReason, string> = {
   harassment: 'Bullying or harassment',
   hate: 'Hate or slurs',
   sexual: 'Sexual content',

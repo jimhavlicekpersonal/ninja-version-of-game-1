@@ -13,7 +13,10 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, HelloResponse, LinkCredential, LinkProvider, PlayerView, PurchaseStore } from './protocol';
+import type { BattleSubmission, FriendRequestBody, FriendRequestResult, FriendsResponse, HelloResponse, LinkCredential, LinkProvider, PlayerCard, PlayerView, PrivacyRequest, PurchaseStore, ReportReason } from './protocol';
+import { normalizeFriendCode } from './names';
+// Name rules for instant hints in the UI (the server decides; step 59).
+export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './names';
 import type { PurchaseVerifier } from '../payments/provider';
 import { VillageSync, type SyncGame } from './villageSync';
 import { SIM_RULES } from '../../gameplay/sim/battle/battle';
@@ -244,6 +247,58 @@ export class Connection {
 
   get online(): boolean {
     return this.status === 'online';
+  }
+
+  // ------------------------------------------------------------ friends (roadmap steps 59-60)
+
+  /** The server has friends (and this game is online with it). */
+  get canFriends(): boolean {
+    return this.online && Boolean(this.server?.features.includes('friends'));
+  }
+
+  private port_(): ServerPort {
+    if (!this.port || !this.online) throw new Error('Friends need online play. Check your connection.');
+    return this.port;
+  }
+
+  friends(): Promise<FriendsResponse> {
+    return this.port_().friends();
+  }
+  /**
+   * One player by exact name or by friend code: text starting with "KAGE" is a
+   * code; otherwise the name is tried first, then the text as a code (codes may
+   * be typed without the prefix).
+   */
+  async findPlayer(text: string): Promise<PlayerCard> {
+    const code = normalizeFriendCode(text);
+    if (code && /^\s*kage/i.test(text)) return this.port_().playerByCode(code);
+    try {
+      return await this.port_().lookupPlayer(text);
+    } catch (e) {
+      if (code && e instanceof ServerError && e.code === 'not_found') return this.port_().playerByCode(code);
+      throw e;
+    }
+  }
+  addFriend(req: FriendRequestBody): Promise<FriendRequestResult> {
+    return this.port_().sendFriendRequest(req);
+  }
+  answerFriendRequest(id: string, accept: boolean): Promise<void> {
+    return this.port_().answerFriendRequest(id, accept);
+  }
+  cancelFriendRequest(id: string): Promise<void> {
+    return this.port_().cancelFriendRequest(id);
+  }
+  unfriend(playerId: string): Promise<void> {
+    return this.port_().unfriend(playerId);
+  }
+  setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
+    return this.port_().setPrivacy(req);
+  }
+  blockPlayer(playerId: string): Promise<void> {
+    return this.port_().block(playerId);
+  }
+  reportPlayer(playerId: string, reason: ReportReason, note: string, block: boolean): Promise<unknown> {
+    return this.port_().report({ kind: 'player', playerId, reason, note, block });
   }
 
   /** Save a server address chosen in Settings: a URL, '' for the built-in one, or 'off'. Takes effect on reload. */

@@ -134,6 +134,13 @@ export const icons = {
       '<circle cx="9.5" cy="7" r="1.2" fill="#f7f0e1"/><circle cx="14.5" cy="12" r="1.2" fill="#f7f0e1"/>',
     rad('kg-red', [[0, '#f08a77'], [1, '#a82f20']]) + rad('kg-blue', [[0, '#8fc0e8'], [1, '#2a5a85']]),
   ),
+  /** Two ninja heads, one in front: Friends (roadmap step 60). */
+  friends: svg(
+    '<circle cx="15.5" cy="8" r="3.6" fill="#8fa3bb" stroke="#26303d" stroke-width="1.3"/><path d="M9.8 19.5c.6-3.6 2.9-5.6 5.7-5.6s5.1 2 5.7 5.6z" fill="#8fa3bb" stroke="#26303d" stroke-width="1.3" stroke-linejoin="round"/>' +
+      '<circle cx="9" cy="9.5" r="4" fill="url(#kg-steel)" stroke="#26303d" stroke-width="1.4"/><path d="M5.2 8.6h7.6" stroke="#a82f20" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M2.6 21c.7-4 3.3-6.2 6.4-6.2s5.7 2.2 6.4 6.2z" fill="url(#kg-steel)" stroke="#26303d" stroke-width="1.4" stroke-linejoin="round"/>',
+    STEEL,
+  ),
   toadstool: svg(
     `<path d="M2.5 9.5L12 4l9.5 5.5c-1.5.8-3.4 1-5 .8H7.5c-1.6.2-3.5 0-5-.8z" fill="url(#kg-red)" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/>` +
       `<rect x="6" y="10.3" width="12" height="4" fill="url(#kg-washi)" stroke="${INK}" stroke-width="1.2"/>` +

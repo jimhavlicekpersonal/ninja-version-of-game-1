@@ -23,6 +23,7 @@ import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
+import { FriendsUi } from './friendsUi';
 import { GroveUi } from './groveUi';
 import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
@@ -75,6 +76,8 @@ export interface HudDeps {
   groveSource: GroveSource;
   /** Online play (status 'off' when no server is configured). */
   connection: Connection;
+  /** The address a friend link opens (step 59); null: share codes only. */
+  friendLinkBase?: () => string | null;
 }
 
 /** localStorage: the kept village already offered at start-up. */
@@ -106,6 +109,8 @@ export class Hud {
   private openModals = new Set<() => void>();
   readonly econ: EconomyUi;
   readonly grove: GroveUi;
+  readonly friends: FriendsUi;
+  private friendsBtn: HTMLElement | null = null;
   readonly daily: DailyUi;
   private readonly army: ArmyUi;
   private armyPill = h('span', { class: 'army-pill' });
@@ -136,6 +141,16 @@ export class Hud {
       source: this.deps.groveSource,
       troopThumb: (t) => this.deps.troopThumb(t),
       onGroveAttack: (i) => this.deps.onGroveAttack(i),
+    });
+    this.friends = new FriendsUi({
+      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      connection: this.deps.connection,
+      shareBase: () => this.deps.friendLinkBase?.() ?? null,
+      // Real raiders (never simulated ones) and Alliance mates.
+      suggestions: () => [
+        ...this.c.state.battleLog.filter((r) => r.kind === 'defense' && !r.simulated).map((r) => r.opponentName),
+        ...this.deps.groveSource.snapshot().members.filter((m) => !m.you && this.deps.groveSource.snapshot().kind === 'online').map((m) => m.name),
+      ],
     });
     this.daily = new DailyUi({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() });
     this.army = new ArmyUi({
@@ -260,6 +275,7 @@ export class Hud {
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => this.grove.open()),
+      (this.friendsBtn = railBtn('Friends', icons.friends, () => this.friends.open())),
       railBtn('Trials', icons.leaf, () => this.openTrials()),
     );
     this.rail = rail;
@@ -348,8 +364,14 @@ export class Hud {
     ]);
   }
 
+  /** Open Friends, looking up a name or code (a friend link). */
+  openFriends(search?: string): void {
+    this.friends.open(search);
+  }
+
   private updateNet(): void {
     const conn = this.deps.connection;
+    if (this.friendsBtn) this.friendsBtn.hidden = !conn.canFriends;
     if (conn.status === 'incompatible' && !this.updateNoticeShown) {
       this.updateNoticeShown = true;
       this.showUpdateNeeded();
