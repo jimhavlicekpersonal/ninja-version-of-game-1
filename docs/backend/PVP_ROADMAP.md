@@ -156,7 +156,13 @@ Owner requirement: players must be able to **find friends, battle them, and team
 
 ### 5.2 Finding friends
 - **Friend code:** every player gets a short code (for example `KAGE-7Q4M`). Add by code, by a share link (`https://<domain>/f/<code>`, which opens the app or the web game), or by QR code shown in the app.
-- **Name search:** search by exact display name plus a 4-digit tag (`Ryu#4821`), so strangers can't browse the player list. Off for players under 13.
+- **Direct username lookup (primary way to find a friend):** every player has a **unique username** (`@ryu_shadow`). Typing it exactly finds that one player, shows their profile card (username, display name, Keep, league, Gang), and offers "Add friend" and "Duel".
+  - Rules: 3–16 characters, letters, digits and `_`; unique ignoring case and look-alike characters (`0`/`o`, `1`/`l`/`i`); word-filtered; reserved words blocked (`admin`, `kagemura`, `support`, staff names).
+  - Chosen at sign-up, with suggestions if taken. One free change every 30 days; the old username is held for 30 days so nobody can grab it to impersonate.
+  - Exact match only: no partial matches, no browsing or listing of players, so the player list can't be scraped. Lookups are rate-limited (about 30 a minute and 300 a day per player) and a lookup of a missing username says only "No player with that username".
+  - The display name (2–24 characters, not unique) stays what appears in battles and chat; the username is how people find you.
+  - Privacy setting "Who can find me by username": Everyone (default for 13+), Friends of friends, Nobody (friend code only). Under-13 accounts default to Nobody.
+  - Migration: existing players get a username from their display name (plus digits if taken) and one free change.
 - **Suggestions:** recent opponents, Alliance mates, and (optional, opt-in) Game Center / Play Games friends. **No phone contacts upload** (privacy label stays small).
 - Requests expire after 14 days. Players can block, which removes the friendship and hides them from search, and report (step 15's report system).
 - Friend list shows Keep, Honor, league, Gang, online / last seen (players can hide their online status).
@@ -193,14 +199,16 @@ An asynchronous war, so no real-time servers are needed:
 - Gang reinforcements reuse `BattleSetup.reinforcements` on the defending side (exists for donated troops).
 
 ### 5.7 Server data
-New tables: `friend_codes`, `friendships` (pair, status, created), `friend_requests`, `blocks`, `squads`, `squad_members` (one Gang per player), `squad_chat`, `squad_wars` (pairing, window, roster snapshots, score), `squad_war_attacks` (including relay order and end state), `duels`. Gang Rating columns on `squads`.
+New tables: `usernames` (unique, normalized form, held-until for released names), `friend_codes`, `friendships` (pair, status, created), `friend_requests`, `blocks`, `squads`, `squad_members` (one Gang per player), `squad_chat`, `squad_wars` (pairing, window, roster snapshots, score), `squad_war_attacks` (including relay order and end state), `duels`. Gang Rating columns on `squads`.
 
 ### 5.8 Client → server data (additions to section 3)
 ```ts
 // Friends
-POST /v1/friends/requests      { code } | { name, tag }
+GET  /v1/players/lookup?username=ryu_shadow  → { id, username, name, keep, league, squad? } | 404
+POST /v1/friends/requests      { code } | { username }
+PUT  /v1/me/username          { username }  → 409 'taken' with suggestions
 POST /v1/friends/requests/:id  { accept: boolean }
-GET  /v1/friends                → { friends: [{ id, name, tag, keep, honor, league, squad?, lastSeen? }] }
+GET  /v1/friends                → { friends: [{ id, username, name, keep, honor, league, squad?, lastSeen? }] }
 POST /v1/blocks                { playerId }      DELETE /v1/friends/:id
 // Duels
 POST /v1/duels/ticket          { friendId, layout?: 'live' | 'duel' }  → { ticket, seed, base, expiresAt }
@@ -218,7 +226,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 
 ### 5.9 Store and safety rules
 - Block and report on every friend, duel, Gang and chat surface (Apple 1.2). Chat filter on for everyone.
-- Under-13: no name search, friend codes only, Gang chat limited to preset phrases unless a parent allows more (COPPA). Under-18 spending cap unchanged.
+- Under-13: not findable by username unless a parent allows it (friend codes only), Gang chat limited to preset phrases unless a parent allows more (COPPA). Under-18 spending cap unchanged.
 - No paid advantage in Gang Wars: war chests, relay turns and war attacks are never sold.
 - Cost impact: small. Duels and war strikes are re-simulated like PvP (same CPU per battle); extra storage is war snapshots, kept 30 days.
 
@@ -302,7 +310,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 
 ### Phase 9: Friends and Gangs (~6–9 weeks) [Code, design in section 5]
 Needs steps 14–15 (deletion, report/block) and 24 (account linking). Build it after Phase 3 and before Phase 7, so it ships at launch. Order:
-- [ ] 59. Friend codes, share links, QR, exact name#tag search (off under 13), requests, accept, remove, block. Server tables + endpoints + contract tests.
+- [ ] 59. Friend codes, share links, QR, direct username lookup (unique usernames, look-alike check, reserved words, 30-day change and hold, rate limit, "who can find me" setting, migration for existing players), requests, accept, remove, block. Server tables + endpoints + contract tests.
 - [ ] 60. Friends panel in the client (list, online status toggle, suggestions from recent opponents and Alliance mates).
 - [ ] 61. Optional Game Center / Play Games friend import (opt-in).
 - [ ] 62. Friendly Duels: duel tickets, re-sim, replay to both players, rivalry tally, optional duel layout, duel challenge. Unranked (test that Honor, loot and ratings never change).
