@@ -11,12 +11,18 @@
  *   {"register":{"limit":200,"windowMs":3600000}} on a staging server.
  * - ADMIN_TOKEN: a long random secret that turns on the staff API
  *   (/admin/v1/…: deletion requests, moderation queue). Unset: no staff API.
+ * - REDIS_URL: redis:// or rediss:// (Upstash). Shares the leaderboard, match
+ *   locks and rate-limit counters between instances. Unset: the database
+ *   holds the leaderboard and locks, and each instance counts its own limits.
  */
 import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
+import type { SharedStores } from './nodeContext';
 import { PgRepo } from './pgRepo';
-import type { RateLimits } from './rateLimit';
+import { DEFAULT_RATE_LIMITS, type RateLimiter, type RateLimits } from './rateLimit';
+import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
+import { RedisLeaderboard, RedisLocks, RedisRateLimiter } from './shared';
 
 function trustProxy(v: string | undefined): boolean | number | string {
   if (!v || v === 'false' || v === '0') return false;
@@ -46,7 +52,17 @@ async function main(): Promise<void> {
     repo = new MemoryRepo();
   }
   const rateLimits = process.env.RATE_LIMITS ? (JSON.parse(process.env.RATE_LIMITS) as Partial<RateLimits>) : undefined;
-  const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true, trustProxy: trustProxy(process.env.TRUST_PROXY), rateLimits, adminToken: process.env.ADMIN_TOKEN || undefined });
+  let shared: SharedStores | undefined;
+  let rateLimiter: RateLimiter | undefined;
+  if (process.env.REDIS_URL) {
+    const redis = RedisClient.fromUrl(process.env.REDIS_URL);
+    const board = new RedisLeaderboard(redis);
+    const added = await board.rebuildIfMissing(repo);
+    if (added) console.log(`Leaderboard rebuilt in Redis from the database (${added} players).`);
+    shared = { board, locks: new RedisLocks(redis) };
+    rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits });
+  }
+  const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true, trustProxy: trustProxy(process.env.TRUST_PROXY), rateLimits, rateLimiter, shared, adminToken: process.env.ADMIN_TOKEN || undefined });
   const port = Number(process.env.PORT ?? 8787);
   await app.listen({ port, host: '0.0.0.0' });
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.

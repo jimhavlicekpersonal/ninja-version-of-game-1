@@ -252,7 +252,7 @@ export class PgRepo implements Repo {
        where p.base is not null and p.shield_until <= $1
          and p.hall_level between $2 and $3 and p.trophies between $4 and $5
          and not (p.id = any($6::text[]))
-         and not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7)
+         and ($7::bigint is null or not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7))
        order by random() limit $8`,
       [q.now, q.minHall, q.maxHall, q.minTrophies, q.maxTrophies, q.excludeIds, q.lockedSince, q.limit],
     );
@@ -266,6 +266,17 @@ export class PgRepo implements Repo {
   async rankOf(trophies: number): Promise<number> {
     const r = await this.rows('select count(*) as n from players where base is not null and trophies > $1', [trophies]);
     return 1 + num(r[0]?.n);
+  }
+
+  async playersByIds(ids: string[]): Promise<Player[]> {
+    if (!ids.length) return [];
+    const r = (await this.rows('select * from players where id = any($1::text[])', [ids])).map(toPlayer);
+    const byId = new Map(r.map((p) => [p.id, p]));
+    return ids.map((id) => byId.get(id)).filter((p): p is Player => Boolean(p));
+  }
+
+  async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
+    return (await this.rows('select id, trophies, created_at from players where base is not null')).map((r) => ({ id: String(r.id), trophies: num(r.trophies), createdAt: num(r.created_at) }));
   }
 
   // ------------------------------------------------------------ tickets and attacks

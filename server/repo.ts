@@ -254,8 +254,11 @@ export interface OpponentQuery {
   minTrophies: number;
   maxTrophies: number;
   now: number;
-  /** Skip players with an unused ticket issued after this time (someone is attacking them). */
-  lockedSince: number;
+  /**
+   * Skip players with an unused ticket issued after this time (someone is
+   * attacking them). Null when match locks live elsewhere (Redis, step 16).
+   */
+  lockedSince: number | null;
   limit: number;
 }
 
@@ -269,6 +272,10 @@ export interface Repo {
   topPlayers(limit: number): Promise<Player[]>;
   /** 1 + number of players (with a base) who have more trophies. */
   rankOf(trophies: number): Promise<number>;
+  /** Players by id, in the order asked (missing ones left out). */
+  playersByIds(ids: string[]): Promise<Player[]>;
+  /** Every ranked player (with a base), to rebuild a leaderboard index. */
+  rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
   // tickets and attacks. Each base is stored once per distinct content
   // (base versions, keyed by contentHash); tickets and attacks keep the key.
   createTicket(t: Ticket): Promise<void>;
@@ -408,7 +415,8 @@ export class MemoryRepo implements Repo {
     if (p) Object.assign(p, clone(patch));
   }
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
-    const locked = new Set([...this.tickets.values()].filter((t) => !t.used && t.defenderId && t.createdAt > q.lockedSince).map((t) => t.defenderId));
+    const since = q.lockedSince;
+    const locked = new Set(since === null ? [] : [...this.tickets.values()].filter((t) => !t.used && t.defenderId && t.createdAt > since).map((t) => t.defenderId));
     return [...this.players.values()]
       .filter((p) => p.base && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
       .filter((p) => p.hallLevel >= q.minHall && p.hallLevel <= q.maxHall && p.trophies >= q.minTrophies && p.trophies <= q.maxTrophies)
@@ -420,6 +428,12 @@ export class MemoryRepo implements Repo {
   }
   async rankOf(trophies: number): Promise<number> {
     return 1 + [...this.players.values()].filter((p) => p.base && p.trophies > trophies).length;
+  }
+  async playersByIds(ids: string[]): Promise<Player[]> {
+    return ids.map((id) => this.players.get(id)).filter((p): p is Player => Boolean(p)).map(clone);
+  }
+  async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
+    return [...this.players.values()].filter((p) => p.base).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));
   }
   private putBase(base: BaseLayout, at: number): string {
     const hash = contentHash(base);

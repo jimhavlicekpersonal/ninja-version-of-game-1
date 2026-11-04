@@ -1,7 +1,7 @@
 /** Shared setup for server tests: the core on a MemoryRepo with a test clock, players as in-process clients. */
 import { createCore } from '../../../server/core';
 import { InProcessServerAdapter } from '../../../server/inProcess';
-import { nodeContext } from '../../../server/nodeContext';
+import { nodeContext, type SharedStores } from '../../../server/nodeContext';
 import { MemoryRepo, type Repo } from '../../../server/repo';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import type { BaseLayout } from '../../../src/gameplay/sim/battle/types';
@@ -11,7 +11,7 @@ import type { GameData } from '../../../src/gameplay/sim/types';
 
 export const HOUR = 3_600_000;
 
-export function world(opts: { data?: GameData; repo?: Repo; start?: number } = {}) {
+export function world(opts: { data?: GameData; repo?: Repo; start?: number; shared?: SharedStores } = {}) {
   const data = opts.data ?? defaultData;
   const repo = opts.repo ?? new MemoryRepo();
   let t = opts.start ?? Date.UTC(2026, 3, 6, 12);
@@ -21,7 +21,7 @@ export function world(opts: { data?: GameData; repo?: Repo; start?: number } = {
     seed = (seed * 16807) % 2147483647;
     return seed / 2147483647;
   };
-  const ctx = nodeContext(repo, data, () => t, random);
+  const ctx = nodeContext(repo, data, () => t, random, opts.shared);
   // Deterministic ids too (bot Groves are seeded from the Grove id), so every run is the same.
   let ids = 0;
   ctx.uuid = () => `00000000-0000-4000-8000-${(++ids).toString(16).padStart(12, '0')}`;

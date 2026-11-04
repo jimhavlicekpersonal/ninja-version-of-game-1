@@ -1,6 +1,7 @@
 /** What the server core needs from its environment (its other ports). */
 import type { GameData } from '../../src/gameplay/sim/types';
 import type { Repo } from '../repo';
+import type { Leaderboard, MatchLocks } from '../shared';
 
 export interface ServerContext {
   repo: Repo;
@@ -16,6 +17,10 @@ export interface ServerContext {
   random(): number;
   /** A fresh 32-bit battle seed for a ticket (the client never picks it). */
   newSeed(): number;
+  /** The honor leaderboard index (the database, or a Redis sorted set). */
+  board: Leaderboard;
+  /** Who is attacking whom right now (open tickets, or Redis locks). */
+  locks: MatchLocks;
 }
 
 export class ApiError extends Error {

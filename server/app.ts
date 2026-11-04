@@ -10,7 +10,7 @@ import { Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net
 import type { GameData } from '../src/gameplay/sim/types';
 import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
 import { ApiError, createCore, type ServerCore } from './core';
-import { nodeContext } from './nodeContext';
+import { nodeContext, type SharedStores } from './nodeContext';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
 import type { Player, Repo } from './repo';
 
@@ -29,6 +29,8 @@ export interface ServerOptions {
   rateLimits?: Partial<RateLimits>;
   /** A shared limiter (e.g. Redis, roadmap step 16); defaults to one in this process's memory. */
   rateLimiter?: RateLimiter;
+  /** Shared leaderboard and match locks (Redis, roadmap step 16); defaults to the database. */
+  shared?: SharedStores;
   /**
    * Behind a load balancer or proxy, take the caller's IP address from
    * X-Forwarded-For (Fastify's trustProxy: true, a hop count, or addresses).
@@ -53,7 +55,7 @@ function bearer(req: FastifyRequest): string | undefined {
 
 export function buildServer(opts: ServerOptions): FastifyInstance & { core: ServerCore } {
   const now = opts.now ?? (() => Date.now());
-  const core: ServerCore = createCore(nodeContext(opts.repo, opts.data, now, opts.random));
+  const core: ServerCore = createCore(nodeContext(opts.repo, opts.data, now, opts.random, opts.shared));
   // Small bodies by default; base uploads and battle reports raise it per route.
   // (trustProxy is cast only to keep Fastify's overloads on the HTTP/1 server type; any of its forms works.)
   const app = Object.assign(Fastify({ logger: opts.logger ?? false, bodyLimit: BODY_LIMITS.default, trustProxy: (opts.trustProxy ?? false) as boolean }), { core });

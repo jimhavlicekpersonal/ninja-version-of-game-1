@@ -13,6 +13,7 @@ import { leaveGrove } from './groves';
 export async function deleteAccount(ctx: ServerContext, me: Player): Promise<void> {
   if (await ctx.repo.getMembership(me.id)) await leaveGrove(ctx, me, { quiet: true });
   await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
+  await ctx.board.remove(me.id);
 }
 
 const text = (v: unknown, max: number): string => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);

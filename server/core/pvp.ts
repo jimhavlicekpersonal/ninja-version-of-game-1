@@ -226,6 +226,8 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   capBaseLoot(base, ctx.data);
   base.name = me.name;
   await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now() });
+  // A player is ranked once they have a base.
+  await ctx.board.set(me.id, me.trophies, me.createdAt);
 }
 
 /** Find someone to attack: a real player if one fits the rules, otherwise a generated base of matched strength. */
@@ -237,12 +239,19 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
   const exclude = [me.id, ...recent, ...mates];
   let found: Player | null = null;
+  const locks = ctx.locks;
   for (const range of [data.ranks.matchTrophyRange, 200, 400, 1_000_000]) {
-    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: t - TICKET_LOCK_MS, limit: 20 });
-    if (list.length) {
-      found = list[Math.floor(ctx.random() * list.length)];
-      break;
+    // With external locks (Redis) the query skips its ticket scan; the lock is taken atomically below.
+    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20 });
+    const busy = await locks.lockedAmong(list.map((p) => p.id));
+    const free = list.filter((p) => !busy.has(p.id));
+    // Start at a random candidate; the first one whose lock we get is ours (two attackers can't both get one).
+    const start = free.length ? Math.floor(ctx.random() * free.length) : 0;
+    for (let i = 0; i < free.length && !found; i++) {
+      const p = free[(start + i) % free.length];
+      if (await locks.acquire(p.id, me.id, TICKET_LOCK_MS)) found = p;
     }
+    if (found) break;
   }
   let ticket: Ticket;
   if (found?.base) {
@@ -323,11 +332,14 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
     throw new ApiError(409, 'conflict', 'This battle was already reported.');
   }
   await repo.updatePlayer(me.id, { trophies: playerTrophies, shieldUntil: Math.min(me.shieldUntil, t) });
+  if (me.base) await ctx.board.set(me.id, playerTrophies, me.createdAt);
   if (defender) {
     const patch: { trophies: number; shieldUntil?: number } = { trophies: Math.max(0, defender.trophies - delta) };
     const shield = shieldHoursFor(result.destruction, data);
     if (shield > 0) patch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
     await repo.updatePlayer(defender.id, patch);
+    if (defender.base) await ctx.board.set(defender.id, patch.trophies, defender.createdAt);
+    await ctx.locks.release(defender.id, me.id);
   }
   if (defender) {
     await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -delta });
@@ -344,13 +356,14 @@ export async function defenses(ctx: ServerContext, me: Player, since: number): P
 
 export async function leaderboard(ctx: ServerContext, me: Player, limit: number): Promise<LeaderboardResponse> {
   const n = Math.max(1, Math.min(100, Number(limit) || 50));
-  const top = await ctx.repo.topPlayers(n);
+  // The board gives the order (a Redis sorted set at scale); names and Keeps come from the players.
+  const top = await ctx.repo.playersByIds((await ctx.board.top(n)).map((e) => e.id));
   const groveNames = new Map<string, string>();
   for (const p of top) {
     if (p.groveId && !groveNames.has(p.groveId)) groveNames.set(p.groveId, (await ctx.repo.getGrove(p.groveId))?.name ?? '');
   }
   return {
     players: top.map((p, i) => ({ rank: i + 1, name: p.name, trophies: p.trophies, hallLevel: p.hallLevel, grove: p.groveId ? groveNames.get(p.groveId) || null : null })),
-    me: me.base ? { rank: await ctx.repo.rankOf(me.trophies), trophies: me.trophies } : null,
+    me: me.base ? { rank: await ctx.board.rankOf(me.trophies), trophies: me.trophies } : null,
   };
 }
