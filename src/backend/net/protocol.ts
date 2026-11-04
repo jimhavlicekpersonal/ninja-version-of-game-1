@@ -924,7 +924,7 @@ export interface GangWarBaseView {
   /** Best result the other side has against this base so far (relays count as one combined result). */
   best: { stars: number; destruction: number } | null;
   /** Enemy bases only: my Gang's relay on it so far. */
-  relay?: { strikes: number; damaged: number; lastBy: string | null; busy: boolean };
+  relay?: { strikes: number; damaged: number; lastBy: string | null; busy: boolean; /** The share of a full army the next relay strike may bring (0 when the relay's budget is spent). */ armyLeft: number };
 }
 
 export interface GangWarSideView {

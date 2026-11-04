@@ -8,7 +8,8 @@ import type { BaseLayout, BattleRecord, BattleSetup } from './gameplay/sim/battl
 import { opponentFor } from './gameplay/sim/matchmaking';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { mixSeed } from './gameplay/sim/rng';
-import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
+import { battleArmy, battleLoadout, hallLevel, scoutFee } from './gameplay/sim/village';
+import { relayLoadout } from './gameplay/sim/social/gangWar';
 import { nextTrialTier, trialBase, trialInfo, trialReward, trialVariant } from './gameplay/sim/trials';
 import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
@@ -180,6 +181,49 @@ export class App {
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, { duel: { ticket: t.ticket, opponent: t.opponent.name, challengeId } });
   }
 
+  /**
+   * A Gang War strike (roadmap step 67) on enemy base `target`. The server
+   * issues the ticket and seed. A relay strike starts from the damage the
+   * Gang's earlier relay strikes left on that base and may bring only what is
+   * left of the relay's army budget (`armyShare`): the army is cut down to it.
+   * Troops are spent like an Alliance War attack, and the outbox keeps the
+   * report until the server has it. `generated`: the enemy Gang is generated
+   * (no players matched), and the battle says so.
+   */
+  async gangWar(target: number, relay: boolean, generated: boolean): Promise<void> {
+    const c = this.d.controller;
+    const conn = this.d.connection;
+    if (!conn.online || !conn.port) {
+      this.d.hud.toast('Gang Wars need a connection.', 'error');
+      return;
+    }
+    let loadout = battleLoadout(c.state, c.data);
+    if (!Object.values(loadout.army).some((n) => n > 0)) {
+      this.d.hud.toast('Train some warriors first.', 'error');
+      return;
+    }
+    let t;
+    try {
+      // The server measures the army against the Keep it knows: tell it first if the Keep changed.
+      await conn.ensureFreshBase();
+      t = await conn.port.gangWarTicket(target, relay);
+    } catch (e) {
+      this.d.hud.toast((e as Error).message, 'error');
+      return;
+    }
+    if (t.armyShare < 1) loadout = relayLoadout(loadout, t.armyShare, hallLevel(c.state, c.data), c.data);
+    if (!Object.values(loadout.army).some((n) => n > 0)) {
+      this.d.hud.toast('The relay has too little army budget left for any of your warriors.', 'error');
+      return;
+    }
+    const base = structuredClone(t.base);
+    delete base.trophies;
+    base.name = generated ? `${t.targetName} (generated Gang)` : t.targetName;
+    const setup: BattleSetup = { seed: t.seed, base, ...loadout, infiltration: true, ...(t.startDamage ? { startDamage: t.startDamage } : {}) };
+    const detail = relay ? (t.startDamage ? `relay strike from your Gang's damage, ${Math.round(t.armyShare * 100)}% army` : `relay opener, ${Math.round(t.armyShare * 100)}% army`) : 'solo strike';
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, { ticket: t.ticket, target, enemy: base.name, detail });
+  }
+
   replay(record: BattleRecord): void {
     this.open(new BattleSession(record.setup, this.d.controller.data, 'replay', record), record);
   }
@@ -196,19 +240,27 @@ export class App {
     sound.music('village');
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, practiceOrDuel: boolean | { duel: { ticket: string; opponent: string; challengeId?: string } } = false): void {
+  private open(
+    session: BattleSession,
+    replayOf?: BattleRecord,
+    grove?: RaidBattle,
+    trialTier?: number,
+    practiceOrDuel: boolean | { duel: { ticket: string; opponent: string; challengeId?: string } } = false,
+    gangWar?: { ticket: string; target: number; enemy: string; detail: string },
+  ): void {
     const c = this.d.controller;
     const duel = typeof practiceOrDuel === 'object' ? practiceOrDuel.duel : null;
     const practice = practiceOrDuel !== false;
     this.battleHud?.destroy();
     this.session = session;
     let lastRecord: BattleRecord | null = null;
+    const startedAt = c.now();
     this.battleHud = new BattleHud({
       root: this.d.battleRoot,
       session,
       myTrophies: c.state.trophies,
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
-      grove: grove ? { enemyName: grove.enemyName } : undefined,
+      grove: grove ? { enemyName: grove.enemyName } : gangWar ? { enemyName: gangWar.enemy, war: 'Gang War', detail: gangWar.detail } : undefined,
       practice,
       trial:
         trialTier !== undefined
@@ -241,6 +293,15 @@ export class App {
             return { result, banked: {}, trophies: 0, note: `Friendly duel with ${duel.opponent}: no Honor, loot or troops change. They get the replay.` };
           }
           return { result, banked: {}, trophies: 0, note: 'Practice battle: no troops were spent and nothing was won.' };
+        }
+        if (gangWar) {
+          // Spent and logged like an Alliance War attack; the server re-simulates it and scores the war.
+          const s = session.setup;
+          const out = c.finishRemoteGroveBattle(gangWar.target, s, session.deployments, session.endTick, s.base.name, startedAt);
+          if (!out) return null;
+          lastRecord = out.record;
+          void this.d.connection.report('gangwar', { ticket: gangWar.ticket, seed: s.seed, army: s.army, levels: s.levels, reinforcements: s.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: out.record.result.hash });
+          return { result: out.record.result, banked: {}, trophies: 0, note: "The Gang War score updates when the server confirms this strike. See Friends → Gang." };
         }
         if (grove) {
           const g = grove.finish(session.deployments, session.endTick);
@@ -286,8 +347,7 @@ export class App {
     const hudHooks = this.battleHud.hooks();
     let lastTrack = 0;
     let trackTimer = 0;
-    const ticket = grove ? grove.ticket : this.ticket ?? undefined;
-    const startedAt = c.now();
+    const ticket = grove ? grove.ticket : gangWar ? gangWar.ticket : this.ticket ?? undefined;
     const hooks = {
       ...hudHooks,
       deployed: () => {
@@ -299,8 +359,8 @@ export class App {
           trackTimer = 0;
           lastTrack = Date.now();
           if (session.sim.ended && !c.state.pendingBattle) return;
-          const kind = grove ? 'war' : trialTier !== undefined ? 'trial' : 'raid';
-          c.trackBattle({ kind, tier: trialTier, target: grove?.target, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: startedAt, rules: SIM_RULES });
+          const kind = grove || gangWar ? 'war' : trialTier !== undefined ? 'trial' : 'raid';
+          c.trackBattle({ kind, tier: trialTier, target: grove?.target ?? gangWar?.target, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: startedAt, rules: SIM_RULES, ...(gangWar ? { gangWar: true } : {}) });
         };
         if (!lastTrack) track();
         else if (!trackTimer) trackTimer = window.setTimeout(track, Math.max(0, 1500 - (Date.now() - lastTrack)));

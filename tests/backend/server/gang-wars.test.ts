@@ -164,3 +164,26 @@ for (const [label, makeRepo] of repoFactories) {
     });
   });
 }
+
+describe('Gang War pushes (roadmap step 68)', () => {
+  it('pushes friend requests, invites, war found, under attack, relay turn and ending soon', async () => {
+    const got: { id: string; type: string; title: string }[] = [];
+    const w = world({ shared: { push: { enabled: true, notify: (id, m) => void got.push({ id, type: m.type, title: m.title }) } } });
+    const [a1, a2] = await gang(w, 'Owls', ['Ann', 'Abe']);
+    const [b1, b2] = await gang(w, 'Foxes', ['Bea', 'Bob']);
+    expect(got.filter((x) => x.id === a2.id).map((x) => x.title)).toEqual(['Friend request', 'Gang invite']);
+    await a1.queueGangWar();
+    await b1.queueGangWar();
+    for (const p of [a1, a2, b1, b2]) expect(got.some((x) => x.id === p.id && x.type === 'gangWar' && x.title === 'Gang War found!')).toBe(true);
+    w.advance(gw.prepHours * HOUR + 1);
+    const t = await a1.gangWarTicket(0, true);
+    await a1.gangWarAttack({ ticket: t.ticket, seed: t.seed, ...rush(5) });
+    const target = (await a1.gangWar()).war!.theirs.bases[0].name === 'Bea' ? b1 : b2;
+    expect(got.some((x) => x.id === target.id && x.title === 'Your Gang is under attack')).toBe(true);
+    expect(got.some((x) => x.id === a2.id && x.title === 'Your turn in the relay')).toBe(true);
+    w.advance(gw.battleHours * HOUR - HOUR);
+    expect(await w.core.remindGangWars()).toBe(1);
+    expect(await w.core.remindGangWars()).toBe(0); // once per war
+    for (const p of [a1, a2, b1, b2]) expect(got.some((x) => x.id === p.id && x.title === 'Gang War ends soon')).toBe(true);
+  });
+});

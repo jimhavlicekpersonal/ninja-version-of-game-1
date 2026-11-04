@@ -25,10 +25,11 @@ import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { scaleReward } from '../../src/gameplay/sim/economy';
 import { newRating, powerRating, rateMatch, type Rating } from '../../src/gameplay/sim/rating';
 import { createRng, mixSeed, next } from '../../src/gameplay/sim/rng';
+import { armyShare } from '../../src/gameplay/sim/social/gangWar';
 import { contentHash } from '../contentHash';
 import type { Player, Repo, Squad, SquadWar, SquadWarAttack, WarRosterEntry } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
-import { battleSeed, checkArmy, maxHousing, normalizeBase, resimulate, takeTicket } from './pvp';
+import { battleSeed, checkArmy, normalizeBase, resimulate, takeTicket } from './pvp';
 import { applyServerResult } from './village';
 
 const TICKET_MS = 10 * MIN;
@@ -304,7 +305,17 @@ async function warView(ctx: ServerContext, me: Player, war: SquadWar): Promise<G
         name: m.name,
         hallLevel: m.hallLevel,
         best: best[m.index],
-        ...(enemy ? { relay: { strikes: relay?.strikes ?? 0, damaged: Math.round((Object.keys(relay?.damage ?? {}).length / total) * 100), lastBy: relay?.by[relay.by.length - 1] ?? null, busy } } : {}),
+        ...(enemy
+          ? {
+              relay: {
+                strikes: relay?.strikes ?? 0,
+                damaged: Math.round((Object.keys(relay?.damage ?? {}).length / total) * 100),
+                lastBy: relay?.by[relay.by.length - 1] ?? null,
+                busy,
+                armyLeft: Math.round(Math.max(0, Math.min(1, rules(ctx).relayHousingShare - (relay?.share ?? 0))) * 100) / 100,
+              },
+            }
+          : {}),
       };
     });
   const myScore = score(bestOnTheirs); // the stars we took
@@ -402,8 +413,8 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
   const seed = battleSeed(ticket, sub);
   const { army, levels, reinforcements } = checkArmy(sub, me, ctx.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const housing = Object.entries(army).reduce((s, [t, n]) => s + (ctx.data.troops[t]?.housing ?? 0) * n, 0) + Object.entries(reinforcements).reduce((s, [t, r]) => s + (ctx.data.troops[t]?.housing ?? 0) * r.count, 0);
-  const share = housing / Math.max(1, maxHousing(me.hallLevel, ctx.data));
+  // `army` already counts the Lodge's warriors (`reinforcements` is the part of it that was donated).
+  const share = armyShare(army, me.hallLevel, ctx.data);
   if (pend.relay && share > (pend.maxShare ?? 1) + 1e-9) throw new ApiError(400, 'bad_request', `This relay strike may bring at most ${Math.round((pend.maxShare ?? 1) * 100)}% of a full army.`);
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(pend.relay && pend.startDamage ? { startDamage: pend.startDamage } : {}) };
   const { result, damage } = await resimulate(ctx, 'gangwar', setup, deployments, sub);

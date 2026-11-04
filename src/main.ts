@@ -208,6 +208,7 @@ async function boot(): Promise<void> {
     onTrial: (tier) => app?.trial(tier),
     onPractice: (army) => app?.practice(army),
     onDuel: (friend, layout, challengeId) => void app?.duel(friend, layout, challengeId),
+    onGangWarAttack: (target, relay, generated) => void app?.gangWar(target, relay, generated),
     gameCenterFriends: gameCenterFriends() ?? undefined,
     prefs,
     notifyPrefs,
@@ -251,9 +252,9 @@ async function boot(): Promise<void> {
     const { pending, record } = interrupted;
     if (pending.ticket) {
       const sub = { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, reinforcements: pending.setup.reinforcements, deployments: pending.deployments };
-      void connection.report(pending.kind === 'war' ? 'raid' : 'attack', sub);
+      void connection.report(pending.kind === 'war' ? (pending.gangWar ? 'gangwar' : 'raid') : 'attack', sub);
     }
-    const what = pending.kind === 'war' ? 'Alliance War attack' : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
+    const what = pending.kind === 'war' ? (pending.gangWar ? 'Gang War strike' : 'Alliance War attack') : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
     hud.toast(`Your ${what} on ${pending.opponentName} was interrupted and has been played out: ${record.result.stars}★, ${record.result.destruction}%. See the battle log.`, 'info');
   }
 

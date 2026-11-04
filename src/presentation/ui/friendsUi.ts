@@ -5,18 +5,20 @@
  * "formerly …"), with Duel, Challenge, Invite to Gang, Remove, Block and
  * Report; suggestions (recent opponents, Alliance mates, Game Center friends
  * on request); who can find you. Gang: start one, invites, members, chat,
- * troop gifts, hand over, leave. Duels: rivalries, challenges, replays, and
+ * troop gifts, hand over, leave, and the Gang War (step 67). Duels: rivalries, challenges, replays, and
  * your own duel layout. Everything goes through the server.
  */
 import type { Connection } from '../../backend/net/connection';
-import type { DuelView, Findable, FriendView, MyGangResponse, ProfileCard } from '../../backend/net/protocol';
+import type { DuelView, Findable, FriendView, GangWarAttackView, GangWarBaseView, GangWarView, MyGangResponse, ProfileCard } from '../../backend/net/protocol';
 import { REPORT_REASONS, type ReportReason } from '../../backend/net/protocol';
 import { villageToBase } from '../../gameplay/sim/defense';
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
 import { troopLevels } from '../../gameplay/sim/research';
+import { scaleReward } from '../../gameplay/sim/economy';
+import { hallLevel } from '../../gameplay/sim/village';
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { clear, h } from './dom';
-import type { UiKit } from './economyUi';
+import { rewardChips, type UiKit } from './economyUi';
 import { formatDuration } from './format';
 import { qrSvg } from './qr';
 
@@ -27,6 +29,8 @@ export interface FriendsUiDeps {
   /** Start a Friendly Duel against a friend's base (their duel layout when `layout` is 'duel'). */
   onDuel(friend: { id: string; name: string }, layout: 'live' | 'duel', challengeId?: string): void;
   onReplay(record: BattleRecord): void;
+  /** A Gang War strike on enemy base `target` (roadmap step 67); `generated`: the enemy Gang is generated. */
+  onGangWarAttack?(target: number, relay: boolean, generated: boolean): void;
   /** Game Center friends' ids, when the device can ask (step 61). */
   gameCenterFriends?: () => Promise<string[]>;
 }
@@ -281,6 +285,7 @@ export class FriendsUi {
       el.append(h('div', { class: 'log-row' }, this.cardLine(i.player, ' · invited'), undo));
     }
     if (leader && gang.members.length + gang.invites.length < gang.max) el.append(h('p', { class: 'muted small' }, 'Invite friends with ⋯ → Invite to my Gang in the Friends tab.'));
+    await this.gangWarSection(el, redraw, leader, gang.members.length);
     // Troop gifts inside the Gang.
     const c = this.d.kit.c;
     const free = reinforcementCapacity(c.state, c.data) - reinforcementHousing(c.state, c.data);
@@ -335,6 +340,136 @@ export class FriendsUi {
       if (await this.d.kit.confirm('Leave the Gang', 'You can join or start another Gang after 24 hours.', 'Leave', true, 'Stay')) await this.act(() => port.leaveGang(), 'You left the Gang.').then(redraw);
     });
     el.append(h('div', { class: 'actions' }, leave));
+  }
+
+  // ------------------------------------------------------------ Gang War (step 67)
+
+  /**
+   * The Gang War: find one (leader), prep (set my war base, fill the Lodge),
+   * the battle day (both Gangs' bases, Solo and Relay strikes with the relay's
+   * state), the war log with replays, and the chest at the end.
+   */
+  private async gangWarSection(el: HTMLElement, redraw: () => void, leader: boolean, members: number): Promise<void> {
+    if (!this.d.connection.server?.features.includes('gang-wars')) return;
+    const port = this.port;
+    const c = this.d.kit.c;
+    const gw = c.data.social.gangWar;
+    const r = await port.gangWar();
+    const now = Date.now();
+    const w = r.war;
+    el.append(h('h3', {}, 'Gang War'));
+    if (r.rating !== null) el.append(h('p', { class: 'muted small' }, `Gang Rating ${r.rating} (only your Gang sees it; wars against generated Gangs never change it).`));
+    const running = w && w.phase !== 'ended';
+    if (!running) {
+      if (w) {
+        const verdict = w.outcome === 'win' ? 'Victory' : w.outcome === 'loss' ? 'Defeat' : 'Draw';
+        el.append(h('div', { class: 'raid-score' }, h('div', {}, h('b', {}, w.ours.name), h('span', { class: 'big' }, `★ ${w.ours.stars}`)), h('div', { class: 'muted' }, verdict), h('div', {}, h('b', {}, w.theirs.name), h('span', { class: 'big' }, `★ ${w.theirs.stars}`))));
+        if (!w.claimed) {
+          // The same chest the server pays (scaled to the Keep), shown before collecting it.
+          const chest = w.outcome ? scaleReward(gw.rewards[w.outcome], hallLevel(c.state, c.data), c.data) : {};
+          const take = h('button', { class: 'btn gold', type: 'button' }, 'Collect the war chest');
+          take.addEventListener('click', () => void this.act(() => this.d.connection.claimGangWar(), 'War chest collected.').then(redraw));
+          el.append(h('div', { class: 'row' }, rewardChips(chest)), take);
+        }
+        this.warLog(el, w);
+      }
+      if (r.queued) {
+        el.append(h('p', {}, `Looking for an enemy Gang of ${members}… (${formatDuration(Math.max(0, now - r.queued.since))}). If none fits within ${gw.botAfterMinutes} minutes, you get a generated Gang: labelled as generated, and it never changes your Gang Rating.`));
+        if (leader) {
+          const stop = h('button', { class: 'btn ghost', type: 'button' }, 'Stop looking');
+          stop.addEventListener('click', () => void this.act(() => port.leaveGangWarQueue(), 'Stopped looking.').then(redraw));
+          el.append(stop);
+        }
+        return;
+      }
+      el.append(h('p', { class: 'muted' }, `A Gang War is your Gang against another Gang of the same size: ${gw.prepHours} hours of prep, then a ${gw.battleHours}-hour battle day. Each member has ${gw.attacksPerMember} strikes; the best result on each enemy base counts. Relay: Gang mates take turns on one base, each strike starting from the damage the last one left, sharing ${gw.relayHousingShare} armies between them. The roster is locked from the search until the war ends.`));
+      if (leader && members >= gw.minMembers) {
+        const go = h('button', { class: 'btn', type: 'button' }, 'Find a Gang War');
+        go.addEventListener('click', () => void this.act(() => port.queueGangWar()).then(redraw));
+        el.append(go);
+      } else el.append(h('p', { class: 'muted small' }, members < gw.minMembers ? `A Gang War needs at least ${gw.minMembers} members.` : 'Your leader starts the search.'));
+      return;
+    }
+    // Running: prep or battle day.
+    const prep = w.phase === 'prep';
+    el.append(
+      h('div', { class: 'raid-score' }, h('div', {}, h('b', {}, w.ours.name), h('span', { class: 'big' }, `★ ${w.ours.stars}`)), h('div', { class: 'muted' }, 'vs'), h('div', {}, h('b', {}, w.theirs.name), h('span', { class: 'big' }, `★ ${w.theirs.stars}`))),
+      h('p', { class: 'muted small' }, prep ? `Prep: the battle starts in ${formatDuration(w.prepUntil - now)}.` : `Battle day: ends in ${formatDuration(w.endsAt - now)} · you have ${w.attacksLeft} strike${w.attacksLeft === 1 ? '' : 's'} left · ${w.ours.destruction}% to ${w.theirs.destruction}% decides a tie.`),
+    );
+    if (w.theirs.generated) el.append(h('p', { class: 'note' }, 'No Gang fitted yours, so this enemy Gang is generated. Its strikes on your bases are simulated, and the war never changes your Gang Rating.'));
+    if (prep) {
+      const set = h('button', { class: 'btn ghost', type: 'button' }, 'Use my village now as my war base');
+      set.addEventListener('click', () => void this.act(() => port.setGangWarBase(villageToBase(c.state, c.now(), c.data, this.d.connection.player?.name)), 'War base saved for this war.').then(redraw));
+      const free = reinforcementCapacity(c.state, c.data) - reinforcementHousing(c.state, c.data);
+      el.append(
+        h('h4', {}, 'Prepare'),
+        h('p', { class: 'muted small' }, 'Your war base is a copy of your village from when the war was found. Rearrange your village, save it here, then move things back: raiders keep attacking your real village.'),
+        set,
+        h('p', { class: 'muted small' }, free > 0 ? `Your Lodge has room for ${free} housing of warriors: ask your Gang below. Gifts fight beside your own army on battle day.` : 'Your Lodge is full: your Gang\'s gifts fight beside your army on battle day.'),
+      );
+    }
+    el.append(h('h4', {}, `Enemy bases (${w.theirs.name})`));
+    for (const b of w.theirs.bases) el.append(this.warBaseRow(b, w, prep));
+    el.append(h('h4', {}, `Our bases (${w.ours.name})`));
+    for (const b of w.ours.bases) el.append(this.warBaseRow(b, w, true));
+    this.warLog(el, w);
+  }
+
+  private warBaseRow(b: GangWarBaseView, w: GangWarView, readOnly: boolean): HTMLElement {
+    const starEl = h('span', { class: 'stars-mini' });
+    for (let k = 0; k < 3; k++) starEl.append(h('span', { class: k < (b.best?.stars ?? 0) ? '' : 'off' }, '★'));
+    const best = b.best ? `best ${b.best.destruction}%` : 'not attacked yet';
+    const relay = b.relay;
+    const relayText = relay && relay.strikes > 0 ? ` · relay: ${relay.strikes} strike${relay.strikes === 1 ? '' : 's'}, ${relay.damaged}% of buildings damaged, last ${relay.lastBy ?? '?'}${relay.busy ? ' · a mate is striking now' : ''} · ${Math.round(relay.armyLeft * 100)}% army left` : '';
+    const row = h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `${b.index + 1}. ${b.name}`), h('div', { class: 'row' }, h('span', { class: 'muted small' }, `Clan Keep ${b.hallLevel} · ${best}${relayText}`), starEl)));
+    if (!readOnly && relay) {
+      const none = w.attacksLeft <= 0;
+      const solo = h('button', { class: 'btn danger', type: 'button', disabled: none, title: 'A strike with your full army' }, 'Solo');
+      solo.addEventListener('click', () => {
+        this.d.kit.closeAllModals();
+        this.d.onGangWarAttack?.(b.index, false, w.theirs.generated);
+      });
+      const canRelay = !none && !relay.busy && relay.armyLeft >= 0.1 && (b.best?.stars ?? 0) < 3;
+      const label = relay.strikes > 0 ? `Relay (${Math.round(relay.armyLeft * 100)}% army)` : 'Open a relay';
+      const rel = h('button', { class: 'btn ghost', type: 'button', disabled: !canRelay, title: 'Start from the damage your Gang left on this base' }, label);
+      rel.addEventListener('click', () => {
+        this.d.kit.closeAllModals();
+        this.d.onGangWarAttack?.(b.index, true, w.theirs.generated);
+      });
+      row.append(h('div', { class: 'row' }, solo, rel));
+    }
+    return row;
+  }
+
+  private warLog(el: HTMLElement, w: GangWarView): void {
+    if (!w.attacks.length) return;
+    el.append(h('h4', {}, 'War log'));
+    for (const a of w.attacks.slice().sort((x, y) => y.at - x.at)) {
+      const watch = h('button', { class: 'btn ghost', type: 'button' }, 'Watch');
+      watch.addEventListener('click', () => {
+        this.d.kit.closeAllModals();
+        this.d.onReplay(this.warRecord(a, w));
+      });
+      const who = a.side === 'ours' ? `${a.attacker} → ${a.targetName}` : `${a.attacker} → ${a.targetName} (ours)`;
+      el.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, who), h('div', { class: 'muted small' }, `${a.stars}★ · ${Math.round(a.destruction)}%${a.relay ? ' · relay strike' : ' · solo'}`)), watch));
+    }
+  }
+
+  /** A war strike as a battle record, only for watching. */
+  private warRecord(a: GangWarAttackView, w: GangWarView): BattleRecord {
+    const x = a.replay;
+    const enemy = a.side === 'ours' ? w.theirs : w.ours;
+    return {
+      id: a.id,
+      kind: a.side === 'ours' ? 'attack' : 'defense',
+      at: a.at,
+      opponentName: `${a.side === 'ours' ? a.targetName : a.attacker}${enemy.generated && a.side === 'ours' ? ' (generated Gang)' : ''} (Gang War)`,
+      setup: { seed: x.seed, base: x.base, army: x.army, levels: x.levels, ...(x.reinforcements ? { reinforcements: x.reinforcements } : {}), ...(x.startDamage ? { startDamage: x.startDamage } : {}), infiltration: true },
+      deployments: x.deployments,
+      endTick: x.endTick,
+      result: x.result,
+      rules: x.rules,
+    } as BattleRecord;
   }
 
   // ------------------------------------------------------------ Duels

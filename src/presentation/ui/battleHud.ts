@@ -19,8 +19,8 @@ export interface BattleHudDeps {
   myTrophies: number;
   /** Set when watching a replay. */
   replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
-  /** Set for Grove Raid attacks (no loot, no Next). */
-  grove?: { enemyName: string };
+  /** Set for Grove Raid attacks and Gang War strikes (no loot, no Next). `war` names the war ('Gang War'); `detail` adds a line (a relay strike's start). */
+  grove?: { enemyName: string; war?: string; detail?: string };
   /** A practice battle (nothing spent or won, no Next). */
   practice?: boolean;
   /** Set for Shadow Trials (practice ladder: no loot from buildings, no honor, no Next). */
@@ -80,7 +80,7 @@ export class BattleHud {
             ? `Replay: ${deps.replayOf.opponentName} attacks · loot taken`
             : 'Replay · loot won'
           : deps.grove
-            ? `Alliance War vs ${deps.grove.enemyName}`
+            ? `${deps.grove.war ?? 'Alliance War'} vs ${deps.grove.enemyName}${deps.grove.detail ? ` · ${deps.grove.detail}` : ''}`
             : deps.trial
               ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
               : deps.practice
@@ -337,7 +337,7 @@ export class BattleHud {
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
       note ? h('p', { class: 'note' }, note) : null,
       this.deps.grove
-        ? h('p', { class: 'muted' }, 'Your stars count toward the Alliance War.')
+        ? h('p', { class: 'muted' }, `Your stars count toward the ${this.deps.grove.war ?? 'Alliance War'}.`)
         : this.deps.practice
           ? h('p', { class: 'muted' }, 'Loot it would have won: ', lootChips(r.loot))
         : pending

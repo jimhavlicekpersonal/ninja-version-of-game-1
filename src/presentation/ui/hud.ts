@@ -59,6 +59,8 @@ export interface HudDeps {
   onReplay(record: BattleRecord): void;
   /** Start a Friendly Duel (roadmap step 62). */
   onDuel?(friend: { id: string; name: string }, layout: 'live' | 'duel', challengeId?: string): void;
+  /** A Gang War strike (roadmap step 67). */
+  onGangWarAttack?(target: number, relay: boolean, generated: boolean): void;
   /** Game Center friends' ids, when this device can ask (step 61). */
   gameCenterFriends?: () => Promise<string[]>;
   onGroveAttack(target: number): void;
@@ -150,6 +152,7 @@ export class Hud {
       troopThumb: (t) => this.deps.troopThumb(t),
       onDuel: (f, layout, challengeId) => this.deps.onDuel?.(f, layout, challengeId),
       onReplay: (r) => this.deps.onReplay(r),
+      onGangWarAttack: (t, relay, generated) => this.deps.onGangWarAttack?.(t, relay, generated),
       gameCenterFriends: this.deps.gameCenterFriends,
     });
     this.daily = new DailyUi({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() });

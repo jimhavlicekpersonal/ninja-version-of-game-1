@@ -13,7 +13,7 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, HelloResponse, LinkCredential, LinkProvider, PlayerView, PurchaseStore } from './protocol';
+import type { BattleSubmission, GangWarClaimResponse, HelloResponse, LinkCredential, LinkProvider, PlayerView, PurchaseStore } from './protocol';
 import type { PurchaseVerifier } from '../payments/provider';
 import { VillageSync, type SyncGame } from './villageSync';
 
@@ -67,7 +67,8 @@ export type ConnectionStatus =
 
 export interface OutboxItem {
   id: string;
-  kind: 'attack' | 'raid';
+  /** 'raid': an Alliance War attack; 'gangwar': a Gang War strike (roadmap step 67). */
+  kind: 'attack' | 'raid' | 'gangwar';
   sub: BattleSubmission;
   at: number;
 }
@@ -523,6 +524,18 @@ export class Connection {
     }
   }
 
+  /**
+   * Collect this Gang War's chest (roadmap step 67): the server pays it once
+   * (into a village it keeps, in the same transaction), and this village gets
+   * the same chest by the same rule (`claimGangWarChest`, once per war id).
+   */
+  async claimGangWar(): Promise<GangWarClaimResponse> {
+    if (!this.port) throw new Error('Connect to the server first.');
+    const c = await this.port.claimGangWar();
+    this.o.game.dispatch({ type: 'claimGangWarChest', warId: c.warId, outcome: c.outcome });
+    return c;
+  }
+
   // ---------------------------------------------------------------- outbox
 
   private get outboxKey(): string {
@@ -576,6 +589,8 @@ export class Connection {
           const r = await port.submitAttack(item.sub);
           g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies });
           g.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
+        } else if (item.kind === 'gangwar') {
+          await port.gangWarAttack(item.sub);
         } else {
           await port.submitRaidAttack(item.sub);
         }

@@ -14,6 +14,7 @@ import { applyLootPenalty, hallWindow, opponentForRank } from '../../src/gamepla
 import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { layoutChangedShare, newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
+import { fullForceHousing, maxLodgeAt } from '../../src/gameplay/sim/social/gangWar';
 import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
@@ -158,14 +159,12 @@ export function capBaseLoot(base: BaseLayout, data: GameData): BaseLayout {
 
 /** Most donated troops (housing) the largest Grove Lodge allowed at this hall level holds. */
 export function maxReinforcementAt(hall: number, data: GameData): number {
-  const lim = data.hall.levels[Math.max(1, Math.min(data.hall.levels.length, hall)) - 1]?.limits.grove_lodge;
-  if (!lim) return 0;
-  return buildingDef(data, 'grove_lodge').levels[lim.maxLevel - 1]?.reinforcement ?? 0;
+  return maxLodgeAt(hall, data);
 }
 
-/** Largest army housing possible at a hall level: full Army Camps plus a full Grove Lodge. */
+/** Largest army housing possible at a hall level: full Army Camps plus a full Grove Lodge (shared with the game). */
 export function maxHousing(hallLevel: number, data: GameData): number {
-  return maxHousingAtHall(hallLevel, data) + maxReinforcementAt(hallLevel, data);
+  return fullForceHousing(hallLevel, data);
 }
 
 /** Troop levels must be ones the attacker's hall level allows. */
