@@ -214,4 +214,23 @@ describe('protocol contract', () => {
       expect(await errorOf(lead.raidTicket(0))).toMatchObject({ status: 409, code: 'raid_not_live' });
     }
   });
+
+  it('account deletion: DELETE /v1/me deletes the player and its token stops working; web requests are accepted', async () => {
+    const tokens = memoryTokenStore();
+    const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
+    await c.register(`Contract Leaving ${tag}`);
+    await c.uploadBase({ base: generateOpponent(7, 1, data) });
+    const saved = tokens.get();
+    await c.deleteAccount();
+    expect(c.hasIdentity()).toBe(false);
+    const again = new HttpServerAdapter(url, { tokens: memoryTokenStore(saved), retryDelayMs: 200 });
+    expect(await errorOf(again.me())).toMatchObject({ status: 401, code: 'unauthorized' });
+    expect((await client().hello()).features).toContain('account-deletion');
+    const res = await fetch(`${url}${Routes.deletionRequests}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: `Contract Nobody ${tag}`, note: 'contract test' }) });
+    expect(res.status).toBe(202);
+    expect((await res.json()).id).toBeTruthy();
+    const page = await fetch(`${url}${Routes.deletionPage}`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get('content-type')).toMatch(/text\/html/);
+  });
 });

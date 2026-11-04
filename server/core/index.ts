@@ -3,6 +3,7 @@
  * database. server/app.ts puts it behind HTTP; server/inProcess.ts calls it
  * directly. A future server can reuse it with other adapters.
  */
+import * as account from './account';
 import type { ServerContext } from './context';
 import * as groves from './groves';
 import * as groveRaid from './groveRaid';
@@ -21,6 +22,8 @@ export function createCore(ctx: ServerContext) {
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
     me: identity.playerView,
     rename: identity.rename.bind(null, ctx),
+    deleteAccount: account.deleteAccount.bind(null, ctx),
+    requestDeletion: account.requestDeletion.bind(null, ctx),
     uploadBase: pvp.uploadBase.bind(null, ctx),
     match: pvp.match.bind(null, ctx),
     attack: pvp.attack.bind(null, ctx),
@@ -44,6 +47,11 @@ export function createCore(ctx: ServerContext) {
     claimRaid: groveRaid.claimRaid.bind(null, ctx),
     /** Retention: old replays, tickets and unreferenced base versions. */
     prune: () => retention.prune(ctx),
+    /** Staff only (the admin API in server/app.ts). */
+    admin: {
+      deletionQueue: account.deletionQueue.bind(null, ctx),
+      resolveDeletion: account.resolveDeletion.bind(null, ctx),
+    },
   };
 }
 

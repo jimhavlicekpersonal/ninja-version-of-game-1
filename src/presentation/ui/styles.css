@@ -194,6 +194,9 @@ html, body {
 .level { font-weight: 800; color: #fff; font-size: 12px; background: linear-gradient(#3d3458, var(--plum)); padding: 2px 9px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 0 rgba(20, 16, 30, .3); letter-spacing: .3px; }
 .desc { margin: 4px 0 8px; font-size: 13px; }
 .muted { color: var(--ink-soft); }
+.text.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+.account-settings { margin-top: 10px; }
+.account-settings a { color: inherit; word-break: break-all; }
 .small { font-size: 12px; }
 .stats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .chip {

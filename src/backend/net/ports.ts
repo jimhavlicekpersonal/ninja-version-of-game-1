@@ -56,6 +56,8 @@ export interface IdentityPort {
   register(name: string): Promise<RegisterResponse>;
   me(): Promise<PlayerView>;
   rename(name: string): Promise<PlayerView>;
+  /** Delete this player's online account on the server, then forget its credentials on this device. */
+  deleteAccount(): Promise<void>;
 }
 
 export interface PvpPort {

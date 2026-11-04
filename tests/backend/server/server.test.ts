@@ -210,4 +210,50 @@ describe('server HTTP adapter', () => {
       expect(lim.size).toBe(1);
     });
   });
+
+  describe('account deletion over HTTP (roadmap step 14)', () => {
+    const ADMIN = 'staff-secret-0123456789abcdef';
+
+    it('DELETE /v1/me deletes the account; its token stops working', async () => {
+      const s = setup();
+      const a = await s.register('Ann');
+      expect((await s.call('DELETE', Routes.me, a.token)).status).toBe(204);
+      expect((await s.call('GET', Routes.me, a.token)).status).toBe(401);
+      expect((await s.call('DELETE', Routes.me, a.token)).status).toBe(401);
+      expect(s.repo.players.size).toBe(0);
+    });
+
+    it('serves the web deletion page and takes requests from it, a few per address', async () => {
+      const s = setup({ rateLimits: { deletionRequest: { limit: 2, windowMs: 3_600_000 } } });
+      const page = await s.app.inject({ method: 'GET', url: Routes.deletionPage });
+      expect(page.statusCode).toBe(200);
+      expect(page.headers['content-type']).toMatch(/text\/html/);
+      expect(page.headers['content-security-policy']).toMatch(/default-src 'none'/);
+      expect(page.body).toMatch(/Settings → Online play → Delete online account/);
+      expect(page.body).toMatch(/v1\/account\/deletion-requests/);
+      const ok = await s.call('POST', Routes.deletionRequests, undefined, { playerId: 'p-1', contact: 'me@example.com' });
+      expect(ok.status).toBe(202);
+      expect(ok.body.id).toBeTruthy();
+      expect((await s.call('POST', Routes.deletionRequests, undefined, {})).status).toBe(400);
+      expect((await s.call('POST', Routes.deletionRequests, undefined, { name: 'Ann' })).status).toBe(429);
+    });
+
+    it('has a staff API only with a strong ADMIN_TOKEN', async () => {
+      expect(() => buildServer({ repo: new MemoryRepo(), data, adminToken: 'short' })).toThrow(/24 characters/);
+      const none = setup();
+      expect((await none.call('GET', '/admin/v1/deletion-requests', ADMIN)).status).toBe(404);
+      const s = setup({ adminToken: ADMIN });
+      const a = await s.register('Ann');
+      const me = (await s.call('GET', Routes.me, a.token)).body;
+      await s.call('POST', Routes.deletionRequests, undefined, { playerId: me.id });
+      expect((await s.call('GET', '/admin/v1/deletion-requests')).status).toBe(401);
+      expect((await s.call('GET', '/admin/v1/deletion-requests', a.token)).status).toBe(401);
+      const queue = await s.call('GET', '/admin/v1/deletion-requests', ADMIN);
+      expect(queue.status).toBe(200);
+      expect(queue.body.requests).toEqual([expect.objectContaining({ playerId: me.id, status: 'open', player: expect.objectContaining({ name: 'Ann' }) })]);
+      const done = await s.call('POST', `/admin/v1/deletion-requests/${queue.body.requests[0].id}`, ADMIN, { action: 'delete' });
+      expect(done.body).toMatchObject({ status: 'done' });
+      expect((await s.call('GET', Routes.me, a.token)).status).toBe(401);
+    });
+  });
 });

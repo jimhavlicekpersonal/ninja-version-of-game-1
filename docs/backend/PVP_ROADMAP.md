@@ -22,7 +22,7 @@
 
 1. ~~**The client picks the battle seed** (`BattleSubmission.seed`).~~ Fixed by step 10: the server issues it in the ticket.
 2. ~~**Every attack and ticket stores a full copy of the defender's base** (~10–20 KB JSON).~~ Fixed by step 11: each base version is stored once and referenced by hash; replays are kept 30 days.
-3. **No account deletion** (`DELETE /v1/me`): required by Apple 5.1.1(v) and Google.
+3. ~~**No account deletion** (`DELETE /v1/me`): required by Apple 5.1.1(v) and Google.~~ Fixed by step 14.
 4. **No chat report/block**: required for user-generated content (Apple 1.2). Only a word filter exists.
 5. **No server-side receipt verification**.
 6. ~~`schema.sql` migrates on every boot (races with several instances).~~ Fixed by step 12. ~~No rate limiting.~~ Fixed by step 13 (per instance; shared counters in Redis are step 16). `rankOf` counts rows on every leaderboard call.
@@ -260,7 +260,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 - [x] 11. Store each base version once (content hash); tickets and attacks reference it; 30-day replay retention. `base_versions` (migration 0003, `server/contentHash.ts`: SHA-256 of canonical JSON), written in the same statement as the ticket or attack; `server/core/retention.ts` (30-day records and tickets, unused tickets a day after expiry, unreferenced bases), run hourly by `server/main.ts`. Rows from before keep their own copy until retention removes them. Tests: `repo.test.ts` (both adapters, legacy rows on Postgres), `core.test.ts`.
 - [x] 12. Migrations as a release step with versioned files (not on every boot). `server/migrations/NNNN_*.sql`, `server/migrate.ts` (checksums, advisory lock, a transaction per file), `npm run server:migrate`; the server refuses to boot with pending migrations unless `MIGRATE_ON_BOOT=1`. Tests: `tests/backend/server/migrate.test.ts`.
 - [x] 13. Rate limiting per token/IP; request size limits. `server/rateLimit.ts` (`RateLimiter` port, memory fixed-window counters; per IP, per token hash, and per route for registration, matches, battle reports, moderation and deletion requests), `429 rate_limited` + `Retry-After`; per-route body limits (16 KB / 128 KB bases / 256 KB battles) and 200-character chat; `TRUST_PROXY`, `RATE_LIMITS` env. The client treats `rate_limited` as retryable, so a report stays in the outbox. Tests: `server.test.ts`, `connection.test.ts`.
-- [ ] 14. `DELETE /v1/me` plus a web deletion form.
+- [x] 14. `DELETE /v1/me` plus a web deletion form. `server/core/account.ts` + `Repo.deletePlayer` (one transaction; what others keep is anonymised as "Deleted player"), migration 0004; web page `GET /account/delete` (`server/accountPage.ts`) posting `POST /v1/account/deletion-requests`, worked through by staff with the admin API (`ADMIN_TOKEN`, `/admin/v1/deletion-requests`); Settings → Online play → Account (Player ID, Delete online account), `Connection.deleteAccount` (pending attacks become practice, online play off on the device). Tests: `core.test.ts` (both adapters), `server.test.ts`, `online-authority.test.ts`, contract test.
 - [ ] 15. Chat report/block endpoints and screens; moderation queue.
 - [ ] 16. Leaderboard as a Redis sorted set; match locks in Redis.
 - [ ] 17. Observability: structured logs, Sentry (client + server), `/healthz`, metrics (re-sim ms, battles/min, desyncs, errors by code).

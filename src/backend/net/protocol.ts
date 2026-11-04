@@ -58,6 +58,10 @@ export const Routes = {
   groveRaidTicket: '/v1/grove/raid/ticket',
   groveRaidAttacks: '/v1/grove/raid/attacks',
   groveRaidClaim: '/v1/grove/raid/claim',
+  /** POST, no token: a deletion request from the web form, for players who cannot open the game. */
+  deletionRequests: '/v1/account/deletion-requests',
+  /** GET (HTML): the web account-deletion page to link from store listings. Not part of the game's API. */
+  deletionPage: '/account/delete',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -91,6 +95,27 @@ export interface PlayerView {
 
 export interface RenameRequest {
   name: string;
+}
+
+/**
+ * DELETE /v1/me deletes the caller's online account (204): the player, their
+ * base, raids on them, Alliance membership, chat lines, troop requests and
+ * gifts to them. Replays of raids they made stay with the defenders, as
+ * "Deleted player". The token stops working. The village on the device is
+ * not touched (it never left it).
+ */
+export interface DeletionRequestBody {
+  /** The Player ID shown in Settings → Online play. */
+  playerId?: string;
+  /** The player name, if the ID is unknown. One of the two is needed. */
+  name?: string;
+  /** How staff can reach the player to confirm (optional, kept only for this request). */
+  contact?: string;
+  note?: string;
+}
+export interface DeletionRequestResponse {
+  /** Reference for the player; the request is handled by staff. */
+  id: string;
 }
 
 // ---------------------------------------------------------------- PvP

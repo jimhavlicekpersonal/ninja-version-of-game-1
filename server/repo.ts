@@ -178,6 +178,23 @@ export interface RaidClaim {
   at: number;
 }
 
+/** How a deleted player appears in what other players keep (their defense replays, war rosters, donation notes). */
+export const DELETED_PLAYER = { id: 'deleted', name: 'Deleted player' } as const;
+
+/** A request from the web deletion form (roadmap step 14), for staff to verify and carry out. */
+export interface DeletionRequest {
+  id: string;
+  at: number;
+  /** As typed on the form: it may not exist, or belong to someone else (staff verify). */
+  playerId: string;
+  name: string;
+  contact: string;
+  note: string;
+  status: 'open' | 'done' | 'rejected';
+  resolvedAt: number | null;
+  resolution: string | null;
+}
+
 /** What `prune` removes (roadmap step 11: 30-day replay retention). */
 export interface PruneCutoffs {
   /** Attack records (replays) and tickets created before this time are deleted. */
@@ -231,6 +248,22 @@ export interface Repo {
   recentTargets(attackerId: string, since: number): Promise<string[]>;
   /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
   prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
+  // account deletion
+  /**
+   * Delete a player and everything that is only theirs: the player row (with
+   * their base and token), tickets they hold, raids on them, their Alliance
+   * membership, chat lines, troop requests and gifts to them, war claims, and
+   * Alliance notices naming them. What other players keep (replays of raids
+   * they made, gifts they sent, war rosters and attacks that count for a war
+   * score) is kept under DELETED_PLAYER. One transaction.
+   */
+  deletePlayer(id: string, name: string): Promise<void>;
+  addDeletionRequest(r: DeletionRequest): Promise<void>;
+  /** Oldest first; 'open' lists only those still waiting. */
+  deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]>;
+  getDeletionRequest(id: string): Promise<DeletionRequest | null>;
+  /** False if it was already resolved. */
+  resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean>;
   // groves
   createGrove(g: Grove): Promise<void>;
   getGrove(id: string): Promise<Grove | null>;
@@ -270,6 +303,16 @@ export interface Repo {
 
 const clone = <T>(v: T): T => structuredClone(v);
 
+/**
+ * The Alliance notices that name a player (server/core/groves.ts writes them):
+ * "<name> founded …!", "<name> joined the Alliance. Say hello!",
+ * "<name> left the Alliance.", "<name> is the new leader.".
+ */
+export function noticesNaming(name: string): (text: string) => boolean {
+  const exact = new Set([`${name} joined the Alliance. Say hello!`, `${name} left the Alliance.`, `${name} is the new leader.`]);
+  return (text) => exact.has(text) || text.startsWith(`${name} founded `);
+}
+
 /** A ticket or attack as stored: the base by its content hash. */
 type Stored<T extends { base: BaseLayout }> = Omit<T, 'base'> & { baseHash: string };
 
@@ -287,6 +330,7 @@ export class MemoryRepo implements Repo {
   pairings: RaidPairing[] = [];
   raidAttackRows: RaidAttack[] = [];
   claims: RaidClaim[] = [];
+  deletionRows: DeletionRequest[] = [];
   private seq = 0;
 
   async createPlayer(p: Player): Promise<void> {
@@ -376,6 +420,45 @@ export class MemoryRepo implements Repo {
       }
     }
     return { attacks: attacks - this.attacks.length, tickets, bases };
+  }
+  async deletePlayer(id: string, name: string): Promise<void> {
+    const D = DELETED_PLAYER;
+    for (const [k, t] of this.tickets) {
+      if (t.attackerId === id) this.tickets.delete(k);
+      else if (t.defenderId === id) t.defenderId = null;
+    }
+    this.attacks = this.attacks.filter((a) => a.defenderId !== id);
+    for (const a of this.attacks) if (a.attackerId === id) Object.assign(a, { attackerId: D.id, attackerName: D.name });
+    this.memberRows = this.memberRows.filter((m) => m.playerId !== id);
+    const notices = noticesNaming(name);
+    this.chatRows = this.chatRows.filter((c) => c.playerId !== id && !(c.kind === 'system' && c.playerId === null && notices(c.text)));
+    const giftNote = ` to ${name}.`;
+    for (const c of this.chatRows) if (c.kind === 'donation' && c.text.endsWith(giftNote)) c.text = `${c.text.slice(0, -giftNote.length)} to ${D.name}.`;
+    this.donations = this.donations.filter((d) => d.toId !== id);
+    for (const d of this.donations) if (d.fromId === id) Object.assign(d, { fromId: D.id, fromName: D.name });
+    for (const [k, r] of this.requestRows) if (r.playerId === id) this.requestRows.delete(k);
+    for (const a of this.raidAttackRows) if (a.attackerId === id) a.attackerId = D.id;
+    this.claims = this.claims.filter((c) => c.playerId !== id);
+    for (const p of this.pairings) {
+      for (const e of p.roster) if (e.playerId === id) Object.assign(e, { playerId: null, name: D.name, base: { ...e.base, name: D.name } });
+    }
+    this.players.delete(id);
+  }
+  async addDeletionRequest(r: DeletionRequest): Promise<void> {
+    this.deletionRows.push(clone(r));
+  }
+  async deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]> {
+    return this.deletionRows.filter((r) => status === 'all' || r.status === 'open').slice(0, limit).map(clone);
+  }
+  async getDeletionRequest(id: string): Promise<DeletionRequest | null> {
+    const r = this.deletionRows.find((x) => x.id === id);
+    return r ? clone(r) : null;
+  }
+  async resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean> {
+    const r = this.deletionRows.find((x) => x.id === id);
+    if (!r || r.status !== 'open') return false;
+    Object.assign(r, { status, resolution, resolvedAt: at });
+    return true;
   }
   async createGrove(g: Grove): Promise<void> {
     this.groves.set(g.id, clone(g));

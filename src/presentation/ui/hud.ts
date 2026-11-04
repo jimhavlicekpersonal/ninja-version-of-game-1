@@ -370,6 +370,7 @@ export class Hud {
             );
           });
           wrap.append(details);
+          wrap.append(this.accountBlock());
         }
         const retry = h('button', { class: 'btn ghost', type: 'button' }, 'Connect now');
         retry.addEventListener('click', () => void conn.sync().then(draw));
@@ -406,6 +407,56 @@ export class Hud {
     });
     window.setTimeout(() => obs.observe(document.body, { childList: true, subtree: true }), 0);
     return wrap;
+  }
+
+  /**
+   * Settings → Online play → Account: the Player ID (for support and the web
+   * deletion form) and in-game account deletion (Apple 5.1.1(v)).
+   */
+  private accountBlock(): HTMLElement {
+    const conn = this.deps.connection;
+    const id = conn.player?.id ?? '';
+    const idBox = h('input', { class: 'text mono', type: 'text', readonly: true, value: id, 'aria-label': 'Player ID' }) as HTMLInputElement;
+    idBox.addEventListener('focus', () => idBox.select());
+    const copy = h('button', { class: 'btn ghost', type: 'button' }, 'Copy');
+    copy.addEventListener('click', () => {
+      idBox.select();
+      const done = () => this.toast('Player ID copied.', 'success');
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(id).then(done, () => this.toast('Select the ID and copy it.', 'info'));
+      else this.toast('Select the ID and copy it.', 'info');
+    });
+    const del = h('button', { class: 'btn danger', type: 'button' }, 'Delete online account');
+    del.addEventListener('click', () => void this.deleteOnlineAccount());
+    const webForm = `${conn.url}/account/delete`;
+    return h(
+      'details',
+      { class: 'account-settings' },
+      h('summary', {}, 'Account'),
+      h('label', { class: 'muted small' }, 'Player ID (for support, and for deletion requests)'),
+      h('div', { class: 'chat-input-row' }, idBox, copy),
+      h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and troop requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
+      h('div', { class: 'actions' }, del),
+      h('p', { class: 'muted small' }, 'No longer have the game? Ask for deletion on the web: ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm)),
+    );
+  }
+
+  private async deleteOnlineAccount(): Promise<void> {
+    const conn = this.deps.connection;
+    const ok = await this.confirm(
+      'Delete your online account?',
+      'Your player name, shared base, Alliance membership, chat messages and troop requests are deleted from the server now. Online attacks still waiting for the server become practice results. Online play turns off on this device; your village stays. This cannot be undone.',
+      'Delete account',
+      true,
+    );
+    if (!ok) return;
+    try {
+      await conn.deleteAccount();
+    } catch (e) {
+      this.toast(`Could not delete the account: ${(e as Error).message}`, 'error');
+      return;
+    }
+    this.toast('Your online account was deleted. Restarting offline…', 'success');
+    void this.c.save().then(() => window.setTimeout(() => location.reload(), 1200));
   }
 
   private updateShield(): void {

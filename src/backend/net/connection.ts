@@ -171,6 +171,27 @@ export class Connection {
     this.emit();
   }
 
+  /**
+   * Delete this player's online account (Settings; Apple 5.1.1(v)). Online
+   * attacks the server has not confirmed yet become practice results (no
+   * loot or honor), as a refused report would. Online play is
+   * then switched off on this device, so the next start does not quietly make
+   * a new account; choosing a server again in Settings does. The village on
+   * this device is not touched. Call reload afterwards for a clean start.
+   */
+  async deleteAccount(): Promise<void> {
+    if (!this.port) return;
+    await this.port.deleteAccount();
+    this.stop();
+    const g = this.o.game;
+    for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'account_deleted' });
+    this.saveOutbox([]);
+    this.kv.set(NAME_KEY, null);
+    Connection.choose('off', this.kv);
+    this.player = null;
+    this.setStatus('off');
+  }
+
   /** Begin connecting, and keep in touch: light sync every minute, base upload every 2 minutes. */
   start(): void {
     if (!this.port) return;

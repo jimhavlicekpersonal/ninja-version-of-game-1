@@ -4,10 +4,11 @@
  * requests, checks the bearer token, applies rate and size limits, and turns
  * errors into protocol errors.
  */
-import { createHash } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
 import type { GameData } from '../src/gameplay/sim/types';
+import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
 import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext } from './nodeContext';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
@@ -34,6 +35,12 @@ export interface ServerOptions {
    * Leave it off when clients connect directly, or anyone could pick their IP.
    */
   trustProxy?: boolean | number | string;
+  /**
+   * Staff token for the admin API (/admin/v1/…: deletion requests, the
+   * moderation queue). At least 24 characters; without it the admin API does
+   * not exist (404).
+   */
+  adminToken?: string;
 }
 
 /** Route option: which extra rate rule the route counts against. */
@@ -129,6 +136,11 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.players, rate('register'), async (req, reply) => reply.code(201).send(await core.register(body<{ name: string }>(req).name)));
   app.get(Routes.me, authed(async (me) => core.me(me)));
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
+  app.delete(Routes.me, authed(async (me) => core.deleteAccount(me)));
+
+  // Account deletion without the game: the web page and its requests (no token).
+  app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage()));
+  app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
 
   // PvP
   app.put(Routes.base, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.uploadBase(me, req.body as never)));
@@ -156,6 +168,19 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target)));
   app.post(Routes.groveRaidAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.raidAttack(me, req.body as never)));
   app.post(Routes.groveRaidClaim, authed(async (me, req) => core.claimRaid(me, body<{ week: number }>(req).week)));
+
+  // Staff API: only with a strong ADMIN_TOKEN, compared in constant time.
+  if (opts.adminToken !== undefined) {
+    if (opts.adminToken.length < 24) throw new Error('ADMIN_TOKEN must be at least 24 characters.');
+    const want = createHash('sha256').update(opts.adminToken).digest();
+    const staff = <T>(h: (req: FastifyRequest) => Promise<T>) => async (req: FastifyRequest) => {
+      const got = createHash('sha256').update(bearer(req) ?? '').digest();
+      if (!timingSafeEqual(got, want)) throw new ApiError(401, 'unauthorized', 'Staff token required.');
+      return h(req);
+    };
+    app.get('/admin/v1/deletion-requests', staff(async (req) => core.admin.deletionQueue(query(req).status === 'all' ? 'all' : 'open')));
+    app.post('/admin/v1/deletion-requests/:id', staff(async (req) => core.admin.resolveDeletion(param(req, 'id'), body<{ action: string }>(req).action, body<{ note: string }>(req).note)));
+  }
 
   return app;
 }

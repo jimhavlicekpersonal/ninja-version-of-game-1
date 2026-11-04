@@ -6,7 +6,7 @@ import { ApiError, HOUR, MIN, type ServerContext } from './context';
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: 6, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed'] };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: 6, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion'] };
 }
 
 export function cleanName(raw: unknown, ctx: ServerContext): string {

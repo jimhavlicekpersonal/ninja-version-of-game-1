@@ -5,6 +5,8 @@
  * Grove rules and the weekly Grove Raid.
  */
 import { describe, expect, it } from 'vitest';
+import { ApiError } from '../../../server/core';
+import { InProcessServerAdapter } from '../../../server/inProcess';
 import { ServerError } from '../../../src/backend/net/ports';
 import { runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData } from '../../../src/gameplay/sim/data';
@@ -18,7 +20,7 @@ async function code(p: Promise<unknown>): Promise<string> {
   try {
     await p;
   } catch (e) {
-    if (e instanceof ServerError) return e.code;
+    if (e instanceof ServerError || e instanceof ApiError) return e.code;
     throw e;
   }
   return 'ok';
@@ -365,6 +367,86 @@ for (const [label, makeRepo] of repoFactories) {
         expect((await eve.raid()).chests).toEqual([]);
         expect(await code(eve.claimRaid(week))).toBe('not_found');
         expect((await ann.claimRaid(week)).alreadyClaimed).toBe(false);
+      });
+    });
+
+    describe('account deletion (roadmap step 14)', () => {
+      it('deletes the account and what is only theirs, and keeps what others hold under "Deleted player"', async () => {
+        const w = await W();
+        const ann = await w.player('Ann', baseAt(3));
+        const ben = await w.player('Ben', baseAt(3, 8));
+        const dot = await w.player('Dot', baseAt(3, 9));
+        const g = await ann.createGrove('Toad Hall');
+        await ben.joinGrove(g.id);
+        await ann.postChat('hello from Ann');
+        // Ann gifts Ben troops, and asks for some herself (Ben fills it).
+        const benAsk = await ben.requestTroops(10);
+        await ann.donate(benAsk.id, { troop: 'hedgehog_roller', count: 2, level: 1 });
+        const annAsk = await ann.requestTroops(10);
+        await ben.donate(annAsk.id, { troop: 'hedgehog_roller', count: 1, level: 1 });
+        // Ann raids Dot; Dot raids Ann.
+        w.pastShields();
+        const raid = async (from: typeof ann, target: string) => {
+          for (let i = 0; i < 6; i++) {
+            const m = (await from.match())!;
+            if (m.opponent.name === target) return from.submitAttack({ ticket: m.ticket, seed: m.seed, ...noTroops });
+          }
+          throw new Error(`never matched ${target}`);
+        };
+        await raid(ann, 'Dot');
+        await w.repo.updatePlayer(ann.id, { shieldUntil: 0 });
+        await raid(dot, 'Ann');
+        // Ann is on an Alliance War roster (as an enemy base of another Alliance).
+        await w.repo.createPairings([{ week: 1, groveId: 'other', opponentGroveId: g.id, opponentName: 'Toad Hall', botSeed: 0, roster: [{ index: 0, name: 'Ann', hallLevel: 3, trophies: 0, base: { ...baseAt(3), name: 'Ann' }, playerId: ann.id }], ourSize: 1, ourHall: 3, createdAt: w.now() }]);
+        const annToken = ann.credentials;
+
+        await ann.deleteAccount();
+
+        expect(ann.hasIdentity()).toBe(false);
+        expect(await w.repo.getPlayer(ann.id)).toBeNull();
+        const stale = new InProcessServerAdapter(w.core, annToken);
+        expect(await code(stale.me())).toBe('unauthorized');
+        // Ben leads the Alliance now; nothing there names Ann.
+        const view = (await ben.myGrove())!;
+        expect(view.members.map((m) => [m.name, m.role])).toEqual([['Ben', 'Leader']]);
+        const chat = (await ben.chat()).messages;
+        expect(chat.some((m) => m.from?.id === ann.id)).toBe(false);
+        expect(chat.map((m) => m.text).join('|')).not.toMatch(/\bAnn\b/);
+        expect(chat.map((m) => m.text)).toContain('A member left the Alliance.');
+        expect(chat.find((m) => m.kind === 'donation' && m.from?.id === ben.id)!.text).toMatch(/to Deleted player\.$/);
+        // Gifts Ann sent stay with Ben, without her name; her own request is gone.
+        expect((await ben.inbox()).donations.map((d) => d.fromName)).toEqual(['Deleted player']);
+        expect((await ben.requests()).requests).toHaveLength(0);
+        // Dot keeps the replay of Ann's raid, anonymised; raids on Ann are gone.
+        expect((await dot.defenses(0)).defenses.map((d) => d.attackerName)).toEqual(['Deleted player']);
+        expect(await w.repo.defensesFor(ann.id, 0, 10)).toEqual([]);
+        // The war roster keeps the base (the score depends on it), without her name.
+        const roster = (await w.repo.getPairing(1, 'other'))!.roster[0];
+        expect(roster).toMatchObject({ playerId: null, name: 'Deleted player', base: { name: 'Deleted player' } });
+        // Opponents can no longer be matched against her.
+        for (let i = 0; i < 4; i++) expect((await dot.match())!.opponent.name).not.toBe('Ann');
+      });
+
+      it('takes web deletion requests without saying whether the player exists; staff carry them out', async () => {
+        const w = await W();
+        const ann = await w.player('Ann', baseAt(1));
+        expect(await code(w.core.requestDeletion({}))).toBe('bad_request');
+        const real = await w.core.requestDeletion({ playerId: ann.id, contact: 'ann@example.com', note: 'lost my phone' });
+        const fake = await w.core.requestDeletion({ playerId: 'nobody', name: 'Ghost' });
+        expect(Object.keys(real)).toEqual(['id']);
+        expect(Object.keys(fake)).toEqual(['id']);
+        const queue = (await w.core.admin.deletionQueue('open')).requests;
+        expect(queue.map((r) => [r.id, r.player?.name ?? null])).toEqual([
+          [real.id, 'Ann'],
+          [fake.id, null],
+        ]);
+        expect(await w.core.admin.resolveDeletion(real.id, 'delete', '')).toMatchObject({ status: 'done', resolution: 'Account deleted.' });
+        expect(await w.repo.getPlayer(ann.id)).toBeNull();
+        expect(await code(w.core.admin.resolveDeletion(real.id, 'delete', ''))).toBe('conflict');
+        expect(await code(w.core.admin.resolveDeletion(fake.id, 'maybe', ''))).toBe('bad_request');
+        expect(await w.core.admin.resolveDeletion(fake.id, 'reject', 'Could not confirm ownership.')).toMatchObject({ status: 'rejected', resolution: 'Could not confirm ownership.' });
+        expect((await w.core.admin.deletionQueue('open')).requests).toHaveLength(0);
+        expect((await w.core.admin.deletionQueue('all')).requests).toHaveLength(2);
       });
     });
   });

@@ -146,7 +146,7 @@ export class HttpServerAdapter implements ServerPort {
     return json as T;
   }
 
-  private async req<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown): Promise<T> {
+  private async req<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
     let attempt = 0;
     for (;;) {
       try {
@@ -193,6 +193,11 @@ export class HttpServerAdapter implements ServerPort {
 
   rename(name: string): Promise<PlayerView> {
     return this.req('PUT', Routes.me, { name });
+  }
+
+  async deleteAccount(): Promise<void> {
+    await this.req<void>('DELETE', Routes.me);
+    this.tokens.set(null);
   }
 
   // ---------------------------------------------------------------- PvP

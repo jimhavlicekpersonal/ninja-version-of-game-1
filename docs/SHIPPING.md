@@ -74,6 +74,7 @@ Without a server, the game uses generated opponents, bot raiders and a bot Grove
      - `DATABASE_URL`: the connection string.
      - `TRUST_PROXY`: set it to `true` on Render, Fly.io, Railway and any host with a load balancer in front, so rate limits count each player's IP address instead of the load balancer's. Leave it unset only when players connect to the server directly (otherwise anyone could choose their IP with a header).
      - `RATE_LIMITS` (optional): JSON that overrides individual limits, for example `{"register":{"limit":200,"windowMs":3600000}}` on a staging server that runs the contract tests often. The defaults are in `server/rateLimit.ts` and `docs/PROTOCOL.md`.
+     - `ADMIN_TOKEN`: a long random secret (at least 24 characters, e.g. `openssl rand -hex 32`). It turns on the staff API for account-deletion requests and the moderation queue (section 3a). Without it those routes don't exist.
      - `CORS_ORIGIN`: leave it unset to allow every origin. This is safe, because players sign in with a token, not a cookie. To restrict it, use a comma-separated list: `https://jimhavlicekpersonal.github.io,capacitor://localhost,https://localhost`. The last two are the iPhone and Android apps.
    - The first `server:migrate` creates the tables; later versions add numbered migrations (`server/migrations/`). `npm run server:migrate -- --status` lists applied and pending ones. A database made by an older server (which created its tables on every boot) is adopted as it is.
    - Use the HTTPS address the host gives you. The phone apps refuse plain HTTP.
@@ -89,6 +90,24 @@ Without a server, the game uses generated opponents, bot raiders and a bot Grove
    - **On one device, no rebuild:** in the game, open **Settings → Online play**, type the server address and tap **Use**. **Play offline** switches back. This is handy for testing a new server before building it in.
 
 The top bar shows the connection: **Online**, **Connecting…** or **No connection**. Battles you fight while the connection is down are sent when it comes back.
+
+### 3a. Account deletion and moderation (staff)
+
+- **In the game:** Settings → Online play → Account → **Delete online account** deletes the account at once (Apple 5.1.1(v)).
+- **Web link for the store listings:** `https://<your-server>/account/delete`. Google Play asks for it ("Delete account URL" in the Data safety section); add it to the privacy policy too. Players who lost the game send a request there with their Player ID (Settings → Online play → Account) or their name.
+- **Working through web requests** (Google expects them handled promptly; the page promises within 30 days). List open requests; each shows the player the ID names, with name and last-seen time:
+
+  ```bash
+  curl -H "Authorization: Bearer $ADMIN_TOKEN" https://<your-server>/admin/v1/deletion-requests
+  ```
+
+  Verify before deleting: player IDs are visible to Alliance mates, so a request alone does not prove ownership. A request whose contact details match the player, or an account inactive for 30+ days, is reasonable to carry out; for an active account, ask the player to delete it from the game. Then:
+
+  ```bash
+  curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" -d '{"action":"delete"}' https://<your-server>/admin/v1/deletion-requests/<id>
+  ```
+
+  Use `{"action":"reject","note":"…"}` to turn one down. `?status=all` lists handled requests too.
 
 **Running a server locally:** run `npm run server:dev`. It uses memory instead of Postgres when `DATABASE_URL` is not set. In the game, set the server address to `http://localhost:8787`, or to `http://<laptop-ip>:8787` from a phone on the same Wi-Fi, using `npm run dev:lan`.
 

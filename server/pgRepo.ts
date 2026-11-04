@@ -3,9 +3,11 @@ import pg from 'pg';
 import { contentHash } from './contentHash';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
+import { DELETED_PLAYER } from './repo';
 import type {
   AttackRecord,
   ChatRow,
+  DeletionRequest,
   Donation,
   Grove,
   GroveMember,
@@ -134,6 +136,17 @@ const toRaidAttack = (r: Row): RaidAttack => ({
   stars: num(r.stars),
   destruction: num(r.destruction),
   at: num(r.at),
+});
+const toDeletion = (r: Row): DeletionRequest => ({
+  id: String(r.id),
+  at: num(r.at),
+  playerId: String(r.player_id),
+  name: String(r.name),
+  contact: String(r.contact),
+  note: String(r.note),
+  status: r.status as DeletionRequest['status'],
+  resolvedAt: r.resolved_at === null || r.resolved_at === undefined ? null : num(r.resolved_at),
+  resolution: strOrNull(r.resolution),
 });
 const toClaim = (r: Row): RaidClaim => ({ week: num(r.week), playerId: String(r.player_id), groveId: String(r.grove_id), outcome: r.outcome as RaidClaim['outcome'], at: num(r.at) });
 
@@ -288,6 +301,74 @@ export class PgRepo implements Repo {
       [c.staleBefore],
     );
     return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0 };
+  }
+
+  // ------------------------------------------------------------ account deletion
+
+  async deletePlayer(id: string, name: string): Promise<void> {
+    const D = DELETED_PLAYER;
+    const client = await this.pool.connect();
+    try {
+      await client.query('begin');
+      const q = (sql: string, vals: unknown[]) => client.query(sql, vals);
+      await q('delete from tickets where attacker_id = $1', [id]);
+      await q('update tickets set defender_id = null where defender_id = $1', [id]);
+      await q('delete from attacks where defender_id = $1', [id]);
+      await q(`update attacks set attacker_id = $2, record = record || jsonb_build_object('attackerId', $2::text, 'attackerName', $3::text) where attacker_id = $1`, [id, D.id, D.name]);
+      await q('delete from grove_members where player_id = $1', [id]);
+      await q('delete from grove_chat where player_id = $1', [id]);
+      // Notices naming them (the texts server/core/groves.ts writes; see noticesNaming).
+      await q(
+        `delete from grove_chat where kind = 'system' and player_id is null
+           and (text = any($1::text[]) or starts_with(text, $2))`,
+        [[`${name} joined the Alliance. Say hello!`, `${name} left the Alliance.`, `${name} is the new leader.`], `${name} founded `],
+      );
+      const giftNote = ` to ${name}.`;
+      await q(`update grove_chat set text = left(text, length(text) - length($1)) || $2 where kind = 'donation' and right(text, length($1)) = $1`, [giftNote, ` to ${D.name}.`]);
+      await q('delete from donations where to_id = $1', [id]);
+      await q('update donations set from_id = $2, from_name = $3 where from_id = $1', [id, D.id, D.name]);
+      await q('delete from troop_requests where player_id = $1', [id]);
+      await q('update raid_attacks set attacker_id = $2 where attacker_id = $1', [id, D.id]);
+      await q('delete from raid_claims where player_id = $1', [id]);
+      // War rosters keep the base (the war's score depends on it) under DELETED_PLAYER.
+      await q(
+        `update raid_pairings set roster = (
+           select jsonb_agg(case when e->>'playerId' = $1
+             then e || jsonb_build_object('playerId', null, 'name', $2::text, 'base', (e->'base') || jsonb_build_object('name', $2::text))
+             else e end order by i)
+           from jsonb_array_elements(roster) with ordinality as x(e, i))
+         where roster @> jsonb_build_array(jsonb_build_object('playerId', $1::text))`,
+        [id, D.name],
+      );
+      await q('delete from players where id = $1', [id]);
+      await client.query('commit');
+    } catch (e) {
+      await client.query('rollback');
+      throw e;
+    } finally {
+      client.release();
+    }
+  }
+
+  async addDeletionRequest(r: DeletionRequest): Promise<void> {
+    await this.pool.query(
+      'insert into deletion_requests (id, at, player_id, name, contact, note, status, resolved_at, resolution) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+      [r.id, r.at, r.playerId, r.name, r.contact, r.note, r.status, r.resolvedAt, r.resolution],
+    );
+  }
+
+  async deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]> {
+    return (await this.rows(`select * from deletion_requests where ($1 = 'all' or status = 'open') order by at limit $2`, [status, limit])).map(toDeletion);
+  }
+
+  async getDeletionRequest(id: string): Promise<DeletionRequest | null> {
+    const r = await this.rows('select * from deletion_requests where id = $1', [id]);
+    return r[0] ? toDeletion(r[0]) : null;
+  }
+
+  async resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean> {
+    const r = await this.pool.query(`update deletion_requests set status = $2, resolution = $3, resolved_at = $4 where id = $1 and status = 'open'`, [id, status, resolution, at]);
+    return (r.rowCount ?? 0) > 0;
   }
 
   // ------------------------------------------------------------ groves

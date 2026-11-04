@@ -233,3 +233,32 @@ describe('F18: replays are tied to the battle rules they were fought under', () 
     expect(replayable({ rules: SIM_RULES - 1 })).toBe(false);
   });
 });
+
+describe('Account deletion from the game (roadmap step 14)', () => {
+  it('deletes the account, settles pending attacks as practice, and turns online play off on this device', async () => {
+    const w = world();
+    const game = village(w);
+    const kv = memoryKv();
+    const port = new InProcessServerAdapter(w.core);
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await conn.sync();
+    const id = conn.player!.id;
+    const { sub } = await onlineAttack(w, game, port);
+    expect(game.state.battleLog.at(-1)!.settlement).toBe('pending');
+    const before = { ...game.state.resources };
+    await conn.deleteAccount();
+    expect(await w.repo.getPlayer(id)).toBeNull();
+    expect(conn.status).toBe('off');
+    expect(conn.player).toBeNull();
+    expect(port.hasIdentity()).toBe(false);
+    expect(game.state.battleLog.at(-1)!.settlement).toBe('rejected'); // a practice result: no loot or honor
+    expect(game.state.resources).toEqual(before);
+    expect(conn.outbox()).toHaveLength(0);
+    // The next start stays offline, so no new account appears by itself.
+    expect(Connection.chosen(kv)).toBe('off');
+    expect(new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined }).enabled).toBe(false);
+    // And the old report can no longer be sent.
+    await expect(port.submitAttack(sub)).rejects.toMatchObject({ code: 'unauthorized' });
+  });
+});
+

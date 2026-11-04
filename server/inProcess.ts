@@ -53,6 +53,10 @@ export class InProcessServerAdapter implements ServerPort {
   rename(name: string) {
     return this.authed((me) => this.core.rename(me, name));
   }
+  async deleteAccount() {
+    await this.authed((me) => this.core.deleteAccount(me));
+    this.token = null;
+  }
   uploadBase(req: UploadBaseRequest) {
     return this.authed((me) => this.core.uploadBase(me, wire(req)));
   }

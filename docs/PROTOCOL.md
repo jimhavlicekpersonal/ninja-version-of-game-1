@@ -3,6 +3,7 @@
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
 **Version 6, server hardening (2026-11, roadmap Phase 1):** additions that keep protocol 6 for clients that use them.
+- **Account deletion.** `DELETE /v1/me` deletes the caller's online account (`204`); its token stops working. Players who can't open the game use the web page `GET /account/delete`, which sends `POST /v1/account/deletion-requests` for staff to verify. `/v1/hello` lists `account-deletion`.
 - **Rate and size limits.** Too many requests get `429 rate_limited` with a `Retry-After` header (seconds); the game treats it as "try again later", never as a refusal, so a rate-limited battle report stays in the outbox. Request bodies are capped (16 KB, base uploads 128 KB, battle reports 256 KB; more is `413`), and chat messages at 200 characters.
 - **Server-issued battle seeds.** `MatchResponse.seed` and `RaidTicketResponse.seed` carry the battle seed the server chose for the ticket. The client plays the battle with it and sends it back as `BattleSubmission.seed`; the server re-simulates with its own seed, and a report with any other seed is refused with `400 bad_request` (a player-facing "update the game" message), without using up the ticket. A client facing an older server that sends no seed picks its own. `/v1/hello` lists the `server-seed` feature.
 
@@ -130,9 +131,14 @@ Every battle report must also be checked:
 | `POST /v1/players` | `{ name }` | `201 { playerId, token }` |
 | `GET /v1/me` | | `PlayerView` `{ id, name, trophies, hallLevel, shieldUntil, groveId }` |
 | `PUT /v1/me` | `{ name }` | `PlayerView` |
+| `DELETE /v1/me` | | `204` (the online account is deleted; the token stops working) |
+| `POST /v1/account/deletion-requests` | `{ playerId?, name?, contact?, note? }` (no token) | `202 { id }` |
+| `GET /account/delete` | | the web deletion page (HTML), for store listings |
 
 - New players start with `ranks.startingTrophies` and a shield of `raids.newPlayerShieldHours`.
 - Names are trimmed, filtered for bad words, and 2–24 characters long. Anything else becomes "Ruler".
+- **Deleting an account** (`DELETE /v1/me`, Apple 5.1.1(v)) leaves the player's Alliance (leadership passes on; the notice does not name them) and deletes the player, their shared base, tickets they hold, raids on them, their chat lines, troop requests and gifts to them, war claims and Alliance notices naming them. What other players keep stays without the name: replays of raids they made (attacker "Deleted player"), troops they gave, war rosters and war attacks (a war's score must not change). Copies of their base inside other players' recent tickets go with the 30-day retention. The game also turns its pending online attacks into practice results and switches online play off on that device, so it does not quietly register a new player.
+- **Deletion requests from the web** (`POST /v1/account/deletion-requests`, 5 an hour per IP address) need a `playerId` or a `name`. The answer is the same whether or not the player exists. Staff verify and carry them out with the admin API (`docs/SHIPPING.md`); the admin API is our server's, not part of this protocol.
 
 ### PvP
 

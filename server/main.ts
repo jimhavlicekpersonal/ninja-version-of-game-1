@@ -9,6 +9,8 @@
  *   player's IP instead of the proxy's;
  * - RATE_LIMITS: optional JSON overriding rules of DEFAULT_RATE_LIMITS, e.g.
  *   {"register":{"limit":200,"windowMs":3600000}} on a staging server.
+ * - ADMIN_TOKEN: a long random secret that turns on the staff API
+ *   (/admin/v1/…: deletion requests, moderation queue). Unset: no staff API.
  */
 import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
@@ -44,7 +46,7 @@ async function main(): Promise<void> {
     repo = new MemoryRepo();
   }
   const rateLimits = process.env.RATE_LIMITS ? (JSON.parse(process.env.RATE_LIMITS) as Partial<RateLimits>) : undefined;
-  const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true, trustProxy: trustProxy(process.env.TRUST_PROXY), rateLimits });
+  const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true, trustProxy: trustProxy(process.env.TRUST_PROXY), rateLimits, adminToken: process.env.ADMIN_TOKEN || undefined });
   const port = Number(process.env.PORT ?? 8787);
   await app.listen({ port, host: '0.0.0.0' });
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.

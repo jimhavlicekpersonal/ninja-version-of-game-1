@@ -86,12 +86,13 @@ export async function joinGrove(ctx: ServerContext, me: Player, id: string): Pro
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }
 
-export async function leaveGrove(ctx: ServerContext, me: Player): Promise<void> {
+/** `quiet`: the player is deleting their account, so the notice does not name them. */
+export async function leaveGrove(ctx: ServerContext, me: Player, opts: { quiet?: boolean } = {}): Promise<void> {
   const { grove, role } = await requireGrove(ctx, me);
   await ctx.repo.removeMember(grove.id, me.id);
   await ctx.repo.updatePlayer(me.id, { groveId: null });
   await ctx.repo.closeRequestsOf(me.id);
-  await system(ctx, grove.id, `${me.name} left the Alliance.`);
+  await system(ctx, grove.id, opts.quiet ? 'A member left the Alliance.' : `${me.name} left the Alliance.`);
   if (role === 'Leader') {
     // Hand leadership to the longest-serving member.
     const rest = (await ctx.repo.members(grove.id)).sort((a, b) => (a.role === 'Elder' ? 0 : 1) - (b.role === 'Elder' ? 0 : 1) || a.joinedAt - b.joinedAt);
