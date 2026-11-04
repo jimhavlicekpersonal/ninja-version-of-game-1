@@ -2,6 +2,8 @@
 
 You are the **BACKEND AI**. You own `src/backend/` (net, social, payments, platform, persist, analytics, pwa), `server/`, `docs/PROTOCOL.md`, `docs/SHIPPING.md`, `ios/`, `android/` and `.github/workflows/`. You call game rules from `src/gameplay/sim`, and never fork or change them.
 
+**Roadmap:** `docs/backend/PVP_ROADMAP.md` is the agreed design and step list for the PvP server (ratings, hosting and cost, protocol 7 payloads, store payments, Friends, Friendly Duels and Gang Wars). Mark steps done there as you finish them.
+
 ## Multiplayer (ports and adapters)
 
 - `net/protocol.ts`: routes, types, error codes and `PROTOCOL_VERSION` (now **6**, `minProtocol: 6`: the gameplay audit changed the battle rules (`SIM_RULES` 2), added `BattleSubmission.reinforcements` (donated troops and their levels) and `DefenseView.reinforcements`/`rules`). `checkArmy` checks own troops against `troopEarliestKeep` and full camps, donated troops against the Lodge, and research caps; `normalizeBase`/`validateBase` enforce the Keep's counts and levels, an allowlisted shape (no `power`/`wallPower`), and `capBaseLoot` drops loot from buildings that can't hold it. A used ticket stores its answer (`Ticket.response`, `tickets.response` column): a repeated report gets the same answer back, never a second settlement. Wars pair equal rosters (strongest members, smaller side's size), cap each side's attacks at roster × allowance, and break star ties by destruction. Bump the protocol for incompatible simulation changes and update `docs/PROTOCOL.md` and contract tests.
