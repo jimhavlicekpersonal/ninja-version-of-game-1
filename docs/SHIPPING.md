@@ -83,7 +83,7 @@ Without a server, the game uses generated opponents, bot raiders and a bot Grove
      - `CORS_ORIGIN`: leave it unset to allow every origin. This is safe, because players sign in with a token, not a cookie. To restrict it, use a comma-separated list: `https://jimhavlicekpersonal.github.io,capacitor://localhost,https://localhost`. The last two are the iPhone and Android apps.
    - The first `server:migrate` creates the tables; later versions add numbered migrations (`server/migrations/`). `npm run server:migrate -- --status` lists applied and pending ones. A database made by an older server (which created its tables on every boot) is adopted as it is.
    - Use the HTTPS address the host gives you. The phone apps refuse plain HTTP.
-3. Check that `https://<your-server>/v1/hello` shows `"name":"toadstool-kingdoms"`.
+3. Check that `https://<your-server>/v1/hello` shows `"name":"toadstool-kingdoms"`. To size the server, run `npm run server:bench` once on the host (a shell or one-off job after the build): it times battle re-simulation per Keep (`docs/backend/PVP_ROADMAP.md`, section 2).
 4. Optional: check the server against the protocol contract. On Windows PowerShell, first set the address with `$env:CONTRACT_URL="https://<your-server>"`.
 
    ```bash

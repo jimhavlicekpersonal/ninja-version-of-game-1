@@ -68,8 +68,18 @@ Phone/PWA ──HTTPS JSON──▶ Load balancer ──▶ N × API containers 
 ```
 
 - Stateless API servers, so scale horizontally. No real-time connections (asynchronous battles), which keeps it far cheaper than a real-time game.
-- Re-sim CPU per battle: **assumed 20–100 ms, not measured yet** (step 18).
-- Capacity (8 attacks/player/day, 50 ms per re-sim): 10k daily players ≈ 80k battles/day ≈ 1 vCPU-hour/day; 1M ≈ 8M/day ≈ 5 vCPU average, ~25 at peak. **Compute is cheap; storage (base copies, replays) and the database are the real costs.**
+- Re-sim CPU per battle, **measured** (step 18, `npm run server:bench`, 2026-11-04, a 4-vCPU Intel Xeon 2.1 GHz cloud container, Node 22; a full bot army at its research cap against a generated base of the same Keep, 40 battles per Keep):
+
+  | Keep | median ms | p95 ms | max ms |
+  |---|---|---|---|
+  | 1 | 5 | 13 | 16 |
+  | 4 | 29 | 40 | 42 |
+  | 8 | 205 | 271 | 286 |
+  | 12 | 329 | 440 | 444 |
+  | 15 | 160 | 202 | 230 |
+
+  Much more than the 20–100 ms first assumed once Keeps reach 8+ (bigger armies, summons, counters). Re-run it on the production host before sizing.
+- Capacity (8 attacks/player/day, ~150 ms per re-sim for a typical Keep mix): 10k daily players ≈ 80k battles/day ≈ 3.3 vCPU-hours/day (well under one vCPU, ~1 at peak); 1M ≈ 8M/day ≈ 14 vCPU average, ~70 at peak. **Compute is still affordable, but a 0.2–0.45 s re-sim blocks a Node instance's event loop, so other requests on it wait.** Before more than a handful of concurrent players, run re-sims in a `worker_threads` pool (step 57, now more urgent) and watch `tk_resim_ms` (step 17). Storage (now one copy per base, step 11) and the database remain the main money costs.
 
 | Stage | Setup | ~USD/month |
 |---|---|---|
@@ -264,7 +274,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 - [x] 15. Chat report/block endpoints and screens; moderation queue. `server/core/moderation.ts` (reports with the message text as evidence, one open report per reporter, auto-hide after 3 reporters, blocks that hide messages and troop requests, chat mutes), migration 0005; `POST /v1/reports`, `GET|POST /v1/blocks`, `DELETE /v1/blocks/:id`, `ChatResponse.hidden`, `403 muted`; staff queue `/admin/v1/reports` (dismiss, remove message, mute); handled reports kept 90 days. Client: "⋯" on other players' chat messages and member rows opens Report (reason, note, also block) / Block / Unblock (`GroveSource.report/block/unblock`); Settings → Online play → Account lists blocked players. Tests: `core.test.ts` (both adapters), `server.test.ts`, `groveSource.test.ts`, contract test.
 - [x] 16. Leaderboard as a Redis sorted set; match locks in Redis. `server/redis.ts` (a dependency-free RESP2 client, TLS for Upstash), `server/shared.ts`: `Leaderboard` (`RepoLeaderboard` default, `RedisLeaderboard`: ZADD/ZREVRANGE/ZCOUNT, equal honor ranks the older account first like the database, rebuilt from Postgres when missing), `MatchLocks` (`TicketLocks` default, `RedisLocks`: SET NX PX, released by the holder only; matchmaking skips its ticket scan and takes the lock atomically, so two attackers never get the same defender), `RedisRateLimiter` (one budget across instances). `REDIS_URL` turns them on. Tests: `tests/backend/server/redis.test.ts` (`TEST_REDIS_URL`).
 - [x] 17. Observability: structured logs, Sentry (client + server), `/healthz`, metrics (re-sim ms, battles/min, desyncs, errors by code). Pino JSON logs with a request id (`x-request-id`, also on every answer) and tokens redacted (`LOG_LEVEL`); Sentry envelopes without the SDK (`src/backend/analytics/sentryEnvelope.ts`): server 5xx and crashes (`SENTRY_DSN`), game crashes (`VITE_SENTRY_DSN`, Settings → Send crash reports, never the sandbox, no player data); `/healthz` (liveness) and `/readyz` (database, Redis; 503 when down); `server/observability.ts` `PromMetrics` at `/metrics` behind `METRICS_TOKEN`: `tk_resim_ms`, `tk_battles_total`, `tk_desyncs_total` (from the new optional `BattleSubmission.clientHash`), `tk_errors_total{code}`, `tk_rate_limited_total`, request counts and latency. Tests: `tests/backend/server/observability.test.ts`.
-- [ ] 18. Benchmark `runBattle` on target hardware; record the result in section 2.
+- [x] 18. Benchmark `runBattle` on target hardware; record the result in section 2. `server/bench.ts` + `npm run server:bench` (built into `dist-server/bench.js`, so it runs on the host); measured here and recorded in section 2 (5 ms at Keep 1, up to 440 ms p95 at Keep 12), which moves step 57 (re-sim worker pool) forward. Test: `tests/backend/server/bench.test.ts`.
 
 ### Phase 1.5: Surviving game updates (~2–3 weeks) [Code]
 Makes balance, combat and data changes safe while old app builds are still in use (gap 8). Art and UI changes need nothing: the server never loads presentation code (`compartments.json`, `boundaries.test.ts`). Do this before the first store release; steps 72, 74 and 75 are small, 73 is the main work. Steps are numbered 72–78 so earlier numbers stay stable.
@@ -327,7 +337,7 @@ Makes balance, combat and data changes safe while old app builds are still in us
 - [ ] 54. Weekly review: economy, rating convergence, desync rate, refund rate; rebalance through the data files.
 - [ ] 55. Seasons: Honor reset, league chests, leaderboard archive.
 - [ ] 56. Moderation, support, account-deletion requests within legal time limits.
-- [ ] 57. Scale when needed: re-sim worker pool, read replica, partition `attacks`, replays to object storage.
+- [ ] 57. Scale when needed: re-sim worker pool, read replica, partition `attacks`, replays to object storage. (The worker pool is needed early: step 18 measured up to ~0.45 s per late-Keep re-sim, which blocks an instance's event loop.)
 - [ ] 58. Rotate keys yearly; renew Apple membership; keep up with yearly SDK and target deadlines.
 
 ### Phase 9: Friends and Gangs (~6–9 weeks) [Code, design in section 5]
