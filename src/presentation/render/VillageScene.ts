@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { BODY_FONT } from './fonts';
+import { BODY_FONT, DISPLAY_FONT } from './fonts';
 import { queueArt } from './artManifest';
 import type { GameController } from '../../gameplay/control/controller';
 import { buildingDef } from '../../gameplay/sim/data';
@@ -381,9 +381,9 @@ export class VillageScene extends Phaser.Scene {
     const top = view.image.y - view.image.displayHeight * view.image.originY;
     const t = this.add
       .text(view.image.x, top, text, {
-        fontFamily: BODY_FONT,
-        fontSize: '20px',
-        fontStyle: 'bold',
+        fontFamily: DISPLAY_FONT,
+        fontSize: '19px',
+        fontStyle: 'normal',
         color,
         stroke: '#26303d',
         strokeThickness: 5,
