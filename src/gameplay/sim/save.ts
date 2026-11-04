@@ -21,6 +21,14 @@ export interface SaveFile {
   village: VillageState;
 }
 
+/** The save was written by a newer build than this one. It is fine; this build just can't read it, so it must not be replaced. */
+export class NewerSaveError extends Error {
+  constructor() {
+    super('This save is from a newer version of the game. Update the game first.');
+    this.name = 'NewerSaveError';
+  }
+}
+
 export function serialize(state: VillageState, now: number): SaveFile {
   return { version: SAVE_VERSION, savedAt: now, village: { ...structuredClone(state), lastSeenAt: now } };
 }
@@ -30,7 +38,7 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
   if (!raw || typeof raw !== 'object') throw new Error('Save data is not an object');
   const file = raw as Partial<SaveFile>;
   if (typeof file.version !== 'number') throw new Error('Save data has no version');
-  if (file.version > SAVE_VERSION) throw new Error('This save is from a newer version of the game. Update the game first.');
+  if (file.version > SAVE_VERSION) throw new NewerSaveError();
   const out = structuredClone(file) as SaveFile;
   const v = out.village as unknown as Record<string, unknown>;
   if (out.version < 2 && v && typeof v === 'object') {
@@ -136,8 +144,23 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
       if (st && typeof st === 'object') for (const k of ['researchDone', 'trialsCleared']) st[k] = st[k] ?? 0;
     }
   }
+  repairTrainingQueue(v);
   out.version = SAVE_VERSION;
   return out;
+}
+
+/**
+ * A timer that ends before it began fails `validateVillage`, and a failed load
+ * replaces the village. "Finish training" with more queued than the camps hold
+ * used to write exactly that. Those warriors did finish, so they stay in the queue
+ * as finished, waiting for room. Runs on every load (the format did not change):
+ * one bad timer must never cost a player their village.
+ */
+function repairTrainingQueue(v: Record<string, unknown> | undefined): void {
+  if (!v || !Array.isArray(v.training)) return;
+  for (const q of v.training as { startedAt: number; endsAt: number }[]) {
+    if (q && q.endsAt < q.startedAt) q.startedAt = q.endsAt;
+  }
 }
 
 export function validateVillage(v: VillageState, data: GameData): string[] {

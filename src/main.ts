@@ -3,7 +3,7 @@ import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
 import { GameController } from './gameplay/control/controller';
 import { openGameDb } from './backend/persist/idb';
-import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, type SaveStore } from './backend/persist/saveStore';
+import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker } from './backend/pwa/register';
 import { Keys } from './presentation/render/assets';
 import { loadArtManifest } from './presentation/render/artManifest';
@@ -138,10 +138,15 @@ async function boot(): Promise<void> {
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', () => setTimeout(onResize, 250));
 
-  const thumbs = new Map<string, string | null>();
+  const thumbs = new Map<string, string>();
+  // Only real images are remembered: a texture that isn't ready yet is asked for again next time.
   const thumbOf = (key: string): string | null => {
-    if (!thumbs.has(key)) thumbs.set(key, game.textures.exists(key) ? (game.textures.getBase64(key) as string) : null);
-    return thumbs.get(key) ?? null;
+    const known = thumbs.get(key);
+    if (known) return known;
+    if (!game.textures.exists(key)) return null;
+    const url = game.textures.getBase64(key) as string;
+    if (url) thumbs.set(key, url);
+    return url || null;
   };
   let app: App | null = null;
   let tutorial: Tutorial | null = null;
@@ -220,6 +225,8 @@ async function boot(): Promise<void> {
   if (!store.persistent) hud.toast('This browser mode cannot save your village.', 'error');
   tutorial = new Tutorial(controller, analytics, document.body);
   tutorial.start();
+  // A village kept after a failed load, further along than this one: offer it back.
+  void hud.offerRecovery().catch((e) => console.warn('Could not check for kept villages', e));
 
   // Sound: unlock on the first touch (iOS needs a gesture), tap clicks, event cues, music.
   document.addEventListener('pointerdown', () => sound.unlock(), { capture: true });
@@ -280,6 +287,8 @@ async function boot(): Promise<void> {
       }
     } else {
       void reminders.cancelAll();
+      // A save right away also tells a tab left in the background that another one has taken over.
+      void controller.save();
     }
   });
   window.addEventListener('pagehide', () => {
@@ -289,6 +298,10 @@ async function boot(): Promise<void> {
   // A failed save is shown (at most once a minute), never only logged.
   let lastSaveWarning = 0;
   controller.onSaveError((e) => {
+    if (e instanceof SaveConflictError) {
+      hud.showTakenOver();
+      return;
+    }
     if (Date.now() - lastSaveWarning < 60_000) return;
     lastSaveWarning = Date.now();
     hud.toast(`Your village could not be saved (${e.message}). Free some device storage, and copy a save code in Settings to keep it safe.`, 'error');

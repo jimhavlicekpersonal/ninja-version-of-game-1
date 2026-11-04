@@ -4,6 +4,7 @@
  * notifications are opt-in, each type can be switched off, nothing arrives in
  * quiet hours, and at most `maxPerDay` arrive per local day.
  */
+import { armyReadyAt } from './army';
 import { buildingDef } from './data';
 import { chestReady, nextChestAt } from './daily';
 import { upcomingEvents } from './events';
@@ -32,8 +33,9 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
   for (const r of state.research?.active ?? []) {
     if (r.endsAt > now) out.push({ id: `research-${r.troop}`, type: 'builds', at: r.endsAt, title: `${data.troops[r.troop]?.name ?? 'Troop'} level ${r.toLevel} researched!`, body: 'A research lane in the Training Dojo is free again.' });
   }
-  const last = state.training[state.training.length - 1];
-  if (last && last.endsAt > now) out.push({ id: 'training', type: 'army', at: last.endsAt, title: 'Your army is ready', body: 'All troops have finished training. Time to raid!' });
+  // When the camps are full: warriors training ahead for the next army don't change that.
+  const armyDone = armyReadyAt(state, data);
+  if (armyDone !== null && armyDone > now) out.push({ id: 'training', type: 'army', at: armyDone, title: 'Your army is ready', body: 'All troops have finished training. Time to raid!' });
   // Earliest time a collector fills up.
   let fullAt = Infinity;
   for (const b of state.buildings) {

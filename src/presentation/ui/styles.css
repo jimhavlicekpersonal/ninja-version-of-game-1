@@ -439,6 +439,56 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .scout-report { position: absolute; left: calc(8px + var(--safe-l)); right: calc(8px + var(--safe-r)); bottom: calc(150px + var(--safe-b)); max-width: 460px; margin: 0 auto; padding: 8px 12px; background: rgba(247, 240, 225, 0.94); border-radius: 16px; font-size: 13px; }
 .scout-report .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .scout-report p { margin: 2px 0; }
+/* Army panel: a pinned status strip, then one tab. */
+.army-strip {
+  position: sticky; top: -12px; z-index: 3; margin: -12px -16px 10px; padding: 10px 16px 8px;
+  background: var(--cream); box-shadow: 0 2px 0 rgba(38, 48, 61, .1);
+}
+.army-strip p { margin: 4px 0 0; }
+.army-strip-head { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.army-strip-head b { white-space: nowrap; }
+.army-bar { flex: 1; display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: #e7dcc4; }
+.army-bar i { display: block; height: 100%; transition: width .25s ease-out; }
+.army-bar .ready { background: var(--leaf); }
+.army-bar .coming { background: var(--sun); }
+.army-strip-line { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-height: 42px; }
+.army-strip-line img { width: 34px; height: 32px; object-fit: contain; flex: none; }
+.army-active { flex: 1; min-width: 0; }
+.army-strip-line .btn { min-height: 38px; padding: 4px 10px; font-size: 13px; }
+.progress.thin { height: 6px; margin-top: 3px; }
+.army-note { color: #8a4b12; font-weight: 700; }
+.army-detail { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.army-tabs { margin-bottom: 8px; }
+.training .army-filters { flex-wrap: nowrap; margin-top: 0; }
+.training .actions.army-filters select { flex: 1 1 0; min-width: 0; padding: 6px 4px; }
+.army-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin-top: 8px; }
+.troop-row.army-card { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: start; gap: 2px 8px; text-align: left; }
+.troop-row.army-card > img { width: 52px; height: 48px; }
+.army-card-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.army-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.army-card .note { grid-column: 1 / -1; max-width: none; }
+.army-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.army-actions .btn { min-height: 40px; padding: 4px 2px; font-size: 13px; white-space: nowrap; }
+.army-setup { padding: 10px 12px; border-radius: 16px; background: #fff; box-shadow: 0 2px 0 rgba(38, 48, 61, .12); }
+.army-setup ul { list-style: none; padding: 0; margin: 8px 0; }
+.army-setup li { padding: 3px 0; color: var(--ink-soft); }
+.army-setup li.ok { color: var(--leaf-dark); }
+.army-setup li.ok::before { content: '✓ '; font-weight: 900; }
+.stack-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 6px 0; border-radius: 14px; background: #fff; box-shadow: 0 2px 0 rgba(38, 48, 61, .12); flex-wrap: wrap; }
+.stack-row img { width: 34px; height: 32px; object-fit: contain; }
+.stack-row > b { flex: 1; min-width: 110px; }
+.stack-row .grow { flex: 1; min-width: 150px; }
+.stack-row .btn { min-height: 38px; padding: 4px 12px; font-size: 13px; }
+.hud-bottom .round-btn { position: relative; }
+.army-pill {
+  position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); min-width: 34px; padding: 1px 6px; border-radius: 999px;
+  background: var(--plum); color: #fff; font: 800 11px var(--font); white-space: nowrap; box-shadow: 0 2px 0 rgba(20, 16, 30, .3);
+}
+.army-pill.full { background: var(--leaf-dark); }
+.army-pill.busy { background: var(--sun-dark); }
+.takeover { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 16px; background: rgba(20, 26, 34, .72); }
+/* Sideways on a phone the pinned strip would take half the screen: let it scroll away. */
+@media (max-height: 480px) { .army-strip { position: static; } }
 /* Keep the expanded roster filters comfortable to use on phones. */
 .training .actions select {
   min-height: 44px;

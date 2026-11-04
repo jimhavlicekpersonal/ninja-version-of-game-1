@@ -27,7 +27,8 @@ An original ninja-clan base-building and raiding game. You lead a clan, build a 
 
 - **Identity:** display names come from `src/gameplay/data/*.json`. Internal ids are unchanged (`docs/rebuild/ID_MAP.md`). The app display name is "Kagemura". The bundle id and product ids are still the old ones until new store listings exist (owner step).
 - **Art:** all art is still generated in code (`src/presentation/art/ninja.ts`), with three visual tiers per building. Real images override any asset key through `public/art/manifest.json`. `npm run art` shows a gallery. ART AI brief: `docs/art/ART_AI_BRIEF.md`.
-- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v12**: donated-troop levels, research lanes, army presets, settled-season log, tasks fixed per period), with a migration step per version. Bump `SAVE_VERSION` for every state change.
+- **Save format** is versioned (`src/gameplay/sim/save.ts`, now **v12**: donated-troop levels, research lanes, army presets, settled-season log, tasks fixed per period), with a migration step per version. Bump `SAVE_VERSION` for every state change. `repairTrainingQueue` runs on every load: one bad timer must never cost a player their village.
+- **One writer per village:** every stored save carries a revision and `saveStore.save` refuses to write over one it didn't read (`SaveConflictError`), so a tab left open can't erase newer progress. The tab opened last owns the village; the other shows "Open somewhere else". A save the game can't read is kept (`backupDamaged`) and offered back at start-up and in Settings (`controller.backups`, `restoreBackup`). A save from a newer build stops the boot instead of being replaced.
 - **Battle rules** are versioned (`SIM_RULES` in `sim/battle/battle.ts`, now 2). Records carry the rules they were fought under; older replays are shown as unavailable, never replayed wrongly. `tests/gameplay/battle/rules-version.test.ts` fails when combat data changes without a bump.
 - **Protocol** is v6 (audit fixes: donated levels, idempotent tickets, server-confirmed loot, legal bases and armies, equal war rosters). Servers require v6 clients.
 - **Infiltration Points** (`src/gameplay/sim/battle/infiltration.ts`, `infiltration` in `battle.json`): warriors enter only inside the base's 6 points (map corners and edge midpoints, an opposite pair closed by the layout), and each point hides a third of the army's housing (minimum 15), so a full army comes in as at least three squads. Smoke Bombs still go anywhere. Scouting shows the points and the defenses covering each path to the Keep. Battles without `setup.infiltration` (records from before the rule) keep free placement. With it, a planned attack (mixed squads, chosen approach) beats a lazy one by about 9–29 points (Keeps 4–8) and best vs worst approach differ by 15–40 (`tests/gameplay/balance/placement.test.ts`). Defense damage ×1.3 and HP ×1.15 at every level, so a planned attack lands at ~60–80% and brute force falls short.
@@ -99,6 +100,32 @@ An external audit (simulated campaigns, 4,435 battles) found settlement, timer a
 | F35–F37 | Lab confound; narrow model player; formula-only tests | Effect-only counter comparison; defender/explorer/engaged policies and campaigns; outcome gates | `army-lab.test.ts`, `policies.test.ts` |
 
 Details and remaining owner decisions: `docs/rebuild/HANDOFF.md` ("Gameplay audit fixes").
+
+## Army overhaul (November 2026)
+
+The Army panel, training queue and saving were traced end to end in a browser. Queue and save fixes have tests (`tests/gameplay/sim/army-queue.test.ts`, `tests/backend/persist/saveStore.test.ts`). Panel behaviour (A11–A13, A16, A19) has no DOM test: there is no browser in `npm test`, so check it by hand.
+
+| # | Problem | Fix |
+|---|---|---|
+| A1 | Finish training with more queued than the camps hold left timers ending before they began; the next load called the save damaged and started a new village | `skipTraining` keeps `startedAt <= endsAt`; `repairTrainingQueue` heals old saves on load |
+| A2 | The wiped village sat in a hidden backup with no way back | `backups`/`restoreBackup`, offered at start-up and in Settings |
+| A3 | A forgotten tab's 15-second autosave erased newer progress | Save revisions (`SaveConflictError`), a "taken over" screen, a save on becoming visible |
+| A4 | A save from a newer build was replaced by a new village | `NewerSaveError` stops the boot and leaves the save alone |
+| A5 | Fill bought two armies | `fillCount`: fill the camps; only then the next army (the button reads `Fill 20` or `Next 20`) |
+| A6 | Finished warriors with no room showed `0s` forever | `armyView`: training / next / waiting stacks, with the reason in words |
+| A7 | Cancelling the first warrior restarted every finished warrior and the one in training | `retimeQueue` moves only warriors who haven't started |
+| A8 | A stale index could cancel the wrong warrior | `cancelTraining` takes the `troop`, and `count` for a whole stack |
+| A9 | Jade paid for warriors who could only wait | `trainingSkipQuote` covers the warriors who fit |
+| A10 | One redraw copied the village about 100 times; Fill froze the game for about a second | `armyView` settles once; `trainQuoteOn` and `researchStartQuoteOn` take a settled village |
+| A11 | The whole panel rebuilt on every change: scroll jumped, taps were lost, dropdowns closed | `armyUi.ts`: pinned strip plus tabs, per-card rebuilds, none mid-tap |
+| A12 | A new player saw an empty panel | Setup card names what's missing and links to Build |
+| A13 | A long queue was one tile per warrior | Stacks with −1 and All |
+| A14 | Refill toast said done after a partial refill | `train_short` event: how many are missing, and why |
+| A15 | A new saved army could overwrite another after a delete; contents were tooltip-only | `nextArmyName`; contents shown |
+| A16 | Dismiss was all or nothing | Dismiss 1 or all |
+| A17 | The tutorial could stall on Finish training | The step ends when nothing more can be finished |
+| A18 | No army status on the village screen, none on coming back, donated warriors invisible | Army pill, `summary.trained`, Lodge row |
+| A19 | A warrior thumbnail asked for too early stayed blank | `thumbOf` remembers only real images |
 
 ## Engagement features (and their limits)
 

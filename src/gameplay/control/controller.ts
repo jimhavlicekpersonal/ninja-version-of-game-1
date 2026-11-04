@@ -1,15 +1,15 @@
 import type { Analytics } from '../../backend/analytics/events';
-import type { SaveStore } from '../../backend/persist/saveStore';
+import { SaveConflictError, type SaveStore } from '../../backend/persist/saveStore';
 import type { Clock } from '../sim/clock';
 import { computeOfflineProgress, type OfflineSummary } from '../sim/offline';
-import { deserialize, serialize } from '../sim/save';
+import { deserialize, NewerSaveError, serialize } from '../sim/save';
 import type { GameData, VillageState, PendingBattle } from '../sim/types';
 import type { BattleRecord, BattleSetup, Deployment } from '../sim/battle/types';
 import type { Cost, OfferRule, OfferTrigger } from '../sim/types';
 import { canPurchase } from '../sim/monetization';
 import { raidPhase } from '../sim/social/groveRaid';
 import { MockPaymentProvider, type PaymentProvider } from '../../backend/payments/provider';
-import { advance, applyCommand, createNewVillage, type Command, type CommandResult, type FinishedUpgrade, type SimEvent } from '../sim/village';
+import { advance, applyCommand, createNewVillage, hallLevel, type Command, type CommandResult, type FinishedUpgrade, type SimEvent } from '../sim/village';
 import { dayIndex, passSeason } from '../sim/pass';
 import { seasonOf } from '../sim/ranks';
 import { trainingReady } from '../sim/army';
@@ -35,6 +35,16 @@ export interface StartResult {
   loadError?: string;
 }
 
+/** An earlier village kept after a failed load, described so the player can recognise it. */
+export interface VillageBackup {
+  key: string;
+  savedAt: number;
+  keep: number;
+  buildings: number;
+  warriors: number;
+  honor: number;
+}
+
 type Listener = (finished: FinishedUpgrade[]) => void;
 
 /**
@@ -49,6 +59,8 @@ export class GameController {
   readonly payments: PaymentProvider;
   private saveChain: Promise<void> = Promise.resolve();
   private saveErrorListeners = new Set<(e: Error) => void>();
+  /** Another tab or window took this village over: nothing here may be saved any more. */
+  private takenOver = false;
 
   /** Hear about saves that failed (storage full, blocked, evicted), so the player can be warned. */
   onSaveError(fn: (e: Error) => void): () => void {
@@ -77,6 +89,8 @@ export class GameController {
       try {
         state = deserialize(raw, deps.data);
       } catch (e) {
+        // A newer game wrote this save. It is healthy: stop here rather than replace it with a new village.
+        if (e instanceof NewerSaveError) throw e;
         loadError = (e as Error).message;
         await deps.store.backupDamaged(raw).catch(() => undefined);
       }
@@ -305,6 +319,39 @@ export class GameController {
     return { record: e.record, cleared: e.cleared, firstClear: e.firstClear, reward: e.reward };
   }
 
+  /** Earlier villages that can be restored, newest first. Ones that still can't be read stay kept but aren't offered. */
+  async backups(): Promise<VillageBackup[]> {
+    const data = this.deps.data;
+    const out: VillageBackup[] = [];
+    for (const { key, raw } of await this.deps.store.listBackups()) {
+      try {
+        const v = deserialize(raw, data);
+        out.push({
+          key,
+          savedAt: (raw as { savedAt?: number }).savedAt ?? v.lastSeenAt,
+          keep: hallLevel(v, data),
+          buildings: v.buildings.filter((b) => data.buildings[b.type]?.category !== 'obstacle').length,
+          warriors: Object.values(v.army).reduce((a, b) => a + b, 0) + v.training.length,
+          honor: v.trophies,
+        });
+      } catch {
+        /* still unreadable: a later version may be able to repair it */
+      }
+    }
+    return out;
+  }
+
+  /** Swap a kept village in. The current one becomes a backup, so a wrong choice can be undone. */
+  async restoreBackup(key: string): Promise<boolean> {
+    const found = (await this.deps.store.listBackups()).find((b) => b.key === key);
+    if (!found) return false;
+    const village = deserialize(found.raw, this.deps.data);
+    await this.deps.store.backupDamaged(serialize(this.state, this.now()));
+    await this.deps.store.deleteBackup(key);
+    await this.replace(village);
+    return true;
+  }
+
   /** Replace the whole village (import or reset). */
   async replace(state: VillageState): Promise<void> {
     this.state = state;
@@ -318,13 +365,15 @@ export class GameController {
 
   /** Saves are queued so they always land in order. */
   save(): Promise<void> {
+    if (this.takenOver) return this.saveChain;
     const now = this.now();
     this.state = { ...this.state, lastSeenAt: now };
     const file = serialize(this.state, now);
     this.saveChain = this.saveChain
       .then(() => this.deps.store.save(file))
       .catch((e) => {
-        console.warn('save failed', e);
+        if (e instanceof SaveConflictError) this.takenOver = true;
+        else console.warn('save failed', e);
         for (const fn of this.saveErrorListeners) fn(e instanceof Error ? e : new Error(String(e)));
       });
     return this.saveChain;

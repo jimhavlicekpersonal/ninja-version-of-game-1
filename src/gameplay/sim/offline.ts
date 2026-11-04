@@ -8,6 +8,8 @@ import { advance, type FinishedUpgrade } from './village';
 export interface OfflineSummary {
   awayMs: number;
   finished: FinishedUpgrade[];
+  /** Warriors who finished training and joined the army while the player was away. */
+  trained: Record<string, number>;
   /** How much the collectors gathered while the player was away. */
   collectorGains: Partial<Record<ResourceKind, number>>;
   /** Bot raids against the village while away. */
@@ -51,8 +53,13 @@ export function computeOfflineProgress(state: VillageState, now: number, data: G
   for (const k of Object.keys(after) as ResourceKind[]) {
     collectorGains[k] = Math.max(0, Math.floor((after[k] ?? 0) - (before[k] ?? 0) + (stolen[k] ?? 0)));
   }
+  const trained: Record<string, number> = {};
+  for (const [t, n] of Object.entries(next.army)) {
+    const joined = n - (state.army[t] ?? 0);
+    if (joined > 0) trained[t] = joined;
+  }
   // Seasons are settled (chest paid, trophies softened) inside advance(), at their real end time.
   const seasons = (next.seasonLog ?? []).filter((sr) => sr.season >= state.season);
   next.lastSeenAt = now;
-  return { state: next, summary: { awayMs, finished, collectorGains, raids: raided.raids.map((r) => r.record), seasons } };
+  return { state: next, summary: { awayMs, finished, trained, collectorGains, raids: raided.raids.map((r) => r.record), seasons } };
 }

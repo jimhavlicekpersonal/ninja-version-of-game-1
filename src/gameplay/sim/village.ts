@@ -1,5 +1,5 @@
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
-import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
+import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFit, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES } from './battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
@@ -40,7 +40,8 @@ export type Command =
   | { type: 'deleteArmyPreset'; index: number }
   /** Send ready warriors home to make room (part of their training cost comes back). */
   | { type: 'dismiss'; troop: string; count: number }
-  | { type: 'cancelTraining'; index: number }
+  /** Cancel from `index` back through a run of one type (`count`, default 1). `troop` guards against the queue having moved. */
+  | { type: 'cancelTraining'; index: number; troop?: string; count?: number }
   | { type: 'research'; troop: string }
   /** Cancel or finish a running research (the oldest when `troop` is left out). */
   | { type: 'cancelResearch'; troop?: string }
@@ -120,7 +121,9 @@ export type SimEvent =
   | { kind: 'move'; buildingType: BuildingType; id: string }
   | { kind: 'train_start'; troop: string; seconds: number; cost: Cost; count?: number }
   | { kind: 'dismiss'; troop: string; count: number; refund: Cost }
-  | { kind: 'train_cancel'; troop: string }
+  | { kind: 'train_cancel'; troop: string; count?: number }
+  /** A one-tap refill could not queue everything: how many are missing, and why. */
+  | { kind: 'train_short'; missing: number; why: string }
   | { kind: 'research_start'; troop: string; toLevel: number; seconds: number; cost: Cost }
   | { kind: 'research_cancel'; troop: string; toLevel: number; refund: Cost }
   /** `grants` is what was really added; `overflow` is what did not fit in storage. */
@@ -458,7 +461,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'saveArmyPreset': {
       const army = cleanArmy(cmd.army, data);
       if (!Object.keys(army).length) return fail('NOT_AVAILABLE', 'Pick some warriors first.');
-      const name = cmd.name.trim().slice(0, 24) || `Army ${s.armyPresets.length + 1}`;
+      const name = cmd.name.trim().slice(0, 24) || nextArmyName(s);
       const at = s.armyPresets.findIndex((p) => p.name === name);
       if (at >= 0) s.armyPresets[at] = { name, army };
       else {
@@ -474,7 +477,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'dismiss':
       return dismiss(s, cmd.troop, cmd.count, now, data);
     case 'cancelTraining':
-      return cancelTraining(s, cmd.index, now, data);
+      return cancelTraining(s, cmd.index, cmd.troop, cmd.count ?? 1, now, data);
     case 'research':
       return research(s, cmd.troop, now, data);
     case 'cancelResearch':
@@ -666,8 +669,9 @@ function skipResearch(s: VillageState, troop: string | undefined, now: number, d
   return { ok: true, state: s, events: [{ kind: 'skip_used', what: `research:${a.troop}`, seconds: q.seconds, moonstones: q.moonstones }] };
 }
 
+/** Finishing training covers the warriors who fit in the camps: Jade never buys a warrior who would only wait for room. */
 export function trainingSkipQuote(state: VillageState, now: number, data: GameData): { seconds: number; moonstones: number } | null {
-  const last = state.training[state.training.length - 1];
+  const last = state.training[queueFit(state, data) - 1];
   if (!last || last.endsAt <= now) return null;
   const seconds = Math.ceil((last.endsAt - now) / 1000);
   return { seconds, moonstones: skipCost(seconds, data) };
@@ -678,8 +682,13 @@ function skipTraining(s: VillageState, now: number, data: GameData): CommandResu
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
   if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
-  for (const item of s.training) item.endsAt = Math.min(item.endsAt, now);
+  for (const item of s.training.slice(0, queueFit(s, data))) {
+    // Some of these never started: a timer must not end before it began (the save check rejects that).
+    item.startedAt = Math.min(item.startedAt, now);
+    item.endsAt = Math.min(item.endsAt, now);
+  }
   finishTraining(s, now, data);
+  retimeQueue(s.training, now);
   return { ok: true, state: s, events: [{ kind: 'skip_used', what: 'training', seconds: q.seconds, moonstones: q.moonstones }] };
 }
 
@@ -885,7 +894,11 @@ function clearObstacle(s: VillageState, id: string, now: number, data: GameData)
 // ---------- Army and raids ----------
 
 export function trainQuote(state: VillageState, troop: string, now: number, data: GameData): QuoteResult {
-  const s = advance(state, now, data).state;
+  return trainQuoteOn(advance(state, now, data).state, troop, now, data);
+}
+
+/** `trainQuote` for a village already settled up to `now`. Nothing is copied: `train` asks once per warrior and the Army panel once per row. */
+export function trainQuoteOn(s: VillageState, troop: string, now: number, data: GameData): QuoteResult {
   const def = data.troops[troop];
   if (!def) return fail('NOT_FOUND', 'Unknown troop.');
   const level = troopLevelOf(s, troop);
@@ -913,7 +926,7 @@ function train(s: VillageState, troop: string, count: number, now: number, data:
   let paid: Cost = {};
   let seconds = 0;
   for (let i = 0; i < want; i++) {
-    const q = trainQuote(s, troop, now, data);
+    const q = trainQuoteOn(s, troop, now, data);
     if (!q.ok) {
       if (queued === 0) return q;
       break;
@@ -927,6 +940,14 @@ function train(s: VillageState, troop: string, count: number, now: number, data:
     queued++;
   }
   return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds, cost: paid, count: queued }] };
+}
+
+/** The first free default name: counting presets would reuse a name after a delete and overwrite that army. */
+function nextArmyName(s: VillageState): string {
+  const taken = new Set(s.armyPresets.map((p) => p.name));
+  let n = 1;
+  while (taken.has(`Army ${n}`)) n++;
+  return `Army ${n}`;
 }
 
 /** Only known troops with whole positive counts. */
@@ -944,15 +965,31 @@ function cleanArmy(army: Record<string, number>, data: GameData): Record<string,
 function trainArmy(s: VillageState, target: Record<string, number>, now: number, data: GameData): CommandResult {
   const army = cleanArmy(target, data);
   const events: SimEvent[] = [];
-  let firstFail: CommandResult | null = null;
+  let firstFail: Extract<CommandResult, { ok: false }> | null = null;
+  let missing = 0;
+  let why = '';
   for (const [troop, n] of Object.entries(army)) {
     const have = (s.army[troop] ?? 0) + s.training.filter((q) => q.troop === troop).length;
     if (have >= n) continue;
     const r = train(s, troop, n - have, now, data);
-    if (r.ok) events.push(...r.events);
-    else firstFail = firstFail ?? r;
+    if (!r.ok) {
+      firstFail = firstFail ?? r;
+      missing += n - have;
+      why = why || r.message;
+      continue;
+    }
+    events.push(...r.events);
+    const queued = r.events.reduce((sum, e) => sum + (e.kind === 'train_start' ? e.count ?? 1 : 0), 0);
+    if (queued < n - have) {
+      missing += n - have - queued;
+      if (!why) {
+        const stopped = trainQuoteOn(s, troop, now, data);
+        why = stopped.ok ? '' : stopped.message;
+      }
+    }
   }
   if (!events.length) return firstFail ?? fail('NOTHING_TO_SKIP', 'That army is already ready or training.');
+  if (missing > 0) events.push({ kind: 'train_short', missing, why });
   return { ok: true, state: s, events };
 }
 
@@ -1047,7 +1084,11 @@ function openDailyChest(s: VillageState, now: number, data: GameData): CommandRe
 
 /** Research quote including the resource check (for the UI). */
 export function researchStartQuote(state: VillageState, troop: string, now: number, data: GameData): QuoteResult {
-  const s = advance(state, now, data).state;
+  return researchStartQuoteOn(advance(state, now, data).state, troop, now, data);
+}
+
+/** `researchStartQuote` for a village already settled up to `now`. */
+export function researchStartQuoteOn(s: VillageState, troop: string, now: number, data: GameData): QuoteResult {
   const q = researchQuote(s, troop, hallLevel(s, data), data);
   const quote: Quote | undefined = q.toLevel !== undefined ? { toLevel: q.toLevel, cost: q.cost ?? {}, seconds: Math.round((q.seconds ?? 0) * buildTimeFactor(s, now, data)) } : undefined;
   if (!q.ok) return { ...fail(q.code, q.message), quote };
@@ -1079,20 +1120,24 @@ function cancelResearch(s: VillageState, troop: string | undefined, now: number,
   return { ok: true, state: s, events: [{ kind: 'research_cancel', troop: a.troop, toLevel: a.toLevel, refund }] };
 }
 
-function cancelTraining(s: VillageState, index: number, now: number, data: GameData): CommandResult {
-  const item = s.training[index];
-  if (!item) return fail('NOT_FOUND', 'Nothing to cancel.');
-  s.training.splice(index, 1);
-  if (index === 0 && s.training.length) {
-    // The next item starts now.
-    const first = s.training[0];
-    const dur = first.endsAt - first.startedAt;
-    first.startedAt = now;
-    first.endsAt = now + dur;
+/**
+ * Take warriors out of the queue, working back from `index` through a run of
+ * the same type, with their full cost back (storage permitting). `troop` is the
+ * type the player tapped: a warrior may have finished since the panel drew, which
+ * shifts every index, and the wrong warrior must never be cancelled.
+ */
+function cancelTraining(s: VillageState, index: number, troop: string | undefined, count: number, now: number, data: GameData): CommandResult {
+  let at = troop !== undefined && s.training[index]?.troop !== troop ? s.training.map((q) => q.troop).lastIndexOf(troop) : index;
+  const type = s.training[at]?.troop;
+  if (type === undefined) return fail('NOT_FOUND', 'Nothing to cancel.');
+  const refund: Cost[] = [];
+  for (let left = Math.max(1, Math.floor(count)); left > 0 && s.training[at]?.troop === type; left--, at--) {
+    refund.push(s.training[at].cost);
+    s.training.splice(at, 1);
   }
-  retimeQueue(s.training, now, data);
-  addCapped(s.resources, item.cost, capacity(s, data));
-  return { ok: true, state: s, events: [{ kind: 'train_cancel', troop: item.troop }] };
+  retimeQueue(s.training, now);
+  addCapped(s.resources, sumCost(...refund), capacity(s, data));
+  return { ok: true, state: s, events: [{ kind: 'train_cancel', troop: type, count: refund.length }] };
 }
 
 export function scoutFee(state: VillageState, data: GameData): number {

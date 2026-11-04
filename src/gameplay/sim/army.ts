@@ -1,4 +1,3 @@
-import { MS_PER_SECOND } from './clock';
 import { buildingDef, hallType, levelDef, troopDef } from './data';
 import type { GameData, TrainingItem, VillageState } from './types';
 
@@ -77,20 +76,58 @@ export function trainingQueueLimit(state: VillageState, data: GameData): number 
   return housingCapacity(state, data) * (1 + data.economy.queuedArmies);
 }
 
-/** Re-time the queue so items run back to back starting no earlier than `now`; each keeps its own duration. Mutates. */
-export function retimeQueue(queue: TrainingItem[], now: number, data: GameData): void {
+/**
+ * Close the gap after a warrior leaves the queue, each keeping its own length.
+ * Finished warriors stay finished (they are only waiting for camp room) and the
+ * one in training keeps its timer; only warriors still waiting to start move up.
+ * Mutates.
+ */
+export function retimeQueue(queue: TrainingItem[], now: number): void {
   let t = now;
-  for (let i = 0; i < queue.length; i++) {
-    const q = queue[i];
-    if (i === 0 && q.startedAt <= now) {
+  for (const q of queue) {
+    if (q.endsAt <= now) continue;
+    if (q.startedAt <= now) {
       t = q.endsAt;
       continue;
     }
-    const dur = q.endsAt > q.startedAt ? q.endsAt - q.startedAt : troopDef(data, q.troop).trainSeconds * MS_PER_SECOND;
+    const length = q.endsAt - q.startedAt;
     q.startedAt = t;
-    q.endsAt = t + dur;
+    q.endsAt = t + length;
     t = q.endsAt;
   }
+}
+
+/** How many warriors at the head of the queue fit in the camps as they stand, in queue order. */
+export function queueFit(state: VillageState, data: GameData): number {
+  let room = housingCapacity(state, data) - armyHousing(state.army, data);
+  let fit = 0;
+  for (const q of state.training) {
+    const size = data.troops[q.troop]?.housing ?? 0;
+    if (size > room) break;
+    room -= size;
+    fit++;
+  }
+  return fit;
+}
+
+/** When the last warrior who fits in the camps finishes (null when none of the queue fits). */
+export function armyReadyAt(state: VillageState, data: GameData): number | null {
+  const fit = queueFit(state, data);
+  return fit > 0 ? state.training[fit - 1].endsAt : null;
+}
+
+/**
+ * How many of a warrior "Fill" queues: enough to fill the camps, counting what
+ * is ready and in training. Only when the camps are already spoken for does it
+ * reach into the next-army queue, so one tap never pays for two armies.
+ */
+export function fillCount(state: VillageState, troop: string, data: GameData): number {
+  const size = data.troops[troop]?.housing ?? 0;
+  if (size <= 0) return 0;
+  const committed = armyHousing(state.army, data) + queueHousing(state.training, data);
+  const toCamps = Math.floor((housingCapacity(state, data) - committed) / size);
+  const count = toCamps > 0 ? toCamps : Math.floor((trainingQueueLimit(state, data) - committed) / size);
+  return Math.max(0, Math.min(data.economy.maxTrainBatch, count));
 }
 
 export function queueEndsAt(state: VillageState, now: number): number {

@@ -1,6 +1,7 @@
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController } from '../../gameplay/control/controller';
 import type { VillageState } from '../../gameplay/sim/types';
+import { trainingSkipQuote } from '../../gameplay/sim/village';
 import { clear, h, icon } from './dom';
 import { icons } from './icons';
 
@@ -8,7 +9,7 @@ interface Step {
   text: string;
   /** CSS selector of the thing to point at (first visible match wins). */
   targets?: string[];
-  done?: (s: VillageState) => boolean;
+  done?: (s: VillageState, c: GameController) => boolean;
   button?: string;
 }
 
@@ -24,7 +25,7 @@ const STEPS: Step[] = [
   { text: 'Upgrades take time, but our artisans work faster with Jade. Tap Finish now.', targets: ['.modal .btn.primary', '.sheet .btn.gold'], done: (s) => hall(s).level >= 2 },
   { text: 'Warriors need a place to train. Build a Training Dojo and a Squad Courtyard (Build, then the Army tab).', targets: ['.round-btn.ok', '.shop-tabs button:nth-child(2)', '.round-btn.build'], done: (s) => has(s, 'burrow_barracks') && has(s, 'army_camp') },
   { text: 'Open the Army panel and train some Shinobi: fast blades that strike the nearest building.', targets: ['.troop-row .btn.primary', '.round-btn[aria-label="Army"]'], done: (s) => s.training.length > 0 || armySize(s) > 0 },
-  { text: 'Use a little Jade to finish training: tap Finish training.', targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[aria-label="Army"]'], done: (s) => armySize(s) > 0 && s.training.length === 0 },
+  { text: 'Use a little Jade to finish training: tap Finish training.', targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[aria-label="Army"]'], done: (s, c) => armySize(s) > 0 && (s.training.length === 0 || !trainingSkipQuote(s, c.now(), c.data)) },
   { text: 'Your first raid. Tap Attack and scout the target. Tap inside a glowing infiltration point to send your Shinobi; each point only hides part of your army, so send the rest through a second point. When they walk up to the Kunai Tower, pick the Smoke Bomb card and tap on them: warriors inside the smoke can only be shot from close up.', targets: ['.big-attack', '.round-btn.attack'], done: (s) => s.battleLog.length > 0 },
   { text: 'Well fought. Upgrade the Training Dojo to unlock Saboteurs: they jam a defense for a few seconds. Jam first, then strike, and smoke your warriors where the fire is heaviest. Collect, upgrade, raid, and join an Alliance.', button: 'Finish' },
 ];
@@ -100,7 +101,7 @@ export class Tutorial {
     }
     const step = STEPS[t.step];
     if (!step) return;
-    if (step.done?.(this.c.state)) {
+    if (step.done?.(this.c.state, this.c)) {
       this.go(t.step + 1);
       return;
     }

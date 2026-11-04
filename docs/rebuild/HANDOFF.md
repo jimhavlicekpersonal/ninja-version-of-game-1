@@ -54,6 +54,10 @@ Roadmap: 1 clarify systems → 2 five defensive counters → 3 measure army bala
 5. **Next (progression flow):** retrain presets (save the last army; needs a `SAVE_VERSION` bump), a clearer next objective on the HUD, teaching Trials (one counter per tier with a hint), and extending the model player's pacing check through Keep 15 (with the new late-Keep curve).
 6. **Next (external playtest):** real-phone performance (Pixel 7 / iPhone), interrupted battles on protocol v5, save recovery from a corrupt slot, update flow for the service worker, and a hosted server verified end to end.
 
+## Army overhaul (2026-11-03)
+
+The owner reported the Army not loading properly, not saving warriors and not training properly. Tracing it in a browser found 19 flaws, listed with their fixes in the root `CLAUDE.md`. The worst: Fill then Finish training wrote timers the save check rejects, so the next load replaced the whole village with a new one. A second: a forgotten tab's autosave erased newer progress. The panel moved to `ui/armyUi.ts` (strip plus tabs), its data to `sim/armyView.ts`. The save format did not change (`repairTrainingQueue` runs on every load), so old saves load as they are, and a village already wiped by the bug comes back from its backup.
+
 ## Gameplay audit fixes (2026-11-03)
 
 An external gameplay audit of `c457aa7` (37 findings, 4,435 simulated battles, two 300-day campaigns) was fixed in one pass. The root `CLAUDE.md` has the finding → fix → test table. Highlights:
