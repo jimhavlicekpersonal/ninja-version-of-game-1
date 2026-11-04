@@ -306,7 +306,7 @@ Makes balance, combat and data changes safe while old app builds are still in us
 - [x] 32. Simulate weeks of model players (`tests/gameplay/balance/`) through the matchmaker; check convergence. `rating-convergence.test.ts`: 120 model players with hidden skills, 4 weeks of 4 raids a day through `pickByRating`; ratings rank the true skills (Spearman > 0.85 for attack and base), settle (deviation under half the start), and pairings average an expected score within 0.08 of the 0.55 target. (Outcomes come from the hidden skills, not full battles: full-battle campaigns are `npm run balance:campaign`.)
 
 ### Phase 4: Payments (~3–4 weeks) [Owner + Code]
-- [ ] 33. [Owner] Create IAP products with the new ids in App Store Connect and the Play Console.
+- [ ] 33. [Owner] Create IAP products with the new ids in App Store Connect and the Play Console. **Prepared:** the 11 products (ids, type, price, contents) are listed in `docs/SHIPPING.md` section 3b.
 - [ ] 34. [Owner] Keys as server secrets: Apple App Store Server API `.p8`, APNs `.p8`, Google service account linked in the Play Console.
 - [ ] 35. [Code] Apple: send JWS → verify → credit → `finish()`; ASSN v2 refund webhook.
 - [ ] 36. [Code] Google: Play Billing plugin → verify token → credit → consume/acknowledge; RTDN + Voided Purchases.

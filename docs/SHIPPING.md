@@ -129,6 +129,26 @@ The top bar shows the connection: **Online**, **Connecting…** or **No connecti
   Actions: `dismiss` (nothing wrong; a hidden message comes back), `remove_message`, `mute` (also removes the message; `hours` up to a year). Handled reports are deleted after 90 days. A full admin tool is roadmap step 48.
 - **Contact for users:** Apple also asks for a published way to reach you about content; put a support address on the support page (roadmap step 7).
 
+### 3b. In-app products to create (roadmap step 33, owner)
+
+Create these in App Store Connect (In-App Purchases) and the Play Console (In-app products), with the same ids. The ids are the game's current ones (`src/gameplay/data/store.json`, `offers.json`, `pass.json`); if you choose new ids with a new bundle id (roadmap steps 3 and 38), change them in those files at the same time. Prices are the game's USD prices; pick the matching price tier in each store.
+
+| Product id | Type | USD | What it gives |
+|---|---|---|---|
+| `moonstones_1` | Consumable | 1.99 | 100 Jade (Pouch of Jade) |
+| `moonstones_2` | Consumable | 4.99 | 280 Jade (Bag of Jade) |
+| `moonstones_3` | Consumable | 9.99 | 600 Jade (Box of Jade) |
+| `moonstones_4` | Consumable | 19.99 | 1,300 Jade (Chest of Jade) |
+| `moonstones_5` | Consumable | 49.99 | 3,500 Jade (Vault of Jade) |
+| `moonstones_6` | Consumable | 99.99 | 7,500 Jade (Dragon Hoard of Jade) |
+| `lantern_pass` | Non-consumable per season (Apple: consumable or non-renewing subscription; the game tracks the season) | 4.99 | Season Scroll premium track |
+| `offer_starter` | Consumable (the game allows it once per account) | 1.99 | Starter offer |
+| `offer_builder` | Consumable | 4.99 | Builder offer |
+| `offer_war_prep` | Consumable | 2.99 | War prep offer |
+| `offer_rebuild` | Consumable | 2.99 | Rebuild offer |
+
+Nothing random is sold, so no odds disclosure is needed for these. Real prices are shown only in the Store and its confirm step.
+
 **Running a server locally:** run `npm run server:dev`. It uses memory instead of Postgres when `DATABASE_URL` is not set. In the game, set the server address to `http://localhost:8787`, or to `http://<laptop-ip>:8787` from a phone on the same Wi-Fi, using `npm run dev:lan`.
 
 **Building a different server later:** `docs/PROTOCOL.md` describes everything the game expects. The contract tests check any server against it.
