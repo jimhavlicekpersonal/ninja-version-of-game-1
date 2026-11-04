@@ -506,11 +506,9 @@ export class Hud {
     const start = h('button', { class: 'btn ghost', type: 'button' }, canMove ? 'Start a new one there' : 'Start a village on the server');
     start.addEventListener('click', () => void go('new')());
     const refused = conn.villageMoveRefused;
-    box.append(
-      h('p', { class: 'muted small' }, 'Keep your village on the server, so it cannot be lost with this device and every change is checked there.'),
-      refused ? h('p', { class: 'note' }, `The server could not take this village: ${refused}`) : null,
-      h('div', { class: 'actions' }, canMove && !refused ? move : null, start),
-    );
+    box.append(h('p', { class: 'muted small' }, 'Keep your village on the server, so it cannot be lost with this device and every change is checked there.'));
+    if (refused) box.append(h('p', { class: 'note' }, `The server could not take this village: ${refused}`));
+    box.append(h('div', { class: 'actions' }, canMove && !refused ? move : null, start));
     return box;
   }
 
