@@ -6,7 +6,7 @@
 import type { BattleRecord, BattleSetup, Deployment } from '../../gameplay/sim/battle/types';
 import type { Connection } from '../net/connection';
 import { ServerError } from '../net/ports';
-import type { ChatView, GroveView, GroveSummary, RaidView, RequestView } from '../net/protocol';
+import type { BlockView, ChatView, GroveView, GroveSummary, RaidView, ReportReason, RequestView } from '../net/protocol';
 import { troopLevels } from '../../gameplay/sim/research';
 import { mixSeed } from '../../gameplay/sim/rng';
 import { canRequest, generateGrove, groveLevel, isOnline, reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
@@ -26,12 +26,16 @@ export interface GroveMemberRow {
   trophies: number;
   online: boolean;
   you: boolean;
+  /** The player blocked this member (their messages and requests are hidden). */
+  blocked: boolean;
 }
 
 export interface GroveChatRow {
   id: string;
   /** Empty for system messages. */
   who: string;
+  /** The author's player id, for report and block (real players only; '' otherwise). */
+  fromId: string;
   mine: boolean;
   text: string;
   at: number;
@@ -79,6 +83,17 @@ export interface GroveSnapshot {
   ask: { ok: boolean; message: string; readyAt?: number };
   raid: GroveRaidSnapshot;
   canLeave: boolean;
+  /** Report and block are offered (real players on a server that supports them; never for bot Alliances). */
+  moderation: boolean;
+  /** Players this player blocked. */
+  blocked: { id: string; name: string }[];
+}
+
+/** Whom a report is about: a player, and the message when it is about one. */
+export interface ReportTarget {
+  playerId: string;
+  name: string;
+  messageId?: string;
 }
 
 /** A Grove Raid battle ready to play: the base, and how to report it when done. */
@@ -107,6 +122,10 @@ export interface GroveSource {
   ask(): Promise<ActionResult>;
   donate(requestId: string, troop: string): Promise<ActionResult>;
   raidBattle(target: number): Promise<RaidBattle | { error: string }>;
+  /** Report a message or a player to the moderators, optionally blocking them too. */
+  report(target: ReportTarget, reason: ReportReason, alsoBlock: boolean, note?: string): Promise<ActionResult>;
+  block(playerId: string): Promise<ActionResult>;
+  unblock(playerId: string): Promise<ActionResult>;
 }
 
 const sub = (set: Set<() => void>, fn: () => void) => {
@@ -138,8 +157,9 @@ export class LocalGroveSource implements GroveSource {
       trophies: Math.max(0, s.trophies + m.trophyOffset),
       online: isOnline(m, now),
       you: false,
+      blocked: false,
     }));
-    members.push({ id: 'you', name: 'You', role: 'Member', hall: hl, trophies: s.trophies, online: true, you: true });
+    members.push({ id: 'you', name: 'You', role: 'Member', hall: hl, trophies: s.trophies, online: true, you: true, blocked: false });
     members.sort((a, b) => b.trophies - a.trophies);
     const p = raidPhase(now, gd);
     let raid: GroveRaidSnapshot = { phase: p.phase, week: p.week, end: p.end, nextStart: p.nextStart, eligible: true, enemyName: null, bases: [], ours: 0, theirs: 0, attacksLeft: 0 };
@@ -160,11 +180,14 @@ export class LocalGroveSource implements GroveSource {
       xp: s.grove.xp,
       maxMembers: grove.members.length + 1,
       members,
-      chat: s.grove.chat.slice(-50).map((m, i) => ({ id: `${m.at}:${i}`, who: m.from === -1 ? 'You' : m.from === -2 ? '' : names[m.from] ?? 'Friend', mine: m.from === -1, text: m.text, at: m.at, kind: m.kind })),
+      chat: s.grove.chat.slice(-50).map((m, i) => ({ id: `${m.at}:${i}`, who: m.from === -1 ? 'You' : m.from === -2 ? '' : names[m.from] ?? 'Friend', fromId: '', mine: m.from === -1, text: m.text, at: m.at, kind: m.kind })),
       requests: s.grove.requests.map((r) => ({ id: r.id, name: names[r.member] ?? 'Friend', size: r.size, filled: r.donated })),
       ask: canRequest(s, now, gd),
       raid,
       canLeave: false,
+      // The offline Alliance is bots with canned lines: nothing for a moderator to see.
+      moderation: false,
+      blocked: [],
     };
   }
 
@@ -202,6 +225,16 @@ export class LocalGroveSource implements GroveSource {
     return this.run({ type: 'donate', requestId, troop, count: 1 });
   }
 
+  async report(_target: ReportTarget, _reason: ReportReason, _alsoBlock: boolean): Promise<ActionResult> {
+    return { ok: false, message: 'The offline Alliance is bots: there is nobody to report.' };
+  }
+  async block(_playerId: string): Promise<ActionResult> {
+    return { ok: false, message: 'The offline Alliance is bots: there is nobody to block.' };
+  }
+  async unblock(_playerId: string): Promise<ActionResult> {
+    return { ok: true };
+  }
+
   async raidBattle(target: number): Promise<RaidBattle | { error: string }> {
     const c = this.c;
     const p = raidPhase(c.now(), c.data);
@@ -233,6 +266,9 @@ export class RemoteGroveSource implements GroveSource {
   private reqs: RequestView[] = [];
   private nextRequestAt = 0;
   private raidView: RaidView | null = null;
+  private blockedList: BlockView[] = [];
+  /** Messages removed by moderation, or reported by this player (hidden for them at once). */
+  private removed = new Set<string>();
 
   constructor(
     private readonly c: GameController,
@@ -262,6 +298,7 @@ export class RemoteGroveSource implements GroveSource {
     try {
       if (!this.conn.online) await this.conn.sync();
       if (!this.conn.online) throw new Error(this.conn.lastError || 'Cannot reach the server right now.');
+      if (full && this.moderation) this.blockedList = (await this.port.blocks()).blocked;
       if (full || !this.grove) {
         this.grove = await this.port.myGrove();
         if (!this.grove) {
@@ -272,6 +309,7 @@ export class RemoteGroveSource implements GroveSource {
       }
       if (this.grove) {
         const ch = await this.port.chat(this.cursor);
+        for (const id of ch.hidden ?? []) this.removed.add(id);
         this.chatRows = [...this.chatRows, ...ch.messages].slice(-100);
         this.cursor = ch.cursor;
         const rq = await this.port.requests();
@@ -311,6 +349,7 @@ export class RemoteGroveSource implements GroveSource {
     else if (free <= 0) ask = { ok: false, message: 'Your Alliance Lodge is full.' };
     else if (this.reqs.some((r) => r.mine)) ask = { ok: false, message: 'Your request is still open.' };
     else if (this.nextRequestAt > now) ask = { ok: false, message: 'You can ask again soon.', readyAt: this.nextRequestAt };
+    const blocked = new Set(this.blockedList.map((b) => b.id));
     const rv = this.raidView;
     const p = raidPhase(now, gd);
     const raid: GroveRaidSnapshot = rv
@@ -338,13 +377,39 @@ export class RemoteGroveSource implements GroveSource {
       level: groveLevel(s.grove.xp, gd),
       xp: s.grove.xp,
       maxMembers: g?.maxMembers ?? gd.social.membersMax,
-      members: (g?.members ?? []).map((m) => ({ id: m.id, name: m.id === meId ? `${m.name} (you)` : m.name, role: m.role, hall: m.hallLevel, trophies: m.trophies, online: m.id === meId || now - m.lastSeenAt < ONLINE_WINDOW_MS, you: m.id === meId })),
-      chat: this.chatRows.map((m) => ({ id: m.id, who: m.from ? (m.from.id === meId ? 'You' : m.from.name) : '', mine: m.from?.id === meId, text: m.text, at: m.at, kind: m.kind })),
-      requests: this.reqs.filter((r) => !r.mine).map((r) => ({ id: r.id, name: r.name, size: r.size, filled: r.filled })),
+      members: (g?.members ?? []).map((m) => ({ id: m.id, name: m.id === meId ? `${m.name} (you)` : m.name, role: m.role, hall: m.hallLevel, trophies: m.trophies, online: m.id === meId || now - m.lastSeenAt < ONLINE_WINDOW_MS, you: m.id === meId, blocked: blocked.has(m.id) })),
+      // Blocked players and removed messages disappear at once (the server also leaves them out from now on).
+      chat: this.chatRows
+        .filter((m) => !this.removed.has(m.id) && !(m.from && blocked.has(m.from.id)))
+        .map((m) => ({ id: m.id, who: m.from ? (m.from.id === meId ? 'You' : m.from.name) : '', fromId: m.from?.id ?? '', mine: m.from?.id === meId, text: m.text, at: m.at, kind: m.kind })),
+      requests: this.reqs.filter((r) => !r.mine && !blocked.has(r.playerId)).map((r) => ({ id: r.id, name: r.name, size: r.size, filled: r.filled })),
       ask,
       raid,
       canLeave: Boolean(g),
+      moderation: this.moderation,
+      blocked: this.blockedList.map((b) => ({ id: b.id, name: b.name })),
     };
+  }
+
+  /** The server takes reports and blocks (servers from before roadmap step 15 do not). */
+  private get moderation(): boolean {
+    return Boolean(this.conn.server?.features.includes('reports'));
+  }
+
+  report(target: ReportTarget, reason: ReportReason, alsoBlock: boolean, note?: string): Promise<ActionResult> {
+    const thanks = `Thanks. A moderator will look at it.${alsoBlock ? ` You won't see ${target.name}'s messages any more.` : ''}`;
+    return this.act(async () => {
+      await this.port.report({ kind: target.messageId ? 'chat' : 'player', messageId: target.messageId, playerId: target.playerId, reason, note, block: alsoBlock });
+      if (target.messageId) this.removed.add(target.messageId);
+    }, thanks);
+  }
+
+  block(playerId: string): Promise<ActionResult> {
+    return this.act(() => this.port.block(playerId), "Blocked. You won't see their messages or troop requests.");
+  }
+
+  unblock(playerId: string): Promise<ActionResult> {
+    return this.act(() => this.port.unblock(playerId), 'Unblocked.');
   }
 
   private async act(fn: () => Promise<unknown>, okMessage?: string): Promise<ActionResult> {
@@ -423,7 +488,9 @@ export class RemoteGroveSource implements GroveSource {
       const t = await this.port.raidTicket(target);
       const c = this.c;
       const base: BaseLayout = t.base;
-      const setup: BattleSetup = { seed: mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target), base, ...battleLoadout(c.state, c.data), infiltration: true };
+      // The server issues the seed and re-simulates with it (an older server sends none: pick one).
+      const seed = typeof t.seed === 'number' ? t.seed >>> 0 : mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target);
+      const setup: BattleSetup = { seed, base, ...battleLoadout(c.state, c.data), infiltration: true };
       const enemyName = this.raidView?.opponent?.name ?? 'Enemy Alliance';
       const at = c.now();
       return {
@@ -434,7 +501,7 @@ export class RemoteGroveSource implements GroveSource {
         finish: (deployments, endTick) => {
           const out = c.finishRemoteGroveBattle(target, setup, deployments, endTick, base.name, at);
           if (!out) return null;
-          void this.conn.report('raid', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick }).then(() => this.refresh(true));
+          void this.conn.report('raid', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick, clientHash: out.record.result.hash }).then(() => this.refresh(true));
           return out;
         },
       };

@@ -3,12 +3,28 @@
  * protocol in protocol.ts (ours in server/, or a future one). Handles the
  * bearer token, timeouts, retries for safe reads, and protocol errors.
  */
+import { SIM_RULES } from '../../gameplay/sim/battle/battle';
 import { ServerError, type ServerPort } from './ports';
 import {
+  ClientHeaders,
   PROTOCOL_VERSION,
   Routes,
   type AttackResponse,
   type BattleSubmission,
+  type BlocksResponse,
+  type CommandBatch,
+  type CommandBatchResponse,
+  type LedgerResponse,
+  type PurchaseHistoryResponse,
+  type PurchaseIntentRequest,
+  type PurchaseIntentResponse,
+  type PushTokenRequest,
+  type RedeemRequest,
+  type RedeemResponse,
+  type LinkCredential,
+  type LinkProvider,
+  type LinksResponse,
+  type VillageResponse,
   type ChatResponse,
   type ChatView,
   type DefensesResponse,
@@ -23,11 +39,14 @@ import {
   type MatchResponse,
   type MyGroveResponse,
   type PlayerView,
+  type PowerLeaderboardResponse,
   type RaidAttackResponse,
   type RaidClaimResponse,
   type RaidTicketResponse,
   type RaidView,
   type RegisterResponse,
+  type ReportRequest,
+  type ReportResponse,
   type RequestView,
   type RequestsResponse,
   type UploadBaseRequest,
@@ -74,6 +93,15 @@ export interface HttpAdapterOptions {
   retries?: number;
   /** Wait between retries (tests set 0). */
   retryDelayMs?: number;
+  /** The game's version and platform for X-Client-Build, e.g. "0.1.0+ios". */
+  build?: string;
+}
+
+/** A fresh id for an Idempotency-Key. */
+function newKey(): string {
+  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 
 /** Normalise a server address typed by a player: adds https://, drops a trailing slash. */
@@ -91,6 +119,7 @@ export class HttpServerAdapter implements ServerPort {
   private readonly timeoutMs: number;
   private readonly retries: number;
   private readonly retryDelayMs: number;
+  private readonly build: string;
 
   constructor(
     readonly baseUrl: string,
@@ -103,6 +132,7 @@ export class HttpServerAdapter implements ServerPort {
     this.timeoutMs = opts.timeoutMs ?? 15_000;
     this.retries = opts.retries ?? 2;
     this.retryDelayMs = opts.retryDelayMs ?? 600;
+    this.build = opts.build ?? 'unknown';
   }
 
   hasIdentity(): boolean {
@@ -122,7 +152,14 @@ export class HttpServerAdapter implements ServerPort {
     try {
       res = await this.fetchFn(`${this.baseUrl}${path}`, {
         method,
-        headers: { ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...(token ? { authorization: `Bearer ${token}` } : {}) },
+        headers: {
+          ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+          [ClientHeaders.protocol]: String(PROTOCOL_VERSION),
+          [ClientHeaders.simRules]: String(SIM_RULES),
+          [ClientHeaders.clientBuild]: this.build,
+          ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: newKey() } : {}),
+        },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: ctrl?.signal,
       });
@@ -146,14 +183,15 @@ export class HttpServerAdapter implements ServerPort {
     return json as T;
   }
 
-  private async req<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown): Promise<T> {
+  private async req<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
     let attempt = 0;
     for (;;) {
       try {
         return await this.once<T>(method, path, body);
       } catch (e) {
         // Only reads are retried here; writes are made safe by tickets and the outbox.
-        if (method !== 'GET' || !(e instanceof ServerError) || !e.retryable || attempt >= this.retries) throw e;
+        // A rate limit is not retried at once: the caller tries again on its next round.
+        if (method !== 'GET' || !(e instanceof ServerError) || !e.retryable || e.code === 'rate_limited' || attempt >= this.retries) throw e;
         attempt++;
         if (this.retryDelayMs) await new Promise((r) => setTimeout(r, this.retryDelayMs * attempt));
       }
@@ -194,6 +232,29 @@ export class HttpServerAdapter implements ServerPort {
     return this.req('PUT', Routes.me, { name });
   }
 
+  links(): Promise<LinksResponse> {
+    return this.req('GET', Routes.links);
+  }
+
+  link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse> {
+    return this.req('POST', Routes.links, { provider, credential });
+  }
+
+  unlink(provider: LinkProvider): Promise<LinksResponse> {
+    return this.req('DELETE', Routes.link(provider));
+  }
+
+  async signIn(provider: LinkProvider, credential: LinkCredential, device?: string): Promise<RegisterResponse> {
+    const r = await this.req<RegisterResponse>('POST', Routes.sessions, { provider, credential, device });
+    this.tokens.set(r.token);
+    return r;
+  }
+
+  async deleteAccount(): Promise<void> {
+    await this.req<void>('DELETE', Routes.me);
+    this.tokens.set(null);
+  }
+
   // ---------------------------------------------------------------- PvP
 
   uploadBase(req: UploadBaseRequest): Promise<void> {
@@ -210,6 +271,10 @@ export class HttpServerAdapter implements ServerPort {
 
   defenses(since: number): Promise<DefensesResponse> {
     return this.req('GET', `${Routes.defenses}?since=${Math.floor(since)}`);
+  }
+
+  powerLeaderboard(limit = 50): Promise<PowerLeaderboardResponse> {
+    return this.req('GET', `${Routes.powerLeaderboard}?limit=${limit}`);
   }
 
   leaderboard(limit = 50): Promise<LeaderboardResponse> {
@@ -264,6 +329,68 @@ export class HttpServerAdapter implements ServerPort {
 
   ackInbox(ids: string[]): Promise<void> {
     return this.req('POST', Routes.groveInboxAck, { ids });
+  }
+
+  // ---------------------------------------------------------------- server-owned village
+
+  getVillage(): Promise<VillageResponse | null> {
+    return this.orNull(this.req<VillageResponse>('GET', Routes.village), 'no_village');
+  }
+
+  startVillage(): Promise<VillageResponse> {
+    return this.req('POST', Routes.village, {});
+  }
+
+  importVillage(file: unknown): Promise<VillageResponse> {
+    return this.req('POST', Routes.villageImport, { file });
+  }
+
+  sendCommands(batch: CommandBatch): Promise<CommandBatchResponse> {
+    return this.req('POST', Routes.villageCommands, batch);
+  }
+
+  ledger(limit = 50): Promise<LedgerResponse> {
+    return this.req('GET', `${Routes.villageLedger}?limit=${limit}`);
+  }
+
+  // ---------------------------------------------------------------- purchases and push
+
+  purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse> {
+    return this.req('POST', Routes.purchaseIntent, req);
+  }
+
+  redeem(req: RedeemRequest): Promise<RedeemResponse> {
+    return this.req('POST', Routes.purchases, req);
+  }
+
+  purchaseHistory(): Promise<PurchaseHistoryResponse> {
+    return this.req('GET', Routes.purchases);
+  }
+
+  async putPushToken(req: PushTokenRequest): Promise<void> {
+    await this.req('PUT', Routes.pushTokens, req);
+  }
+
+  async deletePushToken(token: string): Promise<void> {
+    await this.req('DELETE', `${Routes.pushTokens}?token=${encodeURIComponent(token)}`);
+  }
+
+  // ---------------------------------------------------------------- reports and blocks
+
+  report(req: ReportRequest): Promise<ReportResponse> {
+    return this.req('POST', Routes.reports, req);
+  }
+
+  block(playerId: string): Promise<void> {
+    return this.req('POST', Routes.blocks, { playerId });
+  }
+
+  unblock(playerId: string): Promise<void> {
+    return this.req('DELETE', Routes.block(playerId));
+  }
+
+  blocks(): Promise<BlocksResponse> {
+    return this.req('GET', Routes.blocks);
   }
 
   // ---------------------------------------------------------------- Grove Raid

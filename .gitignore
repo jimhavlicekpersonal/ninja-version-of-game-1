@@ -5,3 +5,6 @@ coverage/
 .DS_Store
 .vite/
 dist-server/
+
+# Store screenshots are generated (npm run store:screenshots)
+docs/store/screenshots/

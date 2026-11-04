@@ -120,5 +120,18 @@
     8.4538,
     11.3684,
     15.1187
-  ]
+  ],
+  "storeProductIds": {
+    "moonstones_1": "jade_pouch",
+    "moonstones_2": "jade_bag",
+    "moonstones_3": "jade_box",
+    "moonstones_4": "jade_chest",
+    "moonstones_5": "jade_vault",
+    "moonstones_6": "jade_hoard",
+    "lantern_pass": "season_scroll",
+    "offer_starter": "offer_starter",
+    "offer_builder": "offer_builder",
+    "offer_war_prep": "offer_war_prep",
+    "offer_rebuild": "offer_rebuild"
+  }
 }

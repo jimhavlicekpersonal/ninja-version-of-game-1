@@ -1,0 +1,131 @@
+/**
+ * Versioned schema migrations (roadmap step 12). Each change to the database
+ * is a numbered SQL file in server/migrations/ (`0002_base_versions.sql`, …).
+ * They run as a release step, `npm run server:migrate`, before new server
+ * instances start, never on every boot: with several instances, boot-time
+ * migrations race each other.
+ *
+ * - `schema_migrations` records each applied file with a checksum. Editing a
+ *   file that was already applied is refused: add a new file instead.
+ * - A Postgres advisory lock lets only one runner work at a time, so two
+ *   release jobs (or MIGRATE_ON_BOOT on several instances) cannot collide.
+ * - Each file runs in its own transaction, together with its bookkeeping row.
+ */
+import { createHash } from 'node:crypto';
+
+export interface Migration {
+  /** The number at the start of the file name, e.g. "0002". Files run in this order. */
+  version: string;
+  /** The file name without its extension. */
+  name: string;
+  sql: string;
+  /** SHA-256 of the SQL with line endings made "\n" (a Windows checkout must not count as an edit). */
+  checksum: string;
+}
+
+/** The part of a pg client the runner uses. */
+export interface SqlClient {
+  query(sql: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
+  release(): void;
+}
+export interface SqlPool {
+  connect(): Promise<SqlClient>;
+}
+
+/** Any fixed number: the lock only has to be the same for every runner of this game. */
+const LOCK_ID = 0x7a6b6d1;
+
+const FILE = /(?:^|\/)((\d{4})_[a-z0-9_]+)\.sql$/;
+
+/** Migrations from a { path: sql } map (Vite's import.meta.glob), sorted by version; malformed or duplicate versions throw. */
+export function loadMigrations(files: Record<string, string>): Migration[] {
+  const out: Migration[] = [];
+  const seen = new Set<string>();
+  for (const [path, raw] of Object.entries(files)) {
+    const m = FILE.exec(path);
+    if (!m) throw new Error(`Migration file names look like 0002_what_it_does.sql, not ${path}`);
+    const [, name, version] = m;
+    if (seen.has(version)) throw new Error(`Two migrations share version ${version}`);
+    seen.add(version);
+    const sql = raw.replace(/\r\n/g, '\n');
+    out.push({ version, name, sql, checksum: createHash('sha256').update(sql).digest('hex') });
+  }
+  return out.sort((a, b) => (a.version < b.version ? -1 : 1));
+}
+
+const BOOKKEEPING = `create table if not exists schema_migrations (
+  version text primary key,
+  name text not null,
+  checksum text not null,
+  applied_at bigint not null
+)`;
+
+async function appliedOf(client: SqlClient): Promise<Map<string, { name: string; checksum: string }>> {
+  await client.query(BOOKKEEPING);
+  const rows = (await client.query('select version, name, checksum from schema_migrations')).rows;
+  return new Map(rows.map((r) => [String(r.version), { name: String(r.name), checksum: String(r.checksum) }]));
+}
+
+function checkApplied(migrations: Migration[], applied: Map<string, { name: string; checksum: string }>): void {
+  for (const m of migrations) {
+    const a = applied.get(m.version);
+    if (a && a.checksum !== m.checksum) throw new Error(`Migration ${m.name} was changed after it was applied. Put the change in a new migration file instead.`);
+  }
+}
+
+export interface MigrationStatus {
+  applied: string[];
+  pending: Migration[];
+  /** Applied versions this build does not know (the database is newer than this server). */
+  unknown: string[];
+}
+
+/** What has been applied and what is still to run. Creates only the bookkeeping table. */
+export async function migrationStatus(pool: SqlPool, migrations: Migration[]): Promise<MigrationStatus> {
+  const client = await pool.connect();
+  try {
+    const applied = await appliedOf(client);
+    checkApplied(migrations, applied);
+    const known = new Set(migrations.map((m) => m.version));
+    return {
+      applied: [...applied.keys()].sort(),
+      pending: migrations.filter((m) => !applied.has(m.version)),
+      unknown: [...applied.keys()].filter((v) => !known.has(v)).sort(),
+    };
+  } finally {
+    client.release();
+  }
+}
+
+/** Apply every pending migration in order; returns the names applied. Safe to run while other runners start. */
+export async function runMigrations(pool: SqlPool, migrations: Migration[], now: () => number = Date.now, log: (msg: string) => void = () => {}): Promise<string[]> {
+  const client = await pool.connect();
+  const done: string[] = [];
+  try {
+    // Waits for any other runner; afterwards it sees what that runner applied.
+    await client.query('select pg_advisory_lock($1)', [LOCK_ID]);
+    try {
+      const applied = await appliedOf(client);
+      checkApplied(migrations, applied);
+      for (const m of migrations) {
+        if (applied.has(m.version)) continue;
+        log(`Applying migration ${m.name}…`);
+        await client.query('begin');
+        try {
+          await client.query(m.sql);
+          await client.query('insert into schema_migrations (version, name, checksum, applied_at) values ($1, $2, $3, $4)', [m.version, m.name, m.checksum, now()]);
+          await client.query('commit');
+        } catch (e) {
+          await client.query('rollback');
+          throw new Error(`Migration ${m.name} failed and was rolled back: ${(e as Error).message}`);
+        }
+        done.push(m.name);
+      }
+    } finally {
+      await client.query('select pg_advisory_unlock($1)', [LOCK_ID]);
+    }
+  } finally {
+    client.release();
+  }
+  return done;
+}

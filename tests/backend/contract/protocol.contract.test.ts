@@ -68,10 +68,10 @@ describe('protocol contract', () => {
     expect(h.name).toBe('toadstool-kingdoms');
     expect(h.minProtocol).toBeLessThanOrEqual(PROTOCOL_VERSION);
     expect(h.protocol).toBeGreaterThanOrEqual(PROTOCOL_VERSION);
-    expect(h.minProtocol).toBeGreaterThanOrEqual(6);
+    expect(h.minProtocol).toBeGreaterThanOrEqual(7);
     expect(h.features).toContain('warriors-50');
     expect(Math.abs(h.serverTime - Date.now())).toBeLessThan(5 * 60_000);
-    expect(h.features).toEqual(expect.arrayContaining(['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid']));
+    expect(h.features).toEqual(expect.arrayContaining(['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid', 'server-seed']));
   });
 
   it('answers CORS preflights so the web game can call it', async () => {
@@ -113,7 +113,11 @@ describe('protocol contract', () => {
     expect(Math.abs(m.base.hallLevel - 2)).toBeLessThanOrEqual(1);
     expect(['player', 'bot']).toContain(m.opponent.kind);
     expect(m.expiresAt).toBeGreaterThan(Date.now() + 3 * 60_000);
-    const sub = { ticket: m.ticket, seed: 1234, ...rush(25) };
+    // The server issues the battle seed (a 32-bit integer) and re-simulates with it.
+    expect(Number.isInteger(m.seed) && m.seed >= 0 && m.seed < 2 ** 32).toBe(true);
+    // A report played with any other seed is refused, and does not use the ticket up.
+    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: (m.seed + 1) >>> 0, ...rush(25) }))).toMatchObject({ status: 400, code: 'bad_request' });
+    const sub = { ticket: m.ticket, seed: m.seed, ...rush(25) };
     const r = await a.submitAttack(sub);
     const local = runBattle({ seed: sub.seed, base: m.base, army: sub.army, infiltration: true }, sub.deployments, data).result;
     expect(r.result.hash).toBe(local.hash); // same deterministic battle on both sides
@@ -128,9 +132,9 @@ describe('protocol contract', () => {
     const a = await player('Ann');
     const b = await player('Ben');
     const m = (await a.match())!;
-    expect(await errorOf(b.submitAttack({ ticket: m.ticket, seed: 1, army: {}, deployments: [] }))).toMatchObject({ status: 404, code: 'not_found' });
-    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: 1, army: { beetle_brute: 999 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
-    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: 1, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 5 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
+    expect(await errorOf(b.submitAttack({ ticket: m.ticket, seed: m.seed, army: {}, deployments: [] }))).toMatchObject({ status: 404, code: 'not_found' });
+    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: m.seed, army: { beetle_brute: 999 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
+    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: m.seed, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 5 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
     const { defenses } = await a.defenses(0);
     expect(Array.isArray(defenses)).toBe(true);
     const lb = await a.leaderboard(5);
@@ -144,7 +148,7 @@ describe('protocol contract', () => {
     const army = Object.fromEntries(Object.keys(data.troops).map((id) => [id, 1]));
     const levels = Object.fromEntries(Object.keys(army).map((id) => [id, 1]));
     // The server applies Infiltration Points: deploy through the base's points, a squad per point.
-    const setup = { seed: 519, base: m.base, army, levels, infiltration: true };
+    const setup = { seed: m.seed, base: m.base, army, levels, infiltration: true };
     const probe = createBattle(setup, data);
     const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(5), data, levels, probe.entry);
     // One warrior dropped on open ground outside every point is refused by the server, as in the game.
@@ -153,7 +157,7 @@ describe('protocol contract', () => {
     for (let i = 0; i < n * n && open < 0; i++) if (probe.deployable[i] && pointAt(probe.entry!, i % n, Math.floor(i / n)) < 0) open = i;
     expect(open).toBeGreaterThanOrEqual(0);
     const offPoint = { tick: 0, troop: 'hedgehog_roller', x: open % n, y: Math.floor(open / n) };
-    const sub = { ticket: m.ticket, seed: 519, army, levels, deployments: [offPoint, ...deployments] };
+    const sub = { ticket: m.ticket, seed: m.seed, army, levels, deployments: [offPoint, ...deployments] };
     const server = await a.submitAttack(sub);
     const local = runBattle(setup, sub.deployments, data).result;
     expect(server.result).toEqual(local);
@@ -209,5 +213,83 @@ describe('protocol contract', () => {
     } else {
       expect(await errorOf(lead.raidTicket(0))).toMatchObject({ status: 409, code: 'raid_not_live' });
     }
+  });
+
+  it('account deletion: DELETE /v1/me deletes the player and its token stops working; web requests are accepted', async () => {
+    const tokens = memoryTokenStore();
+    const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
+    await c.register(`Contract Leaving ${tag}`);
+    await c.uploadBase({ base: generateOpponent(7, 1, data) });
+    const saved = tokens.get();
+    await c.deleteAccount();
+    expect(c.hasIdentity()).toBe(false);
+    const again = new HttpServerAdapter(url, { tokens: memoryTokenStore(saved), retryDelayMs: 200 });
+    expect(await errorOf(again.me())).toMatchObject({ status: 401, code: 'unauthorized' });
+    expect((await client().hello()).features).toContain('account-deletion');
+    const res = await fetch(`${url}${Routes.deletionRequests}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: `Contract Nobody ${tag}`, note: 'contract test' }) });
+    expect(res.status).toBe(202);
+    expect((await res.json()).id).toBeTruthy();
+    const page = await fetch(`${url}${Routes.deletionPage}`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get('content-type')).toMatch(/text\/html/);
+  });
+
+  it('reports and blocks: report a chat message, block and unblock its author', async () => {
+    const lead = await player('Moderated', 2);
+    const mate = await player('Reporter', 2);
+    expect((await lead.hello()).features).toEqual(expect.arrayContaining(['reports', 'blocks']));
+    const g = await lead.createGrove(`Contract Mod ${tag}`);
+    await mate.joinGrove(g.id);
+    const msg = await lead.postChat('a message to report');
+    expect(await errorOf(mate.report({ kind: 'chat', messageId: msg.id, reason: 'bogus' as never }))).toMatchObject({ status: 400, code: 'bad_request' });
+    const r = await mate.report({ kind: 'chat', messageId: msg.id, reason: 'spam', note: 'contract test' });
+    expect(r).toMatchObject({ alreadyReported: false, blocked: false });
+    expect(r.id).toBeTruthy();
+    expect((await mate.report({ kind: 'chat', messageId: msg.id, reason: 'spam' })).alreadyReported).toBe(true);
+    await mate.block(lead.id);
+    expect((await mate.blocks()).blocked.map((b) => b.id)).toEqual([lead.id]);
+    const after = await mate.chat();
+    expect(after.messages.some((m) => m.from?.id === lead.id)).toBe(false);
+    expect(Array.isArray(after.hidden)).toBe(true);
+    await mate.unblock(lead.id);
+    expect((await mate.blocks()).blocked).toEqual([]);
+    expect(await errorOf(mate.block(mate.id))).toMatchObject({ status: 400, code: 'bad_request' });
+    await mate.leaveGrove();
+    await lead.leaveGrove();
+  });
+
+  it('protocol 7: old games are told to update; a repeated Idempotency-Key gets the first answer', async () => {
+    const tokens = memoryTokenStore();
+    const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
+    await c.register(`Contract Idem ${tag}`);
+    const auth = { authorization: `Bearer ${tokens.get()}`, 'content-type': 'application/json' };
+    const old = await fetch(`${url}${Routes.me}`, { headers: { ...auth, 'x-protocol': '6' } });
+    expect(old.status).toBe(426);
+    expect((await old.json()).error).toBe('version_mismatch');
+    const put = (name: string) => fetch(`${url}${Routes.me}`, { method: 'PUT', headers: { ...auth, 'x-protocol': '7', 'idempotency-key': `contract-${tag}` }, body: JSON.stringify({ name }) });
+    const first = await (await put(`Contract One ${tag}`)).json();
+    const second = await (await put(`Contract Two ${tag}`)).json();
+    expect(second).toEqual(first);
+  });
+
+  it('purchases and push: a store the server does not check is refused before paying; forged receipts are refused; push tokens are checked', async () => {
+    const hello = await client().hello();
+    const p = await player('Buyer');
+    for (const store of ['apple', 'google'] as const) {
+      if (hello.features.includes(`purchases-${store}`)) {
+        const intent = await p.purchaseIntent({ store, productId: data.store.packs[0].id, under18: false });
+        expect(intent.accountToken).toMatch(/^[0-9a-f-]{36}$/);
+        expect(await errorOf(p.redeem({ store, storeProductId: intent.storeProductId, receipt: 'forged.receipt.value' }))).toMatchObject({ code: 'bad_request' });
+      } else {
+        expect(await errorOf(p.purchaseIntent({ store, productId: data.store.packs[0].id, under18: false }))).toMatchObject({ status: 403, code: 'purchase_refused' });
+      }
+    }
+    expect((await p.purchaseHistory()).purchases).toEqual([]);
+    expect(await errorOf(p.putPushToken({ token: 'x', platform: 'ios', types: [], tzOffsetMinutes: 0 }))).toMatchObject({ code: 'bad_request' });
+    await p.putPushToken({ token: `contract${tag}`.padEnd(64, '0'), platform: 'ios', types: ['raided'], tzOffsetMinutes: 0 });
+    await p.deletePushToken(`contract${tag}`.padEnd(64, '0'));
+    // Store notifications refuse unsigned payloads (404 where the store is not set up).
+    const forged = await fetch(`${url}${Routes.appleNotifications}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ signedPayload: 'a.b.c' }) });
+    expect([400, 404]).toContain(forged.status);
   });
 });

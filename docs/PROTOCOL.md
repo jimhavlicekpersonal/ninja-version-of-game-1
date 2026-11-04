@@ -1,6 +1,26 @@
-# Kagemura multiplayer protocol (version 6)
+# Kagemura multiplayer protocol (version 7)
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
+
+**Version 7 (roadmap step 26, the server owns the economy):** servers say `minProtocol: 7`; a game older than that is told to update.
+- **Every request** carries `X-Protocol` (7), `X-Sim-Rules` (`SIM_RULES`), `X-Client-Build` (`<version>+<platform>`), and every write an `Idempotency-Key` (a fresh id per action). A request whose `X-Protocol` is below `minProtocol` gets `426 version_mismatch` (except `/v1/hello`, so the game can learn why). Requests without the header (tools, webhooks, the deletion page) are served as before.
+- **Idempotency:** a write repeated with the same key by the same player gets the first answer back (`Idempotent-Replay: true`), for a day. Refusals are not remembered, so a corrected request can reuse its key.
+- **The game keeps its village on the server:** when it connects to a server with `village-import`, it moves its village there (`POST /v1/village/import`). A village the server refuses stays on the device and Settings shows why. Everything below marked as a `/v1/hello` feature (steps 10–25) is part of protocol 7.
+
+**Version 6, server hardening (2026-11, roadmap Phase 1):** additions that keep protocol 6 for clients that use them.
+- **Server-owned village (beta, feature `server-economy`, roadmap Phase 2).** `POST /v1/village` starts keeping the player's village on the server (a new one; moving an existing village comes later), `GET /v1/village` returns it (`404 no_village` while it lives on the device). The game then sends what the player does as numbered commands (`POST /v1/village/commands`); the server replays them with the shared simulation and answers with its economy hash, plus `corrections` (the server's economy) when the game's differs. See "Server-owned village" below.
+- **Ratings (roadmap Phase 3).** Hidden Attack and Base Ratings (`src/gameplay/sim/rating.ts`) steer matchmaking: after the Keep window and power floor, the base whose expected score is nearest 55% is offered. Battles against generated bases never move a rating. A defender loses at most `defenderDailyHonorLossCap` honor a UTC day (`DefenseView.trophies` is what was really lost). `GET /v1/leaderboard/power?limit=` → `{ players: [{ rank, name, power, hallLevel, grove }], me: { rank, power, battles } | null }` (feature `power-ranking`).
+- **Linked sign-ins (cloud save).** `GET /v1/links` (providers this server checks, and the player's links), `POST /v1/links { provider, credential }`, `DELETE /v1/links/:provider`, and `POST /v1/sessions { provider, credential, device? }` (no token) → `{ playerId, token }` for the linked player: a new token for this device, the others keep theirs. Credentials: apple/google `{ idToken }`, gamecenter `{ teamPlayerId, bundleId, timestamp, salt, signature, publicKeyUrl }`, playgames `{ serverAuthCode }`. Only the provider's stable id is stored. A sign-in linked to another player is `409 conflict`; an unlinked one at `/v1/sessions` is `404 not_found`.
+- **Purchases (roadmap Phase 4; features `purchases-apple`, `purchases-google`).** Before paying, `POST /v1/purchases/intent { store, productId, under18 }` → `{ accountToken, storeProductId }`: the server refuses with `403 purchase_refused` (nothing charged) when the store is not set up there, the age group is unknown, or a player under 18 would pass `minorMonthlyCapUsd` this UTC month (counting purchases on every device and intents from the last 30 minutes). The game pays with `storeProductId` and passes `accountToken` to the store (Apple `appAccountToken`, Google `obfuscatedAccountId`). Then `POST /v1/purchases { store, storeProductId, receipt }` (Apple: the transaction's JWS; Google: the purchase token) → `{ transactionId, productId, usd, heldOnServer, already }`. Each store transaction is credited once; a retry answers `already: true`; someone else's receipt is `409 conflict`; a forged, refunded or unknown one is `400 bad_request`. A server-held village gets it at once (ledger `purchase:<store>`); otherwise the game delivers it under `transactionId`. Only then does the game finish the store transaction. `GET /v1/purchases` lists the player's purchases (`credited` or `refunded`). Refunds arrive at `POST /v1/webhooks/apple` (App Store Server Notifications v2, `{ signedPayload }`) and `POST /v1/webhooks/google` (Pub/Sub push with an OIDC token), plus Google's Voided Purchases API hourly; a server-held village gives back what is still there (`refund:<store>`). `grantPurchase` is no longer a player command.
+- **Server push (feature `push`).** `PUT /v1/push/tokens { token, platform: 'ios'|'android', types, tzOffsetMinutes }` registers this device (types are `notifications.json` ids; the server pushes `raided`, `donations` and `groveRaid`); `DELETE /v1/push/tokens?token=` stops it. Never in the device's quiet hours, at most `maxPerDay` a local day.
+- **Suspensions.** Staff can suspend an account (`403 banned`, with the reason and the end time in the message); a suspended player is not matched and not on the leaderboards. The game shows "Suspended" and tries again on its next start.
+- **Operators' notice.** `/v1/hello` may carry `notice` (maintenance, an incident); the game shows it in Settings → Online play.
+- **Test servers.** `/v1/hello` carries `environment: 'staging' | 'development'` on a server that is not production; the game says so in Settings.
+- **Observability.** `BattleSubmission.clientHash` (optional) is the result hash the client's own simulation got; the server counts and logs a difference as a desync and never trusts it. Every answer carries `x-request-id` (a caller's own well-formed id is kept), so a player's report can be matched to the server log.
+- **Reports and blocks** (Apple 1.2). `POST /v1/reports` reports an Alliance chat message (the server keeps its text as it was) or a player; `POST /v1/blocks`, `DELETE /v1/blocks/:id`, `GET /v1/blocks`. A message reported by 3 different players is hidden for everyone until staff decide; `ChatResponse.hidden` lists recently hidden ids so clients drop them. Blocked players' messages and troop requests are left out for the blocker. A muted player's chat gets `403 muted`. `/v1/hello` lists `reports` and `blocks`.
+- **Account deletion.** `DELETE /v1/me` deletes the caller's online account (`204`); its token stops working. Players who can't open the game use the web page `GET /account/delete`, which sends `POST /v1/account/deletion-requests` for staff to verify. `/v1/hello` lists `account-deletion`.
+- **Rate and size limits.** Too many requests get `429 rate_limited` with a `Retry-After` header (seconds); the game treats it as "try again later", never as a refusal, so a rate-limited battle report stays in the outbox. Request bodies are capped (16 KB, base uploads 128 KB, battle reports 256 KB; more is `413`), and chat messages at 200 characters.
+- **Server-issued battle seeds.** `MatchResponse.seed` and `RaidTicketResponse.seed` carry the battle seed the server chose for the ticket. The client plays the battle with it and sends it back as `BattleSubmission.seed`; the server re-simulates with its own seed, and a report with any other seed is refused with `400 bad_request` (a player-facing "update the game" message), without using up the ticket. A client facing an older server that sends no seed picks its own. `/v1/hello` lists the `server-seed` feature.
 
 **Version 6 (gameplay audit fixes):** clients and servers must upgrade together (`minProtocol: 6`), because the battle rules changed (`SIM_RULES` 2: counters are off while upgrading, wall-breakers target the wall in the way, the Siege Bombardier fires on defenses, healers break walls, rebalanced Throwers and kites).
 - `BattleSubmission.reinforcements` lists donated troops in the army with the level each was donated at; they deploy first at that level. `DefenseView` carries `reinforcements` and `rules`.
@@ -32,7 +52,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
  game (browser / iOS / Android)                     server
  ┌───────────────────────────────┐                 ┌────────────────────────────────────┐
  │ App, Grove screen, Settings   │                 │ server/app.ts      HTTP adapter    │
- │        │                      │   protocol v2   │ server/inProcess.ts  (tests)       │
+ │        │                      │   protocol v6   │ server/inProcess.ts  (tests)       │
  │ Connection (outbox, sync)     │ ──────────────▶ │        │                           │
  │ GroveSource (local | remote)  │  JSON over      │ server/core/   every rule, no HTTP │
  │        │                      │  HTTPS          │        │                           │
@@ -59,7 +79,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
 
 - **Transport:** JSON over HTTPS. Native apps need HTTPS; iOS and Android block plain HTTP.
 - **Auth:** `POST /v1/players` returns a `token`. Send it on every other call as `Authorization: Bearer <token>`. Store only a hash of it.
-- **CORS:** allow `Authorization` and `Content-Type` headers, and the methods `GET, POST, PUT, OPTIONS`. Allowed origins:
+- **CORS:** allow `Authorization` and `Content-Type` headers, and the methods `GET, POST, PUT, DELETE, OPTIONS`; expose `Retry-After` and `X-Request-Id`. Allowed origins:
   - the web game (GitHub Pages);
   - `capacitor://localhost` (iOS app);
   - `https://localhost` (Android app);
@@ -80,14 +100,32 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   | `raid_not_live` | 409 | a Grove Raid ticket outside the raid |
   | `raid_not_ended` | 409 | claiming a chest before the raid ends |
   | `no_attacks_left` | 409 | both Grove Raid attacks used, or joined after the raid started |
+  | `muted` | 403 | a moderator paused this player's chat (the message says for how long) |
+  | `no_village` | 404 | the player's village lives on the device, not on the server (server-owned village routes) |
+  | `purchase_refused` | 403 | a purchase is not allowed (under-18 monthly cap, age group unknown, or the store is not set up on this server); nothing was charged |
+  | `banned` | 403 | staff suspended this account from online play; the message says why and until when |
+  | `rate_limited` | 429 | too many requests; wait `Retry-After` seconds (the header is exposed to the web game through CORS) |
 
-  - **Retries:** the client retries network errors and 5xx answers. It never retries 4xx answers.
+  - **Retries:** the client retries network errors, 5xx answers and `rate_limited` (on its next round, not at once). It never retries other 4xx answers.
+- **Limits (our server; other servers may choose their own):**
+
+  | what | limit |
+  |---|---|
+  | every request, per IP address | 600 a minute |
+  | every request, per player token | 240 a minute |
+  | new players (`POST /v1/players`), per IP address | 30 an hour |
+  | opponent searches and war tickets, per player | 30 a minute |
+  | battle reports (re-simulated), per player | 20 a minute |
+  | request body | 16 KB; `PUT /v1/base` 128 KB; battle reports 256 KB (`413` above) |
+  | chat message | 200 characters (`400 bad_request` above) |
+
+  Behind a load balancer the server must see each player's own IP address (`TRUST_PROXY`, `docs/SHIPPING.md`), or all players share one per-IP budget.
 - **Versioning:** `GET /v1/hello` reports `protocol` and `minProtocol`. The game refuses a server whose `minProtocol` is above the game's version, or whose `protocol` is below it. Bump `PROTOCOL_VERSION` in `protocol.ts` for any change that would break older clients.
 - **Time:** all times are epoch milliseconds, taken from the server's clock.
 
 ## Battles must replay exactly
 
-The client plays a battle locally and sends `{ ticket, seed, army, levels, reinforcements, deployments, endTick }`. The server re-runs it from the ticket's base with `runBattle` from `src/gameplay/sim/battle/battle.ts`, and the server's result is what counts. The client records the attack as pending and banks the loot and honor from the server's answer (`settleOnlineAttack`); a permanently refused report becomes a practice result with no loot or honor.
+The client plays a battle locally and sends `{ ticket, seed, army, levels, reinforcements, deployments, endTick }`. The seed is the one the server issued with the ticket (`MatchResponse.seed`, `RaidTicketResponse.seed`), so a client cannot try seeds offline and report the luckiest. The server re-runs the battle from the ticket's base and its own seed with `runBattle` from `src/gameplay/sim/battle/battle.ts`, and the server's result is what counts. The client records the attack as pending and banks the loot and honor from the server's answer (`settleOnlineAttack`); a permanently refused report becomes a practice result with no loot or honor.
 
 - The battle simulation is deterministic: fixed 10 ticks per second, a seeded random generator, and JavaScript number math (IEEE-754 doubles) done in a fixed order. A port must do the same operations in the same order.
 - A server written in another language must either run this TypeScript code (for example a small Node sidecar) or port it exactly.
@@ -100,6 +138,7 @@ Every battle report must also be checked:
 - Troop levels are at most `troopLevelCap` for the attacker's hall.
 - At most 2,000 deployments. A deployment whose `troop` is an ability id (battle.json `abilities`) is an ability use, limited by its charges. Ability uses never count as troops used.
 - Each ticket is used once. A repeated report of a used ticket gets the stored answer back.
+- `seed` must equal the ticket's seed; anything else is `bad_request` and leaves the ticket unused. (Tickets issued before server seeds have none and keep the client's seed.)
 
 ## Endpoints
 
@@ -111,18 +150,23 @@ Every battle report must also be checked:
 | `POST /v1/players` | `{ name }` | `201 { playerId, token }` |
 | `GET /v1/me` | | `PlayerView` `{ id, name, trophies, hallLevel, shieldUntil, groveId }` |
 | `PUT /v1/me` | `{ name }` | `PlayerView` |
+| `DELETE /v1/me` | | `204` (the online account is deleted; the token stops working) |
+| `POST /v1/account/deletion-requests` | `{ playerId?, name?, contact?, note? }` (no token) | `202 { id }` |
+| `GET /account/delete` | | the web deletion page (HTML), for store listings |
 
 - New players start with `ranks.startingTrophies` and a shield of `raids.newPlayerShieldHours`.
 - Names are trimmed, filtered for bad words, and 2–24 characters long. Anything else becomes "Ruler".
+- **Deleting an account** (`DELETE /v1/me`, Apple 5.1.1(v)) leaves the player's Alliance (leadership passes on; the notice does not name them) and deletes the player, their shared base, tickets they hold, raids on them, their chat lines, troop requests and gifts to them, war claims and Alliance notices naming them. What other players keep stays without the name: replays of raids they made (attacker "Deleted player"), troops they gave, war rosters and war attacks (a war's score must not change). Copies of their base inside other players' recent tickets go with the 30-day retention. The game also turns its pending online attacks into practice results and switches online play off on that device, so it does not quietly register a new player.
+- **Deletion requests from the web** (`POST /v1/account/deletion-requests`, 5 an hour per IP address) need a `playerId` or a `name`. The answer is the same whether or not the player exists. Staff verify and carry them out with the admin API (`docs/SHIPPING.md`); the admin API is our server's, not part of this protocol.
 
 ### PvP
 
 | | request | response |
 |---|---|---|
 | `PUT /v1/base` | `{ base: BaseLayout }` | `204` |
-| `GET /v1/match` | | `MatchResponse` `{ ticket, base, opponent: { name, trophies, hallLevel, kind }, expiresAt }` |
+| `GET /v1/match` | | `MatchResponse` `{ ticket, seed, base, opponent: { name, trophies, hallLevel, kind }, expiresAt }` |
 | `POST /v1/attacks` | `BattleSubmission` | `AttackResponse` `{ attackId, result, trophies, playerTrophies }` |
-| `GET /v1/defenses?since=` | | `{ defenses: DefenseView[] }` (raids on this player after `since`, oldest first, at most 20) |
+| `GET /v1/defenses?since=` | | `{ defenses: DefenseView[] }` (raids on this player after `since`, oldest first, at most 20; kept for 30 days) |
 | `GET /v1/leaderboard?limit=` | | `{ players: [{ rank, name, trophies, hallLevel, grove }], me }` |
 
 Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.ts` and the balance data in `src/gameplay/data/`.
@@ -141,11 +185,13 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
   - When nobody fits, generate a base with `opponentForRank(seed, trophies, hall, floor)` and return it with `kind: "bot"`. The floor is the attacker's assumed earned strength (half-way through their Keep, minus `powerSlack`), the same rule the game uses offline with the player's real research. Never answer "nobody": the game should always have something to attack.
 - **The ticket:**
   - Holds a copy of the base with `lootPenaltyByHallDiff` already applied for the attacker's hall. The client must not apply it again.
+  - Holds the battle seed (a random 32-bit integer the server chose), returned as `seed`.
   - Lasts 1 hour (`expiresAt`).
 - **Attack results:**
   - Trophies use `winTrophies`/`lossTrophies` from `src/gameplay/sim/ranks.ts`, based on both players' trophies. The defender moves by the opposite amount.
   - Attacking ends the attacker's own shield.
   - A real defender gets the shield from `shieldTiers` for the destruction reached, plus a defense record that includes the replay. Bot opponents get neither.
+- **Retention:** defense records (with their replays) and tickets are kept for 30 days; an unused ticket goes a day after it expires. A report for a ticket that is gone gets `404 not_found`. Our server stores each distinct base once (`base_versions`, by content hash) and tickets and records refer to it, so keeping 30 days of replays costs a few KB per battle instead of a full base copy each.
 
 ### Groves
 
@@ -163,11 +209,18 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
 | `POST /v1/grove/requests/:id/donate` | `{ troop, count, level }` | `{ request, xp }` |
 | `GET /v1/grove/inbox` | | `{ donations: DonationView[] }` (troops sent to this player, not yet acknowledged) |
 | `POST /v1/grove/inbox/ack` | `{ ids }` | `204` |
+| `POST /v1/reports` | `{ kind: 'chat' \| 'player', messageId?, playerId?, reason, note?, block? }` | `201 { id, alreadyReported, blocked }` |
+| `GET /v1/blocks` | | `{ blocked: [{ id, name, at }] }` |
+| `POST /v1/blocks` | `{ playerId }` | `204` |
+| `DELETE /v1/blocks/:id` | | `204` |
 
 Rules:
 
 - One Grove per player, with at most `social.membersMax` members.
 - Chat is always filtered with `filterText`, also for adults. A player may post at most `social.chatPerMinute` messages per minute.
+- **Reports** (`reason`: `harassment`, `hate`, `sexual`, `spam`, `cheating`, `name`, `other`): a chat report must name a message in the caller's own Alliance chat, written by another player; the server stores the text as it was. One open report per reporter and message (or player): a repeat answers `alreadyReported: true` and files nothing. `block: true` also blocks the player. Once 3 different players report one message, it is hidden from everyone (and listed in `ChatResponse.hidden`) until staff look at it. At most 30 reports and blocks an hour per player.
+- **Blocks** hide the blocked player's chat messages and troop requests from the blocker (on every device), up to 500 blocks. Blocking does not stop matchmaking or wars.
+- **Moderation queue** (our server's staff API, not part of this protocol; `docs/SHIPPING.md`): staff dismiss a report (an auto-hidden message comes back), remove the message, or mute the player's chat for some hours (`403 muted` on posting). A decision about a message settles every open report on it. Handled reports, with their evidence, are deleted after 90 days.
 - **Troop requests:**
   - The size is the smaller of the requester's free Lodge space (`capacity`) and the largest Lodge their hall allows.
   - A player may ask again after `requestCooldownMinutes`.
@@ -184,7 +237,7 @@ Rules:
 | | request | response |
 |---|---|---|
 | `GET /v1/grove/raid` | | `RaidView` |
-| `POST /v1/grove/raid/ticket` | `{ target }` | `{ ticket, base, expiresAt }` |
+| `POST /v1/grove/raid/ticket` | `{ target }` | `{ ticket, seed, base, expiresAt }` |
 | `POST /v1/grove/raid/attacks` | `BattleSubmission` | `{ result, stars, ours, theirs }` |
 | `POST /v1/grove/raid/claim` | `{ week }` | `{ week, outcome, ours, theirs, alreadyClaimed }` |
 
@@ -208,6 +261,26 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
   - `RaidView.chests` lists this week's and last week's ended raids the player took part in, with whether each chest was claimed. The game claims every listed week it has not received yet.
   - The chest's contents are `groveRaidChest(outcome, hall)`, added by the game.
 
+## Server-owned village (beta)
+
+| | request | response |
+|---|---|---|
+| `GET /v1/village` | | `VillageResponse` `{ file, revision, seq, at, stateHash }`, or `404 no_village` |
+| `POST /v1/village` | `{}` | `VillageResponse` (a new village; the one already there if any) |
+| `POST /v1/village/import` | `{ file }` (a save file) | `VillageResponse` (this device's village, kept as it is), `409 conflict` if one is already there, `400 bad_request` naming what its Keep could not hold |
+| `POST /v1/village/commands` | `CommandBatch` `{ stateHash, commands: [{ seq, t, command }] }` | `CommandBatchResponse` `{ ackSeq, revision, stateHash, results: [{ seq, ok, error? }], corrections? }` |
+| `GET /v1/village/ledger?limit=` | | `{ entries: [{ at, resource, delta, balance, reason }] }` (newest first) |
+
+- `file` is a save file (`src/gameplay/sim/save.ts`); `stateHash` is `economyHash` (`src/gameplay/sim/serverEconomy.ts`): a 64-bit FNV-1a of the canonical JSON of the economy (resources, buildings, next id, army, training, research, Lodge). Anything else in the village is the device's business.
+- **Commands** are the game's own `Command`s, numbered by the game from 1 and timed by its clock. Only `PLAYER_COMMANDS` are accepted; results the server makes itself (`battleEnd`, `settleOnlineAttack`, `applyDefense`, donations, war chests, honor) are refused with `NOT_ALLOWED`. A batch holds at most 200 commands and 3 battle replays (`trialEnd`, `abandonBattle`); 30 batches a minute.
+- **Time:** a command counts at the time it says, but never before the village's last change and never more than 2 minutes past the server's clock (later times count as the server's now). So a fast clock cannot finish timers early.
+- **Idempotent:** numbers the server already applied are skipped; `ackSeq` is the last number processed (applied or refused). Refused commands change nothing.
+- **Corrections:** when the game's `stateHash` (its economy right after its last command in the batch) differs from the server's, the answer includes `corrections: { economy, at }`. The game puts that economy in place and replays the commands it queued after the batch.
+- **Ledger:** every change to a server-held resource, with the balance after it and a reason (`command:<type>`, `attack:loot`, `defense:loss`, `donation:sent`, `purchase:apple`, `refund:google`, …). Append-only.
+- While a village lives on the server, its raid base (`PUT /v1/base`) is built from it; an upload is ignored.
+- **Attacks and gifts use the server-held village** (one transaction with the result): an attack report spends the troops that fought from it and banks the loot (refused with `400 bad_request` if the village does not have those warriors; the ticket stays unused), a defender's server-held village loses what was taken, Alliance War attacks spend troops, war chests go in with the first claim, and donations come out of the donor's server-held army and go into the receiver's Lodge. The game applies the same results to its own copy (as it does today), so its economy hash keeps matching.
+- During the transition, a server-held attacker can still raid a village that lives on a device: that loot comes from an uploaded base (capped as always) and the ledger marks it `attack:loot:uploaded-base`.
+
 ## Trust
 
 The server is the authority for:
@@ -226,4 +299,4 @@ The village economy (resources, buildings, timers, the trained army and research
 
 The client side keeps its own guards: time-skip tools and the instant test store exist only in a separate sandbox save that never goes online (`?sandbox`), and online loot is banked only from the server's answers.
 
-**Owner decision before a competitive launch:** keep online play as trusted-local (today), or move the economy to the server: persist inventory, research and timers per player and consume them in the same transaction as each attack. That is a protocol 7 change and a larger server project (`docs/SHIPPING.md`).
+**Server-owned village (beta):** a player can move to a village the server keeps (see "Server-owned village"). For them, the server holds inventory, research and timers, replays every action, and consumes troops and banks loot in the same transaction as each attack; the game is corrected whenever it disagrees. Everyone else stays trusted-local as described above. Making it the rule (and moving existing villages, step 25) is the protocol 7 plan in `docs/backend/PVP_ROADMAP.md`.

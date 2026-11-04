@@ -20,6 +20,26 @@ export function productInfo(data: GameData, productId: string): ProductInfo | nu
   return null;
 }
 
+/** The id this product has in the App Store and Google Play (`store.storeProductIds`). */
+export function storeProductId(data: GameData, productId: string): string {
+  return data.store.storeProductIds?.[productId] ?? productId;
+}
+
+/** The game's product for a store's product id, or null if the game doesn't sell it. */
+export function productForStoreId(data: GameData, storeId: string): ProductInfo | null {
+  const map = data.store.storeProductIds ?? {};
+  const own = Object.keys(map).find((k) => map[k] === storeId);
+  if (own) return productInfo(data, own);
+  // A product with no store id of its own is sold under its game id (but never one renamed away).
+  return map[storeId] === undefined || map[storeId] === storeId ? productInfo(data, storeId) : null;
+}
+
+/** Start of the UTC month `t` falls in. */
+export function monthStart(t: number): number {
+  const d = new Date(t);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
+}
+
 /** Month key (UTC) for spend tracking. */
 function monthOf(t: number): number {
   const d = new Date(t);

@@ -120,7 +120,7 @@ describe('Connection', () => {
     await conn.uploadBase();
     const m = (await bob.match())!;
     expect(m.opponent.kind).toBe('player');
-    const r = await bob.submitAttack({ ticket: m.ticket, seed: 9, ...rush(20) });
+    const r = await bob.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(20) });
     const before = game.state.resources.acorns;
     await conn.sync();
     await conn.sync();
@@ -190,7 +190,7 @@ describe('Connection', () => {
     port.submitAttack = async () => {
       throw new ServerError(0, 'network', 'offline');
     };
-    await conn.report('attack', { ticket: m.ticket, seed: 1, ...rush(10) });
+    await conn.report('attack', { ticket: m.ticket, seed: m.seed, ...rush(10) });
     expect(conn.outbox()).toHaveLength(1);
     // The outbox survives a restart (it is in storage).
     const restarted = connect(w, game, kv, port).conn;
@@ -198,8 +198,20 @@ describe('Connection', () => {
     port.submitAttack = submit;
     await restarted.sync();
     expect(restarted.outbox()).toHaveLength(0);
+    // A rate limit is not a refusal: the report waits in the outbox, and the connection stays online.
+    port.submitAttack = async () => {
+      throw new ServerError(429, 'rate_limited', 'Too many battle reports at once. Try again in 30 seconds.');
+    };
+    const m2 = (await port.match())!;
+    await restarted.report('attack', { ticket: m2.ticket, seed: m2.seed, ...rush(10) });
+    expect(restarted.outbox().map((i) => i.id)).toEqual([m2.ticket]);
+    expect(restarted.status).toBe('online');
+    expect(restarted.lastError).toMatch(/Try again/);
+    port.submitAttack = submit;
+    await restarted.sync();
+    expect(restarted.outbox()).toHaveLength(0);
     // A report the server refuses (already used ticket) is dropped, not retried forever.
-    await restarted.report('attack', { ticket: m.ticket, seed: 1, ...rush(10) });
+    await restarted.report('attack', { ticket: m.ticket, seed: m.seed, ...rush(10) });
     expect(restarted.outbox()).toHaveLength(0);
   });
 });

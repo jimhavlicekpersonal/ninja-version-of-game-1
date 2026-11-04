@@ -3,7 +3,9 @@
  * sandbox. Kept pure so the rules are tested (audit F01/F02):
  * - the instant mock store (no money, instant success) only in the sandbox;
  * - StoreKit on iPhone outside the sandbox;
- * - otherwise (Android, the public web build) purchases are unavailable.
+ * - Google Play Billing on Android, only in builds made with VITE_PLAY_BILLING=1
+ *   (the owner turns it on once the Play products and server keys exist);
+ * - otherwise (the public web build) purchases are unavailable.
  */
 import type { PaymentProvider } from './provider';
 
@@ -13,11 +15,12 @@ export function isSandbox(search: string): boolean {
   return q.has('sandbox') || q.has('debug');
 }
 
-export type PaymentPath = 'storekit' | 'mock' | 'unavailable';
+export type PaymentPath = 'storekit' | 'play' | 'mock' | 'unavailable';
 
-export function paymentPath(platform: string, sandbox: boolean): PaymentPath {
+export function paymentPath(platform: string, sandbox: boolean, playBilling = false): PaymentPath {
   if (sandbox) return 'mock';
-  return platform === 'ios' ? 'storekit' : 'unavailable';
+  if (platform === 'ios') return 'storekit';
+  return platform === 'android' && playBilling ? 'play' : 'unavailable';
 }
 
 /** Build the provider for a path (the factories are passed in so this stays free of platform code). */

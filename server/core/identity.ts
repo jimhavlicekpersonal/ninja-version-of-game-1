@@ -2,11 +2,15 @@ import { filterText } from '../../src/gameplay/sim/social/grove';
 import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { purchaseFeatures } from './purchases';
+
+/** The oldest game this server serves (protocol 7: villages kept on the server, client headers, idempotent writes). */
+export const MIN_PROTOCOL = 7;
 
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: 6, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters'], };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])] };
 }
 
 export function cleanName(raw: unknown, ctx: ServerContext): string {
@@ -29,6 +33,7 @@ export async function register(ctx: ServerContext, name: unknown): Promise<Regis
     createdAt: t,
     updatedAt: t,
     lastSeenAt: t,
+    mutedUntil: 0,
   };
   await ctx.repo.createPlayer(player);
   return { playerId: player.id, token };
@@ -39,6 +44,13 @@ export async function authenticate(ctx: ServerContext, token: string | undefined
   const p = token ? await ctx.repo.playerByTokenHash(await ctx.hash(token)) : null;
   if (!p) throw new ApiError(401, 'unauthorized', 'Unknown or missing player token.');
   const t = ctx.now();
+  if (p.bannedUntil) {
+    if (p.bannedUntil > t) throw new ApiError(403, 'banned', `This account is suspended from online play until ${new Date(p.bannedUntil).toUTCString()}${p.banReason ? `: ${p.banReason}` : ''}. Your village on this device is not affected.`);
+    // The suspension is over: back on the ladders.
+    await ctx.repo.updatePlayer(p.id, { bannedUntil: 0, banReason: null });
+    if (p.base) await ctx.board.set(p.id, p.trophies, p.createdAt);
+    p.bannedUntil = 0;
+  }
   if (t - p.lastSeenAt > MIN) {
     await ctx.repo.updatePlayer(p.id, { lastSeenAt: t });
     p.lastSeenAt = t;

@@ -49,12 +49,23 @@ export class App {
   }
 
   private ticket: string | null = null;
-  /** The online opponent behind the current scout seed, kept so Home + Attack shows the same base. */
-  private onlineMatch: { seed: number; ticket: string; base: BaseLayout; expiresAt: number; bot: boolean } | null = null;
+  /**
+   * The online opponent behind the current scout seed, kept so Home + Attack
+   * shows the same base. `battleSeed` is the ticket's seed: the server issues
+   * it and re-simulates with it (older servers send none; then the game picks one).
+   */
+  private onlineMatch: { seed: number; battleSeed: number; ticket: string; base: BaseLayout; expiresAt: number; bot: boolean } | null = null;
 
   /** Look for an opponent. `paid` = pressing Next. */
   async scout(paid = false): Promise<void> {
     const c = this.d.controller;
+    // A village the server keeps raids only through the server (offline loot could not be checked).
+    if (this.d.connection.serverVillage && !this.d.connection.online) {
+      const msg = 'Your village is kept on the server, so attacks need a connection. Try again when you are online.';
+      if (this.battleHud) this.battleHud.toast(msg);
+      else this.d.hud.toast(msg, 'error');
+      return;
+    }
     const r = c.scout(paid);
     if (!r.ok) {
       if (this.battleHud) this.battleHud.toast(r.message);
@@ -75,16 +86,20 @@ export class App {
         if (!kept) await conn.ensureFreshBase();
         const m = kept ?? (await conn.port.match());
         if (m) {
-          this.onlineMatch = kept ?? { seed: r.seed, ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
+          this.onlineMatch = kept ?? { seed: r.seed, battleSeed: typeof m.seed === 'number' ? m.seed >>> 0 : mixSeed(r.seed, 0xba771e), ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
           this.ticket = this.onlineMatch.ticket;
           const base = structuredClone(this.onlineMatch.base);
           if (this.onlineMatch.bot) base.practice = 'Generated rival (no player fitted your rank)';
-          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, ...loadout, infiltration: true };
+          const setup: BattleSetup = { seed: this.onlineMatch.battleSeed, base, ...loadout, infiltration: true };
           this.open(new BattleSession(setup, c.data, 'scout'));
           return;
         }
       } catch (e) {
         console.warn('Online match failed, using a generated opponent', e);
+      }
+      if (conn.serverVillage) {
+        this.d.hud.toast('Could not reach the server to find an opponent. Try again in a moment.', 'error');
+        return;
       }
     }
     // Opponent strength and loot follow the player's trophies (see sim/matchmaking).
@@ -210,7 +225,7 @@ export class App {
           // keeps the report until it gets through.
           this.ticket = null;
           this.onlineMatch = null;
-          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick });
+          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: out.record.result.hash });
         }
         lastRecord = out.record;
         if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true };

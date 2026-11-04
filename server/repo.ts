@@ -5,7 +5,9 @@
  * the same checks against every adapter.
  */
 import type { BaseLayout, BattleResult, Deployment } from '../src/gameplay/sim/battle/types';
-import type { GroveRole } from '../src/backend/net/protocol';
+import type { GroveRole, ReportReason } from '../src/backend/net/protocol';
+import type { Rating } from '../src/gameplay/sim/rating';
+import { contentHash } from './contentHash';
 
 export interface Player {
   id: string;
@@ -19,9 +21,29 @@ export interface Player {
   createdAt: number;
   updatedAt: number;
   lastSeenAt: number;
+  /** A moderator muted their chat until this time (0 or absent: not muted). */
+  mutedUntil?: number;
+  /** Hidden matchmaking ratings (roadmap Phase 3); absent means not rated yet. */
+  ratings?: { attack: Rating; base: Rating };
+  /** Honor lost as a defender on one UTC day (the daily cap). */
+  honorLoss?: { day: number; lost: number };
+  /** Suspended by staff until this time (0 or absent: not banned). Banned players are not matched or ranked. */
+  bannedUntil?: number;
+  banReason?: string | null;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason'>>;
+
+/** One thing staff did (the admin tool, roadmap step 48). */
+export interface StaffAction {
+  id: string;
+  at: number;
+  /** Who (the X-Staff-Name the admin tool sends). */
+  actor: string;
+  action: string;
+  playerId: string | null;
+  detail: Record<string, unknown>;
+}
 
 export interface Ticket {
   id: string;
@@ -35,6 +57,12 @@ export interface Ticket {
   createdAt: number;
   expiresAt: number;
   used: boolean;
+  /**
+   * The battle seed the server issued with the ticket; the battle is
+   * re-simulated with it whatever the client sends. Absent only on tickets
+   * issued before server seeds (they keep using the client's seed).
+   */
+  seed?: number;
   /** Grove Raid tickets only. */
   week?: number;
   groveId?: string;
@@ -99,6 +127,36 @@ export interface ChatRow {
   name: string | null;
   text: string;
   kind: 'chat' | 'request' | 'donation' | 'system';
+  /** Removed by moderation (enough reports, or staff); never sent to players. */
+  hidden?: boolean;
+}
+
+/** A report of a chat message or a player (roadmap step 15). */
+export interface Report {
+  id: string;
+  at: number;
+  reporterId: string;
+  kind: 'chat' | 'player';
+  /** The reported player. */
+  targetId: string;
+  targetName: string;
+  /** Chat reports: the message, its Alliance, and its text as it was (evidence). */
+  messageId: string | null;
+  groveId: string | null;
+  text: string | null;
+  reason: ReportReason;
+  note: string;
+  status: 'open' | 'actioned' | 'dismissed';
+  resolvedAt: number | null;
+  resolution: string | null;
+}
+
+export interface Block {
+  playerId: string;
+  blockedId: string;
+  /** The name when blocked, for the list (the player may have left or renamed). */
+  blockedName: string;
+  at: number;
 }
 
 export interface TroopRequest {
@@ -171,6 +229,149 @@ export interface RaidClaim {
   at: number;
 }
 
+/** A village the server keeps (roadmap Phase 2, step 19). */
+export interface VillageRow {
+  playerId: string;
+  /** The village as a save file (src/gameplay/sim/save.ts: version, savedAt, village). */
+  file: unknown;
+  /** Goes up with every write; a write names the revision it read. */
+  revision: number;
+  /** The last client command applied (the game numbers its commands). */
+  seq: number;
+  /** The time the village is settled to (its last change). */
+  at: number;
+  /** economyHash (src/gameplay/sim/serverEconomy.ts) of the village at `at`. */
+  stateHash: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** One change to a server-held resource (append-only). */
+export interface LedgerEntry {
+  playerId: string;
+  at: number;
+  resource: string;
+  delta: number;
+  /** The amount after this change. */
+  balance: number;
+  /** What changed it: `command:<type>`, `attack:loot`, `defense:loss`, `donation:sent`, … */
+  reason: string;
+  /** The ticket, attack, donation or command seq behind it. */
+  ref: string | null;
+}
+
+/** A command a client sent, and what the server made of it. */
+export interface CommandLogRow {
+  playerId: string;
+  seq: number;
+  /** When the server applied it (the client's time, clamped). */
+  at: number;
+  /** The time the client said. */
+  clientAt: number;
+  type: string;
+  command: unknown;
+  ok: boolean;
+  error: string | null;
+}
+
+/** A sign-in linked to a player (roadmap step 24). */
+export interface IdentityLink {
+  provider: string;
+  subject: string;
+  playerId: string;
+  linkedAt: number;
+}
+
+/** A store purchase the server checked (roadmap steps 35-37): each store transaction once. */
+export interface PurchaseRow {
+  store: 'apple' | 'google';
+  /** Apple's transactionId, Google's order id (or a hash of the token). */
+  transactionId: string;
+  playerId: string;
+  /** The game's product id. */
+  productId: string;
+  /** The game's USD price, in cents (for the under-18 cap and refund rates; the store's own price may differ). */
+  cents: number;
+  at: number;
+  /** 'Production', 'Sandbox' (Apple), 'Test' (Google license testers). */
+  environment: string;
+  status: 'credited' | 'refunded';
+  refundedAt: number | null;
+  /** What refund notices name: Apple's originalTransactionId, Google's purchase token. */
+  ref: string;
+  /** Delivered into a village the server holds (else the device delivered it). */
+  heldOnServer: boolean;
+}
+
+/** Asked before paying: the age cap was checked, and the store purchase carries this id back (Apple appAccountToken, Google obfuscatedAccountId). */
+export interface PurchaseIntent {
+  id: string;
+  playerId: string;
+  productId: string;
+  cents: number;
+  at: number;
+  used: boolean;
+}
+
+/** A device that receives server push (roadmap step 40). */
+export interface PushToken {
+  token: string;
+  playerId: string;
+  platform: 'ios' | 'android';
+  /** Notification types this device switched on, and its time zone (Date#getTimezoneOffset). */
+  types: string[];
+  tzOffsetMinutes: number;
+  updatedAt: number;
+  /** Pushes sent on local day `day` (for `maxPerDay`). */
+  day: number;
+  sent: number;
+}
+
+/** How a deleted player appears in what other players keep (their defense replays, war rosters, donation notes). */
+export const DELETED_PLAYER = { id: 'deleted', name: 'Deleted player' } as const;
+
+/** A request from the web deletion form (roadmap step 14), for staff to verify and carry out. */
+export interface DeletionRequest {
+  id: string;
+  at: number;
+  /** As typed on the form: it may not exist, or belong to someone else (staff verify). */
+  playerId: string;
+  name: string;
+  contact: string;
+  note: string;
+  status: 'open' | 'done' | 'rejected';
+  resolvedAt: number | null;
+  resolution: string | null;
+}
+
+/** What `prune` removes (roadmap step 11: 30-day replay retention). */
+export interface PruneCutoffs {
+  /** Attack records (replays) and tickets created before this time are deleted. */
+  recordsBefore: number;
+  /**
+   * Unused tickets that expired before this time are deleted too (they only
+   * mattered while they could be used), and so are base versions no ticket or
+   * attack refers to any more and nobody used since this time.
+   */
+  staleBefore: number;
+  /** Handled reports (with their evidence) resolved before this time are deleted. */
+  resolvedReportsBefore?: number;
+  /** Command log lines before this time are deleted (the ledger is kept). */
+  commandsBefore?: number;
+  /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
+  idempotencyBefore?: number;
+  /** Purchase intents from before this time are forgotten (a purchase that comes later is still credited, without the age-cap reservation). */
+  intentsBefore?: number;
+}
+export interface PruneResult {
+  attacks: number;
+  tickets: number;
+  bases: number;
+  reports: number;
+  commands: number;
+  idempotency: number;
+}
+
 export interface OpponentQuery {
   excludeIds: string[];
   minHall: number;
@@ -178,12 +379,17 @@ export interface OpponentQuery {
   minTrophies: number;
   maxTrophies: number;
   now: number;
-  /** Skip players with an unused ticket issued after this time (someone is attacking them). */
-  lockedSince: number;
+  /**
+   * Skip players with an unused ticket issued after this time (someone is
+   * attacking them). Null when match locks live elsewhere (Redis, step 16).
+   */
+  lockedSince: number | null;
   limit: number;
 }
 
 export interface Repo {
+  /** Throws when the store cannot answer (readiness checks). */
+  ping(): Promise<void>;
   // players
   createPlayer(p: Player): Promise<void>;
   playerByTokenHash(hash: string): Promise<Player | null>;
@@ -193,7 +399,50 @@ export interface Repo {
   topPlayers(limit: number): Promise<Player[]>;
   /** 1 + number of players (with a base) who have more trophies. */
   rankOf(trophies: number): Promise<number>;
-  // tickets and attacks
+  /** Another device's token for a player (signing in with a linked account). */
+  addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void>;
+  linksOf(playerId: string): Promise<IdentityLink[]>;
+  playerByIdentity(provider: string, subject: string): Promise<string | null>;
+  /** False if that sign-in is linked to someone, or this player already has one from that provider. */
+  addLink(l: IdentityLink): Promise<boolean>;
+  removeLink(playerId: string, provider: string): Promise<void>;
+  // staff tools (roadmap step 48)
+  /** Players whose id is `q`, or whose name starts with `q` (any case). */
+  searchPlayers(q: string, limit: number): Promise<Player[]>;
+  addStaffAction(a: StaffAction): Promise<void>;
+  /** Newest first; one player's, or everyone's. */
+  staffActions(playerId: string | null, limit: number): Promise<StaffAction[]>;
+  // purchases (roadmap Phase 4)
+  /** False (nothing stored) if that store transaction is already recorded. */
+  addPurchase(p: PurchaseRow): Promise<boolean>;
+  getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null>;
+  purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null>;
+  /** Newest first. */
+  purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]>;
+  /** False if it already had that status. */
+  setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
+  /** Cents of credited purchases since `since`, plus open intents asked since `intentsSince` (reserved by the age cap). */
+  spentCents(playerId: string, since: number, intentsSince: number): Promise<number>;
+  addIntent(i: PurchaseIntent): Promise<void>;
+  getIntent(id: string): Promise<PurchaseIntent | null>;
+  useIntent(id: string): Promise<void>;
+  // push (roadmap step 40)
+  /** Adds or refreshes a device (a token that moved to another player now belongs to them). */
+  putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void>;
+  pushTokensOf(playerId: string): Promise<PushToken[]>;
+  removePushToken(token: string): Promise<void>;
+  /** Count one push sent on local day `day`. */
+  countPush(token: string, day: number): Promise<void>;
+  /** Players by id, in the order asked (missing ones left out). */
+  playersByIds(ids: string[]): Promise<Player[]>;
+  /** The Power Ranking (step 31): players with a base and at least `minBattles` rated attacks, by attack rating + beta x (Keep - 1). */
+  topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]>;
+  /** 1 + players on the Power Ranking above this power. */
+  powerRankOf(power: number, minBattles: number, beta: number): Promise<number>;
+  /** Every ranked player (with a base), to rebuild a leaderboard index. */
+  rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
+  // tickets and attacks. Each base is stored once per distinct content
+  // (base versions, keyed by contentHash); tickets and attacks keep the key.
   createTicket(t: Ticket): Promise<void>;
   getTicket(id: string): Promise<Ticket | null>;
   /**
@@ -204,6 +453,26 @@ export interface Repo {
   addAttack(a: AttackRecord): Promise<void>;
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
   recentTargets(attackerId: string, since: number): Promise<string[]>;
+  /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
+  prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
+  // account deletion
+  /**
+   * Delete a player and everything that is only theirs: the player row (with
+   * their base and token), tickets they hold, raids on them, their Alliance
+   * membership, chat lines, troop requests and gifts to them, war claims, and
+   * Alliance notices naming them. What other players keep (replays of raids
+   * they made, gifts they sent, war rosters and attacks that count for a war
+   * score) is kept under DELETED_PLAYER. Blocks either way and their own
+   * reports go; open reports about them are closed at `at`, without the
+   * evidence text. One transaction.
+   */
+  deletePlayer(id: string, name: string, at: number): Promise<void>;
+  addDeletionRequest(r: DeletionRequest): Promise<void>;
+  /** Oldest first; 'open' lists only those still waiting. */
+  deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]>;
+  getDeletionRequest(id: string): Promise<DeletionRequest | null>;
+  /** False if it was already resolved. */
+  resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean>;
   // groves
   createGrove(g: Grove): Promise<void>;
   getGrove(id: string): Promise<Grove | null>;
@@ -216,8 +485,49 @@ export interface Repo {
   updateMember(groveId: string, playerId: string, patch: Partial<Pick<GroveMember, 'role' | 'xp'>>): Promise<void>;
   // chat
   addChat(row: Omit<ChatRow, 'seq'>): Promise<ChatRow>;
+  /** Messages after the cursor, without hidden ones. */
   chatAfter(groveId: string, afterSeq: number, limit: number): Promise<ChatRow[]>;
   recentChatCount(playerId: string, since: number): Promise<number>;
+  getChat(id: string): Promise<ChatRow | null>;
+  setChatHidden(id: string, hidden: boolean): Promise<void>;
+  /** Ids of hidden messages among the Alliance's latest `lastN` messages. */
+  hiddenChatIds(groveId: string, lastN: number): Promise<string[]>;
+  // reports and blocks (roadmap step 15)
+  /** False (and nothing stored) if the reporter already has an open report on that message or player. */
+  addReport(r: Report): Promise<boolean>;
+  /** Oldest first; 'open' lists only those waiting for staff. */
+  reports(status: 'open' | 'all', limit: number): Promise<Report[]>;
+  getReport(id: string): Promise<Report | null>;
+  /** Open reports on one message (to count distinct reporters, and to resolve them together). */
+  openReportsOn(messageId: string): Promise<Report[]>;
+  /** False if it was already resolved. */
+  resolveReport(id: string, status: 'actioned' | 'dismissed', resolution: string, at: number): Promise<boolean>;
+  /** Adds or refreshes a block. */
+  addBlock(b: Block): Promise<void>;
+  removeBlock(playerId: string, blockedId: string): Promise<void>;
+  /** Newest first. */
+  blocksOf(playerId: string): Promise<Block[]>;
+  // server-owned villages (roadmap Phase 2)
+  /** `forUpdate`: inside a transaction, hold the row until it ends (others wait). */
+  getVillage(playerId: string, opts?: { forUpdate?: boolean }): Promise<VillageRow | null>;
+  /** False if the player already has one. */
+  createVillage(v: VillageRow): Promise<boolean>;
+  /**
+   * Store the next revision with its ledger entries and command lines, all or
+   * nothing. False (nothing written) if the stored revision is no longer
+   * `expectedRevision`: someone else wrote first.
+   */
+  saveVillage(v: VillageRow, expectedRevision: number, ledger: LedgerEntry[], commands: CommandLogRow[]): Promise<boolean>;
+  /** Newest first. */
+  ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
+  /** Oldest first, after `sinceSeq`. */
+  commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]>;
+  /** The answer remembered for a write's Idempotency-Key (protocol 7), per caller. */
+  getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null>;
+  /** Remember it (the first answer wins). */
+  putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void>;
+  /** Run `fn` atomically: what it writes through `tx` lands together, or not at all if it throws. */
+  transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T>;
   // troop requests and donations
   addRequest(r: TroopRequest): Promise<void>;
   getRequest(id: string): Promise<TroopRequest | null>;
@@ -243,10 +553,25 @@ export interface Repo {
 
 const clone = <T>(v: T): T => structuredClone(v);
 
+/**
+ * The Alliance notices that name a player (server/core/groves.ts writes them):
+ * "<name> founded …!", "<name> joined the Alliance. Say hello!",
+ * "<name> left the Alliance.", "<name> is the new leader.".
+ */
+export function noticesNaming(name: string): (text: string) => boolean {
+  const exact = new Set([`${name} joined the Alliance. Say hello!`, `${name} left the Alliance.`, `${name} is the new leader.`]);
+  return (text) => exact.has(text) || text.startsWith(`${name} founded `);
+}
+
+/** A ticket or attack as stored: the base by its content hash. */
+type Stored<T extends { base: BaseLayout }> = Omit<T, 'base'> & { baseHash: string };
+
 export class MemoryRepo implements Repo {
   players = new Map<string, Player>();
-  tickets = new Map<string, Ticket>();
-  attacks: AttackRecord[] = [];
+  /** Base versions by content hash (stored once, like Postgres's base_versions). */
+  bases = new Map<string, { base: BaseLayout; createdAt: number; lastUsedAt: number }>();
+  tickets = new Map<string, Stored<Ticket>>();
+  attacks: Stored<AttackRecord>[] = [];
   groves = new Map<string, Grove>();
   memberRows: GroveMember[] = [];
   chatRows: ChatRow[] = [];
@@ -255,14 +580,200 @@ export class MemoryRepo implements Repo {
   pairings: RaidPairing[] = [];
   raidAttackRows: RaidAttack[] = [];
   claims: RaidClaim[] = [];
+  deletionRows: DeletionRequest[] = [];
+  reportRows: Report[] = [];
+  blockRows: Block[] = [];
+  villageRows = new Map<string, VillageRow>();
+  tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
+  linkRows: IdentityLink[] = [];
+  purchaseRows: PurchaseRow[] = [];
+  staffRows: StaffAction[] = [];
+  intentRows: PurchaseIntent[] = [];
+  pushRows: PushToken[] = [];
+  ledgerRows: LedgerEntry[] = [];
+  commandRows: CommandLogRow[] = [];
+  idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number }>();
   private seq = 0;
+  /** Transactions run one at a time (memory has no row locks). */
+  private txChain: Promise<unknown> = Promise.resolve();
 
+  async transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T> {
+    const run = () => this.withRollback(fn);
+    const result = this.txChain.then(run, run);
+    this.txChain = result.catch(() => undefined);
+    return result;
+  }
+
+  /**
+   * Run `fn` with a handle on this repo; if it throws, every field goes back to
+   * how it was (like a rollback, or a savepoint when nested).
+   */
+  private async withRollback<T>(fn: (tx: Repo) => Promise<T>): Promise<T> {
+    const snapshot = new Map<string, unknown>();
+    for (const [k, v] of Object.entries(this)) if (k !== 'txChain' && typeof v !== 'function') snapshot.set(k, structuredClone(v));
+    // Everything goes to this repo; a transaction inside the transaction is nested (no queueing).
+    const tx: Repo = new Proxy(this, {
+      get: (target, prop) => {
+        if (prop === 'transaction') return <U>(f: (r: Repo) => Promise<U>) => target.withRollback(f);
+        const v = Reflect.get(target, prop, target) as unknown;
+        return typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(target) : v;
+      },
+    });
+    try {
+      return await fn(tx);
+    } catch (e) {
+      for (const [k, v] of snapshot) (this as unknown as Record<string, unknown>)[k] = v;
+      throw e;
+    }
+  }
+
+  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null> {
+    const r = this.idempotencyRows.get(`${scope}\u0000${key}`);
+    return r ? { status: r.status, body: clone(r.body) } : null;
+  }
+  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void> {
+    const k = `${scope}\u0000${key}`;
+    if (!this.idempotencyRows.has(k)) this.idempotencyRows.set(k, { status, body: clone(body), createdAt: at });
+  }
+  async getVillage(playerId: string): Promise<VillageRow | null> {
+    const v = this.villageRows.get(playerId);
+    return v ? clone(v) : null;
+  }
+  async createVillage(v: VillageRow): Promise<boolean> {
+    if (this.villageRows.has(v.playerId) || !this.players.has(v.playerId)) return false;
+    this.villageRows.set(v.playerId, clone(v));
+    return true;
+  }
+  async saveVillage(v: VillageRow, expectedRevision: number, ledger: LedgerEntry[], commands: CommandLogRow[]): Promise<boolean> {
+    const cur = this.villageRows.get(v.playerId);
+    if (!cur || cur.revision !== expectedRevision) return false;
+    this.villageRows.set(v.playerId, clone(v));
+    this.ledgerRows.push(...clone(ledger));
+    for (const c of commands) {
+      this.commandRows = this.commandRows.filter((x) => !(x.playerId === c.playerId && x.seq === c.seq));
+      this.commandRows.push(clone(c));
+    }
+    return true;
+  }
+  async ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]> {
+    return this.ledgerRows
+      .filter((l) => l.playerId === playerId)
+      .slice(-limit)
+      .reverse()
+      .map(clone);
+  }
+  async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
+    return this.commandRows
+      .filter((c) => c.playerId === playerId && c.seq > sinceSeq)
+      .sort((a, b) => a.seq - b.seq)
+      .slice(0, limit)
+      .map(clone);
+  }
+
+  async ping(): Promise<void> {}
   async createPlayer(p: Player): Promise<void> {
     this.players.set(p.id, clone(p));
   }
   async playerByTokenHash(hash: string): Promise<Player | null> {
     for (const p of this.players.values()) if (p.tokenHash === hash) return clone(p);
-    return null;
+    const t = this.tokenRows.find((x) => x.tokenHash === hash);
+    const p = t ? this.players.get(t.playerId) : undefined;
+    return p ? clone(p) : null;
+  }
+  async addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void> {
+    this.tokenRows.push({ tokenHash, playerId, createdAt: at, label });
+  }
+  async linksOf(playerId: string): Promise<IdentityLink[]> {
+    return this.linkRows.filter((l) => l.playerId === playerId).map(clone);
+  }
+  async playerByIdentity(provider: string, subject: string): Promise<string | null> {
+    return this.linkRows.find((l) => l.provider === provider && l.subject === subject)?.playerId ?? null;
+  }
+  async addLink(l: IdentityLink): Promise<boolean> {
+    if (this.linkRows.some((x) => (x.provider === l.provider && x.subject === l.subject) || (x.playerId === l.playerId && x.provider === l.provider))) return false;
+    this.linkRows.push(clone(l));
+    return true;
+  }
+  async removeLink(playerId: string, provider: string): Promise<void> {
+    this.linkRows = this.linkRows.filter((l) => !(l.playerId === playerId && l.provider === provider));
+  }
+  async searchPlayers(q: string, limit: number): Promise<Player[]> {
+    const lower = q.toLowerCase();
+    return [...this.players.values()]
+      .filter((p) => p.id === q || p.name.toLowerCase().startsWith(lower))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addStaffAction(a: StaffAction): Promise<void> {
+    this.staffRows.push(clone(a));
+  }
+  async staffActions(playerId: string | null, limit: number): Promise<StaffAction[]> {
+    return this.staffRows
+      .filter((a) => playerId === null || a.playerId === playerId)
+      .sort((a, b) => b.at - a.at)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addPurchase(p: PurchaseRow): Promise<boolean> {
+    if (this.purchaseRows.some((x) => x.store === p.store && x.transactionId === p.transactionId)) return false;
+    this.purchaseRows.push(clone(p));
+    return true;
+  }
+  async getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null> {
+    const p = this.purchaseRows.find((x) => x.store === store && x.transactionId === transactionId);
+    return p ? clone(p) : null;
+  }
+  async purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null> {
+    const p = this.purchaseRows.find((x) => x.store === store && x.ref === ref);
+    return p ? clone(p) : null;
+  }
+  async purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]> {
+    return this.purchaseRows
+      .filter((p) => p.playerId === playerId)
+      .sort((a, b) => b.at - a.at)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean> {
+    const p = this.purchaseRows.find((x) => x.store === store && x.transactionId === transactionId);
+    if (!p || p.status === status) return false;
+    p.status = status;
+    p.refundedAt = status === 'refunded' ? at : null;
+    return true;
+  }
+  async spentCents(playerId: string, since: number, intentsSince: number): Promise<number> {
+    const bought = this.purchaseRows.filter((p) => p.playerId === playerId && p.status === 'credited' && p.at >= since).reduce((s, p) => s + p.cents, 0);
+    const held = this.intentRows.filter((i) => i.playerId === playerId && !i.used && i.at >= intentsSince).reduce((s, i) => s + i.cents, 0);
+    return bought + held;
+  }
+  async addIntent(i: PurchaseIntent): Promise<void> {
+    this.intentRows.push(clone(i));
+  }
+  async getIntent(id: string): Promise<PurchaseIntent | null> {
+    const i = this.intentRows.find((x) => x.id === id);
+    return i ? clone(i) : null;
+  }
+  async useIntent(id: string): Promise<void> {
+    const i = this.intentRows.find((x) => x.id === id);
+    if (i) i.used = true;
+  }
+  async putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void> {
+    const old = this.pushRows.find((x) => x.token === t.token);
+    this.pushRows = this.pushRows.filter((x) => x.token !== t.token);
+    this.pushRows.push({ ...clone(t), day: old?.playerId === t.playerId ? old.day : 0, sent: old?.playerId === t.playerId ? old.sent : 0 });
+  }
+  async pushTokensOf(playerId: string): Promise<PushToken[]> {
+    return this.pushRows.filter((t) => t.playerId === playerId).map(clone);
+  }
+  async removePushToken(token: string): Promise<void> {
+    this.pushRows = this.pushRows.filter((t) => t.token !== token);
+  }
+  async countPush(token: string, day: number): Promise<void> {
+    const t = this.pushRows.find((x) => x.token === token);
+    if (!t) return;
+    if (t.day !== day) Object.assign(t, { day, sent: 0 });
+    t.sent++;
   }
   async getPlayer(id: string): Promise<Player | null> {
     const p = this.players.get(id);
@@ -273,25 +784,57 @@ export class MemoryRepo implements Repo {
     if (p) Object.assign(p, clone(patch));
   }
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
-    const locked = new Set([...this.tickets.values()].filter((t) => !t.used && t.defenderId && t.createdAt > q.lockedSince).map((t) => t.defenderId));
+    const since = q.lockedSince;
+    const locked = new Set(since === null ? [] : [...this.tickets.values()].filter((t) => !t.used && t.defenderId && t.createdAt > since).map((t) => t.defenderId));
     return [...this.players.values()]
-      .filter((p) => p.base && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
+      .filter((p) => p.base && !p.bannedUntil && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
       .filter((p) => p.hallLevel >= q.minHall && p.hallLevel <= q.maxHall && p.trophies >= q.minTrophies && p.trophies <= q.maxTrophies)
       .slice(0, q.limit)
       .map(clone);
   }
   async topPlayers(limit: number): Promise<Player[]> {
-    return [...this.players.values()].filter((p) => p.base).sort((a, b) => b.trophies - a.trophies || a.createdAt - b.createdAt).slice(0, limit).map(clone);
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil).sort((a, b) => b.trophies - a.trophies || a.createdAt - b.createdAt).slice(0, limit).map(clone);
   }
   async rankOf(trophies: number): Promise<number> {
-    return 1 + [...this.players.values()].filter((p) => p.base && p.trophies > trophies).length;
+    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && p.trophies > trophies).length;
+  }
+  async playersByIds(ids: string[]): Promise<Player[]> {
+    return ids.map((id) => this.players.get(id)).filter((p): p is Player => Boolean(p)).map(clone);
+  }
+  private powerOf(p: Player, beta: number): number {
+    return (p.ratings?.attack.rating ?? 1500) + beta * (Math.max(1, p.hallLevel) - 1);
+  }
+  async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
+    return [...this.players.values()]
+      .filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles)
+      .sort((a, b) => this.powerOf(b, beta) - this.powerOf(a, beta) || a.createdAt - b.createdAt)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
+    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power).length;
+  }
+  async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));
+  }
+  private putBase(base: BaseLayout, at: number): string {
+    const hash = contentHash(base);
+    const known = this.bases.get(hash);
+    if (known) known.lastUsedAt = Math.max(known.lastUsedAt, at);
+    else this.bases.set(hash, { base: clone(base), createdAt: at, lastUsedAt: at });
+    return hash;
+  }
+  private withBase<T extends { baseHash: string }>(row: T): Omit<T, 'baseHash'> & { base: BaseLayout } {
+    const { baseHash, ...rest } = clone(row);
+    return { ...rest, base: clone(this.bases.get(baseHash)!.base) };
   }
   async createTicket(t: Ticket): Promise<void> {
-    this.tickets.set(t.id, clone(t));
+    const { base, ...rest } = clone(t);
+    this.tickets.set(t.id, { ...rest, baseHash: this.putBase(base, t.createdAt) });
   }
   async getTicket(id: string): Promise<Ticket | null> {
     const t = this.tickets.get(id);
-    return t ? clone(t) : null;
+    return t ? this.withBase(t) : null;
   }
   async useTicket(id: string, response?: unknown): Promise<boolean> {
     const t = this.tickets.get(id);
@@ -301,13 +844,112 @@ export class MemoryRepo implements Repo {
     return true;
   }
   async addAttack(a: AttackRecord): Promise<void> {
-    this.attacks.push(clone(a));
+    const { base, ...rest } = clone(a);
+    this.attacks.push({ ...rest, baseHash: this.putBase(base, a.at) });
   }
   async defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]> {
-    return this.attacks.filter((a) => a.defenderId === defenderId && a.at > since).slice(-limit).map(clone);
+    return this.attacks
+      .filter((a) => a.defenderId === defenderId && a.at > since)
+      .slice(-limit)
+      .map((a) => this.withBase(a));
   }
   async recentTargets(attackerId: string, since: number): Promise<string[]> {
     return this.attacks.filter((a) => a.attackerId === attackerId && a.at > since).map((a) => a.defenderId);
+  }
+  async prune(c: PruneCutoffs): Promise<PruneResult> {
+    const attacks = this.attacks.length;
+    this.attacks = this.attacks.filter((a) => a.at >= c.recordsBefore);
+    let tickets = 0;
+    for (const [id, t] of this.tickets) {
+      if (t.createdAt < c.recordsBefore || (!t.used && t.expiresAt < c.staleBefore)) {
+        this.tickets.delete(id);
+        tickets++;
+      }
+    }
+    const used = new Set([...[...this.tickets.values()].map((t) => t.baseHash), ...this.attacks.map((a) => a.baseHash)]);
+    let bases = 0;
+    for (const [hash, b] of this.bases) {
+      if (!used.has(hash) && b.lastUsedAt < c.staleBefore) {
+        this.bases.delete(hash);
+        bases++;
+      }
+    }
+    const reports = this.reportRows.length;
+    const before = c.resolvedReportsBefore;
+    if (before !== undefined) this.reportRows = this.reportRows.filter((r) => r.status === 'open' || (r.resolvedAt ?? 0) >= before);
+    const commands = this.commandRows.length;
+    const cmdBefore = c.commandsBefore;
+    if (cmdBefore !== undefined) this.commandRows = this.commandRows.filter((r) => r.at >= cmdBefore);
+    const intentsBefore = c.intentsBefore;
+    if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
+    let idempotency = 0;
+    const idemBefore = c.idempotencyBefore;
+    if (idemBefore !== undefined) {
+      for (const [k, r] of this.idempotencyRows) {
+        if (r.createdAt < idemBefore) {
+          this.idempotencyRows.delete(k);
+          idempotency++;
+        }
+      }
+    }
+    return { attacks: attacks - this.attacks.length, tickets, bases, reports: reports - this.reportRows.length, commands: commands - this.commandRows.length, idempotency };
+  }
+  async deletePlayer(id: string, name: string, at: number): Promise<void> {
+    const D = DELETED_PLAYER;
+    for (const [k, t] of this.tickets) {
+      if (t.attackerId === id) this.tickets.delete(k);
+      else if (t.defenderId === id) t.defenderId = null;
+    }
+    this.attacks = this.attacks.filter((a) => a.defenderId !== id);
+    for (const a of this.attacks) if (a.attackerId === id) Object.assign(a, { attackerId: D.id, attackerName: D.name });
+    this.memberRows = this.memberRows.filter((m) => m.playerId !== id);
+    const notices = noticesNaming(name);
+    this.chatRows = this.chatRows.filter((c) => c.playerId !== id && !(c.kind === 'system' && c.playerId === null && notices(c.text)));
+    const giftNote = ` to ${name}.`;
+    for (const c of this.chatRows) if (c.kind === 'donation' && c.text.endsWith(giftNote)) c.text = `${c.text.slice(0, -giftNote.length)} to ${D.name}.`;
+    this.donations = this.donations.filter((d) => d.toId !== id);
+    for (const d of this.donations) if (d.fromId === id) Object.assign(d, { fromId: D.id, fromName: D.name });
+    for (const [k, r] of this.requestRows) if (r.playerId === id) this.requestRows.delete(k);
+    for (const a of this.raidAttackRows) if (a.attackerId === id) a.attackerId = D.id;
+    this.claims = this.claims.filter((c) => c.playerId !== id);
+    for (const p of this.pairings) {
+      for (const e of p.roster) if (e.playerId === id) Object.assign(e, { playerId: null, name: D.name, base: { ...e.base, name: D.name } });
+    }
+    // Blocks either way go; their own reports go; reports about them are closed and lose the evidence text.
+    this.blockRows = this.blockRows.filter((b) => b.playerId !== id && b.blockedId !== id);
+    // A server-held village, its ledger and command log, other devices' tokens and linked sign-ins are only theirs.
+    this.villageRows.delete(id);
+    this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
+    this.linkRows = this.linkRows.filter((l) => l.playerId !== id);
+    this.intentRows = this.intentRows.filter((i) => i.playerId !== id);
+    this.pushRows = this.pushRows.filter((t) => t.playerId !== id);
+    // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
+    for (const p of this.purchaseRows) if (p.playerId === id) p.playerId = D.id;
+    this.ledgerRows = this.ledgerRows.filter((l) => l.playerId !== id);
+    this.commandRows = this.commandRows.filter((c) => c.playerId !== id);
+    this.reportRows = this.reportRows.filter((r) => r.reporterId !== id);
+    for (const r of this.reportRows) {
+      if (r.targetId !== id) continue;
+      Object.assign(r, { targetId: D.id, targetName: D.name, text: null });
+      if (r.status === 'open') Object.assign(r, { status: 'dismissed', resolution: 'Account deleted.', resolvedAt: at });
+    }
+    this.players.delete(id);
+  }
+  async addDeletionRequest(r: DeletionRequest): Promise<void> {
+    this.deletionRows.push(clone(r));
+  }
+  async deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]> {
+    return this.deletionRows.filter((r) => status === 'all' || r.status === 'open').slice(0, limit).map(clone);
+  }
+  async getDeletionRequest(id: string): Promise<DeletionRequest | null> {
+    const r = this.deletionRows.find((x) => x.id === id);
+    return r ? clone(r) : null;
+  }
+  async resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean> {
+    const r = this.deletionRows.find((x) => x.id === id);
+    if (!r || r.status !== 'open') return false;
+    Object.assign(r, { status, resolution, resolvedAt: at });
+    return true;
   }
   async createGrove(g: Grove): Promise<void> {
     this.groves.set(g.id, clone(g));
@@ -355,7 +997,52 @@ export class MemoryRepo implements Repo {
     return clone(full);
   }
   async chatAfter(groveId: string, afterSeq: number, limit: number): Promise<ChatRow[]> {
-    return this.chatRows.filter((c) => c.groveId === groveId && c.seq > afterSeq).slice(-limit).map(clone);
+    return this.chatRows.filter((c) => c.groveId === groveId && c.seq > afterSeq && !c.hidden).slice(-limit).map(clone);
+  }
+  async getChat(id: string): Promise<ChatRow | null> {
+    const c = this.chatRows.find((x) => x.id === id);
+    return c ? clone(c) : null;
+  }
+  async setChatHidden(id: string, hidden: boolean): Promise<void> {
+    const c = this.chatRows.find((x) => x.id === id);
+    if (c) c.hidden = hidden;
+  }
+  async hiddenChatIds(groveId: string, lastN: number): Promise<string[]> {
+    return this.chatRows.filter((c) => c.groveId === groveId).slice(-lastN).filter((c) => c.hidden).map((c) => c.id);
+  }
+  async addReport(r: Report): Promise<boolean> {
+    if (this.reportRows.some((x) => x.status === 'open' && x.reporterId === r.reporterId && x.targetId === r.targetId && (x.messageId ?? '') === (r.messageId ?? ''))) return false;
+    this.reportRows.push(clone(r));
+    return true;
+  }
+  async reports(status: 'open' | 'all', limit: number): Promise<Report[]> {
+    return this.reportRows.filter((r) => status === 'all' || r.status === 'open').slice(0, limit).map(clone);
+  }
+  async getReport(id: string): Promise<Report | null> {
+    const r = this.reportRows.find((x) => x.id === id);
+    return r ? clone(r) : null;
+  }
+  async openReportsOn(messageId: string): Promise<Report[]> {
+    return this.reportRows.filter((r) => r.status === 'open' && r.messageId === messageId).map(clone);
+  }
+  async resolveReport(id: string, status: 'actioned' | 'dismissed', resolution: string, at: number): Promise<boolean> {
+    const r = this.reportRows.find((x) => x.id === id);
+    if (!r || r.status !== 'open') return false;
+    Object.assign(r, { status, resolution, resolvedAt: at });
+    return true;
+  }
+  async addBlock(b: Block): Promise<void> {
+    this.blockRows = this.blockRows.filter((x) => !(x.playerId === b.playerId && x.blockedId === b.blockedId));
+    this.blockRows.push(clone(b));
+  }
+  async removeBlock(playerId: string, blockedId: string): Promise<void> {
+    this.blockRows = this.blockRows.filter((x) => !(x.playerId === playerId && x.blockedId === blockedId));
+  }
+  async blocksOf(playerId: string): Promise<Block[]> {
+    return this.blockRows
+      .filter((b) => b.playerId === playerId)
+      .sort((a, b) => b.at - a.at)
+      .map(clone);
   }
   async recentChatCount(playerId: string, since: number): Promise<number> {
     return this.chatRows.filter((c) => c.playerId === playerId && c.at > since && c.kind === 'chat').length;

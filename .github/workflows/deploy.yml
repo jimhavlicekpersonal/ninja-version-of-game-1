@@ -31,6 +31,9 @@ jobs:
         env:
           # Set this repository variable to your PvP server's URL to turn on online play.
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
       - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:

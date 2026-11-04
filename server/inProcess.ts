@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, DonateRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -53,6 +53,24 @@ export class InProcessServerAdapter implements ServerPort {
   rename(name: string) {
     return this.authed((me) => this.core.rename(me, name));
   }
+  links() {
+    return this.authed((me) => this.core.links(me));
+  }
+  link(provider: LinkProvider, credential: LinkCredential) {
+    return this.authed((me) => this.core.link(me, wire({ provider, credential })));
+  }
+  unlink(provider: LinkProvider) {
+    return this.authed((me) => this.core.unlink(me, provider));
+  }
+  async signIn(provider: LinkProvider, credential: LinkCredential, device?: string) {
+    const r = await this.call(() => this.core.signIn(wire({ provider, credential, device })));
+    this.token = r.token;
+    return r;
+  }
+  async deleteAccount() {
+    await this.authed((me) => this.core.deleteAccount(me));
+    this.token = null;
+  }
   uploadBase(req: UploadBaseRequest) {
     return this.authed((me) => this.core.uploadBase(me, wire(req)));
   }
@@ -64,6 +82,9 @@ export class InProcessServerAdapter implements ServerPort {
   }
   defenses(since: number) {
     return this.authed((me) => this.core.defenses(me, since));
+  }
+  powerLeaderboard(limit = 50) {
+    return this.authed((me) => this.core.powerLeaderboard(me, limit));
   }
   leaderboard(limit = 50) {
     return this.authed((me) => this.core.leaderboard(me, limit));
@@ -103,6 +124,53 @@ export class InProcessServerAdapter implements ServerPort {
   }
   ackInbox(ids: string[]) {
     return this.authed((me) => this.core.ackInbox(me, wire(ids)));
+  }
+  async getVillage() {
+    try {
+      return await this.authed((me) => this.core.getVillage(me));
+    } catch (e) {
+      if (e instanceof ServerError && e.code === 'no_village') return null;
+      throw e;
+    }
+  }
+  startVillage() {
+    return this.authed((me) => this.core.startVillage(me));
+  }
+  importVillage(file: unknown) {
+    return this.authed((me) => this.core.importVillage(me, wire({ file })));
+  }
+  sendCommands(batch: CommandBatch) {
+    return this.authed((me) => this.core.villageCommands(me, wire(batch)));
+  }
+  ledger(limit = 50) {
+    return this.authed((me) => this.core.ledger(me, limit));
+  }
+  purchaseIntent(req: PurchaseIntentRequest) {
+    return this.authed((me) => this.core.purchaseIntent(me, wire(req)));
+  }
+  redeem(req: RedeemRequest) {
+    return this.authed((me) => this.core.redeem(me, wire(req)));
+  }
+  purchaseHistory() {
+    return this.authed((me) => this.core.purchaseHistory(me));
+  }
+  async putPushToken(req: PushTokenRequest) {
+    await this.authed((me) => this.core.putPushToken(me, wire(req)));
+  }
+  async deletePushToken(token: string) {
+    await this.authed((me) => this.core.deletePushToken(me, token));
+  }
+  report(req: ReportRequest) {
+    return this.authed((me) => this.core.report(me, wire(req)));
+  }
+  block(playerId: string) {
+    return this.authed((me) => this.core.block(me, playerId));
+  }
+  unblock(playerId: string) {
+    return this.authed((me) => this.core.unblock(me, playerId));
+  }
+  blocks() {
+    return this.authed((me) => this.core.blocks(me));
   }
   raid() {
     return this.authed((me) => this.core.raid(me));

@@ -9,6 +9,14 @@
 import type {
   AttackResponse,
   BattleSubmission,
+  BlocksResponse,
+  CommandBatch,
+  CommandBatchResponse,
+  LedgerResponse,
+  LinkCredential,
+  LinkProvider,
+  LinksResponse,
+  VillageResponse,
   ChatResponse,
   ChatView,
   DefensesResponse,
@@ -22,11 +30,20 @@ import type {
   LeaderboardResponse,
   MatchResponse,
   PlayerView,
+  PowerLeaderboardResponse,
+  PurchaseHistoryResponse,
+  PurchaseIntentRequest,
+  PurchaseIntentResponse,
+  PushTokenRequest,
+  RedeemRequest,
+  RedeemResponse,
   RaidAttackResponse,
   RaidClaimResponse,
   RaidTicketResponse,
   RaidView,
   RegisterResponse,
+  ReportRequest,
+  ReportResponse,
   RequestView,
   RequestsResponse,
   UploadBaseRequest,
@@ -41,9 +58,13 @@ export class ServerError extends Error {
   ) {
     super(message);
   }
-  /** Network problems and server hiccups can be retried; rule violations cannot. */
+  /**
+   * Network problems, server hiccups and rate limits can be retried later;
+   * rule violations cannot. (A rate-limited battle report stays in the outbox
+   * instead of becoming a practice result.)
+   */
   get retryable(): boolean {
-    return this.code === 'network' || this.status >= 500;
+    return this.code === 'network' || this.code === 'rate_limited' || this.status >= 500;
   }
 }
 
@@ -52,6 +73,14 @@ export interface IdentityPort {
   register(name: string): Promise<RegisterResponse>;
   me(): Promise<PlayerView>;
   rename(name: string): Promise<PlayerView>;
+  /** Delete this player's online account on the server, then forget its credentials on this device. */
+  deleteAccount(): Promise<void>;
+  /** Linked sign-ins (roadmap step 24). */
+  links(): Promise<LinksResponse>;
+  link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse>;
+  unlink(provider: LinkProvider): Promise<LinksResponse>;
+  /** Become the player linked to this sign-in on this device (its own token; other devices keep theirs). */
+  signIn(provider: LinkProvider, credential: LinkCredential, device?: string): Promise<RegisterResponse>;
 }
 
 export interface PvpPort {
@@ -61,6 +90,8 @@ export interface PvpPort {
   submitAttack(sub: BattleSubmission): Promise<AttackResponse>;
   defenses(since: number): Promise<DefensesResponse>;
   leaderboard(limit?: number): Promise<LeaderboardResponse>;
+  /** The Power Ranking (roadmap step 31). */
+  powerLeaderboard(limit?: number): Promise<PowerLeaderboardResponse>;
 }
 
 export interface GrovePort {
@@ -86,8 +117,41 @@ export interface GroveRaidPort {
   claimRaid(week: number): Promise<RaidClaimResponse>;
 }
 
+/** A village kept on the server (roadmap Phase 2; feature `server-economy`). */
+export interface VillagePort {
+  /** Null when this player's village lives on the device. */
+  getVillage(): Promise<VillageResponse | null>;
+  /** Start keeping a (new) village on the server, or get the one there. */
+  startVillage(): Promise<VillageResponse>;
+  /** Move this device's village to the server (once; refused if it could not exist at its Keep). */
+  importVillage(file: unknown): Promise<VillageResponse>;
+  sendCommands(batch: CommandBatch): Promise<CommandBatchResponse>;
+  ledger(limit?: number): Promise<LedgerResponse>;
+}
+
+/** Store purchases checked by the server (roadmap Phase 4; features `purchases-apple`, `purchases-google`). */
+export interface PurchasePort {
+  purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse>;
+  redeem(req: RedeemRequest): Promise<RedeemResponse>;
+  purchaseHistory(): Promise<PurchaseHistoryResponse>;
+}
+
+/** Server-sent push (roadmap step 40; feature `push`). */
+export interface PushPort {
+  putPushToken(req: PushTokenRequest): Promise<void>;
+  deletePushToken(token: string): Promise<void>;
+}
+
+/** Reports and blocks (Apple 1.2). */
+export interface ModerationPort {
+  report(req: ReportRequest): Promise<ReportResponse>;
+  block(playerId: string): Promise<void>;
+  unblock(playerId: string): Promise<void>;
+  blocks(): Promise<BlocksResponse>;
+}
+
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */
