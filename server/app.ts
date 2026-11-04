@@ -138,6 +138,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
   app.delete(Routes.me, authed(async (me) => core.deleteAccount(me)));
 
+  // Reports and blocks
+  app.post(Routes.reports, rate('moderation'), authed(async (me, req, reply) => reply.code(201).send(await core.report(me, req.body as never))));
+  app.get(Routes.blocks, authed(async (me) => core.blocks(me)));
+  app.post(Routes.blocks, rate('moderation'), authed(async (me, req) => core.block(me, body<{ playerId: string }>(req).playerId)));
+  app.delete('/v1/blocks/:id', authed(async (me, req) => core.unblock(me, param(req, 'id'))));
+
   // Account deletion without the game: the web page and its requests (no token).
   app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage()));
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
@@ -180,6 +186,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     };
     app.get('/admin/v1/deletion-requests', staff(async (req) => core.admin.deletionQueue(query(req).status === 'all' ? 'all' : 'open')));
     app.post('/admin/v1/deletion-requests/:id', staff(async (req) => core.admin.resolveDeletion(param(req, 'id'), body<{ action: string }>(req).action, body<{ note: string }>(req).note)));
+    app.get('/admin/v1/reports', staff(async (req) => core.admin.reportQueue(query(req).status === 'all' ? 'all' : 'open')));
+    app.post('/admin/v1/reports/:id', staff(async (req) => core.admin.resolveReport(param(req, 'id'), req.body as never)));
   }
 
   return app;

@@ -5,6 +5,7 @@ import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummar
 import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { cleanName } from './identity';
+import { blockedIds, checkNotMuted } from './moderation';
 import { maxReinforcementAt } from './pvp';
 
 
@@ -116,7 +117,10 @@ export async function chat(ctx: ServerContext, me: Player, after: string | undef
   const afterSeq = Number(after ?? 0) || 0;
   const rows = await ctx.repo.chatAfter(grove.id, afterSeq, 100);
   const cursor = rows.length ? String(rows[rows.length - 1].seq) : String(afterSeq);
-  return { messages: rows.map(chatView), cursor };
+  // Players the caller blocked are not shown to them; hidden messages are not shown to anyone.
+  const blocked = await blockedIds(ctx, me);
+  const messages = rows.filter((r) => !r.playerId || !blocked.has(r.playerId)).map(chatView);
+  return { messages, cursor, hidden: await ctx.repo.hiddenChatIds(grove.id, 100) };
 }
 
 export async function postChat(ctx: ServerContext, me: Player, text: unknown): Promise<ChatView> {
@@ -124,6 +128,7 @@ export async function postChat(ctx: ServerContext, me: Player, text: unknown): P
   const raw = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (!raw) throw new ApiError(400, 'bad_request', 'Type a message first.');
   if (raw.length > CHAT_MAX_CHARS) throw new ApiError(400, 'bad_request', `Keep messages under ${CHAT_MAX_CHARS} characters.`);
+  checkNotMuted(ctx, me);
   if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');
   // Chat is always filtered (also for players who are not under 18).
   const row = await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: filterText(raw, ctx.data), kind: 'chat' });
@@ -136,7 +141,8 @@ function requestView(r: TroopRequest, me: Player): RequestView {
 
 export async function requests(ctx: ServerContext, me: Player): Promise<RequestsResponse> {
   const { grove } = await requireGrove(ctx, me);
-  const list = await ctx.repo.openRequests(grove.id, ctx.now() - ctx.data.social.requestLifetimeHours * HOUR);
+  const blocked = await blockedIds(ctx, me);
+  const list = (await ctx.repo.openRequests(grove.id, ctx.now() - ctx.data.social.requestLifetimeHours * HOUR)).filter((r) => !blocked.has(r.playerId));
   const last = await ctx.repo.lastRequestAt(me.id);
   const next = last ? last + ctx.data.social.requestCooldownMinutes * MIN : 0;
   return { requests: list.map((r) => requestView(r, me)), nextRequestAt: next > ctx.now() ? next : 0 };

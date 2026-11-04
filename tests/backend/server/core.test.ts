@@ -449,5 +449,98 @@ for (const [label, makeRepo] of repoFactories) {
         expect((await w.core.admin.deletionQueue('all')).requests).toHaveLength(2);
       });
     });
+
+    describe('reports, blocks and the moderation queue (roadmap step 15)', () => {
+      async function alliance(w: Awaited<ReturnType<typeof W>>, names: string[]) {
+        const ps = [];
+        for (const n of names) ps.push(await w.player(n, baseAt(3, n.length)));
+        const g = await ps[0].createGrove('Toad Hall');
+        for (const p of ps.slice(1)) await p.joinGrove(g.id);
+        return ps;
+      }
+
+      it('reports a message with its text, hides it once three players report it, and staff decide', async () => {
+        const w = await W();
+        const [ann, ben, cat, dan, eve] = await alliance(w, ['Ann', 'Ben', 'Cat', 'Dan', 'Eve']);
+        const zed = await w.player('Zed');
+        const msg = await ann.postChat('give me your gold or else');
+        expect(await code(ben.report({ kind: 'chat', messageId: msg.id, reason: 'nope' as never }))).toBe('bad_request');
+        expect(await code(ann.report({ kind: 'chat', messageId: msg.id, reason: 'harassment' }))).toBe('bad_request'); // your own
+        expect(await code(zed.report({ kind: 'chat', messageId: msg.id, reason: 'harassment' }))).toBe('not_found'); // not your Alliance's chat
+        const first = await ben.report({ kind: 'chat', messageId: msg.id, reason: 'harassment', note: 'threats' });
+        expect(first).toMatchObject({ alreadyReported: false, blocked: false });
+        expect(first.id).toBeTruthy();
+        expect(await ben.report({ kind: 'chat', messageId: msg.id, reason: 'spam' })).toEqual({ id: null, alreadyReported: true, blocked: false });
+        await cat.report({ kind: 'chat', messageId: msg.id, reason: 'harassment' });
+        expect((await eve.chat()).messages.map((m) => m.id)).toContain(msg.id); // two reporters: still shown
+        await dan.report({ kind: 'chat', messageId: msg.id, reason: 'hate' });
+        const after = await eve.chat();
+        expect(after.messages.map((m) => m.id)).not.toContain(msg.id); // three: hidden from everyone
+        expect(after.hidden).toContain(msg.id); // so clients that already show it drop it
+
+        const queue = (await w.core.admin.reportQueue('open')).reports;
+        expect(queue).toHaveLength(3);
+        expect(queue[0]).toMatchObject({ kind: 'chat', targetId: ann.id, targetName: 'Ann', text: 'give me your gold or else', note: 'threats', openOnTarget: 3, messageHidden: true });
+        // Staff find it harmless: it comes back, and every report on it is settled.
+        expect(await w.core.admin.resolveReport(queue[0].id, { action: 'dismiss' })).toMatchObject({ status: 'dismissed' });
+        expect((await w.core.admin.reportQueue('open')).reports).toHaveLength(0);
+        expect((await eve.chat()).messages.map((m) => m.id)).toContain(msg.id);
+        expect(await code(w.core.admin.resolveReport(queue[1].id, { action: 'mute' }))).toBe('conflict');
+
+        // A worse one: staff mute Ann for 2 hours and the message goes.
+        const bad = await ann.postChat('you are all trash');
+        const r = await ben.report({ kind: 'chat', messageId: bad.id, reason: 'harassment' });
+        expect(await code(w.core.admin.resolveReport(r.id!, { action: 'shout' }))).toBe('bad_request');
+        expect(await w.core.admin.resolveReport(r.id!, { action: 'mute', hours: 2 })).toMatchObject({ status: 'actioned', resolution: 'Chat muted for 2 hours; message removed.' });
+        expect((await eve.chat()).messages.map((m) => m.id)).not.toContain(bad.id);
+        expect(await code(ann.postChat('sorry'))).toBe('muted');
+        w.advance(2 * HOUR + 1);
+        expect(await code(ann.postChat('sorry, truly'))).toBe('ok');
+        // A player report cannot remove a message.
+        const pr = await cat.report({ kind: 'player', playerId: ann.id, reason: 'name' });
+        expect(await code(w.core.admin.resolveReport(pr.id!, { action: 'remove_message' }))).toBe('bad_request');
+        expect(await code(cat.report({ kind: 'player', playerId: cat.id, reason: 'other' }))).toBe('bad_request');
+        expect(await code(cat.report({ kind: 'player', playerId: 'nobody', reason: 'other' }))).toBe('not_found');
+      });
+
+      it('blocking hides a player\'s messages and troop requests from the blocker only', async () => {
+        const w = await W();
+        const [ann, ben, cat] = await alliance(w, ['Ann', 'Ben', 'Cat']);
+        expect(await code(ben.block(ben.id))).toBe('bad_request');
+        expect(await code(ben.block('nobody'))).toBe('not_found');
+        await ben.block(ann.id);
+        const hi = await ann.postChat('hi all');
+        await ann.requestTroops(10);
+        expect((await ben.chat()).messages.some((m) => m.from?.id === ann.id)).toBe(false);
+        expect((await ben.requests()).requests).toHaveLength(0);
+        expect((await cat.chat()).messages.map((m) => m.id)).toContain(hi.id);
+        expect((await cat.requests()).requests).toHaveLength(1);
+        expect((await ben.blocks()).blocked).toEqual([{ id: ann.id, name: 'Ann', at: w.now() }]);
+        await ben.unblock(ann.id);
+        expect((await ben.chat()).messages.map((m) => m.id)).toContain(hi.id);
+        // Report and block in one go.
+        expect(await cat.report({ kind: 'player', playerId: ann.id, reason: 'cheating', block: true })).toMatchObject({ blocked: true });
+        expect((await cat.blocks()).blocked.map((b) => b.id)).toEqual([ann.id]);
+      });
+
+      it('keeps handled reports 90 days, and deleting an account closes reports about it without the text', async () => {
+        const w = await W();
+        const [ann, ben] = await alliance(w, ['Ann', 'Ben']);
+        const m1 = await ann.postChat('first');
+        const r1 = await ben.report({ kind: 'chat', messageId: m1.id, reason: 'spam' });
+        await w.core.admin.resolveReport(r1.id!, { action: 'dismiss' });
+        const m2 = await ann.postChat('second');
+        await ben.report({ kind: 'chat', messageId: m2.id, reason: 'spam' });
+        await ben.block(ann.id);
+        await ann.block(ben.id);
+        w.advance(91 * 24 * HOUR);
+        expect(await w.core.prune()).toMatchObject({ reports: 1 }); // the handled one; the open one stays
+        await ann.deleteAccount();
+        const all = (await w.core.admin.reportQueue('all')).reports;
+        expect(all).toEqual([expect.objectContaining({ status: 'dismissed', resolution: 'Account deleted.', targetName: 'Deleted player', text: null })]);
+        expect((await ben.blocks()).blocked).toEqual([]);
+      });
+    });
   });
 }
+

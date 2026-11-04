@@ -12,7 +12,7 @@ import { leaveGrove } from './groves';
 /** Delete the caller's online account. Leaves their Alliance first (handing over leadership), without naming them. */
 export async function deleteAccount(ctx: ServerContext, me: Player): Promise<void> {
   if (await ctx.repo.getMembership(me.id)) await leaveGrove(ctx, me, { quiet: true });
-  await ctx.repo.deletePlayer(me.id, me.name);
+  await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
 }
 
 const text = (v: unknown, max: number): string => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);

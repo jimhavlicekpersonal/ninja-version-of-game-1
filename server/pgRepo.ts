@@ -6,6 +6,7 @@ import { migrations } from './migrations';
 import { DELETED_PLAYER } from './repo';
 import type {
   AttackRecord,
+  Block,
   ChatRow,
   DeletionRequest,
   Donation,
@@ -20,6 +21,7 @@ import type {
   RaidAttack,
   RaidClaim,
   RaidPairing,
+  Report,
   Repo,
   Ticket,
   TroopRequest,
@@ -41,6 +43,7 @@ const toPlayer = (r: Row): Player => ({
   createdAt: num(r.created_at),
   updatedAt: num(r.updated_at),
   lastSeenAt: num(r.last_seen_at),
+  mutedUntil: num(r.muted_until),
 });
 
 const toTicket = (r: Row): Ticket => {
@@ -92,7 +95,25 @@ const toChat = (r: Row): ChatRow => ({
   name: strOrNull(r.name),
   text: String(r.text),
   kind: r.kind as ChatRow['kind'],
+  hidden: Boolean(r.hidden),
 });
+const toReport = (r: Row): Report => ({
+  id: String(r.id),
+  at: num(r.at),
+  reporterId: String(r.reporter_id),
+  kind: r.kind as Report['kind'],
+  targetId: String(r.target_id),
+  targetName: String(r.target_name),
+  messageId: strOrNull(r.message_id),
+  groveId: strOrNull(r.grove_id),
+  text: strOrNull(r.text),
+  reason: r.reason as Report['reason'],
+  note: String(r.note ?? ''),
+  status: r.status as Report['status'],
+  resolvedAt: r.resolved_at === null || r.resolved_at === undefined ? null : num(r.resolved_at),
+  resolution: strOrNull(r.resolution),
+});
+const toBlock = (r: Row): Block => ({ playerId: String(r.player_id), blockedId: String(r.blocked_id), blockedName: String(r.blocked_name), at: num(r.at) });
 const toRequest = (r: Row): TroopRequest => ({
   id: String(r.id),
   groveId: String(r.grove_id),
@@ -184,9 +205,9 @@ export class PgRepo implements Repo {
 
   async createPlayer(p: Player): Promise<void> {
     await this.pool.query(
-      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt],
+      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0],
     );
   }
 
@@ -210,6 +231,7 @@ export class PgRepo implements Repo {
       groveId: 'grove_id',
       updatedAt: 'updated_at',
       lastSeenAt: 'last_seen_at',
+      mutedUntil: 'muted_until',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];
@@ -300,12 +322,13 @@ export class PgRepo implements Repo {
          and not exists (select 1 from attacks a where a.base_hash = b.hash)`,
       [c.staleBefore],
     );
-    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0 };
+    const reports = c.resolvedReportsBefore === undefined ? null : await this.pool.query(`delete from reports where status <> 'open' and resolved_at < $1`, [c.resolvedReportsBefore]);
+    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0 };
   }
 
   // ------------------------------------------------------------ account deletion
 
-  async deletePlayer(id: string, name: string): Promise<void> {
+  async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;
     const client = await this.pool.connect();
     try {
@@ -339,6 +362,17 @@ export class PgRepo implements Repo {
            from jsonb_array_elements(roster) with ordinality as x(e, i))
          where roster @> jsonb_build_array(jsonb_build_object('playerId', $1::text))`,
         [id, D.name],
+      );
+      // Blocks either way and their own reports go; reports about them close, without the evidence text.
+      await q('delete from blocks where player_id = $1 or blocked_id = $1', [id]);
+      await q('delete from reports where reporter_id = $1', [id]);
+      await q(
+        `update reports set target_id = $2, target_name = $3, text = null,
+           status = case when status = 'open' then 'dismissed' else status end,
+           resolution = case when status = 'open' then 'Account deleted.' else resolution end,
+           resolved_at = case when status = 'open' then $4 else resolved_at end
+         where target_id = $1`,
+        [id, D.id, D.name, at],
       );
       await q('delete from players where id = $1', [id]);
       await client.query('commit');
@@ -437,8 +471,68 @@ export class PgRepo implements Repo {
   }
 
   async chatAfter(groveId: string, afterSeq: number, limit: number): Promise<ChatRow[]> {
-    const r = await this.rows('select * from grove_chat where grove_id = $1 and seq > $2 order by seq desc limit $3', [groveId, afterSeq, limit]);
+    const r = await this.rows('select * from grove_chat where grove_id = $1 and seq > $2 and not hidden order by seq desc limit $3', [groveId, afterSeq, limit]);
     return r.map(toChat).reverse();
+  }
+
+  async getChat(id: string): Promise<ChatRow | null> {
+    const r = await this.rows('select * from grove_chat where id = $1', [id]);
+    return r[0] ? toChat(r[0]) : null;
+  }
+
+  async setChatHidden(id: string, hidden: boolean): Promise<void> {
+    await this.pool.query('update grove_chat set hidden = $2 where id = $1', [id, hidden]);
+  }
+
+  async hiddenChatIds(groveId: string, lastN: number): Promise<string[]> {
+    const r = await this.rows('select id from (select id, hidden from grove_chat where grove_id = $1 order by seq desc limit $2) x where hidden', [groveId, lastN]);
+    return r.map((x) => String(x.id));
+  }
+
+  // ------------------------------------------------------------ reports and blocks
+
+  async addReport(r: Report): Promise<boolean> {
+    // The partial unique index (reporter, target, message) where open makes a repeat a no-op.
+    const res = await this.pool.query(
+      `insert into reports (id, at, reporter_id, kind, target_id, target_name, message_id, grove_id, text, reason, note, status, resolved_at, resolution)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) on conflict do nothing`,
+      [r.id, r.at, r.reporterId, r.kind, r.targetId, r.targetName, r.messageId, r.groveId, r.text, r.reason, r.note, r.status, r.resolvedAt, r.resolution],
+    );
+    return (res.rowCount ?? 0) > 0;
+  }
+
+  async reports(status: 'open' | 'all', limit: number): Promise<Report[]> {
+    return (await this.rows(`select * from reports where ($1 = 'all' or status = 'open') order by at limit $2`, [status, limit])).map(toReport);
+  }
+
+  async getReport(id: string): Promise<Report | null> {
+    const r = await this.rows('select * from reports where id = $1', [id]);
+    return r[0] ? toReport(r[0]) : null;
+  }
+
+  async openReportsOn(messageId: string): Promise<Report[]> {
+    return (await this.rows(`select * from reports where message_id = $1 and status = 'open' order by at`, [messageId])).map(toReport);
+  }
+
+  async resolveReport(id: string, status: 'actioned' | 'dismissed', resolution: string, at: number): Promise<boolean> {
+    const r = await this.pool.query(`update reports set status = $2, resolution = $3, resolved_at = $4 where id = $1 and status = 'open'`, [id, status, resolution, at]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async addBlock(b: Block): Promise<void> {
+    await this.pool.query(
+      `insert into blocks (player_id, blocked_id, blocked_name, at) values ($1,$2,$3,$4)
+       on conflict (player_id, blocked_id) do update set blocked_name = excluded.blocked_name, at = excluded.at`,
+      [b.playerId, b.blockedId, b.blockedName, b.at],
+    );
+  }
+
+  async removeBlock(playerId: string, blockedId: string): Promise<void> {
+    await this.pool.query('delete from blocks where player_id = $1 and blocked_id = $2', [playerId, blockedId]);
+  }
+
+  async blocksOf(playerId: string): Promise<Block[]> {
+    return (await this.rows('select * from blocks where player_id = $1 order by at desc', [playerId])).map(toBlock);
   }
 
   async recentChatCount(playerId: string, since: number): Promise<number> {

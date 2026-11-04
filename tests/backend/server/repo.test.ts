@@ -120,14 +120,14 @@ for (const [label, make] of repoFactories) {
       expect((await repo.defensesFor('b', 0, 10)).map((x) => x.base)).toEqual([A, B]);
       const r = await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY });
       // 'old' is past retention, 'stale' expired unused; 'used' keeps its answer for retries.
-      expect(r).toEqual({ attacks: 1, tickets: 2, bases: 0 }); // A and B are both still referred to
+      expect(r).toEqual({ attacks: 1, tickets: 2, bases: 0 , reports: 0 }); // A and B are both still referred to
       expect(await repo.getTicket('old')).toBeNull();
       expect(await repo.getTicket('stale')).toBeNull();
       expect(await repo.getTicket('used')).toMatchObject({ base: A, used: true, response: { answer: 2 } });
       expect((await repo.defensesFor('b', 0, 10)).map((x) => x.id)).toEqual(['x-new']);
       // Once nothing refers to them, both versions go (each was stored once).
-      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 2, bases: 2 });
-      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 0, tickets: 0, bases: 0 });
+      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 2, bases: 2 , reports: 0 });
+      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 0, tickets: 0, bases: 0 , reports: 0 });
     });
 
     it('keeps a base version that was used again recently, even when nothing refers to it yet', async () => {
@@ -136,7 +136,7 @@ for (const [label, make] of repoFactories) {
       const A = baseAt(1, 3);
       await repo.createTicket(ticket('t1', 'a', null, { base: A, createdAt: T - 3 * DAY, expiresAt: T - 3 * DAY + 3_600_000 }));
       await repo.createTicket(ticket('t2', 'a', null, { base: A, createdAt: T, expiresAt: T + 3_600_000 }));
-      expect(await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY })).toEqual({ attacks: 0, tickets: 1, bases: 0 });
+      expect(await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY })).toEqual({ attacks: 0, tickets: 1, bases: 0 , reports: 0 });
       expect((await repo.getTicket('t2'))!.base).toEqual(A);
     });
 
@@ -239,7 +239,7 @@ describe.skipIf(!repoFactories.some(([l]) => l === 'postgres'))('PgRepo: rows fr
     expect((await repo.getTicket('legacy'))!.base).toEqual(A);
     expect((await repo.defensesFor('b', 0, 10))[0].base).toEqual(A);
     // Retention removes them like any other row.
-    expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 1, bases: 0 });
+    expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 1, bases: 0 , reports: 0 });
   });
 
   it('stores a base once in base_versions however many tickets use it', async () => {

@@ -100,3 +100,47 @@ describe('RemoteGroveSource', () => {
     expect(src.snapshot().joined).toBe(false);
   });
 });
+
+describe('Report and block in the Alliance screen (roadmap step 15)', () => {
+  it('never offers them for the bot Alliance', async () => {
+    const w = world();
+    const src = new LocalGroveSource(await game(w));
+    await src.join();
+    expect(src.snapshot()).toMatchObject({ moderation: false, blocked: [] });
+    expect((await src.report({ playerId: 'm0', name: 'Bot' }, 'spam', false)).ok).toBe(false);
+  });
+
+  it('reports a message (hidden for the reporter at once), and blocks and unblocks players', async () => {
+    const w = world();
+    const c = await game(w, false);
+    const port = new InProcessServerAdapter(w.core);
+    const conn = new Connection({ game: c, builtInUrl: 'test.server', kv: kv(), makePort: () => port, log: () => undefined });
+    const src = new RemoteGroveSource(c, conn);
+    const ben = await w.player('Ben', baseAt(3));
+    const g = await ben.createGrove('Mossy Hollow');
+    await src.refresh();
+    await src.join(g.id);
+    const rude = await ben.postChat('rude words');
+    const kind = await ben.postChat('kind words');
+    await src.refresh();
+    let snap = src.snapshot();
+    expect(snap.moderation).toBe(true);
+    const row = snap.chat.find((m) => m.id === rude.id)!;
+    expect(row).toMatchObject({ fromId: ben.id, who: 'Ben', mine: false });
+    const r = await src.report({ playerId: row.fromId, name: row.who, messageId: row.id }, 'harassment', false, 'not nice');
+    expect(r).toMatchObject({ ok: true });
+    snap = src.snapshot();
+    expect(snap.chat.map((m) => m.id)).not.toContain(rude.id);
+    expect(snap.chat.map((m) => m.id)).toContain(kind.id);
+    expect((await w.core.admin.reportQueue('open')).reports).toEqual([expect.objectContaining({ text: 'rude words', reason: 'harassment', note: 'not nice' })]);
+    // Block: every message from Ben goes, the member row says so, and Settings lists him.
+    expect((await src.block(ben.id)).ok).toBe(true);
+    snap = src.snapshot();
+    expect(snap.chat.some((m) => m.fromId === ben.id)).toBe(false);
+    expect(snap.members.find((m) => m.id === ben.id)!.blocked).toBe(true);
+    expect(snap.blocked).toEqual([{ id: ben.id, name: 'Ben' }]);
+    expect((await src.unblock(ben.id)).ok).toBe(true);
+    expect(src.snapshot().chat.map((m) => m.id)).toContain(kind.id);
+  });
+});
+

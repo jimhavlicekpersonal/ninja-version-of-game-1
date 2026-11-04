@@ -9,6 +9,7 @@ import {
   Routes,
   type AttackResponse,
   type BattleSubmission,
+  type BlocksResponse,
   type ChatResponse,
   type ChatView,
   type DefensesResponse,
@@ -28,6 +29,8 @@ import {
   type RaidTicketResponse,
   type RaidView,
   type RegisterResponse,
+  type ReportRequest,
+  type ReportResponse,
   type RequestView,
   type RequestsResponse,
   type UploadBaseRequest,
@@ -270,6 +273,24 @@ export class HttpServerAdapter implements ServerPort {
 
   ackInbox(ids: string[]): Promise<void> {
     return this.req('POST', Routes.groveInboxAck, { ids });
+  }
+
+  // ---------------------------------------------------------------- reports and blocks
+
+  report(req: ReportRequest): Promise<ReportResponse> {
+    return this.req('POST', Routes.reports, req);
+  }
+
+  block(playerId: string): Promise<void> {
+    return this.req('POST', Routes.blocks, { playerId });
+  }
+
+  unblock(playerId: string): Promise<void> {
+    return this.req('DELETE', Routes.block(playerId));
+  }
+
+  blocks(): Promise<BlocksResponse> {
+    return this.req('GET', Routes.blocks);
   }
 
   // ---------------------------------------------------------------- Grove Raid

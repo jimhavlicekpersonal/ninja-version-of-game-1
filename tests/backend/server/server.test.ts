@@ -256,4 +256,44 @@ describe('server HTTP adapter', () => {
       expect((await s.call('GET', Routes.me, a.token)).status).toBe(401);
     });
   });
+
+  describe('reports, blocks and the moderation queue over HTTP (roadmap step 15)', () => {
+    const ADMIN = 'staff-secret-0123456789abcdef';
+
+    it('reports and blocks with the right status codes, and staff work the queue', async () => {
+      const s = setup({ adminToken: ADMIN });
+      const a = await s.register('Ann');
+      const b = await s.register('Ben');
+      const annId = (await s.call('GET', Routes.me, a.token)).body.id;
+      const g = await s.call('POST', Routes.groves, a.token, { name: 'Moss' });
+      await s.call('POST', Routes.groveJoin(g.body.id), b.token, {});
+      const msg = (await s.call('POST', Routes.groveChat, a.token, { text: 'nasty' })).body;
+      const rep = await s.call('POST', Routes.reports, b.token, { kind: 'chat', messageId: msg.id, reason: 'harassment' });
+      expect(rep.status).toBe(201);
+      expect(rep.body).toMatchObject({ alreadyReported: false, blocked: false });
+      expect((await s.call('POST', Routes.reports, b.token, { kind: 'chat', messageId: msg.id, reason: 'what' })).status).toBe(400);
+      expect((await s.call('POST', Routes.blocks, b.token, { playerId: annId })).status).toBe(204);
+      expect((await s.call('GET', Routes.blocks, b.token)).body.blocked.map((x: { name: string }) => x.name)).toEqual(['Ann']);
+      expect((await s.call('DELETE', Routes.block(annId), b.token)).status).toBe(204);
+      expect((await s.call('GET', Routes.blocks, b.token)).body.blocked).toEqual([]);
+      expect((await s.call('GET', '/admin/v1/reports', b.token)).status).toBe(401);
+      const queue = await s.call('GET', '/admin/v1/reports', ADMIN);
+      expect(queue.body.reports).toEqual([expect.objectContaining({ text: 'nasty', targetName: 'Ann' })]);
+      const done = await s.call('POST', `/admin/v1/reports/${queue.body.reports[0].id}`, ADMIN, { action: 'mute', hours: 1 });
+      expect(done.body).toMatchObject({ status: 'actioned' });
+      const muted = await s.call('POST', Routes.groveChat, a.token, { text: 'hello?' });
+      expect(muted.status).toBe(403);
+      expect(muted.body).toMatchObject({ error: 'muted' });
+      expect(muted.body.message).toMatch(/1 more hour/);
+    });
+
+    it('limits how many reports and blocks one player sends', async () => {
+      const s = setup({ rateLimits: { moderation: { limit: 2, windowMs: 3_600_000 } } });
+      const a = await s.register('Ann');
+      const block = () => s.call('POST', Routes.blocks, a.token, { playerId: 'nobody' });
+      expect((await block()).status).toBe(404);
+      expect((await block()).status).toBe(404);
+      expect((await block()).status).toBe(429);
+    });
+  });
 });

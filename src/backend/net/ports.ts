@@ -9,6 +9,7 @@
 import type {
   AttackResponse,
   BattleSubmission,
+  BlocksResponse,
   ChatResponse,
   ChatView,
   DefensesResponse,
@@ -27,6 +28,8 @@ import type {
   RaidTicketResponse,
   RaidView,
   RegisterResponse,
+  ReportRequest,
+  ReportResponse,
   RequestView,
   RequestsResponse,
   UploadBaseRequest,
@@ -92,8 +95,16 @@ export interface GroveRaidPort {
   claimRaid(week: number): Promise<RaidClaimResponse>;
 }
 
+/** Reports and blocks (Apple 1.2). */
+export interface ModerationPort {
+  report(req: ReportRequest): Promise<ReportResponse>;
+  block(playerId: string): Promise<void>;
+  unblock(playerId: string): Promise<void>;
+  blocks(): Promise<BlocksResponse>;
+}
+
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */

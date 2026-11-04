@@ -428,16 +428,42 @@ export class Hud {
     const del = h('button', { class: 'btn danger', type: 'button' }, 'Delete online account');
     del.addEventListener('click', () => void this.deleteOnlineAccount());
     const webForm = `${conn.url}/account/delete`;
-    return h(
+    // Blocked players (blocked from Alliance chat or the member list), with Unblock.
+    const blockedList = h('div', { class: 'events' });
+    const blockedWrap = conn.server?.features.includes('blocks') ? h('div', {}, h('label', { class: 'muted small' }, 'Blocked players'), blockedList) : null;
+    const loadBlocked = () => {
+      const port = conn.port;
+      if (!port || !blockedWrap) return;
+      void port.blocks().then(
+        ({ blocked }) => {
+          clear(blockedList);
+          if (!blocked.length) blockedList.append(h('p', { class: 'muted small' }, 'Nobody. To block a player, tap ⋯ next to their name in Alliance chat or the member list.'));
+          for (const b of blocked) {
+            const un = h('button', { class: 'btn ghost', type: 'button' }, 'Unblock');
+            un.addEventListener('click', () => void port.unblock(b.id).then(loadBlocked, (e: Error) => this.toast(e.message, 'error')));
+            blockedList.append(h('div', { class: 'log-row' }, h('b', {}, b.name), un));
+          }
+        },
+        (e: Error) => {
+          blockedList.textContent = e.message;
+        },
+      );
+    };
+    const details = h(
       'details',
       { class: 'account-settings' },
       h('summary', {}, 'Account'),
       h('label', { class: 'muted small' }, 'Player ID (for support, and for deletion requests)'),
       h('div', { class: 'chat-input-row' }, idBox, copy),
+      blockedWrap,
       h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and troop requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
       h('div', { class: 'actions' }, del),
       h('p', { class: 'muted small' }, 'No longer have the game? Ask for deletion on the web: ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm)),
     );
+    details.addEventListener('toggle', () => {
+      if (details.open) loadBlocked();
+    });
+    return details;
   }
 
   private async deleteOnlineAccount(): Promise<void> {

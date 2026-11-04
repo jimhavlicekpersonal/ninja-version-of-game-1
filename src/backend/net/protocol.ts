@@ -29,7 +29,9 @@ export type ErrorCode =
   | 'no_opponents'
   | 'version_mismatch'
   /** 429: too many requests; wait for the Retry-After header (seconds), then try again. */
-  | 'rate_limited';
+  | 'rate_limited'
+  /** 403: a moderator muted this player's chat for a while (the message says until when). */
+  | 'muted';
 
 export interface ErrorBody {
   error: ErrorCode;
@@ -58,6 +60,9 @@ export const Routes = {
   groveRaidTicket: '/v1/grove/raid/ticket',
   groveRaidAttacks: '/v1/grove/raid/attacks',
   groveRaidClaim: '/v1/grove/raid/claim',
+  reports: '/v1/reports',
+  blocks: '/v1/blocks',
+  block: (playerId: string) => `/v1/blocks/${encodeURIComponent(playerId)}`,
   /** POST, no token: a deletion request from the web form, for players who cannot open the game. */
   deletionRequests: '/v1/account/deletion-requests',
   /** GET (HTML): the web account-deletion page to link from store listings. Not part of the game's API. */
@@ -266,9 +271,15 @@ export interface ChatView {
 }
 
 export interface ChatResponse {
+  /** Newer messages, without hidden ones or ones from players the caller blocked. */
   messages: ChatView[];
   /** Pass back as ?after= to get only newer messages. */
   cursor: string;
+  /**
+   * Ids of recent messages that moderation has removed (they may already be
+   * on screen): drop them. Absent from servers without moderation.
+   */
+  hidden?: string[];
 }
 
 export interface PostChatRequest {
@@ -323,6 +334,43 @@ export interface InboxResponse {
 
 export interface AckRequest {
   ids: string[];
+}
+
+// ---------------------------------------------------------------- Reports and blocks
+
+export type ReportReason = 'harassment' | 'hate' | 'sexual' | 'spam' | 'cheating' | 'name' | 'other';
+export const REPORT_REASONS: readonly ReportReason[] = ['harassment', 'hate', 'sexual', 'spam', 'cheating', 'name', 'other'];
+
+/** POST /v1/reports: report a chat message (the server keeps its text as it was) or a player. */
+export interface ReportRequest {
+  kind: 'chat' | 'player';
+  /** kind 'chat': a message in the caller's Alliance chat. */
+  messageId?: string;
+  /** kind 'player': whom to report. */
+  playerId?: string;
+  reason: ReportReason;
+  note?: string;
+  /** Also block the player (hide their messages and requests from the caller). */
+  block?: boolean;
+}
+export interface ReportResponse {
+  /** Null when the caller already has an open report on it (nothing new was filed). */
+  id: string | null;
+  alreadyReported: boolean;
+  blocked: boolean;
+}
+
+export interface BlockRequest {
+  playerId: string;
+}
+export interface BlockView {
+  id: string;
+  name: string;
+  at: number;
+}
+/** GET /v1/blocks. POST /v1/blocks { playerId } blocks (204); DELETE /v1/blocks/:id unblocks (204). */
+export interface BlocksResponse {
+  blocked: BlockView[];
 }
 
 // ---------------------------------------------------------------- Grove Raid

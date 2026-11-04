@@ -233,4 +233,28 @@ describe('protocol contract', () => {
     expect(page.status).toBe(200);
     expect(page.headers.get('content-type')).toMatch(/text\/html/);
   });
+
+  it('reports and blocks: report a chat message, block and unblock its author', async () => {
+    const lead = await player('Moderated', 2);
+    const mate = await player('Reporter', 2);
+    expect((await lead.hello()).features).toEqual(expect.arrayContaining(['reports', 'blocks']));
+    const g = await lead.createGrove(`Contract Mod ${tag}`);
+    await mate.joinGrove(g.id);
+    const msg = await lead.postChat('a message to report');
+    expect(await errorOf(mate.report({ kind: 'chat', messageId: msg.id, reason: 'bogus' as never }))).toMatchObject({ status: 400, code: 'bad_request' });
+    const r = await mate.report({ kind: 'chat', messageId: msg.id, reason: 'spam', note: 'contract test' });
+    expect(r).toMatchObject({ alreadyReported: false, blocked: false });
+    expect(r.id).toBeTruthy();
+    expect((await mate.report({ kind: 'chat', messageId: msg.id, reason: 'spam' })).alreadyReported).toBe(true);
+    await mate.block(lead.id);
+    expect((await mate.blocks()).blocked.map((b) => b.id)).toEqual([lead.id]);
+    const after = await mate.chat();
+    expect(after.messages.some((m) => m.from?.id === lead.id)).toBe(false);
+    expect(Array.isArray(after.hidden)).toBe(true);
+    await mate.unblock(lead.id);
+    expect((await mate.blocks()).blocked).toEqual([]);
+    expect(await errorOf(mate.block(mate.id))).toMatchObject({ status: 400, code: 'bad_request' });
+    await mate.leaveGrove();
+    await lead.leaveGrove();
+  });
 });

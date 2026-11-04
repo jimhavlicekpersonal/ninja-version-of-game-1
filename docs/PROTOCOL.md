@@ -3,6 +3,7 @@
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
 **Version 6, server hardening (2026-11, roadmap Phase 1):** additions that keep protocol 6 for clients that use them.
+- **Reports and blocks** (Apple 1.2). `POST /v1/reports` reports an Alliance chat message (the server keeps its text as it was) or a player; `POST /v1/blocks`, `DELETE /v1/blocks/:id`, `GET /v1/blocks`. A message reported by 3 different players is hidden for everyone until staff decide; `ChatResponse.hidden` lists recently hidden ids so clients drop them. Blocked players' messages and troop requests are left out for the blocker. A muted player's chat gets `403 muted`. `/v1/hello` lists `reports` and `blocks`.
 - **Account deletion.** `DELETE /v1/me` deletes the caller's online account (`204`); its token stops working. Players who can't open the game use the web page `GET /account/delete`, which sends `POST /v1/account/deletion-requests` for staff to verify. `/v1/hello` lists `account-deletion`.
 - **Rate and size limits.** Too many requests get `429 rate_limited` with a `Retry-After` header (seconds); the game treats it as "try again later", never as a refusal, so a rate-limited battle report stays in the outbox. Request bodies are capped (16 KB, base uploads 128 KB, battle reports 256 KB; more is `413`), and chat messages at 200 characters.
 - **Server-issued battle seeds.** `MatchResponse.seed` and `RaidTicketResponse.seed` carry the battle seed the server chose for the ticket. The client plays the battle with it and sends it back as `BattleSubmission.seed`; the server re-simulates with its own seed, and a report with any other seed is refused with `400 bad_request` (a player-facing "update the game" message), without using up the ticket. A client facing an older server that sends no seed picks its own. `/v1/hello` lists the `server-seed` feature.
@@ -85,6 +86,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   | `raid_not_live` | 409 | a Grove Raid ticket outside the raid |
   | `raid_not_ended` | 409 | claiming a chest before the raid ends |
   | `no_attacks_left` | 409 | both Grove Raid attacks used, or joined after the raid started |
+  | `muted` | 403 | a moderator paused this player's chat (the message says for how long) |
   | `rate_limited` | 429 | too many requests; wait `Retry-After` seconds (the header is exposed to the web game through CORS) |
 
   - **Retries:** the client retries network errors, 5xx answers and `rate_limited` (on its next round, not at once). It never retries other 4xx answers.
@@ -190,11 +192,18 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
 | `POST /v1/grove/requests/:id/donate` | `{ troop, count, level }` | `{ request, xp }` |
 | `GET /v1/grove/inbox` | | `{ donations: DonationView[] }` (troops sent to this player, not yet acknowledged) |
 | `POST /v1/grove/inbox/ack` | `{ ids }` | `204` |
+| `POST /v1/reports` | `{ kind: 'chat' \| 'player', messageId?, playerId?, reason, note?, block? }` | `201 { id, alreadyReported, blocked }` |
+| `GET /v1/blocks` | | `{ blocked: [{ id, name, at }] }` |
+| `POST /v1/blocks` | `{ playerId }` | `204` |
+| `DELETE /v1/blocks/:id` | | `204` |
 
 Rules:
 
 - One Grove per player, with at most `social.membersMax` members.
 - Chat is always filtered with `filterText`, also for adults. A player may post at most `social.chatPerMinute` messages per minute.
+- **Reports** (`reason`: `harassment`, `hate`, `sexual`, `spam`, `cheating`, `name`, `other`): a chat report must name a message in the caller's own Alliance chat, written by another player; the server stores the text as it was. One open report per reporter and message (or player): a repeat answers `alreadyReported: true` and files nothing. `block: true` also blocks the player. Once 3 different players report one message, it is hidden from everyone (and listed in `ChatResponse.hidden`) until staff look at it. At most 30 reports and blocks an hour per player.
+- **Blocks** hide the blocked player's chat messages and troop requests from the blocker (on every device), up to 500 blocks. Blocking does not stop matchmaking or wars.
+- **Moderation queue** (our server's staff API, not part of this protocol; `docs/SHIPPING.md`): staff dismiss a report (an auto-hidden message comes back), remove the message, or mute the player's chat for some hours (`403 muted` on posting). A decision about a message settles every open report on it. Handled reports, with their evidence, are deleted after 90 days.
 - **Troop requests:**
   - The size is the smaller of the requester's free Lodge space (`capacity`) and the largest Lodge their hall allows.
   - A player may ask again after `requestCooldownMinutes`.

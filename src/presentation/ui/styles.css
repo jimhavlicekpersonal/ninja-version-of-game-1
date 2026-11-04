@@ -436,6 +436,16 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .chat-msg.donation { background: #fff6c8; }
 .chat-msg.system { align-self: center; background: #f0e6d0; font-weight: 700; text-align: center; }
 .chat-who { font-weight: 900; font-size: 12px; color: var(--plum); }
+.chat-more { margin-left: 6px; padding: 0 8px; min-width: 34px; min-height: 28px; border: 0; border-radius: 10px; background: rgba(38, 48, 61, .07); color: var(--ink-soft); font: 900 14px/1 var(--font); cursor: pointer; vertical-align: middle; }
+.chat-more:hover, .chat-more:focus-visible { background: rgba(38, 48, 61, .16); color: var(--ink); }
+.log-row .chat-more { min-height: 30px; min-width: 34px; }
+.chip.blocked { background: #f3d9d4; color: #7a2a1e; }
+.report-quote { margin: 0 0 8px; padding: 8px 12px; background: #fff; border-left: 4px solid var(--plum); border-radius: 8px; font-size: 14px; word-break: break-word; }
+.report-reasons { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 12px; margin: 8px 0; }
+.report-reason { display: flex; align-items: center; gap: 8px; min-height: 36px; font-size: 14px; cursor: pointer; }
+.report-reason input, .report-block input { width: 18px; height: 18px; accent-color: var(--plum); }
+.report-form textarea.text { width: 100%; box-sizing: border-box; resize: vertical; }
+.report-block { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 14px; cursor: pointer; }
 .chat-text { font-size: 14px; }
 .chat-time { font-size: 10px; color: var(--ink-soft); align-self: flex-end; }
 .chat-input-row { display: flex; gap: 8px; margin-top: 8px; }

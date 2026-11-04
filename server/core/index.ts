@@ -8,6 +8,7 @@ import type { ServerContext } from './context';
 import * as groves from './groves';
 import * as groveRaid from './groveRaid';
 import * as identity from './identity';
+import * as moderation from './moderation';
 import * as pvp from './pvp';
 import * as retention from './retention';
 
@@ -23,6 +24,10 @@ export function createCore(ctx: ServerContext) {
     me: identity.playerView,
     rename: identity.rename.bind(null, ctx),
     deleteAccount: account.deleteAccount.bind(null, ctx),
+    report: moderation.report.bind(null, ctx),
+    block: moderation.block.bind(null, ctx),
+    unblock: moderation.unblock.bind(null, ctx),
+    blocks: moderation.blocks.bind(null, ctx),
     requestDeletion: account.requestDeletion.bind(null, ctx),
     uploadBase: pvp.uploadBase.bind(null, ctx),
     match: pvp.match.bind(null, ctx),
@@ -51,6 +56,8 @@ export function createCore(ctx: ServerContext) {
     admin: {
       deletionQueue: account.deletionQueue.bind(null, ctx),
       resolveDeletion: account.resolveDeletion.bind(null, ctx),
+      reportQueue: moderation.reportQueue.bind(null, ctx),
+      resolveReport: moderation.resolveReport.bind(null, ctx),
     },
   };
 }

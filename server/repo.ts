@@ -5,7 +5,7 @@
  * the same checks against every adapter.
  */
 import type { BaseLayout, BattleResult, Deployment } from '../src/gameplay/sim/battle/types';
-import type { GroveRole } from '../src/backend/net/protocol';
+import type { GroveRole, ReportReason } from '../src/backend/net/protocol';
 import { contentHash } from './contentHash';
 
 export interface Player {
@@ -20,9 +20,11 @@ export interface Player {
   createdAt: number;
   updatedAt: number;
   lastSeenAt: number;
+  /** A moderator muted their chat until this time (0 or absent: not muted). */
+  mutedUntil?: number;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil'>>;
 
 export interface Ticket {
   id: string;
@@ -106,6 +108,36 @@ export interface ChatRow {
   name: string | null;
   text: string;
   kind: 'chat' | 'request' | 'donation' | 'system';
+  /** Removed by moderation (enough reports, or staff); never sent to players. */
+  hidden?: boolean;
+}
+
+/** A report of a chat message or a player (roadmap step 15). */
+export interface Report {
+  id: string;
+  at: number;
+  reporterId: string;
+  kind: 'chat' | 'player';
+  /** The reported player. */
+  targetId: string;
+  targetName: string;
+  /** Chat reports: the message, its Alliance, and its text as it was (evidence). */
+  messageId: string | null;
+  groveId: string | null;
+  text: string | null;
+  reason: ReportReason;
+  note: string;
+  status: 'open' | 'actioned' | 'dismissed';
+  resolvedAt: number | null;
+  resolution: string | null;
+}
+
+export interface Block {
+  playerId: string;
+  blockedId: string;
+  /** The name when blocked, for the list (the player may have left or renamed). */
+  blockedName: string;
+  at: number;
 }
 
 export interface TroopRequest {
@@ -205,11 +237,14 @@ export interface PruneCutoffs {
    * attack refers to any more and nobody used since this time.
    */
   staleBefore: number;
+  /** Handled reports (with their evidence) resolved before this time are deleted. */
+  resolvedReportsBefore?: number;
 }
 export interface PruneResult {
   attacks: number;
   tickets: number;
   bases: number;
+  reports: number;
 }
 
 export interface OpponentQuery {
@@ -255,9 +290,11 @@ export interface Repo {
    * membership, chat lines, troop requests and gifts to them, war claims, and
    * Alliance notices naming them. What other players keep (replays of raids
    * they made, gifts they sent, war rosters and attacks that count for a war
-   * score) is kept under DELETED_PLAYER. One transaction.
+   * score) is kept under DELETED_PLAYER. Blocks either way and their own
+   * reports go; open reports about them are closed at `at`, without the
+   * evidence text. One transaction.
    */
-  deletePlayer(id: string, name: string): Promise<void>;
+  deletePlayer(id: string, name: string, at: number): Promise<void>;
   addDeletionRequest(r: DeletionRequest): Promise<void>;
   /** Oldest first; 'open' lists only those still waiting. */
   deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]>;
@@ -276,8 +313,28 @@ export interface Repo {
   updateMember(groveId: string, playerId: string, patch: Partial<Pick<GroveMember, 'role' | 'xp'>>): Promise<void>;
   // chat
   addChat(row: Omit<ChatRow, 'seq'>): Promise<ChatRow>;
+  /** Messages after the cursor, without hidden ones. */
   chatAfter(groveId: string, afterSeq: number, limit: number): Promise<ChatRow[]>;
   recentChatCount(playerId: string, since: number): Promise<number>;
+  getChat(id: string): Promise<ChatRow | null>;
+  setChatHidden(id: string, hidden: boolean): Promise<void>;
+  /** Ids of hidden messages among the Alliance's latest `lastN` messages. */
+  hiddenChatIds(groveId: string, lastN: number): Promise<string[]>;
+  // reports and blocks (roadmap step 15)
+  /** False (and nothing stored) if the reporter already has an open report on that message or player. */
+  addReport(r: Report): Promise<boolean>;
+  /** Oldest first; 'open' lists only those waiting for staff. */
+  reports(status: 'open' | 'all', limit: number): Promise<Report[]>;
+  getReport(id: string): Promise<Report | null>;
+  /** Open reports on one message (to count distinct reporters, and to resolve them together). */
+  openReportsOn(messageId: string): Promise<Report[]>;
+  /** False if it was already resolved. */
+  resolveReport(id: string, status: 'actioned' | 'dismissed', resolution: string, at: number): Promise<boolean>;
+  /** Adds or refreshes a block. */
+  addBlock(b: Block): Promise<void>;
+  removeBlock(playerId: string, blockedId: string): Promise<void>;
+  /** Newest first. */
+  blocksOf(playerId: string): Promise<Block[]>;
   // troop requests and donations
   addRequest(r: TroopRequest): Promise<void>;
   getRequest(id: string): Promise<TroopRequest | null>;
@@ -331,6 +388,8 @@ export class MemoryRepo implements Repo {
   raidAttackRows: RaidAttack[] = [];
   claims: RaidClaim[] = [];
   deletionRows: DeletionRequest[] = [];
+  reportRows: Report[] = [];
+  blockRows: Block[] = [];
   private seq = 0;
 
   async createPlayer(p: Player): Promise<void> {
@@ -419,9 +478,12 @@ export class MemoryRepo implements Repo {
         bases++;
       }
     }
-    return { attacks: attacks - this.attacks.length, tickets, bases };
+    const reports = this.reportRows.length;
+    const before = c.resolvedReportsBefore;
+    if (before !== undefined) this.reportRows = this.reportRows.filter((r) => r.status === 'open' || (r.resolvedAt ?? 0) >= before);
+    return { attacks: attacks - this.attacks.length, tickets, bases, reports: reports - this.reportRows.length };
   }
-  async deletePlayer(id: string, name: string): Promise<void> {
+  async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;
     for (const [k, t] of this.tickets) {
       if (t.attackerId === id) this.tickets.delete(k);
@@ -441,6 +503,14 @@ export class MemoryRepo implements Repo {
     this.claims = this.claims.filter((c) => c.playerId !== id);
     for (const p of this.pairings) {
       for (const e of p.roster) if (e.playerId === id) Object.assign(e, { playerId: null, name: D.name, base: { ...e.base, name: D.name } });
+    }
+    // Blocks either way go; their own reports go; reports about them are closed and lose the evidence text.
+    this.blockRows = this.blockRows.filter((b) => b.playerId !== id && b.blockedId !== id);
+    this.reportRows = this.reportRows.filter((r) => r.reporterId !== id);
+    for (const r of this.reportRows) {
+      if (r.targetId !== id) continue;
+      Object.assign(r, { targetId: D.id, targetName: D.name, text: null });
+      if (r.status === 'open') Object.assign(r, { status: 'dismissed', resolution: 'Account deleted.', resolvedAt: at });
     }
     this.players.delete(id);
   }
@@ -506,7 +576,52 @@ export class MemoryRepo implements Repo {
     return clone(full);
   }
   async chatAfter(groveId: string, afterSeq: number, limit: number): Promise<ChatRow[]> {
-    return this.chatRows.filter((c) => c.groveId === groveId && c.seq > afterSeq).slice(-limit).map(clone);
+    return this.chatRows.filter((c) => c.groveId === groveId && c.seq > afterSeq && !c.hidden).slice(-limit).map(clone);
+  }
+  async getChat(id: string): Promise<ChatRow | null> {
+    const c = this.chatRows.find((x) => x.id === id);
+    return c ? clone(c) : null;
+  }
+  async setChatHidden(id: string, hidden: boolean): Promise<void> {
+    const c = this.chatRows.find((x) => x.id === id);
+    if (c) c.hidden = hidden;
+  }
+  async hiddenChatIds(groveId: string, lastN: number): Promise<string[]> {
+    return this.chatRows.filter((c) => c.groveId === groveId).slice(-lastN).filter((c) => c.hidden).map((c) => c.id);
+  }
+  async addReport(r: Report): Promise<boolean> {
+    if (this.reportRows.some((x) => x.status === 'open' && x.reporterId === r.reporterId && x.targetId === r.targetId && (x.messageId ?? '') === (r.messageId ?? ''))) return false;
+    this.reportRows.push(clone(r));
+    return true;
+  }
+  async reports(status: 'open' | 'all', limit: number): Promise<Report[]> {
+    return this.reportRows.filter((r) => status === 'all' || r.status === 'open').slice(0, limit).map(clone);
+  }
+  async getReport(id: string): Promise<Report | null> {
+    const r = this.reportRows.find((x) => x.id === id);
+    return r ? clone(r) : null;
+  }
+  async openReportsOn(messageId: string): Promise<Report[]> {
+    return this.reportRows.filter((r) => r.status === 'open' && r.messageId === messageId).map(clone);
+  }
+  async resolveReport(id: string, status: 'actioned' | 'dismissed', resolution: string, at: number): Promise<boolean> {
+    const r = this.reportRows.find((x) => x.id === id);
+    if (!r || r.status !== 'open') return false;
+    Object.assign(r, { status, resolution, resolvedAt: at });
+    return true;
+  }
+  async addBlock(b: Block): Promise<void> {
+    this.blockRows = this.blockRows.filter((x) => !(x.playerId === b.playerId && x.blockedId === b.blockedId));
+    this.blockRows.push(clone(b));
+  }
+  async removeBlock(playerId: string, blockedId: string): Promise<void> {
+    this.blockRows = this.blockRows.filter((x) => !(x.playerId === playerId && x.blockedId === blockedId));
+  }
+  async blocksOf(playerId: string): Promise<Block[]> {
+    return this.blockRows
+      .filter((b) => b.playerId === playerId)
+      .sort((a, b) => b.at - a.at)
+      .map(clone);
   }
   async recentChatCount(playerId: string, since: number): Promise<number> {
     return this.chatRows.filter((c) => c.playerId === playerId && c.at > since && c.kind === 'chat').length;

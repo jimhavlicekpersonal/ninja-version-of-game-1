@@ -108,6 +108,20 @@ The top bar shows the connection: **Online**, **Connecting…** or **No connecti
   ```
 
   Use `{"action":"reject","note":"…"}` to turn one down. `?status=all` lists handled requests too.
+- **Moderation queue** (Apple 1.2 expects reports to be acted on promptly; check it daily). Each open report shows the message text as it was sent, the reason, how many open reports the player has, and whether the message is already hidden (3 different reporters hide it automatically):
+
+  ```bash
+  curl -H "Authorization: Bearer $ADMIN_TOKEN" https://<your-server>/admin/v1/reports
+  ```
+
+  Then act on one (a decision about a message settles every report on it):
+
+  ```bash
+  curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" -d '{"action":"mute","hours":24,"note":"threats"}' https://<your-server>/admin/v1/reports/<id>
+  ```
+
+  Actions: `dismiss` (nothing wrong; a hidden message comes back), `remove_message`, `mute` (also removes the message; `hours` up to a year). Handled reports are deleted after 90 days. A full admin tool is roadmap step 48.
+- **Contact for users:** Apple also asks for a published way to reach you about content; put a support address on the support page (roadmap step 7).
 
 **Running a server locally:** run `npm run server:dev`. It uses memory instead of Postgres when `DATABASE_URL` is not set. In the game, set the server address to `http://localhost:8787`, or to `http://<laptop-ip>:8787` from a phone on the same Wi-Fi, using `npm run dev:lan`.
 
