@@ -12,11 +12,24 @@ import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
 import { debris } from './fx';
 import { sound } from '../audio/sound';
+import { hpLabel, type InspectTarget } from '../ui/battleInfo';
+
+/** Something on the map the popup can point at. */
+type MapTarget = Extract<InspectTarget, { index: number }>;
+
+/** Where an info popup points, in CSS pixels of the page. `touch` popups close by themselves. */
+export interface InspectAt {
+  x: number;
+  y: number;
+  touch?: boolean;
+}
 
 export interface BattleHooks {
   selectedTroop(): string | null;
   deployFailed(reason: 'zone' | 'full' | 'none' | 'empty'): void;
   deployed(): void;
+  /** The warrior or building under the mouse (or tapped while not deploying), or null to close the popup. */
+  inspect(target: InspectTarget | null, at?: InspectAt): void;
 }
 
 export interface BattleSceneInit {
@@ -28,6 +41,8 @@ export interface BattleSceneInit {
 interface BView {
   image: Phaser.GameObjects.Image;
   bar: Phaser.GameObjects.Graphics;
+  /** Hit points left, beside the health bar; made on the first hit. */
+  hpText: Phaser.GameObjects.Text | null;
   destroyed: boolean;
   lastHp: number;
   /** Sabotage marker and recovery ring, created on first jam. */
@@ -56,6 +71,11 @@ const COUNTER_LABEL: Record<string, string> = { lit: 'Lit up!', repair: 'Repaire
 /** Milliseconds between callouts over the same troop or building, so a fight stays readable. */
 const CALLOUT_GAP_MS = 1400;
 const AIR_HEIGHT = 46;
+/** Health bar size in CSS pixels (scaled by 1 / zoom so it reads the same at every zoom). */
+const BAR_W = 34;
+const BAR_H = 6;
+/** Alpha (0-255) a building sprite's pixel needs under the mouse to count as that building. */
+const HIT_ALPHA = 40;
 
 export class BattleScene extends Phaser.Scene {
   private session!: BattleSession;
@@ -73,6 +93,14 @@ export class BattleScene extends Phaser.Scene {
   private entryLabels: Phaser.GameObjects.Text[] = [];
   private entrySig = '';
   private zoneFade: Phaser.Tweens.Tween | null = null;
+  /** The mouse over the map: game-canvas position (for picking) and page position (for the popup). */
+  private mouse: { sx: number; sy: number; cx: number; cy: number } | null = null;
+  /** Building under the mouse, kept until the mouse or the camera moves (buildings never move). */
+  private hoverBuilding = { wx: NaN, wy: NaN, index: -1, at: 0 };
+  /** What the popup shows now, so the HUD hears only about changes. */
+  private inspectKey = '';
+  /** Per texture: the first drawn row, as a share of its height (sprites leave headroom above short roofs). */
+  private drawnTop = new Map<string, number>();
 
   constructor() {
     super('battle');
@@ -90,6 +118,10 @@ export class BattleScene extends Phaser.Scene {
     this.entryLabels = [];
     this.entrySig = '';
     this.lastCallout = new Map();
+    this.drawnTop = new Map();
+    this.mouse = null;
+    this.hoverBuilding = { wx: NaN, wy: NaN, index: -1, at: 0 };
+    this.inspectKey = '';
   }
 
   preload(): void {
@@ -105,10 +137,21 @@ export class BattleScene extends Phaser.Scene {
     addSurroundings(this, mapSize);
     this.cam = new CameraControl(this, {
       renderScale: this.renderScale,
-      onTap: (x, y) => this.tryDeployAt(x, y, true),
+      onTap: (x, y) => this.onTap(x, y),
       onHold: (x, y) => this.tryDeployAt(x, y, false),
       onZoom: () => this.rescaleOverlays(),
     });
+    // Hover info is for a mouse: a finger on the map deploys instead.
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      if (p.wasTouch) return;
+      const e = p.event as MouseEvent | undefined;
+      this.mouse = { sx: p.x, sy: p.y, cx: e?.clientX ?? p.x / this.renderScale, cy: e?.clientY ?? p.y / this.renderScale };
+    });
+    // Leaving the canvas (onto a HUD panel, or out of the window) closes the popup.
+    this.input.on('gameout', () => {
+      this.mouse = null;
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.hooks.inspect(null));
     this.cam.setBounds(mb.x - 400, mb.y - 400, mb.width + 800, mb.height + 800);
     const cssW = this.scale.width / this.renderScale;
     this.cam.setZoom(Phaser.Math.Clamp(cssW / (18 * 64), 0.42, 1));
@@ -131,7 +174,105 @@ export class BattleScene extends Phaser.Scene {
     const image = this.add.image(c.x, c.y, key).setOrigin(o.x, o.y).setScale(buildingScale(tex, b.size)).setDepth(depthFor(b.x, b.y, b.size));
     if (b.hidden) image.setVisible(false);
     const bar = this.add.graphics().setDepth(OVER - 10);
-    return { image, bar, destroyed: false, lastHp: b.hp, jam: null, ring: null };
+    return { image, bar, hpText: null, destroyed: false, lastHp: b.hp, jam: null, ring: null };
+  }
+
+  /** A tap deploys while fighting; while scouting, watching a replay or after the end it shows what was tapped. */
+  private onTap(wx: number, wy: number): void {
+    const s = this.session;
+    if (s.mode === 'live' && !s.sim.ended) {
+      this.tryDeployAt(wx, wy, true);
+      return;
+    }
+    const target = this.pickAt(wx, wy, true);
+    const p = this.input.activePointer;
+    const e = p.event as MouseEvent | TouchEvent | undefined;
+    const touch = e && 'changedTouches' in e ? e.changedTouches[0] : null;
+    const at = { x: touch?.clientX ?? (e as MouseEvent | undefined)?.clientX ?? p.x / this.renderScale, y: touch?.clientY ?? (e as MouseEvent | undefined)?.clientY ?? p.y / this.renderScale, touch: p.wasTouch };
+    this.inspectKey = target ? `${target.kind}:${target.index}` : '';
+    this.hooks.inspect(target, at);
+  }
+
+  /** Warrior under a world point (topmost first), else the building whose drawn pixels are there. */
+  private pickAt(wx: number, wy: number, fresh = false): MapTarget | null {
+    const troop = this.troopAt(wx, wy);
+    if (troop >= 0) return { kind: 'troop', index: troop };
+    const b = this.buildingAt(wx, wy, fresh);
+    return b >= 0 ? { kind: 'building', index: b } : null;
+  }
+
+  private troopAt(wx: number, wy: number): number {
+    const sim = this.session.sim;
+    let best = -1;
+    let depth = -Infinity;
+    this.tviews.forEach((v, i) => {
+      const t = sim.troops[i];
+      if (!t || t.dead || v.dead || !v.image.active) return;
+      const img = v.image;
+      // A little slack round small sprites, so a moving warrior is easy to point at.
+      const pad = 4 / this.cam.userZoom;
+      const left = img.x - img.displayWidth * img.originX - pad;
+      const top = img.y - img.displayHeight * img.originY - pad;
+      if (wx < left || wx > left + img.displayWidth + pad * 2 || wy < top || wy > top + img.displayHeight + pad * 2) return;
+      if (img.depth > depth) {
+        depth = img.depth;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  private buildingAt(wx: number, wy: number, fresh: boolean): number {
+    const h = this.hoverBuilding;
+    const now = this.time.now;
+    if (!fresh && Math.abs(wx - h.wx) < 0.5 && Math.abs(wy - h.wy) < 0.5 && now - h.at < 300) return h.index;
+    const sim = this.session.sim;
+    let best = -1;
+    let depth = -Infinity;
+    this.bviews.forEach((v, i) => {
+      const b = sim.buildings[i];
+      const img = v.image;
+      // Never a hidden trap or rubble: the popup must not give away what the map does not show.
+      if (!b || b.destroyed || b.hidden || v.destroyed || !img.visible || img.alpha < 0.1) return;
+      const left = img.x - img.displayWidth * img.originX;
+      const top = img.y - img.displayHeight * img.originY;
+      if (wx < left || wx >= left + img.displayWidth || wy < top || wy >= top + img.displayHeight || img.depth <= depth) return;
+      // Only the drawn part of the sprite counts, so the empty corners of a tall tower don't hide its neighbours.
+      const fx = (wx - left) / img.scaleX;
+      const fy = (wy - top) / img.scaleY;
+      let alpha: number | null = 255;
+      try {
+        alpha = this.textures.getPixelAlpha(Math.floor(fx), Math.floor(fy), img.texture.key, img.frame.name);
+      } catch {
+        // A texture with no readable source (GPU only) counts by its bounds.
+      }
+      if ((alpha ?? 0) < HIT_ALPHA) return;
+      depth = img.depth;
+      best = i;
+    });
+    this.hoverBuilding = { wx, wy, index: best, at: now };
+    return best;
+  }
+
+  /** Keeps the hover popup on whatever is under the mouse; closed while a button is held (dragging or deploying). */
+  private syncHover(): void {
+    const m = this.mouse;
+    const held = this.input.manager.pointers.some((p) => p.isDown);
+    if (!m || held) {
+      if (this.inspectKey.startsWith('hover|')) {
+        this.inspectKey = '';
+        this.hooks.inspect(null);
+      }
+      return;
+    }
+    const w = this.cam.screenToWorld(m.sx, m.sy);
+    const target = this.pickAt(w.x, w.y);
+    const key = target ? `hover|${target.kind}:${target.index}|${Math.round(m.cx)},${Math.round(m.cy)}` : '';
+    if (key === this.inspectKey) return;
+    // A tapped popup (scout, replay) stays until the mouse finds something else.
+    if (!target && !this.inspectKey.startsWith('hover|')) return;
+    this.inspectKey = key;
+    this.hooks.inspect(target, { x: m.cx, y: m.cy });
   }
 
   private drawZone(): void {
@@ -399,8 +540,8 @@ export class BattleScene extends Phaser.Scene {
 
   private drawBar(g: Phaser.GameObjects.Graphics, x: number, y: number, frac: number, color: number): void {
     const z = this.cam.userZoom;
-    const w = 34 / z;
-    const h = 6 / z;
+    const w = BAR_W / z;
+    const h = BAR_H / z;
     g.clear();
     // Ink frame and a dark track; the fill gets a lighter top half so it reads as a glossy bar.
     g.fillStyle(0x26303d, 0.92);
@@ -413,6 +554,47 @@ export class BattleScene extends Phaser.Scene {
     g.fillRoundedRect(x - w / 2, y - h / 2, fw, h, h / 2);
     g.fillStyle(0xffffff, 0.35);
     g.fillRoundedRect(x - w / 2 + 1 / z, y - h / 2 + 0.8 / z, Math.max(0, fw - 2 / z), h * 0.38, h * 0.19);
+  }
+
+  /** Where a sprite's drawing starts, from the top, as a share of its height. Read once per texture. */
+  private roofLine(img: Phaser.GameObjects.Image): number {
+    const key = img.texture.key;
+    const known = this.drawnTop.get(key);
+    if (known !== undefined) return known;
+    let share = 0;
+    try {
+      const src = img.texture.getSourceImage() as CanvasImageSource & { width: number; height: number };
+      const w = Math.max(1, Math.floor(src.width));
+      const hgt = Math.max(1, Math.floor(src.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = hgt;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        ctx.drawImage(src, 0, 0);
+        const data = ctx.getImageData(0, 0, w, hgt).data;
+        let row = 0;
+        scan: for (; row < hgt; row++) for (let x = 0; x < w; x += 2) if (data[(row * w + x) * 4 + 3] >= HIT_ALPHA) break scan;
+        share = row < hgt ? row / hgt : 0;
+      }
+    } catch {
+      // Unreadable texture: keep the sprite's own top.
+    }
+    this.drawnTop.set(key, share);
+    return share;
+  }
+
+  /** The number beside a building's health bar. Its texture is redrawn only when the number changes. */
+  private drawHp(v: BView, x: number, y: number, hp: number): void {
+    if (!v.hpText) {
+      v.hpText = this.add
+        .text(0, 0, '', { fontFamily: BODY_FONT, fontSize: '11px', fontStyle: 'bold', color: '#ffffff', stroke: '#26303d', strokeThickness: 3, resolution: Math.max(2, this.renderScale) })
+        .setOrigin(0, 0.5)
+        .setDepth(OVER - 10);
+    }
+    const label = hpLabel(hp);
+    if (v.hpText.text !== label) v.hpText.setText(label);
+    v.hpText.setPosition(x, y).setScale(1 / this.cam.userZoom);
   }
 
   update(_time: number, delta: number): void {
@@ -433,6 +615,8 @@ export class BattleScene extends Phaser.Scene {
       if (b.destroyed && !v.destroyed) {
         v.destroyed = true;
         v.bar.clear();
+        v.hpText?.destroy();
+        v.hpText = null;
         if (b.kind === 'trap') {
           v.image.setVisible(false);
           return;
@@ -450,11 +634,16 @@ export class BattleScene extends Phaser.Scene {
         } else sound.play('hit');
         if (b.kind !== 'hedge') this.cameras.main.shake(140, 0.0035 * Math.min(2, b.size / 2));
       } else if (!b.destroyed && b.hp < b.maxHp && b.kind !== 'hedge') {
-        const top = v.image.y - v.image.displayHeight * v.image.originY;
-        this.drawBar(v.bar, v.image.x, top - 6 / this.cam.userZoom, b.hp / b.maxHp, 0x5aa85e);
+        // Once a building is hit: its health bar just above its roof, with the hit points left beside it.
+        const z = this.cam.userZoom;
+        const top = v.image.y - v.image.displayHeight * (v.image.originY - this.roofLine(v.image));
+        const y = top - 6 / z;
+        this.drawBar(v.bar, v.image.x, y, b.hp / b.maxHp, 0x5aa85e);
+        this.drawHp(v, v.image.x + (BAR_W / 2 + 4) / z, y, b.hp);
       }
       v.lastHp = b.hp;
     });
+    this.syncHover();
 
     // Troops: create, interpolate, bob.
     while (this.tviews.length < sim.troops.length) {

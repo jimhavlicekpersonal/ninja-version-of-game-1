@@ -366,6 +366,27 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
   display: flex; justify-content: space-between; gap: 10px; align-items: center;
 }
 .big-attack { min-width: 130px; font-size: 18px; min-height: 54px; }
+/* Battle info popup: a warrior's stats, a building's name or a tactic, beside the mouse or above a card. */
+.b-inspect {
+  position: absolute; left: 0; top: 0; width: max-content; max-width: min(260px, calc(100vw - 16px)); pointer-events: none;
+  background: var(--paper); border-radius: 14px; padding: 8px 11px; color: var(--ink); font-size: 13px; line-height: 1.3;
+  box-shadow: var(--edge), var(--hairline), var(--shadow-soft);
+}
+.b-inspect.building { padding: 5px 11px; font: 800 14px var(--font-display); white-space: nowrap; }
+.b-inspect.warrior, .b-inspect.tactic { width: min(250px, calc(100vw - 16px)); }
+.b-inspect p { margin: 5px 0 0; }
+.bi-head { display: flex; gap: 8px; align-items: center; }
+.bi-head img { width: 40px; height: 40px; object-fit: contain; flex: none; }
+.bi-name { font: 800 15px var(--font-display); display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; }
+.bi-name .level { flex: none; white-space: nowrap; }
+.bi-hp { display: flex; align-items: center; gap: 6px; margin: 6px 0 5px; font-weight: 800; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bi-bar { flex: 1; min-width: 60px; height: 7px; border-radius: 999px; background: #4a5262; box-shadow: 0 0 0 1.5px var(--ink); overflow: hidden; }
+.bi-bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(#f6d58c, var(--sun)); }
+.bi-bar.low > span { background: linear-gradient(#e2705f, var(--berry)); }
+.bi-stats { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bi-stats .muted { font-weight: 600; }
+.bi-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.bi-foot { margin-top: 5px; font-size: 12px; font-weight: 800; color: var(--plum); }
 .troop-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .troop-row { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px; border-radius: 18px; background: radial-gradient(120% 70% at 50% 15%, #ffffff, #f6eedd); box-shadow: inset 0 0 0 1px rgba(201, 154, 62, .2), 0 3px 0 rgba(38, 48, 61, .16), 0 6px 12px rgba(15, 20, 30, .08); text-align: center; }
 .troop-row img { width: 64px; height: 56px; object-fit: contain; }

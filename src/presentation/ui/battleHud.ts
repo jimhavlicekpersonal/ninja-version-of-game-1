@@ -1,5 +1,6 @@
 import type { BattleSession } from '../../gameplay/control/battleSession';
-import type { BattleHooks } from '../render/BattleScene';
+import type { BattleHooks, InspectAt } from '../render/BattleScene';
+import { inspectInfo, type BattleInfo, type InspectTarget, type WarriorInfo } from './battleInfo';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
 import { isAbility } from '../../gameplay/sim/battle/battle';
 import { pointIntel, scoutReport } from '../../gameplay/sim/battle/scout';
@@ -58,6 +59,12 @@ export class BattleHud {
   private bottomEl = h('div', { class: 'b-bottom' });
   private toastEl = h('div', { class: 'toasts' });
   private modalEl = h('div', { class: 'modal-root' });
+  /** The info popup: a warrior's stats, a building's name, or a tactic. Never takes taps. */
+  private inspectEl = h('div', { class: 'b-inspect', role: 'tooltip', hidden: true });
+  private inspecting: { target: InspectTarget; at: InspectAt; from: 'map' | 'card'; card?: HTMLElement } | null = null;
+  private inspectSig = '';
+  private inspectTimer = 0;
+  private holdTimer = 0;
   private interval = 0;
   private finished = false;
   private lastStars = -1;
@@ -100,7 +107,7 @@ export class BattleHud {
         : null,
     );
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
-    root.append(left, right, this.toastEl, this.troopsEl, this.bottomEl, this.modalEl);
+    root.append(left, right, this.toastEl, this.troopsEl, this.bottomEl, this.inspectEl, this.modalEl);
     // Pick the first available troop by default (Saboteurs first: jam, then attack).
     this.selected = this.firstTroop();
     this.renderBottom();
@@ -114,6 +121,9 @@ export class BattleHud {
 
   destroy(): void {
     window.clearInterval(this.interval);
+    window.clearTimeout(this.inspectTimer);
+    window.clearTimeout(this.holdTimer);
+    this.inspecting = null;
     clear(this.deps.root);
     this.deps.root.hidden = true;
   }
@@ -133,7 +143,154 @@ export class BattleHud {
         else if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0) this.selected = this.firstTroop();
         if (this.s.mode === 'live') this.renderTroops();
       },
+      inspect: (target, at) => {
+        // The map closes only its own popups: a deploy-bar card keeps its popup while the mouse is on it.
+        if (!target) {
+          if (this.inspecting?.from === 'map') this.closeInspect();
+          return;
+        }
+        if (at) this.openInspect({ target, at, from: 'map' });
+      },
     };
+  }
+
+  // ------------------------------------------------------------ info popup
+
+  private openInspect(next: NonNullable<BattleHud['inspecting']>): void {
+    this.inspecting = next;
+    window.clearTimeout(this.inspectTimer);
+    // No hover on a touch screen, so a popup opened by a finger closes by itself.
+    if (next.at.touch) this.inspectTimer = window.setTimeout(() => this.closeInspect(), 3500);
+    this.renderInspect();
+  }
+
+  private closeInspect(): void {
+    window.clearTimeout(this.inspectTimer);
+    this.inspecting = null;
+    this.inspectSig = '';
+    this.inspectEl.hidden = true;
+  }
+
+  /** Redraws the popup when what it says changes (live hit points, warriors left), and keeps it on screen. */
+  private renderInspect(): void {
+    const cur = this.inspecting;
+    const info = cur ? inspectInfo(this.s.sim, cur.target) : null;
+    if (!cur || !info) {
+      if (cur) this.closeInspect();
+      return;
+    }
+    const sig = JSON.stringify(info);
+    if (sig !== this.inspectSig) {
+      this.inspectSig = sig;
+      clear(this.inspectEl);
+      this.inspectEl.className = `b-inspect ${info.kind}`;
+      this.inspectEl.append(...this.inspectBody(info));
+    }
+    this.inspectEl.hidden = false;
+    this.placeInspect(cur);
+  }
+
+  private inspectBody(info: BattleInfo): (HTMLElement | string)[] {
+    if (info.kind === 'building') return [info.name];
+    if (info.kind === 'tactic') {
+      return [
+        h('div', { class: 'bi-name' }, info.name),
+        h('p', { class: 'small' }, info.description),
+        h('div', { class: 'bi-foot' }, `×${info.left} left`),
+      ];
+    }
+    return this.warriorBody(info);
+  }
+
+  private warriorBody(w: WarriorInfo): HTMLElement[] {
+    const thumb = this.deps.troopThumb(w.type);
+    const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
+    const hp = `${formatNumber(Math.ceil(w.hp))}${w.deployed ? ` / ${formatNumber(Math.ceil(w.maxHp))}` : ''}`;
+    const stat = (label: string, value: string) => [h('span', { class: 'muted' }, label), h('span', {}, value)];
+    const out: HTMLElement[] = [
+      h(
+        'div',
+        { class: 'bi-head' },
+        thumb ? h('img', { src: thumb, alt: '' }) : null,
+        h('div', {}, h('div', { class: 'bi-name' }, w.name, h('span', { class: 'level' }, `Lv ${w.level}`)), w.role ? h('div', { class: 'muted small' }, w.role) : null),
+      ),
+      h('div', { class: 'bi-hp' }, h('span', {}, 'HP'), h('span', { class: `bi-bar${frac < 0.3 ? ' low' : ''}` }, h('span', { style: `width:${(frac * 100).toFixed(1)}%` })), h('span', {}, hp)),
+      h(
+        'div',
+        { class: 'bi-stats' },
+        ...stat('Damage/sec', String(w.dps)),
+        ...stat('Range', `${w.range} tiles`),
+        ...stat('Speed', `${w.speed} tiles/s`),
+        ...stat('Moves', w.flies ? 'Flies' : 'On foot'),
+        ...stat('Targets', w.targets),
+        ...stat('Space', String(w.space)),
+      ),
+    ];
+    if (w.ability) out.push(h('p', { class: 'small' }, h('b', {}, `${w.ability.name}: `), w.ability.text));
+    out.push(h('p', { class: 'small muted' }, w.description));
+    if (w.status.length) out.push(h('div', { class: 'bi-tags' }, ...w.status.map((t) => h('span', { class: 'chip' }, t))));
+    if (w.left !== undefined) {
+      const donated = w.donated ? ` · ${w.donated.count} donated at Lv ${w.donated.level} go first` : '';
+      out.push(h('div', { class: 'bi-foot' }, `×${w.left} to send${donated}`));
+    }
+    return out;
+  }
+
+  /** Beside the mouse or finger on the map, above the card in the deploy bar; always inside the screen. */
+  private placeInspect(cur: NonNullable<BattleHud['inspecting']>): void {
+    const el = this.inspectEl;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w = el.offsetWidth;
+    const hgt = el.offsetHeight;
+    const m = 8;
+    let x: number;
+    let y: number;
+    if (cur.from === 'card' && cur.card?.isConnected) {
+      const r = cur.card.getBoundingClientRect();
+      x = r.left + r.width / 2 - w / 2;
+      y = r.top - hgt - 12;
+    } else {
+      // A finger covers what it taps, so a touch popup sits above it.
+      const off = cur.at.touch ? 28 : 16;
+      x = cur.at.x + off > vw - w - m ? cur.at.x - w - off : cur.at.x + off;
+      y = cur.at.touch ? cur.at.y - hgt - off : cur.at.y + off > vh - hgt - m ? cur.at.y - hgt - off : cur.at.y + off;
+    }
+    x = Math.max(m, Math.min(vw - w - m, x));
+    y = Math.max(m, Math.min(vh - hgt - m, y));
+    el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  }
+
+  /** A deploy-bar card shows its warrior's popup on mouse hover, keyboard focus, or a long press. */
+  private wireCardInfo(card: HTMLElement, type: string): void {
+    const show = (touch: boolean) => {
+      const r = card.getBoundingClientRect();
+      this.openInspect({ target: { kind: 'card', type }, at: { x: r.left + r.width / 2, y: r.top, touch }, from: 'card', card });
+    };
+    const hide = () => {
+      if (this.inspecting?.from === 'card' && this.inspecting.card === card) this.closeInspect();
+    };
+    card.addEventListener('pointerenter', (e) => {
+      if (e.pointerType === 'mouse') show(false);
+    });
+    card.addEventListener('pointerleave', (e) => {
+      window.clearTimeout(this.holdTimer);
+      if (e.pointerType === 'mouse') hide();
+    });
+    card.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse') return;
+      window.clearTimeout(this.holdTimer);
+      this.holdTimer = window.setTimeout(() => show(true), 450);
+    });
+    const cancel = () => window.clearTimeout(this.holdTimer);
+    card.addEventListener('pointerup', cancel);
+    card.addEventListener('pointercancel', cancel);
+    // A long press opens the popup, not the browser's menu.
+    card.addEventListener('contextmenu', (e) => e.preventDefault());
+    card.addEventListener('focus', () => {
+      if (card.matches(':focus-visible')) show(false);
+    });
+    card.addEventListener('blur', hide);
   }
 
   private scoutEl: HTMLElement | null = null;
@@ -156,7 +313,8 @@ export class BattleHud {
       ...this.entryIntel(),
       ...r.tips.map((t) => h('p', { class: 'small' }, t)),
     );
-    this.deps.root.append(this.scoutEl);
+    // Before the info popup, so the popup is drawn over the report.
+    this.deps.root.insertBefore(this.scoutEl, this.inspectEl);
   }
 
   /** Infiltration Points in the scout report: the rule in one line, and what each point leads into. */
@@ -228,13 +386,15 @@ export class BattleHud {
   }
 
   private renderTroops(): void {
+    // The cards are rebuilt: a popup pinned to an old card moves to its replacement.
+    const pinned = this.inspecting?.from === 'card' && this.inspecting.target.kind === 'card' ? this.inspecting.target.type : null;
     clear(this.troopsEl);
     if (this.s.mode === 'replay') return;
     if ((this.s.sim.charges.smoke_bomb ?? 0) > 0 || (this.s.sim.abilitiesUsed.smoke_bomb ?? 0) > 0) {
       const left = this.left('smoke_bomb');
       const card = h(
         'button',
-        { class: `troop-card ability${this.selected === 'smoke_bomb' ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.battle.abilities.smoke_bomb.name, 'data-type': 'smoke_bomb', title: this.s.data.battle.abilities.smoke_bomb.description },
+        { class: `troop-card ability${this.selected === 'smoke_bomb' ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.battle.abilities.smoke_bomb.name, 'data-type': 'smoke_bomb' },
         icon(icons.smoke),
         h('span', { class: 'troop-count' }, `×${left}`),
       );
@@ -245,6 +405,7 @@ export class BattleHud {
         this.toast('Tap where your warriors are about to come under fire: warriors inside the smoke can only be shot from close up.');
         this.renderTroops();
       });
+      this.wireCardInfo(card, 'smoke_bomb');
       this.troopsEl.append(card);
     }
     for (const [type, total] of Object.entries(this.s.setup.army).sort(([a], [b]) => (a === 'saboteur' ? -1 : b === 'saboteur' ? 1 : 0))) {
@@ -253,7 +414,7 @@ export class BattleHud {
       const thumb = this.deps.troopThumb(type);
       const card = h(
         'button',
-        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.troops[type]?.name ?? type, 'data-type': type, title: this.s.data.troops[type]?.description ?? type },
+        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.troops[type]?.name ?? type, 'data-type': type },
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('span', { class: 'troop-count' }, `×${left}`),
       );
@@ -263,7 +424,13 @@ export class BattleHud {
         this.lastTroop = type;
         this.renderTroops();
       });
+      this.wireCardInfo(card, type);
       this.troopsEl.append(card);
+    }
+    if (pinned && this.inspecting) {
+      const card = [...this.troopsEl.querySelectorAll<HTMLElement>('.troop-card')].find((el) => el.dataset.type === pinned);
+      if (card) this.inspecting.card = card;
+      else this.closeInspect();
     }
   }
 
@@ -302,6 +469,8 @@ export class BattleHud {
         el.classList.toggle('empty', n <= 0);
       });
     }
+    // Live hit points and counts in an open popup.
+    if (this.inspecting) this.renderInspect();
     if (sim.ended && !this.finished && this.s.mode !== 'scout') {
       this.finished = true;
       if (this.s.mode === 'live') {
@@ -325,6 +494,7 @@ export class BattleHud {
   }
 
   private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false): void {
+    this.closeInspect();
     sound.play(r.stars > 0 ? 'victory' : 'defeat');
     const starsRow = h('div', { class: 'result-stars' });
     for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
