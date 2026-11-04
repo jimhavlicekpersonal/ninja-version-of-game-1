@@ -25,6 +25,8 @@ export interface SharedStores {
   log?: (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
   /** Battle-rule versions (step 73); defaults to today's rules only. */
   rules?: RulesRegistry;
+  /** The signed balance bundle served at /v1/balance (step 76); `data` must already carry its numbers. */
+  balance?: import('../src/backend/net/balanceBundle').BalanceBundle | null;
 }
 
 export function nodeContext(repo: Repo, data: GameData, now: () => number = () => Date.now(), random: () => number = Math.random, shared: SharedStores = {}): ServerContext {
@@ -32,6 +34,7 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     repo,
     data,
     rules: shared.rules ?? new RulesRegistry(liveEngine(data)),
+    balance: shared.balance ?? null,
     board: shared.board ?? new RepoLeaderboard(repo),
     locks: shared.locks ?? new TicketLocks(),
     metrics: shared.metrics ?? noMetrics,

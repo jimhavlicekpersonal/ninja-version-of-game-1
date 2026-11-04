@@ -20,7 +20,7 @@ import type { GameData } from '../../../src/gameplay/sim/types';
 import { baseAt, rush } from './harness';
 
 /** An "older release": rules 1, defenses hit three times as hard. */
-function olderEngine(): RulesEngine {
+function olderEngine(): RulesEngine & { calls: number } {
   const old = structuredClone(data) as GameData;
   for (const def of Object.values(old.buildings)) {
     if (def.category !== 'defense') continue;

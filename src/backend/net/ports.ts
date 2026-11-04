@@ -8,6 +8,7 @@
  */
 import type {
   AttackResponse,
+  BalanceResponse,
   BattleSubmission,
   BlocksResponse,
   CommandBatch,
@@ -70,6 +71,8 @@ export class ServerError extends Error {
 
 export interface IdentityPort {
   hello(): Promise<HelloResponse>;
+  /** The signed balance bundle (step 76); servers without the feature have none. Optional so test ports can leave it out. */
+  balance?(): Promise<BalanceResponse>;
   register(name: string): Promise<RegisterResponse>;
   me(): Promise<PlayerView>;
   rename(name: string): Promise<PlayerView>;

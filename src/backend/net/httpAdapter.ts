@@ -35,6 +35,7 @@ import {
   type ErrorBody,
   type GroveView,
   type GrovesResponse,
+  type BalanceResponse,
   type HelloResponse,
   type InboxResponse,
   type LeaderboardResponse,
@@ -221,6 +222,10 @@ export class HttpServerAdapter implements ServerPort {
   // ---------------------------------------------------------------- identity
 
   /** The server's description; throws version_mismatch when this game and the server cannot talk. */
+  balance(): Promise<BalanceResponse> {
+    return this.req('GET', Routes.balance);
+  }
+
   async hello(): Promise<HelloResponse> {
     const h = await this.req<HelloResponse>('GET', Routes.hello);
     if (!h || h.name !== 'toadstool-kingdoms') throw new ServerError(0, 'version_mismatch', 'That address is not a Kagemura: Ninja Clans server.');

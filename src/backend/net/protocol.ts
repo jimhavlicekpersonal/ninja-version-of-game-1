@@ -119,6 +119,8 @@ export const Routes = {
   googleNotifications: '/v1/webhooks/google',
   /** PUT: this device's push token and choices; DELETE (?token=): stop pushing to it. */
   pushTokens: '/v1/push/tokens',
+  /** GET, no token: the signed balance bundle for this game's rules, if any (step 76; feature `balance-bundles`). */
+  balance: '/v1/balance',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -145,6 +147,11 @@ export interface HelloResponse {
   minClientBuild?: string;
   /** Protocol 8: the server's live data version (for support and dashboards). */
   dataVersion?: string;
+}
+
+/** GET /v1/balance (roadmap step 76): the operators' signed number changes, or null. */
+export interface BalanceResponse {
+  bundle: import('./balanceBundle').BalanceBundle | null;
 }
 
 export interface RegisterRequest {

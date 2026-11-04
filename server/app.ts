@@ -262,6 +262,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       return reply.type('text/plain; version=0.0.4').send(metrics.render());
     });
   }
+  app.get(Routes.balance, async () => core.balance());
   app.get(Routes.hello, async () => ({ ...core.hello(), ...(opts.environment ? { environment: opts.environment } : {}), ...(opts.notice ? { notice: opts.notice } : {}) }));
 
   // Identity

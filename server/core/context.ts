@@ -15,6 +15,8 @@ export interface ServerContext {
   data: GameData;
   /** Battle-rule versions this server can check (roadmap step 73). */
   rules: RulesRegistry;
+  /** The signed balance bundle in force (step 76; `data` already has its numbers), or null. */
+  balance: import('../../src/backend/net/balanceBundle').BalanceBundle | null;
   now(): number;
   /** Unique ids. */
   uuid(): string;

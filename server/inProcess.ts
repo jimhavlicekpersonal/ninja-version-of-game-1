@@ -42,6 +42,10 @@ export class InProcessServerAdapter implements ServerPort {
   hello() {
     return this.call(() => this.core.hello());
   }
+
+  balance() {
+    return this.call(() => this.core.balance());
+  }
   async register(name: string) {
     const r = await this.call(() => this.core.register(name));
     this.token = r.token;

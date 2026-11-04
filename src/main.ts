@@ -14,6 +14,8 @@ import { VillageScene, type VillageSceneInit } from './presentation/render/Villa
 import { BattleScene } from './presentation/render/BattleScene';
 import { App } from './app';
 import { browserKeyValue, Connection, resolveServerUrl } from './backend/net/connection';
+import { BalanceLoader } from './backend/net/balance';
+import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { LocalGroveSource, RemoteGroveSource, type GroveSource } from './backend/social/groveSource';
 import { sound } from './presentation/audio/sound';
 import { notifyPrefs, prefs } from './backend/platform/prefs';
@@ -120,11 +122,15 @@ async function boot(): Promise<void> {
   const builtInUrl = (import.meta.env.VITE_SERVER_URL as string | undefined) || '';
   // With a server, real players raid this village instead of bots (never in the sandbox).
   const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl);
+  // Balance bundles (roadmap step 76): the operators' signed number changes from the last session, applied
+  // before the village loads (never mid-session, never in the sandbox, never without the public key).
+  const balance = sandbox ? null : new BalanceLoader(browserKeyValue, defaultData, SIM_RULES, (import.meta.env.VITE_BALANCE_PUBLIC_KEY as string | undefined) ?? '');
+  await balance?.applyCached();
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl });
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl });
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}) });
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
   // Store receipts go to the server when it checks them (roadmap Phase 4).
   controller.purchaseVerifier = () => (payments.store ? connection.purchaseVerifier(payments.store) : null);

@@ -30,6 +30,10 @@
  * - Game versions (roadmap steps 73, 75; docs/SHIPPING.md "Releasing a balance
  *   change"): RETIRED_RULES ("1,2": archived battle-rule versions no longer
  *   accepted) and MIN_CLIENT_BUILD ("1.2.0": older games are asked to update).
+ * - Balance bundles (step 76, docs/SHIPPING.md 3j): BALANCE_BUNDLE_FILE (a
+ *   signed bundle made by tools/balance/bundle.mjs) and BALANCE_PUBLIC_KEY (the
+ *   key games check it with). The server refuses to start with a bundle that
+ *   does not check out.
  */
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { defaultData } from '../src/gameplay/sim/data';
@@ -43,6 +47,10 @@ import { RedisLeaderboard, RedisLocks, RedisRateLimiter } from './shared';
 import { PromMetrics, ServerSentry } from './observability';
 import { ARCHIVED_ENGINES } from './rules/archive';
 import { liveEngine, parseRetired, RulesRegistry } from './rules/registry';
+import { readFileSync } from 'node:fs';
+import { patchedData, verifyBundle, type BalanceBundle } from '../src/backend/net/balanceBundle';
+import { SIM_RULES } from '../src/gameplay/sim/battle/battle';
+import type { GameData } from '../src/gameplay/sim/types';
 import { verifierFromEnv } from './identity/verify';
 import { checkConfig, paymentsFromEnv } from './config';
 import { pushTransportFromEnv, ServerPush } from './push/push';
@@ -135,14 +143,26 @@ async function main(): Promise<void> {
   const payments = paymentsFromEnv(process.env, fetchFn, Date.now);
   const transport = pushTransportFromEnv(process.env, fetchFn, Date.now);
   const push = transport ? new ServerPush({ repo, data: defaultData, transport, now: Date.now, metrics, log: (l, m, f) => console[l === 'info' ? 'log' : l](m, f ?? {}) }) : undefined;
+  // Balance bundle (step 76): its numbers become the live data; a bad bundle stops the start.
+  let data: GameData = defaultData;
+  let balance: BalanceBundle | null = null;
+  if (process.env.BALANCE_BUNDLE_FILE) {
+    const b = JSON.parse(readFileSync(process.env.BALANCE_BUNDLE_FILE, 'utf8')) as BalanceBundle;
+    if (!(await verifyBundle(b, process.env.BALANCE_PUBLIC_KEY ?? ''))) throw new Error('BALANCE_BUNDLE_FILE is not signed by BALANCE_PUBLIC_KEY.');
+    const p = patchedData(defaultData, b, SIM_RULES);
+    if ('error' in p) throw new Error(`BALANCE_BUNDLE_FILE refused: ${p.error}.`);
+    data = p.data;
+    balance = b;
+    console.log(`Balance bundle ${b.id}: ${b.changes.length} changes (data ${b.dataVersion}).`);
+  }
   // Battle rules (step 73): today's, plus archived versions still in use by older games.
-  const rules = new RulesRegistry(liveEngine(defaultData), { archived: ARCHIVED_ENGINES.map((e) => e()), retired: parseRetired(process.env.RETIRED_RULES), minClientBuild: process.env.MIN_CLIENT_BUILD });
-  shared = { ...shared, payments, push, rules };
+  const rules = new RulesRegistry(liveEngine(data), { archived: ARCHIVED_ENGINES.map((e) => e()), retired: parseRetired(process.env.RETIRED_RULES), minClientBuild: process.env.MIN_CLIENT_BUILD });
+  shared = { ...shared, payments, push, rules, balance };
   console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
     repo,
-    data: defaultData,
+    data,
     corsOrigin: process.env.CORS_ORIGIN,
     logger: level,
     trustProxy: trustProxy(process.env.TRUST_PROXY),

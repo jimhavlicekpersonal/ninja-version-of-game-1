@@ -217,6 +217,17 @@ To make old builds update for any other reason (a security fix, a protocol chang
 
 Changes that never touch a battle (prices, timers, rewards, text) need none of this: the server serves every data version of the same rules. To change those numbers without an app release at all, see balance bundles (section 3j).
 
+### 3j. Balance bundles: number changes without an app release (roadmap step 76)
+
+A bundle is a signed list of changes to existing numbers in the game's data (prices, timers, rewards, loot caps). It can never change combat numbers (those go through section 3i), text or code. Games check the signature and every rule, keep the bundle, and use it from their next start; if anything is off they use their built-in numbers.
+
+1. **Once:** `node tools/balance/bundle.mjs keygen`. Keep the private key in a password manager (never in the repo). Put the public key in the repository variable `VITE_BALANCE_PUBLIC_KEY` (built into the game) and the server's `BALANCE_PUBLIC_KEY`.
+2. **Write the changes** as dotted paths, e.g. `{ "economy.scoutFeeByHall.3": 40 }`, in a file.
+3. **Sign:** `BALANCE_PRIVATE_KEY_FILE=key.pem npm run balance:bundle -- make changes.json 2026-11-20-cheaper-scouting`. It refuses combat numbers, text, unknown paths and non-numbers.
+4. **Deploy** the bundle with the server: `BALANCE_BUNDLE_FILE=/path/balance-….json` (the server refuses to start with a bundle that doesn't check out). Players get it on their next start. To withdraw it, remove the setting: games go back to their built-in numbers on the next start.
+
+A bundle is made for one build of the data: after a game release, make a new one for the new build (or none). Rerun the model-player tests (`tests/gameplay/balance/`) with the same numbers before shipping a big change.
+
 ## 4. Reminders
 
 The installed iOS/Android app schedules real local notifications when you leave the game (turn them on in Settings). The web version can only notify while the game is still open in the background.

@@ -25,6 +25,7 @@ export function createCore(ctx: ServerContext) {
   return {
     ctx,
     hello: () => identity.hello(ctx),
+    balance: () => identity.balance(ctx),
     register: (name: unknown) => identity.register(ctx, name),
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
     me: identity.playerView,

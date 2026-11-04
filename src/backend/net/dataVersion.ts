@@ -40,7 +40,12 @@ export function hash53(s: string): string {
 
 const cache = new WeakMap<object, string>();
 
-/** The data version of a GameData object (cached per object; never mutate data after asking). */
+/** Forget a cached data version (after a balance bundle changed the object in place, step 76). */
+export function forgetDataVersion(data: object): void {
+  cache.delete(data);
+}
+
+/** The data version of a GameData object (cached per object; call forgetDataVersion after changing it in place). */
 export function dataVersionOf(data: object): string {
   const known = cache.get(data);
   if (known) return known;
