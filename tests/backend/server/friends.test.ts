@@ -211,3 +211,24 @@ for (const [label, makeRepo] of repoFactories) {
     });
   });
 }
+
+for (const [label, makeRepo] of repoFactories) {
+  describe(`platform friends (step 61) on ${label} storage`, () => {
+    it('shows which Game Center friends play, only to a player who linked Game Center', async () => {
+      const repo = await makeRepo();
+      const w = world({ repo });
+      const me = await w.player('Ann Swift');
+      const bo = await w.player('Bo Quietstep');
+      const cy = await w.player('Cy Ironpine');
+      const dee = await w.player('Dee Swiftwind');
+      // Before linking: refused (the ids must be the caller's own friends list).
+      expect((await refusal(me.platformFriends({ provider: 'gamecenter', ids: ['T:bo'] }))).status).toBe(403);
+      for (const [id, sub] of [[me.id, 'T:me'], [bo.id, 'T:bo'], [cy.id, 'T:cy'], [dee.id, 'T:dee']] as const) await repo.addLink({ provider: 'gamecenter', subject: sub, playerId: id, linkedAt: w.now() });
+      await cy.setPrivacy({ findable: 'nobody' });
+      await dee.block(me.id);
+      const r = await me.platformFriends({ provider: 'gamecenter', ids: ['T:bo', 'T:cy', 'T:dee', 'T:me', 'T:stranger'] });
+      expect(r.players.map((p) => p.name)).toEqual(['Bo Quietstep']);
+      expect((await refusal(me.platformFriends({ provider: 'nope' as 'gamecenter', ids: [] }))).status).toBe(400);
+    });
+  });
+}

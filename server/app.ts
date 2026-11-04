@@ -281,6 +281,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.friendRequests, lookupRate, authed(async (me, req) => core.friendRequest(me, req.body as never)));
   app.post('/v1/friends/requests/:id', authed(async (me, req) => core.answerFriendRequest(me, (req.params as { id: string }).id, body<{ accept: boolean }>(req).accept)));
   app.delete('/v1/friends/requests/:id', authed(async (me, req) => core.cancelFriendRequest(me, (req.params as { id: string }).id)));
+  app.post(Routes.platformFriends, { ...lookupRate, bodyLimit: 32 * 1024 }, authed(async (me, req) => core.platformFriends(me, req.body as never)));
   app.delete('/v1/friends/:id', authed(async (me, req) => core.unfriend(me, (req.params as { id: string }).id)));
 
   // Linked sign-ins = cloud save (step 24)

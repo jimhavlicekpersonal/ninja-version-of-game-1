@@ -13,6 +13,7 @@ import type { UiKit } from './economyUi';
 import { formatDuration } from './format';
 import { REASON_LABELS } from './groveUi';
 import { qrSvg } from './qr';
+import type { SignInSource } from '../../backend/platform/auth';
 
 export interface FriendsUiDeps {
   kit: UiKit;
@@ -21,6 +22,8 @@ export interface FriendsUiDeps {
   shareBase(): string | null;
   /** Names worth suggesting: real players who raided you recently, and your Alliance mates. */
   suggestions(): string[];
+  /** Platform friends lists this device can read (step 61; Game Center on iPhone). */
+  platform?: SignInSource;
 }
 
 const LEAGUE = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
@@ -36,6 +39,8 @@ export class FriendsUi {
   private found: PlayerCard | null = null;
   private error = '';
   private busy = false;
+  /** Step 61: Kagemura players among the player's platform friends, once they asked. */
+  private platformFound: PlayerCard[] | null = null;
   private body: HTMLElement | null = null;
   private query = '';
 
@@ -169,6 +174,7 @@ export class FriendsUi {
       }
     }
     this.suggestionsBox(body, f);
+    this.platformBox(body);
     this.privacyBox(body, f);
   }
 
@@ -319,6 +325,38 @@ export class FriendsUi {
     for (const n of names) {
       body.append(h('div', { class: 'log-row' }, h('b', {}, n), h('button', { class: 'btn ghost', type: 'button', disabled: this.busy, onclick: () => void this.run(() => this.conn.addFriend({ name: n }), `Friend request sent to ${n}.`) }, 'Add friend')));
     }
+  }
+
+  /** Opt-in: which Game Center (or Play Games) friends play Kagemura. Nothing is read until the player asks. */
+  private platformBox(body: HTMLElement): void {
+    const providers = this.d.platform?.friendProviders?.() ?? [];
+    if (!providers.length || !this.conn.server?.features.includes('platform-friends')) return;
+    const provider = providers[0];
+    const label = provider === 'gamecenter' ? 'Game Center' : 'Play Games';
+    body.append(h('h3', {}, `Friends from ${label}`));
+    if (!this.platformFound) {
+      body.append(
+        h('p', { class: 'muted small' }, `See which of your ${label} friends play Kagemura. ${label} asks you first; the list is checked once and not kept.`),
+        h('button', { class: 'btn ghost', type: 'button', disabled: this.busy, onclick: () => void this.importPlatform(provider, label) }, `Find my ${label} friends`),
+      );
+      return;
+    }
+    if (!this.platformFound.length) body.append(h('p', { class: 'muted small' }, `None of your ${label} friends play Kagemura yet (or they hide from search).`));
+    for (const p of this.platformFound) body.append(this.cardRow(p));
+  }
+
+  private async importPlatform(provider: 'gamecenter' | 'playgames', label: string): Promise<void> {
+    try {
+      if (!(await this.conn.linkedProviders()).includes(provider)) {
+        this.d.kit.toast(`Link ${label} first: Settings → Online play → Sign-ins.`, 'info');
+        return;
+      }
+      const ids = await this.d.platform!.friendIds!(provider);
+      this.platformFound = await this.conn.platformFriends(provider, ids);
+    } catch (e) {
+      this.d.kit.toast((e as Error).message, 'error');
+    }
+    this.draw();
   }
 
   private privacyBox(body: HTMLElement, f: FriendsResponse): void {

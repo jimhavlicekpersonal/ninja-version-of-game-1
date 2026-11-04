@@ -13,6 +13,8 @@ import type {
   FriendRequestResult,
   FriendsResponse,
   PlayerCard,
+  PlatformFriendsRequest,
+  PlatformFriendsResponse,
   PrivacyRequest,
   BattleSubmission,
   BlocksResponse,
@@ -93,6 +95,8 @@ export interface IdentityPort {
   cancelFriendRequest(id: string): Promise<void>;
   unfriend(playerId: string): Promise<void>;
   setPrivacy(req: PrivacyRequest): Promise<FriendsResponse>;
+  /** Step 61: which of my platform friends play Kagemura. */
+  platformFriends(req: PlatformFriendsRequest): Promise<PlatformFriendsResponse>;
   /** Linked sign-ins (roadmap step 24). */
   links(): Promise<LinksResponse>;
   link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse>;

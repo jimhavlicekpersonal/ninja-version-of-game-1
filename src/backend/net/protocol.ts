@@ -141,6 +141,8 @@ export const Routes = {
   playerByCode: (code: string) => `/v1/players/code/${encodeURIComponent(code)}`,
   /** PUT { findable?, showOnline? }: who can find me by name, and whether friends see when I was online. */
   privacy: '/v1/me/privacy',
+  /** POST { provider, ids }: which of my Game Center / Play Games friends play Kagemura (step 61, opt-in). */
+  platformFriends: '/v1/friends/platform',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -262,6 +264,16 @@ export interface FriendRequestResult {
   status: 'sent' | 'friends';
   request?: FriendRequestView;
   friend?: FriendView;
+}
+
+/** Step 61: friend ids from Game Center (teamPlayerID) or Play Games, read on the device with the player's permission. */
+export interface PlatformFriendsRequest {
+  provider: 'gamecenter' | 'playgames';
+  ids: string[];
+}
+export interface PlatformFriendsResponse {
+  /** Kagemura players among them (not blocked either way, not hidden from search). */
+  players: PlayerCard[];
 }
 
 export interface PrivacyRequest {

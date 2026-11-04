@@ -41,6 +41,7 @@ export function createCore(ctx: ServerContext) {
     cancelFriendRequest: friends.cancel.bind(null, ctx),
     unfriend: friends.unfriend.bind(null, ctx),
     setPrivacy: friends.setPrivacy.bind(null, ctx),
+    platformFriends: friends.platformFriends.bind(null, ctx),
     /** Start-up: give players from before unique names their name key (step 59). */
     migrateNames: () => names.migrateNames(ctx),
     links: links.links.bind(null, ctx),

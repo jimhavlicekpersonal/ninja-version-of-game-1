@@ -14,7 +14,7 @@
  */
 import { FINDABLE, FRIEND_CODE_ALPHABET, NAME_CHANGE_DAYS, nameKey, nameShapeProblem, normalizeFriendCode, tidyName } from '../../src/backend/net/names';
 import { leagueFor } from '../../src/gameplay/sim/ranks';
-import type { FriendRequestBody, FriendRequestResult, FriendRequestView, FriendsResponse, FriendView, PlayerCard, PrivacyRequest } from '../../src/backend/net/protocol';
+import type { FriendRequestBody, FriendRequestResult, FriendRequestView, FriendsResponse, FriendView, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PrivacyRequest } from '../../src/backend/net/protocol';
 import { NameTakenError, type FriendRequest, type Player } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 
@@ -250,6 +250,36 @@ export async function cancel(ctx: ServerContext, me: Player, id: unknown): Promi
 /** DELETE /v1/friends/:id */
 export async function unfriend(ctx: ServerContext, me: Player, playerId: unknown): Promise<void> {
   await ctx.repo.removeFriendship(me.id, String(playerId ?? ''));
+}
+
+/** Most platform friend ids one call may check. */
+export const MAX_PLATFORM_IDS = 300;
+
+/**
+ * POST /v1/friends/platform (step 61): which of the caller's Game Center or
+ * Play Games friends play Kagemura. Only for a caller who linked that platform
+ * (so the ids are their own friends list, not a guess list), capped, rate
+ * limited, and players who hide from search (`nobody`) or blocked either way
+ * are left out.
+ */
+export async function platformFriends(ctx: ServerContext, me: Player, req: PlatformFriendsRequest | undefined): Promise<PlatformFriendsResponse> {
+  const provider = req?.provider;
+  if (provider !== 'gamecenter' && provider !== 'playgames') throw new ApiError(400, 'bad_request', 'provider must be gamecenter or playgames.');
+  const linked = (await ctx.repo.linksOf(me.id)).some((l) => l.provider === provider);
+  if (!linked) throw new ApiError(403, 'unauthorized', `Link ${provider === 'gamecenter' ? 'Game Center' : 'Play Games'} to your account first (Settings → Online play → Sign-ins).`);
+  const ids = [...new Set((Array.isArray(req?.ids) ? req.ids : []).filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 200))].slice(0, MAX_PLATFORM_IDS);
+  const s = await socialOf(ctx, me);
+  const players: PlayerCard[] = [];
+  for (const id of ids) {
+    const playerId = await ctx.repo.playerByIdentity(provider, id);
+    if (!playerId || playerId === me.id) continue;
+    const p = await ctx.repo.getPlayer(playerId);
+    if (!p || (p.findable ?? 'everyone') === 'nobody' || (p.bannedUntil && p.bannedUntil > ctx.now())) continue;
+    if (await blockedEitherWay(ctx, me, p, s)) continue;
+    players.push(await card(ctx, p, relationTo(me, s, p.id)));
+  }
+  ctx.metrics.count('tk_friend_imports_total', { provider });
+  return { players };
 }
 
 /** PUT /v1/me/privacy */

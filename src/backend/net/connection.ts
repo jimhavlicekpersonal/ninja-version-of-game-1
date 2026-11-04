@@ -294,6 +294,14 @@ export class Connection {
   setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
     return this.port_().setPrivacy(req);
   }
+  /** The sign-ins linked to this account (to offer importing that platform's friends). */
+  async linkedProviders(): Promise<LinkProvider[]> {
+    return (await this.port_().links()).links.map((l) => l.provider);
+  }
+  /** Step 61: which of these platform friends play Kagemura (ids read on the device, with the player's permission). */
+  async platformFriends(provider: 'gamecenter' | 'playgames', ids: string[]): Promise<PlayerCard[]> {
+    return (await this.port_().platformFriends({ provider, ids })).players;
+  }
   blockPlayer(playerId: string): Promise<void> {
     return this.port_().block(playerId);
   }

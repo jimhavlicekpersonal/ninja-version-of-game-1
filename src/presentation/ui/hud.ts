@@ -146,6 +146,7 @@ export class Hud {
       kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
       connection: this.deps.connection,
       shareBase: () => this.deps.friendLinkBase?.() ?? null,
+      platform: this.deps.signIn,
       // Real raiders (never simulated ones) and Alliance mates.
       suggestions: () => [
         ...this.c.state.battleLog.filter((r) => r.kind === 'defense' && !r.simulated).map((r) => r.opponentName),

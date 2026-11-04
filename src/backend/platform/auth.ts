@@ -17,10 +17,19 @@ export interface SignInSource {
   available(): LinkProvider[];
   /** Ask the player to sign in; throws when they cancel or it fails. */
   obtain(provider: LinkProvider): Promise<LinkCredential>;
+  /** Platforms whose friends list this device can read (roadmap step 61, opt-in). */
+  friendProviders?(): ('gamecenter' | 'playgames')[];
+  /**
+   * The player's friends on that platform (Game Center teamPlayerIDs). The
+   * system asks the player first; throws when they say no or are not signed in.
+   */
+  friendIds?(provider: 'gamecenter' | 'playgames'): Promise<string[]>;
 }
 
 interface TkAuthPlugin {
   signIn(o: { provider: 'apple' | 'gamecenter' }): Promise<LinkCredential>;
+  /** iOS 14.5+: the Game Center friends list (asks the player the first time). */
+  gameCenterFriends(): Promise<{ ids: string[] }>;
 }
 const TkAuth = registerPlugin<TkAuthPlugin>('TkAuth');
 
@@ -49,6 +58,14 @@ export function platformSignIn(opts: { googleClientId?: string; appleServicesId?
   const native = Capacitor.isNativePlatform();
   const plat = Capacitor.getPlatform();
   return {
+    // Step 61: Game Center friends on iPhone. Play Games friends need the Play Games SDK (not in the Android app yet).
+    friendProviders() {
+      return native && plat === 'ios' ? ['gamecenter'] : [];
+    },
+    async friendIds(provider) {
+      if (!native || plat !== 'ios' || provider !== 'gamecenter') throw new Error('Not available on this device.');
+      return (await TkAuth.gameCenterFriends()).ids;
+    },
     available() {
       if (native) return plat === 'ios' ? ['apple', 'gamecenter'] : [];
       const out: LinkProvider[] = [];

@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, FriendRequestBody, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, FriendRequestBody, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -77,6 +77,9 @@ export class InProcessServerAdapter implements ServerPort {
   }
   unfriend(playerId: string) {
     return this.authed((me) => this.core.unfriend(me, playerId));
+  }
+  platformFriends(req: PlatformFriendsRequest) {
+    return this.authed((me) => this.core.platformFriends(me, wire(req)));
   }
   setPrivacy(req: PrivacyRequest) {
     return this.authed((me) => this.core.setPrivacy(me, wire(req)));

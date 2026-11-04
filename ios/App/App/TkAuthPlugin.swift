@@ -12,6 +12,7 @@ public class TkAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorizationControlle
     public let jsName = "TkAuth"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "signIn", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "gameCenterFriends", returnType: CAPPluginReturnPromise),
     ]
 
     private var pending: CAPPluginCall?
@@ -57,6 +58,33 @@ public class TkAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorizationControlle
         guard let call = pending else { return }
         pending = nil
         call.reject("Sign in with Apple was cancelled.", "cancelled")
+    }
+
+    // MARK: Game Center friends (roadmap step 61)
+
+    /// The player's Game Center friends (teamPlayerIDs), so the game can show
+    /// which of them play Kagemura. iOS asks the player the first time
+    /// (NSGKFriendListUsageDescription in Info.plist); the ids are sent to the
+    /// game's server once and not stored there.
+    @objc func gameCenterFriends(_ call: CAPPluginCall) {
+        let local = GKLocalPlayer.local
+        guard local.isAuthenticated else {
+            call.reject("Sign in to Game Center first (Settings → Online play → Sign-ins).", "not_signed_in")
+            return
+        }
+        local.loadFriendsAuthorizationStatus { status, _ in
+            if status == .denied || status == .restricted {
+                call.reject("Kagemura may not see your Game Center friends. You can allow it in the Settings app (Game Center → Friends List).", "denied")
+                return
+            }
+            local.loadFriends { friends, error in
+                if let error = error {
+                    call.reject("Game Center did not share your friends: \(error.localizedDescription)", "failed")
+                    return
+                }
+                call.resolve(["ids": (friends ?? []).map { $0.teamPlayerID }])
+            }
+        }
     }
 
     // MARK: Game Center

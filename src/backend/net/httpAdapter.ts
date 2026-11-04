@@ -40,6 +40,8 @@ import {
   type FriendRequestResult,
   type FriendsResponse,
   type PlayerCard,
+  type PlatformFriendsRequest,
+  type PlatformFriendsResponse,
   type PrivacyRequest,
   type HelloResponse,
   type InboxResponse,
@@ -253,6 +255,10 @@ export class HttpServerAdapter implements ServerPort {
 
   async unfriend(playerId: string): Promise<void> {
     await this.req('DELETE', Routes.friend(playerId));
+  }
+
+  platformFriends(req: PlatformFriendsRequest): Promise<PlatformFriendsResponse> {
+    return this.req('POST', Routes.platformFriends, req);
   }
 
   setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
