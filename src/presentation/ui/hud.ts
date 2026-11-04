@@ -1,3 +1,4 @@
+import { NAME_PROBLEM_TEXT, nameProblem } from '../../gameplay/sim/social/names';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
 import type { SaveStore } from '../../backend/persist/saveStore';
@@ -354,16 +355,28 @@ export class Hud {
         wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
         if (conn.player) {
-          const name = h('input', { class: 'text', type: 'text', maxlength: 24, value: conn.player.name }) as HTMLInputElement;
+          const rules = this.c.data.names.playerNameRules;
+          const name = h('input', { class: 'text', type: 'text', maxlength: rules.maxLength, value: conn.player.name }) as HTMLInputElement;
           name.addEventListener('keydown', (e) => e.stopPropagation());
           const save = h('button', { class: 'btn ghost', type: 'button' }, 'Rename');
+          const hint = h('p', { class: 'muted small' });
+          const changeAt = conn.player.nameChangeAt ?? 0;
+          hint.textContent = `One name, used everywhere and unique: ${rules.minLength}–${rules.maxLength} letters, digits, spaces, _ or -, starting with a letter. ${changeAt > Date.now() ? `Next change: ${new Date(changeAt).toLocaleDateString()}.` : `You can change it once every ${rules.changeEveryDays} days.`}`;
           save.addEventListener('click', () => {
+            const local = nameProblem(name.value, this.c.data);
+            if (local) {
+              this.toast(NAME_PROBLEM_TEXT[local], 'error');
+              return;
+            }
             void conn.rename(name.value).then(
               () => this.toast('Name saved.', 'success'),
-              (e: Error) => this.toast(e.message, 'error'),
+              (e: Error & { suggestions?: string[] }) => {
+                if (e.suggestions?.length) name.value = e.suggestions[0];
+                this.toast(e.suggestions?.length ? `${e.message} Free names: ${e.suggestions.join(', ')}.` : e.message, 'error');
+              },
             );
           });
-          wrap.append(h('label', { class: 'muted small' }, 'Your name in online play'), h('div', { class: 'chat-input-row' }, name, save));
+          wrap.append(h('label', { class: 'muted small' }, 'Your name in online play'), h('div', { class: 'chat-input-row' }, name, save), hint);
           const board = h('div', { class: 'events' }, 'Loading…');
           // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
           let which: 'honor' | 'power' | 'season' = 'honor';

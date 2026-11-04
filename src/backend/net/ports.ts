@@ -31,6 +31,13 @@ import type {
   MatchResponse,
   PlayerView,
   PowerLeaderboardResponse,
+  FriendImportRequest,
+  FriendRequestRequest,
+  FriendRequestResult,
+  FriendsResponse,
+  PrivacyRequest,
+  ProfileCard,
+  SuggestionsResponse,
   SeasonLeaderboardResponse,
   PurchaseHistoryResponse,
   PurchaseIntentRequest,
@@ -56,6 +63,8 @@ export class ServerError extends Error {
     readonly status: number,
     readonly code: ErrorCode | 'network',
     message: string,
+    /** Name suggestions with `name_taken` / `bad_name`. */
+    readonly suggestions: string[] = [],
   ) {
     super(message);
   }
@@ -139,6 +148,18 @@ export interface PurchasePort {
   purchaseHistory(): Promise<PurchaseHistoryResponse>;
 }
 
+/** Unique names and friends (roadmap steps 59-61; feature `friends`). */
+export interface FriendsPort {
+  lookup(name: string): Promise<ProfileCard>;
+  friends(): Promise<FriendsResponse>;
+  requestFriend(req: FriendRequestRequest): Promise<FriendRequestResult>;
+  answerFriendRequest(id: string, accept: boolean): Promise<FriendsResponse>;
+  removeFriend(id: string): Promise<FriendsResponse>;
+  setPrivacy(req: PrivacyRequest): Promise<FriendsResponse>;
+  friendSuggestions(): Promise<SuggestionsResponse>;
+  importFriends(req: FriendImportRequest): Promise<SuggestionsResponse>;
+}
+
 /** Server-sent push (roadmap step 40; feature `push`). */
 export interface PushPort {
   putPushToken(req: PushTokenRequest): Promise<void>;
@@ -154,7 +175,7 @@ export interface ModerationPort {
 }
 
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort, FriendsPort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */

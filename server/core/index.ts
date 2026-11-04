@@ -6,6 +6,7 @@
 import * as account from './account';
 import * as admin from './admin';
 import type { ServerContext } from './context';
+import * as friends from './friends';
 import * as groves from './groves';
 import * as groveRaid from './groveRaid';
 import * as identity from './identity';
@@ -29,12 +30,22 @@ export function createCore(ctx: ServerContext) {
     hello: () => identity.hello(ctx),
     register: (name: unknown) => identity.register(ctx, name),
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
-    me: identity.playerView,
+    me: (p: Parameters<typeof identity.playerView>[0]) => identity.playerView(p, ctx),
     rename: identity.rename.bind(null, ctx),
     deleteAccount: account.deleteAccount.bind(null, ctx),
     links: links.links.bind(null, ctx),
     link: links.link.bind(null, ctx),
     unlink: links.unlink.bind(null, ctx),
+    lookup: friends.lookup.bind(null, ctx),
+    friends: friends.friends.bind(null, ctx),
+    requestFriend: friends.requestFriend.bind(null, ctx),
+    answerFriendRequest: friends.answerRequest.bind(null, ctx),
+    removeFriend: friends.removeFriend.bind(null, ctx),
+    setPrivacy: friends.setPrivacy.bind(null, ctx),
+    friendSuggestions: friends.suggestions.bind(null, ctx),
+    importFriends: friends.importFriends.bind(null, ctx),
+    /** Start-up: name keys and friend codes for players from before step 59. */
+    migrateNames: () => friends.migrateNames(ctx),
     signIn: links.signIn.bind(null, ctx),
     getVillage: village.getVillage.bind(null, ctx),
     startVillage: village.startVillage.bind(null, ctx),

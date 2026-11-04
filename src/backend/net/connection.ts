@@ -425,7 +425,17 @@ export class Connection {
         // The server forgot us (new database): start a new player there.
       }
     }
-    await port.register(this.name);
+    // One unique name per player (step 59): a taken or unfit name is refused with suggestions; take the first.
+    let name = this.name;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await port.register(name);
+        break;
+      } catch (e) {
+        if (!(e instanceof ServerError) || (e.code !== 'name_taken' && e.code !== 'bad_name') || !e.suggestions.length || attempt >= 3) throw e;
+        name = e.suggestions[0];
+      }
+    }
     this.player = await port.me();
     this.kv.set(NAME_KEY, this.player.name);
   }

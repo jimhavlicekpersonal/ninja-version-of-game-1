@@ -62,5 +62,33 @@
     "Cloudpeak",
     "Rainshadow",
     "Duskriver"
-  ]
+  ],
+  "playerNameRules": {
+    "minLength": 3,
+    "maxLength": 18,
+    "changeEveryDays": 28,
+    "holdReleasedDays": 35,
+    "formerlyShownDays": 28,
+    "reservedWords": [
+      "admin",
+      "administrator",
+      "kagemura",
+      "support",
+      "moderator",
+      "official",
+      "staff",
+      "system",
+      "developer",
+      "toadstool"
+    ],
+    "reservedExact": [
+      "mod",
+      "gm",
+      "dev",
+      "ruler",
+      "help",
+      "server",
+      "deleted player"
+    ]
+  }
 }

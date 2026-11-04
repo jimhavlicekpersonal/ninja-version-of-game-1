@@ -30,9 +30,95 @@ export interface Player {
   /** Suspended by staff until this time (0 or absent: not banned). Banned players are not matched or ranked. */
   bannedUntil?: number;
   banReason?: string | null;
+  /** The unique name key (roadmap step 59: lower case, separators made one). */
+  nameKey?: string | null;
+  /** When the name last changed (one change every 28 days). */
+  nameChangedAt?: number;
+  /** One change allowed now regardless of the 28 days (names fixed by the step 59 migration). */
+  nameChangeFree?: boolean;
+  /** The name before the last change, shown to friends as "formerly …" until `previousNameUntil`. */
+  previousName?: string | null;
+  previousNameUntil?: number;
+  /** Short code friends add each other by (KAGE-XXXXXX). */
+  friendCode?: string | null;
+  /** Who can find this player by typing their name. */
+  findable?: Findable;
+  /** Friends don't see when this player was last online. */
+  hideOnline?: boolean;
+  /** Staff or official account: a badge nobody else can get. */
+  staff?: boolean;
+  /** When the player last left a Gang (24 hours before joining another). */
+  squadLeftAt?: number;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason'>>;
+export type Findable = 'everyone' | 'friends_of_friends' | 'nobody';
+
+export type PlayerPatch = Partial<
+  Pick<
+    Player,
+    | 'name'
+    | 'trophies'
+    | 'hallLevel'
+    | 'shieldUntil'
+    | 'base'
+    | 'groveId'
+    | 'updatedAt'
+    | 'lastSeenAt'
+    | 'mutedUntil'
+    | 'ratings'
+    | 'honorLoss'
+    | 'bannedUntil'
+    | 'banReason'
+    | 'nameKey'
+    | 'nameChangedAt'
+    | 'nameChangeFree'
+    | 'previousName'
+    | 'previousNameUntil'
+    | 'friendCode'
+    | 'findable'
+    | 'hideOnline'
+    | 'staff'
+    | 'squadLeftAt'
+  >
+>;
+
+/** A friend request (roadmap step 59); open ones expire after 14 days. */
+export interface FriendRequest {
+  id: string;
+  fromId: string;
+  toId: string;
+  at: number;
+  status: 'open' | 'accepted' | 'declined' | 'cancelled' | 'expired';
+}
+
+/** A Gang (roadmap step 63): 2-4 friends. Internal id `squad`. */
+export interface Squad {
+  id: string;
+  name: string;
+  leaderId: string;
+  createdAt: number;
+}
+
+export interface SquadMember {
+  squadId: string;
+  playerId: string;
+  role: 'leader' | 'member';
+  joinedAt: number;
+}
+
+export interface SquadInvite {
+  id: string;
+  squadId: string;
+  fromId: string;
+  toId: string;
+  at: number;
+  status: 'open' | 'accepted' | 'declined' | 'cancelled' | 'expired';
+}
+
+/** A name in use or held for its previous owner (a unique-key clash; Postgres code 23505). */
+export class NameClashError extends Error {
+  readonly code = '23505';
+}
 
 /** One place on an archived season leaderboard (roadmap step 55). */
 export interface SeasonEntry {
@@ -384,6 +470,8 @@ export interface PruneCutoffs {
   commandsBefore?: number;
   /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
   idempotencyBefore?: number;
+  /** Open friend requests made before this time expire (14 days). */
+  friendRequestsBefore?: number;
   /** Purchase intents from before this time are forgotten (a purchase that comes later is still credited, without the age-cap reservation). */
   intentsBefore?: number;
 }
@@ -427,9 +515,53 @@ export interface Repo {
   addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void>;
   linksOf(playerId: string): Promise<IdentityLink[]>;
   playerByIdentity(provider: string, subject: string): Promise<string | null>;
+  /** Players linked to any of these ids of one provider (friend import, step 61). */
+  playersByIdentities(provider: string, subjects: string[]): Promise<string[]>;
   /** False if that sign-in is linked to someone, or this player already has one from that provider. */
   addLink(l: IdentityLink): Promise<boolean>;
   removeLink(playerId: string, provider: string): Promise<void>;
+  // names and friends (roadmap step 59)
+  playerByNameKey(key: string): Promise<Player | null>;
+  playerByFriendCode(code: string): Promise<Player | null>;
+  /** Who a released name is held for, and until when (null: not held, or the hold ran out before `now`). */
+  nameHold(key: string, now: number): Promise<{ playerId: string; until: number } | null>;
+  holdName(key: string, playerId: string, until: number): Promise<void>;
+  releaseNameHold(key: string): Promise<void>;
+  /** Players still without a name key or friend code (the step 59 migration), oldest first. */
+  playersNeedingNames(limit: number): Promise<Player[]>;
+  /** False if an open request between them in that direction already exists. */
+  addFriendRequest(r: FriendRequest): Promise<boolean>;
+  getFriendRequest(id: string): Promise<FriendRequest | null>;
+  /** Open requests to or from this player. */
+  friendRequestsOf(playerId: string): Promise<FriendRequest[]>;
+  openFriendRequest(fromId: string, toId: string): Promise<FriendRequest | null>;
+  /** Moves an open request to another status; false if it was no longer open. */
+  closeFriendRequest(id: string, status: FriendRequest['status']): Promise<boolean>;
+  /** False if they were already friends. */
+  addFriendship(a: string, b: string, since: number): Promise<boolean>;
+  removeFriendship(a: string, b: string): Promise<void>;
+  friendsOf(playerId: string): Promise<{ id: string; since: number }[]>;
+  // Gangs (roadmap step 63)
+  /** False if the leader is already in a Gang (nothing stored). */
+  createSquad(s: Squad, leader: SquadMember): Promise<boolean>;
+  getSquad(id: string): Promise<Squad | null>;
+  /** The player's Gang, or null. */
+  squadOf(playerId: string): Promise<Squad | null>;
+  squadMembers(squadId: string): Promise<SquadMember[]>;
+  /** False if the player is already in a Gang. */
+  addSquadMember(m: SquadMember): Promise<boolean>;
+  removeSquadMember(squadId: string, playerId: string): Promise<void>;
+  /** Makes `playerId` the leader (and the old leader a member). */
+  setSquadLeader(squadId: string, playerId: string): Promise<void>;
+  deleteSquad(id: string): Promise<void>;
+  /** False if an open invite to that player from this Gang exists. */
+  addSquadInvite(i: SquadInvite): Promise<boolean>;
+  getSquadInvite(id: string): Promise<SquadInvite | null>;
+  /** Open invites to a player. */
+  squadInvitesTo(playerId: string): Promise<SquadInvite[]>;
+  /** Open invites from a Gang. */
+  squadInvitesFrom(squadId: string): Promise<SquadInvite[]>;
+  closeSquadInvite(id: string, status: SquadInvite['status']): Promise<boolean>;
   // staff queues (roadmap step 56)
   /** Open deletion requests and reports, and how many were made before each cutoff (overdue). */
   queueStats(deletionsBefore: number, reportsBefore: number): Promise<{ deletions: { open: number; overdue: number }; reports: { open: number; overdue: number } }>;
@@ -630,6 +762,12 @@ export class MemoryRepo implements Repo {
   staffRows: StaffAction[] = [];
   seasonRows = new Map<number, { closedAt: number; reset: number }>();
   seasonArchiveRows: SeasonEntry[] = [];
+  nameHoldRows = new Map<string, { playerId: string; until: number }>();
+  friendRequestRows: FriendRequest[] = [];
+  friendshipRows: { a: string; b: string; since: number }[] = [];
+  squadRows = new Map<string, Squad>();
+  squadMemberRows: SquadMember[] = [];
+  squadInviteRows: SquadInvite[] = [];
   intentRows: PurchaseIntent[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
@@ -714,6 +852,7 @@ export class MemoryRepo implements Repo {
 
   async ping(): Promise<void> {}
   async createPlayer(p: Player): Promise<void> {
+    if (this.clash(p)) throw new NameClashError('That name or friend code is in use.');
     this.players.set(p.id, clone(p));
   }
   async playerByTokenHash(hash: string): Promise<Player | null> {
@@ -731,6 +870,10 @@ export class MemoryRepo implements Repo {
   async playerByIdentity(provider: string, subject: string): Promise<string | null> {
     return this.linkRows.find((l) => l.provider === provider && l.subject === subject)?.playerId ?? null;
   }
+  async playersByIdentities(provider: string, subjects: string[]): Promise<string[]> {
+    const set = new Set(subjects);
+    return this.linkRows.filter((l) => l.provider === provider && set.has(l.subject)).map((l) => l.playerId);
+  }
   async addLink(l: IdentityLink): Promise<boolean> {
     if (this.linkRows.some((x) => (x.provider === l.provider && x.subject === l.subject) || (x.playerId === l.playerId && x.provider === l.provider))) return false;
     this.linkRows.push(clone(l));
@@ -738,6 +881,129 @@ export class MemoryRepo implements Repo {
   }
   async removeLink(playerId: string, provider: string): Promise<void> {
     this.linkRows = this.linkRows.filter((l) => !(l.playerId === playerId && l.provider === provider));
+  }
+  private clash(p: Pick<Player, 'id' | 'nameKey' | 'friendCode'>): boolean {
+    for (const q of this.players.values()) {
+      if (q.id === p.id) continue;
+      if ((p.nameKey && q.nameKey === p.nameKey) || (p.friendCode && q.friendCode === p.friendCode)) return true;
+    }
+    return false;
+  }
+  async playerByNameKey(key: string): Promise<Player | null> {
+    const p = [...this.players.values()].find((x) => x.nameKey === key);
+    return p ? clone(p) : null;
+  }
+  async playerByFriendCode(code: string): Promise<Player | null> {
+    const p = [...this.players.values()].find((x) => x.friendCode === code);
+    return p ? clone(p) : null;
+  }
+  async nameHold(key: string, now: number): Promise<{ playerId: string; until: number } | null> {
+    const h = this.nameHoldRows.get(key);
+    return h && h.until > now ? { ...h } : null;
+  }
+  async holdName(key: string, playerId: string, until: number): Promise<void> {
+    this.nameHoldRows.set(key, { playerId, until });
+  }
+  async releaseNameHold(key: string): Promise<void> {
+    this.nameHoldRows.delete(key);
+  }
+  async playersNeedingNames(limit: number): Promise<Player[]> {
+    return [...this.players.values()]
+      .filter((p) => !p.nameKey || !p.friendCode)
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addFriendRequest(r: FriendRequest): Promise<boolean> {
+    if (this.friendRequestRows.some((x) => x.status === 'open' && x.fromId === r.fromId && x.toId === r.toId)) return false;
+    this.friendRequestRows.push(clone(r));
+    return true;
+  }
+  async getFriendRequest(id: string): Promise<FriendRequest | null> {
+    const r = this.friendRequestRows.find((x) => x.id === id);
+    return r ? clone(r) : null;
+  }
+  async friendRequestsOf(playerId: string): Promise<FriendRequest[]> {
+    return this.friendRequestRows.filter((r) => r.status === 'open' && (r.fromId === playerId || r.toId === playerId)).sort((a, b) => b.at - a.at).map(clone);
+  }
+  async openFriendRequest(fromId: string, toId: string): Promise<FriendRequest | null> {
+    const r = this.friendRequestRows.find((x) => x.status === 'open' && x.fromId === fromId && x.toId === toId);
+    return r ? clone(r) : null;
+  }
+  async closeFriendRequest(id: string, status: FriendRequest['status']): Promise<boolean> {
+    const r = this.friendRequestRows.find((x) => x.id === id && x.status === 'open');
+    if (!r) return false;
+    r.status = status;
+    return true;
+  }
+  async addFriendship(a: string, b: string, since: number): Promise<boolean> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    if (this.friendshipRows.some((f) => f.a === x && f.b === y)) return false;
+    this.friendshipRows.push({ a: x, b: y, since });
+    return true;
+  }
+  async removeFriendship(a: string, b: string): Promise<void> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    this.friendshipRows = this.friendshipRows.filter((f) => !(f.a === x && f.b === y));
+  }
+  async friendsOf(playerId: string): Promise<{ id: string; since: number }[]> {
+    return this.friendshipRows.filter((f) => f.a === playerId || f.b === playerId).map((f) => ({ id: f.a === playerId ? f.b : f.a, since: f.since }));
+  }
+  async createSquad(s: Squad, leader: SquadMember): Promise<boolean> {
+    if (this.squadMemberRows.some((m) => m.playerId === leader.playerId)) return false;
+    this.squadRows.set(s.id, clone(s));
+    this.squadMemberRows.push(clone(leader));
+    return true;
+  }
+  async getSquad(id: string): Promise<Squad | null> {
+    const s = this.squadRows.get(id);
+    return s ? clone(s) : null;
+  }
+  async squadOf(playerId: string): Promise<Squad | null> {
+    const m = this.squadMemberRows.find((x) => x.playerId === playerId);
+    return m ? this.getSquad(m.squadId) : null;
+  }
+  async squadMembers(squadId: string): Promise<SquadMember[]> {
+    return this.squadMemberRows.filter((m) => m.squadId === squadId).sort((a, b) => a.joinedAt - b.joinedAt).map(clone);
+  }
+  async addSquadMember(m: SquadMember): Promise<boolean> {
+    if (this.squadMemberRows.some((x) => x.playerId === m.playerId)) return false;
+    this.squadMemberRows.push(clone(m));
+    return true;
+  }
+  async removeSquadMember(squadId: string, playerId: string): Promise<void> {
+    this.squadMemberRows = this.squadMemberRows.filter((m) => !(m.squadId === squadId && m.playerId === playerId));
+  }
+  async setSquadLeader(squadId: string, playerId: string): Promise<void> {
+    for (const m of this.squadMemberRows) if (m.squadId === squadId) m.role = m.playerId === playerId ? 'leader' : 'member';
+    const s = this.squadRows.get(squadId);
+    if (s) s.leaderId = playerId;
+  }
+  async deleteSquad(id: string): Promise<void> {
+    this.squadRows.delete(id);
+    this.squadMemberRows = this.squadMemberRows.filter((m) => m.squadId !== id);
+    this.squadInviteRows = this.squadInviteRows.filter((i) => i.squadId !== id);
+  }
+  async addSquadInvite(i: SquadInvite): Promise<boolean> {
+    if (this.squadInviteRows.some((x) => x.status === 'open' && x.squadId === i.squadId && x.toId === i.toId)) return false;
+    this.squadInviteRows.push(clone(i));
+    return true;
+  }
+  async getSquadInvite(id: string): Promise<SquadInvite | null> {
+    const i = this.squadInviteRows.find((x) => x.id === id);
+    return i ? clone(i) : null;
+  }
+  async squadInvitesTo(playerId: string): Promise<SquadInvite[]> {
+    return this.squadInviteRows.filter((i) => i.status === 'open' && i.toId === playerId).map(clone);
+  }
+  async squadInvitesFrom(squadId: string): Promise<SquadInvite[]> {
+    return this.squadInviteRows.filter((i) => i.status === 'open' && i.squadId === squadId).map(clone);
+  }
+  async closeSquadInvite(id: string, status: SquadInvite['status']): Promise<boolean> {
+    const i = this.squadInviteRows.find((x) => x.id === id && x.status === 'open');
+    if (!i) return false;
+    i.status = status;
+    return true;
   }
   async queueStats(deletionsBefore: number, reportsBefore: number) {
     const d = this.deletionRows.filter((r) => r.status === 'open');
@@ -882,7 +1148,9 @@ export class MemoryRepo implements Repo {
   }
   async updatePlayer(id: string, patch: PlayerPatch): Promise<void> {
     const p = this.players.get(id);
-    if (p) Object.assign(p, clone(patch));
+    if (!p) return;
+    if ((patch.nameKey || patch.friendCode) && this.clash({ id, nameKey: patch.nameKey ?? null, friendCode: patch.friendCode ?? null })) throw new NameClashError('That name or friend code is in use.');
+    Object.assign(p, clone(patch));
   }
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
     const since = q.lockedSince;
@@ -981,6 +1249,8 @@ export class MemoryRepo implements Repo {
     const commands = this.commandRows.length;
     const cmdBefore = c.commandsBefore;
     if (cmdBefore !== undefined) this.commandRows = this.commandRows.filter((r) => r.at >= cmdBefore);
+    const frBefore = c.friendRequestsBefore;
+    if (frBefore !== undefined) for (const r of this.friendRequestRows) if (r.status === 'open' && r.at < frBefore) r.status = 'expired';
     const intentsBefore = c.intentsBefore;
     if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
     let idempotency = 0;
@@ -1023,6 +1293,11 @@ export class MemoryRepo implements Repo {
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
     this.linkRows = this.linkRows.filter((l) => l.playerId !== id);
     this.intentRows = this.intentRows.filter((i) => i.playerId !== id);
+    this.friendRequestRows = this.friendRequestRows.filter((r) => r.fromId !== id && r.toId !== id);
+    this.friendshipRows = this.friendshipRows.filter((f) => f.a !== id && f.b !== id);
+    this.squadMemberRows = this.squadMemberRows.filter((m) => m.playerId !== id);
+    this.squadInviteRows = this.squadInviteRows.filter((i) => i.fromId !== id && i.toId !== id);
+    for (const [k, h] of this.nameHoldRows) if (h.playerId === id) this.nameHoldRows.delete(k);
     this.pushRows = this.pushRows.filter((t) => t.playerId !== id);
     // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
     for (const p of this.purchaseRows) if (p.playerId === id) p.playerId = D.id;

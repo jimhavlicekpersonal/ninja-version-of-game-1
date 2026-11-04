@@ -18,6 +18,7 @@
  * - METRICS_TOKEN: serve Prometheus metrics at /metrics to this bearer token.
  * - LOG_LEVEL: debug | info (default) | warn | error.
  * - RELEASE: the build name shown by /healthz and Sentry (default: package version).
+ * - GAME_URL: the web game's address, where friend share links (/f/<code>) send people.
  * - SUPPORT_EMAIL, PRIVACY_URL: shown on the support page (/support, the listings' Support URL).
  * - SERVER_NOTICE: a message shown to every player in Settings (maintenance, an incident).
  * - DATABASE_READ_URL: an optional read replica (leaderboards, defense logs, staff reports).
@@ -165,7 +166,11 @@ async function main(): Promise<void> {
     environment: config.deploy === 'production' ? undefined : config.deploy,
     notice: process.env.SERVER_NOTICE?.slice(0, 300) || undefined,
     support: { email: process.env.SUPPORT_EMAIL || undefined, privacyUrl: process.env.PRIVACY_URL || undefined },
+    gameUrl: process.env.GAME_URL || undefined,
   });
+  // Step 59: name keys and friend codes for players from before unique names (idempotent).
+  const migrated = await app.core.migrateNames();
+  if (migrated) console.log(`Gave ${migrated} players a unique name key and friend code.`);
   const port = Number(process.env.PORT ?? 8787);
   // '::' takes IPv6 and IPv4 (step 45); a machine without IPv6 falls back to IPv4 only.
   try {

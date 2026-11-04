@@ -2,6 +2,7 @@ import { filterText } from '../../src/gameplay/sim/social/grove';
 import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { changeName, claimableName, newFriendCode, withNameClash } from './friends';
 import { purchaseFeatures } from './purchases';
 
 /** The oldest game this server serves (protocol 7: villages kept on the server, client headers, idempotent writes). */
@@ -10,7 +11,7 @@ export const MIN_PROTOCOL = 7;
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'season-archive', ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])] };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'season-archive', 'friends', ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])] };
 }
 
 export function cleanName(raw: unknown, ctx: ServerContext): string {
@@ -18,12 +19,16 @@ export function cleanName(raw: unknown, ctx: ServerContext): string {
   return s.length >= 2 ? s : 'Ruler';
 }
 
-export async function register(ctx: ServerContext, name: unknown): Promise<RegisterResponse> {
+export async function register(ctx: ServerContext, rawName: unknown): Promise<RegisterResponse> {
+  // One unique name (step 59): refused with a reason and suggestions, never silently changed.
+  const { name, key } = await claimableName(ctx, rawName, null);
   const token = ctx.newToken();
   const t = ctx.now();
   const player: Player = {
     id: ctx.uuid(),
-    name: cleanName(name, ctx),
+    name,
+    nameKey: key,
+    friendCode: newFriendCode(ctx),
     tokenHash: await ctx.hash(token),
     trophies: ctx.data.ranks.startingTrophies,
     hallLevel: 1,
@@ -35,7 +40,7 @@ export async function register(ctx: ServerContext, name: unknown): Promise<Regis
     lastSeenAt: t,
     mutedUntil: 0,
   };
-  await ctx.repo.createPlayer(player);
+  await withNameClash(ctx, name, () => ctx.repo.createPlayer(player));
   return { playerId: player.id, token };
 }
 
@@ -58,12 +63,11 @@ export async function authenticate(ctx: ServerContext, token: string | undefined
   return p;
 }
 
-export function playerView(p: Player): PlayerView {
-  return { id: p.id, name: p.name, trophies: p.trophies, hallLevel: p.hallLevel, shieldUntil: p.shieldUntil, groveId: p.groveId };
+export function playerView(p: Player, ctx?: ServerContext): PlayerView {
+  const changeAt = p.nameChangeFree || !ctx ? 0 : Math.max(0, (p.nameChangedAt ?? 0) + ctx.data.names.playerNameRules.changeEveryDays * 24 * HOUR);
+  return { id: p.id, name: p.name, trophies: p.trophies, hallLevel: p.hallLevel, shieldUntil: p.shieldUntil, groveId: p.groveId, ...(p.friendCode ? { friendCode: p.friendCode } : {}), nameChangeAt: p.nameChangedAt ? changeAt : 0, ...(p.staff ? { staff: true } : {}) };
 }
 
 export async function rename(ctx: ServerContext, me: Player, name: unknown): Promise<PlayerView> {
-  const clean = cleanName(name, ctx);
-  await ctx.repo.updatePlayer(me.id, { name: clean, updatedAt: ctx.now() });
-  return playerView({ ...me, name: clean });
+  return playerView(await changeName(ctx, me, name), ctx);
 }

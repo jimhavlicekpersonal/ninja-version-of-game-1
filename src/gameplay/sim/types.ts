@@ -446,6 +446,18 @@ export interface NamesDef {
   placeSecond: string[];
   playerFirst: string[];
   playerSecond: string[];
+  /** One unique player name (roadmap step 59): limits, change and hold periods, names nobody may take. */
+  playerNameRules: {
+    minLength: number;
+    maxLength: number;
+    changeEveryDays: number;
+    holdReleasedDays: number;
+    formerlyShownDays: number;
+    /** Refused when the name (letters read through digit look-alikes) contains one of these. */
+    reservedWords: string[];
+    /** Refused when the whole name is one of these (read through digit look-alikes). */
+    reservedExact: string[];
+  };
 }
 
 export interface BuildingDef {

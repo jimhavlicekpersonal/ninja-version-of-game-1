@@ -15,7 +15,7 @@ for (const [label, makeRepo] of repoFactories) {
       const w = world({ repo: await makeRepo(), start: Date.UTC(2026, 3, 20) });
       const ann = await w.player('Ann', baseAt(2));
       const bob = await w.player('Bob', baseAt(2, 9));
-      const cy = await w.player('Cy'); // no base: not ranked, still reset
+      const cy = await w.player('Cyd'); // no base: not ranked, still reset
       await w.repo.updatePlayer(cy.id, { trophies: 5000 });
       // The first run only marks the month that just ended (no archive, no reset in mid-month).
       expect(await w.core.closeSeasons()).toEqual([seasonOf(w.now()) - 1]);

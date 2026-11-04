@@ -28,7 +28,9 @@ import { defaultData as data } from '../../../src/gameplay/sim/data';
 
 let url = process.env.CONTRACT_URL ?? '';
 let close: (() => Promise<void>) | null = null;
+// Player names are unique and 3-18 characters (step 59): `Ct<tag> <Who>` stays short and starts with a letter.
 const tag = Math.random().toString(36).slice(2, 7);
+const nm = (who: string) => `Ct${tag} ${who}`;
 
 beforeAll(async () => {
   if (url) return;
@@ -45,7 +47,7 @@ const client = () => new HttpServerAdapter(url, { tokens: memoryTokenStore(), re
 
 async function player(name: string, hall = 1) {
   const c = client();
-  const reg = await c.register(`Contract ${name} ${tag}`);
+  const reg = await c.register(nm(name));
   await c.uploadBase({ base: generateOpponent(hall * 101 + name.length, hall, data) });
   return Object.assign(c, { id: reg.playerId });
 }
@@ -86,18 +88,24 @@ describe('protocol contract', () => {
     expect(e.status).toBe(401);
     expect(e.code).toBe('unauthorized');
     expect(e.message).toBeTruthy();
-    const r = await c.register(`Contract Pip ${tag}`);
+    const r = await c.register(nm('Pip'));
     expect(r.playerId).toBeTruthy();
     expect(r.token.length).toBeGreaterThanOrEqual(16);
     const me = await c.me();
     expect(me).toMatchObject({ id: r.playerId, groveId: null, hallLevel: 1 });
     expect(me.shieldUntil).toBeGreaterThan(Date.now()); // new players start shielded
-    expect((await c.rename(`Contract Pip the Bold ${tag}`.slice(0, 24))).name).toMatch(/^Contract Pip/);
+    expect((await c.rename(nm('Pip Bold'))).name).toBe(nm('Pip Bold'));
+    // One name per player: a taken name is refused with suggestions (step 59).
+    const other = client();
+    const taken = await errorOf(other.register(nm('Pip Bold').toUpperCase().replace(' ', '_')));
+    expect(taken).toMatchObject({ status: 409, code: 'name_taken' });
+    expect(taken.suggestions.length).toBeGreaterThan(0);
+    expect(await errorOf(other.register('x'))).toMatchObject({ status: 400, code: 'bad_name' });
   });
 
   it('bases: valid ones are stored, impossible ones are refused with bad_request', async () => {
     const c = client();
-    await c.register(`Contract Base ${tag}`);
+    await c.register(nm('Base'));
     await c.uploadBase({ base: generateOpponent(5, 2, data) });
     expect((await c.me()).hallLevel).toBe(2);
     const bad = generateOpponent(5, 2, data);
@@ -143,7 +151,7 @@ describe('protocol contract', () => {
   });
 
   it('pvp: all fifty warriors reproduce the same result over HTTP', async () => {
-    const a = await player('Full roster', 15);
+    const a = await player('Roster', 15);
     const m = (await a.match())!;
     const army = Object.fromEntries(Object.keys(data.troops).map((id) => [id, 1]));
     const levels = Object.fromEntries(Object.keys(army).map((id) => [id, 1]));
@@ -218,7 +226,7 @@ describe('protocol contract', () => {
   it('account deletion: DELETE /v1/me deletes the player and its token stops working; web requests are accepted', async () => {
     const tokens = memoryTokenStore();
     const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
-    await c.register(`Contract Leaving ${tag}`);
+    await c.register(nm('Leaving'));
     await c.uploadBase({ base: generateOpponent(7, 1, data) });
     const saved = tokens.get();
     await c.deleteAccount();
@@ -226,7 +234,7 @@ describe('protocol contract', () => {
     const again = new HttpServerAdapter(url, { tokens: memoryTokenStore(saved), retryDelayMs: 200 });
     expect(await errorOf(again.me())).toMatchObject({ status: 401, code: 'unauthorized' });
     expect((await client().hello()).features).toContain('account-deletion');
-    const res = await fetch(`${url}${Routes.deletionRequests}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: `Contract Nobody ${tag}`, note: 'contract test' }) });
+    const res = await fetch(`${url}${Routes.deletionRequests}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: nm('Nobody'), note: 'contract test' }) });
     expect(res.status).toBe(202);
     expect((await res.json()).id).toBeTruthy();
     const page = await fetch(`${url}${Routes.deletionPage}`);
@@ -261,14 +269,14 @@ describe('protocol contract', () => {
   it('protocol 7: old games are told to update; a repeated Idempotency-Key gets the first answer', async () => {
     const tokens = memoryTokenStore();
     const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
-    await c.register(`Contract Idem ${tag}`);
+    await c.register(nm('Idem'));
     const auth = { authorization: `Bearer ${tokens.get()}`, 'content-type': 'application/json' };
     const old = await fetch(`${url}${Routes.me}`, { headers: { ...auth, 'x-protocol': '6' } });
     expect(old.status).toBe(426);
     expect((await old.json()).error).toBe('version_mismatch');
     const put = (name: string) => fetch(`${url}${Routes.me}`, { method: 'PUT', headers: { ...auth, 'x-protocol': '7', 'idempotency-key': `contract-${tag}` }, body: JSON.stringify({ name }) });
-    const first = await (await put(`Contract One ${tag}`)).json();
-    const second = await (await put(`Contract Two ${tag}`)).json();
+    const first = await (await put(nm('One'))).json();
+    const second = await (await put(nm('Two'))).json();
     expect(second).toEqual(first);
   });
 

@@ -46,6 +46,8 @@ export class ApiError extends Error {
     readonly status: number,
     readonly code: import('../../src/backend/net/protocol').ErrorCode,
     message: string,
+    /** Extra fields for the error body (e.g. name suggestions). */
+    readonly details?: { suggestions?: string[] },
   ) {
     super(message);
   }

@@ -59,11 +59,17 @@ export type ErrorCode =
   /** 403: the purchase is not allowed (the under-18 monthly cap, or purchases not set up on this server); nothing was charged. */
   | 'purchase_refused'
   /** 403: staff suspended this account from online play (the message says why and until when). */
-  | 'banned';
+  | 'banned'
+  /** 409: another player has that name (or it is held for its previous owner); `suggestions` lists free ones. */
+  | 'name_taken'
+  /** 400: the name breaks a rule (length, characters, reserved); `suggestions` lists free ones. */
+  | 'bad_name';
 
 export interface ErrorBody {
   error: ErrorCode;
   message: string;
+  /** With `name_taken` and `bad_name`: names that are free and fit the rules. */
+  suggestions?: string[];
 }
 
 export const Routes = {
@@ -115,6 +121,24 @@ export const Routes = {
   appleNotifications: '/v1/webhooks/apple',
   /** POST, no token: Google Play Real-time Developer Notifications (Pub/Sub push, OIDC-signed). */
   googleNotifications: '/v1/webhooks/google',
+  /** GET ?name=: the one player with exactly that name (roadmap step 59), if they can be found. */
+  lookup: '/v1/players/lookup',
+  /** GET: friends, requests, my code and privacy. */
+  friends: '/v1/friends',
+  /** POST { code } | { name }: ask to be friends. */
+  friendRequests: '/v1/friends/requests',
+  /** POST { accept }: answer (or, the sender, withdraw) a request. */
+  friendRequest: (id: string) => `/v1/friends/requests/${encodeURIComponent(id)}`,
+  /** DELETE: stop being friends. */
+  friend: (id: string) => `/v1/friends/${encodeURIComponent(id)}`,
+  /** GET: recent opponents and Alliance mates who aren't friends yet (step 60). */
+  friendSuggestions: '/v1/friends/suggestions',
+  /** POST { provider, ids }: Game Center / Play Games friends who play (step 61, opt-in). */
+  friendImport: '/v1/friends/import',
+  /** PUT { findable?, hideOnline? }. */
+  privacy: '/v1/me/privacy',
+  /** GET (HTML): a share link that opens the game with this friend code. Not part of the game's API. */
+  shareLink: (code: string) => `/f/${encodeURIComponent(code)}`,
   /** PUT: this device's push token and choices; DELETE (?token=): stop pushing to it. */
   pushTokens: '/v1/push/tokens',
 } as const;
@@ -150,6 +174,12 @@ export interface PlayerView {
   hallLevel: number;
   shieldUntil: number;
   groveId: string | null;
+  /** Friend code (roadmap step 59), e.g. KAGE-7Q4M2X. */
+  friendCode?: string;
+  /** When the name may next be changed (0: now). */
+  nameChangeAt?: number;
+  /** Staff or official account. */
+  staff?: boolean;
 }
 
 export interface RenameRequest {
@@ -673,3 +703,72 @@ export interface SeasonLeaderboardResponse {
   players: { rank: number; name: string; honor: number; hallLevel: number }[];
   me: { rank: number; honor: number } | null;
 }
+
+// ---------------------------------------------------------------- friends (roadmap steps 59-61)
+
+/** Who can find a player by typing their name. */
+export type Findable = 'everyone' | 'friends_of_friends' | 'nobody';
+
+/** What anyone who found a player sees. */
+export interface ProfileCard {
+  id: string;
+  name: string;
+  hallLevel: number;
+  honor: number;
+  /** League display name. */
+  league: string;
+  /** Their Gang's name, if any (step 63). */
+  gang: string | null;
+  /** Staff or official account (a badge nobody else can get). */
+  staff: boolean;
+}
+
+export interface FriendView extends ProfileCard {
+  since: number;
+  /** Last seen online; null when they hide it. */
+  lastSeen: number | null;
+  /** Their name before a recent change ("formerly …"), for 28 days. */
+  formerly: string | null;
+}
+
+export interface FriendRequestView {
+  id: string;
+  at: number;
+  player: ProfileCard;
+}
+
+export interface FriendsResponse {
+  friends: FriendView[];
+  incoming: FriendRequestView[];
+  outgoing: FriendRequestView[];
+  code: string;
+  findable: Findable;
+  hideOnline: boolean;
+  max: number;
+}
+
+export interface FriendRequestRequest {
+  code?: string;
+  name?: string;
+}
+export interface FriendRequestResult {
+  /** 'friends': they had already asked you, so you are friends now. */
+  status: 'sent' | 'friends';
+}
+
+export type SuggestionReason = 'opponent' | 'alliance' | 'gamecenter' | 'playgames';
+export interface SuggestionsResponse {
+  players: (ProfileCard & { reason: SuggestionReason })[];
+}
+
+export interface PrivacyRequest {
+  findable?: Findable;
+  hideOnline?: boolean;
+}
+
+export interface FriendImportRequest {
+  provider: 'gamecenter' | 'playgames';
+  /** The platform's ids of the player's friends (Game Center teamPlayerID, Play Games player id). */
+  ids: string[];
+}
+

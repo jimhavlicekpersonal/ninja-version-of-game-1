@@ -49,6 +49,11 @@
       "id": "donations",
       "label": "Warriors arrive from your Alliance (online)",
       "default": false
+    },
+    {
+      "id": "friends",
+      "label": "Friend requests and Gang invites (online)",
+      "default": true
     }
   ]
 }

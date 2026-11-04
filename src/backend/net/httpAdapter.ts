@@ -40,6 +40,13 @@ import {
   type MyGroveResponse,
   type PlayerView,
   type PowerLeaderboardResponse,
+  type FriendImportRequest,
+  type FriendRequestRequest,
+  type FriendRequestResult,
+  type FriendsResponse,
+  type PrivacyRequest,
+  type ProfileCard,
+  type SuggestionsResponse,
   type SeasonLeaderboardResponse,
   type RaidAttackResponse,
   type RaidClaimResponse,
@@ -179,7 +186,7 @@ export class HttpServerAdapter implements ServerPort {
     }
     if (!res.ok) {
       const err = (json ?? {}) as Partial<ErrorBody>;
-      throw new ServerError(res.status, err.error ?? (res.status >= 500 ? 'network' : 'bad_request'), err.message ?? `Server answered ${res.status}.`);
+      throw new ServerError(res.status, err.error ?? (res.status >= 500 ? 'network' : 'bad_request'), err.message ?? `Server answered ${res.status}.`, Array.isArray(err.suggestions) ? err.suggestions.map(String) : []);
     }
     return json as T;
   }
@@ -356,6 +363,40 @@ export class HttpServerAdapter implements ServerPort {
 
   ledger(limit = 50): Promise<LedgerResponse> {
     return this.req('GET', `${Routes.villageLedger}?limit=${limit}`);
+  }
+
+  // ---------------------------------------------------------------- names and friends
+
+  lookup(name: string): Promise<ProfileCard> {
+    return this.req('GET', `${Routes.lookup}?name=${encodeURIComponent(name)}`);
+  }
+
+  friends(): Promise<FriendsResponse> {
+    return this.req('GET', Routes.friends);
+  }
+
+  requestFriend(req: FriendRequestRequest): Promise<FriendRequestResult> {
+    return this.req('POST', Routes.friendRequests, req);
+  }
+
+  answerFriendRequest(id: string, accept: boolean): Promise<FriendsResponse> {
+    return this.req('POST', Routes.friendRequest(id), { accept });
+  }
+
+  removeFriend(id: string): Promise<FriendsResponse> {
+    return this.req('DELETE', Routes.friend(id));
+  }
+
+  setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
+    return this.req('PUT', Routes.privacy, req);
+  }
+
+  friendSuggestions(): Promise<SuggestionsResponse> {
+    return this.req('GET', Routes.friendSuggestions);
+  }
+
+  importFriends(req: FriendImportRequest): Promise<SuggestionsResponse> {
+    return this.req('POST', Routes.friendImport, req);
   }
 
   // ---------------------------------------------------------------- purchases and push

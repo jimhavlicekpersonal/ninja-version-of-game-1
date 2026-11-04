@@ -4,6 +4,8 @@
  * requests, checks the bearer token, applies rate and size limits, and turns
  * errors into protocol errors.
  */
+import { normalizeCode, shareTarget } from './core/friends';
+import { sharePage } from './sharePage';
 import { SUPPORT_PAGE_CSP, supportPage } from './supportPage';
 import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
@@ -62,6 +64,8 @@ export interface ServerOptions {
   environment?: string;
   /** SERVER_NOTICE (step 47): a message for every player in /v1/hello (maintenance, an incident). */
   notice?: string;
+  /** Where friend share links send people (step 59): the web game's address (GAME_URL). */
+  gameUrl?: string;
   /** The support page (step 56): SUPPORT_EMAIL and PRIVACY_URL. */
   support?: { email?: string; privacyUrl?: string };
 }
@@ -75,7 +79,7 @@ const sameSecret = (got: string | undefined, want: Buffer | Buffer[]) => {
 const secrets = (v: string) => v.split(',').map((s) => s.trim()).filter(Boolean);
 
 /** Route option: which extra rate rule the route counts against. */
-type RateConfig = { rate?: keyof RateLimits };
+type RateConfig = { rate?: keyof RateLimits | (keyof RateLimits)[] };
 
 function bearer(req: FastifyRequest): string | undefined {
   const h = req.headers.authorization ?? '';
@@ -199,10 +203,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       d = await limiter.hit('player', who, t);
       if (!d.ok) return tooMany(reply, d, 'Too many requests.', 'player');
     }
-    const rule = (req.routeOptions?.config as RateConfig | undefined)?.rate;
-    if (rule) {
+    const rules = (req.routeOptions?.config as RateConfig | undefined)?.rate;
+    for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
       d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' ? ip : who, t);
-      if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : 'Slow down a little.', rule);
+      if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookupDaily' ? 'That is enough name searches for today.' : 'Slow down a little.', rule);
     }
   });
 
@@ -210,7 +214,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (err instanceof ApiError) {
       metrics.count('tk_errors_total', { code: err.code });
       req.log.info({ code: err.code, status: err.status }, err.message);
-      const body: ErrorBody = { error: err.code, message: err.message };
+      const body: ErrorBody = { error: err.code, message: err.message, ...err.details };
       return reply.code(err.status).send(body);
     }
     const status = (err as { statusCode?: number }).statusCode ?? 500;
@@ -265,11 +269,26 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.hello, async () => ({ ...core.hello(), ...(opts.environment ? { environment: opts.environment } : {}), ...(opts.notice ? { notice: opts.notice } : {}) }));
 
   // Identity
-  const rate = (r: keyof RateLimits): { config: RateConfig } => ({ config: { rate: r } });
+  const rate = (...r: (keyof RateLimits)[]): { config: RateConfig } => ({ config: { rate: r } });
   app.post(Routes.players, rate('register'), async (req, reply) => reply.code(201).send(await core.register(body<{ name: string }>(req).name)));
   app.get(Routes.me, authed(async (me) => core.me(me)));
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
   app.delete(Routes.me, authed(async (me) => core.deleteAccount(me)));
+
+  // Names and friends (steps 59-61)
+  app.get(Routes.lookup, rate('lookup', 'lookupDaily'), authed(async (me, req) => core.lookup(me, query(req).name)));
+  app.get(Routes.friends, authed(async (me) => core.friends(me)));
+  app.post(Routes.friendRequests, rate('friends'), authed(async (me, req) => core.requestFriend(me, req.body as never)));
+  app.post('/v1/friends/requests/:id', rate('friends'), authed(async (me, req) => core.answerFriendRequest(me, param(req, 'id'), req.body as never)));
+  app.delete('/v1/friends/:id', rate('friends'), authed(async (me, req) => core.removeFriend(me, param(req, 'id'))));
+  app.get(Routes.friendSuggestions, authed(async (me) => core.friendSuggestions(me)));
+  app.post(Routes.friendImport, rate('friends'), authed(async (me, req) => core.importFriends(me, req.body as never)));
+  app.put(Routes.privacy, authed(async (me, req) => core.setPrivacy(me, req.body as never)));
+  app.get('/f/:code', async (req, reply) => {
+    const code = normalizeCode(param(req, 'code'));
+    const target = shareTarget(opts.gameUrl, code);
+    return reply.type('text/html; charset=utf-8').header('Content-Security-Policy', SUPPORT_PAGE_CSP).send(sharePage(code, target));
+  });
 
   // Linked sign-ins = cloud save (step 24)
   app.get(Routes.links, authed(async (me) => core.links(me)));

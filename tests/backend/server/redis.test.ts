@@ -6,6 +6,7 @@
  */
 import { afterAll, describe, expect, it } from 'vitest';
 import { encodeCommand, parseRedisUrl, RedisClient, RedisError, RespParser } from '../../../server/redis';
+import { DEFAULT_RATE_LIMITS } from '../../../server/rateLimit';
 import { MemoryRepo, type Player } from '../../../server/repo';
 import { boardScore, RedisLeaderboard, RedisLocks, RedisRateLimiter, RepoLeaderboard } from '../../../server/shared';
 import { baseAt, world } from './harness';
@@ -100,7 +101,8 @@ describe.skipIf(!url)('Redis client and shared stores', () => {
 
   it('rate limits are shared by every instance using the same Redis', async () => {
     const prefix = ns();
-    const limits = { ip: { limit: 3, windowMs: 60_000 }, player: { limit: 3, windowMs: 60_000 }, register: { limit: 3, windowMs: 60_000 }, match: { limit: 3, windowMs: 60_000 }, battle: { limit: 3, windowMs: 60_000 }, moderation: { limit: 3, windowMs: 60_000 }, deletionRequest: { limit: 3, windowMs: 60_000 }, commands: { limit: 3, windowMs: 60_000 } };
+    const three = { limit: 3, windowMs: 60_000 };
+    const limits = Object.fromEntries(Object.keys(DEFAULT_RATE_LIMITS).map((k) => [k, three])) as unknown as typeof DEFAULT_RATE_LIMITS;
     const one = new RedisRateLimiter(redis(), limits, prefix);
     const two = new RedisRateLimiter(redis(), limits, prefix);
     expect((await one.hit('battle', 'p1')).ok).toBe(true);

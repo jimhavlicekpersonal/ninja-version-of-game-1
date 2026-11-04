@@ -11,6 +11,7 @@
  * - Staff work through open reports with the admin API: dismiss (a hidden
  *   message comes back), remove the message, or mute the player's chat.
  */
+import { cutTies } from './friends';
 import { DELETION_DUE_MS } from './account';
 import { REPORT_REASONS, type BlocksResponse, type ReportRequest, type ReportResponse } from '../../src/backend/net/protocol';
 import type { Player, Report } from '../repo';
@@ -63,6 +64,8 @@ export async function block(ctx: ServerContext, me: Player, playerId: unknown): 
   const list = await ctx.repo.blocksOf(me.id);
   if (list.length >= MAX_BLOCKS && !list.some((b) => b.blockedId === id)) throw new ApiError(409, 'full', 'You have blocked as many players as you can. Unblock someone first.');
   await ctx.repo.addBlock({ playerId: me.id, blockedId: id, blockedName: p.name, at: ctx.now() });
+  // Blocking ends a friendship and any open requests (step 59).
+  await cutTies(ctx, me.id, id);
 }
 
 export async function unblock(ctx: ServerContext, me: Player, playerId: unknown): Promise<void> {

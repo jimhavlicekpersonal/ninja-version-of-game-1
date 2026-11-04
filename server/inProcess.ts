@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, FriendImportRequest, FriendRequestRequest, LinkCredential, LinkProvider, PrivacyRequest, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -30,7 +30,7 @@ export class InProcessServerAdapter implements ServerPort {
     try {
       return wire(await fn());
     } catch (e) {
-      if (e instanceof ApiError) throw new ServerError(e.status, e.code, e.message);
+      if (e instanceof ApiError) throw new ServerError(e.status, e.code, e.message, e.details?.suggestions ?? []);
       throw e;
     }
   }
@@ -147,6 +147,30 @@ export class InProcessServerAdapter implements ServerPort {
   }
   ledger(limit = 50) {
     return this.authed((me) => this.core.ledger(me, limit));
+  }
+  lookup(name: string) {
+    return this.authed((me) => this.core.lookup(me, name));
+  }
+  friends() {
+    return this.authed((me) => this.core.friends(me));
+  }
+  requestFriend(req: FriendRequestRequest) {
+    return this.authed((me) => this.core.requestFriend(me, wire(req)));
+  }
+  answerFriendRequest(id: string, accept: boolean) {
+    return this.authed((me) => this.core.answerFriendRequest(me, id, { accept }));
+  }
+  removeFriend(id: string) {
+    return this.authed((me) => this.core.removeFriend(me, id));
+  }
+  setPrivacy(req: PrivacyRequest) {
+    return this.authed((me) => this.core.setPrivacy(me, wire(req)));
+  }
+  friendSuggestions() {
+    return this.authed((me) => this.core.friendSuggestions(me));
+  }
+  importFriends(req: FriendImportRequest) {
+    return this.authed((me) => this.core.importFriends(me, wire(req)));
   }
   purchaseIntent(req: PurchaseIntentRequest) {
     return this.authed((me) => this.core.purchaseIntent(me, wire(req)));

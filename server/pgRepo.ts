@@ -3,7 +3,7 @@ import pg from 'pg';
 import { contentHash } from './contentHash';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
-import { DELETED_PLAYER } from './repo';
+import { DELETED_PLAYER, NameClashError } from './repo';
 import type {
   AttackRecord,
   Block,
@@ -22,8 +22,12 @@ import type {
   PurchaseIntent,
   PurchaseRow,
   PushToken,
+  FriendRequest,
   RaidAttack,
   ReviewStats,
+  Squad,
+  SquadInvite,
+  SquadMember,
   SeasonEntry,
   StaffAction,
   RaidClaim,
@@ -56,6 +60,16 @@ const toPlayer = (r: Row): Player => ({
   mutedUntil: num(r.muted_until),
   bannedUntil: num(r.banned_until),
   banReason: strOrNull(r.ban_reason),
+  nameKey: strOrNull(r.name_key),
+  nameChangedAt: num(r.name_changed_at),
+  nameChangeFree: Boolean(r.name_change_free),
+  previousName: strOrNull(r.previous_name),
+  previousNameUntil: num(r.previous_name_until),
+  friendCode: strOrNull(r.friend_code),
+  findable: (strOrNull(r.findable) ?? 'everyone') as Player['findable'],
+  hideOnline: Boolean(r.hide_online),
+  staff: Boolean(r.staff),
+  squadLeftAt: num(r.squad_left_at),
   ...(num(r.attack_rated_at) > 0 || num(r.base_rated_at) > 0
     ? {
         ratings: {
@@ -304,10 +318,10 @@ export class PgRepo implements Repo {
 
   async createPlayer(p: Player): Promise<void> {
     await this.db.query(
-      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0],
-    );
+      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until, name_key, friend_code, findable)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0, p.nameKey ?? null, p.friendCode ?? null, p.findable ?? 'everyone'],
+    ).catch(clash);
   }
 
   async playerByTokenHash(hash: string): Promise<Player | null> {
@@ -326,6 +340,11 @@ export class PgRepo implements Repo {
   async playerByIdentity(provider: string, subject: string): Promise<string | null> {
     const r = await this.rows('select player_id from identity_links where provider = $1 and subject = $2', [provider, subject]);
     return r[0] ? String(r[0].player_id) : null;
+  }
+
+  async playersByIdentities(provider: string, subjects: string[]): Promise<string[]> {
+    if (!subjects.length) return [];
+    return (await this.rows('select player_id from identity_links where provider = $1 and subject = any($2::text[])', [provider, subjects])).map((r) => String(r.player_id));
   }
 
   async addLink(l: IdentityLink): Promise<boolean> {
@@ -348,6 +367,145 @@ export class PgRepo implements Repo {
   }
 
   // ------------------------------------------------------------ staff tools (step 48)
+
+  // ------------------------------------------------------------ names and friends (step 59)
+
+  async playerByNameKey(key: string): Promise<Player | null> {
+    const r = await this.rows('select * from players where name_key = $1', [key]);
+    return r[0] ? toPlayer(r[0]) : null;
+  }
+
+  async playerByFriendCode(code: string): Promise<Player | null> {
+    const r = await this.rows('select * from players where friend_code = $1', [code]);
+    return r[0] ? toPlayer(r[0]) : null;
+  }
+
+  async nameHold(key: string, now: number): Promise<{ playerId: string; until: number } | null> {
+    const r = await this.rows('select player_id, until from name_holds where name_key = $1 and until > $2', [key, now]);
+    return r[0] ? { playerId: String(r[0].player_id), until: num(r[0].until) } : null;
+  }
+
+  async holdName(key: string, playerId: string, until: number): Promise<void> {
+    await this.db.query('insert into name_holds (name_key, player_id, until) values ($1,$2,$3) on conflict (name_key) do update set player_id = excluded.player_id, until = excluded.until', [key, playerId, until]);
+  }
+
+  async releaseNameHold(key: string): Promise<void> {
+    await this.db.query('delete from name_holds where name_key = $1', [key]);
+  }
+
+  async playersNeedingNames(limit: number): Promise<Player[]> {
+    return (await this.rows('select * from players where name_key is null or friend_code is null order by created_at limit $1', [limit])).map(toPlayer);
+  }
+
+  async addFriendRequest(r: FriendRequest): Promise<boolean> {
+    const x = await this.db.query('insert into friend_requests (id, from_id, to_id, at, status) values ($1,$2,$3,$4,$5) on conflict do nothing', [r.id, r.fromId, r.toId, r.at, r.status]);
+    return (x.rowCount ?? 0) > 0;
+  }
+
+  async getFriendRequest(id: string): Promise<FriendRequest | null> {
+    const r = await this.rows('select * from friend_requests where id = $1', [id]);
+    return r[0] ? toFriendRequest(r[0]) : null;
+  }
+
+  async friendRequestsOf(playerId: string): Promise<FriendRequest[]> {
+    return (await this.rows(`select * from friend_requests where status = 'open' and (from_id = $1 or to_id = $1) order by at desc`, [playerId])).map(toFriendRequest);
+  }
+
+  async openFriendRequest(fromId: string, toId: string): Promise<FriendRequest | null> {
+    const r = await this.rows(`select * from friend_requests where status = 'open' and from_id = $1 and to_id = $2`, [fromId, toId]);
+    return r[0] ? toFriendRequest(r[0]) : null;
+  }
+
+  async closeFriendRequest(id: string, status: FriendRequest['status']): Promise<boolean> {
+    const r = await this.db.query(`update friend_requests set status = $2 where id = $1 and status = 'open'`, [id, status]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async addFriendship(a: string, b: string, since: number): Promise<boolean> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    const r = await this.db.query('insert into friendships (a, b, since) values ($1,$2,$3) on conflict do nothing', [x, y, since]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async removeFriendship(a: string, b: string): Promise<void> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    await this.db.query('delete from friendships where a = $1 and b = $2', [x, y]);
+  }
+
+  async friendsOf(playerId: string): Promise<{ id: string; since: number }[]> {
+    return (await this.rows('select case when a = $1 then b else a end as id, since from friendships where a = $1 or b = $1', [playerId])).map((r) => ({ id: String(r.id), since: num(r.since) }));
+  }
+
+  // ------------------------------------------------------------ Gangs (step 63)
+
+  async createSquad(s: Squad, leader: SquadMember): Promise<boolean> {
+    return this.transaction(async (tx) => {
+      const db = (tx as PgRepo).db;
+      if ((await db.query('select 1 from squad_members where player_id = $1', [leader.playerId])).rowCount) return false;
+      await db.query('insert into squads (id, name, leader_id, created_at) values ($1,$2,$3,$4)', [s.id, s.name, s.leaderId, s.createdAt]);
+      const r = await db.query('insert into squad_members (player_id, squad_id, role, joined_at) values ($1,$2,$3,$4) on conflict do nothing', [leader.playerId, leader.squadId, leader.role, leader.joinedAt]);
+      if (!r.rowCount) throw new Error('already in a Gang');
+      return true;
+    }).catch((e) => {
+      if ((e as Error).message === 'already in a Gang') return false;
+      throw e;
+    });
+  }
+
+  async getSquad(id: string): Promise<Squad | null> {
+    const r = await this.rows('select * from squads where id = $1', [id]);
+    return r[0] ? toSquad(r[0]) : null;
+  }
+
+  async squadOf(playerId: string): Promise<Squad | null> {
+    const r = await this.rows('select s.* from squads s join squad_members m on m.squad_id = s.id where m.player_id = $1', [playerId]);
+    return r[0] ? toSquad(r[0]) : null;
+  }
+
+  async squadMembers(squadId: string): Promise<SquadMember[]> {
+    return (await this.rows('select * from squad_members where squad_id = $1 order by joined_at', [squadId])).map((r) => ({ squadId: String(r.squad_id), playerId: String(r.player_id), role: String(r.role) as SquadMember['role'], joinedAt: num(r.joined_at) }));
+  }
+
+  async addSquadMember(m: SquadMember): Promise<boolean> {
+    const r = await this.db.query('insert into squad_members (player_id, squad_id, role, joined_at) values ($1,$2,$3,$4) on conflict do nothing', [m.playerId, m.squadId, m.role, m.joinedAt]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async removeSquadMember(squadId: string, playerId: string): Promise<void> {
+    await this.db.query('delete from squad_members where squad_id = $1 and player_id = $2', [squadId, playerId]);
+  }
+
+  async setSquadLeader(squadId: string, playerId: string): Promise<void> {
+    await this.db.query(`update squad_members set role = case when player_id = $2 then 'leader' else 'member' end where squad_id = $1`, [squadId, playerId]);
+    await this.db.query('update squads set leader_id = $2 where id = $1', [squadId, playerId]);
+  }
+
+  async deleteSquad(id: string): Promise<void> {
+    await this.db.query('delete from squads where id = $1', [id]);
+  }
+
+  async addSquadInvite(i: SquadInvite): Promise<boolean> {
+    const r = await this.db.query('insert into squad_invites (id, squad_id, from_id, to_id, at, status) values ($1,$2,$3,$4,$5,$6) on conflict do nothing', [i.id, i.squadId, i.fromId, i.toId, i.at, i.status]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async getSquadInvite(id: string): Promise<SquadInvite | null> {
+    const r = await this.rows('select * from squad_invites where id = $1', [id]);
+    return r[0] ? toSquadInvite(r[0]) : null;
+  }
+
+  async squadInvitesTo(playerId: string): Promise<SquadInvite[]> {
+    return (await this.rows(`select * from squad_invites where to_id = $1 and status = 'open' order by at desc`, [playerId])).map(toSquadInvite);
+  }
+
+  async squadInvitesFrom(squadId: string): Promise<SquadInvite[]> {
+    return (await this.rows(`select * from squad_invites where squad_id = $1 and status = 'open' order by at desc`, [squadId])).map(toSquadInvite);
+  }
+
+  async closeSquadInvite(id: string, status: SquadInvite['status']): Promise<boolean> {
+    const r = await this.db.query(`update squad_invites set status = $2 where id = $1 and status = 'open'`, [id, status]);
+    return (r.rowCount ?? 0) > 0;
+  }
 
   // ------------------------------------------------------------ staff queues (step 56)
 
@@ -551,6 +709,16 @@ export class PgRepo implements Repo {
       mutedUntil: 'muted_until',
       bannedUntil: 'banned_until',
       banReason: 'ban_reason',
+      nameKey: 'name_key',
+      nameChangedAt: 'name_changed_at',
+      nameChangeFree: 'name_change_free',
+      previousName: 'previous_name',
+      previousNameUntil: 'previous_name_until',
+      friendCode: 'friend_code',
+      findable: 'findable',
+      hideOnline: 'hide_online',
+      staff: 'staff',
+      squadLeftAt: 'squad_left_at',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];
@@ -581,7 +749,7 @@ export class PgRepo implements Repo {
     }
     if (!sets.length) return;
     vals.push(id);
-    await this.db.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals);
+    await this.db.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals).catch(clash);
   }
 
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
@@ -684,6 +852,10 @@ export class PgRepo implements Repo {
     const commands = c.commandsBefore === undefined ? null : await this.db.query('delete from command_log where at < $1', [c.commandsBefore]);
     const idem = c.idempotencyBefore === undefined ? null : await this.db.query('delete from idempotency_keys where created_at < $1', [c.idempotencyBefore]);
     if (c.intentsBefore !== undefined) await this.db.query('delete from purchase_intents where at < $1', [c.intentsBefore]);
+    if (c.friendRequestsBefore !== undefined) {
+      await this.db.query(`update friend_requests set status = 'expired' where status = 'open' and at < $1`, [c.friendRequestsBefore]);
+      await this.db.query(`delete from friend_requests where status <> 'open' and at < $1`, [c.friendRequestsBefore]);
+    }
     return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
   }
 
@@ -747,6 +919,11 @@ export class PgRepo implements Repo {
       await q('delete from player_tokens where player_id = $1', [id]);
       await q('delete from identity_links where player_id = $1', [id]);
       await q('delete from purchase_intents where player_id = $1', [id]);
+      await q('delete from name_holds where player_id = $1', [id]);
+      await q('delete from friend_requests where from_id = $1 or to_id = $1', [id]);
+      await q('delete from friendships where a = $1 or b = $1', [id]);
+      await q('delete from squad_members where player_id = $1', [id]);
+      await q('delete from squad_invites where from_id = $1 or to_id = $1', [id]);
       await q('delete from push_tokens where player_id = $1', [id]);
       // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
       await q('update purchases set player_id = $2 where player_id = $1', [id, D.id]);
@@ -1115,4 +1292,22 @@ function toPurchase(r: Record<string, unknown>): PurchaseRow {
 
 function toSeasonEntry(r: Record<string, unknown>): SeasonEntry {
   return { season: num(r.season), rank: num(r.rank), playerId: String(r.player_id), name: String(r.name), honor: num(r.score), keep: num(r.keep) };
+}
+
+function toFriendRequest(r: Record<string, unknown>): FriendRequest {
+  return { id: String(r.id), fromId: String(r.from_id), toId: String(r.to_id), at: num(r.at), status: String(r.status) as FriendRequest['status'] };
+}
+
+/** A unique name key or friend code already in use: the same error the memory repo throws. */
+function clash(e: unknown): never {
+  if ((e as { code?: string }).code === '23505' && /name_key|friend_code/.test(String((e as { constraint?: string }).constraint ?? (e as Error).message))) throw new NameClashError('That name or friend code is in use.');
+  throw e;
+}
+
+function toSquad(r: Record<string, unknown>): Squad {
+  return { id: String(r.id), name: String(r.name), leaderId: String(r.leader_id), createdAt: num(r.created_at) };
+}
+
+function toSquadInvite(r: Record<string, unknown>): SquadInvite {
+  return { id: String(r.id), squadId: String(r.squad_id), fromId: String(r.from_id), toId: String(r.to_id), at: num(r.at), status: String(r.status) as SquadInvite['status'] };
 }

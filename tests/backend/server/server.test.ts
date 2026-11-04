@@ -151,7 +151,8 @@ describe('server HTTP adapter', () => {
 
     it('limits new players and all requests per IP address, and never limits health checks or preflights', async () => {
       const s = setup({ rateLimits: { register: { limit: 2, windowMs: 3_600_000 }, ip: { limit: 6, windowMs: MIN } } });
-      const reg = (ip: string) => s.call('POST', Routes.players, undefined, { name: 'Pip' }, { ip });
+      let n = 0;
+      const reg = (ip: string) => s.call('POST', Routes.players, undefined, { name: `Pip ${++n}` }, { ip });
       expect((await reg('10.0.0.1')).status).toBe(201);
       expect((await reg('10.0.0.1')).status).toBe(201);
       expect((await reg('10.0.0.1')).status).toBe(429);
@@ -177,7 +178,8 @@ describe('server HTTP adapter', () => {
 
     it('takes the IP address from X-Forwarded-For only when told it is behind a proxy', async () => {
       const limits = { register: { limit: 1, windowMs: 3_600_000 } };
-      const via = (s: ReturnType<typeof setup>, client: string) => s.call('POST', Routes.players, undefined, { name: 'Pip' }, { ip: '10.9.9.9', headers: { 'x-forwarded-for': client } });
+      let n = 0;
+      const via = (s: ReturnType<typeof setup>, client: string) => s.call('POST', Routes.players, undefined, { name: `Pip ${++n}` }, { ip: '10.9.9.9', headers: { 'x-forwarded-for': client } });
       const proxied = setup({ rateLimits: limits, trustProxy: true });
       expect((await via(proxied, '203.0.113.1')).status).toBe(201);
       expect((await via(proxied, '203.0.113.2')).status).toBe(201); // a different player behind the same proxy
