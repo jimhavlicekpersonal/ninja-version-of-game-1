@@ -11,6 +11,7 @@ import { formatDuration, formatNumber } from '../ui/format';
 import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
 import { confetti, resourceBurst } from './fx';
+import { setupTouchInput } from './touchInput';
 import { sound } from '../audio/sound';
 
 export interface VillageSceneInit {
@@ -483,7 +484,7 @@ export class VillageScene extends Phaser.Scene {
   // ------------------------------------------------------------------ input
 
   private setupInput(): void {
-    this.input.addPointer(2);
+    setupTouchInput(this);
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.onDown(p));
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.onMove(p));
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onUp(p));
