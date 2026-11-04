@@ -10,10 +10,10 @@ import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
 import { MODEL, WARRIORS } from '../../gameplay/sim/progression';
 import { missingFor } from '../../gameplay/sim/resources';
-import { RESOURCE_KINDS } from '../../gameplay/sim/types';
+import { RESOURCE_KINDS, type ResourceKind } from '../../gameplay/sim/types';
 import { troopUnlock, trainingSpeed } from '../../gameplay/sim/army';
-import { armyView, researchRow, trainRow, type ArmyView, type BuildState, type QueueStack, type TrainRow } from '../../gameplay/sim/armyView';
-import { dismissPreview, hallLevel, lastAttackArmy, lodgeTroops, practiceArmy, researchSkipQuote } from '../../gameplay/sim/village';
+import { armyView, researchRow, researchTopUp, trainRow, type ArmyView, type BuildState, type QueueStack, type TrainRow } from '../../gameplay/sim/armyView';
+import { dismissPreview, hallLevel, lastAttackArmy, lodgeTroops, practiceArmy, researchSkipQuote, topUpQuote } from '../../gameplay/sim/village';
 import { costChips, RES_LABEL } from './chips';
 import { clear, h, icon } from './dom';
 import type { EconomyUi, UiKit } from './economyUi';
@@ -31,6 +31,10 @@ export interface ArmyUiDeps {
   openBuildArmy(): void;
   openCodex(): void;
 }
+
+/** "600 Coins and 2,000 Provisions" for a buy confirmation. */
+const missingText = (m: Partial<Record<ResourceKind, number>>) =>
+  (Object.entries(m) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => `${formatNumber(v)} ${RES_LABEL[k]}`).join(' and ');
 
 const BUILD_TEXT: Record<BuildState, string> = { ready: 'Built', building: 'Being built', missing: 'Not built yet' };
 
@@ -134,7 +138,7 @@ export class ArmyUi {
       (scope.options[0] as HTMLOptionElement).textContent = `Unlocked (${scopeCount})`;
       const rows = troops.map((t) => {
         const row = trainRow(v, t, now, gd);
-        const sig = JSON.stringify([t, row.quote.ok, !row.quote.ok && row.quote.message, row.quote.quote, row.fill, row.ahead, v.state.resources.dew >= (row.quote.quote?.cost.dew ?? 0)]);
+        const sig = JSON.stringify([t, row.quote.ok, !row.quote.ok && row.quote.message, row.quote.quote, row.fill, row.ahead, v.state.resources.dew >= (row.quote.quote?.cost.dew ?? 0), row.topUp]);
         return { t, row, sig };
       });
       const sig = JSON.stringify(['train', v.dojo, v.camp, rows.map((r) => r.sig), ready]);
@@ -175,7 +179,7 @@ export class ArmyUi {
         const q = researchRow(v, t, now, gd);
         return [t, q.ok, !q.ok && q.message, q.quote];
       });
-      const sig = JSON.stringify(['research', s.research, rows, s.resources.moonstones]);
+      const sig = JSON.stringify(['research', s.research, rows, s.resources]);
       if (sig === paneSig) return;
       paneSig = sig;
       pane.replaceChildren(filters, this.researchPane(v, now, visibleTroops(v), redraw));
@@ -323,6 +327,18 @@ export class ArmyUi {
         this.d.kit.closeAllModals();
         this.d.onPractice(practiceArmy(c.state, t, gd));
       }, `Practice battle with a squad of ${def.name}: nothing is spent or won`);
+    }
+    // Below the row, full width, so a stray tap on +1 or Fill never lands on a purchase.
+    const tu = row.topUp;
+    if (tu) {
+      const what = `the missing ${missingText(tu.missing)} and queue ${tu.count} ${def.name}`;
+      const b = h('button', { class: 'btn gold buy', type: 'button', title: `Buy ${what}` }, `Buy & ${ahead ? 'Next' : 'Fill'} ${tu.count} `, h('span', { class: 'chip' }, icon(icons.moonstones), String(tu.moonstones)));
+      b.addEventListener('click', () => {
+        const action = { type: 'train', troop: t, count: tu.count } as const;
+        const price = topUpQuote(c.state, action, c.now(), gd)?.moonstones ?? tu.moonstones;
+        void this.d.econ.spendMoonstones('Buy missing Provisions', `Buy ${what}`, price, () => c.dispatch({ type: 'topUp', then: action }).ok).then(draw);
+      });
+      buttons.append(b);
     }
     return h(
       'div',
@@ -532,10 +548,21 @@ export class ArmyUi {
         if (!r.ok) this.d.kit.toast(r.message, 'error');
         redraw();
       });
+      const rtu = researchTopUp(v, t, now, gd);
+      let buy: HTMLElement | null = null;
+      if (rtu) {
+        const what = `the missing ${missingText(rtu.missing)} and start ${def.name} level ${rq.quote?.toLevel}`;
+        buy = h('button', { class: 'btn gold buy', type: 'button', title: `Buy ${what}` }, 'Buy missing ', h('span', { class: 'chip' }, icon(icons.moonstones), String(rtu.moonstones)));
+        buy.addEventListener('click', () => {
+          const action = { type: 'research', troop: t } as const;
+          const price = topUpQuote(c.state, action, c.now(), gd)?.moonstones ?? rtu.moonstones;
+          void this.d.econ.spendMoonstones('Buy missing Provisions', `Buy ${what}`, price, () => c.dispatch({ type: 'topUp', then: action }).ok).then(redraw);
+        });
+      }
       list.append(
         h(
           'div',
-          { class: `troop-row army-card${rq.ok ? '' : ' locked'}` },
+          { class: `troop-row army-card${rq.ok || rtu ? '' : ' locked'}` },
           this.thumb(t),
           h(
             'div',
@@ -544,7 +571,7 @@ export class ArmyUi {
             nxt ? h('span', { class: 'muted small' }, `HP ${cur.hp} → ${nxt.hp} · Damage ${cur.damage} → ${nxt.damage}`) : null,
             rq.quote ? h('span', { class: 'row' }, costChips(rq.quote.cost, missingFor(s.resources, rq.quote.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(rq.quote.seconds * 1000))) : null,
           ),
-          nxt ? h('div', { class: 'army-actions' }, btn) : null,
+          nxt ? h('div', { class: 'army-actions' }, btn, buy) : null,
           !rq.ok ? h('span', { class: 'note' }, rq.message) : null,
         ),
       );

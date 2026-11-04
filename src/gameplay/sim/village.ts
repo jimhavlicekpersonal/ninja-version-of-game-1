@@ -55,7 +55,12 @@ export type Command =
   | { type: 'battleProgress'; pending: PendingBattle | null }
   | { type: 'skip'; id: string }
   | { type: 'skipTraining' }
-  | { type: 'topUp'; cost: Cost }
+  /**
+   * Buy exactly the Coins/Provisions missing for one action with Jade, and do it in the same step.
+   * There is no free-standing exchange: bought resources are spent at once, so they never sit in
+   * storage for raiders, and if the action fails nothing is bought.
+   */
+  | { type: 'topUp'; then: TopUpAction }
   | { type: 'grantPurchase'; productId: string; transactionId: string }
   | { type: 'setProfile'; under18: boolean }
   | { type: 'buySkin'; skin: string }
@@ -89,6 +94,9 @@ export type Command =
   /** An interrupted battle that can no longer be banked: its deployed troops are spent, nothing is won. */
   | { type: 'abandonBattle'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'leaveLocalGrove' };
+
+/** The actions a top-up can pay for. */
+export type TopUpAction = Extract<Command, { type: 'upgrade' | 'place' | 'train' | 'research' }>;
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -132,6 +140,8 @@ export type SimEvent =
   | { kind: 'raid_end'; record: BattleRecord }
   | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost }
   | { kind: 'skip_used'; what: string; seconds: number; moonstones: number }
+  /** Jade bought exactly these missing resources, spent at once by the action that follows. */
+  | { kind: 'top_up'; missing: Cost; moonstones: number }
   | { kind: 'moonstone_spend'; what: string; moonstones: number }
   | { kind: 'purchase_granted'; productId: string; usd: number; grants: Cost }
   | { kind: 'trigger'; trigger: OfferTrigger }
@@ -507,7 +517,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'skipTraining':
       return skipTraining(s, now, data);
     case 'topUp':
-      return topUp(s, cmd.cost, data);
+      return topUp(s, cmd.then, now, data);
     case 'grantPurchase':
       return grantPurchase(s, cmd.productId, cmd.transactionId, now, data);
     case 'setProfile':
@@ -695,29 +705,78 @@ function skipTraining(s: VillageState, now: number, data: GameData): CommandResu
   return { ok: true, state: s, events: [{ kind: 'skip_used', what: 'training', seconds: q.seconds, moonstones: q.moonstones }] };
 }
 
-/** Moonstones to buy exactly the resources missing for `cost` (null if nothing is missing or it would not fit). */
-export function topUpQuote(state: VillageState, cost: Cost, data: GameData): { missing: Cost; moonstones: number } | null {
+/** Jade for exactly the resources missing for `cost`, at the village's Keep (null if nothing is missing or it would not fit). */
+function shortfallQuote(s: VillageState, cost: Cost, data: GameData): { missing: Cost; moonstones: number } | null {
   const missing: Cost = {};
-  const cap = capacity(state, data);
+  const cap = capacity(s, data);
   for (const k of RESOURCE_KINDS) {
     if (k === 'moonstones') continue;
-    const need = (cost[k] ?? 0) - state.resources[k];
+    const need = (cost[k] ?? 0) - s.resources[k];
     if (need > 0) {
       if ((cost[k] ?? 0) > cap[k]) return null;
       missing[k] = need;
     }
   }
   if (!Object.keys(missing).length) return null;
-  return { missing, moonstones: topUpCost(missing, data) };
+  return { missing, moonstones: topUpCost(missing, data, hallLevel(s, data)) };
 }
 
-function topUp(s: VillageState, cost: Cost, data: GameData): CommandResult {
-  const q = topUpQuote(s, cost, data);
+/** What `action` would cost if resources were the only thing missing (null when something else blocks it). */
+function topUpTarget(s: VillageState, action: TopUpAction, now: number, data: GameData): Cost | null {
+  const short = (q: QuoteResult) => (!q.ok && q.code === 'NOT_ENOUGH_RESOURCES' && q.quote ? q.quote : null);
+  const builderFree = (seconds: number) => seconds <= 0 || builderStatus(s, data, now).free >= 1;
+  switch (action.type) {
+    case 'upgrade': {
+      const q = short(upgradeQuote(s, action.id, data, now));
+      return q && builderFree(q.seconds) ? q.cost : null;
+    }
+    case 'place': {
+      const q = short(placeQuote(s, data, action.buildingType, now));
+      return q && builderFree(q.seconds) ? q.cost : null;
+    }
+    case 'research':
+      return short(researchStartQuoteOn(s, action.troop, now, data))?.cost ?? null;
+    case 'train': {
+      // The warriors who fit in the camps and the next-army queue, all paid for.
+      const q = trainQuoteOn(s, action.troop, now, data);
+      if (!q.quote || (!q.ok && q.code !== 'NOT_ENOUGH_RESOURCES')) return null;
+      const def = data.troops[action.troop];
+      const room = trainingQueueLimit(s, data) - armyHousing(s.army, data) - queueHousing(s.training, data);
+      const n = Math.min(Math.max(1, Math.min(data.economy.maxTrainBatch, Math.floor(action.count ?? 1) || 1)), Math.floor(room / def.housing));
+      if (n < 1) return null;
+      const cost: Cost = {};
+      for (const [k, v] of Object.entries(q.quote.cost) as [ResourceKind, number][]) cost[k] = v * n;
+      return cost;
+    }
+  }
+}
+
+/**
+ * Jade to buy what `action` is missing and do it now (null when nothing is missing, it would not fit
+ * in storage, or something other than resources blocks it).
+ */
+export function topUpQuote(state: VillageState, action: TopUpAction, now: number, data: GameData): { missing: Cost; moonstones: number } | null {
+  return topUpQuoteOn(advance(state, now, data).state, action, now, data);
+}
+
+/** `topUpQuote` for a village already settled up to `now` (the Army panel asks once per row). */
+export function topUpQuoteOn(s: VillageState, action: TopUpAction, now: number, data: GameData): { missing: Cost; moonstones: number } | null {
+  const cost = topUpTarget(s, action, now, data);
+  return cost ? shortfallQuote(s, cost, data) : null;
+}
+
+function topUp(s: VillageState, action: TopUpAction, now: number, data: GameData): CommandResult {
+  if (!action || !['upgrade', 'place', 'train', 'research'].includes(action.type)) return fail('NOT_AVAILABLE', 'Jade can only buy what an upgrade, building, warrior or research is missing.');
+  const q = topUpQuoteOn(s, action, now, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing missing, or it would not fit in your storage.');
   if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
   for (const [k, v] of Object.entries(q.missing) as [ResourceKind, number][]) s.resources[k] += v;
-  return { ok: true, state: s, events: [] };
+  // The bought resources are spent in the same step; if the action fails, the whole command fails
+  // and the village is left as it was (applyCommand works on a copy).
+  const r = runCommand(s, action, now, data);
+  if (!r.ok) return r;
+  return { ok: true, state: r.state, events: [{ kind: 'top_up', missing: q.missing, moonstones: q.moonstones }, ...r.events] };
 }
 
 function grantPurchase(s: VillageState, productId: string, transactionId: string, now: number, data: GameData): CommandResult {

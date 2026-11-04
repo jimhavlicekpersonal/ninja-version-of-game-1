@@ -633,7 +633,8 @@ export class Hud {
       const uq = upgradeQuote(this.c.state, b.id, gd, now);
       actions.append(this.upgradeButton(b, uq));
       if (!uq.ok && uq.code === 'NOT_ENOUGH_RESOURCES' && uq.quote) {
-        const tq = topUpQuote(this.c.state, uq.quote.cost, gd);
+        const action = { type: 'upgrade', id: b.id } as const;
+        const tq = topUpQuote(this.c.state, action, now, gd);
         if (tq) {
           const missing = Object.entries(tq.missing).map(([k, v]) => `${formatNumber(v as number)} ${RES_LABEL[k as ResourceKind]}`).join(' and ');
           actions.append(
@@ -643,10 +644,7 @@ export class Hud {
                 class: 'btn gold',
                 type: 'button',
                 onclick: () =>
-                  void this.econ.spendMoonstones('Buy missing resources', `Buy the missing ${missing} and start the upgrade`, tq.moonstones, () => {
-                    const r1 = this.c.dispatch({ type: 'topUp', cost: uq.quote!.cost });
-                    return r1.ok && this.c.dispatch({ type: 'upgrade', id: b.id }).ok;
-                  }),
+                  void this.econ.spendMoonstones('Buy missing resources', `Buy the missing ${missing} and start the upgrade`, topUpQuote(this.c.state, action, this.c.now(), gd)?.moonstones ?? tq.moonstones, () => this.c.dispatch({ type: 'topUp', then: action }).ok),
               },
               'Buy missing ',
               h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)),

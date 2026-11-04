@@ -113,8 +113,8 @@ describe('fixed rewards scale with the hall level (#19)', () => {
 });
 
 describe('buying progress (#20)', () => {
-  /** Moonstones to buy the next Elder Toadstool's Acorns and skip its timer. */
-  const rush = (h: number) => topUpOne(hallLv[h].cost.acorns!, data) + skipCost(hallLv[h].buildSeconds, data);
+  /** Moonstones to buy the next Elder Toadstool's Acorns (at the buyer's Keep price) and skip its timer. */
+  const rush = (h: number) => topUpOne(hallLv[h].cost.acorns!, data, h) + skipCost(hallLv[h].buildSeconds, data);
 
   it('costs more at every hall, and the starting Moonstones cannot buy a mid-game hall', () => {
     for (let h = 2; h < halls; h++) expect(rush(h)).toBeGreaterThan(rush(h - 1));

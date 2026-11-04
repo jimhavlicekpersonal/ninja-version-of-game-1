@@ -70,10 +70,10 @@ describe('spending Moonstones', () => {
     const { state, clock } = newGame({ acorns: 400 });
     const hall = find(state, 'elder_toadstool')[0];
     expect(applyCommand(state, { type: 'upgrade', id: hall.id }, clock.now(), data).ok).toBe(false);
-    const s = must(state, { type: 'topUp', cost: { acorns: 1000 } }, clock.now());
-    expect(s.resources.acorns).toBe(1000);
-    expect(s.resources.moonstones).toBe(500 - topUpOne(600, data));
-    expect(applyCommand(s, { type: 'upgrade', id: hall.id }, clock.now(), data).ok).toBe(true);
+    const s = must(state, { type: 'topUp', then: { type: 'upgrade', id: hall.id } }, clock.now());
+    expect(s.resources.acorns).toBe(0);
+    expect(s.resources.moonstones).toBe(500 - topUpOne(600, data, 1));
+    expect(find(s, 'elder_toadstool')[0].upgrade).toBeTruthy();
   });
 
   it('Beaver Lodges 3, 4 and 5 cost 250, 500 and 1,000 Moonstones', () => {
@@ -209,7 +209,7 @@ describe('purchases end to end with the mock provider (all logged in analytics)'
     const hall = c.state.buildings.find((b) => b.type === 'elder_toadstool')!;
     c.dispatch({ type: 'upgrade', id: hall.id });
     expect(c.dispatch({ type: 'skip', id: hall.id }).ok).toBe(true);
-    expect(c.dispatch({ type: 'topUp', cost: { acorns: c.state.resources.acorns + 100 } }).ok).toBe(true);
+    expect(c.dispatch({ type: 'topUp', then: { type: 'upgrade', id: hall.id } }).ok).toBe(true);
     expect(c.dispatch({ type: 'place', buildingType: 'beaver_lodge', x: 2, y: 2 }).ok).toBe(true);
     const list = await names();
     expect(list).toContain('skip_used');

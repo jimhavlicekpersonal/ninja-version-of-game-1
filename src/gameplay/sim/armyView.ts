@@ -1,6 +1,6 @@
 import { armyHousing, armyReadyAt, fillCount, housingCapacity, queueFits, trainingQueueLimit } from './army';
-import type { GameData, TrainingItem, VillageState } from './types';
-import { advance, researchStartQuoteOn, trainingSkipQuote, trainQuoteOn, type QuoteResult } from './village';
+import type { Cost, GameData, TrainingItem, VillageState } from './types';
+import { advance, researchStartQuoteOn, topUpQuoteOn, trainingSkipQuote, trainQuoteOn, type QuoteResult } from './village';
 
 /**
  * Where a queued warrior stands:
@@ -123,6 +123,8 @@ export interface TrainRow {
   fill: number;
   /** True when the camps are spoken for, so "Fill" trains ahead for the next army. */
   ahead: boolean;
+  /** Jade to buy the Provisions missing for a full Fill (`count` warriors) and queue them; null when resources aren't what stops it. */
+  topUp: { count: number; missing: Cost; moonstones: number } | null;
 }
 
 /** The train list's quote for one warrior, on a view's settled village. */
@@ -133,10 +135,17 @@ export function trainRow(view: ArmyView, troop: string, now: number, data: GameD
     if (v > 0) fill = Math.min(fill, Math.floor(view.state.resources[k] / v));
   }
   const committed = view.readyHousing + view.trainingHousing + view.nextHousing + view.waitingHousing;
-  return { quote, fill, ahead: committed + (data.troops[troop]?.housing ?? 0) > view.capacity };
+  const room = fillCount(view.state, troop, data);
+  const tq = room > fill && quote.quote && (quote.ok || quote.code === 'NOT_ENOUGH_RESOURCES') ? topUpQuoteOn(view.state, { type: 'train', troop, count: room }, now, data) : null;
+  return { quote, fill, ahead: committed + (data.troops[troop]?.housing ?? 0) > view.capacity, topUp: tq ? { count: room, ...tq } : null };
 }
 
 /** The research list's quote for one warrior, on a view's settled village. */
 export function researchRow(view: ArmyView, troop: string, now: number, data: GameData): QuoteResult {
   return researchStartQuoteOn(view.state, troop, now, data);
+}
+
+/** Jade to buy what a research is missing and start it (null when resources aren't what stops it). */
+export function researchTopUp(view: ArmyView, troop: string, now: number, data: GameData): { missing: Cost; moonstones: number } | null {
+  return topUpQuoteOn(view.state, { type: 'research', troop }, now, data);
 }

@@ -586,6 +586,8 @@ export interface StoreDef {
   packs: PackDef[];
   skipCurve: [number, number][];
   topUpCurve: [number, number][];
+  /** Amounts are divided by this (per Keep, 1-15) before `topUpCurve` prices them (tools/balance/topup.mjs). */
+  topUpScaleByHall: number[];
   minorMonthlyCapUsd: number;
 }
 

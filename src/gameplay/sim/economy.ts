@@ -20,17 +20,28 @@ export function skipCost(seconds: number, data: GameData): number {
   return Math.max(1, Math.ceil(interpolate(data.store.skipCurve, seconds)));
 }
 
-/** Moonstones to buy `amount` of a soft resource. */
-export function topUpOne(amount: number, data: GameData): number {
-  if (amount <= 0) return 0;
-  return Math.max(1, Math.ceil(interpolate(data.store.topUpCurve, amount)));
+/**
+ * How much the buyer's Keep stretches the top-up curve (store.json `topUpScaleByHall`).
+ * The curve is priced for Keep 5 (scale 1); later Keeps buy more per Jade, earlier ones less,
+ * so a raid's worth of loot costs a similar share of a Keep's economy everywhere.
+ */
+export function topUpScale(hallLevel: number, data: GameData): number {
+  const t = data.store.topUpScaleByHall;
+  return t[Math.max(1, Math.min(t.length, hallLevel)) - 1] ?? 1;
 }
 
-export function topUpCost(missing: Cost, data: GameData): number {
+/** Moonstones to buy `amount` of a soft resource at a Keep (the plain curve when `hallLevel` is left out). */
+export function topUpOne(amount: number, data: GameData, hallLevel?: number): number {
+  if (amount <= 0) return 0;
+  const scale = hallLevel === undefined ? 1 : topUpScale(hallLevel, data);
+  return Math.max(1, Math.ceil(interpolate(data.store.topUpCurve, amount / scale)));
+}
+
+export function topUpCost(missing: Cost, data: GameData, hallLevel?: number): number {
   let total = 0;
   for (const [k, v] of Object.entries(missing) as [ResourceKind, number][]) {
     if (k === 'moonstones') continue;
-    total += topUpOne(v, data);
+    total += topUpOne(v, data, hallLevel);
   }
   return total;
 }
