@@ -63,7 +63,7 @@ The server in `server/` (Node + Fastify + Postgres) does five things:
 - runs real Groves (chat, troop requests and donations);
 - pairs Groves for the weekly Grove Raid.
 
-Without a server, the game uses generated opponents, bot raiders and a bot Grove, as before. Your village itself always stays on your device.
+Without a server, the game uses generated opponents, bot raiders and a bot Grove, as before, and the village stays on the device. With one, the game moves its village to the server (protocol 7), and linked sign-ins bring it to another device.
 
 1. Create a Postgres database. Render, Railway, Neon and Supabase all have free or cheap plans; copy its connection string.
 2. Deploy the server, for example on Render as a **Web Service** from this repository:
@@ -72,6 +72,8 @@ Without a server, the game uses generated opponents, bot raiders and a bot Grove
    - Start command: `npm run server:start`. It refuses to start while migrations are pending, so a skipped release step shows up at once instead of as broken requests.
    - Environment variables:
      - `DATABASE_URL`: the connection string.
+     - `DEPLOY_ENV`: `staging` or `production` (section 3f). Production refuses to start without its essentials.
+     - Purchases, push and their keys: sections 3c and 3e.
      - `TRUST_PROXY`: set it to `true` on Render, Fly.io, Railway and any host with a load balancer in front, so rate limits count each player's IP address instead of the load balancer's. Leave it unset only when players connect to the server directly (otherwise anyone could choose their IP with a header).
      - `RATE_LIMITS` (optional): JSON that overrides individual limits, for example `{"register":{"limit":200,"windowMs":3600000}}` on a staging server that runs the contract tests often. The defaults are in `server/rateLimit.ts` and `docs/PROTOCOL.md`.
      - `REDIS_URL` (optional for one instance, needed for two or more): `rediss://…` from Upstash (or any Redis). It holds the leaderboard (rebuilt from Postgres if Redis is emptied), match locks and rate-limit counters, so every instance shares them. Without it, the database holds the leaderboard and locks, and each instance counts its own rate limits.
@@ -131,23 +133,61 @@ The top bar shows the connection: **Online**, **Connecting…** or **No connecti
 
 ### 3b. In-app products to create (roadmap step 33, owner)
 
-Create these in App Store Connect (In-App Purchases) and the Play Console (In-app products), with the same ids. The ids are the game's current ones (`src/gameplay/data/store.json`, `offers.json`, `pass.json`); if you choose new ids with a new bundle id (roadmap steps 3 and 38), change them in those files at the same time. Prices are the game's USD prices; pick the matching price tier in each store.
+Create these in App Store Connect (In-App Purchases) and the Play Console (In-app products), with the **store id** in the first column. The game keeps its own ids (they are in saves) and maps them to these in `src/gameplay/data/store.json` (`storeProductIds`, roadmap step 38); to use other store ids, change only that map. Prices are the game's USD prices; pick the matching price tier in each store. Every product is a consumable in Google Play (the server consumes each purchase once it is delivered).
 
-| Product id | Type | USD | What it gives |
-|---|---|---|---|
-| `moonstones_1` | Consumable | 1.99 | 100 Jade (Pouch of Jade) |
-| `moonstones_2` | Consumable | 4.99 | 280 Jade (Bag of Jade) |
-| `moonstones_3` | Consumable | 9.99 | 600 Jade (Box of Jade) |
-| `moonstones_4` | Consumable | 19.99 | 1,300 Jade (Chest of Jade) |
-| `moonstones_5` | Consumable | 49.99 | 3,500 Jade (Vault of Jade) |
-| `moonstones_6` | Consumable | 99.99 | 7,500 Jade (Dragon Hoard of Jade) |
-| `lantern_pass` | Non-consumable per season (Apple: consumable or non-renewing subscription; the game tracks the season) | 4.99 | Season Scroll premium track |
-| `offer_starter` | Consumable (the game allows it once per account) | 1.99 | Starter offer |
-| `offer_builder` | Consumable | 4.99 | Builder offer |
-| `offer_war_prep` | Consumable | 2.99 | War prep offer |
-| `offer_rebuild` | Consumable | 2.99 | Rebuild offer |
+| Store id | Game id | Type | USD | What it gives |
+|---|---|---|---|---|
+| `jade_pouch` | `moonstones_1` | Consumable | 1.99 | 100 Jade (Pouch of Jade) |
+| `jade_bag` | `moonstones_2` | Consumable | 4.99 | 280 Jade (Bag of Jade) |
+| `jade_box` | `moonstones_3` | Consumable | 9.99 | 600 Jade (Box of Jade) |
+| `jade_chest` | `moonstones_4` | Consumable | 19.99 | 1,300 Jade (Chest of Jade) |
+| `jade_vault` | `moonstones_5` | Consumable | 49.99 | 3,500 Jade (Vault of Jade) |
+| `jade_hoard` | `moonstones_6` | Consumable | 99.99 | 7,500 Jade (Dragon Hoard of Jade) |
+| `season_scroll` | `lantern_pass` | Non-consumable per season (Apple: consumable or non-renewing subscription; the game tracks the season; Store → Restore purchases brings it back) | 4.99 | Season Scroll premium track |
+| `offer_starter` | `offer_starter` | Consumable (the game allows it once per account) | 1.99 | Starter offer |
+| `offer_builder` | `offer_builder` | Consumable | 4.99 | Builder offer |
+| `offer_war_prep` | `offer_war_prep` | Consumable | 2.99 | War prep offer |
+| `offer_rebuild` | `offer_rebuild` | Consumable | 2.99 | Rebuild offer |
 
 Nothing random is sold, so no odds disclosure is needed for these. Real prices are shown only in the Store and its confirm step.
+
+### 3c. Store keys and purchase checks on the server (roadmap steps 34-37)
+
+The server checks every store purchase before it is delivered (`server/payments/`), credits each store transaction once, keeps the under-18 cap across devices, and takes refunds back. Set these on the server (they are secrets: the host's secret settings, never the repository):
+
+- **App Store** (step 35): `APPLE_BUNDLE_IDS` = the app's bundle id (defaults to `GAMECENTER_BUNDLE_IDS`). Receipts are StoreKit 2 signed transactions, checked against Apple Root CA - G3, which is built in by its SHA-256 fingerprint; compare it once with the certificate on https://www.apple.com/certificateauthority/ (`APPLE_ROOT_CA_SHA256` overrides it). `APPLE_ENVIRONMENTS` defaults to `Production,Sandbox` (App Review buys in the sandbox against the production server). No App Store Server API key is needed for this; keep the `.p8` for later use of that API.
+  - **Refunds:** App Store Connect → the app → App Information → App Store Server Notifications: set Version 2 and the URL `https://<server>/v1/webhooks/apple` for production and for sandbox (staging's address there).
+- **Google Play** (step 36): `GOOGLE_PLAY_PACKAGE` (the application id) and `GOOGLE_SERVICE_ACCOUNT_JSON` (a service account key, as one line of JSON; invite the service account in Play Console → Users and permissions with "View financial data" and "Manage orders"). Refunds: create a Pub/Sub topic, set it in Play Console → Monetization setup → Real-time developer notifications, and add a **push** subscription to `https://<server>/v1/webhooks/google` with authentication on; set `GOOGLE_RTDN_AUDIENCE` (the subscription's audience) and `GOOGLE_RTDN_SERVICE_ACCOUNT` (its service account email). The server also reads the Voided Purchases API every hour. Build the Android app with the GitHub variable `VITE_PLAY_BILLING=1` to turn purchases on there (off until then; the Play Billing library is in `android/app/build.gradle`).
+- `/v1/hello` lists `purchases-apple` / `purchases-google` when a store is set up. A village kept on the server can buy only through a server that checks its store; a village on the device is trusted as before.
+
+### 3d. Test purchases (roadmap step 39, owner)
+
+1. **Apple:** App Store Connect → Users and Access → Sandbox → add a tester (an email that is not an Apple ID). On the iPhone: Settings → App Store → Sandbox Account. Install the TestFlight build, buy the Pouch of Jade, check it arrives, then check `GET /v1/purchases` (or Settings → Account → Player ID and the staff tools) shows it as `Sandbox`. Refund it from the sandbox account's purchase history and check the Jade is taken back (`refund:apple` in Settings → Online play → Village on the server → ledger).
+2. **Google:** Play Console → Settings → License testing → add the testers' Google accounts. Upload a build made with `VITE_PLAY_BILLING=1` to the internal testing track, buy with the test card, check it arrives (`Test` purchases are accepted on staging; on production only with `GOOGLE_PLAY_ALLOW_TEST=1`). Refund the order in the Play Console and check it is revoked within an hour.
+3. Under 18: set the age group to under 18 and check that the second purchase past $50 in a month is refused **before** the store sheet opens.
+
+### 3e. Server push (roadmap steps 40-41)
+
+The server sends three kinds of push: "your village was raided", "warriors arrived" and "the Alliance War has started". Each device chooses them in Settings (Reminders), with the same quiet hours and daily limit as reminders.
+
+- **iPhone:** in Xcode add the **Push Notifications** capability. Create an APNs key (Certificates, Identifiers & Profiles → Keys → +, Apple Push Notifications service) and set `APNS_KEY` (the `.p8` text; `\n` for line breaks is fine), `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_TOPIC` (the bundle id). Staging, used by development builds, also sets `APNS_SANDBOX=1`.
+- **Android (step 41, owner):** create a Firebase project for the app, download `google-services.json` into `android/app/` (the build picks it up), and set `FCM_PROJECT_ID` and `FCM_SERVICE_ACCOUNT_JSON` on the server (or give the Play service account the "Firebase Cloud Messaging API Admin" role and leave `FCM_SERVICE_ACCOUNT_JSON` unset).
+- `/v1/hello` lists `push` when at least one is set up.
+
+### 3f. Staging and production (roadmap step 42)
+
+Run two separate servers, each with its own database (and Redis, Sentry environment and secrets):
+
+- `DEPLOY_ENV=staging`: TestFlight and internal-track builds, the contract tests, sandbox purchases and `APNS_SANDBOX=1`. The game says "This is a staging server" in Settings.
+- `DEPLOY_ENV=production`: the store builds. It refuses to start without `DATABASE_URL`, `ADMIN_TOKEN` and an explicit `CORS_ORIGIN` list, or with `APNS_SANDBOX=1`, and warns about missing Sentry and metrics (`server/config.ts`).
+- Each database remembers the first deployment that used it (`server_meta`), and a server of the other kind refuses to start on it, so a copied `DATABASE_URL` can never let staging write to production's data.
+- Build games against each with GitHub **Environments** (Settings → Environments → `staging`, `production`), each with its own `VITE_SERVER_URL` variable.
+
+### 3g. Server releases (roadmap step 43)
+
+`.github/workflows/server.yml`: every push to `main` that touches the server or the shared rules runs all tests (Postgres and Redis included), builds one Docker image (`Dockerfile`, tagged with the commit, pushed to `ghcr.io/<owner>/<repo>/server`), deploys it to staging and runs the contract tests there, with this build's client and the previous release's (the latest `v*` tag). Production gets the same image only when you run the workflow by hand with target `production`.
+
+Set up once: in Settings → Environments, create `staging` and `production` (give `production` required reviewers). In each, add the secret `DEPLOY_HOOK` (the host's deploy URL; it receives `{ "image", "tag" }` and must run `node dist-server/migrate.js` before starting the new image: Render and Railway deploy hooks, or a small script on your host) and the variable `SERVER_URL`. Tag each store release `v<version>` so later releases are tested against it.
 
 **Running a server locally:** run `npm run server:dev`. It uses memory instead of Postgres when `DATABASE_URL` is not set. In the game, set the server address to `http://localhost:8787`, or to `http://<laptop-ip>:8787` from a phone on the same Wi-Fi, using `npm run dev:lan`.
 
@@ -159,12 +199,12 @@ The installed iOS/Android app schedules real local notifications when you leave 
 
 ## 5. Not done yet (decisions for later)
 
-- **Google Play Billing** for the Android app. The `PaymentProvider` interface is ready for a Play Billing provider; purchases are disabled in the Android build until then. Publishing on Google Play also needs a Google Play Console account ($25 one-time).
-- **Cloud saves across devices.** The server handles PvP, Groves and Grove Raids. Your village itself is still saved per device; use Settings → Copy save code / Load from code to move it. Moving the village economy to the server would also stop players from editing their own saves (see "Trust" in `docs/PROTOCOL.md`).
+- **Google Play** needs a Google Play Console account ($25 one-time). Purchases in the Android app stay off until it is built with `VITE_PLAY_BILLING=1` (section 3c).
+- **Android sign-in** (Play Games / Google) still needs the Play services SDKs in `android/`.
 
 ## 6. Kagemura rebuild: identity steps (owner)
 
 - **Repository:** `jimhavlicekpersonal/ninja-version-of-game-1` (done). Turn on Pages (Source: GitHub Actions).
 - **Name check:** search trademarks and app stores for "Kagemura" before publishing. The display name lives in `index.html`, `public/manifest.webmanifest`, `capacitor.config.ts`, `android/.../strings.xml` and `ios/App/App/Info.plist`.
-- **New store listings:** the bundle id (`com.toadstoolkingdoms.app`) and the product ids were kept so nothing breaks. For a separate Kagemura app, choose a new reverse-domain id, update `capacitor.config.ts`, the native projects and App Store Connect products, and update `src/gameplay/data/store.json` product ids at the same time.
-- **Server:** deploy the server from the same commit as the game (protocol 6), with `npm run server:migrate` as the pre-deploy step (section 3).
+- **New store listings:** the bundle id (`com.toadstoolkingdoms.app`) was kept so nothing breaks. For a separate Kagemura app, choose a new reverse-domain id and update `capacitor.config.ts` and the native projects (`android/app/build.gradle` `applicationId` and `namespace`, the Java package folder, Xcode's bundle identifier) and the server's `APPLE_BUNDLE_IDS` / `GOOGLE_PLAY_PACKAGE`. Product ids already have their own store ids (section 3b).
+- **Server:** deploy the server from the same commit as the game (protocol 7), with `npm run server:migrate` as the pre-deploy step (section 3, or the release workflow in 3g).

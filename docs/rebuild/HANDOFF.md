@@ -79,6 +79,8 @@ Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. Wh
 - **Measured:** re-simulating one battle takes 5 ms at Keep 1 and up to ~0.45 s (p95) at Keeps 8–15 on a 2.1 GHz vCPU, which blocks an instance's event loop: a re-sim worker pool (step 57) should come before real load.
 - **Phase 2 completed (24–26):** linked sign-ins = cloud save (Apple, Google, Game Center, Play Games checks; iPhone plugin; web sign-in), moving a device village to the server with sanity limits per Keep, protocol 7 (client headers, idempotent writes, the game keeps its village on the server).
 - **Phase 3, ranking (27–32):** hidden Attack/Base Ratings, matchmaking by expected score, daily honor-loss cap, Base Rating reset on a rebuilt layout, Power Ranking and its Settings tab, a convergence simulation.
+- **Phase 4, payments (35–38):** App Store JWS and Google Play tokens checked on the server, each transaction once, the under-18 cap before paying, refunds taken back, Restore purchases, store product ids mapped; Play Billing plugin (off until `VITE_PLAY_BILLING=1`; its Java was not compiled here).
+- **Phases 5–6 (40, 42, 43):** server push (APNs/FCM), staging/production separation (`DEPLOY_ENV`, one database per deployment), the server release workflow (image → staging → contract tests; production by hand).
 - **Owner steps** (Phase 0, 33, 34, 39, 41, store submission) stay unticked; the roadmap says what was prepared for each.
 - **Hosting checklist:** `docs/SHIPPING.md` (pre-deploy `server:migrate`, `TRUST_PROXY`, `REDIS_URL`, `ADMIN_TOKEN`, `SENTRY_DSN`, `METRICS_TOKEN`, health checks, the deletion URL for Google Play).
 
@@ -91,7 +93,7 @@ Further checks from the audit, now handled: the last deployments are saved at on
 3. **Mastery EXP** is in the model and docs but not yet tracked in the live game.
 4. **Scroll-theft mission**: the first alternative objective, now that standard raids work.
 5. **Real art:** hand `docs/art/ART_AI_BRIEF.md` + `ICON_MANIFEST.json` to an ART session. Live items first.
-6. Owner steps: turn on Pages (above); trademark search for "Kagemura"; new bundle id and store listings when ready (`docs/SHIPPING.md`); host the server; Google Play Billing decision.
+6. Owner steps: turn on Pages (above); trademark search for "Kagemura"; new bundle id and store listings when ready (`docs/SHIPPING.md`); host the server (staging and production, `docs/SHIPPING.md` 3f-3g); store keys (3c, 3e); turn on Play Billing (`VITE_PLAY_BILLING=1`) when the Play products exist.
 
 ## Online features: honest status
 

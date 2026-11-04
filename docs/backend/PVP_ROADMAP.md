@@ -307,20 +307,20 @@ Makes balance, combat and data changes safe while old app builds are still in us
 
 ### Phase 4: Payments (~3–4 weeks) [Owner + Code]
 - [ ] 33. [Owner] Create IAP products with the new ids in App Store Connect and the Play Console. **Prepared:** the 11 products (ids, type, price, contents) are listed in `docs/SHIPPING.md` section 3b.
-- [ ] 34. [Owner] Keys as server secrets: Apple App Store Server API `.p8`, APNs `.p8`, Google service account linked in the Play Console.
-- [ ] 35. [Code] Apple: send JWS → verify → credit → `finish()`; ASSN v2 refund webhook.
-- [ ] 36. [Code] Google: Play Billing plugin → verify token → credit → consume/acknowledge; RTDN + Voided Purchases.
-- [ ] 37. [Code] Transaction ids redeemable once; under-18 cap on the server; purchase history; restore.
-- [ ] 38. [Code] New product ids in `store.json`, `capacitor.config.ts` and the native projects.
-- [ ] 39. [Owner] Test purchases: Apple sandbox testers (TestFlight), Google license testers (internal track).
+- [ ] 34. [Owner] Keys as server secrets: Apple App Store Server API `.p8`, APNs `.p8`, Google service account linked in the Play Console. **Prepared:** every setting the server reads and where to get it is in `docs/SHIPPING.md` sections 3c and 3e (`APPLE_BUNDLE_IDS`, `GOOGLE_PLAY_PACKAGE`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_RTDN_*`, `APNS_*`, `FCM_*`); receipt checks need no App Store Server API key.
+- [x] 35. [Code] Apple: send JWS → verify → credit → `finish()`; ASSN v2 refund webhook. `server/payments/apple.ts` (node:crypto: x5c chain to Apple Root CA - G3 pinned by fingerprint, Apple's marker OIDs, ES256, bundle id, allowed environments), `POST /v1/purchases`, `POST /v1/webhooks/apple` (REFUND/REVOKE take back what a server-held village still has: `revokePurchase`); `TkStorePlugin.swift` returns the JWS and finishes only when the game says (`finish`, `unfinished`); `StoreKitPaymentProvider`. Tests: `tests/backend/server/purchases.test.ts` (a made-up test chain in `tests/backend/fixtures/appstore/`), `tests/backend/net/purchases.test.ts`.
+- [x] 36. [Code] Google: Play Billing plugin → verify token → credit → consume/acknowledge; RTDN + Voided Purchases. `TkBillingPlugin.java` (Billing 7.1.1; the game uses it only in builds made with `VITE_PLAY_BILLING=1`), `PlayBillingPaymentProvider`, `server/payments/google.ts` (service-account OAuth, Play Developer API, consume after credit, RTDN checked by its OIDC token, Voided Purchases API hourly). The Java was not compiled in this environment (no Android SDK); the Android workflow builds it.
+- [x] 37. [Code] Transaction ids redeemable once; under-18 cap on the server; purchase history; restore. Migration 0010 (`purchases`, primary key store + transaction; `purchase_intents`), `POST /v1/purchases/intent` (cap across devices, intents held 30 minutes, `403 purchase_refused` before anything is charged), `GET /v1/purchases`, Store → Restore purchases (unfinished store purchases and this season's Scroll); purchase records outlive account deletion, unlinked. `grantPurchase` left `PLAYER_COMMANDS` (the server delivers, with `verified`).
+- [x] 38. [Code] New product ids in `store.json`, `capacitor.config.ts` and the native projects. `store.json` `storeProductIds` maps the game's ids (kept: they are in saves) to store ids (`jade_pouch` … `season_scroll`); the native plugins take the id from the game, so the native projects need no product list. The app's bundle id in `capacitor.config.ts` stays the owner's choice with the new listing (`docs/SHIPPING.md` section 6).
+- [ ] 39. [Owner] Test purchases: Apple sandbox testers (TestFlight), Google license testers (internal track). **Prepared:** the checklist is `docs/SHIPPING.md` section 3d.
 
 ### Phase 5: Push and native (~1–2 weeks)
-- [ ] 40. [Code] Server-sent push via APNs/FCM (raided, war, donations); respect quiet hours and `maxPerDay`; tokens per device.
-- [ ] 41. [Owner] Firebase project for FCM; `google-services.json`.
+- [x] 40. [Code] Server-sent push via APNs/FCM (raided, war, donations); respect quiet hours and `maxPerDay`; tokens per device. `server/push/push.ts` (APNs over HTTP/2 with an ES256 token, FCM HTTP v1; a push in quiet hours is dropped; invalid tokens removed), migration 0011 (`push_tokens`: types, time zone, count per local day), `PUT|DELETE /v1/push/tokens`, `@capacitor/push-notifications` + `platform/push.ts`; the game registers the types switched on in Settings and stops scheduling a local reminder the server pushes. Tests: `tests/backend/server/push.test.ts`.
+- [ ] 41. [Owner] Firebase project for FCM; `google-services.json`. **Prepared:** steps in `docs/SHIPPING.md` section 3e; the Android build applies the Google services plugin as soon as the file is there.
 
 ### Phase 6: Launch infrastructure (~1–2 weeks) [Owner + Code]
-- [ ] 42. Separate staging and production (databases, secrets).
-- [ ] 43. CI/CD: tests → build → deploy to staging → contract tests; production deploys by hand.
+- [x] 42. Separate staging and production (databases, secrets). `DEPLOY_ENV` and `server/config.ts` (production refuses to start without its database, staff token and CORS list, or with sandbox push), migration 0012 (`server_meta`: a database belongs to the first deployment that used it; the other kind refuses to start), `environment` in `/v1/hello` and a note in Settings. **Owner:** create the two hosts and databases (`docs/SHIPPING.md` section 3f).
+- [x] 43. CI/CD: tests → build → deploy to staging → contract tests; production deploys by hand. `.github/workflows/server.yml` (tests with Postgres and Redis, one Docker image per commit on GHCR, staging deploy through a deploy hook, contract tests against staging with this and the previous release's client, production only by hand and read-only checks), `Dockerfile`, `tools/release/`. **Owner:** the two GitHub Environments, `DEPLOY_HOOK` and `SERVER_URL` (`docs/SHIPPING.md` section 3g).
 - [ ] 44. Automated backups + a practised restore, point-in-time recovery, 2+ API instances.
 - [ ] 45. HTTPS on the custom domain; works on IPv6.
 - [ ] 46. Load test with recorded battle traffic at 5× expected peak.

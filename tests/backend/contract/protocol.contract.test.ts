@@ -271,4 +271,25 @@ describe('protocol contract', () => {
     const second = await (await put(`Contract Two ${tag}`)).json();
     expect(second).toEqual(first);
   });
+
+  it('purchases and push: a store the server does not check is refused before paying; forged receipts are refused; push tokens are checked', async () => {
+    const hello = await client().hello();
+    const p = await player('Buyer');
+    for (const store of ['apple', 'google'] as const) {
+      if (hello.features.includes(`purchases-${store}`)) {
+        const intent = await p.purchaseIntent({ store, productId: data.store.packs[0].id, under18: false });
+        expect(intent.accountToken).toMatch(/^[0-9a-f-]{36}$/);
+        expect(await errorOf(p.redeem({ store, storeProductId: intent.storeProductId, receipt: 'forged.receipt.value' }))).toMatchObject({ code: 'bad_request' });
+      } else {
+        expect(await errorOf(p.purchaseIntent({ store, productId: data.store.packs[0].id, under18: false }))).toMatchObject({ status: 403, code: 'purchase_refused' });
+      }
+    }
+    expect((await p.purchaseHistory()).purchases).toEqual([]);
+    expect(await errorOf(p.putPushToken({ token: 'x', platform: 'ios', types: [], tzOffsetMinutes: 0 }))).toMatchObject({ code: 'bad_request' });
+    await p.putPushToken({ token: `contract${tag}`.padEnd(64, '0'), platform: 'ios', types: ['raided'], tzOffsetMinutes: 0 });
+    await p.deletePushToken(`contract${tag}`.padEnd(64, '0'));
+    // Store notifications refuse unsigned payloads (404 where the store is not set up).
+    const forged = await fetch(`${url}${Routes.appleNotifications}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ signedPayload: 'a.b.c' }) });
+    expect([400, 404]).toContain(forged.status);
+  });
 });

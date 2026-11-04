@@ -344,6 +344,9 @@ export class Hud {
       clear(wrap);
       const status = h('p', {}, h('span', { class: `net-pill inline ${conn.status}` }, Hud.NET_LABEL[conn.status] ?? conn.status), ' ', conn.enabled ? h('span', { class: 'muted small' }, conn.url) : '');
       wrap.append(h('h3', {}, 'Online play'), status);
+      // A test server says so (roadmap step 42): progress there is not the real game's.
+      const env = conn.server?.environment;
+      if (env && env !== 'production') wrap.append(h('p', { class: 'muted small' }, `This is a ${env} server for testing: villages and purchases here are separate from the real game.`));
       if (!conn.enabled) {
         wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Alliance are friendly bots. Enter a Kagemura: Ninja Clans server address to raid real players and join real Alliances.'));
       } else {

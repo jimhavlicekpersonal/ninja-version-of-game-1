@@ -1,0 +1,154 @@
+name: Server release
+
+# Roadmap step 43: tests -> image -> staging -> contract tests; production by hand.
+#
+# Every push to main that touches the server or the shared game rules builds
+# one image (tagged with the commit), deploys it to staging and runs the
+# protocol contract tests against staging, with this build's client and the
+# previous release's (step 77). Production gets the same image only when someone
+# runs this workflow by hand with target "production" (protect the
+# "production" environment with required reviewers in the repo settings).
+#
+# Owner setup (docs/SHIPPING.md, "Server releases"):
+# - Environments "staging" and "production", each with:
+#   - secret DEPLOY_HOOK: the host's deploy URL (Render/Railway deploy hook, or a
+#     small script on your host) that pulls IMAGE and runs
+#     `node dist-server/migrate.js` before starting it;
+#   - variable SERVER_URL: the public https address of that server.
+# - The image goes to ghcr.io/<owner>/<repo>/server (GITHUB_TOKEN, no secret needed).
+# Without DEPLOY_HOOK the deploy jobs only build and say what is missing.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'src/gameplay/sim/**'
+      - 'src/gameplay/data/**'
+      - 'src/backend/net/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Dockerfile'
+      - '.github/workflows/server.yml'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Where to deploy this commit'
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: server-release-${{ github.event.inputs.target || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}/server
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tk_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/tk_test
+      TEST_REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck:server
+      - run: npm test
+      - run: npm run server:build
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: tag
+        run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Build and push
+        run: |
+          IMAGE_LC=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          docker build --build-arg RELEASE=${{ steps.tag.outputs.tag }} -t "$IMAGE_LC:${{ steps.tag.outputs.tag }}" .
+          docker push "$IMAGE_LC:${{ steps.tag.outputs.tag }}"
+
+  staging:
+    needs: image
+    if: github.event_name == 'push' || github.event.inputs.target == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
+          SERVER_URL: ${{ vars.SERVER_URL }}
+          TAG: ${{ needs.image.outputs.tag }}
+        run: node tools/release/deploy.mjs
+      - name: Contract tests against staging (this build's client)
+        if: vars.SERVER_URL != ''
+        env:
+          CONTRACT_URL: ${{ vars.SERVER_URL }}
+        run: npm run test:contract
+      - name: Contract tests against staging (the previous release's client)
+        if: vars.SERVER_URL != ''
+        env:
+          CONTRACT_URL: ${{ vars.SERVER_URL }}
+        run: node tools/release/previous-client-contract.mjs
+
+  production:
+    needs: image
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
+          SERVER_URL: ${{ vars.SERVER_URL }}
+          TAG: ${{ needs.image.outputs.tag }}
+        run: node tools/release/deploy.mjs
+      - name: Smoke check (read-only; production is never used for contract tests)
+        if: vars.SERVER_URL != ''
+        run: |
+          curl -sf "${{ vars.SERVER_URL }}/readyz"
+          curl -sf "${{ vars.SERVER_URL }}/v1/hello"
