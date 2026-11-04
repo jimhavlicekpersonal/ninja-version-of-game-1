@@ -1,6 +1,8 @@
 /** Small on/off preferences kept in localStorage (per device). */
-type Key = 'sessionReminder' | 'reminders';
-const DEFAULTS: Record<Key, boolean> = { sessionReminder: true, reminders: false };
+export type PrefKey = 'sessionReminder' | 'reminders' | 'crashReports';
+type Key = PrefKey;
+/** crashReports: send crash reports (no player data) when the build has a Sentry DSN; the player can switch it off. */
+const DEFAULTS: Record<Key, boolean> = { sessionReminder: true, reminders: false, crashReports: true };
 
 export const prefs = {
   get(k: Key): boolean {

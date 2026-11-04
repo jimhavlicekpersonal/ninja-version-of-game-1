@@ -59,7 +59,9 @@ export interface HudDeps {
   onTrial(tier: number): void;
   /** Open a practice battle with this army (nothing spent or won). */
   onPractice(army: Record<string, number>): void;
-  prefs: { get(k: 'sessionReminder' | 'reminders'): boolean; set(k: 'sessionReminder' | 'reminders', v: boolean): void };
+  prefs: { get(k: 'sessionReminder' | 'reminders' | 'crashReports'): boolean; set(k: 'sessionReminder' | 'reminders' | 'crashReports', v: boolean): void };
+  /** This build sends crash reports (it has a Sentry DSN): show the switch. */
+  crashReports?: boolean;
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
   reminderNote: string;
@@ -1214,6 +1216,11 @@ export class Hud {
         h('p', { class: 'muted small' }, 'Time skips and test purchases live in a separate testing sandbox, so they can never change your real village or online play.'),
         h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { location.search = '?sandbox'; } }, 'Open the testing sandbox')),
       );
+    }
+    if (this.deps.crashReports) {
+      const crashToggle = h('input', { type: 'checkbox', checked: prefs.get('crashReports') }) as HTMLInputElement;
+      crashToggle.addEventListener('change', () => prefs.set('crashReports', crashToggle.checked));
+      body.append(h('label', { class: 'toggle' }, crashToggle, ' Send crash reports'), h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error and the game version to help fix it. Never your name, village, chat or anything typed.'));
     }
     body.append(h('details', {}, h('summary', {}, 'Analytics events (this device)'), events));
     void this.deps.analytics.recent(60).then((list) => {

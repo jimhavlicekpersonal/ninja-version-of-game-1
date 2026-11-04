@@ -295,6 +295,22 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
 export { takeTicket };
 
 /**
+ * Re-run a reported battle, timing it and comparing it with the client's own
+ * result hash: a difference is a desync (counted and logged, never trusted).
+ */
+export function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): ReturnType<typeof runBattle> {
+  const t0 = performance.now();
+  const out = runBattle(setup, deployments, ctx.data, sub.endTick);
+  ctx.metrics.observe('tk_resim_ms', performance.now() - t0, { kind });
+  ctx.metrics.count('tk_battles_total', { kind });
+  if (typeof sub.clientHash === 'string' && sub.clientHash !== out.result.hash) {
+    ctx.metrics.count('tk_desyncs_total', { kind });
+    ctx.log('warn', 'battle desync', { kind, ticket: sub.ticket, rules: SIM_RULES, client: sub.clientHash, server: out.result.hash });
+  }
+  return out;
+}
+
+/**
  * The seed a battle is re-simulated with: the one the server issued with the
  * ticket, so a client cannot try seeds offline and report the luckiest. A
  * report with any other seed is refused (it was played as a different battle,
@@ -318,7 +334,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { result } = runBattle(setup, deployments, data, sub.endTick);
+  const { result } = resimulate(ctx, 'pvp', setup, deployments, sub);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);

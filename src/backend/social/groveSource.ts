@@ -501,7 +501,7 @@ export class RemoteGroveSource implements GroveSource {
         finish: (deployments, endTick) => {
           const out = c.finishRemoteGroveBattle(target, setup, deployments, endTick, base.name, at);
           if (!out) return null;
-          void this.conn.report('raid', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick }).then(() => this.refresh(true));
+          void this.conn.report('raid', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick, clientHash: out.record.result.hash }).then(() => this.refresh(true));
           return out;
         },
       };

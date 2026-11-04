@@ -3,14 +3,13 @@
  * Grove when no rival is free). Same schedule, attack allowance, star scoring
  * and chests as the game's offline Grove Raid (src/sim/social/groveRaid.ts).
  */
-import { runBattle } from '../../src/gameplay/sim/battle/battle';
 import { createRng, int, mixSeed, next } from '../../src/gameplay/sim/rng';
 import { enemyGrove, raidPhase, raidWindow } from '../../src/gameplay/sim/social/groveRaid';
 import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, BattleSubmission } from '../../src/backend/net/protocol';
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';
-import { battleSeed, checkArmy, takeTicket, TICKET_TTL_MS } from './pvp';
+import { battleSeed, checkArmy, resimulate, takeTicket, TICKET_TTL_MS } from './pvp';
 
 const ACTIVE_WINDOW_MS = 3 * 24 * HOUR;
 
@@ -217,7 +216,7 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   const used = sideAttacks.filter((a) => a.attackerId === me.id).length;
   if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const { result } = runBattle({ seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) }, deployments, ctx.data, sub.endTick);
+  const { result } = resimulate(ctx, 'raid', { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) }, deployments, sub);
   if (!(await ctx.repo.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
   await ctx.repo.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });

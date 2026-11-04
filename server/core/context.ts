@@ -1,6 +1,7 @@
 /** What the server core needs from its environment (its other ports). */
 import type { GameData } from '../../src/gameplay/sim/types';
 import type { Repo } from '../repo';
+import type { Metrics } from '../observability';
 import type { Leaderboard, MatchLocks } from '../shared';
 
 export interface ServerContext {
@@ -21,6 +22,10 @@ export interface ServerContext {
   board: Leaderboard;
   /** Who is attacking whom right now (open tickets, or Redis locks). */
   locks: MatchLocks;
+  /** Counters and timings (re-simulation, battles, desyncs); a no-op unless the server exposes /metrics. */
+  metrics: Metrics;
+  /** A structured log line (the request's logger in the HTTP adapter). */
+  log(level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>): void;
 }
 
 export class ApiError extends Error {

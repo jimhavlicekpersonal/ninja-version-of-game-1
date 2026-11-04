@@ -25,6 +25,7 @@ jobs:
       - run: npm run build
         env:
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
       - run: npx cap sync ios
       - name: Install the App Store Connect API key
         run: |

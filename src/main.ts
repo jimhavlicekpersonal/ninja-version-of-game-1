@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
+import { CrashReporter } from './backend/analytics/crashReports';
 import { GameController } from './gameplay/control/controller';
 import { openGameDb } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
@@ -77,6 +78,9 @@ async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events
   }
 }
 
+/** Set up first thing in boot(), so a failed start is reported too. */
+let crashReporter: CrashReporter | null = null;
+
 async function boot(): Promise<void> {
   const params = new URLSearchParams(location.search);
   // Testing tools (time skips, instant test purchases) exist only in the
@@ -84,6 +88,15 @@ async function boot(): Promise<void> {
   // own save and never goes online, so neither its clock nor its free
   // purchases can reach a real village or a shared economy.
   const sandbox = isSandbox(location.search);
+  // Crash reports (VITE_SENTRY_DSN builds only; Settings can switch them off; never from the sandbox).
+  crashReporter = new CrashReporter({
+    dsn: sandbox ? undefined : (import.meta.env.VITE_SENTRY_DSN as string | undefined),
+    release: `kagemura@${__APP_VERSION__}`,
+    environment: isNative() ? platform() : 'web',
+    enabled: () => prefs.get('crashReports'),
+    tags: { device: platformName() },
+  });
+  crashReporter.install();
   const debugTime = sandbox ? createDebugTime() : { offsetMs: () => 0, skip: () => undefined };
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   const [{ store, events }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
@@ -183,6 +196,7 @@ async function boot(): Promise<void> {
     debugTime,
     sandbox,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
+    crashReports: crashReporter.configured,
     groveSource,
     connection,
   });
@@ -316,6 +330,7 @@ async function boot(): Promise<void> {
 
 boot().catch((e) => {
   console.error(e);
+  crashReporter?.report(e, { kind: 'boot' });
   const el = document.getElementById('boot');
   if (el) el.innerHTML = `<div class="err">Something went wrong starting the game.<br><small>${String((e as Error)?.message ?? e)}</small></div>`;
 });

@@ -1,4 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 /**
  * Bundles the PvP server for Node: dist-server/main.js (the API) and
@@ -6,6 +9,7 @@ import { defineConfig } from 'vite';
  */
 export default defineConfig({
   publicDir: false,
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   build: {
     ssr: true,
     outDir: 'dist-server',

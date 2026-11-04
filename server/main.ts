@@ -14,6 +14,10 @@
  * - REDIS_URL: redis:// or rediss:// (Upstash). Shares the leaderboard, match
  *   locks and rate-limit counters between instances. Unset: the database
  *   holds the leaderboard and locks, and each instance counts its own limits.
+ * - SENTRY_DSN (+ SENTRY_ENVIRONMENT, default 'production'): server errors to Sentry.
+ * - METRICS_TOKEN: serve Prometheus metrics at /metrics to this bearer token.
+ * - LOG_LEVEL: debug | info (default) | warn | error.
+ * - RELEASE: the build name shown by /healthz and Sentry (default: package version).
  */
 import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
@@ -23,12 +27,28 @@ import { DEFAULT_RATE_LIMITS, type RateLimiter, type RateLimits } from './rateLi
 import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
 import { RedisLeaderboard, RedisLocks, RedisRateLimiter } from './shared';
+import { ServerSentry } from './observability';
+
+declare const __APP_VERSION__: string;
 
 function trustProxy(v: string | undefined): boolean | number | string {
   if (!v || v === 'false' || v === '0') return false;
   if (v === 'true') return true;
   return /^\d+$/.test(v) ? Number(v) : v;
 }
+
+const release = process.env.RELEASE || `kagemura-server@${__APP_VERSION__}`;
+const sentry = ServerSentry.fromDsn(process.env.SENTRY_DSN, release, process.env.SENTRY_ENVIRONMENT || 'production');
+// Crashes outside a request still reach Sentry (and the log) before the process exits.
+process.on('unhandledRejection', (e) => {
+  console.error('Unhandled rejection', e);
+  sentry?.capture(e, { level: 'error', tags: { kind: 'unhandledRejection' } });
+});
+process.on('uncaughtException', (e) => {
+  console.error('Uncaught exception', e);
+  sentry?.capture(e, { level: 'fatal', tags: { kind: 'uncaughtException' } });
+  setTimeout(() => process.exit(1), 1000).unref();
+});
 
 async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;
@@ -54,15 +74,32 @@ async function main(): Promise<void> {
   const rateLimits = process.env.RATE_LIMITS ? (JSON.parse(process.env.RATE_LIMITS) as Partial<RateLimits>) : undefined;
   let shared: SharedStores | undefined;
   let rateLimiter: RateLimiter | undefined;
+  const readiness: Record<string, () => Promise<unknown>> = {};
   if (process.env.REDIS_URL) {
     const redis = RedisClient.fromUrl(process.env.REDIS_URL);
+    readiness.redis = () => redis.command('PING');
     const board = new RedisLeaderboard(redis);
     const added = await board.rebuildIfMissing(repo);
     if (added) console.log(`Leaderboard rebuilt in Redis from the database (${added} players).`);
     shared = { board, locks: new RedisLocks(redis) };
     rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits });
   }
-  const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true, trustProxy: trustProxy(process.env.TRUST_PROXY), rateLimits, rateLimiter, shared, adminToken: process.env.ADMIN_TOKEN || undefined });
+  const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
+  const app = buildServer({
+    repo,
+    data: defaultData,
+    corsOrigin: process.env.CORS_ORIGIN,
+    logger: level,
+    trustProxy: trustProxy(process.env.TRUST_PROXY),
+    rateLimits,
+    rateLimiter,
+    shared,
+    adminToken: process.env.ADMIN_TOKEN || undefined,
+    metricsToken: process.env.METRICS_TOKEN || undefined,
+    sentry,
+    version: release,
+    readiness,
+  });
   const port = Number(process.env.PORT ?? 8787);
   await app.listen({ port, host: '0.0.0.0' });
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.

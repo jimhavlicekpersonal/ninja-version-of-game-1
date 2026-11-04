@@ -201,6 +201,10 @@ export class PgRepo implements Repo {
     return (await this.pool.query(sql, vals)).rows as Row[];
   }
 
+  async ping(): Promise<void> {
+    await this.pool.query('select 1');
+  }
+
   // ------------------------------------------------------------ players
 
   async createPlayer(p: Player): Promise<void> {

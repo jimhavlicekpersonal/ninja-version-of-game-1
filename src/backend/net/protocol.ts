@@ -168,6 +168,11 @@ export interface BattleSubmission {
   reinforcements?: Record<string, { count: number; level: number }>;
   deployments: Deployment[];
   endTick?: number;
+  /**
+   * The result hash the client's own simulation got. Only for spotting
+   * desyncs (counted and logged by the server); never trusted.
+   */
+  clientHash?: string;
 }
 
 export interface AttackResponse {

@@ -263,6 +263,8 @@ export interface OpponentQuery {
 }
 
 export interface Repo {
+  /** Throws when the store cannot answer (readiness checks). */
+  ping(): Promise<void>;
   // players
   createPlayer(p: Player): Promise<void>;
   playerByTokenHash(hash: string): Promise<Player | null>;
@@ -399,6 +401,7 @@ export class MemoryRepo implements Repo {
   blockRows: Block[] = [];
   private seq = 0;
 
+  async ping(): Promise<void> {}
   async createPlayer(p: Player): Promise<void> {
     this.players.set(p.id, clone(p));
   }
