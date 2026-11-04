@@ -1,13 +1,16 @@
 /**
  * HTTP adapter: puts the server core (server/core/) behind the protocol in
  * src/net/protocol.ts. All rules live in the core; this file only reads
- * requests, checks the bearer token and turns errors into protocol errors.
+ * requests, checks the bearer token, applies rate and size limits, and turns
+ * errors into protocol errors.
  */
+import { createHash } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
 import type { GameData } from '../src/gameplay/sim/types';
 import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext } from './nodeContext';
+import { BODY_LIMITS, DEFAULT_RATE_LIMITS, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
 import type { Player, Repo } from './repo';
 
 export { maxHousing, validateBase, validLevels } from './core/pvp';
@@ -21,7 +24,20 @@ export interface ServerOptions {
   logger?: boolean;
   /** Override for tests (deterministic opponent picks). */
   random?: () => number;
+  /** Rate limits; any rule left out keeps its default (DEFAULT_RATE_LIMITS). */
+  rateLimits?: Partial<RateLimits>;
+  /** A shared limiter (e.g. Redis, roadmap step 16); defaults to one in this process's memory. */
+  rateLimiter?: RateLimiter;
+  /**
+   * Behind a load balancer or proxy, take the caller's IP address from
+   * X-Forwarded-For (Fastify's trustProxy: true, a hop count, or addresses).
+   * Leave it off when clients connect directly, or anyone could pick their IP.
+   */
+  trustProxy?: boolean | number | string;
 }
+
+/** Route option: which extra rate rule the route counts against. */
+type RateConfig = { rate?: keyof RateLimits };
 
 function bearer(req: FastifyRequest): string | undefined {
   const h = req.headers.authorization ?? '';
@@ -29,8 +45,12 @@ function bearer(req: FastifyRequest): string | undefined {
 }
 
 export function buildServer(opts: ServerOptions): FastifyInstance & { core: ServerCore } {
-  const core: ServerCore = createCore(nodeContext(opts.repo, opts.data, opts.now, opts.random));
-  const app = Object.assign(Fastify({ logger: opts.logger ?? false, bodyLimit: 1_000_000 }), { core });
+  const now = opts.now ?? (() => Date.now());
+  const core: ServerCore = createCore(nodeContext(opts.repo, opts.data, now, opts.random));
+  // Small bodies by default; base uploads and battle reports raise it per route.
+  // (trustProxy is cast only to keep Fastify's overloads on the HTTP/1 server type; any of its forms works.)
+  const app = Object.assign(Fastify({ logger: opts.logger ?? false, bodyLimit: BODY_LIMITS.default, trustProxy: (opts.trustProxy ?? false) as boolean }), { core });
+  const limiter = opts.rateLimiter ?? new MemoryRateLimiter({ ...DEFAULT_RATE_LIMITS, ...opts.rateLimits });
 
   // CORS without an extra dependency. corsOrigin: '*' (default; fine because
   // auth is a bearer token, not a cookie) or a comma-separated list of origins.
@@ -45,7 +65,36 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     reply.header('Access-Control-Allow-Headers', 'authorization, content-type');
     reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     reply.header('Access-Control-Max-Age', '86400');
+    reply.header('Access-Control-Expose-Headers', 'retry-after');
     if (req.method === 'OPTIONS') return reply.code(204).send();
+  });
+
+  // Rate limits: every caller by IP address, every player by token, and the
+  // costly routes (new players, matches, battle reports, reports) on their own.
+  const tooMany = (reply: FastifyReply, d: RateDecision, what: string) => {
+    const secs = Math.max(1, Math.ceil(d.retryAfterMs / 1000));
+    reply.header('Retry-After', String(secs));
+    const body: ErrorBody = { error: 'rate_limited', message: `${what} Try again in ${secs} second${secs === 1 ? '' : 's'}.` };
+    return reply.code(429).send(body);
+  };
+  app.addHook('onRequest', async (req, reply) => {
+    if (req.method === 'OPTIONS' || req.url === '/healthz') return;
+    const t = now();
+    const ip = `ip:${req.ip}`;
+    let d = await limiter.hit('ip', ip, t);
+    if (!d.ok) return tooMany(reply, d, 'Too many requests from your network.');
+    const token = bearer(req);
+    // Keyed by a hash, so tokens never sit in the limiter (or a shared Redis) in the clear.
+    const who = token ? `t:${createHash('sha256').update(token).digest('hex').slice(0, 32)}` : ip;
+    if (token) {
+      d = await limiter.hit('player', who, t);
+      if (!d.ok) return tooMany(reply, d, 'Too many requests.');
+    }
+    const rule = (req.routeOptions?.config as RateConfig | undefined)?.rate;
+    if (rule) {
+      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' ? ip : who, t);
+      if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : 'Slow down a little.');
+    }
   });
 
   app.setErrorHandler((err, _req, reply) => {
@@ -76,14 +125,15 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.hello, async () => core.hello());
 
   // Identity
-  app.post(Routes.players, async (req, reply) => reply.code(201).send(await core.register(body<{ name: string }>(req).name)));
+  const rate = (r: keyof RateLimits): { config: RateConfig } => ({ config: { rate: r } });
+  app.post(Routes.players, rate('register'), async (req, reply) => reply.code(201).send(await core.register(body<{ name: string }>(req).name)));
   app.get(Routes.me, authed(async (me) => core.me(me)));
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
 
   // PvP
-  app.put(Routes.base, authed(async (me, req) => core.uploadBase(me, req.body as never)));
-  app.get(Routes.match, authed(async (me) => core.match(me)));
-  app.post(Routes.attacks, authed(async (me, req) => core.attack(me, req.body as never)));
+  app.put(Routes.base, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.uploadBase(me, req.body as never)));
+  app.get(Routes.match, rate('match'), authed(async (me) => core.match(me)));
+  app.post(Routes.attacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.attack(me, req.body as never)));
   app.get(Routes.defenses, authed(async (me, req) => core.defenses(me, Number(query(req).since ?? 0))));
   app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50))));
 
@@ -103,8 +153,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
 
   // Grove Raid
   app.get(Routes.groveRaid, authed(async (me) => core.raid(me)));
-  app.post(Routes.groveRaidTicket, authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target)));
-  app.post(Routes.groveRaidAttacks, authed(async (me, req) => core.raidAttack(me, req.body as never)));
+  app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target)));
+  app.post(Routes.groveRaidAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.raidAttack(me, req.body as never)));
   app.post(Routes.groveRaidClaim, authed(async (me, req) => core.claimRaid(me, body<{ week: number }>(req).week)));
 
   return app;

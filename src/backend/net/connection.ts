@@ -233,8 +233,9 @@ export class Connection {
     }
     const msg = e instanceof Error ? e.message : String(e);
     this.log('Online play: sync failed', e);
-    if (e instanceof ServerError && !e.retryable && this.online) {
-      // A rule said no to one call; the connection itself is fine.
+    if (e instanceof ServerError && (!e.retryable || e.code === 'rate_limited') && this.online) {
+      // A rule said no to one call (or asked us to slow down); the connection itself is
+      // fine. Queued battle reports stay in the outbox for the next sync.
       this.lastError = msg;
       this.emit();
       return;

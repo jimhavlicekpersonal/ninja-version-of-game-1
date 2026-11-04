@@ -251,6 +251,7 @@ for (const [label, makeRepo] of repoFactories) {
         w.advance(61_000);
         expect(await code(a.postChat('ok again'))).toBe('ok');
         expect(await code(a.postChat('   '))).toBe('bad_request');
+        expect(await code(a.postChat('x'.repeat(201)))).toBe('bad_request'); // longer than any message the game can type
       });
 
       it('runs troop requests and donations end to end', async () => {

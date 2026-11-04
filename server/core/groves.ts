@@ -8,6 +8,9 @@ import { cleanName } from './identity';
 import { maxReinforcementAt } from './pvp';
 
 
+/** Longest chat message accepted (the game's input allows 160 characters). */
+export const CHAT_MAX_CHARS = 200;
+
 export function maxMembers(ctx: ServerContext): number {
   return ctx.data.social.membersMax;
 }
@@ -119,6 +122,7 @@ export async function postChat(ctx: ServerContext, me: Player, text: unknown): P
   const { grove } = await requireGrove(ctx, me);
   const raw = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (!raw) throw new ApiError(400, 'bad_request', 'Type a message first.');
+  if (raw.length > CHAT_MAX_CHARS) throw new ApiError(400, 'bad_request', `Keep messages under ${CHAT_MAX_CHARS} characters.`);
   if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');
   // Chat is always filtered (also for players who are not under 18).
   const row = await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: filterText(raw, ctx.data), kind: 'chat' });

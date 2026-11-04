@@ -1,13 +1,26 @@
 /**
- * Server entry point. Env: PORT, DATABASE_URL (Postgres; memory if unset),
- * CORS_ORIGIN ('*' or a comma-separated list of origins), MIGRATE_ON_BOOT=1
- * (single-instance hosts only: apply pending migrations on start instead of in
- * a release step).
+ * Server entry point. Env:
+ * - PORT; DATABASE_URL (Postgres; memory if unset);
+ * - CORS_ORIGIN: '*' or a comma-separated list of origins;
+ * - MIGRATE_ON_BOOT=1: single-instance hosts only, apply pending migrations on
+ *   start instead of in a release step;
+ * - TRUST_PROXY: behind a load balancer (Render, Fly.io, Railway, …) set
+ *   'true' (or a hop count, or the proxy addresses) so rate limits see each
+ *   player's IP instead of the proxy's;
+ * - RATE_LIMITS: optional JSON overriding rules of DEFAULT_RATE_LIMITS, e.g.
+ *   {"register":{"limit":200,"windowMs":3600000}} on a staging server.
  */
 import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
 import { PgRepo } from './pgRepo';
+import type { RateLimits } from './rateLimit';
 import { MemoryRepo, type Repo } from './repo';
+
+function trustProxy(v: string | undefined): boolean | number | string {
+  if (!v || v === 'false' || v === '0') return false;
+  if (v === 'true') return true;
+  return /^\d+$/.test(v) ? Number(v) : v;
+}
 
 async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;
@@ -30,7 +43,8 @@ async function main(): Promise<void> {
     console.warn('DATABASE_URL not set: using in-memory storage (data is lost on restart).');
     repo = new MemoryRepo();
   }
-  const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true });
+  const rateLimits = process.env.RATE_LIMITS ? (JSON.parse(process.env.RATE_LIMITS) as Partial<RateLimits>) : undefined;
+  const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true, trustProxy: trustProxy(process.env.TRUST_PROXY), rateLimits });
   const port = Number(process.env.PORT ?? 8787);
   await app.listen({ port, host: '0.0.0.0' });
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.

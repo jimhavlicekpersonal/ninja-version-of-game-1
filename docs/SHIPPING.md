@@ -72,6 +72,8 @@ Without a server, the game uses generated opponents, bot raiders and a bot Grove
    - Start command: `npm run server:start`. It refuses to start while migrations are pending, so a skipped release step shows up at once instead of as broken requests.
    - Environment variables:
      - `DATABASE_URL`: the connection string.
+     - `TRUST_PROXY`: set it to `true` on Render, Fly.io, Railway and any host with a load balancer in front, so rate limits count each player's IP address instead of the load balancer's. Leave it unset only when players connect to the server directly (otherwise anyone could choose their IP with a header).
+     - `RATE_LIMITS` (optional): JSON that overrides individual limits, for example `{"register":{"limit":200,"windowMs":3600000}}` on a staging server that runs the contract tests often. The defaults are in `server/rateLimit.ts` and `docs/PROTOCOL.md`.
      - `CORS_ORIGIN`: leave it unset to allow every origin. This is safe, because players sign in with a token, not a cookie. To restrict it, use a comma-separated list: `https://jimhavlicekpersonal.github.io,capacitor://localhost,https://localhost`. The last two are the iPhone and Android apps.
    - The first `server:migrate` creates the tables; later versions add numbered migrations (`server/migrations/`). `npm run server:migrate -- --status` lists applied and pending ones. A database made by an older server (which created its tables on every boot) is adopted as it is.
    - Use the HTTPS address the host gives you. The phone apps refuse plain HTTP.

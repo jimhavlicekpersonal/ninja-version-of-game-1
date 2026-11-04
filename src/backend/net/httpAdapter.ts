@@ -153,7 +153,8 @@ export class HttpServerAdapter implements ServerPort {
         return await this.once<T>(method, path, body);
       } catch (e) {
         // Only reads are retried here; writes are made safe by tickets and the outbox.
-        if (method !== 'GET' || !(e instanceof ServerError) || !e.retryable || attempt >= this.retries) throw e;
+        // A rate limit is not retried at once: the caller tries again on its next round.
+        if (method !== 'GET' || !(e instanceof ServerError) || !e.retryable || e.code === 'rate_limited' || attempt >= this.retries) throw e;
         attempt++;
         if (this.retryDelayMs) await new Promise((r) => setTimeout(r, this.retryDelayMs * attempt));
       }

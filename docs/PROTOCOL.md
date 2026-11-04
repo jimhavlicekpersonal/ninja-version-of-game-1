@@ -3,6 +3,7 @@
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
 **Version 6, server hardening (2026-11, roadmap Phase 1):** additions that keep protocol 6 for clients that use them.
+- **Rate and size limits.** Too many requests get `429 rate_limited` with a `Retry-After` header (seconds); the game treats it as "try again later", never as a refusal, so a rate-limited battle report stays in the outbox. Request bodies are capped (16 KB, base uploads 128 KB, battle reports 256 KB; more is `413`), and chat messages at 200 characters.
 - **Server-issued battle seeds.** `MatchResponse.seed` and `RaidTicketResponse.seed` carry the battle seed the server chose for the ticket. The client plays the battle with it and sends it back as `BattleSubmission.seed`; the server re-simulates with its own seed, and a report with any other seed is refused with `400 bad_request` (a player-facing "update the game" message), without using up the ticket. A client facing an older server that sends no seed picks its own. `/v1/hello` lists the `server-seed` feature.
 
 **Version 6 (gameplay audit fixes):** clients and servers must upgrade together (`minProtocol: 6`), because the battle rules changed (`SIM_RULES` 2: counters are off while upgrading, wall-breakers target the wall in the way, the Siege Bombardier fires on defenses, healers break walls, rebalanced Throwers and kites).
@@ -83,8 +84,22 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   | `raid_not_live` | 409 | a Grove Raid ticket outside the raid |
   | `raid_not_ended` | 409 | claiming a chest before the raid ends |
   | `no_attacks_left` | 409 | both Grove Raid attacks used, or joined after the raid started |
+  | `rate_limited` | 429 | too many requests; wait `Retry-After` seconds (the header is exposed to the web game through CORS) |
 
-  - **Retries:** the client retries network errors and 5xx answers. It never retries 4xx answers.
+  - **Retries:** the client retries network errors, 5xx answers and `rate_limited` (on its next round, not at once). It never retries other 4xx answers.
+- **Limits (our server; other servers may choose their own):**
+
+  | what | limit |
+  |---|---|
+  | every request, per IP address | 600 a minute |
+  | every request, per player token | 240 a minute |
+  | new players (`POST /v1/players`), per IP address | 30 an hour |
+  | opponent searches and war tickets, per player | 30 a minute |
+  | battle reports (re-simulated), per player | 20 a minute |
+  | request body | 16 KB; `PUT /v1/base` 128 KB; battle reports 256 KB (`413` above) |
+  | chat message | 200 characters (`400 bad_request` above) |
+
+  Behind a load balancer the server must see each player's own IP address (`TRUST_PROXY`, `docs/SHIPPING.md`), or all players share one per-IP budget.
 - **Versioning:** `GET /v1/hello` reports `protocol` and `minProtocol`. The game refuses a server whose `minProtocol` is above the game's version, or whose `protocol` is below it. Bump `PROTOCOL_VERSION` in `protocol.ts` for any change that would break older clients.
 - **Time:** all times are epoch milliseconds, taken from the server's clock.
 

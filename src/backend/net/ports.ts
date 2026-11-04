@@ -41,9 +41,13 @@ export class ServerError extends Error {
   ) {
     super(message);
   }
-  /** Network problems and server hiccups can be retried; rule violations cannot. */
+  /**
+   * Network problems, server hiccups and rate limits can be retried later;
+   * rule violations cannot. (A rate-limited battle report stays in the outbox
+   * instead of becoming a practice result.)
+   */
   get retryable(): boolean {
-    return this.code === 'network' || this.status >= 500;
+    return this.code === 'network' || this.code === 'rate_limited' || this.status >= 500;
   }
 }
 

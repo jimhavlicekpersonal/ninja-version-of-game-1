@@ -27,7 +27,9 @@ export type ErrorCode =
   | 'raid_not_ended'
   | 'no_attacks_left'
   | 'no_opponents'
-  | 'version_mismatch';
+  | 'version_mismatch'
+  /** 429: too many requests; wait for the Retry-After header (seconds), then try again. */
+  | 'rate_limited';
 
 export interface ErrorBody {
   error: ErrorCode;
