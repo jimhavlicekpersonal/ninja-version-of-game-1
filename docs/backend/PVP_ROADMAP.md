@@ -156,13 +156,14 @@ Owner requirement: players must be able to **find friends, battle them, and team
 
 ### 5.2 Finding friends
 - **Friend code:** every player gets a short code (for example `KAGE-7Q4M`). Add by code, by a share link (`https://<domain>/f/<code>`, which opens the app or the web game), or by QR code shown in the app.
-- **Direct username lookup (primary way to find a friend):** every player has a **unique username** (`@ryu_shadow`). Typing it exactly finds that one player, shows their profile card (username, display name, Keep, league, Gang), and offers "Add friend" and "Duel".
-  - Rules: 3–16 characters, letters, digits and `_`; unique ignoring case and look-alike characters (`0`/`o`, `1`/`l`/`i`); word-filtered; reserved words blocked (`admin`, `kagemura`, `support`, staff names).
-  - Chosen at sign-up, with suggestions if taken. One free change every 30 days; the old username is held for 30 days so nobody can grab it to impersonate.
-  - Exact match only: no partial matches, no browsing or listing of players, so the player list can't be scraped. Lookups are rate-limited (about 30 a minute and 300 a day per player) and a lookup of a missing username says only "No player with that username".
-  - The display name (2–24 characters, not unique) stays what appears in battles and chat; the username is how people find you.
-  - Privacy setting "Who can find me by username": Everyone (default for 13+), Friends of friends, Nobody (friend code only). Under-13 accounts default to Nobody.
-  - Migration: existing players get a username from their display name (plus digits if taken) and one free change.
+- **One name per player, looked up directly (primary way to find a friend).** There is no separate display name: a player has exactly **one unique name**, used everywhere (battles, chat, leaderboards, replays, Gang and Alliance lists) and typed to find them. Typing a name exactly finds that one player, shows their profile card (name, Keep, league, Gang), and offers "Add friend" and "Duel".
+  - Rules: **3–24 characters** (longer than a typical handle, so names like `Silent Crane of Iga` fit): Latin letters, digits, single spaces, `_` and `-`; must start with a letter or digit. Non-Latin scripts are a later option (they need a confusable-character check per script).
+  - Unique after normalizing: case, spaces, `_` and `-` are ignored and look-alike characters are folded (`0`/`o`, `1`/`l`/`i`, `5`/`s`), so `Silent Crane`, `silent_crane` and `S1lent-Crane` are the same name and only one player can hold it. The server stores both the name as written and its normalized key (unique index on the key).
+  - Word-filtered; reserved words blocked (`admin`, `kagemura`, `support`, `moderator`, staff names). The old fallback name "Ruler" is removed: an invalid or taken name is refused with a reason and suggestions.
+  - Chosen at sign-up (suggestions built from the data-file name parts, for example `Midnight Lotus 27`). One free change every 30 days; the old name is held for 30 days so nobody can grab it to impersonate. Battle records keep the name as it was at the time.
+  - Lookup is an exact match on the normalized key: no partial matches, no browsing or listing of players, so the player list can't be scraped. Rate-limited (about 30 a minute and 300 a day per player); a miss says only "No player with that name".
+  - Privacy setting "Who can find me by name": Everyone (default for 13+), Friends of friends, Nobody (friend code only). The name is still shown to opponents and chat members either way. Under-13 accounts default to Nobody.
+  - Migration: existing players keep their current name if it's free after normalizing; collisions get digits added (oldest account keeps the plain name), names under 3 characters or equal to "Ruler" get a suggested name, and everyone migrated gets one free change. Protocol change: `POST /v1/players` and `PUT /v1/me` return `409 name_taken` with suggestions instead of silently renaming.
 - **Suggestions:** recent opponents, Alliance mates, and (optional, opt-in) Game Center / Play Games friends. **No phone contacts upload** (privacy label stays small).
 - Requests expire after 14 days. Players can block, which removes the friendship and hides them from search, and report (step 15's report system).
 - Friend list shows Keep, Honor, league, Gang, online / last seen (players can hide their online status).
@@ -199,16 +200,16 @@ An asynchronous war, so no real-time servers are needed:
 - Gang reinforcements reuse `BattleSetup.reinforcements` on the defending side (exists for donated troops).
 
 ### 5.7 Server data
-New tables: `usernames` (unique, normalized form, held-until for released names), `friend_codes`, `friendships` (pair, status, created), `friend_requests`, `blocks`, `squads`, `squad_members` (one Gang per player), `squad_chat`, `squad_wars` (pairing, window, roster snapshots, score), `squad_war_attacks` (including relay order and end state), `duels`. Gang Rating columns on `squads`.
+New tables: `player_names` (name as written, unique normalized key, held-until for released names; replaces the free-text `players.name`), `friend_codes`, `friendships` (pair, status, created), `friend_requests`, `blocks`, `squads`, `squad_members` (one Gang per player), `squad_chat`, `squad_wars` (pairing, window, roster snapshots, score), `squad_war_attacks` (including relay order and end state), `duels`. Gang Rating columns on `squads`.
 
 ### 5.8 Client → server data (additions to section 3)
 ```ts
 // Friends
-GET  /v1/players/lookup?username=ryu_shadow  → { id, username, name, keep, league, squad? } | 404
-POST /v1/friends/requests      { code } | { username }
-PUT  /v1/me/username          { username }  → 409 'taken' with suggestions
+GET  /v1/players/lookup?name=Silent%20Crane  → { id, name, keep, league, squad? } | 404
+POST /v1/friends/requests      { code } | { name }
+PUT  /v1/me                   { name }  → 409 'name_taken' with suggestions (30-day change limit)
 POST /v1/friends/requests/:id  { accept: boolean }
-GET  /v1/friends                → { friends: [{ id, username, name, keep, honor, league, squad?, lastSeen? }] }
+GET  /v1/friends                → { friends: [{ id, name, keep, honor, league, squad?, lastSeen? }] }
 POST /v1/blocks                { playerId }      DELETE /v1/friends/:id
 // Duels
 POST /v1/duels/ticket          { friendId, layout?: 'live' | 'duel' }  → { ticket, seed, base, expiresAt }
@@ -226,7 +227,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 
 ### 5.9 Store and safety rules
 - Block and report on every friend, duel, Gang and chat surface (Apple 1.2). Chat filter on for everyone.
-- Under-13: not findable by username unless a parent allows it (friend codes only), Gang chat limited to preset phrases unless a parent allows more (COPPA). Under-18 spending cap unchanged.
+- Under-13: not findable by name unless a parent allows it (friend codes only), Gang chat limited to preset phrases unless a parent allows more (COPPA). Under-18 spending cap unchanged.
 - No paid advantage in Gang Wars: war chests, relay turns and war attacks are never sold.
 - Cost impact: small. Duels and war strikes are re-simulated like PvP (same CPU per battle); extra storage is war snapshots, kept 30 days.
 
@@ -310,7 +311,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 
 ### Phase 9: Friends and Gangs (~6–9 weeks) [Code, design in section 5]
 Needs steps 14–15 (deletion, report/block) and 24 (account linking). Build it after Phase 3 and before Phase 7, so it ships at launch. Order:
-- [ ] 59. Friend codes, share links, QR, direct username lookup (unique usernames, look-alike check, reserved words, 30-day change and hold, rate limit, "who can find me" setting, migration for existing players), requests, accept, remove, block. Server tables + endpoints + contract tests.
+- [ ] 59. Friend codes, share links, QR, one unique name per player (3–24 characters, no separate display name) with direct name lookup (normalized key, look-alike check, reserved words, no "Ruler" fallback, 30-day change and hold, rate limit, "who can find me" setting, migration of existing names), requests, accept, remove, block. Server tables + endpoints + contract tests.
 - [ ] 60. Friends panel in the client (list, online status toggle, suggestions from recent opponents and Alliance mates).
 - [ ] 61. Optional Game Center / Play Games friend import (opt-in).
 - [ ] 62. Friendly Duels: duel tickets, re-sim, replay to both players, rivalry tally, optional duel layout, duel challenge. Unranked (test that Honor, loot and ratings never change).
