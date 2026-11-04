@@ -59,7 +59,7 @@ export class BattleHud {
   private bottomEl = h('div', { class: 'b-bottom' });
   private toastEl = h('div', { class: 'toasts' });
   private modalEl = h('div', { class: 'modal-root' });
-  /** The info popup: a warrior's stats, a building's name, or a tactic. Never takes taps. */
+  /** The info popup: a deploy card's warrior stats or tactic, or a building's name. Never takes taps. */
   private inspectEl = h('div', { class: 'b-inspect', role: 'tooltip', hidden: true });
   private inspecting: { target: InspectTarget; at: InspectAt; from: 'map' | 'card'; card?: HTMLElement } | null = null;
   private inspectSig = '';
@@ -171,7 +171,7 @@ export class BattleHud {
     this.inspectEl.hidden = true;
   }
 
-  /** Redraws the popup when what it says changes (live hit points, warriors left), and keeps it on screen. */
+  /** Redraws the popup when what it says changes (warriors left, the next one's level), and keeps it on screen. */
   private renderInspect(): void {
     const cur = this.inspecting;
     const info = cur ? inspectInfo(this.s.sim, cur.target) : null;
@@ -204,8 +204,6 @@ export class BattleHud {
 
   private warriorBody(w: WarriorInfo): HTMLElement[] {
     const thumb = this.deps.troopThumb(w.type);
-    const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
-    const hp = `${formatNumber(Math.ceil(w.hp))}${w.deployed ? ` / ${formatNumber(Math.ceil(w.maxHp))}` : ''}`;
     const stat = (label: string, value: string) => [h('span', { class: 'muted' }, label), h('span', {}, value)];
     const out: HTMLElement[] = [
       h(
@@ -214,10 +212,10 @@ export class BattleHud {
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('div', {}, h('div', { class: 'bi-name' }, w.name, h('span', { class: 'level' }, `Lv ${w.level}`)), w.role ? h('div', { class: 'muted small' }, w.role) : null),
       ),
-      h('div', { class: 'bi-hp' }, h('span', {}, 'HP'), h('span', { class: `bi-bar${frac < 0.3 ? ' low' : ''}` }, h('span', { style: `width:${(frac * 100).toFixed(1)}%` })), h('span', {}, hp)),
       h(
         'div',
         { class: 'bi-stats' },
+        ...stat('HP', formatNumber(w.hp)),
         ...stat('Damage/sec', String(w.dps)),
         ...stat('Range', `${w.range} tiles`),
         ...stat('Speed', `${w.speed} tiles/s`),
@@ -228,15 +226,12 @@ export class BattleHud {
     ];
     if (w.ability) out.push(h('p', { class: 'small' }, h('b', {}, `${w.ability.name}: `), w.ability.text));
     out.push(h('p', { class: 'small muted' }, w.description));
-    if (w.status.length) out.push(h('div', { class: 'bi-tags' }, ...w.status.map((t) => h('span', { class: 'chip' }, t))));
-    if (w.left !== undefined) {
-      const donated = w.donated ? ` · ${w.donated.count} donated at Lv ${w.donated.level} go first` : '';
-      out.push(h('div', { class: 'bi-foot' }, `×${w.left} to send${donated}`));
-    }
+    const donated = w.donated ? ` · ${w.donated.count} donated at Lv ${w.donated.level} go first` : '';
+    out.push(h('div', { class: 'bi-foot' }, `×${w.left} to send${donated}`));
     return out;
   }
 
-  /** Beside the mouse or finger on the map, above the card in the deploy bar; always inside the screen. */
+  /** Beside the mouse or finger over a building, above the card in the deploy bar; always inside the screen. */
   private placeInspect(cur: NonNullable<BattleHud['inspecting']>): void {
     const el = this.inspectEl;
     const vw = window.innerWidth;
@@ -469,7 +464,7 @@ export class BattleHud {
         el.classList.toggle('empty', n <= 0);
       });
     }
-    // Live hit points and counts in an open popup.
+    // Counts left (and donated warriors' level) in an open popup.
     if (this.inspecting) this.renderInspect();
     if (sim.ended && !this.finished && this.s.mode !== 'scout') {
       this.finished = true;

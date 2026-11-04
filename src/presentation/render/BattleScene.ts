@@ -28,7 +28,7 @@ export interface BattleHooks {
   selectedTroop(): string | null;
   deployFailed(reason: 'zone' | 'full' | 'none' | 'empty'): void;
   deployed(): void;
-  /** The warrior or building under the mouse (or tapped while not deploying), or null to close the popup. */
+  /** The building under the mouse (or tapped while not deploying), or null to close the popup. */
   inspect(target: InspectTarget | null, at?: InspectAt): void;
 }
 
@@ -141,7 +141,7 @@ export class BattleScene extends Phaser.Scene {
       onHold: (x, y) => this.tryDeployAt(x, y, false),
       onZoom: () => this.rescaleOverlays(),
     });
-    // Hover info is for a mouse: a finger on the map deploys instead.
+    // Building names on hover are for a mouse: a finger on the map deploys instead.
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
       if (p.wasTouch) return;
       const e = p.event as MouseEvent | undefined;
@@ -193,33 +193,10 @@ export class BattleScene extends Phaser.Scene {
     this.hooks.inspect(target, at);
   }
 
-  /** Warrior under a world point (topmost first), else the building whose drawn pixels are there. */
+  /** The building whose drawn pixels are under a world point. Warriors on the field have no popup. */
   private pickAt(wx: number, wy: number, fresh = false): MapTarget | null {
-    const troop = this.troopAt(wx, wy);
-    if (troop >= 0) return { kind: 'troop', index: troop };
     const b = this.buildingAt(wx, wy, fresh);
     return b >= 0 ? { kind: 'building', index: b } : null;
-  }
-
-  private troopAt(wx: number, wy: number): number {
-    const sim = this.session.sim;
-    let best = -1;
-    let depth = -Infinity;
-    this.tviews.forEach((v, i) => {
-      const t = sim.troops[i];
-      if (!t || t.dead || v.dead || !v.image.active) return;
-      const img = v.image;
-      // A little slack round small sprites, so a moving warrior is easy to point at.
-      const pad = 4 / this.cam.userZoom;
-      const left = img.x - img.displayWidth * img.originX - pad;
-      const top = img.y - img.displayHeight * img.originY - pad;
-      if (wx < left || wx > left + img.displayWidth + pad * 2 || wy < top || wy > top + img.displayHeight + pad * 2) return;
-      if (img.depth > depth) {
-        depth = img.depth;
-        best = i;
-      }
-    });
-    return best;
   }
 
   private buildingAt(wx: number, wy: number, fresh: boolean): number {

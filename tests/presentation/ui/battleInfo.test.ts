@@ -1,12 +1,13 @@
 /**
- * The battle info popup: warriors show their stats, enemy buildings show their
- * name only (never level or hidden stats), and hidden traps say nothing.
+ * The battle info popup: deploy-bar cards show their warrior's stats, enemy
+ * buildings show their name only (never level or hidden stats), and hidden
+ * traps say nothing. Warriors already on the field have no popup.
  */
 import { describe, expect, it } from 'vitest';
 import { createBattle, deploy, type BattleSim } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData as data, troopLevel } from '../../../src/gameplay/sim/data';
 import type { BaseBuilding } from '../../../src/gameplay/sim/battle/types';
-import { buildingInfo, cardInfo, hpLabel, inspectInfo, troopInfo } from '../../../src/presentation/ui/battleInfo';
+import { buildingInfo, cardInfo, hpLabel, inspectInfo } from '../../../src/presentation/ui/battleInfo';
 
 const base: BaseBuilding[] = [
   { id: 'h', type: 'elder_toadstool', level: 3, x: 30, y: 30 },
@@ -41,7 +42,8 @@ describe('battle info popup', () => {
     const info = cardInfo(sim, 'hedgehog_roller');
     const def = data.troops.hedgehog_roller;
     const lvl = troopLevel(data, 'hedgehog_roller', 3);
-    expect(info).toMatchObject({ kind: 'warrior', name: def.name, level: 3, hp: lvl.hp, maxHp: lvl.hp, deployed: false, left: 5, description: def.description, flies: false });
+    expect(info).toMatchObject({ kind: 'warrior', name: def.name, level: 3, hp: lvl.hp, left: 5, description: def.description, flies: false });
+    expect(inspectInfo(sim, { kind: 'card', type: 'hedgehog_roller' })).toEqual(info);
     if (info?.kind !== 'warrior') throw new Error('expected a warrior');
     expect(info.dps).toBeCloseTo((lvl.damage * data.battle.ticksPerSecond) / def.attackIntervalTicks, 0);
     expect(info.role).toMatch(/tier \d/);
@@ -55,18 +57,6 @@ describe('battle info popup', () => {
     expect(deploy(sim, { tick: 0, troop: 'hedgehog_roller', x: 1, y: 1 })).toBe(true);
     expect(cardInfo(sim, 'hedgehog_roller')).toMatchObject({ level: 3, left: 4 });
     expect((cardInfo(sim, 'hedgehog_roller') as { donated?: unknown }).donated).toBeUndefined();
-  });
-
-  it('a warrior on the field shows live hit points', () => {
-    const sim = battle({ hedgehog_roller: 5 });
-    expect(deploy(sim, { tick: 0, troop: 'hedgehog_roller', x: 1, y: 1 })).toBe(true);
-    const t = sim.troops[0];
-    t.hp = t.maxHp * 0.4;
-    const info = troopInfo(sim, 0);
-    expect(info).toMatchObject({ deployed: true, hp: t.maxHp * 0.4, maxHp: t.maxHp, level: 3 });
-    expect(inspectInfo(sim, { kind: 'troop', index: 0 })).toEqual(info);
-    t.dead = true;
-    expect(troopInfo(sim, 0)).toBeNull();
   });
 
   it('Smoke Bomb shows its rule and charges left', () => {
