@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { setupTouchInput } from './touchInput';
 
 const TAP_SLOP_CSS_PX = 10;
 const MAX_ZOOM = 2;
@@ -26,7 +27,7 @@ export class CameraControl {
     private readonly opts: CameraControlOptions,
   ) {
     const input = scene.input;
-    input.addPointer(2);
+    setupTouchInput(scene);
     input.on('pointerdown', (p: Phaser.Input.Pointer) => this.down(p));
     input.on('pointermove', (p: Phaser.Input.Pointer) => this.move(p));
     input.on('pointerup', (p: Phaser.Input.Pointer) => this.up(p));
