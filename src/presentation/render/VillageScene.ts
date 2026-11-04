@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { BODY_FONT } from './fonts';
 import { queueArt } from './artManifest';
 import type { GameController } from '../../gameplay/control/controller';
 import { buildingDef } from '../../gameplay/sim/data';
@@ -7,7 +8,7 @@ import { collectorAmount, collectorCapacity, effectiveLevel } from '../../gamepl
 import type { Building } from '../../gameplay/sim/types';
 import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
-import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
 import { confetti, resourceBurst } from './fx';
 import { sound } from '../audio/sound';
@@ -110,7 +111,7 @@ export class VillageScene extends Phaser.Scene {
     const mapSize = gd.economy.mapSize;
     ensureTextures(this, gd);
     const mb = mapBounds(mapSize);
-    this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setDepth(-10);
+    this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setScale(groundScale(this.textures, mapSize)).setDepth(-10);
     this.addWaves(mapSize);
     this.grid = this.add.graphics().setDepth(-5).setAlpha(0);
     this.drawGrid(mapSize);
@@ -215,11 +216,11 @@ export class VillageScene extends Phaser.Scene {
       const bar = this.add.graphics();
       const label = this.add
         .text(0, -15, '', {
-          fontFamily: 'ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+          fontFamily: BODY_FONT,
           fontSize: '14px',
           fontStyle: 'bold',
           color: '#ffffff',
-          stroke: '#5a3d7a',
+          stroke: '#26303d',
           strokeThickness: 4,
           resolution: Math.max(2, this.renderScale),
         })
@@ -387,7 +388,7 @@ export class VillageScene extends Phaser.Scene {
     const top = view.image.y - view.image.displayHeight * view.image.originY;
     const t = this.add
       .text(view.image.x, top, text, {
-        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        fontFamily: BODY_FONT,
         fontSize: '20px',
         fontStyle: 'bold',
         color,

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { BODY_FONT } from './fonts';
 import { queueArt } from './artManifest';
 import { drainEvents, type BattleSession } from '../../gameplay/control/battleSession';
 import { buildingDef } from '../../gameplay/sim/data';
@@ -6,7 +7,7 @@ import { airborne, deployBlock, isAbility, type SimBuilding, type SmokeCloud } f
 import { coverLeft, pointAt } from '../../gameplay/sim/battle/infiltration';
 import { WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
-import { GROUND_PAD, Keys, TEX_SCALE, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
 import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
 import { debris } from './fx';
@@ -100,7 +101,7 @@ export class BattleScene extends Phaser.Scene {
     ensureTextures(this, gd);
     const mapSize = gd.economy.mapSize;
     const mb = mapBounds(mapSize);
-    this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setDepth(-10);
+    this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setScale(groundScale(this.textures, mapSize)).setDepth(-10);
     this.addWaves(mapSize);
     this.cam = new CameraControl(this, {
       renderScale: this.renderScale,
@@ -176,7 +177,7 @@ export class BattleScene extends Phaser.Scene {
       this.entryGfx = this.add.graphics().setDepth(-3);
       this.entryLabels = entry.points.map(() =>
         this.add
-          .text(0, 0, '', { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#fff6c8', stroke: '#26303d', strokeThickness: 4, align: 'center' })
+          .text(0, 0, '', { fontFamily: BODY_FONT, fontSize: '15px', fontStyle: 'bold', color: '#fff6c8', stroke: '#26303d', strokeThickness: 4, align: 'center' })
           .setOrigin(0.5, 1)
           .setDepth(OVER - 50),
       );
@@ -379,7 +380,7 @@ export class BattleScene extends Phaser.Scene {
     this.lastCallout.set(key, now);
     const zoom = this.cam.userZoom;
     const label = this.add
-      .text(x, y, text, { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4 })
+      .text(x, y, text, { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4 })
       .setOrigin(0.5, 1)
       .setScale(1 / zoom)
       .setDepth(OVER);

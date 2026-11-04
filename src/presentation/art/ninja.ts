@@ -289,6 +289,181 @@ function coinStack(ctx: Ctx, x: number, y: number, n: number): void {
   ctx.fillRect(x - 1, y - (n - 1) * 2.2 - 1, 2, 2);
 }
 
+// ---------------------------------------------------------------------------
+// Function cues: small, consistent signs of what a building does.
+// Resource is told by colour and pictogram (gold coin = coins, straw sheaf = rice);
+// producers look busy (smoke, glow, water), stores look shut (lattice walls, locks, stacks).
+// ---------------------------------------------------------------------------
+
+export type Mark = 'coin' | 'rice' | 'blades' | 'hammer' | 'crest';
+
+/** A point on a block's front-left face: f = 0 at the left corner, 1 at the front corner; `up` px above the base. */
+function onLeft(hw: number, hh: number, base: number, f: number, up: number): Pt {
+  return { x: -hw + hw * f, y: base + hh * f - up };
+}
+
+/** A point on a block's front-right face: f = 0 at the front corner, 1 at the right corner. */
+function onRight(hw: number, hh: number, base: number, f: number, up: number): Pt {
+  return { x: hw * f, y: base + hh * (1 - f) - up };
+}
+
+/** A pictogram that names a building's job, drawn upright in about 2r x 2r. */
+function mark(ctx: Ctx, kind: Mark, x: number, y: number, r: number, color: string): void {
+  ctx.save();
+  ctx.translate(x, y);
+  if (kind === 'coin') {
+    circle(ctx, 0, 0, r, color, Math.max(0.7, r * 0.14), darken(color, 0.5));
+    circle(ctx, 0, 0, r * 0.68, 'rgba(0,0,0,0)', Math.max(0.5, r * 0.08), rgba(darken(color, 0.45), 0.6));
+    ctx.fillStyle = darken(color, 0.55);
+    ctx.fillRect(-r * 0.24, -r * 0.24, r * 0.48, r * 0.48);
+  } else if (kind === 'rice') {
+    // A tied sheaf: three stalks, drooping grain heads.
+    const w = Math.max(0.8, r * 0.16);
+    for (const d of [-1, 0, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(d * r * 0.18, r);
+      ctx.quadraticCurveTo(d * r * 0.1, -r * 0.2, d * r * 0.55, -r * 0.75);
+      ctx.lineWidth = w;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      for (let k = 0; k < 3; k++) {
+        ctx.beginPath();
+        ctx.ellipse(d * r * (0.3 + k * 0.09) + (d === 0 ? r * 0.12 * k : 0), -r * (0.25 + k * 0.22), r * 0.13, r * 0.21, d * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
+    }
+    line(ctx, [{ x: -r * 0.38, y: r * 0.35 }, { x: r * 0.38, y: r * 0.35 }], color, w * 1.3);
+  } else if (kind === 'blades') {
+    const w = Math.max(1, r * 0.2);
+    for (const d of [-1, 1]) {
+      line(ctx, [{ x: -d * r * 0.85, y: r * 0.85 }, { x: d * r * 0.8, y: -r * 0.8 }], color, w);
+      line(ctx, [{ x: -d * r * 0.62 - r * 0.2, y: r * 0.62 - d * r * 0.2 }, { x: -d * r * 0.62 + r * 0.2, y: r * 0.62 + d * r * 0.2 }], color, w);
+    }
+  } else if (kind === 'hammer') {
+    ctx.rotate(-0.6);
+    line(ctx, [{ x: 0, y: r * 0.95 }, { x: 0, y: -r * 0.3 }], color, Math.max(1, r * 0.22));
+    poly(ctx, [{ x: -r * 0.6, y: -r * 0.85 }, { x: r * 0.6, y: -r * 0.85 }, { x: r * 0.6, y: -r * 0.3 }, { x: -r * 0.6, y: -r * 0.3 }], color, 0);
+  } else {
+    crest(ctx, 0, 0, r, color);
+  }
+  ctx.restore();
+}
+
+/** Split shop curtain (noren) over a doorway on the front-right face, with the building's mark. */
+function noren(ctx: Ctx, hw: number, hh: number, base: number, f: number, top: number, color: string, kind: Mark, markColor = WASHI, len = 10): void {
+  const half = Math.max(6, hw * 0.17) / hw;
+  const a = onRight(hw, hh, base, f - half, top);
+  const b = onRight(hw, hh, base, f + half, top);
+  const c = { x: b.x, y: b.y + len };
+  const d = { x: a.x, y: a.y + len };
+  ctx.save();
+  ctx.shadowColor = 'rgba(20,16,30,0.25)';
+  ctx.shadowOffsetY = 1.5;
+  poly(ctx, [a, b, c, d], color, 1.1);
+  ctx.restore();
+  poly(ctx, [a, b, { x: b.x, y: b.y + 2.4 }, { x: a.x, y: a.y + 2.4 }], darken(color, 0.3), 0.9);
+  // Slits between the panels.
+  for (const s of [1 / 3, 2 / 3]) {
+    const p = { x: a.x + (b.x - a.x) * s, y: a.y + (b.y - a.y) * s };
+    line(ctx, [{ x: p.x, y: p.y + len * 0.42 }, { x: p.x, y: p.y + len }], darken(color, 0.45), 1);
+  }
+  const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + len * 0.55 };
+  mark(ctx, kind, m.x, m.y, len * 0.32, markColor);
+}
+
+/** Painted round crest on a wall face (a white disc with the building's mark). */
+function wallMon(ctx: Ctx, x: number, y: number, r: number, kind: Mark, color: string, disc = WASHI): void {
+  ctx.beginPath();
+  ctx.ellipse(x, y, r, r * 1.05, 0, 0, Math.PI * 2);
+  ctx.fillStyle = disc;
+  ctx.fill();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = rgba(INK, 0.7);
+  ctx.stroke();
+  mark(ctx, kind, x, y, r * 0.66, color);
+}
+
+/** Hanging wooden signboard (kanban) on a post, with a mark. */
+function signboard(ctx: Ctx, x: number, y: number, h: number, kind: Mark, markColor: string, board = '#6b4a2e'): void {
+  line(ctx, [{ x, y }, { x, y: y - h }], WOOD_DARK, 2.2);
+  line(ctx, [{ x: x - 1, y: y - h }, { x: x + 9, y: y - h - 3 }], WOOD_DARK, 1.8);
+  const bx = x + 7;
+  const by = y - h + 6;
+  line(ctx, [{ x: bx - 3, y: by - 7 }, { x: bx - 3, y: by - 3 }], INK, 0.8);
+  line(ctx, [{ x: bx + 3, y: by - 8.5 }, { x: bx + 3, y: by - 4.5 }], INK, 0.8);
+  poly(ctx, [{ x: bx - 6.5, y: by - 2 }, { x: bx + 6.5, y: by - 5 }, { x: bx + 6.5, y: by + 9 }, { x: bx - 6.5, y: by + 12 }], board, 1.1);
+  line(ctx, [{ x: bx - 5.5, y: by - 0.8 }, { x: bx + 5.5, y: by - 3.4 }], rgba('#ffffff', 0.25), 1);
+  mark(ctx, kind, bx, by + 3.6, 4.6, markColor);
+}
+
+/** Thin rising smoke or steam: soft overlapping puffs. */
+function wisp(ctx: Ctx, x: number, y: number, n: number, color = '#ffffff', a = 0.5): void {
+  for (let i = 0; i < n; i++) {
+    const r = 3 + i * 1.4;
+    const px = x + Math.sin(i * 1.3) * (2 + i);
+    const py = y - i * 6.5;
+    const g = ctx.createRadialGradient(px - r * 0.3, py - r * 0.3, 0, px, py, r);
+    g.addColorStop(0, rgba(color, a * (1 - i / (n + 1))));
+    g.addColorStop(1, rgba(color, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+/** Namako lattice: white diagonal grid on dark tiles, the mark of a fire-proof storehouse. */
+function namako(ctx: Ctx, quad: Pt[], spacing = 5.5): void {
+  ctx.save();
+  ctx.beginPath();
+  quad.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+  ctx.closePath();
+  ctx.clip();
+  const xs = quad.map((p) => p.x);
+  const ys = quad.map((p) => p.y);
+  const x0 = Math.min(...xs) - 30;
+  const x1 = Math.max(...xs) + 30;
+  const y0 = Math.min(...ys);
+  const y1 = Math.max(...ys);
+  const span = y1 - y0 + 40;
+  ctx.strokeStyle = rgba('#f4f0e6', 0.88);
+  ctx.lineWidth = 1.3;
+  for (let x = x0; x < x1; x += spacing) {
+    ctx.beginPath();
+    ctx.moveTo(x, y0 - 20);
+    ctx.lineTo(x + span * 0.8, y0 - 20 + span);
+    ctx.moveTo(x, y0 - 20);
+    ctx.lineTo(x - span * 0.8, y0 - 20 + span);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** A stack of rice bales, bottom row first (2..4 rows by count). */
+function balePile(ctx: Ctx, x: number, y: number, count: number, s = 1): void {
+  let row = 0;
+  let left = count;
+  let width = Math.min(3, count);
+  while (left > 0 && width > 0) {
+    const n = Math.min(width, left);
+    for (let i = 0; i < n; i++) riceBale(ctx, x + (i - (n - 1) / 2) * 12 * s, y - row * 7.5 * s, s);
+    left -= n;
+    row++;
+    width--;
+  }
+}
+
+/** A banded strongbox. */
+function chest(ctx: Ctx, x: number, y: number, s = 1): void {
+  ctx.save();
+  ctx.translate(x, y);
+  block(ctx, 7 * s, 3.5 * s, 0, 7 * s, '#7a4a2a', { top: '#9a6238', lw: 1 });
+  for (const bx of [-3.5 * s, 3.5 * s]) line(ctx, [{ x: bx, y: -5.25 * s }, { x: bx, y: 1.75 * s }], GOLD, 1.1);
+  circle(ctx, -1.6 * s, -2.2 * s, 1.2 * s, GOLD, 0.5);
+  ctx.restore();
+}
+
 const half = (size: number) => ({ hw: (size * TILE_W) / 2, hh: (size * TILE_H) / 2 });
 
 // ---------------------------------------------------------------------------
@@ -328,20 +503,47 @@ export function keepSkin(roofColor: string, trimColor: string): PainterDef {
   };
 }
 
+/** Coin Mint (produces coins): a working foundry. Furnace glow, a smoking chimney, a gold noren. */
 const coinMint: PainterDef = {
-  extra: 80,
+  extra: 92,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#b8a07a');
-    const top = storey(ctx, hw * 0.55, hh * 0.55, -4, 26, '#e8dcc6', { door: true, window: tier >= 2 });
+    softShadow(ctx, hw * 0.62, hh * 0.62, 2, 0.22);
+    const sw = hw * 0.55;
+    const sh = hh * 0.55;
+    const top = storey(ctx, sw, sh, -4, 26, '#e8dcc6', { door: true, window: tier >= 2 });
+    // Furnace mouth on the left wall: the warm glow says "something is being made here".
+    const fm = onLeft(sw, sh, -4, 0.42, 4);
+    glow(ctx, fm.x, fm.y - 6, 16);
+    ctx.beginPath();
+    ctx.moveTo(fm.x - 6, fm.y - 3);
+    ctx.lineTo(fm.x - 6, fm.y - 9);
+    ctx.quadraticCurveTo(fm.x, fm.y - 17, fm.x + 6, fm.y - 3);
+    ctx.lineTo(fm.x + 6, fm.y + 3);
+    ctx.closePath();
+    const fg = ctx.createLinearGradient(0, fm.y - 14, 0, fm.y + 3);
+    fg.addColorStop(0, '#ffe08a');
+    fg.addColorStop(1, '#e8662e');
+    ctx.fillStyle = fg;
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = '#4a3a30';
+    ctx.stroke();
+    // Chimney behind the roof, with a wisp of smoke.
+    ctx.save();
+    ctx.translate(-hw * 0.3, 0);
+    const ct = block(ctx, 4.5, 2.25, top - 2, 32, '#7d838e', { top: '#3a3f48', lw: 1.1 });
+    ctx.restore();
     roof(ctx, hw * 0.75, hh * 0.75, top + 2, 26, tier >= 3 ? '#6b3f2a' : ROOF, { finial: tier >= 2 ? GOLD : undefined });
+    wisp(ctx, -hw * 0.3, ct - 6, 3 + tier, '#eef0f4', 0.6);
+    noren(ctx, sw, sh, -4, 0.45, 15, '#c99a2e', 'coin', '#fff4d6');
     coinStack(ctx, -hw * 0.55, hh * 0.35, 3 + tier);
-    coinStack(ctx, -hw * 0.35, hh * 0.55, 2 + tier);
+    coinStack(ctx, -hw * 0.38, hh * 0.55, 2 + tier);
+    if (tier >= 2) coinStack(ctx, -hw * 0.68, hh * 0.55, 1 + tier);
     // Hanging sign with a square-holed coin.
     line(ctx, [{ x: hw * 0.62, y: hh * 0.2 }, { x: hw * 0.62, y: -30 }], WOOD_DARK, 2);
-    circle(ctx, hw * 0.62, -36, 7, GOLD, 1.2);
-    ctx.fillStyle = INK;
-    ctx.fillRect(hw * 0.62 - 2, -38, 4, 4);
+    mark(ctx, 'coin', hw * 0.62, -36, 7, GOLD);
   },
 };
 
@@ -377,66 +579,134 @@ const ricePaddy: PainterDef = {
   },
 };
 
+/** Treasury (stores coins): a fire-proof kura. Namako lattice walls, a banded door with a gold lock, strongboxes. */
 const treasury: PainterDef = {
-  extra: 80,
+  extra: 84,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#a99a80');
+    softShadow(ctx, hw * 0.7, hh * 0.7, 2, 0.22);
     const y = stoneBase(ctx, hw * 0.68, hh * 0.68, 2, 8);
-    // Kura storehouse: white plaster, dark tile skirting, heavy door.
-    block(ctx, hw * 0.6, hh * 0.6, y, 12, '#3a3f48');
-    const top = storey(ctx, hw * 0.6, hh * 0.6, y - 12, 22, '#f6f1e6', { trim: tier >= 2 ? GOLD : undefined });
-    const dx = hw * 0.3;
-    poly(ctx, [{ x: dx - 7, y: y + hh * 0.3 + 2 }, { x: dx + 7, y: y + hh * 0.3 - 5 }, { x: dx + 7, y: y + hh * 0.3 - 29 }, { x: dx - 7, y: y + hh * 0.3 - 22 }], '#4d3a2a', 1.2);
-    circle(ctx, dx + 3, y + hh * 0.3 - 14, 1.6, GOLD, 0.6);
-    roof(ctx, hw * 0.78, hh * 0.78, top + 2, 24, ROOF, { finial: tier >= 3 ? GOLD : undefined });
-    coinStack(ctx, -hw * 0.55, hh * 0.5, 2 + tier * 2);
+    const kw = hw * 0.6;
+    const kh = hh * 0.6;
+    block(ctx, kw, kh, y, 14, '#3a3f48');
+    namako(ctx, [onLeft(kw, kh, y, 0, 0), onLeft(kw, kh, y, 1, 0), onLeft(kw, kh, y, 1, 14), onLeft(kw, kh, y, 0, 14)]);
+    namako(ctx, [onRight(kw, kh, y, 0, 0), onRight(kw, kh, y, 1, 0), onRight(kw, kh, y, 1, 14), onRight(kw, kh, y, 0, 14)]);
+    const top = storey(ctx, kw, kh, y - 14, 22, '#f6f1e6', { trim: tier >= 2 ? GOLD : undefined });
+    // Small barred window high on the left wall.
+    const w = onLeft(kw, kh, y - 14, 0.5, 13);
+    poly(ctx, [{ x: w.x - 4, y: w.y - 2 }, { x: w.x + 4, y: w.y + 2 }, { x: w.x + 4, y: w.y + 8 }, { x: w.x - 4, y: w.y + 4 }], '#2c2f36', 1);
+    for (const dx of [-1.5, 1.5]) line(ctx, [{ x: w.x + dx, y: w.y + dx * 0.5 - 1 }, { x: w.x + dx, y: w.y + dx * 0.5 + 6 }], '#9aa0aa', 1);
+    // Heavy door across both storeys, iron-banded, with a gold lock plate.
+    const d0 = onRight(kw, kh, y, 0.42, 0);
+    const d1 = onRight(kw, kh, y, 0.74, 0);
+    const dh = 30;
+    poly(ctx, [d0, d1, { x: d1.x, y: d1.y - dh }, { x: d0.x, y: d0.y - dh }], '#4d3a2a', 1.3);
+    for (const f of [0.25, 0.6]) line(ctx, [{ x: d0.x, y: d0.y - dh * f }, { x: d1.x, y: d1.y - dh * f }], '#2a2c33', 2);
+    const lk = { x: (d0.x + d1.x) / 2, y: (d0.y + d1.y) / 2 - dh * 0.42 };
+    poly(ctx, [{ x: lk.x - 3, y: lk.y - 3 }, { x: lk.x + 3, y: lk.y - 4.5 }, { x: lk.x + 3, y: lk.y + 3 }, { x: lk.x - 3, y: lk.y + 4.5 }], GOLD, 0.8, darken(GOLD, 0.5));
+    circle(ctx, lk.x, lk.y, 0.9, INK, 0);
+    roof(ctx, hw * 0.78, hh * 0.78, top + 2, 24, ROOF, { finial: tier >= 2 ? GOLD : undefined });
+    // Coin crest on the plaster: this kura holds coins.
+    const mc = onLeft(kw, kh, y - 14, 0.18, 12);
+    wallMon(ctx, mc.x + 3, mc.y, 5, 'coin', GOLD, '#fbf7ee');
+    chest(ctx, -hw * 0.52, hh * 0.5, 1);
+    if (tier >= 2) chest(ctx, -hw * 0.3, hh * 0.66, 0.9);
+    coinStack(ctx, -hw * 0.72, hh * 0.62, 2 + tier);
+    if (tier >= 3) coinStack(ctx, -hw * 0.6, hh * 0.78, 4);
   },
 };
 
+/** Provision Storehouse (stores rice): a raised granary with bales stacked high and a rice crest. */
 const provisionStorehouse: PainterDef = {
-  extra: 90,
+  extra: 92,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#a8946c');
+    softShadow(ctx, hw * 0.6, hh * 0.6, 2, 0.2);
     // Raised granary on posts, thatched roof.
     for (const [x, y] of [[-hw * 0.45, 0], [hw * 0.45, 0], [0, hh * 0.45], [0, -hh * 0.45]] as const) line(ctx, [{ x, y }, { x, y: y - 16 }], WOOD_DARK, 3);
-    const top = block(ctx, hw * 0.5, hh * 0.5, -16, 24, '#b98a58');
-    for (let i = 1; i < 4; i++) line(ctx, [{ x: -hw * 0.5, y: -16 - i * 6 }, { x: 0, y: -16 - i * 6 + hh * 0.5 }, { x: hw * 0.5, y: -16 - i * 6 }], rgba(WOOD_DARK, 0.5), 1);
+    const gw = hw * 0.5;
+    const gh = hh * 0.5;
+    const top = block(ctx, gw, gh, -16, 24, '#b98a58');
+    for (let i = 1; i < 4; i++) line(ctx, [{ x: -gw, y: -16 - i * 6 }, { x: 0, y: -16 - i * 6 + gh }, { x: gw, y: -16 - i * 6 }], rgba(WOOD_DARK, 0.5), 1);
     roof(ctx, hw * 0.74, hh * 0.74, top + 2, 30, '#c9a65e', { flare: 3 });
-    for (let i = 0; i < 1 + tier; i++) riceBale(ctx, -hw * 0.55 + i * 9, hh * 0.45 + (i % 2) * 3, 1);
-    if (tier >= 3) riceBale(ctx, hw * 0.5, hh * 0.45, 1.1);
+    // Rice crest under the eave of the thatch: this granary holds rice.
+    const mc = onRight(gw, gh, -16, 0.42, 6);
+    wallMon(ctx, mc.x, mc.y, 6, 'rice', '#a87a22', '#f4ead6');
+    // A pyramid of bales in front grows with the tier: a full store.
+    balePile(ctx, -hw * 0.5, hh * 0.5, 2 + tier, 1);
+    if (tier >= 2) balePile(ctx, hw * 0.45, hh * 0.55, tier, 0.9);
   },
 };
 
+/** Artisan's Hut (builders): a carpenter's workshop with stacked timber, a mallet and a hammer sign. */
 const artisanHut: PainterDef = {
-  extra: 60,
+  extra: 64,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#b29d7c');
+    softShadow(ctx, hw * 0.55, hh * 0.55, 0, 0.2);
     const top = storey(ctx, hw * 0.5, hh * 0.5, -2, 20, '#d9c9a8', { door: true });
     roof(ctx, hw * 0.72, hh * 0.72, top + 2, 26, '#b89150', { flare: 3 });
-    // Sawhorse and a mallet.
-    line(ctx, [{ x: -hw * 0.6, y: hh * 0.3 }, { x: -hw * 0.3, y: hh * 0.45 }], WOOD, 3);
-    line(ctx, [{ x: -hw * 0.55, y: hh * 0.33 }, { x: -hw * 0.58, y: hh * 0.6 }], WOOD_DARK, 1.6);
-    line(ctx, [{ x: -hw * 0.35, y: hh * 0.43 }, { x: -hw * 0.32, y: hh * 0.68 }], WOOD_DARK, 1.6);
+    // Timber stack: logs seen end-on, planks across the top.
+    const lx = -hw * 0.5;
+    const ly = hh * 0.42;
+    for (const [dx, dy] of [[-5, 0], [1, 3], [-2, -5]] as const) {
+      circle(ctx, lx + dx, ly + dy, 3.4, '#c9a07a', 1);
+      circle(ctx, lx + dx, ly + dy, 1.4, 'rgba(0,0,0,0)', 0.6, '#8a6440');
+    }
+    line(ctx, [{ x: lx - 9, y: ly - 9 }, { x: lx + 9, y: ly - 1 }], '#d8b07c', 2.6);
+    line(ctx, [{ x: lx - 9, y: ly - 9 }, { x: lx + 9, y: ly - 1 }], rgba(INK, 0.5), 0.6);
+    // Sawhorse with a big mallet resting on it.
+    line(ctx, [{ x: -hw * 0.15, y: hh * 0.62 }, { x: hw * 0.15, y: hh * 0.74 }], WOOD, 3);
+    line(ctx, [{ x: -hw * 0.1, y: hh * 0.65 }, { x: -hw * 0.13, y: hh * 0.88 }], WOOD_DARK, 1.6);
+    line(ctx, [{ x: hw * 0.1, y: hh * 0.72 }, { x: hw * 0.13, y: hh * 0.95 }], WOOD_DARK, 1.6);
+    line(ctx, [{ x: -2, y: hh * 0.64 }, { x: 8, y: hh * 0.5 }], WOOD_DARK, 1.6);
+    poly(ctx, [{ x: 5, y: hh * 0.42 }, { x: 13, y: hh * 0.46 }, { x: 11, y: hh * 0.58 }, { x: 3, y: hh * 0.54 }], '#a0703f', 1);
+    signboard(ctx, hw * 0.55, hh * 0.2, 30, 'hammer', '#f4ead6');
     if (tier >= 2) lantern(ctx, hw * 0.55, -10, 0.8);
   },
 };
 
+/** Training Dojo (trains warriors): vermilion noren with crossed blades, a straw target and a sword rack. */
 const trainingDojo: PainterDef = {
   extra: 100,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#c2b08e');
+    softShadow(ctx, hw * 0.72, hh * 0.72, 2, 0.22);
     const y = stoneBase(ctx, hw * 0.7, hh * 0.7, 2, 8);
-    const top = storey(ctx, hw * 0.62, hh * 0.62, y, 26, '#efe5d2', { door: true, window: true, trim: VERMILION });
+    const dw = hw * 0.62;
+    const dh = hh * 0.62;
+    const top = storey(ctx, dw, dh, y, 26, '#efe5d2', { door: true, window: true, trim: VERMILION });
+    // Sword rack on the left wall: three practice blades.
+    const r0 = onLeft(dw, dh, y, 0.14, 7);
+    const r1 = onLeft(dw, dh, y, 0.38, 7);
+    line(ctx, [r0, r1], WOOD_DARK, 2);
+    line(ctx, [{ x: r0.x, y: r0.y - 12 }, { x: r1.x, y: r1.y - 12 }], WOOD_DARK, 2);
+    for (let i = 0; i < 3; i++) {
+      const f = 0.2 + i * 0.3;
+      const p = { x: r0.x + (r1.x - r0.x) * f, y: r0.y + (r1.y - r0.y) * f };
+      line(ctx, [{ x: p.x, y: p.y + 2 }, { x: p.x + 1, y: p.y - 16 }], '#d9dde3', 1.5);
+      line(ctx, [{ x: p.x - 1.5, y: p.y - 1 }, { x: p.x + 1.5, y: p.y - 1 }], INK, 1.2);
+    }
     const apex = roof(ctx, hw * 0.86, hh * 0.86, top + 3, tier >= 2 ? 34 : 28, ROOF, { finial: tier >= 3 ? GOLD : VERMILION });
     if (tier >= 2) roof(ctx, hw * 0.36, hh * 0.36, apex + 12, 16, ROOF);
-    // Practice dummy and banners.
-    line(ctx, [{ x: -hw * 0.62, y: hh * 0.45 }, { x: -hw * 0.62, y: hh * 0.45 - 26 }], WOOD, 3);
-    line(ctx, [{ x: -hw * 0.62 - 8, y: hh * 0.45 - 18 }, { x: -hw * 0.62 + 8, y: hh * 0.45 - 18 }], WOOD, 2.6);
-    circle(ctx, -hw * 0.62, hh * 0.45 - 29, 4, RICE, 1);
+    noren(ctx, dw, dh, y, 0.45, 15, VERMILION, 'blades');
+    // Straw practice target (makiwara) and banners.
+    const tx = -hw * 0.66;
+    const ty = hh * 0.45;
+    line(ctx, [{ x: tx, y: ty }, { x: tx, y: ty - 24 }], WOOD, 3);
+    ctx.beginPath();
+    ctx.ellipse(tx, ty - 26, 5.5, 7, 0, 0, Math.PI * 2);
+    ctx.fillStyle = RICE;
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = darken(RICE, 0.5);
+    ctx.stroke();
+    circle(ctx, tx, ty - 26, 3, 'rgba(0,0,0,0)', 1.2, VERMILION);
+    circle(ctx, tx, ty - 26, 1, VERMILION, 0);
     banner(ctx, hw * 0.62, hh * 0.25, 54);
     if (tier >= 3) banner(ctx, hw * 0.4, hh * 0.5, 54, '#3f6fa0');
   },
@@ -469,8 +739,18 @@ const squadCourtyard: PainterDef = {
   },
 };
 
+/** An upright kunai: leaf blade, wrapped grip and ring pommel. */
+function kunaiFinial(ctx: Ctx, x: number, y: number, tier: Tier): void {
+  const steel = tier >= 3 ? GOLD : '#d4d9e0';
+  circle(ctx, x, y - 1, 3.2, 'rgba(0,0,0,0)', 1.6, WOOD_DARK);
+  poly(ctx, [{ x: x - 1.6, y: y - 4 }, { x: x + 1.6, y: y - 4 }, { x: x + 1.6, y: y - 12 }, { x: x - 1.6, y: y - 12 }], '#3a2a1e', 0.8);
+  line(ctx, [{ x: x - 2.4, y: y - 12.5 }, { x: x + 2.4, y: y - 12.5 }], INK, 1.6);
+  poly(ctx, [{ x: x - 4.2, y: y - 15 }, { x, y: y - 32 }, { x: x + 4.2, y: y - 15 }, { x, y: y - 12.5 }], steel, 1.1);
+  line(ctx, [{ x, y: y - 14 }, { x, y: y - 29 }], rgba('#ffffff', 0.7), 0.9);
+}
+
 const kunaiTower: PainterDef = {
-  extra: 110,
+  extra: 140,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#a9a08c');
@@ -482,9 +762,11 @@ const kunaiTower: PainterDef = {
     line(ctx, [{ x: -lw, y }, { x: 0, y: y + lw / 2 - lh }], WOOD, 1.6);
     line(ctx, [{ x: 0, y: y + lw / 2 }, { x: lw, y: y - lh }], WOOD, 1.6);
     const deck = block(ctx, lw + 6, (lw + 6) / 2, y - lh, 8, WOOD);
-    roof(ctx, lw + 14, (lw + 14) / 2, deck - 12, 20, tier >= 3 ? '#6b3f2a' : ROOF, { finial: tier >= 3 ? GOLD : undefined });
+    const roofTop = roof(ctx, lw + 14, (lw + 14) / 2, deck - 12, 20, tier >= 3 ? '#6b3f2a' : ROOF);
     // Kunai bundle on the rail.
     for (let i = 0; i < 3; i++) poly(ctx, [{ x: 4 + i * 4, y: deck - 2 }, { x: 6 + i * 4, y: deck - 12 }, { x: 8 + i * 4, y: deck - 2 }], '#c9ced6', 0.8);
+    // A great kunai crowns the roof (as the shuriken crowns the Pagoda): this tower throws blades.
+    kunaiFinial(ctx, 0, roofTop - 2, tier);
     if (tier >= 2) banner(ctx, -hw * 0.6, hh * 0.3, 44);
   },
 };
@@ -718,6 +1000,7 @@ const allianceLodge: PainterDef = {
     const y = stoneBase(ctx, hw * 0.66, hh * 0.66, 2, 8);
     const top = storey(ctx, hw * 0.58, hh * 0.58, y, 24, '#efe5d2', { door: true, window: true, trim: '#3f6fa0' });
     roof(ctx, hw * 0.82, hh * 0.82, top + 3, 30, '#4a5a3a', { finial: tier >= 3 ? GOLD : '#3f6fa0' });
+    noren(ctx, hw * 0.58, hh * 0.58, y, 0.45, 14, '#3f6fa0', 'crest');
     // Taiko drum and the two allied banners.
     circle(ctx, -hw * 0.55, hh * 0.35, 8, '#8a4a2a', 1.3);
     circle(ctx, -hw * 0.55, hh * 0.35, 5.5, '#efe5d2', 1);

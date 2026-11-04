@@ -35,8 +35,20 @@ export { GROUND_PAD };
  * the full image width and touches the bottom edge of the image.
  */
 
-/** Textures are drawn at 2x so they stay sharp on high-DPI phones and when zoomed in. */
+/** Small effect textures (puffs, stars, bubbles, projectiles) are drawn at 2x; scenes divide by this. */
 export const TEX_SCALE = 2;
+
+/**
+ * Buildings are drawn at 2.5x and warriors and badges at 3x (2.5x on low-density screens), so edges
+ * stay smooth on high-density phones (iPhone 3x, Pixel 7 2.6x) and when zoomed in. Scenes size these
+ * from the image itself (`buildingScale`, `troopSize`), so the values can change per device.
+ * Buildings stop at 2.5x to keep texture memory well inside iOS Safari's canvas budget.
+ */
+export const BUILDING_SCALE = 2.5;
+export const HD_SCALE = typeof window !== 'undefined' && (window.devicePixelRatio || 1) >= 2 ? 3 : 2.5;
+
+/** The island is big: drawn at 1.5x, or less if the GPU can't hold a texture that wide. */
+const GROUND_SCALE = 1.5;
 
 export const Keys = {
   ground: 'ground',
@@ -98,6 +110,28 @@ export function buildingScale(texture: Phaser.Textures.Texture, size: number): n
   return (size * TILE_W) / src.width;
 }
 
+/** Logical (world-pixel) size of the island image. */
+export function groundSize(mapSize: number): { w: number; h: number } {
+  return { w: mapSize * TILE_W + GROUND_PAD * 2, h: mapSize * TILE_H + CLIFF + GROUND_PAD * 2 };
+}
+
+/** Display scale for the island image, whatever resolution it was drawn (or supplied) at. */
+export function groundScale(textures: Phaser.Textures.TextureManager, mapSize: number): number {
+  const src = textures.get(Keys.ground).getSourceImage() as { width: number };
+  return groundSize(mapSize).w / Math.max(1, src.width);
+}
+
+/** Thumbnail key for the HUD: real art for the plain key wins, else the tier 1 drawing. */
+export function buildingThumbKey(textures: Phaser.Textures.TextureManager, type: string): string {
+  const base = Keys.buildingBase(type);
+  return textures.exists(base) ? base : Keys.buildingTier(type, 1);
+}
+
+function maxTextureSize(scene: Phaser.Scene): number {
+  const r = scene.renderer as { getMaxTextureSize?: () => number };
+  return typeof r.getMaxTextureSize === 'function' ? r.getMaxTextureSize() : 4096;
+}
+
 // ---------------------------------------------------------------------------
 // Texture generation
 // ---------------------------------------------------------------------------
@@ -119,11 +153,14 @@ function canvasFor(scene: Phaser.Scene, key: string, w: number, h: number, origi
 /** Create every placeholder texture that real art has not already provided. */
 export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type: string; size: number; maxLevel: number }[], mapSize: number): void {
   if (!scene.textures.exists(Keys.ground)) {
-    const w = mapSize * TILE_W + GROUND_PAD * 2;
-    const h = mapSize * TILE_H + CLIFF + GROUND_PAD * 2;
-    const tex = scene.textures.createCanvas(Keys.ground, w, h);
+    const { w, h } = groundSize(mapSize);
+    const max = maxTextureSize(scene);
+    const s = Math.max(1, Math.min(GROUND_SCALE, max / w, max / h));
+    const tex = scene.textures.createCanvas(Keys.ground, Math.floor(w * s), Math.floor(h * s));
     if (tex) {
-      paintGround(tex.getContext(), mapSize);
+      const ctx = tex.getContext();
+      ctx.scale(s, s);
+      paintGround(ctx, mapSize);
       tex.refresh();
     }
   }
@@ -134,24 +171,19 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
     const h = size * TILE_H + p.extra;
     const tiers: Tier[] = maxLevel > 1 ? [1, 2, 3] : [1];
     for (const tier of tiers) {
-      const c = canvasFor(scene, Keys.buildingTier(type, tier), w, h, h - (size * TILE_H) / 2);
+      const c = canvasFor(scene, Keys.buildingTier(type, tier), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
       if (c) {
         p.paint(c.ctx, size, tier);
         c.done();
       }
     }
-    // The plain key keeps working for real art and older callers: tier 1.
-    const base = canvasFor(scene, Keys.buildingBase(type), w, h, h - (size * TILE_H) / 2);
-    if (base) {
-      p.paint(base.ctx, size, 1);
-      base.done();
-    }
+    // The plain key (`building.<type>`) is only for real art now: code art never draws tier 1 twice.
   }
   for (const size of [1, 2, 3, 4]) {
     const extra = 24 + size * 8;
     const w = size * TILE_W;
     const h = size * TILE_H + extra;
-    const c = canvasFor(scene, Keys.construction(size), w, h, h - (size * TILE_H) / 2);
+    const c = canvasFor(scene, Keys.construction(size), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
     if (c) {
       paintConstruction(c.ctx, size);
       c.done();
@@ -172,21 +204,21 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
   for (const size of [1, 2, 3, 4]) {
     const w = size * TILE_W;
     const h = size * TILE_H + 10;
-    const c = canvasFor(scene, Keys.rubble(size), w, h, h - (size * TILE_H) / 2);
+    const c = canvasFor(scene, Keys.rubble(size), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
     if (c) {
       paintRubble(c.ctx, size);
       c.done();
     }
   }
   for (const [type, art] of Object.entries(troopArt)) {
-    const c = canvasFor(scene, Keys.troop(type), art.w, art.h, art.h - 6);
+    const c = canvasFor(scene, Keys.troop(type), art.w, art.h, art.h - 6, HD_SCALE);
     if (c) {
       art.paint(c.ctx);
       c.done();
     }
   }
   for (const [id, art] of Object.entries(warriorIconArt)) {
-    const c = canvasFor(scene, Keys.warriorIcon(id), art.w, art.h, ICON_SIZE / 2);
+    const c = canvasFor(scene, Keys.warriorIcon(id), art.w, art.h, ICON_SIZE / 2, HD_SCALE);
     if (c) {
       art.paint(c.ctx);
       c.done();
@@ -235,7 +267,7 @@ export function ensureTextures(
     const w = hallSize * TILE_W;
     const h = hallSize * TILE_H + p.extra;
     for (const tier of [1, 2, 3] as Tier[]) {
-      const c = canvasFor(scene, Keys.hallSkin(skin.id, tier), w, h, h - (hallSize * TILE_H) / 2);
+      const c = canvasFor(scene, Keys.hallSkin(skin.id, tier), w, h, h - (hallSize * TILE_H) / 2, BUILDING_SCALE);
       if (c) {
         p.paint(c.ctx, hallSize, tier);
         c.done();

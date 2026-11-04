@@ -6,7 +6,7 @@ Every image the game draws lives behind a key (`src/presentation/render/assets.t
 |---|---|---|
 | `building.<type>.<level>` | one exact level (optional, wins over tiers) | isometric; footprint diamond = full width, touching the bottom edge |
 | `building.<type>.t1` / `t2` / `t3` | visual tier: levels split into thirds | same |
-| `building.<type>` | fallback (tier 1) | same |
+| `building.<type>` | real art only: fallback for every level, and the HUD thumbnail (code art uses `.t1`) | same |
 | `building.elder_toadstool.skin.<skin>.t<n>` | Clan Keep cosmetic skins | same |
 | `construction.<1-4>` | scaffolding by footprint size | same |
 | `rubble.<1-4>` | destroyed building | same |

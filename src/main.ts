@@ -5,7 +5,8 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker } from './backend/pwa/register';
-import { Keys } from './presentation/render/assets';
+import { Keys, buildingThumbKey } from './presentation/render/assets';
+import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
@@ -111,8 +112,10 @@ async function boot(): Promise<void> {
   }
   analytics.log('session_start', { isNew, awayMs: offline?.awayMs ?? 0, platform: platformName(), standalone: matchMedia('(display-mode: standalone)').matches });
 
+  await loadInterfaceFonts();
   const host = document.getElementById('game')!;
-  const renderScale = Math.min(window.devicePixelRatio || 1, 2);
+  // Draw at the screen's real density (iPhone 3x, Pixel 7 2.6x) so lines and text are smooth, not upscaled.
+  const renderScale = Math.min(window.devicePixelRatio || 1, 3);
   const size = () => ({ w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) });
   const { w, h } = size();
   const bus = new Bus<UiEvents>();
@@ -157,7 +160,7 @@ async function boot(): Promise<void> {
     bus,
     analytics,
     store,
-    thumbnail: (type) => thumbOf(Keys.buildingBase(type)),
+    thumbnail: (type) => thumbOf(buildingThumbKey(game.textures, type)),
     getFps: () => game.loop.actualFps,
     troopThumb: (type) => thumbOf(Keys.troop(type)),
     warriorIcon: (id) => thumbOf(Keys.warriorIcon(id)),
