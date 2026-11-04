@@ -176,19 +176,24 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
  * transaction, with ledger lines. Null when the player's village lives on
  * their device (nothing to do); otherwise the simulation's verdict.
  */
-export async function applyServerResult(tx: Repo, ctx: ServerContext, player: { id: string; name: string }, cmd: Command, reason: string, ref: string | null): Promise<{ ok: true } | { ok: false; message: string } | null> {
+export async function applyServerResult(tx: Repo, ctx: ServerContext, player: { id: string; name: string }, steps: { cmd: Command; reason: string }[], ref: string | null): Promise<{ ok: true } | { ok: false; message: string } | null> {
   const loaded = await load(tx, ctx, player.id, true);
   if (!loaded) return null;
   const { row } = loaded;
   const now = ctx.now();
   const when = Math.max(row.at, now);
-  const r = applyCommand(loaded.state, cmd, when, ctx.data);
-  if (!r.ok) return { ok: false, message: r.message };
-  const next: VillageRow = { ...row, file: serialize(r.state, when), revision: row.revision + 1, at: when, stateHash: economyHash(r.state), updatedAt: now };
-  if (!(await tx.saveVillage(next, row.revision, ledgerDiff(player.id, loaded.state.resources, r.state.resources, when, reason, ref), []))) {
-    throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
+  let state = loaded.state;
+  const ledger: LedgerEntry[] = [];
+  // All the steps or none: the first refusal leaves the village as it was.
+  for (const { cmd, reason } of steps) {
+    const r = applyCommand(state, cmd, when, ctx.data);
+    if (!r.ok) return { ok: false, message: r.message };
+    ledger.push(...ledgerDiff(player.id, state.resources, r.state.resources, when, reason, ref));
+    state = r.state;
   }
-  await refreshBase(tx, ctx, player, r.state, when);
+  const next: VillageRow = { ...row, file: serialize(state, when), revision: row.revision + 1, at: when, stateHash: economyHash(state), updatedAt: now };
+  if (!(await tx.saveVillage(next, row.revision, ledger, []))) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
+  await refreshBase(tx, ctx, player, state, when);
   return { ok: true };
 }
 

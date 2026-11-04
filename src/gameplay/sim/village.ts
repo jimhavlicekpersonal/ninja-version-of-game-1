@@ -85,7 +85,8 @@ export type Command =
   | { type: 'receiveDonations'; items: ServerDonation[] }
   | { type: 'spendDonation'; troop: string; count: number; xp: number }
   | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number }
-  | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /** `known`: server only, the result it has just simulated from this setup (see battleEnd). */
+  | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
   /**
    * The server's answer to an online attack (see battleEnd with `ticket`):
    * bank its result, or turn the attack into a practice result when it was
@@ -588,7 +589,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       s.pendingBattle = null;
       const bad = checkBattleSetup(s, cmd.record.setup, data);
       if (bad) return fail('INVALID_BATTLE', bad);
-      const { result } = runBattle(cmd.record.setup, cmd.record.deployments, data, cmd.record.endTick);
+      const result = cmd.known ? structuredClone(cmd.known) : runBattle(cmd.record.setup, cmd.record.deployments, data, cmd.record.endTick).result;
       spendTroops(s, result.used, cmd.record.setup);
       const record = logWarAttack(s, cmd.record, result, now, data);
       return { ok: true, state: s, events: [{ kind: 'grove_attack', target: cmd.target, stars: result.stars, destruction: result.destruction, record }] };

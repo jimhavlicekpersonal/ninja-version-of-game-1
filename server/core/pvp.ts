@@ -16,7 +16,7 @@ import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
-import { hasServerVillage, refreshBaseFromVillage } from './village';
+import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 
 /** How long a matched base stays reserved for its attacker. */
 export const TICKET_LOCK_MS = 5 * MIN;
@@ -332,6 +332,14 @@ export function battleSeed(ticket: Ticket, sub: BattleSubmission): number {
   return ticket.seed;
 }
 
+/**
+ * Settle a reported attack. Everything it changes lands in one transaction
+ * (roadmap step 22): the ticket and its stored answer, both players' honor and
+ * shields, the defense record, and, for villages the server keeps, the
+ * attacker's spent troops and banked loot and the defender's losses, each
+ * with ledger lines. An attacker whose server-held village lacks the troops is
+ * refused (nothing changes and the ticket stays unused).
+ */
 export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<AttackResponse> {
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
@@ -341,31 +349,46 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { result } = resimulate(ctx, 'pvp', setup, deployments, sub);
+  const { sim, result } = resimulate(ctx, 'pvp', setup, deployments, sub);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
   const playerTrophies = Math.max(0, me.trophies + delta);
   const attackId = ctx.uuid();
   const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies };
-  // Marking the ticket used and storing the answer is one step: only the first report applies anything.
-  if (!(await repo.useTicket(ticket.id, response))) {
+  const defPatch: { trophies: number; shieldUntil?: number } = { trophies: Math.max(0, (defender?.trophies ?? 0) - delta) };
+  const shield = shieldHoursFor(result.destruction, data);
+  if (defender && shield > 0) defPatch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
+  const settled = await repo.transaction(async (tx) => {
+    // Marking the ticket used and storing the answer comes first: only the first report applies anything.
+    if (!(await tx.useTicket(ticket.id, response))) return false;
+    // A village the server keeps: the troops must be there, they are spent, and the loot is banked.
+    const lootFrom = !defender ? 'generated-base' : (await hasServerVillage(tx, defender.id)) ? 'server-village' : 'uploaded-base';
+    const mine = await applyServerResult(tx, ctx, me, [
+      { cmd: { type: 'battleEnd', record: { at: t, opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick, ticket: ticket.id }, known: result }, reason: 'attack:troops' },
+      { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result, trophies: delta, playerTrophies }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
+    ], attackId);
+    if (mine && !mine.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${mine.message}`);
+    await tx.updatePlayer(me.id, { trophies: playerTrophies, shieldUntil: Math.min(me.shieldUntil, t) });
+    if (defender) {
+      await tx.updatePlayer(defender.id, defPatch);
+      // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
+      const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -delta };
+      const fallen = sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } }));
+      await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
+      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -delta });
+    }
+    return true;
+  });
+  if (!settled) {
     const again = await repo.getTicket(ticket.id);
     if (again?.response !== undefined) return again.response as AttackResponse;
     throw new ApiError(409, 'conflict', 'This battle was already reported.');
   }
-  await repo.updatePlayer(me.id, { trophies: playerTrophies, shieldUntil: Math.min(me.shieldUntil, t) });
   if (me.base) await ctx.board.set(me.id, playerTrophies, me.createdAt);
   if (defender) {
-    const patch: { trophies: number; shieldUntil?: number } = { trophies: Math.max(0, defender.trophies - delta) };
-    const shield = shieldHoursFor(result.destruction, data);
-    if (shield > 0) patch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
-    await repo.updatePlayer(defender.id, patch);
-    if (defender.base) await ctx.board.set(defender.id, patch.trophies, defender.createdAt);
+    if (defender.base) await ctx.board.set(defender.id, defPatch.trophies, defender.createdAt);
     await ctx.locks.release(defender.id, me.id);
-  }
-  if (defender) {
-    await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -delta });
   }
   return response;
 }

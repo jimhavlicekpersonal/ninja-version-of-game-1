@@ -262,6 +262,8 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
 - **Corrections:** when the game's `stateHash` (its economy right after its last command in the batch) differs from the server's, the answer includes `corrections: { economy, at }`. The game puts that economy in place and replays the commands it queued after the batch.
 - **Ledger:** every change to a server-held resource, with the balance after it and a reason (`command:<type>`, `attack:loot`, `defense:loss`, `donation:sent`, `purchase:unverified`, …). Append-only.
 - While a village lives on the server, its raid base (`PUT /v1/base`) is built from it; an upload is ignored.
+- **Attacks and gifts use the server-held village** (one transaction with the result): an attack report spends the troops that fought from it and banks the loot (refused with `400 bad_request` if the village does not have those warriors; the ticket stays unused), a defender's server-held village loses what was taken, Alliance War attacks spend troops, war chests go in with the first claim, and donations come out of the donor's server-held army and go into the receiver's Lodge. The game applies the same results to its own copy (as it does today), so its economy hash keeps matching.
+- During the transition, a server-held attacker can still raid a village that lives on a device: that loot comes from an uploaded base (capped as always) and the ledger marks it `attack:loot:uploaded-base`.
 
 ## Trust
 

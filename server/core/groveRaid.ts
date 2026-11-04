@@ -10,6 +10,7 @@ import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo'
 import { ApiError, HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';
 import { battleSeed, checkArmy, resimulate, takeTicket, TICKET_TTL_MS } from './pvp';
+import { applyServerResult } from './village';
 
 const ACTIVE_WINDOW_MS = 3 * 24 * HOUR;
 
@@ -216,10 +217,16 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   const used = sideAttacks.filter((a) => a.attackerId === me.id).length;
   if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const { result } = resimulate(ctx, 'raid', { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) }, deployments, sub);
-  if (!(await ctx.repo.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
+  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
+  const { result } = resimulate(ctx, 'raid', setup, deployments, sub);
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
-  await ctx.repo.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
+  await ctx.repo.transaction(async (tx) => {
+    if (!(await tx.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
+    // A village the server keeps spends the warriors who fought (roadmap step 22).
+    const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'remoteGroveBattleEnd', target: ticket.target!, record: { at: ctx.now(), opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick }, known: result }, reason: 'war:troops' }], ticket.id);
+    if (spent && !spent.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${spent.message}`);
+    await tx.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
+  });
   const s = await scores(ctx, pairing, ctx.now());
   return { result, stars: result.stars, ours: s.ours, theirs: s.theirs };
 }
@@ -242,6 +249,11 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
   if (!pairing) throw new ApiError(404, 'not_found', 'Your Alliance did not take part in that Alliance War.');
   const s = await scores(ctx, pairing, end);
   const outcome = outcomeOf(s);
-  const fresh = await ctx.repo.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });
+  const fresh = await ctx.repo.transaction(async (tx) => {
+    const first = await tx.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });
+    // A village the server keeps gets the chest with the claim (once: only the first claim).
+    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimRaidChest', week: w, outcome, ours: s.ours, theirs: s.theirs }, reason: 'war:chest' }], `week:${w}`);
+    return first;
+  });
   return { week: w, outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: !fresh };
 }

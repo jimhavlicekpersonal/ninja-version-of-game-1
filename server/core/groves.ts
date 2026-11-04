@@ -7,6 +7,7 @@ import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { cleanName } from './identity';
 import { blockedIds, checkNotMuted } from './moderation';
 import { maxReinforcementAt } from './pvp';
+import { applyServerResult } from './village';
 
 
 /** Longest chat message accepted (the game's input allows 160 characters). */
@@ -173,13 +174,24 @@ export async function donate(ctx: ServerContext, me: Player, requestId: string, 
   if (!def || count <= 0) throw new ApiError(400, 'bad_request', 'Pick a troop to donate.');
   if (me.hallLevel < (def.unlockKeep ?? 1) || level < 1 || level > Math.min(troopLevelCapAt(me.hallLevel, ctx.data, req!.troop), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop level');
   const housing = def.housing * count;
-  const updated = await ctx.repo.fillRequest(r.id, housing);
-  if (!updated) throw new ApiError(409, 'full', 'That request does not have room for those troops.');
   const xp = housing * ctx.data.social.xpPerHousing;
-  const mine = await ctx.repo.getMembership(me.id);
-  await ctx.repo.updateMember(grove.id, me.id, { xp: (mine?.xp ?? 0) + xp });
-  await ctx.repo.addDonation({ id: ctx.uuid(), requestId: r.id, groveId: grove.id, fromId: me.id, fromName: me.name, toId: r.playerId, troop: req.troop, count, level, at: ctx.now(), delivered: false });
-  await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: `Sent ${count} ${def.name}${count > 1 ? 's' : ''} to ${r.name}.`, kind: 'donation' });
+  const donationId = ctx.uuid();
+  // One transaction: the request's room, the gift, and (roadmap step 23) server-held armies on both sides.
+  const updated = await ctx.repo.transaction(async (tx) => {
+    const filled = await tx.fillRequest(r.id, housing);
+    if (!filled) throw new ApiError(409, 'full', 'That request does not have room for those troops.');
+    // A donor whose village the server keeps gives warriors from that real army.
+    const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'spendDonation', troop: req.troop, count, xp }, reason: 'donation:sent' }], donationId);
+    if (spent && !spent.ok) throw new ApiError(400, 'bad_request', 'Your army on the server does not have those warriors.');
+    const mine = await tx.getMembership(me.id);
+    await tx.updateMember(grove.id, me.id, { xp: (mine?.xp ?? 0) + xp });
+    await tx.addDonation({ id: donationId, requestId: r.id, groveId: grove.id, fromId: me.id, fromName: me.name, toId: r.playerId, troop: req.troop, count, level, at: ctx.now(), delivered: false });
+    await tx.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: `Sent ${count} ${def.name}${count > 1 ? 's' : ''} to ${r.name}.`, kind: 'donation' });
+    // A receiver whose village the server keeps gets them in its Lodge now (same donation id, so the game's own copy is not added twice).
+    const to = await tx.getPlayer(r.playerId);
+    if (to) await applyServerResult(tx, ctx, to, [{ cmd: { type: 'receiveDonations', items: [{ id: donationId, troop: req.troop, count, fromName: me.name, level }] }, reason: 'donation:received' }], donationId);
+    return filled;
+  });
   return { request: requestView(updated, me), xp };
 }
 

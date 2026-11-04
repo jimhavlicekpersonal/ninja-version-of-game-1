@@ -6,13 +6,10 @@
  */
 import { describe, expect, it } from 'vitest';
 import { ServerError } from '../../../src/backend/net/ports';
-import type { CommandBatch, VillageCommand } from '../../../src/backend/net/protocol';
-import { deserialize, type SaveFile } from '../../../src/gameplay/sim/save';
 import { economyHash, withEconomy } from '../../../src/gameplay/sim/serverEconomy';
-import type { GameData, VillageState } from '../../../src/gameplay/sim/types';
-import { canPlace } from '../../../src/gameplay/sim/grid';
-import { applyCommand, type Command } from '../../../src/gameplay/sim/village';
+import type { VillageState } from '../../../src/gameplay/sim/types';
 import { HOUR, baseAt, world } from './harness';
+import { collectors, emulator, placeCollector } from './economyHarness';
 import { repoFactories } from './pg';
 
 async function code(p: Promise<unknown>): Promise<string> {
@@ -23,52 +20,6 @@ async function code(p: Promise<unknown>): Promise<string> {
     throw e;
   }
   return 'ok';
-}
-
-/** The game's side: a local village, a numbered command queue, and its economy hash. */
-export function emulator(file: SaveFile, data: GameData) {
-  let state: VillageState = deserialize(file, data);
-  let seq = 0;
-  const queue: VillageCommand[] = [];
-  return {
-    get state() {
-      return state;
-    },
-    set state(s: VillageState) {
-      state = s;
-    },
-    /** Apply locally (like controller.dispatch) and queue it for the server. */
-    do(command: Command, t: number) {
-      const r = applyCommand(state, command, t, data);
-      if (r.ok) state = r.state;
-      queue.push({ seq: ++seq, t, command });
-      return r;
-    },
-    /** Queue without applying (a command the game would never apply itself). */
-    raw(command: Command, t: number) {
-      queue.push({ seq: ++seq, t, command });
-    },
-    batch(): CommandBatch {
-      return { stateHash: economyHash(state), commands: queue.splice(0) };
-    },
-  };
-}
-
-const collectors = (s: VillageState, data: GameData) => s.buildings.filter((b) => data.buildings[b.type].produces);
-
-/** Have the game place a collector of `res` that the Keep allows, on the first free spot. */
-function placeCollector(game: ReturnType<typeof emulator>, data: GameData, t: number, res: 'acorns' | 'dew' = 'acorns'): void {
-  const limits = data.hall.levels[0].limits;
-  const type = Object.keys(limits).find((k) => data.buildings[k]?.produces === res && limits[k].count > 0)!;
-  for (let y = 0; y < data.economy.mapSize; y++) {
-    for (let x = 0; x < data.economy.mapSize; x++) {
-      if (canPlace(game.state, data, type, x, y).ok) {
-        expect(game.do({ type: 'place', buildingType: type, x, y }, t).ok).toBe(true);
-        return;
-      }
-    }
-  }
-  throw new Error('no room');
 }
 
 for (const [label, makeRepo] of repoFactories) {
