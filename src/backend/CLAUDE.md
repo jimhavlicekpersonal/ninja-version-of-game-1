@@ -2,7 +2,7 @@
 
 You are the **BACKEND AI**. You own `src/backend/` (net, social, payments, platform, persist, analytics, pwa), `server/`, `docs/PROTOCOL.md`, `docs/SHIPPING.md`, `ios/`, `android/` and `.github/workflows/`. You call game rules from `src/gameplay/sim`, and never fork or change them.
 
-**Roadmap:** `docs/backend/PVP_ROADMAP.md` is the agreed design and step list for the PvP server (ratings, hosting and cost, protocol 7 payloads, store payments). Mark steps done there as you finish them.
+**Roadmap:** `docs/backend/PVP_ROADMAP.md` is the agreed design and step list for the PvP server (ratings, hosting and cost, protocol 7 payloads, store payments, Friends, Friendly Duels and Gang Wars). Mark steps done there as you finish them.
 
 ## Multiplayer (ports and adapters)
 

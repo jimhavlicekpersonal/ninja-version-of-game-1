@@ -1,6 +1,6 @@
 # PvP server roadmap (design + implementation steps)
 
-> **For AI sessions.** This is the agreed design and plan for the online PvP backend, the most important system in the game ("the crown jewel"). Read it before changing `server/`, `src/backend/net/`, payments, or ranking. Owner: BACKEND compartment (`src/backend/CLAUDE.md`), with rating math in `src/gameplay/sim/` (GAMEPLAY).
+> **For AI sessions.** This is the agreed design and plan for the online PvP backend, including Friends and Gangs (section 5), the most important system in the game ("the crown jewel"). Read it before changing `server/`, `src/backend/net/`, payments, or ranking. Owner: BACKEND compartment (`src/backend/CLAUDE.md`), with rating math in `src/gameplay/sim/` (GAMEPLAY).
 >
 > Status (2026-11-04): **design only, nothing below is implemented yet** unless a step is marked done. When you finish a step, mark it `[x]` here in the same commit.
 >
@@ -144,7 +144,85 @@ Expected volume: ~50–200 KB per player per day.
   - Privacy label, Data Safety form, IARC rating.
 - **External payment links:** the rules are changing (Epic v. Apple and Epic v. Google in the US, the EU Digital Markets Act). Get legal advice before adding any link-out.
 
-## 5. Implementation steps
+## 5. Friends and Gangs (required feature)
+
+Owner requirement: players must be able to **find friends, battle them, and team up with up to 3 friends (a Gang of 2–4) to attack and defend against other Gangs.**
+
+### 5.1 Concepts and names
+- **Friend:** a two-way link between players (request → accept). At most 100 friends.
+- **Gang:** a team of 2–4 players who are all friends with its leader. Internal id `squad`; player-facing name "Gang" (a ninja-flavoured name such as "Shadow Cell" can be chosen later through the data files, like every other display name).
+- A player can be in **one Gang and one Alliance at the same time**. They're separate: an Alliance (10–20 members) is the large community; a Gang is a small team of friends.
+- Gang mates may be in different Alliances. Gang mates are never matched against each other in normal PvP (as Alliance mates aren't today).
+
+### 5.2 Finding friends
+- **Friend code:** every player gets a short code (for example `KAGE-7Q4M`). Add by code, by a share link (`https://<domain>/f/<code>`, which opens the app or the web game), or by QR code shown in the app.
+- **Name search:** search by exact display name plus a 4-digit tag (`Ryu#4821`), so strangers can't browse the player list. Off for players under 13.
+- **Suggestions:** recent opponents, Alliance mates, and (optional, opt-in) Game Center / Play Games friends. **No phone contacts upload** (privacy label stays small).
+- Requests expire after 14 days. Players can block, which removes the friendship and hides them from search, and report (step 15's report system).
+- Friend list shows Keep, Honor, league, Gang, online / last seen (players can hide their online status).
+
+### 5.3 Battling friends: Friendly Duels
+- Attack a friend's current base at any time. The friend can also set a separate **duel layout** to test designs.
+- **No Honor, no loot, no rating change, no shield.** Ranked rewards between friends would let them trade wins, so duels stay friendly by design.
+- Rewards: a duel record and a rivalry tally (wins, best stars), and small daily-task credit (at most 3 duels a day count).
+- The server still re-simulates duels, so the rivalry tally and replays can be trusted. The defender gets the replay in their battle log, marked "Friendly duel".
+- Optional "Duel challenge": both players attack each other's base within 24 hours; the higher stars, then destruction, wins the challenge. Still unranked.
+
+### 5.4 Gangs
+- **Create:** the leader names the Gang and invites friends; invitees accept. Roles: Leader and Member. The leader can hand over leadership; if the leader leaves, the longest-serving member takes over.
+- **Gang chat** (filtered, like Alliance chat) and **troop gifts** inside the Gang (reuse the Alliance request/donation system, scoped to the Gang).
+- **Leaving cooldown:** 24 hours before joining another Gang, and nobody can leave or join while a Gang War is running (the roster is locked at war start).
+
+### 5.5 Gang Wars: attack and defend together
+An asynchronous war, so no real-time servers are needed:
+
+- **Queue:** the leader starts a search. Matched on Gang size (2v2, 3v3, 4v4), then **Gang Rating** (a Glicko rating per Gang, the same math as section 1), then total Power. Never against a Gang sharing a member, a recent opponent (last 3 wars), or a Gang whose members are mostly in the same Alliance.
+- **Bot fallback:** if no Gang is found within a few minutes, a generated Gang is offered, clearly labelled as one (honesty rule). Bot wars don't move Gang Rating.
+- **Prep (2 hours):** each member's base is copied into the war, without loot. Members can move defenses and choose a **Gang reinforcement**: gift troops to a mate's Lodge for the war (defending together).
+- **Battle day (22 hours):** each member has 2 attacks. Two kinds:
+  - **Solo strike:** a normal attack on any enemy base.
+  - **Relay assault (the team attack):** gang mates attack the *same* enemy base one after another within the window. Damage carries over: buildings destroyed by an earlier strike stay destroyed, and damaged ones keep their lost HP. Stars are scored on the base's total destruction. This makes teamwork matter: one mate uses a cheap army to break walls and the Keep's outer defenses, the next sends the main force.
+- **Scoring:** each enemy base counts its best result (relay assaults counted as one combined result). More stars wins; ties go to total destruction.
+- **Rewards:** a war chest (fixed contents, scaled by Keep, nothing random or sold) and Gang Rating change. Honor is not changed by Gang Wars.
+- **Defending:** a member's war base is defended by its own defenses plus any Gang reinforcements in its Lodge. All members get the defense replays and a "Your Gang is under attack" push.
+- **Later option, live co-op strike:** 2–4 friends deploy into one battle at the same moment. Because the simulation is deterministic, the server only needs to relay each player's deployments over a WebSocket (lockstep) and re-simulate at the end. This adds always-on connections (more cost and complexity), so do it after asynchronous Gang Wars are proven.
+
+### 5.6 Simulation changes needed (GAMEPLAY compartment)
+- `BattleSetup` gains an optional `startDamage` (HP per building already lost) so a relay strike starts from the previous strike's end state. Bump `SIM_RULES`; old records without it replay unchanged.
+- A relay strike's end state is stored per base per war, and the next ticket for that base starts from it. Two mates can't relay the same base at once (ticket lock, as PvP already does).
+- Gang reinforcements reuse `BattleSetup.reinforcements` on the defending side (exists for donated troops).
+
+### 5.7 Server data
+New tables: `friend_codes`, `friendships` (pair, status, created), `friend_requests`, `blocks`, `squads`, `squad_members` (one Gang per player), `squad_chat`, `squad_wars` (pairing, window, roster snapshots, score), `squad_war_attacks` (including relay order and end state), `duels`. Gang Rating columns on `squads`.
+
+### 5.8 Client → server data (additions to section 3)
+```ts
+// Friends
+POST /v1/friends/requests      { code } | { name, tag }
+POST /v1/friends/requests/:id  { accept: boolean }
+GET  /v1/friends                → { friends: [{ id, name, tag, keep, honor, league, squad?, lastSeen? }] }
+POST /v1/blocks                { playerId }      DELETE /v1/friends/:id
+// Duels
+POST /v1/duels/ticket          { friendId, layout?: 'live' | 'duel' }  → { ticket, seed, base, expiresAt }
+POST /v1/duels                 BattleSubmission (same shape as PvP)
+// Gangs
+POST /v1/squads { name }   POST /v1/squads/invites { friendId }   POST /v1/squads/invites/:id { accept }
+POST /v1/squad/leave   GET /v1/squad   GET|POST /v1/squad/chat
+// Gang Wars
+POST /v1/squad/war/queue  {}            GET /v1/squad/war  → { phase, endsAt, ours, theirs, bases[], relayState[] }
+POST /v1/squad/war/ticket { target, relay: boolean }   → { ticket, seed, base, startDamage?, expiresAt }
+POST /v1/squad/war/attacks BattleSubmission           → { result, stars, combined?, ours, theirs }
+POST /v1/squad/war/claim  { warId }
+```
+Push types to add: friend request, Gang invite, war found, war ending soon, Gang under attack, relay strike handed to you ("Ryu broke the walls; your turn").
+
+### 5.9 Store and safety rules
+- Block and report on every friend, duel, Gang and chat surface (Apple 1.2). Chat filter on for everyone.
+- Under-13: no name search, friend codes only, Gang chat limited to preset phrases unless a parent allows more (COPPA). Under-18 spending cap unchanged.
+- No paid advantage in Gang Wars: war chests, relay turns and war attacks are never sold.
+- Cost impact: small. Duels and war strikes are re-simulated like PvP (same CPU per battle); extra storage is war snapshots, kept 30 days.
+
+## 6. Implementation steps
 
 ### Phase 0: Decisions and accounts (~1–2 weeks) [Owner]
 - [ ] 1. Decide: server owns the economy (protocol 7). Recommended yes; Phases 2–3 depend on it.
@@ -222,9 +300,25 @@ Expected volume: ~50–200 KB per player per day.
 - [ ] 57. Scale when needed: re-sim worker pool, read replica, partition `attacks`, replays to object storage.
 - [ ] 58. Rotate keys yearly; renew Apple membership; keep up with yearly SDK and target deadlines.
 
+### Phase 9: Friends and Gangs (~6–9 weeks) [Code, design in section 5]
+Needs steps 14–15 (deletion, report/block) and 24 (account linking). Build it after Phase 3 and before Phase 7, so it ships at launch. Order:
+- [ ] 59. Friend codes, share links, QR, exact name#tag search (off under 13), requests, accept, remove, block. Server tables + endpoints + contract tests.
+- [ ] 60. Friends panel in the client (list, online status toggle, suggestions from recent opponents and Alliance mates).
+- [ ] 61. Optional Game Center / Play Games friend import (opt-in).
+- [ ] 62. Friendly Duels: duel tickets, re-sim, replay to both players, rivalry tally, optional duel layout, duel challenge. Unranked (test that Honor, loot and ratings never change).
+- [ ] 63. Gangs: create, invite friends, accept, leave, hand over, 24 h leave cooldown, Gang chat, Gang troop gifts (reuse donations).
+- [ ] 64. [GAMEPLAY] `BattleSetup.startDamage` for relay assaults; bump `SIM_RULES`; tests that a relay of two strikes matches the combined damage and that old records replay unchanged.
+- [ ] 65. Gang War server: queue, matching by size → Gang Rating → Power, exclusions, labelled bot Gangs, prep phase with roster lock, battle day, solo and relay tickets with locks, scoring, claims.
+- [ ] 66. Gang Rating (reuse `rating.ts`), not changed by bot wars.
+- [ ] 67. Gang War client: war map of both Gangs' bases, relay hand-off view, prep-phase layout and reinforcement screen, war log and replays.
+- [ ] 68. Push for friend requests, invites, war found or ending, under attack, relay hand-off.
+- [ ] 69. Balance: model Gangs (`tests/gameplay/balance/`) fight simulated wars; check a coordinated relay beats four solo strikes by a clear but limited margin, and war chests fit the progression curve.
+- [ ] 70. Protocol bump, `docs/PROTOCOL.md`, contract tests for every new route; abuse tests (win trading, roster swapping, a shared member, duplicate claims).
+- [ ] 71. Later: live co-op strike over WebSocket lockstep (section 5.5), after asynchronous Gang Wars are proven.
+
 ### Totals and shortcut
-- About 4–6 months for one developer or AI session. Before launch: Apple $99, Google $25, domain ~$15, staging hosting $20–60/month, plus legal.
-- Fastest playable online launch: Phases 0, 1, 4, 6, 7 on the trusted-local economy, then Phases 2–3 before promoting competitive play. Until Phase 2, saves and purchases stay per device.
+- About 6–8 months for one developer or AI session, including Phase 9 (Friends and Gangs). Before launch: Apple $99, Google $25, domain ~$15, staging hosting $20–60/month, plus legal.
+- Fastest playable online launch: Phases 0, 1, 4, 6, 7 on the trusted-local economy, then Phases 2–3 and 9 before promoting competitive play. Friends and Gangs (Phase 9) are required at launch of competitive play. Until Phase 2, saves and purchases stay per device.
 
 ## Rules for sessions working from this file
 - Keep the honesty rule (bots and simulated raids are labelled), loot-box odds, the never-sold rules and the under-18 cap (root `CLAUDE.md`, `src/backend/CLAUDE.md`).

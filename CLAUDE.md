@@ -2,7 +2,7 @@
 
 An original ninja-clan base-building and raiding game. You lead a clan, build a hidden mountain village, train specialised warriors, scout rivals, raid with smoke and sabotage, and climb the endless Shadow Trials. It was rebuilt in place from **Toadstool Kingdoms**: every working system was kept, internal ids stayed stable, and saves migrate (v9 to v10).
 
-**Start here:** `AGENTS.md` (one AI session per compartment), `docs/rebuild/HANDOFF.md` (state of the build), `docs/rebuild/01-REBUILD-ANALYSIS.md` (pitfalls), `docs/rebuild/02-ARCHITECTURE.md` (structure and research). Online PvP plan (ranking, hosting, client data, app stores, step list): `docs/backend/PVP_ROADMAP.md`.
+**Start here:** `AGENTS.md` (one AI session per compartment), `docs/rebuild/HANDOFF.md` (state of the build), `docs/rebuild/01-REBUILD-ANALYSIS.md` (pitfalls), `docs/rebuild/02-ARCHITECTURE.md` (structure and research). Online PvP plan (ranking, hosting, client data, app stores, Friends and Gangs of up to 4, step list): `docs/backend/PVP_ROADMAP.md`.
 
 ## Compartments (each has its own CLAUDE.md)
 
