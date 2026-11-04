@@ -228,7 +228,7 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { result } = resimulate(ctx, 'raid', setup, deployments, sub);
+  const { result } = await resimulate(ctx, 'raid', setup, deployments, sub);
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
   await ctx.repo.transaction(async (tx) => {
     if (!(await tx.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');

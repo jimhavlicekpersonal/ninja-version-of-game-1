@@ -40,6 +40,7 @@ import {
   type MyGroveResponse,
   type PlayerView,
   type PowerLeaderboardResponse,
+  type SeasonLeaderboardResponse,
   type RaidAttackResponse,
   type RaidClaimResponse,
   type RaidTicketResponse,
@@ -275,6 +276,10 @@ export class HttpServerAdapter implements ServerPort {
 
   powerLeaderboard(limit = 50): Promise<PowerLeaderboardResponse> {
     return this.req('GET', `${Routes.powerLeaderboard}?limit=${limit}`);
+  }
+
+  seasonLeaderboard(season?: number, limit = 50): Promise<SeasonLeaderboardResponse> {
+    return this.req('GET', `${Routes.seasonLeaderboard}?limit=${limit}${season === undefined ? '' : `&season=${season}`}`);
   }
 
   leaderboard(limit = 50): Promise<LeaderboardResponse> {

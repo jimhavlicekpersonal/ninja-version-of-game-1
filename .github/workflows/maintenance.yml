@@ -1,0 +1,47 @@
+name: Maintenance reminders
+
+# Roadmap step 58: opens an issue with the yearly and half-yearly chores
+# (keys to rotate, memberships and certificates to renew, store SDK
+# deadlines), so none of them is remembered only when something breaks.
+# The steps themselves are in docs/OPERATIONS.md.
+
+on:
+  schedule:
+    # 2 January and 1 July, 09:13 UTC.
+    - cron: '13 9 2 1 *'
+    - cron: '13 9 1 7 *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open the checklist issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          month=$(date -u +%m)
+          title="Maintenance $(date -u +%Y)-$month: keys, renewals, store deadlines"
+          body=$(cat <<'MD'
+          Steps for each item are in `docs/OPERATIONS.md`.
+
+          **Every January and July**
+          - [ ] Store SDK deadlines: Google Play's target API level (new apps and updates, usually due end of August); Apple's minimum Xcode / iOS SDK for submissions (usually from April). Update Capacitor, Android `targetSdkVersion`, Xcode on the CI runner.
+          - [ ] Update dependencies (`npm outdated`), Node on the server image, and run the release workflow on staging.
+          - [ ] Check the server certificate and domain: `node tools/ops/check-domain.mjs https://<server>`.
+          - [ ] Look at the last restore drill run (Database backup workflow) and the last weekly review (`/admin` → Weekly review).
+
+          **Every January**
+          - [ ] Rotate `ADMIN_TOKEN` and `METRICS_TOKEN` (set "new,old", deploy, update the staff tool and Prometheus, then remove the old one).
+          - [ ] Rotate `BACKUP_KEY` (move the current one to `BACKUP_KEY_OLD` until older backups expire after 35 days).
+          - [ ] Rotate the Google service account key and the APNs key (`APNS_KEY`, `APNS_KEY_ID`); revoke the old ones after the deploy.
+          - [ ] Renew the Apple Developer Program membership (yearly; the apps leave the App Store if it lapses) and check the Google Play Console account details.
+          - [ ] Compare `APPLE_ROOT_CA_G3_SHA256` (`server/payments/apple.ts`) with https://www.apple.com/certificateauthority/.
+          - [ ] Review the privacy policy and the store privacy answers (`docs/store/PRIVACY.md`) against what the game now collects.
+          MD
+          )
+          gh issue create --repo "$REPO" --title "$title" --body "$body"

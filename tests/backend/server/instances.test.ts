@@ -55,3 +55,32 @@ describe.skipIf(!process.env.TEST_DATABASE_URL || !redisUrl)('two instances, one
     await b.close();
   });
 });
+
+describe.skipIf(!process.env.TEST_DATABASE_URL)('a read replica (roadmap step 57)', () => {
+  it('serves leaderboards and defense logs from the replica, and writes and transactions from the primary', async () => {
+    const { PgRepo } = await import('../../../server/pgRepo');
+    const primary = await freshPgRepo();
+    const pool = (primary as unknown as { pool: import('pg').Pool }).pool;
+    let replicaQueries = 0;
+    const replica = new Proxy(pool, {
+      get(target, prop) {
+        if (prop === 'query') return (...a: unknown[]) => (replicaQueries++, (target.query as (...x: unknown[]) => unknown).apply(target, a));
+        const v = Reflect.get(target, prop, target) as unknown;
+        return typeof v === 'function' ? (v as (...x: unknown[]) => unknown).bind(target) : v;
+      },
+    });
+    const repo = new PgRepo(pool, null, replica);
+    const now = Date.now();
+    await repo.createPlayer({ id: 'p1', name: 'Ann', tokenHash: 'h1', trophies: 10, hallLevel: 1, shieldUntil: 0, base: baseAt(1), groveId: null, createdAt: now, updatedAt: now, lastSeenAt: now, mutedUntil: 0 });
+    expect(replicaQueries).toBe(0);
+    expect((await repo.topPlayers(5)).map((p) => p.name)).toEqual(['Ann']);
+    await repo.defensesFor('p1', 0, 5);
+    expect(replicaQueries).toBe(2);
+    // Inside a transaction everything stays on the transaction's connection.
+    await repo.transaction(async (tx) => {
+      await tx.topPlayers(5);
+    });
+    expect(replicaQueries).toBe(2);
+    await repo.pingReplica();
+  });
+});

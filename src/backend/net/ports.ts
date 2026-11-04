@@ -31,6 +31,7 @@ import type {
   MatchResponse,
   PlayerView,
   PowerLeaderboardResponse,
+  SeasonLeaderboardResponse,
   PurchaseHistoryResponse,
   PurchaseIntentRequest,
   PurchaseIntentResponse,
@@ -92,6 +93,8 @@ export interface PvpPort {
   leaderboard(limit?: number): Promise<LeaderboardResponse>;
   /** The Power Ranking (roadmap step 31). */
   powerLeaderboard(limit?: number): Promise<PowerLeaderboardResponse>;
+  /** An archived season's top (feature `season-archive`); the last closed season by default. */
+  seasonLeaderboard(season?: number, limit?: number): Promise<SeasonLeaderboardResponse>;
 }
 
 export interface GrovePort {

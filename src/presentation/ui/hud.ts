@@ -366,16 +366,18 @@ export class Hud {
           wrap.append(h('label', { class: 'muted small' }, 'Your name in online play'), h('div', { class: 'chat-input-row' }, name, save));
           const board = h('div', { class: 'events' }, 'Loading…');
           // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
-          let which: 'honor' | 'power' = 'honor';
+          let which: 'honor' | 'power' | 'season' = 'honor';
           const hasPower = Boolean(conn.server?.features.includes('power-ranking'));
+          const hasSeasons = Boolean(conn.server?.features.includes('season-archive'));
           const tabs = h('div', { class: 'shop-tabs' });
           const load = () => {
             const port = conn.port;
             if (!port) return;
             board.textContent = 'Loading…';
             clear(tabs);
-            if (hasPower) {
-              for (const [id, label] of [['honor', 'Honor'], ['power', 'Power']] as const) {
+            if (hasPower || hasSeasons) {
+              const list = [['honor', 'Honor'], ...(hasPower ? [['power', 'Power']] : []), ...(hasSeasons ? [['season', 'Last season']] : [])] as ['honor' | 'power' | 'season', string][];
+              for (const [id, label] of list) {
                 const b = h('button', { type: 'button', class: id === which ? 'on' : '' }, label);
                 b.addEventListener('click', () => {
                   which = id;
@@ -389,6 +391,20 @@ export class Hud {
             const fail = (e: Error) => {
               board.textContent = e.message;
             };
+            if (which === 'season') {
+              void port.seasonLeaderboard(undefined, 30).then((lb) => {
+                clear(board);
+                if (lb.season === null) {
+                  board.append('No season has ended on this server yet.');
+                  return;
+                }
+                const d = new Date(Date.UTC(Math.floor(lb.season / 12), lb.season % 12, 1));
+                board.append(h('p', { class: 'muted small' }, `Final Honor of the ${d.toLocaleString(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' })} season.`));
+                for (const p of lb.players) board.append(row(p.rank, p.name, `Clan Keep ${p.hallLevel}`, String(p.honor), icon(icons.leaf)));
+                board.append(h('p', { class: 'muted small' }, lb.me ? `You finished number ${lb.me.rank}, with ${lb.me.honor} Honor.` : 'You were not in the top of that season.'));
+              }, fail);
+              return;
+            }
             if (which === 'power') {
               void port.powerLeaderboard(30).then((lb) => {
                 clear(board);

@@ -11,6 +11,7 @@
  * - Staff work through open reports with the admin API: dismiss (a hidden
  *   message comes back), remove the message, or mute the player's chat.
  */
+import { DELETION_DUE_MS } from './account';
 import { REPORT_REASONS, type BlocksResponse, type ReportRequest, type ReportResponse } from '../../src/backend/net/protocol';
 import type { Player, Report } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
@@ -94,9 +95,21 @@ export interface ReportQueueEntry extends Report {
   targetMutedUntil: number;
   /** The message is hidden right now (enough reports, or staff). */
   messageHidden: boolean;
+  /** We commit to acting on reports within a day (step 56, store UGC rules); `overdue` once passed. */
+  dueAt: number;
+  overdue: boolean;
 }
 
 /** Staff: reports, oldest first, with context. */
+/** Open staff work and what is overdue (step 56), for the tk_staff_queue gauge and its alerts. */
+export async function staffQueues(ctx: ServerContext) {
+  const now = ctx.now();
+  return ctx.repo.queueStats(now - DELETION_DUE_MS, now - REPORT_DUE_MS);
+}
+
+/** Reports are acted on within a day (the commitment in docs/store/PRIVACY.md). */
+export const REPORT_DUE_MS = 24 * 3_600_000;
+
 export async function reportQueue(ctx: ServerContext, status: 'open' | 'all'): Promise<{ reports: ReportQueueEntry[] }> {
   const list = await ctx.repo.reports(status, 200);
   const open = status === 'open' ? list : await ctx.repo.reports('open', 1000);
@@ -106,7 +119,8 @@ export async function reportQueue(ctx: ServerContext, status: 'open' | 'all'): P
   for (const r of list) {
     const target = await ctx.repo.getPlayer(r.targetId);
     const msg = r.messageId ? await ctx.repo.getChat(r.messageId) : null;
-    out.push({ ...r, openOnTarget: perTarget.get(r.targetId) ?? 0, targetMutedUntil: target?.mutedUntil ?? 0, messageHidden: Boolean(msg?.hidden) });
+    const dueAt = r.at + REPORT_DUE_MS;
+    out.push({ ...r, openOnTarget: perTarget.get(r.targetId) ?? 0, targetMutedUntil: target?.mutedUntil ?? 0, messageHidden: Boolean(msg?.hidden), dueAt, overdue: r.status === 'open' && ctx.now() > dueAt });
   }
   return { reports: out };
 }

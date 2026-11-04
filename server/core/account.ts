@@ -34,14 +34,21 @@ export async function requestDeletion(ctx: ServerContext, body: DeletionRequestB
 export interface DeletionQueueEntry extends DeletionRequest {
   /** The player the ID names, if any, to help staff verify (name, last seen). */
   player: { id: string; name: string; lastSeenAt: number; createdAt: number } | null;
+  /** When it must be done by (step 56): a month from the request (GDPR art. 12(3)); `overdue` once passed. */
+  dueAt: number;
+  overdue: boolean;
 }
+
+/** Erasure requests are answered within one month (GDPR art. 12(3); CCPA allows 45 days: the shorter applies). */
+export const DELETION_DUE_MS = 30 * 24 * 3_600_000;
 
 /** Staff: deletion requests, oldest first, with the player each one names. */
 export async function deletionQueue(ctx: ServerContext, status: 'open' | 'all'): Promise<{ requests: DeletionQueueEntry[] }> {
   const out: DeletionQueueEntry[] = [];
   for (const r of await ctx.repo.deletionRequests(status, 200)) {
     const p = r.playerId ? await ctx.repo.getPlayer(r.playerId) : null;
-    out.push({ ...r, player: p ? { id: p.id, name: p.name, lastSeenAt: p.lastSeenAt, createdAt: p.createdAt } : null });
+    const dueAt = r.at + DELETION_DUE_MS;
+    out.push({ ...r, player: p ? { id: p.id, name: p.name, lastSeenAt: p.lastSeenAt, createdAt: p.createdAt } : null, dueAt, overdue: r.status === 'open' && ctx.now() > dueAt });
   }
   return { requests: out };
 }

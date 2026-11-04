@@ -53,6 +53,12 @@ export function leagueChest(league: LeagueDef, hallLevel: number, data: GameData
   return scaleReward(league.chest, hallLevel, data);
 }
 
+/** Honor after a season ends: above `seasonResetFloor`, half of the part above it is kept. The server applies the same rule. */
+export function seasonResetTrophies(trophies: number, data: GameData): number {
+  const floor = data.ranks.seasonResetFloor;
+  return trophies > floor ? floor + Math.floor((trophies - floor) / 2) : trophies;
+}
+
 /**
  * Close any seasons that ended before `now`: give the league chest (fixed
  * contents, nothing random, sized to the player's hall level) and soften
@@ -65,8 +71,7 @@ export function rollSeasons(state: VillageState, now: number, data: GameData): S
   while (state.season < current) {
     const league = leagueFor(state.trophies, data);
     const before = state.trophies;
-    const floor = data.ranks.seasonResetFloor;
-    if (state.trophies > floor) state.trophies = floor + Math.floor((state.trophies - floor) / 2);
+    state.trophies = seasonResetTrophies(state.trophies, data);
     out.push({ season: state.season, league: league.id, chest: leagueChest(league, hall, data), trophiesBefore: before, trophiesAfter: state.trophies });
     state.season++;
   }

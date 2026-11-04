@@ -7,6 +7,7 @@ import type { Leaderboard, MatchLocks } from '../shared';
 import type { AppleVerifier } from '../payments/apple';
 import type { GoogleVerifier } from '../payments/google';
 import type { Pusher } from '../push/push';
+import type { Resimulator } from '../resim';
 
 export interface ServerContext {
   repo: Repo;
@@ -32,6 +33,8 @@ export interface ServerContext {
   identity: IdentityVerifier;
   /** Store receipt checkers (roadmap Phase 4); null for a store this server is not set up for. */
   payments: { apple: AppleVerifier | null; google: GoogleVerifier | null };
+  /** Re-simulates reported battles: a worker-thread pool in production (roadmap step 57), inline otherwise. */
+  resim: Resimulator;
   /** Server-sent push (roadmap step 40); a no-op without APNs/FCM keys. */
   push: Pusher;
   /** A structured log line (the request's logger in the HTTP adapter). */

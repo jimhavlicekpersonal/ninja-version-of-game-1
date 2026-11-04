@@ -30,7 +30,7 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #eee;pad
 <span id="status" class="muted"></span></header>
 <main>
 <section><div class="row"><input id="q" placeholder="Player name or id"><button id="find" class="primary">Find</button>
-<button id="queues">Reports and deletion requests</button><button id="log">Staff log</button></div>
+<button id="queues">Reports and deletion requests</button><button id="review">Weekly review</button><button id="log">Staff log</button></div>
 <div id="results"></div></section>
 <div id="detail"></div>
 </main>
@@ -96,8 +96,20 @@ $('queues').onclick = async () => {
   try {
     const [reports, deletions] = await Promise.all([api('GET', '/admin/v1/reports'), api('GET', '/admin/v1/deletion-requests')]);
     $('detail').replaceChildren(
-      el('section', {}, el('h3', {}, 'Open reports'), table(reports.reports, [['When', (r) => when(r.at)], ['About', (r) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); show(r.targetId); } }, r.targetName || r.targetId)], ['Reason', (r) => r.reason], ['Text', (r) => r.text || ''], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Resolve with POST /admin/v1/reports/:id (dismiss, remove_message, mute).')),
-      el('section', {}, el('h3', {}, 'Deletion requests'), table(deletions.requests, [['When', (r) => when(r.at)], ['Player', (r) => r.playerId || r.name], ['Contact', (r) => r.contact], ['Note', (r) => r.note], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Carry out with POST /admin/v1/deletion-requests/:id (delete or reject).')));
+      el('section', {}, el('h3', {}, 'Open reports'), table(reports.reports, [['Due', (r) => (r.overdue ? 'OVERDUE ' : '') + when(r.dueAt)], ['When', (r) => when(r.at)], ['About', (r) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); show(r.targetId); } }, r.targetName || r.targetId)], ['Reason', (r) => r.reason], ['Text', (r) => r.text || ''], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Resolve with POST /admin/v1/reports/:id (dismiss, remove_message, mute).')),
+      el('section', {}, el('h3', {}, 'Deletion requests'), table(deletions.requests, [['Due', (r) => (r.overdue ? 'OVERDUE ' : '') + when(r.dueAt)], ['When', (r) => when(r.at)], ['Player', (r) => r.playerId || r.name], ['Contact', (r) => r.contact], ['Note', (r) => r.note], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Carry out with POST /admin/v1/deletion-requests/:id (delete or reject).')));
+  } catch (e) { status(e.message); }
+};
+$('review').onclick = async () => {
+  try {
+    const r = await api('GET', '/admin/v1/review?days=7');
+    $('detail').replaceChildren(
+      el('section', {}, el('h3', {}, 'Needs attention'), r.attention.length ? el('ul', {}, ...r.attention.map((a) => el('li', {}, a))) : el('p', { class: 'ok' }, 'Nothing stands out this week.')),
+      el('section', {}, el('h3', {}, 'Players and battles'), el('p', {}, 'Active ' + r.players.active + ' of ' + r.players.total + ' · new ' + r.players.new + ' · suspended ' + r.players.banned + ' · PvP battles ' + r.battles.total + ' · desyncs ' + r.battles.desyncs + ' (' + r.rates.desync + '%)')),
+      el('section', {}, el('h3', {}, 'Money'), el('p', {}, r.purchases.count + ' purchases, $' + (r.purchases.cents / 100).toFixed(2) + ' · refunds ' + r.purchases.refunds + ' ($' + (r.purchases.refundedCents / 100).toFixed(2) + ', ' + r.rates.refund + '%)')),
+      el('section', {}, el('h3', {}, 'Economy (server-held villages)'), table(r.economy, [['Resource', (e) => e.resource], ['In', (e) => e.in], ['Out', (e) => e.out], ['Net', (e) => e.net], ['Biggest source', (e) => e.biggestSource || ''], ['Biggest sink', (e) => e.biggestSink || '']])),
+      el('section', {}, el('h3', {}, 'Ratings and Honor'), el('p', {}, 'Rated ' + r.ratings.rated + ' · Attack Rating mean ' + r.ratings.attackMean + ', spread ' + r.ratings.attackSd + ' · median deviation ' + r.ratings.medianRd + ' · Honor p50 ' + r.honor.p50 + ', p90 ' + r.honor.p90 + ', p99 ' + r.honor.p99 + ', top ' + r.honor.max)),
+      el('section', {}, el('h3', {}, 'Ledger by reason'), table(r.ledger, [['Reason', (l) => l.reason], ['Resource', (l) => l.resource], ['Change', (l) => l.delta], ['Lines', (l) => l.lines]])));
   } catch (e) { status(e.message); }
 };
 $('log').onclick = async () => {

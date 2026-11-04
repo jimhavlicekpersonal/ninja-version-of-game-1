@@ -15,6 +15,8 @@ import * as purchases from './purchases';
 import * as pushTokens from './pushTokens';
 import * as pvp from './pvp';
 import * as retention from './retention';
+import * as review from './review';
+import * as seasons from './seasons';
 import * as village from './village';
 import * as villageImport from './villageImport';
 
@@ -59,6 +61,9 @@ export function createCore(ctx: ServerContext) {
     defenses: pvp.defenses.bind(null, ctx),
     leaderboard: pvp.leaderboard.bind(null, ctx),
     powerLeaderboard: pvp.powerLeaderboard.bind(null, ctx),
+    seasonLeaderboard: seasons.seasonLeaderboard.bind(null, ctx),
+    /** Hourly: close league seasons that ended (archive, Honor reset). */
+    closeSeasons: () => seasons.closeSeasons(ctx),
     listGroves: groves.listGroves.bind(null, ctx),
     createGrove: groves.createGrove.bind(null, ctx),
     joinGrove: groves.joinGrove.bind(null, ctx),
@@ -89,6 +94,8 @@ export function createCore(ctx: ServerContext) {
       ban: admin.ban.bind(null, ctx),
       resetRating: admin.resetRating.bind(null, ctx),
       actions: admin.actions.bind(null, ctx),
+      review: review.weeklyReview.bind(null, ctx),
+      queues: () => moderation.staffQueues(ctx),
     },
   };
 }

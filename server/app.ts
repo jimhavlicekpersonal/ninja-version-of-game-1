@@ -4,6 +4,7 @@
  * requests, checks the bearer token, applies rate and size limits, and turns
  * errors into protocol errors.
  */
+import { SUPPORT_PAGE_CSP, supportPage } from './supportPage';
 import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
@@ -61,9 +62,17 @@ export interface ServerOptions {
   environment?: string;
   /** SERVER_NOTICE (step 47): a message for every player in /v1/hello (maintenance, an incident). */
   notice?: string;
+  /** The support page (step 56): SUPPORT_EMAIL and PRIVACY_URL. */
+  support?: { email?: string; privacyUrl?: string };
 }
 
-const sameSecret = (got: string | undefined, want: Buffer) => timingSafeEqual(createHash('sha256').update(got ?? '').digest(), want);
+const sameSecret = (got: string | undefined, want: Buffer | Buffer[]) => {
+  const h = createHash('sha256').update(got ?? '').digest();
+  // Every candidate is compared (constant time each), so a rotation's two tokens take the same time.
+  return (Array.isArray(want) ? want : [want]).map((w) => timingSafeEqual(h, w)).includes(true);
+};
+/** A secret setting may hold the current and the previous value, comma-separated, while it is rotated (step 58). */
+const secrets = (v: string) => v.split(',').map((s) => s.trim()).filter(Boolean);
 
 /** Route option: which extra rate rule the route counts against. */
 type RateConfig = { rate?: keyof RateLimits };
@@ -247,7 +256,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   });
   // Prometheus metrics, only with a token (they describe the traffic).
   if (opts.metricsToken) {
-    const want = createHash('sha256').update(opts.metricsToken).digest();
+    const want = secrets(opts.metricsToken).map((t) => createHash('sha256').update(t).digest());
     app.get('/metrics', async (req, reply) => {
       if (!sameSecret(bearer(req), want)) return reply.code(401).send({ error: 'unauthorized', message: 'Metrics token required.' });
       return reply.type('text/plain; version=0.0.4').send(metrics.render());
@@ -298,6 +307,9 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.blocks, rate('moderation'), authed(async (me, req) => core.block(me, body<{ playerId: string }>(req).playerId)));
   app.delete('/v1/blocks/:id', authed(async (me, req) => core.unblock(me, param(req, 'id'))));
 
+  // Support page for the store listings (step 56).
+  app.get('/support', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', SUPPORT_PAGE_CSP).send(supportPage(opts.support ?? {})));
+
   // Account deletion without the game: the web page and its requests (no token).
   app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage()));
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
@@ -309,6 +321,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.defenses, authed(async (me, req) => core.defenses(me, Number(query(req).since ?? 0))));
   app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50))));
   app.get(Routes.powerLeaderboard, authed(async (me, req) => core.powerLeaderboard(me, Number(query(req).limit ?? 50))));
+  app.get(Routes.seasonLeaderboard, authed(async (me, req) => core.seasonLeaderboard(me, query(req).season, query(req).limit)));
 
   // Groves
   app.get(Routes.groves, authed(async (me, req) => core.listGroves(me, query(req).q ?? '')));
@@ -332,8 +345,9 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
 
   // Staff API: only with a strong ADMIN_TOKEN, compared in constant time.
   if (opts.adminToken !== undefined) {
-    if (opts.adminToken.length < 24) throw new Error('ADMIN_TOKEN must be at least 24 characters.');
-    const want = createHash('sha256').update(opts.adminToken).digest();
+    const tokens = secrets(opts.adminToken);
+    if (!tokens.length || tokens.some((t) => t.length < 24)) throw new Error('ADMIN_TOKEN must be at least 24 characters (each one, while rotating).');
+    const want = tokens.map((t) => createHash('sha256').update(t).digest());
     const staff = <T>(h: (req: FastifyRequest) => Promise<T>) => async (req: FastifyRequest) => {
       if (!sameSecret(bearer(req), want)) throw new ApiError(401, 'unauthorized', 'Staff token required.');
       return h(req);
@@ -350,6 +364,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.post('/admin/v1/players/:id/ban', staff(async (req) => core.admin.ban(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
+    app.get('/admin/v1/review', staff(async (req) => core.admin.review(query(req).days)));
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
     app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));
   }

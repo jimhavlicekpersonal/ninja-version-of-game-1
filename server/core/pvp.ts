@@ -4,6 +4,7 @@
  * attacker, near their trophies; the loot penalty for hitting lower halls;
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
+import type { ResimOutput } from '../resim';
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
 import { runBattle, SIM_RULES } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
@@ -311,10 +312,10 @@ export { takeTicket };
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): ReturnType<typeof runBattle> {
-  const t0 = performance.now();
-  const out = runBattle(setup, deployments, ctx.data, sub.endTick);
-  ctx.metrics.observe('tk_resim_ms', performance.now() - t0, { kind });
+export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): Promise<ResimOutput> {
+  const out = await ctx.resim.run({ setup, deployments, endTick: sub.endTick });
+  ctx.metrics.observe('tk_resim_ms', out.ms, { kind });
+  ctx.metrics.observe('tk_resim_wait_ms', out.waitMs, { kind });
   ctx.metrics.count('tk_battles_total', { kind });
   if (typeof sub.clientHash === 'string' && sub.clientHash !== out.result.hash) {
     ctx.metrics.count('tk_desyncs_total', { kind });
@@ -355,7 +356,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { sim, result } = resimulate(ctx, 'pvp', setup, deployments, sub);
+  const { fallen, result } = await resimulate(ctx, 'pvp', setup, deployments, sub);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
@@ -393,9 +394,8 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       await tx.updatePlayer(defender.id, defPatch);
       // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
-      const fallen = sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } }));
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
-      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -defLoss });
+      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -defLoss, ...(typeof sub.clientHash === 'string' && sub.clientHash !== result.hash ? { desync: true } : {}) });
     }
     return true;
   });

@@ -18,7 +18,7 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'node20',
     rollupOptions: {
-      input: { main: 'server/main.ts', migrate: 'server/migrateMain.ts', bench: 'server/benchMain.ts', load: 'server/loadMain.ts' },
+      input: { main: 'server/main.ts', migrate: 'server/migrateMain.ts', bench: 'server/benchMain.ts', load: 'server/loadMain.ts', resimWorker: 'server/resimWorker.ts' },
       output: { entryFileNames: '[name].js', chunkFileNames: 'chunks/[name]-[hash].js', format: 'es' },
     },
   },

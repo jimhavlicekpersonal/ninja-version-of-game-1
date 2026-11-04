@@ -86,6 +86,9 @@ export class InProcessServerAdapter implements ServerPort {
   powerLeaderboard(limit = 50) {
     return this.authed((me) => this.core.powerLeaderboard(me, limit));
   }
+  seasonLeaderboard(season?: number, limit = 50) {
+    return this.authed((me) => this.core.seasonLeaderboard(me, season, limit));
+  }
   leaderboard(limit = 50) {
     return this.authed((me) => this.core.leaderboard(me, limit));
   }

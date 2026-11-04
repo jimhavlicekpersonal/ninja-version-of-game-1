@@ -9,6 +9,7 @@ import { RepoLeaderboard, TicketLocks, type Leaderboard, type MatchLocks } from 
 import type { AppleVerifier } from './payments/apple';
 import type { GoogleVerifier } from './payments/google';
 import { noPush, type Pusher } from './push/push';
+import { InlineResimulator, type Resimulator } from './resim';
 
 /**
  * Optional shared stores (Redis, roadmap step 16; without them the database
@@ -21,6 +22,7 @@ export interface SharedStores {
   identity?: IdentityVerifier;
   payments?: { apple?: AppleVerifier | null; google?: GoogleVerifier | null };
   push?: Pusher;
+  resim?: Resimulator;
   log?: (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
 }
 
@@ -34,6 +36,7 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     identity: shared.identity ?? noIdentity,
     payments: { apple: shared.payments?.apple ?? null, google: shared.payments?.google ?? null },
     push: shared.push ?? noPush,
+    resim: shared.resim ?? new InlineResimulator(data),
     log: shared.log ?? (() => undefined),
     now,
     uuid: () => randomUUID(),

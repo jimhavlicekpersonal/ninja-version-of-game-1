@@ -18,7 +18,10 @@
  * - METRICS_TOKEN: serve Prometheus metrics at /metrics to this bearer token.
  * - LOG_LEVEL: debug | info (default) | warn | error.
  * - RELEASE: the build name shown by /healthz and Sentry (default: package version).
+ * - SUPPORT_EMAIL, PRIVACY_URL: shown on the support page (/support, the listings' Support URL).
  * - SERVER_NOTICE: a message shown to every player in Settings (maintenance, an incident).
+ * - DATABASE_READ_URL: an optional read replica (leaderboards, defense logs, staff reports).
+ * - RESIM_WORKERS: battle re-simulation threads (default: CPUs - 1; 0 = on the event loop).
  * - HOST: the address to listen on (default '::', IPv6 and IPv4).
  * - DEPLOY_ENV: development (default) | staging | production (server/config.ts:
  *   what production requires; a database belongs to one deployment).
@@ -28,7 +31,9 @@
  * - Push (step 40, server/push/push.ts): APNS_KEY, APNS_KEY_ID, APNS_TEAM_ID,
  *   APNS_TOPIC, APNS_SANDBOX; FCM_PROJECT_ID, FCM_SERVICE_ACCOUNT_JSON.
  */
+import { availableParallelism } from 'node:os';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
+import { WorkerResimulator } from './resim';
 import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
 import type { SharedStores } from './nodeContext';
@@ -74,7 +79,8 @@ async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;
   let repo: Repo;
   if (url) {
-    const pg = PgRepo.fromUrl(url);
+    // DATABASE_READ_URL (optional, step 57): a read replica for leaderboards, defense logs and staff reports.
+    const pg = PgRepo.fromUrl(url, process.env.DATABASE_READ_URL || undefined);
     // Migrations are a release step (npm run server:migrate), not part of every boot.
     const status = await pg.migrationStatus();
     if (status.unknown.length) console.warn(`The database has migrations this server does not know (${status.unknown.join(', ')}): it is newer than this build.`);
@@ -101,6 +107,10 @@ async function main(): Promise<void> {
   let shared: SharedStores | undefined;
   let rateLimiter: RateLimiter | undefined;
   const readiness: Record<string, () => Promise<unknown>> = {};
+  if (repo instanceof PgRepo && process.env.DATABASE_READ_URL) {
+    const pgRepo = repo;
+    readiness.replica = () => pgRepo.pingReplica();
+  }
   if (process.env.REDIS_URL) {
     const redis = RedisClient.fromUrl(process.env.REDIS_URL);
     readiness.redis = () => redis.command('PING');
@@ -130,8 +140,12 @@ async function main(): Promise<void> {
   const payments = paymentsFromEnv(process.env, fetchFn, Date.now);
   const transport = pushTransportFromEnv(process.env, fetchFn, Date.now);
   const push = transport ? new ServerPush({ repo, data: defaultData, transport, now: Date.now, metrics, log: (l, m, f) => console[l === 'info' ? 'log' : l](m, f ?? {}) }) : undefined;
-  shared = { ...shared, payments, push };
-  console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}.`);
+  // Battle re-simulation in worker threads (step 57): RESIM_WORKERS (default: CPUs - 1; 0 = on the event loop).
+  const workers = process.env.RESIM_WORKERS !== undefined ? Number(process.env.RESIM_WORKERS) : Math.max(1, availableParallelism() - 1);
+  const resim = workers > 0 ? new WorkerResimulator(new URL('./resimWorker.js', import.meta.url), workers) : undefined;
+  if (resim) metrics.gauge('tk_resim_queue', () => [{ value: resim.waiting }]);
+  shared = { ...shared, payments, push, resim };
+  console.log(`Deployment: ${config.deploy}. Re-simulation workers: ${workers}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
     repo,
@@ -150,6 +164,7 @@ async function main(): Promise<void> {
     metrics,
     environment: config.deploy === 'production' ? undefined : config.deploy,
     notice: process.env.SERVER_NOTICE?.slice(0, 300) || undefined,
+    support: { email: process.env.SUPPORT_EMAIL || undefined, privacyUrl: process.env.PRIVACY_URL || undefined },
   });
   const port = Number(process.env.PORT ?? 8787);
   // '::' takes IPv6 and IPv4 (step 45); a machine without IPv6 falls back to IPv4 only.
@@ -173,12 +188,32 @@ async function main(): Promise<void> {
       (n) => n && app.log.info({ revoked: n }, 'voided purchases'),
       (e) => app.log.error(e, 'voided purchases failed'),
     );
+  // Staff queues (step 56): open and overdue deletion requests and reports, every 5 minutes, for the gauge and alerts.
+  let queues = { deletions: { open: 0, overdue: 0 }, reports: { open: 0, overdue: 0 } };
+  const readQueues = () =>
+    app.core.admin.queues().then(
+      (q) => (queues = q),
+      (e) => app.log.error(e, 'reading staff queues failed'),
+    );
+  void readQueues();
+  setInterval(() => void readQueues(), 5 * 60_000).unref();
+  metrics.gauge('tk_staff_queue', () =>
+    (['deletions', 'reports'] as const).flatMap((q) => (['open', 'overdue'] as const).map((state) => ({ labels: { queue: q === 'deletions' ? 'deletion' : 'reports', state }, value: queues[q][state] }))),
+  );
+  // League seasons (step 55): close the one that ended (archive, Honor reset); once, whichever instance is first.
+  const seasons = () =>
+    app.core.closeSeasons().then(
+      (closed) => closed.length && app.log.info({ closed }, 'seasons closed'),
+      (e) => app.log.error(e, 'closing seasons failed'),
+    );
+  void seasons();
   setTimeout(() => {
     void prune();
     void voided();
     setInterval(() => {
       void prune();
       void voided();
+      void seasons();
     }, 3_600_000).unref();
   }, Math.floor(Math.random() * 3_600_000)).unref();
 }

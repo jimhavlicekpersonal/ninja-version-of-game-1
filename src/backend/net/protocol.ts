@@ -76,6 +76,8 @@ export const Routes = {
   defenses: '/v1/defenses',
   leaderboard: '/v1/leaderboard',
   powerLeaderboard: '/v1/leaderboard/power',
+  /** GET ?season=: an archived season's top (default: the last closed season). */
+  seasonLeaderboard: '/v1/leaderboard/season',
   groves: '/v1/groves',
   groveJoin: (id: string) => `/v1/groves/${encodeURIComponent(id)}/join`,
   grove: '/v1/grove',
@@ -662,3 +664,12 @@ export interface PushTokenRequest {
   tzOffsetMinutes: number;
 }
 
+// ---------------------------------------------------------------- seasons (roadmap step 55)
+
+/** A closed season's archived Honor top (seasons are UTC months: year * 12 + month). */
+export interface SeasonLeaderboardResponse {
+  /** Null before the server closed its first season. */
+  season: number | null;
+  players: { rank: number; name: string; honor: number; hallLevel: number }[];
+  me: { rank: number; honor: number } | null;
+}

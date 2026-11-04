@@ -65,3 +65,22 @@ groups:
         labels: { severity: info }
         annotations:
           summary: 'Many requests are rate limited (abuse, or limits too tight for real traffic).'
+
+      - alert: DeletionRequestsOverdue
+        expr: max(tk_staff_queue{queue="deletion",state="overdue"}) > 0
+        labels: { severity: page }
+        annotations:
+          summary: 'An account-deletion request is older than 30 days (the legal limit): handle it in /admin today.'
+
+      - alert: DeletionRequestsWaiting
+        expr: max(tk_staff_queue{queue="deletion",state="open"}) > 0
+        for: 7d
+        labels: { severity: warn }
+        annotations:
+          summary: 'Account-deletion requests have waited a week: handle them well before the 30-day limit.'
+
+      - alert: ReportsOverdue
+        expr: max(tk_staff_queue{queue="reports",state="overdue"}) > 0
+        labels: { severity: warn }
+        annotations:
+          summary: 'A player report has waited more than 24 hours (the commitment to the stores): handle it in /admin.'

@@ -23,6 +23,8 @@ import type {
   PurchaseRow,
   PushToken,
   RaidAttack,
+  ReviewStats,
+  SeasonEntry,
   StaffAction,
   RaidClaim,
   LedgerEntry,
@@ -213,10 +215,21 @@ export class PgRepo implements Repo {
   constructor(
     private readonly pool: pg.Pool,
     private readonly client: pg.PoolClient | null = null,
+    /** A read replica (DATABASE_READ_URL, step 57) for reads that may lag a moment: leaderboards, defense logs, staff reports. */
+    private readonly replica: pg.Pool | null = null,
   ) {}
 
   private get db(): pg.Pool | pg.PoolClient {
     return this.client ?? this.pool;
+  }
+
+  /** Where a read that tolerates replication lag goes: the transaction's connection inside one, else the replica if any. */
+  private get reader(): pg.Pool | pg.PoolClient {
+    return this.client ?? this.replica ?? this.pool;
+  }
+
+  private async replicaRows(sql: string, vals: unknown[] = []): Promise<Row[]> {
+    return (await this.reader.query(sql, vals)).rows as Row[];
   }
 
   /**
@@ -239,7 +252,7 @@ export class PgRepo implements Repo {
     const client = await this.pool.connect();
     try {
       await client.query('begin');
-      const out = await fn(new PgRepo(this.pool, client));
+      const out = await fn(new PgRepo(this.pool, client, this.replica));
       await client.query('commit');
       return out;
     } catch (e) {
@@ -250,8 +263,9 @@ export class PgRepo implements Repo {
     }
   }
 
-  static fromUrl(url: string): PgRepo {
-    return new PgRepo(new pg.Pool({ connectionString: url, ssl: /sslmode=require/.test(url) ? { rejectUnauthorized: false } : undefined }));
+  static fromUrl(url: string, readUrl?: string): PgRepo {
+    const pool = (u: string) => new pg.Pool({ connectionString: u, ssl: /sslmode=require/.test(u) ? { rejectUnauthorized: false } : undefined });
+    return new PgRepo(pool(url), null, readUrl ? pool(readUrl) : null);
   }
 
   /** Connections in the pool (for the tk_db_pool_connections gauge, step 47). */
@@ -279,6 +293,11 @@ export class PgRepo implements Repo {
 
   async ping(): Promise<void> {
     await this.db.query('select 1');
+  }
+
+  /** The read replica answers (readiness), if there is one. */
+  async pingReplica(): Promise<void> {
+    await this.replica?.query('select 1');
   }
 
   // ------------------------------------------------------------ players
@@ -330,6 +349,87 @@ export class PgRepo implements Repo {
 
   // ------------------------------------------------------------ staff tools (step 48)
 
+  // ------------------------------------------------------------ staff queues (step 56)
+
+  async queueStats(deletionsBefore: number, reportsBefore: number) {
+    const d = (await this.rows(`select count(*) as open, count(*) filter (where at < $1) as overdue from deletion_requests where status = 'open'`, [deletionsBefore]))[0];
+    const r = (await this.rows(`select count(*) as open, count(*) filter (where at < $1) as overdue from reports where status = 'open'`, [reportsBefore]))[0];
+    return { deletions: { open: num(d.open), overdue: num(d.overdue) }, reports: { open: num(r.open), overdue: num(r.overdue) } };
+  }
+
+  // ------------------------------------------------------------ seasons (step 55)
+
+  async lastClosedSeason(): Promise<number | null> {
+    const r = await this.rows('select max(season) as s from seasons', []);
+    return r[0]?.s == null ? null : num(r[0].s);
+  }
+
+  async closeSeason(season: number, at: number, archive: number, floor: number): Promise<{ closed: boolean; reset: number }> {
+    return this.transaction(async (tx) => {
+      const db = (tx as PgRepo).db;
+      const claimed = await db.query('insert into seasons (season, closed_at) values ($1, $2) on conflict do nothing', [season, at]);
+      if (!claimed.rowCount) return { closed: false, reset: 0 };
+      await db.query(
+        `insert into season_archive (season, board, rank, player_id, name, score, keep)
+         select $1, 'honor', row_number() over (order by trophies desc, created_at asc), id, name, trophies, hall_level
+           from players where base is not null and banned_until = 0 order by trophies desc, created_at asc limit $2`,
+        [season, archive],
+      );
+      // The game's rule (sim/ranks.ts seasonResetTrophies): integer halving of the part above the floor.
+      const reset = await db.query('update players set trophies = $1 + (trophies - $1) / 2 where trophies > $1', [floor]);
+      await db.query('update seasons set players_reset = $2 where season = $1', [season, reset.rowCount ?? 0]);
+      return { closed: true, reset: reset.rowCount ?? 0 };
+    });
+  }
+
+  async seasonBoard(season: number, limit: number): Promise<SeasonEntry[]> {
+    return (await this.replicaRows(`select * from season_archive where season = $1 and board = 'honor' order by rank limit $2`, [season, limit])).map(toSeasonEntry);
+  }
+
+  async seasonEntry(season: number, playerId: string): Promise<SeasonEntry | null> {
+    const r = await this.rows(`select * from season_archive where season = $1 and board = 'honor' and player_id = $2`, [season, playerId]);
+    return r[0] ? toSeasonEntry(r[0]) : null;
+  }
+
+  async reviewStats(since: number): Promise<ReviewStats> {
+    const one = async (sql: string, vals: unknown[]) => (await this.replicaRows(sql, vals))[0] ?? {};
+    const p = await one(
+      `select count(*) as total, count(*) filter (where last_seen_at >= $1) as active, count(*) filter (where created_at >= $1) as new,
+              count(*) filter (where banned_until <> 0) as banned from players`,
+      [since],
+    );
+    const b = await one(`select count(*) as total, count(*) filter (where (record->>'desync')::boolean) as desyncs from attacks where at >= $1`, [since]);
+    const ledger = await this.replicaRows(
+      `select case when reason like 'command:%' then reason else split_part(reason, ':', 1) end as reason, resource, sum(delta) as delta, count(*) as lines
+         from ledger where at >= $1 group by 1, 2 order by 1, 2`,
+      [since],
+    );
+    const pu = await one(
+      `select count(*) filter (where at >= $1) as count, coalesce(sum(cents) filter (where at >= $1), 0) as cents,
+              count(*) filter (where status = 'refunded' and refunded_at >= $1) as refunds,
+              coalesce(sum(cents) filter (where status = 'refunded' and refunded_at >= $1), 0) as refunded_cents from purchases`,
+      [since],
+    );
+    const r = await one(
+      `select count(*) as rated, coalesce(avg(attack_rating), 0) as mean, coalesce(stddev_pop(attack_rating), 0) as sd,
+              coalesce(percentile_cont(0.5) within group (order by attack_rd), 0) as rd from players where attack_battles > 0`,
+      [],
+    );
+    const h = await one(
+      `select coalesce(percentile_disc(0.5) within group (order by trophies), 0) as p50, coalesce(percentile_disc(0.9) within group (order by trophies), 0) as p90,
+              coalesce(percentile_disc(0.99) within group (order by trophies), 0) as p99, coalesce(max(trophies), 0) as max from players where base is not null`,
+      [],
+    );
+    return {
+      players: { total: num(p.total), active: num(p.active), new: num(p.new), banned: num(p.banned) },
+      battles: { total: num(b.total), desyncs: num(b.desyncs) },
+      ledger: ledger.map((x) => ({ reason: String(x.reason), resource: String(x.resource), delta: num(x.delta), lines: num(x.lines) })),
+      purchases: { count: num(pu.count), cents: num(pu.cents), refunds: num(pu.refunds), refundedCents: num(pu.refunded_cents) },
+      ratings: { rated: num(r.rated), attackMean: Math.round(num(r.mean)), attackSd: Math.round(num(r.sd)), medianRd: Math.round(num(r.rd)) },
+      honor: { p50: num(h.p50), p90: num(h.p90), p99: num(h.p99), max: num(h.max) },
+    };
+  }
+
   async searchPlayers(q: string, limit: number): Promise<Player[]> {
     const like = q.toLowerCase().replace(/[\\%_]/g, (c) => `\\${c}`) + '%';
     return (await this.rows('select * from players where id = $1 or lower(name) like $2 order by name limit $3', [q, like, limit])).map(toPlayer);
@@ -340,7 +440,7 @@ export class PgRepo implements Repo {
   }
 
   async staffActions(playerId: string | null, limit: number): Promise<StaffAction[]> {
-    const r = await this.rows('select * from staff_actions where ($1::text is null or player_id = $1) order by at desc limit $2', [playerId, limit]);
+    const r = await this.replicaRows('select * from staff_actions where ($1::text is null or player_id = $1) order by at desc limit $2', [playerId, limit]);
     return r.map((x) => ({ id: String(x.id), at: num(x.at), actor: String(x.actor), action: String(x.action), playerId: strOrNull(x.player_id), detail: (x.detail as Record<string, unknown>) ?? {} }));
   }
 
@@ -498,11 +598,11 @@ export class PgRepo implements Repo {
   }
 
   async topPlayers(limit: number): Promise<Player[]> {
-    return (await this.rows('select * from players where base is not null and banned_until = 0 order by trophies desc, created_at asc limit $1', [limit])).map(toPlayer);
+    return (await this.replicaRows('select * from players where base is not null and banned_until = 0 order by trophies desc, created_at asc limit $1', [limit])).map(toPlayer);
   }
 
   async rankOf(trophies: number): Promise<number> {
-    const r = await this.rows('select count(*) as n from players where base is not null and banned_until = 0 and trophies > $1', [trophies]);
+    const r = await this.replicaRows('select count(*) as n from players where base is not null and banned_until = 0 and trophies > $1', [trophies]);
     return 1 + num(r[0]?.n);
   }
 
@@ -514,11 +614,11 @@ export class PgRepo implements Repo {
   }
 
   async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
-    return (await this.rows('select * from players where base is not null and banned_until = 0 and attack_battles >= $2 order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1', [limit, minBattles, beta])).map(toPlayer);
+    return (await this.replicaRows('select * from players where base is not null and banned_until = 0 and attack_battles >= $2 order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1', [limit, minBattles, beta])).map(toPlayer);
   }
 
   async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
-    const r = await this.rows('select count(*) as n from players where base is not null and banned_until = 0 and attack_battles >= $2 and attack_rating + $3 * (greatest(hall_level, 1) - 1) > $1', [power, minBattles, beta]);
+    const r = await this.replicaRows('select count(*) as n from players where base is not null and banned_until = 0 and attack_battles >= $2 and attack_rating + $3 * (greatest(hall_level, 1) - 1) > $1', [power, minBattles, beta]);
     return 1 + num(r[0]?.n);
   }
 
@@ -558,7 +658,7 @@ export class PgRepo implements Repo {
   }
 
   async defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]> {
-    const r = await this.rows(
+    const r = await this.replicaRows(
       `select a.id, a.record, b.base as stored_base from attacks a left join base_versions b on b.hash = a.base_hash
        where a.defender_id = $1 and a.at > $2 order by a.at desc limit $3`,
       [defenderId, since, limit],
@@ -1011,4 +1111,8 @@ function toPurchase(r: Record<string, unknown>): PurchaseRow {
     ref: String(r.ref),
     heldOnServer: Boolean(r.held_on_server),
   };
+}
+
+function toSeasonEntry(r: Record<string, unknown>): SeasonEntry {
+  return { season: num(r.season), rank: num(r.rank), playerId: String(r.player_id), name: String(r.name), honor: num(r.score), keep: num(r.keep) };
 }

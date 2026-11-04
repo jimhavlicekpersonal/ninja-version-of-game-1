@@ -88,6 +88,30 @@ for (const [label, makeRepo] of repoFactories) {
       expect(log).toEqual(['ban', 'unban', 'ban']);
     });
 
+    it('shows when deletion requests and reports are due, and counts what is overdue (step 56)', async () => {
+      const s = await setup(await makeRepo());
+      const ann = await s.register('Ann');
+      await s.call('POST', Routes.deletionRequests, undefined, { playerId: ann.playerId, contact: 'ann@example.com' });
+      let q = await s.call('GET', '/admin/v1/deletion-requests', ADMIN);
+      expect(q.body.requests[0]).toMatchObject({ overdue: false, dueAt: q.body.requests[0].at + 30 * 24 * 3_600_000 });
+      s.advance(31 * 24 * 3_600_000);
+      q = await s.call('GET', '/admin/v1/deletion-requests', ADMIN);
+      expect(q.body.requests[0].overdue).toBe(true);
+      expect(await s.app.core.admin.queues()).toEqual({ deletions: { open: 1, overdue: 1 }, reports: { open: 0, overdue: 0 } });
+      const page = await s.app.inject({ method: 'GET', url: '/support' });
+      expect(page.statusCode).toBe(200);
+      expect(page.body).toContain('/account/delete');
+      expect(page.body).toContain('Player ID');
+    });
+
+    it('accepts the old and the new staff token while ADMIN_TOKEN is rotated (step 58)', async () => {
+      const NEW = 'rotated-secret-abcdef0123456789';
+      const app = buildServer({ repo: await makeRepo(), data, adminToken: `${NEW}, ${ADMIN}` });
+      for (const t of [NEW, ADMIN]) expect((await app.inject({ method: 'GET', url: '/admin/v1/actions', headers: { authorization: `Bearer ${t}` } })).statusCode).toBe(200);
+      expect((await app.inject({ method: 'GET', url: '/admin/v1/actions', headers: { authorization: 'Bearer wrong-token-0123456789abcdef' } })).statusCode).toBe(401);
+      expect(() => buildServer({ repo: new MemoryRepo(), data, adminToken: `${NEW},short` })).toThrow(/24 characters/);
+    });
+
     it('resets ratings and serves the admin page with a strict policy', async () => {
       const s = await setup(await makeRepo());
       const ann = await s.register('Ann');

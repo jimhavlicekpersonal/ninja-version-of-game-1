@@ -25,6 +25,8 @@ export interface Leaderboard {
   top(limit: number): Promise<{ id: string; trophies: number }[]>;
   /** 1 + the number of ranked players with more honor. */
   rankOf(trophies: number): Promise<number>;
+  /** Load every ranked player again from the database (after a season reset). */
+  rebuild(repo: Repo): Promise<void>;
 }
 
 /** The default: read straight from the database (fine for one instance and modest numbers of players). */
@@ -38,6 +40,7 @@ export class RepoLeaderboard implements Leaderboard {
   rankOf(trophies: number): Promise<number> {
     return this.repo.rankOf(trophies);
   }
+  async rebuild(): Promise<void> {}
 }
 
 /**
@@ -76,6 +79,11 @@ export class RedisLeaderboard implements Leaderboard {
   }
 
   /** Fill the set from the database when it is missing (a new or flushed Redis). Returns how many players were added. */
+  async rebuild(repo: Repo): Promise<void> {
+    await this.redis.command('DEL', this.key);
+    await this.rebuildIfMissing(repo);
+  }
+
   async rebuildIfMissing(repo: Repo): Promise<number> {
     if (Number(await this.redis.command('EXISTS', this.key)) > 0) return 0;
     const all = await repo.rankedPlayers();

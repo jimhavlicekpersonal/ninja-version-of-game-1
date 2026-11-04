@@ -34,6 +34,28 @@ export interface Player {
 
 export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason'>>;
 
+/** One place on an archived season leaderboard (roadmap step 55). */
+export interface SeasonEntry {
+  season: number;
+  rank: number;
+  playerId: string;
+  name: string;
+  honor: number;
+  keep: number;
+}
+
+/** Numbers for the weekly review (roadmap step 54), over a period. */
+export interface ReviewStats {
+  players: { total: number; active: number; new: number; banned: number };
+  /** Player-vs-player attacks recorded (bot battles are only in the metrics). */
+  battles: { total: number; desyncs: number };
+  /** Server-held resources in and out, by reason (`command:<type>` kept whole, other reasons by their first part). */
+  ledger: { reason: string; resource: string; delta: number; lines: number }[];
+  purchases: { count: number; cents: number; refunds: number; refundedCents: number };
+  ratings: { rated: number; attackMean: number; attackSd: number; medianRd: number };
+  honor: { p50: number; p90: number; p99: number; max: number };
+}
+
 /** One thing staff did (the admin tool, roadmap step 48). */
 export interface StaffAction {
   id: string;
@@ -93,6 +115,8 @@ export interface AttackRecord {
   rules?: number;
   attackerTrophies: number;
   defenderTrophies: number;
+  /** The game's own result hash differed from the server's (a desync, counted in the weekly review). */
+  desync?: boolean;
 }
 
 export interface Grove {
@@ -406,7 +430,23 @@ export interface Repo {
   /** False if that sign-in is linked to someone, or this player already has one from that provider. */
   addLink(l: IdentityLink): Promise<boolean>;
   removeLink(playerId: string, provider: string): Promise<void>;
+  // staff queues (roadmap step 56)
+  /** Open deletion requests and reports, and how many were made before each cutoff (overdue). */
+  queueStats(deletionsBefore: number, reportsBefore: number): Promise<{ deletions: { open: number; overdue: number }; reports: { open: number; overdue: number } }>;
+  // seasons (roadmap step 55)
+  /** The latest season closed on this server, or null before the first. */
+  lastClosedSeason(): Promise<number | null>;
+  /**
+   * Close one season, once: archive the top `archive` of the Honor ladder,
+   * then soften every player's Honor with `reset`; one transaction. False
+   * (nothing done) if it was already closed.
+   */
+  closeSeason(season: number, at: number, archive: number, floor: number): Promise<{ closed: boolean; reset: number }>;
+  seasonBoard(season: number, limit: number): Promise<SeasonEntry[]>;
+  seasonEntry(season: number, playerId: string): Promise<SeasonEntry | null>;
   // staff tools (roadmap step 48)
+  /** The weekly review's numbers since `since` (roadmap step 54). */
+  reviewStats(since: number): Promise<ReviewStats>;
   /** Players whose id is `q`, or whose name starts with `q` (any case). */
   searchPlayers(q: string, limit: number): Promise<Player[]>;
   addStaffAction(a: StaffAction): Promise<void>;
@@ -588,6 +628,8 @@ export class MemoryRepo implements Repo {
   linkRows: IdentityLink[] = [];
   purchaseRows: PurchaseRow[] = [];
   staffRows: StaffAction[] = [];
+  seasonRows = new Map<number, { closedAt: number; reset: number }>();
+  seasonArchiveRows: SeasonEntry[] = [];
   intentRows: PurchaseIntent[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
@@ -696,6 +738,65 @@ export class MemoryRepo implements Repo {
   }
   async removeLink(playerId: string, provider: string): Promise<void> {
     this.linkRows = this.linkRows.filter((l) => !(l.playerId === playerId && l.provider === provider));
+  }
+  async queueStats(deletionsBefore: number, reportsBefore: number) {
+    const d = this.deletionRows.filter((r) => r.status === 'open');
+    const r = this.reportRows.filter((x) => x.status === 'open');
+    return { deletions: { open: d.length, overdue: d.filter((x) => x.at < deletionsBefore).length }, reports: { open: r.length, overdue: r.filter((x) => x.at < reportsBefore).length } };
+  }
+  async lastClosedSeason(): Promise<number | null> {
+    return this.seasonRows.size ? Math.max(...this.seasonRows.keys()) : null;
+  }
+  async closeSeason(season: number, at: number, archive: number, floor: number): Promise<{ closed: boolean; reset: number }> {
+    if (this.seasonRows.has(season)) return { closed: false, reset: 0 };
+    const ranked = [...this.players.values()].filter((p) => p.base && !p.bannedUntil).sort((a, b) => b.trophies - a.trophies || a.createdAt - b.createdAt);
+    ranked.slice(0, archive).forEach((p, i) => this.seasonArchiveRows.push({ season, rank: i + 1, playerId: p.id, name: p.name, honor: p.trophies, keep: p.hallLevel }));
+    let reset = 0;
+    for (const p of this.players.values()) {
+      if (p.trophies > floor) {
+        p.trophies = floor + Math.floor((p.trophies - floor) / 2);
+        reset++;
+      }
+    }
+    this.seasonRows.set(season, { closedAt: at, reset });
+    return { closed: true, reset };
+  }
+  async seasonBoard(season: number, limit: number): Promise<SeasonEntry[]> {
+    return this.seasonArchiveRows.filter((e) => e.season === season).sort((a, b) => a.rank - b.rank).slice(0, limit).map(clone);
+  }
+  async seasonEntry(season: number, playerId: string): Promise<SeasonEntry | null> {
+    const e = this.seasonArchiveRows.find((x) => x.season === season && x.playerId === playerId);
+    return e ? clone(e) : null;
+  }
+  async reviewStats(since: number): Promise<ReviewStats> {
+    const players = [...this.players.values()];
+    const group = new Map<string, { reason: string; resource: string; delta: number; lines: number }>();
+    for (const l of this.ledgerRows.filter((x) => x.at >= since)) {
+      const reason = l.reason.startsWith('command:') ? l.reason : l.reason.split(':')[0];
+      const k = `${reason}|${l.resource}`;
+      const g = group.get(k) ?? { reason, resource: l.resource, delta: 0, lines: 0 };
+      g.delta += l.delta;
+      g.lines++;
+      group.set(k, g);
+    }
+    const bought = this.purchaseRows.filter((p) => p.at >= since);
+    const refunded = this.purchaseRows.filter((p) => p.status === 'refunded' && (p.refundedAt ?? 0) >= since);
+    const rated = players.filter((p) => (p.ratings?.attack.battles ?? 0) > 0);
+    const ar = rated.map((p) => p.ratings!.attack.rating);
+    const mean = ar.length ? ar.reduce((s, x) => s + x, 0) / ar.length : 0;
+    const sd = ar.length ? Math.sqrt(ar.reduce((s, x) => s + (x - mean) ** 2, 0) / ar.length) : 0;
+    const rds = rated.map((p) => p.ratings!.attack.rd).sort((a, b) => a - b);
+    const honor = players.filter((p) => p.base).map((p) => p.trophies).sort((a, b) => a - b);
+    const q = (list: number[], f: number) => (list.length ? list[Math.min(list.length - 1, Math.floor(f * list.length))] : 0);
+    const attacks = this.attacks.filter((a) => a.at >= since);
+    return {
+      players: { total: players.length, active: players.filter((p) => p.lastSeenAt >= since).length, new: players.filter((p) => p.createdAt >= since).length, banned: players.filter((p) => p.bannedUntil).length },
+      battles: { total: attacks.length, desyncs: attacks.filter((a) => a.desync).length },
+      ledger: [...group.values()].sort((a, b) => a.reason.localeCompare(b.reason) || a.resource.localeCompare(b.resource)),
+      purchases: { count: bought.length, cents: bought.reduce((s, p) => s + p.cents, 0), refunds: refunded.length, refundedCents: refunded.reduce((s, p) => s + p.cents, 0) },
+      ratings: { rated: rated.length, attackMean: Math.round(mean), attackSd: Math.round(sd), medianRd: Math.round(q(rds, 0.5)) },
+      honor: { p50: q(honor, 0.5), p90: q(honor, 0.9), p99: q(honor, 0.99), max: honor[honor.length - 1] ?? 0 },
+    };
   }
   async searchPlayers(q: string, limit: number): Promise<Player[]> {
     const lower = q.toLowerCase();
