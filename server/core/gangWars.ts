@@ -28,7 +28,7 @@ import { createRng, mixSeed, next } from '../../src/gameplay/sim/rng';
 import { contentHash } from '../contentHash';
 import type { Player, Repo, Squad, SquadWar, SquadWarAttack, WarRosterEntry } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
-import { battleSeed, checkArmy, normalizeBase, resimulate, takeTicket } from './pvp';
+import { battleSeed, checkArmy, maxHousing, normalizeBase, resimulate, takeTicket } from './pvp';
 import { applyServerResult } from './village';
 
 const TICKET_MS = 10 * MIN;
@@ -380,12 +380,16 @@ export async function warTicket(ctx: ServerContext, me: Player, body: { target?:
     const used = (await tx.squadWarAttacks(war.id)).filter((a) => a.attackerId === me.id).length + Object.values(war.doc.pending).filter((p) => p.playerId === me.id).length;
     if (used >= rules(ctx).attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your war attacks.');
     if (relay && Object.values(war.doc.pending).some((p) => p.side === side && p.target === target && p.relay)) throw new ApiError(409, 'conflict', 'A Gang mate is striking that base right now. Wait for their result.');
-    const startDamage = relay ? war.doc.relay[`${side}:${target}`]?.damage : undefined;
+    const chain = war.doc.relay[`${side}:${target}`];
+    const startDamage = relay ? chain?.damage : undefined;
+    // A relay's strikes share one army budget (a half-army opener plus the main force).
+    const maxShare = relay ? Math.min(1, rules(ctx).relayHousingShare - (chain?.share ?? 0)) : 1;
+    if (relay && maxShare < 0.1) throw new ApiError(409, 'no_attacks_left', 'This base\'s relay has used its army budget. Attack it solo, or pick another base.');
     const ticket = { id: ctx.uuid(), kind: 'gangwar' as const, attackerId: me.id, defenderId: enemy.playerId, defenderName: enemy.name, base: enemy.base, defenderTrophies: 0, createdAt: now, expiresAt: now + TICKET_MS, used: false, seed: ctx.newSeed(), groveId: war.id, target };
     await tx.createTicket(ticket);
-    war.doc.pending[ticket.id] = { side, target, relay, playerId: me.id, ...(startDamage ? { startDamage } : {}), expiresAt: ticket.expiresAt };
+    war.doc.pending[ticket.id] = { side, target, relay, playerId: me.id, ...(startDamage ? { startDamage } : {}), maxShare, expiresAt: ticket.expiresAt };
     await tx.saveSquadWar(war);
-    return { ticket: ticket.id, seed: ticket.seed, base: enemy.base, ...(startDamage ? { startDamage } : {}), expiresAt: ticket.expiresAt, targetName: enemy.name };
+    return { ticket: ticket.id, seed: ticket.seed, base: enemy.base, ...(startDamage ? { startDamage } : {}), armyShare: maxShare, expiresAt: ticket.expiresAt, targetName: enemy.name };
   });
 }
 
@@ -398,6 +402,9 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
   const seed = battleSeed(ticket, sub);
   const { army, levels, reinforcements } = checkArmy(sub, me, ctx.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
+  const housing = Object.entries(army).reduce((s, [t, n]) => s + (ctx.data.troops[t]?.housing ?? 0) * n, 0) + Object.entries(reinforcements).reduce((s, [t, r]) => s + (ctx.data.troops[t]?.housing ?? 0) * r.count, 0);
+  const share = housing / Math.max(1, maxHousing(me.hallLevel, ctx.data));
+  if (pend.relay && share > (pend.maxShare ?? 1) + 1e-9) throw new ApiError(400, 'bad_request', `This relay strike may bring at most ${Math.round((pend.maxShare ?? 1) * 100)}% of a full army.`);
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(pend.relay && pend.startDamage ? { startDamage: pend.startDamage } : {}) };
   const { result, damage } = await resimulate(ctx, 'gangwar', setup, deployments, sub);
   const t = ctx.now();
@@ -419,7 +426,7 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
     });
     if (pend.relay) {
       const prev = war.doc.relay[key];
-      war.doc.relay[key] = { damage, strikes: (prev?.strikes ?? 0) + 1, by: [...(prev?.by ?? []), me.name], lastAt: t };
+      war.doc.relay[key] = { damage, strikes: (prev?.strikes ?? 0) + 1, by: [...(prev?.by ?? []), me.name], lastAt: t, share: (prev?.share ?? 0) + Math.min(share, pend.maxShare ?? 1) };
     }
     delete war.doc.pending[ticket.id];
     await tx.saveSquadWar(war);

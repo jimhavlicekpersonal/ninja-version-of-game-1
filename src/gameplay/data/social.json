@@ -204,6 +204,8 @@
     "prepHours": 2,
     "battleHours": 22,
     "attacksPerMember": 2,
+    "relayHousingShare": 1.5,
+    "$relayHousingShare": "All strikes in one relay on a base may bring this many armies in total (housing / the striker's camps): a half-army opener plus the main force. Measured (tests/gameplay/balance/gang-war.test.ts): +20-31 destruction over the best of two solo strikes, 1.4-2.3 stars on average.",
     "botAfterMinutes": 3,
     "recentOpponents": 3,
     "ratingWindow": 150,

@@ -8,6 +8,8 @@
 import { describe, expect, it } from 'vitest';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { deserialize } from '../../../src/gameplay/sim/save';
+import { maxHousing } from '../../../server/core/pvp';
+import { maxHousingAtHall } from '../../../src/gameplay/sim/army';
 import { baseAt, HOUR, rush, world } from './harness';
 import { repoFactories } from './pg';
 
@@ -93,6 +95,30 @@ for (const [label, makeRepo] of repoFactories) {
       expect(ra + rb).toBeCloseTo(3000, -1); // zero-sum at equal deviations
       // The roster lock lifts after the war.
       await a2.leaveGang();
+    });
+
+    it('gives one relay a budget of armies: a full opener leaves half an army for the next strike', async () => {
+      const w = world({ repo: await makeRepo() });
+      const [a1, a2] = await gang(w, 'Owls', ['Ann', 'Abe']);
+      await a1.queueGangWar();
+      w.advance(gw.botAfterMinutes * MIN);
+      await a1.gangWar();
+      w.advance(gw.prepHours * HOUR + 1);
+      const per = data.troops.hedgehog_roller.housing;
+      const camps = Math.floor(maxHousingAtHall(3, data) / per); // a full camp army
+      const shareOf = (n: number) => (n * per) / maxHousing(3, data); // of the whole force (camps and Lodge)
+      const t1 = await a1.gangWarTicket(0, true);
+      expect(t1.armyShare).toBe(1);
+      await a1.gangWarAttack({ ticket: t1.ticket, seed: t1.seed, ...rush(camps) });
+      const left = gw.relayHousingShare - shareOf(camps);
+      const t2 = await a2.gangWarTicket(0, true);
+      expect(t2.armyShare).toBeCloseTo(Math.min(1, left), 5);
+      await expect(a2.gangWarAttack({ ticket: t2.ticket, seed: t2.seed, ...rush(camps) })).rejects.toMatchObject({ code: 'bad_request' }); // over the budget
+      const half = Math.floor(camps / 2);
+      await a2.gangWarAttack({ ticket: t2.ticket, seed: t2.seed, ...rush(half) }); // the same ticket, a smaller army
+      const after = left - shareOf(half);
+      if (after < 0.1) await expect(a2.gangWarTicket(0, true)).rejects.toMatchObject({ code: 'no_attacks_left' });
+      else expect((await a2.gangWarTicket(0, true)).armyShare).toBeCloseTo(after, 5);
     });
 
     it('offers a generated Gang after a wait, labelled and never rated', async () => {

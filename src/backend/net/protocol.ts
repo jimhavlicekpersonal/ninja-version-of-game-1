@@ -980,6 +980,8 @@ export interface GangWarTicketResponse {
   base: BaseLayout;
   /** A relay strike starts from this damage (HP lost per building). */
   startDamage?: Record<string, number>;
+  /** Relay strikes: the share of a full army this strike may bring (the relay's budget left, at most 1). */
+  armyShare: number;
   expiresAt: number;
   targetName: string;
 }

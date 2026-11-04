@@ -182,9 +182,9 @@ export interface WarDoc {
   bot: { seed: number } | null;
   sides: { a: WarSide; b: WarSide };
   /** Relay state per `side:target`: HP each building has lost so far, and who struck. */
-  relay: Record<string, { damage: Record<string, number>; strikes: number; by: string[]; lastAt: number }>;
-  /** Open tickets: what each one attacks, and the relay damage it starts from. */
-  pending: Record<string, { side: 'a' | 'b'; target: number; relay: boolean; playerId: string; startDamage?: Record<string, number>; expiresAt: number }>;
+  relay: Record<string, { damage: Record<string, number>; strikes: number; by: string[]; lastAt: number; /** Armies brought so far (housing / camps, summed). */ share?: number }>;
+  /** Open tickets: what each one attacks, the relay damage it starts from, and the army share it may bring. */
+  pending: Record<string, { side: 'a' | 'b'; target: number; relay: boolean; playerId: string; startDamage?: Record<string, number>; maxShare?: number; expiresAt: number }>;
   rated: boolean;
   /** Pushes already sent (war ending soon). */
   reminded?: boolean;

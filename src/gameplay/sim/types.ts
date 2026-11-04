@@ -744,6 +744,8 @@ export interface SocialDef {
     prepHours: number;
     battleHours: number;
     attacksPerMember: number;
+    /** All strikes of one relay on a base may bring this many armies in total. */
+    relayHousingShare: number;
     /** Waiting this long in the queue offers a generated Gang (labelled as one). */
     botAfterMinutes: number;
     /** Never matched again with any of the last N opponents. */
