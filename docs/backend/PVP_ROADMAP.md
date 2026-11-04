@@ -8,7 +8,7 @@
 
 ## 0. Current state (facts from the code, protocol v6)
 
-- Server: `server/core/*` (rules, no HTTP/DB), `server/app.ts` (Fastify adapter), `Repo` port with `MemoryRepo` / `PgRepo`, `server/schema.sql` (idempotent, runs on every boot). Stateless API; all state in Postgres.
+- Server: `server/core/*` (rules, no HTTP/DB), `server/app.ts` (Fastify adapter), `Repo` port with `MemoryRepo` / `PgRepo`, versioned migrations in `server/migrations/` (applied by `npm run server:migrate` as a release step; step 12). Stateless API; all state in Postgres.
 - Battles are played on the device; the server re-simulates every attack with `runBattle` (10 ticks/s, ≤1,800 ticks) and its result is authoritative. Tickets are single-use and idempotent (`tickets.response`).
 - Ranking today = **Honor** (internal name `trophies`), Elo-like (`src/gameplay/sim/ranks.ts`, `ranks.json`):
   - win: `clamp(24 + 0.05·(def − att), 1, 50)`; loss: `clamp(20 − 0.05·(def − att), 2, 40)`; defender moves by the opposite.
@@ -25,7 +25,7 @@
 3. **No account deletion** (`DELETE /v1/me`): required by Apple 5.1.1(v) and Google.
 4. **No chat report/block**: required for user-generated content (Apple 1.2). Only a word filter exists.
 5. **No server-side receipt verification**.
-6. `schema.sql` migrates on every boot (races with several instances). No rate limiting. `rankOf` counts rows on every leaderboard call.
+6. ~~`schema.sql` migrates on every boot (races with several instances).~~ Fixed by step 12. No rate limiting. `rankOf` counts rows on every leaderboard call.
 7. Bot attacks move the attacker's Honor.
 8. **The server runs exactly one set of combat rules and never checks which set the client used.** `SIM_RULES` and the gameplay data are compiled into the server; `BattleSubmission` carries no rules version. Phone players stay on old app builds for weeks, so after a balance patch their battles are re-simulated under different rules and the server's (different) result silently wins. Changed Keep limits can also make old clients' base uploads fail. Fixed by Phase 1.5.
 
@@ -258,7 +258,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 ### Phase 1: Server hardening on protocol 6 (~2–3 weeks) [Code]
 - [ ] 10. Server-issued battle seed in the match ticket.
 - [ ] 11. Store each base version once (content hash); tickets and attacks reference it; 30-day replay retention.
-- [ ] 12. Migrations as a release step with versioned files (not on every boot).
+- [x] 12. Migrations as a release step with versioned files (not on every boot). `server/migrations/NNNN_*.sql`, `server/migrate.ts` (checksums, advisory lock, a transaction per file), `npm run server:migrate`; the server refuses to boot with pending migrations unless `MIGRATE_ON_BOOT=1`. Tests: `tests/backend/server/migrate.test.ts`.
 - [ ] 13. Rate limiting per token/IP; request size limits.
 - [ ] 14. `DELETE /v1/me` plus a web deletion form.
 - [ ] 15. Chat report/block endpoints and screens; moderation queue.

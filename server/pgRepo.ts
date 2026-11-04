@@ -1,5 +1,7 @@
-/** Postgres storage adapter for the Repo port (tables in schema.sql). Bases and battle records are JSONB. */
+/** Postgres storage adapter for the Repo port (tables in server/migrations/). Bases and battle records are JSONB. */
 import pg from 'pg';
+import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
+import { migrations } from './migrations';
 import type {
   AttackRecord,
   ChatRow,
@@ -128,8 +130,14 @@ export class PgRepo implements Repo {
     return new PgRepo(new pg.Pool({ connectionString: url, ssl: /sslmode=require/.test(url) ? { rejectUnauthorized: false } : undefined }));
   }
 
-  async migrate(schemaSql: string): Promise<void> {
-    await this.pool.query(schemaSql);
+  /** Apply pending migrations (a release step: `npm run server:migrate`). Returns the names applied. */
+  async migrate(log?: (msg: string) => void): Promise<string[]> {
+    return runMigrations(this.pool, migrations, Date.now, log);
+  }
+
+  /** Applied and pending migrations, without changing the schema. */
+  async migrationStatus(): Promise<MigrationStatus> {
+    return migrationStatus(this.pool, migrations);
   }
 
   async close(): Promise<void> {

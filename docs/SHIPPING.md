@@ -68,11 +68,12 @@ Without a server, the game uses generated opponents, bot raiders and a bot Grove
 1. Create a Postgres database. Render, Railway, Neon and Supabase all have free or cheap plans; copy its connection string.
 2. Deploy the server, for example on Render as a **Web Service** from this repository:
    - Build command: `npm ci && npm run server:build`
-   - Start command: `npm run server:start`
+   - Pre-deploy (release) command: `npm run server:migrate`. It applies new database migrations before the new version starts, once, even with several instances (Render: "Pre-Deploy Command"; Fly.io: `release_command`; Railway: "Pre-deploy step"). On a host without a release step and with exactly one instance, set `MIGRATE_ON_BOOT=1` instead.
+   - Start command: `npm run server:start`. It refuses to start while migrations are pending, so a skipped release step shows up at once instead of as broken requests.
    - Environment variables:
      - `DATABASE_URL`: the connection string.
      - `CORS_ORIGIN`: leave it unset to allow every origin. This is safe, because players sign in with a token, not a cookie. To restrict it, use a comma-separated list: `https://jimhavlicekpersonal.github.io,capacitor://localhost,https://localhost`. The last two are the iPhone and Android apps.
-   - The tables are created on first start, and upgraded in place on later versions.
+   - The first `server:migrate` creates the tables; later versions add numbered migrations (`server/migrations/`). `npm run server:migrate -- --status` lists applied and pending ones. A database made by an older server (which created its tables on every boot) is adopted as it is.
    - Use the HTTPS address the host gives you. The phone apps refuse plain HTTP.
 3. Check that `https://<your-server>/v1/hello` shows `"name":"toadstool-kingdoms"`.
 4. Optional: check the server against the protocol contract. On Windows PowerShell, first set the address with `$env:CONTRACT_URL="https://<your-server>"`.

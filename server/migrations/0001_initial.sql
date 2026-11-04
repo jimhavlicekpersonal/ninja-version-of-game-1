@@ -1,6 +1,8 @@
--- Toadstool Kingdoms server schema (PostgreSQL 14+). Times are epoch milliseconds.
--- Safe to run on every start: it creates what is missing and upgrades the
--- protocol-1 tables (PvP only) in place.
+-- Migration 0001: the schema as it was before versioned migrations (PostgreSQL 14+).
+-- Times are epoch milliseconds. Idempotent on purpose: databases created by the
+-- old boot-time schema.sql already have these tables, and this records them as
+-- migrated without changing anything. Never edit an applied migration: add a
+-- new numbered file instead (server/migrate.ts refuses a changed checksum).
 
 create table if not exists players (
   id text primary key,
