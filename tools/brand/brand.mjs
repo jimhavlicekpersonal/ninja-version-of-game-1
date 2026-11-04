@@ -123,7 +123,7 @@ function iconSvg(size, { inset = 1, background = true } = {}) {
 }
 
 function splashSvg(w, h) {
-  const fontPath = join(ROOT, 'src/presentation/ui/fonts/shippori-mincho-b1-latin-800.woff2');
+  const fontPath = join(ROOT, 'src/presentation/ui/fonts/mplus1-latin-var.woff2');
   const font = readFileSync(fontPath).toString('base64');
   const m = Math.min(w, h);
   const markSize = m * 0.42;
@@ -134,13 +134,13 @@ function splashSvg(w, h) {
 <defs>${DEFS}
 <radialGradient id="bg" cx="0.5" cy="0.42" r="0.8"><stop offset="0" stop-color="#3b4862"/><stop offset="1" stop-color="#151b28"/></radialGradient>
 <clipPath id="disc"><circle cx="512" cy="512" r="500"/></clipPath>
-<style>@font-face{font-family:'Shippori Mincho B1';src:url(data:font/woff2;base64,${font}) format('woff2');font-weight:800;}</style>
+<style>@font-face{font-family:'M PLUS 1';src:url(data:font/woff2;base64,${font}) format('woff2');font-weight:100 900;}</style>
 </defs>
 <rect width="${w}" height="${h}" fill="url(#bg)"/>
 <g transform="translate(${mx} ${my}) scale(${markSize / 1024})"><g clip-path="url(#disc)"><rect width="1024" height="1024" fill="url(#sky)"/>${mark()}</g>
 <circle cx="512" cy="512" r="500" fill="none" stroke="#e9b44c" stroke-width="14"/></g>
-<text x="${w / 2}" y="${my + markSize + title * 1.35}" text-anchor="middle" font-family="Shippori Mincho B1" font-weight="800" font-size="${title}" fill="#f7f0e1" letter-spacing="${title * 0.04}">Kagemura</text>
-<text x="${w / 2}" y="${my + markSize + title * 2.05}" text-anchor="middle" font-family="Shippori Mincho B1" font-weight="800" font-size="${title * 0.36}" fill="#e9b44c" letter-spacing="${title * 0.12}">NINJA CLANS</text>
+<text x="${w / 2}" y="${my + markSize + title * 1.35}" text-anchor="middle" font-family="'M PLUS 1', sans-serif" font-weight="900" font-size="${title}" fill="#f7f0e1" letter-spacing="${title * 0.01}">Kagemura</text>
+<text x="${w / 2}" y="${my + markSize + title * 2.05}" text-anchor="middle" font-family="'M PLUS 1', sans-serif" font-weight="800" font-size="${title * 0.36}" fill="#e9b44c" letter-spacing="${title * 0.12}">NINJA CLANS</text>
 </svg>`;
 }
 
