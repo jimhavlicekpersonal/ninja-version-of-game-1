@@ -40,6 +40,10 @@ import {
   type MyGroveResponse,
   type PlayerView,
   type PowerLeaderboardResponse,
+  type GangWarAttackResponse,
+  type GangWarClaimResponse,
+  type GangWarResponse,
+  type GangWarTicketResponse,
   type ChallengeView,
   type DuelResponse,
   type DuelsResponse,
@@ -426,6 +430,34 @@ export class HttpServerAdapter implements ServerPort {
 
   async setDuelLayout(base: unknown): Promise<void> {
     await this.req('PUT', Routes.duelLayout, { base });
+  }
+
+  gangWar(): Promise<GangWarResponse> {
+    return this.req('GET', Routes.squadWar);
+  }
+
+  queueGangWar(): Promise<GangWarResponse> {
+    return this.req('POST', Routes.squadWarQueue);
+  }
+
+  leaveGangWarQueue(): Promise<GangWarResponse> {
+    return this.req('DELETE', Routes.squadWarQueue);
+  }
+
+  setGangWarBase(base: unknown): Promise<GangWarResponse> {
+    return this.req('PUT', Routes.squadWarBase, { base });
+  }
+
+  gangWarTicket(target: number, relay: boolean): Promise<GangWarTicketResponse> {
+    return this.req('POST', Routes.squadWarTicket, { target, relay });
+  }
+
+  gangWarAttack(sub: BattleSubmission): Promise<GangWarAttackResponse> {
+    return this.req('POST', Routes.squadWarAttacks, sub);
+  }
+
+  claimGangWar(): Promise<GangWarClaimResponse> {
+    return this.req('POST', Routes.squadWarClaim);
   }
 
   myGang(): Promise<MyGangResponse> {

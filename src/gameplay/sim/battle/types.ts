@@ -45,6 +45,13 @@ export interface BattleSetup {
    * `levels`. Absent on battles from before donated levels were kept.
    */
   reinforcements?: Record<string, { count: number; level: number }>;
+  /**
+   * Relay assaults (Gang Wars, roadmap step 64, SIM_RULES 3): HP each building
+   * already lost to an earlier strike on this base, by building id. A building
+   * that lost all of it starts destroyed (and counts toward destruction and
+   * stars); the others start damaged. Absent on every other battle.
+   */
+  startDamage?: Record<string, number>;
 }
 
 /** Buildings being upgraded take no part in a battle: they don't fire, and their counter effect is off. */

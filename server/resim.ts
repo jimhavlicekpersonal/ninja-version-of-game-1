@@ -8,7 +8,7 @@
  * on the calling thread (tests, custom game data, RESIM_WORKERS=0).
  */
 import { Worker } from 'node:worker_threads';
-import { runBattle } from '../src/gameplay/sim/battle/battle';
+import { endDamage, runBattle } from '../src/gameplay/sim/battle/battle';
 import type { BattleResult, BattleSetup, Deployment } from '../src/gameplay/sim/battle/types';
 import type { Cost, GameData } from '../src/gameplay/sim/types';
 
@@ -22,6 +22,8 @@ export interface ResimOutput {
   result: BattleResult;
   /** Buildings destroyed, with the loot they held (the defender's losses). */
   fallen: { id: string; loot: Cost }[];
+  /** HP each building lost, counting any start damage: the next relay strike's `startDamage`. */
+  damage: Record<string, number>;
   /** CPU time of the battle itself. */
   ms: number;
   /** Time spent waiting for a free worker. */
@@ -38,7 +40,7 @@ export interface Resimulator {
 export function resimOnce(job: ResimJob, data: GameData): Omit<ResimOutput, 'waitMs'> {
   const t0 = performance.now();
   const out = runBattle(job.setup, job.deployments, data, job.endTick);
-  return { result: out.result, fallen: out.sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } })), ms: performance.now() - t0 };
+  return { result: out.result, fallen: out.sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } })), damage: endDamage(out.sim), ms: performance.now() - t0 };
 }
 
 export class InlineResimulator implements Resimulator {

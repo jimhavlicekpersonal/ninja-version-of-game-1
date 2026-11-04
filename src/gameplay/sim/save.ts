@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -143,6 +143,11 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     for (const st of [v.stats, tasks?.dayBaseline, tasks?.weekBaseline] as (Record<string, number> | undefined)[]) {
       if (st && typeof st === 'object') for (const k of ['researchDone', 'trialsCleared']) st[k] = st[k] ?? 0;
     }
+  }
+  if (out.version < 13 && v && typeof v === 'object') {
+    // v12 -> v13 (Gang Wars, roadmap step 65): Gang War chests collected, by war id.
+    const net = v.net as { gangWars?: string[] } | undefined;
+    if (net && typeof net === 'object') net.gangWars = net.gangWars ?? [];
   }
   repairTrainingQueue(v);
   out.version = SAVE_VERSION;

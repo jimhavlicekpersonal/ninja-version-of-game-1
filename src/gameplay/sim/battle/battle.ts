@@ -20,11 +20,18 @@ import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isH
  * longer show the fight the player had. `tests/gameplay/battle/rules-version.test.ts`
  * fails when combat data changes without a bump.
  */
-export const SIM_RULES = 2;
+export const SIM_RULES = 3;
+
+/**
+ * Rules a record may carry and still replay exactly. Rules 3 only added
+ * `BattleSetup.startDamage` (relay assaults): a battle without it plays out
+ * as under rules 2, so rules-2 records stay watchable.
+ */
+export const REPLAYABLE_RULES: readonly number[] = [2, 3];
 
 /** Whether a record can be replayed faithfully with the current rules. */
 export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {
-  return record.rules === SIM_RULES;
+  return record.rules !== undefined && REPLAYABLE_RULES.includes(record.rules);
 }
 
 export interface SimBuilding {
@@ -286,7 +293,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       for (let x = Math.max(0, b.x - m); x < Math.min(size, b.x + b.size + m); x++) deployable[y * size + x] = 0;
     }
   }
-  return {
+  const sim: BattleSim = {
     setup,
     data,
     entry: planInfiltration(setup, deployable, size, data),
@@ -315,6 +322,43 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     warriorEffects: [],
     supportTroops: [],
   };
+  applyStartDamage(sim);
+  return sim;
+}
+
+/**
+ * A relay strike starts where the previous one ended (roadmap step 64):
+ * buildings keep the HP they lost; those with none left start destroyed,
+ * without giving loot again, and count toward destruction and stars.
+ */
+function applyStartDamage(sim: BattleSim): void {
+  const start = sim.setup.startDamage;
+  if (!start) return;
+  const n = sim.grid.size;
+  for (const b of sim.buildings) {
+    const lost = start[b.id];
+    if (!(lost > 0)) continue;
+    if (lost < b.maxHp) {
+      b.hp = b.maxHp - lost;
+      continue;
+    }
+    b.hp = 0;
+    b.destroyed = true;
+    b.hidden = false;
+    if (b.kind !== 'hedge' && b.kind !== 'trap') sim.destroyedCount++;
+    if (b.kind === 'hall') sim.hallDestroyed = true;
+    if (b.kind !== 'trap') for (let y = b.y; y < b.y + b.size; y++) for (let x = b.x; x < b.x + b.size; x++) sim.grid.cells[y * n + x] = 0;
+  }
+}
+
+/** HP each building lost by the end of this battle, counting what it started without: the next relay strike's `startDamage`. */
+export function endDamage(sim: BattleSim): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const b of sim.buildings) {
+    const lost = b.destroyed ? b.maxHp : b.maxHp - b.hp;
+    if (lost > 0) out[b.id] = lost;
+  }
+  return out;
 }
 
 export function canDeploy(sim: BattleSim, troop: string, x: number, y: number): boolean {

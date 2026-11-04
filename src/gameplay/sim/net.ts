@@ -13,9 +13,10 @@ import type { Cost, GameData, NetState, ResourceKind, VillageState } from './typ
 /** How many applied donation ids to remember (older ones are long acknowledged). */
 const MAX_DONATION_IDS = 300;
 const MAX_RAID_WEEKS = 20;
+const MAX_GANG_WARS = 30;
 
 export function emptyNet(): NetState {
-  return { playerId: null, defensesSince: 0, donations: [], raidWeeks: [] };
+  return { playerId: null, defensesSince: 0, donations: [], raidWeeks: [], gangWars: [] };
 }
 
 /** Start fresh bookkeeping when this village is played by a different server account. Mutates. */
@@ -82,5 +83,25 @@ export function claimRaidChest(state: VillageState, week: number, outcome: 'win'
   state.grove.xp += xp;
   state.grove.raidHistory.push({ week, ours: score.ours, theirs: score.theirs, outcome, reward: { ...chest } });
   while (state.grove.raidHistory.length > 8) state.grove.raidHistory.shift();
+  return chest;
+}
+
+/**
+ * Collect a Gang War chest (roadmap step 65): fixed contents for the outcome,
+ * scaled to the hall level, nothing random. Once per war. Mutates; returns
+ * the chest or null when it was already collected.
+ */
+export function claimGangWarChest(state: VillageState, warId: string, outcome: 'win' | 'draw' | 'loss', hall: number, data: GameData): Cost | null {
+  state.net.gangWars = state.net.gangWars ?? [];
+  if (state.net.gangWars.includes(warId)) return null;
+  state.net.gangWars.push(warId);
+  if (state.net.gangWars.length > MAX_GANG_WARS) state.net.gangWars.shift();
+  const chest = scaleReward(data.social.gangWar.rewards[outcome], hall, data);
+  const soft: Cost = {};
+  for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) {
+    if (k === 'moonstones') state.resources.moonstones += v;
+    else soft[k] = v;
+  }
+  addCapped(state.resources, soft, capacity(state, data));
   return chest;
 }

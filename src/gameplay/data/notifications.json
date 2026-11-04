@@ -54,6 +54,11 @@
       "id": "friends",
       "label": "Friend requests and Gang invites (online)",
       "default": true
+    },
+    {
+      "id": "gangWar",
+      "label": "Gang Wars: found, under attack, your relay turn, ending soon (online)",
+      "default": true
     }
   ]
 }

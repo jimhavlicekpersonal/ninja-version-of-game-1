@@ -313,7 +313,7 @@ export async function takeTicket(ctx: ServerContext, me: Player, id: string | un
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): Promise<ResimOutput> {
+export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel' | 'gangwar', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): Promise<ResimOutput> {
   const out = await ctx.resim.run({ setup, deployments, endTick: sub.endTick });
   ctx.metrics.observe('tk_resim_ms', out.ms, { kind });
   ctx.metrics.observe('tk_resim_wait_ms', out.waitMs, { kind });

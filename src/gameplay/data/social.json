@@ -196,5 +196,40 @@
         "xp": 60
       }
     }
+  },
+  "gangWar": {
+    "$comment": "Gang Wars (roadmap section 5.5, steps 65-69): 2-4 friends against another Gang. Chests are fixed (scaled by Keep like Alliance War chests, nothing random, never sold); a war lasts a day, so they are about a third of an Alliance War chest.",
+    "minMembers": 2,
+    "maxMembers": 4,
+    "prepHours": 2,
+    "battleHours": 22,
+    "attacksPerMember": 2,
+    "botAfterMinutes": 3,
+    "recentOpponents": 3,
+    "ratingWindow": 150,
+    "ratingWindowPerMinute": 50,
+    "botStarOdds": {
+      "base3": 0.15,
+      "base2": 0.35,
+      "base1": 0.3,
+      "perHallDiff": 0.12
+    },
+    "rewards": {
+      "win": {
+        "acorns": 50000,
+        "dew": 50000,
+        "moonstones": 15
+      },
+      "draw": {
+        "acorns": 30000,
+        "dew": 30000,
+        "moonstones": 8
+      },
+      "loss": {
+        "acorns": 15000,
+        "dew": 15000,
+        "moonstones": 3
+      }
+    }
   }
 }

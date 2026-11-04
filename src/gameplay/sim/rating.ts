@@ -60,6 +60,19 @@ export function rateBattle(attack: Rating, base: Rating, powerAtt: number, power
   return { attack: settle(a, kFor(a, def) * (score - expected)), base: settle(b, -kFor(b, def) * (score - expected)), expected, score };
 }
 
+/**
+ * Gang Rating (roadmap step 66): a whole Gang War between two Gangs, scored 1
+ * (win), 0.5 (draw) or 0 for side `a`. Same deviation and K rules as battles,
+ * no power term (Gangs are matched on size, rating and power separately).
+ */
+export function rateMatch(a: Rating, b: Rating, scoreA: number, now: number, def: RatingDef): { a: Rating; b: Rating; expected: number } {
+  const x = decayed(a, now, def);
+  const y = decayed(b, now, def);
+  const expected = expectedScore(x.rating, y.rating, 0, 0, def);
+  const settle = (r: Rating, delta: number): Rating => ({ rating: r.rating + delta, rd: Math.max(def.minRd, r.rd * def.rdShrinkPerBattle), battles: r.battles + 1, at: now });
+  return { a: settle(x, kFor(x, def) * (scoreA - expected)), b: settle(y, -kFor(y, def) * (scoreA - expected)), expected };
+}
+
 /** How far a pairing is from the score matchmaking aims for (0 = perfect). */
 export function matchDistance(expected: number, def: RatingDef): number {
   return Math.abs(expected - def.matchTarget);

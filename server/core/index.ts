@@ -8,6 +8,7 @@ import * as admin from './admin';
 import type { ServerContext } from './context';
 import * as duels from './duels';
 import * as friends from './friends';
+import * as gangWars from './gangWars';
 import * as groves from './groves';
 import * as groveRaid from './groveRaid';
 import * as identity from './identity';
@@ -51,6 +52,15 @@ export function createCore(ctx: ServerContext) {
     duels: duels.duels.bind(null, ctx),
     challengeFriend: duels.challenge.bind(null, ctx),
     setDuelLayout: duels.setDuelLayout.bind(null, ctx),
+    gangWar: gangWars.view.bind(null, ctx),
+    queueGangWar: gangWars.queue.bind(null, ctx),
+    leaveGangWarQueue: gangWars.leaveQueue.bind(null, ctx),
+    setGangWarBase: gangWars.setWarBase.bind(null, ctx),
+    gangWarTicket: gangWars.warTicket.bind(null, ctx),
+    gangWarAttack: gangWars.warAttack.bind(null, ctx),
+    claimGangWar: gangWars.claim.bind(null, ctx),
+    /** Hourly: tell members a war ends within two hours. */
+    remindGangWars: () => gangWars.remindEnding(ctx),
     myGang: squads.myGang.bind(null, ctx),
     createGang: squads.createGang.bind(null, ctx),
     inviteToGang: squads.invite.bind(null, ctx),

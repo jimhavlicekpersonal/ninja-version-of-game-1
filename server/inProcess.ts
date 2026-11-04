@@ -187,6 +187,27 @@ export class InProcessServerAdapter implements ServerPort {
   async setDuelLayout(base: unknown) {
     await this.authed((me) => this.core.setDuelLayout(me, wire({ base })));
   }
+  gangWar() {
+    return this.authed((me) => this.core.gangWar(me));
+  }
+  queueGangWar() {
+    return this.authed((me) => this.core.queueGangWar(me));
+  }
+  leaveGangWarQueue() {
+    return this.authed((me) => this.core.leaveGangWarQueue(me));
+  }
+  setGangWarBase(base: unknown) {
+    return this.authed((me) => this.core.setGangWarBase(me, wire({ base })));
+  }
+  gangWarTicket(target: number, relay: boolean) {
+    return this.authed((me) => this.core.gangWarTicket(me, { target, relay }));
+  }
+  gangWarAttack(sub: BattleSubmission) {
+    return this.authed((me) => this.core.gangWarAttack(me, wire(sub)));
+  }
+  claimGangWar() {
+    return this.authed((me) => this.core.claimGangWar(me));
+  }
   myGang() {
     return this.authed((me) => this.core.myGang(me));
   }

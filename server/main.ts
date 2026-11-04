@@ -219,6 +219,7 @@ async function main(): Promise<void> {
       void prune();
       void voided();
       void seasons();
+      void app.core.remindGangWars().catch((e) => app.log.error(e, 'gang war reminders failed'));
     }, 3_600_000).unref();
   }, Math.floor(Math.random() * 3_600_000)).unref();
 }

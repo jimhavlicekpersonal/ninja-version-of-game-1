@@ -13,6 +13,7 @@ import { filterText } from '../../src/gameplay/sim/social/grove';
 import type { Player, Squad } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { card } from './friends';
+import { gangLocked } from './gangWars';
 import { chatIn, donateIn, postIn, requestIn, requestsIn } from './groves';
 
 export const GANG_MAX = 4;
@@ -39,10 +40,9 @@ async function requireGang(ctx: ServerContext, me: Player): Promise<{ gang: Squa
   return { gang, role };
 }
 
-/** No joining, leaving or inviting while the Gang fights a war (the roster is locked; Gang Wars are step 65). */
+/** No joining, leaving or inviting while the Gang looks for or fights a war (the roster is locked; step 65). */
 async function assertNotAtWar(ctx: ServerContext, squadId: string): Promise<void> {
-  void ctx;
-  void squadId;
+  if (await gangLocked(ctx.repo, squadId, ctx.now())) throw new ApiError(409, 'conflict', 'Your Gang is in a war (or looking for one): the roster is locked until it ends.');
 }
 
 function canJoinAt(me: Player): number {

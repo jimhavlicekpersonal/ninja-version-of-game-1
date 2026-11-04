@@ -158,6 +158,8 @@ export interface NetState {
   donations: string[];
   /** Server Grove Raid weeks whose chest was collected. */
   raidWeeks: number[];
+  /** Gang War ids whose chest was collected (save v13). */
+  gangWars: string[];
 }
 
 export interface ChatMessage {
@@ -734,6 +736,24 @@ export interface SocialDef {
     prepOfferHours: number;
     starOdds: { base3: number; base2: number; base1: number; perHallDiff: number };
     rewards: Record<'win' | 'draw' | 'loss', Cost & { xp: number }>;
+  };
+  /** Gang Wars (roadmap steps 65-69). */
+  gangWar: {
+    minMembers: number;
+    maxMembers: number;
+    prepHours: number;
+    battleHours: number;
+    attacksPerMember: number;
+    /** Waiting this long in the queue offers a generated Gang (labelled as one). */
+    botAfterMinutes: number;
+    /** Never matched again with any of the last N opponents. */
+    recentOpponents: number;
+    /** Gang Rating difference accepted at once, and how much it widens per minute of waiting. */
+    ratingWindow: number;
+    ratingWindowPerMinute: number;
+    /** How a generated Gang attacks (like the bot Alliance's `starOdds`). */
+    botStarOdds: { base3: number; base2: number; base1: number; perHallDiff: number };
+    rewards: Record<'win' | 'draw' | 'loss', Cost>;
   };
 }
 

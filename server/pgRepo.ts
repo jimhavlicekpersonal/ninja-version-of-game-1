@@ -1,6 +1,7 @@
 /** Postgres storage adapter for the Repo port (tables in server/migrations/). Bases and battle records are JSONB. */
 import pg from 'pg';
 import type { BaseLayout } from '../src/gameplay/sim/battle/types';
+import type { Rating } from '../src/gameplay/sim/rating';
 import { contentHash } from './contentHash';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
@@ -32,6 +33,9 @@ import type {
   Squad,
   SquadInvite,
   SquadMember,
+  SquadQueueEntry,
+  SquadWar,
+  SquadWarAttack,
   SeasonEntry,
   StaffAction,
   RaidClaim,
@@ -88,7 +92,7 @@ const toPlayer = (r: Row): Player => ({
 const toTicket = (r: Row): Ticket => {
   const t: Ticket = {
     id: String(r.id),
-    kind: r.kind === 'raid' || r.kind === 'duel' ? r.kind : 'pvp',
+    kind: r.kind === 'raid' || r.kind === 'duel' || r.kind === 'gangwar' ? r.kind : 'pvp',
     attackerId: String(r.attacker_id),
     defenderId: strOrNull(r.defender_id),
     defenderName: String(r.defender_name ?? ''),
@@ -587,6 +591,75 @@ export class PgRepo implements Repo {
 
   async closeSquadInvite(id: string, status: SquadInvite['status']): Promise<boolean> {
     const r = await this.db.query(`update squad_invites set status = $2 where id = $1 and status = 'open'`, [id, status]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async setSquadRating(id: string, r: Rating): Promise<void> {
+    await this.db.query('update squads set gang_rating = $2, gang_rd = $3, gang_battles = $4, gang_rated_at = $5 where id = $1', [id, r.rating, r.rd, r.battles, r.at]);
+  }
+
+  // ------------------------------------------------------------ Gang Wars (steps 65-66)
+
+  async enqueueSquad(e: SquadQueueEntry): Promise<boolean> {
+    const r = await this.db.query('insert into squad_war_queue (squad_id, size, rating, power, at) values ($1,$2,$3,$4,$5) on conflict do nothing', [e.squadId, e.size, e.rating, e.power, e.at]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async dequeueSquad(squadId: string): Promise<boolean> {
+    const r = await this.db.query('delete from squad_war_queue where squad_id = $1', [squadId]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async squadQueue(): Promise<SquadQueueEntry[]> {
+    return (await this.rows('select * from squad_war_queue order by at', [])).map((r) => ({ squadId: String(r.squad_id), size: num(r.size), rating: num(r.rating), power: num(r.power), at: num(r.at) }));
+  }
+
+  async createSquadWar(w: SquadWar): Promise<void> {
+    await this.db.query('insert into squad_wars (id, a_squad, b_squad, created_at, prep_until, ends_at, doc) values ($1,$2,$3,$4,$5,$6,$7)', [w.id, w.aSquad, w.bSquad, w.createdAt, w.prepUntil, w.endsAt, JSON.stringify(w.doc)]);
+  }
+
+  async getSquadWar(id: string, opts: { forUpdate?: boolean } = {}): Promise<SquadWar | null> {
+    const r = await this.rows(`select * from squad_wars where id = $1${opts.forUpdate && this.client ? ' for update' : ''}`, [id]);
+    return r[0] ? toSquadWar(r[0]) : null;
+  }
+
+  async saveSquadWar(w: SquadWar): Promise<void> {
+    await this.db.query('update squad_wars set doc = $2 where id = $1', [w.id, JSON.stringify(w.doc)]);
+  }
+
+  async squadWarsOf(squadId: string, limit: number): Promise<SquadWar[]> {
+    return (await this.rows('select * from squad_wars where a_squad = $1 or b_squad = $1 order by created_at desc limit $2', [squadId, limit])).map(toSquadWar);
+  }
+
+  async addSquadWarAttack(a: SquadWarAttack): Promise<void> {
+    await this.db.query('insert into squad_war_attacks (id, war_id, side, attacker_id, target, relay, at, stars, destruction, record) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)', [a.id, a.warId, a.side, a.attackerId, a.target, a.relay, a.at, a.stars, a.destruction, JSON.stringify(a.record)]);
+  }
+
+  async squadWarAttacks(warId: string): Promise<SquadWarAttack[]> {
+    return (await this.rows('select * from squad_war_attacks where war_id = $1 order by at', [warId])).map((r) => ({
+      id: String(r.id),
+      warId: String(r.war_id),
+      side: String(r.side) as 'a' | 'b',
+      attackerId: String(r.attacker_id),
+      target: num(r.target),
+      relay: Boolean(r.relay),
+      at: num(r.at),
+      stars: num(r.stars),
+      destruction: num(r.destruction),
+      record: r.record as SquadWarAttack['record'],
+    }));
+  }
+
+  async hasClaimedSquadWar(warId: string, playerId: string): Promise<boolean> {
+    return (await this.rows('select 1 from squad_war_claims where war_id = $1 and player_id = $2', [warId, playerId])).length > 0;
+  }
+
+  async activeSquadWars(now: number): Promise<SquadWar[]> {
+    return (await this.rows('select * from squad_wars where ends_at > $1', [now])).map(toSquadWar);
+  }
+
+  async claimSquadWar(warId: string, playerId: string, at: number): Promise<boolean> {
+    const r = await this.db.query('insert into squad_war_claims (war_id, player_id, at) values ($1,$2,$3) on conflict do nothing', [warId, playerId, at]);
     return (r.rowCount ?? 0) > 0;
   }
 
@@ -1389,7 +1462,11 @@ function clash(e: unknown): never {
 }
 
 function toSquad(r: Record<string, unknown>): Squad {
-  return { id: String(r.id), name: String(r.name), leaderId: String(r.leader_id), createdAt: num(r.created_at) };
+  return { id: String(r.id), name: String(r.name), leaderId: String(r.leader_id), createdAt: num(r.created_at), ...(num(r.gang_rated_at) > 0 ? { rating: { rating: num(r.gang_rating), rd: num(r.gang_rd), battles: num(r.gang_battles), at: num(r.gang_rated_at) } } : {}) };
+}
+
+function toSquadWar(r: Record<string, unknown>): SquadWar {
+  return { id: String(r.id), aSquad: String(r.a_squad), bSquad: strOrNull(r.b_squad), createdAt: num(r.created_at), prepUntil: num(r.prep_until), endsAt: num(r.ends_at), doc: r.doc as SquadWar['doc'] };
 }
 
 function toSquadInvite(r: Record<string, unknown>): SquadInvite {

@@ -12,6 +12,7 @@ import type { BaseLayout, BattleResult, Deployment } from '../../gameplay/sim/ba
 import type { SaveFile } from '../../gameplay/sim/save';
 import type { Economy } from '../../gameplay/sim/serverEconomy';
 import type { Command } from '../../gameplay/sim/village';
+import type { Cost } from '../../gameplay/sim/types';
 
 /**
  * Bump when a change would break older clients; servers report the oldest
@@ -145,6 +146,18 @@ export const Routes = {
   duelLayout: '/v1/duels/layout',
   /** POST { friendId }: challenge a friend: both attack each other's base within 24 hours. */
   duelChallenges: '/v1/duels/challenges',
+  /** GET: the Gang's war (roadmap step 65): queue, prep, battle day, result. */
+  squadWar: '/v1/squad/war',
+  /** POST: the leader looks for a war; DELETE: stop looking. */
+  squadWarQueue: '/v1/squad/war/queue',
+  /** PUT { base }: during prep, my base for this war. */
+  squadWarBase: '/v1/squad/war/base',
+  /** POST { target, relay }: a ticket for an enemy base (relay: start from the Gang's damage so far). */
+  squadWarTicket: '/v1/squad/war/ticket',
+  /** POST BattleSubmission: report a war attack. */
+  squadWarAttacks: '/v1/squad/war/attacks',
+  /** POST { warId }: collect the war chest once. */
+  squadWarClaim: '/v1/squad/war/claim',
   /** POST { name }: start a Gang (roadmap step 63). */
   squads: '/v1/squads',
   /** POST { friendId }: the leader invites a friend. */
@@ -900,5 +913,90 @@ export interface DuelsResponse {
   rivalries: RivalryView[];
   challenges: ChallengeView[];
   hasDuelLayout: boolean;
+}
+
+// ---------------------------------------------------------------- Gang Wars (roadmap steps 65-67)
+
+export interface GangWarBaseView {
+  index: number;
+  name: string;
+  hallLevel: number;
+  /** Best result the other side has against this base so far (relays count as one combined result). */
+  best: { stars: number; destruction: number } | null;
+  /** Enemy bases only: my Gang's relay on it so far. */
+  relay?: { strikes: number; damaged: number; lastBy: string | null; busy: boolean };
+}
+
+export interface GangWarSideView {
+  name: string;
+  /** A generated Gang (no players matched): labelled, never rated. */
+  generated: boolean;
+  rating: number | null;
+  stars: number;
+  destruction: number;
+  bases: GangWarBaseView[];
+}
+
+export interface GangWarAttackView {
+  id: string;
+  at: number;
+  /** 'ours': my Gang attacked; 'theirs': attacked us. */
+  side: 'ours' | 'theirs';
+  attacker: string;
+  target: number;
+  targetName: string;
+  relay: boolean;
+  stars: number;
+  destruction: number;
+  replay: { seed: number; base: BaseLayout; army: Record<string, number>; levels: Record<string, number>; reinforcements?: Record<string, { count: number; level: number }>; startDamage?: Record<string, number>; deployments: Deployment[]; endTick?: number; result: BattleResult; rules: number };
+}
+
+export interface GangWarView {
+  id: string;
+  phase: 'prep' | 'battle' | 'ended';
+  prepUntil: number;
+  endsAt: number;
+  size: number;
+  ours: GangWarSideView;
+  theirs: GangWarSideView;
+  /** My attacks left. */
+  attacksLeft: number;
+  attacks: GangWarAttackView[];
+  /** When ended. */
+  outcome: 'win' | 'draw' | 'loss' | null;
+  claimed: boolean;
+}
+
+export interface GangWarResponse {
+  queued: { since: number } | null;
+  war: GangWarView | null;
+  /** The Gang's rating (hidden from other players; shown to members). */
+  rating: number | null;
+}
+
+export interface GangWarTicketResponse {
+  ticket: string;
+  seed: number;
+  base: BaseLayout;
+  /** A relay strike starts from this damage (HP lost per building). */
+  startDamage?: Record<string, number>;
+  expiresAt: number;
+  targetName: string;
+}
+
+export interface GangWarAttackResponse {
+  result: BattleResult;
+  /** The best result on that base now. */
+  combined: { stars: number; destruction: number };
+  ours: number;
+  theirs: number;
+}
+
+export interface GangWarClaimResponse {
+  warId: string;
+  outcome: 'win' | 'draw' | 'loss';
+  ours: number;
+  theirs: number;
+  chest: Cost;
 }
 

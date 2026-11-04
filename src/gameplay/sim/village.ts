@@ -18,7 +18,7 @@ import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unloc
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
 import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
-import { bindPlayer, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
+import { bindPlayer, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation, claimGangWarChest } from './net';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState, PendingBattle } from './types';
@@ -95,6 +95,8 @@ export type Command =
   | { type: 'receiveDonations'; items: ServerDonation[] }
   | { type: 'spendDonation'; troop: string; count: number; xp: number }
   | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number }
+  /** A Gang War chest the server confirmed (roadmap step 65); once per war. */
+  | { type: 'claimGangWarChest'; warId: string; outcome: 'win' | 'draw' | 'loss' }
   /** `known`: server only, the result it has just simulated from this setup (see battleEnd). */
   | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
   /**
@@ -601,6 +603,11 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       const chest = claimRaidChest(s, cmd.week, cmd.outcome, cmd, hallLevel(s, data), data);
       if (!chest) return fail('ALREADY_CLAIMED', 'That chest was already collected.');
       return { ok: true, state: s, events: [{ kind: 'reward', source: `grove_raid:${cmd.week}`, grants: chest }] };
+    }
+    case 'claimGangWarChest': {
+      const chest = claimGangWarChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data);
+      if (!chest) return fail('ALREADY_CLAIMED', 'That chest was already collected.');
+      return { ok: true, state: s, events: [{ kind: 'reward', source: `gang_war:${cmd.warId}`, grants: chest }] };
     }
     case 'remoteGroveBattleEnd': {
       // An Alliance War attack scored by the server: the troops are spent and the fight is kept for replay.

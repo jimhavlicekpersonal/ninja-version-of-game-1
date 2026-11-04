@@ -145,6 +145,72 @@ export interface Squad {
   name: string;
   leaderId: string;
   createdAt: number;
+  /** Gang Rating (step 66); absent until stored. */
+  rating?: Rating;
+}
+
+/** A Gang waiting for a war (step 65). */
+export interface SquadQueueEntry {
+  squadId: string;
+  size: number;
+  rating: number;
+  power: number;
+  at: number;
+}
+
+/** One base in a Gang War roster: a snapshot without loot. */
+export interface WarRosterEntry {
+  index: number;
+  /** Null on a generated Gang. */
+  playerId: string | null;
+  name: string;
+  hallLevel: number;
+  base: BaseLayout;
+}
+
+export interface WarSide {
+  /** Null for a generated Gang. */
+  squadId: string | null;
+  name: string;
+  roster: WarRosterEntry[];
+}
+
+/** Everything a Gang War keeps besides its attacks (one document, changed with the row locked). */
+export interface WarDoc {
+  size: number;
+  /** A generated opponent (side b): never rated, labelled as generated. */
+  bot: { seed: number } | null;
+  sides: { a: WarSide; b: WarSide };
+  /** Relay state per `side:target`: HP each building has lost so far, and who struck. */
+  relay: Record<string, { damage: Record<string, number>; strikes: number; by: string[]; lastAt: number }>;
+  /** Open tickets: what each one attacks, and the relay damage it starts from. */
+  pending: Record<string, { side: 'a' | 'b'; target: number; relay: boolean; playerId: string; startDamage?: Record<string, number>; expiresAt: number }>;
+  rated: boolean;
+  /** Pushes already sent (war ending soon). */
+  reminded?: boolean;
+}
+
+export interface SquadWar {
+  id: string;
+  aSquad: string;
+  bSquad: string | null;
+  createdAt: number;
+  prepUntil: number;
+  endsAt: number;
+  doc: WarDoc;
+}
+
+export interface SquadWarAttack {
+  id: string;
+  warId: string;
+  side: 'a' | 'b';
+  attackerId: string;
+  target: number;
+  relay: boolean;
+  at: number;
+  stars: number;
+  destruction: number;
+  record: { attackerName: string; seed: number; base: BaseLayout; army: Record<string, number>; levels: Record<string, number>; reinforcements?: Record<string, { count: number; level: number }>; startDamage?: Record<string, number>; deployments: Deployment[]; endTick?: number; result: BattleResult; rules: number };
 }
 
 export interface SquadMember {
@@ -203,7 +269,7 @@ export interface StaffAction {
 
 export interface Ticket {
   id: string;
-  kind: 'pvp' | 'raid' | 'duel';
+  kind: 'pvp' | 'raid' | 'duel' | 'gangwar';
   attackerId: string;
   /** Null for a server-generated (bot) opponent. */
   defenderId: string | null;
@@ -623,6 +689,25 @@ export interface Repo {
   /** Open invites from a Gang. */
   squadInvitesFrom(squadId: string): Promise<SquadInvite[]>;
   closeSquadInvite(id: string, status: SquadInvite['status']): Promise<boolean>;
+  setSquadRating(id: string, rating: Rating): Promise<void>;
+  // Gang Wars (roadmap steps 65-66)
+  /** False if the Gang is already queued. */
+  enqueueSquad(e: SquadQueueEntry): Promise<boolean>;
+  /** True if it was queued (and is not now): whoever removes it first owns the pairing. */
+  dequeueSquad(squadId: string): Promise<boolean>;
+  squadQueue(): Promise<SquadQueueEntry[]>;
+  createSquadWar(w: SquadWar): Promise<void>;
+  getSquadWar(id: string, opts?: { forUpdate?: boolean }): Promise<SquadWar | null>;
+  saveSquadWar(w: SquadWar): Promise<void>;
+  /** Newest first. */
+  squadWarsOf(squadId: string, limit: number): Promise<SquadWar[]>;
+  addSquadWarAttack(a: SquadWarAttack): Promise<void>;
+  squadWarAttacks(warId: string): Promise<SquadWarAttack[]>;
+  /** False if this player already claimed this war's chest. */
+  claimSquadWar(warId: string, playerId: string, at: number): Promise<boolean>;
+  hasClaimedSquadWar(warId: string, playerId: string): Promise<boolean>;
+  /** Wars that have not ended by `now`. */
+  activeSquadWars(now: number): Promise<SquadWar[]>;
   // staff queues (roadmap step 56)
   /** Open deletion requests and reports, and how many were made before each cutoff (overdue). */
   queueStats(deletionsBefore: number, reportsBefore: number): Promise<{ deletions: { open: number; overdue: number }; reports: { open: number; overdue: number } }>;
@@ -833,6 +918,10 @@ export class MemoryRepo implements Repo {
   challengeRows: DuelChallenge[] = [];
   squadMemberRows: SquadMember[] = [];
   squadInviteRows: SquadInvite[] = [];
+  squadQueueRows = new Map<string, SquadQueueEntry>();
+  squadWarRows = new Map<string, SquadWar>();
+  squadWarAttackRows: SquadWarAttack[] = [];
+  squadWarClaimRows = new Set<string>();
   intentRows: PurchaseIntent[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
@@ -1120,6 +1209,56 @@ export class MemoryRepo implements Repo {
     const i = this.squadInviteRows.find((x) => x.id === id && x.status === 'open');
     if (!i) return false;
     i.status = status;
+    return true;
+  }
+  async setSquadRating(id: string, rating: Rating): Promise<void> {
+    const s = this.squadRows.get(id);
+    if (s) s.rating = { ...rating };
+  }
+  async enqueueSquad(e: SquadQueueEntry): Promise<boolean> {
+    if (this.squadQueueRows.has(e.squadId)) return false;
+    this.squadQueueRows.set(e.squadId, { ...e });
+    return true;
+  }
+  async dequeueSquad(squadId: string): Promise<boolean> {
+    return this.squadQueueRows.delete(squadId);
+  }
+  async squadQueue(): Promise<SquadQueueEntry[]> {
+    return [...this.squadQueueRows.values()].map((e) => ({ ...e }));
+  }
+  async createSquadWar(w: SquadWar): Promise<void> {
+    this.squadWarRows.set(w.id, clone(w));
+  }
+  async getSquadWar(id: string): Promise<SquadWar | null> {
+    const w = this.squadWarRows.get(id);
+    return w ? clone(w) : null;
+  }
+  async saveSquadWar(w: SquadWar): Promise<void> {
+    this.squadWarRows.set(w.id, clone(w));
+  }
+  async squadWarsOf(squadId: string, limit: number): Promise<SquadWar[]> {
+    return [...this.squadWarRows.values()]
+      .filter((w) => w.aSquad === squadId || w.bSquad === squadId)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addSquadWarAttack(a: SquadWarAttack): Promise<void> {
+    this.squadWarAttackRows.push(clone(a));
+  }
+  async squadWarAttacks(warId: string): Promise<SquadWarAttack[]> {
+    return this.squadWarAttackRows.filter((a) => a.warId === warId).sort((x, y) => x.at - y.at).map(clone);
+  }
+  async hasClaimedSquadWar(warId: string, playerId: string): Promise<boolean> {
+    return this.squadWarClaimRows.has(`${warId}|${playerId}`);
+  }
+  async activeSquadWars(now: number): Promise<SquadWar[]> {
+    return [...this.squadWarRows.values()].filter((w) => w.endsAt > now).map(clone);
+  }
+  async claimSquadWar(warId: string, playerId: string): Promise<boolean> {
+    const k = `${warId}|${playerId}`;
+    if (this.squadWarClaimRows.has(k)) return false;
+    this.squadWarClaimRows.add(k);
     return true;
   }
   async queueStats(deletionsBefore: number, reportsBefore: number) {

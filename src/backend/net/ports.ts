@@ -31,6 +31,10 @@ import type {
   MatchResponse,
   PlayerView,
   PowerLeaderboardResponse,
+  GangWarAttackResponse,
+  GangWarClaimResponse,
+  GangWarResponse,
+  GangWarTicketResponse,
   ChallengeView,
   DuelResponse,
   DuelsResponse,
@@ -178,6 +182,13 @@ export interface DuelsPort {
 }
 
 export interface GangsPort {
+  gangWar(): Promise<GangWarResponse>;
+  queueGangWar(): Promise<GangWarResponse>;
+  leaveGangWarQueue(): Promise<GangWarResponse>;
+  setGangWarBase(base: unknown): Promise<GangWarResponse>;
+  gangWarTicket(target: number, relay: boolean): Promise<GangWarTicketResponse>;
+  gangWarAttack(sub: BattleSubmission): Promise<GangWarAttackResponse>;
+  claimGangWar(): Promise<GangWarClaimResponse>;
   myGang(): Promise<MyGangResponse>;
   createGang(name: string): Promise<MyGangResponse>;
   inviteToGang(friendId: string): Promise<MyGangResponse>;

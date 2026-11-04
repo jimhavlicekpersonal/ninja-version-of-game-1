@@ -292,6 +292,15 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.duelChallenges, rate('friends'), authed(async (me, req, reply) => reply.code(201).send(await core.challengeFriend(me, body<{ friendId: string }>(req).friendId))));
   app.put(Routes.duelLayout, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.setDuelLayout(me, req.body as never)));
 
+  // Gang Wars (steps 65-66)
+  app.get(Routes.squadWar, authed(async (me) => core.gangWar(me)));
+  app.post(Routes.squadWarQueue, rate('friends'), authed(async (me) => core.queueGangWar(me)));
+  app.delete(Routes.squadWarQueue, authed(async (me) => core.leaveGangWarQueue(me)));
+  app.put(Routes.squadWarBase, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.setGangWarBase(me, req.body as never)));
+  app.post(Routes.squadWarTicket, rate('match'), authed(async (me, req) => core.gangWarTicket(me, req.body as never)));
+  app.post(Routes.squadWarAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.gangWarAttack(me, req.body as never)));
+  app.post(Routes.squadWarClaim, authed(async (me) => core.claimGangWar(me)));
+
   // Gangs (step 63)
   app.get(Routes.squad, authed(async (me) => core.myGang(me)));
   app.post(Routes.squads, rate('friends'), authed(async (me, req, reply) => reply.code(201).send(await core.createGang(me, body<{ name: string }>(req).name))));
