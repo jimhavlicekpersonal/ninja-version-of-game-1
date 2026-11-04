@@ -3,7 +3,7 @@ import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
 import { GameController } from './gameplay/control/controller';
 import { openGameDb } from './backend/persist/idb';
-import { IdbSaveStore, MemorySaveStore, type SaveStore } from './backend/persist/saveStore';
+import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker } from './backend/pwa/register';
 import { Keys } from './presentation/render/assets';
 import { loadArtManifest } from './presentation/render/artManifest';
@@ -18,6 +18,7 @@ import { WebReminders, type ReminderService } from './backend/platform/reminders
 import { NativeReminders, isNative, platform } from './backend/platform/native';
 import { MockPaymentProvider, type PaymentProvider } from './backend/payments/provider';
 import { StoreKitPaymentProvider, UnavailablePaymentProvider } from './backend/payments/storekit';
+import { choosePaymentProvider, isSandbox, paymentPath } from './backend/payments/select';
 import { planNotifications, upcomingReminders } from './gameplay/sim/reminders';
 import { Tutorial } from './presentation/ui/tutorial';
 import { OffsetClock, SystemClock } from './gameplay/sim/clock';
@@ -60,14 +61,15 @@ function platformName(): string {
   return 'other';
 }
 
-async function openStorage(): Promise<{ store: SaveStore; events: EventStore }> {
+async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events: EventStore }> {
   try {
     const db = await openGameDb();
     const events = new IdbEventStore(db);
     void events.prune().catch(() => undefined);
     // Ask the browser not to evict our save (granted automatically for installed apps on most browsers).
     void navigator.storage?.persist?.().catch(() => undefined);
-    return { store: new IdbSaveStore(db), events };
+    // The testing sandbox has its own village: time skips and test purchases never touch the real one.
+    return { store: new IdbSaveStore(db, sandbox ? SANDBOX_SAVE_KEY : undefined), events };
   } catch (e) {
     console.warn('Falling back to in-memory storage', e);
     return { store: new MemorySaveStore(), events: new MemoryEventStore() };
@@ -75,19 +77,31 @@ async function openStorage(): Promise<{ store: SaveStore; events: EventStore }> 
 }
 
 async function boot(): Promise<void> {
-  const debugTime = createDebugTime();
+  const params = new URLSearchParams(location.search);
+  // Testing tools (time skips, instant test purchases) exist only in the
+  // testing sandbox: ?sandbox (or ?debug) in the address. The sandbox has its
+  // own save and never goes online, so neither its clock nor its free
+  // purchases can reach a real village or a shared economy.
+  const sandbox = isSandbox(location.search);
+  const debugTime = sandbox ? createDebugTime() : { offsetMs: () => 0, skip: () => undefined };
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
-  const [{ store, events }] = await Promise.all([openStorage(), loadArtManifest()]);
+  const [{ store, events }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
   const analytics = new Analytics(events, clock);
-  // Payments: StoreKit on iPhone, nothing yet on Android, a mock store on the web.
-  const storeKit = platform() === 'ios' ? new StoreKitPaymentProvider() : null;
-  const payments: PaymentProvider = storeKit ?? (platform() === 'android' ? new UnavailablePaymentProvider() : new MockPaymentProvider(() => clock.now()));
+  // Payments: StoreKit on iPhone; nothing yet on Android or the public web build;
+  // the instant mock store only in the sandbox (clearly labelled there).
+  const path = paymentPath(platform(), sandbox);
+  const storeKit = path === 'storekit' ? new StoreKitPaymentProvider() : null;
+  const payments: PaymentProvider = choosePaymentProvider(path, {
+    storekit: () => storeKit!,
+    mock: () => new MockPaymentProvider(() => clock.now()),
+    unavailable: () => new UnavailablePaymentProvider(),
+  });
   // Online play: the server chosen in Settings, else the one built into this version (VITE_SERVER_URL).
   const builtInUrl = (import.meta.env.VITE_SERVER_URL as string | undefined) || '';
-  // With a server, real players raid this village instead of bots.
-  const serverUrl = resolveServerUrl(browserKeyValue, builtInUrl);
+  // With a server, real players raid this village instead of bots (never in the sandbox).
+  const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl);
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl });
-  const connection = new Connection({ game: controller, builtInUrl });
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox });
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
   if (storeKit) {
     void storeKit.listen((productId, transactionId) => {
@@ -146,6 +160,7 @@ async function boot(): Promise<void> {
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),
     onTrial: (tier) => app?.trial(tier),
+    onPractice: (army) => app?.practice(army),
     prefs,
     notifyPrefs,
     onRemindersEnabled: async () => {
@@ -158,6 +173,7 @@ async function boot(): Promise<void> {
     reminderNote: reminders.note,
     onReplayTutorial: () => tutorial?.restart(),
     debugTime,
+    sandbox,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
     groveSource,
     connection,
@@ -182,12 +198,15 @@ async function boot(): Promise<void> {
   if (interrupted) {
     const { pending, record } = interrupted;
     if (pending.ticket) {
-      void connection.report('attack', { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, deployments: pending.deployments });
+      const sub = { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, reinforcements: pending.setup.reinforcements, deployments: pending.deployments };
+      void connection.report(pending.kind === 'war' ? 'raid' : 'attack', sub);
     }
-    hud.toast(`Your raid on ${pending.opponentName} was interrupted and has been played out: ${record.result.stars}★, ${record.result.destruction}%. See the battle log.`, 'info');
+    const what = pending.kind === 'war' ? 'Alliance War attack' : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
+    hud.toast(`Your ${what} on ${pending.opponentName} was interrupted and has been played out: ${record.result.stars}★, ${record.result.destruction}%. See the battle log.`, 'info');
   }
 
-  if (new URLSearchParams(location.search).has('debug')) {
+  if (sandbox) hud.toast('Testing sandbox: a separate practice village with testing tools and a free test store. Your real village is untouched, and online play is off.', 'info');
+  if (params.has('debug')) {
     // Testing hook, only with ?debug in the URL.
     (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection };
   }
@@ -209,6 +228,12 @@ async function boot(): Promise<void> {
   }, { capture: true });
   controller.onEvents((events) => {
     for (const e of events) {
+      if (e.kind === 'raid_settled') {
+        // The server's answer to an online attack.
+        const r = e.record;
+        if (e.outcome === 'confirmed') hud.toast(`Raid on ${r.opponentName} confirmed by the server${Object.values(r.banked ?? {}).some((v) => (v ?? 0) > 0) ? ': loot banked' : ''}.`, 'success');
+        else hud.toast(`The server did not accept your raid on ${r.opponentName} (${r.rejected}). It counts as practice: no loot or honor.`, 'error');
+      } else if (e.kind === 'reward' && e.source.startsWith('season:')) hud.toast('The league season ended: your chest was added. See Honor for details.', 'success');
       if (e.kind === 'purchase_granted') sound.play('coin');
       else if (e.kind === 'skip_used') sound.play('magic');
       else if (e.kind === 'reward') sound.play('star');
@@ -244,6 +269,7 @@ async function boot(): Promise<void> {
     const hidden = document.visibilityState === 'hidden';
     sound.suspend(hidden);
     if (hidden) {
+      app?.flushBattle();
       void controller.save();
       void connection.uploadBase();
       if (prefs.get('reminders')) {
@@ -256,7 +282,17 @@ async function boot(): Promise<void> {
       void reminders.cancelAll();
     }
   });
-  window.addEventListener('pagehide', () => void controller.save());
+  window.addEventListener('pagehide', () => {
+    app?.flushBattle();
+    void controller.save();
+  });
+  // A failed save is shown (at most once a minute), never only logged.
+  let lastSaveWarning = 0;
+  controller.onSaveError((e) => {
+    if (Date.now() - lastSaveWarning < 60_000) return;
+    lastSaveWarning = Date.now();
+    hud.toast(`Your village could not be saved (${e.message}). Free some device storage, and copy a save code in Settings to keep it safe.`, 'error');
+  });
 
   if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
   document.getElementById('boot')?.classList.add('done');

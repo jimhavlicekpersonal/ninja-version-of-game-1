@@ -9,7 +9,10 @@ import type { Cost, OfferRule, OfferTrigger } from '../sim/types';
 import { canPurchase } from '../sim/monetization';
 import { raidPhase } from '../sim/social/groveRaid';
 import { MockPaymentProvider, type PaymentProvider } from '../../backend/payments/provider';
-import { advance, applyCommand, createNewVillage, type Command, type CommandResult, type FinishedUpgrade } from '../sim/village';
+import { advance, applyCommand, createNewVillage, type Command, type CommandResult, type FinishedUpgrade, type SimEvent } from '../sim/village';
+import { dayIndex, passSeason } from '../sim/pass';
+import { seasonOf } from '../sim/ranks';
+import { trainingReady } from '../sim/army';
 
 export interface ControllerDeps {
   clock: Clock;
@@ -41,10 +44,17 @@ type Listener = (finished: FinishedUpgrade[]) => void;
 export class GameController {
   private listeners = new Set<Listener>();
   private offerListeners = new Set<(rule: OfferRule) => void>();
-  private eventListeners = new Set<(events: import('../sim/village').SimEvent[]) => void>();
+  private eventListeners = new Set<(events: SimEvent[]) => void>();
   private offersThisSession = 0;
   readonly payments: PaymentProvider;
   private saveChain: Promise<void> = Promise.resolve();
+  private saveErrorListeners = new Set<(e: Error) => void>();
+
+  /** Hear about saves that failed (storage full, blocked, evicted), so the player can be warned. */
+  onSaveError(fn: (e: Error) => void): () => void {
+    this.saveErrorListeners.add(fn);
+    return () => this.saveErrorListeners.delete(fn);
+  }
 
   private constructor(
     private readonly deps: ControllerDeps,
@@ -144,14 +154,22 @@ export class GameController {
     this.triggerOffer('grove_raid_soon');
   }
 
-  /** Bank a Grove Raid attack. */
-  finishGroveBattle(target: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string): { stars: number; destruction: number } | null {
-    const r = this.dispatch({ type: 'groveBattleEnd', target, record: { at: this.now(), opponentName, setup, deployments, endTick } });
+  /** Bank an Alliance War attack (offline Alliance). `at` is when the attack began. */
+  finishGroveBattle(target: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string, at = this.now()): { stars: number; destruction: number; record: BattleRecord } | null {
+    const r = this.dispatch({ type: 'groveBattleEnd', target, record: { at, opponentName, setup, deployments, endTick } });
     if (!r.ok) return null;
     const e = r.events.find((x) => x.kind === 'grove_attack');
     if (!e || e.kind !== 'grove_attack') return null;
     this.deps.analytics.log('grove_raid_end', { target, stars: e.stars, destruction: e.destruction });
-    return { stars: e.stars, destruction: e.destruction };
+    return { stars: e.stars, destruction: e.destruction, record: e.record };
+  }
+
+  /** Record an Alliance War attack the server scores (online Alliance): troops are spent, the fight is kept for replay. */
+  finishRemoteGroveBattle(target: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string, at = this.now()): { stars: number; destruction: number; record: BattleRecord } | null {
+    const r = this.dispatch({ type: 'remoteGroveBattleEnd', target, record: { at, opponentName, setup, deployments, endTick } });
+    if (!r.ok) return null;
+    const e = r.events.find((x) => x.kind === 'grove_attack');
+    return e && e.kind === 'grove_attack' ? { stars: e.stars, destruction: e.destruction, record: e.record } : null;
   }
 
   // ---------- Offers ----------
@@ -194,17 +212,31 @@ export class GameController {
     return { ok: true, grants: check.product.grants };
   }
 
-  /** Finish any timers that have ended. Call this a few times a second. */
+  /**
+   * Finish any timers that have ended, and settle what the clock rolled over
+   * (a new task day, a finished league season). Call this a few times a second.
+   */
   tick(): FinishedUpgrade[] {
     const now = this.now();
-    const trainingDone = this.state.training.length > 0 && this.state.training[0].endsAt <= now;
-    const groveDue = this.state.grove.joined && now - this.state.grove.processedAt >= 30_000;
+    const data = this.deps.data;
+    const s = this.state;
+    const trainingDone = trainingReady(s, now, data);
+    const researchDone = s.research.active.some((a) => a.endsAt <= now);
+    const groveDue = s.grove.joined && now - s.grove.processedAt >= 30_000;
+    const periodDue = dayIndex(now, data) > s.tasks.day || passSeason(now, data) > s.pass.season;
+    const seasonDue = seasonOf(now) > s.season;
     this.checkPrepOffer(now);
-    if (!trainingDone && !groveDue && !this.state.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
-    const { state, finished } = advance(this.state, now, this.deps.data);
+    if (!trainingDone && !researchDone && !groveDue && !periodDue && !seasonDue && !s.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
+    const logged = this.state.seasonLog.length ? this.state.seasonLog[this.state.seasonLog.length - 1].season : -1;
+    const { state, finished } = advance(this.state, now, data);
     this.state = state;
     this.emit(finished);
     void this.save();
+    // A league season that ended while the game was open: show its chest like any other reward.
+    const seasonEvents: SimEvent[] = state.seasonLog
+      .filter((sr) => sr.season > logged)
+      .map((sr) => ({ kind: 'reward', source: `season:${sr.league}`, grants: sr.chest, ...(sr.overflow ? { overflow: sr.overflow } : {}) }));
+    if (seasonEvents.length) for (const fn of this.eventListeners) fn(seasonEvents);
     return finished;
   }
 
@@ -216,13 +248,17 @@ export class GameController {
     return { ok: true, seed: e && e.kind === 'scout' ? e.seed : 0 };
   }
 
-  /** Bank an attack's result (re-simulated from its seed and deployments). */
-  finishBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string): { record: BattleRecord; banked: Cost } | null {
-    const r = this.dispatch({ type: 'battleEnd', record: { at: this.now(), opponentName, setup, deployments, endTick } });
+  /**
+   * Bank an attack's result (re-simulated from its seed and deployments). With a
+   * server `ticket` the attack is recorded as pending: loot and honor arrive
+   * when the server confirms it (settleOnlineAttack, from the Connection).
+   */
+  finishBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string, ticket?: string, at = this.now()): { record: BattleRecord; banked: Cost } | null {
+    const r = this.dispatch({ type: 'battleEnd', record: { at, opponentName, setup, deployments, endTick, ...(ticket ? { ticket } : {}) } });
     if (!r.ok) return null;
     const e = r.events.find((x) => x.kind === 'raid_end');
     if (!e || e.kind !== 'raid_end') return null;
-    return { record: e.record, banked: e.record.result.loot };
+    return { record: e.record, banked: e.record.banked ?? {} };
   }
 
   /** Remember an attack in progress (called on each deployment), or forget it. */
@@ -238,15 +274,25 @@ export class GameController {
   resolvePendingBattle(): { pending: PendingBattle; record: BattleRecord } | null {
     const p = this.state.pendingBattle;
     if (!p) return null;
+    // Played out under today's rules: the player never saw it finish, so there is no
+    // earlier result to contradict (the record carries the rules it was settled with).
     if (p.kind === 'trial' && p.tier !== undefined) {
       const t = this.finishTrial(p.tier, p.setup, p.deployments, undefined);
       if (t) return { pending: p, record: t.record };
+    } else if (p.kind === 'war' && p.target !== undefined) {
+      // Alliance War attacks are protected too: closing the app can't save the troops or the attempt.
+      const w = p.ticket
+        ? this.finishRemoteGroveBattle(p.target, p.setup, p.deployments, undefined, p.opponentName, p.at)
+        : this.finishGroveBattle(p.target, p.setup, p.deployments, undefined, p.opponentName, p.at);
+      if (w) return { pending: p, record: w.record };
     } else {
-      const out = this.finishBattle(p.setup, p.deployments, undefined, p.opponentName);
+      const out = this.finishBattle(p.setup, p.deployments, undefined, p.opponentName, p.ticket, p.at);
       if (out) return { pending: p, record: out.record };
     }
-    // Could not be banked (for example the army changed): drop it rather than block the game.
-    this.trackBattle(null);
+    // Could not be banked (for example the war ended): the deployed troops are
+    // still spent, so quitting never undoes an attack, but nothing is won.
+    this.dispatch({ type: 'abandonBattle', record: { at: p.at, opponentName: p.opponentName, setup: p.setup, deployments: p.deployments } });
+    if (this.state.pendingBattle) this.trackBattle(null);
     return null;
   }
 
@@ -277,7 +323,10 @@ export class GameController {
     const file = serialize(this.state, now);
     this.saveChain = this.saveChain
       .then(() => this.deps.store.save(file))
-      .catch((e) => console.warn('save failed', e));
+      .catch((e) => {
+        console.warn('save failed', e);
+        for (const fn of this.saveErrorListeners) fn(e instanceof Error ? e : new Error(String(e)));
+      });
     return this.saveChain;
   }
 

@@ -25,8 +25,8 @@ const STEPS: Step[] = [
   { text: 'Warriors need a place to train. Build a Training Dojo and a Squad Courtyard (Build, then the Army tab).', targets: ['.round-btn.ok', '.shop-tabs button:nth-child(2)', '.round-btn.build'], done: (s) => has(s, 'burrow_barracks') && has(s, 'army_camp') },
   { text: 'Open the Army panel and train some Shinobi: fast blades that strike the nearest building.', targets: ['.troop-row .btn.primary', '.round-btn[aria-label="Army"]'], done: (s) => s.training.length > 0 || armySize(s) > 0 },
   { text: 'Use a little Jade to finish training: tap Finish training.', targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[aria-label="Army"]'], done: (s) => armySize(s) > 0 && s.training.length === 0 },
-  { text: 'Your first raid. Tap Attack and scout the target. Then pick the Smoke Bomb card and tap the Kunai Tower: inside the smoke it can only see close up. Then tap inside a glowing infiltration point to send your Shinobi. Each point only hides part of your army, so send the rest through a second point.', targets: ['.big-attack', '.round-btn.attack'], done: (s) => s.battleLog.length > 0 },
-  { text: 'Well fought. Upgrade the Training Dojo to unlock Saboteurs: they jam a defense for a few seconds. Jam first, smoke the core, then strike. Collect, upgrade, raid, and join an Alliance.', button: 'Finish' },
+  { text: 'Your first raid. Tap Attack and scout the target. Tap inside a glowing infiltration point to send your Shinobi; each point only hides part of your army, so send the rest through a second point. When they walk up to the Kunai Tower, pick the Smoke Bomb card and tap on them: warriors inside the smoke can only be shot from close up.', targets: ['.big-attack', '.round-btn.attack'], done: (s) => s.battleLog.length > 0 },
+  { text: 'Well fought. Upgrade the Training Dojo to unlock Saboteurs: they jam a defense for a few seconds. Jam first, then strike, and smoke your warriors where the fire is heaviest. Collect, upgrade, raid, and join an Alliance.', button: 'Finish' },
 ];
 
 /** Guided first steps. Points at buttons and moves on when the player has done each thing. */

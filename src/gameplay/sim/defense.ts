@@ -3,7 +3,7 @@
  * Everything is derived from the village seed and the time window, so the
  * same save always produces the same raids.
  */
-import { createBattle, runBattle } from './battle/battle';
+import { createBattle, runBattle, SIM_RULES } from './battle/battle';
 import type { BaseBuilding, BaseLayout, BattleRecord, Deployment } from './battle/types';
 import type { InfiltrationPlan } from './battle/infiltration';
 import { MS_PER_HOUR } from './clock';
@@ -198,6 +198,7 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
     result: { ...result, loot: sumCosts(fromStorage, fromCollectors) },
     trophies: delta,
     simulated: true,
+    rules: SIM_RULES,
   };
   s.defenseLog.push(record);
   while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();

@@ -3,7 +3,7 @@
  * actions; it does not know whether the Grove is the offline bot Grove
  * (LocalGroveSource) or a real Grove on a server (RemoteGroveSource).
  */
-import type { BattleSetup, Deployment } from '../../gameplay/sim/battle/types';
+import type { BattleRecord, BattleSetup, Deployment } from '../../gameplay/sim/battle/types';
 import type { Connection } from '../net/connection';
 import { ServerError } from '../net/ports';
 import type { ChatView, GroveView, GroveSummary, RaidView, RequestView } from '../net/protocol';
@@ -11,7 +11,7 @@ import { troopLevels } from '../../gameplay/sim/research';
 import { mixSeed } from '../../gameplay/sim/rng';
 import { canRequest, generateGrove, groveLevel, isOnline, reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
 import { attacksLeft, enemyGrove, raidPhase, raidScore } from '../../gameplay/sim/social/groveRaid';
-import { battleArmy, hallLevel } from '../../gameplay/sim/village';
+import { battleLoadout, hallLevel } from '../../gameplay/sim/village';
 import type { BaseLayout } from '../../gameplay/sim/battle/types';
 import type { GameController } from '../../gameplay/control/controller';
 
@@ -85,7 +85,12 @@ export interface GroveSnapshot {
 export interface RaidBattle {
   setup: BattleSetup;
   enemyName: string;
-  finish(deployments: Deployment[], endTick: number | undefined): { stars: number; destruction: number } | null;
+  /** The enemy base attacked (for interrupted-battle recovery). */
+  target: number;
+  /** Server ticket of an online Alliance War attack. */
+  ticket?: string;
+  /** Bank the attack. The record is kept in the battle log so it can be replayed. */
+  finish(deployments: Deployment[], endTick: number | undefined): { stars: number; destruction: number; record: BattleRecord } | null;
 }
 
 export interface GroveSource {
@@ -205,8 +210,9 @@ export class LocalGroveSource implements GroveSource {
     const base = enemy.bases[target];
     if (!base) return { error: 'No such enemy base.' };
     const done = c.state.grove.raid?.week === p.week ? c.state.grove.raid.attacks.length : 0;
-    const setup: BattleSetup = { seed: mixSeed(c.state.grove.seed, p.week * 1000 + target + done * 97 + 1), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data), infiltration: true };
-    return { setup, enemyName: enemy.name, finish: (deployments, endTick) => c.finishGroveBattle(target, setup, deployments, endTick, base.name) };
+    const setup: BattleSetup = { seed: mixSeed(c.state.grove.seed, p.week * 1000 + target + done * 97 + 1), base, ...battleLoadout(c.state, c.data), infiltration: true };
+    const at = c.now();
+    return { setup, enemyName: enemy.name, target, finish: (deployments, endTick) => c.finishGroveBattle(target, setup, deployments, endTick, base.name, at) };
   }
 }
 
@@ -417,17 +423,19 @@ export class RemoteGroveSource implements GroveSource {
       const t = await this.port.raidTicket(target);
       const c = this.c;
       const base: BaseLayout = t.base;
-      const setup: BattleSetup = { seed: mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target), base, army: battleArmy(c.state), levels: troopLevels(c.state, c.data), infiltration: true };
+      const setup: BattleSetup = { seed: mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target), base, ...battleLoadout(c.state, c.data), infiltration: true };
       const enemyName = this.raidView?.opponent?.name ?? 'Enemy Alliance';
+      const at = c.now();
       return {
         setup,
         enemyName,
+        target,
+        ticket: t.ticket,
         finish: (deployments, endTick) => {
-          const r = c.dispatch({ type: 'remoteGroveBattleEnd', target, record: { at: c.now(), opponentName: base.name, setup, deployments, endTick } });
-          if (!r.ok) return null;
-          const e = r.events.find((x) => x.kind === 'grove_attack');
-          void this.conn.report('raid', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, deployments, endTick }).then(() => this.refresh(true));
-          return e && e.kind === 'grove_attack' ? { stars: e.stars, destruction: e.destruction } : null;
+          const out = c.finishRemoteGroveBattle(target, setup, deployments, endTick, base.name, at);
+          if (!out) return null;
+          void this.conn.report('raid', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick }).then(() => this.refresh(true));
+          return out;
         },
       };
     } catch (e) {

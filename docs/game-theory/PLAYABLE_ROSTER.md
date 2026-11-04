@@ -8,15 +8,15 @@ Ability numbers live in `src/gameplay/data/troops.json` (`kit`); shared limits l
 
 | Role | Implemented specialties |
 |---|---|
-| Blade | Basic melee, reduced secondary cleave, triple opening dash strike, every-fourth-hit crescent, three-building arcs |
-| Thrower | Ranged attacks, fan splash, five-second nonstacking poison, nonstacking 20% vulnerability, rapid long-range needles |
+| Blade | Basic melee, reduced secondary cleave, double opening dash strike, every-fourth-hit crescent, three-building arcs |
+| Thrower | Ranged attacks (0.7× damage budget: range pays for safety), fan splash, five-second nonstacking poison, nonstacking 20% vulnerability, rapid 5-range needles (extra 0.6× DPS tax) |
 | Guardian | Tanking, nonstacking 15% resistance, in-range defense taunt, directional splash reduction, fivefold wall damage |
 | Saboteur | Original one-use six-second jam, trap disarming, two nine-second jams, five-second delayed explosive, one three-defense four-second blackout |
 | Infiltrator | Wall bypass, storage preference, defense preference, one two-second emergence stun, periodic nearby wall opening |
 | Sky | Flight, fast storage raids, ember splash and burning, lightning against up to four defenses, bomber-crew splash |
-| Mystic | Nonstacking 2.5%-max-health/second healing, nonstacking 25% haste, intermittent moving mist, one 35%-health resurrection, one 25% heal plus shields |
-| Siege | Fourfold wall damage, flame splash/burning, one suicidal explosion, stationary 11-range artillery, wide splash and burning ground |
-| Beast | Two budgeted hunting dogs, nonstacking defense fire delay, one wall-breaking charge, 75% extra damage below half health, two budgeted war tigers |
+| Mystic | Follows the nearest ally it can reach and breaks a wall when every ally is walled in; nonstacking 2.5%-max-health/second healing, nonstacking 25% haste, intermittent moving mist, one 35%-health resurrection, one 25% heal plus shields |
+| Siege | Fourfold wall damage, flame splash/burning, one suicidal explosion, stationary 5-range artillery that fires on defenses (0.5× DPS tax), wide splash and burning ground. Wall-breakers break the wall between them and the nearest defense or Keep, not every wall |
+| Beast | Two budgeted hunting dogs, nonstacking defense fire delay from 3.5 range (0.6× DPS tax; a Repair Crane cuts it short), one wall-breaking charge, 75% extra damage below half health, two budgeted war tigers |
 | Shadow | Hidden until first attack, four-second decoy, double damage against smoked buildings, periodic six-tile shadow step, trap immunity and seeded 25% double-damage criticals |
 
 ## Limits
@@ -29,6 +29,7 @@ Ability numbers live in `src/gameplay/data/troops.json` (`kit`); shared limits l
 - Each handler keeps 60% of the original HP/damage budget; each of two pets receives 20%. Pets never summon, use inventory, or add training/mastery credit. Decoys cannot attack and expire after four seconds.
 - Eclipse stealth ends on the first attack. Criticals use seeded battle RNG.
 - Artillery stops while firing and must approach its target. New specialized abilities make the numerical budget a starting point, not proof of balanced win rates.
+- DPS taxes (`dpsScale` in `roster.json`, gameplay audit Nov 2026) for warriors that measured too strong in battle: Siege Bombardier 0.5, Thousand Needle 0.6, Hawk Tamer 0.6. Kit trims: Wind-Step first hit ×2 (was ×3), Storm Sovereign arcs 35% (was 50%), Thunder Kite 35% (was 45%); the Dragon Kite Armada now splashes three buildings within 2.5 tiles at 35%, so the tier-5 kite is worth its price over the Thunder Kite. Measured in `docs/game-theory/ARMY_BALANCE.md`.
 
 ## Validation
 

@@ -30,23 +30,23 @@ describe('troop research', () => {
     const next = troopLevel(data, 'hedgehog_roller', 2);
     const s1 = must(state, { type: 'research', troop: 'hedgehog_roller' }, clock.now());
     expect(s1.resources.dew).toBe(state.resources.dew - next.research!.cost.dew!);
-    expect(s1.research.active?.toLevel).toBe(2);
+    expect(s1.research.active[0]?.toLevel).toBe(2);
     expect(troopLevelOf(s1, 'hedgehog_roller')).toBe(1);
     // Builders stay free.
     expect(s1.buildings.every((b) => !b.upgrade)).toBe(true);
-    // One research at a time.
+    // One research at a time at an early Keep (one research lane).
     const busy = applyCommand(s1, { type: 'research', troop: 'frog_lobber' }, clock.now(), data);
     expect(busy.ok).toBe(false);
     clock.advanceSeconds(next.research!.seconds);
     const s2 = advance(s1, clock.now(), data).state;
     expect(troopLevelOf(s2, 'hedgehog_roller')).toBe(2);
-    expect(s2.research.active).toBeNull();
+    expect(s2.research.active).toEqual([]);
   });
 
   it('is capped by the Elder Toadstool level and locked until the barracks unlocks the troop', () => {
     const { state, clock } = lab(2);
     expect(troopLevelCapAt(2, data)).toBe(2);
-    const s1 = { ...state, research: { levels: { hedgehog_roller: 2 }, active: null } };
+    const s1 = { ...state, research: { levels: { hedgehog_roller: 2 }, active: [] } };
     const capped = applyCommand(s1, { type: 'research', troop: 'hedgehog_roller' }, clock.now(), data);
     expect(capped.ok).toBe(false);
     if (!capped.ok) expect(capped.code).toBe('HALL_LEVEL_TOO_LOW');
@@ -65,7 +65,7 @@ describe('troop research', () => {
     expect(s2.resources.moonstones).toBe(s1.resources.moonstones - q.moonstones);
     // Empty the Dew so the refund fits in storage.
     const s3 = must({ ...s1, resources: { ...s1.resources, dew: 0 } }, { type: 'cancelResearch' }, clock.now());
-    expect(s3.research.active).toBeNull();
+    expect(s3.research.active).toEqual([]);
     const paid = troopLevel(data, 'hedgehog_roller', 2).research!.cost.dew!;
     expect(s3.resources.dew).toBe(Math.floor(paid * data.economy.cancelRefundFraction));
   });
@@ -78,7 +78,7 @@ describe('troop research', () => {
     expect(l3.sim.buildings[0].hp).toBeLessThan(l1.sim.buildings[0].hp);
     expect(l3.sim.troops[0].maxHp).toBe(troopLevel(data, 'hedgehog_roller', 3).hp);
     const { state, clock } = lab();
-    const s = { ...state, research: { levels: { hedgehog_roller: 2 }, active: null } };
+    const s = { ...state, research: { levels: { hedgehog_roller: 2 }, active: [] } };
     const t = must(s, { type: 'train', troop: 'hedgehog_roller' }, clock.now());
     expect(t.training[0].cost).toEqual(troopLevel(data, 'hedgehog_roller', 2).cost);
     expect(troopLevel(data, 'hedgehog_roller', 2).cost.dew!).toBeGreaterThan(troopLevel(data, 'hedgehog_roller', 1).cost.dew!);

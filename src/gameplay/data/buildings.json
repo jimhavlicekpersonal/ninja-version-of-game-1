@@ -1168,7 +1168,8 @@
           "dew": 200
         },
         "buildSeconds": 10,
-        "hp": 380
+        "hp": 380,
+        "trainingSpeed": 1
       },
       {
         "level": 2,
@@ -1176,7 +1177,8 @@
           "dew": 600
         },
         "buildSeconds": 22,
-        "hp": 440
+        "hp": 440,
+        "trainingSpeed": 1
       },
       {
         "level": 3,
@@ -1184,7 +1186,8 @@
           "dew": 1500
         },
         "buildSeconds": 50,
-        "hp": 500
+        "hp": 500,
+        "trainingSpeed": 1
       },
       {
         "level": 4,
@@ -1192,7 +1195,8 @@
           "dew": 4000
         },
         "buildSeconds": 110,
-        "hp": 560
+        "hp": 560,
+        "trainingSpeed": 1
       },
       {
         "level": 5,
@@ -1200,7 +1204,8 @@
           "dew": 12000
         },
         "buildSeconds": 240,
-        "hp": 630
+        "hp": 630,
+        "trainingSpeed": 1.2
       },
       {
         "level": 6,
@@ -1208,7 +1213,8 @@
           "dew": 40000
         },
         "buildSeconds": 540,
-        "hp": 700
+        "hp": 700,
+        "trainingSpeed": 1.4
       },
       {
         "level": 7,
@@ -1216,7 +1222,8 @@
           "dew": 58000
         },
         "buildSeconds": 1188,
-        "hp": 1457
+        "hp": 1457,
+        "trainingSpeed": 1.6
       },
       {
         "level": 8,
@@ -1224,7 +1231,8 @@
           "dew": 84100
         },
         "buildSeconds": 2614,
-        "hp": 1944
+        "hp": 1944,
+        "trainingSpeed": 2
       },
       {
         "level": 9,
@@ -1232,7 +1240,8 @@
           "dew": 121945
         },
         "buildSeconds": 5750,
-        "hp": 2983
+        "hp": 2983,
+        "trainingSpeed": 2.5
       },
       {
         "level": 10,
@@ -1240,7 +1249,8 @@
           "dew": 176820
         },
         "buildSeconds": 12650,
-        "hp": 3974
+        "hp": 3974,
+        "trainingSpeed": 3
       },
       {
         "level": 11,
@@ -1248,7 +1258,8 @@
           "dew": 256389
         },
         "buildSeconds": 27830,
-        "hp": 5304
+        "hp": 5304,
+        "trainingSpeed": 3.5
       },
       {
         "level": 12,
@@ -1256,7 +1267,8 @@
           "dew": 371765
         },
         "buildSeconds": 61225,
-        "hp": 8137
+        "hp": 8137,
+        "trainingSpeed": 4
       },
       {
         "level": 13,
@@ -1264,7 +1276,8 @@
           "dew": 539059
         },
         "buildSeconds": 134695,
-        "hp": 10854
+        "hp": 10854,
+        "trainingSpeed": 4.5
       }
     ]
   },
@@ -1442,7 +1455,7 @@
         },
         "buildSeconds": 50,
         "hp": 1265,
-        "damage": 52.0
+        "damage": 52
       },
       {
         "level": 3,
@@ -1451,7 +1464,7 @@
         },
         "buildSeconds": 110,
         "hp": 1438,
-        "damage": 65.0
+        "damage": 65
       },
       {
         "level": 4,
@@ -1477,8 +1490,8 @@
           "acorns": 100000
         },
         "buildSeconds": 1200,
-        "hp": 2415,
-        "damage": 128.7
+        "hp": 2608,
+        "damage": 139
       },
       {
         "level": 7,
@@ -1486,8 +1499,8 @@
           "acorns": 200000
         },
         "buildSeconds": 2700,
-        "hp": 2818,
-        "damage": 158.6
+        "hp": 4862,
+        "damage": 273.58
       },
       {
         "level": 8,
@@ -1495,8 +1508,8 @@
           "acorns": 290000
         },
         "buildSeconds": 5940,
-        "hp": 5863,
-        "damage": 330.07
+        "hp": 7036,
+        "damage": 396.08
       },
       {
         "level": 9,
@@ -1504,8 +1517,8 @@
           "acorns": 420500
         },
         "buildSeconds": 13068,
-        "hp": 7822,
-        "damage": 440.3
+        "hp": 9386,
+        "damage": 528.36
       },
       {
         "level": 10,
@@ -1513,8 +1526,8 @@
           "acorns": 609725
         },
         "buildSeconds": 28750,
-        "hp": 10434,
-        "damage": 587.35
+        "hp": 12103,
+        "damage": 681.33
       },
       {
         "level": 11,
@@ -1522,8 +1535,8 @@
           "acorns": 884101
         },
         "buildSeconds": 63249,
-        "hp": 13920,
-        "damage": 783.52
+        "hp": 15590,
+        "damage": 877.54
       },
       {
         "level": 12,
@@ -1531,8 +1544,8 @@
           "acorns": 1281947
         },
         "buildSeconds": 139148,
-        "hp": 21354,
-        "damage": 1201.99
+        "hp": 22208,
+        "damage": 1250.07
       },
       {
         "level": 13,
@@ -1540,8 +1553,8 @@
           "acorns": 1858823
         },
         "buildSeconds": 306126,
-        "hp": 28484,
-        "damage": 1603.46
+        "hp": 30193,
+        "damage": 1699.67
       },
       {
         "level": 14,
@@ -1549,8 +1562,8 @@
           "acorns": 2695293
         },
         "buildSeconds": 604800,
-        "hp": 37998,
-        "damage": 2139.02
+        "hp": 40278,
+        "damage": 2267.36
       },
       {
         "level": 15,
@@ -1558,8 +1571,8 @@
           "acorns": 3908175
         },
         "buildSeconds": 604800,
-        "hp": 50692,
-        "damage": 2853.46
+        "hp": 53734,
+        "damage": 3024.67
       }
     ]
   },
@@ -1586,7 +1599,7 @@
         },
         "buildSeconds": 240,
         "hp": 1380,
-        "damage": 117.0
+        "damage": 117
       },
       {
         "level": 2,
@@ -1603,8 +1616,8 @@
           "acorns": 120000
         },
         "buildSeconds": 1200,
-        "hp": 1725,
-        "damage": 187.2
+        "hp": 1863,
+        "damage": 202.18
       },
       {
         "level": 4,
@@ -1612,8 +1625,8 @@
           "acorns": 300000
         },
         "buildSeconds": 2700,
-        "hp": 1897,
-        "damage": 234.0
+        "hp": 2182,
+        "damage": 269.1
       },
       {
         "level": 5,
@@ -1621,8 +1634,8 @@
           "acorns": 600000
         },
         "buildSeconds": 6000,
-        "hp": 3713,
-        "damage": 513.08
+        "hp": 4456,
+        "damage": 615.7
       },
       {
         "level": 6,
@@ -1630,8 +1643,8 @@
           "acorns": 870000
         },
         "buildSeconds": 13200,
-        "hp": 5698,
-        "damage": 787.12
+        "hp": 6610,
+        "damage": 913.06
       },
       {
         "level": 7,
@@ -1639,8 +1652,8 @@
           "acorns": 1261500
         },
         "buildSeconds": 29040,
-        "hp": 8741,
-        "damage": 1207.53
+        "hp": 9440,
+        "damage": 1304.13
       },
       {
         "level": 8,
@@ -1648,8 +1661,8 @@
           "acorns": 1829175
         },
         "buildSeconds": 63888,
-        "hp": 13411,
-        "damage": 1852.45
+        "hp": 14216,
+        "damage": 1963.6
       },
       {
         "level": 9,
@@ -1657,8 +1670,8 @@
           "acorns": 2652304
         },
         "buildSeconds": 140554,
-        "hp": 20568,
-        "damage": 2841.85
+        "hp": 21802,
+        "damage": 3012.36
       }
     ]
   },
@@ -1718,8 +1731,8 @@
           "acorns": 110000
         },
         "buildSeconds": 1200,
-        "hp": 1667,
-        "damage": 58.5
+        "hp": 1800,
+        "damage": 63.18
       },
       {
         "level": 6,
@@ -1727,8 +1740,8 @@
           "acorns": 250000
         },
         "buildSeconds": 2700,
-        "hp": 1955,
-        "damage": 70.2
+        "hp": 3372,
+        "damage": 121.1
       },
       {
         "level": 7,
@@ -1736,8 +1749,8 @@
           "acorns": 362500
         },
         "buildSeconds": 5940,
-        "hp": 4069,
-        "damage": 146.09
+        "hp": 4883,
+        "damage": 175.31
       },
       {
         "level": 8,
@@ -1745,8 +1758,8 @@
           "acorns": 525625
         },
         "buildSeconds": 13068,
-        "hp": 5429,
-        "damage": 194.9
+        "hp": 6515,
+        "damage": 233.88
       },
       {
         "level": 9,
@@ -1754,8 +1767,8 @@
           "acorns": 762156
         },
         "buildSeconds": 28750,
-        "hp": 8328,
-        "damage": 298.97
+        "hp": 9327,
+        "damage": 334.85
       },
       {
         "level": 10,
@@ -1763,8 +1776,8 @@
           "acorns": 1105127
         },
         "buildSeconds": 63249,
-        "hp": 11107,
-        "damage": 398.83
+        "hp": 11996,
+        "damage": 430.74
       },
       {
         "level": 11,
@@ -1772,8 +1785,8 @@
           "acorns": 1602434
         },
         "buildSeconds": 139148,
-        "hp": 14819,
-        "damage": 532.02
+        "hp": 15412,
+        "damage": 553.3
       },
       {
         "level": 12,
@@ -1781,8 +1794,8 @@
           "acorns": 2323529
         },
         "buildSeconds": 306126,
-        "hp": 22730,
-        "damage": 816.19
+        "hp": 24094,
+        "damage": 865.16
       },
       {
         "level": 13,
@@ -1790,8 +1803,8 @@
           "acorns": 3369116
         },
         "buildSeconds": 604800,
-        "hp": 30324,
-        "damage": 1088.79
+        "hp": 32143,
+        "damage": 1154.12
       }
     ]
   },
@@ -1816,7 +1829,7 @@
         },
         "buildSeconds": 540,
         "hp": 2760,
-        "damage": 234.0
+        "damage": 234
       },
       {
         "level": 2,
@@ -1824,8 +1837,8 @@
           "acorns": 90000
         },
         "buildSeconds": 1200,
-        "hp": 3220,
-        "damage": 325.0
+        "hp": 3478,
+        "damage": 351
       },
       {
         "level": 3,
@@ -1833,8 +1846,8 @@
           "acorns": 270000
         },
         "buildSeconds": 2700,
-        "hp": 3680,
-        "damage": 416.0
+        "hp": 4232,
+        "damage": 478.4
       },
       {
         "level": 4,
@@ -1842,8 +1855,8 @@
           "acorns": 540000
         },
         "buildSeconds": 6000,
-        "hp": 8733,
-        "damage": 1072.81
+        "hp": 10480,
+        "damage": 1287.37
       },
       {
         "level": 5,
@@ -1851,8 +1864,8 @@
           "acorns": 783000
         },
         "buildSeconds": 13200,
-        "hp": 13393,
-        "damage": 1645.8
+        "hp": 15536,
+        "damage": 1909.13
       },
       {
         "level": 6,
@@ -1860,8 +1873,8 @@
           "acorns": 1135350
         },
         "buildSeconds": 29040,
-        "hp": 20549,
-        "damage": 2524.81
+        "hp": 23015,
+        "damage": 2827.79
       },
       {
         "level": 7,
@@ -1869,8 +1882,8 @@
           "acorns": 1646258
         },
         "buildSeconds": 63888,
-        "hp": 31523,
-        "damage": 3873.34
+        "hp": 32784,
+        "damage": 4028.27
       },
       {
         "level": 8,
@@ -1878,8 +1891,8 @@
           "acorns": 2387100
         },
         "buildSeconds": 140554,
-        "hp": 42051,
-        "damage": 5167.03
+        "hp": 44574,
+        "damage": 5477.05
       },
       {
         "level": 9,
@@ -1887,8 +1900,8 @@
           "acorns": 3461300
         },
         "buildSeconds": 309219,
-        "hp": 56096,
-        "damage": 6892.82
+        "hp": 59462,
+        "damage": 7306.39
       },
       {
         "level": 10,
@@ -1896,8 +1909,8 @@
           "acorns": 5018900
         },
         "buildSeconds": 604800,
-        "hp": 74833,
-        "damage": 9195.02
+        "hp": 79323,
+        "damage": 9746.72
       }
     ]
   },
@@ -2455,7 +2468,7 @@
         "buildSeconds": 1800,
         "hp": 1,
         "effect": {
-          "seconds": 3.0,
+          "seconds": 3,
           "vulnerablePct": 0.1
         }
       },
@@ -2515,7 +2528,7 @@
         "buildSeconds": 92765,
         "hp": 1,
         "effect": {
-          "seconds": 4.0,
+          "seconds": 4,
           "vulnerablePct": 0.15
         }
       }
@@ -2523,7 +2536,7 @@
   },
   "clockwork_repairer": {
     "name": "Clockwork Repair Crane",
-    "description": "A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.",
+    "description": "A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.",
     "size": 2,
     "category": "support",
     "inShop": true,
@@ -2816,8 +2829,8 @@
           "acorns": 400000
         },
         "buildSeconds": 7200,
-        "hp": 6832,
-        "damage": 536.41
+        "hp": 8198,
+        "damage": 115.87
       },
       {
         "level": 2,
@@ -2825,8 +2838,8 @@
           "acorns": 580000
         },
         "buildSeconds": 15840,
-        "hp": 7859,
-        "damage": 616.85
+        "hp": 9431,
+        "damage": 133.24
       },
       {
         "level": 3,
@@ -2834,8 +2847,8 @@
           "acorns": 841000
         },
         "buildSeconds": 34848,
-        "hp": 10390,
-        "damage": 815.8
+        "hp": 12052,
+        "damage": 170.33
       },
       {
         "level": 4,
@@ -2843,8 +2856,8 @@
           "acorns": 1219400
         },
         "buildSeconds": 76666,
-        "hp": 13747,
-        "damage": 1078.9
+        "hp": 15397,
+        "damage": 217.51
       },
       {
         "level": 5,
@@ -2852,8 +2865,8 @@
           "acorns": 1768200
         },
         "buildSeconds": 168664,
-        "hp": 18176,
-        "damage": 1426.84
+        "hp": 19630,
+        "damage": 277.38
       },
       {
         "level": 6,
@@ -2861,8 +2874,8 @@
           "acorns": 2563900
         },
         "buildSeconds": 371062,
-        "hp": 24034,
-        "damage": 1886.99
+        "hp": 24995,
+        "damage": 353.25
       },
       {
         "level": 7,
@@ -2870,8 +2883,8 @@
           "acorns": 3717600
         },
         "buildSeconds": 604800,
-        "hp": 31793,
-        "damage": 2495.55
+        "hp": 33701,
+        "damage": 476.16
       },
       {
         "level": 8,
@@ -2879,8 +2892,8 @@
           "acorns": 5390600
         },
         "buildSeconds": 604800,
-        "hp": 42042,
-        "damage": 3300.36
+        "hp": 44565,
+        "damage": 629.71
       },
       {
         "level": 9,
@@ -2888,8 +2901,8 @@
           "acorns": 7816400
         },
         "buildSeconds": 604800,
-        "hp": 55598,
-        "damage": 4364.74
+        "hp": 58934,
+        "damage": 832.79
       },
       {
         "level": 10,
@@ -2897,14 +2910,14 @@
           "acorns": 11333700
         },
         "buildSeconds": 604800,
-        "hp": 63940,
-        "damage": 5019.52
+        "hp": 67776,
+        "damage": 957.72
       }
     ]
   },
   "longbow_yagura": {
     "name": "Longbow Yagura",
-    "description": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.",
+    "description": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.",
     "size": 2,
     "category": "defense",
     "inShop": true,
@@ -2918,7 +2931,7 @@
     },
     "effect": {
       "kind": "counter_artillery",
-      "prefersBeyond": 4
+      "prefersBeyond": 3.5
     },
     "levels": [
       {
@@ -2927,8 +2940,8 @@
           "acorns": 1500000
         },
         "buildSeconds": 28800,
-        "hp": 10375,
-        "damage": 1547.99
+        "hp": 10790,
+        "damage": 1609.91
       },
       {
         "level": 2,
@@ -2936,8 +2949,8 @@
           "acorns": 1950000
         },
         "buildSeconds": 63360,
-        "hp": 11930,
-        "damage": 1780.19
+        "hp": 12407,
+        "damage": 1851.4
       },
       {
         "level": 3,
@@ -2945,8 +2958,8 @@
           "acorns": 2535000
         },
         "buildSeconds": 139392,
-        "hp": 13718,
-        "damage": 2047.2
+        "hp": 14267,
+        "damage": 2129.09
       },
       {
         "level": 4,
@@ -2954,8 +2967,8 @@
           "acorns": 3295500
         },
         "buildSeconds": 306662,
-        "hp": 18142,
-        "damage": 2707.46
+        "hp": 19231,
+        "damage": 2869.91
       },
       {
         "level": 5,
@@ -2963,8 +2976,8 @@
           "acorns": 4284200
         },
         "buildSeconds": 604800,
-        "hp": 20868,
-        "damage": 3113.54
+        "hp": 22120,
+        "damage": 3300.35
       },
       {
         "level": 6,
@@ -2972,8 +2985,8 @@
           "acorns": 5569400
         },
         "buildSeconds": 604800,
-        "hp": 27593,
-        "damage": 4117.71
+        "hp": 29249,
+        "damage": 4364.77
       },
       {
         "level": 7,
@@ -2981,8 +2994,8 @@
           "acorns": 7240200
         },
         "buildSeconds": 604800,
-        "hp": 31735,
-        "damage": 4735.33
+        "hp": 33639,
+        "damage": 5019.45
       },
       {
         "level": 8,
@@ -2990,8 +3003,8 @@
           "acorns": 9412300
         },
         "buildSeconds": 604800,
-        "hp": 41968,
-        "damage": 6262.53
+        "hp": 44486,
+        "damage": 6638.28
       },
       {
         "level": 9,
@@ -2999,8 +3012,8 @@
           "acorns": 12236000
         },
         "buildSeconds": 604800,
-        "hp": 48267,
-        "damage": 7201.9
+        "hp": 51163,
+        "damage": 7634.01
       },
       {
         "level": 10,
@@ -3008,8 +3021,8 @@
           "acorns": 15906700
         },
         "buildSeconds": 604800,
-        "hp": 55506,
-        "damage": 8282.14
+        "hp": 58836,
+        "damage": 8779.07
       }
     ]
   }

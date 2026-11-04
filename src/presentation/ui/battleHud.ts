@@ -21,6 +21,8 @@ export interface BattleHudDeps {
   replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
   /** Set for Grove Raid attacks (no loot, no Next). */
   grove?: { enemyName: string };
+  /** A practice battle (nothing spent or won, no Next). */
+  practice?: boolean;
   /** Set for Shadow Trials (practice ladder: no loot from buildings, no honor, no Next). */
   trial?: { tier: number; layout: string; modifiers: string[]; reward: Cost; firstClear: boolean; starsToClear: number };
   troopThumb(type: string): string | null;
@@ -30,7 +32,8 @@ export interface BattleHudDeps {
   onNext(): void;
   onAttack(): void;
   /** Called once when a live battle ends; returns the loot actually banked. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; note?: string } | null;
+  /** `banked` is what reached storage (bonuses included); `overflow` is what was won but did not fit. */
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean } | null;
   onReplay(): void;
 }
 
@@ -80,11 +83,13 @@ export class BattleHud {
             ? `Alliance War vs ${deps.grove.enemyName}`
             : deps.trial
               ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
-              : this.s.setup.base.practice
+              : deps.practice
+                ? 'Practice battle · nothing is spent or won'
+                : this.s.setup.base.practice
                 ? `Practice target · ${this.s.setup.base.practice} · loot you can win`
                 : 'Loot you can win',
       ),
-      deps.grove ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
+      deps.grove || deps.practice ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
       this.s.mode !== 'replay' && !deps.grove && !deps.trial && this.s.setup.base.trophies !== undefined
         ? h(
             'div',
@@ -101,7 +106,7 @@ export class BattleHud {
     this.renderBottom();
     this.renderTroops();
     if (this.s.mode !== 'replay' && !deps.grove && (this.s.setup.army.saboteur ?? 0) > 0) {
-      this.toast('Tactic: send Saboteurs first to jam defenses, throw smoke over the core, then send the main force.');
+      this.toast('Tactic: send Saboteurs first to jam defenses, then the main force; throw smoke over your warriors as they walk into tower range.');
     }
     this.tick();
     this.interval = window.setInterval(() => this.tick(), 100);
@@ -175,7 +180,7 @@ export class BattleHud {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
         h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, 'Home'),
-        this.deps.grove || this.deps.trial
+        this.deps.grove || this.deps.trial || this.deps.practice
           ? h('span', {}, '')
           : h(
               'button',
@@ -237,7 +242,7 @@ export class BattleHud {
         if (this.left('smoke_bomb') <= 0) return;
         if (this.selected && !isAbility(this.s.data, this.selected)) this.lastTroop = this.selected;
         this.selected = 'smoke_bomb';
-        this.toast('Tap the map to throw smoke. Defenses inside it can only see close up.');
+        this.toast('Tap where your warriors are about to come under fire: warriors inside the smoke can only be shot from close up.');
         this.renderTroops();
       });
       this.troopsEl.append(card);
@@ -301,7 +306,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending);
       } else {
         this.toast('Replay finished.');
       }
@@ -319,7 +324,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false): void {
     sound.play(r.stars > 0 ? 'victory' : 'defeat');
     const starsRow = h('div', { class: 'result-stars' });
     for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
@@ -331,13 +336,20 @@ export class BattleHud {
       starsRow,
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
       note ? h('p', { class: 'note' }, note) : null,
-      this.deps.grove ? h('p', { class: 'muted' }, 'Your stars count toward the Alliance War.') : h('p', {}, this.deps.trial ? 'Reward: ' : 'Loot: ', lootChips(banked)),
-      this.deps.grove || this.deps.trial ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+      this.deps.grove
+        ? h('p', { class: 'muted' }, 'Your stars count toward the Alliance War.')
+        : this.deps.practice
+          ? h('p', { class: 'muted' }, 'Loot it would have won: ', lootChips(r.loot))
+        : pending
+          ? h('p', {}, 'Loot won: ', lootChips(r.loot), h('span', { class: 'muted small' }, ' (confirming with the server; it arrives when the server accepts the attack)'))
+          : h('p', {}, this.deps.trial ? 'Reward: ' : 'Loot: ', lootChips(banked)),
+      this.deps.grove || this.deps.trial || this.deps.practice || pending ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),
       used ? h('p', { class: 'muted small' }, `Troops used: ${used}`) : null,
-      Object.entries(banked).some(([k, v]) => v - (bonus?.[k as ResourceKind] ?? 0) - (eventBonus?.[k as ResourceKind] ?? 0) < (r.loot[k as ResourceKind] ?? 0)) ? h('p', { class: 'note' }, 'Some loot did not fit in your storage.') : null,
+      // The settlement says exactly what did not fit; nothing is inferred from totals.
+      overflow && Object.values(overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, 'Did not fit in your storage: ', lootChips(overflow)) : null,
     );
     this.modal(title, body, [
       { label: 'Watch replay', onClick: () => this.deps.onReplay() },

@@ -43,7 +43,7 @@
       "ability": {
         "id": "wind_step",
         "name": "Wind Step",
-        "text": "Dashes to a new target; the first hit after each dash deals triple damage."
+        "text": "Dashes to a new target; the first hit after each dash deals double damage."
       },
       "look": {
         "gi": "#2a3a3a",
@@ -169,6 +169,7 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
+      "dpsScale": 0.6,
       "liveTroop": "thousand_needle"
     },
     {
@@ -495,7 +496,7 @@
       "ability": {
         "id": "chain_lightning",
         "name": "Chain Lightning",
-        "text": "Lightning hits a defense and up to three nearby defenses for 45% damage each."
+        "text": "Lightning hits a defense and up to three nearby defenses for 35% damage each."
       },
       "look": {
         "gi": "#1f2433",
@@ -667,13 +668,14 @@
       "ability": {
         "id": "long_shot",
         "name": "Long Shot",
-        "text": "Artillery with 11-tile range. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing."
+        "text": "Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing."
       },
       "look": {
         "gi": "#3a3f48",
         "accent": "#e9b44c",
         "weapon": "bronze hand-mortar"
       },
+      "dpsScale": 0.5,
       "liveTroop": "siege_bombardier"
     },
     {
@@ -727,6 +729,7 @@
         "weapon": "falconry glove",
         "mount": "hawk"
       },
+      "dpsScale": 0.6,
       "liveTroop": "hawk_tamer"
     },
     {

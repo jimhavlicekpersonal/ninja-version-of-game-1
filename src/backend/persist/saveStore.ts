@@ -32,20 +32,26 @@ export class MemorySaveStore implements SaveStore {
   }
 }
 
+/** The testing sandbox keeps its own village under this key, so testing tools never touch the real save. */
+export const SANDBOX_SAVE_KEY = 'village-sandbox';
+
 export class IdbSaveStore implements SaveStore {
   readonly persistent = true;
-  constructor(private readonly db: IDBDatabase) {}
+  constructor(
+    private readonly db: IDBDatabase,
+    private readonly key: string = SAVE_KEY,
+  ) {}
   async load(): Promise<unknown | null> {
-    const v = await transact<unknown>(this.db, KV_STORE, 'readonly', (s) => s.get(SAVE_KEY));
+    const v = await transact<unknown>(this.db, KV_STORE, 'readonly', (s) => s.get(this.key));
     return v ?? null;
   }
   async save(file: SaveFile): Promise<void> {
-    await transact(this.db, KV_STORE, 'readwrite', (s) => s.put(file, SAVE_KEY));
+    await transact(this.db, KV_STORE, 'readwrite', (s) => s.put(file, this.key));
   }
   async clear(): Promise<void> {
-    await transact(this.db, KV_STORE, 'readwrite', (s) => s.delete(SAVE_KEY));
+    await transact(this.db, KV_STORE, 'readwrite', (s) => s.delete(this.key));
   }
   async backupDamaged(raw: unknown): Promise<void> {
-    await transact(this.db, KV_STORE, 'readwrite', (s) => s.put(raw, `${SAVE_KEY}-damaged-${Date.now()}`));
+    await transact(this.db, KV_STORE, 'readwrite', (s) => s.put(raw, `${this.key}-damaged-${Date.now()}`));
   }
 }

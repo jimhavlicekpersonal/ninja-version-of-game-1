@@ -12,9 +12,9 @@
  */
 import { generateOpponent } from './battle/basegen';
 import type { BaseLayout } from './battle/types';
-import { maxHousingAtHall } from './army';
+import { maxHousingAtHall, troopUnlock } from './army';
 import { troopDef } from './data';
-import { troopLevelCapAt } from './research';
+import { troopLevelCapAt, troopLevelOf } from './research';
 import { createRng, mixSeed, next, type Rng } from './rng';
 import type { GameData, ResourceKind, VillageState } from './types';
 import { hallLevel } from './village';
@@ -41,13 +41,14 @@ export function strengthFor(trophies: number, data: GameData): number {
  * than `hallsBelow` / `hallsAbove` Elder Toadstool levels away from the
  * player's own hall. Pass `mirror` for attackers matched against a defender.
  */
-export function matchStrength(rng: Rng, trophies: number, ownHall: number, data: GameData, mirror = false): MatchStrength {
+export function matchStrength(rng: Rng, trophies: number, ownHall: number, data: GameData, mirror = false, floor = 0): MatchStrength {
   const mm = data.ranks.matchmaking;
   const top = maxHall(data);
   const below = mirror ? mm.hallsAbove : mm.hallsBelow;
   const above = mirror ? mm.hallsBelow : mm.hallsAbove;
-  const lo = Math.max(0, ownHall - below - 1);
   const hi = Math.min(top, ownHall + above) - 1e-6;
+  // Never weaker than the attacker's own earned power allows (see attackerStrength).
+  const lo = Math.min(hi, Math.max(0, ownHall - below - 1, floor));
   let s = strengthFor(trophies, data) + (next(rng) * 2 - 1) * mm.strengthJitter;
   s = Math.max(lo, Math.min(hi, s));
   const whole = Math.floor(s);
@@ -74,17 +75,54 @@ export function applyLootPenalty(base: BaseLayout, attackerHall: number, data: G
   return base;
 }
 
-/** The generated opponent behind a scout seed, for this player. */
+/**
+ * How strong a player's army is, in hall units: Keep level minus 1, plus how
+ * far their warriors' research has climbed toward that Keep's caps (0..1). A
+ * Keep 15 player with maxed research is ~15; one who just arrived at Keep 15
+ * with Keep 14 research is ~14.6. Counts the warriors they field (ready or
+ * training), or every warrior they can train if none.
+ *
+ * Levels are read on the Keep's research scale: a newer tier's level 1 is as
+ * strong as an older warrior at level 1 + `levelCapOffset`, so swapping in
+ * newly unlocked warriors at level 1 does not make the army look weaker (Keep 7
+ * players with fresh Keep 7 warriors used to be matched with Keep 6 bases and
+ * three-starred them).
+ */
+export function attackerStrength(state: VillageState, data: GameData): number {
+  const hall = hallLevel(state, data);
+  const fielded = new Set([...Object.keys(state.army), ...state.training.map((q) => q.troop)]);
+  const troops = fielded.size ? [...fielded] : Object.keys(data.troops).filter((t) => troopUnlock(state, t, data).unlocked);
+  const scale = troopLevelCapAt(hall, data);
+  let sum = 0;
+  let n = 0;
+  for (const t of troops) {
+    const def = data.troops[t];
+    if (!def) continue;
+    const offset = def.levelCapOffset ?? 0;
+    const lvl = Math.min(troopLevelCapAt(hall, data, t), troopLevelOf(state, t)) + offset;
+    sum += scale > 1 ? Math.min(1, (lvl - 1) / (scale - 1)) : 1;
+    n++;
+  }
+  return hall - 1 + (n ? sum / n : 0);
+}
+
+/**
+ * The generated opponent behind a scout seed, for this player. Trophies pick
+ * the strength, but never below what the player's own army has earned (minus
+ * a little slack): climbing research while honor lags no longer turns the late
+ * game into farming bases a whole Keep below.
+ */
 export function opponentFor(seed: number, state: VillageState, data: GameData): BaseLayout {
-  return opponentForRank(seed, state.trophies, hallLevel(state, data), data);
+  const floor = attackerStrength(state, data) - data.ranks.matchmaking.powerSlack;
+  return opponentForRank(seed, state.trophies, hallLevel(state, data), data, floor);
 }
 
 /**
  * The same generated opponent from just a rank and hall level. The server uses
  * this when no real player fits, so online and offline matchmaking agree.
  */
-export function opponentForRank(seed: number, trophies: number, ownHall: number, data: GameData): BaseLayout {
-  const st = matchStrength(createRng(mixSeed(seed, 0x5c0a7)), trophies, ownHall, data);
+export function opponentForRank(seed: number, trophies: number, ownHall: number, data: GameData, floor = 0): BaseLayout {
+  const st = matchStrength(createRng(mixSeed(seed, 0x5c0a7)), trophies, ownHall, data, false, floor);
   const base = generateOpponent(seed, st.hall, data, { levelBias: st.bias });
   base.trophies = st.trophies;
   return applyLootPenalty(base, ownHall, data);

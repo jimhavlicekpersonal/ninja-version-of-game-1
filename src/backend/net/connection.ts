@@ -83,6 +83,8 @@ export interface ConnectionOptions {
   kv?: KeyValue;
   /** Makes the adapter for a server address (tests pass an in-process one). */
   makePort?: (url: string) => ServerPort;
+  /** Force online play off (the testing sandbox: its clock and test purchases must never reach a server). */
+  offline?: boolean;
   log?: (msg: string, err?: unknown) => void;
 }
 
@@ -105,7 +107,7 @@ export class Connection {
 
   constructor(private readonly o: ConnectionOptions) {
     this.kv = o.kv ?? browserKeyValue;
-    this.url = resolveServerUrl(this.kv, o.builtInUrl);
+    this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl);
     if (this.url) {
       this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u)))(this.url);
       this.status = 'connecting';
@@ -273,6 +275,24 @@ export class Connection {
     }
   }
 
+  /**
+   * Upload the base first if the Keep level the server knows is out of date:
+   * the server checks attacks against that Keep (troop unlocks, camp and Lodge
+   * sizes), so a fresh Keep upgrade must reach it before the next attack.
+   */
+  async ensureFreshBase(): Promise<void> {
+    if (!this.port || !this.player) return;
+    const g = this.o.game;
+    const hall = villageToBase(g.state, g.now(), g.data).hallLevel;
+    if (hall === this.player.hallLevel) return;
+    await this.uploadBase();
+    try {
+      this.player = await this.port.me();
+    } catch (e) {
+      this.log('Online play: could not refresh the player', e);
+    }
+  }
+
   /** Real raids against this village since the last check. */
   private async pullDefenses(port: ServerPort): Promise<void> {
     const g = this.o.game;
@@ -363,20 +383,44 @@ export class Connection {
 
   private async runFlush(): Promise<void> {
     const port = this.port!;
+    const g = this.o.game;
+    this.requeuePending();
     for (const item of this.outbox()) {
       try {
         if (item.kind === 'attack') {
+          // The server's answer settles the attack: its loot and honor are banked only now.
           const r = await port.submitAttack(item.sub);
-          this.o.game.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
+          g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies });
+          g.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
         } else {
           await port.submitRaidAttack(item.sub);
         }
       } catch (e) {
         if (!(e instanceof ServerError) || e.retryable) throw e;
         this.log(`Online play: the server refused a ${item.kind} report (${e.code})`, e);
+        // Refused for good (expired ticket, rule check): it becomes a practice result, with no loot or honor.
+        if (item.kind === 'attack') g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, rejected: e.code });
       }
       this.saveOutbox(this.outbox().filter((i) => i.id !== item.id));
     }
     this.emit();
+  }
+
+  /**
+   * Attacks still waiting for the server whose report is missing from the
+   * outbox (cleared browser storage, another device's outbox): queue them
+   * again from the battle record. The server answers a repeated report with
+   * its first result, so this can never count an attack twice.
+   */
+  private requeuePending(): void {
+    const items = this.outbox();
+    const queued = new Set(items.map((i) => i.sub.ticket));
+    let added = false;
+    for (const r of this.o.game.state.battleLog) {
+      if (r.settlement !== 'pending' || !r.ticket || queued.has(r.ticket)) continue;
+      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick } });
+      added = true;
+    }
+    if (added) this.saveOutbox(items);
   }
 }

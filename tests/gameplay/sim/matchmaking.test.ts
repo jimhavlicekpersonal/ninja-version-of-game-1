@@ -1,7 +1,8 @@
 /** Scouting (#1, #2), trophy-based matchmaking (#3), trophy equilibrium (#4) and the loot penalty. */
 import { describe, expect, it } from 'vitest';
 import { totalLoot } from '../../../src/gameplay/sim/battle/basegen';
-import { matchStrength, opponentFor, strengthFor } from '../../../src/gameplay/sim/matchmaking';
+import { attackerStrength, matchStrength, opponentFor, opponentForRank, strengthFor } from '../../../src/gameplay/sim/matchmaking';
+import { troopLevelCapAt } from '../../../src/gameplay/sim/research';
 import { lossTrophies, winTrophies } from '../../../src/gameplay/sim/ranks';
 import { createRng, next } from '../../../src/gameplay/sim/rng';
 import type { VillageState } from '../../../src/gameplay/sim/types';
@@ -105,12 +106,11 @@ describe('matchmaking by trophies (#3)', () => {
   });
 
   it('beating a lower Elder Toadstool pays less loot', () => {
-    const { state } = newGame();
     // At these trophies both a hall 2 and a hall 3 player meet the same hall 2 base.
     const trophies = Math.round(1.4 * data.ranks.matchmaking.trophiesPerHall);
     for (const seed of [4242, 99, 1234]) {
-      const full = opponentFor(seed, { ...atHall(state, 2), trophies }, data);
-      const penalised = opponentFor(seed, { ...atHall(state, 3), trophies }, data);
+      const full = opponentForRank(seed, trophies, 2, data);
+      const penalised = opponentForRank(seed, trophies, 3, data);
       expect(full.hallLevel).toBe(2);
       expect(penalised.buildings.map((b) => [b.type, b.level, b.x, b.y])).toEqual(full.buildings.map((b) => [b.type, b.level, b.x, b.y]));
       expect(totalLoot(penalised).acorns!).toBeLessThan(totalLoot(full).acorns!);
@@ -165,3 +165,34 @@ describe('trophy equilibrium (#4)', () => {
     expect(strengthFor(data.ranks.matchmaking.trophiesPerHall * 2, data)).toBe(2);
   });
 });
+
+describe('matchmaking follows earned power, not only honor (audit F22)', () => {
+  it('a Keep 15 attacker with maxed research meets Keep 15 bases even while its honor lags a Keep behind', () => {
+    const { state } = newGame();
+    const village = atHall(state, 15);
+    const lagging = { ...village, trophies: 14 * data.ranks.matchmaking.trophiesPerHall - 200 };
+    const fresh = opponentFor(7, { ...lagging, army: { hedgehog_roller: 10 } }, data);
+    const maxed = opponentFor(7, { ...lagging, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: troopLevelCapAt(15, data, 'hedgehog_roller') }, active: [] } }, data);
+    expect(attackerStrength({ ...lagging, army: { hedgehog_roller: 10 } }, data)).toBeCloseTo(14, 5);
+    expect(fresh.hallLevel).toBeLessThanOrEqual(14);
+    expect(maxed.hallLevel).toBe(15);
+    // Same Keep: no loot penalty.
+    expect(totalLoot(maxed).acorns!).toBeGreaterThan(0);
+  });
+
+  it('swapping in a newly unlocked tier at level 1 does not lower the floor (the old Keep 7 hole)', () => {
+    // A new tier's level 1 is as strong as an older warrior at 1 + levelCapOffset.
+    const village = atHall(newGame().state, 7);
+    const old = { ...village, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: troopLevelCapAt(6, data, 'hedgehog_roller') }, active: [] } };
+    const fresh = { ...village, army: { wind_step_assassin: 10 }, research: { levels: {}, active: [] } };
+    expect(data.troops.wind_step_assassin.levelCapOffset).toBeGreaterThan(0);
+    expect(attackerStrength(fresh, data)).toBeGreaterThanOrEqual(attackerStrength(old, data) - 1e-9);
+    expect(attackerStrength(fresh, data)).toBeGreaterThan(6.5);
+    // Fully researched new tier: the top of Keep 7.
+    const maxed = { ...fresh, research: { levels: { wind_step_assassin: troopLevelCapAt(7, data, 'wind_step_assassin') }, active: [] } };
+    expect(attackerStrength(maxed, data)).toBeCloseTo(7, 5);
+    // So Keep 7 attackers meet Keep 7 bases, not the Keep 6 bases they used to flatten.
+    for (let seed = 1; seed <= 20; seed++) expect(opponentFor(seed, { ...fresh, trophies: 0 }, data).hallLevel).toBe(7);
+  });
+});
+

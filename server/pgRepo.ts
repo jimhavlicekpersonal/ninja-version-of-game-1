@@ -52,6 +52,7 @@ const toTicket = (r: Row): Ticket => {
   if (r.week !== null && r.week !== undefined) t.week = num(r.week);
   if (r.grove_id !== null && r.grove_id !== undefined) t.groveId = String(r.grove_id);
   if (r.target !== null && r.target !== undefined) t.target = num(r.target);
+  if (r.response !== null && r.response !== undefined) t.response = r.response;
   return t;
 };
 
@@ -220,8 +221,8 @@ export class PgRepo implements Repo {
     return r[0] ? toTicket(r[0]) : null;
   }
 
-  async useTicket(id: string): Promise<boolean> {
-    const r = await this.pool.query('update tickets set used = true where id = $1 and used = false', [id]);
+  async useTicket(id: string, response?: unknown): Promise<boolean> {
+    const r = await this.pool.query('update tickets set used = true, response = coalesce($2::jsonb, response) where id = $1 and used = false', [id, response === undefined ? null : JSON.stringify(response)]);
     return (r.rowCount ?? 0) > 0;
   }
 

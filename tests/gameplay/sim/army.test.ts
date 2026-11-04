@@ -39,14 +39,20 @@ describe('troop training', () => {
     expect(s.training).toHaveLength(0);
   });
 
-  it('respects army camp housing', () => {
+  it('respects army camp housing: one army in the camps, the next one waiting in the queue', () => {
     const { state, clock } = withArmyBuildings();
     expect(housingCapacity(state, data)).toBe(20);
     let s = { ...state, resources: { ...state.resources, dew: 1500 } };
-    for (let i = 0; i < 20; i++) s = must(s, { type: 'train', troop: 'hedgehog_roller' }, clock.now());
+    // A full army, then a full next army in the queue (economy.json queuedArmies = 1).
+    for (let i = 0; i < 40; i++) s = must(s, { type: 'train', troop: 'hedgehog_roller' }, clock.now());
     const r = applyCommand(s, { type: 'train', troop: 'hedgehog_roller' }, clock.now(), data);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.code).toBe('ARMY_FULL');
+    // Once everything has trained, only one army fits in the camps; the rest waits, done, in the queue.
+    const later = advance(s, clock.now() + 3_600_000, data).state;
+    expect(later.army.hedgehog_roller).toBe(20);
+    expect(later.training).toHaveLength(20);
+    expect(later.stats.troopsTrained).toBe(20);
   });
 
   it('locks troops behind barracks levels', () => {

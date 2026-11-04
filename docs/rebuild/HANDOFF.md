@@ -29,7 +29,7 @@
 | Icon manifest (504 images) + ART AI brief + real-art loader | Done | `npm run docs:progression`; `public/art/manifest.json` loads in game |
 | Mobile sizes | Checked | 390×844, 360×640, 844×390 screenshots |
 
-**Checks:** `npm test`: 42 files, 286 tests, all passing. `npm run build`, `npm run typecheck:server` and `npm run server:build` all pass.
+**Checks (original rebuild):** `npm test`: 42 files, 286 tests, all passing. `npm run build`, `npm run typecheck:server` and `npm run server:build` all pass.
 
 ## Not verified here (needs your devices or accounts)
 
@@ -53,6 +53,20 @@ Roadmap: 1 clarify systems → 2 five defensive counters → 3 measure army bala
    - **Open: Keep 9** is ~90–100% for every plan (Tier 3 power spike); placement doesn't matter there yet.
 5. **Next (progression flow):** retrain presets (save the last army; needs a `SAVE_VERSION` bump), a clearer next objective on the HUD, teaching Trials (one counter per tier with a hint), and extending the model player's pacing check through Keep 15 (with the new late-Keep curve).
 6. **Next (external playtest):** real-phone performance (Pixel 7 / iPhone), interrupted battles on protocol v5, save recovery from a corrupt slot, update flow for the service worker, and a hosted server verified end to end.
+
+## Gameplay audit fixes (2026-11-03)
+
+An external gameplay audit of `c457aa7` (37 findings, 4,435 simulated battles, two 300-day campaigns) was fixed in one pass. The root `CLAUDE.md` has the finding → fix → test table. Highlights:
+
+- **Settlement and lifecycle:** online raid losses come out of the collector that lost them; research, task days and league seasons settle while the game is open; overnight work counts for the day it finished; donated troops keep their level; counters are off while upgrading (and scouting agrees); results and rewards report what was really banked and what overflowed, with a warning before one-time claims; replays carry the battle rules (`SIM_RULES`) and stale ones are shown as unavailable; Alliance War attacks are protected against interruption and replayable.
+- **Online authority (protocol 6):** online loot is banked only from the server's answer (refused = practice); tickets are idempotent; uploaded bases must be legal for their Keep; armies must be trainable at the attacker's Keep (donated troops within the Lodge); wars pair equal rosters with a side attack cap and a destruction tiebreak. Time skips and the free test store live only in the testing sandbox (`?sandbox`).
+- **AI and teaching:** Repair Cranes and Incense Burners are generated next to defenses; wall-breakers break only the wall in their way and the Siege Bombardier fires on defenses; healers break through when every ally is walled in; the tutorial teaches smoke over your warriors (what the rule rewards).
+- **Pacing:** Dojo training speed and a next-army queue (a full late army refills in about 1.5 h, was 13 h); batch training, saved armies, retrain-last, dismiss, practice battles; research lanes and one research curve for all 50 warriors (the roster maxes in about 268 days, was 2,462); tasks only from what's possible; Keep-scaled Season Scroll rewards; leagues to 5,200 honor and achievements to Keep 15; Shadow Trials use median-strength fortresses, layout factors and an alternate fortress after a failure.
+- **Balance and measurement:** opponents never fall below the attacker's earned strength; Throwers pay for range (0.7× damage), DPS taxes on the Bombardier, Thousand Needle and Hawk Tamer, kite kit trims (the Dragon Kite now outperforms the Thunder Kite), a control-tower Ballista, and a measured mid-Keep defense bump. Keep 7 was a hole the audit's Keep 7 raids showed (27/27 three stars): its bases fielded Keep 6 levels while armies gained two research levels and a new tier, so Keep 7 now unlocks Kunai Tower level 9, Shuriken Pagoda level 8 and Firework Mortar level 6, the step into the late-Keep curve is smoothed, and `attackerStrength` reads a new tier's level 1 at its research-scale level, so fresh Keep 7 warriors meet Keep 7 bases. The army lab measures counters by switching only their effects off (same bases and entry points), reports investment and counter activity, and outcome gates guard the matrix. The model player has defender, explorer and engaged (Trials, tasks, pass) policies; `npm run balance:campaign` writes `docs/game-theory/CAMPAIGN.md`.
+
+Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. What the audit asked for that stays an **owner decision**: whether online play is trusted-local or competitive (a competitive launch needs a server-side inventory/research/timer ledger, protocol 7), and a real web/Play payment path.
+
+Further checks from the audit, now handled: the last deployments are saved at once when the app is hidden or closed; a failed save shows a warning; a flyer grounded by a Ballista can set off traps; the Ballista's catalog matchups list only flyers, and the Repair Crane really answers the Hawk Tamer (it cuts the slowing short). Not yet covered: an automated check that every Infiltration Point is reachable on unusually dense player bases.
 
 ## Unfinished (prioritised)
 

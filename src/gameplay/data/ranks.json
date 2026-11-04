@@ -67,6 +67,62 @@
         "acorns": 20000,
         "dew": 20000
       }
+    },
+    {
+      "id": "jade",
+      "name": "Jade League",
+      "min": 2800,
+      "chest": {
+        "acorns": 450000,
+        "dew": 450000,
+        "moonstones": 125
+      },
+      "winBonus": {
+        "acorns": 30000,
+        "dew": 30000
+      }
+    },
+    {
+      "id": "storm",
+      "name": "Storm League",
+      "min": 3600,
+      "chest": {
+        "acorns": 600000,
+        "dew": 600000,
+        "moonstones": 150
+      },
+      "winBonus": {
+        "acorns": 45000,
+        "dew": 45000
+      }
+    },
+    {
+      "id": "shadow",
+      "name": "Shadow League",
+      "min": 4400,
+      "chest": {
+        "acorns": 800000,
+        "dew": 800000,
+        "moonstones": 175
+      },
+      "winBonus": {
+        "acorns": 60000,
+        "dew": 60000
+      }
+    },
+    {
+      "id": "kage",
+      "name": "Kage League",
+      "min": 5200,
+      "chest": {
+        "acorns": 1000000,
+        "dew": 1000000,
+        "moonstones": 200
+      },
+      "winBonus": {
+        "acorns": 80000,
+        "dew": 80000
+      }
     }
   ],
   "matchmaking": {
@@ -74,7 +130,8 @@
     "strengthJitter": 0.35,
     "hallsBelow": 1,
     "hallsAbove": 1,
-    "trophyJitter": 30
+    "trophyJitter": 30,
+    "powerSlack": 0.25
   },
   "lootPenaltyByHallDiff": [
     1,

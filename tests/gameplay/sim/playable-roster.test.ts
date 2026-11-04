@@ -39,7 +39,7 @@ describe('roster unlock, training, research and persistence', () => {
     const trained = applyCommand(state, { type: 'train', troop }, now, data);
     expect(trained.ok).toBe(true);
     if (!trained.ok) return;
-    finishTraining(trained.state, now + data.troops[troop].trainSeconds * 1000);
+    finishTraining(trained.state, now + data.troops[troop].trainSeconds * 1000, data);
     expect(trained.state.army[troop]).toBe(1);
     expect(deserialize(serialize(trained.state, now), data).army[troop]).toBe(1);
     const endgame = atKeep(15);

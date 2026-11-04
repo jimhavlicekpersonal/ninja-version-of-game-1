@@ -54,7 +54,8 @@ describe('attack vs defense at the same hall (#5)', () => {
   it('a base a hall above is much harder', { timeout: 60_000 }, () => {
     const same = fight(4, 0.5, botArmy(4, 1, data), troopLevelCapAt(4, data));
     const above = fight(5, 0.2, botArmy(4, 1, data), troopLevelCapAt(4, data));
-    expect(above.destruction).toBeLessThan(same.destruction - 15);
+    // Measured 14-20 points (it was 15+ before the Thrower damage cut lowered the same-hall result).
+    expect(above.destruction).toBeLessThan(same.destruction - 12);
   });
 });
 

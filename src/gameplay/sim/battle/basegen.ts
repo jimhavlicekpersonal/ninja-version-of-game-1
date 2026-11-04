@@ -61,7 +61,7 @@ export const LAYOUTS: LayoutArchetype[] = [
   {
     id: 'kunai_ring',
     name: 'Kunai Ring',
-    tip: 'Towers in a wide ring cover each other: jam one, smoke the next, break in through the gap.',
+    tip: 'Towers in a wide ring cover each other: jam one, smoke your squad as it reaches the next, break in through the gap.',
     rings: { splash: [6, 9], defense: [6, 9], storage: [2, 5], trap: [5, 8], other: [10, 14] },
     wallRings: 0,
     wallGaps: 0,
@@ -167,9 +167,18 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
     return ({ defense: 0, storage: 1, trap: 2 } as Record<string, number>)[d.category] ?? 3;
   };
   plan.sort((a, b) => order(a.type) - order(b.type));
+  // Support counters (Repair Crane, Incense Burner) only work near defenses, so
+  // they are placed after the defenses, where they cover the most of them.
+  const supports = plan.filter((p) => coversDefenses(data, p.type));
   for (const p of plan) {
+    if (supports.includes(p)) continue;
     const def = buildingDef(data, p.type);
     const spot = placeInRing(rng, o, def.size, c, p.r1, p.r2, def.category === 'trap' ? 0 : 1);
+    if (spot) add(p.type, levelFor(p.type), spot.x, spot.y);
+  }
+  for (const p of supports) {
+    const def = buildingDef(data, p.type);
+    const spot = placeNearDefenses(o, buildings, data, p.type, c) ?? placeInRing(rng, o, def.size, c, p.r1, p.r2, 1);
     if (spot) add(p.type, levelFor(p.type), spot.x, spot.y);
   }
 
@@ -246,6 +255,50 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
   const out: BaseLayout = { name: opponentName(rng, data), hallLevel: hl, buildings };
   if (opts.layout) out.practice = opts.layout.name;
   return out;
+}
+
+/** A non-firing building whose counter effect works on defenses or the fights around them. */
+function coversDefenses(data: GameData, type: string): boolean {
+  const def = buildingDef(data, type);
+  return def.category === 'support' && Boolean(def.effect?.radius);
+}
+
+/** Defense centres a building at (x, y) would cover with its effect radius. */
+export function defensesCovered(data: GameData, buildings: BaseBuilding[], type: string, x: number, y: number): number {
+  const def = buildingDef(data, type);
+  const r = def.effect?.radius ?? 0;
+  const cx = x + def.size / 2;
+  const cy = y + def.size / 2;
+  let n = 0;
+  for (const b of buildings) {
+    const d = buildingDef(data, b.type);
+    if (d.category !== 'defense') continue;
+    const dx = b.x + d.size / 2 - cx;
+    const dy = b.y + d.size / 2 - cy;
+    if (dx * dx + dy * dy <= r * r) n++;
+  }
+  return n;
+}
+
+/**
+ * The free spot where a support counter covers the most defenses (it may
+ * stand right next to them: a 3-tile defense is otherwise out of a 3-tile
+ * radius); ties go to the spot nearest the centre, then the lowest row and
+ * column, so it is deterministic. Null when no spot covers any defense.
+ */
+function placeNearDefenses(o: Occ, buildings: BaseBuilding[], data: GameData, type: string, c: number): { x: number; y: number } | null {
+  const s = buildingDef(data, type).size;
+  let best: { x: number; y: number; n: number; d: number } | null = null;
+  for (let y = 1; y + s < o.size; y++) {
+    for (let x = 1; x + s < o.size; x++) {
+      if (!free(o, x, y, s, 0)) continue;
+      const n = defensesCovered(data, buildings, type, x, y);
+      if (n === 0) continue;
+      const d = (x + s / 2 - c) * (x + s / 2 - c) + (y + s / 2 - c) * (y + s / 2 - c);
+      if (!best || n > best.n || (n === best.n && d < best.d)) best = { x, y, n, d };
+    }
+  }
+  return best ? { x: best.x, y: best.y } : null;
 }
 
 /** Wall rings for a styled layout: rings around the core, `wallGaps` gates in each. */

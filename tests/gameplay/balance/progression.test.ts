@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
-import { activeHour, ModelPlayer, normalDays } from './playerModel';
+import { activeHour, ModelPlayer, normalDays } from '../../../tools/balance/playerModel';
 
 // The model fights every raid as a real battle (no assumed loot share), so
 // these targets check the actual battle, loot and matchmaking rules.

@@ -1,6 +1,13 @@
-# Kagemura multiplayer protocol (version 4)
+# Kagemura multiplayer protocol (version 6)
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
+
+**Version 6 (gameplay audit fixes):** clients and servers must upgrade together (`minProtocol: 6`), because the battle rules changed (`SIM_RULES` 2: counters are off while upgrading, wall-breakers target the wall in the way, the Siege Bombardier fires on defenses, healers break walls, rebalanced Throwers and kites).
+- `BattleSubmission.reinforcements` lists donated troops in the army with the level each was donated at; they deploy first at that level. `DefenseView` carries `reinforcements` and `rules`.
+- A used ticket stores its answer. Reporting the same battle again returns that same answer (no `409`), so a client that lost an answer can always recover it, and nothing is applied twice.
+- The client banks an online attack's loot and honor only from the server's answer. A refused report (expired ticket, failed check) becomes a practice result on the client.
+- Uploaded bases must be legal for their Keep, and armies must be trainable at the attacker's Keep (see PvP rules).
+- Alliance Wars pair equal rosters, cap each side's attacks at roster × allowance, and break star ties by destruction.
 
 **Version 5 (defensive counters, Infiltration Points):** the server re-simulates every attack with the five live counter buildings and with Infiltration Points on (`BattleSetup.infiltration: true`): warriors only enter inside the base's points, each hiding about a third of the army; off-point deployments are dropped, exactly as in the game. `DefenseView.infiltration` is `true` on attacks recorded under this rule, so replays use it. The server advertises `minProtocol: 5` and the `defense-counters` feature.
 
@@ -80,7 +87,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
 
 ## Battles must replay exactly
 
-The client plays a battle locally and sends `{ ticket, seed, army, levels, deployments, endTick }`. The server re-runs it from the ticket's base with `runBattle` from `src/gameplay/sim/battle/battle.ts`, and the server's result is what counts.
+The client plays a battle locally and sends `{ ticket, seed, army, levels, reinforcements, deployments, endTick }`. The server re-runs it from the ticket's base with `runBattle` from `src/gameplay/sim/battle/battle.ts`, and the server's result is what counts. The client records the attack as pending and banks the loot and honor from the server's answer (`settleOnlineAttack`); a permanently refused report becomes a practice result with no loot or honor.
 
 - The battle simulation is deterministic: fixed 10 ticks per second, a seeded random generator, and JavaScript number math (IEEE-754 doubles) done in a fixed order. A port must do the same operations in the same order.
 - A server written in another language must either run this TypeScript code (for example a small Node sidecar) or port it exactly.
@@ -88,10 +95,11 @@ The client plays a battle locally and sends `{ ticket, seed, army, levels, deplo
 
 Every battle report must also be checked:
 
-- The army fits `maxHousing(attacker hall)`: full Army Camps plus a full Grove Lodge at that hall.
+- Own troops (army minus `reinforcements`) are trainable at the attacker's Keep (`troopEarliestKeep`: the troop's Keep gate and the Keep that allows its Dojo level) and fit full Army Camps at that Keep.
+- Donated troops fit the largest Lodge at that Keep, and their levels are at most the highest research cap any donor could have.
 - Troop levels are at most `troopLevelCap` for the attacker's hall.
 - At most 2,000 deployments. A deployment whose `troop` is an ability id (battle.json `abilities`) is an ability use, limited by its charges. Ability uses never count as troops used.
-- Each ticket can be used only once.
+- Each ticket is used once. A repeated report of a used ticket gets the stored answer back.
 
 ## Endpoints
 
@@ -120,7 +128,8 @@ Every battle report must also be checked:
 Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.ts` and the balance data in `src/gameplay/data/`.
 
 - **Base upload:**
-  - Refuse impossible bases: unknown buildings, bad levels, buildings off the map or overlapping, anything other than exactly one Elder Toadstool, or bad loot values.
+  - Refuse impossible bases: unknown buildings, bad levels, buildings off the map or overlapping, duplicate ids, anything other than exactly one Clan Keep, bad loot values, more buildings of a type or higher levels than the Keep allows (`hall.json` limits), and any field outside the allowed shape (a `power`/`wallPower` multiplier or a label is never accepted from a player).
+  - Drop loot from buildings that cannot hold it (only a collector holds what it produces; only a storage or the Keep holds what it stores; Jade is never loot).
   - Then cap the loot:
     - each collector at `ratePerHour × collectorHoursCap × raidableUncollectedFraction`;
     - storages together at `storageLootCapByHall[hall]` per resource, scaled down proportionally.
@@ -129,7 +138,7 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
   - Pick real players whose hall is within `hallsBelow`/`hallsAbove` of the attacker's, who have a base, and who are not shielded.
   - Skip the attacker, players they attacked in the last hour, their Grove mates, and anyone with an open ticket from the last 5 minutes (someone is already attacking them).
   - Search the trophy range `matchTrophyRange` first, then ±200, ±400, then any trophies.
-  - When nobody fits, generate a base with `opponentForRank(seed, trophies, hall)` and return it with `kind: "bot"`. Never answer "nobody": the game should always have something to attack.
+  - When nobody fits, generate a base with `opponentForRank(seed, trophies, hall, floor)` and return it with `kind: "bot"`. The floor is the attacker's assumed earned strength (half-way through their Keep, minus `powerSlack`), the same rule the game uses offline with the player's real research. Never answer "nobody": the game should always have something to attack.
 - **The ticket:**
   - Holds a copy of the base with `lootPenaltyByHallDiff` already applied for the attacker's hall. The client must not apply it again.
   - Lasts 1 hour (`expiresAt`).
@@ -186,12 +195,14 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
   - Weeks are numbered `floor((t − epoch) / 7 days)`.
 - **Pairing:**
   - When a member first looks at a live raid, pair their Grove with the closest active, unpaired Grove (by average trophies; member counts within 5; active means seen in the last 3 days).
-  - If no such Grove exists, pair it with a bot Grove from `enemyGrove(seed, week, averageHall)`. Its attacks on us are deterministic and spread over the raid.
+  - Both sides field the same number of bases: the smaller roster's size, taking each side's strongest members with a base (Keep, then honor). So both sides can win the same number of stars.
+  - If no such Grove exists, pair it with a bot Grove from `enemyGrove(seed, week, averageHall)`, sized to match. Its attacks on us are deterministic and spread over the raid.
   - Each side's roster is a copy of the other side's member bases with no loot.
 - **Attacks:**
-  - `attacksPerMember` per member.
+  - `attacksPerMember` per member, and at most roster size × `attacksPerMember` for the whole side (equal for both sides).
   - Only members who joined before the raid started take part. `RaidView.eligible` is false for the others.
-- **Scoring:** each base counts its best stars. The side with more stars in total wins.
+  - A repeated report of a used war ticket returns the same result with the current score.
+- **Scoring:** each base counts its best stars (and, among equal stars, its best destruction). The side with more stars in total wins; between two real Alliances, equal stars are decided by total destruction.
 - **Claims:**
   - Allowed after the raid ends, once per player per week. Repeating a claim is safe: it returns `alreadyClaimed: true` with the same outcome.
   - `RaidView.chests` lists this week's and last week's ended raids the player took part in, with whether each chest was claimed. The game claims every listed week it has not received yet.
@@ -207,9 +218,12 @@ The server is the authority for:
 - Groves, chat, requests and donations;
 - Grove Raid pairing, scoring and claims.
 
-The village economy (resources, buildings, timers and the trained army) still lives on each device, as it did in Phases 1–5. So the server trusts:
+The village economy (resources, buildings, timers, the trained army and research) still lives on each device. So the server checks legality, not ownership:
 
-- the uploaded base layout, after the checks and loot caps above;
+- an uploaded base must be one the Keep allows (counts, levels, shape, loot holders), but the server does not know the player paid for it;
+- an attack's army must be trainable and fit at the attacker's Keep, but the server does not keep an inventory or research ledger, so it cannot tell whether those exact troops were trained;
 - that a donor really had the troops they donated.
 
-Moving the economy to the server would close those gaps. That would be a protocol 3 change.
+The client side keeps its own guards: time-skip tools and the instant test store exist only in a separate sandbox save that never goes online (`?sandbox`), and online loot is banked only from the server's answers.
+
+**Owner decision before a competitive launch:** keep online play as trusted-local (today), or move the economy to the server: persist inventory, research and timers per player and consume them in the same transaction as each attack. That is a protocol 7 change and a larger server project (`docs/SHIPPING.md`).

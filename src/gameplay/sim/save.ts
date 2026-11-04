@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -109,6 +109,33 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // New per-warrior battle effects are reconstructed from deployments.
     v.research = v.research ?? emptyResearch();
   }
+  if (out.version < 12 && v && typeof v === 'object') {
+    // v11 -> v12 (gameplay audit fixes):
+    // - Lodge troops keep the level they were donated at. Troops already in the
+    //   Lodge keep fighting at the level they would have used (your research).
+    // - Settled league seasons are logged (they now settle while the game is open).
+    // - Army presets for one-tap retraining.
+    // - Battle records carry the rules version they were fought under; records
+    //   from before have none, so their replays are marked unavailable instead of
+    //   playing back a different fight. Their results stay in the log.
+    const grove = v.grove as { reinforcements?: Record<string, number>; reinforcementLevels?: Record<string, number> } | undefined;
+    const research = v.research as { levels?: Record<string, number> } | undefined;
+    if (grove && typeof grove === 'object') {
+      const levels: Record<string, number> = {};
+      for (const [t, n] of Object.entries(grove.reinforcements ?? {})) if (n > 0) levels[t] = Math.max(1, research?.levels?.[t] ?? 1);
+      grove.reinforcementLevels = grove.reinforcementLevels ?? levels;
+    }
+    v.seasonLog = v.seasonLog ?? [];
+    v.armyPresets = v.armyPresets ?? [];
+    // Research lanes: the single running research becomes the first lane.
+    const r = v.research as { active?: unknown } | undefined;
+    if (r && typeof r === 'object' && !Array.isArray(r.active)) r.active = r.active ? [r.active] : [];
+    // New task counters start at zero (in the lifetime stats and both task baselines).
+    const tasks = v.tasks as { dayBaseline?: Record<string, number>; weekBaseline?: Record<string, number> } | undefined;
+    for (const st of [v.stats, tasks?.dayBaseline, tasks?.weekBaseline] as (Record<string, number> | undefined)[]) {
+      if (st && typeof st === 'object') for (const k of ['researchDone', 'trialsCleared']) st[k] = st[k] ?? 0;
+    }
+  }
   out.version = SAVE_VERSION;
   return out;
 }
@@ -159,11 +186,15 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('alliance missing');
   if (!v.tutorial) problems.push('tutorial missing');
   if (!v.daily || !Number.isFinite(v.daily.lastDay) || !Number.isFinite(v.daily.step) || !Array.isArray(v.daily.history)) problems.push('daily chest missing');
+  if (!Array.isArray(v.seasonLog)) problems.push('season log missing');
+  if (!Array.isArray(v.armyPresets)) problems.push('army presets missing');
+  else for (const p of v.armyPresets) if (!p || typeof p.army !== 'object' || Object.entries(p.army).some(([t, n]) => !data.troops[t] || !Number.isInteger(n) || n < 0)) problems.push('bad army preset');
+  if (v.grove && (typeof v.grove.reinforcementLevels !== 'object' || !v.grove.reinforcementLevels)) problems.push('lodge levels missing');
   if (!v.research || typeof v.research.levels !== 'object') problems.push('research missing');
   else {
     for (const [t, n] of Object.entries(v.research.levels)) if (!data.troops[t] || !Number.isInteger(n) || n < 1 || n > data.troops[t].levels.length) problems.push(`bad research level ${t}`);
-    const a = v.research.active;
-    if (a && (!data.troops[a.troop] || !(a.endsAt >= a.startedAt))) problems.push('bad research timer');
+    if (!Array.isArray(v.research.active)) problems.push('bad research timer');
+    else for (const a of v.research.active) if (!data.troops[a.troop] || !(a.endsAt >= a.startedAt)) problems.push('bad research timer');
   }
   for (let i = 0; i < v.buildings.length; i++) {
     for (let j = i + 1; j < v.buildings.length; j++) {

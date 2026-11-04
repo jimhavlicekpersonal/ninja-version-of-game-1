@@ -1,16 +1,16 @@
-import { nextTrialTier, trialBase, trialReward } from './trials';
-import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueHousing, retimeQueue } from './army';
-import { runBattle } from './battle/battle';
-import type { BattleRecord, BattleSetup, Deployment } from './battle/types';
+import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
+import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
+import { runBattle, SIM_RULES } from './battle/battle';
+import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
-import { buildingDef, hallType, levelDef, maxDefinedLevel, troopDef, troopLevel } from './data';
+import { buildingDef, hallType, levelDef, maxDefinedLevel, troopLevel } from './data';
 import { mixSeed } from './rng';
-import { leagueFor, lossTrophies, seasonOf, winTrophies } from './ranks';
+import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies, type SeasonReward } from './ranks';
 import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
 import { chestContents, chestOutcome, emptyDaily, streakAfterClaim } from './daily';
 import { eventEffect } from './events';
 import { achievementViews } from './achievements';
-import { skipCost, topUpCost } from './economy';
+import { scaleReward, skipCost, topUpCost } from './economy';
 import { canPurchase, productInfo } from './monetization';
 import { scatterObstacles } from './obstacles';
 import { triggerOffer } from './offers';
@@ -32,15 +32,25 @@ export type Command =
   | { type: 'upgrade'; id: string }
   | { type: 'cancel'; id: string }
   | { type: 'collect'; id: string }
-  | { type: 'train'; troop: string }
+  /** Queue `count` warriors (default 1); as many as fit and can be paid for are queued. */
+  | { type: 'train'; troop: string; count?: number }
+  /** Queue whatever is missing to reach this army (camps plus the next-army queue), e.g. a saved preset or the last army. */
+  | { type: 'trainArmy'; army: Record<string, number> }
+  | { type: 'saveArmyPreset'; name: string; army: Record<string, number> }
+  | { type: 'deleteArmyPreset'; index: number }
+  /** Send ready warriors home to make room (part of their training cost comes back). */
+  | { type: 'dismiss'; troop: string; count: number }
   | { type: 'cancelTraining'; index: number }
   | { type: 'research'; troop: string }
-  | { type: 'cancelResearch' }
-  | { type: 'skipResearch' }
+  /** Cancel or finish a running research (the oldest when `troop` is left out). */
+  | { type: 'cancelResearch'; troop?: string }
+  | { type: 'skipResearch'; troop?: string }
   | { type: 'openDailyChest' }
   | { type: 'scout'; paid: boolean }
   | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'trialEnd'; tier: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /** After failing the next Shadow Trial tier, switch it to an alternate fortress (same tier, same reward). */
+  | { type: 'trialAlternate' }
   | { type: 'battleProgress'; pending: PendingBattle | null }
   | { type: 'skip'; id: string }
   | { type: 'skipTraining' }
@@ -69,6 +79,14 @@ export type Command =
   | { type: 'spendDonation'; troop: string; count: number; xp: number }
   | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number }
   | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /**
+   * The server's answer to an online attack (see battleEnd with `ticket`):
+   * bank its result, or turn the attack into a practice result when it was
+   * refused (expired ticket, rule violation). Safe to apply twice.
+   */
+  | { type: 'settleOnlineAttack'; ticket: string; result?: BattleResult; trophies?: number; playerTrophies?: number; rejected?: string }
+  /** An interrupted battle that can no longer be banked: its deployed troops are spent, nothing is won. */
+  | { type: 'abandonBattle'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'leaveLocalGrove' };
 
 export type ErrorCode =
@@ -100,11 +118,13 @@ export type SimEvent =
   | { kind: 'upgrade_cancel'; buildingType: BuildingType; id: string; toLevel: number; refund: Cost }
   | { kind: 'collect'; buildingType: BuildingType; id: string; resource: ResourceKind; amount: number; eventBonus?: number }
   | { kind: 'move'; buildingType: BuildingType; id: string }
-  | { kind: 'train_start'; troop: string; seconds: number; cost: Cost }
+  | { kind: 'train_start'; troop: string; seconds: number; cost: Cost; count?: number }
+  | { kind: 'dismiss'; troop: string; count: number; refund: Cost }
   | { kind: 'train_cancel'; troop: string }
   | { kind: 'research_start'; troop: string; toLevel: number; seconds: number; cost: Cost }
   | { kind: 'research_cancel'; troop: string; toLevel: number; refund: Cost }
-  | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number }
+  /** `grants` is what was really added; `overflow` is what did not fit in storage. */
+  | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number; overflow?: Cost }
   | { kind: 'scout'; seed: number; fee: number }
   | { kind: 'raid_end'; record: BattleRecord }
   | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost }
@@ -113,10 +133,11 @@ export type SimEvent =
   | { kind: 'purchase_granted'; productId: string; usd: number; grants: Cost }
   | { kind: 'trigger'; trigger: OfferTrigger }
   | { kind: 'offer_shown'; offerId: string; expiresAt: number }
-  | { kind: 'reward'; source: string; grants: Cost }
+  | { kind: 'reward'; source: string; grants: Cost; overflow?: Cost }
   | { kind: 'clear_start'; buildingType: BuildingType; id: string; seconds: number }
   | { kind: 'donation'; troop: string; count: number; xp: number }
-  | { kind: 'grove_attack'; target: number; stars: number; destruction: number }
+  | { kind: 'grove_attack'; target: number; stars: number; destruction: number; record: BattleRecord }
+  | { kind: 'raid_settled'; record: BattleRecord; outcome: 'confirmed' | 'rejected' }
   | { kind: 'reinforcements'; troops: { troop: string; count: number; fromName: string }[] };
 
 export type CommandResult =
@@ -178,6 +199,8 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     daily: emptyDaily(data),
     trials: { best: 0 },
     pendingBattle: null,
+    seasonLog: [],
+    armyPresets: [],
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -195,35 +218,78 @@ export function createNewVillage(now: number, data: GameData): VillageState {
   return state;
 }
 
-/** Finish every timer whose end time has passed. Returns a new state; the input is untouched. */
+/**
+ * Finish every timer whose end time has passed. Returns a new state; the input is untouched.
+ *
+ * Timers finish in the order they ended, and the task day/week (and the monthly
+ * league season) rolls over at its real boundary in between. So a troop that
+ * finished at 03:00 on the new day counts toward the new day's tasks even if
+ * the player only comes back at 09:00, and one that finished before midnight
+ * counts toward the old day.
+ */
 export function advance(state: VillageState, now: number, data: GameData): { state: VillageState; finished: FinishedUpgrade[] } {
   const next = structuredClone(state);
   const finished: FinishedUpgrade[] = [];
-  // Obstacles whose clearing finished disappear and give their Moonstones.
-  next.buildings = next.buildings.filter((b) => {
-    if (!b.upgrade || b.upgrade.toLevel !== 0 || b.upgrade.endsAt > now) return true;
-    const reward = buildingDef(data, b.type).clear?.moonstones ?? 0;
-    next.resources.moonstones += reward;
-    next.stats.obstaclesCleared++;
-    finished.push({ id: b.id, type: b.type, level: 0, at: b.upgrade.endsAt });
-    return false;
-  });
+  const timeline: { at: number; seq: number; run: () => void }[] = [];
+  const cleared = new Set<string>();
+  let seq = 0;
   for (const b of next.buildings) {
-    if (b.upgrade && b.upgrade.endsAt <= now) {
-      finished.push({ id: b.id, type: b.type, level: b.upgrade.toLevel, at: b.upgrade.endsAt });
-      b.level = b.upgrade.toLevel;
-      b.upgrade = null;
-      // Tasks count finished upgrades only, so start-and-cancel earns nothing.
-      next.stats.upgradesDone++;
+    const u = b.upgrade;
+    if (!u || u.endsAt > now) continue;
+    if (u.toLevel === 0) {
+      // Obstacles whose clearing finished disappear and give their Jade.
+      finished.push({ id: b.id, type: b.type, level: 0, at: u.endsAt });
+      timeline.push({ at: u.endsAt, seq: seq++, run: () => {
+        next.resources.moonstones += buildingDef(data, b.type).clear?.moonstones ?? 0;
+        next.stats.obstaclesCleared++;
+        cleared.add(b.id);
+      } });
+    } else {
+      finished.push({ id: b.id, type: b.type, level: u.toLevel, at: u.endsAt });
+      timeline.push({ at: u.endsAt, seq: seq++, run: () => {
+        b.level = u.toLevel;
+        b.upgrade = null;
+        // Tasks count finished upgrades only, so start-and-cancel earns nothing.
+        next.stats.upgradesDone++;
+      } });
     }
   }
+  // Training runs back to back, so the finished items are a prefix of the queue.
+  for (const item of next.training) {
+    if (item.endsAt > now) break;
+    timeline.push({ at: item.endsAt, seq: seq++, run: () => finishTraining(next, item.endsAt, data) });
+  }
+  for (const r of next.research?.active ?? []) if (r.endsAt <= now) timeline.push({ at: r.endsAt, seq: seq++, run: () => finishResearch(next, r.endsAt) });
+  timeline.sort((a, b) => a.at - b.at || a.seq - b.seq);
+  for (const e of timeline) {
+    settleSeasons(next, e.at, data);
+    rollPeriods(next, e.at, data);
+    e.run();
+  }
+  if (cleared.size) next.buildings = next.buildings.filter((b) => !cleared.has(b.id));
   finished.sort((a, b) => a.at - b.at);
-  finishTraining(next, now);
-  finishResearch(next, now);
+  settleSeasons(next, now, data);
   rollPeriods(next, now, data);
   advanceGrove(next, now, data);
   settleRaids(next, now, hallLevel(next, data), data);
   return { state: next, finished };
+}
+
+/** How many settled league seasons the village remembers (for the welcome-back summary and the Ranks screen). */
+const SEASON_LOG = 6;
+
+/**
+ * Close every monthly league season that ended before `at`: soften trophies and
+ * pay the league chest (resources up to storage, Jade in full). Runs from
+ * `advance`, so a game left open across the month end settles at once, and it
+ * is idempotent: a season is only ever closed once. Mutates.
+ */
+export function settleSeasons(s: VillageState, at: number, data: GameData): void {
+  for (const sr of rollSeasons(s, at, data)) {
+    const { granted, overflow } = grantResources(s, sr.chest, data);
+    const entry: SeasonReward = { ...sr, chest: granted, ...(hasAny(overflow) ? { overflow } : {}) };
+    s.seasonLog = [...(s.seasonLog ?? []), entry].slice(-SEASON_LOG);
+  }
 }
 
 export function hallLevel(state: VillageState, data: GameData): number {
@@ -360,7 +426,8 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
         events.push({ kind: 'trigger', trigger: 'first_long_wait' });
       }
       if (e.seconds > 0 && builderStatus(s, data, now).free === 0) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
-    } else if (e.kind === 'raid_end' && e.record.kind === 'attack') {
+    } else if (e.kind === 'raid_end' && e.record.kind === 'attack' && e.record.settlement !== 'pending') {
+      // Online attacks count once the server has confirmed them (see settleOnlineAttack).
       if (e.record.result.stars >= 1) s.stats.raidsWon++;
       s.stats.starsEarned += e.record.result.stars;
     }
@@ -385,15 +452,35 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'collect':
       return collect(s, cmd.id, now, data);
     case 'train':
-      return train(s, cmd.troop, now, data);
+      return train(s, cmd.troop, cmd.count ?? 1, now, data);
+    case 'trainArmy':
+      return trainArmy(s, cmd.army, now, data);
+    case 'saveArmyPreset': {
+      const army = cleanArmy(cmd.army, data);
+      if (!Object.keys(army).length) return fail('NOT_AVAILABLE', 'Pick some warriors first.');
+      const name = cmd.name.trim().slice(0, 24) || `Army ${s.armyPresets.length + 1}`;
+      const at = s.armyPresets.findIndex((p) => p.name === name);
+      if (at >= 0) s.armyPresets[at] = { name, army };
+      else {
+        if (s.armyPresets.length >= data.economy.maxArmyPresets) return fail('LIMIT_REACHED', `You can keep ${data.economy.maxArmyPresets} saved armies. Delete one first.`);
+        s.armyPresets.push({ name, army });
+      }
+      return { ok: true, state: s, events: [] };
+    }
+    case 'deleteArmyPreset':
+      if (!s.armyPresets[cmd.index]) return fail('NOT_FOUND', 'No such saved army.');
+      s.armyPresets.splice(cmd.index, 1);
+      return { ok: true, state: s, events: [] };
+    case 'dismiss':
+      return dismiss(s, cmd.troop, cmd.count, now, data);
     case 'cancelTraining':
       return cancelTraining(s, cmd.index, now, data);
     case 'research':
       return research(s, cmd.troop, now, data);
     case 'cancelResearch':
-      return cancelResearch(s, now, data);
+      return cancelResearch(s, cmd.troop, now, data);
     case 'skipResearch':
-      return skipResearch(s, now, data);
+      return skipResearch(s, cmd.troop, now, data);
     case 'openDailyChest':
       return openDailyChest(s, now, data);
     case 'scout':
@@ -404,6 +491,10 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'trialEnd':
       s.pendingBattle = null;
       return trialEnd(s, cmd.tier, cmd.record, now, data);
+    case 'trialAlternate':
+      if (!canTryAlternate(s.trials, data)) return fail('NOT_AVAILABLE', 'An alternate fortress opens after a failed attempt at your next tier.');
+      s.trials = { ...s.trials, alternate: (s.trials.alternate ?? 0) + 1, failedTier: 0 };
+      return { ok: true, state: s, events: [] };
     case 'battleProgress':
       s.pendingBattle = cmd.pending ? structuredClone(cmd.pending) : null;
       return { ok: true, state: s, events: [] };
@@ -454,11 +545,12 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return { ok: true, state: s, events: [] };
     }
     case 'groveBattleEnd':
+      s.pendingBattle = null;
       return groveBattleEnd(s, cmd.target, cmd.record, now, data);
     case 'applyDefense': {
       // A real player's raid reported by the server.
       if (s.defenseLog.some((d) => d.id === cmd.record.id)) return { ok: true, state: s, events: [] };
-      for (const [k, v] of Object.entries(cmd.lost) as [ResourceKind, number][]) s.resources[k] = Math.max(0, s.resources[k] - Math.max(0, v));
+      applyDefenseLosses(s, cmd.record, cmd.lost, now, data);
       s.trophies = Math.max(0, cmd.trophies);
       s.shieldUntil = Math.max(s.shieldUntil, cmd.shieldUntil);
       s.defenseLog.push(cmd.record);
@@ -482,12 +574,23 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return { ok: true, state: s, events: [{ kind: 'reward', source: `grove_raid:${cmd.week}`, grants: chest }] };
     }
     case 'remoteGroveBattleEnd': {
-      // A Grove Raid attack scored by the server: only the troops are spent here.
+      // An Alliance War attack scored by the server: the troops are spent and the fight is kept for replay.
+      s.pendingBattle = null;
       const bad = checkBattleSetup(s, cmd.record.setup, data);
       if (bad) return fail('INVALID_BATTLE', bad);
       const { result } = runBattle(cmd.record.setup, cmd.record.deployments, data, cmd.record.endTick);
-      spendTroops(s, result.used);
-      return { ok: true, state: s, events: [{ kind: 'grove_attack', target: cmd.target, stars: result.stars, destruction: result.destruction }] };
+      spendTroops(s, result.used, cmd.record.setup);
+      const record = logWarAttack(s, cmd.record, result, now, data);
+      return { ok: true, state: s, events: [{ kind: 'grove_attack', target: cmd.target, stars: result.stars, destruction: result.destruction, record }] };
+    }
+    case 'settleOnlineAttack':
+      return settleOnlineAttack(s, cmd, now, data);
+    case 'abandonBattle': {
+      s.pendingBattle = null;
+      if (checkBattleSetup(s, cmd.record.setup, data)) return { ok: true, state: s, events: [] };
+      const { result } = runBattle(cmd.record.setup, cmd.record.deployments, data, cmd.record.endTick);
+      spendTroops(s, result.used, cmd.record.setup);
+      return { ok: true, state: s, events: [] };
     }
     case 'leaveLocalGrove':
       // Playing online: the real Grove replaces the bot one (XP, Lodge troops and history stay).
@@ -538,23 +641,29 @@ function skip(s: VillageState, id: string, now: number, data: GameData): Command
   return { ok: true, state: adv, events: [{ kind: 'skip_used', what: b.type, seconds: q.seconds, moonstones: q.moonstones }] };
 }
 
-/** Moonstones to finish the running research now. */
-export function researchSkipQuote(state: VillageState, now: number, data: GameData): { seconds: number; moonstones: number } | null {
-  const a = state.research?.active;
+/** The running research of a troop (the oldest one when `troop` is not given). */
+function activeResearch(state: VillageState, troop?: string) {
+  const list = state.research?.active ?? [];
+  return troop ? list.find((a) => a.troop === troop) : list[0];
+}
+
+/** Jade to finish a running research now (the oldest one when `troop` is not given). */
+export function researchSkipQuote(state: VillageState, now: number, data: GameData, troop?: string): { seconds: number; moonstones: number } | null {
+  const a = activeResearch(state, troop);
   if (!a || a.endsAt <= now) return null;
   const seconds = Math.ceil((a.endsAt - now) / 1000);
   return { seconds, moonstones: skipCost(seconds, data) };
 }
 
-function skipResearch(s: VillageState, now: number, data: GameData): CommandResult {
-  const q = researchSkipQuote(s, now, data);
+function skipResearch(s: VillageState, troop: string | undefined, now: number, data: GameData): CommandResult {
+  const q = researchSkipQuote(s, now, data, troop);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
   if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
-  const what = s.research.active!.troop;
-  s.research.active!.endsAt = now;
+  const a = activeResearch(s, troop)!;
+  a.endsAt = now;
   finishResearch(s, now);
-  return { ok: true, state: s, events: [{ kind: 'skip_used', what: `research:${what}`, seconds: q.seconds, moonstones: q.moonstones }] };
+  return { ok: true, state: s, events: [{ kind: 'skip_used', what: `research:${a.troop}`, seconds: q.seconds, moonstones: q.moonstones }] };
 }
 
 export function trainingSkipQuote(state: VillageState, now: number, data: GameData): { seconds: number; moonstones: number } | null {
@@ -570,7 +679,7 @@ function skipTraining(s: VillageState, now: number, data: GameData): CommandResu
   if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
   for (const item of s.training) item.endsAt = Math.min(item.endsAt, now);
-  finishTraining(s, now);
+  finishTraining(s, now, data);
   return { ok: true, state: s, events: [{ kind: 'skip_used', what: 'training', seconds: q.seconds, moonstones: q.moonstones }] };
 }
 
@@ -632,17 +741,100 @@ function buySkin(s: VillageState, id: string, data: GameData): CommandResult {
   return { ok: true, state: s, events: [] };
 }
 
-/** Grant a reward bundle (resources capped by storage, Moonstones and skins in full). Mutates. */
-function grantReward(s: VillageState, reward: Cost & { skin?: string }, data: GameData): Cost {
+/** True when a cost has any positive amount. */
+export function hasAny(c: Cost | undefined): boolean {
+  return Boolean(c) && Object.values(c!).some((v) => (v ?? 0) > 0);
+}
+
+/** `want` minus `got`, keeping only what is still positive (what did not fit). */
+function shortfall(want: Cost, got: Cost): Cost {
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(want) as [ResourceKind, number][]) {
+    const left = (v ?? 0) - (got[k] ?? 0);
+    if (left > 0) out[k] = left;
+  }
+  return out;
+}
+
+/** Only the positive entries of a cost. */
+function positive(c: Cost): Cost {
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(c) as [ResourceKind, number][]) if ((v ?? 0) > 0) out[k] = v;
+  return out;
+}
+
+function sumCost(...parts: Cost[]): Cost {
+  const out: Cost = {};
+  for (const p of parts) for (const [k, v] of Object.entries(p) as [ResourceKind, number][]) if (v) out[k] = (out[k] ?? 0) + v;
+  return out;
+}
+
+/** Add resources (storage-capped; Jade in full). Returns what was actually added and what did not fit. Mutates. */
+function grantResources(s: VillageState, res: Cost, data: GameData): { granted: Cost; overflow: Cost } {
+  const soft: Cost = {};
+  const granted: Cost = {};
+  for (const [k, v] of Object.entries(res) as [ResourceKind, number][]) {
+    if (!(v > 0)) continue;
+    if (k === 'moonstones') {
+      s.resources.moonstones += v;
+      granted.moonstones = v;
+    } else soft[k] = v;
+  }
+  const added = addCapped(s.resources, soft, capacity(s, data));
+  return { granted: positive({ ...granted, ...added }), overflow: shortfall(soft, added) };
+}
+
+/**
+ * Grant a reward bundle (resources capped by storage, Jade and skins in full). Mutates.
+ * Returns what was actually received, and what did not fit, so a message never
+ * claims resources the player did not get.
+ */
+function grantReward(s: VillageState, reward: Cost & { skin?: string }, data: GameData): { granted: Cost; overflow: Cost } {
   const { skin, ...res } = reward;
   if (skin && !s.cosmetics.owned.includes(skin)) s.cosmetics.owned.push(skin);
-  const soft: Cost = {};
-  for (const [k, v] of Object.entries(res) as [ResourceKind, number][]) {
-    if (k === 'moonstones') s.resources.moonstones += v;
-    else soft[k] = v;
+  return grantResources(s, res, data);
+}
+
+/**
+ * What of a one-time reward would not fit in storage right now (empty when it
+ * all fits). The UI warns with this before the player opens or claims it.
+ */
+export function rewardOverflow(state: VillageState, reward: Cost, data: GameData): Cost {
+  const cap = capacity(state, data);
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(reward) as [ResourceKind, number][]) {
+    if (k === 'moonstones' || typeof v !== 'number' || v <= 0) continue;
+    const lost = v - Math.max(0, cap[k] - state.resources[k]);
+    if (lost > 0) out[k] = lost;
   }
-  addCapped(s.resources, soft, capacity(s, data));
-  return res;
+  return out;
+}
+
+/** The most today's chest could hold that would not fit (the largest outcome at today's streak step). */
+export function dailyChestOverflowRisk(state: VillageState, now: number, data: GameData): Cost {
+  const day = dayIndex(now, data);
+  if (state.daily.lastDay >= day) return {};
+  const step = streakAfterClaim(state.daily, day, data).step;
+  const hall = hallLevel(state, data);
+  let worst: Cost = {};
+  let worstTotal = 0;
+  for (const o of data.daily.chest.outcomes) {
+    const lost = rewardOverflow(state, chestContents(o.id, hall, step, data), data);
+    const total = Object.values(lost).reduce((a, b) => a + (b ?? 0), 0);
+    if (total > worstTotal) {
+      worst = lost;
+      worstTotal = total;
+    }
+  }
+  return worst;
+}
+
+/** A Season Scroll tier's reward on a track, scaled to the player's Keep like other fixed rewards. */
+export function passTierReward(state: VillageState, tier: number, track: 'free' | 'premium', data: GameData): (Cost & { skin?: string }) | null {
+  const def = data.pass.tiers.find((t) => t.tier === tier);
+  if (!def) return null;
+  const { skin, ...res } = track === 'free' ? def.free : def.premium;
+  return { ...scaleReward(res, hallLevel(state, data), data), ...(skin ? { skin } : {}) };
 }
 
 function claimTask(s: VillageState, id: string, kind: 'daily' | 'weekly', data: GameData): CommandResult {
@@ -663,8 +855,8 @@ function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', dat
   const list = track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium;
   if (list.includes(tier)) return fail('ALREADY_CLAIMED', 'Already claimed.');
   list.push(tier);
-  const grants = grantReward(s, track === 'free' ? def.free : def.premium, data);
-  return { ok: true, state: s, events: [{ kind: 'reward', source: `pass:${track}:${tier}`, grants }] };
+  const { granted, overflow } = grantReward(s, passTierReward(s, tier, track, data)!, data);
+  return { ok: true, state: s, events: [{ kind: 'reward', source: `pass:${track}:${tier}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) }] };
 }
 
 function claimAchievement(s: VillageState, id: string, data: GameData): CommandResult {
@@ -698,7 +890,7 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
   if (!def) return fail('NOT_FOUND', 'Unknown troop.');
   const level = troopLevelOf(s, troop);
   const cost = discounted(troopLevel(data, troop, level).cost, eventEffect(now, data).trainingDiscount);
-  const quote: Quote = { toLevel: level, cost, seconds: def.trainSeconds };
+  const quote: Quote = { toLevel: level, cost, seconds: trainSecondsFor(s, troop, data) };
   if (hallLevel(s, data) < (def.unlockKeep ?? 1)) {
     return { ...fail('LOCKED', `Needs a level ${def.unlockKeep} Clan Keep.`), quote };
   }
@@ -706,22 +898,122 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
     return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Training Dojo.`), quote };
   }
   const cap = housingCapacity(s, data);
-  if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > cap) {
-    return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards are full.' : 'Build a Squad Courtyard to house troops.'), quote };
+  // The camps hold one army; the queue may train the next one ahead.
+  if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > trainingQueueLimit(s, data)) {
+    return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards and the next-army queue are full.' : 'Build a Squad Courtyard to house troops.'), quote };
   }
   if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost)}).`), quote };
   return { ok: true, quote };
 }
 
-function train(s: VillageState, troop: string, now: number, data: GameData): CommandResult {
-  const q = trainQuote(s, troop, now, data);
-  if (!q.ok) return q;
-  const def = troopDef(data, troop);
-  const cost = q.quote.cost;
-  subtractCost(s.resources, cost);
-  const startedAt = queueEndsAt(s, now);
-  s.training.push({ troop, startedAt, endsAt: startedAt + def.trainSeconds * MS_PER_SECOND, cost });
-  return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds: def.trainSeconds, cost }] };
+/** Queue up to `count` warriors of one type: as many as fit and can be paid for (at least one, or it fails). */
+function train(s: VillageState, troop: string, count: number, now: number, data: GameData): CommandResult {
+  const want = Math.max(1, Math.min(data.economy.maxTrainBatch, Math.floor(count) || 1));
+  let queued = 0;
+  let paid: Cost = {};
+  let seconds = 0;
+  for (let i = 0; i < want; i++) {
+    const q = trainQuote(s, troop, now, data);
+    if (!q.ok) {
+      if (queued === 0) return q;
+      break;
+    }
+    const cost = q.quote.cost;
+    subtractCost(s.resources, cost);
+    const startedAt = queueEndsAt(s, now);
+    s.training.push({ troop, startedAt, endsAt: startedAt + q.quote.seconds * MS_PER_SECOND, cost });
+    paid = sumCost(paid, cost);
+    seconds = q.quote.seconds;
+    queued++;
+  }
+  return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds, cost: paid, count: queued }] };
+}
+
+/** Only known troops with whole positive counts. */
+function cleanArmy(army: Record<string, number>, data: GameData): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [t, n] of Object.entries(army ?? {})) if (data.troops[t] && Number.isInteger(n) && n > 0) out[t] = Math.min(n, 999);
+  return out;
+}
+
+/**
+ * Queue what is missing to reach `army` (counting troops already ready and
+ * queued), in the order given, as far as space and resources allow. Fails only
+ * when nothing could be queued.
+ */
+function trainArmy(s: VillageState, target: Record<string, number>, now: number, data: GameData): CommandResult {
+  const army = cleanArmy(target, data);
+  const events: SimEvent[] = [];
+  let firstFail: CommandResult | null = null;
+  for (const [troop, n] of Object.entries(army)) {
+    const have = (s.army[troop] ?? 0) + s.training.filter((q) => q.troop === troop).length;
+    if (have >= n) continue;
+    const r = train(s, troop, n - have, now, data);
+    if (r.ok) events.push(...r.events);
+    else firstFail = firstFail ?? r;
+  }
+  if (!events.length) return firstFail ?? fail('NOTHING_TO_SKIP', 'That army is already ready or training.');
+  return { ok: true, state: s, events };
+}
+
+/** What dismissing `count` ready warriors would give back and how much camp space it frees (before storage caps). */
+export function dismissPreview(state: VillageState, troop: string, count: number, data: GameData): { refund: Cost; housing: number } {
+  const each = troopLevel(data, troop, troopLevelOf(state, troop)).cost;
+  const refund: Cost = {};
+  for (const [k, v] of Object.entries(each) as [ResourceKind, number][]) {
+    const r = Math.floor((v ?? 0) * count * data.economy.dismissRefundFraction);
+    if (r > 0) refund[k] = r;
+  }
+  return { refund, housing: (data.troops[troop]?.housing ?? 0) * count };
+}
+
+/** Your own warriors in your last attack (donated ones left out), for "Retrain last army". */
+export function lastAttackArmy(state: VillageState): Record<string, number> | null {
+  const last = [...state.battleLog].reverse().find((r) => r.kind === 'attack');
+  if (!last) return null;
+  const out: Record<string, number> = {};
+  for (const [t, n] of Object.entries(last.setup.army)) {
+    const own = n - (last.setup.reinforcements?.[t]?.count ?? 0);
+    if (own > 0) out[t] = own;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/**
+ * A practice army to try a warrior without training it: the village's own mix
+ * (ready, queued, or the last attack) scaled to full camps, with a squad of
+ * `troop` taking `share` of the space. Practice battles spend and win nothing.
+ */
+export function practiceArmy(state: VillageState, troop: string, data: GameData, share = 0.3): Record<string, number> {
+  const cap = Math.max(housingCapacity(state, data), data.troops[troop]?.housing ?? 1);
+  const mix: Record<string, number> = { ...state.army };
+  for (const q of state.training) mix[q.troop] = (mix[q.troop] ?? 0) + 1;
+  const base = Object.keys(mix).length ? mix : lastAttackArmy(state) ?? {};
+  const out: Record<string, number> = {};
+  const squad = Math.max(1, Math.floor((cap * (Object.keys(base).length ? share : 1)) / data.troops[troop].housing));
+  out[troop] = squad;
+  const room = cap - squad * data.troops[troop].housing;
+  const baseHousing = armyHousing(base, data);
+  if (baseHousing > 0 && room > 0) {
+    for (const [t, n] of Object.entries(base)) {
+      const k = Math.floor((n * room) / baseHousing);
+      if (k > 0) out[t] = (out[t] ?? 0) + k;
+    }
+  }
+  return out;
+}
+
+/** Send ready warriors home. Part of their training cost comes back (storage permitting). Mutates. */
+function dismiss(s: VillageState, troop: string, count: number, now: number, data: GameData): CommandResult {
+  const n = Math.floor(count);
+  if (!data.troops[troop] || !(n > 0)) return fail('NOT_FOUND', 'Pick warriors to dismiss.');
+  if ((s.army[troop] ?? 0) < n) return fail('NOT_AVAILABLE', 'You do not have that many ready.');
+  s.army[troop] -= n;
+  if (s.army[troop] === 0) delete s.army[troop];
+  const refund = positive(addCapped(s.resources, dismissPreview(s, troop, n, data).refund, capacity(s, data)));
+  // Finished warriors waiting for camp room can walk in now.
+  finishTraining(s, now, data);
+  return { ok: true, state: s, events: [{ kind: 'dismiss', troop, count: n, refund }] };
 }
 
 /** A cost with a share taken off (limited-time events). */
@@ -738,15 +1030,17 @@ function openDailyChest(s: VillageState, now: number, data: GameData): CommandRe
   if (s.daily.lastDay >= day) return fail('ALREADY_CLAIMED', "You've opened today's chest. A new one is ready at the start of the next day (UTC).");
   const st = streakAfterClaim(s.daily, day, data);
   const outcome = chestOutcome(s.seed, day, data);
-  const grants = grantReward(s, chestContents(outcome, hallLevel(s, data), st.step, data), data);
-  const history = [...s.daily.history, { day, outcome, step: st.step, grants }].slice(-data.daily.streak.historyDays);
+  // A chest only reports what it really gave: anything that did not fit is listed separately.
+  const { granted: grants, overflow } = grantReward(s, chestContents(outcome, hallLevel(s, data), st.step, data), data);
+  const lost = hasAny(overflow) ? { overflow } : {};
+  const history = [...s.daily.history, { day, outcome, step: st.step, grants, ...lost }].slice(-data.daily.streak.historyDays);
   s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history };
   return {
     ok: true,
     state: s,
     events: [
-      { kind: 'daily_chest', outcome, step: st.step, grants, skipped: st.skipped, steppedBack: st.steppedBack },
-      { kind: 'reward', source: `daily_chest:${outcome}`, grants },
+      { kind: 'daily_chest', outcome, step: st.step, grants, skipped: st.skipped, steppedBack: st.steppedBack, ...lost },
+      { kind: 'reward', source: `daily_chest:${outcome}`, grants, ...lost },
     ],
   };
 }
@@ -771,10 +1065,10 @@ function research(s: VillageState, troop: string, now: number, data: GameData): 
   return { ok: true, state: s, events: [{ kind: 'research_start', troop, toLevel, seconds, cost }] };
 }
 
-function cancelResearch(s: VillageState, now: number, data: GameData): CommandResult {
-  const a = s.research.active;
+function cancelResearch(s: VillageState, troop: string | undefined, now: number, data: GameData): CommandResult {
+  const a = activeResearch(s, troop);
   if (!a) return fail('NOT_UPGRADING', 'Nothing to cancel.');
-  s.research.active = null;
+  s.research.active = s.research.active.filter((x) => x !== a);
   const want: Cost = {};
   for (const k of RESOURCE_KINDS) {
     const r = Math.floor((a.cost[k] ?? 0) * data.economy.cancelRefundFraction);
@@ -836,7 +1130,47 @@ function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): 
   for (const [t, lvl] of Object.entries(setup.levels ?? {})) {
     if (!data.troops[t] || !Number.isInteger(lvl) || lvl < 1 || lvl > troopLevelOf(s, t)) return 'Troop levels do not match your research.';
   }
+  const lodge = lodgeTroops(s);
+  for (const [t, r] of Object.entries(setup.reinforcements ?? {})) {
+    if (!data.troops[t] || !r || !Number.isInteger(r.count) || r.count < 0 || r.count > (lodge[t]?.count ?? 0)) return 'More donated troops than your Lodge holds.';
+    if (r.count > 0 && r.level !== lodge[t].level) return 'Donated troop levels do not match your Lodge.';
+  }
   return null;
+}
+
+/**
+ * Take a real raid's losses where they came from, the same way offline raids
+ * do: loot a destroyed collector gave comes out of that collector, the rest out
+ * of storage. Which buildings fell is re-simulated from the record (the server
+ * ran the same battle). Never takes more than `lost`. Mutates.
+ */
+function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, now: number, data: GameData): void {
+  const claims: { b: Building; k: ResourceKind; amount: number }[] = [];
+  try {
+    const { sim } = runBattle(record.setup, record.deployments, data, record.endTick);
+    for (const sb of sim.buildings) {
+      if (!sb.destroyed) continue;
+      const vb = s.buildings.find((b) => b.id === sb.id);
+      const k = vb ? data.buildings[vb.type]?.produces : undefined;
+      if (!vb || !k || !vb.collector || !(sb.loot[k]! > 0)) continue;
+      claims.push({ b: vb, k, amount: sb.loot[k]! });
+    }
+  } catch {
+    // A record this version cannot simulate: everything comes out of storage.
+  }
+  for (const [k, v0] of Object.entries(lost) as [ResourceKind, number][]) {
+    let left = Math.max(0, Math.floor(v0 ?? 0));
+    for (const c of claims) {
+      if (c.k !== k || left <= 0) continue;
+      const have = collectorAmount(c.b, now, data);
+      const take = Math.floor(Math.min(have, c.amount, left));
+      if (take <= 0) continue;
+      c.b.collector = { stored: have - take, accrueFrom: c.b.upgrade && c.b.upgrade.endsAt > now ? c.b.upgrade.endsAt : now };
+      left -= take;
+    }
+    // Collected since the raid (or not traceable): it is in storage now.
+    s.resources[k] = Math.max(0, s.resources[k] - left);
+  }
 }
 
 /** League bonus for a won attack: the full bonus at 3 stars, a third per star. */
@@ -855,31 +1189,98 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   const bad = checkBattleSetup(s, rec.setup, data);
   if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
-  spendTroops(s, result.used);
-  const cap = capacity(s, data);
-  const added = addCapped(s.resources, result.loot, cap);
-  const bonusWanted = leagueWinBonus(s.trophies, result.stars, data);
-  const bonus = addCapped(s.resources, bonusWanted, cap);
-  for (const [k, v] of Object.entries(bonus) as [ResourceKind, number][]) added[k] = (added[k] ?? 0) + v;
-  // Limited-time event: extra loot on won attacks.
-  const lootBonus = result.stars >= 1 ? eventEffect(now, data).raidLootBonus : 0;
-  const eventWanted: Cost = {};
-  if (lootBonus > 0) for (const [k, v] of Object.entries(result.loot) as [ResourceKind, number][]) if (v > 0) eventWanted[k] = Math.floor(v * lootBonus);
-  const eventBonus = addCapped(s.resources, eventWanted, cap);
-  for (const [k, v] of Object.entries(eventBonus) as [ResourceKind, number][]) added[k] = (added[k] ?? 0) + v;
+  spendTroops(s, result.used, rec.setup);
+  if (rec.ticket) {
+    // Online attack: the server re-runs it and decides. Troops are spent now
+    // (they fought), but loot and honor wait for the server's answer, so a
+    // refused or expired report can never leave loot behind (settleOnlineAttack).
+    if (s.battleLog.some((r) => r.ticket === rec.ticket)) return fail('ALREADY_CLAIMED', 'This attack was already recorded.');
+    s.shieldUntil = Math.min(s.shieldUntil, now);
+    s.scout = null;
+    const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: {}, rules: SIM_RULES, settlement: 'pending' };
+    s.battleLog.push(record);
+    trimLog(s.battleLog, data.battle.maxReplays);
+    return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+  }
+  // Three separate amounts: the battle's loot (result.loot, exactly what the
+  // simulation says), the bonuses on top (league, limited-time event), and what
+  // really reached storage. Whatever was won but did not fit is kept as
+  // `overflow`, so the results screen can say so precisely.
+  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data);
   const opp = rec.setup.base.trophies ?? s.trophies;
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
   // Attacking ends your shield, and the next look at an opponent is free again.
   s.shieldUntil = Math.min(s.shieldUntil, now);
   s.scout = null;
-  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies };
-  record.result.loot = added;
-  if (Object.keys(bonus).length) record.leagueBonus = bonus;
-  if (Object.values(eventBonus).some((v) => (v ?? 0) > 0)) record.eventBonus = eventBonus;
+  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies, banked, rules: SIM_RULES };
+  if (hasAny(overflow)) record.overflow = overflow;
+  if (hasAny(bonus)) record.leagueBonus = bonus;
+  if (hasAny(eventBonus)) record.eventBonus = eventBonus;
   s.battleLog.push(record);
-  while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
+  trimLog(s.battleLog, data.battle.maxReplays);
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+}
+
+/** Bank a won attack's loot plus the league and event bonuses. Returns banked, overflow and the bonuses. Mutates. */
+function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: GameData): { banked: Cost; overflow: Cost; bonus: Cost; eventBonus: Cost } {
+  const cap = capacity(s, data);
+  const fromBattle = addCapped(s.resources, result.loot, cap);
+  const bonusWanted = leagueWinBonus(s.trophies, result.stars, data);
+  const bonus = positive(addCapped(s.resources, bonusWanted, cap));
+  const lootBonus = result.stars >= 1 ? eventEffect(at, data).raidLootBonus : 0;
+  const eventWanted: Cost = {};
+  if (lootBonus > 0) for (const [k, v] of Object.entries(result.loot) as [ResourceKind, number][]) if (v > 0) eventWanted[k] = Math.floor(v * lootBonus);
+  const eventBonus = positive(addCapped(s.resources, eventWanted, cap));
+  const banked = positive(sumCost(fromBattle, bonus, eventBonus));
+  return { banked, overflow: shortfall(sumCost(result.loot, bonusWanted, eventWanted), banked), bonus, eventBonus };
+}
+
+/**
+ * Apply the server's answer to an online attack recorded as pending. Confirmed:
+ * bank the server's result (it re-ran the battle) and take its honor change.
+ * Refused: the attack stays in the log as a practice result with no loot or
+ * honor. Idempotent: a settled or unknown ticket changes nothing.
+ */
+function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'settleOnlineAttack' }>, now: number, data: GameData): CommandResult {
+  const rec = s.battleLog.find((r) => r.ticket === cmd.ticket && r.settlement === 'pending');
+  if (!rec) return { ok: true, state: s, events: [] };
+  if (cmd.rejected || !cmd.result) {
+    rec.settlement = 'rejected';
+    rec.rejected = cmd.rejected ?? 'refused';
+    rec.banked = {};
+    return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'rejected' }] };
+  }
+  const result = cmd.result;
+  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data);
+  rec.result = { ...result, loot: { ...result.loot } };
+  rec.banked = banked;
+  if (hasAny(overflow)) rec.overflow = overflow;
+  if (hasAny(bonus)) rec.leagueBonus = bonus;
+  if (hasAny(eventBonus)) rec.eventBonus = eventBonus;
+  rec.trophies = cmd.trophies ?? 0;
+  rec.settlement = 'confirmed';
+  if (cmd.playerTrophies !== undefined) s.trophies = Math.max(0, cmd.playerTrophies);
+  if (result.stars >= 1) s.stats.raidsWon++;
+  s.stats.starsEarned += result.stars;
+  void now;
+  return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'confirmed' }] };
+}
+
+/** Keep the log to `max` entries, dropping the oldest settled ones (an attack awaiting the server is never dropped). Mutates. */
+function trimLog(log: BattleRecord[], max: number): void {
+  while (log.length > max) {
+    const i = log.findIndex((r) => r.settlement !== 'pending');
+    log.splice(i < 0 ? 0 : i, 1);
+  }
+}
+
+/** Keep an Alliance War attack in the battle log so it can be replayed. Mutates. */
+function logWarAttack(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, result: BattleResult, now: number, data: GameData): BattleRecord {
+  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: {} }, trophies: 0, banked: {}, rules: SIM_RULES, war: true };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return record;
 }
 
 /**
@@ -890,32 +1291,43 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
 function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
   if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`);
-  const setup: BattleSetup = { ...rec.setup, base: trialBase(tier, data) };
+  const setup: BattleSetup = { ...rec.setup, base: trialBase(tier, data, trialVariant(s.trials, tier)) };
   const bad = checkBattleSetup(s, setup, data);
   if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
-  spendTroops(s, result.used);
+  spendTroops(s, result.used, setup);
   const cleared = result.stars >= data.trials.starsToClear;
   const firstClear = cleared && tier === nextTrialTier(s.trials.best);
   let reward: Cost = {};
+  let overflow: Cost = {};
   if (firstClear) {
-    reward = addCapped(s.resources, trialReward(tier, data), capacity(s, data));
-    s.trials.best = tier;
+    ({ granted: reward, overflow } = grantResources(s, trialReward(tier, data), data));
+    s.trials = { best: tier, alternate: 0, failedTier: 0 };
+    s.stats.trialsCleared++;
+  } else if (!cleared && tier === nextTrialTier(s.trials.best)) {
+    s.trials.failedTier = tier;
   }
-  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: reward }, trophies: 0 };
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, ...(hasAny(overflow) ? { overflow } : {}) };
   s.battleLog.push(record);
-  while (s.battleLog.length > data.battle.maxReplays) s.battleLog.shift();
+  trimLog(s.battleLog, data.battle.maxReplays);
   return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward }] };
 }
 
-/** Use donated (Grove) troops first, then your own army. Mutates. */
-function spendTroops(s: VillageState, used: Record<string, number>): void {
+/**
+ * Use donated (Lodge) troops first, then your own army: the battle deploys the
+ * donated ones first too, so the troops spent are the ones that fought. Mutates.
+ */
+function spendTroops(s: VillageState, used: Record<string, number>, setup?: BattleSetup): void {
   for (const [t, n0] of Object.entries(used)) {
     let n = n0;
-    const fromGrove = Math.min(n, s.grove.reinforcements[t] ?? 0);
+    const donated = setup?.reinforcements ? setup.reinforcements[t]?.count ?? 0 : Infinity;
+    const fromGrove = Math.min(n, s.grove.reinforcements[t] ?? 0, donated);
     if (fromGrove > 0) {
       s.grove.reinforcements[t] -= fromGrove;
-      if (s.grove.reinforcements[t] <= 0) delete s.grove.reinforcements[t];
+      if (s.grove.reinforcements[t] <= 0) {
+        delete s.grove.reinforcements[t];
+        if (s.grove.reinforcementLevels) delete s.grove.reinforcementLevels[t];
+      }
       n -= fromGrove;
     }
     s.army[t] = Math.max(0, (s.army[t] ?? 0) - n);
@@ -923,25 +1335,45 @@ function spendTroops(s: VillageState, used: Record<string, number>): void {
   }
 }
 
-/** Troops available for a battle: your army plus troops your Grove donated. */
+/** Troops available for a battle: your army plus troops your Alliance donated. */
 export function battleArmy(state: VillageState): Record<string, number> {
   const out: Record<string, number> = { ...state.army };
   for (const [t, n] of Object.entries(state.grove.reinforcements)) out[t] = (out[t] ?? 0) + n;
   return out;
 }
 
+/** Donated troops in the Lodge with the level each was donated at (your own research level if none was kept). */
+export function lodgeTroops(state: VillageState): Record<string, { count: number; level: number }> {
+  const out: Record<string, { count: number; level: number }> = {};
+  for (const [t, n] of Object.entries(state.grove.reinforcements)) {
+    if (n > 0) out[t] = { count: n, level: state.grove.reinforcementLevels?.[t] ?? troopLevelOf(state, t) };
+  }
+  return out;
+}
+
+/** Everything a new battle setup needs about the attacker: troops, researched levels and donated troops. */
+export function battleLoadout(state: VillageState, data: GameData): Pick<BattleSetup, 'army' | 'levels' | 'reinforcements'> {
+  const levels: Record<string, number> = {};
+  for (const t of Object.keys(data.troops)) levels[t] = troopLevelOf(state, t);
+  return { army: battleArmy(state), levels, reinforcements: lodgeTroops(state) };
+}
+
 /** A Grove Raid attack: no loot or trophies, best stars per enemy base count. */
 function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
-  const phase = raidPhase(now, data);
+  // The war must have been live when the attack began (an interrupted attack
+  // settled after the war ended still counts, exactly once).
+  const at = Math.min(now, rec.at ?? now);
+  const phase = raidPhase(at, data);
   if (!s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Alliance War is not running.');
-  const raid = ensureRaid(s, now, data)!;
+  const raid = ensureRaid(s, at, data)!;
   if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Alliance War attacks.');
   const bad = checkBattleSetup(s, rec.setup, data);
   if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
-  spendTroops(s, result.used);
-  raid.attacks.push({ target, stars: result.stars, destruction: result.destruction, at: now });
-  return { ok: true, state: s, events: [{ kind: 'grove_attack', target, stars: result.stars, destruction: result.destruction }] };
+  spendTroops(s, result.used, rec.setup);
+  raid.attacks.push({ target, stars: result.stars, destruction: result.destruction, at });
+  const record = logWarAttack(s, rec, result, now, data);
+  return { ok: true, state: s, events: [{ kind: 'grove_attack', target, stars: result.stars, destruction: result.destruction, record }] };
 }
 
 export type { BattleSetup, Deployment };

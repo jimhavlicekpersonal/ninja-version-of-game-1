@@ -5,7 +5,7 @@ import { productInfo, spentThisMonth, spentTotal } from '../../gameplay/sim/mone
 import { currentTasks, passSeasonEndsAt, unlockedTier } from '../../gameplay/sim/pass';
 import type { Cost, OfferRule, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
-import { hallLevel } from '../../gameplay/sim/village';
+import { hallLevel, passTierReward, rewardOverflow } from '../../gameplay/sim/village';
 import { clear, h, icon } from './dom';
 import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
@@ -19,6 +19,7 @@ export interface UiKit {
 }
 
 const usd = (n: number) => `$${n.toFixed(2)}`;
+const RES_NAME: Record<ResourceKind, string> = { acorns: 'Coins', dew: 'Provisions', nightsap: 'Shadow Ink', moonstones: 'Jade' };
 
 export function rewardChips(r: Cost & { skin?: string }, skinName?: (id: string) => string): HTMLElement {
   const wrap = h('span', { class: 'cost' });
@@ -122,7 +123,8 @@ export class EconomyUi {
       else if (current === 'offers') body.append(this.offersList());
       else if (current === 'pass') body.append(this.passProduct(draw));
       else body.append(this.looksGrid(draw));
-      if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, 'Test store: purchases complete instantly and no real money is charged.'));
+      if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, 'Sandbox test store: purchases complete instantly, no real money is charged, and nothing leaves this practice village.'));
+      else if (!this.c.payments.available()) body.append(h('p', { class: 'muted small store-note' }, 'Purchases are not available in this version of the game yet. Everything here can also be earned by playing.'));
     };
     draw();
     this.kit.modal('Store', body, [], 'wide');
@@ -265,8 +267,17 @@ export class EconomyUi {
         const cell = (track: 'free' | 'premium') => {
           const claimed = (track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium).includes(tr.tier);
           const can = tr.tier <= tier && !claimed && (track === 'free' || s.pass.premium);
-          const el = h('button', { class: `tier-cell ${track}${claimed ? ' claimed' : ''}${can ? ' ready' : ''}`, type: 'button', disabled: !can }, rewardChips(track === 'free' ? tr.free : tr.premium, this.skinName));
-          el.addEventListener('click', () => {
+          // Rewards are sized for your Clan Keep, like chests and league rewards.
+          const reward = passTierReward(s, tr.tier, track, d) ?? {};
+          const el = h('button', { class: `tier-cell ${track}${claimed ? ' claimed' : ''}${can ? ' ready' : ''}`, type: 'button', disabled: !can }, rewardChips(reward, this.skinName));
+          el.addEventListener('click', async () => {
+            // Each tier can be claimed once: warn before part of it is lost to full storage.
+            const lost = rewardOverflow(this.c.state, reward, d);
+            if (Object.keys(lost).length) {
+              const text = RESOURCE_KINDS.filter((k) => lost[k]).map((k) => `${formatNumber(lost[k]!)} ${RES_NAME[k]}`).join(', ');
+              const ok = await this.kit.confirm('Storage is too full', `${text} of this reward will not fit in your storage and will be lost. Claim it later, after spending some?`, 'Claim anyway', false, 'Claim later');
+              if (!ok) return;
+            }
             const r = this.c.dispatch({ type: 'claimTier', tier: tr.tier, track });
             if (!r.ok) this.kit.toast(r.message, 'error');
             else this.kit.toast('Reward claimed!', 'success');

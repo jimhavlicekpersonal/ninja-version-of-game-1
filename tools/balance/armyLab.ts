@@ -9,7 +9,7 @@
  * numbers compare compositions, not player skill.
  */
 import { maxHousingAtHall } from '../../src/gameplay/sim/army';
-import { createBattle, runBattle } from '../../src/gameplay/sim/battle/battle';
+import { createBattle, deploymentsByTick, result as battleResult, step } from '../../src/gameplay/sim/battle/battle';
 import { LAYOUTS, generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { defaultData } from '../../src/gameplay/sim/data';
@@ -53,6 +53,9 @@ export const COMPOSITIONS: Composition[] = [
   { id: 'air', name: 'Air', shares: { air: 0.8, melee: 0.2 } },
   { id: 'shadow', name: 'Shadow strike', shares: { shadow: 0.7, melee: 0.3 } },
   { id: 'siege', name: 'Siege', shares: { siege: 0.5, melee: 0.5 } },
+  // Realistic mixes: a little support, or a breaching wedge, with a ranged backline.
+  { id: 'support_light', name: 'Melee + ranged, light support', shares: { melee: 0.55, artillery: 0.3, support: 0.15 } },
+  { id: 'breach', name: 'Breach wedge', shares: { siege: 0.25, melee: 0.45, artillery: 0.3 } },
 ];
 
 /** The newest `n` troops of a family unlocked at a Keep (what a player would bring). */
@@ -63,21 +66,50 @@ export function newestInFamily(family: Family, keep: number, n = 3, data: GameDa
     .slice(0, n);
 }
 
-/** An army for a composition at a Keep, filling the Keep's full housing. Null if a family it needs isn't unlocked yet. */
+/**
+ * An army for a composition at a Keep, filling the Keep's full housing (at
+ * least 97%: rounding is topped up with the composition's own troops, smallest
+ * first, so no army is short-changed). Null if a family it needs isn't unlocked yet.
+ */
 export function buildArmy(comp: Composition, keep: number, data: GameData = defaultData): Record<string, number> | null {
   const housing = maxHousingAtHall(keep, data);
   if (comp.id === 'mixed') return botArmy(keep, 1, data);
   const army: Record<string, number> = {};
+  const used = () => Object.entries(army).reduce((s, [t, n]) => s + data.troops[t].housing * n, 0);
+  const all: string[] = [];
   for (const [family, share] of Object.entries(comp.shares) as [Family, number][]) {
     const troops = newestInFamily(family, keep, 3, data);
     if (!troops.length) return null;
+    all.push(...troops);
     const slice = (housing * share) / troops.length;
     for (const t of troops) {
       const n = Math.floor(slice / data.troops[t].housing);
       if (n > 0) army[t] = (army[t] ?? 0) + n;
     }
   }
+  const fillers = [...new Set(all)].sort((a, b) => data.troops[a].housing - data.troops[b].housing || (a < b ? -1 : 1));
+  for (let i = 0; fillers.length && i < 1000; i++) {
+    const t = fillers.find((x) => used() + data.troops[x].housing <= housing);
+    if (!t) break;
+    army[t] = (army[t] ?? 0) + 1;
+    fillers.push(fillers.shift()!);
+  }
   return Object.keys(army).length ? army : null;
+}
+
+/** What an army costs to put in the field at a Keep: Provisions and Dojo seconds to train it, and Provisions to research its troops to the Keep's caps. */
+export function armyInvestment(army: Record<string, number>, keep: number, data: GameData = defaultData): { trainDew: number; trainSeconds: number; researchDew: number } {
+  let trainDew = 0;
+  let trainSeconds = 0;
+  let researchDew = 0;
+  for (const [t, n] of Object.entries(army)) {
+    const cap = troopLevelCapAt(keep, data, t);
+    const def = data.troops[t];
+    trainDew += (def.levels[cap - 1].cost.dew ?? 0) * n;
+    trainSeconds += def.trainSeconds * n;
+    for (const lv of def.levels.slice(1, cap)) researchDew += lv.research?.cost.dew ?? 0;
+  }
+  return { trainDew, trainSeconds, researchDew };
 }
 
 export interface LabRow {
@@ -88,14 +120,39 @@ export interface LabRow {
   destruction: number;
   oneStar: number;
   threeStar: number;
-  /** Same fights with the five counter buildings removed from the bases (how much the counters cost this army). */
+  /** Same bases and deployments with only the five counters' effects switched off (what the effects cost this army). */
   destructionNoCounters?: number;
+  /** Counter actions per fight, by kind ('lit', 'repair', 'grounded'): is each counter actually in play? */
+  counterEvents: Record<string, number>;
 }
 
 const COUNTERS = new Set(['paper_lantern_line', 'clockwork_repairer', 'bitter_incense_burner', 'kite_cutter_ballista', 'longbow_yagura']);
 
+/**
+ * Removes the counter buildings from a base (their whole value: footprint,
+ * objective, shots and effect). Note this changes the base's entry geometry and
+ * destruction denominator, so it is not used for the effect comparison.
+ */
 export function stripCounters(base: BaseLayout): BaseLayout {
   return { ...base, buildings: base.buildings.filter((b) => !COUNTERS.has(b.type)) };
+}
+
+/**
+ * The same game data with only the five counters' special effects switched off
+ * (Lantern light, Crane repairs, Incense cuts, Ballista grounding, Yagura's
+ * long-range preference). The buildings stay, so the base, its Infiltration
+ * Points, its objectives and the Ballista and Yagura shots are identical: a
+ * before/after comparison measures the counter ability alone.
+ */
+export function withoutCounterEffects(data: GameData): GameData {
+  const out = structuredClone(data);
+  for (const id of COUNTERS) {
+    const def = out.buildings[id];
+    if (!def) continue;
+    delete def.effect;
+    for (const lv of def.levels) delete lv.effect;
+  }
+  return out;
 }
 
 export interface LabOptions {
@@ -111,6 +168,7 @@ export interface LabOptions {
 
 export function runLab(opts: LabOptions): LabRow[] {
   const data = opts.data ?? defaultData;
+  const plain = opts.compareCounters ? withoutCounterEffects(data) : data;
   const rows: LabRow[] = [];
   for (const keep of opts.keeps) {
     for (const comp of opts.compositions ?? COMPOSITIONS) {
@@ -123,24 +181,31 @@ export function runLab(opts: LabOptions): LabRow[] {
         let dn = 0;
         let one = 0;
         let three = 0;
+        const events: Record<string, number> = {};
         for (let i = 0; i < opts.seeds; i++) {
           const base = generateOpponent(5000 + i * 7919 + keep * 131, keep, data, { levelBias: 0.5, layout });
-          const fight = (b: BaseLayout) => {
-            const setup = { seed: 77 + i, base: b, army, levels, infiltration: true };
-            const probe = createBattle(setup, data);
-            const deps = botDeployments(probe.deployable, probe.grid.size, army, createRng(13 + i), data, levels, probe.entry);
-            return runBattle(setup, deps, data).result;
+          const fight = (gd: GameData, count = false) => {
+            const setup = { seed: 77 + i, base, army, levels, infiltration: true };
+            const sim = createBattle(setup, gd);
+            const byTick = deploymentsByTick(botDeployments(sim.deployable, sim.grid.size, army, createRng(13 + i), gd, levels, sim.entry));
+            while (!sim.ended) {
+              step(sim, byTick.get(sim.tick));
+              if (count) for (const e of sim.events) if (e.k === 'counter') events[e.what] = (events[e.what] ?? 0) + 1;
+            }
+            return battleResult(sim);
           };
-          const r = fight(base);
+          const r = fight(data, true);
           d += r.destruction;
           if (r.stars >= 1) one++;
           if (r.stars === 3) three++;
-          if (opts.compareCounters) dn += fight(stripCounters(base)).destruction;
+          // Same base, same deployments, same entry points: only the counter effects are off.
+          if (opts.compareCounters) dn += fight(plain).destruction;
         }
         const n = opts.seeds;
         rows.push({
           comp: comp.id, keep, layout: layoutId, fights: n,
           destruction: d / n, oneStar: one / n, threeStar: three / n,
+          counterEvents: Object.fromEntries(Object.entries(events).map(([k, v]) => [k, v / n])),
           ...(opts.compareCounters ? { destructionNoCounters: dn / n } : {}),
         });
       }
@@ -178,6 +243,8 @@ export function summarize(rows: LabRow[]): Map<string, Map<number, LabCell>> {
   return out;
 }
 
+const fmtK = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}m` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n));
+
 export function labMarkdown(rows: LabRow[], opts: LabOptions): string {
   const s = summarize(rows);
   const keeps = opts.keeps;
@@ -194,13 +261,19 @@ export function labMarkdown(rows: LabRow[], opts: LabOptions): string {
     L.push(`| ${c.name} | ${keeps.map((k) => { const v = byKeep?.get(k); return v ? `${v.destruction.toFixed(0)} (${Math.round(v.threeStar * 100)}%)` : '–'; }).join(' | ')} |`);
   }
   if (opts.compareCounters) {
-    L.push('', '## What the five live counters cost each army', '');
-    L.push('Destruction lost when the same bases keep their Paper Lantern Line, Repair Crane, Incense Burner, Kite-Cutter Ballista and Longbow Yagura (Keep 5+), versus the same bases with those removed.', '');
+    L.push('', '## What the five live counters\' effects cost each army', '');
+    L.push('Destruction lost to the counter abilities: the same bases, deployments and Infiltration Points, fought once with the Paper Lantern Line, Repair Crane, Incense Burner, Kite-Cutter Ballista and Longbow Yagura effects on and once with only those effects switched off (the buildings stay and still count; the Ballista and Yagura still shoot).', '');
     L.push(`| Army | ${keeps.map((k) => `Keep ${k}`).join(' | ')} |`, `|---|${keeps.map(() => '---').join('|')}|`);
     for (const c of COMPOSITIONS) {
       const byKeep = s.get(c.id);
       L.push(`| ${c.name} | ${keeps.map((k) => { const v = byKeep?.get(k); return v && v.noCounters !== undefined ? `${(v.destruction - v.noCounters).toFixed(1)}` : '–'; }).join(' | ')} |`);
     }
+  }
+  L.push('', '## Investment per army', '');
+  L.push('Equal housing is not equal investment. Provisions and Dojo time to train each army once (base Dojo speed), and Provisions to research its troops to the Keep\'s caps.', '');
+  L.push(`| Army | ${keeps.map((k) => `Keep ${k}`).join(' | ')} |`, `|---|${keeps.map(() => '---').join('|')}|`);
+  for (const c of COMPOSITIONS) {
+    L.push(`| ${c.name} | ${keeps.map((k) => { const a = buildArmy(c, k, opts.data ?? defaultData); if (!a) return '–'; const v = armyInvestment(a, k, opts.data ?? defaultData); return `${fmtK(v.trainDew)} · ${(v.trainSeconds / 3600).toFixed(1)}h · R ${fmtK(v.researchDew)}`; }).join(' | ')} |`);
   }
   L.push('', '## Armies used', '');
   for (const k of keeps) {

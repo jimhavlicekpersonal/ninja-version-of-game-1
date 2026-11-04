@@ -1,7 +1,7 @@
 import type { BattleRecord } from './battle/types';
 import { simulateOfflineRaids } from './defense';
-import { rollSeasons, type SeasonReward } from './ranks';
-import { addCapped, capacity, producedResource, collectorAmount } from './resources';
+import type { SeasonReward } from './ranks';
+import { producedResource, collectorAmount } from './resources';
 import type { GameData, ResourceKind, VillageState } from './types';
 import { advance, type FinishedUpgrade } from './village';
 
@@ -51,8 +51,8 @@ export function computeOfflineProgress(state: VillageState, now: number, data: G
   for (const k of Object.keys(after) as ResourceKind[]) {
     collectorGains[k] = Math.max(0, Math.floor((after[k] ?? 0) - (before[k] ?? 0) + (stolen[k] ?? 0)));
   }
-  const seasons = rollSeasons(next, now, data);
-  for (const sr of seasons) addCapped(next.resources, sr.chest, capacity(next, data));
+  // Seasons are settled (chest paid, trophies softened) inside advance(), at their real end time.
+  const seasons = (next.seasonLog ?? []).filter((sr) => sr.season >= state.season);
   next.lastSeenAt = now;
   return { state: next, summary: { awayMs, finished, collectorGains, raids: raided.raids.map((r) => r.record), seasons } };
 }

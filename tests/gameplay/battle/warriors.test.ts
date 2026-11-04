@@ -52,11 +52,11 @@ describe('offensive abilities', () => {
     expect(primary).toBeCloseTo(sim.troops[0].damage);
     expect(secondary).toBeCloseTo(primary * .65);
   });
-  it('applies a triple first hit once per target and a fourth-hit crescent', () => {
+  it('applies a double first hit once per target and a fourth-hit crescent', () => {
     const dash = arena('wind_step_assassin'); step(dash);
-    expect(dash.buildings[0].maxHp - dash.buildings[0].hp).toBeCloseTo(dash.troops[0].damage * 3);
+    expect(dash.buildings[0].maxHp - dash.buildings[0].hp).toBeCloseTo(dash.troops[0].damage * 2);
     advance(dash, 10);
-    expect(dash.buildings[0].maxHp - dash.buildings[0].hp).toBeCloseTo(dash.troops[0].damage * 4);
+    expect(dash.buildings[0].maxHp - dash.buildings[0].hp).toBeCloseTo(dash.troops[0].damage * 3);
     const moon = arena('moonblade_master'); advance(moon, 31);
     expect(moon.buildings[0].maxHp - moon.buildings[0].hp).toBeCloseTo(moon.troops[0].damage * 5.5);
   });
@@ -91,14 +91,16 @@ describe('offensive abilities', () => {
     expect(sim.buildings[1].hp).toBeLessThan(sim.buildings[1].maxHp);
     expect(sim.used.bomb_carrier).toBe(1);
   });
-  it('artillery fires while stationary from outside a mortar’s range', () => {
+  it('artillery fires while stationary from range, but within reach of a Cannon (no free shelling)', () => {
     const sim = arena('siege_bombardier');
-    sim.troops[0].x = 1; sim.troops[0].y = 10;
+    sim.troops[0].x = 5.5; sim.troops[0].y = 10.5;
     const x = sim.troops[0].x; step(sim);
     expect(sim.troops[0].attacking).toBe(true);
     expect(sim.troops[0].x).toBe(x);
     expect(sim.projectiles).toHaveLength(1);
-    expect(data.troops.siege_bombardier.range).toBeGreaterThan(data.buildings.pinecone_catapult.combat!.range);
+    // Firing at a Cannon's edge, it stands inside the Cannon's own range (measured from its centre).
+    const cannon = data.buildings.acorn_cannon;
+    expect(data.troops.siege_bombardier.range + cannon.size / 2).toBeLessThanOrEqual(cannon.combat!.range);
   });
   it('rage increases damage below half health', () => {
     const sim = arena('bear_warrior'); sim.troops[0].hp = sim.troops[0].maxHp * .4; step(sim);

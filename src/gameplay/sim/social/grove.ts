@@ -5,6 +5,7 @@
  */
 import { barracksLevel } from '../army';
 import { levelDef } from '../data';
+import { troopLevelOf } from '../research';
 import { createRng, int, mixSeed, next, pick } from '../rng';
 import type { BotRequest, ChatMessage, GameData, GroveState, VillageState } from '../types';
 
@@ -29,7 +30,7 @@ export interface Grove {
 }
 
 export function emptyGrove(): GroveState {
-  return { joined: false, seed: 0, joinedAt: 0, xp: 0, chat: [], processedAt: 0, requests: [], myRequest: null, reinforcements: {}, raid: null, raidHistory: [], prepOfferWeek: -1, settledWeek: -1 };
+  return { joined: false, seed: 0, joinedAt: 0, xp: 0, chat: [], processedAt: 0, requests: [], myRequest: null, reinforcements: {}, reinforcementLevels: {}, raid: null, raidHistory: [], prepOfferWeek: -1, settledWeek: -1 };
 }
 
 export function groveSeedFor(villageSeed: number): number {
@@ -107,14 +108,23 @@ function giftTroop(rng: ReturnType<typeof createRng>, state: VillageState, data:
   return ok.length ? pick(rng, ok) : data.social.requestTroops[0];
 }
 
-/** Add donated troops to the player's reinforcements, up to Lodge capacity. Returns housing added. */
-export function addReinforcements(state: VillageState, troop: string, housing: number, data: GameData): number {
+/**
+ * Add donated troops to the player's reinforcements, up to Lodge capacity, at
+ * the level they were donated at. Returns housing added. Mutates.
+ */
+export function addReinforcements(state: VillageState, troop: string, housing: number, data: GameData, level: number): number {
   const def = data.troops[troop];
   if (!def) return 0;
   const room = reinforcementCapacity(state, data) - reinforcementHousing(state, data);
   const n = Math.floor(Math.min(room, housing) / def.housing);
   if (n <= 0) return 0;
-  state.grove.reinforcements[troop] = (state.grove.reinforcements[troop] ?? 0) + n;
+  const lvl = Math.max(1, Math.min(def.levels.length, Math.floor(level) || 1));
+  const g = state.grove;
+  g.reinforcementLevels = g.reinforcementLevels ?? {};
+  // One level per troop type in the Lodge: mixing keeps the lower one, so no donation is boosted.
+  const had = (g.reinforcements[troop] ?? 0) > 0 ? g.reinforcementLevels[troop] ?? troopLevelOf(state, troop) : Infinity;
+  g.reinforcementLevels[troop] = Math.min(had, lvl);
+  g.reinforcements[troop] = (g.reinforcements[troop] ?? 0) + n;
   return n * def.housing;
 }
 
@@ -169,7 +179,9 @@ export function advanceGrove(state: VillageState, now: number, data: GameData): 
       const rng = createRng(mixSeed(g.seed, Math.floor(g.myRequest.at / 1000) + k));
       const online = grove.members.map((m, i) => ({ m, i })).filter(({ m }) => isOnline(m, t));
       const giver = online.length ? pick(rng, online).i : int(rng, 0, grove.members.length - 1);
-      const added = addReinforcements(state, giftTroop(rng, state, data), so.reinforcementChunkHousing, data);
+      // Bot friends donate at your own research level for that troop (they are matched to you).
+      const gift = giftTroop(rng, state, data);
+      const added = addReinforcements(state, gift, so.reinforcementChunkHousing, data, troopLevelOf(state, gift));
       g.myRequest.chunks = k;
       if (added > 0) pushChat(g, { at: t, from: giver, text: pick(rng, so.chatLines.donated), kind: 'donation' }, data);
       if (added <= 0 || k >= 6) g.myRequest = null;

@@ -7,6 +7,7 @@
 import { scaleReward } from './economy';
 import { addCapped, capacity } from './resources';
 import { addReinforcements } from './social/grove';
+import { troopLevelOf } from './research';
 import type { Cost, GameData, NetState, ResourceKind, VillageState } from './types';
 
 /** How many applied donation ids to remember (older ones are long acknowledged). */
@@ -28,6 +29,8 @@ export interface ServerDonation {
   troop: string;
   count: number;
   fromName: string;
+  /** The level the donor sent them at (absent from old servers: the receiver's own level). */
+  level?: number;
 }
 
 /**
@@ -42,7 +45,8 @@ export function receiveDonations(state: VillageState, items: ServerDonation[], d
     state.net.donations.push(d.id);
     const def = data.troops[d.troop];
     if (!def || !(d.count > 0)) continue;
-    const housing = addReinforcements(state, d.troop, def.housing * Math.floor(d.count), data);
+    const level = Number.isInteger(d.level) && d.level! >= 1 ? d.level! : troopLevelOf(state, d.troop);
+    const housing = addReinforcements(state, d.troop, def.housing * Math.floor(d.count), data, level);
     if (housing > 0) added.push({ troop: d.troop, count: housing / def.housing, fromName: d.fromName });
   }
   if (state.net.donations.length > MAX_DONATION_IDS) state.net.donations.splice(0, state.net.donations.length - MAX_DONATION_IDS);

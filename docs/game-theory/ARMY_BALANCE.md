@@ -13,32 +13,54 @@ A composition takes the three newest unlocked troops of each family it uses:
 - **Air** (`air`): 80% air, 20% melee
 - **Shadow strike** (`shadow`): 70% shadow, 30% melee
 - **Siege** (`siege`): 50% siege, 50% melee
+- **Melee + ranged, light support** (`support_light`): 55% melee, 30% artillery, 15% support
+- **Breach wedge** (`breach`): 25% siege, 45% melee, 30% artillery
 
 ## Average destruction % (3-star rate)
 
-| Army | Keep 4 | Keep 6 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
-|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 66 (11%) | 78 (28%) | 98 (89%) | 96 (83%) | 74 (33%) | 98 (78%) |
-| Melee rush | 73 (33%) | 72 (22%) | 93 (61%) | 74 (17%) | 43 (6%) | 53 (6%) |
-| Artillery-heavy | 69 (28%) | 98 (89%) | 91 (72%) | 95 (78%) | 82 (44%) | 96 (78%) |
-| Support-heavy | 45 (0%) | 53 (6%) | 43 (0%) | 57 (6%) | 33 (0%) | 44 (0%) |
-| Air | 48 (0%) | 46 (0%) | 45 (11%) | 51 (0%) | 28 (0%) | 48 (6%) |
-| Shadow strike | 52 (11%) | 57 (11%) | 55 (11%) | 55 (6%) | 35 (0%) | 50 (6%) |
-| Siege | 49 (6%) | 50 (6%) | 46 (6%) | 44 (0%) | 48 (22%) | 48 (17%) |
+| Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
+|---|---|---|---|---|---|---|---|
+| Mixed (raid bot mix) | 56 (6%) | 63 (11%) | 74 (28%) | 66 (11%) | 71 (22%) | 67 (17%) | 84 (44%) |
+| Melee rush | 73 (33%) | 63 (11%) | 59 (22%) | 33 (17%) | 63 (6%) | 41 (6%) | 39 (0%) |
+| Artillery-heavy | 65 (11%) | 79 (33%) | 62 (6%) | 58 (6%) | 71 (17%) | 55 (0%) | 71 (11%) |
+| Support-heavy | 48 (0%) | 47 (0%) | 36 (0%) | 16 (0%) | 47 (0%) | 33 (0%) | 34 (0%) |
+| Air | 50 (0%) | 41 (0%) | 38 (0%) | 33 (0%) | 47 (0%) | 25 (0%) | 45 (0%) |
+| Shadow strike | 60 (17%) | 55 (0%) | 51 (0%) | 45 (0%) | 42 (0%) | 38 (0%) | 44 (0%) |
+| Siege | 68 (22%) | 62 (22%) | 41 (0%) | 26 (6%) | 44 (0%) | 30 (0%) | 32 (0%) |
+| Melee + ranged, light support | 69 (28%) | 81 (39%) | 57 (6%) | 54 (6%) | 83 (44%) | 52 (0%) | 53 (0%) |
+| Breach wedge | 66 (22%) | 79 (39%) | 51 (0%) | 53 (0%) | 69 (17%) | 42 (0%) | 50 (0%) |
 
-## What the five live counters cost each army
+## What the five live counters' effects cost each army
 
-Destruction lost when the same bases keep their Paper Lantern Line, Repair Crane, Incense Burner, Kite-Cutter Ballista and Longbow Yagura (Keep 5+), versus the same bases with those removed.
+Destruction lost to the counter abilities: the same bases, deployments and Infiltration Points, fought once with the Paper Lantern Line, Repair Crane, Incense Burner, Kite-Cutter Ballista and Longbow Yagura effects on and once with only those effects switched off (the buildings stay and still count; the Ballista and Yagura still shoot).
 
-| Army | Keep 4 | Keep 6 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
-|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 0.0 | 6.1 | -1.9 | 0.1 | -13.1 | -2.2 |
-| Melee rush | 0.0 | -1.7 | -5.0 | -3.8 | -13.0 | -15.0 |
-| Artillery-heavy | 0.0 | 0.2 | -6.0 | -0.1 | -4.7 | -3.2 |
-| Support-heavy | 0.0 | -3.7 | -1.2 | 3.1 | -9.3 | -9.8 |
-| Air | 0.0 | 2.2 | -15.4 | -3.8 | -14.1 | -27.9 |
-| Shadow strike | 0.0 | -6.4 | -4.3 | 2.6 | -9.7 | -16.7 |
-| Siege | 0.0 | -3.2 | -3.4 | -1.1 | -7.3 | -12.4 |
+| Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
+|---|---|---|---|---|---|---|---|
+| Mixed (raid bot mix) | 0.0 | 0.0 | -3.4 | -0.4 | 0.0 | 2.0 | 4.1 |
+| Melee rush | 0.0 | -0.1 | -2.6 | 9.2 | 0.0 | 0.3 | 0.4 |
+| Artillery-heavy | 0.0 | 0.0 | -0.6 | -1.3 | 0.0 | -0.6 | -3.5 |
+| Support-heavy | 0.0 | 0.0 | -1.4 | -2.7 | 0.2 | 0.7 | 0.4 |
+| Air | 0.0 | 0.0 | -1.7 | -1.6 | 0.6 | -1.2 | -2.5 |
+| Shadow strike | 0.0 | 0.0 | -2.8 | 0.8 | 0.0 | -0.3 | 0.7 |
+| Siege | 0.0 | 0.0 | -1.1 | -1.1 | 0.0 | 0.0 | -1.9 |
+| Melee + ranged, light support | 0.0 | -0.2 | -3.4 | -1.9 | 0.3 | -4.8 | -2.1 |
+| Breach wedge | 0.0 | 0.0 | -1.3 | -1.3 | 0.0 | -1.1 | -3.6 |
+
+## Investment per army
+
+Equal housing is not equal investment. Provisions and Dojo time to train each army once (base Dojo speed), and Provisions to research its troops to the Keep's caps.
+
+| Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
+|---|---|---|---|---|---|---|---|
+| Mixed (raid bot mix) | 8k · 0.8h · R 51k | 31k · 1.5h · R 174k | 66k · 2.6h · R 367k | 92k · 2.7h · R 713k | 267k · 4.1h · R 3.7m | 607k · 4.3h · R 16.1m | 4.0m · 6.6h · R 290.0m |
+| Melee rush | 12k · 0.9h · R 10k | 44k · 1.9h · R 96k | 66k · 2.6h · R 275k | 123k · 2.7h · R 535k | 263k · 4.1h · R 2.8m | 658k · 4.3h · R 12.1m | 4.3m · 6.6h · R 217.5m |
+| Artillery-heavy | 11k · 0.9h · R 20k | 35k · 1.8h · R 192k | 64k · 2.3h · R 575k | 97k · 2.4h · R 1.1m | 250k · 3.4h · R 5.3m | 616k · 4.0h · R 23.4m | 3.9m · 5.8h · R 406.7m |
+| Support-heavy | 9k · 0.8h · R 20k | 32k · 1.7h · R 161k | 50k · 2.2h · R 473k | 90k · 2.5h · R 1.0m | 199k · 3.4h · R 4.9m | 502k · 3.9h · R 22.1m | 3.3m · 6.0h · R 395.1m |
+| Air | 18k · 1.0h · R 20k | 68k · 1.9h · R 161k | 121k · 2.1h · R 473k | 186k · 2.4h · R 1.0m | 448k · 2.9h · R 4.9m | 1.2m · 3.5h · R 22.1m | 7.9m · 5.4h · R 395.1m |
+| Shadow strike | 6k · 0.7h · R 20k | 23k · 1.7h · R 161k | 39k · 1.9h · R 473k | 63k · 2.0h · R 857k | 148k · 2.9h · R 4.9m | 387k · 3.6h · R 22.1m | 2.5m · 5.5h · R 395.1m |
+| Siege | 8k · 0.8h · R 20k | 29k · 1.7h · R 161k | 46k · 2.1h · R 473k | 80k · 2.2h · R 857k | 182k · 3.2h · R 4.9m | 450k · 3.4h · R 20.2m | 2.9m · 5.5h · R 374.3m |
+| Melee + ranged, light support | 10k · 0.9h · R 31k | 35k · 1.8h · R 257k | 59k · 2.3h · R 773k | 99k · 2.5h · R 1.6m | 232k · 3.5h · R 7.4m | 583k · 4.0h · R 33.5m | 3.8m · 6.1h · R 584.3m |
+| Breach wedge | 10k · 0.8h · R 31k | 32k · 1.8h · R 257k | 56k · 2.2h · R 773k | 91k · 2.3h · R 1.4m | 217k · 3.4h · R 7.4m | 538k · 3.7h · R 31.6m | 3.5m · 5.7h · R 563.5m |
 
 ## Armies used
 
@@ -46,59 +68,83 @@ Destruction lost when the same bases keep their Paper Lantern Line, Repair Crane
 
 - Mixed (raid bot mix): 53× Shinobi, 36× Kunai Adept, 3× Armored Guardian, 2× Kite Raider, 4× Tunnel Runner
 - Melee rush: 8× Iron Monk, 20× Tunnel Runner, 20× Trap Breaker
-- Artillery-heavy: 42× Shuriken Storm, 42× Kunai Adept, 2× Iron Monk, 6× Tunnel Runner, 6× Trap Breaker
-- Support-heavy: 16× Herbalist, 4× Iron Monk, 12× Tunnel Runner, 12× Trap Breaker
-- Air: 24× Kite Raider, 1× Iron Monk, 4× Tunnel Runner, 4× Trap Breaker
-- Shadow strike: 42× Shadow Stalker, 2× Iron Monk, 6× Tunnel Runner, 6× Trap Breaker
+- Artillery-heavy: 43× Shuriken Storm, 43× Kunai Adept, 2× Iron Monk, 6× Tunnel Runner, 6× Trap Breaker
+- Support-heavy: 16× Herbalist, 4× Iron Monk, 13× Tunnel Runner, 13× Trap Breaker
+- Air: 24× Kite Raider, 1× Iron Monk, 5× Tunnel Runner, 4× Trap Breaker
+- Shadow strike: 42× Shadow Stalker, 2× Iron Monk, 7× Tunnel Runner, 6× Trap Breaker
 - Siege: 20× Ram Crew, 4× Iron Monk, 10× Tunnel Runner, 10× Trap Breaker
+- Melee + ranged, light support: 4× Iron Monk, 11× Tunnel Runner, 11× Trap Breaker, 19× Shuriken Storm, 19× Kunai Adept, 6× Herbalist
+- Breach wedge: 10× Ram Crew, 3× Iron Monk, 9× Tunnel Runner, 9× Trap Breaker, 19× Shuriken Storm, 20× Kunai Adept
 
 **Keep 6** (housing 240)
 
 - Mixed (raid bot mix): 85× Shinobi, 72× Kunai Adept, 7× Armored Guardian, 6× Kite Raider, 12× Tunnel Runner
 - Melee rush: 40× Wall Climber, 16× Iron Monk, 40× Tunnel Runner
-- Artillery-heavy: 18× Hawk Tamer, 56× Shuriken Storm, 56× Kunai Adept, 12× Wall Climber, 4× Iron Monk, 12× Tunnel Runner
-- Support-heavy: 16× Drum Monk, 16× Herbalist, 24× Wall Climber, 9× Iron Monk, 24× Tunnel Runner
+- Artillery-heavy: 18× Hawk Tamer, 57× Shuriken Storm, 57× Kunai Adept, 13× Wall Climber, 4× Iron Monk, 13× Tunnel Runner
+- Support-heavy: 16× Drum Monk, 16× Herbalist, 24× Wall Climber, 9× Iron Monk, 25× Tunnel Runner
 - Air: 24× Crane Glider, 24× Kite Raider, 8× Wall Climber, 3× Iron Monk, 8× Tunnel Runner
-- Shadow strike: 42× Mirage Twin, 42× Shadow Stalker, 12× Wall Climber, 4× Iron Monk, 12× Tunnel Runner
+- Shadow strike: 43× Mirage Twin, 42× Shadow Stalker, 12× Wall Climber, 4× Iron Monk, 13× Tunnel Runner
 - Siege: 20× Fire Monk, 20× Ram Crew, 20× Wall Climber, 8× Iron Monk, 20× Tunnel Runner
+- Melee + ranged, light support: 22× Wall Climber, 8× Iron Monk, 23× Tunnel Runner, 8× Hawk Tamer, 25× Shuriken Storm, 25× Kunai Adept, 6× Drum Monk, 6× Herbalist
+- Breach wedge: 10× Fire Monk, 10× Ram Crew, 18× Wall Climber, 7× Iron Monk, 18× Tunnel Runner, 8× Hawk Tamer, 24× Shuriken Storm, 25× Kunai Adept
+
+**Keep 7** (housing 255)
+
+- Mixed (raid bot mix): 93× Wind-Step Assassin, 63× Blowgun Hunter, 15× Bell Warden, 12× Gearbreaker
+- Melee rush: 17× Bell Warden, 42× Gearbreaker, 86× Wind-Step Assassin
+- Artillery-heavy: 61× Blowgun Hunter, 19× Hawk Tamer, 60× Shuriken Storm, 5× Bell Warden, 13× Gearbreaker, 26× Wind-Step Assassin
+- Support-heavy: 17× Drum Monk, 17× Herbalist, 10× Bell Warden, 25× Gearbreaker, 53× Wind-Step Assassin
+- Air: 26× Crane Glider, 25× Kite Raider, 3× Bell Warden, 9× Gearbreaker, 18× Wind-Step Assassin
+- Shadow strike: 45× Mirage Twin, 44× Shadow Stalker, 5× Bell Warden, 13× Gearbreaker, 26× Wind-Step Assassin
+- Siege: 21× Fire Monk, 21× Ram Crew, 8× Bell Warden, 22× Gearbreaker, 45× Wind-Step Assassin
+- Melee + ranged, light support: 9× Bell Warden, 24× Gearbreaker, 47× Wind-Step Assassin, 26× Blowgun Hunter, 8× Hawk Tamer, 26× Shuriken Storm, 7× Drum Monk, 6× Herbalist
+- Breach wedge: 11× Fire Monk, 10× Ram Crew, 7× Bell Warden, 20× Gearbreaker, 39× Wind-Step Assassin, 28× Blowgun Hunter, 8× Hawk Tamer, 26× Shuriken Storm
 
 **Keep 8** (housing 270)
 
 - Mixed (raid bot mix): 97× Wind-Step Assassin, 67× Blowgun Hunter, 16× Bell Warden, 13× Gearbreaker
 - Melee rush: 45× Grapple Raider, 18× Bell Warden, 45× Gearbreaker
-- Artillery-heavy: 63× Blowgun Hunter, 21× Hawk Tamer, 63× Shuriken Storm, 13× Grapple Raider, 5× Bell Warden, 13× Gearbreaker
-- Support-heavy: 12× Mist Weaver, 12× Drum Monk, 12× Herbalist, 27× Grapple Raider, 10× Bell Warden, 27× Gearbreaker
-- Air: 18× Lantern Balloon, 18× Crane Glider, 18× Kite Raider, 9× Grapple Raider, 3× Bell Warden, 9× Gearbreaker
-- Shadow strike: 47× Mirage Twin, 47× Shadow Stalker, 13× Grapple Raider, 5× Bell Warden, 13× Gearbreaker
-- Siege: 22× Fire Monk, 22× Ram Crew, 22× Grapple Raider, 9× Bell Warden, 22× Gearbreaker
+- Artillery-heavy: 64× Blowgun Hunter, 21× Hawk Tamer, 64× Shuriken Storm, 13× Grapple Raider, 5× Bell Warden, 14× Gearbreaker
+- Support-heavy: 12× Mist Weaver, 12× Drum Monk, 12× Herbalist, 28× Grapple Raider, 10× Bell Warden, 28× Gearbreaker
+- Air: 18× Lantern Balloon, 18× Crane Glider, 18× Kite Raider, 9× Grapple Raider, 3× Bell Warden, 10× Gearbreaker
+- Shadow strike: 47× Mirage Twin, 47× Shadow Stalker, 14× Grapple Raider, 5× Bell Warden, 14× Gearbreaker
+- Siege: 22× Fire Monk, 22× Ram Crew, 23× Grapple Raider, 9× Bell Warden, 23× Gearbreaker
+- Melee + ranged, light support: 25× Grapple Raider, 9× Bell Warden, 25× Gearbreaker, 28× Blowgun Hunter, 10× Hawk Tamer, 28× Shuriken Storm, 4× Mist Weaver, 5× Drum Monk, 4× Herbalist
+- Breach wedge: 11× Fire Monk, 11× Ram Crew, 20× Grapple Raider, 8× Bell Warden, 20× Gearbreaker, 29× Blowgun Hunter, 9× Hawk Tamer, 28× Shuriken Storm
 
 **Keep 10** (housing 300)
 
 - Mixed (raid bot mix): 105× Moonblade Master, 75× Chain-Sickle Reaper, 18× Mountain Shield, 15× Fuse Master
 - Melee rush: 50× Fuse Master, 100× Moonblade Master, 20× Mountain Shield
-- Artillery-heavy: 70× Chain-Sickle Reaper, 70× Blowgun Hunter, 23× Hawk Tamer, 15× Fuse Master, 30× Moonblade Master, 6× Mountain Shield
-- Support-heavy: 13× Mist Weaver, 13× Drum Monk, 13× Herbalist, 30× Fuse Master, 60× Moonblade Master, 12× Mountain Shield
+- Artillery-heavy: 70× Chain-Sickle Reaper, 71× Blowgun Hunter, 23× Hawk Tamer, 15× Fuse Master, 30× Moonblade Master, 6× Mountain Shield
+- Support-heavy: 13× Mist Weaver, 13× Drum Monk, 13× Herbalist, 31× Fuse Master, 61× Moonblade Master, 12× Mountain Shield
 - Air: 20× Lantern Balloon, 20× Crane Glider, 20× Kite Raider, 10× Fuse Master, 20× Moonblade Master, 4× Mountain Shield
 - Shadow strike: 35× Night Blade, 35× Mirage Twin, 35× Shadow Stalker, 15× Fuse Master, 30× Moonblade Master, 6× Mountain Shield
-- Siege: 16× Bomb Carrier, 16× Fire Monk, 16× Ram Crew, 25× Fuse Master, 50× Moonblade Master, 10× Mountain Shield
+- Siege: 17× Bomb Carrier, 16× Fire Monk, 16× Ram Crew, 26× Fuse Master, 51× Moonblade Master, 10× Mountain Shield
+- Melee + ranged, light support: 27× Fuse Master, 55× Moonblade Master, 11× Mountain Shield, 30× Chain-Sickle Reaper, 31× Blowgun Hunter, 10× Hawk Tamer, 5× Mist Weaver, 5× Drum Monk, 5× Herbalist
+- Breach wedge: 8× Bomb Carrier, 8× Fire Monk, 8× Ram Crew, 22× Fuse Master, 46× Moonblade Master, 9× Mountain Shield, 31× Chain-Sickle Reaper, 32× Blowgun Hunter, 10× Hawk Tamer
 
 **Keep 12** (housing 315)
 
 - Mixed (raid bot mix): 117× Moonblade Master, 78× Chain-Sickle Reaper, 18× Mountain Shield, 15× Fuse Master
-- Melee rush: 35× Bear Warrior, 52× Mole King, 52× Fuse Master
-- Artillery-heavy: 73× Chain-Sickle Reaper, 73× Blowgun Hunter, 24× Hawk Tamer, 10× Bear Warrior, 15× Mole King, 15× Fuse Master
-- Support-heavy: 14× Spirit Caller, 14× Mist Weaver, 14× Drum Monk, 21× Bear Warrior, 31× Mole King, 31× Fuse Master
-- Air: 21× Thunder Kite, 21× Lantern Balloon, 21× Crane Glider, 7× Bear Warrior, 10× Mole King, 10× Fuse Master
-- Shadow strike: 36× Void Walker, 36× Night Blade, 36× Mirage Twin, 10× Bear Warrior, 15× Mole King, 15× Fuse Master
-- Siege: 17× Siege Bombardier, 17× Bomb Carrier, 17× Fire Monk, 17× Bear Warrior, 26× Mole King, 26× Fuse Master
+- Melee rush: 35× Bear Warrior, 52× Mole King, 53× Fuse Master
+- Artillery-heavy: 24× Siege Bombardier, 74× Chain-Sickle Reaper, 75× Blowgun Hunter, 10× Bear Warrior, 16× Mole King, 16× Fuse Master
+- Support-heavy: 14× Spirit Caller, 14× Mist Weaver, 14× Drum Monk, 21× Bear Warrior, 31× Mole King, 32× Fuse Master
+- Air: 21× Thunder Kite, 21× Lantern Balloon, 21× Crane Glider, 7× Bear Warrior, 10× Mole King, 11× Fuse Master
+- Shadow strike: 36× Void Walker, 37× Night Blade, 37× Mirage Twin, 10× Bear Warrior, 16× Mole King, 16× Fuse Master
+- Siege: 17× Bomb Carrier, 17× Fire Monk, 17× Ram Crew, 18× Bear Warrior, 27× Mole King, 27× Fuse Master
+- Melee + ranged, light support: 20× Bear Warrior, 29× Mole King, 29× Fuse Master, 10× Siege Bombardier, 32× Chain-Sickle Reaper, 32× Blowgun Hunter, 5× Spirit Caller, 5× Mist Weaver, 5× Drum Monk
+- Breach wedge: 9× Bomb Carrier, 8× Fire Monk, 8× Ram Crew, 16× Bear Warrior, 24× Mole King, 24× Fuse Master, 10× Siege Bombardier, 32× Chain-Sickle Reaper, 34× Blowgun Hunter
 
 **Keep 15** (housing 360)
 
 - Mixed (raid bot mix): 129× Storm Sovereign, 90× Thousand Needle, 21× Oni Breaker, 18× Ghost Engineer
 - Melee rush: 40× Tiger Lord, 60× Phantom Gate, 60× Ghost Engineer
-- Artillery-heavy: 83× Thousand Needle, 83× Chain-Sickle Reaper, 83× Blowgun Hunter, 12× Tiger Lord, 18× Phantom Gate, 18× Ghost Engineer
+- Artillery-heavy: 84× Thousand Needle, 27× Siege Bombardier, 85× Chain-Sickle Reaper, 12× Tiger Lord, 18× Phantom Gate, 19× Ghost Engineer
 - Support-heavy: 16× Sage of Clouds, 16× Spirit Caller, 16× Mist Weaver, 24× Tiger Lord, 36× Phantom Gate, 36× Ghost Engineer
 - Air: 24× Dragon Kite Armada, 24× Thunder Kite, 24× Lantern Balloon, 8× Tiger Lord, 12× Phantom Gate, 12× Ghost Engineer
-- Shadow strike: 41× Eclipse Ninja, 41× Void Walker, 41× Night Blade, 12× Tiger Lord, 18× Phantom Gate, 18× Ghost Engineer
-- Siege: 20× Volcano Cannoneer, 20× Siege Bombardier, 20× Bomb Carrier, 20× Tiger Lord, 30× Phantom Gate, 30× Ghost Engineer
+- Shadow strike: 42× Eclipse Ninja, 41× Void Walker, 42× Night Blade, 12× Tiger Lord, 18× Phantom Gate, 19× Ghost Engineer
+- Siege: 20× Volcano Cannoneer, 20× Bomb Carrier, 20× Fire Monk, 20× Tiger Lord, 30× Phantom Gate, 30× Ghost Engineer
+- Melee + ranged, light support: 22× Tiger Lord, 33× Phantom Gate, 33× Ghost Engineer, 36× Thousand Needle, 12× Siege Bombardier, 36× Chain-Sickle Reaper, 6× Sage of Clouds, 6× Spirit Caller, 6× Mist Weaver
+- Breach wedge: 10× Volcano Cannoneer, 10× Bomb Carrier, 10× Fire Monk, 18× Tiger Lord, 27× Phantom Gate, 27× Ghost Engineer, 36× Thousand Needle, 12× Siege Bombardier, 36× Chain-Sickle Reaper
 

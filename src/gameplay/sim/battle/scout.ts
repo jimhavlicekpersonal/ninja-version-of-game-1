@@ -4,7 +4,7 @@
  */
 import { buildingDef } from '../data';
 import type { GameData } from '../types';
-import type { BaseLayout } from './types';
+import { activeInBattle, type BaseLayout } from './types';
 
 export interface ScoutReport {
   /** Visible defenses by building type. */
@@ -34,6 +34,8 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
     const def = buildingDef(data, b.type);
     if (def.category === 'hedge') walls++;
     if (def.category === 'trap') trapsUnlocked = true;
+    // Buildings being upgraded take no part in the battle, so scouting doesn't count them as threats.
+    if (!activeInBattle(b)) continue;
     if (def.effect && def.category !== 'trap') counters[b.type] = (counters[b.type] ?? 0) + 1;
     if (def.category !== 'defense' || !def.combat) continue;
     defenses[b.type] = (defenses[b.type] ?? 0) + 1;
@@ -62,7 +64,7 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
   if (has('shorten_disables')) tips.push('A Repair Crane cuts jams short: destroy it, or jam defenses out of its reach.');
   if (has('anti_heal')) tips.push('Bitter Incense weakens healing and auras near it: fight away from it, or break it first.');
   if (total === 0) tips.push('No working defenses: any squad will do.');
-  if (coveringPairs >= 2) tips.push('Defenses cover each other: jam one with a Saboteur, then smoke the rest.');
+  if (coveringPairs >= 2) tips.push('Defenses cover each other: jam one with a Saboteur, and throw smoke over your squad as it walks into the others\' range.');
   else if (total > 0 && coveringPairs === 0) tips.push('Defenses stand alone: pick them off one at a time.');
   if (hasSplash) tips.push('A Firework Mortar splashes groups and is blind up close: jam it or spread out.');
   if (walls >= 20) tips.push('Thick walls: Saboteurs and Tunnel Runners slip past; Guardians break through.');
@@ -106,7 +108,7 @@ export function pointIntel(points: { label: string; x: number; y: number }[], ba
     const out: PointIntel = { label: p.label, defenses: 0, antiAir: false, splash: false };
     for (const b of base.buildings) {
       const def = buildingDef(data, b.type);
-      if (def.category !== 'defense' || !def.combat || b.upgrading) continue;
+      if (def.category !== 'defense' || !def.combat || !activeInBattle(b)) continue;
       if (toSegment(b.x + def.size / 2, b.y + def.size / 2, p.x, p.y, hx, hy) > def.combat.range) continue;
       out.defenses++;
       if (def.combat.targets !== 'ground') out.antiAir = true;

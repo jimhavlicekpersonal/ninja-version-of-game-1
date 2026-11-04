@@ -26,7 +26,8 @@
     "cap:android": "npm run build && cap sync android && cap open android",
     "art": "vite --open /tools/art-gallery/",
     "docs:progression": "node tools/progression/generate.mjs",
-    "balance:armies": "node tools/balance/generate.mjs"
+    "balance:armies": "node tools/balance/generate.mjs",
+    "balance:campaign": "node tools/balance/campaign.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

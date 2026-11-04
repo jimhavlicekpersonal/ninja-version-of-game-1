@@ -137,8 +137,10 @@ for (const [label, makeRepo] of repoFactories) {
         expect(await code(b.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops }))).toBe('not_found');
         expect(await code(a.submitAttack({ ticket: m1.ticket, seed: 1, army: { beetle_brute: 500 }, deployments: [] }))).toBe('bad_request');
         expect(await code(a.submitAttack({ ticket: m1.ticket, seed: 1, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 4 }, deployments: [] }))).toBe('bad_request');
-        expect(await code(a.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops }))).toBe('ok');
-        expect(await code(a.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops }))).toBe('conflict');
+        const first = await a.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops });
+        // A repeated report (lost answer, retry) gets the first answer back and changes nothing.
+        expect(await a.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops })).toEqual(first);
+        expect((await a.me()).trophies).toBe(first.playerTrophies);
         const m2 = (await a.match())!;
         w.advance(HOUR + 1);
         expect(await code(a.submitAttack({ ticket: m2.ticket, seed: 1, ...noTroops }))).toBe('expired');

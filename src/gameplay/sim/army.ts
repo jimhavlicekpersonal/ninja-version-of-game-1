@@ -31,11 +31,19 @@ export function barracksLevel(state: VillageState, data: GameData): number {
   return best;
 }
 
-/** Move finished training into the army. Mutates `state`. Only finished troops count toward tasks. */
-export function finishTraining(state: VillageState, now: number): string[] {
+/**
+ * Move finished training into the army, as far as the camps have room. A
+ * finished warrior with no room waits at the head of the queue (the next army,
+ * trained ahead) and walks in as soon as space frees up. Mutates `state`. Only
+ * troops that reach the army count toward tasks.
+ */
+export function finishTraining(state: VillageState, now: number, data: GameData): string[] {
   const done: string[] = [];
+  const cap = housingCapacity(state, data);
   while (state.training.length && state.training[0].endsAt <= now) {
-    const item = state.training.shift()!;
+    const item = state.training[0];
+    if (armyHousing(state.army, data) + (data.troops[item.troop]?.housing ?? 0) > cap) break;
+    state.training.shift();
     state.army[item.troop] = (state.army[item.troop] ?? 0) + 1;
     if (state.stats) state.stats.troopsTrained++;
     done.push(item.troop);
@@ -43,7 +51,33 @@ export function finishTraining(state: VillageState, now: number): string[] {
   return done;
 }
 
-/** Re-time the queue so items run back to back starting no earlier than `now`. Mutates. */
+/** True when the first queued warrior has finished and there is camp room for it. */
+export function trainingReady(state: VillageState, now: number, data: GameData): boolean {
+  const head = state.training[0];
+  if (!head || head.endsAt > now) return false;
+  return armyHousing(state.army, data) + (data.troops[head.troop]?.housing ?? 0) <= housingCapacity(state, data);
+}
+
+/** How many times faster than base the Training Dojo trains (its highest finished level). */
+export function trainingSpeed(state: VillageState, data: GameData): number {
+  const lvl = barracksLevel(state, data);
+  return lvl >= 1 ? levelDef(data, 'burrow_barracks', lvl)?.trainingSpeed ?? 1 : 1;
+}
+
+/** Seconds one warrior of this type takes to train in this village's Dojo. */
+export function trainSecondsFor(state: VillageState, troop: string, data: GameData): number {
+  return Math.max(1, Math.ceil(troopDef(data, troop).trainSeconds / trainingSpeed(state, data)));
+}
+
+/**
+ * Most housing that can be trained or queued: a full army in the camps plus
+ * one more full army waiting in the queue.
+ */
+export function trainingQueueLimit(state: VillageState, data: GameData): number {
+  return housingCapacity(state, data) * (1 + data.economy.queuedArmies);
+}
+
+/** Re-time the queue so items run back to back starting no earlier than `now`; each keeps its own duration. Mutates. */
 export function retimeQueue(queue: TrainingItem[], now: number, data: GameData): void {
   let t = now;
   for (let i = 0; i < queue.length; i++) {
@@ -52,7 +86,7 @@ export function retimeQueue(queue: TrainingItem[], now: number, data: GameData):
       t = q.endsAt;
       continue;
     }
-    const dur = troopDef(data, q.troop).trainSeconds * MS_PER_SECOND;
+    const dur = q.endsAt > q.startedAt ? q.endsAt - q.startedAt : troopDef(data, q.troop).trainSeconds * MS_PER_SECOND;
     q.startedAt = t;
     q.endsAt = t + dur;
     t = q.endsAt;
@@ -98,6 +132,16 @@ export function troopUnlock(state: VillageState, troop: string, data: GameData):
   const hall = Math.max(1, state.buildings.find((b) => b.type === hallType(data))?.level ?? 1);
   const needsKeep = hall < keep;
   const needsDojo = barracksLevel(state, data) < dojo;
-  const dojoKeep = data.hall.levels.findIndex((l) => (l.limits.burrow_barracks?.maxLevel ?? 0) >= dojo) + 1 || data.hall.levels.length;
-  return { unlocked: !needsKeep && !needsDojo, keep, dojo, needsKeep, needsDojo, earliestKeep: Math.max(keep, dojoKeep) };
+  return { unlocked: !needsKeep && !needsDojo, keep, dojo, needsKeep, needsDojo, earliestKeep: troopEarliestKeep(troop, data) };
+}
+
+/**
+ * The lowest Clan Keep level at which a troop can be trained at all: its own
+ * Keep gate, and the first Keep whose limits allow the Training Dojo level it
+ * needs. The server checks attacks against this too (no Kite Raider at Keep 1).
+ */
+export function troopEarliestKeep(troop: string, data: GameData): number {
+  const def = troopDef(data, troop);
+  const dojoKeep = data.hall.levels.findIndex((l) => (l.limits.burrow_barracks?.maxLevel ?? 0) >= def.barracksLevel) + 1 || data.hall.levels.length;
+  return Math.max(def.unlockKeep ?? 1, dojoKeep);
 }

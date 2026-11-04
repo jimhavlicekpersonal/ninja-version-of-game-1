@@ -322,6 +322,13 @@
       "stat": "starsEarned",
       "base": 3,
       "perHall": 0
+    },
+    {
+      "id": "finish_research",
+      "text": "Finish {n} research",
+      "stat": "researchDone",
+      "base": 1,
+      "perHall": 0
     }
   ],
   "weeklyChallenges": [
@@ -351,6 +358,20 @@
       "text": "Clear {n} obstacles this week",
       "stat": "obstaclesCleared",
       "base": 3,
+      "perHall": 0
+    },
+    {
+      "id": "w_research",
+      "text": "Finish {n} research this week",
+      "stat": "researchDone",
+      "base": 4,
+      "perHall": 0
+    },
+    {
+      "id": "w_trials",
+      "text": "Clear {n} new Shadow Trial tiers this week",
+      "stat": "trialsCleared",
+      "base": 2,
       "perHall": 0
     }
   ],

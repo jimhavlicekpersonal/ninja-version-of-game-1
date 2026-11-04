@@ -2,7 +2,7 @@
 import type { BattleSim, SimBuilding, SimTroop } from './battle';
 import type { WarriorKit } from '../types';
 import { next } from '../rng';
-import { distToRect, findPath } from './pathfind';
+import { BLOCKED, distToRect, findPath, HEDGE } from './pathfind';
 
 export interface WarriorEffect {
   kind: 'poison' | 'burn' | 'charge';
@@ -223,16 +223,62 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
   const allies = sim.troops.filter((ally) => !ally.dead && !ally.summoned && ally.id !== t.id && sim.data.troops[ally.type].prefers !== 'support');
   const injured = allies.filter((ally) => ally.hp < ally.maxHp);
   const candidates = kit.aura === 'heal' && injured.length ? injured : allies;
-  const ally = candidates.sort((a, b) => distance(t.x, t.y, a.x, a.y) - distance(t.x, t.y, b.x, b.y) || a.id - b.id)[0];
-  if (!ally) return false; // A stranded support can still finish a building.
-  t.attacking = false;
-  if (distance(t.x, t.y, ally.x, ally.y) <= radius / 2) return true;
-  const path = findPath(sim.grid, t.x, t.y, { x: ally.x, y: ally.y, w: 0, h: 0 }, radius / 2, sim.data.battle.hedgePathCost, false);
-  const waypoint = path?.[0];
-  if (waypoint !== undefined && sim.grid.cells[waypoint] === 0) {
-    actions.moveToward(t, waypoint % sim.grid.size + 0.5, Math.floor(waypoint / sim.grid.size) + 0.5, def.speed * (t.slowTicks > 0 ? 0.5 : 1) * (1 + auraStrength(sim, t, 'haste')));
+  candidates.sort((a, b) => distance(t.x, t.y, a.x, a.y) - distance(t.x, t.y, b.x, b.y) || a.id - b.id);
+  if (!candidates.length) {
+    t.path = null;
+    return false; // A stranded support can still finish a building.
   }
+  t.attacking = false;
+  const speed = def.speed * (t.slowTicks > 0 ? 0.5 : 1) * (1 + auraStrength(sim, t, 'haste'));
   if (t.slowTicks > 0) t.slowTicks--;
+  if (distance(t.x, t.y, candidates[0].x, candidates[0].y) <= radius / 2) {
+    t.path = null;
+    return true;
+  }
+  const n = sim.grid.size;
+  // Re-plan every few ticks (or when the route runs out): the nearest ally it can
+  // walk to. A wall in the way is a reason to try the next ally, not to stand still;
+  // if every ally tried is walled in, the route goes through the wall and the support breaks it.
+  if (!t.path || t.pathPos >= t.path.length || (sim.tick + t.id) % rules.supportIntervalTicks === 0) {
+    let walled: number[] | null = null;
+    t.path = null;
+    for (const ally of candidates.slice(0, rules.supportAllyTries)) {
+      const path = findPath(sim.grid, t.x, t.y, { x: ally.x, y: ally.y, w: 0, h: 0 }, radius / 2, sim.data.battle.hedgePathCost, false);
+      if (!path) continue;
+      if (!path.some((c) => sim.grid.cells[c] === HEDGE)) {
+        t.path = path;
+        break;
+      }
+      walled = walled ?? path;
+    }
+    t.path = t.path ?? walled;
+    t.pathPos = 0;
+    if (!t.path) return false;
+    if (!t.path.length) {
+      actions.moveToward(t, candidates[0].x, candidates[0].y, speed);
+      return true;
+    }
+  }
+  const wp = t.path[t.pathPos];
+  const cell = sim.grid.cells[wp];
+  if (cell === HEDGE) {
+    const hx = wp % n;
+    const hy = (wp - hx) / n;
+    const hi = sim.buildings.findIndex((b) => !b.destroyed && b.kind === 'hedge' && b.x === hx && b.y === hy);
+    if (hi >= 0) {
+      t.attacking = true;
+      if (t.cooldown <= 0) {
+        t.cooldown = def.attackIntervalTicks;
+        resolveWarriorHit(sim, t, hi, attackDamage(sim, t, sim.buildings[hi]), actions);
+      }
+      return true;
+    }
+  }
+  if (cell === BLOCKED) {
+    t.path = null;
+    return true;
+  }
+  if (actions.moveToward(t, (wp % n) + 0.5, Math.floor(wp / n) + 0.5, speed)) t.pathPos++;
   return true;
 }
 

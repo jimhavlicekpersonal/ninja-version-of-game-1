@@ -26,7 +26,10 @@ describe('buildings designed against the ninja roster', () => {
         expect(list.length, b.id).toBeLessThanOrEqual(4);
         for (const id of list) expect(byId.has(id), `${b.id}: ${id}`).toBe(true);
       }
-      expect(new Set(b.counters!.map((id) => byId.get(id)!.role)).size, b.id).toBeGreaterThanOrEqual(2);
+      // An air-only counter can only honestly answer flyers (one role); every other counter spans two roles.
+      const airOnly = Boolean((b.effect as { airOnly?: boolean } | undefined)?.airOnly);
+      if (airOnly) for (const id of b.counters!) expect(byId.get(id)!.role, `${b.id} is air-only but lists ${id}`).toBe(WARRIORS.find((w) => w.liveTroop === 'owl_bomber')!.role);
+      else expect(new Set(b.counters!.map((id) => byId.get(id)!.role)).size, b.id).toBeGreaterThanOrEqual(2);
       expect(b.counters!.filter((id) => b.counteredBy!.includes(id)), b.id).toEqual([]);
     }
   });

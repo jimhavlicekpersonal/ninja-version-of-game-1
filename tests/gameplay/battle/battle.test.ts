@@ -94,7 +94,7 @@ describe('battle simulation', () => {
   it('defenses kill weak troops; ground-only cannons ignore flyers', () => {
     const defended = tiny([
       { id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18 },
-      { id: 'c', type: 'acorn_cannon', level: 7, x: 23, y: 18 },
+      { id: 'c', type: 'acorn_cannon', level: 6, x: 23, y: 18 },
     ]);
     const ground = runBattle({ seed: 3, base: defended, army: { hedgehog_roller: 3 } }, [0, 1, 2].map((i) => ({ tick: i, troop: 'hedgehog_roller', x: 29, y: 19 })), data);
     expect(ground.sim.troops.every((t) => t.dead)).toBe(true);

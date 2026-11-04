@@ -18,28 +18,48 @@
  * - The army follows the bot army mix for its hall, using unlocked troops.
  * - Limited-time events (events.json) apply as they would for a player.
  * - Between sessions, real offline bot raids run against the real layout.
+ *
+ * Policies (`policy`), so pacing claims stay tied to a strategy actually played:
+ * - 'raider' (default): the above.
+ * - 'defender': also builds and upgrades the five live counters, and ranks
+ *   defenses above collectors.
+ * - 'explorer': trains the newest unlocked warrior of each family (melee,
+ *   ranged, support, siege, shadow, air) instead of the raid bots' mix, and
+ *   researches them.
+ * `engaged` adds the other long-term goals: a Shadow Trial attempt when the
+ * army is full after raiding, and claiming finished tasks and pass tiers.
  */
-import { armyHousing, barracksLevel, housingCapacity, queueHousing } from '../../../src/gameplay/sim/army';
-import { createBattle } from '../../../src/gameplay/sim/battle/battle';
-import { totalLoot } from '../../../src/gameplay/sim/battle/basegen';
-import { FakeClock } from '../../../src/gameplay/sim/clock';
-import { buildingDef, levelDef } from '../../../src/gameplay/sim/data';
-import { botDeployments } from '../../../src/gameplay/sim/defense';
-import { findFreeSpot } from '../../../src/gameplay/sim/grid';
-import { opponentFor } from '../../../src/gameplay/sim/matchmaking';
-import { computeOfflineProgress } from '../../../src/gameplay/sim/offline';
-import { troopLevels } from '../../../src/gameplay/sim/research';
-import { capacity, collectorAmount } from '../../../src/gameplay/sim/resources';
-import { createRng, mixSeed } from '../../../src/gameplay/sim/rng';
-import type { GameData, VillageState } from '../../../src/gameplay/sim/types';
-import { advance, applyCommand, battleArmy, builderStatus, countOfType, createNewVillage, hallLevel, limitFor, researchStartQuote, scoutFee, type Command } from '../../../src/gameplay/sim/village';
+import { armyHousing, barracksLevel, housingCapacity, queueHousing, troopUnlock } from '../../src/gameplay/sim/army';
+import { newestInFamily, type Family } from './armyLab';
+import { currentTasks, unlockedTier } from '../../src/gameplay/sim/pass';
+import { nextTrialTier, trialBase, trialVariant } from '../../src/gameplay/sim/trials';
+import { createBattle } from '../../src/gameplay/sim/battle/battle';
+import { totalLoot } from '../../src/gameplay/sim/battle/basegen';
+import { FakeClock } from '../../src/gameplay/sim/clock';
+import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
+import { botDeployments } from '../../src/gameplay/sim/defense';
+import { findFreeSpot } from '../../src/gameplay/sim/grid';
+import { opponentFor } from '../../src/gameplay/sim/matchmaking';
+import { computeOfflineProgress } from '../../src/gameplay/sim/offline';
+import { researchLanes, troopLevels } from '../../src/gameplay/sim/research';
+import { capacity, collectorAmount } from '../../src/gameplay/sim/resources';
+import { createRng, mixSeed } from '../../src/gameplay/sim/rng';
+import type { GameData, VillageState } from '../../src/gameplay/sim/types';
+import { advance, applyCommand, battleArmy, builderStatus, countOfType, createNewVillage, hallLevel, limitFor, researchStartQuote, scoutFee, type Command } from '../../src/gameplay/sim/village';
 
 export interface ModelOptions {
   /** Max raids per session (armies permitting). */
   raidsPerSession: number;
   /** Max paid "Next" presses per raid. */
   maxNext?: number;
+  policy?: 'raider' | 'defender' | 'explorer';
+  /** Also play Shadow Trials and claim tasks and pass tiers. */
+  engaged?: boolean;
 }
+
+const COUNTER_BUILDINGS = ['paper_lantern_line', 'clockwork_repairer', 'bitter_incense_burner', 'kite_cutter_ballista', 'longbow_yagura'];
+/** Explorer army: housing share per family (each family's newest unlocked warrior). */
+const EXPLORER_SHARES: [Family, number][] = [['melee', 0.35], ['artillery', 0.25], ['support', 0.1], ['siege', 0.1], ['shadow', 0.1], ['air', 0.1]];
 
 export interface RaidLog {
   hall: number;
@@ -56,6 +76,11 @@ export class ModelPlayer {
   hallReachedAt: Record<number, number> = {};
   raids = 0;
   raidLog: RaidLog[] = [];
+  /** Every warrior type that fought in a raid. */
+  fielded = new Set<string>();
+  trialsTried = 0;
+  private sessions = 0;
+  tasksClaimed = 0;
   defenseLog: { hall: number; stars: number; destruction: number; lost: number }[] = [];
   private readonly t0: number;
 
@@ -106,7 +131,11 @@ export class ModelPlayer {
     for (const b of this.state.buildings) if (d.buildings[b.type].produces) this.run({ type: 'collect', id: b.id });
     // The free daily chest (fails harmlessly once today's is open).
     this.run({ type: 'openDailyChest' });
+    // Engaged players spend one full army a day on the next Shadow Trial tier.
+    if (this.opts.engaged && this.sessions % 8 === 0) this.trial();
+    this.sessions++;
     this.raid();
+    if (this.opts.engaged) this.claimRewards();
     this.train();
     this.research();
     this.spend();
@@ -159,7 +188,9 @@ export class ModelPlayer {
       for (const t of ['acorn_silo', 'dew_cistern']) consider(t, storageShort ? 0 : 3);
       for (const t of ['army_camp', 'burrow_barracks']) consider(t, 1);
       for (const t of ['acorn_orchard', 'dewdrop_well']) consider(t, 2);
-      for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle']) consider(t, 4);
+      const defender = this.opts.policy === 'defender';
+      for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle']) consider(t, defender ? 2.6 : 4);
+      if (defender) for (const t of COUNTER_BUILDINGS) consider(t, 2.5);
       options.sort((a, b) => a.prio - b.prio);
       let did = false;
       for (const o of options) {
@@ -179,6 +210,16 @@ export class ModelPlayer {
   /** Housing shares to train toward: the bot mix for this hall, using unlocked troops. */
   private mix(): [string, number][] {
     const d = this.data;
+    if (this.opts.policy === 'explorer') {
+      const hl = hallLevel(this.state, d);
+      const out: [string, number][] = [];
+      for (const [family, share] of EXPLORER_SHARES) {
+        const t = newestInFamily(family, hl, 6, d).find((x) => troopUnlock(this.state, x, d).unlocked);
+        if (t) out.push([t, share]);
+      }
+      const sum = out.reduce((a, [, v]) => a + v, 0);
+      if (out.length) return out.map(([t, v]) => [t, v / sum]);
+    }
     const bl = barracksLevel(this.state, d);
     const mixes = d.raids.botArmyMix;
     const want = mixes[Math.min(mixes.length, hallLevel(this.state, d)) - 1];
@@ -215,7 +256,7 @@ export class ModelPlayer {
 
   /** Research the most used unlocked troop that can go up a level, if it leaves 30% of Dew storage for the rest. */
   private research(): void {
-    if (this.state.research.active) return;
+    if (this.state.research.active.length >= researchLanes(hallLevel(this.state, this.data), this.data)) return;
     const d = this.data;
     const reserve = capacity(this.state, d).dew * 0.3;
     for (const [t] of this.mix().sort((a, b) => b[1] - a[1])) {
@@ -246,6 +287,7 @@ export class ModelPlayer {
         base = opponentFor(seed, this.state, d);
       }
       const army = battleArmy(this.state);
+      for (const t of Object.keys(army)) this.fielded.add(t);
       const levels = troopLevels(this.state, d);
       const setup = { seed: mixSeed(seed, 0xba771e), base, army, levels, infiltration: true };
       const probe = createBattle(setup, d);
@@ -259,6 +301,35 @@ export class ModelPlayer {
       // Replays are not needed here, and cloning them on every command is slow.
       this.state.battleLog = [];
       this.raids++;
+    }
+  }
+
+  /** One attempt at the next Shadow Trial tier with the whole army, when it is full. */
+  private trial(): void {
+    const d = this.data;
+    const cap = housingCapacity(this.state, d);
+    if (!cap || armyHousing(this.state.army, d) < cap * 0.9) return;
+    const tier = nextTrialTier(this.state.trials.best);
+    const base = trialBase(tier, d, trialVariant(this.state.trials, tier));
+    const army = battleArmy(this.state);
+    const levels = troopLevels(this.state, d);
+    const setup = { seed: mixSeed(this.state.seed, tier), base, army, levels, infiltration: true };
+    const probe = createBattle(setup, d);
+    const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(tier), d, levels, probe.entry);
+    if (this.run({ type: 'trialEnd', tier, record: { at: this.clock.now(), opponentName: base.name, setup, deployments } })) this.trialsTried++;
+    // Stuck? Take an alternate fortress next time.
+    this.run({ type: 'trialAlternate' });
+    this.state.battleLog = [];
+  }
+
+  /** Claim finished tasks and unlocked Season Scroll tiers (free track). */
+  private claimRewards(): void {
+    const d = this.data;
+    for (const t of currentTasks(this.state, hallLevel(this.state, d), d)) {
+      if (!t.claimed && t.progress >= t.target && this.run({ type: 'claimTask', id: t.id, kind: t.kind })) this.tasksClaimed++;
+    }
+    for (let tier = 1; tier <= unlockedTier(this.state, d); tier++) {
+      if (!this.state.pass.claimedFree.includes(tier)) this.run({ type: 'claimTier', tier, track: 'free' });
     }
   }
 
@@ -302,6 +373,20 @@ export function normalDays(p: ModelPlayer, days: number, onDay?: (day: number) =
     // Sleep until the next morning.
     const next = dayStart(p.clock.now()) + 86_400_000;
     p.away(next - p.clock.now());
+    onDay?.(day + 1);
+  }
+}
+
+/** Casual play: one ~10-minute visit a day (18:00 UTC here), with a second round after training. */
+export function casualDays(p: ModelPlayer, days: number, onDay?: (day: number) => void): void {
+  const dayStart = (t: number) => Math.floor(t / 86_400_000) * 86_400_000;
+  for (let day = 0; day < days; day++) {
+    const t = dayStart(p.clock.now()) + 18 * 3_600_000;
+    if (t > p.clock.now()) p.away(t - p.clock.now());
+    p.session();
+    p.wait(10 * 60_000);
+    p.session();
+    p.away(dayStart(p.clock.now()) + 86_400_000 - p.clock.now());
     onDay?.(day + 1);
   }
 }

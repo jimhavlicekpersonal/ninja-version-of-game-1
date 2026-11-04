@@ -98,8 +98,9 @@ describe('server HTTP adapter', () => {
     expect(atk.status).toBe(200);
     expect(atk.body.result.hash).toBe(runBattle({ seed: 5, base: m.body.base, army, infiltration: true }, deployments, data).result.hash);
     const again = await s.call('POST', Routes.attacks, attacker.token, { ticket: m.body.ticket, seed: 5, army, deployments });
-    expect(again.status).toBe(409);
-    expect(again.body.error).toBe('conflict');
+    // Idempotent: a retried report returns the first answer instead of applying it twice.
+    expect(again.status).toBe(200);
+    expect(again.body).toEqual(atk.body);
     const defs = await s.call('GET', `${Routes.defenses}?since=0`, defender.token);
     expect(defs.body.defenses).toHaveLength(1);
     expect(defs.body.defenses[0].attackerName).toBe('Attacker');

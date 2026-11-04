@@ -11,7 +11,7 @@
 import type { BaseLayout, BattleResult, Deployment } from '../../gameplay/sim/battle/types';
 
 /** Bump when a change would break older clients; servers report the oldest they accept. */
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 
 export type ErrorCode =
   | 'unauthorized'
@@ -121,6 +121,8 @@ export interface BattleSubmission {
   seed: number;
   army: Record<string, number>;
   levels?: Record<string, number>;
+  /** Donated troops in `army` and the level each was donated at (protocol 6+). */
+  reinforcements?: Record<string, { count: number; level: number }>;
   deployments: Deployment[];
   endTick?: number;
 }
@@ -147,6 +149,10 @@ export interface DefenseView {
   result: BattleResult;
   /** The attack used Infiltration Points (replay with the same rule). Absent on attacks from before protocol v5. */
   infiltration?: boolean;
+  /** Donated troops the attacker brought, with their levels (protocol 6+). */
+  reinforcements?: Record<string, { count: number; level: number }>;
+  /** Battle rules version the server simulated it with; a replay is shown only when it matches (protocol 6+). */
+  rules?: number;
   /** Trophy change for the defender. */
   trophies: number;
 }

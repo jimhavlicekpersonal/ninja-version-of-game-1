@@ -35,6 +35,8 @@ alter table tickets add column if not exists expires_at bigint not null default 
 alter table tickets add column if not exists week integer;
 alter table tickets add column if not exists grove_id text;
 alter table tickets add column if not exists target integer;
+-- The answer given for a used ticket, returned again if the same report is retried (protocol 6).
+alter table tickets add column if not exists response jsonb;
 create index if not exists tickets_lock_idx on tickets (defender_id, created_at) where not used;
 
 create table if not exists attacks (

@@ -7,10 +7,25 @@ import { buildingDef, levelDef, troopDef, troopLevel } from '../data';
 import { createRng, next, type Rng } from '../rng';
 import { RESOURCE_KINDS, type BuildingEffect, type CombatDef, type Cost, type GameData, type ResourceKind } from '../types';
 import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from './pathfind';
-import type { BattleResult, BattleSetup, Deployment, EndReason } from './types';
+import { activeInBattle, type BattleRecord, type BattleResult, type BattleSetup, type Deployment, type EndReason } from './types';
 import { stepFortifications } from './fortifications';
 import { coverLeft, planInfiltration, pointAt, type InfiltrationPlan } from './infiltration';
 import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isHidden, resolveWarriorHit, stepWarriorEffects, type WarriorEffect } from './warriors';
+
+/**
+ * Version of the battle rules and combat numbers. Bump it whenever a change
+ * would make an old recording play out differently (troop, building or battle
+ * numbers, targeting, abilities). Records carry the version they were fought
+ * under, and replays of other versions are not shown, because they would no
+ * longer show the fight the player had. `tests/gameplay/battle/rules-version.test.ts`
+ * fails when combat data changes without a bump.
+ */
+export const SIM_RULES = 2;
+
+/** Whether a record can be replayed faithfully with the current rules. */
+export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {
+  return record.rules === SIM_RULES;
+}
 
 export interface SimBuilding {
   id: string;
@@ -42,6 +57,8 @@ export interface SimBuilding {
   uses: number;
   /** The jam end tick a crane already shortened, so one jam is repaired once. */
   repairedUntil: number;
+  /** The same for a Hawk Tamer's slowing. */
+  repairedSlowUntil: number;
 }
 
 /** A Smoke Bomb cloud on the map. Active while tick < endsTick. */
@@ -170,6 +187,8 @@ export interface BattleSim {
   abilitiesUsed: Record<string, number>;
   warriorEffects: WarriorEffect[];
   supportTroops: number[];
+  /** Donated troops of each type not yet deployed (they deploy first, at their donated level). */
+  lodgeLeft: Record<string, number>;
 }
 
 /** True when `id` names a tactical ability (battle.json `abilities`) rather than a troop. */
@@ -229,7 +248,9 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     // Shadow Trials scale defenses (and walls) beyond the normal level caps.
     const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? setup.base.wallPower ?? 1 : 1;
     const hp = mult === 1 ? ld.hp : ld.hp * mult;
-    const effect: BuildingEffect | null = def.effect ? { ...def.effect, ...(ld.effect ?? {}) } : null;
+    // A building being upgraded neither fires nor runs its counter effect (one downtime rule for both).
+    const active = activeInBattle(bb);
+    const effect: BuildingEffect | null = def.effect && active ? { ...def.effect, ...(ld.effect ?? {}) } : null;
     return {
       id: bb.id,
       type: bb.type,
@@ -242,14 +263,14 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       kind,
       destroyed: false,
       loot: { ...(bb.loot ?? {}) },
-      combat: def.combat && !bb.upgrading ? { ...def.combat, damage: kind === 'hedge' || mult === 1 ? ld.damage ?? 0 : (ld.damage ?? 0) * mult } : null,
+      combat: def.combat && active ? { ...def.combat, damage: kind === 'hedge' || mult === 1 ? ld.damage ?? 0 : (ld.damage ?? 0) * mult } : null,
       cooldown: 0,
       targetTroop: -1,
       hidden: kind === 'trap',
       disabledUntil: 0,
       immuneUntil: 0,
       vulnerableUntil: 0, vulnerability: 0, slowedUntil: 0, fireSlow: 0,
-      effect, uses: effect?.uses ?? 0, repairedUntil: -1,
+      effect, uses: effect?.uses ?? 0, repairedUntil: -1, repairedSlowUntil: -1,
     };
   });
   const cells = new Uint8Array(size * size);
@@ -289,6 +310,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     nextProjectile: 1,
     smokes: [],
     charges: { smoke_bomb: smokeCharges(setup.army, data) },
+    lodgeLeft: Object.fromEntries(Object.entries(setup.reinforcements ?? {}).map(([t, r]) => [t, Math.max(0, Math.floor(r.count))])),
     abilitiesUsed: {},
     warriorEffects: [],
     supportTroops: [],
@@ -346,7 +368,13 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
   if (!canDeploy(sim, d.troop, d.x, d.y)) return false;
   if (isAbility(sim.data, d.troop)) return useAbility(sim, d);
   const def = troopDef(sim.data, d.troop);
-  const stats = troopLevel(sim.data, d.troop, sim.setup.levels?.[d.troop] ?? 1);
+  // Donated troops come out first and keep the level they were donated at.
+  let level = sim.setup.levels?.[d.troop] ?? 1;
+  if ((sim.lodgeLeft[d.troop] ?? 0) > 0) {
+    sim.lodgeLeft[d.troop]--;
+    level = sim.setup.reinforcements![d.troop].level;
+  }
+  const stats = troopLevel(sim.data, d.troop, level);
   const s = sim.data.battle.deploySpread;
   const x = Math.floor(d.x) + 0.5 + (next(sim.rng) * 2 - 1) * s;
   const y = Math.floor(d.y) + 0.5 + (next(sim.rng) * 2 - 1) * s;
@@ -442,6 +470,14 @@ function chooseTarget(sim: BattleSim, t: SimTroop): number {
     if (storage >= 0) return storage;
   }
   if (def.prefers === 'walls') {
+    // Wall-breakers open the way to the core: they break the wall standing
+    // between them and the nearest defense (or the Keep), not every wall on
+    // the map, and go for the building itself when nothing is in the way.
+    const goal = pick((b) => b.kind === 'defense' || b.kind === 'hall');
+    if (goal >= 0) {
+      const wall = wallInTheWay(sim, t, goal);
+      return wall >= 0 ? wall : goal;
+    }
     const wall = pick((b) => b.kind === 'hedge');
     if (wall >= 0) return wall;
   }
@@ -458,6 +494,21 @@ function chooseTarget(sim: BattleSim, t: SimTroop): number {
     if (d >= 0) return d;
   }
   return pick(() => true);
+}
+
+/** The first standing wall on a troop's cheapest route into range of a building (-1 if none). */
+function wallInTheWay(sim: BattleSim, t: SimTroop, bi: number): number {
+  const def = troopDef(sim.data, t.type);
+  const path = findPath(sim.grid, t.x, t.y, rect(sim.buildings[bi]), def.range, sim.data.battle.hedgePathCost, false);
+  if (!path) return -1;
+  const n = sim.grid.size;
+  for (const cell of path) {
+    if (sim.grid.cells[cell] !== HEDGE) continue;
+    const hx = cell % n;
+    const hy = (cell - hx) / n;
+    return sim.buildings.findIndex((b) => !b.destroyed && b.kind === 'hedge' && b.x === hx && b.y === hy);
+  }
+  return -1;
 }
 
 function stepTroop(sim: BattleSim, ti: number): void {
@@ -652,7 +703,8 @@ function stepTraps(sim: BattleSim): void {
     if (!c) return;
     const cx = b.x + b.size / 2;
     const cy = b.y + b.size / 2;
-    const vulnerable = (t: SimTroop) => !t.dead && !t.air && !sim.data.troops[t.type].kit?.trapImmune;
+    // A flyer grounded by a Kite-Cutter Ballista is on the ground: traps can catch it too.
+    const vulnerable = (t: SimTroop) => !t.dead && !airborne(sim, t) && !sim.data.troops[t.type].kit?.trapImmune;
     const triggered = sim.troops.some((t) => vulnerable(t) && dist(cx, cy, t.x, t.y) <= c.range);
     if (!triggered) return;
     b.hidden = false;

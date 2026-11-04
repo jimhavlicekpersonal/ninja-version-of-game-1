@@ -107,15 +107,15 @@
     "costGrowth": 1.3,
     "tierCostMult": 2.0,
     "secondsPerHousing": 20,
-    "tierTimeMult": 1.6
+    "tierTimeMult": 1.35
   },
   "research": {
     "costBase": 4000,
     "costGrowth": 1.55,
     "tierCostMult": 3.0,
     "secondsBase": 1800,
-    "timeGrowth": 1.9,
-    "maxSeconds": 604800
+    "timeGrowth": 1.6,
+    "maxSeconds": 216000
   },
   "mastery": {
     "xpBase": 50,
@@ -154,8 +154,8 @@
     },
     "thrower": {
       "name": "Thrower",
-      "efficiency": 0.75,
-      "hpPerDps": 2.4,
+      "efficiency": 0.627,
+      "hpPerDps": 3.43,
       "housing": 1,
       "range": 3.5,
       "speed": 0.15,
@@ -702,7 +702,7 @@
       "unlockKeep": 6,
       "pinnacleMaxLevel": 10,
       "live": true,
-      "description": "A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.",
+      "description": "A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.",
       "effect": {
         "kind": "shorten_disables",
         "radius": 3,
@@ -713,7 +713,7 @@
         "saboteur",
         "gearbreaker",
         "ghost_engineer",
-        "mole_king"
+        "hawk_tamer"
       ],
       "counteredBy": [
         "fuse_master",
@@ -838,7 +838,7 @@
         "crane_glider",
         "thunder_kite",
         "dragon_kite_armada",
-        "hawk_tamer"
+        "lantern_balloon"
       ],
       "counteredBy": [
         "saboteur",
@@ -1022,12 +1022,12 @@
       "unlockKeep": 12,
       "pinnacleMaxLevel": 10,
       "live": true,
-      "description": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.",
+      "description": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.",
       "effect": {
         "kind": "counter_artillery",
         "range": 13,
         "minRange": 2,
-        "prefersBeyond": 4
+        "prefersBeyond": 3.5
       },
       "counters": [
         "siege_bombardier",

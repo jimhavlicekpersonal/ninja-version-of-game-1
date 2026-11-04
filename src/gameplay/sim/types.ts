@@ -44,11 +44,24 @@ export interface TrainingItem {
   cost: Cost;
 }
 
-/** Troop research done in the Burrow Barracks (one at a time, no builder needed). */
+/** One research in progress. */
+export interface ActiveResearch {
+  troop: string;
+  toLevel: number;
+  startedAt: number;
+  endsAt: number;
+  cost: Cost;
+}
+
+/**
+ * Troop research done in the Training Dojo (no builder needed). The Clan Keep
+ * sets how many run at once (hall.json `researchLanes`); one per troop type.
+ */
 export interface ResearchState {
   /** Researched level per troop type; missing means level 1. */
   levels: Record<string, number>;
-  active: { troop: string; toLevel: number; startedAt: number; endsAt: number; cost: Cost } | null;
+  /** Research in progress, oldest first. */
+  active: ActiveResearch[];
 }
 
 export interface VillageState {
@@ -88,7 +101,8 @@ export interface VillageState {
   profile: { under18: boolean | null };
   offers: { active: ActiveOffer[]; lastShown: Record<string, number>; bought: string[] };
   pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[] };
-  tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[] };
+  /** Task periods; `dayIds`/`weekIds` are the tasks chosen when the period began (absent on older saves until the next roll). */
+  tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[] };
   cosmetics: { owned: string[]; hallSkin: string };
   /** Achievement id -> number of tiers claimed. */
   achievements: Record<string, number>;
@@ -98,8 +112,12 @@ export interface VillageState {
   net: NetState;
   /** Guided first steps for new players. */
   tutorial: { step: number; done: boolean };
-  /** Shadow Trials: highest tier cleared (rewards are paid once per tier). */
-  trials: { best: number };
+  /**
+   * Shadow Trials: highest tier cleared (rewards are paid once per tier), the
+   * alternate fortress chosen for the next tier, and the next tier if the last
+   * attempt at it failed (which allows switching).
+   */
+  trials: { best: number; alternate?: number; failedTier?: number };
   /**
    * A raid in progress (saved from the first deployment). If the app closes
    * mid-battle it is resolved on the next launch as if it had played out.
@@ -107,6 +125,16 @@ export interface VillageState {
   pendingBattle: PendingBattle | null;
   /** Free daily chest and visit streak. */
   daily: DailyState;
+  /** League seasons settled most recently, newest last (chest = what was really added). */
+  seasonLog: import('./ranks').SeasonReward[];
+  /** Saved army presets for one-tap retraining (see sim/army.ts `trainPlan`). */
+  armyPresets: ArmyPreset[];
+}
+
+/** A saved army: troop counts to refill to. */
+export interface ArmyPreset {
+  name: string;
+  army: Record<string, number>;
 }
 
 export interface DailyState {
@@ -118,7 +146,7 @@ export interface DailyState {
   skipsLeft: number;
   skipWeek: number;
   /** Recent chests, newest last. */
-  history: { day: number; outcome: string; step: number; grants: Cost }[];
+  history: { day: number; outcome: string; step: number; grants: Cost; overflow?: Cost }[];
 }
 
 export interface NetState {
@@ -169,6 +197,12 @@ export interface GroveState {
   requests: BotRequest[];
   myRequest: { at: number; chunks: number } | null;
   reinforcements: Record<string, number>;
+  /**
+   * The level each donated troop type was given at (it fights at that level,
+   * not the receiver's research). Donations of one type at different levels
+   * keep the lower level, so a donation never fights above what was given.
+   */
+  reinforcementLevels: Record<string, number>;
   raid: GroveRaidState | null;
   raidHistory: { week: number; ours: number; theirs: number; outcome: 'win' | 'draw' | 'loss'; reward: Cost }[];
   prepOfferWeek: number;
@@ -180,9 +214,9 @@ export interface GroveState {
  * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
  * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
  */
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations';
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared';
 export type Stats = Record<StatKey, number>;
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations'];
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }
@@ -211,6 +245,8 @@ export interface LevelDef {
   storage?: Cost;
   /** Army Camp capacity. */
   housing?: number;
+  /** Training Dojo: how many times faster than the base training time warriors train. */
+  trainingSpeed?: number;
   /** Damage per shot for defenses and traps. */
   damage?: number;
   /** Grove Lodge: housing space for donated troops. */
@@ -364,6 +400,8 @@ export interface SabotageDef {
 export interface BattleDef {
   warriorRules: {
     supportIntervalTicks: number;
+    /** A support troop tries this many of the nearest allies for one it can reach without breaking a wall. */
+    supportAllyTries: number;
     defaultAuraRadius: number;
     abilityCooldownTicks: number;
     shieldCooldownTicks: number;
@@ -434,6 +472,8 @@ export interface HallLevelDef {
   level: number;
   /** Highest troop level that can be researched at this hall level. */
   troopLevelCap: number;
+  /** How many troop researches can run at the same time. */
+  researchLanes: number;
   limits: Record<BuildingType, BuildingLimit>;
 }
 
@@ -453,6 +493,13 @@ export interface EconomyDef {
   raidableUncollectedFraction: number;
   cancelRefundFraction: number;
   welcomeBackMinAwaySeconds: number;
+  /** Full armies that may wait in the training queue on top of a full army in the camps. */
+  queuedArmies: number;
+  /** Share of a dismissed ready warrior's training cost given back (storage permitting). */
+  dismissRefundFraction: number;
+  /** Most warriors one Train command queues, and how many armies can be saved as presets. */
+  maxTrainBatch: number;
+  maxArmyPresets: number;
   collectBubbleMinFraction: number;
   minCollectAmount: number;
   builderHutCosts: number[];
@@ -497,6 +544,8 @@ export interface RanksDef {
     hallsAbove: number;
     /** Random spread of an opponent's trophies around its strength. */
     trophyJitter: number;
+    /** Opponents are at least the attacker's earned strength (Keep and research) minus this many hall levels. */
+    powerSlack: number;
   };
   /** Loot multiplier when the target's Elder Toadstool is lower than the attacker's (index = difference). */
   lootPenaltyByHallDiff: number[];
@@ -710,12 +759,22 @@ export interface TrialsDef {
   jadeEveryTiers: number;
   jadeReward: number;
   modifiers: TrialModifierDef[];
+  /** Fortresses generated per tier; the one of median strength is used. */
+  candidates: number;
+  /** Authored power factor per layout id, so every layout is about as hard at the same tier. */
+  layoutPower: Record<string, number>;
+  /** Alternate fortresses a player may switch the next tier to (one per failed attempt). */
+  maxAlternates: number;
 }
 
 /** An attack that has started (troops deployed) but not been banked yet. */
 export interface PendingBattle {
-  kind: 'raid' | 'trial';
+  kind: 'raid' | 'trial' | 'war';
   tier?: number;
+  /** Alliance War: the enemy base attacked. */
+  target?: number;
+  /** The battle rules it was fought under (SIM_RULES). */
+  rules?: number;
   opponentName: string;
   setup: import('./battle/types').BattleSetup;
   deployments: import('./battle/types').Deployment[];

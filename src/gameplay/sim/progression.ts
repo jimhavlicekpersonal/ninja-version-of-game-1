@@ -43,6 +43,12 @@ export interface WarriorEntry {
   look: Record<string, string>;
   /** troops.json id when this warrior is already playable. */
   liveTroop?: string;
+  /**
+   * DPS tax on top of the role budget, for a warrior whose range or ability
+   * measured too strong in battle (e.g. the Siege Bombardier outranges almost
+   * every defense). Absent = 1. The role budget stays the baseline.
+   */
+  dpsScale?: number;
 }
 
 export interface HeroEntry {
@@ -93,7 +99,7 @@ export function warriorStats(w: WarriorEntry, level: number): { hp: number; dps:
   const r = role(w.role);
   const p = warriorPower(w, level);
   const k = Math.sqrt(r.hpPerDps);
-  return { hp: p * k, dps: p / k, power: p, housing: r.housing, range: r.range, speed: r.speed };
+  return { hp: p * k, dps: (p / k) * (w.dpsScale ?? 1), power: p, housing: r.housing, range: r.range, speed: r.speed };
 }
 
 /**

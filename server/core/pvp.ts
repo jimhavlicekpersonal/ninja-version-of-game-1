@@ -4,8 +4,8 @@
  * attacker, near their trophies; the loot penalty for hitting lower halls;
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
-import { maxHousingAtHall } from '../../src/gameplay/sim/army';
-import { runBattle } from '../../src/gameplay/sim/battle/battle';
+import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
+import { runBattle, SIM_RULES } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
 import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
@@ -22,17 +22,38 @@ export const TICKET_LOCK_MS = 5 * MIN;
 /** How long the attacker has to report the battle (3 minutes of play plus slack for bad connections). */
 export const TICKET_TTL_MS = HOUR;
 
-/** Reject bases that could not exist in the game. */
+/** Fields an uploaded base may carry. Trial-only multipliers and labels are never accepted from a player. */
+const BASE_FIELDS = new Set(['name', 'hallLevel', 'buildings', 'trophies']);
+const BUILDING_FIELDS = new Set(['id', 'type', 'level', 'x', 'y', 'loot', 'upgrading']);
+
+/**
+ * Reject bases that could not exist in the game: unknown or overlapping
+ * buildings, off-map tiles, duplicate ids, more buildings of a type or higher
+ * levels than the Keep allows, and any Shadow Trial multiplier (power,
+ * wallPower) or label. Loot on buildings that cannot hold it is removed by
+ * `capBaseLoot`.
+ */
 export function validateBase(base: BaseLayout, data: GameData): string | null {
-  if (!base || !Array.isArray(base.buildings) || base.buildings.length === 0 || base.buildings.length > 400) return 'bad base';
+  if (!base || typeof base !== 'object' || !Array.isArray(base.buildings) || base.buildings.length === 0 || base.buildings.length > 400) return 'bad base';
+  for (const k of Object.keys(base)) if (!BASE_FIELDS.has(k)) return `field not allowed: ${k}`;
   const map = data.economy.mapSize;
   const occ = new Uint8Array(map * map);
-  let halls = 0;
+  const ids = new Set<string>();
+  const counts: Record<string, number> = {};
+  let hall: number | null = null;
   for (const b of base.buildings) {
+    if (!b || typeof b !== 'object') return 'bad building';
+    for (const k of Object.keys(b)) if (!BUILDING_FIELDS.has(k)) return `field not allowed: ${k}`;
     const def = data.buildings[b.type];
     if (!def || def.category === 'obstacle' || def.category === 'decor') return `unknown building ${b.type}`;
+    if (typeof b.id !== 'string' || !b.id || ids.has(b.id)) return 'duplicate building id';
+    ids.add(b.id);
     if (!Number.isInteger(b.level) || b.level < 1 || b.level > def.levels.length) return `bad level on ${b.type}`;
-    if (def.category === 'hall') halls++;
+    if (def.category === 'hall') {
+      if (hall !== null) return 'base needs exactly one Clan Keep';
+      hall = b.level;
+    }
+    counts[b.type] = (counts[b.type] ?? 0) + 1;
     for (let y = b.y; y < b.y + def.size; y++) {
       for (let x = b.x; x < b.x + def.size; x++) {
         if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= map || y >= map) return 'building off the map';
@@ -40,10 +61,55 @@ export function validateBase(base: BaseLayout, data: GameData): string | null {
         occ[y * map + x] = 1;
       }
     }
+    // Loot on a building that cannot hold it is dropped by capBaseLoot (it never reaches a battle).
     for (const v of Object.values(b.loot ?? {})) if (typeof v !== 'number' || v < 0 || !Number.isFinite(v)) return 'bad loot';
   }
-  if (halls !== 1) return 'base needs exactly one Clan Keep';
+  if (hall === null) return 'base needs exactly one Clan Keep';
+  if (base.hallLevel !== undefined && base.hallLevel !== hall) return 'Keep level does not match';
+  // Counts and levels the Keep allows (the Keep itself is capped by its own table).
+  const limits = data.hall.levels[Math.min(data.hall.levels.length, hall) - 1]?.limits ?? {};
+  for (const b of base.buildings) {
+    const def = data.buildings[b.type];
+    if (def.category === 'hall') {
+      if (b.level > data.hall.levels.length) return 'Keep level too high';
+      continue;
+    }
+    const lim = limits[b.type];
+    if (!lim || counts[b.type] > lim.count) return `too many ${b.type} for Keep ${hall}`;
+    if (b.level > lim.maxLevel) return `${b.type} level too high for Keep ${hall}`;
+  }
   return null;
+}
+
+/** A collector holds what it produces; a storage (or the Keep) holds what it stores. Jade is never loot. */
+function canHoldLoot(type: string, level: number, k: ResourceKind, data: GameData): boolean {
+  if (k === 'moonstones') return false;
+  const def = buildingDef(data, type);
+  if (def.produces === k) return true;
+  return (levelDef(data, type, level)?.storage?.[k] ?? 0) > 0;
+}
+
+/** An uploaded base reduced to the allowed shape (unknown fields dropped), or an error. */
+export function normalizeBase(raw: unknown, data: GameData): { base: BaseLayout } | { error: string } {
+  const r = raw as BaseLayout | null;
+  if (!r || typeof r !== 'object' || !Array.isArray(r.buildings)) return { error: 'bad base' };
+  const base: BaseLayout = {
+    name: String(r.name ?? ''),
+    hallLevel: Number(r.hallLevel),
+    trophies: Number(r.trophies) || 0,
+    buildings: r.buildings.map((b) => ({
+      id: String(b?.id ?? ''),
+      type: String(b?.type ?? ''),
+      level: Number(b?.level),
+      x: Number(b?.x),
+      y: Number(b?.y),
+      ...(b?.loot ? { loot: { ...b.loot } } : {}),
+      ...(b?.upgrading ? { upgrading: true } : {}),
+    })),
+  };
+  if ((r as unknown as Record<string, unknown>).power !== undefined || (r as unknown as Record<string, unknown>).wallPower !== undefined) return { error: 'field not allowed: power' };
+  const err = validateBase(base, data);
+  return err ? { error: err } : { base };
 }
 
 /**
@@ -61,6 +127,10 @@ export function capBaseLoot(base: BaseLayout, data: GameData): BaseLayout {
     const def = buildingDef(data, b.type);
     const loot = b.loot ?? {};
     for (const k of Object.keys(loot) as ResourceKind[]) {
+      if (!canHoldLoot(b.type, b.level, k, data)) {
+        delete loot[k];
+        continue;
+      }
       if (def.produces === k) {
         const ld = levelDef(data, b.type, b.level);
         const max = Math.floor((ld?.ratePerHour ?? 0) * data.economy.collectorHoursCap * data.economy.raidableUncollectedFraction);
@@ -108,27 +178,51 @@ export function validLevels(levels: unknown, hallLevel: number, data: GameData):
   return out;
 }
 
-/** Check a battle submission's army and levels against the attacker's hall. */
-export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number> } {
+/**
+ * Check a battle submission against the attacker's Keep. Own troops must be
+ * trainable at that Keep (its gate and the Dojo level the Keep allows: no Kite
+ * Raider at Keep 1) and fit full Army Camps; donated troops (`reinforcements`)
+ * must fit the largest Lodge the Keep allows and be at a level some donor could
+ * have researched. Levels must be ones the Keep's research cap allows.
+ *
+ * This is a legality check, not an inventory ledger: the server does not yet
+ * track what each player trained or researched (docs/PROTOCOL.md, "Trust model").
+ */
+export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number>; reinforcements: Record<string, { count: number; level: number }> } {
   const army = sub.army ?? {};
   if (typeof army !== 'object') throw new ApiError(400, 'bad_request', 'bad army');
-  let housing = 0;
+  const reinforcements: Record<string, { count: number; level: number }> = {};
+  const lodge = sub.reinforcements ?? {};
+  if (typeof lodge !== 'object') throw new ApiError(400, 'bad_request', 'bad reinforcements');
+  const topKeep = data.hall.levels.length;
+  let lodgeHousing = 0;
+  for (const [k, r] of Object.entries(lodge)) {
+    const def = data.troops[k];
+    const count = Number(r?.count);
+    const level = Number(r?.level);
+    if (!def || !Number.isInteger(count) || count < 0 || count > (army[k] ?? 0)) throw new ApiError(400, 'bad_request', 'bad reinforcements');
+    if (!Number.isInteger(level) || level < 1 || level > Math.min(troopLevelCapAt(topKeep, data, k), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop levels');
+    if (count > 0) reinforcements[k] = { count, level };
+    lodgeHousing += def.housing * count;
+  }
+  let ownHousing = 0;
   for (const [k, n] of Object.entries(army)) {
     const def = data.troops[k];
     if (!def || !Number.isInteger(n) || n < 0) throw new ApiError(400, 'bad_request', 'bad army');
-    if (n > 0 && me.hallLevel < (def.unlockKeep ?? 1)) throw new ApiError(400, 'bad_request', 'troop not unlocked');
-    housing += def.housing * n;
+    const own = n - (reinforcements[k]?.count ?? 0);
+    if (own > 0 && me.hallLevel < troopEarliestKeep(k, data)) throw new ApiError(400, 'bad_request', 'troop not unlocked');
+    ownHousing += def.housing * own;
   }
-  if (housing > maxHousing(me.hallLevel, data)) throw new ApiError(400, 'bad_request', 'army too big');
+  if (ownHousing > maxHousingAtHall(me.hallLevel, data) || lodgeHousing > maxReinforcementAt(me.hallLevel, data)) throw new ApiError(400, 'bad_request', 'army too big');
   const levels = validLevels(sub.levels, me.hallLevel, data);
   if (!levels) throw new ApiError(400, 'bad_request', 'bad troop levels');
-  return { army, levels };
+  return { army, levels, reinforcements };
 }
 
 export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest): Promise<void> {
-  const base = structuredClone(req?.base) as BaseLayout;
-  const err = validateBase(base, ctx.data);
-  if (err) throw new ApiError(400, 'bad_request', err);
+  const n = normalizeBase(structuredClone(req?.base), ctx.data);
+  if ('error' in n) throw new ApiError(400, 'bad_request', n.error);
+  const base = n.base;
   capBaseLoot(base, ctx.data);
   base.name = me.name;
   await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now() });
@@ -157,7 +251,8 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   } else {
     // Nobody fits: a generated base with the same matchmaking math the game uses offline.
     const seed = Math.floor(ctx.random() * 4294967296) >>> 0;
-    const base = opponentForRank(seed, me.trophies, me.hallLevel, data);
+    // The server does not know the player's research, so it assumes half-way through their Keep (same rule as offline).
+    const base = opponentForRank(seed, me.trophies, me.hallLevel, data, me.hallLevel - 0.5 - data.ranks.matchmaking.powerSlack);
     const names = data.names;
     base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
     ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false };
@@ -171,28 +266,46 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   };
 }
 
-async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined, kind: Ticket['kind']): Promise<Ticket> {
+/**
+ * The attacker's own ticket. A ticket that was already used returns its stored
+ * answer (`answered`), so a client retrying a report it never got the answer
+ * to gets the same result instead of an error, and nothing is applied twice.
+ */
+async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined, kind: Ticket['kind']): Promise<{ ticket: Ticket; answered?: unknown }> {
   const ticket = id ? await ctx.repo.getTicket(String(id)) : null;
   if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw new ApiError(404, 'not_found', 'Unknown ticket.');
+  if (ticket.used) {
+    if (ticket.response !== undefined) return { ticket, answered: ticket.response };
+    throw new ApiError(409, 'conflict', 'This battle was already reported.');
+  }
   if (ctx.now() > ticket.expiresAt) throw new ApiError(410, 'expired', 'This battle took too long to report.');
-  return ticket;
+  return { ticket };
 }
 
 export { takeTicket };
 
 export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<AttackResponse> {
   const { data, repo } = ctx;
-  const ticket = await takeTicket(ctx, me, sub?.ticket, 'pvp');
-  const { army, levels } = checkArmy(sub, me, data);
+  const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
+  if (answered) return answered as AttackResponse;
+  const { army, levels, reinforcements } = checkArmy(sub, me, data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  if (!(await repo.useTicket(ticket.id))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
   const t = ctx.now();
   const seed = Number(sub.seed) >>> 0;
-  const { result } = runBattle({ seed, base: ticket.base, army, levels, infiltration: true }, deployments, data, sub.endTick);
+  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
+  const { result } = runBattle(setup, deployments, data, sub.endTick);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
   const playerTrophies = Math.max(0, me.trophies + delta);
+  const attackId = ctx.uuid();
+  const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies };
+  // Marking the ticket used and storing the answer is one step: only the first report applies anything.
+  if (!(await repo.useTicket(ticket.id, response))) {
+    const again = await repo.getTicket(ticket.id);
+    if (again?.response !== undefined) return again.response as AttackResponse;
+    throw new ApiError(409, 'conflict', 'This battle was already reported.');
+  }
   await repo.updatePlayer(me.id, { trophies: playerTrophies, shieldUntil: Math.min(me.shieldUntil, t) });
   if (defender) {
     const patch: { trophies: number; shieldUntil?: number } = { trophies: Math.max(0, defender.trophies - delta) };
@@ -200,17 +313,16 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
     if (shield > 0) patch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
     await repo.updatePlayer(defender.id, patch);
   }
-  const attackId = ctx.uuid();
   if (defender) {
-    await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, attackerTrophies: delta, defenderTrophies: -delta });
+    await repo.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -delta });
   }
-  return { attackId, result, trophies: delta, playerTrophies };
+  return response;
 }
 
 export async function defenses(ctx: ServerContext, me: Player, since: number): Promise<DefensesResponse> {
   const list = await ctx.repo.defensesFor(me.id, Number(since) || 0, 20);
   return {
-    defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, ...(a.infiltration ? { infiltration: true } : {}), trophies: a.defenderTrophies })),
+    defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, ...(a.reinforcements ? { reinforcements: a.reinforcements } : {}), base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, ...(a.infiltration ? { infiltration: true } : {}), ...(a.rules !== undefined ? { rules: a.rules } : {}), trophies: a.defenderTrophies })),
   };
 }
 

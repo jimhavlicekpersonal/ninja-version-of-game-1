@@ -8,8 +8,9 @@ import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFo
 import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../../gameplay/sim/save';
 import type { Building, Cost, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
-import { armyHousing, housingCapacity, queueHousing, barracksLevel, troopUnlock } from '../../gameplay/sim/army';
+import { armyHousing, housingCapacity, queueHousing, barracksLevel, trainingQueueLimit, trainingSpeed, troopUnlock } from '../../gameplay/sim/army';
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
+import { replayable } from '../../gameplay/sim/battle/battle';
 import { shieldHoursFor } from '../../gameplay/sim/defense';
 import { leagueChest, leagueFor, nextLeague, seasonEndsAt } from '../../gameplay/sim/ranks';
 import { achievementViews } from '../../gameplay/sim/achievements';
@@ -24,10 +25,10 @@ import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
-import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, researchSkipQuote, researchStartQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../../gameplay/sim/village';
-import { troopLevelOf } from '../../gameplay/sim/research';
+import { builderStatus, countOfType, dismissPreview, hallLevel, lastAttackArmy, limitFor, practiceArmy, placeQuote, researchSkipQuote, researchStartQuote, skipQuote, topUpQuote, trainQuote, trainingSkipQuote, upgradeQuote, type QuoteResult } from '../../gameplay/sim/village';
+import { researchLanes, troopLevelOf } from '../../gameplay/sim/research';
 import { role as roleDef, warriorUnlockKeep } from '../../gameplay/sim/progression';
-import { nextTrialTier, trialInfo, trialReward } from '../../gameplay/sim/trials';
+import { canTryAlternate, nextTrialTier, trialInfo, trialReward, trialVariant } from '../../gameplay/sim/trials';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
@@ -43,6 +44,8 @@ export interface HudDeps {
   thumbnail(type: string): string | null;
   getFps(): number;
   debugTime: { offsetMs(): number; skip(ms: number): void };
+  /** The testing sandbox (separate save, offline): only there are testing tools shown. */
+  sandbox: boolean;
   build: { version: string; builtAt: string };
   troopThumb(type: string): string | null;
   /** Data URL of a roster warrior's badge icon, for the Warrior Codex. */
@@ -52,6 +55,8 @@ export interface HudDeps {
   onGroveAttack(target: number): void;
   /** Start a Shadow Trial attack on this tier. */
   onTrial(tier: number): void;
+  /** Open a practice battle with this army (nothing spent or won). */
+  onPractice(army: Record<string, number>): void;
   prefs: { get(k: 'sessionReminder' | 'reminders'): boolean; set(k: 'sessionReminder' | 'reminders', v: boolean): void };
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
@@ -778,6 +783,18 @@ export class Hud {
 
   // ------------------------------------------------------------ army
 
+  /** Confirm sending ready warriors home, with the refund and the camp space it frees. */
+  private async dismissTroops(troop: string, have: number): Promise<void> {
+    const gd = this.c.data;
+    const name = gd.troops[troop]?.name ?? troop;
+    const p = dismissPreview(this.c.state, troop, have, gd);
+    const refund = RESOURCE_KINDS.filter((k) => p.refund[k]).map((k) => `${formatNumber(p.refund[k]!)} ${RES_LABEL[k]}`).join(' and ');
+    const ok = await this.confirm(`Dismiss ${have} ${name}?`, `They go home and free ${p.housing} camp space. You get back ${Math.round(gd.economy.dismissRefundFraction * 100)}% of their training cost${refund ? ` (${refund})` : ''}, as far as your storage allows.`, 'Dismiss', true);
+    if (!ok) return;
+    const r = this.c.dispatch({ type: 'dismiss', troop, count: have });
+    if (!r.ok) this.toast(r.message, 'error');
+  }
+
   openTraining(): void {
     const body = h('div', { class: 'training' });
     let tierFilter = 0;
@@ -788,7 +805,7 @@ export class Hud {
       const s = this.c.state;
       const gd = this.c.data;
       const now = this.c.now();
-      const sig = JSON.stringify([tierFilter, roleFilter, onlyUnlocked, s.army, s.training.length, s.resources.dew, s.resources.moonstones, barracksLevel(s, gd), housingCapacity(s, gd), s.research, hallLevel(s, gd)]);
+      const sig = JSON.stringify([tierFilter, roleFilter, onlyUnlocked, s.army, s.training.length, s.resources.dew, s.resources.moonstones, barracksLevel(s, gd), housingCapacity(s, gd), s.research, hallLevel(s, gd), s.armyPresets]);
       if (sig === lastSig) {
         // Only refresh timers.
         body.querySelectorAll<HTMLElement>('[data-ends]').forEach((el) => {
@@ -801,17 +818,63 @@ export class Hud {
       const cap = housingCapacity(s, gd);
       const used = armyHousing(s.army, gd);
       const queued = queueHousing(s.training, gd);
-      body.append(
-        h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${cap ? Math.min(100, ((used + queued) / cap) * 100) : 0}%` })), h('span', {}, `Army ${used}${queued ? ` (+${queued})` : ''} / ${cap}`)),
-      );
+      const speed = trainingSpeed(s, gd);
+      body.append(h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${cap ? Math.min(100, (used / cap) * 100) : 0}%` })), h('span', {}, `Army ${used} / ${cap}`)));
+      if (queued) body.append(h('p', { class: 'muted small' }, `Training ${queued} housing. The queue can hold the next army too (up to ${trainingQueueLimit(s, gd) - used} more housing); finished warriors wait there until the camps have room.`));
+      if (speed > 1) body.append(h('p', { class: 'muted small' }, `Your Training Dojo trains ${speed}× faster than a level 1 Dojo.`));
+      // Ready warriors, each with a way to send some home to make room for a new mix.
       const army = h('div', { class: 'army-row' });
       for (const [t, n] of Object.entries(s.army)) {
         if (n <= 0) continue;
         const th = this.deps.troopThumb(t);
-        army.append(h('span', { class: 'army-chip' }, th ? h('img', { src: th, alt: '' }) : null, `${gd.troops[t]?.name ?? t} ×${n}`));
+        const x = h('button', { class: 'qx', type: 'button', 'aria-label': `Dismiss ${gd.troops[t]?.name ?? t}` }, '×');
+        x.addEventListener('click', () => void this.dismissTroops(t, n).then(() => { lastSig = ''; render(); }));
+        army.append(h('span', { class: 'army-chip' }, th ? h('img', { src: th, alt: '' }) : null, `${gd.troops[t]?.name ?? t} ×${n}`, x));
       }
       if (!army.childElementCount) army.append(h('span', { class: 'muted' }, 'No troops yet.'));
       body.append(h('h3', {}, 'Ready to attack'), army);
+      // One-tap refills: the last army you attacked with, and saved armies.
+      const lastArmy = lastAttackArmy(s);
+      const presetRow = h('div', { class: 'actions' });
+      if (lastArmy) {
+        const again = h('button', { class: 'btn sky', type: 'button' }, 'Retrain last army');
+        again.addEventListener('click', () => {
+          const r = this.c.dispatch({ type: 'trainArmy', army: lastArmy });
+          this.toast(r.ok ? 'Queued the missing warriors.' : r.message, r.ok ? 'success' : 'error');
+          lastSig = '';
+          render();
+        });
+        presetRow.append(again);
+      }
+      s.armyPresets.forEach((p, i) => {
+        const go = h('button', { class: 'btn sky', type: 'button', title: Object.entries(p.army).map(([t, n]) => `${n} ${gd.troops[t]?.name ?? t}`).join(', ') }, `Train “${p.name}”`);
+        go.addEventListener('click', () => {
+          const r = this.c.dispatch({ type: 'trainArmy', army: p.army });
+          this.toast(r.ok ? 'Queued the missing warriors.' : r.message, r.ok ? 'success' : 'error');
+          lastSig = '';
+          render();
+        });
+        const del = h('button', { class: 'btn ghost', type: 'button', 'aria-label': `Delete saved army ${p.name}` }, '×');
+        del.addEventListener('click', () => {
+          this.c.dispatch({ type: 'deleteArmyPreset', index: i });
+          lastSig = '';
+          render();
+        });
+        presetRow.append(go, del);
+      });
+      const current: Record<string, number> = { ...s.army };
+      for (const q of s.training) current[q.troop] = (current[q.troop] ?? 0) + 1;
+      if (Object.keys(current).length && s.armyPresets.length < gd.economy.maxArmyPresets) {
+        const save = h('button', { class: 'btn ghost', type: 'button' }, 'Save this army');
+        save.addEventListener('click', () => {
+          const r = this.c.dispatch({ type: 'saveArmyPreset', name: `Army ${s.armyPresets.length + 1}`, army: current });
+          this.toast(r.ok ? 'Army saved: refill it with one tap.' : r.message, r.ok ? 'success' : 'error');
+          lastSig = '';
+          render();
+        });
+        presetRow.append(save);
+      }
+      if (presetRow.childElementCount) body.append(presetRow);
       if (s.training.length) {
         const q = h('div', { class: 'queue' });
         s.training.forEach((item, i) => {
@@ -856,12 +919,30 @@ export class Hud {
         const locked = !qr.ok && qr.code === 'LOCKED';
         const lvl = troopLevelOf(s, t);
         const cost = troopLevel(gd, t, lvl).cost;
-        const btn = h('button', { class: 'btn primary', type: 'button', disabled: !qr.ok }, '+ Train');
-        btn.addEventListener('click', () => {
-          const r = this.c.dispatch({ type: 'train', troop: t });
-          if (!r.ok) this.toast(r.message, 'error');
-          render();
-        });
+        const btn = h('span', { class: 'row' });
+        // One, five, or as many as fit (each still needs its resources).
+        for (const [label, count] of [['+1', 1], ['+5', 5], ['Fill', gd.economy.maxTrainBatch]] as const) {
+          const b = h('button', { class: `btn ${count === 1 ? 'primary' : 'ghost'}`, type: 'button', disabled: !qr.ok }, label);
+          b.addEventListener('click', () => {
+            const r = this.c.dispatch({ type: 'train', troop: t, count });
+            if (!r.ok) this.toast(r.message, 'error');
+            else {
+              const e = r.events.find((x) => x.kind === 'train_start');
+              if (e && e.kind === 'train_start' && (e.count ?? 1) > 1) this.toast(`Queued ${e.count} ${def.name}.`, 'success');
+            }
+            render();
+          });
+          btn.append(b);
+        }
+        // Try a warrior before training it: a practice battle with a squad of it in your army.
+        if (troopUnlock(s, t, gd).unlocked && housingCapacity(s, gd) > 0) {
+          const tryIt = h('button', { class: 'btn ghost', type: 'button', title: `Practice battle with a squad of ${def.name}: nothing is spent or won` }, 'Try');
+          tryIt.addEventListener('click', () => {
+            this.closeAllModals();
+            this.deps.onPractice(practiceArmy(this.c.state, t, gd));
+          });
+          btn.append(tryIt);
+        }
         list.append(
           h(
             'div',
@@ -869,30 +950,30 @@ export class Hud {
             th ? h('img', { src: th, alt: '' }) : null,
             h('b', {}, `${def.name} `, h('span', { class: 'muted small' }, `Lv ${lvl}`)),
             h('span', { class: 'muted small' }, def.description),
-            h('span', { class: 'row' }, costChips(cost, missingFor(s.resources, cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(def.trainSeconds * 1000)), h('span', { class: 'chip' }, icon(icons.troops), String(def.housing))),
+            h('span', { class: 'row' }, costChips(cost, missingFor(s.resources, cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration((qr.quote?.seconds ?? def.trainSeconds) * 1000)), h('span', { class: 'chip' }, icon(icons.troops), String(def.housing))),
             btn,
             !qr.ok ? h('span', { class: 'note' }, qr.message) : null,
           ),
         );
       }
       body.append(h('h3', {}, 'Train'), list);
-      body.append(h('h3', {}, 'Research'), h('p', { class: 'muted small' }, 'The Training Dojo researches one troop at a time, without an artisan. A new level makes every troop of that kind stronger, and costs a little more to train. Your Clan Keep level sets the highest level.'));
-      const active = s.research.active;
-      if (active) {
+      const lanes = researchLanes(hallLevel(s, gd), gd);
+      body.append(h('h3', {}, 'Research'), h('p', { class: 'muted small' }, `The Training Dojo researches without an artisan, ${lanes > 1 ? `${lanes} warriors at a time` : 'one warrior at a time'} (a higher Clan Keep opens more research lanes). A new level makes every warrior of that kind stronger, and costs a little more to train. Your Clan Keep level sets the highest level.`));
+      for (const active of s.research.active) {
         const ad = gd.troops[active.troop];
         const row = h('div', { class: 'progress-row' }, h('span', {}, `${ad?.name ?? active.troop} → level ${active.toLevel}`), h('span', { class: 'chip', 'data-ends': String(active.endsAt) }, formatDuration(active.endsAt - now)));
         const acts = h('div', { class: 'actions' });
-        const rsq = researchSkipQuote(s, now, gd);
+        const rsq = researchSkipQuote(s, now, gd, active.troop);
         if (rsq) {
           const fin = h('button', { class: 'btn gold', type: 'button' }, 'Finish now ', h('span', { class: 'chip' }, icon(icons.moonstones), String(rsq.moonstones)));
-          fin.addEventListener('click', () => void this.econ.spendMoonstones('Finish research', `Finish ${ad?.name ?? 'research'} level ${active.toLevel} now`, rsq.moonstones, () => this.c.dispatch({ type: 'skipResearch' }).ok).then(() => { lastSig = ''; render(); }));
+          fin.addEventListener('click', () => void this.econ.spendMoonstones('Finish research', `Finish ${ad?.name ?? 'research'} level ${active.toLevel} now`, rsq.moonstones, () => this.c.dispatch({ type: 'skipResearch', troop: active.troop }).ok).then(() => { lastSig = ''; render(); }));
           acts.append(fin);
         }
         const cancel = h('button', { class: 'btn ghost', type: 'button' }, 'Cancel');
         cancel.addEventListener('click', () => {
           void this.confirm('Cancel research?', `You'll get back ${Math.round(gd.economy.cancelRefundFraction * 100)}% of what you paid.`, 'Cancel research', true).then((ok) => {
             if (!ok) return;
-            const r = this.c.dispatch({ type: 'cancelResearch' });
+            const r = this.c.dispatch({ type: 'cancelResearch', troop: active.troop });
             if (!r.ok) this.toast(r.message, 'error');
             lastSig = '';
             render();
@@ -901,6 +982,7 @@ export class Hud {
         acts.append(cancel);
         body.append(row, acts);
       }
+      if (s.research.active.length < lanes) body.append(h('p', { class: 'muted small' }, `${lanes - s.research.active.length} research lane${lanes - s.research.active.length > 1 ? 's' : ''} free.`));
       const rlist = h('div', { class: 'troop-list' });
       for (const [t, def] of Object.entries(gd.troops)) {
         if (!visible(t)) continue;
@@ -1049,16 +1131,22 @@ export class Hud {
     for (const r of attacks) {
       const stars = h('span', { class: 'stars-mini' });
       for (let i = 0; i < 3; i++) stars.append(h('span', { class: i < r.result.stars ? '' : 'off' }, '★'));
-      const replay = h('button', { class: 'btn sky', type: 'button' }, 'Replay');
-      replay.addEventListener('click', () => {
+      // A replay recorded under older battle rules would show a different fight, so it is not offered.
+      const canReplay = replayable(r);
+      const replay = canReplay
+        ? h('button', { class: 'btn sky', type: 'button' }, 'Replay')
+        : h('span', { class: 'muted small', title: 'Recorded under older battle rules: the result stands, but the replay would no longer match it.' }, 'Replay unavailable (older rules)');
+      if (canReplay) replay.addEventListener('click', () => {
         this.closeAllModals();
         this.deps.onReplay(r);
       });
+      // Attacks show what reached storage; old records stored that in result.loot.
+      const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
       body.append(
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}${r.setup.base.practice ? ' (practice)' : ''}` : `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(r.result.loot).some((k) => (r.result.loot as Record<string, number>)[k] > 0) ? costChips(r.result.loot) : h('span', { class: 'chip' }, 'No loot'))),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}${r.setup.base.practice ? ' (practice)' : ''}` : `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, 'No loot'))),
           replay,
         ),
       );
@@ -1090,7 +1178,7 @@ export class Hud {
       list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));
     }
     for (const sr of s.seasons) {
-      list.append(h('li', {}, `The season ended! Your ${this.c.data.ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league} chest: `, costChips(sr.chest)));
+      list.append(h('li', {}, `The season ended! Your ${this.c.data.ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league} chest: `, costChips(sr.chest), sr.overflow ? h('span', { class: 'muted small' }, ' (did not fit in storage: ', costChips(sr.overflow), ')') : null));
     }
     if (!list.childElementCount) list.append(h('li', {}, 'All quiet in the village.'));
     body.append(list);
@@ -1178,24 +1266,32 @@ export class Hud {
       h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'),
     );
 
-    // Testing tools
-    const offsetText = () => (this.deps.debugTime.offsetMs() ? `Game clock is ${formatDuration(this.deps.debugTime.offsetMs())} ahead of real time.` : 'Game clock matches real time.');
+    // Testing tools: only in the sandbox, which has its own village and never goes online.
+    const offsetText = () => (this.deps.debugTime.offsetMs() ? `Sandbox clock is ${formatDuration(this.deps.debugTime.offsetMs())} ahead of real time.` : 'Sandbox clock matches real time.');
     const offsetEl = h('p', { class: 'muted' }, offsetText());
     const events = h('div', { class: 'events' }, 'Loading…');
-    body.append(
-      h('h3', {}, 'Testing tools'),
-      h('p', { class: 'muted' }, 'Skip time forward to test timers and offline progress. This moves this device’s game clock ahead permanently.'),
-      offsetEl,
-      h(
-        'div',
-        { class: 'actions' },
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.deps.debugTime.skip(3_600_000); offsetEl.textContent = offsetText(); this.c.tick(); this.refresh(); } }, '+1 hour'),
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.simulateAway(8) }, 'Simulate 8 hours away'),
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.dropShield() }, 'Remove shield'),
-      ),
-      h('p', { class: 'muted small' }, 'New villages start with a 24-hour shield. Remove it, then simulate time away, to see raiders attack your village.'),
-      h('details', {}, h('summary', {}, 'Analytics events (this device)'), events),
-    );
+    if (this.deps.sandbox) {
+      body.append(
+        h('h3', {}, 'Testing tools (sandbox)'),
+        h('p', { class: 'muted' }, 'This is the testing sandbox: a separate practice village with online play off. Skipping time moves the sandbox clock ahead for good; your real village is never affected.'),
+        offsetEl,
+        h(
+          'div',
+          { class: 'actions' },
+          h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.deps.debugTime.skip(3_600_000); offsetEl.textContent = offsetText(); this.c.tick(); this.refresh(); } }, '+1 hour'),
+          h('button', { class: 'btn ghost', type: 'button', onclick: () => this.simulateAway(8) }, 'Simulate 8 hours away'),
+          h('button', { class: 'btn ghost', type: 'button', onclick: () => this.dropShield() }, 'Remove shield'),
+        ),
+        h('p', { class: 'muted small' }, 'New villages start with a 24-hour shield. Remove it, then simulate time away, to see raiders attack your village.'),
+      );
+    } else {
+      body.append(
+        h('h3', {}, 'Testing tools'),
+        h('p', { class: 'muted small' }, 'Time skips and test purchases live in a separate testing sandbox, so they can never change your real village or online play.'),
+        h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { location.search = '?sandbox'; } }, 'Open the testing sandbox')),
+      );
+    }
+    body.append(h('details', {}, h('summary', {}, 'Analytics events (this device)'), events));
     void this.deps.analytics.recent(60).then((list) => {
       clear(events);
       if (!list.length) events.append('No events yet.');
@@ -1289,7 +1385,8 @@ export class Hud {
     const gd = this.c.data;
     const best = this.c.state.trials.best;
     const next = nextTrialTier(best);
-    const info = trialInfo(next, gd);
+    const info = trialInfo(next, gd, trialVariant(this.c.state.trials, next));
+    const alternate = canTryAlternate(this.c.state.trials, gd);
     const body = h('div', {});
     body.append(
       h('p', {}, 'An endless ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and there is no top.'),
@@ -1309,8 +1406,10 @@ export class Hud {
       ),
       h('p', { class: 'muted small' }, best > 0 ? `Best: tier ${best}. You can replay any cleared tier for practice (no reward).` : 'You have not cleared a tier yet.'),
     );
+    if (alternate) body.append(h('p', { class: 'note' }, `Stuck on tier ${next}? You can switch it to a different fortress of the same strength and reward (${gd.trials.maxAlternates - (this.c.state.trials.alternate ?? 0)} switches left for this tier, one after each failed attempt).`));
     const close = this.modal('Shadow Trials', body, [
       best > 0 && { label: `Replay tier ${best}`, onClick: () => { close(); this.deps.onTrial(best); } },
+      alternate && { label: 'Try a different fortress', onClick: () => { const r = this.c.dispatch({ type: 'trialAlternate' }); close(); if (r.ok) this.openTrials(); else this.toast(r.message, 'error'); } },
       { label: `Scout tier ${next}`, primary: true, onClick: () => { close(); this.deps.onTrial(next); } },
     ]);
   }

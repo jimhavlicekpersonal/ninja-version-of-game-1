@@ -3,6 +3,7 @@
     {
       "level": 1,
       "troopLevelCap": 1,
+      "researchLanes": 1,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -61,6 +62,7 @@
     {
       "level": 2,
       "troopLevelCap": 2,
+      "researchLanes": 1,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -127,6 +129,7 @@
     {
       "level": 3,
       "troopLevelCap": 2,
+      "researchLanes": 1,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -205,6 +208,7 @@
     {
       "level": 4,
       "troopLevelCap": 3,
+      "researchLanes": 1,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -287,6 +291,7 @@
     {
       "level": 5,
       "troopLevelCap": 4,
+      "researchLanes": 1,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -373,6 +378,7 @@
     {
       "level": 6,
       "troopLevelCap": 5,
+      "researchLanes": 1,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -467,6 +473,7 @@
     {
       "level": 7,
       "troopLevelCap": 7,
+      "researchLanes": 2,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -498,15 +505,15 @@
         },
         "acorn_cannon": {
           "count": 4,
-          "maxLevel": 8
+          "maxLevel": 9
         },
         "wasp_nest": {
           "count": 3,
-          "maxLevel": 7
+          "maxLevel": 8
         },
         "pinecone_catapult": {
           "count": 2,
-          "maxLevel": 5
+          "maxLevel": 6
         },
         "firefly_tower": {
           "count": 2,
@@ -561,6 +568,7 @@
     {
       "level": 8,
       "troopLevelCap": 8,
+      "researchLanes": 2,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -600,7 +608,7 @@
         },
         "pinecone_catapult": {
           "count": 2,
-          "maxLevel": 5
+          "maxLevel": 6
         },
         "firefly_tower": {
           "count": 2,
@@ -659,6 +667,7 @@
     {
       "level": 9,
       "troopLevelCap": 10,
+      "researchLanes": 2,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -757,6 +766,7 @@
     {
       "level": 10,
       "troopLevelCap": 11,
+      "researchLanes": 2,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -855,6 +865,7 @@
     {
       "level": 11,
       "troopLevelCap": 13,
+      "researchLanes": 3,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -953,6 +964,7 @@
     {
       "level": 12,
       "troopLevelCap": 14,
+      "researchLanes": 3,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -1055,6 +1067,7 @@
     {
       "level": 13,
       "troopLevelCap": 16,
+      "researchLanes": 3,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -1157,6 +1170,7 @@
     {
       "level": 14,
       "troopLevelCap": 18,
+      "researchLanes": 3,
       "limits": {
         "beaver_lodge": {
           "count": 5,
@@ -1259,6 +1273,7 @@
     {
       "level": 15,
       "troopLevelCap": 20,
+      "researchLanes": 3,
       "limits": {
         "beaver_lodge": {
           "count": 5,

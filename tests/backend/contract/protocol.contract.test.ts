@@ -68,7 +68,7 @@ describe('protocol contract', () => {
     expect(h.name).toBe('toadstool-kingdoms');
     expect(h.minProtocol).toBeLessThanOrEqual(PROTOCOL_VERSION);
     expect(h.protocol).toBeGreaterThanOrEqual(PROTOCOL_VERSION);
-    expect(h.minProtocol).toBeGreaterThanOrEqual(4);
+    expect(h.minProtocol).toBeGreaterThanOrEqual(6);
     expect(h.features).toContain('warriors-50');
     expect(Math.abs(h.serverTime - Date.now())).toBeLessThan(5 * 60_000);
     expect(h.features).toEqual(expect.arrayContaining(['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid']));
@@ -119,8 +119,9 @@ describe('protocol contract', () => {
     expect(r.result.hash).toBe(local.hash); // same deterministic battle on both sides
     expect(r.result.stars).toBe(local.stars);
     expect((await a.me()).trophies).toBe(r.playerTrophies);
-    const again = await errorOf(a.submitAttack(sub));
-    expect(again).toMatchObject({ status: 409, code: 'conflict' });
+    // Retrying a report returns the first answer (protocol 6), never a second settlement.
+    expect(await a.submitAttack(sub)).toEqual(r);
+    expect((await a.me()).trophies).toBe(r.playerTrophies);
   });
 
   it('pvp: refuses foreign tickets, oversized armies and troop levels above the hall cap', async () => {

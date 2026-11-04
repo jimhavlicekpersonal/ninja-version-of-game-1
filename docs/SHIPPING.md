@@ -4,7 +4,7 @@ Everything that can be built and tested without your personal accounts is in the
 
 ## 1. Play on your devices right now (no accounts needed)
 
-- **Web app (all devices):** https://jimhavlicekpersonal.github.io/toadstool-kingdoms/ (see the README for installing it to your home screen). The web build uses a **mock store**: purchases complete instantly and nothing is charged.
+- **Web app (all devices):** https://jimhavlicekpersonal.github.io/toadstool-kingdoms/ (see the README for installing it to your home screen). The public web build has **no store** (purchases show as unavailable) and runs on real time. The instant mock store and the time-skip tools exist only in the **testing sandbox**: open the game with `?sandbox` (or `?debug`). The sandbox keeps a separate village and never goes online, so test purchases and skipped time can't reach a real village or a server. Before a competitive online launch, decide whether the server should own the economy (inventory, research, timers); see `docs/PROTOCOL.md`, "Trust".
 - **Android app on your Pixel 7:** every push to `main` builds an installable APK.
   1. On GitHub, open **Actions → Android app (installable APK)** and click the latest green run.
   2. Under **Artifacts**, download `toadstool-kingdoms-android-apk` and unzip it (you get `app-debug.apk`).

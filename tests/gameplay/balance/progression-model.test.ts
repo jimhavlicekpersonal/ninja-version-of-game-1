@@ -4,6 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
+import { maxHousingAtHall, troopEarliestKeep } from '../../../src/gameplay/sim/army';
+import { researchLanes, troopLevelCapAt } from '../../../src/gameplay/sim/research';
 import {
   BUILDINGS,
   HEROES,
@@ -111,16 +113,58 @@ describe('the 50-warrior design', () => {
     }
   });
 
-  it('long curve: costs outgrow power every level, research time caps at 7 days', () => {
+  it('long curve: costs outgrow power every level, research time caps at 2.5 days', () => {
     for (const w of WARRIORS) {
       for (let lv = 2; lv <= MODEL.warriorMaxLevel; lv++) {
         expect(researchCost(w, lv) / warriorPower(w, lv)).toBeGreaterThan(researchCost(w, lv - 1) / warriorPower(w, lv - 1) || 0);
         expect(trainingCost(w, lv)).toBeGreaterThanOrEqual(trainingCost(w, lv - 1));
       }
     }
-    expect(researchSeconds(MODEL.warriorMaxLevel)).toBe(7 * 86400);
+    expect(researchSeconds(MODEL.warriorMaxLevel)).toBe(2.5 * 86400);
     const days = Array.from({ length: MODEL.warriorMaxLevel }, (_, i) => researchSeconds(i + 1)).reduce((a, b) => a + b, 0) / 86400;
-    expect(days).toBeGreaterThan(30); // maxing one warrior is a long project
+    expect(days).toBeGreaterThan(20); // maxing one warrior is still a project of weeks
+  });
+
+  it('every live warrior uses the one research curve: cost and time never drop from one level to the next (F27)', () => {
+    for (const w of WARRIORS) {
+      const levels = data.troops[w.liveTroop!].levels;
+      for (let i = 1; i < levels.length; i++) {
+        const r = levels[i].research!;
+        expect(r.cost.dew, `${w.name} level ${levels[i].level}`).toBe(researchCost(w, levels[i].level));
+        expect(r.seconds).toBe(researchSeconds(levels[i].level));
+        if (i > 1) {
+          expect(r.cost.dew!).toBeGreaterThan(levels[i - 1].research!.cost.dew!);
+          expect(r.seconds).toBeGreaterThanOrEqual(levels[i - 1].research!.seconds);
+        }
+      }
+    }
+  });
+
+  it('collection horizon: the whole roster can be researched to the Keep 15 caps in under a year (F26)', () => {
+    const days = (keep: number) => {
+      let seconds = 0;
+      for (const t of Object.keys(data.troops)) {
+        if (troopEarliestKeep(t, data) > keep) continue;
+        for (const lv of data.troops[t].levels.slice(1, troopLevelCapAt(keep, data, t))) seconds += lv.research!.seconds;
+      }
+      return seconds / 86400 / researchLanes(keep, data);
+    };
+    expect(days(15)).toBeLessThan(365);
+    expect(days(15)).toBeGreaterThan(120); // still a long-term goal
+    expect(days(12)).toBeLessThan(120);
+    expect(days(8)).toBeLessThan(21);
+  });
+
+  it('a full army of the newest warriors refills in two hours or less at a maxed Dojo (F25)', () => {
+    for (let keep = 1; keep <= 15; keep++) {
+      const dojo = data.hall.levels[keep - 1].limits.burrow_barracks.maxLevel;
+      const speed = data.buildings.burrow_barracks.levels[dojo - 1].trainingSpeed ?? 1;
+      const housing = maxHousingAtHall(keep, data);
+      for (const t of Object.keys(data.troops).filter((x) => troopEarliestKeep(x, data) <= keep && troopEarliestKeep(x, data) >= keep - 2)) {
+        const hours = (Math.floor(housing / data.troops[t].housing) * Math.ceil(data.troops[t].trainSeconds / speed)) / 3600;
+        expect(hours, `Keep ${keep} ${t}`).toBeLessThanOrEqual(2);
+      }
+    }
   });
 
   it('art stages cover every level', () => {

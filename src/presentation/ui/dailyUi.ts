@@ -5,7 +5,8 @@
 import { chestContents, chestOdds, chestReady, nextChestAt, streakAfterClaim } from '../../gameplay/sim/daily';
 import { activeEvents, upcomingEvents, type EventWindow } from '../../gameplay/sim/events';
 import { dayIndex } from '../../gameplay/sim/pass';
-import { hallLevel } from '../../gameplay/sim/village';
+import { dailyChestOverflowRisk, hallLevel } from '../../gameplay/sim/village';
+import type { Cost } from '../../gameplay/sim/types';
 import { clear, h, icon } from './dom';
 import { rewardChips, type UiKit } from './economyUi';
 import { formatDuration } from './format';
@@ -20,7 +21,7 @@ export class DailyUi {
   openDaily(): void {
     const c = this.kit.c;
     const body = h('div', { class: 'daily' });
-    let opened: { outcome: string; grants: Record<string, number>; skipped: number; steppedBack: number } | null = null;
+    let opened: { outcome: string; grants: Record<string, number>; overflow?: Cost; skipped: number; steppedBack: number } | null = null;
     const render = () => {
       clear(body);
       const s = c.state;
@@ -59,7 +60,9 @@ export class DailyUi {
         const notes: string[] = [];
         if (opened.skipped) notes.push(`A free skip covered ${opened.skipped === 1 ? 'the day' : `${opened.skipped} days`} you missed.`);
         if (opened.steppedBack) notes.push(`You missed ${opened.steppedBack} day${opened.steppedBack > 1 ? 's' : ''} without a skip, so your streak moved back ${opened.steppedBack} step${opened.steppedBack > 1 ? 's' : ''}.`);
-        body.append(h('div', { class: 'chest-result' }, h('b', {}, `You got: ${label}`), rewardChips(opened.grants), ...notes.map((n) => h('p', { class: 'muted small' }, n))));
+        // Only what was really added is shown as received; anything that did not fit is listed as such.
+        const lost = opened.overflow && Object.values(opened.overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, 'Did not fit in your storage: ', rewardChips(opened.overflow)) : null;
+        body.append(h('div', { class: 'chest-result' }, h('b', {}, `You got: ${label}`), rewardChips(opened.grants), lost, ...notes.map((n) => h('p', { class: 'muted small' }, n))));
       }
 
       // Odds, always visible before opening
@@ -79,14 +82,20 @@ export class DailyUi {
       const actions = h('div', { class: 'actions' });
       if (ready) {
         const btn = h('button', { class: 'btn primary', type: 'button' }, icon(icons.chest), " Open today's chest (free)");
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
+          // The chest is one a day: if storage is too full for it, say so before it is used up.
+          const risk = dailyChestOverflowRisk(c.state, c.now(), gd);
+          if (Object.keys(risk).length) {
+            const ok = await this.kit.confirm('Storage is nearly full', 'Some of what this chest can hold may not fit in your storage, and anything that does not fit is lost. Spend or collect some resources first, or open it anyway.', 'Open anyway', false, 'Not now');
+            if (!ok) return;
+          }
           const r = c.dispatch({ type: 'openDailyChest' });
           if (!r.ok) {
             this.kit.toast(r.message, 'error');
             return;
           }
           const e = r.events.find((x) => x.kind === 'daily_chest');
-          if (e && e.kind === 'daily_chest') opened = { outcome: e.outcome, grants: e.grants as Record<string, number>, skipped: e.skipped, steppedBack: e.steppedBack };
+          if (e && e.kind === 'daily_chest') opened = { outcome: e.outcome, grants: e.grants as Record<string, number>, overflow: e.overflow, skipped: e.skipped, steppedBack: e.steppedBack };
           render();
         });
         actions.append(btn);

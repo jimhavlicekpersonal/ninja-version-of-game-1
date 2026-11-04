@@ -20,17 +20,28 @@ function hashString(s: string): number {
   return h;
 }
 
-/** Bases of a Grove's members (the roster the other side attacks). */
-async function rosterOf(ctx: ServerContext, groveId: string): Promise<RosterEntry[]> {
-  const out: RosterEntry[] = [];
+/**
+ * Bases of a Grove's members (the roster the other side attacks), strongest
+ * first (Keep, then honor, then id, so the order is stable). `size` keeps only
+ * that many, for equal-sized war rosters.
+ */
+async function rosterOf(ctx: ServerContext, groveId: string, size = Infinity): Promise<RosterEntry[]> {
+  const players: Player[] = [];
   for (const m of await ctx.repo.members(groveId)) {
     const p = await ctx.repo.getPlayer(m.playerId);
-    if (!p?.base) continue;
-    const base = structuredClone(p.base);
-    for (const b of base.buildings) b.loot = {};
-    out.push({ index: out.length, name: p.name, hallLevel: p.hallLevel, trophies: p.trophies, base: { ...base, name: p.name }, playerId: p.id });
+    if (p?.base) players.push(p);
   }
-  return out;
+  players.sort((a, b) => b.hallLevel - a.hallLevel || b.trophies - a.trophies || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return players.slice(0, size).map((p, index) => {
+    const base = structuredClone(p.base!);
+    for (const b of base.buildings) b.loot = {};
+    return { index, name: p.name, hallLevel: p.hallLevel, trophies: p.trophies, base: { ...base, name: p.name }, playerId: p.id };
+  });
+}
+
+/** Attacks a side may make in a war: its roster size times the per-member allowance (equal for both sides). */
+function sideAttackCap(p: RaidPairing, ctx: ServerContext): number {
+  return Math.max(1, p.roster.length) * ctx.data.social.groveRaid.attacksPerMember;
 }
 
 async function sideInfo(ctx: ServerContext, groveId: string): Promise<{ size: number; hall: number }> {
@@ -52,13 +63,17 @@ async function ensurePairing(ctx: ServerContext, groveId: string, week: number):
   candidates.sort((a: GroveSummaryRow, b: GroveSummaryRow) => Math.abs(a.averageTrophies - avg) - Math.abs(b.averageTrophies - avg));
   for (const rival of candidates.slice(0, 5)) {
     const theirs = await sideInfo(ctx, rival.id);
-    const ourRoster = await rosterOf(ctx, groveId);
-    const theirRoster = await rosterOf(ctx, rival.id);
-    if (!ourRoster.length || !theirRoster.length) continue;
+    // Equal rosters: both sides field the same number of bases (their strongest
+    // members with a base), so both can win the same number of stars, and each
+    // side's attacks are capped at that size times the per-member allowance.
+    const size = Math.min((await rosterOf(ctx, groveId)).length, (await rosterOf(ctx, rival.id)).length);
+    if (!size) continue;
+    const ourRoster = await rosterOf(ctx, groveId, size);
+    const theirRoster = await rosterOf(ctx, rival.id, size);
     const ourName = me?.name ?? 'Alliance';
     const ok = await ctx.repo.createPairings([
-      { week, groveId, opponentGroveId: rival.id, opponentName: rival.name, botSeed: 0, roster: theirRoster, ourSize: ourRoster.length, ourHall: mine.hall, createdAt: t },
-      { week, groveId: rival.id, opponentGroveId: groveId, opponentName: ourName, botSeed: 0, roster: ourRoster, ourSize: theirRoster.length, ourHall: theirs.hall, createdAt: t },
+      { week, groveId, opponentGroveId: rival.id, opponentName: rival.name, botSeed: 0, roster: theirRoster, ourSize: size, ourHall: mine.hall, createdAt: t },
+      { week, groveId: rival.id, opponentGroveId: groveId, opponentName: ourName, botSeed: 0, roster: ourRoster, ourSize: size, ourHall: theirs.hall, createdAt: t },
     ]);
     if (ok) return (await ctx.repo.getPairing(week, groveId))!;
   }
@@ -90,23 +105,30 @@ function botStars(p: RaidPairing, t: number, ctx: ServerContext): number[] {
   return best;
 }
 
-async function scores(ctx: ServerContext, p: RaidPairing, t: number): Promise<{ ours: number; theirs: number; enemyBaseStars: number[] }> {
-  const enemyBaseStars = new Array(p.roster.length).fill(0);
-  for (const a of await ctx.repo.raidAttacks(p.week, p.groveId)) {
-    if (a.at <= t && a.target < enemyBaseStars.length) enemyBaseStars[a.target] = Math.max(enemyBaseStars[a.target], a.stars);
+/** Best stars (and, among equal stars, best destruction) on each base of a roster. */
+function bestPerBase(attacks: { target: number; stars: number; destruction: number; at: number }[], size: number, t: number): { stars: number[]; destruction: number[] } {
+  const stars = new Array(size).fill(0);
+  const destruction = new Array(size).fill(0);
+  for (const a of attacks) {
+    if (a.at > t || a.target >= size) continue;
+    if (a.stars > stars[a.target] || (a.stars === stars[a.target] && a.destruction > destruction[a.target])) {
+      stars[a.target] = a.stars;
+      destruction[a.target] = a.destruction;
+    }
   }
-  let theirStars: number[];
+  return { stars, destruction };
+}
+
+async function scores(ctx: ServerContext, p: RaidPairing, t: number): Promise<{ ours: number; theirs: number; enemyBaseStars: number[]; ourDestruction?: number; theirDestruction?: number }> {
+  const sum = (xs: number[]) => xs.reduce((s, v) => s + v, 0);
+  const mine = bestPerBase(await ctx.repo.raidAttacks(p.week, p.groveId), p.roster.length, t);
   if (p.opponentGroveId) {
     const theirPairing = await ctx.repo.getPairing(p.week, p.opponentGroveId);
-    theirStars = new Array(theirPairing?.roster.length ?? 0).fill(0);
-    for (const a of await ctx.repo.raidAttacks(p.week, p.opponentGroveId)) {
-      if (a.at <= t && a.target < theirStars.length) theirStars[a.target] = Math.max(theirStars[a.target], a.stars);
-    }
-  } else {
-    theirStars = botStars(p, t, ctx);
+    const theirs = bestPerBase(await ctx.repo.raidAttacks(p.week, p.opponentGroveId), theirPairing?.roster.length ?? 0, t);
+    // Destruction breaks a tie in stars (both sides have the same number of bases, so the totals compare fairly).
+    return { ours: sum(mine.stars), theirs: sum(theirs.stars), enemyBaseStars: mine.stars, ourDestruction: sum(mine.destruction), theirDestruction: sum(theirs.destruction) };
   }
-  const sum = (xs: number[]) => xs.reduce((s, v) => s + v, 0);
-  return { ours: sum(enemyBaseStars), theirs: sum(theirStars), enemyBaseStars };
+  return { ours: sum(mine.stars), theirs: sum(botStars(p, t, ctx)), enemyBaseStars: mine.stars };
 }
 
 /**
@@ -118,8 +140,12 @@ function eligible(joinedAt: number, week: number, ctx: ServerContext): boolean {
   return joinedAt <= raidWindow(week, ctx.data).start;
 }
 
-function outcomeOf(ours: number, theirs: number): 'win' | 'draw' | 'loss' {
-  return ours > theirs ? 'win' : ours < theirs ? 'loss' : 'draw';
+/** Stars decide; equal stars are broken by total destruction when both sides are real Alliances. */
+function outcomeOf(s: { ours: number; theirs: number; ourDestruction?: number; theirDestruction?: number }): 'win' | 'draw' | 'loss' {
+  if (s.ours !== s.theirs) return s.ours > s.theirs ? 'win' : 'loss';
+  const a = s.ourDestruction ?? 0;
+  const b = s.theirDestruction ?? 0;
+  return a > b ? 'win' : a < b ? 'loss' : 'draw';
 }
 
 export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
@@ -139,7 +165,9 @@ export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
   const pairing = ph.phase === 'live' ? await ensurePairing(ctx, grove.id, ph.week) : await ctx.repo.getPairing(ph.week, grove.id);
   if (!pairing) return base;
   const s = await scores(ctx, pairing, ph.phase === 'ended' ? ph.end : t);
-  const mine = (await ctx.repo.raidAttacks(ph.week, grove.id)).filter((a) => a.attackerId === me.id).length;
+  const sideAttacks = await ctx.repo.raidAttacks(ph.week, grove.id);
+  const mine = sideAttacks.filter((a) => a.attackerId === me.id).length;
+  const sideLeft = Math.max(0, sideAttackCap(pairing, ctx) - sideAttacks.length);
   const claim = await ctx.repo.getClaim(ph.week, me.id);
   return {
     ...base,
@@ -147,8 +175,8 @@ export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
     ours: s.ours,
     theirs: s.theirs,
     enemyBaseStars: s.enemyBaseStars,
-    attacksLeft: ph.phase === 'live' && ok ? Math.max(0, per - mine) : 0,
-    result: ph.phase === 'ended' ? { outcome: outcomeOf(s.ours, s.theirs), ours: s.ours, theirs: s.theirs } : null,
+    attacksLeft: ph.phase === 'live' && ok ? Math.min(sideLeft, Math.max(0, per - mine)) : 0,
+    result: ph.phase === 'ended' ? { outcome: outcomeOf(s), ours: s.ours, theirs: s.theirs } : null,
     claimed: Boolean(claim),
   };
 }
@@ -160,8 +188,10 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
   if (ph.phase !== 'live') throw new ApiError(409, 'raid_not_live', 'The Alliance War is not running.');
   if (!eligible(joinedAt, ph.week, ctx)) throw new ApiError(409, 'no_attacks_left', 'You joined during this Alliance War; you can take part from next week.');
   const pairing = await ensurePairing(ctx, grove.id, ph.week);
-  const used = (await ctx.repo.raidAttacks(ph.week, grove.id)).filter((a) => a.attackerId === me.id).length;
+  const sideAttacks = await ctx.repo.raidAttacks(ph.week, grove.id);
+  const used = sideAttacks.filter((a) => a.attackerId === me.id).length;
   if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
+  if (sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'Your Alliance has used all of its war attacks (both sides get the same number).');
   const idx = Math.floor(Number(target));
   const entry = pairing.roster[idx];
   if (!entry) throw new ApiError(404, 'not_found', 'No such enemy base.');
@@ -172,17 +202,24 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
 }
 
 export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<RaidAttackResponse> {
-  const ticket = await takeTicket(ctx, me, sub?.ticket, 'raid');
-  const { army, levels } = checkArmy(sub, me, ctx.data);
+  const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'raid');
   const week = ticket.week!;
-  const used = (await ctx.repo.raidAttacks(week, ticket.groveId!)).filter((a) => a.attackerId === me.id).length;
-  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
-  if (!(await ctx.repo.useTicket(ticket.id))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
+  if (answered) {
+    // A retried report: the same result, with the current score.
+    const a = answered as { result: RaidAttackResponse['result'] };
+    const s = await scores(ctx, (await ctx.repo.getPairing(week, ticket.groveId!))!, ctx.now());
+    return { result: a.result, stars: a.result.stars, ours: s.ours, theirs: s.theirs };
+  }
+  const { army, levels, reinforcements } = checkArmy(sub, me, ctx.data);
+  const pairing = (await ctx.repo.getPairing(week, ticket.groveId!))!;
+  const sideAttacks = await ctx.repo.raidAttacks(week, ticket.groveId!);
+  const used = sideAttacks.filter((a) => a.attackerId === me.id).length;
+  if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const { result } = runBattle({ seed: Number(sub.seed) >>> 0, base: ticket.base, army, levels, infiltration: true }, deployments, ctx.data, sub.endTick);
+  const { result } = runBattle({ seed: Number(sub.seed) >>> 0, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) }, deployments, ctx.data, sub.endTick);
+  if (!(await ctx.repo.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
   await ctx.repo.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
-  const pairing = (await ctx.repo.getPairing(week, ticket.groveId!))!;
   const s = await scores(ctx, pairing, ctx.now());
   return { result, stars: result.stars, ours: s.ours, theirs: s.theirs };
 }
@@ -204,7 +241,7 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
   const pairing = await ctx.repo.getPairing(w, grove.id);
   if (!pairing) throw new ApiError(404, 'not_found', 'Your Alliance did not take part in that Alliance War.');
   const s = await scores(ctx, pairing, end);
-  const outcome = outcomeOf(s.ours, s.theirs);
+  const outcome = outcomeOf(s);
   const fresh = await ctx.repo.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });
   return { week: w, outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: !fresh };
 }

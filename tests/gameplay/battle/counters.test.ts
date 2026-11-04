@@ -240,21 +240,16 @@ describe('Longbow Yagura: artillery counter', () => {
     expect(s.troops[0].hp).toBe(1e9);
   });
 
-  it('picks off bombardiers that siege from outside every other defense\'s range', () => {
-    // Bombardiers shell a wall line from range; a Kunai Tower behind the walls can't reach them.
-    const walls: BaseBuilding[] = Array.from({ length: 10 }, (_, i) => ({ id: `w${i}`, type: 'bramble_hedge', level: 8, x: 15 + i, y: 26 }));
-    const tower: BaseBuilding = { id: 'k', type: 'acorn_cannon', level: 10, x: 19, y: 20 };
-    const setup = (withYagura: boolean) => ({
-      seed: 3,
-      base: { name: 'Siege', hallLevel: 15, buildings: [hall, ...walls, tower, ...(withYagura ? [{ ...yagura, level: 3, x: 19, y: 24 }] : [])] },
-      army: { siege_bombardier: 2 },
-      levels: { siege_bombardier: 8 },
-    });
-    const deploys = [0, 1].map((tick) => ({ tick, troop: 'siege_bombardier', x: 20, y: 37 }));
-    const without = runBattle(setup(false), deploys, data, 400).sim;
-    const withY = runBattle(setup(true), deploys, data, 400).sim;
-    expect(without.troops.filter((t) => t.dead)).toHaveLength(0);
-    expect(withY.troops.filter((t) => t.dead).length).toBe(2);
+  it('prefers Throwers (range 3.5) too, not only the longest-range artillery', () => {
+    // The Yagura answers the ranged backline that hides behind the front line (audit F23).
+    const s = sim([yagura], { hedgehog_roller: 1, frog_lobber: 1 });
+    const melee = place(s, 'hedgehog_roller', 21, 24.5);
+    const thrower = place(s, 'frog_lobber', 21, 30);
+    for (const t of s.troops) t.hp = t.maxHp = 1e9;
+    step(s);
+    expect(data.buildings.longbow_yagura.effect!.prefersBeyond).toBeLessThanOrEqual(data.troops.frog_lobber.range);
+    expect(s.buildings[1].targetTroop).toBe(thrower);
+    expect(s.buildings[1].targetTroop).not.toBe(melee);
   });
 });
 

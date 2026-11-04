@@ -6,10 +6,10 @@ import type { Connection } from './backend/net/connection';
 import type { BattleSceneInit } from './presentation/render/BattleScene';
 import type { BaseLayout, BattleRecord, BattleSetup } from './gameplay/sim/battle/types';
 import { opponentFor } from './gameplay/sim/matchmaking';
-import { troopLevels } from './gameplay/sim/research';
+import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { mixSeed } from './gameplay/sim/rng';
-import { battleArmy, scoutFee } from './gameplay/sim/village';
-import { nextTrialTier, trialBase, trialInfo, trialReward } from './gameplay/sim/trials';
+import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
+import { nextTrialTier, trialBase, trialInfo, trialReward, trialVariant } from './gameplay/sim/trials';
 import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
 import type { Hud } from './presentation/ui/hud';
@@ -34,6 +34,13 @@ const TICKET_MARGIN_MS = 5 * 60_000;
 export class App {
   private battleHud: BattleHud | null = null;
   private session: BattleSession | null = null;
+  /** Saves the live battle's deployments right now (they are otherwise saved at most every 1.5 s). */
+  private flushTrack: (() => void) | null = null;
+
+  /** Call when the app is hidden or closing, so the last deployments are never lost. */
+  flushBattle(): void {
+    this.flushTrack?.();
+  }
 
   constructor(private readonly d: AppDeps) {}
 
@@ -55,8 +62,7 @@ export class App {
       return;
     }
     this.ticket = null;
-    const army = battleArmy(c.state);
-    const levels = troopLevels(c.state, c.data);
+    const loadout = battleLoadout(c.state, c.data);
     const conn = this.d.connection;
     // Online: the server picks the opponent (a real village, or a generated
     // one when nobody fits) with the same matchmaking rules, and has already
@@ -66,13 +72,14 @@ export class App {
         // Same scout seed as last time (Home, then Attack): show the same base
         // while its ticket is still valid, so leaving never rerolls for free.
         const kept = this.onlineMatch && this.onlineMatch.seed === r.seed && Date.now() < this.onlineMatch.expiresAt - TICKET_MARGIN_MS ? this.onlineMatch : null;
+        if (!kept) await conn.ensureFreshBase();
         const m = kept ?? (await conn.port.match());
         if (m) {
           this.onlineMatch = kept ?? { seed: r.seed, ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
           this.ticket = this.onlineMatch.ticket;
           const base = structuredClone(this.onlineMatch.base);
           if (this.onlineMatch.bot) base.practice = 'Generated rival (no player fitted your rank)';
-          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels, infiltration: true };
+          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, ...loadout, infiltration: true };
           this.open(new BattleSession(setup, c.data, 'scout'));
           return;
         }
@@ -84,7 +91,7 @@ export class App {
     const base = opponentFor(r.seed, c.state, c.data);
     // Offline, every rival is generated: say so instead of passing it off as a player.
     base.practice = 'Generated rival (offline)';
-    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, army, levels, infiltration: true };
+    const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, ...loadout, infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'));
   }
 
@@ -106,9 +113,25 @@ export class App {
       this.d.hud.toast('Train some warriors first.', 'error');
       return;
     }
-    const base = trialBase(tier, c.data);
-    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x7a1a1 + tier * 7919 + c.state.nextSeed), base, army, levels: troopLevels(c.state, c.data), infiltration: true };
+    const base = trialBase(tier, c.data, trialVariant(c.state.trials, tier));
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x7a1a1 + tier * 7919 + c.state.nextSeed), base, ...battleLoadout(c.state, c.data), infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, tier);
+  }
+
+  /**
+   * A practice battle: any army (e.g. one with a warrior you have not trained
+   * yet) against a generated base at your Keep. Nothing is spent or won, and it
+   * is never saved as a raid; you can still watch its replay.
+   */
+  practice(army: Record<string, number>): void {
+    const c = this.d.controller;
+    const seed = mixSeed(c.state.seed, 0x9a7c + Math.floor(c.now() / 1000));
+    const base = opponentFor(seed, c.state, c.data);
+    base.practice = 'Practice battle (nothing spent or won)';
+    delete base.trophies;
+    const loadout = battleLoadout(c.state, c.data);
+    const setup: BattleSetup = { seed, base, army, levels: loadout.levels, infiltration: true };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, true);
   }
 
   replay(record: BattleRecord): void {
@@ -116,6 +139,7 @@ export class App {
   }
 
   home(): void {
+    this.flushTrack = null;
     this.battleHud?.destroy();
     this.battleHud = null;
     this.session = null;
@@ -126,7 +150,7 @@ export class App {
     sound.music('village');
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number): void {
+  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, practice = false): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
     this.session = session;
@@ -137,10 +161,11 @@ export class App {
       myTrophies: c.state.trophies,
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
       grove: grove ? { enemyName: grove.enemyName } : undefined,
+      practice,
       trial:
         trialTier !== undefined
           ? (() => {
-              const info = trialInfo(trialTier, c.data);
+              const info = trialInfo(trialTier, c.data, trialVariant(c.state.trials, trialTier));
               const firstClear = trialTier === nextTrialTier(c.state.trials.best);
               return { tier: trialTier, layout: info.layout.name, modifiers: info.modifiers.map((m) => m.name), reward: trialReward(trialTier, c.data), firstClear, starsToClear: c.data.trials.starsToClear };
             })()
@@ -152,10 +177,18 @@ export class App {
       onNext: () => this.scout(true),
       onAttack: () => session.start(),
       onFinished: () => {
+        if (practice) {
+          // Never banked: a record only for "Watch replay".
+          const result = session.result();
+          lastRecord = { id: 'practice', kind: 'attack', at: c.now(), opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick, result, rules: SIM_RULES };
+          return { result, banked: {}, trophies: 0, note: 'Practice battle: no troops were spent and nothing was won.' };
+        }
         if (grove) {
           const g = grove.finish(session.deployments, session.endTick);
           if (!g) return null;
-          return { result: session.result(), banked: {}, trophies: 0 };
+          // Kept in the battle log, so "Watch replay" works after an Alliance War attack too.
+          lastRecord = g.record;
+          return { result: g.record.result, banked: {}, trophies: 0 };
         }
         if (trialTier !== undefined) {
           const t = c.finishTrial(trialTier, session.setup, session.deployments, session.endTick);
@@ -166,20 +199,22 @@ export class App {
             : t.cleared
               ? 'Cleared again. The reward for this tier was already claimed.'
               : `Not cleared: you need ${c.data.trials.starsToClear} stars.`;
-          return { result: t.record.result, banked: t.reward, trophies: 0, note };
+          return { result: t.record.result, banked: t.reward, overflow: t.record.overflow, trophies: 0, note };
         }
-        const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name);
+        const ticket = this.ticket ?? undefined;
+        // Online: recorded as pending; loot and honor arrive with the server's confirmation.
+        const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name, ticket);
         if (!out) return null;
-        if (this.ticket) {
+        if (ticket) {
           // The server re-runs the battle from seed + deployments; the outbox
           // keeps the report until it gets through.
-          const ticket = this.ticket;
           this.ticket = null;
           this.onlineMatch = null;
-          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, deployments: session.deployments, endTick: session.endTick });
+          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick });
         }
         lastRecord = out.record;
-        return { result: out.record.result, banked: out.banked, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus };
+        if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true };
+        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);
@@ -192,22 +227,29 @@ export class App {
     const hudHooks = this.battleHud.hooks();
     let lastTrack = 0;
     let trackTimer = 0;
-    const ticket = this.ticket ?? undefined;
+    const ticket = grove ? grove.ticket : this.ticket ?? undefined;
+    const startedAt = c.now();
     const hooks = {
       ...hudHooks,
       deployed: () => {
         hudHooks.deployed();
-        // Saved from the first deployment, so closing the app mid-raid can't erase it.
+        // Saved from the first deployment, so closing the app mid-raid (or mid-war-attack) can't erase it.
         // Throttled: the first deployment saves at once, later ones at most every 1.5 s.
-        if (session.mode !== 'live' || grove || replayOf) return;
+        if (session.mode !== 'live' || replayOf || practice) return;
         const track = () => {
           trackTimer = 0;
           lastTrack = Date.now();
           if (session.sim.ended && !c.state.pendingBattle) return;
-          c.trackBattle({ kind: trialTier !== undefined ? 'trial' : 'raid', tier: trialTier, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: c.now() });
+          const kind = grove ? 'war' : trialTier !== undefined ? 'trial' : 'raid';
+          c.trackBattle({ kind, tier: trialTier, target: grove?.target, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: startedAt, rules: SIM_RULES });
         };
         if (!lastTrack) track();
         else if (!trackTimer) trackTimer = window.setTimeout(track, Math.max(0, 1500 - (Date.now() - lastTrack)));
+        this.flushTrack = () => {
+          if (!trackTimer) return;
+          window.clearTimeout(trackTimer);
+          track();
+        };
       },
     };
     const init: BattleSceneInit = { session, hooks, renderScale: this.d.renderScale };

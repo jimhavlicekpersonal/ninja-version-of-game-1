@@ -35,14 +35,15 @@ describe('Shadow Trials ladder', () => {
     expect(trialInfo(1, data).hall).toBe(1);
     expect(trialInfo(lastHallTier, data).hall).toBe(data.hall.levels.length);
     const last = trialInfo(lastHallTier, data);
-    expect(last.power).toBe(last.modifiers.reduce((m, x) => m * (x.power ?? 1), 1));
+    const layoutFactor = (i: typeof last) => data.trials.layoutPower[i.layout.id] ?? 1;
+    expect(last.power).toBeCloseTo(last.modifiers.reduce((m, x) => m * (x.power ?? 1), 1) * layoutFactor(last), 9);
     for (let t = 1; t < 300; t++) {
       const a = trialInfo(t, data);
       const b = trialInfo(t + 1, data);
       expect(b.hall).toBeGreaterThanOrEqual(a.hall);
-      // Modifiers come and go, so compare the base growth without them.
-      const strip = (i: typeof a) => i.power / i.modifiers.reduce((m, x) => m * (x.power ?? 1), 1);
-      expect(strip(b)).toBeGreaterThanOrEqual(strip(a));
+      // Modifiers and the layout factor come and go, so compare the base growth without them.
+      const strip = (i: typeof a) => i.power / i.modifiers.reduce((m, x) => m * (x.power ?? 1), 1) / layoutFactor(i);
+      expect(strip(b)).toBeGreaterThanOrEqual(strip(a) - 1e-9);
     }
     const far = trialInfo(1_000_000, data);
     expect(Number.isFinite(far.power)).toBe(true);
@@ -149,3 +150,34 @@ describe('save v10', () => {
     expect(out.village.trials).toEqual({ best: 0 });
   });
 });
+
+describe('Shadow Trials: a dependable climb (F33)', () => {
+  it('each tier uses the median-strength fortress of several candidates, deterministically', () => {
+    for (const t of [3, 30, 61, 74]) {
+      const base = trialBase(t, data);
+      expect(trialBase(t, data)).toEqual(base);
+      expect(base.trialTier).toBe(t);
+    }
+  });
+
+  it('after failing the next tier, the player may switch to an alternate fortress (same tier and reward, limited)', () => {
+    const { clock, state } = newGame();
+    state.army = { hedgehog_roller: 1 };
+    state.trials = { best: 3 };
+    const fight = (s: typeof state) => applyCommand(s, { type: 'trialEnd', tier: 4, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(4, data), army: { hedgehog_roller: 1 } }, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: 0, y: 0 }] } }, clock.now(), data);
+    expect(applyCommand(state, { type: 'trialAlternate' }, clock.now(), data).ok).toBe(false);
+    const failed = fight(state);
+    expect(failed.ok).toBe(true);
+    if (!failed.ok) return;
+    expect(failed.state.trials.failedTier).toBe(4);
+    const alt = applyCommand(failed.state, { type: 'trialAlternate' }, clock.now(), data);
+    expect(alt.ok).toBe(true);
+    if (!alt.ok) return;
+    expect(alt.state.trials.alternate).toBe(1);
+    expect(trialInfo(4, data, 1).layout.id).not.toBe(trialInfo(4, data).layout.id);
+    expect(trialReward(4, data)).toEqual(trialReward(4, data));
+    // One switch per failed attempt.
+    expect(applyCommand(alt.state, { type: 'trialAlternate' }, clock.now(), data).ok).toBe(false);
+  });
+});
+

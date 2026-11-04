@@ -44,6 +44,8 @@ export interface SeasonReward {
   chest: Cost;
   trophiesBefore: number;
   trophiesAfter: number;
+  /** Chest contents that did not fit in storage. */
+  overflow?: Cost;
 }
 
 /** A league's monthly chest for a player at this Elder Toadstool level. */

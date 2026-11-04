@@ -39,6 +39,8 @@ export interface Ticket {
   week?: number;
   groveId?: string;
   target?: number;
+  /** The answer given when the ticket was used, so a repeated report gets the same answer (idempotent). */
+  response?: unknown;
 }
 
 export interface AttackRecord {
@@ -57,6 +59,10 @@ export interface AttackRecord {
   result: BattleResult;
   /** Infiltration Points were in force (protocol v5+); absent on older records. */
   infiltration?: boolean;
+  /** Donated troops and their levels (protocol 6+). */
+  reinforcements?: Record<string, { count: number; level: number }>;
+  /** Battle rules version (SIM_RULES) the attack was simulated with (protocol 6+). */
+  rules?: number;
   attackerTrophies: number;
   defenderTrophies: number;
 }
@@ -190,8 +196,11 @@ export interface Repo {
   // tickets and attacks
   createTicket(t: Ticket): Promise<void>;
   getTicket(id: string): Promise<Ticket | null>;
-  /** Marks a ticket used; returns false if it already was (prevents double submits). */
-  useTicket(id: string): Promise<boolean>;
+  /**
+   * Marks a ticket used, storing the answer given for it; returns false if it
+   * already was (prevents double submits; the stored answer is returned on a retry).
+   */
+  useTicket(id: string, response?: unknown): Promise<boolean>;
   addAttack(a: AttackRecord): Promise<void>;
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
   recentTargets(attackerId: string, since: number): Promise<string[]>;
@@ -284,10 +293,11 @@ export class MemoryRepo implements Repo {
     const t = this.tickets.get(id);
     return t ? clone(t) : null;
   }
-  async useTicket(id: string): Promise<boolean> {
+  async useTicket(id: string, response?: unknown): Promise<boolean> {
     const t = this.tickets.get(id);
     if (!t || t.used) return false;
     t.used = true;
+    if (response !== undefined) t.response = clone(response);
     return true;
   }
   async addAttack(a: AttackRecord): Promise<void> {

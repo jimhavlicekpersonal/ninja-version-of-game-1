@@ -1,6 +1,6 @@
 {
   "generated": "npm run docs:progression",
-  "count": 604,
+  "count": 608,
   "icons": [
     {
       "key": "icon.warrior.shinobi.s1",
@@ -5938,7 +5938,7 @@
         2
       ],
       "live": true,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.clockwork_repairer.s2",
@@ -5952,7 +5952,7 @@
         4
       ],
       "live": true,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.clockwork_repairer.s3",
@@ -5966,7 +5966,7 @@
         6
       ],
       "live": true,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.clockwork_repairer.s4",
@@ -5980,7 +5980,7 @@
         8
       ],
       "live": true,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.clockwork_repairer.s5",
@@ -5994,7 +5994,7 @@
         10
       ],
       "live": true,
-      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams and stuns on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Clockwork Repair Crane: A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.bitter_incense_burner.s1",
@@ -6848,7 +6848,7 @@
         2
       ],
       "live": true,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.longbow_yagura.s2",
@@ -6862,7 +6862,7 @@
         4
       ],
       "live": true,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.longbow_yagura.s3",
@@ -6876,7 +6876,7 @@
         6
       ],
       "live": true,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.longbow_yagura.s4",
@@ -6890,7 +6890,7 @@
         8
       ],
       "live": true,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.longbow_yagura.s5",
@@ -6904,7 +6904,7 @@
         10
       ],
       "live": true,
-      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from beyond 4 tiles, but cannot hit anything closer than 2 tiles.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Longbow Yagura: A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.lightning_rod_pagoda.s1",
@@ -6983,7 +6983,7 @@
       "group": "ability",
       "subject": "Smoke Bomb",
       "live": true,
-      "prompt": "Ability icon \"Smoke Bomb\": Throw anywhere on the map. For 8 seconds, defenses can only target troops inside the cloud from close range. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Smoke Bomb\": Throw it over your warriors as they walk into a defense's range. For 8 seconds, warriors inside the cloud can only be shot from close up (Night Blades also hit buildings inside it twice as hard). One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.swift_strike",
@@ -7010,7 +7010,7 @@
       "group": "ability",
       "subject": "Wind Step",
       "live": true,
-      "prompt": "Ability icon \"Wind Step\": Dashes to a new target; the first hit after each dash deals triple damage. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Wind Step\": Dashes to a new target; the first hit after each dash deals double damage. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.moon_cut",
@@ -7244,7 +7244,7 @@
       "group": "ability",
       "subject": "Chain Lightning",
       "live": true,
-      "prompt": "Ability icon \"Chain Lightning\": Lightning hits a defense and up to three nearby defenses for 45% damage each. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Chain Lightning\": Lightning hits a defense and up to three nearby defenses for 35% damage each. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.armada",
@@ -7334,7 +7334,7 @@
       "group": "ability",
       "subject": "Long Shot",
       "live": true,
-      "prompt": "Ability icon \"Long Shot\": Artillery with 11-tile range. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Long Shot\": Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.eruption",
@@ -7544,6 +7544,42 @@
       "prompt": "League badge for the Obsidian League: a shield-shaped crest with obsidian material and the clan crest."
     },
     {
+      "key": "icon.league.jade",
+      "file": "public/art/icons/leagues/jade.png",
+      "size": 192,
+      "group": "league",
+      "subject": "Jade League",
+      "live": true,
+      "prompt": "League badge for the Jade League: a shield-shaped crest with jade material and the clan crest."
+    },
+    {
+      "key": "icon.league.storm",
+      "file": "public/art/icons/leagues/storm.png",
+      "size": 192,
+      "group": "league",
+      "subject": "Storm League",
+      "live": true,
+      "prompt": "League badge for the Storm League: a shield-shaped crest with storm material and the clan crest."
+    },
+    {
+      "key": "icon.league.shadow",
+      "file": "public/art/icons/leagues/shadow.png",
+      "size": 192,
+      "group": "league",
+      "subject": "Shadow League",
+      "live": true,
+      "prompt": "League badge for the Shadow League: a shield-shaped crest with shadow material and the clan crest."
+    },
+    {
+      "key": "icon.league.kage",
+      "file": "public/art/icons/leagues/kage.png",
+      "size": 192,
+      "group": "league",
+      "subject": "Kage League",
+      "live": true,
+      "prompt": "League badge for the Kage League: a shield-shaped crest with kage material and the clan crest."
+    },
+    {
       "key": "icon.tier.1",
       "file": "public/art/icons/tiers/tier_1.png",
       "size": 96,
@@ -7712,7 +7748,7 @@
       "group": "trial",
       "subject": "Kunai Ring",
       "live": true,
-      "prompt": "Top-down map glyph of the \"Kunai Ring\" layout: Towers in a wide ring cover each other: jam one, smoke the next, break in through the gap."
+      "prompt": "Top-down map glyph of the \"Kunai Ring\" layout: Towers in a wide ring cover each other: jam one, smoke your squad as it reaches the next, break in through the gap."
     },
     {
       "key": "icon.layout.walled_keep",

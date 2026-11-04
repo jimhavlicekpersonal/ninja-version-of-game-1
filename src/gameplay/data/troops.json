@@ -43,9 +43,9 @@
         },
         "research": {
           "cost": {
-            "dew": 18000
+            "dew": 6200
           },
-          "seconds": 7200
+          "seconds": 2880
         }
       },
       {
@@ -57,9 +57,9 @@
         },
         "research": {
           "cost": {
-            "dew": 60000
+            "dew": 9610
           },
-          "seconds": 21600
+          "seconds": 4608
         }
       },
       {
@@ -71,9 +71,9 @@
         },
         "research": {
           "cost": {
-            "dew": 150000
+            "dew": 14896
           },
-          "seconds": 43200
+          "seconds": 7373
         }
       },
       {
@@ -87,7 +87,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -101,7 +101,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -115,7 +115,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -129,7 +129,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -143,7 +143,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -157,7 +157,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -171,7 +171,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -185,7 +185,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -199,7 +199,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -213,7 +213,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -227,7 +227,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -241,7 +241,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -255,7 +255,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -269,7 +269,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -283,7 +283,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -306,7 +306,7 @@
       {
         "level": 1,
         "hp": 24,
-        "damage": 10,
+        "damage": 7,
         "cost": {
           "dew": 50
         }
@@ -314,13 +314,13 @@
       {
         "level": 2,
         "hp": 28,
-        "damage": 12,
+        "damage": 8.4,
         "cost": {
           "dew": 65
         },
         "research": {
           "cost": {
-            "dew": 5000
+            "dew": 4000
           },
           "seconds": 1800
         }
@@ -328,49 +328,49 @@
       {
         "level": 3,
         "hp": 32,
-        "damage": 13,
+        "damage": 9.1,
         "cost": {
           "dew": 85
         },
         "research": {
           "cost": {
-            "dew": 21500
+            "dew": 6200
           },
-          "seconds": 7200
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 37,
-        "damage": 16,
+        "damage": 11.2,
         "cost": {
           "dew": 110
         },
         "research": {
           "cost": {
-            "dew": 72000
+            "dew": 9610
           },
-          "seconds": 21600
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 43,
-        "damage": 18,
+        "damage": 12.6,
         "cost": {
           "dew": 145
         },
         "research": {
           "cost": {
-            "dew": 180000
+            "dew": 14896
           },
-          "seconds": 43200
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 50,
-        "damage": 21.003,
+        "damage": 14.7,
         "cost": {
           "dew": 186
         },
@@ -378,13 +378,13 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 58,
-        "damage": 24.364,
+        "damage": 17.1,
         "cost": {
           "dew": 241
         },
@@ -392,13 +392,13 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 68,
-        "damage": 28.262,
+        "damage": 19.8,
         "cost": {
           "dew": 314
         },
@@ -406,13 +406,13 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 79,
-        "damage": 32.784,
+        "damage": 22.9,
         "cost": {
           "dew": 408
         },
@@ -420,13 +420,13 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 91,
-        "damage": 38.03,
+        "damage": 26.6,
         "cost": {
           "dew": 530
         },
@@ -434,13 +434,13 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 106,
-        "damage": 44.114,
+        "damage": 30.9,
         "cost": {
           "dew": 689
         },
@@ -448,13 +448,13 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 123,
-        "damage": 51.173,
+        "damage": 35.8,
         "cost": {
           "dew": 896
         },
@@ -462,13 +462,13 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 142,
-        "damage": 59.36,
+        "damage": 41.6,
         "cost": {
           "dew": 1165
         },
@@ -476,13 +476,13 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 165,
-        "damage": 68.858,
+        "damage": 48.2,
         "cost": {
           "dew": 1514
         },
@@ -490,13 +490,13 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 15,
         "hp": 192,
-        "damage": 79.875,
+        "damage": 55.9,
         "cost": {
           "dew": 1969
         },
@@ -504,13 +504,13 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 16,
         "hp": 222,
-        "damage": 92.655,
+        "damage": 64.9,
         "cost": {
           "dew": 2559
         },
@@ -518,13 +518,13 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 17,
         "hp": 258,
-        "damage": 107.48,
+        "damage": 75.2,
         "cost": {
           "dew": 3327
         },
@@ -532,13 +532,13 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 18,
         "hp": 299,
-        "damage": 124.677,
+        "damage": 87.3,
         "cost": {
           "dew": 4325
         },
@@ -546,13 +546,13 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 19,
         "hp": 347,
-        "damage": 144.625,
+        "damage": 101.2,
         "cost": {
           "dew": 5623
         },
@@ -560,13 +560,13 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 20,
         "hp": 403,
-        "damage": 167.765,
+        "damage": 117.4,
         "cost": {
           "dew": 7310
         },
@@ -574,7 +574,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -609,7 +609,7 @@
         },
         "research": {
           "cost": {
-            "dew": 6000
+            "dew": 4000
           },
           "seconds": 1800
         }
@@ -623,9 +623,9 @@
         },
         "research": {
           "cost": {
-            "dew": 27000
+            "dew": 6200
           },
-          "seconds": 7200
+          "seconds": 2880
         }
       },
       {
@@ -637,9 +637,9 @@
         },
         "research": {
           "cost": {
-            "dew": 90000
+            "dew": 9610
           },
-          "seconds": 21600
+          "seconds": 4608
         }
       },
       {
@@ -651,9 +651,9 @@
         },
         "research": {
           "cost": {
-            "dew": 225000
+            "dew": 14896
           },
-          "seconds": 43200
+          "seconds": 7373
         }
       },
       {
@@ -667,7 +667,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -681,7 +681,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -695,7 +695,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -709,7 +709,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -723,7 +723,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -737,7 +737,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -751,7 +751,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -765,7 +765,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -779,7 +779,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -793,7 +793,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -807,7 +807,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -821,7 +821,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -835,7 +835,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -849,7 +849,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -863,7 +863,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -900,7 +900,7 @@
         },
         "research": {
           "cost": {
-            "dew": 7000
+            "dew": 4000
           },
           "seconds": 1800
         }
@@ -908,15 +908,15 @@
       {
         "level": 3,
         "hp": 90,
-        "damage": 50.25,
+        "damage": 50.3,
         "cost": {
           "dew": 675
         },
         "research": {
           "cost": {
-            "dew": 32500
+            "dew": 6200
           },
-          "seconds": 7200
+          "seconds": 2880
         }
       },
       {
@@ -928,29 +928,29 @@
         },
         "research": {
           "cost": {
-            "dew": 108000
+            "dew": 9610
           },
-          "seconds": 21600
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 122,
-        "damage": 68.25,
+        "damage": 68.3,
         "cost": {
           "dew": 1140
         },
         "research": {
           "cost": {
-            "dew": 270000
+            "dew": 14896
           },
-          "seconds": 43200
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 142,
-        "damage": 78.763,
+        "damage": 78.8,
         "cost": {
           "dew": 1485
         },
@@ -958,13 +958,13 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 164,
-        "damage": 91.365,
+        "damage": 91.4,
         "cost": {
           "dew": 1931
         },
@@ -972,13 +972,13 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 191,
-        "damage": 105.983,
+        "damage": 106,
         "cost": {
           "dew": 2510
         },
@@ -986,13 +986,13 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 221,
-        "damage": 122.941,
+        "damage": 123,
         "cost": {
           "dew": 3263
         },
@@ -1000,13 +1000,13 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 256,
-        "damage": 142.611,
+        "damage": 142.6,
         "cost": {
           "dew": 4242
         },
@@ -1014,13 +1014,13 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 298,
-        "damage": 165.429,
+        "damage": 165.4,
         "cost": {
           "dew": 5514
         },
@@ -1028,13 +1028,13 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 346,
-        "damage": 191.897,
+        "damage": 191.9,
         "cost": {
           "dew": 7169
         },
@@ -1042,13 +1042,13 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 400,
-        "damage": 222.601,
+        "damage": 222.6,
         "cost": {
           "dew": 9319
         },
@@ -1056,13 +1056,13 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 465,
-        "damage": 258.218,
+        "damage": 258.3,
         "cost": {
           "dew": 12115
         },
@@ -1070,13 +1070,13 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 15,
         "hp": 539,
-        "damage": 299.532,
+        "damage": 299.6,
         "cost": {
           "dew": 15750
         },
@@ -1084,13 +1084,13 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 16,
         "hp": 626,
-        "damage": 347.457,
+        "damage": 347.5,
         "cost": {
           "dew": 20474
         },
@@ -1098,13 +1098,13 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 17,
         "hp": 725,
-        "damage": 403.05,
+        "damage": 403,
         "cost": {
           "dew": 26617
         },
@@ -1112,13 +1112,13 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 18,
         "hp": 842,
-        "damage": 467.538,
+        "damage": 467.6,
         "cost": {
           "dew": 34602
         },
@@ -1126,13 +1126,13 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 19,
         "hp": 976,
-        "damage": 542.344,
+        "damage": 542.3,
         "cost": {
           "dew": 44982
         },
@@ -1140,13 +1140,13 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 20,
         "hp": 1132,
-        "damage": 629.12,
+        "damage": 629.1,
         "cost": {
           "dew": 58477
         },
@@ -1154,7 +1154,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -1189,7 +1189,7 @@
         },
         "research": {
           "cost": {
-            "dew": 6500
+            "dew": 4000
           },
           "seconds": 1800
         }
@@ -1203,9 +1203,9 @@
         },
         "research": {
           "cost": {
-            "dew": 29000
+            "dew": 6200
           },
-          "seconds": 7200
+          "seconds": 2880
         }
       },
       {
@@ -1217,9 +1217,9 @@
         },
         "research": {
           "cost": {
-            "dew": 96000
+            "dew": 9610
           },
-          "seconds": 21600
+          "seconds": 4608
         }
       },
       {
@@ -1231,9 +1231,9 @@
         },
         "research": {
           "cost": {
-            "dew": 240000
+            "dew": 14896
           },
-          "seconds": 43200
+          "seconds": 7373
         }
       },
       {
@@ -1247,7 +1247,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -1261,7 +1261,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -1275,7 +1275,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -1289,7 +1289,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -1303,7 +1303,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -1317,7 +1317,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -1331,7 +1331,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -1345,7 +1345,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1359,7 +1359,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1373,7 +1373,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1387,7 +1387,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1401,7 +1401,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1415,7 +1415,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1429,7 +1429,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1443,7 +1443,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -1480,7 +1480,7 @@
         },
         "research": {
           "cost": {
-            "dew": 5500
+            "dew": 4000
           },
           "seconds": 1800
         }
@@ -1494,9 +1494,9 @@
         },
         "research": {
           "cost": {
-            "dew": 24000
+            "dew": 6200
           },
-          "seconds": 7200
+          "seconds": 2880
         }
       },
       {
@@ -1508,9 +1508,9 @@
         },
         "research": {
           "cost": {
-            "dew": 80000
+            "dew": 9610
           },
-          "seconds": 21600
+          "seconds": 4608
         }
       },
       {
@@ -1522,9 +1522,9 @@
         },
         "research": {
           "cost": {
-            "dew": 200000
+            "dew": 14896
           },
-          "seconds": 43200
+          "seconds": 7373
         }
       },
       {
@@ -1538,7 +1538,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -1552,7 +1552,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -1566,7 +1566,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -1580,7 +1580,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -1594,7 +1594,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -1608,7 +1608,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -1622,7 +1622,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -1636,7 +1636,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1650,7 +1650,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1664,7 +1664,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1678,7 +1678,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1692,7 +1692,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1706,7 +1706,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1720,7 +1720,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1734,7 +1734,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -1749,7 +1749,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 32,
+    "trainSeconds": 27,
     "barracksLevel": 5,
     "unlockKeep": 4,
     "levelCapOffset": 2,
@@ -1793,7 +1793,7 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -1807,7 +1807,7 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -1821,7 +1821,7 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -1835,7 +1835,7 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -1849,7 +1849,7 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -1863,7 +1863,7 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -1877,7 +1877,7 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -1891,7 +1891,7 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -1905,7 +1905,7 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -1919,7 +1919,7 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -1933,7 +1933,7 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1947,7 +1947,7 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1961,7 +1961,7 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1975,7 +1975,7 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -1989,7 +1989,7 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -2003,14 +2003,14 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
   },
   "wind_step_assassin": {
     "name": "Wind-Step Assassin",
-    "description": "Dashes to a new target; the first hit after each dash deals triple damage.",
+    "description": "Dashes to a new target; the first hit after each dash deals double damage.",
     "housing": 1,
     "attackIntervalTicks": 10,
     "range": 0.6,
@@ -2018,14 +2018,14 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 51,
+    "trainSeconds": 36,
     "barracksLevel": 7,
     "unlockKeep": 7,
     "levelCapOffset": 4,
     "ability": "wind_step",
     "kit": {
       "dashSpeed": 2,
-      "firstHitMultiplier": 3
+      "firstHitMultiplier": 2
     },
     "levels": [
       {
@@ -2061,7 +2061,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -2075,7 +2075,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -2089,7 +2089,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -2103,7 +2103,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -2117,7 +2117,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -2131,7 +2131,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -2145,7 +2145,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -2159,7 +2159,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -2173,7 +2173,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -2187,7 +2187,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -2201,7 +2201,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -2215,7 +2215,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -2229,7 +2229,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -2243,7 +2243,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -2258,7 +2258,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 82,
+    "trainSeconds": 49,
     "barracksLevel": 9,
     "unlockKeep": 10,
     "levelCapOffset": 6,
@@ -2301,7 +2301,7 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -2315,7 +2315,7 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -2329,7 +2329,7 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -2343,7 +2343,7 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -2357,7 +2357,7 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -2371,7 +2371,7 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -2385,7 +2385,7 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -2399,7 +2399,7 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -2413,7 +2413,7 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -2427,7 +2427,7 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -2441,7 +2441,7 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -2455,7 +2455,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -2470,7 +2470,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 131,
+    "trainSeconds": 66,
     "barracksLevel": 11,
     "unlockKeep": 13,
     "levelCapOffset": 8,
@@ -2478,7 +2478,7 @@
     "kit": {
       "extraTargets": 2,
       "radius": 3,
-      "secondaryDamage": 0.5
+      "secondaryDamage": 0.35
     },
     "levels": [
       {
@@ -2514,7 +2514,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -2528,7 +2528,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -2542,7 +2542,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -2556,7 +2556,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -2570,7 +2570,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -2584,7 +2584,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -2598,7 +2598,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -2612,7 +2612,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -2626,7 +2626,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -2640,7 +2640,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ]
@@ -2655,7 +2655,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 32,
+    "trainSeconds": 27,
     "barracksLevel": 5,
     "unlockKeep": 4,
     "levelCapOffset": 2,
@@ -2669,7 +2669,7 @@
       {
         "level": 1,
         "hp": 34,
-        "damage": 14.233,
+        "damage": 10,
         "cost": {
           "dew": 100
         }
@@ -2677,7 +2677,7 @@
       {
         "level": 2,
         "hp": 40,
-        "damage": 16.511,
+        "damage": 11.6,
         "cost": {
           "dew": 130
         },
@@ -2691,7 +2691,7 @@
       {
         "level": 3,
         "hp": 46,
-        "damage": 19.152,
+        "damage": 13.4,
         "cost": {
           "dew": 169
         },
@@ -2699,13 +2699,13 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 53,
-        "damage": 22.217,
+        "damage": 15.6,
         "cost": {
           "dew": 220
         },
@@ -2713,13 +2713,13 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 62,
-        "damage": 25.771,
+        "damage": 18,
         "cost": {
           "dew": 286
         },
@@ -2727,13 +2727,13 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 72,
-        "damage": 29.895,
+        "damage": 20.9,
         "cost": {
           "dew": 371
         },
@@ -2741,13 +2741,13 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 83,
-        "damage": 34.678,
+        "damage": 24.3,
         "cost": {
           "dew": 483
         },
@@ -2755,13 +2755,13 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 97,
-        "damage": 40.226,
+        "damage": 28.2,
         "cost": {
           "dew": 627
         },
@@ -2769,13 +2769,13 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 112,
-        "damage": 46.662,
+        "damage": 32.7,
         "cost": {
           "dew": 816
         },
@@ -2783,13 +2783,13 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 130,
-        "damage": 54.128,
+        "damage": 37.9,
         "cost": {
           "dew": 1060
         },
@@ -2797,13 +2797,13 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 151,
-        "damage": 62.789,
+        "damage": 44,
         "cost": {
           "dew": 1379
         },
@@ -2811,13 +2811,13 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 175,
-        "damage": 72.835,
+        "damage": 51,
         "cost": {
           "dew": 1792
         },
@@ -2825,13 +2825,13 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 203,
-        "damage": 84.489,
+        "damage": 59.1,
         "cost": {
           "dew": 2330
         },
@@ -2839,13 +2839,13 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 235,
-        "damage": 98.007,
+        "damage": 68.6,
         "cost": {
           "dew": 3029
         },
@@ -2853,13 +2853,13 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 15,
         "hp": 273,
-        "damage": 113.688,
+        "damage": 79.6,
         "cost": {
           "dew": 3937
         },
@@ -2867,13 +2867,13 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 16,
         "hp": 317,
-        "damage": 131.878,
+        "damage": 92.3,
         "cost": {
           "dew": 5119
         },
@@ -2881,13 +2881,13 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 17,
         "hp": 367,
-        "damage": 152.979,
+        "damage": 107.1,
         "cost": {
           "dew": 6654
         },
@@ -2895,13 +2895,13 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 18,
         "hp": 426,
-        "damage": 177.455,
+        "damage": 124.2,
         "cost": {
           "dew": 8650
         },
@@ -2909,7 +2909,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -2926,7 +2926,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 51,
+    "trainSeconds": 36,
     "barracksLevel": 7,
     "unlockKeep": 7,
     "levelCapOffset": 4,
@@ -2939,7 +2939,7 @@
       {
         "level": 1,
         "hp": 48,
-        "damage": 19.926,
+        "damage": 13.9,
         "cost": {
           "dew": 200
         }
@@ -2947,7 +2947,7 @@
       {
         "level": 2,
         "hp": 55,
-        "damage": 23.115,
+        "damage": 16.2,
         "cost": {
           "dew": 260
         },
@@ -2961,7 +2961,7 @@
       {
         "level": 3,
         "hp": 64,
-        "damage": 26.813,
+        "damage": 18.8,
         "cost": {
           "dew": 338
         },
@@ -2969,13 +2969,13 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 75,
-        "damage": 31.103,
+        "damage": 21.8,
         "cost": {
           "dew": 439
         },
@@ -2983,13 +2983,13 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 87,
-        "damage": 36.08,
+        "damage": 25.3,
         "cost": {
           "dew": 571
         },
@@ -2997,13 +2997,13 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 100,
-        "damage": 41.852,
+        "damage": 29.3,
         "cost": {
           "dew": 743
         },
@@ -3011,13 +3011,13 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 117,
-        "damage": 48.549,
+        "damage": 34,
         "cost": {
           "dew": 965
         },
@@ -3025,13 +3025,13 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 135,
-        "damage": 56.317,
+        "damage": 39.4,
         "cost": {
           "dew": 1255
         },
@@ -3039,13 +3039,13 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 157,
-        "damage": 65.327,
+        "damage": 45.7,
         "cost": {
           "dew": 1631
         },
@@ -3053,13 +3053,13 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 182,
-        "damage": 75.78,
+        "damage": 53,
         "cost": {
           "dew": 2121
         },
@@ -3067,13 +3067,13 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 211,
-        "damage": 87.904,
+        "damage": 61.5,
         "cost": {
           "dew": 2757
         },
@@ -3081,13 +3081,13 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 245,
-        "damage": 101.969,
+        "damage": 71.4,
         "cost": {
           "dew": 3584
         },
@@ -3095,13 +3095,13 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 284,
-        "damage": 118.284,
+        "damage": 82.8,
         "cost": {
           "dew": 4660
         },
@@ -3109,13 +3109,13 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 329,
-        "damage": 137.21,
+        "damage": 96,
         "cost": {
           "dew": 6058
         },
@@ -3123,13 +3123,13 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 15,
         "hp": 382,
-        "damage": 159.163,
+        "damage": 111.4,
         "cost": {
           "dew": 7875
         },
@@ -3137,13 +3137,13 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 16,
         "hp": 443,
-        "damage": 184.629,
+        "damage": 129.2,
         "cost": {
           "dew": 10237
         },
@@ -3151,7 +3151,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -3168,7 +3168,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 82,
+    "trainSeconds": 49,
     "barracksLevel": 9,
     "unlockKeep": 10,
     "levelCapOffset": 6,
@@ -3181,7 +3181,7 @@
       {
         "level": 1,
         "hp": 67,
-        "damage": 27.897,
+        "damage": 19.5,
         "cost": {
           "dew": 400
         }
@@ -3189,7 +3189,7 @@
       {
         "level": 2,
         "hp": 78,
-        "damage": 32.361,
+        "damage": 22.7,
         "cost": {
           "dew": 520
         },
@@ -3203,7 +3203,7 @@
       {
         "level": 3,
         "hp": 90,
-        "damage": 37.538,
+        "damage": 26.3,
         "cost": {
           "dew": 676
         },
@@ -3211,13 +3211,13 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 105,
-        "damage": 43.544,
+        "damage": 30.5,
         "cost": {
           "dew": 879
         },
@@ -3225,13 +3225,13 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 121,
-        "damage": 50.512,
+        "damage": 35.4,
         "cost": {
           "dew": 1142
         },
@@ -3239,13 +3239,13 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 141,
-        "damage": 58.593,
+        "damage": 41,
         "cost": {
           "dew": 1485
         },
@@ -3253,13 +3253,13 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 163,
-        "damage": 67.968,
+        "damage": 47.6,
         "cost": {
           "dew": 1931
         },
@@ -3267,13 +3267,13 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 189,
-        "damage": 78.843,
+        "damage": 55.2,
         "cost": {
           "dew": 2510
         },
@@ -3281,13 +3281,13 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 219,
-        "damage": 91.458,
+        "damage": 64,
         "cost": {
           "dew": 3263
         },
@@ -3295,13 +3295,13 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 255,
-        "damage": 106.092,
+        "damage": 74.3,
         "cost": {
           "dew": 4242
         },
@@ -3309,13 +3309,13 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 295,
-        "damage": 123.066,
+        "damage": 86.1,
         "cost": {
           "dew": 5514
         },
@@ -3323,13 +3323,13 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 343,
-        "damage": 142.757,
+        "damage": 99.9,
         "cost": {
           "dew": 7169
         },
@@ -3337,13 +3337,13 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 397,
-        "damage": 165.598,
+        "damage": 115.9,
         "cost": {
           "dew": 9319
         },
@@ -3351,13 +3351,13 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 461,
-        "damage": 192.094,
+        "damage": 134.5,
         "cost": {
           "dew": 12115
         },
@@ -3365,7 +3365,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -3374,15 +3374,15 @@
   },
   "thousand_needle": {
     "name": "Thousand Needle",
-    "description": "Very long range and rapid fire; must stay behind cover.",
+    "description": "Long range (5 tiles) and rapid fire; must stay behind cover.",
     "housing": 1,
     "attackIntervalTicks": 5,
-    "range": 7,
+    "range": 5,
     "speed": 0.15,
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 131,
+    "trainSeconds": 66,
     "barracksLevel": 11,
     "unlockKeep": 13,
     "levelCapOffset": 8,
@@ -3392,7 +3392,7 @@
       {
         "level": 1,
         "hp": 94,
-        "damage": 19.528,
+        "damage": 8.2,
         "cost": {
           "dew": 800
         }
@@ -3400,7 +3400,7 @@
       {
         "level": 2,
         "hp": 109,
-        "damage": 22.652,
+        "damage": 9.5,
         "cost": {
           "dew": 1040
         },
@@ -3414,7 +3414,7 @@
       {
         "level": 3,
         "hp": 126,
-        "damage": 26.277,
+        "damage": 11,
         "cost": {
           "dew": 1352
         },
@@ -3422,13 +3422,13 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 146,
-        "damage": 30.481,
+        "damage": 12.8,
         "cost": {
           "dew": 1758
         },
@@ -3436,13 +3436,13 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 170,
-        "damage": 35.358,
+        "damage": 14.9,
         "cost": {
           "dew": 2285
         },
@@ -3450,13 +3450,13 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 197,
-        "damage": 41.015,
+        "damage": 17.2,
         "cost": {
           "dew": 2970
         },
@@ -3464,13 +3464,13 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 228,
-        "damage": 47.578,
+        "damage": 20,
         "cost": {
           "dew": 3861
         },
@@ -3478,13 +3478,13 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 265,
-        "damage": 55.19,
+        "damage": 23.2,
         "cost": {
           "dew": 5020
         },
@@ -3492,13 +3492,13 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 307,
-        "damage": 64.021,
+        "damage": 26.9,
         "cost": {
           "dew": 6526
         },
@@ -3506,13 +3506,13 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 356,
-        "damage": 74.264,
+        "damage": 31.2,
         "cost": {
           "dew": 8484
         },
@@ -3520,13 +3520,13 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 414,
-        "damage": 86.146,
+        "damage": 36.2,
         "cost": {
           "dew": 11029
         },
@@ -3534,13 +3534,13 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 480,
-        "damage": 99.93,
+        "damage": 42,
         "cost": {
           "dew": 14337
         },
@@ -3548,7 +3548,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ],
@@ -3565,7 +3565,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": false,
-    "trainSeconds": 160,
+    "trainSeconds": 135,
     "barracksLevel": 5,
     "unlockKeep": 4,
     "levelCapOffset": 2,
@@ -3609,7 +3609,7 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -3623,7 +3623,7 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -3637,7 +3637,7 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -3651,7 +3651,7 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -3665,7 +3665,7 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -3679,7 +3679,7 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -3693,7 +3693,7 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -3707,7 +3707,7 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -3721,7 +3721,7 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -3735,7 +3735,7 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -3749,7 +3749,7 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -3763,7 +3763,7 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -3777,7 +3777,7 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -3791,7 +3791,7 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -3805,7 +3805,7 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -3819,7 +3819,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -3834,7 +3834,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": false,
-    "trainSeconds": 256,
+    "trainSeconds": 182,
     "barracksLevel": 7,
     "unlockKeep": 7,
     "levelCapOffset": 4,
@@ -3877,7 +3877,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -3891,7 +3891,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -3905,7 +3905,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -3919,7 +3919,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -3933,7 +3933,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -3947,7 +3947,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -3961,7 +3961,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -3975,7 +3975,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -3989,7 +3989,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -4003,7 +4003,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -4017,7 +4017,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4031,7 +4031,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4045,7 +4045,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4059,7 +4059,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -4074,7 +4074,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": false,
-    "trainSeconds": 410,
+    "trainSeconds": 246,
     "barracksLevel": 9,
     "unlockKeep": 10,
     "levelCapOffset": 6,
@@ -4118,7 +4118,7 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -4132,7 +4132,7 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -4146,7 +4146,7 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -4160,7 +4160,7 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -4174,7 +4174,7 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -4188,7 +4188,7 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -4202,7 +4202,7 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -4216,7 +4216,7 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -4230,7 +4230,7 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -4244,7 +4244,7 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -4258,7 +4258,7 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4272,7 +4272,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -4287,7 +4287,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": false,
-    "trainSeconds": 655,
+    "trainSeconds": 332,
     "barracksLevel": 11,
     "unlockKeep": 13,
     "levelCapOffset": 8,
@@ -4329,7 +4329,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -4343,7 +4343,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -4357,7 +4357,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -4371,7 +4371,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -4385,7 +4385,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -4399,7 +4399,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -4413,7 +4413,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -4427,7 +4427,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -4441,7 +4441,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -4455,7 +4455,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ]
@@ -4470,7 +4470,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 64,
+    "trainSeconds": 54,
     "barracksLevel": 5,
     "unlockKeep": 4,
     "levelCapOffset": 2,
@@ -4513,7 +4513,7 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -4527,7 +4527,7 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -4541,7 +4541,7 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -4555,7 +4555,7 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -4569,7 +4569,7 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -4583,7 +4583,7 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -4597,7 +4597,7 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -4611,7 +4611,7 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -4625,7 +4625,7 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -4639,7 +4639,7 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -4653,7 +4653,7 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4667,7 +4667,7 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4681,7 +4681,7 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4695,7 +4695,7 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4709,7 +4709,7 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4723,7 +4723,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -4738,7 +4738,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 102,
+    "trainSeconds": 73,
     "barracksLevel": 7,
     "unlockKeep": 7,
     "levelCapOffset": 4,
@@ -4780,7 +4780,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -4794,7 +4794,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -4808,7 +4808,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -4822,7 +4822,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -4836,7 +4836,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -4850,7 +4850,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -4864,7 +4864,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -4878,7 +4878,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -4892,7 +4892,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -4906,7 +4906,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -4920,7 +4920,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4934,7 +4934,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4948,7 +4948,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -4962,7 +4962,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -4978,7 +4978,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 164,
+    "trainSeconds": 98,
     "barracksLevel": 9,
     "unlockKeep": 10,
     "levelCapOffset": 6,
@@ -5021,7 +5021,7 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -5035,7 +5035,7 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -5049,7 +5049,7 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -5063,7 +5063,7 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -5077,7 +5077,7 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -5091,7 +5091,7 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -5105,7 +5105,7 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -5119,7 +5119,7 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -5133,7 +5133,7 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -5147,7 +5147,7 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -5161,7 +5161,7 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5175,7 +5175,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -5191,7 +5191,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 262,
+    "trainSeconds": 133,
     "barracksLevel": 11,
     "unlockKeep": 13,
     "levelCapOffset": 8,
@@ -5235,7 +5235,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -5249,7 +5249,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -5263,7 +5263,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -5277,7 +5277,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -5291,7 +5291,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -5305,7 +5305,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -5319,7 +5319,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -5333,7 +5333,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -5347,7 +5347,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -5361,7 +5361,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ],
@@ -5377,7 +5377,7 @@
     "air": false,
     "prefers": "storage",
     "ignoresHedges": true,
-    "trainSeconds": 64,
+    "trainSeconds": 54,
     "barracksLevel": 6,
     "unlockKeep": 5,
     "levelCapOffset": 2,
@@ -5417,7 +5417,7 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -5431,7 +5431,7 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -5445,7 +5445,7 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -5459,7 +5459,7 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -5473,7 +5473,7 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -5487,7 +5487,7 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -5501,7 +5501,7 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -5515,7 +5515,7 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -5529,7 +5529,7 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -5543,7 +5543,7 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -5557,7 +5557,7 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5571,7 +5571,7 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5585,7 +5585,7 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5599,7 +5599,7 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5613,7 +5613,7 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5627,7 +5627,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -5642,7 +5642,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 102,
+    "trainSeconds": 73,
     "barracksLevel": 8,
     "unlockKeep": 8,
     "levelCapOffset": 4,
@@ -5682,7 +5682,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -5696,7 +5696,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -5710,7 +5710,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -5724,7 +5724,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -5738,7 +5738,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -5752,7 +5752,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -5766,7 +5766,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -5780,7 +5780,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -5794,7 +5794,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -5808,7 +5808,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -5822,7 +5822,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5836,7 +5836,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5850,7 +5850,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -5864,7 +5864,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -5879,7 +5879,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 164,
+    "trainSeconds": 98,
     "barracksLevel": 10,
     "unlockKeep": 11,
     "levelCapOffset": 6,
@@ -5921,7 +5921,7 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -5935,7 +5935,7 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -5949,7 +5949,7 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -5963,7 +5963,7 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -5977,7 +5977,7 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -5991,7 +5991,7 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -6005,7 +6005,7 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -6019,7 +6019,7 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -6033,7 +6033,7 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -6047,7 +6047,7 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -6061,7 +6061,7 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -6075,7 +6075,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -6091,7 +6091,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": true,
-    "trainSeconds": 262,
+    "trainSeconds": 133,
     "barracksLevel": 12,
     "unlockKeep": 14,
     "levelCapOffset": 8,
@@ -6135,7 +6135,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -6149,7 +6149,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -6163,7 +6163,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -6177,7 +6177,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -6191,7 +6191,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -6205,7 +6205,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -6219,7 +6219,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -6233,7 +6233,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -6247,7 +6247,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -6261,7 +6261,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ]
@@ -6276,7 +6276,7 @@
     "air": true,
     "prefers": "storage",
     "ignoresHedges": true,
-    "trainSeconds": 128,
+    "trainSeconds": 108,
     "barracksLevel": 6,
     "unlockKeep": 5,
     "levelCapOffset": 2,
@@ -6286,7 +6286,7 @@
       {
         "level": 1,
         "hp": 95,
-        "damage": 35.341,
+        "damage": 35.3,
         "cost": {
           "dew": 800
         }
@@ -6294,7 +6294,7 @@
       {
         "level": 2,
         "hp": 111,
-        "damage": 40.996,
+        "damage": 41,
         "cost": {
           "dew": 1040
         },
@@ -6308,7 +6308,7 @@
       {
         "level": 3,
         "hp": 128,
-        "damage": 47.555,
+        "damage": 47.6,
         "cost": {
           "dew": 1352
         },
@@ -6316,13 +6316,13 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 149,
-        "damage": 55.164,
+        "damage": 55.1,
         "cost": {
           "dew": 1758
         },
@@ -6330,13 +6330,13 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 173,
-        "damage": 63.99,
+        "damage": 64,
         "cost": {
           "dew": 2285
         },
@@ -6344,13 +6344,13 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 200,
-        "damage": 74.228,
+        "damage": 74.3,
         "cost": {
           "dew": 2970
         },
@@ -6358,13 +6358,13 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 233,
-        "damage": 86.105,
+        "damage": 86.1,
         "cost": {
           "dew": 3861
         },
@@ -6372,13 +6372,13 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 270,
-        "damage": 99.882,
+        "damage": 99.9,
         "cost": {
           "dew": 5020
         },
@@ -6386,13 +6386,13 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 313,
-        "damage": 115.863,
+        "damage": 115.8,
         "cost": {
           "dew": 6526
         },
@@ -6400,13 +6400,13 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 363,
-        "damage": 134.401,
+        "damage": 134.4,
         "cost": {
           "dew": 8484
         },
@@ -6414,13 +6414,13 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 421,
-        "damage": 155.905,
+        "damage": 155.9,
         "cost": {
           "dew": 11029
         },
@@ -6428,13 +6428,13 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 488,
-        "damage": 180.85,
+        "damage": 180.9,
         "cost": {
           "dew": 14337
         },
@@ -6442,13 +6442,13 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 567,
-        "damage": 209.786,
+        "damage": 209.8,
         "cost": {
           "dew": 18638
         },
@@ -6456,13 +6456,13 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 657,
-        "damage": 243.352,
+        "damage": 243.4,
         "cost": {
           "dew": 24230
         },
@@ -6470,13 +6470,13 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 15,
         "hp": 762,
-        "damage": 282.289,
+        "damage": 282.3,
         "cost": {
           "dew": 31499
         },
@@ -6484,13 +6484,13 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 16,
         "hp": 884,
-        "damage": 327.454,
+        "damage": 327.5,
         "cost": {
           "dew": 40949
         },
@@ -6498,13 +6498,13 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 17,
         "hp": 1026,
-        "damage": 379.847,
+        "damage": 379.8,
         "cost": {
           "dew": 53233
         },
@@ -6512,13 +6512,13 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 18,
         "hp": 1190,
-        "damage": 440.623,
+        "damage": 440.6,
         "cost": {
           "dew": 69203
         },
@@ -6526,7 +6526,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -6543,7 +6543,7 @@
     "air": true,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 205,
+    "trainSeconds": 146,
     "barracksLevel": 8,
     "unlockKeep": 8,
     "levelCapOffset": 4,
@@ -6559,7 +6559,7 @@
       {
         "level": 1,
         "hp": 134,
-        "damage": 49.477,
+        "damage": 49.5,
         "cost": {
           "dew": 1600
         }
@@ -6567,7 +6567,7 @@
       {
         "level": 2,
         "hp": 155,
-        "damage": 57.394,
+        "damage": 57.4,
         "cost": {
           "dew": 2080
         },
@@ -6581,7 +6581,7 @@
       {
         "level": 3,
         "hp": 180,
-        "damage": 66.578,
+        "damage": 66.6,
         "cost": {
           "dew": 2704
         },
@@ -6589,13 +6589,13 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 208,
-        "damage": 77.23,
+        "damage": 77.2,
         "cost": {
           "dew": 3515
         },
@@ -6603,13 +6603,13 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 242,
-        "damage": 89.586,
+        "damage": 89.6,
         "cost": {
           "dew": 4570
         },
@@ -6617,13 +6617,13 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 281,
-        "damage": 103.92,
+        "damage": 103.9,
         "cost": {
           "dew": 5941
         },
@@ -6631,13 +6631,13 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 325,
-        "damage": 120.547,
+        "damage": 120.5,
         "cost": {
           "dew": 7723
         },
@@ -6645,13 +6645,13 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 378,
-        "damage": 139.834,
+        "damage": 139.8,
         "cost": {
           "dew": 10040
         },
@@ -6659,13 +6659,13 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 438,
-        "damage": 162.208,
+        "damage": 162.2,
         "cost": {
           "dew": 13052
         },
@@ -6673,13 +6673,13 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 508,
-        "damage": 188.161,
+        "damage": 188.2,
         "cost": {
           "dew": 16967
         },
@@ -6687,13 +6687,13 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 590,
-        "damage": 218.267,
+        "damage": 218.3,
         "cost": {
           "dew": 22057
         },
@@ -6701,13 +6701,13 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 684,
-        "damage": 253.19,
+        "damage": 253.2,
         "cost": {
           "dew": 28675
         },
@@ -6715,13 +6715,13 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 793,
-        "damage": 293.701,
+        "damage": 293.7,
         "cost": {
           "dew": 37277
         },
@@ -6729,13 +6729,13 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 920,
-        "damage": 340.693,
+        "damage": 340.7,
         "cost": {
           "dew": 48460
         },
@@ -6743,13 +6743,13 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 15,
         "hp": 1067,
-        "damage": 395.203,
+        "damage": 395.2,
         "cost": {
           "dew": 62998
         },
@@ -6757,13 +6757,13 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 16,
         "hp": 1238,
-        "damage": 458.437,
+        "damage": 458.4,
         "cost": {
           "dew": 81897
         },
@@ -6771,7 +6771,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -6780,7 +6780,7 @@
   },
   "thunder_kite": {
     "name": "Thunder Kite",
-    "description": "Lightning hits a defense and up to three nearby defenses for 45% damage each.",
+    "description": "Lightning hits a defense and up to three nearby defenses for 35% damage each.",
     "housing": 4,
     "attackIntervalTicks": 10,
     "range": 0.5,
@@ -6788,7 +6788,7 @@
     "air": true,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 328,
+    "trainSeconds": 197,
     "barracksLevel": 10,
     "unlockKeep": 11,
     "levelCapOffset": 6,
@@ -6796,13 +6796,13 @@
     "kit": {
       "extraTargets": 3,
       "radius": 3,
-      "secondaryDamage": 0.45
+      "secondaryDamage": 0.35
     },
     "levels": [
       {
         "level": 1,
         "hp": 187,
-        "damage": 69.269,
+        "damage": 69.3,
         "cost": {
           "dew": 3200
         }
@@ -6810,7 +6810,7 @@
       {
         "level": 2,
         "hp": 217,
-        "damage": 80.352,
+        "damage": 80.3,
         "cost": {
           "dew": 4160
         },
@@ -6824,7 +6824,7 @@
       {
         "level": 3,
         "hp": 252,
-        "damage": 93.208,
+        "damage": 93.2,
         "cost": {
           "dew": 5408
         },
@@ -6832,13 +6832,13 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 292,
-        "damage": 108.121,
+        "damage": 108.1,
         "cost": {
           "dew": 7030
         },
@@ -6846,13 +6846,13 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 339,
-        "damage": 125.421,
+        "damage": 125.4,
         "cost": {
           "dew": 9140
         },
@@ -6860,13 +6860,13 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 393,
-        "damage": 145.488,
+        "damage": 145.5,
         "cost": {
           "dew": 11881
         },
@@ -6874,13 +6874,13 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 456,
-        "damage": 168.766,
+        "damage": 168.8,
         "cost": {
           "dew": 15446
         },
@@ -6888,13 +6888,13 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 529,
-        "damage": 195.769,
+        "damage": 195.7,
         "cost": {
           "dew": 20080
         },
@@ -6902,13 +6902,13 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 613,
-        "damage": 227.092,
+        "damage": 227.1,
         "cost": {
           "dew": 26103
         },
@@ -6916,13 +6916,13 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 711,
-        "damage": 263.426,
+        "damage": 263.4,
         "cost": {
           "dew": 33934
         },
@@ -6930,13 +6930,13 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 825,
-        "damage": 305.575,
+        "damage": 305.6,
         "cost": {
           "dew": 44115
         },
@@ -6944,13 +6944,13 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 957,
-        "damage": 354.466,
+        "damage": 354.4,
         "cost": {
           "dew": 57349
         },
@@ -6958,13 +6958,13 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 1110,
-        "damage": 411.181,
+        "damage": 411.2,
         "cost": {
           "dew": 74554
         },
@@ -6972,13 +6972,13 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 1288,
-        "damage": 476.97,
+        "damage": 477,
         "cost": {
           "dew": 96920
         },
@@ -6986,7 +6986,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -7003,21 +7003,21 @@
     "air": true,
     "prefers": "defense",
     "ignoresHedges": true,
-    "trainSeconds": 524,
+    "trainSeconds": 266,
     "barracksLevel": 12,
     "unlockKeep": 14,
     "levelCapOffset": 8,
     "ability": "armada",
     "kit": {
-      "extraTargets": 2,
-      "radius": 2,
+      "extraTargets": 3,
+      "radius": 2.5,
       "secondaryDamage": 0.35
     },
     "levels": [
       {
         "level": 1,
         "hp": 262,
-        "damage": 96.976,
+        "damage": 97,
         "cost": {
           "dew": 6400
         }
@@ -7025,7 +7025,7 @@
       {
         "level": 2,
         "hp": 304,
-        "damage": 112.493,
+        "damage": 112.5,
         "cost": {
           "dew": 8320
         },
@@ -7039,7 +7039,7 @@
       {
         "level": 3,
         "hp": 352,
-        "damage": 130.491,
+        "damage": 130.5,
         "cost": {
           "dew": 10816
         },
@@ -7047,13 +7047,13 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 409,
-        "damage": 151.369,
+        "damage": 151.4,
         "cost": {
           "dew": 14061
         },
@@ -7061,13 +7061,13 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 474,
-        "damage": 175.589,
+        "damage": 175.6,
         "cost": {
           "dew": 18279
         },
@@ -7075,13 +7075,13 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 550,
-        "damage": 203.683,
+        "damage": 203.7,
         "cost": {
           "dew": 23763
         },
@@ -7089,13 +7089,13 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 638,
-        "damage": 236.272,
+        "damage": 236.3,
         "cost": {
           "dew": 30892
         },
@@ -7103,13 +7103,13 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 740,
-        "damage": 274.076,
+        "damage": 274.1,
         "cost": {
           "dew": 40159
         },
@@ -7117,13 +7117,13 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 859,
-        "damage": 317.928,
+        "damage": 317.9,
         "cost": {
           "dew": 52207
         },
@@ -7131,13 +7131,13 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 996,
-        "damage": 368.797,
+        "damage": 368.8,
         "cost": {
           "dew": 67869
         },
@@ -7145,13 +7145,13 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 1155,
-        "damage": 427.804,
+        "damage": 427.8,
         "cost": {
           "dew": 88229
         },
@@ -7159,13 +7159,13 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 1340,
-        "damage": 496.253,
+        "damage": 496.3,
         "cost": {
           "dew": 114698
         },
@@ -7173,7 +7173,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ],
@@ -7185,7 +7185,7 @@
     "description": "Heals nearby warriors over time.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 3.0,
+    "range": 3,
     "speed": 0.15,
     "air": false,
     "prefers": "support",
@@ -7234,7 +7234,7 @@
           "cost": {
             "dew": 6200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -7248,7 +7248,7 @@
           "cost": {
             "dew": 9610
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -7262,7 +7262,7 @@
           "cost": {
             "dew": 14896
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -7276,7 +7276,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -7290,7 +7290,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -7304,7 +7304,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -7318,7 +7318,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -7332,7 +7332,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -7346,7 +7346,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -7360,7 +7360,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -7374,7 +7374,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7388,7 +7388,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7402,7 +7402,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7416,7 +7416,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7430,7 +7430,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7444,7 +7444,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7458,7 +7458,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7472,7 +7472,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -7482,12 +7482,12 @@
     "description": "Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 3.0,
+    "range": 3,
     "speed": 0.15,
     "air": false,
     "prefers": "support",
     "ignoresHedges": false,
-    "trainSeconds": 96,
+    "trainSeconds": 81,
     "barracksLevel": 6,
     "unlockKeep": 5,
     "levelCapOffset": 2,
@@ -7531,7 +7531,7 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -7545,7 +7545,7 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -7559,7 +7559,7 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -7573,7 +7573,7 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -7587,7 +7587,7 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -7601,7 +7601,7 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -7615,7 +7615,7 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -7629,7 +7629,7 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -7643,7 +7643,7 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -7657,7 +7657,7 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -7671,7 +7671,7 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7685,7 +7685,7 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7699,7 +7699,7 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7713,7 +7713,7 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7727,7 +7727,7 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7741,7 +7741,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -7751,12 +7751,12 @@
     "description": "Wraps nearby warriors in thin mist (a small moving smoke cloud).",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 3.0,
+    "range": 3,
     "speed": 0.15,
     "air": false,
     "prefers": "support",
     "ignoresHedges": false,
-    "trainSeconds": 154,
+    "trainSeconds": 109,
     "barracksLevel": 8,
     "unlockKeep": 8,
     "levelCapOffset": 4,
@@ -7801,7 +7801,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -7815,7 +7815,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -7829,7 +7829,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -7843,7 +7843,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -7857,7 +7857,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -7871,7 +7871,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -7885,7 +7885,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -7899,7 +7899,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -7913,7 +7913,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -7927,7 +7927,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -7941,7 +7941,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7955,7 +7955,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7969,7 +7969,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -7983,7 +7983,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -7993,12 +7993,12 @@
     "description": "Brings one fallen warrior back to its feet.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 3.0,
+    "range": 3,
     "speed": 0.15,
     "air": false,
     "prefers": "support",
     "ignoresHedges": false,
-    "trainSeconds": 246,
+    "trainSeconds": 148,
     "barracksLevel": 10,
     "unlockKeep": 11,
     "levelCapOffset": 6,
@@ -8041,7 +8041,7 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -8055,7 +8055,7 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -8069,7 +8069,7 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -8083,7 +8083,7 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -8097,7 +8097,7 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -8111,7 +8111,7 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -8125,7 +8125,7 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -8139,7 +8139,7 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -8153,7 +8153,7 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -8167,7 +8167,7 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -8181,7 +8181,7 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8195,7 +8195,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -8206,12 +8206,12 @@
     "description": "Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 3.0,
+    "range": 3,
     "speed": 0.15,
     "air": false,
     "prefers": "support",
     "ignoresHedges": false,
-    "trainSeconds": 393,
+    "trainSeconds": 199,
     "barracksLevel": 12,
     "unlockKeep": 14,
     "levelCapOffset": 8,
@@ -8255,7 +8255,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -8269,7 +8269,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -8283,7 +8283,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -8297,7 +8297,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -8311,7 +8311,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -8325,7 +8325,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -8339,7 +8339,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -8353,7 +8353,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -8367,7 +8367,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -8381,7 +8381,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ],
@@ -8392,7 +8392,7 @@
     "description": "Four times damage against walls and gates.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 1.0,
+    "range": 1,
     "speed": 0.12,
     "air": false,
     "prefers": "walls",
@@ -8439,7 +8439,7 @@
           "cost": {
             "dew": 6200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -8453,7 +8453,7 @@
           "cost": {
             "dew": 9610
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -8467,7 +8467,7 @@
           "cost": {
             "dew": 14896
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -8481,7 +8481,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -8495,7 +8495,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -8509,7 +8509,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -8523,7 +8523,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -8537,7 +8537,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -8551,7 +8551,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -8565,7 +8565,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -8579,7 +8579,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8593,7 +8593,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8607,7 +8607,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8621,7 +8621,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8635,7 +8635,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8649,7 +8649,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8663,7 +8663,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8677,7 +8677,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -8687,12 +8687,12 @@
     "description": "Short-range fire that burns a small area of buildings.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 1.0,
+    "range": 1,
     "speed": 0.12,
     "air": false,
     "prefers": "walls",
     "ignoresHedges": false,
-    "trainSeconds": 96,
+    "trainSeconds": 81,
     "barracksLevel": 6,
     "unlockKeep": 6,
     "levelCapOffset": 2,
@@ -8738,7 +8738,7 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -8752,7 +8752,7 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -8766,7 +8766,7 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -8780,7 +8780,7 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -8794,7 +8794,7 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -8808,7 +8808,7 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -8822,7 +8822,7 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -8836,7 +8836,7 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -8850,7 +8850,7 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -8864,7 +8864,7 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -8878,7 +8878,7 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8892,7 +8892,7 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8906,7 +8906,7 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8920,7 +8920,7 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8934,7 +8934,7 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -8948,7 +8948,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -8960,12 +8960,12 @@
     "description": "Runs to the nearest wall or defense and explodes.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 1.0,
+    "range": 1,
     "speed": 0.12,
     "air": false,
     "prefers": "breach",
     "ignoresHedges": false,
-    "trainSeconds": 154,
+    "trainSeconds": 109,
     "barracksLevel": 8,
     "unlockKeep": 9,
     "levelCapOffset": 4,
@@ -9011,7 +9011,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -9025,7 +9025,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -9039,7 +9039,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -9053,7 +9053,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -9067,7 +9067,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -9081,7 +9081,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -9095,7 +9095,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -9109,7 +9109,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -9123,7 +9123,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -9137,7 +9137,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -9151,7 +9151,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9165,7 +9165,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9179,7 +9179,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9193,22 +9193,22 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
   },
   "siege_bombardier": {
     "name": "Siege Bombardier",
-    "description": "Artillery with 11-tile range. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing.",
+    "description": "Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; still inside a Cannon's reach, and a Longbow Yagura hunts it.",
     "housing": 3,
     "attackIntervalTicks": 25,
-    "range": 11,
+    "range": 5,
     "speed": 0.12,
     "air": false,
-    "prefers": "walls",
+    "prefers": "defense",
     "ignoresHedges": false,
-    "trainSeconds": 246,
+    "trainSeconds": 148,
     "barracksLevel": 11,
     "unlockKeep": 12,
     "levelCapOffset": 6,
@@ -9218,7 +9218,7 @@
       {
         "level": 1,
         "hp": 269,
-        "damage": 224.567,
+        "damage": 112.3,
         "cost": {
           "dew": 480
         }
@@ -9226,7 +9226,7 @@
       {
         "level": 2,
         "hp": 313,
-        "damage": 260.498,
+        "damage": 130.2,
         "cost": {
           "dew": 624
         },
@@ -9240,7 +9240,7 @@
       {
         "level": 3,
         "hp": 363,
-        "damage": 302.178,
+        "damage": 151.1,
         "cost": {
           "dew": 811
         },
@@ -9248,13 +9248,13 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 421,
-        "damage": 350.526,
+        "damage": 175.3,
         "cost": {
           "dew": 1055
         },
@@ -9262,13 +9262,13 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 488,
-        "damage": 406.61,
+        "damage": 203.3,
         "cost": {
           "dew": 1371
         },
@@ -9276,13 +9276,13 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 566,
-        "damage": 471.668,
+        "damage": 235.8,
         "cost": {
           "dew": 1782
         },
@@ -9290,13 +9290,13 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 657,
-        "damage": 547.135,
+        "damage": 273.6,
         "cost": {
           "dew": 2317
         },
@@ -9304,13 +9304,13 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 762,
-        "damage": 634.677,
+        "damage": 317.3,
         "cost": {
           "dew": 3012
         },
@@ -9318,13 +9318,13 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 883,
-        "damage": 736.225,
+        "damage": 368.1,
         "cost": {
           "dew": 3916
         },
@@ -9332,13 +9332,13 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 1025,
-        "damage": 854.021,
+        "damage": 427,
         "cost": {
           "dew": 5090
         },
@@ -9346,13 +9346,13 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 1189,
-        "damage": 990.664,
+        "damage": 495.3,
         "cost": {
           "dew": 6617
         },
@@ -9360,13 +9360,13 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 1379,
-        "damage": 1149.17,
+        "damage": 574.6,
         "cost": {
           "dew": 8602
         },
@@ -9374,13 +9374,13 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 1600,
-        "damage": 1333.038,
+        "damage": 666.5,
         "cost": {
           "dew": 11183
         },
@@ -9388,13 +9388,13 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 1856,
-        "damage": 1546.324,
+        "damage": 773.2,
         "cost": {
           "dew": 14538
         },
@@ -9402,7 +9402,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -9414,12 +9414,12 @@
     "description": "Huge splash that leaves burning ground.",
     "housing": 3,
     "attackIntervalTicks": 10,
-    "range": 1.0,
+    "range": 1,
     "speed": 0.12,
     "air": false,
     "prefers": "walls",
     "ignoresHedges": false,
-    "trainSeconds": 393,
+    "trainSeconds": 199,
     "barracksLevel": 13,
     "unlockKeep": 15,
     "levelCapOffset": 8,
@@ -9465,7 +9465,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -9479,7 +9479,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -9493,7 +9493,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -9507,7 +9507,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -9521,7 +9521,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -9535,7 +9535,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -9549,7 +9549,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -9563,7 +9563,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -9577,7 +9577,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -9591,7 +9591,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ],
@@ -9651,7 +9651,7 @@
           "cost": {
             "dew": 6200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -9665,7 +9665,7 @@
           "cost": {
             "dew": 9610
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -9679,7 +9679,7 @@
           "cost": {
             "dew": 14896
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -9693,7 +9693,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -9707,7 +9707,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -9721,7 +9721,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -9735,7 +9735,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -9749,7 +9749,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -9763,7 +9763,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -9777,7 +9777,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -9791,7 +9791,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9805,7 +9805,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9819,7 +9819,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9833,7 +9833,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9847,7 +9847,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9861,7 +9861,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9875,7 +9875,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -9889,7 +9889,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -9904,7 +9904,7 @@
     "air": false,
     "prefers": "defense",
     "ignoresHedges": false,
-    "trainSeconds": 96,
+    "trainSeconds": 81,
     "barracksLevel": 6,
     "unlockKeep": 6,
     "levelCapOffset": 2,
@@ -9917,7 +9917,7 @@
       {
         "level": 1,
         "hp": 237,
-        "damage": 29.624,
+        "damage": 17.8,
         "cost": {
           "dew": 120
         }
@@ -9925,7 +9925,7 @@
       {
         "level": 2,
         "hp": 275,
-        "damage": 34.364,
+        "damage": 20.6,
         "cost": {
           "dew": 156
         },
@@ -9939,7 +9939,7 @@
       {
         "level": 3,
         "hp": 319,
-        "damage": 39.862,
+        "damage": 23.9,
         "cost": {
           "dew": 203
         },
@@ -9947,13 +9947,13 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
         "level": 4,
         "hp": 370,
-        "damage": 46.24,
+        "damage": 27.7,
         "cost": {
           "dew": 264
         },
@@ -9961,13 +9961,13 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
         "level": 5,
         "hp": 429,
-        "damage": 53.639,
+        "damage": 32.2,
         "cost": {
           "dew": 343
         },
@@ -9975,13 +9975,13 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
         "level": 6,
         "hp": 498,
-        "damage": 62.221,
+        "damage": 37.3,
         "cost": {
           "dew": 446
         },
@@ -9989,13 +9989,13 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
         "level": 7,
         "hp": 577,
-        "damage": 72.176,
+        "damage": 43.3,
         "cost": {
           "dew": 579
         },
@@ -10003,13 +10003,13 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
         "level": 8,
         "hp": 670,
-        "damage": 83.725,
+        "damage": 50.2,
         "cost": {
           "dew": 753
         },
@@ -10017,13 +10017,13 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
         "level": 9,
         "hp": 777,
-        "damage": 97.121,
+        "damage": 58.3,
         "cost": {
           "dew": 979
         },
@@ -10031,13 +10031,13 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
         "level": 10,
         "hp": 901,
-        "damage": 112.66,
+        "damage": 67.6,
         "cost": {
           "dew": 1273
         },
@@ -10045,13 +10045,13 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
         "level": 11,
         "hp": 1045,
-        "damage": 130.685,
+        "damage": 78.4,
         "cost": {
           "dew": 1654
         },
@@ -10059,13 +10059,13 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
         "level": 12,
         "hp": 1213,
-        "damage": 151.595,
+        "damage": 91,
         "cost": {
           "dew": 2151
         },
@@ -10073,13 +10073,13 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
         "level": 13,
         "hp": 1407,
-        "damage": 175.85,
+        "damage": 105.5,
         "cost": {
           "dew": 2796
         },
@@ -10087,13 +10087,13 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 14,
         "hp": 1632,
-        "damage": 203.986,
+        "damage": 122.4,
         "cost": {
           "dew": 3635
         },
@@ -10101,13 +10101,13 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 15,
         "hp": 1893,
-        "damage": 236.624,
+        "damage": 142,
         "cost": {
           "dew": 4725
         },
@@ -10115,13 +10115,13 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 16,
         "hp": 2196,
-        "damage": 274.484,
+        "damage": 164.7,
         "cost": {
           "dew": 6142
         },
@@ -10129,13 +10129,13 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 17,
         "hp": 2547,
-        "damage": 318.401,
+        "damage": 191,
         "cost": {
           "dew": 7985
         },
@@ -10143,13 +10143,13 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
         "level": 18,
         "hp": 2955,
-        "damage": 369.346,
+        "damage": 221.6,
         "cost": {
           "dew": 10380
         },
@@ -10157,7 +10157,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -10174,7 +10174,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 154,
+    "trainSeconds": 109,
     "barracksLevel": 8,
     "unlockKeep": 9,
     "levelCapOffset": 4,
@@ -10216,7 +10216,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -10230,7 +10230,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -10244,7 +10244,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -10258,7 +10258,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -10272,7 +10272,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -10286,7 +10286,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -10300,7 +10300,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -10314,7 +10314,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -10328,7 +10328,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -10342,7 +10342,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -10356,7 +10356,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -10370,7 +10370,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -10384,7 +10384,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -10398,7 +10398,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ],
@@ -10414,7 +10414,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 246,
+    "trainSeconds": 148,
     "barracksLevel": 11,
     "unlockKeep": 12,
     "levelCapOffset": 6,
@@ -10456,7 +10456,7 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -10470,7 +10470,7 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -10484,7 +10484,7 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -10498,7 +10498,7 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -10512,7 +10512,7 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -10526,7 +10526,7 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -10540,7 +10540,7 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -10554,7 +10554,7 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -10568,7 +10568,7 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -10582,7 +10582,7 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -10596,7 +10596,7 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -10610,7 +10610,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -10625,7 +10625,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 393,
+    "trainSeconds": 199,
     "barracksLevel": 13,
     "unlockKeep": 15,
     "levelCapOffset": 8,
@@ -10668,7 +10668,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -10682,7 +10682,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -10696,7 +10696,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -10710,7 +10710,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -10724,7 +10724,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -10738,7 +10738,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -10752,7 +10752,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -10766,7 +10766,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -10780,7 +10780,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -10794,7 +10794,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ]
@@ -10851,7 +10851,7 @@
           "cost": {
             "dew": 6200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -10865,7 +10865,7 @@
           "cost": {
             "dew": 9610
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -10879,7 +10879,7 @@
           "cost": {
             "dew": 14896
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -10893,7 +10893,7 @@
           "cost": {
             "dew": 23088
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -10907,7 +10907,7 @@
           "cost": {
             "dew": 35786
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -10921,7 +10921,7 @@
           "cost": {
             "dew": 55469
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -10935,7 +10935,7 @@
           "cost": {
             "dew": 85977
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -10949,7 +10949,7 @@
           "cost": {
             "dew": 133264
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -10963,7 +10963,7 @@
           "cost": {
             "dew": 206560
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -10977,7 +10977,7 @@
           "cost": {
             "dew": 320167
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -10991,7 +10991,7 @@
           "cost": {
             "dew": 496259
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11005,7 +11005,7 @@
           "cost": {
             "dew": 769202
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11019,7 +11019,7 @@
           "cost": {
             "dew": 1192263
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11033,7 +11033,7 @@
           "cost": {
             "dew": 1848008
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11047,7 +11047,7 @@
           "cost": {
             "dew": 2864412
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11061,7 +11061,7 @@
           "cost": {
             "dew": 4439838
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11075,7 +11075,7 @@
           "cost": {
             "dew": 6881750
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11089,7 +11089,7 @@
           "cost": {
             "dew": 10666712
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -11104,7 +11104,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 64,
+    "trainSeconds": 54,
     "barracksLevel": 6,
     "unlockKeep": 6,
     "levelCapOffset": 2,
@@ -11146,7 +11146,7 @@
           "cost": {
             "dew": 18600
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -11160,7 +11160,7 @@
           "cost": {
             "dew": 28830
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -11174,7 +11174,7 @@
           "cost": {
             "dew": 44687
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -11188,7 +11188,7 @@
           "cost": {
             "dew": 69264
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -11202,7 +11202,7 @@
           "cost": {
             "dew": 107359
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -11216,7 +11216,7 @@
           "cost": {
             "dew": 166407
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -11230,7 +11230,7 @@
           "cost": {
             "dew": 257931
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -11244,7 +11244,7 @@
           "cost": {
             "dew": 399793
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -11258,7 +11258,7 @@
           "cost": {
             "dew": 619679
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -11272,7 +11272,7 @@
           "cost": {
             "dew": 960502
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -11286,7 +11286,7 @@
           "cost": {
             "dew": 1488778
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11300,7 +11300,7 @@
           "cost": {
             "dew": 2307606
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11314,7 +11314,7 @@
           "cost": {
             "dew": 3576789
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11328,7 +11328,7 @@
           "cost": {
             "dew": 5544023
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11342,7 +11342,7 @@
           "cost": {
             "dew": 8593236
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11356,7 +11356,7 @@
           "cost": {
             "dew": 13319515
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -11371,7 +11371,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 102,
+    "trainSeconds": 73,
     "barracksLevel": 8,
     "unlockKeep": 9,
     "levelCapOffset": 4,
@@ -11413,7 +11413,7 @@
           "cost": {
             "dew": 55800
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -11427,7 +11427,7 @@
           "cost": {
             "dew": 86490
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -11441,7 +11441,7 @@
           "cost": {
             "dew": 134060
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -11455,7 +11455,7 @@
           "cost": {
             "dew": 207792
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -11469,7 +11469,7 @@
           "cost": {
             "dew": 322078
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -11483,7 +11483,7 @@
           "cost": {
             "dew": 499221
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -11497,7 +11497,7 @@
           "cost": {
             "dew": 773792
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -11511,7 +11511,7 @@
           "cost": {
             "dew": 1199378
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -11525,7 +11525,7 @@
           "cost": {
             "dew": 1859036
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -11539,7 +11539,7 @@
           "cost": {
             "dew": 2881506
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -11553,7 +11553,7 @@
           "cost": {
             "dew": 4466334
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11567,7 +11567,7 @@
           "cost": {
             "dew": 6922817
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11581,7 +11581,7 @@
           "cost": {
             "dew": 10730367
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11595,7 +11595,7 @@
           "cost": {
             "dew": 16632069
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -11610,7 +11610,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 164,
+    "trainSeconds": 98,
     "barracksLevel": 11,
     "unlockKeep": 12,
     "levelCapOffset": 6,
@@ -11653,7 +11653,7 @@
           "cost": {
             "dew": 167400
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -11667,7 +11667,7 @@
           "cost": {
             "dew": 259470
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -11681,7 +11681,7 @@
           "cost": {
             "dew": 402179
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -11695,7 +11695,7 @@
           "cost": {
             "dew": 623377
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -11709,7 +11709,7 @@
           "cost": {
             "dew": 966234
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -11723,7 +11723,7 @@
           "cost": {
             "dew": 1497662
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -11737,7 +11737,7 @@
           "cost": {
             "dew": 2321377
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -11751,7 +11751,7 @@
           "cost": {
             "dew": 3598134
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -11765,7 +11765,7 @@
           "cost": {
             "dew": 5577108
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -11779,7 +11779,7 @@
           "cost": {
             "dew": 8644517
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       },
       {
@@ -11793,7 +11793,7 @@
           "cost": {
             "dew": 13399001
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       },
       {
@@ -11807,7 +11807,7 @@
           "cost": {
             "dew": 20768452
           },
-          "seconds": 604800
+          "seconds": 216000
         }
       }
     ]
@@ -11822,7 +11822,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 262,
+    "trainSeconds": 133,
     "barracksLevel": 13,
     "unlockKeep": 15,
     "levelCapOffset": 8,
@@ -11867,7 +11867,7 @@
           "cost": {
             "dew": 502200
           },
-          "seconds": 3420
+          "seconds": 2880
         }
       },
       {
@@ -11881,7 +11881,7 @@
           "cost": {
             "dew": 778410
           },
-          "seconds": 6498
+          "seconds": 4608
         }
       },
       {
@@ -11895,7 +11895,7 @@
           "cost": {
             "dew": 1206536
           },
-          "seconds": 12346
+          "seconds": 7373
         }
       },
       {
@@ -11909,7 +11909,7 @@
           "cost": {
             "dew": 1870130
           },
-          "seconds": 23458
+          "seconds": 11796
         }
       },
       {
@@ -11923,7 +11923,7 @@
           "cost": {
             "dew": 2898702
           },
-          "seconds": 44570
+          "seconds": 18874
         }
       },
       {
@@ -11937,7 +11937,7 @@
           "cost": {
             "dew": 4492987
           },
-          "seconds": 84683
+          "seconds": 30199
         }
       },
       {
@@ -11951,7 +11951,7 @@
           "cost": {
             "dew": 6964130
           },
-          "seconds": 160897
+          "seconds": 48318
         }
       },
       {
@@ -11965,7 +11965,7 @@
           "cost": {
             "dew": 10794402
           },
-          "seconds": 305704
+          "seconds": 77309
         }
       },
       {
@@ -11979,7 +11979,7 @@
           "cost": {
             "dew": 16731323
           },
-          "seconds": 580838
+          "seconds": 123695
         }
       },
       {
@@ -11993,7 +11993,7 @@
           "cost": {
             "dew": 25933551
           },
-          "seconds": 604800
+          "seconds": 197912
         }
       }
     ]

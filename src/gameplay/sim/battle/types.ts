@@ -39,6 +39,17 @@ export interface BattleSetup {
   infiltration?: boolean;
   /** The attacker's researched troop levels (missing troops, or a missing map, mean level 1). */
   levels?: Record<string, number>;
+  /**
+   * Donated (Alliance Lodge) troops in `army`, with the level they were donated
+   * at. The first `count` of that type deployed fight at this level; the rest at
+   * `levels`. Absent on battles from before donated levels were kept.
+   */
+  reinforcements?: Record<string, { count: number; level: number }>;
+}
+
+/** Buildings being upgraded take no part in a battle: they don't fire, and their counter effect is off. */
+export function activeInBattle(b: BaseBuilding): boolean {
+  return !b.upgrading;
 }
 
 export interface Deployment {
@@ -80,4 +91,23 @@ export interface BattleRecord {
   eventBonus?: Cost;
   /** A raid made up by the offline raid simulation (not a real player). */
   simulated?: boolean;
+  /**
+   * Attacks: what really reached storage (battle loot plus bonuses, capped by
+   * storage), and what was won but did not fit. `result.loot` stays the
+   * battle's own loot. Older records kept the banked total in `result.loot`.
+   */
+  banked?: Cost;
+  overflow?: Cost;
+  /**
+   * The battle rules (SIM_RULES) the fight was recorded under. A replay is only
+   * shown when it matches the current rules; absent = recorded before rules were versioned.
+   */
+  rules?: number;
+  /** Online attacks: the server ticket, and whether the server has confirmed or refused it yet. */
+  ticket?: string;
+  settlement?: 'pending' | 'confirmed' | 'rejected';
+  /** Why the server refused it (the attack then counts as practice: no loot, no honor). */
+  rejected?: string;
+  /** An Alliance War attack (no loot or honor; stars count for the war). */
+  war?: boolean;
 }

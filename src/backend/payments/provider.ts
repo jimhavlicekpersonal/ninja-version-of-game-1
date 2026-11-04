@@ -1,6 +1,8 @@
 /**
- * All real-money purchases go through a PaymentProvider. The web build uses
- * MockPaymentProvider (instant success). Phase 6 adds StoreKit for iOS.
+ * All real-money purchases go through a PaymentProvider: StoreKit on iPhone,
+ * none yet on Android or the public web build (UnavailablePaymentProvider).
+ * MockPaymentProvider (instant success, no money) is used only in the testing
+ * sandbox and in tests, never with a real save or a server (see main.ts).
  */
 export type PaymentResult = { ok: true; transactionId: string } | { ok: false; reason: 'cancelled' | 'failed' | 'unavailable'; message: string };
 

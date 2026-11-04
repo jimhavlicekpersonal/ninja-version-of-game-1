@@ -103,7 +103,7 @@
   "abilities": {
     "smoke_bomb": {
       "name": "Smoke Bomb",
-      "description": "Throw anywhere on the map. For 8 seconds, defenses can only target troops inside the cloud from close range.",
+      "description": "Throw it over your warriors as they walk into a defense's range. For 8 seconds, warriors inside the cloud can only be shot from close up (Night Blades also hit buildings inside it twice as hard).",
       "radius": 3,
       "durationTicks": 80,
       "rangeFactor": 0.4,
@@ -127,6 +127,7 @@
   },
   "warriorRules": {
     "supportIntervalTicks": 10,
+    "supportAllyTries": 3,
     "defaultAuraRadius": 3,
     "abilityCooldownTicks": 60,
     "shieldCooldownTicks": 100,
