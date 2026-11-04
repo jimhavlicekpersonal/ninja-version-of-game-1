@@ -57,7 +57,9 @@ export type ErrorCode =
   /** 404: this player's village is not kept on the server (it lives on the device). */
   | 'no_village'
   /** 403: the purchase is not allowed (the under-18 monthly cap, or purchases not set up on this server); nothing was charged. */
-  | 'purchase_refused';
+  | 'purchase_refused'
+  /** 403: staff suspended this account from online play (the message says why and until when). */
+  | 'banned';
 
 export interface ErrorBody {
   error: ErrorCode;
@@ -127,6 +129,8 @@ export interface HelloResponse {
   features: string[];
   /** 'staging' or 'development' on a test server (the game says so in Settings); absent or 'production' otherwise. */
   environment?: string;
+  /** A message from the operators for every player (maintenance, an incident), shown in Settings → Online play. */
+  notice?: string;
 }
 
 export interface RegisterRequest {

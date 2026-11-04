@@ -1,0 +1,67 @@
+# Alert rules for the Kagemura server (roadmap step 47), for Prometheus or
+# Grafana Cloud (import as a rule file). The server serves these metrics at
+# /metrics to METRICS_TOKEN (server/observability.ts, METRIC_HELP).
+# Thresholds are starting points: tune them after a few weeks of real traffic.
+groups:
+  - name: kagemura-server
+    rules:
+      - alert: ServerDown
+        expr: up{job="kagemura"} == 0
+        for: 3m
+        labels: { severity: page }
+        annotations:
+          summary: 'A Kagemura server instance is not answering /metrics.'
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(tk_http_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(tk_http_requests_total[5m])), 1e-9) > 0.02
+        for: 10m
+        labels: { severity: page }
+        annotations:
+          summary: 'More than 2% of requests fail with a server error.'
+
+      - alert: SlowResponses
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(tk_http_request_duration_ms_bucket[5m]))) > 1000
+        for: 10m
+        labels: { severity: warn }
+        annotations:
+          summary: '95% of requests take longer than 1 s (re-simulation or the database).'
+
+      - alert: EventLoopBlocked
+        expr: max(tk_event_loop_delay_ms{quantile="0.99"}) > 250
+        for: 10m
+        labels: { severity: warn }
+        annotations:
+          summary: 'The event loop is blocked for >250 ms at p99: battle re-simulation needs the worker pool (roadmap step 57) or more instances.'
+
+      - alert: DatabasePoolSaturated
+        expr: max(tk_db_pool_connections{state="waiting"}) > 0
+        for: 5m
+        labels: { severity: warn }
+        annotations:
+          summary: 'Requests are waiting for a database connection.'
+
+      - alert: RefundSpike
+        expr: |
+          sum(increase(tk_refunds_total[24h])) > 5
+            and sum(increase(tk_refunds_total[24h])) / clamp_min(sum(increase(tk_purchases_total[24h])), 1) > 0.1
+        labels: { severity: warn }
+        annotations:
+          summary: 'More than 10% of purchases were refunded in the last day (abuse, or a delivery bug).'
+
+      - alert: DesyncsRising
+        expr: |
+          sum(rate(tk_desyncs_total[30m])) / clamp_min(sum(rate(tk_battles_total[30m])), 1e-9) > 0.01
+        for: 15m
+        labels: { severity: warn }
+        annotations:
+          summary: 'More than 1% of battles desync between game and server (a release with different rules?).'
+
+      - alert: RateLimitStorm
+        expr: sum(rate(tk_rate_limited_total[5m])) > 5
+        for: 10m
+        labels: { severity: info }
+        annotations:
+          summary: 'Many requests are rate limited (abuse, or limits too tight for real traffic).'

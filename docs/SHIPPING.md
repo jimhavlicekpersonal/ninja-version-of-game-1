@@ -193,6 +193,15 @@ Set up once: in Settings → Environments, create `staging` and `production` (gi
 
 **Building a different server later:** `docs/PROTOCOL.md` describes everything the game expects. The contract tests check any server against it.
 
+### 3h. Backups, instances, domain, alerts, staff tool (roadmap steps 44-48)
+
+- **Backups:** turn on your database host's point-in-time recovery first (Neon, Render, Supabase and Railway have it on paid plans). On top, `.github/workflows/backup.yml` makes an encrypted `pg_dump` every day (kept 35 days as a workflow artifact) and every Sunday restores it into an empty database, checks it and starts the server on it. In the `production` environment add `BACKUP_DATABASE_URL` (a read-only role) and `BACKUP_KEY` (`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`; keep a copy outside GitHub). To restore for real: `TARGET_DATABASE_URL=<new empty db> BACKUP_KEY=… node tools/ops/restore.mjs <file>`, then `DATABASE_URL=<new db> node tools/ops/restore-check.mjs`, then point the server at it.
+- **Two or more instances:** set `REDIS_URL` and run at least two (the host's instance count). Every instance shares players, answers, the leaderboard, match locks and limits.
+- **Domain:** give the server a name (e.g. `api.<your domain>`), with A and AAAA records (or the host's CNAME) and the host's certificate. Check it with `node tools/ops/check-domain.mjs https://api.<your domain>`; App Review uses IPv6-only networks. Set `TRUST_PROXY` so the server sees HTTPS and sends HSTS.
+- **Load test:** on staging, with `RATE_LIMITS` raised for registration and matches: `npm run server:build && npm run server:load -- --url https://<staging> --bps 14 --seconds 300`. One instance holds about 3 battles a second today (roadmap step 46).
+- **Alerts and status:** scrape `/metrics` (Grafana Cloud's free tier or Prometheus) with `ops/prometheus/alerts.yml`; add an uptime check and a public status page on `/readyz` (Better Stack, UptimeRobot). For maintenance or an incident, set `SERVER_NOTICE` (shown to every player in Settings → Online play).
+- **Staff tool:** open `https://<server>/admin`, paste `ADMIN_TOKEN` and your name. Find players by name or id; give or take resources (server-held villages only, with a reason that goes in the ledger), suspend or lift a suspension, reset ratings; open reports and deletion requests. Everything is in the staff log.
+
 ## 4. Reminders
 
 The installed iOS/Android app schedules real local notifications when you leave the game (turn them on in Settings). The web version can only notify while the game is still open in the background.
@@ -201,6 +210,10 @@ The installed iOS/Android app schedules real local notifications when you leave 
 
 - **Google Play** needs a Google Play Console account ($25 one-time). Purchases in the Android app stay off until it is built with `VITE_PLAY_BILLING=1` (section 3c).
 - **Android sign-in** (Play Games / Google) still needs the Play services SDKs in `android/`.
+
+## 5b. Store submission (roadmap steps 49-53, owner)
+
+`docs/store/` has the listing texts, the privacy and age-rating answers, the App Review notes, the closed-testing plan and the release checklist; `npm run build && npm run store:screenshots` makes the screenshots.
 
 ## 6. Kagemura rebuild: identity steps (owner)
 

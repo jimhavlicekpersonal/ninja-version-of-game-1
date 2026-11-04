@@ -70,6 +70,8 @@ export type Command =
   | { type: 'grantPurchase'; productId: string; transactionId: string; verified?: boolean }
   /** A purchase the store refunded: take back what it gave, as far as it is still there (server only). */
   | { type: 'revokePurchase'; transactionId: string }
+  /** Staff add or take resources (support; the admin tool, server only). Never below zero. */
+  | { type: 'staffAdjust'; resources: Partial<Record<ResourceKind, number>> }
   | { type: 'setProfile'; under18: boolean }
   | { type: 'buySkin'; skin: string }
   | { type: 'equipSkin'; skin: string }
@@ -452,7 +454,7 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
     }
   }
   const spent = moonBefore - s.resources.moonstones;
-  if (spent > 0 && cmd.type !== 'grantPurchase' && cmd.type !== 'revokePurchase') {
+  if (spent > 0 && cmd.type !== 'grantPurchase' && cmd.type !== 'revokePurchase' && cmd.type !== 'staffAdjust') {
     s.stats.moonstonesSpent += spent;
     events.push({ kind: 'moonstone_spend', what: cmd.type === 'place' ? cmd.buildingType : cmd.type, moonstones: spent });
   }
@@ -527,6 +529,12 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return grantPurchase(s, cmd.productId, cmd.transactionId, now, data, cmd.verified === true);
     case 'revokePurchase':
       return revokePurchase(s, cmd.transactionId, now, data);
+    case 'staffAdjust':
+      for (const [k, v] of Object.entries(cmd.resources) as [ResourceKind, number][]) {
+        if (!(k in s.resources) || !Number.isFinite(v)) return fail('NOT_FOUND', 'Unknown resource.');
+        s.resources[k] = Math.max(0, Math.round(s.resources[k] + v));
+      }
+      return { ok: true, state: s, events: [] };
     case 'setProfile':
       s.profile.under18 = cmd.under18;
       return { ok: true, state: s, events: [] };

@@ -18,6 +18,8 @@
  * - METRICS_TOKEN: serve Prometheus metrics at /metrics to this bearer token.
  * - LOG_LEVEL: debug | info (default) | warn | error.
  * - RELEASE: the build name shown by /healthz and Sentry (default: package version).
+ * - SERVER_NOTICE: a message shown to every player in Settings (maintenance, an incident).
+ * - HOST: the address to listen on (default '::', IPv6 and IPv4).
  * - DEPLOY_ENV: development (default) | staging | production (server/config.ts:
  *   what production requires; a database belongs to one deployment).
  * - Purchases (roadmap Phase 4, server/config.ts): APPLE_BUNDLE_IDS,
@@ -26,6 +28,7 @@
  * - Push (step 40, server/push/push.ts): APNS_KEY, APNS_KEY_ID, APNS_TEAM_ID,
  *   APNS_TOPIC, APNS_SANDBOX; FCM_PROJECT_ID, FCM_SERVICE_ACCOUNT_JSON.
  */
+import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
 import type { SharedStores } from './nodeContext';
@@ -112,6 +115,18 @@ async function main(): Promise<void> {
   // Store receipts (Phase 4) and server push (step 40): whichever keys are configured.
   const fetchFn = globalThis.fetch as unknown as Fetch;
   const metrics = new PromMetrics();
+  // Gauges for alerts (step 47): database pool and event-loop delay.
+  if (repo instanceof PgRepo) {
+    const pgRepo = repo;
+    metrics.gauge('tk_db_pool_connections', () => Object.entries(pgRepo.poolStats()).map(([state, value]) => ({ labels: { state }, value })));
+  }
+  const loop = monitorEventLoopDelay({ resolution: 20 });
+  loop.enable();
+  metrics.gauge('tk_event_loop_delay_ms', () => {
+    const points = [0.5, 0.99, 1].map((q) => ({ labels: { quantile: String(q) }, value: Math.round((q === 1 ? loop.max : loop.percentile(q * 100)) / 1e6) }));
+    loop.reset();
+    return points;
+  });
   const payments = paymentsFromEnv(process.env, fetchFn, Date.now);
   const transport = pushTransportFromEnv(process.env, fetchFn, Date.now);
   const push = transport ? new ServerPush({ repo, data: defaultData, transport, now: Date.now, metrics, log: (l, m, f) => console[l === 'info' ? 'log' : l](m, f ?? {}) }) : undefined;
@@ -134,9 +149,18 @@ async function main(): Promise<void> {
     readiness,
     metrics,
     environment: config.deploy === 'production' ? undefined : config.deploy,
+    notice: process.env.SERVER_NOTICE?.slice(0, 300) || undefined,
   });
   const port = Number(process.env.PORT ?? 8787);
-  await app.listen({ port, host: '0.0.0.0' });
+  // '::' takes IPv6 and IPv4 (step 45); a machine without IPv6 falls back to IPv4 only.
+  try {
+    await app.listen({ port, host: process.env.HOST || '::' });
+  } catch (e) {
+    const code = (e as NodeJS.ErrnoException).code;
+    if (process.env.HOST || (code !== 'EAFNOSUPPORT' && code !== 'EADDRNOTAVAIL')) throw e;
+    console.warn('IPv6 is not available here: listening on IPv4 only.');
+    await app.listen({ port, host: '0.0.0.0' });
+  }
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.
   const prune = () =>
     app.core.prune().then(

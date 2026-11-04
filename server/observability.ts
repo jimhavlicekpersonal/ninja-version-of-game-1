@@ -33,6 +33,8 @@ export const METRIC_HELP: Record<string, string> = {
   tk_village_commands_total: 'Village commands replayed, by result (ok, refused).',
   tk_village_corrections_total: 'Command batches answered with a correction (client and server disagreed).',
   tk_client_requests_total: 'Requests by game build and battle rules version (from the protocol 7 headers).',
+  tk_db_pool_connections: 'Database pool connections, by state (total, idle, waiting for one).',
+  tk_event_loop_delay_ms: 'Event-loop delay in milliseconds over the last scrape interval, by quantile (re-simulation blocks the loop).',
   tk_purchases_total: 'Store purchases credited, by store and environment (Production, Sandbox, Test).',
   tk_refunds_total: 'Purchases refunded or revoked, by store and reason.',
   tk_push_total: 'Server pushes, by type and result (sent, quiet, limit, off, invalid, failed).',
@@ -49,6 +51,7 @@ const key = (labels: Labels = {}) =>
 export class PromMetrics implements Metrics {
   private counters = new Map<string, Map<string, number>>();
   private histograms = new Map<string, Map<string, { buckets: number[]; sum: number; count: number }>>();
+  private gauges = new Map<string, () => { labels?: Labels; value: number }[]>();
 
   constructor(private readonly buckets = DEFAULT_BUCKETS) {}
 
@@ -72,6 +75,11 @@ export class PromMetrics implements Metrics {
     m.set(k, h);
   }
 
+  /** A value read when /metrics is scraped (pool sizes, event-loop delay). */
+  gauge(name: string, read: () => { labels?: Labels; value: number }[]): void {
+    this.gauges.set(name, read);
+  }
+
   /** A counter's value (tests, /healthz summaries). */
   value(name: string, labels?: Labels): number {
     return this.counters.get(name)?.get(key(labels)) ?? 0;
@@ -87,6 +95,16 @@ export class PromMetrics implements Metrics {
     for (const [name, series] of [...this.counters].sort()) {
       help(name, 'counter');
       for (const [k, v] of series) out.push(`${name}${k ? `{${k}}` : ''} ${v}`);
+    }
+    for (const [name, read] of [...this.gauges].sort()) {
+      let points: { labels?: Labels; value: number }[];
+      try {
+        points = read();
+      } catch {
+        continue;
+      }
+      help(name, 'gauge');
+      for (const p of points) out.push(`${name}${p.labels ? `{${key(p.labels)}}` : ''} ${p.value}`);
     }
     for (const [name, series] of [...this.histograms].sort()) {
       help(name, 'histogram');

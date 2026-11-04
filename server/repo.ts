@@ -27,9 +27,23 @@ export interface Player {
   ratings?: { attack: Rating; base: Rating };
   /** Honor lost as a defender on one UTC day (the daily cap). */
   honorLoss?: { day: number; lost: number };
+  /** Suspended by staff until this time (0 or absent: not banned). Banned players are not matched or ranked. */
+  bannedUntil?: number;
+  banReason?: string | null;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason'>>;
+
+/** One thing staff did (the admin tool, roadmap step 48). */
+export interface StaffAction {
+  id: string;
+  at: number;
+  /** Who (the X-Staff-Name the admin tool sends). */
+  actor: string;
+  action: string;
+  playerId: string | null;
+  detail: Record<string, unknown>;
+}
 
 export interface Ticket {
   id: string;
@@ -392,6 +406,12 @@ export interface Repo {
   /** False if that sign-in is linked to someone, or this player already has one from that provider. */
   addLink(l: IdentityLink): Promise<boolean>;
   removeLink(playerId: string, provider: string): Promise<void>;
+  // staff tools (roadmap step 48)
+  /** Players whose id is `q`, or whose name starts with `q` (any case). */
+  searchPlayers(q: string, limit: number): Promise<Player[]>;
+  addStaffAction(a: StaffAction): Promise<void>;
+  /** Newest first; one player's, or everyone's. */
+  staffActions(playerId: string | null, limit: number): Promise<StaffAction[]>;
   // purchases (roadmap Phase 4)
   /** False (nothing stored) if that store transaction is already recorded. */
   addPurchase(p: PurchaseRow): Promise<boolean>;
@@ -567,6 +587,7 @@ export class MemoryRepo implements Repo {
   tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
   linkRows: IdentityLink[] = [];
   purchaseRows: PurchaseRow[] = [];
+  staffRows: StaffAction[] = [];
   intentRows: PurchaseIntent[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
@@ -676,6 +697,24 @@ export class MemoryRepo implements Repo {
   async removeLink(playerId: string, provider: string): Promise<void> {
     this.linkRows = this.linkRows.filter((l) => !(l.playerId === playerId && l.provider === provider));
   }
+  async searchPlayers(q: string, limit: number): Promise<Player[]> {
+    const lower = q.toLowerCase();
+    return [...this.players.values()]
+      .filter((p) => p.id === q || p.name.toLowerCase().startsWith(lower))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addStaffAction(a: StaffAction): Promise<void> {
+    this.staffRows.push(clone(a));
+  }
+  async staffActions(playerId: string | null, limit: number): Promise<StaffAction[]> {
+    return this.staffRows
+      .filter((a) => playerId === null || a.playerId === playerId)
+      .sort((a, b) => b.at - a.at)
+      .slice(0, limit)
+      .map(clone);
+  }
   async addPurchase(p: PurchaseRow): Promise<boolean> {
     if (this.purchaseRows.some((x) => x.store === p.store && x.transactionId === p.transactionId)) return false;
     this.purchaseRows.push(clone(p));
@@ -748,16 +787,16 @@ export class MemoryRepo implements Repo {
     const since = q.lockedSince;
     const locked = new Set(since === null ? [] : [...this.tickets.values()].filter((t) => !t.used && t.defenderId && t.createdAt > since).map((t) => t.defenderId));
     return [...this.players.values()]
-      .filter((p) => p.base && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
+      .filter((p) => p.base && !p.bannedUntil && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
       .filter((p) => p.hallLevel >= q.minHall && p.hallLevel <= q.maxHall && p.trophies >= q.minTrophies && p.trophies <= q.maxTrophies)
       .slice(0, q.limit)
       .map(clone);
   }
   async topPlayers(limit: number): Promise<Player[]> {
-    return [...this.players.values()].filter((p) => p.base).sort((a, b) => b.trophies - a.trophies || a.createdAt - b.createdAt).slice(0, limit).map(clone);
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil).sort((a, b) => b.trophies - a.trophies || a.createdAt - b.createdAt).slice(0, limit).map(clone);
   }
   async rankOf(trophies: number): Promise<number> {
-    return 1 + [...this.players.values()].filter((p) => p.base && p.trophies > trophies).length;
+    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && p.trophies > trophies).length;
   }
   async playersByIds(ids: string[]): Promise<Player[]> {
     return ids.map((id) => this.players.get(id)).filter((p): p is Player => Boolean(p)).map(clone);
@@ -767,16 +806,16 @@ export class MemoryRepo implements Repo {
   }
   async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
     return [...this.players.values()]
-      .filter((p) => p.base && (p.ratings?.attack.battles ?? 0) >= minBattles)
+      .filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles)
       .sort((a, b) => this.powerOf(b, beta) - this.powerOf(a, beta) || a.createdAt - b.createdAt)
       .slice(0, limit)
       .map(clone);
   }
   async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
-    return 1 + [...this.players.values()].filter((p) => p.base && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power).length;
+    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power).length;
   }
   async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
-    return [...this.players.values()].filter((p) => p.base).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));
   }
   private putBase(base: BaseLayout, at: number): string {
     const hash = contentHash(base);

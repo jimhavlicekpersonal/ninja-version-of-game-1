@@ -4,6 +4,7 @@
  * directly. A future server can reuse it with other adapters.
  */
 import * as account from './account';
+import * as admin from './admin';
 import type { ServerContext } from './context';
 import * as groves from './groves';
 import * as groveRaid from './groveRaid';
@@ -82,6 +83,12 @@ export function createCore(ctx: ServerContext) {
       resolveDeletion: account.resolveDeletion.bind(null, ctx),
       reportQueue: moderation.reportQueue.bind(null, ctx),
       resolveReport: moderation.resolveReport.bind(null, ctx),
+      search: admin.search.bind(null, ctx),
+      player: admin.detail.bind(null, ctx),
+      adjust: admin.adjust.bind(null, ctx),
+      ban: admin.ban.bind(null, ctx),
+      resetRating: admin.resetRating.bind(null, ctx),
+      actions: admin.actions.bind(null, ctx),
     },
   };
 }

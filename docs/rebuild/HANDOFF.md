@@ -81,7 +81,9 @@ Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. Wh
 - **Phase 3, ranking (27–32):** hidden Attack/Base Ratings, matchmaking by expected score, daily honor-loss cap, Base Rating reset on a rebuilt layout, Power Ranking and its Settings tab, a convergence simulation.
 - **Phase 4, payments (35–38):** App Store JWS and Google Play tokens checked on the server, each transaction once, the under-18 cap before paying, refunds taken back, Restore purchases, store product ids mapped; Play Billing plugin (off until `VITE_PLAY_BILLING=1`; its Java was not compiled here).
 - **Phases 5–6 (40, 42, 43):** server push (APNs/FCM), staging/production separation (`DEPLOY_ENV`, one database per deployment), the server release workflow (image → staging → contract tests; production by hand).
-- **Owner steps** (Phase 0, 33, 34, 39, 41, store submission) stay unticked; the roadmap says what was prepared for each.
+- **Phase 6, operations (44–48):** backups with a weekly restore drill, two instances, IPv6/HSTS, a load test (one instance: ~3 battles/s; the worker pool, step 57, is needed before launch), alert rules, the staff tool at `/admin`.
+- **Phase 7 (49–53, owner):** `docs/store/` (listing, privacy answers, review notes, testing plan, release checklist) and `npm run store:screenshots`.
+- **Owner steps** (Phase 0, 33, 34, 39, 41, 49–53) stay unticked; the roadmap says what was prepared for each.
 - **Hosting checklist:** `docs/SHIPPING.md` (pre-deploy `server:migrate`, `TRUST_PROXY`, `REDIS_URL`, `ADMIN_TOKEN`, `SENTRY_DSN`, `METRICS_TOKEN`, health checks, the deletion URL for Google Play).
 
 Further checks from the audit, now handled: the last deployments are saved at once when the app is hidden or closed; a failed save shows a warning; a flyer grounded by a Ballista can set off traps; the Ballista's catalog matchups list only flyers, and the Repair Crane really answers the Hawk Tamer (it cuts the slowing short). Not yet covered: an automated check that every Infiltration Point is reachable on unusually dense player bases.

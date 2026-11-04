@@ -1,0 +1,84 @@
+name: Database backup and restore drill
+
+# Roadmap step 44. Every day: an encrypted pg_dump of the production database,
+# kept as a workflow artifact for 35 days (in addition to the host's own
+# point-in-time recovery, which is the first thing to use). Every Sunday the
+# same run also practises the restore: it decrypts the new backup into an
+# empty Postgres, checks it (tools/ops/restore-check.mjs) and starts the
+# server on it. A failed drill fails the workflow, and GitHub emails you.
+#
+# Owner setup, environment "production":
+# - secret BACKUP_DATABASE_URL: a read-only role on the production database;
+# - secret BACKUP_KEY: base64 of 32 random bytes (keep a copy outside GitHub:
+#   without it the backups cannot be read).
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      drill:
+        description: 'Also practise the restore now'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: production
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: drill
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Postgres 16 client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16 || sudo apt-get install -y -qq postgresql-client
+      - name: Back up
+        id: backup
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          BACKUP_KEY: ${{ secrets.BACKUP_KEY }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then echo "BACKUP_DATABASE_URL is not set: nothing to back up (docs/SHIPPING.md, Backups)."; exit 0; fi
+          echo "file=$(node tools/ops/backup.mjs backups)" >> "$GITHUB_OUTPUT"
+      - if: steps.backup.outputs.file != ''
+        uses: actions/upload-artifact@v5
+        with:
+          name: kagemura-db-${{ github.run_id }}
+          path: ${{ steps.backup.outputs.file }}
+          retention-days: 35
+      - name: Restore drill (Sundays and on request)
+        if: steps.backup.outputs.file != ''
+        env:
+          BACKUP_KEY: ${{ secrets.BACKUP_KEY }}
+          TARGET_DATABASE_URL: postgres://postgres:postgres@localhost:5432/drill
+          DRILL: ${{ github.event_name == 'workflow_dispatch' && inputs.drill }}
+        run: |
+          if [ "$(date -u +%u)" != "7" ] && [ "$DRILL" != "true" ]; then echo "The restore drill runs on Sundays."; exit 0; fi
+          npm ci --ignore-scripts
+          node tools/ops/restore.mjs "${{ steps.backup.outputs.file }}"
+          DATABASE_URL=$TARGET_DATABASE_URL node tools/ops/restore-check.mjs
+          npm run server:build
+          DATABASE_URL=$TARGET_DATABASE_URL DEPLOY_ENV=production ADMIN_TOKEN=drill-only-0123456789abcdef CORS_ORIGIN=https://drill.invalid PORT=8787 node dist-server/main.js > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8787/readyz && break; sleep 1; done
+          curl -sf http://localhost:8787/readyz || (cat server.log; exit 1)
+          echo "Restore drill passed: the backup restores, checks out, and the server starts on it."

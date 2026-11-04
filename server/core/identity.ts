@@ -44,6 +44,13 @@ export async function authenticate(ctx: ServerContext, token: string | undefined
   const p = token ? await ctx.repo.playerByTokenHash(await ctx.hash(token)) : null;
   if (!p) throw new ApiError(401, 'unauthorized', 'Unknown or missing player token.');
   const t = ctx.now();
+  if (p.bannedUntil) {
+    if (p.bannedUntil > t) throw new ApiError(403, 'banned', `This account is suspended from online play until ${new Date(p.bannedUntil).toUTCString()}${p.banReason ? `: ${p.banReason}` : ''}. Your village on this device is not affected.`);
+    // The suspension is over: back on the ladders.
+    await ctx.repo.updatePlayer(p.id, { bannedUntil: 0, banReason: null });
+    if (p.base) await ctx.board.set(p.id, p.trophies, p.createdAt);
+    p.bannedUntil = 0;
+  }
   if (t - p.lastSeenAt > MIN) {
     await ctx.repo.updatePlayer(p.id, { lastSeenAt: t });
     p.lastSeenAt = t;

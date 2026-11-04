@@ -61,7 +61,9 @@ export type ConnectionStatus =
   /** Server configured but not reachable right now; retrying. */
   | 'offline'
   /** The server and this game cannot talk (protocol versions). */
-  | 'incompatible';
+  | 'incompatible'
+  /** Staff suspended this account from online play (`lastError` says why and until when); tried again on the next start. */
+  | 'suspended';
 
 export interface OutboxItem {
   id: string;
@@ -344,7 +346,7 @@ export class Connection {
 
   /** Connect if needed, then bring everything in. Concurrent calls share one run. */
   sync(): Promise<void> {
-    if (!this.port || this.status === 'incompatible') return Promise.resolve();
+    if (!this.port || this.status === 'incompatible' || this.status === 'suspended') return Promise.resolve();
     if (!this.syncing) {
       this.syncing = this.runSync().finally(() => {
         this.syncing = null;
@@ -388,6 +390,10 @@ export class Connection {
   private handleError(e: unknown): void {
     if (e instanceof ServerError && e.code === 'version_mismatch') {
       this.setStatus('incompatible', e.message);
+      return;
+    }
+    if (e instanceof ServerError && e.code === 'banned') {
+      this.setStatus('suspended', e.message);
       return;
     }
     const msg = e instanceof Error ? e.message : String(e);

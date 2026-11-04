@@ -23,6 +23,7 @@ import type {
   PurchaseRow,
   PushToken,
   RaidAttack,
+  StaffAction,
   RaidClaim,
   LedgerEntry,
   CommandLogRow,
@@ -51,6 +52,8 @@ const toPlayer = (r: Row): Player => ({
   updatedAt: num(r.updated_at),
   lastSeenAt: num(r.last_seen_at),
   mutedUntil: num(r.muted_until),
+  bannedUntil: num(r.banned_until),
+  banReason: strOrNull(r.ban_reason),
   ...(num(r.attack_rated_at) > 0 || num(r.base_rated_at) > 0
     ? {
         ratings: {
@@ -251,6 +254,11 @@ export class PgRepo implements Repo {
     return new PgRepo(new pg.Pool({ connectionString: url, ssl: /sslmode=require/.test(url) ? { rejectUnauthorized: false } : undefined }));
   }
 
+  /** Connections in the pool (for the tk_db_pool_connections gauge, step 47). */
+  poolStats(): { total: number; idle: number; waiting: number } {
+    return { total: this.pool.totalCount, idle: this.pool.idleCount, waiting: this.pool.waitingCount };
+  }
+
   /** Apply pending migrations (a release step: `npm run server:migrate`). Returns the names applied. */
   async migrate(log?: (msg: string) => void): Promise<string[]> {
     return runMigrations(this.pool, migrations, Date.now, log);
@@ -318,6 +326,22 @@ export class PgRepo implements Repo {
     await this.db.query(`insert into server_meta (key, value) values ('environment', $1) on conflict (key) do nothing`, [deploy]);
     const r = await this.rows(`select value from server_meta where key = 'environment'`, []);
     return String(r[0].value);
+  }
+
+  // ------------------------------------------------------------ staff tools (step 48)
+
+  async searchPlayers(q: string, limit: number): Promise<Player[]> {
+    const like = q.toLowerCase().replace(/[\\%_]/g, (c) => `\\${c}`) + '%';
+    return (await this.rows('select * from players where id = $1 or lower(name) like $2 order by name limit $3', [q, like, limit])).map(toPlayer);
+  }
+
+  async addStaffAction(a: StaffAction): Promise<void> {
+    await this.db.query('insert into staff_actions (id, at, actor, action, player_id, detail) values ($1,$2,$3,$4,$5,$6)', [a.id, a.at, a.actor, a.action, a.playerId, JSON.stringify(a.detail)]);
+  }
+
+  async staffActions(playerId: string | null, limit: number): Promise<StaffAction[]> {
+    const r = await this.rows('select * from staff_actions where ($1::text is null or player_id = $1) order by at desc limit $2', [playerId, limit]);
+    return r.map((x) => ({ id: String(x.id), at: num(x.at), actor: String(x.actor), action: String(x.action), playerId: strOrNull(x.player_id), detail: (x.detail as Record<string, unknown>) ?? {} }));
   }
 
   // ------------------------------------------------------------ purchases (Phase 4)
@@ -425,6 +449,8 @@ export class PgRepo implements Repo {
       updatedAt: 'updated_at',
       lastSeenAt: 'last_seen_at',
       mutedUntil: 'muted_until',
+      bannedUntil: 'banned_until',
+      banReason: 'ban_reason',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];
@@ -461,7 +487,7 @@ export class PgRepo implements Repo {
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
     const r = await this.rows(
       `select * from players p
-       where p.base is not null and p.shield_until <= $1
+       where p.base is not null and p.banned_until = 0 and p.shield_until <= $1
          and p.hall_level between $2 and $3 and p.trophies between $4 and $5
          and not (p.id = any($6::text[]))
          and ($7::bigint is null or not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7))
@@ -472,11 +498,11 @@ export class PgRepo implements Repo {
   }
 
   async topPlayers(limit: number): Promise<Player[]> {
-    return (await this.rows('select * from players where base is not null order by trophies desc, created_at asc limit $1', [limit])).map(toPlayer);
+    return (await this.rows('select * from players where base is not null and banned_until = 0 order by trophies desc, created_at asc limit $1', [limit])).map(toPlayer);
   }
 
   async rankOf(trophies: number): Promise<number> {
-    const r = await this.rows('select count(*) as n from players where base is not null and trophies > $1', [trophies]);
+    const r = await this.rows('select count(*) as n from players where base is not null and banned_until = 0 and trophies > $1', [trophies]);
     return 1 + num(r[0]?.n);
   }
 
@@ -488,16 +514,16 @@ export class PgRepo implements Repo {
   }
 
   async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
-    return (await this.rows('select * from players where base is not null and attack_battles >= $2 order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1', [limit, minBattles, beta])).map(toPlayer);
+    return (await this.rows('select * from players where base is not null and banned_until = 0 and attack_battles >= $2 order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1', [limit, minBattles, beta])).map(toPlayer);
   }
 
   async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
-    const r = await this.rows('select count(*) as n from players where base is not null and attack_battles >= $2 and attack_rating + $3 * (greatest(hall_level, 1) - 1) > $1', [power, minBattles, beta]);
+    const r = await this.rows('select count(*) as n from players where base is not null and banned_until = 0 and attack_battles >= $2 and attack_rating + $3 * (greatest(hall_level, 1) - 1) > $1', [power, minBattles, beta]);
     return 1 + num(r[0]?.n);
   }
 
   async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
-    return (await this.rows('select id, trophies, created_at from players where base is not null')).map((r) => ({ id: String(r.id), trophies: num(r.trophies), createdAt: num(r.created_at) }));
+    return (await this.rows('select id, trophies, created_at from players where base is not null and banned_until = 0')).map((r) => ({ id: String(r.id), trophies: num(r.trophies), createdAt: num(r.created_at) }));
   }
 
   // ------------------------------------------------------------ tickets and attacks

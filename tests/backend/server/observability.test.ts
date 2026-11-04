@@ -164,3 +164,36 @@ describe('observability over HTTP', () => {
     expect(posts[0]).not.toContain('Bearer');
   });
 });
+
+describe('gauges and the operators notice (roadmap step 47)', () => {
+  it('renders gauges read at scrape time, with help text, and skips one that fails', () => {
+    const m = new PromMetrics();
+    let waiting = 0;
+    m.gauge('tk_db_pool_connections', () => [
+      { labels: { state: 'total' }, value: 4 },
+      { labels: { state: 'waiting' }, value: waiting },
+    ]);
+    m.gauge('tk_broken', () => {
+      throw new Error('no pool');
+    });
+    waiting = 2;
+    const text = m.render();
+    expect(text).toContain('# TYPE tk_db_pool_connections gauge');
+    expect(text).toContain('# HELP tk_db_pool_connections');
+    expect(text).toContain('tk_db_pool_connections{state="waiting"} 2');
+    expect(text).not.toContain('tk_broken');
+  });
+
+  it('every alert rule names metrics the server records', async () => {
+    const { readFileSync } = await import('node:fs');
+    const rules = readFileSync(new URL('../../../ops/prometheus/alerts.yml', import.meta.url), 'utf8');
+    const used = new Set([...rules.matchAll(/\b(tk_[a-z_]+?)(?:_bucket|_sum|_count)?\b/g)].map((x) => x[1]));
+    const { METRIC_HELP } = await import('../../../server/observability');
+    for (const name of used) expect(Object.keys(METRIC_HELP), name).toContain(name);
+  });
+
+  it('tells every player the operators notice in /v1/hello', async () => {
+    const app = buildServer({ repo: new MemoryRepo(), data, notice: 'Maintenance at 02:00 UTC for 20 minutes.' });
+    expect((await app.inject({ method: 'GET', url: Routes.hello })).json().notice).toBe('Maintenance at 02:00 UTC for 20 minutes.');
+  });
+});

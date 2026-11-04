@@ -77,3 +77,4 @@ Each compartment has a `CLAUDE.md` brief, so a **separate AI session** can upgra
 - `docs/art/ART_AI_BRIEF.md` and `ICON_MANIFEST.md`: instructions and the full list of icons for an ART AI
 - `docs/PROTOCOL.md` (v7) and `docs/SHIPPING.md`: multiplayer protocol and store and hosting steps
 - `docs/backend/PVP_ROADMAP.md`: the PvP server plan and step list (each finished step is marked)
+- `docs/store/`: the store submission kit (listing, privacy answers, review notes, testing, release)

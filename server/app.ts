@@ -4,6 +4,7 @@
  * requests, checks the bearer token, applies rate and size limits, and turns
  * errors into protocol errors.
  */
+import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
@@ -58,6 +59,8 @@ export interface ServerOptions {
   readiness?: Record<string, () => Promise<unknown>>;
   /** DEPLOY_ENV (step 42): told to the game in /v1/hello so a test server says so. */
   environment?: string;
+  /** SERVER_NOTICE (step 47): a message for every player in /v1/hello (maintenance, an incident). */
+  notice?: string;
 }
 
 const sameSecret = (got: string | undefined, want: Buffer) => timingSafeEqual(createHash('sha256').update(got ?? '').digest(), want);
@@ -111,6 +114,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     reply.header('Access-Control-Max-Age', '86400');
     reply.header('Access-Control-Expose-Headers', 'retry-after, x-request-id');
     reply.header('x-request-id', req.id);
+    // Over HTTPS (directly, or X-Forwarded-Proto from a trusted proxy): browsers keep to HTTPS (step 45).
+    if (req.protocol === 'https') reply.header('Strict-Transport-Security', 'max-age=31536000');
     if (req.method === 'OPTIONS') return reply.code(204).send();
   });
 
@@ -248,7 +253,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       return reply.type('text/plain; version=0.0.4').send(metrics.render());
     });
   }
-  app.get(Routes.hello, async () => (opts.environment ? { ...core.hello(), environment: opts.environment } : core.hello()));
+  app.get(Routes.hello, async () => ({ ...core.hello(), ...(opts.environment ? { environment: opts.environment } : {}), ...(opts.notice ? { notice: opts.notice } : {}) }));
 
   // Identity
   const rate = (r: keyof RateLimits): { config: RateConfig } => ({ config: { rate: r } });
@@ -337,6 +342,16 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.post('/admin/v1/deletion-requests/:id', staff(async (req) => core.admin.resolveDeletion(param(req, 'id'), body<{ action: string }>(req).action, body<{ note: string }>(req).note)));
     app.get('/admin/v1/reports', staff(async (req) => core.admin.reportQueue(query(req).status === 'all' ? 'all' : 'open')));
     app.post('/admin/v1/reports/:id', staff(async (req) => core.admin.resolveReport(param(req, 'id'), req.body as never)));
+    // The admin tool (roadmap step 48): player lookup, give/take, suspend, rating reset, staff log.
+    const actor = (req: FastifyRequest) => String(req.headers['x-staff-name'] ?? 'staff').slice(0, 40);
+    app.get('/admin/v1/players', staff(async (req) => core.admin.search(query(req).q)));
+    app.get('/admin/v1/players/:id', staff(async (req) => core.admin.player(param(req, 'id'))));
+    app.post('/admin/v1/players/:id/adjust', staff(async (req) => core.admin.adjust(actor(req), param(req, 'id'), req.body as never)));
+    app.post('/admin/v1/players/:id/ban', staff(async (req) => core.admin.ban(actor(req), param(req, 'id'), req.body as never)));
+    app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
+    app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
+    app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
+    app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));
   }
 
   return app;
