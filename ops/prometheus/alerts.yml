@@ -59,6 +59,23 @@ groups:
         annotations:
           summary: 'More than 1% of battles desync between game and server (a release with different rules?).'
 
+      # Game versions (roadmap step 78): one rules version desyncing points at a release.
+      - alert: DesyncsRisingForOneVersion
+        expr: |
+          sum by (rules) (rate(tk_desyncs_total[30m])) / clamp_min(sum by (rules) (rate(tk_battles_total[30m])), 1e-9) > 0.02
+            and sum by (rules) (rate(tk_battles_total[30m])) > 0.01
+        for: 15m
+        labels: { severity: warn }
+        annotations:
+          summary: 'Battles under rules {{ $labels.rules }} desync more than 2% (the game and the server disagree on that version: check the latest release and server/rules/).'
+
+      - alert: GamesRefusedForVersion
+        expr: sum by (reason) (rate(tk_refused_total[15m])) > 0.2
+        for: 15m
+        labels: { severity: info }
+        annotations:
+          summary: 'Many requests refused for the game version ({{ $labels.reason }}): players need an update, or a version was retired too early.'
+
       - alert: RateLimitStorm
         expr: sum(rate(tk_rate_limited_total[5m])) > 5
         for: 10m

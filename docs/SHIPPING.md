@@ -202,6 +202,21 @@ Set up once: in Settings → Environments, create `staging` and `production` (gi
 - **Alerts and status:** scrape `/metrics` (Grafana Cloud's free tier or Prometheus) with `ops/prometheus/alerts.yml`; add an uptime check and a public status page on `/readyz` (Better Stack, UptimeRobot). For maintenance or an incident, set `SERVER_NOTICE` (shown to every player in Settings → Online play).
 - **Staff tool:** open `https://<server>/admin`, paste `ADMIN_TOKEN` and your name. Find players by name or id; give or take resources (server-held villages only, with a reason that goes in the ledger), suspend or lift a suspension, reset ratings; open reports and deletion requests. Everything is in the staff log.
 
+### 3i. Releasing a balance change (roadmap steps 72-78)
+
+Phone players keep an old app for weeks, so the server checks every battle with the rules of the game that played it. A change that touches combat numbers (`troops.json`, `buildings.json`, `battle.json`: the rules-version test says so) goes out **server first**:
+
+1. **Archive today's rules:** `npm run rules:snapshot`. It copies `src/gameplay/sim` and `src/gameplay/data` to `server/rules/v<N>/` and lists them in `server/rules/archive.ts`. Never edit a snapshot.
+2. **Make the change:** bump `SIM_RULES` in `src/gameplay/sim/battle/battle.ts`, change the data, update `tests/gameplay/battle/rules-version.test.ts`, and record the new version's test battle with `npm run rules:fixture`. `npm test` replays every recorded version with its engine.
+3. **Deploy the server** (staging, then production: section 3g). `/v1/hello` now lists both versions in `supportedRules`.
+4. **Release the game** (web, Android, iPhone). Each release workflow first checks that the server lists this build's rules (`tools/release/check-server-rules.mjs`) and stops if it doesn't.
+5. **Watch** the dashboard (`ops/grafana/game-versions.json`): traffic per rules version and build, desyncs per version, refused reports by reason. Tag the store release `v<version>`.
+6. **Retire the old version** once under ~2% of battles use it, or after 4-6 weeks: set `RETIRED_RULES=<N>` on the server (games still on it see "Update Kagemura"), and in the next release delete `server/rules/v<N>/` and its line in `archive.ts`.
+
+To make old builds update for any other reason (a security fix, a protocol change), set `MIN_CLIENT_BUILD` (for example `1.4.0`) on the server: older games are answered `426` and show "Update Kagemura". Set the store links once the listings exist: repository variables `VITE_APP_STORE_URL` and `VITE_PLAY_STORE_URL` (the web game reloads instead).
+
+Changes that never touch a battle (prices, timers, rewards, text) need none of this: the server serves every data version of the same rules. To change those numbers without an app release at all, see balance bundles (section 3j).
+
 ## 4. Reminders
 
 The installed iOS/Android app schedules real local notifications when you leave the game (turn them on in Settings). The web version can only notify while the game is still open in the background.
