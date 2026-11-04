@@ -7,7 +7,7 @@ import { airborne, deployBlock, isAbility, type SimBuilding, type SmokeCloud } f
 import { coverLeft, pointAt } from '../../gameplay/sim/battle/infiltration';
 import { WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
-import { GROUND_PAD, Keys, TEX_SCALE, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
 import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
 import { debris } from './fx';
@@ -102,7 +102,7 @@ export class BattleScene extends Phaser.Scene {
     const mapSize = gd.economy.mapSize;
     const mb = mapBounds(mapSize);
     this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setScale(groundScale(this.textures, mapSize)).setDepth(-10);
-    this.addWaves(mapSize);
+    addSurroundings(this, mapSize);
     this.cam = new CameraControl(this, {
       renderScale: this.renderScale,
       onTap: (x, y) => this.tryDeployAt(x, y, true),
@@ -122,20 +122,6 @@ export class BattleScene extends Phaser.Scene {
     if (this.session.mode !== 'replay') this.flashZone(2500);
   }
 
-  private addWaves(mapSize: number): void {
-    const mb = mapBounds(mapSize);
-    let seed = 4242;
-    const rand = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
-    for (let i = 0, placed = 0; i < 400 && placed < 60; i++) {
-      const x = mb.x - 380 + rand() * (mb.width + 760);
-      const y = mb.y - 380 + rand() * (mb.height + 760);
-      const t = worldToTile(x, y);
-      if (t.tx > -3 && t.ty > -3 && t.tx < mapSize + 4 && t.ty < mapSize + 4) continue;
-      placed++;
-      const w = this.add.image(x, y, Keys.wave).setScale(0.5 + rand() * 0.4).setAlpha(0).setDepth(-20);
-      this.tweens.add({ targets: w, alpha: { from: 0, to: 0.85 }, x: x + 10, duration: 1600 + rand() * 1800, delay: rand() * 2500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    }
-  }
 
   private makeBuilding(b: SimBuilding): BView {
     const key = buildingTexture(this.textures, b.type, b.level, b.size);
@@ -153,7 +139,7 @@ export class BattleScene extends Phaser.Scene {
     const n = sim.grid.size;
     const g = this.zone;
     g.clear();
-    g.fillStyle(0xff5a6a, 0.22);
+    g.fillStyle(0xc8402f, 0.24);
     for (let y = 0; y < n; y++) {
       for (let x = 0; x < n; x++) {
         if (sim.deployable[y * n + x] && (!sim.entry || pointAt(sim.entry, x, y) >= 0)) continue;
@@ -177,7 +163,8 @@ export class BattleScene extends Phaser.Scene {
       this.entryGfx = this.add.graphics().setDepth(-3);
       this.entryLabels = entry.points.map(() =>
         this.add
-          .text(0, 0, '', { fontFamily: BODY_FONT, fontSize: '15px', fontStyle: 'bold', color: '#fff6c8', stroke: '#26303d', strokeThickness: 4, align: 'center' })
+          .text(0, 0, '', { fontFamily: BODY_FONT, fontSize: '15px', fontStyle: 'bold', color: '#fff6c8', stroke: '#26303d', strokeThickness: 4, align: 'center', resolution: Math.max(2, this.renderScale) })
+          .setShadow(0, 2, 'rgba(15,20,30,0.45)', 3, true, true)
           .setOrigin(0.5, 1)
           .setDepth(OVER - 50),
       );
@@ -191,10 +178,14 @@ export class BattleScene extends Phaser.Scene {
       const left = coverLeft(entry, i);
       const open = left > 0;
       const c = tileToWorld(p.x, p.y);
-      g.fillStyle(open ? 0xffd23f : 0x9aa0aa, open ? 0.16 : 0.1);
+      g.fillStyle(open ? 0xe9b44c : 0x9aa0aa, open ? 0.16 : 0.1);
       g.fillEllipse(c.x, c.y, rx * 2, ry * 2);
-      g.lineStyle(3, open ? 0xffd23f : 0x9aa0aa, open ? 0.9 : 0.5);
+      g.lineStyle(8, open ? 0xe9b44c : 0x9aa0aa, open ? 0.22 : 0.12);
       g.strokeEllipse(c.x, c.y, rx * 2, ry * 2);
+      g.lineStyle(3, open ? 0xe9b44c : 0x9aa0aa, open ? 0.95 : 0.5);
+      g.strokeEllipse(c.x, c.y, rx * 2, ry * 2);
+      g.lineStyle(1.2, 0xfff6d8, open ? 0.8 : 0.3);
+      g.strokeEllipse(c.x, c.y, rx * 2 - 5, ry * 2 - 2.5);
       this.entryLabels[i]
         .setText(`${p.label} · ${open ? left : 'full'}`)
         .setPosition(c.x, c.y - ry - 4)
@@ -380,7 +371,8 @@ export class BattleScene extends Phaser.Scene {
     this.lastCallout.set(key, now);
     const zoom = this.cam.userZoom;
     const label = this.add
-      .text(x, y, text, { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4 })
+      .text(x, y, text, { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
+      .setShadow(0, 2, 'rgba(15,20,30,0.45)', 3, true, true)
       .setOrigin(0.5, 1)
       .setScale(1 / zoom)
       .setDepth(OVER);
@@ -410,10 +402,17 @@ export class BattleScene extends Phaser.Scene {
     const w = 34 / z;
     const h = 6 / z;
     g.clear();
-    g.fillStyle(0x3a2350, 0.85);
+    // Ink frame and a dark track; the fill gets a lighter top half so it reads as a glossy bar.
+    g.fillStyle(0x26303d, 0.92);
     g.fillRoundedRect(x - w / 2 - 1.5 / z, y - h / 2 - 1.5 / z, w + 3 / z, h + 3 / z, (h + 3 / z) / 2);
-    g.fillStyle(color, 1);
-    g.fillRoundedRect(x - w / 2, y - h / 2, Math.max(h, w * frac), h, h / 2);
+    g.fillStyle(0x4a5262, 1);
+    g.fillRoundedRect(x - w / 2, y - h / 2, w, h, h / 2);
+    const fw = Math.max(h, w * frac);
+    const low = frac < 0.3;
+    g.fillStyle(low ? 0xc8402f : color, 1);
+    g.fillRoundedRect(x - w / 2, y - h / 2, fw, h, h / 2);
+    g.fillStyle(0xffffff, 0.35);
+    g.fillRoundedRect(x - w / 2 + 1 / z, y - h / 2 + 0.8 / z, Math.max(0, fw - 2 / z), h * 0.38, h * 0.19);
   }
 
   update(_time: number, delta: number): void {
@@ -452,7 +451,7 @@ export class BattleScene extends Phaser.Scene {
         if (b.kind !== 'hedge') this.cameras.main.shake(140, 0.0035 * Math.min(2, b.size / 2));
       } else if (!b.destroyed && b.hp < b.maxHp && b.kind !== 'hedge') {
         const top = v.image.y - v.image.displayHeight * v.image.originY;
-        this.drawBar(v.bar, v.image.x, top - 6 / this.cam.userZoom, b.hp / b.maxHp, 0x6fd651);
+        this.drawBar(v.bar, v.image.x, top - 6 / this.cam.userZoom, b.hp / b.maxHp, 0x5aa85e);
       }
       v.lastHp = b.hp;
     });
@@ -498,7 +497,7 @@ export class BattleScene extends Phaser.Scene {
       if (t.attacking && !t.air) v.image.setScale(v.baseScale * (1 + Math.max(0, Math.sin(now / 60)) * 0.08), v.baseScale * (1 - Math.max(0, Math.sin(now / 60)) * 0.06));
       else if (v.image.scaleX !== v.baseScale && !this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale);
       v.shadow.setPosition(w.x, w.y + 1);
-      if (t.hp < t.maxHp) this.drawBar(v.bar, w.x, w.y - lift - 34, t.hp / t.maxHp, 0xffd23f);
+      if (t.hp < t.maxHp) this.drawBar(v.bar, w.x, w.y - lift - 34, t.hp / t.maxHp, 0xe9b44c);
       else v.bar.clear();
       if (t.shieldUntil > sim.tick) {
         v.bar.lineStyle(2 / this.cam.userZoom, 0x8ad0ff, 0.8);

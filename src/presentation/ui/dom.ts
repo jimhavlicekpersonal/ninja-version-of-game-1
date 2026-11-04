@@ -20,11 +20,18 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Attrs = 
   return el;
 }
 
-/** An element whose innerHTML is a trusted inline SVG icon. */
+let iconSerial = 0;
+
+/**
+ * An element whose innerHTML is a trusted inline SVG icon. Gradient ids (`kg-*`) are made unique per
+ * copy: a `url(#id)` resolves to the first match in the document, and one inside a hidden panel
+ * would leave every other copy unfilled.
+ */
 export function icon(svgMarkup: string, cls = 'icon'): HTMLSpanElement {
   const s = document.createElement('span');
   s.className = cls;
-  s.innerHTML = svgMarkup;
+  const n = ++iconSerial;
+  s.innerHTML = svgMarkup.includes('kg-') ? svgMarkup.replace(/kg-([a-z0-9]+)/g, `kg${n}-$1`) : svgMarkup;
   return s;
 }
 

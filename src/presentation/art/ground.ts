@@ -1,7 +1,7 @@
 import { TILE_H, TILE_W } from '../render/iso';
 import { artRng, darken, lighten, type Ctx } from './toolkit';
 
-/** Extra pixels around the map diamond for the shallow-water glow. */
+/** Extra pixels around the map diamond for the mist halo. */
 export const GROUND_PAD = 80;
 /** Height of the dirt cliff under the island's front edges. */
 export const CLIFF = 54;
@@ -9,7 +9,10 @@ export const CLIFF = 54;
 const GRASS = '#86b864';
 const GRASS_EDGE = '#6b9c52';
 
-/** Paints the island: shallow-water glow, dirt cliff, soft grass with flowers. Returns the canvas size. */
+/**
+ * Paints the plateau: a mountain top rising out of a sea of clouds. Mist halo, rocky crags that
+ * fade into cloud, a grass top with tonal patches, grain, flowers and a shrub line on the back rim.
+ */
 export function paintGround(ctx: Ctx, mapSize: number): void {
   const W = mapSize * TILE_W;
   const H = mapSize * TILE_H;
@@ -27,30 +30,19 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
     ctx.closePath();
   };
 
-  // Shallow water glow around the island.
+  // Mist halo: the plateau glows faintly above the cloud sea.
   ctx.save();
-  ctx.shadowColor = 'rgba(200, 212, 228, 0.9)';
-  ctx.shadowBlur = 60;
+  ctx.shadowColor = 'rgba(214, 222, 240, 0.85)';
+  ctx.shadowBlur = 70;
   ctx.beginPath();
   ctx.moveTo(top.x, top.y - 10);
   ctx.lineTo(right.x + 20, right.y);
   ctx.lineTo(bottom.x, bottom.y + CLIFF + 20);
   ctx.lineTo(left.x - 20, left.y);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(120, 136, 158, 0.75)';
+  ctx.fillStyle = 'rgba(150, 162, 190, 0.55)';
   ctx.fill();
   ctx.restore();
-
-  // Foam line where the cliff meets the water.
-  ctx.beginPath();
-  ctx.moveTo(left.x - 6, left.y + CLIFF - 4);
-  ctx.lineTo(bottom.x, bottom.y + CLIFF + 6);
-  ctx.lineTo(right.x + 6, right.y + CLIFF - 4);
-  ctx.lineWidth = 10;
-  ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  ctx.stroke();
 
   // Cliff faces: left face lit, right face in shade.
   const face = (a: { x: number; y: number }, b: { x: number; y: number }, c1: string, c2: string) => {
@@ -66,8 +58,8 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
     ctx.fillStyle = g;
     ctx.fill();
   };
-  face(left, bottom, '#9aa0aa', '#6f7580');
-  face(bottom, right, '#7d838e', '#585d67');
+  face(left, bottom, '#a3a5a8', '#6b6f78');
+  face(bottom, right, '#7f838c', '#50545e');
   // Soft strata stripes and pebbles.
   const rand = artRng(99);
   ctx.lineWidth = 3;
@@ -90,6 +82,66 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
       ctx.beginPath();
       ctx.ellipse(x, y, 3 + rand() * 4, 2 + rand() * 2, 0, 0, Math.PI * 2);
       ctx.fillStyle = rand() < 0.5 ? 'rgba(235,240,245,0.35)' : 'rgba(40,46,56,0.3)';
+      ctx.fill();
+    }
+  }
+
+  // Crags: vertical fissures and lit ledges, so the cliff reads as mountain rock.
+  for (const [a, b, lit] of [[left, bottom, true], [bottom, right, false]] as const) {
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const n = Math.floor(len / 9);
+    for (let i = 1; i < n; i++) {
+      const f = (i + rand() * 0.6 - 0.3) / n;
+      const x = a.x + (b.x - a.x) * f;
+      const y0 = a.y + (b.y - a.y) * f + 4;
+      const depth = 14 + rand() * (CLIFF - 16);
+      ctx.beginPath();
+      ctx.moveTo(x, y0);
+      ctx.lineTo(x + (rand() - 0.5) * 4, y0 + depth * 0.5);
+      ctx.lineTo(x + (rand() - 0.5) * 5, y0 + depth);
+      ctx.strokeStyle = lit ? 'rgba(52,56,66,0.32)' : 'rgba(28,30,38,0.38)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      if (rand() < 0.4) {
+        ctx.beginPath();
+        ctx.moveTo(x + 1.5, y0 + depth * 0.3);
+        ctx.lineTo(x + 7, y0 + depth * 0.3 + (b.y - a.y) / len * 7);
+        ctx.strokeStyle = lit ? 'rgba(240,244,250,0.35)' : 'rgba(200,210,225,0.18)';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      }
+    }
+  }
+  // The foot of the cliff dissolves into the cloud sea.
+  for (const [a, b] of [[left, bottom], [bottom, right]] as const) {
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y + CLIFF * 0.45);
+    ctx.lineTo(b.x, b.y + CLIFF * 0.45);
+    ctx.lineTo(b.x, b.y + CLIFF + 1);
+    ctx.lineTo(a.x, a.y + CLIFF + 1);
+    ctx.closePath();
+    const mg = ctx.createLinearGradient(0, Math.min(a.y, b.y) + CLIFF * 0.45, 0, Math.max(a.y, b.y) + CLIFF);
+    mg.addColorStop(0, 'rgba(206,214,232,0)');
+    mg.addColorStop(1, 'rgba(206,214,232,0.6)');
+    ctx.fillStyle = mg;
+    ctx.fill();
+  }
+  // Cloud banks hugging the cliff foot.
+  for (const [a, b] of [[left, bottom], [bottom, right]] as const) {
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const n = Math.floor(len / 22);
+    for (let i = 0; i <= n; i++) {
+      const f = i / n;
+      const x = a.x + (b.x - a.x) * f + (rand() - 0.5) * 10;
+      const y = a.y + (b.y - a.y) * f + CLIFF + 2 + rand() * 6;
+      const r = 14 + rand() * 14;
+      const cg = ctx.createRadialGradient(x - r * 0.3, y - r * 0.4, r * 0.1, x, y, r);
+      cg.addColorStop(0, 'rgba(250,251,255,0.95)');
+      cg.addColorStop(0.6, 'rgba(226,232,246,0.75)');
+      cg.addColorStop(1, 'rgba(206,214,236,0)');
+      ctx.fillStyle = cg;
+      ctx.beginPath();
+      ctx.ellipse(x, y, r * 1.4, r * 0.75, 0, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -126,6 +178,15 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+  }
+  // Fine grain, so the grass has texture at high zoom instead of flat colour.
+  for (let i = 0; i < mapSize * mapSize * 5; i++) {
+    const tx = rand() * mapSize;
+    const ty = rand() * mapSize;
+    const x = (tx - ty) * (TILE_W / 2);
+    const y = (tx + ty) * (TILE_H / 2);
+    ctx.fillStyle = rand() < 0.5 ? 'rgba(220,245,190,0.18)' : 'rgba(50,110,40,0.12)';
+    ctx.fillRect(x, y, 1.6, 1);
   }
   // Very faint tile checker so the grid can be sensed without lines.
   ctx.fillStyle = 'rgba(40,90,20,0.035)';
@@ -217,16 +278,69 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
   ctx.lineWidth = 3;
   ctx.strokeStyle = 'rgba(230,255,200,0.7)';
   ctx.stroke();
+  // Low shrubs and rocks along the back rim, where the plateau drops away.
+  for (const [a, b] of [[left, top], [top, right]] as const) {
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const n = Math.floor(len / 26);
+    for (let i = 1; i < n; i++) {
+      if (rand() < 0.35) continue;
+      const f = (i + (rand() - 0.5) * 0.6) / n;
+      const x = a.x + (b.x - a.x) * f;
+      const y = a.y + (b.y - a.y) * f - 2;
+      if (rand() < 0.25) {
+        ctx.beginPath();
+        ctx.ellipse(x, y, 7, 4.5, 0, Math.PI, 0);
+        ctx.closePath();
+        ctx.fillStyle = '#8f949d';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(38,48,61,0.6)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        continue;
+      }
+      for (const [dx, dy, r] of [[-5, 0, 6], [4, -1, 7], [0, -5, 6]]) {
+        const sg = ctx.createRadialGradient(x + dx - 2, y + dy - 3, 1, x + dx, y + dy, r);
+        sg.addColorStop(0, '#7fae5a');
+        sg.addColorStop(1, '#3f7a3c');
+        ctx.fillStyle = sg;
+        ctx.beginPath();
+        ctx.ellipse(x + dx, y + dy, r, r * 0.75, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
 }
 
-/** A small curved wave highlight for the water around the island. */
-export function paintWave(ctx: Ctx): void {
-  ctx.lineCap = 'round';
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-  ctx.beginPath();
-  ctx.moveTo(-14, 2);
-  ctx.quadraticCurveTo(-7, -4, 0, 1);
-  ctx.quadraticCurveTo(7, 6, 14, 0);
-  ctx.stroke();
+/**
+ * Backdrop behind the plateau: dusk light over the valley, darker toward the edges.
+ * Drawn small and stretched (a smooth gradient survives scaling).
+ */
+export function paintBackdrop(ctx: Ctx, w: number, h: number): void {
+  const g = ctx.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.5, Math.max(w, h) * 0.62);
+  g.addColorStop(0, '#5b6a86');
+  g.addColorStop(0.45, '#3b4862');
+  g.addColorStop(1, '#1d2537');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+}
+
+/**
+ * A drifting wisp of the cloud sea around the plateau (key `water.wave`, kept for compatibility).
+ * Draw it in a box about 4 x 1.35 of `size`, centred on the origin.
+ */
+export function paintWave(ctx: Ctx, size = 30): void {
+  const lobes: [number, number, number][] = [[-1.3, 0.12, 0.62], [-0.55, -0.12, 0.85], [0.35, -0.05, 0.95], [1.2, 0.15, 0.6]];
+  for (const [dx, dy, r] of lobes) {
+    const x = dx * size;
+    const y = dy * size;
+    const rr = r * size;
+    const g = ctx.createRadialGradient(x - rr * 0.25, y - rr * 0.35, rr * 0.1, x, y, rr);
+    g.addColorStop(0, 'rgba(250,251,255,0.9)');
+    g.addColorStop(0.55, 'rgba(222,229,245,0.55)');
+    g.addColorStop(1, 'rgba(200,210,235,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(x, y, rr * 1.15, rr * 0.55, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }

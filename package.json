@@ -25,6 +25,7 @@
     "cap:ios": "npm run build && cap sync ios && cap open ios",
     "cap:android": "npm run build && cap sync android && cap open android",
     "art": "vite --open /tools/art-gallery/",
+    "brand": "node tools/brand/brand.mjs",
     "docs:progression": "node tools/progression/generate.mjs",
     "balance:armies": "node tools/balance/generate.mjs",
     "balance:campaign": "node tools/balance/campaign.mjs"

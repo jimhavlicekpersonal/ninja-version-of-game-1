@@ -8,7 +8,7 @@ import { collectorAmount, collectorCapacity, effectiveLevel } from '../../gamepl
 import type { Building } from '../../gameplay/sim/types';
 import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
-import { GROUND_PAD, Keys, TEX_SCALE, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
 import { confetti, resourceBurst } from './fx';
 import { sound } from '../audio/sound';
@@ -112,7 +112,7 @@ export class VillageScene extends Phaser.Scene {
     ensureTextures(this, gd);
     const mb = mapBounds(mapSize);
     this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setScale(groundScale(this.textures, mapSize)).setDepth(-10);
-    this.addWaves(mapSize);
+    addSurroundings(this, mapSize);
     this.grid = this.add.graphics().setDepth(-5).setAlpha(0);
     this.drawGrid(mapSize);
 
@@ -254,16 +254,25 @@ export class VillageScene extends Phaser.Scene {
     timer.lastFill = fill;
     const g = timer.bar;
     g.clear();
-    g.fillStyle(0x5a3d7a, 0.9);
-    g.fillRoundedRect(-TIMER_W / 2 - 2, -TIMER_H / 2 - 2, TIMER_W + 4, TIMER_H + 4, (TIMER_H + 4) / 2);
-    g.fillStyle(0xfff6e0, 1);
+    // Sumi-ink frame, a fine gold-leaf rule, a recessed washi track and a glossy bamboo-green fill.
+    g.fillStyle(0x0f141c, 0.25);
+    g.fillRoundedRect(-TIMER_W / 2 - 2, -TIMER_H / 2, TIMER_W + 4, TIMER_H + 4, (TIMER_H + 4) / 2);
+    g.fillStyle(0x26303d, 0.95);
+    g.fillRoundedRect(-TIMER_W / 2 - 2.5, -TIMER_H / 2 - 2.5, TIMER_W + 5, TIMER_H + 5, (TIMER_H + 5) / 2);
+    g.lineStyle(1, 0xc99a3e, 0.8);
+    g.strokeRoundedRect(-TIMER_W / 2 - 1.5, -TIMER_H / 2 - 1.5, TIMER_W + 3, TIMER_H + 3, (TIMER_H + 3) / 2);
+    g.fillStyle(0xe8dcc2, 1);
     g.fillRoundedRect(-TIMER_W / 2, -TIMER_H / 2, TIMER_W, TIMER_H, TIMER_H / 2);
+    g.fillStyle(0xc9b896, 1);
+    g.fillRoundedRect(-TIMER_W / 2, -TIMER_H / 2, TIMER_W, 3, 1.5);
     const w = Math.max(TIMER_H, TIMER_W * fill);
     if (fill > 0) {
-      g.fillStyle(0x6fd651, 1);
+      g.fillStyle(0x3f8a4b, 1);
       g.fillRoundedRect(-TIMER_W / 2, -TIMER_H / 2, w, TIMER_H, TIMER_H / 2);
-      g.fillStyle(0xb8f59a, 1);
-      g.fillRoundedRect(-TIMER_W / 2 + 3, -TIMER_H / 2 + 2, Math.max(0, w - 6), 3, 1.5);
+      g.fillStyle(0x6cc15c, 1);
+      g.fillRoundedRect(-TIMER_W / 2, -TIMER_H / 2, w, TIMER_H - 3, (TIMER_H - 3) / 2);
+      g.fillStyle(0xc4f2a8, 0.9);
+      g.fillRoundedRect(-TIMER_W / 2 + 3, -TIMER_H / 2 + 2, Math.max(0, w - 6), 2.5, 1.25);
     }
   }
 
@@ -295,30 +304,6 @@ export class VillageScene extends Phaser.Scene {
     });
   }
 
-  private addWaves(mapSize: number): void {
-    const mb = mapBounds(mapSize);
-    let seed = 4242;
-    const rand = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
-    let placed = 0;
-    for (let i = 0; i < 400 && placed < 70; i++) {
-      const x = mb.x - 380 + rand() * (mb.width + 760);
-      const y = mb.y - 380 + rand() * (mb.height + 760);
-      const t = worldToTile(x, y);
-      if (t.tx > -3 && t.ty > -3 && t.tx < mapSize + 4 && t.ty < mapSize + 4) continue; // on or near the island
-      placed++;
-      const w = this.add.image(x, y, Keys.wave).setScale(0.5 + rand() * 0.4).setAlpha(0).setDepth(-20);
-      this.tweens.add({
-        targets: w,
-        alpha: { from: 0, to: 0.85 },
-        x: x + 10,
-        duration: 1600 + rand() * 1800,
-        delay: rand() * 2500,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-      });
-    }
-  }
 
   private drawGrid(mapSize: number): void {
     const g = this.grid;
@@ -375,9 +360,14 @@ export class VillageScene extends Phaser.Scene {
     const size = buildingDef(this.controller.data, b.type).size;
     const pts = footprintCorners(b.x, b.y, size);
     const v = pts.map((p) => new Phaser.Math.Vector2(p.x, p.y));
-    g.lineStyle(9 / this.userZoom, 0xfff6a8, 0.35);
+    // Gold-leaf selection: a soft glow, a gold line and a bright inner edge.
+    g.fillStyle(0xffe9a8, 0.14);
+    g.fillPoints(v, true);
+    g.lineStyle(10 / this.userZoom, 0xe9b44c, 0.25);
     g.strokePoints(v, true);
-    g.lineStyle(3 / this.userZoom, 0xffffff, 0.95);
+    g.lineStyle(3.5 / this.userZoom, 0xe9b44c, 1);
+    g.strokePoints(v, true);
+    g.lineStyle(1.4 / this.userZoom, 0xfff6d8, 0.95);
     g.strokePoints(v, true);
     g.setDepth(depthFor(b.x, b.y, size) - 1);
   }
@@ -392,8 +382,9 @@ export class VillageScene extends Phaser.Scene {
         fontSize: '20px',
         fontStyle: 'bold',
         color,
-        stroke: '#2b1d12',
+        stroke: '#26303d',
         strokeThickness: 5,
+        shadow: { offsetX: 0, offsetY: 2, color: 'rgba(15,20,30,0.45)', blur: 3, stroke: true, fill: true },
         resolution: Math.max(2, this.renderScale),
       })
       .setOrigin(0.5, 1)
@@ -735,8 +726,20 @@ export class VillageScene extends Phaser.Scene {
     const g = pl.outline;
     g.clear();
     const pts = footprintCorners(pl.x, pl.y, pl.size).map((p) => new Phaser.Math.Vector2(p.x, p.y));
-    g.fillStyle(pl.valid ? 0x7cff6b : 0xff5a4a, 0.35);
+    g.fillStyle(pl.valid ? 0x6cc15c : 0xc8402f, pl.valid ? 0.32 : 0.4);
     g.fillPoints(pts, true);
+    // Tile lines inside the footprint, so the exact cells are visible.
+    g.lineStyle(1 / this.userZoom, 0xffffff, 0.35);
+    for (let i = 1; i < pl.size; i++) {
+      const a = tileToWorld(pl.x + i, pl.y);
+      const b = tileToWorld(pl.x + i, pl.y + pl.size);
+      const c = tileToWorld(pl.x, pl.y + i);
+      const d = tileToWorld(pl.x + pl.size, pl.y + i);
+      g.lineBetween(a.x, a.y, b.x, b.y);
+      g.lineBetween(c.x, c.y, d.x, d.y);
+    }
+    g.lineStyle(8 / this.userZoom, pl.valid ? 0x6cc15c : 0xc8402f, 0.3);
+    g.strokePoints(pts, true);
     g.lineStyle(3 / this.userZoom, pl.valid ? 0xeaffd8 : 0xffd0c8, 1);
     g.strokePoints(pts, true);
   }

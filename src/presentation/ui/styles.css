@@ -81,6 +81,12 @@ html, body {
   text-shadow: 0 2px 0 rgba(10, 14, 20, .6), 0 0 22px rgba(233, 180, 76, .35); transition: opacity .35s;
 }
 #boot.done { opacity: 0; pointer-events: none; }
+.boot-card { display: flex; flex-direction: column; align-items: center; gap: 2px; animation: fade .6s ease-out; }
+.boot-mark { width: 112px; height: 112px; border-radius: 50%; box-shadow: 0 0 0 3px #e9b44c, 0 0 0 7px rgba(233, 180, 76, .2), 0 14px 40px rgba(0, 0, 0, .5); margin-bottom: 14px; }
+.boot-title { font: 800 34px/1.1 var(--font-display); letter-spacing: 1px; }
+.boot-sub { font: 800 12px var(--font-display); letter-spacing: 4px; text-transform: uppercase; color: var(--sun); text-shadow: none; }
+.boot-status { margin-top: 22px; font: 500 14px var(--font); color: rgba(247, 240, 225, .7); text-shadow: none; letter-spacing: .3px; animation: net-blink 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .boot-status { animation: none; } }
 #boot .err { max-width: 420px; padding: 16px; text-align: center; font-weight: 600; font-size: 15px; color: var(--ink); text-shadow: none; background: var(--cream); border-radius: 20px; }
 
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
@@ -261,6 +267,15 @@ html, body {
   background: linear-gradient(90deg, transparent, rgba(120, 78, 10, .35) 15%, rgba(120, 78, 10, .35) 85%, transparent);
 }
 .modal-head h2 { color: #4a2e00; text-shadow: 0 1px 0 rgba(255, 255, 255, .55); }
+/* A lost battle gets a slate lacquer header instead of the victory gold. */
+.modal:has(.results.loss) .modal-head {
+  background: linear-gradient(180deg, #6a7488 0%, #4a5468 48%, #3f485b 52%, #343c4d 100%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .25), inset 0 -2px 0 rgba(10, 14, 20, .45), 0 2px 0 rgba(10, 14, 20, .2);
+}
+.modal:has(.results.loss) .modal-head::after { background: linear-gradient(90deg, transparent, rgba(233, 180, 76, .45) 15%, rgba(233, 180, 76, .45) 85%, transparent); }
+.modal:has(.results.loss) .modal-head h2 { color: #f7f0e1; text-shadow: 0 1px 0 rgba(10, 14, 20, .5); }
+/* A win gets a soft gold glow behind the stars. */
+.results.win .result-stars { background: radial-gradient(closest-side, rgba(255, 210, 63, .28), transparent); }
 .modal-head .icon-btn { background: radial-gradient(circle at 40% 30%, #fffef8, #f6ecd6); }
 .modal-body { padding: 12px 16px 16px; overflow: auto; -webkit-user-select: text; user-select: text; touch-action: pan-y; }
 .modal-body p { margin: 6px 0; line-height: 1.45; }
@@ -288,7 +303,7 @@ html, body {
 .shop-why { font-size: 11px; font-weight: 700; color: #b0392b; }
 
 .settings textarea.code, textarea.chat-input, input.text {
-  width: 100%; font: 13px ui-monospace, Menlo, Consolas, monospace; border: 2px solid #e2d8f2; border-radius: 14px; padding: 9px;
+  width: 100%; font: 13px ui-monospace, Menlo, Consolas, monospace; border: 2px solid #ddcfb2; border-radius: 14px; padding: 9px; box-shadow: inset 0 2px 3px rgba(38, 48, 61, .08);
   background: #fff; resize: vertical; -webkit-user-select: text; user-select: text; color: var(--ink);
 }
 .toggle { display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 6px 0; }
@@ -343,7 +358,8 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .troop-card.on { border-color: var(--sun); background: radial-gradient(110% 80% at 50% 15%, #fffbe0, #ffe27a); transform: translateY(-5px); box-shadow: 0 0 0 1px var(--sun-dark), 0 0 16px rgba(255, 210, 63, .65), 0 5px 0 rgba(38, 48, 61, .26); }
 .troop-card.empty { filter: grayscale(1); opacity: .5; }
 .troop-card.ability { background: linear-gradient(#e8edf3, #c9d1dc); }
-.troop-card.ability svg { width: 100%; height: 44px; }
+.troop-card.ability .icon { display: block; width: 100%; height: 46px; padding: 3px 6px 0; }
+.troop-card.ability svg { width: 100%; height: 100%; }
 .troop-count { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; font-weight: 900; font-size: 14px; color: var(--plum); }
 .b-bottom {
   position: absolute; left: calc(12px + var(--safe-l)); right: calc(12px + var(--safe-r)); bottom: calc(12px + var(--safe-b));
@@ -423,7 +439,7 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .chat-input-row input { flex: 1; font-family: var(--font); font-size: 15px; }
 .donate-btn { min-height: 38px; padding: 4px 8px; }
 .donate-btn img { width: 26px; height: 24px; object-fit: contain; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: #d6cfe4; display: inline-block; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #c9bea4; display: inline-block; }
 .dot.on { background: var(--leaf); box-shadow: 0 0 0 3px rgba(92, 207, 74, .25); }
 .raid-score { display: flex; justify-content: space-around; align-items: center; background: linear-gradient(#fff6c8, #ffe27a); border-radius: 18px; padding: 10px; text-align: center; }
 .raid-score .big { display: block; font: 800 28px var(--font-display); color: var(--plum); }
@@ -453,7 +469,7 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 
 /* Online play status */
 .net-pill { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: linear-gradient(#fffdf7, #f1e7d2); color: var(--plum); font: 700 12px var(--font); box-shadow: var(--gloss), var(--hairline), 0 3px 0 rgba(38, 48, 61, .2); pointer-events: auto; cursor: pointer; white-space: nowrap; }
-.net-pill::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #b9b0c6; box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15); }
+.net-pill::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #9aa0aa; box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .15); }
 .net-pill.online::before { background: #46c35a; }
 .net-pill.connecting::before { background: #ffc93c; animation: net-blink 1s ease-in-out infinite; }
 .net-pill.offline::before, .net-pill.incompatible::before { background: #d2412f; }
@@ -513,7 +529,7 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-detail { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .army-tabs { margin-bottom: 8px; }
 .training .army-filters { flex-wrap: nowrap; margin-top: 0; }
-.training .actions.army-filters select { flex: 1 1 0; min-width: 0; padding: 6px 4px; }
+.training .actions.army-filters select { flex: 1 1 0; min-width: 0; padding: 6px 20px 6px 8px; background-position: right 7px center; text-overflow: ellipsis; }
 .army-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin-top: 8px; }
 .troop-row.army-card { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: start; gap: 2px 8px; text-align: left; }
 .troop-row.army-card > img { width: 52px; height: 48px; }
@@ -551,12 +567,24 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 /* Keep the expanded roster filters comfortable to use on phones. */
 .training .actions select {
   min-height: 44px;
-  padding: 8px 12px;
+  padding: 8px 28px 8px 12px;
   border: 1px solid #c9bea4;
   border-radius: 10px;
-  background: #fffaf0;
+  background-color: #fffaf0;
   color: #302a24;
   font: inherit;
+}
+/* Dropdowns in panels: washi field, ink chevron, the same bevel as buttons. */
+.modal select, .sheet select {
+  -webkit-appearance: none; appearance: none;
+  min-height: 36px; padding: 6px 28px 6px 10px;
+  border: 1px solid #cdbf9f; border-radius: 10px;
+  background-color: #fffaf0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2326303d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 11px 8px;
+  color: var(--ink); font: 600 13px var(--font);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 0 rgba(38, 48, 61, .12);
+  cursor: pointer;
 }
 .codex-row.locked img { filter: grayscale(.7); opacity: .75; }
 .codex-status { font-weight: 700; color: #a0522d; }

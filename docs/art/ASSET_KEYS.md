@@ -16,7 +16,7 @@ Every image the game draws lives behind a key (`src/presentation/render/assets.t
 | `projectile.<kind>` | `acorn` (Kunai Tower kunai), `pebble` (Kunai Adept), `pinecone` (firework shell), `sting` (shuriken), `spark` (arrow), `seedbomb` (firebomb) | centred |
 | `bubble.acorns`, `bubble.dew` | "ready to collect" bubbles | 44×54 |
 | `fx.puff`, `fx.smoke`, `fx.jam`, `fx.star`, `fx.star.grey`, `fx.shadow` | effects | centred |
-| `ground`, `water.wave` | the plateau and mist wisps | ground is map-sized |
+| `ground`, `water.wave`, `backdrop` | the plateau, the drifting cloud-sea wisps around it (the key predates the clouds), and the dusk gradient behind everything | ground is map-sized (any resolution: scenes scale it by its width); a wave is about 130 x 44; the backdrop is stretched, so a small smooth gradient is enough |
 | `icon.*` | UI icons, planned (see `ICON_MANIFEST.json`) | square |
 
 Building type ids are the stable internal ids (see `docs/rebuild/ID_MAP.md`): for example the Clan Keep is `elder_toadstool` and the Kunai Tower is `acorn_cannon`.

@@ -3,6 +3,8 @@ import { Keys, TEX_SCALE } from './assets';
 
 const CONFETTI = 'fx.confetti';
 const DOT = 'fx.dot';
+const COIN = 'fx.coin';
+const GRAIN = 'fx.grain';
 
 /** Small white shapes that particles tint at runtime. */
 export function ensureFxTextures(scene: Phaser.Scene): void {
@@ -15,6 +17,28 @@ export function ensureFxTextures(scene: Phaser.Scene): void {
     g.fillStyle(0xffffff, 1);
     g.fillCircle(6, 6, 6);
     g.generateTexture(DOT, 12, 12);
+    // A square-holed gold coin (2x, so it stays crisp).
+    g.clear();
+    g.fillStyle(0x7a5418, 1);
+    g.fillCircle(14, 14, 14);
+    g.fillStyle(0xe9b44c, 1);
+    g.fillCircle(14, 14, 12);
+    g.fillStyle(0xffe08a, 1);
+    g.fillCircle(12, 11, 7);
+    g.fillStyle(0xe9b44c, 1);
+    g.fillCircle(14, 14, 7);
+    g.fillStyle(0x7a5418, 1);
+    g.fillRect(10.5, 10.5, 7, 7);
+    g.generateTexture(COIN, 28, 28);
+    // A rice grain.
+    g.clear();
+    g.fillStyle(0x8a7140, 1);
+    g.fillEllipse(8, 12, 14, 22);
+    g.fillStyle(0xfff6e0, 1);
+    g.fillEllipse(8, 12, 11, 19);
+    g.fillStyle(0xffffff, 1);
+    g.fillEllipse(6, 8, 4, 8);
+    g.generateTexture(GRAIN, 16, 24);
     g.destroy();
   }
 }
@@ -38,7 +62,8 @@ export function confetti(scene: Phaser.Scene, x: number, y: number, zoom: number
     scale: { start: 1 / zoom, end: 0.6 / zoom },
     alpha: { start: 1, end: 0 },
     lifespan: 1100,
-    tint: [0xff6b5b, 0xffd23f, 0x5ccf4a, 0x47b9f5, 0xb48cff, 0xff9ad0],
+    // Clan colours: vermilion, gold leaf, washi, indigo, bamboo and a little sakura.
+    tint: [0xc8402f, 0xe9b44c, 0xf4ead6, 0x3f6fa0, 0x7fae5a, 0xf4b6c8],
   }, depth);
   burst(scene, x, y, Keys.star, 8, {
     speed: { min: 40 / zoom, max: 120 / zoom },
@@ -50,16 +75,17 @@ export function confetti(scene: Phaser.Scene, x: number, y: number, zoom: number
 
 /** Resource icons popping out of a collector. */
 export function resourceBurst(scene: Phaser.Scene, x: number, y: number, resource: string, zoom: number, depth: number): void {
-  const key = resource === 'dew' ? Keys.bubble('dew') : Keys.projectile('acorn');
-  burst(scene, x, y, key, 7, {
+  ensureFxTextures(scene);
+  const key = resource === 'dew' ? GRAIN : COIN;
+  burst(scene, x, y, key, 8, {
     speed: { min: 80 / zoom, max: 170 / zoom },
     angle: { min: 230, max: 310 },
     gravityY: 300 / zoom,
-    scale: { start: (resource === 'dew' ? 0.5 : 0.9) / TEX_SCALE / zoom, end: 0.2 / TEX_SCALE / zoom },
+    rotate: resource === 'dew' ? { min: -60, max: 60 } : 0,
+    scale: { start: 0.55 / zoom, end: 0.3 / zoom },
     alpha: { start: 1, end: 0 },
     lifespan: 800,
   }, depth);
-  ensureFxTextures(scene);
   burst(scene, x, y, DOT, 10, {
     speed: { min: 30 / zoom, max: 90 / zoom },
     angle: { min: 0, max: 360 },

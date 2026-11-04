@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CLIFF, GROUND_PAD, paintGround, paintWave } from '../art/ground';
+import { CLIFF, GROUND_PAD, paintBackdrop, paintGround, paintWave } from '../art/ground';
 import {
   buildingPainters,
   keepSkin,
@@ -19,7 +19,7 @@ import {
   type Tier,
 } from '../art/ninja';
 import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
-import { TILE_H, TILE_W } from './iso';
+import { TILE_H, TILE_W, mapBounds, worldToTile } from './iso';
 import { WARRIORS } from '../../gameplay/sim/progression';
 
 registerWarriorArt(WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })));
@@ -59,7 +59,10 @@ export const Keys = {
   buildingBase: (type: string) => `building.${type}`,
   construction: (size: number) => `construction.${size}`,
   bubble: (resource: string) => `bubble.${resource}`,
+  /** A drifting wisp of the cloud sea around the plateau (the key predates the clouds). */
   wave: 'water.wave',
+  /** Dusk gradient behind everything. */
+  backdrop: 'backdrop',
   rubble: (size: number) => `rubble.${size}`,
   troop: (type: string) => `troop.${type}`,
   /** Badge icon for a roster warrior (src/gameplay/data/roster.json id). */
@@ -119,6 +122,39 @@ export function groundSize(mapSize: number): { w: number; h: number } {
 export function groundScale(textures: Phaser.Textures.TextureManager, mapSize: number): number {
   const src = textures.get(Keys.ground).getSourceImage() as { width: number };
   return groundSize(mapSize).w / Math.max(1, src.width);
+}
+
+/**
+ * The world around the plateau: a dusk backdrop and slow wisps of the cloud sea.
+ * Shared by the village and battle scenes.
+ */
+export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = 60): void {
+  const mb = mapBounds(mapSize);
+  const cx = mb.x + mb.width / 2;
+  const cy = mb.y + mb.height / 2;
+  const bd = scene.add.image(cx, cy, Keys.backdrop).setDepth(-30);
+  bd.setDisplaySize(mb.width + 4000, mb.height + 4000);
+  let seed = 4242;
+  const rand = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0, placed = 0; i < 500 && placed < count; i++) {
+    const x = mb.x - 420 + rand() * (mb.width + 840);
+    const y = mb.y - 360 + rand() * (mb.height + 760);
+    const t = worldToTile(x, y);
+    if (t.tx > -2 && t.ty > -2 && t.tx < mapSize + 3 && t.ty < mapSize + 3) continue; // on or near the plateau
+    placed++;
+    const scale = 0.7 + rand() * 0.9;
+    const w = scene.add.image(x, y, Keys.wave).setScale(scale / TEX_SCALE).setAlpha(0).setDepth(-20);
+    scene.tweens.add({
+      targets: w,
+      alpha: { from: 0, to: 0.55 + rand() * 0.35 },
+      x: x + 40 + rand() * 40,
+      duration: 6000 + rand() * 6000,
+      delay: rand() * 4000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
 }
 
 /** Thumbnail key for the HUD: real art for the plain key wins, else the tier 1 drawing. */
@@ -196,10 +232,16 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
       c.done();
     }
   }
-  const wave = canvasFor(scene, Keys.wave, 32, 12, 6);
+  const wave = canvasFor(scene, Keys.wave, 130, 44, 22);
   if (wave) {
     paintWave(wave.ctx);
     wave.done();
+  }
+  const backdrop = canvasFor(scene, Keys.backdrop, 128, 128, 0, 1);
+  if (backdrop) {
+    backdrop.ctx.translate(-64, 0);
+    paintBackdrop(backdrop.ctx, 128, 128);
+    backdrop.done();
   }
   for (const size of [1, 2, 3, 4]) {
     const w = size * TILE_W;

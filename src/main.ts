@@ -122,7 +122,7 @@ async function boot(): Promise<void> {
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: host,
-    backgroundColor: '#2b3747',
+    backgroundColor: '#1d2537',
     banner: false,
     disableContextMenu: true,
     scale: { mode: Phaser.Scale.NONE, width: w * renderScale, height: h * renderScale, zoom: 1 / renderScale },

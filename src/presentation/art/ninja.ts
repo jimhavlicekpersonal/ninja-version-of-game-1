@@ -56,7 +56,7 @@ function poly(ctx: Ctx, pts: Pt[], fill: string | CanvasGradient, line = 1.4, st
   }
 }
 
-function circle(ctx: Ctx, x: number, y: number, r: number, fill: string, line = 1.2, stroke = INK): void {
+function circle(ctx: Ctx, x: number, y: number, r: number, fill: string | CanvasGradient, line = 1.2, stroke = INK): void {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = fill;
@@ -77,18 +77,36 @@ function line(ctx: Ctx, pts: Pt[], color: string, width: number): void {
   ctx.stroke();
 }
 
-/** Footprint plate: packed earth or gravel with a soft edge. */
+/** Footprint plate: packed earth or gravel, lighter in the middle, with a raised kerb and loose grit. */
 function plate(ctx: Ctx, size: number, color: string, inset = 4): void {
   const hw = (size * TILE_W) / 2 - inset;
   const hh = (size * TILE_H) / 2 - inset / 2;
-  poly(ctx, [{ x: 0, y: -hh }, { x: hw, y: 0 }, { x: 0, y: hh }, { x: -hw, y: 0 }], color, 1.2, darken(color, 0.35));
+  const pts = [{ x: 0, y: -hh }, { x: hw, y: 0 }, { x: 0, y: hh }, { x: -hw, y: 0 }];
+  // Kerb: a sliver of the plate's front edges, a shade darker, so the plate sits on the grass.
+  poly(ctx, [{ x: -hw, y: 0 }, { x: 0, y: hh }, { x: hw, y: 0 }, { x: hw, y: 2 }, { x: 0, y: hh + 2 }, { x: -hw, y: 2 }], darken(color, 0.3), 0);
+  const g = ctx.createRadialGradient(-hw * 0.15, -hh * 0.2, hh * 0.1, 0, 0, hw * 1.05);
+  g.addColorStop(0, lighten(color, 0.12));
+  g.addColorStop(0.6, color);
+  g.addColorStop(1, darken(color, 0.14));
+  poly(ctx, pts, g, 1.2, darken(color, 0.38));
   const r = artRng(size * 31 + color.length);
-  ctx.fillStyle = rgba(darken(color, 0.3), 0.35);
-  for (let i = 0; i < size * 10; i++) {
+  for (let i = 0; i < size * 16; i++) {
     const u = r() * 2 - 1;
     const v = (r() * 2 - 1) * (1 - Math.abs(u));
-    ctx.fillRect(u * hw * 0.85, v * hh * 0.85, 1.6, 1.2);
+    const light = r() < 0.35;
+    ctx.fillStyle = light ? rgba(lighten(color, 0.4), 0.55) : rgba(darken(color, 0.32), 0.38);
+    ctx.beginPath();
+    ctx.ellipse(u * hw * 0.85, v * hh * 0.85, 1 + r() * 0.8, 0.6 + r() * 0.4, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
+}
+
+/** Vertical gradient for a wall face: lit at the top, a touch of ambient occlusion at the foot. */
+function faceFill(ctx: Ctx, color: string, top: number, bottom: number, light: number, dark: number): CanvasGradient {
+  const g = ctx.createLinearGradient(0, top, 0, bottom);
+  g.addColorStop(0, light >= 0 ? lighten(color, light) : darken(color, -light));
+  g.addColorStop(1, darken(color, dark));
+  return g;
 }
 
 /**
@@ -100,9 +118,18 @@ function block(ctx: Ctx, hw: number, hh: number, base: number, height: number, f
   const y0 = base;
   const y1 = base - height;
   const lw = opts.lw ?? 1.4;
-  poly(ctx, [{ x: -hw, y: y0 }, { x: 0, y: y0 + hh }, { x: 0, y: y1 + hh }, { x: -hw, y: y1 }], lighten(front, 0.06), lw);
-  poly(ctx, [{ x: 0, y: y0 + hh }, { x: hw, y: y0 }, { x: hw, y: y1 }, { x: 0, y: y1 + hh }], darken(front, 0.16), lw);
-  poly(ctx, [{ x: 0, y: y1 - hh }, { x: hw, y: y1 }, { x: 0, y: y1 + hh }, { x: -hw, y: y1 }], opts.top ?? lighten(front, 0.2), lw);
+  poly(ctx, [{ x: -hw, y: y0 }, { x: 0, y: y0 + hh }, { x: 0, y: y1 + hh }, { x: -hw, y: y1 }], faceFill(ctx, front, y1, y0 + hh, 0.1, 0.06), lw);
+  poly(ctx, [{ x: 0, y: y0 + hh }, { x: hw, y: y0 }, { x: hw, y: y1 }, { x: 0, y: y1 + hh }], faceFill(ctx, front, y1, y0 + hh, -0.1, 0.24), lw);
+  const topColor = opts.top ?? lighten(front, 0.2);
+  const tg = ctx.createLinearGradient(-hw * 0.5, y1 - hh, hw * 0.5, y1 + hh);
+  tg.addColorStop(0, lighten(topColor, 0.1));
+  tg.addColorStop(1, darken(topColor, 0.05));
+  poly(ctx, [{ x: 0, y: y1 - hh }, { x: hw, y: y1 }, { x: 0, y: y1 + hh }, { x: -hw, y: y1 }], tg, lw);
+  // Rim light on the two front top edges and the near corner.
+  if (height > 3 && hw > 6) {
+    line(ctx, [{ x: -hw + 1.2, y: y1 + 0.6 }, { x: 0, y: y1 + hh - 0.6 }], rgba('#ffffff', 0.35), 0.9);
+    line(ctx, [{ x: 0, y: y1 + hh + 1 }, { x: 0, y: y0 + hh - 1 }], rgba('#ffffff', 0.16), 0.9);
+  }
   return y1;
 }
 
@@ -112,6 +139,24 @@ function stoneBase(ctx: Ctx, hw: number, hh: number, base: number, height: numbe
   ctx.strokeStyle = rgba(INK, 0.35);
   ctx.lineWidth = 0.9;
   const rows = Math.max(1, Math.round(height / 7));
+  // Each dressed stone a slightly different tone, so the plinth reads as masonry, not a grey box.
+  const tone = artRng(Math.round(hw * 7 + height * 13));
+  const rh = height / rows;
+  for (let i = 0; i < rows; i++) {
+    const yb = base - rh * i;
+    const off = i % 2 ? 0.5 : 0;
+    for (let k = -1; k < 4; k++) {
+      const f0 = Math.max(0, (k + off) / 4);
+      const f1 = Math.min(1, (k + 1 + off) / 4);
+      if (f1 <= f0) continue;
+      const t = tone();
+      const fill = t < 0.5 ? rgba('#ffffff', 0.05 + t * 0.12) : rgba(INK, (t - 0.5) * 0.16);
+      for (const side of [0, 1]) {
+        const at = (f: number, up: number) => (side === 0 ? { x: -hw + hw * f, y: yb + hh * f - up } : { x: hw * f, y: yb + hh * (1 - f) - up });
+        poly(ctx, [at(f0, 0), at(f1, 0), at(f1, rh), at(f0, rh)], fill, 0);
+      }
+    }
+  }
   for (let i = 1; i < rows; i++) {
     const y = base - (height * i) / rows;
     line(ctx, [{ x: -hw, y }, { x: 0, y: y + hh }, { x: hw, y }], rgba(INK, 0.3), 0.9);
@@ -131,7 +176,7 @@ function stoneBase(ctx: Ctx, hw: number, hh: number, base: number, height: numbe
  * Japanese hip roof with upturned corners and tile rows.
  * Eave diamond half sizes (hw, hh) at y = eave; apex `rise` above.
  */
-function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, color = ROOF, opts: { flare?: number; ridge?: string; finial?: string } = {}): number {
+function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, color = ROOF, opts: { flare?: number; ridge?: string; finial?: string; tips?: string } = {}): number {
   const flare = opts.flare ?? Math.min(10, hw * 0.16);
   const apex = { x: 0, y: eave - rise };
   const L = { x: -hw, y: eave - flare };
@@ -142,7 +187,7 @@ function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, colo
   poly(ctx, [L, T, apex], darken(color, 0.25), 1.4);
   poly(ctx, [T, R, apex], darken(color, 0.32), 1.4);
   // Front slopes with a slight concave sag toward the eaves.
-  const face = (a: Pt, b: Pt, fill: string) => {
+  const face = (a: Pt, b: Pt, fill: string | CanvasGradient) => {
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
     ctx.quadraticCurveTo((a.x + b.x) / 2, (a.y + b.y) / 2 + 3, b.x, b.y);
@@ -156,21 +201,43 @@ function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, colo
     ctx.lineJoin = 'round';
     ctx.stroke();
   };
-  face(L, B, lighten(color, 0.08));
-  face(B, R, darken(color, 0.12));
-  // Tile rows.
+  const slope = (a: Pt, b: Pt, light: number, dark: number) => {
+    const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    const g = ctx.createLinearGradient(apex.x, apex.y, mid.x, mid.y);
+    g.addColorStop(0, light >= 0 ? lighten(color, light) : darken(color, -light));
+    g.addColorStop(1, darken(color, dark));
+    return g;
+  };
+  face(L, B, slope(L, B, 0.2, -0.04));
+  face(B, R, slope(B, R, -0.02, 0.2));
+  // Tile rows: runs from eave to ridge, and courses parallel to the eave.
   ctx.save();
-  for (const [a, b] of [[L, B], [B, R]] as const) {
-    for (let i = 1; i < 6; i++) {
-      const f = i / 6;
+  for (const [a, b, alpha] of [[L, B, 0.16], [B, R, 0.09]] as const) {
+    const runs = Math.max(5, Math.round(Math.hypot(b.x - a.x, b.y - a.y) / 7));
+    for (let i = 1; i < runs; i++) {
+      const f = i / runs;
       const p = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f + 2 };
-      line(ctx, [p, { x: apex.x + (p.x - apex.x) * 0.25, y: apex.y + (p.y - apex.y) * 0.25 }], rgba('#ffffff', 0.13), 1);
+      line(ctx, [p, { x: apex.x + (p.x - apex.x) * 0.22, y: apex.y + (p.y - apex.y) * 0.22 }], rgba('#ffffff', alpha), 0.9);
+    }
+    for (const t of [0.3, 0.55, 0.78]) {
+      const p = { x: apex.x + (a.x - apex.x) * t, y: apex.y + (a.y - apex.y) * t + 3 * t };
+      const q = { x: apex.x + (b.x - apex.x) * t, y: apex.y + (b.y - apex.y) * t + 3 * t };
+      line(ctx, [p, q], rgba(INK, 0.16), 0.9);
     }
   }
   ctx.restore();
-  // Eave edge highlight and ridge.
-  line(ctx, [L, { x: B.x, y: B.y }, R], rgba(lighten(color, 0.5), 0.6), 1.2);
-  line(ctx, [B, apex], opts.ridge ?? darken(color, 0.45), 2.2);
+  // Eave fascia, a soft highlight along the lower edge, and the ridge cap.
+  line(ctx, [L, { x: B.x, y: B.y }, R], rgba(lighten(color, 0.55), 0.7), 1.4);
+  line(ctx, [{ x: L.x + 2, y: L.y + 2.2 }, { x: B.x, y: B.y + 2.2 }, { x: R.x - 2, y: R.y + 2.2 }], rgba(INK, 0.22), 1);
+  line(ctx, [B, apex], opts.ridge ?? darken(color, 0.45), 2.6);
+  line(ctx, [{ x: B.x - 0.8, y: B.y - 2 }, { x: apex.x - 0.8, y: apex.y + 2 }], rgba('#ffffff', 0.22), 0.8);
+  if (opts.tips) {
+    // Metal caps on the upturned eave corners.
+    for (const c of [L, R]) {
+      circle(ctx, c.x, c.y - 1, 2, opts.tips, 0.8);
+      circle(ctx, c.x - 0.6, c.y - 1.6, 0.7, rgba('#ffffff', 0.7), 0);
+    }
+  }
   if (opts.finial) {
     circle(ctx, apex.x, apex.y - 3, 3.2, opts.finial, 1);
     line(ctx, [{ x: apex.x, y: apex.y - 6 }, { x: apex.x, y: apex.y - 11 }], opts.finial, 1.6);
@@ -181,6 +248,16 @@ function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, colo
 /** Plaster wall storey with timber posts and an optional lit window. */
 function storey(ctx: Ctx, hw: number, hh: number, base: number, height: number, wall = PLASTER, opts: { window?: boolean; door?: boolean; trim?: string } = {}): number {
   const top = block(ctx, hw, hh, base, height, wall);
+  // Shadow cast by the eaves onto the top of the walls.
+  for (const side of [0, 1]) {
+    const g = ctx.createLinearGradient(0, base - height, 0, base - height + Math.min(10, height * 0.45));
+    g.addColorStop(0, rgba(INK, 0.22));
+    g.addColorStop(1, rgba(INK, 0));
+    const pts = side === 0
+      ? [{ x: -hw, y: base - height }, { x: 0, y: base - height + hh }, { x: 0, y: base + hh }, { x: -hw, y: base }]
+      : [{ x: 0, y: base - height + hh }, { x: hw, y: base - height }, { x: hw, y: base }, { x: 0, y: base + hh }];
+    poly(ctx, pts, g, 0);
+  }
   const posts = [0.33, 0.66];
   for (const f of posts) {
     line(ctx, [{ x: -hw + hw * f, y: base + hh * f }, { x: -hw + hw * f, y: base - height + hh * f }], rgba(WOOD_DARK, 0.75), 1.6);
@@ -192,8 +269,13 @@ function storey(ctx: Ctx, hw: number, hh: number, base: number, height: number, 
   if (opts.window) {
     const wx = -hw * 0.5;
     const wy = base - height * 0.55 + hh * 0.5;
-    poly(ctx, [{ x: wx - 5, y: wy - 6 }, { x: wx + 5, y: wy - 1 }, { x: wx + 5, y: wy + 7 }, { x: wx - 5, y: wy + 2 }], '#ffd27a', 1.1);
+    glow(ctx, wx, wy + 1, 9);
+    const wg = ctx.createLinearGradient(0, wy - 6, 0, wy + 7);
+    wg.addColorStop(0, '#fff0b8');
+    wg.addColorStop(1, '#f2b04e');
+    poly(ctx, [{ x: wx - 5, y: wy - 6 }, { x: wx + 5, y: wy - 1 }, { x: wx + 5, y: wy + 7 }, { x: wx - 5, y: wy + 2 }], wg, 1.1);
     line(ctx, [{ x: wx, y: wy - 3.5 }, { x: wx, y: wy + 4.5 }], rgba(WOOD_DARK, 0.8), 0.9);
+    line(ctx, [{ x: wx - 5, y: wy - 2 + 2.5 }, { x: wx + 5, y: wy + 3 + 2.5 }], rgba(WOOD_DARK, 0.55), 0.7);
   }
   if (opts.door) {
     const dx = hw * 0.45;
@@ -477,8 +559,22 @@ export function keepSkin(roofColor: string, trimColor: string): PainterDef {
     paint(ctx, size, tier) {
       const { hw, hh } = half(size);
       plate(ctx, size, '#b9a98c');
-      softShadow(ctx, hw * 0.8, hh * 0.8, 6, 0.3);
-      let y = stoneBase(ctx, hw * 0.78, hh * 0.78, 6, 26);
+      softShadow(ctx, hw * 0.82, hh * 0.82, 6, 0.32);
+      const pw = hw * 0.78;
+      const ph = hh * 0.78;
+      let y = stoneBase(ctx, pw, ph, 6, 26);
+      // Stone steps up the plinth to the gate on the front-right face.
+      for (let i = 0; i < 4; i++) {
+        const f0 = 0.38;
+        const f1 = 0.62;
+        const up = i * 6.5;
+        const out = (4 - i) * 3;
+        const a = onRight(pw, ph, 6, f0, up);
+        const b = onRight(pw, ph, 6, f1, up);
+        const o = { x: out, y: out * 0.5 };
+        poly(ctx, [a, b, { x: b.x + o.x, y: b.y + o.y }, { x: a.x + o.x, y: a.y + o.y }], lighten(STONE, 0.18), 1);
+        poly(ctx, [{ x: a.x + o.x, y: a.y + o.y }, { x: b.x + o.x, y: b.y + o.y }, { x: b.x + o.x, y: b.y + o.y + 3 }, { x: a.x + o.x, y: a.y + o.y + 3 }], darken(STONE, 0.12), 1);
+      }
       const storeys = tier + 1;
       let w = hw * 0.62;
       for (let i = 0; i < storeys; i++) {
@@ -486,7 +582,7 @@ export function keepSkin(roofColor: string, trimColor: string): PainterDef {
         const top = storey(ctx, w, w / 2, y, h, PLASTER, { window: true, door: i === 0, trim: trimColor });
         const last = i === storeys - 1;
         const rw = w + 14;
-        const apex = roof(ctx, rw, rw / 2, top + 4, last ? 40 : 22, roofColor, { finial: last ? (tier === 3 ? GOLD : trimColor) : undefined, ridge: tier === 3 ? GOLD : undefined });
+        const apex = roof(ctx, rw, rw / 2, top + 4, last ? 40 : 22, roofColor, { finial: last ? (tier === 3 ? GOLD : trimColor) : undefined, tips: tier >= 2 ? GOLD : undefined });
         y = last ? apex : top - 6;
         w *= 0.74;
       }
@@ -498,6 +594,14 @@ export function keepSkin(roofColor: string, trimColor: string): PainterDef {
         lantern(ctx, -hw * 0.3, hh * 0.35, 1.1);
         lantern(ctx, hw * 0.3, hh * 0.35, 1.1);
       }
+      // The clan crest on a white gable plate.
+      ctx.beginPath();
+      ctx.ellipse(-hw * 0.18, -48, 9, 9.5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#fbf7ee';
+      ctx.fill();
+      ctx.lineWidth = 1.1;
+      ctx.strokeStyle = rgba(INK, 0.7);
+      ctx.stroke();
       crest(ctx, -hw * 0.18, -48, 7, trimColor);
     },
   };
@@ -547,32 +651,51 @@ const coinMint: PainterDef = {
   },
 };
 
+/** Rice Paddy (produces rice): terraced water with rows of sprouts, a bamboo spout keeping it filled. */
 const ricePaddy: PainterDef = {
   extra: 60,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#8a7a5a');
-    // Two terraces of water with rows of sprouts.
     for (const [s, dy] of [[0.86, 2], [0.56, -6]] as const) {
       const w = hw * s;
       const h = hh * s;
-      block(ctx, w, h, dy, 5, '#7a6646', { top: '#7fb4c8' });
+      const top = block(ctx, w, h, dy, 5, '#7a6646', { top: '#7fb4c8' });
+      // Water: sky reflected light-to-deep, with a few glints.
+      const g = ctx.createLinearGradient(-w, top - h, w, top + h);
+      g.addColorStop(0, '#b6dbe6');
+      g.addColorStop(0.5, '#7fb4c8');
+      g.addColorStop(1, '#5f97ad');
+      poly(ctx, [{ x: 0, y: top - h + 2 }, { x: w - 4, y: top }, { x: 0, y: top + h - 2 }, { x: -w + 4, y: top }], g, 0);
+      for (const [gx, gy] of [[-0.35, -0.15], [0.2, 0.2], [0.05, -0.4]] as const) line(ctx, [{ x: gx * w - 5, y: top + gy * h }, { x: gx * w + 5, y: top + gy * h - 2.5 }], rgba('#ffffff', 0.55), 1);
       const r = artRng(Math.round(w));
-      ctx.strokeStyle = '#5c9e45';
-      ctx.lineWidth = 1.6;
       for (let i = 0; i < 18 + tier * 6; i++) {
         const u = r() * 1.6 - 0.8;
         const v = (r() * 1.6 - 0.8) * (1 - Math.abs(u));
         const x = u * w;
         const y = dy - 5 + v * h;
-        line(ctx, [{ x, y }, { x: x - 1, y: y - 5 }], '#5c9e45', 1.4);
-        line(ctx, [{ x, y }, { x: x + 2, y: y - 4 }], '#79bd5a', 1.2);
+        line(ctx, [{ x, y: y + 1 }, { x: x + 3, y: y + 1 }], rgba('#2f5d6e', 0.25), 1);
+        line(ctx, [{ x, y }, { x: x - 1, y: y - 5 }], '#4f8f3c', 1.4);
+        line(ctx, [{ x, y }, { x: x + 2, y: y - 4 }], '#7cc25c', 1.2);
       }
     }
+    // Bamboo spout pouring into the upper terrace.
+    const sx = -hw * 0.42;
+    const sy = -hh * 0.28;
+    line(ctx, [{ x: sx - 4, y: sy + 2 }, { x: sx - 4, y: sy - 14 }], darken(BAMBOO, 0.35), 2.2);
+    line(ctx, [{ x: sx - 8, y: sy - 15 }, { x: sx + 6, y: sy - 9 }], darken(BAMBOO, 0.35), 4.2);
+    line(ctx, [{ x: sx - 8, y: sy - 15 }, { x: sx + 6, y: sy - 9 }], BAMBOO, 2.8);
+    line(ctx, [{ x: sx + 6, y: sy - 8 }, { x: sx + 7, y: sy - 1 }], rgba('#d9f1f7', 0.85), 1.6);
+    ctx.beginPath();
+    ctx.ellipse(sx + 7, sy, 3.5, 1.4, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = rgba('#ffffff', 0.6);
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
     // Scarecrow-post with a straw hat; tier 3 adds a lantern.
     line(ctx, [{ x: hw * 0.45, y: -2 }, { x: hw * 0.45, y: -38 }], WOOD_DARK, 2.4);
     line(ctx, [{ x: hw * 0.45 - 10, y: -28 }, { x: hw * 0.45 + 10, y: -28 }], WOOD_DARK, 2);
     poly(ctx, [{ x: hw * 0.45 - 11, y: -38 }, { x: hw * 0.45, y: -46 }, { x: hw * 0.45 + 11, y: -38 }], RICE, 1.1);
+    line(ctx, [{ x: hw * 0.45 - 9, y: -38.5 }, { x: hw * 0.45 + 9, y: -38.5 }], darken(RICE, 0.3), 0.8);
     riceBale(ctx, -hw * 0.5, hh * 0.45, 1);
     if (tier >= 2) riceBale(ctx, -hw * 0.3, hh * 0.6, 1);
     if (tier >= 3) lantern(ctx, hw * 0.45 + 10, -22, 0.8);
@@ -712,29 +835,68 @@ const trainingDojo: PainterDef = {
   },
 };
 
+/** Squad Courtyard (houses the army): a camp walled by jinmaku curtains, with a campfire, weapon rack and banners. */
 const squadCourtyard: PainterDef = {
-  extra: 50,
+  extra: 54,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#cdbf9f', 2);
-    // Low bamboo fence around the edge.
+    // Raked sand rings around the fire.
+    for (const r of [0.28, 0.44]) {
+      ctx.beginPath();
+      ctx.ellipse(0, 2, hw * r, hh * r, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = rgba(darken('#cdbf9f', 0.3), 0.35);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
     const corners = [{ x: 0, y: -hh + 6 }, { x: hw - 10, y: 0 }, { x: 0, y: hh - 6 }, { x: -hw + 10, y: 0 }];
-    for (let i = 0; i < 4; i++) {
-      const a = corners[i];
-      const b = corners[(i + 1) % 4];
+    // Back edges: camp curtains (jinmaku) on posts, white with an indigo band and the clan crest.
+    for (const [ai, bi] of [[3, 0], [0, 1]] as const) {
+      const a = corners[ai];
+      const b = corners[bi];
+      const H = 16;
+      const cloth = [a, b, { x: b.x, y: b.y - H }, { x: a.x, y: a.y - H }];
+      poly(ctx, cloth, faceFill(ctx, '#f4efe4', a.y - H, a.y, 0.04, 0.12), 1.1);
+      const band = (t0: number, t1: number) => [
+        { x: a.x, y: a.y - H * t0 }, { x: b.x, y: b.y - H * t0 }, { x: b.x, y: b.y - H * t1 }, { x: a.x, y: a.y - H * t1 },
+      ];
+      poly(ctx, band(0.62, 0.8), '#3f6fa0', 0);
+      poly(ctx, band(0.12, 0.26), '#3f6fa0', 0);
+      // Folds.
+      for (let k = 1; k < 6; k++) {
+        const x = a.x + ((b.x - a.x) * k) / 6;
+        const yy = a.y + ((b.y - a.y) * k) / 6;
+        line(ctx, [{ x, y: yy - H + 1 }, { x, y: yy - 1 }], rgba(INK, 0.12), 0.8);
+      }
+      const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - H * 0.44 };
+      crest(ctx, m.x, m.y, 4, '#3f6fa0');
+      for (const p of [a, b]) line(ctx, [{ x: p.x, y: p.y + 1 }, { x: p.x, y: p.y - H - 4 }], WOOD_DARK, 2);
+    }
+    // Front edges: low bamboo fence with a gate gap.
+    for (const [ai, bi] of [[1, 2], [2, 3]] as const) {
+      const a = corners[ai];
+      const b = corners[bi];
       for (let k = 0; k <= 8; k++) {
         const x = a.x + ((b.x - a.x) * k) / 8;
         const yy = a.y + ((b.y - a.y) * k) / 8;
-        if (i === 2 && k > 3 && k < 6) continue; // gate gap
-        line(ctx, [{ x, y: yy }, { x, y: yy - 9 }], BAMBOO, 2.2);
+        if (ai === 2 && k < 3) continue; // gate gap
+        line(ctx, [{ x, y: yy }, { x, y: yy - 9 }], darken(BAMBOO, 0.25), 2.6);
+        line(ctx, [{ x: x - 0.4, y: yy - 0.5 }, { x: x - 0.4, y: yy - 8.5 }], lighten(BAMBOO, 0.15), 1);
       }
       line(ctx, [{ x: a.x, y: a.y - 6 }, { x: b.x, y: b.y - 6 }], darken(BAMBOO, 0.3), 1.4);
     }
-    // Campfire and weapon rack; banners per tier.
-    circle(ctx, 0, 2, 6, '#5a4a3a', 1);
-    poly(ctx, [{ x: -4, y: 2 }, { x: 0, y: -9 }, { x: 4, y: 2 }], '#f2933a', 0.8);
+    // Campfire on a stone ring.
+    for (let i = 0; i < 7; i++) {
+      const ang = (i / 7) * Math.PI * 2;
+      circle(ctx, Math.cos(ang) * 7, 2 + Math.sin(ang) * 3.5, 1.8, '#8a8f99', 0.6);
+    }
+    glow(ctx, 0, -2, 16);
+    poly(ctx, [{ x: -4, y: 2 }, { x: 0, y: -10 }, { x: 4, y: 2 }], '#f2933a', 0.8);
     poly(ctx, [{ x: -2, y: 2 }, { x: 0, y: -5 }, { x: 2, y: 2 }], '#ffe08a', 0);
+    wisp(ctx, 1, -14, 3, '#eef0f4', 0.35);
+    // Spear rack and banners per tier.
     for (let i = 0; i < 3; i++) line(ctx, [{ x: -hw * 0.45 + i * 6, y: -hh * 0.2 + i * 3 }, { x: -hw * 0.45 + i * 6 + 3, y: -hh * 0.2 + i * 3 - 22 }], '#c9ced6', 1.6);
+    line(ctx, [{ x: -hw * 0.48, y: -hh * 0.2 - 12 }, { x: -hw * 0.45 + 16, y: -hh * 0.2 - 6 }], WOOD_DARK, 1.6);
     for (let i = 0; i < tier; i++) banner(ctx, hw * 0.3 + i * 10, -hh * 0.25 + i * 5, 40, i === 1 ? '#3f6fa0' : VERMILION);
   },
 };
@@ -771,32 +933,66 @@ const kunaiTower: PainterDef = {
   },
 };
 
+/** Firework Mortar: a banded bronze tube angled skyward, a smouldering fuse and a crate of shells. */
 const fireworkMortar: PainterDef = {
-  extra: 70,
+  extra: 78,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#a69c88');
+    softShadow(ctx, hw * 0.65, hh * 0.65, 2, 0.22);
     const y = stoneBase(ctx, hw * 0.62, hh * 0.62, 2, 12);
-    // Wide bronze tube angled up.
+    // Timber cradle under the tube.
+    line(ctx, [{ x: -14, y: y - 2 }, { x: 0, y: y - 16 }], WOOD_DARK, 3.4);
+    line(ctx, [{ x: 10, y: y + 2 }, { x: 4, y: y - 14 }], WOOD_DARK, 3.4);
+    const metal = tier >= 3 ? '#b88a3e' : '#7a6a52';
     ctx.save();
-    ctx.translate(2, y - 6);
+    ctx.translate(2, y - 8);
     ctx.rotate(-0.55);
-    poly(ctx, [{ x: -10, y: -14 }, { x: 34, y: -14 }, { x: 34, y: 14 }, { x: -10, y: 14 }], tier >= 3 ? '#b88a3e' : '#7a6a52', 1.6);
-    for (const x of [0, 14, 28]) line(ctx, [{ x, y: -14 }, { x, y: 14 }], tier >= 2 ? GOLD : '#4a3f30', 2.2);
+    const g = ctx.createLinearGradient(0, -14, 0, 14);
+    g.addColorStop(0, lighten(metal, 0.35));
+    g.addColorStop(0.35, metal);
+    g.addColorStop(1, darken(metal, 0.35));
+    poly(ctx, [{ x: -10, y: -13 }, { x: 34, y: -14 }, { x: 34, y: 14 }, { x: -10, y: 13 }], g, 1.6);
+    ctx.beginPath();
+    ctx.ellipse(-10, 0, 4, 13, 0, Math.PI / 2, Math.PI * 1.5);
+    ctx.fillStyle = darken(metal, 0.2);
+    ctx.fill();
+    ctx.stroke();
+    for (const x of [0, 14, 28]) {
+      line(ctx, [{ x, y: -14 }, { x, y: 14 }], tier >= 2 ? GOLD : '#4a3f30', 2.6);
+      line(ctx, [{ x: x - 0.8, y: -12 }, { x: x - 0.8, y: -5 }], rgba('#ffffff', 0.4), 0.7);
+    }
     ctx.beginPath();
     ctx.ellipse(34, 0, 5, 14, 0, 0, Math.PI * 2);
-    ctx.fillStyle = '#2a2420';
+    ctx.fillStyle = lighten(metal, 0.1);
     ctx.fill();
-    ctx.strokeStyle = INK;
     ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(34.5, 0, 3.2, 11, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#1e1a18';
+    ctx.fill();
+    // Fuse leading to a spark at the breech.
+    line(ctx, [{ x: -4, y: -13 }, { x: -8, y: -20 }], '#3a2a1e', 1.2);
     ctx.restore();
-    // Stack of red shells with fuses.
-    for (let i = 0; i < 2 + tier; i++) {
-      const x = -hw * 0.5 + (i % 3) * 8;
-      const yy = hh * 0.35 - Math.floor(i / 3) * 7;
-      circle(ctx, x, yy, 4.2, VERMILION, 1);
-      line(ctx, [{ x, y: yy - 4 }, { x: x + 2, y: yy - 7 }], '#3a2a1e', 1);
+    const spark = { x: -4, y: y - 30 };
+    glow(ctx, spark.x, spark.y, 8);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      line(ctx, [spark, { x: spark.x + Math.cos(a) * 3.5, y: spark.y + Math.sin(a) * 3.5 }], '#ffd27a', 1);
     }
+    wisp(ctx, 28, y - 52, 2 + tier, '#d9dde3', 0.4);
+    // Crate of red shells with fuses.
+    ctx.save();
+    ctx.translate(-hw * 0.48, hh * 0.42);
+    const ct = block(ctx, 9, 4.5, 0, 6, WOOD, { lw: 1 });
+    for (let i = 0; i < 2 + tier; i++) {
+      const x = -5 + (i % 3) * 5;
+      const yy = ct - 1 - Math.floor(i / 3) * 4 + (i % 3) * 0.8;
+      circle(ctx, x, yy, 3.2, VERMILION, 0.9);
+      circle(ctx, x - 1, yy - 1, 1, rgba('#ffffff', 0.5), 0);
+      line(ctx, [{ x, y: yy - 3 }, { x: x + 1.5, y: yy - 5.5 }], '#3a2a1e', 0.9);
+    }
+    ctx.restore();
   },
 };
 
@@ -847,31 +1043,45 @@ const skyBowTower: PainterDef = {
   },
 };
 
+/** Stone Wall: dressed stone, a white plaster band and a tiled coping; reinforced walls get iron bands. */
 const stoneWall: PainterDef = {
-  extra: 26,
+  extra: 28,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
-    const color = tier === 1 ? '#a3a7ad' : tier === 2 ? '#7d838e' : '#5d636e';
-    const top = stoneBase(ctx, hw * 0.92, hh * 0.92, 2, 18, color);
-    // Tiled coping; reinforced walls get iron bands and a gold stud.
-    block(ctx, hw * 0.98, hh * 0.98, top, 4, ROOF, { top: lighten(ROOF, 0.15), lw: 1.1 });
+    const color = tier === 1 ? '#a3a7ad' : tier === 2 ? '#8a909a' : '#6d7380';
+    softShadow(ctx, hw * 0.95, hh * 0.95, 4, 0.25);
+    const stoneTop = stoneBase(ctx, hw * 0.9, hh * 0.9, 2, 13, color);
+    const top = block(ctx, hw * 0.9, hh * 0.9, stoneTop, 6, '#f1ebdf');
+    // Tiled coping with an overhang.
+    const cap = block(ctx, hw * 0.98, hh * 0.98, top, 3.5, ROOF, { top: lighten(ROOF, 0.18), lw: 1.1 });
+    line(ctx, [{ x: -hw * 0.98 + 2, y: cap + 0.5 }, { x: 0, y: cap + hh * 0.98 - 0.5 }], rgba('#ffffff', 0.3), 0.8);
     if (tier >= 2) {
-      line(ctx, [{ x: -hw * 0.92, y: top + 10 }, { x: 0, y: top + 10 + hh * 0.92 }, { x: hw * 0.92, y: top + 10 }], '#3a3f48', 2.2);
+      line(ctx, [{ x: -hw * 0.9, y: stoneTop + 7 }, { x: 0, y: stoneTop + 7 + hh * 0.9 }, { x: hw * 0.9, y: stoneTop + 7 }], '#3a3f48', 2.2);
     }
-    if (tier >= 3) circle(ctx, -hw * 0.45, top + 13 + hh * 0.45, 1.6, GOLD, 0.6);
+    if (tier >= 3) {
+      circle(ctx, -hw * 0.45, stoneTop + 7 + hh * 0.45, 1.6, GOLD, 0.6);
+      circle(ctx, hw * 0.45, stoneTop + 7 + hh * 0.45, 1.6, GOLD, 0.6);
+    }
   },
 };
 
 const spikePit: PainterDef = {
-  extra: 14,
+  extra: 16,
   paint(ctx, size) {
     const { hw, hh } = half(size);
-    poly(ctx, [{ x: 0, y: -hh * 0.7 }, { x: hw * 0.7, y: 0 }, { x: 0, y: hh * 0.7 }, { x: -hw * 0.7, y: 0 }], '#4a3f30', 1.2);
+    // A dug pit: dark earth shading into shadow, a rim of loose soil.
+    const pts = [{ x: 0, y: -hh * 0.7 }, { x: hw * 0.7, y: 0 }, { x: 0, y: hh * 0.7 }, { x: -hw * 0.7, y: 0 }];
+    const g = ctx.createLinearGradient(0, -hh * 0.7, 0, hh * 0.7);
+    g.addColorStop(0, '#2a221a');
+    g.addColorStop(1, '#5a4a38');
+    poly(ctx, pts, g, 1.2, '#3a2f22');
+    line(ctx, [pts[3], pts[0], pts[1]], rgba('#8a7458', 0.8), 1.6);
     const r = artRng(5);
     for (let i = 0; i < 7; i++) {
       const x = (r() - 0.5) * hw;
-      const y = (r() - 0.5) * hh * 0.6;
-      poly(ctx, [{ x: x - 2, y }, { x, y: y - 11 }, { x: x + 2, y }], BAMBOO, 0.8);
+      const y = (r() - 0.5) * hh * 0.6 + 2;
+      poly(ctx, [{ x: x - 2.2, y }, { x, y: y - 12 }, { x: x + 2.2, y }], darken(BAMBOO, 0.15), 0.8);
+      line(ctx, [{ x: x - 0.6, y: y - 1 }, { x: x - 0.2, y: y - 9 }], rgba('#ffffff', 0.45), 0.6);
     }
   },
 };
@@ -884,32 +1094,49 @@ const caltropField: PainterDef = {
     for (let i = 0; i < 9; i++) {
       const x = (r() - 0.5) * hw * 1.2;
       const y = (r() - 0.5) * hh * 0.9;
+      ctx.beginPath();
+      ctx.ellipse(x, y + 1, 3.4, 1.4, 0, 0, Math.PI * 2);
+      ctx.fillStyle = rgba(INK, 0.18);
+      ctx.fill();
+      const a0 = r() * Math.PI;
       for (let k = 0; k < 4; k++) {
-        const a = (k / 4) * Math.PI * 2 + r();
-        line(ctx, [{ x, y }, { x: x + Math.cos(a) * 3.5, y: y + Math.sin(a) * 2 - (k === 0 ? 3 : 0) }], '#5d636e', 1.4);
+        const a = a0 + (k / 4) * Math.PI * 2;
+        const tip = { x: x + Math.cos(a) * 3.8, y: y + Math.sin(a) * 2 - (k === 0 ? 3.5 : 0) };
+        line(ctx, [{ x, y }, tip], '#4d535e', 1.6);
+        line(ctx, [{ x: x - 0.3, y: y - 0.3 }, { x: (x + tip.x) / 2, y: (y + tip.y) / 2 - 0.3 }], rgba('#ffffff', 0.45), 0.6);
       }
     }
   },
 };
 
 const bonsai: PainterDef = {
-  extra: 26,
+  extra: 30,
   paint(ctx) {
+    softShadow(ctx, 14, 6, 3, 0.25);
     block(ctx, 12, 6, 2, 7, '#7a3f2a');
     ctx.beginPath();
+    ctx.ellipse(0, -5, 10, 4.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#4a3a2c';
+    ctx.fill();
+    ctx.beginPath();
     ctx.moveTo(0, -5);
-    ctx.quadraticCurveTo(-6, -12, 2, -18);
-    ctx.lineWidth = 2.6;
+    ctx.quadraticCurveTo(-7, -12, 2, -18);
+    ctx.lineWidth = 3;
     ctx.strokeStyle = WOOD_DARK;
     ctx.stroke();
-    for (const [x, y, rx] of [[-6, -18, 8], [5, -22, 7], [0, -27, 6]] as const) {
+    line(ctx, [{ x: -2, y: -11 }, { x: -7, y: -17 }], WOOD_DARK, 1.6);
+    for (const [x, y, rx] of [[-7, -18, 8], [6, -22, 7], [0, -28, 6]] as const) {
       ctx.beginPath();
       ctx.ellipse(x, y, rx, rx * 0.55, 0, 0, Math.PI * 2);
-      ctx.fillStyle = '#3f7a46';
+      const g = ctx.createLinearGradient(0, y - rx * 0.55, 0, y + rx * 0.55);
+      g.addColorStop(0, '#5f9a5a');
+      g.addColorStop(1, '#2f6238');
+      ctx.fillStyle = g;
       ctx.fill();
       ctx.lineWidth = 1;
       ctx.strokeStyle = INK;
       ctx.stroke();
+      line(ctx, [{ x: x - rx * 0.5, y: y - rx * 0.2 }, { x: x + rx * 0.2, y: y - rx * 0.35 }], rgba('#ffffff', 0.3), 0.8);
     }
   },
 };
@@ -927,32 +1154,97 @@ const stoneLantern: PainterDef = {
 };
 
 const zenGarden: PainterDef = {
-  extra: 18,
+  extra: 20,
   paint(ctx, size) {
     const { hw, hh } = half(size);
-    poly(ctx, [{ x: 0, y: -hh + 2 }, { x: hw - 4, y: 0 }, { x: 0, y: hh - 2 }, { x: -hw + 4, y: 0 }], '#e8e2d4', 1.2, '#b8b0a0');
-    for (let i = 1; i < 5; i++) {
-      const f = i / 5;
-      line(ctx, [{ x: -hw * (1 - f) * 0.9, y: -hh * f * 0.9 + hh * 0.45 }, { x: hw * f * 0.9 - hw * 0.45, y: -hh * 0.45 + hh * (1 - f) * 0.9 }], '#cfc6b4', 1);
+    // Raked gravel in a timber border, with three stones and their ripple rings.
+    poly(ctx, [{ x: 0, y: -hh + 1 }, { x: hw - 2, y: 0 }, { x: 0, y: hh - 1 }, { x: -hw + 2, y: 0 }], WOOD, 1.1);
+    const g = ctx.createRadialGradient(-hw * 0.2, -hh * 0.2, 2, 0, 0, hw);
+    g.addColorStop(0, '#f4efe4');
+    g.addColorStop(1, '#ddd5c4');
+    poly(ctx, [{ x: 0, y: -hh + 4 }, { x: hw - 7, y: 0 }, { x: 0, y: hh - 4 }, { x: -hw + 7, y: 0 }], g, 0.8, '#b8b0a0');
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, -hh + 4);
+    ctx.lineTo(hw - 7, 0);
+    ctx.lineTo(0, hh - 4);
+    ctx.lineTo(-hw + 7, 0);
+    ctx.closePath();
+    ctx.clip();
+    for (let i = -6; i <= 6; i++) line(ctx, [{ x: -hw + i * 6, y: -hh }, { x: hw + i * 6, y: hh }], rgba('#b8ad98', 0.55), 0.8);
+    ctx.restore();
+    const stones = [[-6, -2, 4.5], [7, 3, 3.2], [2, -6, 2.4]] as const;
+    for (const [x, y, r] of stones) {
+      for (const k of [1.9, 1.45]) {
+        ctx.beginPath();
+        ctx.ellipse(x, y, r * k, r * k * 0.5, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#efe9dc';
+        ctx.fill();
+        ctx.strokeStyle = rgba('#b8ad98', 0.8);
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
     }
-    for (const [x, y, r] of [[-6, -2, 4], [5, 2, 3], [2, -5, 2.4]] as const) circle(ctx, x, y - 2, r, '#7d838e', 1);
+    for (const [x, y, r] of stones) {
+      ctx.beginPath();
+      ctx.ellipse(x, y - r * 0.5, r, r * 0.8, 0, 0, Math.PI * 2);
+      const sg = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+      sg.addColorStop(0, '#9aa0aa');
+      sg.addColorStop(1, '#5d636e');
+      ctx.fillStyle = sg;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = INK;
+      ctx.stroke();
+      circle(ctx, x - r * 0.4, y - r * 0.9, r * 0.3, rgba('#6b9c52', 0.8), 0);
+    }
   },
 };
 
 const foxStatue: PainterDef = {
-  extra: 60,
-  paint(ctx) {
-    block(ctx, 12, 6, 2, 12, STONE);
-    // Seated fox guardian, stylised and original.
-    poly(ctx, [{ x: -7, y: -10 }, { x: 7, y: -10 }, { x: 5, y: -30 }, { x: -5, y: -30 }], '#b9b4a8', 1.3);
-    circle(ctx, 0, -35, 7, '#c4bfb2', 1.3);
-    poly(ctx, [{ x: -6, y: -38 }, { x: -4, y: -48 }, { x: -1, y: -40 }], '#c4bfb2', 1.1);
-    poly(ctx, [{ x: 6, y: -38 }, { x: 4, y: -48 }, { x: 1, y: -40 }], '#c4bfb2', 1.1);
-    poly(ctx, [{ x: 0, y: -34 }, { x: 9, y: -32 }, { x: 0, y: -30 }], '#c4bfb2', 1);
-    poly(ctx, [{ x: -6, y: -27 }, { x: 6, y: -27 }, { x: 0, y: -21 }], VERMILION, 1);
+  extra: 72,
+  paint(ctx, size) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#b8b0a0', 10);
+    softShadow(ctx, hw * 0.4, hh * 0.4, 2, 0.25);
+    const top = stoneBase(ctx, 15, 7.5, 2, 14, STONE);
+    // Seated fox guardian, stylised and original: stone body, red bib, a little moss.
+    const s = 1.25;
+    ctx.save();
+    ctx.translate(0, top + 2);
+    ctx.scale(s, s);
+    const body = '#c4bfb2';
+    ctx.beginPath();
+    ctx.moveTo(-7, -2);
+    ctx.quadraticCurveTo(-9, -18, -4, -24);
+    ctx.lineTo(4, -24);
+    ctx.quadraticCurveTo(9, -18, 7, -2);
+    ctx.closePath();
+    ctx.fillStyle = faceFill(ctx, body, -24, -2, 0.12, 0.12);
+    ctx.fill();
+    ctx.lineWidth = 1.1;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    // Tail curling up the back.
+    ctx.beginPath();
+    ctx.moveTo(6, -4);
+    ctx.quadraticCurveTo(15, -10, 10, -20);
+    ctx.quadraticCurveTo(8, -12, 4, -9);
+    ctx.closePath();
+    ctx.fillStyle = darken(body, 0.08);
+    ctx.fill();
+    ctx.stroke();
+    circle(ctx, 0, -28, 6.5, lighten(body, 0.06), 1.1);
+    poly(ctx, [{ x: -5.5, y: -31 }, { x: -4, y: -40 }, { x: -1, y: -33 }], body, 1);
+    poly(ctx, [{ x: 5.5, y: -31 }, { x: 4, y: -40 }, { x: 1, y: -33 }], body, 1);
+    poly(ctx, [{ x: 0, y: -28 }, { x: 8.5, y: -26 }, { x: 0, y: -24 }], body, 1);
+    poly(ctx, [{ x: -6, y: -22 }, { x: 6, y: -22 }, { x: 0, y: -15 }], VERMILION, 1);
     ctx.fillStyle = INK;
-    ctx.fillRect(-3, -37, 1.6, 1.6);
-    ctx.fillRect(2, -37, 1.6, 1.6);
+    ctx.fillRect(-3, -30, 1.4, 1.4);
+    ctx.fillRect(2, -30, 1.4, 1.4);
+    circle(ctx, -4, -6, 2, rgba('#6b9c52', 0.8), 0);
+    circle(ctx, -2.5, -4.5, 1.4, rgba('#6b9c52', 0.8), 0);
+    ctx.restore();
   },
 };
 
@@ -966,29 +1258,75 @@ const bambooThicket: PainterDef = {
 };
 
 const fallenCedar: PainterDef = {
-  extra: 28,
+  extra: 30,
   paint(ctx, size) {
     const { hw } = half(size);
+    softShadow(ctx, hw * 0.75, hw * 0.22, 6, 0.28);
     ctx.save();
     ctx.rotate(0.45);
-    poly(ctx, [{ x: -hw * 0.7, y: -6 }, { x: hw * 0.6, y: -6 }, { x: hw * 0.6, y: 6 }, { x: -hw * 0.7, y: 6 }], '#7a5236', 1.4);
+    const L = -hw * 0.7;
+    const Rr = hw * 0.6;
+    // Trunk with rounded bark shading, bark furrows and a branch stub.
     ctx.beginPath();
-    ctx.ellipse(hw * 0.6, 0, 3.5, 6, 0, 0, Math.PI * 2);
-    ctx.fillStyle = '#c9a07a';
+    ctx.moveTo(L, -6);
+    ctx.lineTo(Rr, -6.5);
+    ctx.lineTo(Rr, 6.5);
+    ctx.lineTo(L, 6);
+    ctx.quadraticCurveTo(L - 4, 0, L, -6);
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, -7, 0, 7);
+    g.addColorStop(0, '#9a6c48');
+    g.addColorStop(0.4, '#7a5236');
+    g.addColorStop(1, '#4e3322');
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    const r = artRng(17);
+    for (let i = 0; i < 9; i++) {
+      const x = L + 6 + r() * (Rr - L - 12);
+      line(ctx, [{ x, y: -4 + r() * 2 }, { x: x + 8 + r() * 6, y: -3 + r() * 6 }], rgba('#3a2416', 0.55), 0.9);
+    }
+    line(ctx, [{ x: -hw * 0.1, y: -6 }, { x: -hw * 0.05, y: -13 }], '#6a4630', 3);
+    // Cut end with growth rings.
+    ctx.beginPath();
+    ctx.ellipse(Rr, 0, 3.8, 6.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#d8b48c';
     ctx.fill();
     ctx.stroke();
+    for (const rr of [0.6, 0.3]) {
+      ctx.beginPath();
+      ctx.ellipse(Rr, 0, 3.8 * rr, 6.5 * rr, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = rgba('#8a6440', 0.7);
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
     ctx.restore();
-    circle(ctx, -hw * 0.3, -8, 5, '#4f7a46', 1);
+    // Moss and a fern.
+    for (const [x, y, rr] of [[-hw * 0.3, -9, 4.5], [-hw * 0.22, -7, 3], [hw * 0.15, 2, 3.2]] as const) circle(ctx, x, y, rr, '#5f8f4a', 0.8, darken('#5f8f4a', 0.4));
+    for (const d of [-1, 1]) line(ctx, [{ x: -hw * 0.55, y: 6 }, { x: -hw * 0.55 + d * 6, y: -2 }], '#4f7a3c', 1.4);
   },
 };
 
 const boulder: PainterDef = {
-  extra: 30,
+  extra: 32,
   paint(ctx, size) {
     const { hw } = half(size);
-    poly(ctx, [{ x: -hw * 0.6, y: 6 }, { x: -hw * 0.5, y: -12 }, { x: -hw * 0.1, y: -22 }, { x: hw * 0.4, y: -16 }, { x: hw * 0.6, y: 2 }, { x: hw * 0.2, y: 10 }], '#8a8f99', 1.5);
-    poly(ctx, [{ x: -hw * 0.1, y: -22 }, { x: hw * 0.4, y: -16 }, { x: hw * 0.1, y: -8 }, { x: -hw * 0.3, y: -10 }], '#a9aeb7', 0);
-    circle(ctx, -hw * 0.3, -6, 3, '#6b9c52', 0);
+    softShadow(ctx, hw * 0.7, hw * 0.24, 6, 0.3);
+    const outline = [{ x: -hw * 0.6, y: 6 }, { x: -hw * 0.5, y: -12 }, { x: -hw * 0.1, y: -22 }, { x: hw * 0.4, y: -16 }, { x: hw * 0.6, y: 2 }, { x: hw * 0.2, y: 10 }];
+    const g = ctx.createLinearGradient(-hw * 0.4, -22, hw * 0.4, 10);
+    g.addColorStop(0, '#b4b9c1');
+    g.addColorStop(1, '#6e737d');
+    poly(ctx, outline, g, 1.5);
+    // Facets: a lit top plane and a shaded right plane.
+    poly(ctx, [{ x: -hw * 0.1, y: -22 }, { x: hw * 0.4, y: -16 }, { x: hw * 0.1, y: -8 }, { x: -hw * 0.3, y: -10 }], rgba('#ffffff', 0.28), 0);
+    poly(ctx, [{ x: hw * 0.1, y: -8 }, { x: hw * 0.4, y: -16 }, { x: hw * 0.6, y: 2 }, { x: hw * 0.2, y: 10 }], rgba(INK, 0.16), 0);
+    line(ctx, [{ x: -hw * 0.3, y: -10 }, { x: hw * 0.1, y: -8 }, { x: hw * 0.2, y: 10 }], rgba(INK, 0.35), 1);
+    line(ctx, [{ x: -hw * 0.42, y: -4 }, { x: -hw * 0.25, y: 2 }], rgba(INK, 0.3), 0.9);
+    // Moss on the shaded foot and pebbles around it.
+    for (const [x, y, rr] of [[-hw * 0.48, 2, 3.4], [-hw * 0.38, 5, 2.4], [-hw * 0.3, -11, 2]] as const) circle(ctx, x, y, rr, '#6b9c52', 0.7, darken('#6b9c52', 0.4));
+    for (const [x, y] of [[hw * 0.66, 8], [-hw * 0.68, 10], [hw * 0.35, 13]] as const) circle(ctx, x, y, 1.8, '#9aa0aa', 0.7);
   },
 };
 
@@ -1035,25 +1373,49 @@ const paperLanternLine: PainterDef = {
 };
 
 const repairCrane: PainterDef = {
-  extra: 90,
+  extra: 92,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#a9a08c');
+    softShadow(ctx, hw * 0.55, hh * 0.55, 2, 0.22);
     const y = stoneBase(ctx, hw * 0.45, hh * 0.45, 2, 10);
-    // Mast and a long jib with a hook and a big gear.
-    line(ctx, [{ x: -6, y }, { x: -6, y: y - 58 }], WOOD_DARK, 4);
-    line(ctx, [{ x: -10, y: y - 54 }, { x: hw * 0.75, y: y - 62 }], WOOD, 3);
-    line(ctx, [{ x: -6, y: y - 30 }, { x: hw * 0.4, y: y - 59 }], WOOD, 1.4);
-    line(ctx, [{ x: hw * 0.7, y: y - 61 }, { x: hw * 0.7, y: y - 30 }], '#5d636e', 1);
-    line(ctx, [{ x: hw * 0.7 - 3, y: y - 30 }, { x: hw * 0.7, y: y - 26 }, { x: hw * 0.7 + 3, y: y - 30 }], '#5d636e', 1.6);
+    // Workshop deck with a toolbox.
+    const deck = block(ctx, hw * 0.4, hh * 0.4, y, 3, WOOD, { lw: 1 });
+    // Mast and a long jib with a hook; brass gear drives the winch.
+    line(ctx, [{ x: -6, y: deck }, { x: -6, y: deck - 58 }], darken(WOOD_DARK, 0.1), 5);
+    line(ctx, [{ x: -7, y: deck }, { x: -7, y: deck - 58 }], rgba('#ffffff', 0.2), 1);
+    line(ctx, [{ x: -10, y: deck - 54 }, { x: hw * 0.75, y: deck - 62 }], WOOD, 3.4);
+    line(ctx, [{ x: -6, y: deck - 30 }, { x: hw * 0.4, y: deck - 59 }], WOOD, 1.4);
+    line(ctx, [{ x: -6, y: deck - 56 }, { x: -hw * 0.3, y: deck - 40 }], '#5d636e', 0.9);
+    line(ctx, [{ x: hw * 0.7, y: deck - 61 }, { x: hw * 0.7, y: deck - 30 }], '#5d636e', 1);
+    ctx.beginPath();
+    ctx.arc(hw * 0.7, deck - 27, 3, -Math.PI * 0.1, Math.PI * 1.1);
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = '#4d535e';
+    ctx.stroke();
     const gx = -hw * 0.35;
-    const gy = y - 18;
+    const gy = deck - 18;
+    const brass = tier >= 3 ? GOLD : '#b8862f';
     for (let i = 0; i < 8; i++) {
       const ang = (i / 8) * Math.PI * 2;
-      circle(ctx, gx + Math.cos(ang) * 10, gy + Math.sin(ang) * 10, 2.6, tier >= 3 ? GOLD : '#b8862f', 0.8);
+      circle(ctx, gx + Math.cos(ang) * 10, gy + Math.sin(ang) * 10, 2.6, brass, 0.8);
     }
-    circle(ctx, gx, gy, 9, tier >= 3 ? GOLD : '#b8862f', 1.2);
+    ctx.beginPath();
+    ctx.arc(gx, gy, 9, 0, Math.PI * 2);
+    const gg = ctx.createRadialGradient(gx - 3, gy - 3, 1, gx, gy, 9);
+    gg.addColorStop(0, lighten(brass, 0.35));
+    gg.addColorStop(1, darken(brass, 0.2));
+    ctx.fillStyle = gg;
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
     circle(ctx, gx, gy, 3, INK, 0);
+    ctx.save();
+    ctx.translate(hw * 0.22, hh * 0.15);
+    block(ctx, 6, 3, 0, 5, VERMILION, { lw: 1 });
+    line(ctx, [{ x: -2, y: -6 }, { x: 2, y: -6 }], INK, 1);
+    ctx.restore();
     if (tier >= 2) banner(ctx, hw * 0.45, hh * 0.35, 34, '#3f6fa0');
   },
 };
@@ -1081,25 +1443,39 @@ const incenseBurner: PainterDef = {
 };
 
 const kiteCutterBallista: PainterDef = {
-  extra: 70,
+  extra: 74,
   paint(ctx, size, tier) {
     const { hw, hh } = half(size);
     plate(ctx, size, '#a9a08c');
+    softShadow(ctx, hw * 0.6, hh * 0.6, 2, 0.22);
     const y = stoneBase(ctx, hw * 0.55, hh * 0.55, 2, 12);
-    // Upward-pointing bow on a turntable, with a weighted bolas ready.
+    // Turntable deck with a brass ring, an upward-pointing bow and a bolas bolt loaded.
     const deck = block(ctx, hw * 0.4, hh * 0.4, y, 8, WOOD);
+    ctx.beginPath();
+    ctx.ellipse(0, deck, hw * 0.28, hh * 0.28, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = tier >= 3 ? GOLD : '#b8862f';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
     ctx.save();
     ctx.translate(0, deck - 8);
     ctx.rotate(-0.9);
-    line(ctx, [{ x: -6, y: 0 }, { x: 30, y: 0 }], WOOD_DARK, 4);
+    line(ctx, [{ x: -8, y: 0 }, { x: 32, y: 0 }], WOOD_DARK, 5);
+    line(ctx, [{ x: -8, y: -1.2 }, { x: 32, y: -1.2 }], rgba('#ffffff', 0.2), 1);
     ctx.beginPath();
     ctx.arc(16, 0, 18, -Math.PI / 2 - 0.9, -Math.PI / 2 + 0.9);
     ctx.strokeStyle = tier >= 3 ? GOLD : WOOD;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.4;
     ctx.stroke();
+    const a = { x: 16 + Math.cos(-Math.PI / 2 - 0.9) * 18, y: Math.sin(-Math.PI / 2 - 0.9) * 18 };
+    const b = { x: 16 + Math.cos(-Math.PI / 2 + 0.9) * 18, y: Math.sin(-Math.PI / 2 + 0.9) * 18 };
+    line(ctx, [a, { x: 4, y: 0 }, b], '#e8e0cc', 0.9);
+    line(ctx, [{ x: 4, y: 0 }, { x: 36, y: 0 }], '#d4d9e0', 1.6);
+    poly(ctx, [{ x: 36, y: -2.5 }, { x: 42, y: 0 }, { x: 36, y: 2.5 }], '#d4d9e0', 0.8);
     ctx.restore();
     circle(ctx, -hw * 0.45, hh * 0.25, 3.5, '#5d636e', 1);
     circle(ctx, -hw * 0.3, hh * 0.4, 3.5, '#5d636e', 1);
+    circle(ctx, -hw * 0.46, hh * 0.25 - 1, 1, rgba('#ffffff', 0.5), 0);
+    circle(ctx, -hw * 0.31, hh * 0.4 - 1, 1, rgba('#ffffff', 0.5), 0);
     line(ctx, [{ x: -hw * 0.45, y: hh * 0.25 }, { x: -hw * 0.3, y: hh * 0.4 }], '#3a2a1e', 1);
     if (tier >= 2) banner(ctx, hw * 0.55, hh * 0.2, 40, '#3f6fa0');
   },
@@ -1174,49 +1550,104 @@ export function paintGeneric(ctx: Ctx, size: number): void {
   roof(ctx, hw * 0.75, hh * 0.75, top + 2, 20);
 }
 
-/** Bamboo scaffolding with a tarp: a building under construction. */
+/** Bamboo scaffolding with a tarp, a ladder and stacked materials: a building under construction. */
 export function paintConstruction(ctx: Ctx, size: number): void {
   const { hw, hh } = half(size);
   plate(ctx, size, '#bba98a');
   const h = 18 + size * 8;
-  poly(ctx, [{ x: -hw * 0.5, y: 0 }, { x: 0, y: hh * 0.5 }, { x: 0, y: hh * 0.5 - h * 0.6 }, { x: -hw * 0.5, y: -h * 0.6 }], rgba('#3f6fa0', 0.85), 1.2);
-  for (const [x, y] of [[-hw * 0.55, 0], [0, hh * 0.55], [hw * 0.55, 0], [0, -hh * 0.55]] as const) line(ctx, [{ x, y }, { x, y: y - h }], BAMBOO, 2.6);
+  const sw = hw * 0.55;
+  const sh = hh * 0.55;
+  // Back posts first, then the tarp, then front posts and ties.
+  for (const [x, y] of [[-sw, 0], [0, -sh], [sw, 0]] as const) line(ctx, [{ x, y }, { x, y: y - h }], darken(BAMBOO, 0.2), 2.6);
+  const tg = ctx.createLinearGradient(0, -h * 0.6, 0, hh * 0.5);
+  tg.addColorStop(0, rgba('#4f7fb0', 0.92));
+  tg.addColorStop(1, rgba('#2f5a85', 0.92));
+  poly(ctx, [{ x: -hw * 0.5, y: 0 }, { x: 0, y: hh * 0.5 }, { x: 0, y: hh * 0.5 - h * 0.6 }, { x: -hw * 0.5, y: -h * 0.6 }], tg, 1.2);
+  for (const f of [0.33, 0.66]) line(ctx, [{ x: -hw * 0.5 + hw * 0.5 * f, y: hh * 0.5 * f - h * 0.6 + 1 }, { x: -hw * 0.5 + hw * 0.5 * f, y: hh * 0.5 * f - 1 }], rgba('#1d3a57', 0.5), 0.8);
+  crest(ctx, -hw * 0.25, hh * 0.25 - h * 0.32, Math.min(6, 2 + size * 1.3), rgba(WASHI, 0.85));
+  line(ctx, [{ x: 0, y: sh }, { x: 0, y: sh - h }], BAMBOO, 2.8);
   for (const f of [0.4, 0.8]) {
-    line(ctx, [{ x: -hw * 0.55, y: -h * f }, { x: 0, y: hh * 0.55 - h * f }, { x: hw * 0.55, y: -h * f }], darken(BAMBOO, 0.2), 2);
+    line(ctx, [{ x: -sw, y: -h * f }, { x: 0, y: sh - h * f }, { x: sw, y: -h * f }], darken(BAMBOO, 0.2), 2);
+    for (const p of [{ x: -sw, y: -h * f }, { x: 0, y: sh - h * f }, { x: sw, y: -h * f }]) circle(ctx, p.x, p.y, 1.3, '#c9a65e', 0.5);
   }
-  riceBale(ctx, hw * 0.4, hh * 0.4, 0.8);
+  // Ladder leaning on the front-right side.
+  const lx = sw * 0.55;
+  line(ctx, [{ x: lx - 3, y: sh * 0.5 + 4 }, { x: lx - 1, y: sh * 0.5 + 4 - h * 0.7 }], WOOD, 1.4);
+  line(ctx, [{ x: lx + 3, y: sh * 0.5 + 1 }, { x: lx + 5, y: sh * 0.5 + 1 - h * 0.7 }], WOOD, 1.4);
+  for (let i = 1; i < 5; i++) {
+    const t = i / 5;
+    line(ctx, [{ x: lx - 3 + 2 * t, y: sh * 0.5 + 4 - h * 0.7 * t }, { x: lx + 3 + 2 * t, y: sh * 0.5 + 1 - h * 0.7 * t }], WOOD, 1);
+  }
+  // Materials: planks and a stack of roof tiles.
+  ctx.save();
+  ctx.translate(-hw * 0.5, hh * 0.45);
+  for (let i = 0; i < 3; i++) line(ctx, [{ x: -8, y: -i * 2 }, { x: 8, y: 4 - i * 2 }], i % 2 ? '#c99a64' : '#d8b07c', 2.2);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(hw * 0.42, hh * 0.42);
+  block(ctx, 5, 2.5, 0, 5, ROOF, { lw: 0.9 });
+  ctx.restore();
+  riceBale(ctx, hw * 0.1, hh * 0.62, 0.7);
 }
 
-/** Broken tiles and beams where a building stood. */
+/** Scorched ground, broken beams and roof tiles where a building stood. */
 export function paintRubble(ctx: Ctx, size: number): void {
   const { hw, hh } = half(size);
   const r = artRng(size * 13);
-  poly(ctx, [{ x: 0, y: -hh * 0.6 }, { x: hw * 0.6, y: 0 }, { x: 0, y: hh * 0.6 }, { x: -hw * 0.6, y: 0 }], '#6e6458', 1, '#4a4238');
-  for (let i = 0; i < 6 + size * 3; i++) {
+  const g = ctx.createRadialGradient(0, 0, 2, 0, 0, hw * 0.65);
+  g.addColorStop(0, '#3e3833');
+  g.addColorStop(0.7, '#5e554b');
+  g.addColorStop(1, rgba('#6e6458', 0));
+  ctx.save();
+  ctx.scale(1, hh / hw);
+  ctx.beginPath();
+  ctx.arc(0, 0, hw * 0.65, 0, Math.PI * 2);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.restore();
+  for (let i = 0; i < 6 + size * 4; i++) {
     const x = (r() - 0.5) * hw;
     const y = (r() - 0.5) * hh * 0.8;
-    if (r() < 0.5) line(ctx, [{ x, y }, { x: x + (r() - 0.5) * 16, y: y - 4 - r() * 4 }], WOOD_DARK, 2.4);
-    else poly(ctx, [{ x, y }, { x: x + 5, y: y - 2 }, { x: x + 4, y: y + 2 }], ROOF, 0.6);
+    const k = r();
+    if (k < 0.4) {
+      const ex = x + (r() - 0.5) * 18;
+      const ey = y - 4 - r() * 5;
+      line(ctx, [{ x, y }, { x: ex, y: ey }], '#2e2018', 3.2);
+      line(ctx, [{ x, y }, { x: ex, y: ey }], WOOD_DARK, 2);
+      if (r() < 0.35) circle(ctx, ex, ey, 1, '#e8662e', 0);
+    } else if (k < 0.8) {
+      poly(ctx, [{ x, y }, { x: x + 5, y: y - 2 }, { x: x + 4, y: y + 2 }], r() < 0.5 ? ROOF : lighten(ROOF, 0.2), 0.6);
+    } else {
+      circle(ctx, x, y, 1.8 + r() * 1.2, '#8a8f99', 0.6);
+    }
   }
+  wisp(ctx, hw * 0.1, -6, 3, '#9aa0aa', 0.35);
 }
 
 /** Ready-to-collect bubble over a collector. */
 export function paintBubble(ctx: Ctx, resource: string): void {
+  softShadow(ctx, 10, 3, 24, 0.3);
   ctx.beginPath();
   ctx.moveTo(-15, -6);
   ctx.arc(0, -6, 15, Math.PI, 0);
   ctx.quadraticCurveTo(15, 10, 0, 22);
   ctx.quadraticCurveTo(-15, 10, -15, -6);
   ctx.closePath();
-  ctx.fillStyle = WASHI;
+  const bg = ctx.createLinearGradient(0, -21, 0, 22);
+  bg.addColorStop(0, '#ffffff');
+  bg.addColorStop(1, '#eadfc8');
+  ctx.fillStyle = bg;
   ctx.fill();
   ctx.lineWidth = 1.6;
   ctx.strokeStyle = INK;
   ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, -6, 12.5, Math.PI * 1.1, Math.PI * 1.55);
+  ctx.strokeStyle = rgba('#ffffff', 0.9);
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
   if (resource === 'acorn' || resource === 'acorns') {
-    circle(ctx, 0, -4, 8, GOLD, 1.2, darken(GOLD, 0.5));
-    ctx.fillStyle = darken(GOLD, 0.5);
-    ctx.fillRect(-2.2, -6.2, 4.4, 4.4);
+    mark(ctx, 'coin', 0, -4, 8, GOLD);
   } else {
     riceBale(ctx, 0, -4, 1.15);
   }
@@ -1251,20 +1682,38 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
   ctx.scale(s, s);
   softShadow(ctx, 11, 4, 0, 0.3);
   const gi = look.gi;
-  // Legs
-  poly(ctx, [{ x: -6, y: -9 }, { x: -2, y: -9 }, { x: -2, y: 0 }, { x: -7, y: 0 }], darken(gi, 0.15), 1.1);
-  poly(ctx, [{ x: 2, y: -9 }, { x: 6, y: -9 }, { x: 7, y: 0 }, { x: 2, y: 0 }], darken(gi, 0.2), 1.1);
+  // Cloth lit from the upper left: a soft horizontal ramp across each part.
+  const ramp = (x0: number, x1: number, c: string, light = 0.18, dark = 0.22) => {
+    const g = ctx.createLinearGradient(x0, 0, x1, 0);
+    g.addColorStop(0, lighten(c, light));
+    g.addColorStop(0.55, c);
+    g.addColorStop(1, darken(c, dark));
+    return g;
+  };
+  // Legs, with wrapped shins.
+  poly(ctx, [{ x: -6, y: -9 }, { x: -2, y: -9 }, { x: -2, y: 0 }, { x: -7, y: 0 }], ramp(-7, -2, darken(gi, 0.12)), 1.1);
+  poly(ctx, [{ x: 2, y: -9 }, { x: 6, y: -9 }, { x: 7, y: 0 }, { x: 2, y: 0 }], ramp(2, 7, darken(gi, 0.2)), 1.1);
+  for (const [x0, x1] of [[-6.6, -2], [2, 6.6]] as const) line(ctx, [{ x: x0, y: -4 }, { x: x1, y: -5 }], rgba('#ffffff', 0.22), 0.8);
   // Body
-  poly(ctx, [{ x: -8, y: -22 }, { x: 8, y: -22 }, { x: 9, y: -8 }, { x: -9, y: -8 }], gi, 1.3);
-  line(ctx, [{ x: -9, y: -12 }, { x: 9, y: -12 }], look.band ?? VERMILION, 2.2); // sash
+  poly(ctx, [{ x: -8, y: -22 }, { x: 8, y: -22 }, { x: 9, y: -8 }, { x: -9, y: -8 }], ramp(-9, 9, gi), 1.3);
+  line(ctx, [{ x: -3, y: -22 }, { x: 3, y: -15 }], rgba(INK, 0.35), 0.9); // crossed collar
+  line(ctx, [{ x: -8.6, y: -12 }, { x: 8.6, y: -12 }], look.band ?? VERMILION, 2.4); // sash
+  line(ctx, [{ x: -8.6, y: -12.8 }, { x: 8.6, y: -12.8 }], rgba('#ffffff', 0.3), 0.6);
+  line(ctx, [{ x: -9, y: -12 }, { x: -12, y: -8 }], look.band ?? VERMILION, 1.6); // sash knot tail
   if (look.armor) {
-    poly(ctx, [{ x: -9, y: -21 }, { x: 9, y: -21 }, { x: 10, y: -13 }, { x: -10, y: -13 }], look.armor, 1.2);
+    poly(ctx, [{ x: -9, y: -21 }, { x: 9, y: -21 }, { x: 10, y: -13 }, { x: -10, y: -13 }], ramp(-10, 10, look.armor, 0.25, 0.3), 1.2);
     for (const y of [-18, -15]) line(ctx, [{ x: -9, y }, { x: 9, y }], darken(look.armor, 0.35), 0.9);
+    line(ctx, [{ x: -8, y: -20 }, { x: 0, y: -20 }], rgba('#ffffff', 0.35), 0.8);
   }
   if (look.pack === 'satchel') poly(ctx, [{ x: -12, y: -20 }, { x: -6, y: -20 }, { x: -6, y: -11 }, { x: -12, y: -11 }], WOOD, 1);
   if (look.pack === 'bombs') for (const y of [-19, -13]) circle(ctx, -10, y, 3, INK, 0.8, '#000');
   // Head with hood and mask.
-  circle(ctx, 0, -31, 10, look.mask ?? gi, 1.4);
+  const hood = look.mask ?? gi;
+  const hg = ctx.createRadialGradient(-3.5, -35, 1, 0, -31, 11);
+  hg.addColorStop(0, lighten(hood, 0.28));
+  hg.addColorStop(0.6, hood);
+  hg.addColorStop(1, darken(hood, 0.25));
+  circle(ctx, 0, -31, 10, hg, 1.4);
   poly(ctx, [{ x: -7, y: -34 }, { x: 10, y: -34 }, { x: 10, y: -28 }, { x: -7, y: -28 }], look.skin ?? '#f1c9a0', 0);
   line(ctx, [{ x: -7, y: -34 }, { x: 10, y: -34 }], INK, 0.8);
   line(ctx, [{ x: -7, y: -28 }, { x: 10, y: -28 }], INK, 0.8);
@@ -1281,15 +1730,22 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
   ctx.lineWidth = 2;
   ctx.strokeStyle = look.band ?? VERMILION;
   ctx.stroke();
-  if (look.hat === 'kasa') poly(ctx, [{ x: -14, y: -38 }, { x: 0, y: -47 }, { x: 14, y: -38 }], RICE, 1.2);
+  if (look.hat === 'kasa') {
+    poly(ctx, [{ x: -14, y: -38 }, { x: 0, y: -47 }, { x: 14, y: -38 }], ramp(-14, 14, RICE, 0.2, 0.2), 1.2);
+    for (const f of [0.35, 0.7]) line(ctx, [{ x: -14 * f, y: -47 + 9 * f }, { x: 14 * f, y: -47 + 9 * f }], rgba(darken(RICE, 0.5), 0.45), 0.7);
+  }
   if (look.hat === 'helm') {
-    poly(ctx, [{ x: -11, y: -35 }, { x: -8, y: -43 }, { x: 8, y: -43 }, { x: 11, y: -35 }], look.armor ?? '#5d636e', 1.2);
+    poly(ctx, [{ x: -11, y: -35 }, { x: -8, y: -43 }, { x: 8, y: -43 }, { x: 11, y: -35 }], ramp(-11, 11, look.armor ?? '#5d636e', 0.28, 0.3), 1.2);
     poly(ctx, [{ x: -3, y: -43 }, { x: 0, y: -50 }, { x: 3, y: -43 }], GOLD, 0.9);
   }
   // Arm and weapon
   const w = look.weapon ?? 'katana';
   if (w === 'katana') {
-    line(ctx, [{ x: 6, y: -18 }, { x: 22, y: -30 }], '#d9dee6', 2.2);
+    // Blade with a bright edge, a gold guard and a wrapped grip.
+    line(ctx, [{ x: 8, y: -19.5 }, { x: 23, y: -31 }], '#5d636e', 3);
+    line(ctx, [{ x: 8, y: -19.5 }, { x: 23, y: -31 }], '#e4e8ee', 2);
+    line(ctx, [{ x: 10, y: -21.6 }, { x: 22, y: -30.8 }], '#ffffff', 0.7);
+    line(ctx, [{ x: 6.5, y: -20.5 }, { x: 9, y: -17.5 }], GOLD, 1.8);
     line(ctx, [{ x: 4, y: -16 }, { x: 8, y: -19 }], INK, 3);
   } else if (w === 'kunai') {
     for (const dy of [0, 4]) poly(ctx, [{ x: 10, y: -19 + dy }, { x: 20, y: -21 + dy }, { x: 10, y: -16 + dy }], '#c9ced6', 0.8);
@@ -1301,6 +1757,7 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
     poly(ctx, [{ x: 16, y: -24 }, { x: 22, y: -30 }, { x: 24, y: -26 }, { x: 19, y: -21 }], '#8a8f99', 1);
   } else if (w === 'club') {
     line(ctx, [{ x: 4, y: -14 }, { x: 18, y: -34 }], '#3a3f48', 4.5);
+    line(ctx, [{ x: 5, y: -15.5 }, { x: 17, y: -32.5 }], rgba('#ffffff', 0.25), 1);
     for (let i = 0; i < 3; i++) circle(ctx, 13 + i * 2, -26 - i * 3, 1.2, '#c9ced6', 0);
   }
   ctx.restore();
@@ -1332,6 +1789,15 @@ export const troopArt: Record<string, TroopArt> = {
 // Projectiles and effects
 // ---------------------------------------------------------------------------
 
+/** Top-lit vertical ramp for small rounded parts (kites, fur, shields). */
+function vramp(ctx: Ctx, y0: number, y1: number, c: string, light = 0.25, dark = 0.22): CanvasGradient {
+  const g = ctx.createLinearGradient(0, y0, 0, y1);
+  g.addColorStop(0, lighten(c, light));
+  g.addColorStop(0.5, c);
+  g.addColorStop(1, darken(c, dark));
+  return g;
+}
+
 /** Register code-drawn catalog warriors. Rendering supplies metadata across the art contract. */
 export function registerWarriorArt(warriors: { id: string; role: string; tier: number; look: Record<string, string> }[]): void {
   for (const w of warriors) {
@@ -1345,8 +1811,10 @@ export function registerWarriorArt(warriors: { id: string; role: string; tier: n
       paint(ctx) {
         const accent = w.look.accent;
         if (flying) {
-          poly(ctx, [{ x: -34, y: -43 }, { x: 0, y: -68 }, { x: 34, y: -43 }, { x: 0, y: -29 }], accent, 1.4);
+          poly(ctx, [{ x: -34, y: -43 }, { x: 0, y: -68 }, { x: 34, y: -43 }, { x: 0, y: -29 }], vramp(ctx, -68, -29, accent, 0.3, 0.2), 1.4);
+          poly(ctx, [{ x: 0, y: -68 }, { x: 34, y: -43 }, { x: 0, y: -29 }], rgba(INK, 0.12), 0);
           line(ctx, [{ x: -34, y: -43 }, { x: 34, y: -43 }], WOOD_DARK, 1.4);
+          line(ctx, [{ x: 0, y: -68 }, { x: 0, y: -29 }], rgba(WOOD_DARK, 0.7), 1);
           crest(ctx, 0, -49, 7, WASHI);
         }
         ctx.save();
@@ -1359,18 +1827,24 @@ export function registerWarriorArt(warriors: { id: string; role: string; tier: n
         });
         ctx.restore();
         if (role === 'mystic') {
-          circle(ctx, 17, -28, 5, accent, 1.2);
+          const og = ctx.createRadialGradient(15.5, -29.5, 0.5, 17, -28, 5);
+          og.addColorStop(0, '#ffffff');
+          og.addColorStop(0.5, lighten(accent, 0.2));
+          og.addColorStop(1, accent);
+          circle(ctx, 17, -28, 9, rgba(accent, 0.18), 0);
+          circle(ctx, 17, -28, 5, og, 1.2);
           line(ctx, [{ x: 17, y: -23 }, { x: 17, y: -4 }], WOOD, 2);
         }
         if (role === 'siege') {
-          poly(ctx, [{ x: 6, y: -22 }, { x: 23, y: -28 }, { x: 26, y: -18 }, { x: 9, y: -12 }], '#5d636e', 1.4);
+          poly(ctx, [{ x: 6, y: -22 }, { x: 23, y: -28 }, { x: 26, y: -18 }, { x: 9, y: -12 }], vramp(ctx, -28, -12, '#5d636e', 0.3, 0.25), 1.4);
+          line(ctx, [{ x: 8, y: -21 }, { x: 22, y: -26.5 }], rgba('#ffffff', 0.35), 0.8);
           circle(ctx, 13, -7, 5, WOOD_DARK, 1);
         }
         if (role === 'beast') {
           ctx.beginPath();
           ctx.ellipse(-19, -7, 10, 6, 0, 0, Math.PI * 2);
-          ctx.fillStyle = accent; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.stroke();
-          circle(ctx, -24, -14, 5, accent, 1);
+          ctx.fillStyle = vramp(ctx, -13, -1, accent); ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.stroke();
+          circle(ctx, -24, -14, 5, vramp(ctx, -19, -9, accent), 1);
           poly(ctx, [{ x: -28, y: -17 }, { x: -27, y: -23 }, { x: -23, y: -18 }], accent, 1);
         }
         // Tier dots make similarly equipped warriors distinguishable at thumbnail size.
@@ -1382,8 +1856,8 @@ export function registerWarriorArt(warriors: { id: string; role: string; tier: n
       paint(ctx) {
         const fur = w.tier === 5 ? '#f4ead6' : '#b88750';
         ctx.beginPath(); ctx.ellipse(0, -10, 13, 7, 0, 0, Math.PI * 2);
-        ctx.fillStyle = fur; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.stroke();
-        circle(ctx, 11, -18, 7, fur, 1.4);
+        ctx.fillStyle = vramp(ctx, -17, -3, fur); ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.stroke();
+        circle(ctx, 11, -18, 7, vramp(ctx, -25, -11, fur), 1.4);
         poly(ctx, [{ x: 7, y: -23 }, { x: 7, y: -29 }, { x: 12, y: -24 }], fur, 1);
         for (const x of [-9, -3, 5, 10]) line(ctx, [{ x, y: -8 }, { x: x + 1, y: -2 }], fur, 3);
         line(ctx, [{ x: -12, y: -11 }, { x: -18, y: -19 }], fur, 3);
@@ -1395,7 +1869,14 @@ export function registerWarriorArt(warriors: { id: string; role: string; tier: n
 }
 
 const kunai = (ctx: Ctx, s: number) => {
+  // Motion streak behind the blade.
+  const tg = ctx.createLinearGradient(-12 * s, 0, -2 * s, 0);
+  tg.addColorStop(0, rgba('#ffffff', 0));
+  tg.addColorStop(1, rgba('#ffffff', 0.5));
+  ctx.fillStyle = tg;
+  ctx.fillRect(-12 * s, -1.2 * s, 10 * s, 2.4 * s);
   poly(ctx, [{ x: -6 * s, y: 0 }, { x: 2 * s, y: -2.4 * s }, { x: 7 * s, y: 0 }, { x: 2 * s, y: 2.4 * s }], '#c9ced6', 0.9);
+  line(ctx, [{ x: -4 * s, y: -0.4 * s }, { x: 6 * s, y: -0.2 * s }], '#ffffff', 0.7 * s);
   line(ctx, [{ x: -6 * s, y: 0 }, { x: -10 * s, y: 0 }], INK, 1.6 * s);
   circle(ctx, -11 * s, 0, 1.4 * s, 'rgba(0,0,0,0)', 0.9);
 };
@@ -1407,8 +1888,12 @@ export const projectileArt: Record<string, { w: number; h: number; paint: (ctx: 
     w: 22,
     h: 22,
     paint(ctx) {
-      circle(ctx, 0, 0, 7, VERMILION, 1.2);
+      const g = ctx.createRadialGradient(-2.5, -2.5, 0.5, 0, 0, 7);
+      g.addColorStop(0, lighten(VERMILION, 0.45));
+      g.addColorStop(1, darken(VERMILION, 0.2));
+      circle(ctx, 0, 0, 7, g, 1.2);
       line(ctx, [{ x: -7, y: 0 }, { x: 7, y: 0 }], GOLD, 1.4);
+      glow(ctx, 2.5, -10.5, 5);
       line(ctx, [{ x: 0, y: -7 }, { x: 2, y: -10 }], '#3a2a1e', 1.2);
       circle(ctx, 2.5, -10.5, 1.6, '#ffcf70', 0);
     },
@@ -1437,8 +1922,12 @@ export const projectileArt: Record<string, { w: number; h: number; paint: (ctx: 
     w: 18,
     h: 18,
     paint(ctx) {
-      circle(ctx, 0, 1, 6, INK, 1, '#000');
+      const g = ctx.createRadialGradient(-2, -1, 0.5, 0, 1, 6);
+      g.addColorStop(0, '#5d6472');
+      g.addColorStop(1, '#14181f');
+      circle(ctx, 0, 1, 6, g, 1, '#000');
       line(ctx, [{ x: 0, y: -5 }, { x: 3, y: -8 }], '#b8a888', 1.2);
+      glow(ctx, 3.5, -8.5, 5);
       circle(ctx, 3.5, -8.5, 1.8, '#ffb15c', 0);
     },
   },
@@ -1469,9 +1958,10 @@ export const projectileArt: Record<string, { w: number; h: number; paint: (ctx: 
 /** Grey-white smoke puff (deploys, hits, destruction). */
 export function paintPuff(ctx: Ctx): void {
   for (const [x, y, r] of [[-8, 2, 9], [8, 2, 9], [0, -5, 11], [0, 5, 9]] as const) {
-    const g = ctx.createRadialGradient(x - 2, y - 3, 1, x, y, r);
+    const g = ctx.createRadialGradient(x - 3, y - 4, 1, x, y, r);
     g.addColorStop(0, '#ffffff');
-    g.addColorStop(1, 'rgba(214,220,228,0.85)');
+    g.addColorStop(0.55, 'rgba(240,236,228,0.95)');
+    g.addColorStop(1, 'rgba(196,190,186,0.8)');
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -1493,7 +1983,11 @@ export function paintSmokeLobe(ctx: Ctx): void {
 
 /** Marker over a sabotaged (jammed) defense: a gold wrench crossing a broken gear. */
 export function paintJam(ctx: Ctx): void {
-  circle(ctx, 0, 0, 11, '#2b3340', 1.4, '#141a22');
+  const dg = ctx.createRadialGradient(-3, -4, 1, 0, 0, 11);
+  dg.addColorStop(0, '#46505f');
+  dg.addColorStop(1, '#1d232c');
+  circle(ctx, 0, 0, 12.5, 'rgba(233,180,76,0.35)', 0);
+  circle(ctx, 0, 0, 11, dg, 1.4, '#141a22');
   ctx.save();
   for (let i = 0; i < 6; i++) {
     ctx.rotate(Math.PI / 3);
@@ -1507,6 +2001,7 @@ export function paintJam(ctx: Ctx): void {
 }
 
 export function paintStar(ctx: Ctx, color = GOLD): void {
+  if (color === GOLD) glow(ctx, 0, 0, 12);
   ctx.beginPath();
   for (let i = 0; i < 10; i++) {
     const r = i % 2 ? 4.5 : 10;
@@ -1517,11 +2012,16 @@ export function paintStar(ctx: Ctx, color = GOLD): void {
     else ctx.moveTo(x, y);
   }
   ctx.closePath();
-  ctx.fillStyle = color;
+  const sg = ctx.createLinearGradient(0, -10, 0, 10);
+  sg.addColorStop(0, lighten(color, 0.45));
+  sg.addColorStop(0.5, color);
+  sg.addColorStop(1, darken(color, 0.15));
+  ctx.fillStyle = sg;
   ctx.fill();
   ctx.lineWidth = 1.2;
   ctx.strokeStyle = mix(color, INK, 0.5);
   ctx.stroke();
+  line(ctx, [{ x: -2.5, y: -4 }, { x: 0, y: -8 }], rgba('#ffffff', 0.7), 1);
 }
 
 export function paintShadowDisc(ctx: Ctx): void {

@@ -332,7 +332,7 @@ export class BattleHud {
     const title = r.stars === 3 ? 'Perfect raid!' : r.stars > 0 ? 'Victory!' : 'Defeat';
     const body = h(
       'div',
-      { class: 'results' },
+      { class: `results ${r.stars > 0 ? 'win' : 'loss'}` },
       starsRow,
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
       note ? h('p', { class: 'note' }, note) : null,
