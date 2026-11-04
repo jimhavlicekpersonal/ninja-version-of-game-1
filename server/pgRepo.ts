@@ -1,5 +1,6 @@
 /** Postgres storage adapter for the Repo port (tables in server/migrations/). Bases and battle records are JSONB. */
 import pg from 'pg';
+import { contentHash } from './contentHash';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
 import type {
@@ -12,6 +13,8 @@ import type {
   OpponentQuery,
   Player,
   PlayerPatch,
+  PruneCutoffs,
+  PruneResult,
   RaidAttack,
   RaidClaim,
   RaidPairing,
@@ -45,7 +48,8 @@ const toTicket = (r: Row): Ticket => {
     attackerId: String(r.attacker_id),
     defenderId: strOrNull(r.defender_id),
     defenderName: String(r.defender_name ?? ''),
-    base: r.base as Ticket['base'],
+    // From base_versions; tickets made before step 11 carry their own copy.
+    base: (r.stored_base ?? r.base) as Ticket['base'],
     defenderTrophies: num(r.defender_trophies),
     createdAt: num(r.created_at),
     expiresAt: num(r.expires_at),
@@ -59,7 +63,21 @@ const toTicket = (r: Row): Ticket => {
   return t;
 };
 
-const toAttack = (r: Row): AttackRecord => ({ ...(r.record as AttackRecord), id: String(r.id) });
+// From base_versions; records made before step 11 carry their own copy in `record.base`.
+const toAttack = (r: Row): AttackRecord => {
+  const rec = r.record as AttackRecord;
+  return { ...rec, base: (r.stored_base as AttackRecord['base'] | null) ?? rec.base, id: String(r.id) };
+};
+
+/**
+ * A statement prefix that stores a base version once ($1 = hash, $2 = base,
+ * $3 = time): new content is inserted, known content only has its last use
+ * refreshed (so retention never removes a base that was just used again).
+ */
+const PUT_BASE = `with put_base as (
+  insert into base_versions (hash, base, created_at, last_used_at) values ($1, $2, $3, $3)
+  on conflict (hash) do update set last_used_at = greatest(base_versions.last_used_at, excluded.last_used_at)
+)`;
 const toGrove = (r: Row): Grove => ({ id: String(r.id), name: String(r.name), color: String(r.color), createdAt: num(r.created_at) });
 const toSummary = (r: Row): GroveSummaryRow => ({ ...toGrove(r), members: num(r.members), averageTrophies: Math.round(num(r.average_trophies)), lastActiveAt: num(r.last_active_at) });
 const toMember = (r: Row): GroveMember => ({ groveId: String(r.grove_id), playerId: String(r.player_id), role: r.role as GroveMember['role'], joinedAt: num(r.joined_at), xp: num(r.xp) });
@@ -218,15 +236,17 @@ export class PgRepo implements Repo {
   // ------------------------------------------------------------ tickets and attacks
 
   async createTicket(t: Ticket): Promise<void> {
+    // The base version and the ticket in one statement: retention never sees one without the other.
     await this.pool.query(
-      `insert into tickets (id, kind, attacker_id, defender_id, defender_name, base, defender_trophies, created_at, expires_at, used, week, grove_id, target, seed)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,false,$10,$11,$12,$13)`,
-      [t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, JSON.stringify(t.base), t.defenderTrophies, t.createdAt, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null],
+      `${PUT_BASE}
+       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed)
+       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14)`,
+      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null],
     );
   }
 
   async getTicket(id: string): Promise<Ticket | null> {
-    const r = await this.rows('select * from tickets where id = $1', [id]);
+    const r = await this.rows('select t.*, b.base as stored_base from tickets t left join base_versions b on b.hash = t.base_hash where t.id = $1', [id]);
     return r[0] ? toTicket(r[0]) : null;
   }
 
@@ -236,16 +256,38 @@ export class PgRepo implements Repo {
   }
 
   async addAttack(a: AttackRecord): Promise<void> {
-    await this.pool.query('insert into attacks (id, at, attacker_id, defender_id, record) values ($1,$2,$3,$4,$5)', [a.id, a.at, a.attackerId, a.defenderId, JSON.stringify(a)]);
+    const { base, ...record } = a;
+    await this.pool.query(
+      `${PUT_BASE}
+       insert into attacks (base_hash, at, id, attacker_id, defender_id, record) values ($1, $3, $4, $5, $6, $7)`,
+      [contentHash(base), JSON.stringify(base), a.at, a.id, a.attackerId, a.defenderId, JSON.stringify(record)],
+    );
   }
 
   async defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]> {
-    const r = await this.rows('select id, record from attacks where defender_id = $1 and at > $2 order by at desc limit $3', [defenderId, since, limit]);
+    const r = await this.rows(
+      `select a.id, a.record, b.base as stored_base from attacks a left join base_versions b on b.hash = a.base_hash
+       where a.defender_id = $1 and a.at > $2 order by a.at desc limit $3`,
+      [defenderId, since, limit],
+    );
     return r.map(toAttack).reverse();
   }
 
   async recentTargets(attackerId: string, since: number): Promise<string[]> {
     return (await this.rows('select defender_id from attacks where attacker_id = $1 and at > $2', [attackerId, since])).map((x) => String(x.defender_id));
+  }
+
+  async prune(c: PruneCutoffs): Promise<PruneResult> {
+    const attacks = await this.pool.query('delete from attacks where at < $1', [c.recordsBefore]);
+    const tickets = await this.pool.query('delete from tickets where created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.staleBefore]);
+    // last_used_at guards a base that a new ticket is referring to right now (its insert refreshes it).
+    const bases = await this.pool.query(
+      `delete from base_versions b where b.last_used_at < $1
+         and not exists (select 1 from tickets t where t.base_hash = b.hash)
+         and not exists (select 1 from attacks a where a.base_hash = b.hash)`,
+      [c.staleBefore],
+    );
+    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0 };
   }
 
   // ------------------------------------------------------------ groves

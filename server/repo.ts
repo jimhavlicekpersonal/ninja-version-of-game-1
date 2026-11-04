@@ -6,6 +6,7 @@
  */
 import type { BaseLayout, BattleResult, Deployment } from '../src/gameplay/sim/battle/types';
 import type { GroveRole } from '../src/backend/net/protocol';
+import { contentHash } from './contentHash';
 
 export interface Player {
   id: string;
@@ -177,6 +178,23 @@ export interface RaidClaim {
   at: number;
 }
 
+/** What `prune` removes (roadmap step 11: 30-day replay retention). */
+export interface PruneCutoffs {
+  /** Attack records (replays) and tickets created before this time are deleted. */
+  recordsBefore: number;
+  /**
+   * Unused tickets that expired before this time are deleted too (they only
+   * mattered while they could be used), and so are base versions no ticket or
+   * attack refers to any more and nobody used since this time.
+   */
+  staleBefore: number;
+}
+export interface PruneResult {
+  attacks: number;
+  tickets: number;
+  bases: number;
+}
+
 export interface OpponentQuery {
   excludeIds: string[];
   minHall: number;
@@ -199,7 +217,8 @@ export interface Repo {
   topPlayers(limit: number): Promise<Player[]>;
   /** 1 + number of players (with a base) who have more trophies. */
   rankOf(trophies: number): Promise<number>;
-  // tickets and attacks
+  // tickets and attacks. Each base is stored once per distinct content
+  // (base versions, keyed by contentHash); tickets and attacks keep the key.
   createTicket(t: Ticket): Promise<void>;
   getTicket(id: string): Promise<Ticket | null>;
   /**
@@ -210,6 +229,8 @@ export interface Repo {
   addAttack(a: AttackRecord): Promise<void>;
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
   recentTargets(attackerId: string, since: number): Promise<string[]>;
+  /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
+  prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
   // groves
   createGrove(g: Grove): Promise<void>;
   getGrove(id: string): Promise<Grove | null>;
@@ -249,10 +270,15 @@ export interface Repo {
 
 const clone = <T>(v: T): T => structuredClone(v);
 
+/** A ticket or attack as stored: the base by its content hash. */
+type Stored<T extends { base: BaseLayout }> = Omit<T, 'base'> & { baseHash: string };
+
 export class MemoryRepo implements Repo {
   players = new Map<string, Player>();
-  tickets = new Map<string, Ticket>();
-  attacks: AttackRecord[] = [];
+  /** Base versions by content hash (stored once, like Postgres's base_versions). */
+  bases = new Map<string, { base: BaseLayout; createdAt: number; lastUsedAt: number }>();
+  tickets = new Map<string, Stored<Ticket>>();
+  attacks: Stored<AttackRecord>[] = [];
   groves = new Map<string, Grove>();
   memberRows: GroveMember[] = [];
   chatRows: ChatRow[] = [];
@@ -292,12 +318,24 @@ export class MemoryRepo implements Repo {
   async rankOf(trophies: number): Promise<number> {
     return 1 + [...this.players.values()].filter((p) => p.base && p.trophies > trophies).length;
   }
+  private putBase(base: BaseLayout, at: number): string {
+    const hash = contentHash(base);
+    const known = this.bases.get(hash);
+    if (known) known.lastUsedAt = Math.max(known.lastUsedAt, at);
+    else this.bases.set(hash, { base: clone(base), createdAt: at, lastUsedAt: at });
+    return hash;
+  }
+  private withBase<T extends { baseHash: string }>(row: T): Omit<T, 'baseHash'> & { base: BaseLayout } {
+    const { baseHash, ...rest } = clone(row);
+    return { ...rest, base: clone(this.bases.get(baseHash)!.base) };
+  }
   async createTicket(t: Ticket): Promise<void> {
-    this.tickets.set(t.id, clone(t));
+    const { base, ...rest } = clone(t);
+    this.tickets.set(t.id, { ...rest, baseHash: this.putBase(base, t.createdAt) });
   }
   async getTicket(id: string): Promise<Ticket | null> {
     const t = this.tickets.get(id);
-    return t ? clone(t) : null;
+    return t ? this.withBase(t) : null;
   }
   async useTicket(id: string, response?: unknown): Promise<boolean> {
     const t = this.tickets.get(id);
@@ -307,13 +345,37 @@ export class MemoryRepo implements Repo {
     return true;
   }
   async addAttack(a: AttackRecord): Promise<void> {
-    this.attacks.push(clone(a));
+    const { base, ...rest } = clone(a);
+    this.attacks.push({ ...rest, baseHash: this.putBase(base, a.at) });
   }
   async defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]> {
-    return this.attacks.filter((a) => a.defenderId === defenderId && a.at > since).slice(-limit).map(clone);
+    return this.attacks
+      .filter((a) => a.defenderId === defenderId && a.at > since)
+      .slice(-limit)
+      .map((a) => this.withBase(a));
   }
   async recentTargets(attackerId: string, since: number): Promise<string[]> {
     return this.attacks.filter((a) => a.attackerId === attackerId && a.at > since).map((a) => a.defenderId);
+  }
+  async prune(c: PruneCutoffs): Promise<PruneResult> {
+    const attacks = this.attacks.length;
+    this.attacks = this.attacks.filter((a) => a.at >= c.recordsBefore);
+    let tickets = 0;
+    for (const [id, t] of this.tickets) {
+      if (t.createdAt < c.recordsBefore || (!t.used && t.expiresAt < c.staleBefore)) {
+        this.tickets.delete(id);
+        tickets++;
+      }
+    }
+    const used = new Set([...[...this.tickets.values()].map((t) => t.baseHash), ...this.attacks.map((a) => a.baseHash)]);
+    let bases = 0;
+    for (const [hash, b] of this.bases) {
+      if (!used.has(hash) && b.lastUsedAt < c.staleBefore) {
+        this.bases.delete(hash);
+        bases++;
+      }
+    }
+    return { attacks: attacks - this.attacks.length, tickets, bases };
   }
   async createGrove(g: Grove): Promise<void> {
     this.groves.set(g.id, clone(g));

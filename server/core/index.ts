@@ -8,6 +8,7 @@ import * as groves from './groves';
 import * as groveRaid from './groveRaid';
 import * as identity from './identity';
 import * as pvp from './pvp';
+import * as retention from './retention';
 
 export type { ServerContext } from './context';
 export { ApiError } from './context';
@@ -41,6 +42,8 @@ export function createCore(ctx: ServerContext) {
     raidTicket: groveRaid.raidTicket.bind(null, ctx),
     raidAttack: groveRaid.raidAttack.bind(null, ctx),
     claimRaid: groveRaid.claimRaid.bind(null, ctx),
+    /** Retention: old replays, tickets and unreferenced base versions. */
+    prune: () => retention.prune(ctx),
   };
 }
 

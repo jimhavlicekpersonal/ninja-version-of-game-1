@@ -126,7 +126,7 @@ Every battle report must also be checked:
 | `PUT /v1/base` | `{ base: BaseLayout }` | `204` |
 | `GET /v1/match` | | `MatchResponse` `{ ticket, seed, base, opponent: { name, trophies, hallLevel, kind }, expiresAt }` |
 | `POST /v1/attacks` | `BattleSubmission` | `AttackResponse` `{ attackId, result, trophies, playerTrophies }` |
-| `GET /v1/defenses?since=` | | `{ defenses: DefenseView[] }` (raids on this player after `since`, oldest first, at most 20) |
+| `GET /v1/defenses?since=` | | `{ defenses: DefenseView[] }` (raids on this player after `since`, oldest first, at most 20; kept for 30 days) |
 | `GET /v1/leaderboard?limit=` | | `{ players: [{ rank, name, trophies, hallLevel, grove }], me }` |
 
 Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.ts` and the balance data in `src/gameplay/data/`.
@@ -151,6 +151,7 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
   - Trophies use `winTrophies`/`lossTrophies` from `src/gameplay/sim/ranks.ts`, based on both players' trophies. The defender moves by the opposite amount.
   - Attacking ends the attacker's own shield.
   - A real defender gets the shield from `shieldTiers` for the destruction reached, plus a defense record that includes the replay. Bot opponents get neither.
+- **Retention:** defense records (with their replays) and tickets are kept for 30 days; an unused ticket goes a day after it expires. A report for a ticket that is gone gets `404 not_found`. Our server stores each distinct base once (`base_versions`, by content hash) and tickets and records refer to it, so keeping 30 days of replays costs a few KB per battle instead of a full base copy each.
 
 ### Groves
 

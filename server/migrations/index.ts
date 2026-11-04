@@ -7,8 +7,10 @@
 import { loadMigrations } from '../migrate';
 import m0001 from './0001_initial.sql?raw';
 import m0002 from './0002_ticket_seed.sql?raw';
+import m0003 from './0003_base_versions.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
   '0002_ticket_seed.sql': m0002,
+  '0003_base_versions.sql': m0003,
 });

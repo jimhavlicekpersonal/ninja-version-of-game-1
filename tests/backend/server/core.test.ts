@@ -155,6 +155,22 @@ for (const [label, makeRepo] of repoFactories) {
         expect(r.result.hash).toBe(runBattle({ seed: 77, base: m.base, army, infiltration: true }, deployments, w.data).result.hash);
       });
 
+      it('keeps defense replays for 30 days, then retention removes them', async () => {
+        const w = await W();
+        const a = await w.player('Ann', baseAt(1));
+        const d = await w.player('Dot', baseAt(1, 77));
+        w.pastShields();
+        const m = (await a.match())!;
+        expect(m.opponent.name).toBe('Dot');
+        await a.submitAttack({ ticket: m.ticket, seed: m.seed, ...noTroops });
+        w.advance(29 * 24 * HOUR);
+        await w.core.prune();
+        expect((await d.defenses(0)).defenses).toHaveLength(1);
+        w.advance(2 * 24 * HOUR);
+        expect(await w.core.prune()).toMatchObject({ attacks: 1 });
+        expect((await d.defenses(0)).defenses).toHaveLength(0);
+      });
+
       it('refuses late, reused and foreign tickets, and impossible armies', async () => {
         const w = await W();
         const a = await w.player('Ann', baseAt(1));

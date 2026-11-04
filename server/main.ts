@@ -33,6 +33,16 @@ async function main(): Promise<void> {
   const app = buildServer({ repo, data: defaultData, corsOrigin: process.env.CORS_ORIGIN, logger: true });
   const port = Number(process.env.PORT ?? 8787);
   await app.listen({ port, host: '0.0.0.0' });
+  // Retention (30-day replays): hourly, starting at a random minute so instances spread out.
+  const prune = () =>
+    app.core.prune().then(
+      (r) => app.log.info({ pruned: r }, 'retention'),
+      (e) => app.log.error(e, 'retention failed'),
+    );
+  setTimeout(() => {
+    void prune();
+    setInterval(() => void prune(), 3_600_000).unref();
+  }, Math.floor(Math.random() * 3_600_000)).unref();
 }
 
 main().catch((e) => {

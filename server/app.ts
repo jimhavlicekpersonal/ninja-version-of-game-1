@@ -28,9 +28,9 @@ function bearer(req: FastifyRequest): string | undefined {
   return h.startsWith('Bearer ') ? h.slice(7) : undefined;
 }
 
-export function buildServer(opts: ServerOptions): FastifyInstance {
+export function buildServer(opts: ServerOptions): FastifyInstance & { core: ServerCore } {
   const core: ServerCore = createCore(nodeContext(opts.repo, opts.data, opts.now, opts.random));
-  const app = Fastify({ logger: opts.logger ?? false, bodyLimit: 1_000_000 });
+  const app = Object.assign(Fastify({ logger: opts.logger ?? false, bodyLimit: 1_000_000 }), { core });
 
   // CORS without an extra dependency. corsOrigin: '*' (default; fine because
   // auth is a bearer token, not a cookie) or a comma-separated list of origins.
