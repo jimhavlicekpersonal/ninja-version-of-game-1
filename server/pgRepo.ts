@@ -20,9 +20,12 @@ import type {
   PruneResult,
   RaidAttack,
   RaidClaim,
+  LedgerEntry,
+  CommandLogRow,
   RaidPairing,
   Report,
   Repo,
+  VillageRow,
   Ticket,
   TroopRequest,
 } from './repo';
@@ -113,6 +116,19 @@ const toReport = (r: Row): Report => ({
   resolvedAt: r.resolved_at === null || r.resolved_at === undefined ? null : num(r.resolved_at),
   resolution: strOrNull(r.resolution),
 });
+const toVillage = (r: Row): VillageRow => ({
+  playerId: String(r.player_id),
+  file: r.file,
+  revision: num(r.revision),
+  seq: num(r.seq),
+  at: num(r.at),
+  stateHash: String(r.state_hash),
+  createdAt: num(r.created_at),
+  updatedAt: num(r.updated_at),
+});
+const toLedger = (r: Row): LedgerEntry => ({ playerId: String(r.player_id), at: num(r.at), resource: String(r.resource), delta: num(r.delta), balance: num(r.balance), reason: String(r.reason), ref: strOrNull(r.ref) });
+const toCommand = (r: Row): CommandLogRow => ({ playerId: String(r.player_id), seq: num(r.seq), at: num(r.at), clientAt: num(r.client_at), type: String(r.type), command: r.command, ok: Boolean(r.ok), error: strOrNull(r.error) });
+let savepoints = 0;
 const toBlock = (r: Row): Block => ({ playerId: String(r.player_id), blockedId: String(r.blocked_id), blockedName: String(r.blocked_name), at: num(r.at) });
 const toRequest = (r: Row): TroopRequest => ({
   id: String(r.id),
@@ -177,7 +193,46 @@ const GROVE_SUMMARY = `
   from groves g join grove_members m on m.grove_id = g.id join players p on p.id = m.player_id`;
 
 export class PgRepo implements Repo {
-  constructor(private readonly pool: pg.Pool) {}
+  /** `client`: a connection inside a transaction (see `transaction`); otherwise queries use the pool. */
+  constructor(
+    private readonly pool: pg.Pool,
+    private readonly client: pg.PoolClient | null = null,
+  ) {}
+
+  private get db(): pg.Pool | pg.PoolClient {
+    return this.client ?? this.pool;
+  }
+
+  /**
+   * Run `fn` in one transaction on one connection. Inside a transaction, a
+   * nested one is a savepoint: if it throws, only its own writes are undone.
+   */
+  async transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T> {
+    if (this.client) {
+      const sp = `sp_${++savepoints}`;
+      await this.client.query(`savepoint ${sp}`);
+      try {
+        const out = await fn(this);
+        await this.client.query(`release savepoint ${sp}`);
+        return out;
+      } catch (e) {
+        await this.client.query(`rollback to savepoint ${sp}`);
+        throw e;
+      }
+    }
+    const client = await this.pool.connect();
+    try {
+      await client.query('begin');
+      const out = await fn(new PgRepo(this.pool, client));
+      await client.query('commit');
+      return out;
+    } catch (e) {
+      await client.query('rollback').catch(() => undefined);
+      throw e;
+    } finally {
+      client.release();
+    }
+  }
 
   static fromUrl(url: string): PgRepo {
     return new PgRepo(new pg.Pool({ connectionString: url, ssl: /sslmode=require/.test(url) ? { rejectUnauthorized: false } : undefined }));
@@ -198,17 +253,17 @@ export class PgRepo implements Repo {
   }
 
   private async rows(sql: string, vals: unknown[] = []): Promise<Row[]> {
-    return (await this.pool.query(sql, vals)).rows as Row[];
+    return (await this.db.query(sql, vals)).rows as Row[];
   }
 
   async ping(): Promise<void> {
-    await this.pool.query('select 1');
+    await this.db.query('select 1');
   }
 
   // ------------------------------------------------------------ players
 
   async createPlayer(p: Player): Promise<void> {
-    await this.pool.query(
+    await this.db.query(
       `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0],
@@ -247,7 +302,7 @@ export class PgRepo implements Repo {
     }
     if (!sets.length) return;
     vals.push(id);
-    await this.pool.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals);
+    await this.db.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals);
   }
 
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
@@ -287,7 +342,7 @@ export class PgRepo implements Repo {
 
   async createTicket(t: Ticket): Promise<void> {
     // The base version and the ticket in one statement: retention never sees one without the other.
-    await this.pool.query(
+    await this.db.query(
       `${PUT_BASE}
        insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed)
        values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14)`,
@@ -301,13 +356,13 @@ export class PgRepo implements Repo {
   }
 
   async useTicket(id: string, response?: unknown): Promise<boolean> {
-    const r = await this.pool.query('update tickets set used = true, response = coalesce($2::jsonb, response) where id = $1 and used = false', [id, response === undefined ? null : JSON.stringify(response)]);
+    const r = await this.db.query('update tickets set used = true, response = coalesce($2::jsonb, response) where id = $1 and used = false', [id, response === undefined ? null : JSON.stringify(response)]);
     return (r.rowCount ?? 0) > 0;
   }
 
   async addAttack(a: AttackRecord): Promise<void> {
     const { base, ...record } = a;
-    await this.pool.query(
+    await this.db.query(
       `${PUT_BASE}
        insert into attacks (base_hash, at, id, attacker_id, defender_id, record) values ($1, $3, $4, $5, $6, $7)`,
       [contentHash(base), JSON.stringify(base), a.at, a.id, a.attackerId, a.defenderId, JSON.stringify(record)],
@@ -328,27 +383,26 @@ export class PgRepo implements Repo {
   }
 
   async prune(c: PruneCutoffs): Promise<PruneResult> {
-    const attacks = await this.pool.query('delete from attacks where at < $1', [c.recordsBefore]);
-    const tickets = await this.pool.query('delete from tickets where created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.staleBefore]);
+    const attacks = await this.db.query('delete from attacks where at < $1', [c.recordsBefore]);
+    const tickets = await this.db.query('delete from tickets where created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.staleBefore]);
     // last_used_at guards a base that a new ticket is referring to right now (its insert refreshes it).
-    const bases = await this.pool.query(
+    const bases = await this.db.query(
       `delete from base_versions b where b.last_used_at < $1
          and not exists (select 1 from tickets t where t.base_hash = b.hash)
          and not exists (select 1 from attacks a where a.base_hash = b.hash)`,
       [c.staleBefore],
     );
-    const reports = c.resolvedReportsBefore === undefined ? null : await this.pool.query(`delete from reports where status <> 'open' and resolved_at < $1`, [c.resolvedReportsBefore]);
-    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0 };
+    const reports = c.resolvedReportsBefore === undefined ? null : await this.db.query(`delete from reports where status <> 'open' and resolved_at < $1`, [c.resolvedReportsBefore]);
+    const commands = c.commandsBefore === undefined ? null : await this.db.query('delete from command_log where at < $1', [c.commandsBefore]);
+    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0 };
   }
 
   // ------------------------------------------------------------ account deletion
 
   async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;
-    const client = await this.pool.connect();
-    try {
-      await client.query('begin');
-      const q = (sql: string, vals: unknown[]) => client.query(sql, vals);
+    await this.transaction(async (tx) => {
+      const q = (sql: string, vals: unknown[]) => (tx as PgRepo).db.query(sql, vals);
       await q('delete from tickets where attacker_id = $1', [id]);
       await q('update tickets set defender_id = null where defender_id = $1', [id]);
       await q('delete from attacks where defender_id = $1', [id]);
@@ -389,18 +443,16 @@ export class PgRepo implements Repo {
          where target_id = $1`,
         [id, D.id, D.name, at],
       );
+      // A server-held village, its ledger and command log are only theirs.
+      await q('delete from villages where player_id = $1', [id]);
+      await q('delete from ledger where player_id = $1', [id]);
+      await q('delete from command_log where player_id = $1', [id]);
       await q('delete from players where id = $1', [id]);
-      await client.query('commit');
-    } catch (e) {
-      await client.query('rollback');
-      throw e;
-    } finally {
-      client.release();
-    }
+    });
   }
 
   async addDeletionRequest(r: DeletionRequest): Promise<void> {
-    await this.pool.query(
+    await this.db.query(
       'insert into deletion_requests (id, at, player_id, name, contact, note, status, resolved_at, resolution) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
       [r.id, r.at, r.playerId, r.name, r.contact, r.note, r.status, r.resolvedAt, r.resolution],
     );
@@ -416,14 +468,68 @@ export class PgRepo implements Repo {
   }
 
   async resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean> {
-    const r = await this.pool.query(`update deletion_requests set status = $2, resolution = $3, resolved_at = $4 where id = $1 and status = 'open'`, [id, status, resolution, at]);
+    const r = await this.db.query(`update deletion_requests set status = $2, resolution = $3, resolved_at = $4 where id = $1 and status = 'open'`, [id, status, resolution, at]);
     return (r.rowCount ?? 0) > 0;
+  }
+
+  // ------------------------------------------------------------ server-owned villages (Phase 2)
+
+  async getVillage(playerId: string, opts: { forUpdate?: boolean } = {}): Promise<VillageRow | null> {
+    // A row lock only means something inside a transaction.
+    const r = await this.rows(`select * from villages where player_id = $1${opts.forUpdate && this.client ? ' for update' : ''}`, [playerId]);
+    return r[0] ? toVillage(r[0]) : null;
+  }
+
+  async createVillage(v: VillageRow): Promise<boolean> {
+    const r = await this.db.query(
+      `insert into villages (player_id, file, revision, seq, at, state_hash, created_at, updated_at)
+       select $1, $2, $3, $4, $5, $6, $7, $8 where exists (select 1 from players where id = $1)
+       on conflict (player_id) do nothing`,
+      [v.playerId, JSON.stringify(v.file), v.revision, v.seq, v.at, v.stateHash, v.createdAt, v.updatedAt],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async saveVillage(v: VillageRow, expectedRevision: number, ledger: LedgerEntry[], commands: CommandLogRow[]): Promise<boolean> {
+    const stale = new Error('stale revision');
+    try {
+      return await this.transaction(async (tx) => {
+        const db = (tx as PgRepo).db;
+        const r = await db.query(
+          `update villages set file = $2, revision = $3, seq = $4, at = $5, state_hash = $6, updated_at = $7 where player_id = $1 and revision = $8`,
+          [v.playerId, JSON.stringify(v.file), v.revision, v.seq, v.at, v.stateHash, v.updatedAt, expectedRevision],
+        );
+        if ((r.rowCount ?? 0) === 0) throw stale;
+        for (const l of ledger) {
+          await db.query('insert into ledger (player_id, at, resource, delta, balance, reason, ref) values ($1,$2,$3,$4,$5,$6,$7)', [l.playerId, l.at, l.resource, l.delta, l.balance, l.reason, l.ref]);
+        }
+        for (const c of commands) {
+          await db.query(
+            `insert into command_log (player_id, seq, at, client_at, type, command, ok, error) values ($1,$2,$3,$4,$5,$6,$7,$8)
+             on conflict (player_id, seq) do update set at = excluded.at, client_at = excluded.client_at, type = excluded.type, command = excluded.command, ok = excluded.ok, error = excluded.error`,
+            [c.playerId, c.seq, c.at, c.clientAt, c.type, JSON.stringify(c.command), c.ok, c.error],
+          );
+        }
+        return true;
+      });
+    } catch (e) {
+      if (e === stale) return false;
+      throw e;
+    }
+  }
+
+  async ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]> {
+    return (await this.rows('select * from ledger where player_id = $1 order by id desc limit $2', [playerId, limit])).map(toLedger);
+  }
+
+  async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
+    return (await this.rows('select * from command_log where player_id = $1 and seq > $2 order by seq limit $3', [playerId, sinceSeq, limit])).map(toCommand);
   }
 
   // ------------------------------------------------------------ groves
 
   async createGrove(g: Grove): Promise<void> {
-    await this.pool.query('insert into groves (id, name, color, created_at) values ($1,$2,$3,$4)', [g.id, g.name, g.color, g.createdAt]);
+    await this.db.query('insert into groves (id, name, color, created_at) values ($1,$2,$3,$4)', [g.id, g.name, g.color, g.createdAt]);
   }
 
   async getGrove(id: string): Promise<Grove | null> {
@@ -446,7 +552,7 @@ export class PgRepo implements Repo {
   }
 
   async addMember(m: GroveMember): Promise<boolean> {
-    const r = await this.pool.query('insert into grove_members (player_id, grove_id, role, joined_at, xp) values ($1,$2,$3,$4,$5) on conflict (player_id) do nothing', [
+    const r = await this.db.query('insert into grove_members (player_id, grove_id, role, joined_at, xp) values ($1,$2,$3,$4,$5) on conflict (player_id) do nothing', [
       m.playerId,
       m.groveId,
       m.role,
@@ -457,7 +563,7 @@ export class PgRepo implements Repo {
   }
 
   async removeMember(groveId: string, playerId: string): Promise<void> {
-    await this.pool.query('delete from grove_members where grove_id = $1 and player_id = $2', [groveId, playerId]);
+    await this.db.query('delete from grove_members where grove_id = $1 and player_id = $2', [groveId, playerId]);
   }
 
   async updateMember(groveId: string, playerId: string, patch: Partial<Pick<GroveMember, 'role' | 'xp'>>): Promise<void> {
@@ -467,7 +573,7 @@ export class PgRepo implements Repo {
     if (patch.xp !== undefined) sets.push(`xp = $${vals.push(patch.xp)}`);
     if (!sets.length) return;
     vals.push(groveId, playerId);
-    await this.pool.query(`update grove_members set ${sets.join(', ')} where grove_id = $${vals.length - 1} and player_id = $${vals.length}`, vals);
+    await this.db.query(`update grove_members set ${sets.join(', ')} where grove_id = $${vals.length - 1} and player_id = $${vals.length}`, vals);
   }
 
   // ------------------------------------------------------------ chat
@@ -496,7 +602,7 @@ export class PgRepo implements Repo {
   }
 
   async setChatHidden(id: string, hidden: boolean): Promise<void> {
-    await this.pool.query('update grove_chat set hidden = $2 where id = $1', [id, hidden]);
+    await this.db.query('update grove_chat set hidden = $2 where id = $1', [id, hidden]);
   }
 
   async hiddenChatIds(groveId: string, lastN: number): Promise<string[]> {
@@ -508,7 +614,7 @@ export class PgRepo implements Repo {
 
   async addReport(r: Report): Promise<boolean> {
     // The partial unique index (reporter, target, message) where open makes a repeat a no-op.
-    const res = await this.pool.query(
+    const res = await this.db.query(
       `insert into reports (id, at, reporter_id, kind, target_id, target_name, message_id, grove_id, text, reason, note, status, resolved_at, resolution)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) on conflict do nothing`,
       [r.id, r.at, r.reporterId, r.kind, r.targetId, r.targetName, r.messageId, r.groveId, r.text, r.reason, r.note, r.status, r.resolvedAt, r.resolution],
@@ -530,12 +636,12 @@ export class PgRepo implements Repo {
   }
 
   async resolveReport(id: string, status: 'actioned' | 'dismissed', resolution: string, at: number): Promise<boolean> {
-    const r = await this.pool.query(`update reports set status = $2, resolution = $3, resolved_at = $4 where id = $1 and status = 'open'`, [id, status, resolution, at]);
+    const r = await this.db.query(`update reports set status = $2, resolution = $3, resolved_at = $4 where id = $1 and status = 'open'`, [id, status, resolution, at]);
     return (r.rowCount ?? 0) > 0;
   }
 
   async addBlock(b: Block): Promise<void> {
-    await this.pool.query(
+    await this.db.query(
       `insert into blocks (player_id, blocked_id, blocked_name, at) values ($1,$2,$3,$4)
        on conflict (player_id, blocked_id) do update set blocked_name = excluded.blocked_name, at = excluded.at`,
       [b.playerId, b.blockedId, b.blockedName, b.at],
@@ -543,7 +649,7 @@ export class PgRepo implements Repo {
   }
 
   async removeBlock(playerId: string, blockedId: string): Promise<void> {
-    await this.pool.query('delete from blocks where player_id = $1 and blocked_id = $2', [playerId, blockedId]);
+    await this.db.query('delete from blocks where player_id = $1 and blocked_id = $2', [playerId, blockedId]);
   }
 
   async blocksOf(playerId: string): Promise<Block[]> {
@@ -558,7 +664,7 @@ export class PgRepo implements Repo {
   // ------------------------------------------------------------ troop requests and donations
 
   async addRequest(q: TroopRequest): Promise<void> {
-    await this.pool.query('insert into troop_requests (id, grove_id, player_id, name, at, size, filled, open) values ($1,$2,$3,$4,$5,$6,$7,$8)', [
+    await this.db.query('insert into troop_requests (id, grove_id, player_id, name, at, size, filled, open) values ($1,$2,$3,$4,$5,$6,$7,$8)', [
       q.id,
       q.groveId,
       q.playerId,
@@ -585,7 +691,7 @@ export class PgRepo implements Repo {
   }
 
   async closeRequestsOf(playerId: string): Promise<void> {
-    await this.pool.query('update troop_requests set open = false where player_id = $1 and open', [playerId]);
+    await this.db.query('update troop_requests set open = false where player_id = $1 and open', [playerId]);
   }
 
   async fillRequest(id: string, housing: number): Promise<TroopRequest | null> {
@@ -599,7 +705,7 @@ export class PgRepo implements Repo {
   }
 
   async addDonation(d: Donation): Promise<void> {
-    await this.pool.query(
+    await this.db.query(
       `insert into donations (id, request_id, grove_id, from_id, from_name, to_id, troop, count, level, at, delivered)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
       [d.id, d.requestId, d.groveId, d.fromId, d.fromName, d.toId, d.troop, d.count, d.level, d.at, d.delivered],
@@ -611,7 +717,7 @@ export class PgRepo implements Repo {
   }
 
   async markDelivered(playerId: string, ids: string[]): Promise<void> {
-    await this.pool.query('update donations set delivered = true where to_id = $1 and id = any($2::text[])', [playerId, ids]);
+    await this.db.query('update donations set delivered = true where to_id = $1 and id = any($2::text[])', [playerId, ids]);
   }
 
   // ------------------------------------------------------------ grove raids
@@ -622,27 +728,23 @@ export class PgRepo implements Repo {
   }
 
   async createPairings(pairs: RaidPairing[]): Promise<boolean> {
-    const client = await this.pool.connect();
+    const taken = new Error('pairing taken');
     try {
-      await client.query('begin');
-      for (const p of pairs) {
-        const r = await client.query(
-          `insert into raid_pairings (week, grove_id, opponent_grove_id, opponent_name, bot_seed, roster, our_size, our_hall, created_at)
-           values ($1,$2,$3,$4,$5,$6,$7,$8,$9) on conflict do nothing`,
-          [p.week, p.groveId, p.opponentGroveId, p.opponentName, p.botSeed, JSON.stringify(p.roster), p.ourSize, p.ourHall, p.createdAt],
-        );
-        if ((r.rowCount ?? 0) === 0) {
-          await client.query('rollback');
-          return false;
+      return await this.transaction(async (tx) => {
+        for (const p of pairs) {
+          const r = await (tx as PgRepo).db.query(
+            `insert into raid_pairings (week, grove_id, opponent_grove_id, opponent_name, bot_seed, roster, our_size, our_hall, created_at)
+             values ($1,$2,$3,$4,$5,$6,$7,$8,$9) on conflict do nothing`,
+            [p.week, p.groveId, p.opponentGroveId, p.opponentName, p.botSeed, JSON.stringify(p.roster), p.ourSize, p.ourHall, p.createdAt],
+          );
+          // Either Grove already paired this week: undo both sides.
+          if ((r.rowCount ?? 0) === 0) throw taken;
         }
-      }
-      await client.query('commit');
-      return true;
+        return true;
+      });
     } catch (e) {
-      await client.query('rollback');
+      if (e === taken) return false;
       throw e;
-    } finally {
-      client.release();
     }
   }
 
@@ -657,7 +759,7 @@ export class PgRepo implements Repo {
   }
 
   async addRaidAttack(a: RaidAttack): Promise<void> {
-    await this.pool.query('insert into raid_attacks (id, week, grove_id, attacker_id, target, stars, destruction, at) values ($1,$2,$3,$4,$5,$6,$7,$8)', [
+    await this.db.query('insert into raid_attacks (id, week, grove_id, attacker_id, target, stars, destruction, at) values ($1,$2,$3,$4,$5,$6,$7,$8)', [
       a.id,
       a.week,
       a.groveId,
@@ -674,7 +776,7 @@ export class PgRepo implements Repo {
   }
 
   async addClaim(c: RaidClaim): Promise<boolean> {
-    const r = await this.pool.query('insert into raid_claims (week, player_id, grove_id, outcome, at) values ($1,$2,$3,$4,$5) on conflict do nothing', [
+    const r = await this.db.query('insert into raid_claims (week, player_id, grove_id, outcome, at) values ($1,$2,$3,$4,$5) on conflict do nothing', [
       c.week,
       c.playerId,
       c.groveId,

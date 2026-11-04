@@ -287,7 +287,7 @@ Makes balance, combat and data changes safe while old app builds are still in us
 - [ ] 78. **Monitoring.** Dashboard of traffic by client build and rules version, desync rate (client `clientResultHash` ≠ server hash) per version, and refused reports by reason; alert when desyncs rise after a release.
 
 ### Phase 2: Server-owned economy, protocol 7 (~6–10 weeks) [Code]
-- [ ] 19. Tables: `villages` (state JSON + revision), `ledger` (append-only), `command_log`.
+- [x] 19. Tables: `villages` (state JSON + revision), `ledger` (append-only), `command_log`. Migration 0006: `villages` (save file, revision, last client `seq`, settled time, economy hash), `ledger` (every server-held resource change with balance, reason and ref; a trigger refuses updates), `command_log` (kept 30 days). `Repo.getVillage` (row lock inside a transaction), `createVillage`, `saveVillage` (revision check, ledger and log in one transaction), `ledgerOf`, `commandsOf`, and `Repo.transaction` (Postgres: one connection, savepoints when nested; memory: queued, rolled back on error). Account deletion removes all three. Tests: `repo.test.ts` (both adapters).
 - [ ] 20. Command endpoint: replay with the shared sim, check timers against server time, return `stateHash` plus corrections.
 - [ ] 21. Client: every action becomes a queued command (reuse the outbox); server state is the truth when online; offline actions stay pending until confirmed.
 - [ ] 22. Attacks use up server-held troops in the same transaction as the result; loot comes from the server ledger.

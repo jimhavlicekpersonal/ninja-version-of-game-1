@@ -48,7 +48,12 @@ export type Command =
   | { type: 'skipResearch'; troop?: string }
   | { type: 'openDailyChest' }
   | { type: 'scout'; paid: boolean }
-  | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /**
+   * `known`: server only (roadmap step 22), the result it has just simulated
+   * from this exact setup, so the battle is not run a second time. The game
+   * never sets it, and the server never accepts battleEnd from a player.
+   */
+  | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
   | { type: 'trialEnd'; tier: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   /** After failing the next Shadow Trial tier, switch it to an alternate fortress (same tier, same reward). */
   | { type: 'trialAlternate' }
@@ -72,7 +77,8 @@ export type Command =
   | { type: 'groveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'markPrepOffer'; week: number }
   | { type: 'tutorial'; step: number; done?: boolean }
-  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number }
+  /** `fallen`: server only, the buildings its own simulation saw destroyed and their loot (saves re-running the raid). */
+  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[] }
   | { type: 'syncRank'; trophies: number; shieldUntil?: number }
   // Multiplayer server results (see sim/net.ts); each is safe to apply twice.
   | { type: 'netBind'; playerId: string }
@@ -491,7 +497,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return scout(s, cmd.paid, data);
     case 'battleEnd':
       s.pendingBattle = null;
-      return battleEnd(s, cmd.record, now, data);
+      return battleEnd(s, cmd.record, now, data, cmd.known);
     case 'trialEnd':
       s.pendingBattle = null;
       return trialEnd(s, cmd.tier, cmd.record, now, data);
@@ -554,7 +560,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'applyDefense': {
       // A real player's raid reported by the server.
       if (s.defenseLog.some((d) => d.id === cmd.record.id)) return { ok: true, state: s, events: [] };
-      applyDefenseLosses(s, cmd.record, cmd.lost, now, data);
+      applyDefenseLosses(s, cmd.record, cmd.lost, now, data, cmd.fallen);
       s.trophies = Math.max(0, cmd.trophies);
       s.shieldUntil = Math.max(s.shieldUntil, cmd.shieldUntil);
       s.defenseLog.push(cmd.record);
@@ -1192,12 +1198,11 @@ function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): 
  * of storage. Which buildings fell is re-simulated from the record (the server
  * ran the same battle). Never takes more than `lost`. Mutates.
  */
-function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, now: number, data: GameData): void {
+function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, now: number, data: GameData, fallen?: { id: string; loot: Cost }[]): void {
   const claims: { b: Building; k: ResourceKind; amount: number }[] = [];
   try {
-    const { sim } = runBattle(record.setup, record.deployments, data, record.endTick);
-    for (const sb of sim.buildings) {
-      if (!sb.destroyed) continue;
+    const down = fallen ?? runBattle(record.setup, record.deployments, data, record.endTick).sim.buildings.filter((b) => b.destroyed);
+    for (const sb of down) {
       const vb = s.buildings.find((b) => b.id === sb.id);
       const k = vb ? data.buildings[vb.type]?.produces : undefined;
       if (!vb || !k || !vb.collector || !(sb.loot[k]! > 0)) continue;
@@ -1233,10 +1238,10 @@ export function leagueWinBonus(trophies: number, stars: number, data: GameData):
   return out;
 }
 
-function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData, known?: BattleResult): CommandResult {
   const bad = checkBattleSetup(s, rec.setup, data);
   if (bad) return fail('INVALID_BATTLE', bad);
-  const { result } = runBattle(rec.setup, rec.deployments, data, rec.endTick);
+  const result = known ? structuredClone(known) : runBattle(rec.setup, rec.deployments, data, rec.endTick).result;
   spendTroops(s, result.used, rec.setup);
   if (rec.ticket) {
     // Online attack: the server re-runs it and decides. Troops are spent now

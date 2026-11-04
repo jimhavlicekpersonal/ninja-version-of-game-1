@@ -210,6 +210,51 @@ export interface RaidClaim {
   at: number;
 }
 
+/** A village the server keeps (roadmap Phase 2, step 19). */
+export interface VillageRow {
+  playerId: string;
+  /** The village as a save file (src/gameplay/sim/save.ts: version, savedAt, village). */
+  file: unknown;
+  /** Goes up with every write; a write names the revision it read. */
+  revision: number;
+  /** The last client command applied (the game numbers its commands). */
+  seq: number;
+  /** The time the village is settled to (its last change). */
+  at: number;
+  /** economyHash (src/gameplay/sim/serverEconomy.ts) of the village at `at`. */
+  stateHash: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** One change to a server-held resource (append-only). */
+export interface LedgerEntry {
+  playerId: string;
+  at: number;
+  resource: string;
+  delta: number;
+  /** The amount after this change. */
+  balance: number;
+  /** What changed it: `command:<type>`, `attack:loot`, `defense:loss`, `donation:sent`, … */
+  reason: string;
+  /** The ticket, attack, donation or command seq behind it. */
+  ref: string | null;
+}
+
+/** A command a client sent, and what the server made of it. */
+export interface CommandLogRow {
+  playerId: string;
+  seq: number;
+  /** When the server applied it (the client's time, clamped). */
+  at: number;
+  /** The time the client said. */
+  clientAt: number;
+  type: string;
+  command: unknown;
+  ok: boolean;
+  error: string | null;
+}
+
 /** How a deleted player appears in what other players keep (their defense replays, war rosters, donation notes). */
 export const DELETED_PLAYER = { id: 'deleted', name: 'Deleted player' } as const;
 
@@ -239,12 +284,15 @@ export interface PruneCutoffs {
   staleBefore: number;
   /** Handled reports (with their evidence) resolved before this time are deleted. */
   resolvedReportsBefore?: number;
+  /** Command log lines before this time are deleted (the ledger is kept). */
+  commandsBefore?: number;
 }
 export interface PruneResult {
   attacks: number;
   tickets: number;
   bases: number;
   reports: number;
+  commands: number;
 }
 
 export interface OpponentQuery {
@@ -344,6 +392,23 @@ export interface Repo {
   removeBlock(playerId: string, blockedId: string): Promise<void>;
   /** Newest first. */
   blocksOf(playerId: string): Promise<Block[]>;
+  // server-owned villages (roadmap Phase 2)
+  /** `forUpdate`: inside a transaction, hold the row until it ends (others wait). */
+  getVillage(playerId: string, opts?: { forUpdate?: boolean }): Promise<VillageRow | null>;
+  /** False if the player already has one. */
+  createVillage(v: VillageRow): Promise<boolean>;
+  /**
+   * Store the next revision with its ledger entries and command lines, all or
+   * nothing. False (nothing written) if the stored revision is no longer
+   * `expectedRevision`: someone else wrote first.
+   */
+  saveVillage(v: VillageRow, expectedRevision: number, ledger: LedgerEntry[], commands: CommandLogRow[]): Promise<boolean>;
+  /** Newest first. */
+  ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
+  /** Oldest first, after `sinceSeq`. */
+  commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]>;
+  /** Run `fn` atomically: what it writes through `tx` lands together, or not at all if it throws. */
+  transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T>;
   // troop requests and donations
   addRequest(r: TroopRequest): Promise<void>;
   getRequest(id: string): Promise<TroopRequest | null>;
@@ -399,7 +464,77 @@ export class MemoryRepo implements Repo {
   deletionRows: DeletionRequest[] = [];
   reportRows: Report[] = [];
   blockRows: Block[] = [];
+  villageRows = new Map<string, VillageRow>();
+  ledgerRows: LedgerEntry[] = [];
+  commandRows: CommandLogRow[] = [];
   private seq = 0;
+  /** Transactions run one at a time (memory has no row locks). */
+  private txChain: Promise<unknown> = Promise.resolve();
+
+  async transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T> {
+    const run = () => this.withRollback(fn);
+    const result = this.txChain.then(run, run);
+    this.txChain = result.catch(() => undefined);
+    return result;
+  }
+
+  /**
+   * Run `fn` with a handle on this repo; if it throws, every field goes back to
+   * how it was (like a rollback, or a savepoint when nested).
+   */
+  private async withRollback<T>(fn: (tx: Repo) => Promise<T>): Promise<T> {
+    const snapshot = new Map<string, unknown>();
+    for (const [k, v] of Object.entries(this)) if (k !== 'txChain' && typeof v !== 'function') snapshot.set(k, structuredClone(v));
+    // Everything goes to this repo; a transaction inside the transaction is nested (no queueing).
+    const tx: Repo = new Proxy(this, {
+      get: (target, prop) => {
+        if (prop === 'transaction') return <U>(f: (r: Repo) => Promise<U>) => target.withRollback(f);
+        const v = Reflect.get(target, prop, target) as unknown;
+        return typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(target) : v;
+      },
+    });
+    try {
+      return await fn(tx);
+    } catch (e) {
+      for (const [k, v] of snapshot) (this as unknown as Record<string, unknown>)[k] = v;
+      throw e;
+    }
+  }
+
+  async getVillage(playerId: string): Promise<VillageRow | null> {
+    const v = this.villageRows.get(playerId);
+    return v ? clone(v) : null;
+  }
+  async createVillage(v: VillageRow): Promise<boolean> {
+    if (this.villageRows.has(v.playerId) || !this.players.has(v.playerId)) return false;
+    this.villageRows.set(v.playerId, clone(v));
+    return true;
+  }
+  async saveVillage(v: VillageRow, expectedRevision: number, ledger: LedgerEntry[], commands: CommandLogRow[]): Promise<boolean> {
+    const cur = this.villageRows.get(v.playerId);
+    if (!cur || cur.revision !== expectedRevision) return false;
+    this.villageRows.set(v.playerId, clone(v));
+    this.ledgerRows.push(...clone(ledger));
+    for (const c of commands) {
+      this.commandRows = this.commandRows.filter((x) => !(x.playerId === c.playerId && x.seq === c.seq));
+      this.commandRows.push(clone(c));
+    }
+    return true;
+  }
+  async ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]> {
+    return this.ledgerRows
+      .filter((l) => l.playerId === playerId)
+      .slice(-limit)
+      .reverse()
+      .map(clone);
+  }
+  async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
+    return this.commandRows
+      .filter((c) => c.playerId === playerId && c.seq > sinceSeq)
+      .sort((a, b) => a.seq - b.seq)
+      .slice(0, limit)
+      .map(clone);
+  }
 
   async ping(): Promise<void> {}
   async createPlayer(p: Player): Promise<void> {
@@ -498,7 +633,10 @@ export class MemoryRepo implements Repo {
     const reports = this.reportRows.length;
     const before = c.resolvedReportsBefore;
     if (before !== undefined) this.reportRows = this.reportRows.filter((r) => r.status === 'open' || (r.resolvedAt ?? 0) >= before);
-    return { attacks: attacks - this.attacks.length, tickets, bases, reports: reports - this.reportRows.length };
+    const commands = this.commandRows.length;
+    const cmdBefore = c.commandsBefore;
+    if (cmdBefore !== undefined) this.commandRows = this.commandRows.filter((r) => r.at >= cmdBefore);
+    return { attacks: attacks - this.attacks.length, tickets, bases, reports: reports - this.reportRows.length, commands: commands - this.commandRows.length };
   }
   async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;
@@ -523,6 +661,10 @@ export class MemoryRepo implements Repo {
     }
     // Blocks either way go; their own reports go; reports about them are closed and lose the evidence text.
     this.blockRows = this.blockRows.filter((b) => b.playerId !== id && b.blockedId !== id);
+    // A server-held village, its ledger and command log are only theirs.
+    this.villageRows.delete(id);
+    this.ledgerRows = this.ledgerRows.filter((l) => l.playerId !== id);
+    this.commandRows = this.commandRows.filter((c) => c.playerId !== id);
     this.reportRows = this.reportRows.filter((r) => r.reporterId !== id);
     for (const r of this.reportRows) {
       if (r.targetId !== id) continue;

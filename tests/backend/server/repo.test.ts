@@ -120,14 +120,14 @@ for (const [label, make] of repoFactories) {
       expect((await repo.defensesFor('b', 0, 10)).map((x) => x.base)).toEqual([A, B]);
       const r = await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY });
       // 'old' is past retention, 'stale' expired unused; 'used' keeps its answer for retries.
-      expect(r).toEqual({ attacks: 1, tickets: 2, bases: 0 , reports: 0 }); // A and B are both still referred to
+      expect(r).toEqual({ attacks: 1, tickets: 2, bases: 0 , reports: 0, commands: 0 }); // A and B are both still referred to
       expect(await repo.getTicket('old')).toBeNull();
       expect(await repo.getTicket('stale')).toBeNull();
       expect(await repo.getTicket('used')).toMatchObject({ base: A, used: true, response: { answer: 2 } });
       expect((await repo.defensesFor('b', 0, 10)).map((x) => x.id)).toEqual(['x-new']);
       // Once nothing refers to them, both versions go (each was stored once).
-      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 2, bases: 2 , reports: 0 });
-      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 0, tickets: 0, bases: 0 , reports: 0 });
+      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 2, bases: 2 , reports: 0, commands: 0 });
+      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 0, tickets: 0, bases: 0 , reports: 0, commands: 0 });
     });
 
     it('keeps a base version that was used again recently, even when nothing refers to it yet', async () => {
@@ -136,8 +136,61 @@ for (const [label, make] of repoFactories) {
       const A = baseAt(1, 3);
       await repo.createTicket(ticket('t1', 'a', null, { base: A, createdAt: T - 3 * DAY, expiresAt: T - 3 * DAY + 3_600_000 }));
       await repo.createTicket(ticket('t2', 'a', null, { base: A, createdAt: T, expiresAt: T + 3_600_000 }));
-      expect(await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY })).toEqual({ attacks: 0, tickets: 1, bases: 0 , reports: 0 });
+      expect(await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY })).toEqual({ attacks: 0, tickets: 1, bases: 0 , reports: 0, commands: 0 });
       expect((await repo.getTicket('t2'))!.base).toEqual(A);
+    });
+
+    it('keeps server-owned villages with a revision check, an append-only ledger and a command log', async () => {
+      await fresh();
+      await repo.createPlayer(player('a'));
+      const v = { playerId: 'a', file: { version: 12, savedAt: T, village: { note: 'v1' } }, revision: 1, seq: 0, at: T, stateHash: 'h1', createdAt: T, updatedAt: T };
+      expect(await repo.createVillage(v)).toBe(true);
+      expect(await repo.createVillage(v)).toBe(false); // one per player
+      expect(await repo.createVillage({ ...v, playerId: 'nobody' })).toBe(false); // players only
+      expect(await repo.getVillage('a')).toEqual(v);
+      const next = { ...v, file: { version: 12, savedAt: T + 5, village: { note: 'v2' } }, revision: 2, seq: 3, at: T + 5, stateHash: 'h2', updatedAt: T + 5 };
+      const led = [
+        { playerId: 'a', at: T + 5, resource: 'acorns', delta: -100, balance: 900, reason: 'command:upgrade', ref: '1' },
+        { playerId: 'a', at: T + 5, resource: 'dew', delta: 50, balance: 550, reason: 'command:collect', ref: '2' },
+      ];
+      const cmds = [1, 2, 3].map((seq) => ({ playerId: 'a', seq, at: T + seq, clientAt: T + seq, type: 'collect', command: { type: 'collect', id: 'b1' }, ok: seq !== 3, error: seq === 3 ? 'NOTHING_TO_COLLECT' : null }));
+      expect(await repo.saveVillage(next, 1, led, cmds)).toBe(true);
+      // A writer that read revision 1 is too late now, and writes nothing at all.
+      expect(await repo.saveVillage({ ...next, revision: 2, stateHash: 'stale' }, 1, led, [])).toBe(false);
+      expect(await repo.getVillage('a')).toEqual(next);
+      expect((await repo.ledgerOf('a', 10)).map((l) => l.reason)).toEqual(['command:collect', 'command:upgrade']);
+      expect((await repo.commandsOf('a', 1, 10)).map((c) => [c.seq, c.ok, c.error])).toEqual([
+        [2, true, null],
+        [3, false, 'NOTHING_TO_COLLECT'],
+      ]);
+      expect((await repo.prune({ recordsBefore: 0, staleBefore: 0, commandsBefore: T + 2 })).commands).toBe(1);
+      await repo.deletePlayer('a', 'a', T + 9);
+      expect(await repo.getVillage('a')).toBeNull();
+      expect(await repo.ledgerOf('a', 10)).toEqual([]);
+      expect(await repo.commandsOf('a', 0, 10)).toEqual([]);
+    });
+
+    it('runs transactions all or nothing, a failed nested one undoing only its own writes', async () => {
+      await fresh();
+      await expect(
+        repo.transaction(async (tx) => {
+          await tx.createPlayer(player('x'));
+          throw new Error('boom');
+        }),
+      ).rejects.toThrow('boom');
+      expect(await repo.getPlayer('x')).toBeNull();
+      await repo.transaction(async (tx) => {
+        await tx.createPlayer(player('y'));
+        await tx
+          .transaction(async (inner) => {
+            await inner.createPlayer(player('z'));
+            throw new Error('inner');
+          })
+          .catch(() => undefined);
+        await tx.updatePlayer('y', { trophies: 7 });
+      });
+      expect((await repo.getPlayer('y'))!.trophies).toBe(7);
+      expect(await repo.getPlayer('z')).toBeNull();
     });
 
     it('lists Groves with member counts and activity, and manages members', async () => {
@@ -239,7 +292,7 @@ describe.skipIf(!repoFactories.some(([l]) => l === 'postgres'))('PgRepo: rows fr
     expect((await repo.getTicket('legacy'))!.base).toEqual(A);
     expect((await repo.defensesFor('b', 0, 10))[0].base).toEqual(A);
     // Retention removes them like any other row.
-    expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 1, bases: 0 , reports: 0 });
+    expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 1, bases: 0 , reports: 0, commands: 0 });
   });
 
   it('stores a base once in base_versions however many tickets use it', async () => {
@@ -249,5 +302,16 @@ describe.skipIf(!repoFactories.some(([l]) => l === 'postgres'))('PgRepo: rows fr
     for (let i = 0; i < 5; i++) await repo.createTicket(ticket(`t${i}`, 'a', null, { base: baseAt(1, 3), createdAt: T + i }));
     expect(Number((await pool.query('select count(*) as n from base_versions')).rows[0].n)).toBe(1);
     expect((await pool.query('select base from tickets where base is not null')).rows).toHaveLength(0);
+  });
+});
+
+describe.skipIf(!repoFactories.some(([l]) => l === 'postgres'))('PgRepo: the ledger', () => {
+  it('refuses to change a ledger row', async () => {
+    const repo = (await repoFactories.find(([l]) => l === 'postgres')![1]()) as PgRepo;
+    const pool = (repo as unknown as { pool: import('pg').Pool }).pool;
+    await repo.createPlayer(player('a'));
+    await repo.createVillage({ playerId: 'a', file: {}, revision: 1, seq: 0, at: T, stateHash: 'h', createdAt: T, updatedAt: T });
+    await repo.saveVillage({ playerId: 'a', file: {}, revision: 2, seq: 0, at: T, stateHash: 'h', createdAt: T, updatedAt: T }, 1, [{ playerId: 'a', at: T, resource: 'acorns', delta: 5, balance: 5, reason: 'test', ref: null }], []);
+    await expect(pool.query('update ledger set delta = 500')).rejects.toThrow(/append-only/);
   });
 });

@@ -10,6 +10,7 @@ import m0002 from './0002_ticket_seed.sql?raw';
 import m0003 from './0003_base_versions.sql?raw';
 import m0004 from './0004_account_deletion.sql?raw';
 import m0005 from './0005_moderation.sql?raw';
+import m0006 from './0006_server_economy.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -17,4 +18,5 @@ export const migrations = loadMigrations({
   '0003_base_versions.sql': m0003,
   '0004_account_deletion.sql': m0004,
   '0005_moderation.sql': m0005,
+  '0006_server_economy.sql': m0006,
 });
