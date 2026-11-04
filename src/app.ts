@@ -49,8 +49,12 @@ export class App {
   }
 
   private ticket: string | null = null;
-  /** The online opponent behind the current scout seed, kept so Home + Attack shows the same base. */
-  private onlineMatch: { seed: number; ticket: string; base: BaseLayout; expiresAt: number; bot: boolean } | null = null;
+  /**
+   * The online opponent behind the current scout seed, kept so Home + Attack
+   * shows the same base. `battleSeed` is the ticket's seed: the server issues
+   * it and re-simulates with it (older servers send none; then the game picks one).
+   */
+  private onlineMatch: { seed: number; battleSeed: number; ticket: string; base: BaseLayout; expiresAt: number; bot: boolean } | null = null;
 
   /** Look for an opponent. `paid` = pressing Next. */
   async scout(paid = false): Promise<void> {
@@ -75,11 +79,11 @@ export class App {
         if (!kept) await conn.ensureFreshBase();
         const m = kept ?? (await conn.port.match());
         if (m) {
-          this.onlineMatch = kept ?? { seed: r.seed, ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
+          this.onlineMatch = kept ?? { seed: r.seed, battleSeed: typeof m.seed === 'number' ? m.seed >>> 0 : mixSeed(r.seed, 0xba771e), ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
           this.ticket = this.onlineMatch.ticket;
           const base = structuredClone(this.onlineMatch.base);
           if (this.onlineMatch.bot) base.practice = 'Generated rival (no player fitted your rank)';
-          const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, ...loadout, infiltration: true };
+          const setup: BattleSetup = { seed: this.onlineMatch.battleSeed, base, ...loadout, infiltration: true };
           this.open(new BattleSession(setup, c.data, 'scout'));
           return;
         }

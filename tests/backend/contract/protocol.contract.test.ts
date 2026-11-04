@@ -71,7 +71,7 @@ describe('protocol contract', () => {
     expect(h.minProtocol).toBeGreaterThanOrEqual(6);
     expect(h.features).toContain('warriors-50');
     expect(Math.abs(h.serverTime - Date.now())).toBeLessThan(5 * 60_000);
-    expect(h.features).toEqual(expect.arrayContaining(['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid']));
+    expect(h.features).toEqual(expect.arrayContaining(['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid', 'server-seed']));
   });
 
   it('answers CORS preflights so the web game can call it', async () => {
@@ -113,7 +113,11 @@ describe('protocol contract', () => {
     expect(Math.abs(m.base.hallLevel - 2)).toBeLessThanOrEqual(1);
     expect(['player', 'bot']).toContain(m.opponent.kind);
     expect(m.expiresAt).toBeGreaterThan(Date.now() + 3 * 60_000);
-    const sub = { ticket: m.ticket, seed: 1234, ...rush(25) };
+    // The server issues the battle seed (a 32-bit integer) and re-simulates with it.
+    expect(Number.isInteger(m.seed) && m.seed >= 0 && m.seed < 2 ** 32).toBe(true);
+    // A report played with any other seed is refused, and does not use the ticket up.
+    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: (m.seed + 1) >>> 0, ...rush(25) }))).toMatchObject({ status: 400, code: 'bad_request' });
+    const sub = { ticket: m.ticket, seed: m.seed, ...rush(25) };
     const r = await a.submitAttack(sub);
     const local = runBattle({ seed: sub.seed, base: m.base, army: sub.army, infiltration: true }, sub.deployments, data).result;
     expect(r.result.hash).toBe(local.hash); // same deterministic battle on both sides
@@ -128,9 +132,9 @@ describe('protocol contract', () => {
     const a = await player('Ann');
     const b = await player('Ben');
     const m = (await a.match())!;
-    expect(await errorOf(b.submitAttack({ ticket: m.ticket, seed: 1, army: {}, deployments: [] }))).toMatchObject({ status: 404, code: 'not_found' });
-    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: 1, army: { beetle_brute: 999 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
-    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: 1, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 5 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
+    expect(await errorOf(b.submitAttack({ ticket: m.ticket, seed: m.seed, army: {}, deployments: [] }))).toMatchObject({ status: 404, code: 'not_found' });
+    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: m.seed, army: { beetle_brute: 999 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
+    expect(await errorOf(a.submitAttack({ ticket: m.ticket, seed: m.seed, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 5 }, deployments: [] }))).toMatchObject({ status: 400, code: 'bad_request' });
     const { defenses } = await a.defenses(0);
     expect(Array.isArray(defenses)).toBe(true);
     const lb = await a.leaderboard(5);
@@ -144,7 +148,7 @@ describe('protocol contract', () => {
     const army = Object.fromEntries(Object.keys(data.troops).map((id) => [id, 1]));
     const levels = Object.fromEntries(Object.keys(army).map((id) => [id, 1]));
     // The server applies Infiltration Points: deploy through the base's points, a squad per point.
-    const setup = { seed: 519, base: m.base, army, levels, infiltration: true };
+    const setup = { seed: m.seed, base: m.base, army, levels, infiltration: true };
     const probe = createBattle(setup, data);
     const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(5), data, levels, probe.entry);
     // One warrior dropped on open ground outside every point is refused by the server, as in the game.
@@ -153,7 +157,7 @@ describe('protocol contract', () => {
     for (let i = 0; i < n * n && open < 0; i++) if (probe.deployable[i] && pointAt(probe.entry!, i % n, Math.floor(i / n)) < 0) open = i;
     expect(open).toBeGreaterThanOrEqual(0);
     const offPoint = { tick: 0, troop: 'hedgehog_roller', x: open % n, y: Math.floor(open / n) };
-    const sub = { ticket: m.ticket, seed: 519, army, levels, deployments: [offPoint, ...deployments] };
+    const sub = { ticket: m.ticket, seed: m.seed, army, levels, deployments: [offPoint, ...deployments] };
     const server = await a.submitAttack(sub);
     const local = runBattle(setup, sub.deployments, data).result;
     expect(server.result).toEqual(local);

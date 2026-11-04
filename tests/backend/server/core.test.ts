@@ -42,7 +42,7 @@ for (const [label, makeRepo] of repoFactories) {
         expect(m.base.hallLevel).toBeLessThanOrEqual(win.max);
         expect(m.expiresAt).toBe(w.now() + HOUR);
         // A bot battle still counts for trophies but leaves no defense record.
-        const r = await a.submitAttack({ ticket: m.ticket, seed: 1, ...rush() });
+        const r = await a.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush() });
         expect(r.playerTrophies).toBe(Math.max(0, r.trophies));
         expect(w.repo).toBeTruthy();
       });
@@ -80,7 +80,7 @@ for (const [label, makeRepo] of repoFactories) {
         w.pastShields();
         const m = (await a.match())!;
         expect(m.opponent.name).toBe('Two');
-        await a.submitAttack({ ticket: m.ticket, seed: 1, ...noTroops }); // 0% destruction: no shield
+        await a.submitAttack({ ticket: m.ticket, seed: m.seed, ...noTroops }); // 0% destruction: no shield
         expect((await a.match())!.opponent.kind).toBe('bot');
         w.advance(HOUR + 60_000);
         expect((await a.match())!.opponent.name).toBe('Two');
@@ -116,8 +116,8 @@ for (const [label, makeRepo] of repoFactories) {
         const m = (await a.match())!;
         expect(m.opponent.name).toBe('Dot');
         const { army, deployments } = rush(20);
-        const r = await a.submitAttack({ ticket: m.ticket, seed: 5, army, deployments });
-        const local = runBattle({ seed: 5, base: m.base, army, infiltration: true }, deployments, w.data).result;
+        const r = await a.submitAttack({ ticket: m.ticket, seed: m.seed, army, deployments });
+        const local = runBattle({ seed: m.seed, base: m.base, army, infiltration: true }, deployments, w.data).result;
         expect(r.result.hash).toBe(local.hash);
         expect((await a.me()).trophies).toBe(r.playerTrophies);
         const dp = await d.me();
@@ -126,7 +126,33 @@ for (const [label, makeRepo] of repoFactories) {
         if (hours) expect(dp.shieldUntil).toBe(w.now() + hours * HOUR);
         const defs = (await d.defenses(0)).defenses;
         expect(defs).toHaveLength(1);
-        expect(defs[0]).toMatchObject({ attackerName: 'Ann', trophies: -r.trophies, seed: 5 });
+        expect(defs[0]).toMatchObject({ attackerName: 'Ann', trophies: -r.trophies, seed: m.seed });
+      });
+
+      it('issues the battle seed with each ticket and re-simulates with it, never with one the client picks', async () => {
+        const w = await W();
+        const a = await w.player('Ann', baseAt(1));
+        const m1 = (await a.match())!;
+        const m2 = (await a.match())!;
+        expect(m1.seed).not.toBe(m2.seed);
+        const { army, deployments } = rush(20);
+        // A battle played with another seed is refused, and the ticket stays usable.
+        expect(await code(a.submitAttack({ ticket: m1.ticket, seed: (m1.seed + 1) >>> 0, army, deployments }))).toBe('bad_request');
+        const r = await a.submitAttack({ ticket: m1.ticket, seed: m1.seed, army, deployments });
+        expect(r.result.hash).toBe(runBattle({ seed: m1.seed, base: m1.base, army, infiltration: true }, deployments, w.data).result.hash);
+        expect(await a.submitAttack({ ticket: m1.ticket, seed: m1.seed, army, deployments })).toEqual(r);
+      });
+
+      it('keeps the client seed for a ticket issued before server seeds', async () => {
+        const w = await W();
+        const a = await w.player('Ann', baseAt(1));
+        const m = (await a.match())!;
+        const legacy = { ...(await w.repo.getTicket(m.ticket))!, id: 'legacy-ticket' };
+        delete legacy.seed;
+        await w.repo.createTicket(legacy);
+        const { army, deployments } = rush(20);
+        const r = await a.submitAttack({ ticket: 'legacy-ticket', seed: 77, army, deployments });
+        expect(r.result.hash).toBe(runBattle({ seed: 77, base: m.base, army, infiltration: true }, deployments, w.data).result.hash);
       });
 
       it('refuses late, reused and foreign tickets, and impossible armies', async () => {
@@ -134,16 +160,16 @@ for (const [label, makeRepo] of repoFactories) {
         const a = await w.player('Ann', baseAt(1));
         const b = await w.player('Ben', baseAt(1, 4));
         const m1 = (await a.match())!;
-        expect(await code(b.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops }))).toBe('not_found');
-        expect(await code(a.submitAttack({ ticket: m1.ticket, seed: 1, army: { beetle_brute: 500 }, deployments: [] }))).toBe('bad_request');
-        expect(await code(a.submitAttack({ ticket: m1.ticket, seed: 1, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 4 }, deployments: [] }))).toBe('bad_request');
-        const first = await a.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops });
+        expect(await code(b.submitAttack({ ticket: m1.ticket, seed: m1.seed, ...noTroops }))).toBe('not_found');
+        expect(await code(a.submitAttack({ ticket: m1.ticket, seed: m1.seed, army: { beetle_brute: 500 }, deployments: [] }))).toBe('bad_request');
+        expect(await code(a.submitAttack({ ticket: m1.ticket, seed: m1.seed, army: { hedgehog_roller: 5 }, levels: { hedgehog_roller: 4 }, deployments: [] }))).toBe('bad_request');
+        const first = await a.submitAttack({ ticket: m1.ticket, seed: m1.seed, ...noTroops });
         // A repeated report (lost answer, retry) gets the first answer back and changes nothing.
-        expect(await a.submitAttack({ ticket: m1.ticket, seed: 1, ...noTroops })).toEqual(first);
+        expect(await a.submitAttack({ ticket: m1.ticket, seed: m1.seed, ...noTroops })).toEqual(first);
         expect((await a.me()).trophies).toBe(first.playerTrophies);
         const m2 = (await a.match())!;
         w.advance(HOUR + 1);
-        expect(await code(a.submitAttack({ ticket: m2.ticket, seed: 1, ...noTroops }))).toBe('expired');
+        expect(await code(a.submitAttack({ ticket: m2.ticket, seed: m2.seed, ...noTroops }))).toBe('expired');
       });
 
       it('ranks players with bases on the leaderboard', async () => {
@@ -265,8 +291,10 @@ for (const [label, makeRepo] of repoFactories) {
         const stars: number[] = [];
         for (const who of [ann, ann, ben]) {
           const t = await who.raidTicket(0);
+          expect(Number.isInteger(t.seed)).toBe(true);
+          expect(await code(who.submitRaidAttack({ ticket: t.ticket, seed: (t.seed + 1) >>> 0, ...rush(20) }))).toBe('bad_request');
           expect(t.base.buildings.every((b) => !Object.values(b.loot ?? {}).some((v) => v))).toBe(true); // no loot in Grove Raids
-          const r = await who.submitRaidAttack({ ticket: t.ticket, seed: stars.length + 1, ...rush(20) });
+          const r = await who.submitRaidAttack({ ticket: t.ticket, seed: t.seed, ...rush(20) });
           stars.push(r.stars);
         }
         expect(await code(ann.raidTicket(1))).toBe('no_attacks_left');

@@ -247,7 +247,7 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   let ticket: Ticket;
   if (found?.base) {
     const base = applyLootPenalty(capBaseLoot({ ...structuredClone(found.base), name: found.name, trophies: found.trophies }, data), me.hallLevel, data);
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed() };
   } else {
     // Nobody fits: a generated base with the same matchmaking math the game uses offline.
     const seed = Math.floor(ctx.random() * 4294967296) >>> 0;
@@ -255,11 +255,12 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
     const base = opponentForRank(seed, me.trophies, me.hallLevel, data, me.hallLevel - 0.5 - data.ranks.matchmaking.powerSlack);
     const names = data.names;
     base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed() };
   }
   await repo.createTicket(ticket);
   return {
     ticket: ticket.id,
+    seed: ticket.seed!,
     base: ticket.base,
     opponent: { name: ticket.defenderName, trophies: ticket.defenderTrophies, hallLevel: ticket.base.hallLevel, kind: ticket.defenderId ? 'player' : 'bot' },
     expiresAt: ticket.expiresAt,
@@ -284,14 +285,29 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
 
 export { takeTicket };
 
+/**
+ * The seed a battle is re-simulated with: the one the server issued with the
+ * ticket, so a client cannot try seeds offline and report the luckiest. A
+ * report with any other seed is refused (it was played as a different battle,
+ * so its result would not match). Tickets issued before server seeds have none
+ * and keep the client's.
+ */
+export function battleSeed(ticket: Ticket, sub: BattleSubmission): number {
+  if (ticket.seed === undefined) return Number(sub.seed) >>> 0;
+  if (sub.seed !== undefined && sub.seed !== null && Number(sub.seed) >>> 0 !== ticket.seed) {
+    throw new ApiError(400, 'bad_request', 'This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.');
+  }
+  return ticket.seed;
+}
+
 export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<AttackResponse> {
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
   if (answered) return answered as AttackResponse;
+  const seed = battleSeed(ticket, sub);
   const { army, levels, reinforcements } = checkArmy(sub, me, data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
-  const seed = Number(sub.seed) >>> 0;
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
   const { result } = runBattle(setup, deployments, data, sub.endTick);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;

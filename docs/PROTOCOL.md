@@ -2,6 +2,9 @@
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
+**Version 6, server hardening (2026-11, roadmap Phase 1):** additions that keep protocol 6 for clients that use them.
+- **Server-issued battle seeds.** `MatchResponse.seed` and `RaidTicketResponse.seed` carry the battle seed the server chose for the ticket. The client plays the battle with it and sends it back as `BattleSubmission.seed`; the server re-simulates with its own seed, and a report with any other seed is refused with `400 bad_request` (a player-facing "update the game" message), without using up the ticket. A client facing an older server that sends no seed picks its own. `/v1/hello` lists the `server-seed` feature.
+
 **Version 6 (gameplay audit fixes):** clients and servers must upgrade together (`minProtocol: 6`), because the battle rules changed (`SIM_RULES` 2: counters are off while upgrading, wall-breakers target the wall in the way, the Siege Bombardier fires on defenses, healers break walls, rebalanced Throwers and kites).
 - `BattleSubmission.reinforcements` lists donated troops in the army with the level each was donated at; they deploy first at that level. `DefenseView` carries `reinforcements` and `rules`.
 - A used ticket stores its answer. Reporting the same battle again returns that same answer (no `409`), so a client that lost an answer can always recover it, and nothing is applied twice.
@@ -87,7 +90,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
 
 ## Battles must replay exactly
 
-The client plays a battle locally and sends `{ ticket, seed, army, levels, reinforcements, deployments, endTick }`. The server re-runs it from the ticket's base with `runBattle` from `src/gameplay/sim/battle/battle.ts`, and the server's result is what counts. The client records the attack as pending and banks the loot and honor from the server's answer (`settleOnlineAttack`); a permanently refused report becomes a practice result with no loot or honor.
+The client plays a battle locally and sends `{ ticket, seed, army, levels, reinforcements, deployments, endTick }`. The seed is the one the server issued with the ticket (`MatchResponse.seed`, `RaidTicketResponse.seed`), so a client cannot try seeds offline and report the luckiest. The server re-runs the battle from the ticket's base and its own seed with `runBattle` from `src/gameplay/sim/battle/battle.ts`, and the server's result is what counts. The client records the attack as pending and banks the loot and honor from the server's answer (`settleOnlineAttack`); a permanently refused report becomes a practice result with no loot or honor.
 
 - The battle simulation is deterministic: fixed 10 ticks per second, a seeded random generator, and JavaScript number math (IEEE-754 doubles) done in a fixed order. A port must do the same operations in the same order.
 - A server written in another language must either run this TypeScript code (for example a small Node sidecar) or port it exactly.
@@ -100,6 +103,7 @@ Every battle report must also be checked:
 - Troop levels are at most `troopLevelCap` for the attacker's hall.
 - At most 2,000 deployments. A deployment whose `troop` is an ability id (battle.json `abilities`) is an ability use, limited by its charges. Ability uses never count as troops used.
 - Each ticket is used once. A repeated report of a used ticket gets the stored answer back.
+- `seed` must equal the ticket's seed; anything else is `bad_request` and leaves the ticket unused. (Tickets issued before server seeds have none and keep the client's seed.)
 
 ## Endpoints
 
@@ -120,7 +124,7 @@ Every battle report must also be checked:
 | | request | response |
 |---|---|---|
 | `PUT /v1/base` | `{ base: BaseLayout }` | `204` |
-| `GET /v1/match` | | `MatchResponse` `{ ticket, base, opponent: { name, trophies, hallLevel, kind }, expiresAt }` |
+| `GET /v1/match` | | `MatchResponse` `{ ticket, seed, base, opponent: { name, trophies, hallLevel, kind }, expiresAt }` |
 | `POST /v1/attacks` | `BattleSubmission` | `AttackResponse` `{ attackId, result, trophies, playerTrophies }` |
 | `GET /v1/defenses?since=` | | `{ defenses: DefenseView[] }` (raids on this player after `since`, oldest first, at most 20) |
 | `GET /v1/leaderboard?limit=` | | `{ players: [{ rank, name, trophies, hallLevel, grove }], me }` |
@@ -141,6 +145,7 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
   - When nobody fits, generate a base with `opponentForRank(seed, trophies, hall, floor)` and return it with `kind: "bot"`. The floor is the attacker's assumed earned strength (half-way through their Keep, minus `powerSlack`), the same rule the game uses offline with the player's real research. Never answer "nobody": the game should always have something to attack.
 - **The ticket:**
   - Holds a copy of the base with `lootPenaltyByHallDiff` already applied for the attacker's hall. The client must not apply it again.
+  - Holds the battle seed (a random 32-bit integer the server chose), returned as `seed`.
   - Lasts 1 hour (`expiresAt`).
 - **Attack results:**
   - Trophies use `winTrophies`/`lossTrophies` from `src/gameplay/sim/ranks.ts`, based on both players' trophies. The defender moves by the opposite amount.
@@ -184,7 +189,7 @@ Rules:
 | | request | response |
 |---|---|---|
 | `GET /v1/grove/raid` | | `RaidView` |
-| `POST /v1/grove/raid/ticket` | `{ target }` | `{ ticket, base, expiresAt }` |
+| `POST /v1/grove/raid/ticket` | `{ target }` | `{ ticket, seed, base, expiresAt }` |
 | `POST /v1/grove/raid/attacks` | `BattleSubmission` | `{ result, stars, ours, theirs }` |
 | `POST /v1/grove/raid/claim` | `{ week }` | `{ week, outcome, ours, theirs, alreadyClaimed }` |
 

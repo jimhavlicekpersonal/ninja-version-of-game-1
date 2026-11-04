@@ -20,7 +20,7 @@
 
 ### Known gaps (must fix before a competitive launch)
 
-1. **The client picks the battle seed** (`BattleSubmission.seed`). The server must issue it in the ticket.
+1. ~~**The client picks the battle seed** (`BattleSubmission.seed`).~~ Fixed by step 10: the server issues it in the ticket.
 2. **Every attack and ticket stores a full copy of the defender's base** (~10–20 KB JSON). This is the main storage cost at scale.
 3. **No account deletion** (`DELETE /v1/me`): required by Apple 5.1.1(v) and Google.
 4. **No chat report/block**: required for user-generated content (Apple 1.2). Only a word filter exists.
@@ -256,7 +256,7 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 - [ ] 9. Legal review: privacy policy/terms, under-18 cap and COPPA, loot-box laws, external payment links.
 
 ### Phase 1: Server hardening on protocol 6 (~2–3 weeks) [Code]
-- [ ] 10. Server-issued battle seed in the match ticket.
+- [x] 10. Server-issued battle seed in the match ticket. `MatchResponse.seed` / `RaidTicketResponse.seed` (`tickets.seed`, migration 0002); the server re-simulates with it and refuses a report with another seed (`battleSeed` in `server/core/pvp.ts`); the client plays with it (`src/app.ts`, `RemoteGroveSource.raidBattle`). Still protocol 6 (`server-seed` feature). Tests: `core.test.ts`, contract test.
 - [ ] 11. Store each base version once (content hash); tickets and attacks reference it; 30-day replay retention.
 - [x] 12. Migrations as a release step with versioned files (not on every boot). `server/migrations/NNNN_*.sql`, `server/migrate.ts` (checksums, advisory lock, a transaction per file), `npm run server:migrate`; the server refuses to boot with pending migrations unless `MIGRATE_ON_BOOT=1`. Tests: `tests/backend/server/migrate.test.ts`.
 - [ ] 13. Rate limiting per token/IP; request size limits.

@@ -25,6 +25,9 @@ export function world(opts: { data?: GameData; repo?: Repo; start?: number } = {
   // Deterministic ids too (bot Groves are seeded from the Grove id), so every run is the same.
   let ids = 0;
   ctx.uuid = () => `00000000-0000-4000-8000-${(++ids).toString(16).padStart(12, '0')}`;
+  // And deterministic battle seeds (the server issues one per ticket).
+  let seeds = 0;
+  ctx.newSeed = () => Math.imul(++seeds, 0x9e3779b1) >>> 0;
   const core = createCore(ctx);
   const player = async (name: string, base?: BaseLayout) => {
     const c = new InProcessServerAdapter(core);

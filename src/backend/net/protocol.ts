@@ -108,6 +108,12 @@ export interface OpponentView {
 
 export interface MatchResponse {
   ticket: string;
+  /**
+   * The battle seed for this ticket, chosen by the server. The client plays
+   * the battle with it and sends it back in `BattleSubmission.seed`. Servers
+   * from before server seeds leave it out; the client then picks its own.
+   */
+  seed: number;
   /** The base to attack, loot already reduced by the attacker's loot penalty. */
   base: BaseLayout;
   opponent: OpponentView;
@@ -118,6 +124,11 @@ export interface MatchResponse {
 /** The battle a client played; the server re-runs it from seed + deployments. */
 export interface BattleSubmission {
   ticket: string;
+  /**
+   * The ticket's seed (`MatchResponse.seed` / `RaidTicketResponse.seed`). The
+   * server re-simulates with the seed it issued; a different one is refused
+   * with `bad_request` (an old client that picks its own seed must update).
+   */
   seed: number;
   army: Record<string, number>;
   levels?: Record<string, number>;
@@ -326,6 +337,8 @@ export interface RaidTicketRequest {
 }
 export interface RaidTicketResponse {
   ticket: string;
+  /** The battle seed for this ticket, chosen by the server (see MatchResponse.seed). */
+  seed: number;
   base: BaseLayout;
   expiresAt: number;
 }

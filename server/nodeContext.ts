@@ -13,5 +13,6 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     newToken: () => randomBytes(24).toString('base64url'),
     hash: async (token) => createHash('sha256').update(token).digest('hex'),
     random,
+    newSeed: () => randomBytes(4).readUInt32LE(0),
   };
 }

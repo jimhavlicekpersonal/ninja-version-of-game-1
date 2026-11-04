@@ -35,6 +35,12 @@ export interface Ticket {
   createdAt: number;
   expiresAt: number;
   used: boolean;
+  /**
+   * The battle seed the server issued with the ticket; the battle is
+   * re-simulated with it whatever the client sends. Absent only on tickets
+   * issued before server seeds (they keep using the client's seed).
+   */
+  seed?: number;
   /** Grove Raid tickets only. */
   week?: number;
   groveId?: string;

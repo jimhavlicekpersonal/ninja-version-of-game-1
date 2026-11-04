@@ -51,6 +51,7 @@ const toTicket = (r: Row): Ticket => {
     expiresAt: num(r.expires_at),
     used: Boolean(r.used),
   };
+  if (r.seed !== null && r.seed !== undefined) t.seed = num(r.seed);
   if (r.week !== null && r.week !== undefined) t.week = num(r.week);
   if (r.grove_id !== null && r.grove_id !== undefined) t.groveId = String(r.grove_id);
   if (r.target !== null && r.target !== undefined) t.target = num(r.target);
@@ -218,9 +219,9 @@ export class PgRepo implements Repo {
 
   async createTicket(t: Ticket): Promise<void> {
     await this.pool.query(
-      `insert into tickets (id, kind, attacker_id, defender_id, defender_name, base, defender_trophies, created_at, expires_at, used, week, grove_id, target)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,false,$10,$11,$12)`,
-      [t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, JSON.stringify(t.base), t.defenderTrophies, t.createdAt, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null],
+      `insert into tickets (id, kind, attacker_id, defender_id, defender_name, base, defender_trophies, created_at, expires_at, used, week, grove_id, target, seed)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,false,$10,$11,$12,$13)`,
+      [t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, JSON.stringify(t.base), t.defenderTrophies, t.createdAt, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null],
     );
   }
 

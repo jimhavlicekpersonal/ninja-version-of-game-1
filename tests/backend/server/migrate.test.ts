@@ -1,4 +1,5 @@
 /** Versioned migrations (roadmap step 12): file rules, the runner's bookkeeping, and real Postgres when TEST_DATABASE_URL is set. */
+import { readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { loadMigrations, migrationStatus, runMigrations, type SqlClient, type SqlPool } from '../../../server/migrate';
 import { migrations } from '../../../server/migrations';
@@ -45,8 +46,9 @@ describe('migration files', () => {
     expect(() => loadMigrations({ './0001_a.sql': 'x', './0001_b.sql': 'y' })).toThrow(/share version 0001/);
   });
 
-  it('the bundled migrations start at 0001 and leave no gaps', () => {
-    expect(migrations.length).toBeGreaterThan(0);
+  it('the bundled migrations are every file in server/migrations, from 0001 with no gaps', () => {
+    const files = readdirSync(new URL('../../../server/migrations/', import.meta.url)).filter((f) => f.endsWith('.sql'));
+    expect(migrations.map((m) => `${m.name}.sql`)).toEqual(files.sort());
     migrations.forEach((m, i) => expect(m.version).toBe(String(i + 1).padStart(4, '0')));
     expect(migrations[0].sql).toMatch(/create table if not exists players/);
   });

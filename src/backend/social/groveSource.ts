@@ -423,7 +423,9 @@ export class RemoteGroveSource implements GroveSource {
       const t = await this.port.raidTicket(target);
       const c = this.c;
       const base: BaseLayout = t.base;
-      const setup: BattleSetup = { seed: mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target), base, ...battleLoadout(c.state, c.data), infiltration: true };
+      // The server issues the seed and re-simulates with it (an older server sends none: pick one).
+      const seed = typeof t.seed === 'number' ? t.seed >>> 0 : mixSeed(c.state.seed, Math.floor(c.now() / 1000) ^ target);
+      const setup: BattleSetup = { seed, base, ...battleLoadout(c.state, c.data), infiltration: true };
       const enemyName = this.raidView?.opponent?.name ?? 'Enemy Alliance';
       const at = c.now();
       return {

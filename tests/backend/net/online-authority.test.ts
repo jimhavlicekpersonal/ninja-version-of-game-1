@@ -49,7 +49,7 @@ function village(w: ReturnType<typeof world>): GameLink & { state: VillageState 
 async function onlineAttack(w: ReturnType<typeof world>, game: ReturnType<typeof village>, port: ServerPort) {
   const m = (await port.match())!;
   const { deployments } = rush(20);
-  const setup: BattleSetup = { seed: 9, base: m.base, ...battleLoadout(game.state, data), infiltration: true };
+  const setup: BattleSetup = { seed: m.seed, base: m.base, ...battleLoadout(game.state, data), infiltration: true };
   const r = game.dispatch({ type: 'battleEnd', record: { at: w.now(), opponentName: m.base.name, setup, deployments, ticket: m.ticket } });
   expect(r.ok).toBe(true);
   const sub = { ticket: m.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments };
@@ -173,7 +173,7 @@ describe('F34: Alliance Wars pair equal rosters', () => {
     // The bigger Alliance gets 1 base × 2 attacks in total, like the smaller one.
     for (const who of [ann, ben]) {
       const t = await who.raidTicket(0);
-      await who.submitRaidAttack({ ticket: t.ticket, seed: 1, ...rush(5) });
+      await who.submitRaidAttack({ ticket: t.ticket, seed: t.seed, ...rush(5) });
     }
     await expect(cat.raidTicket(0)).rejects.toMatchObject({ code: 'no_attacks_left' });
     expect((await cat.raid()).attacksLeft).toBe(0);

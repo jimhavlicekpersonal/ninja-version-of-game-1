@@ -1,6 +1,14 @@
-/** Every migration file in this folder, bundled into the server build (no files are read at run time). */
+/**
+ * Every migration, bundled into the server build (no files are read at run
+ * time). Add each new file here: an explicit list, because a glob import would
+ * be cached by Vitest's module cache and miss a new file. A test checks that
+ * every .sql file in this folder is listed.
+ */
 import { loadMigrations } from '../migrate';
+import m0001 from './0001_initial.sql?raw';
+import m0002 from './0002_ticket_seed.sql?raw';
 
-const files = import.meta.glob<string>('./*.sql', { query: '?raw', import: 'default', eager: true });
-
-export const migrations = loadMigrations(files);
+export const migrations = loadMigrations({
+  '0001_initial.sql': m0001,
+  '0002_ticket_seed.sql': m0002,
+});

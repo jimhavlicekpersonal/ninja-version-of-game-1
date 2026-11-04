@@ -14,6 +14,8 @@ export interface ServerContext {
   hash(token: string): Promise<string>;
   /** 0..1, for picking among equally good opponents. */
   random(): number;
+  /** A fresh 32-bit battle seed for a ticket (the client never picks it). */
+  newSeed(): number;
 }
 
 export class ApiError extends Error {
