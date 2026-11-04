@@ -17,9 +17,13 @@ import type { Command } from '../../gameplay/sim/village';
  * Bump when a change would break older clients; servers report the oldest
  * they accept. 7 (roadmap step 26): the server owns the economy (villages are
  * kept on the server), every request says which game it comes from
- * (`ClientHeaders`), and writes carry an Idempotency-Key.
+ * (`ClientHeaders`), and writes carry an Idempotency-Key. 8 (roadmap steps
+ * 72–75): the game also sends `x-data-version`; tickets are checked with the
+ * battle rules they were issued under, and `/v1/hello` lists `supportedRules`
+ * and `minClientBuild` so an old game can say "Update Kagemura". Servers
+ * still accept 7 (it already sends `x-sim-rules`).
  */
-export const PROTOCOL_VERSION = 7;
+export const PROTOCOL_VERSION = 8;
 
 /** Headers the game sends with every request (protocol 7). */
 export const ClientHeaders = {
@@ -131,6 +135,16 @@ export interface HelloResponse {
   environment?: string;
   /** A message from the operators for every player (maintenance, an incident), shown in Settings → Online play. */
   notice?: string;
+  /**
+   * Protocol 8 (roadmap step 75): the battle-rule versions (SIM_RULES) this
+   * server can check, newest first. A game whose SIM_RULES is not listed must
+   * update before playing online (it shows "Update Kagemura").
+   */
+  supportedRules?: number[];
+  /** Protocol 8: the oldest game build allowed online (e.g. "1.2.0"); older builds must update. */
+  minClientBuild?: string;
+  /** Protocol 8: the server's live data version (for support and dashboards). */
+  dataVersion?: string;
 }
 
 export interface RegisterRequest {
@@ -225,6 +239,12 @@ export interface BattleSubmission {
    * desyncs (counted and logged by the server); never trusted.
    */
   clientHash?: string;
+  /**
+   * The SIM_RULES and data version the game played the battle with (protocol
+   * 8). Must match the ticket's; the server re-simulates with the ticket's.
+   */
+  rules?: number;
+  dataVersion?: string;
 }
 
 export interface AttackResponse {

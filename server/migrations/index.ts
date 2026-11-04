@@ -18,6 +18,7 @@ import m0010 from './0010_purchases.sql?raw';
 import m0011 from './0011_push_tokens.sql?raw';
 import m0012 from './0012_server_meta.sql?raw';
 import m0013 from './0013_staff_tools.sql?raw';
+import m0014 from './0014_ticket_rules.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -33,4 +34,5 @@ export const migrations = loadMigrations({
   '0011_push_tokens.sql': m0011,
   '0012_server_meta.sql': m0012,
   '0013_staff_tools.sql': m0013,
+  '0014_ticket_rules.sql': m0014,
 });

@@ -80,6 +80,8 @@ const toTicket = (r: Row): Ticket => {
     used: Boolean(r.used),
   };
   if (r.seed !== null && r.seed !== undefined) t.seed = num(r.seed);
+  if (r.rules !== null && r.rules !== undefined) t.rules = num(r.rules);
+  if (r.data_version !== null && r.data_version !== undefined) t.dataVersion = String(r.data_version);
   if (r.week !== null && r.week !== undefined) t.week = num(r.week);
   if (r.grove_id !== null && r.grove_id !== undefined) t.groveId = String(r.grove_id);
   if (r.target !== null && r.target !== undefined) t.target = num(r.target);
@@ -532,9 +534,9 @@ export class PgRepo implements Repo {
     // The base version and the ticket in one statement: retention never sees one without the other.
     await this.db.query(
       `${PUT_BASE}
-       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed)
-       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14)`,
-      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null],
+       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed, rules, data_version)
+       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16)`,
+      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null, t.rules ?? null, t.dataVersion ?? null],
     );
   }
 

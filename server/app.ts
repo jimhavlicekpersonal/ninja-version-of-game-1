@@ -16,6 +16,7 @@ import { nodeContext, type SharedStores } from './nodeContext';
 import { PromMetrics, type ServerSentry } from './observability';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
 import type { Player, Repo } from './repo';
+import type { ClientInfo } from './rules/registry';
 
 export { maxHousing, validateBase, validLevels } from './core/pvp';
 export { nodeContext } from './nodeContext';
@@ -123,8 +124,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Requests without the header (tools, webhooks, the deletion page) are served as before.
   app.addHook('onRequest', async (req, reply) => {
     const v = req.headers[ClientHeaders.protocol];
-    if (v !== undefined && req.url.startsWith('/v1/') && req.url !== Routes.hello && Number(v) < MIN_PROTOCOL) {
+    const tooOldBuild = typeof req.headers[ClientHeaders.clientBuild] === 'string' && core.ctx.rules.buildTooOld(req.headers[ClientHeaders.clientBuild] as string);
+    if (v !== undefined && req.url.startsWith('/v1/') && req.url !== Routes.hello && (Number(v) < MIN_PROTOCOL || tooOldBuild)) {
       metrics.count('tk_errors_total', { code: 'version_mismatch' });
+      metrics.count('tk_refused_total', { reason: tooOldBuild ? 'build_too_old' : 'protocol_too_old', rules: String(req.headers[ClientHeaders.simRules] ?? '?').slice(0, 8) });
       const body: ErrorBody = { error: 'version_mismatch', message: 'This version of Kagemura is too old for the server. Update the game to keep playing online.' };
       return reply.code(426).send(body);
     }
@@ -224,6 +227,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     return out;
   };
   const body = <T>(req: FastifyRequest) => (req.body ?? {}) as Partial<T> & Record<string, unknown>;
+  /** What the request's headers say about the game (rules version, data version, build): roadmap step 72. */
+  const client = (req: FastifyRequest): ClientInfo => {
+    const h = (k: string) => (typeof req.headers[k] === 'string' ? (req.headers[k] as string).slice(0, 60) : undefined);
+    const rules = h(ClientHeaders.simRules);
+    return { rules: rules !== undefined && /^\d+$/.test(rules) ? Number(rules) : undefined, dataVersion: h(ClientHeaders.dataVersion), build: h(ClientHeaders.clientBuild) };
+  };
   const query = (req: FastifyRequest) => (req.query ?? {}) as Record<string, string | undefined>;
   const param = (req: FastifyRequest, k: string) => String((req.params as Record<string, string>)[k] ?? '');
 
@@ -303,8 +312,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
 
   // PvP
-  app.put(Routes.base, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.uploadBase(me, req.body as never)));
-  app.get(Routes.match, rate('match'), authed(async (me) => core.match(me)));
+  app.put(Routes.base, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.uploadBase(me, req.body as never, client(req))));
+  app.get(Routes.match, rate('match'), authed(async (me, req) => core.match(me, client(req))));
   app.post(Routes.attacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.attack(me, req.body as never)));
   app.get(Routes.defenses, authed(async (me, req) => core.defenses(me, Number(query(req).since ?? 0))));
   app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50))));
@@ -326,7 +335,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
 
   // Grove Raid
   app.get(Routes.groveRaid, authed(async (me) => core.raid(me)));
-  app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target)));
+  app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target, client(req))));
   app.post(Routes.groveRaidAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.raidAttack(me, req.body as never)));
   app.post(Routes.groveRaidClaim, authed(async (me, req) => core.claimRaid(me, body<{ week: number }>(req).week)));
 

@@ -225,7 +225,7 @@ export class App {
           // keeps the report until it gets through.
           this.ticket = null;
           this.onlineMatch = null;
-          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: out.record.result.hash });
+          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: out.record.result.hash, rules: SIM_RULES });
         }
         lastRecord = out.record;
         if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true };

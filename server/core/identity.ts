@@ -4,13 +4,17 @@ import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { purchaseFeatures } from './purchases';
 
-/** The oldest game this server serves (protocol 7: villages kept on the server, client headers, idempotent writes). */
+/**
+ * The oldest game this server serves (protocol 7: villages kept on the server,
+ * client headers, idempotent writes). Protocol 8 games are served too: they add
+ * the data version and read `supportedRules` / `minClientBuild` from hello.
+ */
 export const MIN_PROTOCOL = 7;
 
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])] };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}) };
 }
 
 export function cleanName(raw: unknown, ctx: ServerContext): string {

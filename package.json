@@ -32,7 +32,9 @@
     "store:screenshots": "node tools/store/screenshots.mjs",
     "docs:progression": "node tools/progression/generate.mjs",
     "balance:armies": "node tools/balance/generate.mjs",
-    "balance:campaign": "node tools/balance/campaign.mjs"
+    "balance:campaign": "node tools/balance/campaign.mjs",
+    "rules:fixture": "node tools/release/rules-snapshot.mjs fixture",
+    "rules:snapshot": "node tools/release/rules-snapshot.mjs snapshot"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

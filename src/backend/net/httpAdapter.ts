@@ -4,6 +4,8 @@
  * bearer token, timeouts, retries for safe reads, and protocol errors.
  */
 import { SIM_RULES } from '../../gameplay/sim/battle/battle';
+import { defaultData } from '../../gameplay/sim/data';
+import { dataVersionOf } from './dataVersion';
 import { ServerError, type ServerPort } from './ports';
 import {
   ClientHeaders,
@@ -95,6 +97,12 @@ export interface HttpAdapterOptions {
   retryDelayMs?: number;
   /** The game's version and platform for X-Client-Build, e.g. "0.1.0+ios". */
   build?: string;
+  /**
+   * The data version for X-Data-Version (protocol 8): the balance data this
+   * game runs with, including a balance bundle applied at start (step 76).
+   * Defaults to the built-in data.
+   */
+  dataVersion?: () => string;
 }
 
 /** A fresh id for an Idempotency-Key. */
@@ -120,6 +128,7 @@ export class HttpServerAdapter implements ServerPort {
   private readonly retries: number;
   private readonly retryDelayMs: number;
   private readonly build: string;
+  private readonly dataVersion: () => string;
 
   constructor(
     readonly baseUrl: string,
@@ -133,6 +142,7 @@ export class HttpServerAdapter implements ServerPort {
     this.retries = opts.retries ?? 2;
     this.retryDelayMs = opts.retryDelayMs ?? 600;
     this.build = opts.build ?? 'unknown';
+    this.dataVersion = opts.dataVersion ?? (() => dataVersionOf(defaultData));
   }
 
   hasIdentity(): boolean {
@@ -157,6 +167,7 @@ export class HttpServerAdapter implements ServerPort {
           ...(token ? { authorization: `Bearer ${token}` } : {}),
           [ClientHeaders.protocol]: String(PROTOCOL_VERSION),
           [ClientHeaders.simRules]: String(SIM_RULES),
+          [ClientHeaders.dataVersion]: this.dataVersion(),
           [ClientHeaders.clientBuild]: this.build,
           ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: newKey() } : {}),
         },
@@ -266,7 +277,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   submitAttack(sub: BattleSubmission): Promise<AttackResponse> {
-    return this.req('POST', Routes.attacks, sub);
+    return this.req('POST', Routes.attacks, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
   }
 
   defenses(since: number): Promise<DefensesResponse> {
@@ -404,7 +415,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   submitRaidAttack(sub: BattleSubmission): Promise<RaidAttackResponse> {
-    return this.req('POST', Routes.groveRaidAttacks, sub);
+    return this.req('POST', Routes.groveRaidAttacks, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
   }
 
   claimRaid(week: number): Promise<RaidClaimResponse> {

@@ -323,8 +323,37 @@ export class Hud {
 
   private static readonly NET_LABEL: Record<string, string> = { off: 'Offline play', connecting: 'Connecting…', online: 'Online', offline: 'No connection', incompatible: 'Update needed', suspended: 'Suspended' };
 
+  /** Shown once per session when the server can no longer check this game (roadmap step 75). */
+  private updateNoticeShown = false;
+
+  /** Open the store listing (apps) or reload (web, where the service worker brings the new version). */
+  private openUpdate(): void {
+    const url = this.deps.connection.updateUrl;
+    if (url) window.open(url, '_blank', 'noopener');
+    else window.location.reload();
+  }
+
+  private showUpdateNeeded(): void {
+    const conn = this.deps.connection;
+    const body = h(
+      'div',
+      {},
+      h('p', {}, conn.lastError || 'A new version of Kagemura is out, and online play needs it.'),
+      h('p', { class: 'muted' }, 'Online battles, raids and your Alliance pause until you update. Your village is safe: everything else keeps working on this device.'),
+    );
+    let close = () => {};
+    close = this.modal('Update Kagemura', body, [
+      { label: 'Later', onClick: () => close() },
+      { label: conn.updateUrl ? 'Update' : 'Reload', primary: true, onClick: () => this.openUpdate() },
+    ]);
+  }
+
   private updateNet(): void {
     const conn = this.deps.connection;
+    if (conn.status === 'incompatible' && !this.updateNoticeShown) {
+      this.updateNoticeShown = true;
+      this.showUpdateNeeded();
+    }
     this.netPill.hidden = !conn.enabled;
     this.netPill.className = `net-pill ${conn.status}`;
     this.netPill.textContent = Hud.NET_LABEL[conn.status] ?? conn.status;
@@ -354,6 +383,7 @@ export class Hud {
       } else {
         wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
+        if (conn.status === 'incompatible') wrap.append(h('p', {}, h('button', { class: 'btn primary', type: 'button', onclick: () => this.openUpdate() }, conn.updateUrl ? 'Update Kagemura' : 'Reload to update')));
         if (conn.player) {
           const name = h('input', { class: 'text', type: 'text', maxlength: 24, value: conn.player.name }) as HTMLInputElement;
           name.addEventListener('keydown', (e) => e.stopPropagation());

@@ -7,6 +7,7 @@ import { CrashReporter } from '../../../src/backend/analytics/crashReports';
 import { buildEnvelope, envelopeEndpoint, parseDsn, parseStack, ReportThrottle, scrubUrl } from '../../../src/backend/analytics/sentryEnvelope';
 import { Routes } from '../../../src/backend/net/protocol';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
+import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import { baseAt, rush } from './harness';
 
 const DSN = 'https://abc123@o42.ingest.sentry.io/4507';
@@ -117,12 +118,13 @@ describe('observability over HTTP', () => {
     expect((await s.call('GET', '/metrics')).status).toBe(401);
     expect((await s.call('GET', '/metrics', 'wrong')).status).toBe(401);
     const text = (await s.call('GET', '/metrics', METRICS)).body as string;
-    expect(text).toContain('tk_battles_total{kind="pvp"} 1');
-    expect(text).toContain('tk_desyncs_total{kind="pvp"} 1');
+    // By battle-rules version too (roadmap step 78), so a desync spike after a release shows which version.
+    expect(text).toContain(`tk_battles_total{kind="pvp",rules="${SIM_RULES}"} 1`);
+    expect(text).toContain(`tk_desyncs_total{kind="pvp",rules="${SIM_RULES}"} 1`);
     expect(text).toMatch(/tk_resim_ms_count\{kind="pvp"\} 1/);
     expect(text).toContain('tk_errors_total{code="not_found"} 1');
     expect(text).toContain('tk_http_requests_total{method="POST",route="/v1/attacks",status="200"} 1');
-    expect(s.app.metrics.value('tk_desyncs_total', { kind: 'pvp' })).toBe(1);
+    expect(s.app.metrics.value('tk_desyncs_total', { kind: 'pvp', rules: String(SIM_RULES) })).toBe(1);
     // Without a metrics token there is no /metrics at all.
     expect((await (await setup({ metricsToken: undefined })).call('GET', '/metrics')).status).toBe(404);
   });

@@ -27,6 +27,9 @@
  *   GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_RTDN_AUDIENCE, GOOGLE_RTDN_SERVICE_ACCOUNT.
  * - Push (step 40, server/push/push.ts): APNS_KEY, APNS_KEY_ID, APNS_TEAM_ID,
  *   APNS_TOPIC, APNS_SANDBOX; FCM_PROJECT_ID, FCM_SERVICE_ACCOUNT_JSON.
+ * - Game versions (roadmap steps 73, 75; docs/SHIPPING.md "Releasing a balance
+ *   change"): RETIRED_RULES ("1,2": archived battle-rule versions no longer
+ *   accepted) and MIN_CLIENT_BUILD ("1.2.0": older games are asked to update).
  */
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { defaultData } from '../src/gameplay/sim/data';
@@ -38,6 +41,8 @@ import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
 import { RedisLeaderboard, RedisLocks, RedisRateLimiter } from './shared';
 import { PromMetrics, ServerSentry } from './observability';
+import { ARCHIVED_ENGINES } from './rules/archive';
+import { liveEngine, parseRetired, RulesRegistry } from './rules/registry';
 import { verifierFromEnv } from './identity/verify';
 import { checkConfig, paymentsFromEnv } from './config';
 import { pushTransportFromEnv, ServerPush } from './push/push';
@@ -130,8 +135,10 @@ async function main(): Promise<void> {
   const payments = paymentsFromEnv(process.env, fetchFn, Date.now);
   const transport = pushTransportFromEnv(process.env, fetchFn, Date.now);
   const push = transport ? new ServerPush({ repo, data: defaultData, transport, now: Date.now, metrics, log: (l, m, f) => console[l === 'info' ? 'log' : l](m, f ?? {}) }) : undefined;
-  shared = { ...shared, payments, push };
-  console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}.`);
+  // Battle rules (step 73): today's, plus archived versions still in use by older games.
+  const rules = new RulesRegistry(liveEngine(defaultData), { archived: ARCHIVED_ENGINES.map((e) => e()), retired: parseRetired(process.env.RETIRED_RULES), minClientBuild: process.env.MIN_CLIENT_BUILD });
+  shared = { ...shared, payments, push, rules };
+  console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
     repo,

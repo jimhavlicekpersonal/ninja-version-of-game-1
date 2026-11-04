@@ -9,6 +9,7 @@ import { RepoLeaderboard, TicketLocks, type Leaderboard, type MatchLocks } from 
 import type { AppleVerifier } from './payments/apple';
 import type { GoogleVerifier } from './payments/google';
 import { noPush, type Pusher } from './push/push';
+import { liveEngine, RulesRegistry } from './rules/registry';
 
 /**
  * Optional shared stores (Redis, roadmap step 16; without them the database
@@ -22,12 +23,15 @@ export interface SharedStores {
   payments?: { apple?: AppleVerifier | null; google?: GoogleVerifier | null };
   push?: Pusher;
   log?: (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
+  /** Battle-rule versions (step 73); defaults to today's rules only. */
+  rules?: RulesRegistry;
 }
 
 export function nodeContext(repo: Repo, data: GameData, now: () => number = () => Date.now(), random: () => number = Math.random, shared: SharedStores = {}): ServerContext {
   return {
     repo,
     data,
+    rules: shared.rules ?? new RulesRegistry(liveEngine(data)),
     board: shared.board ?? new RepoLeaderboard(repo),
     locks: shared.locks ?? new TicketLocks(),
     metrics: shared.metrics ?? noMetrics,

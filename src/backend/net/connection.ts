@@ -16,6 +16,8 @@ import { ServerError, type ServerPort } from './ports';
 import type { BattleSubmission, HelloResponse, LinkCredential, LinkProvider, PlayerView, PurchaseStore } from './protocol';
 import type { PurchaseVerifier } from '../payments/provider';
 import { VillageSync, type SyncGame } from './villageSync';
+import { SIM_RULES } from '../../gameplay/sim/battle/battle';
+import { updateNeeded } from './versionCheck';
 
 /** What the connection needs from the game. GameController provides it. */
 export interface GameLink {
@@ -60,7 +62,10 @@ export type ConnectionStatus =
   | 'online'
   /** Server configured but not reachable right now; retrying. */
   | 'offline'
-  /** The server and this game cannot talk (protocol versions). */
+  /**
+   * The server and this game cannot talk: protocol versions, or the server no
+   * longer checks this game's battle rules or build (`updateUrl`, step 75).
+   */
   | 'incompatible'
   /** Staff suspended this account from online play (`lastError` says why and until when); tried again on the next start. */
   | 'suspended';
@@ -100,6 +105,10 @@ export interface ConnectionOptions {
    * take it (the real game sets this; tests leave it off to stay on the device).
    */
   keepVillageOnServer?: boolean;
+  /** The balance data version this game runs with (step 76 bundles change it); sent as X-Data-Version. */
+  dataVersion?: () => string;
+  /** Where "Update Kagemura" sends the player (the App Store / Play listing); the web build reloads instead. */
+  updateUrl?: string;
   log?: (msg: string, err?: unknown) => void;
 }
 
@@ -111,6 +120,10 @@ export class Connection {
   player: PlayerView | null = null;
   port: ServerPort | null = null;
   readonly url: string;
+  /** Where the player gets the new version (step 75); empty on the web, where a reload updates. */
+  get updateUrl(): string {
+    return this.o.updateUrl ?? '';
+  }
   /** The server-owned village queue (roadmap step 21); null when the game cannot keep one on a server. */
   readonly village: VillageSync | null = null;
 
@@ -126,7 +139,7 @@ export class Connection {
     this.kv = o.kv ?? browserKeyValue;
     this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl);
     if (this.url) {
-      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build })))(this.url);
+      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build, dataVersion: o.dataVersion })))(this.url);
       this.status = 'connecting';
       const g = o.game;
       if (g.onCommand && g.adoptEconomy && g.adoptVillage) {
@@ -362,6 +375,12 @@ export class Connection {
       if (!this.online) {
         if (this.status !== 'connecting') this.setStatus('connecting');
         this.server = await port.hello();
+        // Step 75: a game the server can no longer check pauses online play (the village keeps working offline).
+        const update = updateNeeded(this.server, SIM_RULES, this.o.build);
+        if (update) {
+          this.setStatus('incompatible', update);
+          return;
+        }
         await this.ensurePlayer(port);
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
         // The real Grove replaces the bot Grove while playing online.
@@ -592,7 +611,7 @@ export class Connection {
     let added = false;
     for (const r of this.o.game.state.battleLog) {
       if (r.settlement !== 'pending' || !r.ticket || queued.has(r.ticket)) continue;
-      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick, clientHash: r.result.hash } });
+      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick, clientHash: r.result.hash, ...(r.rules !== undefined ? { rules: r.rules } : {}) } });
       added = true;
     }
     if (added) this.saveOutbox(items);

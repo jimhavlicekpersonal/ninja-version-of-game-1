@@ -63,6 +63,13 @@ export interface Ticket {
    * issued before server seeds (they keep using the client's seed).
    */
   seed?: number;
+  /**
+   * The battle rules (SIM_RULES) and data version the ticket was issued under
+   * (roadmap step 73): the report is re-simulated with that engine. Absent on
+   * tickets from before protocol 8 (the live engine).
+   */
+  rules?: number;
+  dataVersion?: string;
   /** Grove Raid tickets only. */
   week?: number;
   groveId?: string;

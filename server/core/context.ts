@@ -7,10 +7,14 @@ import type { Leaderboard, MatchLocks } from '../shared';
 import type { AppleVerifier } from '../payments/apple';
 import type { GoogleVerifier } from '../payments/google';
 import type { Pusher } from '../push/push';
+import type { RulesRegistry } from '../rules/registry';
 
 export interface ServerContext {
   repo: Repo;
+  /** Today's balance data (the live rules engine's). Battles use the engine of their ticket (`rules`). */
   data: GameData;
+  /** Battle-rule versions this server can check (roadmap step 73). */
+  rules: RulesRegistry;
   now(): number;
   /** Unique ids. */
   uuid(): string;

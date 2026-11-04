@@ -5,17 +5,18 @@
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
-import { runBattle, SIM_RULES } from '../../src/gameplay/sim/battle/battle';
+import type { runBattle } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
 import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
-import { applyLootPenalty, hallWindow, opponentForRank } from '../../src/gameplay/sim/matchmaking';
+import { applyLootPenalty, hallWindow } from '../../src/gameplay/sim/matchmaking';
 import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { layoutChangedShare, newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
+import type { ClientInfo, RulesEngine } from '../rules/registry';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 
@@ -221,17 +222,19 @@ export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { 
   return { army, levels, reinforcements };
 }
 
-export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest): Promise<void> {
+export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest, client?: ClientInfo): Promise<void> {
   // A village the server holds is the base (its real layout and loot); the upload is ignored.
   if (await hasServerVillage(ctx.repo, me.id)) {
     await refreshBaseFromVillage(ctx, me);
     await ctx.board.set(me.id, me.trophies, me.createdAt);
     return;
   }
-  const n = normalizeBase(structuredClone(req?.base), ctx.data);
+  // Checked against the rules of the game that sent it (an older app's Keep limits, step 73).
+  const rulesData = engineForClient(ctx, client).data;
+  const n = normalizeBase(structuredClone(req?.base), rulesData);
   if ('error' in n) throw new ApiError(400, 'bad_request', n.error);
   const base = n.base;
-  capBaseLoot(base, ctx.data);
+  capBaseLoot(base, rulesData);
   base.name = me.name;
   await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), ...layoutReset(ctx, me, base) });
   // A player is ranked once they have a base.
@@ -239,9 +242,12 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
 }
 
 /** Find someone to attack: a real player if one fits the rules, otherwise a generated base of matched strength. */
-export async function match(ctx: ServerContext, me: Player): Promise<MatchResponse> {
+export async function match(ctx: ServerContext, me: Player, client?: ClientInfo): Promise<MatchResponse> {
   const t = ctx.now();
   const { data, repo } = ctx;
+  const engine = engineForClient(ctx, client);
+  // An older game only meets bases that are legal under its own rules (step 73).
+  const legalFor = (p: Player) => engine.data === data || !p.base || validateBase(p.base, engine.data) === null;
   const win = hallWindow(me.hallLevel, data);
   const recent = await repo.recentTargets(me.id, t - HOUR);
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
@@ -252,7 +258,7 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
     // With external locks (Redis) the query skips its ticket scan; the lock is taken atomically below.
     const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20 });
     const busy = await locks.lockedAmong(list.map((p) => p.id));
-    const free = list.filter((p) => !busy.has(p.id));
+    const free = list.filter((p) => !busy.has(p.id) && legalFor(p));
     // Step 29: after the Keep window and power floor, the base whose expected score is nearest the target
     // (ties from a random start); the first one whose lock we get is ours (two attackers can't both get one).
     const start = free.length ? Math.floor(ctx.random() * free.length) : 0;
@@ -269,15 +275,15 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
   let ticket: Ticket;
   if (found?.base) {
     const base = applyLootPenalty(capBaseLoot({ ...structuredClone(found.base), name: found.name, trophies: found.trophies }, data), me.hallLevel, data);
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed() };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: engine.rules, dataVersion: engine.dataVersion };
   } else {
     // Nobody fits: a generated base with the same matchmaking math the game uses offline.
     const seed = Math.floor(ctx.random() * 4294967296) >>> 0;
     // The server does not know the player's research, so it assumes half-way through their Keep (same rule as offline).
-    const base = opponentForRank(seed, me.trophies, me.hallLevel, data, me.hallLevel - 0.5 - data.ranks.matchmaking.powerSlack);
+    const base = engine.opponentForRank(seed, me.trophies, me.hallLevel, engine.data, me.hallLevel - 0.5 - engine.data.ranks.matchmaking.powerSlack);
     const names = data.names;
     base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed() };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: engine.rules, dataVersion: engine.dataVersion };
   }
   await repo.createTicket(ticket);
   return {
@@ -307,18 +313,50 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
 
 export { takeTicket };
 
+const UPDATE_MESSAGE = 'This version of Kagemura is too old for online battles. Update the game to keep playing online.';
+
+/** The rules engine for the game that sent this request, or 426 if the server no longer has its rules (step 73). */
+export function engineForClient(ctx: ServerContext, client: ClientInfo | undefined): RulesEngine {
+  const e = ctx.rules.forClient(client);
+  if (!e) {
+    ctx.metrics.count('tk_refused_total', { reason: 'rules_unsupported', rules: String(client?.rules ?? '?') });
+    throw new ApiError(426, 'version_mismatch', UPDATE_MESSAGE);
+  }
+  return e;
+}
+
+/**
+ * The engine a ticket's battle is checked with: the one it was issued under.
+ * A report that names other rules was played by a different game build than
+ * the one that asked for the ticket (it updated mid-battle): refused, as is a
+ * ticket whose rules the server has since retired.
+ */
+export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleSubmission): RulesEngine {
+  if (ticket.rules !== undefined && sub.rules !== undefined && sub.rules !== null && Number(sub.rules) !== ticket.rules) {
+    ctx.metrics.count('tk_refused_total', { reason: 'rules_changed', rules: String(sub.rules) });
+    throw new ApiError(400, 'bad_request', 'This battle was played with different rules than the ticket was issued for. Find a new opponent.');
+  }
+  const e = ctx.rules.forTicket(ticket.rules, ticket.dataVersion);
+  if (!e) {
+    ctx.metrics.count('tk_refused_total', { reason: 'rules_retired', rules: String(ticket.rules ?? '?') });
+    throw new ApiError(426, 'version_mismatch', UPDATE_MESSAGE);
+  }
+  return e;
+}
+
 /**
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission): ReturnType<typeof runBattle> {
+export function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission, engine: RulesEngine = ctx.rules.live): ReturnType<typeof runBattle> {
   const t0 = performance.now();
-  const out = runBattle(setup, deployments, ctx.data, sub.endTick);
+  const out = engine.runBattle(setup, deployments, engine.data, sub.endTick);
+  const rules = String(engine.rules);
   ctx.metrics.observe('tk_resim_ms', performance.now() - t0, { kind });
-  ctx.metrics.count('tk_battles_total', { kind });
+  ctx.metrics.count('tk_battles_total', { kind, rules });
   if (typeof sub.clientHash === 'string' && sub.clientHash !== out.result.hash) {
-    ctx.metrics.count('tk_desyncs_total', { kind });
-    ctx.log('warn', 'battle desync', { kind, ticket: sub.ticket, rules: SIM_RULES, client: sub.clientHash, server: out.result.hash });
+    ctx.metrics.count('tk_desyncs_total', { kind, rules });
+    ctx.log('warn', 'battle desync', { kind, ticket: sub.ticket, rules: engine.rules, dataVersion: engine.dataVersion, client: sub.clientHash, server: out.result.hash });
   }
   return out;
 }
@@ -350,12 +388,13 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
   if (answered) return answered as AttackResponse;
+  const engine = engineForTicket(ctx, ticket, sub);
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, data);
+  const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { sim, result } = resimulate(ctx, 'pvp', setup, deployments, sub);
+  const { sim, result } = resimulate(ctx, 'pvp', setup, deployments, sub, engine);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
@@ -395,7 +434,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
       const fallen = sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } }));
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
-      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -defLoss });
+      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
     }
     return true;
   });

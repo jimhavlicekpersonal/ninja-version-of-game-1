@@ -121,7 +121,10 @@ async function boot(): Promise<void> {
   // With a server, real players raid this village instead of bots (never in the sandbox).
   const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl);
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl });
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true });
+  // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
+  const env = import.meta.env as Record<string, string | undefined>;
+  const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl });
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
   // Store receipts go to the server when it checks them (roadmap Phase 4).
   controller.purchaseVerifier = () => (payments.store ? connection.purchaseVerifier(payments.store) : null);
