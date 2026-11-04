@@ -604,3 +604,12 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .codex-status.ok { color: #3c7d2c; }
 .point-chip b { color: var(--plum); }
 .point-chip.quiet { color: var(--leaf-dark); }
+
+/* Friends, Gang and duels (roadmap steps 59-63) */
+.friends-ui .friend-me { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 8px 0 12px; }
+.friends-ui .friend-qr { width: 120px; height: 120px; image-rendering: pixelated; border-radius: 8px; background: #fff; }
+.friends-ui .friend-code { font: 700 22px/1.2 ui-monospace, monospace; letter-spacing: 1px; margin: 2px 0; }
+.friends-ui .staff-badge { margin-left: 6px; background: #2d6cdf; color: #fff; }
+.friends-ui .chat-log { max-height: 180px; overflow-y: auto; padding: 6px; border-radius: 8px; background: rgba(0, 0, 0, 0.05); }
+.friends-ui .chat-msg.system { opacity: 0.7; font-style: italic; }
+.friends-ui select.text { max-width: 100%; }

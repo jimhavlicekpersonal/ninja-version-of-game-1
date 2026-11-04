@@ -280,6 +280,39 @@ describe('protocol contract', () => {
     expect(second).toEqual(first);
   });
 
+  it('friends, duels and Gangs: unique names, exact lookup, requests by code, an unranked duel, a Gang of friends', async () => {
+    const hello = await client().hello();
+    if (!hello.features.includes('friends')) return;
+    const a = await player('Fa', 2);
+    const b = await player('Fb', 2);
+    expect(await errorOf(client().register(nm('Fa').toLowerCase()))).toMatchObject({ status: 409, code: 'name_taken' });
+    expect((await a.lookup(nm('Fb').toUpperCase())).name).toBe(nm('Fb'));
+    expect(await errorOf(a.lookup(nm('Nobody')))).toMatchObject({ status: 404, code: 'not_found' });
+    const code = (await b.friends()).code;
+    expect(await a.requestFriend({ code })).toEqual({ status: 'sent' });
+    const req = (await b.friends()).incoming[0];
+    expect((await b.answerFriendRequest(req.id, true)).friends.map((f) => f.name)).toEqual([nm('Fa')]);
+    if (hello.features.includes('duels')) {
+      const before = await a.me();
+      const t = await a.duelTicket({ friendId: b.id });
+      const r = await a.submitDuel({ ticket: t.ticket, seed: t.seed, army: { hedgehog_roller: 5 }, deployments: Array.from({ length: 5 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 1, y: 1 + i })) });
+      expect(r.rivalry.duels).toBe(1);
+      expect((await a.me()).trophies).toBe(before.trophies); // never ranked
+      expect((await b.duels()).duels[0].attacker.name).toBe(nm('Fa'));
+    }
+    if (hello.features.includes('gangs')) {
+      await a.createGang(`G${tag}`);
+      await a.inviteToGang(b.id);
+      const inv = (await b.myGang()).invites[0];
+      expect((await b.answerGangInvite(inv.id, true)).gang!.members).toHaveLength(2);
+      await b.postGangChat('hi');
+      expect((await a.gangChat()).messages.some((m) => m.text === 'hi')).toBe(true);
+      await b.leaveGang();
+      await a.leaveGang();
+    }
+    await a.removeFriend(b.id);
+  });
+
   it('purchases and push: a store the server does not check is refused before paying; forged receipts are refused; push tokens are checked', async () => {
     const hello = await client().hello();
     const p = await player('Buyer');

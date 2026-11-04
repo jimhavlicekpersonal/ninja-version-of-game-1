@@ -55,7 +55,7 @@ export async function detail(ctx: ServerContext, id: string) {
     : null;
   const membership = await ctx.repo.getMembership(p.id);
   return {
-    player: { ...summary(p, now), shieldUntil: p.shieldUntil, mutedUntil: p.mutedUntil ?? 0, groveId: p.groveId, hasBase: Boolean(p.base), ratings: p.ratings ?? null },
+    player: { ...summary(p, now), staff: Boolean(p.staff), shieldUntil: p.shieldUntil, mutedUntil: p.mutedUntil ?? 0, groveId: p.groveId, hasBase: Boolean(p.base), ratings: p.ratings ?? null },
     links: (await ctx.repo.linksOf(p.id)).map((l) => ({ provider: l.provider, linkedAt: l.linkedAt })),
     alliance: membership ? { id: membership.groveId, role: membership.role } : null,
     village,
@@ -110,6 +110,15 @@ export async function resetRating(ctx: ServerContext, actor: string, id: string,
   const current = p.ratings ?? { attack: fresh, base: fresh };
   await ctx.repo.updatePlayer(p.id, { ratings: { attack: which === 'base' ? current.attack : fresh, base: which === 'attack' ? current.base : fresh } });
   await audit(ctx, actor, 'reset-rating', p.id, { which, note: text(body?.note, 200) });
+  return detail(ctx, p.id);
+}
+
+/** Give or take the staff badge (step 59): shown next to the name, and nobody can get it otherwise. */
+export async function setStaff(ctx: ServerContext, actor: string, id: string, body: { staff?: unknown } | undefined) {
+  const p = await playerOr404(ctx, id);
+  const staff = body?.staff === true;
+  await ctx.repo.updatePlayer(p.id, { staff });
+  await audit(ctx, actor, staff ? 'staff-badge' : 'staff-badge-removed', p.id, {});
   return detail(ctx, p.id);
 }
 

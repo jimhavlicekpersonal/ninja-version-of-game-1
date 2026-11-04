@@ -25,6 +25,7 @@ import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
 import { GroveUi } from './groveUi';
+import { FriendsUi } from './friendsUi';
 import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
 import { Connection } from '../../backend/net/connection';
@@ -56,6 +57,10 @@ export interface HudDeps {
   warriorIcon(id: string): string | null;
   onAttack(): void;
   onReplay(record: BattleRecord): void;
+  /** Start a Friendly Duel (roadmap step 62). */
+  onDuel?(friend: { id: string; name: string }, layout: 'live' | 'duel', challengeId?: string): void;
+  /** Game Center friends' ids, when this device can ask (step 61). */
+  gameCenterFriends?: () => Promise<string[]>;
   onGroveAttack(target: number): void;
   /** Start a Shadow Trial attack on this tier. */
   onTrial(tier: number): void;
@@ -107,6 +112,7 @@ export class Hud {
   private openModals = new Set<() => void>();
   readonly econ: EconomyUi;
   readonly grove: GroveUi;
+  readonly friends: FriendsUi;
   readonly daily: DailyUi;
   private readonly army: ArmyUi;
   private armyPill = h('span', { class: 'army-pill' });
@@ -137,6 +143,14 @@ export class Hud {
       source: this.deps.groveSource,
       troopThumb: (t) => this.deps.troopThumb(t),
       onGroveAttack: (i) => this.deps.onGroveAttack(i),
+    });
+    this.friends = new FriendsUi({
+      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      connection: this.deps.connection,
+      troopThumb: (t) => this.deps.troopThumb(t),
+      onDuel: (f, layout, challengeId) => this.deps.onDuel?.(f, layout, challengeId),
+      onReplay: (r) => this.deps.onReplay(r),
+      gameCenterFriends: this.deps.gameCenterFriends,
     });
     this.daily = new DailyUi({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() });
     this.army = new ArmyUi({
@@ -440,6 +454,11 @@ export class Hud {
             if (details.open) load();
           });
           wrap.append(details);
+          if (conn.server?.features.includes('friends')) {
+            const fr = h('button', { class: 'btn', type: 'button' }, 'Friends, Gang and duels');
+            fr.addEventListener('click', () => this.friends.open());
+            wrap.append(h('div', { class: 'actions' }, fr));
+          }
           if (conn.canKeepVillage || conn.serverVillage) wrap.append(this.villageBlock());
           wrap.append(this.accountBlock());
         }

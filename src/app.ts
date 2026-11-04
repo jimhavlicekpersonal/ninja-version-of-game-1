@@ -149,6 +149,37 @@ export class App {
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, true);
   }
 
+  /**
+   * A Friendly Duel (roadmap step 62): your army against a friend's base (or
+   * their duel layout). Like a practice battle nothing is spent or won; the
+   * server re-simulates it for the rivalry tally and sends your friend the replay.
+   */
+  async duel(friend: { id: string; name: string }, layout: 'live' | 'duel' = 'live', challengeId?: string): Promise<void> {
+    const c = this.d.controller;
+    const conn = this.d.connection;
+    if (!conn.online || !conn.port) {
+      this.d.hud.toast('Duels need a connection.', 'error');
+      return;
+    }
+    const loadout = battleLoadout(c.state, c.data);
+    if (!Object.values(loadout.army).some((n) => n > 0)) {
+      this.d.hud.toast('Train some warriors first.', 'error');
+      return;
+    }
+    let t;
+    try {
+      t = await conn.port.duelTicket({ friendId: friend.id, layout });
+    } catch (e) {
+      this.d.hud.toast((e as Error).message, 'error');
+      return;
+    }
+    const base = structuredClone(t.base);
+    base.practice = `Friendly duel with ${t.opponent.name}${t.layout === 'duel' ? ' (their duel layout)' : ''}: no Honor, loot or troops`;
+    delete base.trophies;
+    const setup: BattleSetup = { seed: t.seed, base, ...loadout, infiltration: true };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, { duel: { ticket: t.ticket, opponent: t.opponent.name, challengeId } });
+  }
+
   replay(record: BattleRecord): void {
     this.open(new BattleSession(record.setup, this.d.controller.data, 'replay', record), record);
   }
@@ -165,8 +196,10 @@ export class App {
     sound.music('village');
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, practice = false): void {
+  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, practiceOrDuel: boolean | { duel: { ticket: string; opponent: string; challengeId?: string } } = false): void {
     const c = this.d.controller;
+    const duel = typeof practiceOrDuel === 'object' ? practiceOrDuel.duel : null;
+    const practice = practiceOrDuel !== false;
     this.battleHud?.destroy();
     this.session = session;
     let lastRecord: BattleRecord | null = null;
@@ -195,7 +228,18 @@ export class App {
         if (practice) {
           // Never banked: a record only for "Watch replay".
           const result = session.result();
-          lastRecord = { id: 'practice', kind: 'attack', at: c.now(), opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick, result, rules: SIM_RULES };
+          lastRecord = { id: duel ? 'duel' : 'practice', kind: 'attack', at: c.now(), opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick, result, rules: SIM_RULES };
+          if (duel) {
+            // The server re-simulates it for the rivalry tally and the friend's replay.
+            const s = session.setup;
+            void this.d.connection.port
+              ?.submitDuel({ ticket: duel.ticket, seed: s.seed, army: s.army, levels: s.levels, reinforcements: s.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: result.hash, challengeId: duel.challengeId })
+              .then(
+                (r) => this.d.hud.toast(`Duel recorded: ${r.rivalry.myWins}–${r.rivalry.theirWins} against ${duel.opponent}.${r.challenge?.winner ? ` Challenge: ${r.challenge.winner === 'me' ? 'you won!' : r.challenge.winner === 'them' ? 'they won.' : 'a draw.'}` : ''}`, 'success'),
+                (e: Error) => this.d.hud.toast(`The duel could not be recorded: ${e.message}`, 'error'),
+              );
+            return { result, banked: {}, trophies: 0, note: `Friendly duel with ${duel.opponent}: no Honor, loot or troops change. They get the replay.` };
+          }
           return { result, banked: {}, trophies: 0, note: 'Practice battle: no troops were spent and nothing was won.' };
         }
         if (grove) {

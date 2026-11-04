@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
 import { CrashReporter } from './backend/analytics/crashReports';
-import { platformSignIn } from './backend/platform/auth';
+import { gameCenterFriends, platformSignIn } from './backend/platform/auth';
 import { GameController } from './gameplay/control/controller';
 import { openGameDb } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
@@ -138,6 +138,9 @@ async function boot(): Promise<void> {
     deliveredOnline = true;
     void controller.deliverUnfinished();
     void syncPush();
+    // A friend's share link (/f/<code> → ?friend=KAGE-…): open Friends with the code ready to add.
+    const friendCode = new URLSearchParams(location.search).get('friend');
+    if (friendCode && connection.server?.features.includes('friends')) hud?.friends.open('friends', friendCode);
   });
   if (!connection.enabled) void controller.deliverUnfinished();
   // Server push (step 40): the types switched on in Settings, only while notifications are on.
@@ -204,6 +207,8 @@ async function boot(): Promise<void> {
     onGroveAttack: (target) => app?.groveAttack(target),
     onTrial: (tier) => app?.trial(tier),
     onPractice: (army) => app?.practice(army),
+    onDuel: (friend, layout, challengeId) => void app?.duel(friend, layout, challengeId),
+    gameCenterFriends: gameCenterFriends() ?? undefined,
     prefs,
     notifyPrefs,
     onRemindersEnabled: async () => {

@@ -122,6 +122,7 @@ export function createCore(ctx: ServerContext) {
       adjust: admin.adjust.bind(null, ctx),
       ban: admin.ban.bind(null, ctx),
       resetRating: admin.resetRating.bind(null, ctx),
+      setStaff: admin.setStaff.bind(null, ctx),
       actions: admin.actions.bind(null, ctx),
       review: review.weeklyReview.bind(null, ctx),
       queues: () => moderation.staffQueues(ctx),

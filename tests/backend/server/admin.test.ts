@@ -115,6 +115,7 @@ for (const [label, makeRepo] of repoFactories) {
     it('resets ratings and serves the admin page with a strict policy', async () => {
       const s = await setup(await makeRepo());
       const ann = await s.register('Ann');
+      expect((await s.call('POST', `/admin/v1/players/${ann.playerId}/staff`, ADMIN, { staff: true })).body.player.staff).toBe(true);
       const r = await s.call('POST', `/admin/v1/players/${ann.playerId}/reset-rating`, ADMIN, { which: 'attack' });
       expect(r.body.player.ratings.attack).toMatchObject({ rating: data.ranks.rating.initial, battles: 0 });
       const page = await s.app.inject({ method: 'GET', url: '/admin' });

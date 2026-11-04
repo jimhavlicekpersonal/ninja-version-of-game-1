@@ -21,6 +21,8 @@ export interface SignInSource {
 
 interface TkAuthPlugin {
   signIn(o: { provider: 'apple' | 'gamecenter' }): Promise<LinkCredential>;
+  /** Game Center friends' teamPlayerIDs (iOS 14.5+; the player is asked first). */
+  friends(): Promise<{ ids: string[] }>;
 }
 const TkAuth = registerPlugin<TkAuthPlugin>('TkAuth');
 
@@ -82,3 +84,15 @@ export function platformSignIn(opts: { googleClientId?: string; appleServicesId?
     },
   };
 }
+
+/**
+ * Game Center friends who allowed it (roadmap step 61, opt-in: called only
+ * when the player taps "Find my Game Center friends"). iPhone only; null
+ * elsewhere. Play Games friends need the Play services SDKs (not in the
+ * Android project yet).
+ */
+export function gameCenterFriends(): (() => Promise<string[]>) | null {
+  if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return null;
+  return async () => (await TkAuth.friends()).ids;
+}
+

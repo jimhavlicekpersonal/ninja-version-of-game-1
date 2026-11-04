@@ -891,7 +891,7 @@ export interface DuelView {
   mine: boolean;
   layout: 'live' | 'duel';
   challengeId: string | null;
-  result: { stars: number; destruction: number };
+  result: BattleResult;
   replay: { seed: number; base: BaseLayout; army: Record<string, number>; levels: Record<string, number>; reinforcements?: Record<string, { count: number; level: number }>; deployments: Deployment[]; endTick?: number; rules: number };
 }
 

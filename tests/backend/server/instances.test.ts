@@ -49,7 +49,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL || !redisUrl)('two instances, one
     expect((await call(a, 'GET', `${Routes.leaderboard}?limit=5`, ann.token)).body.players.map((p: { name: string }) => p.name)).toEqual(['Annie']);
     // One rate limit across both (3 registrations an hour from one address; Ann was the first).
     expect((await call(b, 'POST', Routes.players, undefined, { name: 'Bob' })).status).toBe(201);
-    expect((await call(a, 'POST', Routes.players, undefined, { name: 'Cy' })).status).toBe(201);
+    expect((await call(a, 'POST', Routes.players, undefined, { name: 'Cyd' })).status).toBe(201);
     expect((await call(b, 'POST', Routes.players, undefined, { name: 'Dee' })).status).toBe(429);
     await a.close();
     await b.close();

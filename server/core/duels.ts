@@ -160,7 +160,7 @@ export async function duels(ctx: ServerContext, me: Player): Promise<DuelsRespon
       mine: d.attackerId === me.id,
       layout: d.record.layout,
       challengeId: d.challengeId,
-      result: { stars: d.record.result.stars, destruction: d.record.result.destruction },
+      result: d.record.result,
       replay: { seed: d.record.seed, base: d.record.base, army: d.record.army, levels: d.record.levels, ...(d.record.reinforcements ? { reinforcements: d.record.reinforcements } : {}), deployments: d.record.deployments, endTick: d.record.endTick, rules: d.record.rules },
     })),
     rivalries: rivalries.map((r) => {

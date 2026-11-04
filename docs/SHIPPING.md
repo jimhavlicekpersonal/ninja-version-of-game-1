@@ -200,6 +200,7 @@ Set up once: in Settings → Environments, create `staging` and `production` (gi
 - **Domain:** give the server a name (e.g. `api.<your domain>`), with A and AAAA records (or the host's CNAME) and the host's certificate. Check it with `node tools/ops/check-domain.mjs https://api.<your domain>`; App Review uses IPv6-only networks. Set `TRUST_PROXY` so the server sees HTTPS and sends HSTS.
 - **Load test:** on staging, with `RATE_LIMITS` raised for registration and matches: `npm run server:build && npm run server:load -- --url https://<staging> --bps 14 --seconds 300`. One instance holds about 3 battles a second today (roadmap step 46).
 - **Alerts and status:** scrape `/metrics` (Grafana Cloud's free tier or Prometheus) with `ops/prometheus/alerts.yml`; add an uptime check and a public status page on `/readyz` (Better Stack, UptimeRobot). For maintenance or an incident, set `SERVER_NOTICE` (shown to every player in Settings → Online play).
+- **Share links:** set `GAME_URL` (the web game's address) so `https://<server>/f/<code>` can open the game with a friend's code. For the apps to open such links directly, add the domain as an Associated Domain (iOS) and an App Link (Android) when the store listings exist.
 - **Staff tool:** open `https://<server>/admin`, paste `ADMIN_TOKEN` and your name. Find players by name or id; give or take resources (server-held villages only, with a reason that goes in the ledger), suspend or lift a suspension, reset ratings; open reports and deletion requests. Everything is in the staff log.
 
 ## 4. Reminders

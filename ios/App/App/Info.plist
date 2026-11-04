@@ -66,5 +66,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSGKFriendListUsageDescription</key>
+	<string>Kagemura finds your Game Center friends who play, so you can add them as friends. Only when you ask.</string>
 </dict>
 </plist>

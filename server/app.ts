@@ -403,6 +403,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.post('/admin/v1/players/:id/ban', staff(async (req) => core.admin.ban(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
+    app.post('/admin/v1/players/:id/staff', staff(async (req) => core.admin.setStaff(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/review', staff(async (req) => core.admin.review(query(req).days)));
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
     app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));

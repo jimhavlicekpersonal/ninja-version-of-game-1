@@ -83,6 +83,8 @@ Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. Wh
 - **Phases 5–6 (40, 42, 43):** server push (APNs/FCM), staging/production separation (`DEPLOY_ENV`, one database per deployment), the server release workflow (image → staging → contract tests; production by hand).
 - **Phase 6, operations (44–48):** backups with a weekly restore drill, two instances, IPv6/HSTS, a load test (one instance: ~3 battles/s; the worker pool, step 57, is needed before launch), alert rules, the staff tool at `/admin`.
 - **Phase 7 (49–53, owner):** `docs/store/` (listing, privacy answers, review notes, testing plan, release checklist) and `npm run store:screenshots`.
+- **Phase 8, after launch (54–58):** weekly review, seasons on the server, legal time limits for staff queues and `/support`, the re-simulation worker pool (step 57's partitioning and object storage are left for when they are needed), secret rotation and maintenance reminders (`docs/OPERATIONS.md`).
+- **Phase 9 so far (59–63):** unique names, friends (codes, share links, QR, lookup, privacy, suggestions, Game Center import; Play Games import waits for Android sign-in), Friendly Duels, Gangs, and the Friends panel.
 - **Owner steps** (Phase 0, 33, 34, 39, 41, 49–53) stay unticked; the roadmap says what was prepared for each.
 - **Hosting checklist:** `docs/SHIPPING.md` (pre-deploy `server:migrate`, `TRUST_PROXY`, `REDIS_URL`, `ADMIN_TOKEN`, `SENTRY_DSN`, `METRICS_TOKEN`, health checks, the deletion URL for Google Play).
 

@@ -12,9 +12,31 @@ public class TkAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorizationControlle
     public let jsName = "TkAuth"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "signIn", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "friends", returnType: CAPPluginReturnPromise),
     ]
 
     private var pending: CAPPluginCall?
+
+    /// Game Center friends' teamPlayerIDs (roadmap step 61). Asked only when the
+    /// player taps "Find my Game Center friends"; iOS asks them to allow it.
+    @objc func friends(_ call: CAPPluginCall) {
+        guard #available(iOS 14.5, *) else {
+            call.reject("Game Center friends need iOS 14.5 or later.", "unavailable")
+            return
+        }
+        let player = GKLocalPlayer.local
+        guard player.isAuthenticated else {
+            call.reject("Sign in to Game Center first (Settings → Account → Sign-ins).", "failed")
+            return
+        }
+        player.loadFriends { friends, error in
+            if let error = error {
+                call.reject("Game Center did not share your friends: \(error.localizedDescription)", "failed")
+                return
+            }
+            call.resolve(["ids": (friends ?? []).map { $0.teamPlayerID }])
+        }
+    }
 
     @objc func signIn(_ call: CAPPluginCall) {
         switch call.getString("provider") {
