@@ -23,7 +23,7 @@
 | Rewards: no duplicates (trial tier paid once; battle banked once; rapid taps can't double-throw smoke) | Working | tests above + `interrupted.test.ts` |
 | **Interrupted raids** play out on next launch, banked once | Working | `interrupted.test.ts` + browser reload mid-raid |
 | Save v9 → v10 migration; save and reload | Working | `trials.test.ts`, `migration-full.test.ts`, browser reload |
-| Multiplayer server and protocol v3 (abilities) | Kept, working in tests | 52 backend tests locally; GitHub CI `server` job (Postgres + contract test) green on this branch |
+| Multiplayer server, protocol 6 (roadmap steps 10–23 on top) | Working in tests | Backend tests on memory, Postgres (`TEST_DATABASE_URL`) and Redis (`TEST_REDIS_URL`); contract test against a live server |
 | Practice opponents clearly labelled | Done | "Practice target · Generated rival (offline)", "(simulated raider)", "Shadow Trial" |
 | Progression model + 50 warriors + 4 heroes + 34 buildings | Design complete, 6 warriors live | `progression-model.test.ts`: the model reproduces the live troops within 3% |
 | Icon manifest (504 images) + ART AI brief + real-art loader | Done | `npm run docs:progression`; `public/art/manifest.json` loads in game |
@@ -68,7 +68,17 @@ An external gameplay audit of `c457aa7` (37 findings, 4,435 simulated battles, t
 - **Pacing:** Dojo training speed and a next-army queue (a full late army refills in about 1.5 h, was 13 h); batch training, saved armies, retrain-last, dismiss, practice battles; research lanes and one research curve for all 50 warriors (the roster maxes in about 268 days, was 2,462); tasks only from what's possible; Keep-scaled Season Scroll rewards; leagues to 5,200 honor and achievements to Keep 15; Shadow Trials use median-strength fortresses, layout factors and an alternate fortress after a failure.
 - **Balance and measurement:** opponents never fall below the attacker's earned strength; Throwers pay for range (0.7× damage), DPS taxes on the Bombardier, Thousand Needle and Hawk Tamer, kite kit trims (the Dragon Kite now outperforms the Thunder Kite), a control-tower Ballista, and a measured mid-Keep defense bump. Keep 7 was a hole the audit's Keep 7 raids showed (27/27 three stars): its bases fielded Keep 6 levels while armies gained two research levels and a new tier, so Keep 7 now unlocks Kunai Tower level 9, Shuriken Pagoda level 8 and Firework Mortar level 6, the step into the late-Keep curve is smoothed, and `attackerStrength` reads a new tier's level 1 at its research-scale level, so fresh Keep 7 warriors meet Keep 7 bases. The army lab measures counters by switching only their effects off (same bases and entry points), reports investment and counter activity, and outcome gates guard the matrix. The model player has defender, explorer and engaged (Trials, tasks, pass) policies; `npm run balance:campaign` writes `docs/game-theory/CAMPAIGN.md`.
 
-Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. What the audit asked for that stays an **owner decision**: whether online play is trusted-local or competitive (a competitive launch needs a server-side inventory/research/timer ledger, protocol 7), and a real web/Play payment path.
+Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. What the audit asked for that stays an **owner decision**: whether online play is trusted-local or competitive (a competitive launch needs a server-side inventory/research/timer ledger, protocol 7; its foundation now exists as the opt-in server-owned village below), and a real web/Play payment path.
+
+## PvP server roadmap progress (2026-11-04)
+
+`docs/backend/PVP_ROADMAP.md` steps 10–23 are done, on protocol 6 (each addition is a `/v1/hello` feature), each with tests (`tests/backend/`):
+
+- **Phase 1, hardening (10–18):** server-issued battle seeds; each base stored once by content hash, 30-day replay retention; versioned migrations as a release step (`npm run server:migrate`); rate and body limits; account deletion in Settings and on the web (`/account/delete`) with a staff queue; chat report/block, auto-hide after 3 reporters, mutes and a moderation queue (`ADMIN_TOKEN`); optional Redis for the leaderboard, match locks and shared rate limits; JSON logs with request ids, Sentry (server and game, no SDK), `/healthz` + `/readyz`, Prometheus metrics; `npm run server:bench`.
+- **Phase 2, server-owned village (19–23, beta, opt-in):** `villages`, an append-only `ledger` and `command_log`; the command endpoint replays the game's own commands with the shared simulation and corrects the game when the economy hashes differ; the game queues its commands and takes the server's economy; attacks, war attacks, war chests and gifts settle server-held villages in one transaction with the result.
+- **Measured:** re-simulating one battle takes 5 ms at Keep 1 and up to ~0.45 s (p95) at Keeps 8–15 on a 2.1 GHz vCPU, which blocks an instance's event loop: a re-sim worker pool (step 57) should come before real load.
+- **Next:** 24 (account linking = cloud save), 25 (moving an existing village to the server, with sanity limits), 26 (protocol 7), and Phase 1.5 (keeping old app builds working across balance patches) before the first store release.
+- **Hosting checklist:** `docs/SHIPPING.md` (pre-deploy `server:migrate`, `TRUST_PROXY`, `REDIS_URL`, `ADMIN_TOKEN`, `SENTRY_DSN`, `METRICS_TOKEN`, health checks, the deletion URL for Google Play).
 
 Further checks from the audit, now handled: the last deployments are saved at once when the app is hidden or closed; a failed save shows a warning; a flyer grounded by a Ballista can set off traps; the Ballista's catalog matchups list only flyers, and the Repair Crane really answers the Hawk Tamer (it cuts the slowing short). Not yet covered: an automated check that every Infiltration Point is reachable on unusually dense player bases.
 
@@ -83,7 +93,7 @@ Further checks from the audit, now handled: the last deployments are saved at on
 
 ## Online features: honest status
 
-Real PvP, real Alliances and Alliance Wars work **only with a hosted server** (`VITE_SERVER_URL` or Settings → Online play). Without one, everything social is bot-driven and labelled as practice. Smoke Bombs work online (protocol v3), but the server must be deployed from this branch: a v2 server would score smoke battles differently, so v3 clients refuse it.
+Real PvP, real Alliances and Alliance Wars work **only with a hosted server** (`VITE_SERVER_URL` or Settings → Online play). Without one, everything social is bot-driven and labelled as practice. Game and server must both be protocol 6; deploy the server from the same commit as the game (run `npm run server:migrate` first). Villages stay on the device unless a player opts into the server-owned village (beta).
 
 ## Next sessions
 

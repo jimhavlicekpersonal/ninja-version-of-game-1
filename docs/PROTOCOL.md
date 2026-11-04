@@ -40,7 +40,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
  game (browser / iOS / Android)                     server
  ┌───────────────────────────────┐                 ┌────────────────────────────────────┐
  │ App, Grove screen, Settings   │                 │ server/app.ts      HTTP adapter    │
- │        │                      │   protocol v2   │ server/inProcess.ts  (tests)       │
+ │        │                      │   protocol v6   │ server/inProcess.ts  (tests)       │
  │ Connection (outbox, sync)     │ ──────────────▶ │        │                           │
  │ GroveSource (local | remote)  │  JSON over      │ server/core/   every rule, no HTTP │
  │        │                      │  HTTPS          │        │                           │
@@ -67,7 +67,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
 
 - **Transport:** JSON over HTTPS. Native apps need HTTPS; iOS and Android block plain HTTP.
 - **Auth:** `POST /v1/players` returns a `token`. Send it on every other call as `Authorization: Bearer <token>`. Store only a hash of it.
-- **CORS:** allow `Authorization` and `Content-Type` headers, and the methods `GET, POST, PUT, OPTIONS`. Allowed origins:
+- **CORS:** allow `Authorization` and `Content-Type` headers, and the methods `GET, POST, PUT, DELETE, OPTIONS`; expose `Retry-After` and `X-Request-Id`. Allowed origins:
   - the web game (GitHub Pages);
   - `capacitor://localhost` (iOS app);
   - `https://localhost` (Android app);
@@ -89,6 +89,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   | `raid_not_ended` | 409 | claiming a chest before the raid ends |
   | `no_attacks_left` | 409 | both Grove Raid attacks used, or joined after the raid started |
   | `muted` | 403 | a moderator paused this player's chat (the message says for how long) |
+  | `no_village` | 404 | the player's village lives on the device, not on the server (server-owned village routes) |
   | `rate_limited` | 429 | too many requests; wait `Retry-After` seconds (the header is exposed to the web game through CORS) |
 
   - **Retries:** the client retries network errors, 5xx answers and `rate_limited` (on its next round, not at once). It never retries other 4xx answers.
@@ -283,4 +284,4 @@ The village economy (resources, buildings, timers, the trained army and research
 
 The client side keeps its own guards: time-skip tools and the instant test store exist only in a separate sandbox save that never goes online (`?sandbox`), and online loot is banked only from the server's answers.
 
-**Owner decision before a competitive launch:** keep online play as trusted-local (today), or move the economy to the server: persist inventory, research and timers per player and consume them in the same transaction as each attack. That is a protocol 7 change and a larger server project (`docs/SHIPPING.md`).
+**Server-owned village (beta):** a player can move to a village the server keeps (see "Server-owned village"). For them, the server holds inventory, research and timers, replays every action, and consumes troops and banks loot in the same transaction as each attack; the game is corrected whenever it disagrees. Everyone else stays trusted-local as described above. Making it the rule (and moving existing villages, step 25) is the protocol 7 plan in `docs/backend/PVP_ROADMAP.md`.

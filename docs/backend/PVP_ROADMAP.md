@@ -2,7 +2,7 @@
 
 > **For AI sessions.** This is the agreed design and plan for the online PvP backend, including Friends and Gangs (section 5), the most important system in the game ("the crown jewel"). Read it before changing `server/`, `src/backend/net/`, payments, or ranking. Owner: BACKEND compartment (`src/backend/CLAUDE.md`), with rating math in `src/gameplay/sim/` (GAMEPLAY).
 >
-> Status (2026-11-04): **design only, nothing below is implemented yet** unless a step is marked done. When you finish a step, mark it `[x]` here in the same commit.
+> Status (2026-11-04): **steps 10–23 are done** (Phase 1, and Phase 2 up to donations; each is marked `[x]` with where it lives and its tests). Phase 0 is the owner's; Phase 1.5 and everything from step 24 on are still design. When you finish a step, mark it `[x]` here in the same commit.
 >
 > Tags: **[Owner]** = needs the human owner (accounts, money, legal). **[Code]** = can be done in the repo.
 
@@ -15,7 +15,8 @@
   - leagues: sprout 0, fern 400, oak 1000, elder 2000, jade 2800, storm 3600, shadow 4400, kage 5200.
   - monthly season: Honor above 400 is halved toward 400.
   - matchmaking: Keep ±1, ±80 Honor then widening, power floor (`powerSlack` 0.25), bot base (`kind: 'bot'`) when nobody fits.
-- Economy is **trusted-local**: village, army, research live on the device; the server checks legality, not ownership (`docs/PROTOCOL.md`, "Trust").
+- Economy: **trusted-local by default** (village, army, research live on the device; the server checks legality, not ownership; `docs/PROTOCOL.md`, "Trust"). **Server-owned village (beta, steps 19–23):** a player can opt in (Settings; a new village for now, moving an existing one is step 25); the server then replays their commands with the shared sim, corrects the game when the economy hashes differ, and settles their attacks, raids, chests and gifts against the village it holds, with a ledger.
+- Shared state and operations: optional Redis for the leaderboard, match locks and rate limits (step 16); logs with request ids, Sentry, `/healthz` + `/readyz`, Prometheus metrics (step 17); re-sim measured at up to ~0.45 s per late-Keep battle (step 18, section 2).
 - Payments: StoreKit 2 on iOS (`ios/App/App/TkStorePlugin.swift`) calls `transaction.finish()` immediately and grants Jade on the device. Android and public web purchases are disabled (`src/backend/payments/select.ts`).
 
 ### Known gaps (must fix before a competitive launch)

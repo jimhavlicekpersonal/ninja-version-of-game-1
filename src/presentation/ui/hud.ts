@@ -412,6 +412,44 @@ export class Hud {
     return wrap;
   }
 
+  /** A ledger reason in words (the codes come from the server: command:<type>, attack:loot, …). */
+  static ledgerReason(code: string): string {
+    const words: Record<string, string> = {
+      start: 'Starting resources',
+      'command:collect': 'Collected',
+      'command:place': 'Built',
+      'command:upgrade': 'Upgrade',
+      'command:cancel': 'Cancelled (refund)',
+      'command:clear': 'Cleared',
+      'command:train': 'Training',
+      'command:trainArmy': 'Training',
+      'command:dismiss': 'Sent warriors home',
+      'command:cancelTraining': 'Training cancelled',
+      'command:research': 'Research',
+      'command:cancelResearch': 'Research cancelled',
+      'command:skip': 'Finished with Jade',
+      'command:skipTraining': 'Finished with Jade',
+      'command:skipResearch': 'Finished with Jade',
+      'command:topUp': 'Bought with Jade',
+      'command:openDailyChest': 'Daily chest',
+      'command:scout': 'Next opponent',
+      'command:trialEnd': 'Shadow Trial',
+      'command:buySkin': 'Look bought',
+      'command:claimTask': 'Task reward',
+      'command:claimTier': 'Pass reward',
+      'command:claimAchievement': 'Achievement',
+      'purchase:unverified': 'Purchase',
+      'attack:loot': 'Raid loot',
+      'attack:loot:uploaded-base': 'Raid loot',
+      'attack:loot:generated-base': 'Raid loot',
+      'defense:loss': 'Raided',
+      'war:chest': 'Alliance War chest',
+      'donation:sent': 'Warriors sent',
+      'donation:received': 'Warriors received',
+    };
+    return words[code] ?? code;
+  }
+
   /** Settings → Online play → Village on the server (beta, roadmap Phase 2). */
   private villageBlock(): HTMLElement {
     const conn = this.deps.connection;
@@ -430,7 +468,7 @@ export class Hud {
           ({ entries }) => {
             clear(list);
             if (!entries.length) list.append('Nothing yet.');
-            for (const e of entries) list.append(h('div', { class: 'event' }, h('b', {}, `${e.delta > 0 ? '+' : ''}${formatNumber(e.delta)} ${e.resource}`), ` ${new Date(e.at).toLocaleString()} `, h('code', {}, e.reason)));
+            for (const e of entries) list.append(h('div', { class: 'event' }, h('b', {}, `${e.delta > 0 ? '+' : ''}${formatNumber(e.delta)} ${RES_LABEL[e.resource as keyof typeof RES_LABEL] ?? e.resource}`), ` ${Hud.ledgerReason(e.reason)} · ${new Date(e.at).toLocaleString()}`));
           },
           (e: Error) => {
             list.textContent = e.message;

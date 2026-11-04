@@ -146,4 +146,4 @@ The installed iOS/Android app schedules real local notifications when you leave 
 - **Repository:** `jimhavlicekpersonal/ninja-version-of-game-1` (done). Turn on Pages (Source: GitHub Actions).
 - **Name check:** search trademarks and app stores for "Kagemura" before publishing. The display name lives in `index.html`, `public/manifest.webmanifest`, `capacitor.config.ts`, `android/.../strings.xml` and `ios/App/App/Info.plist`.
 - **New store listings:** the bundle id (`com.toadstoolkingdoms.app`) and the product ids were kept so nothing breaks. For a separate Kagemura app, choose a new reverse-domain id, update `capacitor.config.ts`, the native projects and App Store Connect products, and update `src/gameplay/data/store.json` product ids at the same time.
-- **Server:** deploy the server from this branch (protocol v3). v3 clients refuse v2 servers.
+- **Server:** deploy the server from the same commit as the game (protocol 6), with `npm run server:migrate` as the pre-deploy step (section 3).
