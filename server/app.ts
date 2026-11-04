@@ -6,7 +6,8 @@
  */
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
-import { Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
+import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
+import { MIN_PROTOCOL } from './core/identity';
 import type { GameData } from '../src/gameplay/sim/types';
 import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
 import { ApiError, createCore, type ServerCore } from './core';
@@ -103,12 +104,53 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       reply.header('Access-Control-Allow-Origin', origin);
       reply.header('Vary', 'Origin');
     }
-    reply.header('Access-Control-Allow-Headers', 'authorization, content-type');
+    reply.header('Access-Control-Allow-Headers', `authorization, content-type, ${Object.values(ClientHeaders).join(', ')}`);
     reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     reply.header('Access-Control-Max-Age', '86400');
     reply.header('Access-Control-Expose-Headers', 'retry-after, x-request-id');
     reply.header('x-request-id', req.id);
     if (req.method === 'OPTIONS') return reply.code(204).send();
+  });
+
+  // Protocol 7: a game older than MIN_PROTOCOL is told to update (hello stays open, so it can learn why).
+  // Requests without the header (tools, webhooks, the deletion page) are served as before.
+  app.addHook('onRequest', async (req, reply) => {
+    const v = req.headers[ClientHeaders.protocol];
+    if (v !== undefined && req.url.startsWith('/v1/') && req.url !== Routes.hello && Number(v) < MIN_PROTOCOL) {
+      metrics.count('tk_errors_total', { code: 'version_mismatch' });
+      const body: ErrorBody = { error: 'version_mismatch', message: 'This version of Kagemura is too old for the server. Update the game to keep playing online.' };
+      return reply.code(426).send(body);
+    }
+    const build = req.headers[ClientHeaders.clientBuild];
+    if (typeof build === 'string') metrics.count('tk_client_requests_total', { build: build.slice(0, 40), rules: String(req.headers[ClientHeaders.simRules] ?? '?').slice(0, 8) });
+  });
+
+  // Idempotent writes (protocol 7): the same Idempotency-Key from the same caller gets the first answer back.
+  const idemScope = (req: FastifyRequest) => {
+    const key = req.headers[ClientHeaders.idempotencyKey];
+    const token = bearer(req);
+    if (req.method === 'GET' || req.method === 'OPTIONS' || typeof key !== 'string' || !token || key.length > 100) return null;
+    return { scope: createHash('sha256').update(token).digest('hex').slice(0, 32), key };
+  };
+  app.addHook('onRequest', async (req, reply) => {
+    const id = idemScope(req);
+    if (!id) return;
+    const seen = await opts.repo.getIdempotent(id.scope, id.key);
+    if (!seen) return;
+    reply.header('idempotent-replay', 'true');
+    return reply.code(seen.status).send(seen.body ?? undefined);
+  });
+  app.addHook('onSend', async (req, reply, payload) => {
+    const id = idemScope(req);
+    if (!id || reply.getHeader('idempotent-replay') || reply.statusCode >= 300) return payload;
+    let body: unknown = null;
+    try {
+      body = typeof payload === 'string' && payload ? JSON.parse(payload) : null;
+    } catch {
+      return payload;
+    }
+    await opts.repo.putIdempotent(id.scope, id.key, reply.statusCode, body, now());
+    return payload;
   });
 
   // Requests and their time, by route (the route pattern, never ids from the path).

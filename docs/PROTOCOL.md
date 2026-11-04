@@ -1,6 +1,11 @@
-# Kagemura multiplayer protocol (version 6)
+# Kagemura multiplayer protocol (version 7)
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
+
+**Version 7 (roadmap step 26, the server owns the economy):** servers say `minProtocol: 7`; a game older than that is told to update.
+- **Every request** carries `X-Protocol` (7), `X-Sim-Rules` (`SIM_RULES`), `X-Client-Build` (`<version>+<platform>`), and every write an `Idempotency-Key` (a fresh id per action). A request whose `X-Protocol` is below `minProtocol` gets `426 version_mismatch` (except `/v1/hello`, so the game can learn why). Requests without the header (tools, webhooks, the deletion page) are served as before.
+- **Idempotency:** a write repeated with the same key by the same player gets the first answer back (`Idempotent-Replay: true`), for a day. Refusals are not remembered, so a corrected request can reuse its key.
+- **The game keeps its village on the server:** when it connects to a server with `village-import`, it moves its village there (`POST /v1/village/import`). A village the server refuses stays on the device and Settings shows why. Everything below marked as a `/v1/hello` feature (steps 10–25) is part of protocol 7.
 
 **Version 6, server hardening (2026-11, roadmap Phase 1):** additions that keep protocol 6 for clients that use them.
 - **Server-owned village (beta, feature `server-economy`, roadmap Phase 2).** `POST /v1/village` starts keeping the player's village on the server (a new one; moving an existing village comes later), `GET /v1/village` returns it (`404 no_village` while it lives on the device). The game then sends what the player does as numbered commands (`POST /v1/village/commands`); the server replays them with the shared simulation and answers with its economy hash, plus `corrections` (the server's economy) when the game's differs. See "Server-owned village" below.

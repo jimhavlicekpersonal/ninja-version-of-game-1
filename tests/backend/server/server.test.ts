@@ -296,4 +296,35 @@ describe('server HTTP adapter', () => {
       expect((await block()).status).toBe(429);
     });
   });
+
+  describe('protocol 7 (roadmap step 26)', () => {
+    it('tells a game older than minProtocol to update, but still says hello', async () => {
+      const s = setup();
+      const a = await s.register('Ann');
+      expect((await s.call('GET', Routes.hello)).body).toMatchObject({ protocol: 7, minProtocol: 7 });
+      const old = await s.call('GET', Routes.me, a.token, undefined, { headers: { 'x-protocol': '6' } });
+      expect(old.status).toBe(426);
+      expect(old.body).toMatchObject({ error: 'version_mismatch' });
+      expect((await s.call('GET', Routes.hello, undefined, undefined, { headers: { 'x-protocol': '6' } })).status).toBe(200);
+      expect((await s.call('GET', Routes.me, a.token, undefined, { headers: { 'x-protocol': '7' } })).status).toBe(200);
+      expect((await s.call('GET', Routes.me, a.token)).status).toBe(200); // no header: tools and webhooks
+    });
+
+    it('answers a repeated Idempotency-Key with the first answer, per caller', async () => {
+      const s = setup();
+      const a = await s.register('Ann');
+      const b = await s.register('Ben');
+      const first = await s.call('PUT', Routes.me, a.token, { name: 'Ann Prime' }, { headers: { 'idempotency-key': 'k-1' } });
+      const again = await s.call('PUT', Routes.me, a.token, { name: 'Ann Other' }, { headers: { 'idempotency-key': 'k-1' } });
+      expect(again.body).toEqual(first.body);
+      expect(again.headers['idempotent-replay']).toBe('true');
+      expect((await s.call('GET', Routes.me, a.token)).body.name).toBe('Ann Prime'); // the second write never ran
+      // Another player's same key is their own.
+      expect((await s.call('PUT', Routes.me, b.token, { name: 'Ben Prime' }, { headers: { 'idempotency-key': 'k-1' } })).body.name).toBe('Ben Prime');
+      // Refusals are not remembered: fixing the request and resending works.
+      const bad = await s.call('PUT', Routes.base, a.token, { base: { buildings: [] } }, { headers: { 'idempotency-key': 'k-2' } });
+      expect(bad.status).toBe(400);
+      expect((await s.call('PUT', Routes.base, a.token, { base: sampleBase() }, { headers: { 'idempotency-key': 'k-2' } })).status).toBe(204);
+    });
+  });
 });

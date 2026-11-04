@@ -3,10 +3,13 @@ import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterRes
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 
+/** The oldest game this server serves (protocol 7: villages kept on the server, client headers, idempotent writes). */
+export const MIN_PROTOCOL = 7;
+
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: 6, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links'] };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links'] };
 }
 
 export function cleanName(raw: unknown, ctx: ServerContext): string {

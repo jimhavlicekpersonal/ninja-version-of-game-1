@@ -13,8 +13,27 @@ import type { SaveFile } from '../../gameplay/sim/save';
 import type { Economy } from '../../gameplay/sim/serverEconomy';
 import type { Command } from '../../gameplay/sim/village';
 
-/** Bump when a change would break older clients; servers report the oldest they accept. */
-export const PROTOCOL_VERSION = 6;
+/**
+ * Bump when a change would break older clients; servers report the oldest
+ * they accept. 7 (roadmap step 26): the server owns the economy (villages are
+ * kept on the server), every request says which game it comes from
+ * (`ClientHeaders`), and writes carry an Idempotency-Key.
+ */
+export const PROTOCOL_VERSION = 7;
+
+/** Headers the game sends with every request (protocol 7). */
+export const ClientHeaders = {
+  /** PROTOCOL_VERSION of the game. Older than the server's minProtocol: 426 version_mismatch. */
+  protocol: 'x-protocol',
+  /** SIM_RULES the game simulates battles with. */
+  simRules: 'x-sim-rules',
+  /** Hash of the game's balance data (src/gameplay/data), so a server can tell builds apart. */
+  dataVersion: 'x-data-version',
+  /** The game's version and platform, e.g. "0.1.0+ios". */
+  clientBuild: 'x-client-build',
+  /** On writes: a fresh id per action; the same key again (by the same player) gets the first answer back. */
+  idempotencyKey: 'idempotency-key',
+} as const;
 
 export type ErrorCode =
   | 'unauthorized'

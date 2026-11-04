@@ -3,8 +3,10 @@
  * protocol in protocol.ts (ours in server/, or a future one). Handles the
  * bearer token, timeouts, retries for safe reads, and protocol errors.
  */
+import { SIM_RULES } from '../../gameplay/sim/battle/battle';
 import { ServerError, type ServerPort } from './ports';
 import {
+  ClientHeaders,
   PROTOCOL_VERSION,
   Routes,
   type AttackResponse,
@@ -84,6 +86,15 @@ export interface HttpAdapterOptions {
   retries?: number;
   /** Wait between retries (tests set 0). */
   retryDelayMs?: number;
+  /** The game's version and platform for X-Client-Build, e.g. "0.1.0+ios". */
+  build?: string;
+}
+
+/** A fresh id for an Idempotency-Key. */
+function newKey(): string {
+  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 
 /** Normalise a server address typed by a player: adds https://, drops a trailing slash. */
@@ -101,6 +112,7 @@ export class HttpServerAdapter implements ServerPort {
   private readonly timeoutMs: number;
   private readonly retries: number;
   private readonly retryDelayMs: number;
+  private readonly build: string;
 
   constructor(
     readonly baseUrl: string,
@@ -113,6 +125,7 @@ export class HttpServerAdapter implements ServerPort {
     this.timeoutMs = opts.timeoutMs ?? 15_000;
     this.retries = opts.retries ?? 2;
     this.retryDelayMs = opts.retryDelayMs ?? 600;
+    this.build = opts.build ?? 'unknown';
   }
 
   hasIdentity(): boolean {
@@ -132,7 +145,14 @@ export class HttpServerAdapter implements ServerPort {
     try {
       res = await this.fetchFn(`${this.baseUrl}${path}`, {
         method,
-        headers: { ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...(token ? { authorization: `Bearer ${token}` } : {}) },
+        headers: {
+          ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+          [ClientHeaders.protocol]: String(PROTOCOL_VERSION),
+          [ClientHeaders.simRules]: String(SIM_RULES),
+          [ClientHeaders.clientBuild]: this.build,
+          ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: newKey() } : {}),
+        },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: ctrl?.signal,
       });

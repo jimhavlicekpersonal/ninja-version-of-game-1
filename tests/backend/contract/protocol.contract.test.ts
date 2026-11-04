@@ -68,7 +68,7 @@ describe('protocol contract', () => {
     expect(h.name).toBe('toadstool-kingdoms');
     expect(h.minProtocol).toBeLessThanOrEqual(PROTOCOL_VERSION);
     expect(h.protocol).toBeGreaterThanOrEqual(PROTOCOL_VERSION);
-    expect(h.minProtocol).toBeGreaterThanOrEqual(6);
+    expect(h.minProtocol).toBeGreaterThanOrEqual(7);
     expect(h.features).toContain('warriors-50');
     expect(Math.abs(h.serverTime - Date.now())).toBeLessThan(5 * 60_000);
     expect(h.features).toEqual(expect.arrayContaining(['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid', 'server-seed']));
@@ -256,5 +256,19 @@ describe('protocol contract', () => {
     expect(await errorOf(mate.block(mate.id))).toMatchObject({ status: 400, code: 'bad_request' });
     await mate.leaveGrove();
     await lead.leaveGrove();
+  });
+
+  it('protocol 7: old games are told to update; a repeated Idempotency-Key gets the first answer', async () => {
+    const tokens = memoryTokenStore();
+    const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
+    await c.register(`Contract Idem ${tag}`);
+    const auth = { authorization: `Bearer ${tokens.get()}`, 'content-type': 'application/json' };
+    const old = await fetch(`${url}${Routes.me}`, { headers: { ...auth, 'x-protocol': '6' } });
+    expect(old.status).toBe(426);
+    expect((await old.json()).error).toBe('version_mismatch');
+    const put = (name: string) => fetch(`${url}${Routes.me}`, { method: 'PUT', headers: { ...auth, 'x-protocol': '7', 'idempotency-key': `contract-${tag}` }, body: JSON.stringify({ name }) });
+    const first = await (await put(`Contract One ${tag}`)).json();
+    const second = await (await put(`Contract Two ${tag}`)).json();
+    expect(second).toEqual(first);
   });
 });

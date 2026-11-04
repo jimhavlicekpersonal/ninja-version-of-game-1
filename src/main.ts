@@ -116,7 +116,7 @@ async function boot(): Promise<void> {
   // With a server, real players raid this village instead of bots (never in the sandbox).
   const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl);
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl });
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox });
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true });
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
   if (storeKit) {
     void storeKit.listen((productId, transactionId) => {

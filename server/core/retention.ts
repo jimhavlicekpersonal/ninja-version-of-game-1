@@ -17,5 +17,11 @@ export const STALE_MS = 24 * HOUR;
 
 export function prune(ctx: ServerContext): Promise<PruneResult> {
   const t = ctx.now();
-  return ctx.repo.prune({ recordsBefore: t - REPLAY_RETENTION_MS, staleBefore: t - STALE_MS, resolvedReportsBefore: t - RESOLVED_REPORT_RETENTION_DAYS * 24 * HOUR });
+  return ctx.repo.prune({
+    recordsBefore: t - REPLAY_RETENTION_MS,
+    staleBefore: t - STALE_MS,
+    resolvedReportsBefore: t - RESOLVED_REPORT_RETENTION_DAYS * 24 * HOUR,
+    commandsBefore: t - REPLAY_RETENTION_MS,
+    idempotencyBefore: t - STALE_MS,
+  });
 }

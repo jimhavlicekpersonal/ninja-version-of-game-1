@@ -294,6 +294,8 @@ export interface PruneCutoffs {
   resolvedReportsBefore?: number;
   /** Command log lines before this time are deleted (the ledger is kept). */
   commandsBefore?: number;
+  /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
+  idempotencyBefore?: number;
 }
 export interface PruneResult {
   attacks: number;
@@ -301,6 +303,7 @@ export interface PruneResult {
   bases: number;
   reports: number;
   commands: number;
+  idempotency: number;
 }
 
 export interface OpponentQuery {
@@ -422,6 +425,10 @@ export interface Repo {
   ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
   /** Oldest first, after `sinceSeq`. */
   commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]>;
+  /** The answer remembered for a write's Idempotency-Key (protocol 7), per caller. */
+  getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null>;
+  /** Remember it (the first answer wins). */
+  putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void>;
   /** Run `fn` atomically: what it writes through `tx` lands together, or not at all if it throws. */
   transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T>;
   // troop requests and donations
@@ -484,6 +491,7 @@ export class MemoryRepo implements Repo {
   linkRows: IdentityLink[] = [];
   ledgerRows: LedgerEntry[] = [];
   commandRows: CommandLogRow[] = [];
+  idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number }>();
   private seq = 0;
   /** Transactions run one at a time (memory has no row locks). */
   private txChain: Promise<unknown> = Promise.resolve();
@@ -518,6 +526,14 @@ export class MemoryRepo implements Repo {
     }
   }
 
+  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null> {
+    const r = this.idempotencyRows.get(`${scope}\u0000${key}`);
+    return r ? { status: r.status, body: clone(r.body) } : null;
+  }
+  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void> {
+    const k = `${scope}\u0000${key}`;
+    if (!this.idempotencyRows.has(k)) this.idempotencyRows.set(k, { status, body: clone(body), createdAt: at });
+  }
   async getVillage(playerId: string): Promise<VillageRow | null> {
     const v = this.villageRows.get(playerId);
     return v ? clone(v) : null;
@@ -672,7 +688,17 @@ export class MemoryRepo implements Repo {
     const commands = this.commandRows.length;
     const cmdBefore = c.commandsBefore;
     if (cmdBefore !== undefined) this.commandRows = this.commandRows.filter((r) => r.at >= cmdBefore);
-    return { attacks: attacks - this.attacks.length, tickets, bases, reports: reports - this.reportRows.length, commands: commands - this.commandRows.length };
+    let idempotency = 0;
+    const idemBefore = c.idempotencyBefore;
+    if (idemBefore !== undefined) {
+      for (const [k, r] of this.idempotencyRows) {
+        if (r.createdAt < idemBefore) {
+          this.idempotencyRows.delete(k);
+          idempotency++;
+        }
+      }
+    }
+    return { attacks: attacks - this.attacks.length, tickets, bases, reports: reports - this.reportRows.length, commands: commands - this.commandRows.length, idempotency };
   }
   async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;

@@ -175,5 +175,27 @@ describe('server-owned village: the game side', () => {
     await s.conn.village!.flush();
     expect(s.conn.village!.corrections).toBe(0);
   });
+
+  it('protocol 7: the real game moves its village to the server by itself, and remembers a refusal', async () => {
+    const w = world();
+    const clock = { now: () => w.now() };
+    const { controller } = await GameController.start({ clock, store: new MemorySaveStore(), data: w.data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false });
+    const port = new InProcessServerAdapter(w.core);
+    const kv = memoryKv();
+    const conn = new Connection({ game: controller, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined, keepVillageOnServer: true });
+    await conn.sync();
+    expect(conn.serverVillage).toBe(true);
+    expect(economyHash(controller.state)).toBe((await port.getVillage())!.stateHash);
+    // A village the server refuses stays here; the reason is kept for Settings and not retried every minute.
+    const w2 = world();
+    const c2 = (await GameController.start({ clock: { now: () => w2.now() }, store: new MemorySaveStore(), data: w2.data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false })).controller;
+    c2.state.resources.moonstones = 10_000_000;
+    const kv2 = memoryKv();
+    const conn2 = new Connection({ game: c2, builtInUrl: 'test.server', kv: kv2, makePort: () => new InProcessServerAdapter(w2.core), log: () => undefined, keepVillageOnServer: true });
+    await conn2.sync();
+    expect(conn2.serverVillage).toBe(false);
+    expect(conn2.villageMoveRefused).toMatch(/Jade/);
+    expect(conn2.status).toBe('online');
+  });
 });
 

@@ -90,6 +90,13 @@ export interface ConnectionOptions {
   makePort?: (url: string) => ServerPort;
   /** Force online play off (the testing sandbox: its clock and test purchases must never reach a server). */
   offline?: boolean;
+  /** The game's version and platform, sent as X-Client-Build. */
+  build?: string;
+  /**
+   * Protocol 7: move this village to the server as soon as the server can
+   * take it (the real game sets this; tests leave it off to stay on the device).
+   */
+  keepVillageOnServer?: boolean;
   log?: (msg: string, err?: unknown) => void;
 }
 
@@ -116,13 +123,33 @@ export class Connection {
     this.kv = o.kv ?? browserKeyValue;
     this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl);
     if (this.url) {
-      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u)))(this.url);
+      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build })))(this.url);
       this.status = 'connecting';
       const g = o.game;
       if (g.onCommand && g.adoptEconomy && g.adoptVillage) {
         this.village = new VillageSync(g as GameLink & SyncGame, () => this.port, this.kv, `tk.net.village:${this.url}`);
         this.village.onChange = () => this.emit();
       }
+    }
+  }
+
+  /** Why the server would not take this village (protocol 7 auto-move), if it refused. */
+  get villageMoveRefused(): string | null {
+    return this.kv.get(`tk.net.villageMoveRefused:${this.url}`);
+  }
+
+  /**
+   * Protocol 7: the server owns the economy, so the village moves there the
+   * first time it can. If the server refuses it (a village its Keep could not
+   * hold), it stays on the device, and Settings says why.
+   */
+  private async autoMoveVillage(): Promise<void> {
+    if (!this.o.keepVillageOnServer || !this.village || this.serverVillage || !this.server?.features.includes('village-import') || this.villageMoveRefused) return;
+    try {
+      await this.village.enable('move');
+    } catch (e) {
+      if (e instanceof ServerError && !e.retryable) this.kv.set(`tk.net.villageMoveRefused:${this.url}`, e.message);
+      else throw e;
     }
   }
 
@@ -283,6 +310,7 @@ export class Connection {
         await this.uploadBase();
         // Learn whether the server keeps this village, and reconcile with it.
         if (this.server.features.includes('server-economy')) await this.village?.connect();
+        await this.autoMoveVillage();
         this.retryDelay = 15_000;
         this.setStatus('online');
       } else {

@@ -32,6 +32,7 @@ export const METRIC_HELP: Record<string, string> = {
   tk_desyncs_total: "Battles whose client result hash differed from the server's, by kind.",
   tk_village_commands_total: 'Village commands replayed, by result (ok, refused).',
   tk_village_corrections_total: 'Command batches answered with a correction (client and server disagreed).',
+  tk_client_requests_total: 'Requests by game build and battle rules version (from the protocol 7 headers).',
 };
 
 const DEFAULT_BUCKETS = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];

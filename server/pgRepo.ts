@@ -417,7 +417,17 @@ export class PgRepo implements Repo {
     );
     const reports = c.resolvedReportsBefore === undefined ? null : await this.db.query(`delete from reports where status <> 'open' and resolved_at < $1`, [c.resolvedReportsBefore]);
     const commands = c.commandsBefore === undefined ? null : await this.db.query('delete from command_log where at < $1', [c.commandsBefore]);
-    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0 };
+    const idem = c.idempotencyBefore === undefined ? null : await this.db.query('delete from idempotency_keys where created_at < $1', [c.idempotencyBefore]);
+    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
+  }
+
+  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null> {
+    const r = await this.rows('select status, body from idempotency_keys where scope = $1 and key = $2', [scope, key]);
+    return r[0] ? { status: num(r[0].status), body: r[0].body ?? null } : null;
+  }
+
+  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void> {
+    await this.db.query('insert into idempotency_keys (scope, key, status, body, created_at) values ($1,$2,$3,$4,$5) on conflict do nothing', [scope, key, status, body === undefined ? null : JSON.stringify(body), at]);
   }
 
   // ------------------------------------------------------------ account deletion
