@@ -10,6 +10,10 @@ import {
   type AttackResponse,
   type BattleSubmission,
   type BlocksResponse,
+  type CommandBatch,
+  type CommandBatchResponse,
+  type LedgerResponse,
+  type VillageResponse,
   type ChatResponse,
   type ChatView,
   type DefensesResponse,
@@ -273,6 +277,24 @@ export class HttpServerAdapter implements ServerPort {
 
   ackInbox(ids: string[]): Promise<void> {
     return this.req('POST', Routes.groveInboxAck, { ids });
+  }
+
+  // ---------------------------------------------------------------- server-owned village
+
+  getVillage(): Promise<VillageResponse | null> {
+    return this.orNull(this.req<VillageResponse>('GET', Routes.village), 'no_village');
+  }
+
+  startVillage(): Promise<VillageResponse> {
+    return this.req('POST', Routes.village, {});
+  }
+
+  sendCommands(batch: CommandBatch): Promise<CommandBatchResponse> {
+    return this.req('POST', Routes.villageCommands, batch);
+  }
+
+  ledger(limit = 50): Promise<LedgerResponse> {
+    return this.req('GET', `${Routes.villageLedger}?limit=${limit}`);
   }
 
   // ---------------------------------------------------------------- reports and blocks

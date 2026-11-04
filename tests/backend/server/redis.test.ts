@@ -100,7 +100,7 @@ describe.skipIf(!url)('Redis client and shared stores', () => {
 
   it('rate limits are shared by every instance using the same Redis', async () => {
     const prefix = ns();
-    const limits = { ip: { limit: 3, windowMs: 60_000 }, player: { limit: 3, windowMs: 60_000 }, register: { limit: 3, windowMs: 60_000 }, match: { limit: 3, windowMs: 60_000 }, battle: { limit: 3, windowMs: 60_000 }, moderation: { limit: 3, windowMs: 60_000 }, deletionRequest: { limit: 3, windowMs: 60_000 } };
+    const limits = { ip: { limit: 3, windowMs: 60_000 }, player: { limit: 3, windowMs: 60_000 }, register: { limit: 3, windowMs: 60_000 }, match: { limit: 3, windowMs: 60_000 }, battle: { limit: 3, windowMs: 60_000 }, moderation: { limit: 3, windowMs: 60_000 }, deletionRequest: { limit: 3, windowMs: 60_000 }, commands: { limit: 3, windowMs: 60_000 } };
     const one = new RedisRateLimiter(redis(), limits, prefix);
     const two = new RedisRateLimiter(redis(), limits, prefix);
     expect((await one.hit('battle', 'p1')).ok).toBe(true);

@@ -28,6 +28,8 @@ export interface RateLimits {
   moderation: RateRule;
   /** Web account-deletion requests from one IP address. */
   deletionRequest: RateRule;
+  /** Village command batches (server-owned economy), per player. */
+  commands: RateRule;
 }
 
 const MIN = 60_000;
@@ -41,6 +43,7 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   battle: { limit: 20, windowMs: MIN },
   moderation: { limit: 30, windowMs: HOUR },
   deletionRequest: { limit: 5, windowMs: HOUR },
+  commands: { limit: 30, windowMs: MIN },
 };
 
 export interface RateDecision {

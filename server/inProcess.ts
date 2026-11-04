@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, DonateRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -107,6 +107,23 @@ export class InProcessServerAdapter implements ServerPort {
   }
   ackInbox(ids: string[]) {
     return this.authed((me) => this.core.ackInbox(me, wire(ids)));
+  }
+  async getVillage() {
+    try {
+      return await this.authed((me) => this.core.getVillage(me));
+    } catch (e) {
+      if (e instanceof ServerError && e.code === 'no_village') return null;
+      throw e;
+    }
+  }
+  startVillage() {
+    return this.authed((me) => this.core.startVillage(me));
+  }
+  sendCommands(batch: CommandBatch) {
+    return this.authed((me) => this.core.villageCommands(me, wire(batch)));
+  }
+  ledger(limit = 50) {
+    return this.authed((me) => this.core.ledger(me, limit));
   }
   report(req: ReportRequest) {
     return this.authed((me) => this.core.report(me, wire(req)));

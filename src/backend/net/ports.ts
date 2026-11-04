@@ -10,6 +10,10 @@ import type {
   AttackResponse,
   BattleSubmission,
   BlocksResponse,
+  CommandBatch,
+  CommandBatchResponse,
+  LedgerResponse,
+  VillageResponse,
   ChatResponse,
   ChatView,
   DefensesResponse,
@@ -95,6 +99,16 @@ export interface GroveRaidPort {
   claimRaid(week: number): Promise<RaidClaimResponse>;
 }
 
+/** A village kept on the server (roadmap Phase 2; feature `server-economy`). */
+export interface VillagePort {
+  /** Null when this player's village lives on the device. */
+  getVillage(): Promise<VillageResponse | null>;
+  /** Start keeping a (new) village on the server, or get the one there. */
+  startVillage(): Promise<VillageResponse>;
+  sendCommands(batch: CommandBatch): Promise<CommandBatchResponse>;
+  ledger(limit?: number): Promise<LedgerResponse>;
+}
+
 /** Reports and blocks (Apple 1.2). */
 export interface ModerationPort {
   report(req: ReportRequest): Promise<ReportResponse>;
@@ -104,7 +118,7 @@ export interface ModerationPort {
 }
 
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */

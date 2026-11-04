@@ -3,6 +3,7 @@
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
 **Version 6, server hardening (2026-11, roadmap Phase 1):** additions that keep protocol 6 for clients that use them.
+- **Server-owned village (beta, feature `server-economy`, roadmap Phase 2).** `POST /v1/village` starts keeping the player's village on the server (a new one; moving an existing village comes later), `GET /v1/village` returns it (`404 no_village` while it lives on the device). The game then sends what the player does as numbered commands (`POST /v1/village/commands`); the server replays them with the shared simulation and answers with its economy hash, plus `corrections` (the server's economy) when the game's differs. See "Server-owned village" below.
 - **Observability.** `BattleSubmission.clientHash` (optional) is the result hash the client's own simulation got; the server counts and logs a difference as a desync and never trusts it. Every answer carries `x-request-id` (a caller's own well-formed id is kept), so a player's report can be matched to the server log.
 - **Reports and blocks** (Apple 1.2). `POST /v1/reports` reports an Alliance chat message (the server keeps its text as it was) or a player; `POST /v1/blocks`, `DELETE /v1/blocks/:id`, `GET /v1/blocks`. A message reported by 3 different players is hidden for everyone until staff decide; `ChatResponse.hidden` lists recently hidden ids so clients drop them. Blocked players' messages and troop requests are left out for the blocker. A muted player's chat gets `403 muted`. `/v1/hello` lists `reports` and `blocks`.
 - **Account deletion.** `DELETE /v1/me` deletes the caller's online account (`204`); its token stops working. Players who can't open the game use the web page `GET /account/delete`, which sends `POST /v1/account/deletion-requests` for staff to verify. `/v1/hello` lists `account-deletion`.
@@ -244,6 +245,23 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
   - Allowed after the raid ends, once per player per week. Repeating a claim is safe: it returns `alreadyClaimed: true` with the same outcome.
   - `RaidView.chests` lists this week's and last week's ended raids the player took part in, with whether each chest was claimed. The game claims every listed week it has not received yet.
   - The chest's contents are `groveRaidChest(outcome, hall)`, added by the game.
+
+## Server-owned village (beta)
+
+| | request | response |
+|---|---|---|
+| `GET /v1/village` | | `VillageResponse` `{ file, revision, seq, at, stateHash }`, or `404 no_village` |
+| `POST /v1/village` | `{}` | `VillageResponse` (a new village; the one already there if any) |
+| `POST /v1/village/commands` | `CommandBatch` `{ stateHash, commands: [{ seq, t, command }] }` | `CommandBatchResponse` `{ ackSeq, revision, stateHash, results: [{ seq, ok, error? }], corrections? }` |
+| `GET /v1/village/ledger?limit=` | | `{ entries: [{ at, resource, delta, balance, reason }] }` (newest first) |
+
+- `file` is a save file (`src/gameplay/sim/save.ts`); `stateHash` is `economyHash` (`src/gameplay/sim/serverEconomy.ts`): a 64-bit FNV-1a of the canonical JSON of the economy (resources, buildings, next id, army, training, research, Lodge). Anything else in the village is the device's business.
+- **Commands** are the game's own `Command`s, numbered by the game from 1 and timed by its clock. Only `PLAYER_COMMANDS` are accepted; results the server makes itself (`battleEnd`, `settleOnlineAttack`, `applyDefense`, donations, war chests, honor) are refused with `NOT_ALLOWED`. A batch holds at most 200 commands and 3 battle replays (`trialEnd`, `abandonBattle`); 30 batches a minute.
+- **Time:** a command counts at the time it says, but never before the village's last change and never more than 2 minutes past the server's clock (later times count as the server's now). So a fast clock cannot finish timers early.
+- **Idempotent:** numbers the server already applied are skipped; `ackSeq` is the last number processed (applied or refused). Refused commands change nothing.
+- **Corrections:** when the game's `stateHash` (its economy right after its last command in the batch) differs from the server's, the answer includes `corrections: { economy, at }`. The game puts that economy in place and replays the commands it queued after the batch.
+- **Ledger:** every change to a server-held resource, with the balance after it and a reason (`command:<type>`, `attack:loot`, `defense:loss`, `donation:sent`, `purchase:unverified`, …). Append-only.
+- While a village lives on the server, its raid base (`PUT /v1/base`) is built from it; an upload is ignored.
 
 ## Trust
 

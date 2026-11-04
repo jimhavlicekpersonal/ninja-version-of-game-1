@@ -9,6 +9,9 @@
  * Pure types and constants only (shared by browser and Node).
  */
 import type { BaseLayout, BattleResult, Deployment } from '../../gameplay/sim/battle/types';
+import type { SaveFile } from '../../gameplay/sim/save';
+import type { Economy } from '../../gameplay/sim/serverEconomy';
+import type { Command } from '../../gameplay/sim/village';
 
 /** Bump when a change would break older clients; servers report the oldest they accept. */
 export const PROTOCOL_VERSION = 6;
@@ -31,7 +34,9 @@ export type ErrorCode =
   /** 429: too many requests; wait for the Retry-After header (seconds), then try again. */
   | 'rate_limited'
   /** 403: a moderator muted this player's chat for a while (the message says until when). */
-  | 'muted';
+  | 'muted'
+  /** 404: this player's village is not kept on the server (it lives on the device). */
+  | 'no_village';
 
 export interface ErrorBody {
   error: ErrorCode;
@@ -60,6 +65,9 @@ export const Routes = {
   groveRaidTicket: '/v1/grove/raid/ticket',
   groveRaidAttacks: '/v1/grove/raid/attacks',
   groveRaidClaim: '/v1/grove/raid/claim',
+  village: '/v1/village',
+  villageCommands: '/v1/village/commands',
+  villageLedger: '/v1/village/ledger',
   reports: '/v1/reports',
   blocks: '/v1/blocks',
   block: (playerId: string) => `/v1/blocks/${encodeURIComponent(playerId)}`,
@@ -339,6 +347,74 @@ export interface InboxResponse {
 
 export interface AckRequest {
   ids: string[];
+}
+
+// ---------------------------------------------------------------- Server-owned village (roadmap Phase 2)
+
+/**
+ * A village kept on the server (feature `server-economy`). GET /v1/village
+ * returns it (404 `no_village` if the village lives on the device); POST
+ * /v1/village starts one on the server (or returns the one there).
+ */
+export interface VillageResponse {
+  /** The whole village as a save file (the game loads it with deserialize). */
+  file: SaveFile;
+  revision: number;
+  /** The last command of this player the server applied. */
+  seq: number;
+  /** The time the village is settled to. */
+  at: number;
+  /** economyHash of the village. */
+  stateHash: string;
+}
+
+/** One player action, numbered by the game (`seq` goes up by one per command) and timed by its clock. */
+export interface VillageCommand {
+  seq: number;
+  /** When the player did it (the game's clock, epoch ms). */
+  t: number;
+  command: Command;
+}
+
+/** POST /v1/village/commands: what the player did since the last batch. */
+export interface CommandBatch {
+  /** The game's economy hash right after its last command in this batch. */
+  stateHash: string;
+  commands: VillageCommand[];
+}
+
+export interface CommandOutcome {
+  seq: number;
+  ok: boolean;
+  /** Why it was refused (a sim error code, NOT_ALLOWED, TOO_MANY_BATTLES). */
+  error?: string;
+}
+
+export interface CommandBatchResponse {
+  /** Every command up to here was processed (applied or refused); drop them from the queue. */
+  ackSeq: number;
+  revision: number;
+  /** The server's economy hash after the batch. */
+  stateHash: string;
+  /** Commands that were in this batch (repeats of already-applied ones are left out). */
+  results: CommandOutcome[];
+  /**
+   * Present when the server's economy differs from the game's: the game puts
+   * this economy in place (the server is the truth) and replays any commands
+   * it has queued since.
+   */
+  corrections?: { economy: Economy; at: number };
+}
+
+export interface LedgerEntryView {
+  at: number;
+  resource: string;
+  delta: number;
+  balance: number;
+  reason: string;
+}
+export interface LedgerResponse {
+  entries: LedgerEntryView[];
 }
 
 // ---------------------------------------------------------------- Reports and blocks

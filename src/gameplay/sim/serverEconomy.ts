@@ -80,11 +80,14 @@ export function economyHash(s: VillageState): string {
 }
 
 /**
- * Commands a player may send for the server to replay. The rest are results
- * the server makes itself (attacks, defenses, donations, war chests, honor:
- * `battleEnd`, `settleOnlineAttack`, `applyDefense`, `spendDonation`, …) or
- * belong to the offline bot Alliance. `grantPurchase` stays trusted until the
- * server verifies store receipts (roadmap Phase 4); the server logs it as such.
+ * Commands a player sends for the server to replay: the ones that change the
+ * economy, or that the economy depends on (task and pass claims read stats;
+ * `setProfile` sets the under-18 spending cap). The rest are results the
+ * server makes itself (attacks, defenses, donations, war chests, honor:
+ * `battleEnd`, `settleOnlineAttack`, `applyDefense`, `spendDonation`, …),
+ * device-only bookkeeping (tutorial, presets, battle progress, offers), or
+ * the offline bot Alliance. `grantPurchase` stays trusted until the server
+ * verifies store receipts (roadmap Phase 4); the ledger marks it unverified.
  */
 export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['type']>([
   'place',
@@ -92,32 +95,29 @@ export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['ty
   'upgrade',
   'cancel',
   'collect',
+  'clear',
   'train',
   'trainArmy',
-  'saveArmyPreset',
-  'deleteArmyPreset',
   'dismiss',
   'cancelTraining',
+  'skipTraining',
   'research',
   'cancelResearch',
   'skipResearch',
+  'skip',
+  'topUp',
   'openDailyChest',
   'scout',
   'trialEnd',
   'trialAlternate',
-  'battleProgress',
   'abandonBattle',
-  'skip',
-  'skipTraining',
-  'topUp',
   'grantPurchase',
   'setProfile',
   'buySkin',
-  'equipSkin',
   'claimTask',
   'claimTier',
   'claimAchievement',
-  'clear',
-  'tutorial',
-  'markPrepOffer',
 ]);
+
+/** Commands that re-run a whole battle on the server (CPU): a batch may carry only a few. */
+export const BATTLE_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['type']>(['trialEnd', 'abandonBattle']);

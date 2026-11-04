@@ -213,6 +213,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
   app.delete(Routes.me, authed(async (me) => core.deleteAccount(me)));
 
+  // Server-owned village (roadmap Phase 2)
+  app.get(Routes.village, authed(async (me) => core.getVillage(me)));
+  app.post(Routes.village, authed(async (me) => core.startVillage(me)));
+  app.post(Routes.villageCommands, { ...rate('commands'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.villageCommands(me, req.body as never)));
+  app.get(Routes.villageLedger, authed(async (me, req) => core.ledger(me, query(req).limit)));
+
   // Reports and blocks
   app.post(Routes.reports, rate('moderation'), authed(async (me, req, reply) => reply.code(201).send(await core.report(me, req.body as never))));
   app.get(Routes.blocks, authed(async (me) => core.blocks(me)));

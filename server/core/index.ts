@@ -11,6 +11,7 @@ import * as identity from './identity';
 import * as moderation from './moderation';
 import * as pvp from './pvp';
 import * as retention from './retention';
+import * as village from './village';
 
 export type { ServerContext } from './context';
 export { ApiError } from './context';
@@ -24,6 +25,10 @@ export function createCore(ctx: ServerContext) {
     me: identity.playerView,
     rename: identity.rename.bind(null, ctx),
     deleteAccount: account.deleteAccount.bind(null, ctx),
+    getVillage: village.getVillage.bind(null, ctx),
+    startVillage: village.startVillage.bind(null, ctx),
+    villageCommands: village.applyCommands.bind(null, ctx),
+    ledger: village.ledger.bind(null, ctx),
     report: moderation.report.bind(null, ctx),
     block: moderation.block.bind(null, ctx),
     unblock: moderation.unblock.bind(null, ctx),

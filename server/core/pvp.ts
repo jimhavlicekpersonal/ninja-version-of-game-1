@@ -16,6 +16,7 @@ import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { hasServerVillage, refreshBaseFromVillage } from './village';
 
 /** How long a matched base stays reserved for its attacker. */
 export const TICKET_LOCK_MS = 5 * MIN;
@@ -220,6 +221,12 @@ export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { 
 }
 
 export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest): Promise<void> {
+  // A village the server holds is the base (its real layout and loot); the upload is ignored.
+  if (await hasServerVillage(ctx.repo, me.id)) {
+    await refreshBaseFromVillage(ctx, me);
+    await ctx.board.set(me.id, me.trophies, me.createdAt);
+    return;
+  }
   const n = normalizeBase(structuredClone(req?.base), ctx.data);
   if ('error' in n) throw new ApiError(400, 'bad_request', n.error);
   const base = n.base;
