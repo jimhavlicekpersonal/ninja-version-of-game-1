@@ -27,6 +27,7 @@
 5. **No server-side receipt verification**.
 6. `schema.sql` migrates on every boot (races with several instances). No rate limiting. `rankOf` counts rows on every leaderboard call.
 7. Bot attacks move the attacker's Honor.
+8. **The server runs exactly one set of combat rules and never checks which set the client used.** `SIM_RULES` and the gameplay data are compiled into the server; `BattleSubmission` carries no rules version. Phone players stay on old app builds for weeks, so after a balance patch their battles are re-simulated under different rules and the server's (different) result silently wins. Changed Keep limits can also make old clients' base uploads fail. Fixed by Phase 1.5.
 
 ## 1. Ranking design
 
@@ -265,6 +266,16 @@ Push types to add: friend request, Gang invite, war found, war ending soon, Gang
 - [ ] 17. Observability: structured logs, Sentry (client + server), `/healthz`, metrics (re-sim ms, battles/min, desyncs, errors by code).
 - [ ] 18. Benchmark `runBattle` on target hardware; record the result in section 2.
 
+### Phase 1.5: Surviving game updates (~2–3 weeks) [Code]
+Makes balance, combat and data changes safe while old app builds are still in use (gap 8). Art and UI changes need nothing: the server never loads presentation code (`compartments.json`, `boundaries.test.ts`). Do this before the first store release; steps 72, 74 and 75 are small, 73 is the main work. Steps are numbered 72–78 so earlier numbers stay stable.
+- [ ] 72. **Clients say which rules they use.** Every request sends `X-Sim-Rules` and `X-Data-Version` (a hash of `src/gameplay/data/*.json` made at build time); `BattleSubmission` carries `rules` and `dataVersion`; each ticket stores the rules and data version it was issued under, and the submission must match its ticket (`bad_request` otherwise, with a player-facing "please update" message).
+- [ ] 73. **The server keeps the last 2–3 rule versions loaded.** A build script snapshots the released sim and data into `server/rules/v<N>/` (generated, never edited by hand; the live code in `src/gameplay/sim` stays the only one people change). The server re-simulates each battle, validates each base and army, and computes loot caps with the version its ticket was issued under. Matchmaking only pairs a client with bases legal under its version (store bases tagged with the version they were uploaded under; re-check on the newer version). Tests: one recorded battle per supported version replays to its recorded `result.hash`.
+- [ ] 74. **Release order: server first.** Deploy a server that accepts old and new versions, then ship the web and store builds, then retire the old version after its share of traffic drops below ~2% (or 4–6 weeks). Write the checklist into `docs/SHIPPING.md`; CI refuses a client release whose `SIM_RULES` the production server doesn't list in `/v1/hello`.
+- [ ] 75. **Friendly forced update.** `/v1/hello` adds `supportedRules: number[]` and `minClientBuild`. A client below either shows an "Update Kagemura" screen with a store link (online play paused, the village still playable offline) instead of getting wrong results. Bump `PROTOCOL_VERSION`; update `docs/PROTOCOL.md` and the contract tests.
+- [ ] 76. **Optional: server-delivered balance numbers.** Number-only changes (costs, timers, damage, HP) shipped as a signed, versioned data bundle the client downloads, so balance can change without an app release. Data only, never code (Apple 2.5.2 / Google Play policy allow downloaded data, not executable code). The bundle counts as a new data version under steps 72–73, is cached for offline play, and falls back to the built-in data if missing or badly signed.
+- [ ] 77. **Contract tests in CI.** On every change to `src/gameplay/sim`, `src/gameplay/data` or `server/`, deploy to staging and run `npm run test:contract` against it with both the current and the previous client version.
+- [ ] 78. **Monitoring.** Dashboard of traffic by client build and rules version, desync rate (client `clientResultHash` ≠ server hash) per version, and refused reports by reason; alert when desyncs rise after a release.
+
 ### Phase 2: Server-owned economy, protocol 7 (~6–10 weeks) [Code]
 - [ ] 19. Tables: `villages` (state JSON + revision), `ledger` (append-only), `command_log`.
 - [ ] 20. Command endpoint: replay with the shared sim, check timers against server time, return `stateHash` plus corrections.
@@ -337,10 +348,11 @@ Needs steps 14–15 (deletion, report/block) and 24 (account linking). Build it 
 
 ### Totals and shortcut
 - About 6–8 months for one developer or AI session, including Phase 9 (Friends and Gangs). Before launch: Apple $99, Google $25, domain ~$15, staging hosting $20–60/month, plus legal.
-- Fastest playable online launch: Phases 0, 1, 4, 6, 7 on the trusted-local economy, then Phases 2–3 and 9 before promoting competitive play. Friends and Gangs (Phase 9) are required at launch of competitive play. Until Phase 2, saves and purchases stay per device.
+- Fastest playable online launch: Phases 0, 1, 1.5, 4, 6, 7 on the trusted-local economy, then Phases 2–3 and 9 before promoting competitive play. Friends and Gangs (Phase 9) are required at launch of competitive play. Until Phase 2, saves and purchases stay per device.
 
 ## Rules for sessions working from this file
 - Keep the honesty rule (bots and simulated raids are labelled), loot-box odds, the never-sold rules and the under-18 cap (root `CLAUDE.md`, `src/backend/CLAUDE.md`).
 - Any incompatible protocol change: bump `PROTOCOL_VERSION`, update `docs/PROTOCOL.md` and the contract tests. Any combat-data change: bump `SIM_RULES`. Any village state change: bump `SAVE_VERSION` with a migration.
-- Server rules stay in `server/core` (no HTTP/DB code there); game rules stay in `src/gameplay/sim` and are shared, never forked.
+- Server rules stay in `server/core` (no HTTP/DB code there); game rules stay in `src/gameplay/sim` and are shared, never forked. The only exception is the generated, read-only snapshots of released rule versions in `server/rules/v<N>/` (step 73); never edit them by hand.
+- Any combat or data change that ships to players: follow the release order in step 74 (server first, old version kept until its traffic is gone).
 - Cost and legal figures above are estimates as of 2026-11. Re-check store fees and policies before acting on them.
