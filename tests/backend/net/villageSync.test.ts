@@ -14,6 +14,8 @@ import { canPlace } from '../../../src/gameplay/sim/grid';
 import { deserialize } from '../../../src/gameplay/sim/save';
 import { economyHash } from '../../../src/gameplay/sim/serverEconomy';
 import { HOUR, world } from '../server/harness';
+import { combineVerifiers, JwtVerifier } from '../../../server/identity/verify';
+import { generateKeyPairSync, sign as cryptoSign } from 'node:crypto';
 
 function memoryKv(): KeyValue & { map: Map<string, string> } {
   const map = new Map<string, string>();
@@ -131,5 +133,32 @@ describe('server-owned village: the game side', () => {
     await s.conn.deleteAccount();
     expect(s.conn.serverVillage).toBe(false);
     expect(s.kv.map.has('tk.net.village:https://test.server')).toBe(false);
+  });
+
+  it('cloud save: a second device signs in with a linked account and gets the village the server keeps', async () => {
+    const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'k' };
+    const fetch = async () => ({ ok: true, status: 200, json: async () => ({ keys: [jwk] }), arrayBuffer: async () => new ArrayBuffer(0) });
+    const w0 = world();
+    const apple = new JwtVerifier({ jwksUrl: 'x', issuers: ['https://appleid.apple.com'], audiences: ['app'], fetch, now: () => w0.now() });
+    const w = world({ shared: { identity: combineVerifiers({ apple }) } });
+    const token = () => {
+      const h = Buffer.from(JSON.stringify({ alg: 'RS256', kid: 'k' })).toString('base64url');
+      const p = Buffer.from(JSON.stringify({ iss: 'https://appleid.apple.com', aud: 'app', sub: 'me', exp: w.now() / 1000 + 600 })).toString('base64url');
+      return { idToken: `${h}.${p}.${cryptoSign('RSA-SHA256', Buffer.from(`${h}.${p}`), privateKey).toString('base64url')}` };
+    };
+    const laptop = await setup(w);
+    await laptop.conn.village!.enable();
+    placeCollector(laptop.controller);
+    await laptop.conn.village!.flush();
+    await laptop.conn.link('apple', token());
+    // A new phone starts its own village and its own online player, then signs in.
+    const phone = await setup(w);
+    expect(phone.conn.player!.id).not.toBe(laptop.conn.player!.id);
+    await phone.conn.signIn('apple', token());
+    expect(phone.conn.player!.id).toBe(laptop.conn.player!.id);
+    expect(phone.conn.serverVillage).toBe(true);
+    expect(economyHash(phone.controller.state)).toBe(economyHash(laptop.controller.state));
+    expect(await phone.store.listBackups()).toHaveLength(1); // the phone's own village is kept
   });
 });

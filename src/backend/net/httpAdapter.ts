@@ -13,6 +13,9 @@ import {
   type CommandBatch,
   type CommandBatchResponse,
   type LedgerResponse,
+  type LinkCredential,
+  type LinkProvider,
+  type LinksResponse,
   type VillageResponse,
   type ChatResponse,
   type ChatView,
@@ -200,6 +203,24 @@ export class HttpServerAdapter implements ServerPort {
 
   rename(name: string): Promise<PlayerView> {
     return this.req('PUT', Routes.me, { name });
+  }
+
+  links(): Promise<LinksResponse> {
+    return this.req('GET', Routes.links);
+  }
+
+  link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse> {
+    return this.req('POST', Routes.links, { provider, credential });
+  }
+
+  unlink(provider: LinkProvider): Promise<LinksResponse> {
+    return this.req('DELETE', Routes.link(provider));
+  }
+
+  async signIn(provider: LinkProvider, credential: LinkCredential, device?: string): Promise<RegisterResponse> {
+    const r = await this.req<RegisterResponse>('POST', Routes.sessions, { provider, credential, device });
+    this.tokens.set(r.token);
+    return r;
   }
 
   async deleteAccount(): Promise<void> {

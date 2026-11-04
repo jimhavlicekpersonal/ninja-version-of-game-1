@@ -3,6 +3,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { GameData } from '../src/gameplay/sim/types';
 import type { ServerContext } from './core';
 import type { Repo } from './repo';
+import { noIdentity, type IdentityVerifier } from './identity/verify';
 import { noMetrics, type Metrics } from './observability';
 import { RepoLeaderboard, TicketLocks, type Leaderboard, type MatchLocks } from './shared';
 
@@ -14,6 +15,7 @@ export interface SharedStores {
   board?: Leaderboard;
   locks?: MatchLocks;
   metrics?: Metrics;
+  identity?: IdentityVerifier;
   log?: (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
 }
 
@@ -24,6 +26,7 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     board: shared.board ?? new RepoLeaderboard(repo),
     locks: shared.locks ?? new TicketLocks(),
     metrics: shared.metrics ?? noMetrics,
+    identity: shared.identity ?? noIdentity,
     log: shared.log ?? (() => undefined),
     now,
     uuid: () => randomUUID(),

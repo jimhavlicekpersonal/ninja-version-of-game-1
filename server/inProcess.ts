@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, LinkCredential, LinkProvider, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -52,6 +52,20 @@ export class InProcessServerAdapter implements ServerPort {
   }
   rename(name: string) {
     return this.authed((me) => this.core.rename(me, name));
+  }
+  links() {
+    return this.authed((me) => this.core.links(me));
+  }
+  link(provider: LinkProvider, credential: LinkCredential) {
+    return this.authed((me) => this.core.link(me, wire({ provider, credential })));
+  }
+  unlink(provider: LinkProvider) {
+    return this.authed((me) => this.core.unlink(me, provider));
+  }
+  async signIn(provider: LinkProvider, credential: LinkCredential, device?: string) {
+    const r = await this.call(() => this.core.signIn(wire({ provider, credential, device })));
+    this.token = r.token;
+    return r;
   }
   async deleteAccount() {
     await this.authed((me) => this.core.deleteAccount(me));

@@ -13,6 +13,7 @@ import type {
   Grove,
   GroveMember,
   GroveSummaryRow,
+  IdentityLink,
   OpponentQuery,
   Player,
   PlayerPatch,
@@ -271,8 +272,30 @@ export class PgRepo implements Repo {
   }
 
   async playerByTokenHash(hash: string): Promise<Player | null> {
-    const r = await this.rows('select * from players where token_hash = $1', [hash]);
+    const r = await this.rows('select * from players where token_hash = $1 or id = (select player_id from player_tokens where token_hash = $1) limit 1', [hash]);
     return r[0] ? toPlayer(r[0]) : null;
+  }
+
+  async addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void> {
+    await this.db.query('insert into player_tokens (token_hash, player_id, created_at, label) values ($1,$2,$3,$4)', [tokenHash, playerId, at, label]);
+  }
+
+  async linksOf(playerId: string): Promise<IdentityLink[]> {
+    return (await this.rows('select * from identity_links where player_id = $1 order by linked_at', [playerId])).map((r) => ({ provider: String(r.provider), subject: String(r.subject), playerId: String(r.player_id), linkedAt: num(r.linked_at) }));
+  }
+
+  async playerByIdentity(provider: string, subject: string): Promise<string | null> {
+    const r = await this.rows('select player_id from identity_links where provider = $1 and subject = $2', [provider, subject]);
+    return r[0] ? String(r[0].player_id) : null;
+  }
+
+  async addLink(l: IdentityLink): Promise<boolean> {
+    const r = await this.db.query('insert into identity_links (provider, subject, player_id, linked_at) values ($1,$2,$3,$4) on conflict do nothing', [l.provider, l.subject, l.playerId, l.linkedAt]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async removeLink(playerId: string, provider: string): Promise<void> {
+    await this.db.query('delete from identity_links where player_id = $1 and provider = $2', [playerId, provider]);
   }
 
   async getPlayer(id: string): Promise<Player | null> {
@@ -445,6 +468,8 @@ export class PgRepo implements Repo {
       );
       // A server-held village, its ledger and command log are only theirs.
       await q('delete from villages where player_id = $1', [id]);
+      await q('delete from player_tokens where player_id = $1', [id]);
+      await q('delete from identity_links where player_id = $1', [id]);
       await q('delete from ledger where player_id = $1', [id]);
       await q('delete from command_log where player_id = $1', [id]);
       await q('delete from players where id = $1', [id]);

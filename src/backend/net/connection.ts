@@ -13,7 +13,7 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, HelloResponse, PlayerView } from './protocol';
+import type { BattleSubmission, HelloResponse, LinkCredential, LinkProvider, PlayerView } from './protocol';
 import { VillageSync, type SyncGame } from './villageSync';
 
 /** What the connection needs from the game. GameController provides it. */
@@ -214,6 +214,31 @@ export class Connection {
     Connection.choose('off', this.kv);
     this.player = null;
     this.setStatus('off');
+  }
+
+  /** Link a sign-in (Apple, Google, Game Center, Play Games) to this player, so it can be restored on other devices. */
+  async link(provider: LinkProvider, credential: LinkCredential): Promise<void> {
+    if (!this.port) throw new Error('No server configured.');
+    await this.port.link(provider, credential);
+    this.emit();
+  }
+
+  /**
+   * Sign in on this device as the player linked to this sign-in (cloud save,
+   * roadmap step 24). Battle reports waiting here belong to the current
+   * player, so they are sent first. Afterwards the connection syncs as that
+   * player; a village the server keeps for them replaces the one here (which
+   * becomes a backup).
+   */
+  async signIn(provider: LinkProvider, credential: LinkCredential): Promise<void> {
+    if (!this.port) throw new Error('No server configured.');
+    await this.flush();
+    await this.port.signIn(provider, credential, 'game');
+    this.village?.reset();
+    this.player = null;
+    this.status = 'connecting';
+    this.server = null;
+    await this.sync();
   }
 
   /** Begin connecting, and keep in touch: light sync every minute, base upload every 2 minutes. */

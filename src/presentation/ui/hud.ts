@@ -18,6 +18,7 @@ import { activeOffers } from '../../gameplay/sim/offers';
 import { currentTasks, unlockedTier } from '../../gameplay/sim/pass';
 import { ArmyUi } from './armyUi';
 import { costChips, RES_LABEL } from './chips';
+import { PROVIDER_NAMES } from '../../backend/platform/auth';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -62,6 +63,8 @@ export interface HudDeps {
   prefs: { get(k: 'sessionReminder' | 'reminders' | 'crashReports'): boolean; set(k: 'sessionReminder' | 'reminders' | 'crashReports', v: boolean): void };
   /** This build sends crash reports (it has a Sentry DSN): show the switch. */
   crashReports?: boolean;
+  /** Sign-ins this device can give (account linking, roadmap step 24). */
+  signIn?: import('../../backend/platform/auth').SignInSource;
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
   reminderNote: string;
@@ -541,21 +544,84 @@ export class Hud {
         },
       );
     };
+    // Linked sign-ins: keep this account on other devices (cloud save), or switch this device to one.
+    const signIns = h('div', {});
+    const loadLinks = () => {
+      const port = conn.port;
+      const source = this.deps.signIn;
+      if (!port || !source) return;
+      void port.links().then(
+        ({ providers, links }) => {
+          clear(signIns);
+          const here = source.available().filter((p) => providers.includes(p));
+          if (!here.length) return;
+          signIns.append(h('label', { class: 'muted small' }, 'Sign-ins (play this account on other devices)'));
+          for (const p of here) {
+            const linked = links.some((l) => l.provider === p);
+            const name = PROVIDER_NAMES[p];
+            const act = h('button', { class: 'btn ghost', type: 'button' }, linked ? 'Unlink' : `Link ${name}`);
+            act.addEventListener('click', () => {
+              const run = linked ? port.unlink(p) : source.obtain(p).then((cred) => conn.link(p, cred));
+              void run.then(
+                () => {
+                  this.toast(linked ? `${name} unlinked.` : `${name} linked. Sign in with it on another device to play this account there.`, 'success');
+                  loadLinks();
+                },
+                (e: Error) => this.toast(e.message, 'error'),
+              );
+            });
+            signIns.append(h('div', { class: 'log-row' }, h('b', {}, `${name}${linked ? ' · linked' : ''}`), act));
+          }
+          const switchRow = h('div', { class: 'actions' });
+          for (const p of here) {
+            const b = h('button', { class: 'btn ghost', type: 'button' }, `Sign in with ${PROVIDER_NAMES[p]}`);
+            b.addEventListener('click', () => void this.switchAccount(p));
+            switchRow.append(b);
+          }
+          signIns.append(h('p', { class: 'muted small' }, 'Already linked an account on another device? Sign in with it here to play that account.'), switchRow);
+        },
+        () => clear(signIns),
+      );
+    };
     const details = h(
       'details',
       { class: 'account-settings' },
       h('summary', {}, 'Account'),
       h('label', { class: 'muted small' }, 'Player ID (for support, and for deletion requests)'),
       h('div', { class: 'chat-input-row' }, idBox, copy),
+      signIns,
       blockedWrap,
       h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and troop requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
       h('div', { class: 'actions' }, del),
       h('p', { class: 'muted small' }, 'No longer have the game? Ask for deletion on the web: ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm)),
     );
     details.addEventListener('toggle', () => {
-      if (details.open) loadBlocked();
+      if (!details.open) return;
+      loadBlocked();
+      loadLinks();
     });
     return details;
+  }
+
+  /** Switch this device to the account linked to a sign-in (cloud save). */
+  private async switchAccount(provider: import('../../backend/net/protocol').LinkProvider): Promise<void> {
+    const source = this.deps.signIn;
+    if (!source) return;
+    const ok = await this.confirm(
+      `Sign in with ${PROVIDER_NAMES[provider]}?`,
+      'This device will play the account linked to that sign-in. If its village is kept on the server, it replaces the village here, which stays as a backup in Settings. Your current online account is not deleted.',
+      'Sign in',
+      false,
+      'Not now',
+    );
+    if (!ok) return;
+    try {
+      await this.deps.connection.signIn(provider, await source.obtain(provider));
+      this.toast(`Signed in as ${this.deps.connection.player?.name ?? 'your account'}.`, 'success');
+      this.closeAllModals();
+    } catch (e) {
+      this.toast((e as Error).message, 'error');
+    }
   }
 
   private async deleteOnlineAccount(): Promise<void> {

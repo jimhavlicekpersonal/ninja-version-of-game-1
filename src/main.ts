@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
 import { CrashReporter } from './backend/analytics/crashReports';
+import { platformSignIn } from './backend/platform/auth';
 import { GameController } from './gameplay/control/controller';
 import { openGameDb } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
@@ -197,6 +198,7 @@ async function boot(): Promise<void> {
     sandbox,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
     crashReports: crashReporter.configured,
+    signIn: platformSignIn({ googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined, appleServicesId: import.meta.env.VITE_APPLE_SERVICES_ID as string | undefined }),
     groveSource,
     connection,
   });

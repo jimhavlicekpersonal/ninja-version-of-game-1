@@ -13,6 +13,9 @@ import type {
   CommandBatch,
   CommandBatchResponse,
   LedgerResponse,
+  LinkCredential,
+  LinkProvider,
+  LinksResponse,
   VillageResponse,
   ChatResponse,
   ChatView,
@@ -65,6 +68,12 @@ export interface IdentityPort {
   rename(name: string): Promise<PlayerView>;
   /** Delete this player's online account on the server, then forget its credentials on this device. */
   deleteAccount(): Promise<void>;
+  /** Linked sign-ins (roadmap step 24). */
+  links(): Promise<LinksResponse>;
+  link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse>;
+  unlink(provider: LinkProvider): Promise<LinksResponse>;
+  /** Become the player linked to this sign-in on this device (its own token; other devices keep theirs). */
+  signIn(provider: LinkProvider, credential: LinkCredential, device?: string): Promise<RegisterResponse>;
 }
 
 export interface PvpPort {

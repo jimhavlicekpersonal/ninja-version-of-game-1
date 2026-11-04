@@ -65,6 +65,10 @@ export const Routes = {
   groveRaidTicket: '/v1/grove/raid/ticket',
   groveRaidAttacks: '/v1/grove/raid/attacks',
   groveRaidClaim: '/v1/grove/raid/claim',
+  links: '/v1/links',
+  link: (provider: string) => `/v1/links/${encodeURIComponent(provider)}`,
+  /** POST, no token: sign in on this device with a linked account. */
+  sessions: '/v1/sessions',
   village: '/v1/village',
   villageCommands: '/v1/village/commands',
   villageLedger: '/v1/village/ledger',
@@ -347,6 +351,31 @@ export interface InboxResponse {
 
 export interface AckRequest {
   ids: string[];
+}
+
+// ---------------------------------------------------------------- Linked sign-ins (roadmap step 24)
+
+export type LinkProvider = 'apple' | 'google' | 'gamecenter' | 'playgames';
+
+/**
+ * What a provider's sign-in gives the game, passed through to the server:
+ * apple/google `{ idToken }`; gamecenter `{ teamPlayerId, bundleId,
+ * timestamp, salt, signature, publicKeyUrl }`; playgames `{ serverAuthCode }`.
+ */
+export type LinkCredential = Record<string, unknown>;
+
+/** GET /v1/links; POST /v1/links { provider, credential } links; DELETE /v1/links/:provider unlinks. */
+export interface LinksResponse {
+  /** Providers this server can check. */
+  providers: LinkProvider[];
+  links: { provider: LinkProvider; linkedAt: number }[];
+}
+
+/** POST /v1/sessions (no token): `{ provider, credential, device? }` → `RegisterResponse` for the linked player. */
+export interface SignInRequest {
+  provider: LinkProvider;
+  credential: LinkCredential;
+  device?: string;
 }
 
 // ---------------------------------------------------------------- Server-owned village (roadmap Phase 2)

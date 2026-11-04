@@ -8,6 +8,7 @@ import type { ServerContext } from './context';
 import * as groves from './groves';
 import * as groveRaid from './groveRaid';
 import * as identity from './identity';
+import * as links from './links';
 import * as moderation from './moderation';
 import * as pvp from './pvp';
 import * as retention from './retention';
@@ -25,6 +26,10 @@ export function createCore(ctx: ServerContext) {
     me: identity.playerView,
     rename: identity.rename.bind(null, ctx),
     deleteAccount: account.deleteAccount.bind(null, ctx),
+    links: links.links.bind(null, ctx),
+    link: links.link.bind(null, ctx),
+    unlink: links.unlink.bind(null, ctx),
+    signIn: links.signIn.bind(null, ctx),
     getVillage: village.getVillage.bind(null, ctx),
     startVillage: village.startVillage.bind(null, ctx),
     villageCommands: village.applyCommands.bind(null, ctx),

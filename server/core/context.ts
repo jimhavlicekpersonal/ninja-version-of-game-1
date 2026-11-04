@@ -1,6 +1,7 @@
 /** What the server core needs from its environment (its other ports). */
 import type { GameData } from '../../src/gameplay/sim/types';
 import type { Repo } from '../repo';
+import type { IdentityVerifier } from '../identity/verify';
 import type { Metrics } from '../observability';
 import type { Leaderboard, MatchLocks } from '../shared';
 
@@ -24,6 +25,8 @@ export interface ServerContext {
   locks: MatchLocks;
   /** Counters and timings (re-simulation, battles, desyncs); a no-op unless the server exposes /metrics. */
   metrics: Metrics;
+  /** Checks sign-ins from Apple, Google, Game Center and Play Games (account linking). */
+  identity: IdentityVerifier;
   /** A structured log line (the request's logger in the HTTP adapter). */
   log(level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>): void;
 }

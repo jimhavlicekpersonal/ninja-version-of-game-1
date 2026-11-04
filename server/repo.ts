@@ -255,6 +255,14 @@ export interface CommandLogRow {
   error: string | null;
 }
 
+/** A sign-in linked to a player (roadmap step 24). */
+export interface IdentityLink {
+  provider: string;
+  subject: string;
+  playerId: string;
+  linkedAt: number;
+}
+
 /** How a deleted player appears in what other players keep (their defense replays, war rosters, donation notes). */
 export const DELETED_PLAYER = { id: 'deleted', name: 'Deleted player' } as const;
 
@@ -322,6 +330,13 @@ export interface Repo {
   topPlayers(limit: number): Promise<Player[]>;
   /** 1 + number of players (with a base) who have more trophies. */
   rankOf(trophies: number): Promise<number>;
+  /** Another device's token for a player (signing in with a linked account). */
+  addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void>;
+  linksOf(playerId: string): Promise<IdentityLink[]>;
+  playerByIdentity(provider: string, subject: string): Promise<string | null>;
+  /** False if that sign-in is linked to someone, or this player already has one from that provider. */
+  addLink(l: IdentityLink): Promise<boolean>;
+  removeLink(playerId: string, provider: string): Promise<void>;
   /** Players by id, in the order asked (missing ones left out). */
   playersByIds(ids: string[]): Promise<Player[]>;
   /** Every ranked player (with a base), to rebuild a leaderboard index. */
@@ -465,6 +480,8 @@ export class MemoryRepo implements Repo {
   reportRows: Report[] = [];
   blockRows: Block[] = [];
   villageRows = new Map<string, VillageRow>();
+  tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
+  linkRows: IdentityLink[] = [];
   ledgerRows: LedgerEntry[] = [];
   commandRows: CommandLogRow[] = [];
   private seq = 0;
@@ -542,7 +559,26 @@ export class MemoryRepo implements Repo {
   }
   async playerByTokenHash(hash: string): Promise<Player | null> {
     for (const p of this.players.values()) if (p.tokenHash === hash) return clone(p);
-    return null;
+    const t = this.tokenRows.find((x) => x.tokenHash === hash);
+    const p = t ? this.players.get(t.playerId) : undefined;
+    return p ? clone(p) : null;
+  }
+  async addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void> {
+    this.tokenRows.push({ tokenHash, playerId, createdAt: at, label });
+  }
+  async linksOf(playerId: string): Promise<IdentityLink[]> {
+    return this.linkRows.filter((l) => l.playerId === playerId).map(clone);
+  }
+  async playerByIdentity(provider: string, subject: string): Promise<string | null> {
+    return this.linkRows.find((l) => l.provider === provider && l.subject === subject)?.playerId ?? null;
+  }
+  async addLink(l: IdentityLink): Promise<boolean> {
+    if (this.linkRows.some((x) => (x.provider === l.provider && x.subject === l.subject) || (x.playerId === l.playerId && x.provider === l.provider))) return false;
+    this.linkRows.push(clone(l));
+    return true;
+  }
+  async removeLink(playerId: string, provider: string): Promise<void> {
+    this.linkRows = this.linkRows.filter((l) => !(l.playerId === playerId && l.provider === provider));
   }
   async getPlayer(id: string): Promise<Player | null> {
     const p = this.players.get(id);
@@ -661,8 +697,10 @@ export class MemoryRepo implements Repo {
     }
     // Blocks either way go; their own reports go; reports about them are closed and lose the evidence text.
     this.blockRows = this.blockRows.filter((b) => b.playerId !== id && b.blockedId !== id);
-    // A server-held village, its ledger and command log are only theirs.
+    // A server-held village, its ledger and command log, other devices' tokens and linked sign-ins are only theirs.
     this.villageRows.delete(id);
+    this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
+    this.linkRows = this.linkRows.filter((l) => l.playerId !== id);
     this.ledgerRows = this.ledgerRows.filter((l) => l.playerId !== id);
     this.commandRows = this.commandRows.filter((c) => c.playerId !== id);
     this.reportRows = this.reportRows.filter((r) => r.reporterId !== id);

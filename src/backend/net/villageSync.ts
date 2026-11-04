@@ -139,7 +139,15 @@ export class VillageSync {
       if (this.stored.active) this.reset();
       return;
     }
-    if (!this.stored.active || this.stored.seq < v.seq) this.stored = { ...this.stored, active: true, seq: Math.max(this.stored.seq, v.seq) };
+    if (!this.stored.active) {
+      // First time this device meets the server's village (signed in on a new device: cloud save):
+      // take the whole village; the one here becomes a backup.
+      await this.game.adoptVillage(deserialize(v.file, this.game.data));
+      this.stored = { active: true, seq: v.seq, queue: [] };
+      this.persist();
+      return;
+    }
+    if (this.stored.seq < v.seq) this.stored = { ...this.stored, seq: v.seq };
     this.persist();
     if (this.stored.queue.length) await this.flush();
     else if (economyHash(this.game.state) !== v.stateHash) this.adopt(economyOf(deserialize(v.file, this.game.data)));

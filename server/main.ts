@@ -28,6 +28,7 @@ import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
 import { RedisLeaderboard, RedisLocks, RedisRateLimiter } from './shared';
 import { ServerSentry } from './observability';
+import { verifierFromEnv } from './identity/verify';
 
 declare const __APP_VERSION__: string;
 
@@ -84,6 +85,8 @@ async function main(): Promise<void> {
     shared = { board, locks: new RedisLocks(redis) };
     rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits });
   }
+  // Account linking: whichever sign-in providers are configured (APPLE_CLIENT_IDS, GOOGLE_CLIENT_IDS, GAMECENTER_BUNDLE_IDS, PLAYGAMES_CLIENT_ID/SECRET).
+  shared = { ...shared, identity: verifierFromEnv(process.env) };
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
     repo,

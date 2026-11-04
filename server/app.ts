@@ -213,6 +213,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
   app.delete(Routes.me, authed(async (me) => core.deleteAccount(me)));
 
+  // Linked sign-ins = cloud save (step 24)
+  app.get(Routes.links, authed(async (me) => core.links(me)));
+  app.post(Routes.links, rate('moderation'), authed(async (me, req) => core.link(me, req.body as never)));
+  app.delete('/v1/links/:provider', authed(async (me, req) => core.unlink(me, param(req, 'provider'))));
+  app.post(Routes.sessions, rate('register'), async (req) => core.signIn(req.body as never));
+
   // Server-owned village (roadmap Phase 2)
   app.get(Routes.village, authed(async (me) => core.getVillage(me)));
   app.post(Routes.village, authed(async (me) => core.startVillage(me)));
