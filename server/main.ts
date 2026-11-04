@@ -188,6 +188,11 @@ async function main(): Promise<void> {
     console.warn('IPv6 is not available here: listening on IPv4 only.');
     await app.listen({ port, host: '0.0.0.0' });
   }
+  // Unique names (step 59): players from before it get their name key once (idempotent; safe on every instance).
+  void app.core.migrateNames().then(
+    (n) => n && app.log.info({ named: n }, 'name migration'),
+    (e) => app.log.error(e, 'name migration failed'),
+  );
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.
   const prune = () =>
     app.core.prune().then(

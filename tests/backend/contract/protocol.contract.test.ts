@@ -92,7 +92,38 @@ describe('protocol contract', () => {
     const me = await c.me();
     expect(me).toMatchObject({ id: r.playerId, groveId: null, hallLevel: 1 });
     expect(me.shieldUntil).toBeGreaterThan(Date.now()); // new players start shielded
-    expect((await c.rename(`Contract Pip the Bold ${tag}`.slice(0, 24))).name).toMatch(/^Contract Pip/);
+    // Names are unique and 3-18 characters (step 59): a valid one is taken as typed.
+    expect((await c.rename(`Bold Pip ${tag}`)).name).toBe(`Bold Pip ${tag}`);
+  });
+
+  it('friends: exact name lookup, codes, requests, privacy (step 59)', async () => {
+    const hello = await client().hello();
+    if (!hello.features.includes('friends')) return;
+    const a = client();
+    const b = client();
+    await a.register(`Kit ${tag}`);
+    const bName = `Rook ${tag}`;
+    await b.register(bName);
+    // Case and separators do not matter; partial names find nobody.
+    const card = await a.lookupPlayer(bName.toUpperCase().replace(' ', '_'));
+    expect(card).toMatchObject({ name: bName, relation: 'none' });
+    expect((await errorOf(a.lookupPlayer(bName.slice(0, -1)))).status).toBe(404);
+    const sent = await a.sendFriendRequest({ name: bName });
+    expect(sent.status).toBe('sent');
+    const theirs = await b.friends();
+    expect(theirs.code).toMatch(/^KAGE-[2-9A-HJKMNP-Z]{6}$/);
+    expect(theirs.incoming.map((r) => r.player.name)).toEqual([`Kit ${tag}`]);
+    await b.answerFriendRequest(theirs.incoming[0].id, true);
+    expect((await a.friends()).friends.map((f) => f.name)).toEqual([bName]);
+    // Hidden from name search, still found by code; friends still find each other.
+    await b.setPrivacy({ findable: 'nobody' });
+    const c = client();
+    await c.register(`Wren ${tag}`);
+    expect((await errorOf(c.lookupPlayer(bName))).status).toBe(404);
+    expect((await c.playerByCode(theirs.code)).name).toBe(bName);
+    expect((await a.lookupPlayer(bName)).relation).toBe('friend');
+    await a.unfriend(card.id);
+    expect((await a.friends()).friends).toEqual([]);
   });
 
   it('bases: valid ones are stored, impossible ones are refused with bad_request', async () => {

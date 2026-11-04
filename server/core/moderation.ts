@@ -62,6 +62,9 @@ export async function block(ctx: ServerContext, me: Player, playerId: unknown): 
   const list = await ctx.repo.blocksOf(me.id);
   if (list.length >= MAX_BLOCKS && !list.some((b) => b.blockedId === id)) throw new ApiError(409, 'full', 'You have blocked as many players as you can. Unblock someone first.');
   await ctx.repo.addBlock({ playerId: me.id, blockedId: id, blockedName: p.name, at: ctx.now() });
+  // A block ends a friendship and its requests either way (step 59).
+  await ctx.repo.removeFriendship(me.id, id);
+  await ctx.repo.deleteFriendRequestsBetween(me.id, id);
 }
 
 export async function unblock(ctx: ServerContext, me: Player, playerId: unknown): Promise<void> {

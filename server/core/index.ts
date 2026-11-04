@@ -6,7 +6,9 @@
 import * as account from './account';
 import * as admin from './admin';
 import type { ServerContext } from './context';
+import * as friends from './friends';
 import * as groves from './groves';
+import * as names from './names';
 import * as groveRaid from './groveRaid';
 import * as identity from './identity';
 import * as links from './links';
@@ -28,9 +30,19 @@ export function createCore(ctx: ServerContext) {
     balance: () => identity.balance(ctx),
     register: (name: unknown) => identity.register(ctx, name),
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
-    me: identity.playerView,
+    me: (p: Parameters<typeof identity.playerView>[0]) => identity.playerView(p, ctx.now()),
     rename: identity.rename.bind(null, ctx),
     deleteAccount: account.deleteAccount.bind(null, ctx),
+    friends: friends.friends.bind(null, ctx),
+    lookupPlayer: friends.lookup.bind(null, ctx),
+    playerByCode: friends.byCode.bind(null, ctx),
+    friendRequest: friends.request.bind(null, ctx),
+    answerFriendRequest: friends.answer.bind(null, ctx),
+    cancelFriendRequest: friends.cancel.bind(null, ctx),
+    unfriend: friends.unfriend.bind(null, ctx),
+    setPrivacy: friends.setPrivacy.bind(null, ctx),
+    /** Start-up: give players from before unique names their name key (step 59). */
+    migrateNames: () => names.migrateNames(ctx),
     links: links.links.bind(null, ctx),
     link: links.link.bind(null, ctx),
     unlink: links.unlink.bind(null, ctx),

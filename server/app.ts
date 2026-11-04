@@ -67,7 +67,7 @@ export interface ServerOptions {
 const sameSecret = (got: string | undefined, want: Buffer) => timingSafeEqual(createHash('sha256').update(got ?? '').digest(), want);
 
 /** Route option: which extra rate rule the route counts against. */
-type RateConfig = { rate?: keyof RateLimits };
+type RateConfig = { rate?: keyof RateLimits | (keyof RateLimits)[] };
 
 function bearer(req: FastifyRequest): string | undefined {
   const h = req.headers.authorization ?? '';
@@ -193,10 +193,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       d = await limiter.hit('player', who, t);
       if (!d.ok) return tooMany(reply, d, 'Too many requests.', 'player');
     }
-    const rule = (req.routeOptions?.config as RateConfig | undefined)?.rate;
-    if (rule) {
+    const rules = (req.routeOptions?.config as RateConfig | undefined)?.rate;
+    for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
       d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' ? ip : who, t);
-      if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : 'Slow down a little.', rule);
+      if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookup' || rule === 'lookupDay' ? 'Too many player searches. Try again later.' : 'Slow down a little.', rule);
     }
   });
 
@@ -204,7 +204,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (err instanceof ApiError) {
       metrics.count('tk_errors_total', { code: err.code });
       req.log.info({ code: err.code, status: err.status }, err.message);
-      const body: ErrorBody = { error: err.code, message: err.message };
+      const body: ErrorBody = { error: err.code, message: err.message, ...(err.suggestions?.length ? { suggestions: err.suggestions } : {}) };
       return reply.code(err.status).send(body);
     }
     const status = (err as { statusCode?: number }).statusCode ?? 500;
@@ -271,6 +271,17 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.me, authed(async (me) => core.me(me)));
   app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
   app.delete(Routes.me, authed(async (me) => core.deleteAccount(me)));
+
+  // Friends and names (roadmap step 59). Lookups and requests are rate limited per minute and per day.
+  const lookupRate = { config: { rate: ['lookup', 'lookupDay'] as (keyof RateLimits)[] } };
+  app.get(Routes.friends, authed(async (me) => core.friends(me)));
+  app.put(Routes.privacy, authed(async (me, req) => core.setPrivacy(me, req.body as never)));
+  app.get(Routes.playerLookup, lookupRate, authed(async (me, req) => core.lookupPlayer(me, (req.query as { name?: string }).name)));
+  app.get('/v1/players/code/:code', lookupRate, authed(async (me, req) => core.playerByCode(me, (req.params as { code: string }).code)));
+  app.post(Routes.friendRequests, lookupRate, authed(async (me, req) => core.friendRequest(me, req.body as never)));
+  app.post('/v1/friends/requests/:id', authed(async (me, req) => core.answerFriendRequest(me, (req.params as { id: string }).id, body<{ accept: boolean }>(req).accept)));
+  app.delete('/v1/friends/requests/:id', authed(async (me, req) => core.cancelFriendRequest(me, (req.params as { id: string }).id)));
+  app.delete('/v1/friends/:id', authed(async (me, req) => core.unfriend(me, (req.params as { id: string }).id)));
 
   // Linked sign-ins = cloud save (step 24)
   app.get(Routes.links, authed(async (me) => core.links(me)));

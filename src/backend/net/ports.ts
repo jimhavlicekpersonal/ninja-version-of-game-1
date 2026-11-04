@@ -9,6 +9,11 @@
 import type {
   AttackResponse,
   BalanceResponse,
+  FriendRequestBody,
+  FriendRequestResult,
+  FriendsResponse,
+  PlayerCard,
+  PrivacyRequest,
   BattleSubmission,
   BlocksResponse,
   CommandBatch,
@@ -78,6 +83,16 @@ export interface IdentityPort {
   rename(name: string): Promise<PlayerView>;
   /** Delete this player's online account on the server, then forget its credentials on this device. */
   deleteAccount(): Promise<void>;
+  /** Friends (roadmap step 59; servers with the `friends` feature). */
+  friends(): Promise<FriendsResponse>;
+  /** One player by exact name (404 when there is none, or they hide from name search). */
+  lookupPlayer(name: string): Promise<PlayerCard>;
+  playerByCode(code: string): Promise<PlayerCard>;
+  sendFriendRequest(req: FriendRequestBody): Promise<FriendRequestResult>;
+  answerFriendRequest(id: string, accept: boolean): Promise<void>;
+  cancelFriendRequest(id: string): Promise<void>;
+  unfriend(playerId: string): Promise<void>;
+  setPrivacy(req: PrivacyRequest): Promise<FriendsResponse>;
   /** Linked sign-ins (roadmap step 24). */
   links(): Promise<LinksResponse>;
   link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse>;

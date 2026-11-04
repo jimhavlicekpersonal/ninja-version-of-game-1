@@ -36,6 +36,11 @@ import {
   type GroveView,
   type GrovesResponse,
   type BalanceResponse,
+  type FriendRequestBody,
+  type FriendRequestResult,
+  type FriendsResponse,
+  type PlayerCard,
+  type PrivacyRequest,
   type HelloResponse,
   type InboxResponse,
   type LeaderboardResponse,
@@ -222,6 +227,38 @@ export class HttpServerAdapter implements ServerPort {
   // ---------------------------------------------------------------- identity
 
   /** The server's description; throws version_mismatch when this game and the server cannot talk. */
+  friends(): Promise<FriendsResponse> {
+    return this.req('GET', Routes.friends);
+  }
+
+  lookupPlayer(name: string): Promise<PlayerCard> {
+    return this.req('GET', `${Routes.playerLookup}?name=${encodeURIComponent(name)}`);
+  }
+
+  playerByCode(code: string): Promise<PlayerCard> {
+    return this.req('GET', Routes.playerByCode(code));
+  }
+
+  sendFriendRequest(req: FriendRequestBody): Promise<FriendRequestResult> {
+    return this.req('POST', Routes.friendRequests, req);
+  }
+
+  async answerFriendRequest(id: string, accept: boolean): Promise<void> {
+    await this.req('POST', Routes.friendRequest(id), { accept });
+  }
+
+  async cancelFriendRequest(id: string): Promise<void> {
+    await this.req('DELETE', Routes.friendRequest(id));
+  }
+
+  async unfriend(playerId: string): Promise<void> {
+    await this.req('DELETE', Routes.friend(playerId));
+  }
+
+  setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
+    return this.req('PUT', Routes.privacy, req);
+  }
+
   balance(): Promise<BalanceResponse> {
     return this.req('GET', Routes.balance);
   }

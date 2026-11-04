@@ -30,6 +30,10 @@ export interface RateLimits {
   deletionRequest: RateRule;
   /** Village command batches (server-owned economy), per player. */
   commands: RateRule;
+  /** Name and friend-code lookups and friend requests per player (step 59: no scraping the player list). */
+  lookup: RateRule;
+  /** The same, per day. */
+  lookupDay: RateRule;
 }
 
 const MIN = 60_000;
@@ -44,6 +48,8 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   moderation: { limit: 30, windowMs: HOUR },
   deletionRequest: { limit: 5, windowMs: HOUR },
   commands: { limit: 30, windowMs: MIN },
+  lookup: { limit: 30, windowMs: MIN },
+  lookupDay: { limit: 300, windowMs: 24 * HOUR },
 };
 
 export interface RateDecision {

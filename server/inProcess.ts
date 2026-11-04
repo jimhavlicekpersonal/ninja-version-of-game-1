@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, FriendRequestBody, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -56,6 +56,30 @@ export class InProcessServerAdapter implements ServerPort {
   }
   rename(name: string) {
     return this.authed((me) => this.core.rename(me, name));
+  }
+  friends() {
+    return this.authed((me) => this.core.friends(me));
+  }
+  lookupPlayer(name: string) {
+    return this.authed((me) => this.core.lookupPlayer(me, name));
+  }
+  playerByCode(code: string) {
+    return this.authed((me) => this.core.playerByCode(me, code));
+  }
+  sendFriendRequest(req: FriendRequestBody) {
+    return this.authed((me) => this.core.friendRequest(me, wire(req)));
+  }
+  async answerFriendRequest(id: string, accept: boolean) {
+    await this.authed((me) => this.core.answerFriendRequest(me, id, accept));
+  }
+  cancelFriendRequest(id: string) {
+    return this.authed((me) => this.core.cancelFriendRequest(me, id));
+  }
+  unfriend(playerId: string) {
+    return this.authed((me) => this.core.unfriend(me, playerId));
+  }
+  setPrivacy(req: PrivacyRequest) {
+    return this.authed((me) => this.core.setPrivacy(me, wire(req)));
   }
   links() {
     return this.authed((me) => this.core.links(me));

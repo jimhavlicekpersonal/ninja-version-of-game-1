@@ -30,9 +30,43 @@ export interface Player {
   /** Suspended by staff until this time (0 or absent: not banned). Banned players are not matched or ranked. */
   bannedUntil?: number;
   banReason?: string | null;
+  /**
+   * Names (roadmap step 59): `name` is unique by this key (lower case,
+   * space/_/- the same; `nameKey` in src/backend/net/names.ts). Absent only on
+   * players from before step 59 until the name migration gives them one.
+   */
+  nameKey?: string;
+  /** The name before the last change, and when it changed ("formerly …" for 28 days). */
+  previousName?: string | null;
+  nameChangedAt?: number;
+  /** Changes that skip the 28-day wait (one after the name migration). */
+  freeRenames?: number;
+  /** Who may find them by name (default everyone). */
+  findable?: import('../src/backend/net/protocol').Findable;
+  /** Friends see when they were last online (default true). */
+  showOnline?: boolean;
+  /** Their friend code ("KAGE-XXXXXX"), made on first use. */
+  friendCode?: string | null;
+  /** Staff and official accounts (a badge nobody else can get). */
+  staff?: boolean;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff'>>;
+
+/** Two players asked to change to the same name at once: the second one gets this (the store's unique key said no). */
+export class NameTakenError extends Error {
+  constructor() {
+    super('That name was just taken.');
+  }
+}
+
+/** A friend request (roadmap step 59). */
+export interface FriendRequest {
+  id: string;
+  fromId: string;
+  toId: string;
+  at: number;
+}
 
 /** One thing staff did (the admin tool, roadmap step 48). */
 export interface StaffAction {
@@ -499,6 +533,29 @@ export interface Repo {
   setChatHidden(id: string, hidden: boolean): Promise<void>;
   /** Ids of hidden messages among the Alliance's latest `lastN` messages. */
   hiddenChatIds(groveId: string, lastN: number): Promise<string[]>;
+  // names and friends (roadmap step 59)
+  /** The player whose name has this key (names.ts `nameKey`). */
+  playerByNameKey(key: string): Promise<Player | null>;
+  playerByFriendCode(code: string): Promise<Player | null>;
+  /** A released name still kept for its previous owner, if `now` is before the hold ends. */
+  nameHold(key: string, now: number): Promise<{ playerId: string; until: number } | null>;
+  /** Keep a released name for its previous owner until `until` (replaces an older hold on it). */
+  holdName(key: string, playerId: string, until: number): Promise<void>;
+  /** Players from before step 59 with no name key yet, oldest first (the name migration). */
+  playersWithoutNameKey(limit: number): Promise<Player[]>;
+  addFriendship(a: string, b: string, at: number): Promise<void>;
+  removeFriendship(a: string, b: string): Promise<void>;
+  /** Friends of a player, with when the friendship started. */
+  friendsOf(playerId: string): Promise<{ id: string; since: number }[]>;
+  addFriendRequest(r: FriendRequest): Promise<void>;
+  getFriendRequest(id: string): Promise<FriendRequest | null>;
+  /** Requests to or from the player made after `since` (older ones have lapsed). */
+  friendRequestsOf(playerId: string, since: number): Promise<FriendRequest[]>;
+  deleteFriendRequest(id: string): Promise<void>;
+  /** Every request between two players, either way (on becoming friends, or a block). */
+  deleteFriendRequestsBetween(a: string, b: string): Promise<void>;
+  /** Retention: requests made before `before`; returns how many went. */
+  pruneFriendRequests(before: number): Promise<number>;
   // reports and blocks (roadmap step 15)
   /** False (and nothing stored) if the reporter already has an open report on that message or player. */
   addReport(r: Report): Promise<boolean>;
@@ -590,6 +647,9 @@ export class MemoryRepo implements Repo {
   deletionRows: DeletionRequest[] = [];
   reportRows: Report[] = [];
   blockRows: Block[] = [];
+  nameHolds = new Map<string, { playerId: string; until: number }>();
+  friendshipRows: { a: string; b: string; since: number }[] = [];
+  friendRequestRows: FriendRequest[] = [];
   villageRows = new Map<string, VillageRow>();
   tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
   linkRows: IdentityLink[] = [];
@@ -679,6 +739,7 @@ export class MemoryRepo implements Repo {
 
   async ping(): Promise<void> {}
   async createPlayer(p: Player): Promise<void> {
+    if (p.nameKey && [...this.players.values()].some((x) => x.nameKey === p.nameKey)) throw new NameTakenError();
     this.players.set(p.id, clone(p));
   }
   async playerByTokenHash(hash: string): Promise<Player | null> {
@@ -788,7 +849,63 @@ export class MemoryRepo implements Repo {
   }
   async updatePlayer(id: string, patch: PlayerPatch): Promise<void> {
     const p = this.players.get(id);
+    if (patch.nameKey !== undefined && [...this.players.values()].some((x) => x.id !== id && x.nameKey === patch.nameKey)) throw new NameTakenError();
+    if (patch.friendCode && [...this.players.values()].some((x) => x.id !== id && x.friendCode === patch.friendCode)) throw new NameTakenError();
     if (p) Object.assign(p, clone(patch));
+  }
+  async playerByNameKey(key: string): Promise<Player | null> {
+    for (const p of this.players.values()) if (p.nameKey === key) return clone(p);
+    return null;
+  }
+  async playerByFriendCode(code: string): Promise<Player | null> {
+    for (const p of this.players.values()) if (p.friendCode === code) return clone(p);
+    return null;
+  }
+  async nameHold(key: string, now: number): Promise<{ playerId: string; until: number } | null> {
+    const h = this.nameHolds.get(key);
+    return h && h.until > now ? { ...h } : null;
+  }
+  async holdName(key: string, playerId: string, until: number): Promise<void> {
+    this.nameHolds.set(key, { playerId, until });
+  }
+  async playersWithoutNameKey(limit: number): Promise<Player[]> {
+    return [...this.players.values()]
+      .filter((p) => !p.nameKey)
+      .sort((a, b) => a.createdAt - b.createdAt || (a.id < b.id ? -1 : 1))
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addFriendship(a: string, b: string, at: number): Promise<void> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    if (!this.friendshipRows.some((f) => f.a === x && f.b === y)) this.friendshipRows.push({ a: x, b: y, since: at });
+  }
+  async removeFriendship(a: string, b: string): Promise<void> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    this.friendshipRows = this.friendshipRows.filter((f) => !(f.a === x && f.b === y));
+  }
+  async friendsOf(playerId: string): Promise<{ id: string; since: number }[]> {
+    return this.friendshipRows.filter((f) => f.a === playerId || f.b === playerId).map((f) => ({ id: f.a === playerId ? f.b : f.a, since: f.since }));
+  }
+  async addFriendRequest(r: FriendRequest): Promise<void> {
+    this.friendRequestRows.push(clone(r));
+  }
+  async getFriendRequest(id: string): Promise<FriendRequest | null> {
+    const r = this.friendRequestRows.find((x) => x.id === id);
+    return r ? clone(r) : null;
+  }
+  async friendRequestsOf(playerId: string, since: number): Promise<FriendRequest[]> {
+    return this.friendRequestRows.filter((r) => (r.fromId === playerId || r.toId === playerId) && r.at > since).map(clone);
+  }
+  async deleteFriendRequest(id: string): Promise<void> {
+    this.friendRequestRows = this.friendRequestRows.filter((r) => r.id !== id);
+  }
+  async deleteFriendRequestsBetween(a: string, b: string): Promise<void> {
+    this.friendRequestRows = this.friendRequestRows.filter((r) => !((r.fromId === a && r.toId === b) || (r.fromId === b && r.toId === a)));
+  }
+  async pruneFriendRequests(before: number): Promise<number> {
+    const n = this.friendRequestRows.length;
+    this.friendRequestRows = this.friendRequestRows.filter((r) => r.at >= before);
+    return n - this.friendRequestRows.length;
   }
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
     const since = q.lockedSince;
@@ -924,6 +1041,10 @@ export class MemoryRepo implements Repo {
     }
     // Blocks either way go; their own reports go; reports about them are closed and lose the evidence text.
     this.blockRows = this.blockRows.filter((b) => b.playerId !== id && b.blockedId !== id);
+    // Friends and requests go; name holds go (the name is free again).
+    this.friendshipRows = this.friendshipRows.filter((f) => f.a !== id && f.b !== id);
+    this.friendRequestRows = this.friendRequestRows.filter((r) => r.fromId !== id && r.toId !== id);
+    for (const [k, h] of this.nameHolds) if (h.playerId === id) this.nameHolds.delete(k);
     // A server-held village, its ledger and command log, other devices' tokens and linked sign-ins are only theirs.
     this.villageRows.delete(id);
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);

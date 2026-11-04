@@ -63,11 +63,17 @@ export type ErrorCode =
   /** 403: the purchase is not allowed (the under-18 monthly cap, or purchases not set up on this server); nothing was charged. */
   | 'purchase_refused'
   /** 403: staff suspended this account from online play (the message says why and until when). */
-  | 'banned';
+  | 'banned'
+  /** 409: that name belongs to someone else (or is held for its previous owner); `suggestions` lists free ones. */
+  | 'name_taken'
+  /** 429: one name change per 28 days; the message says when the next one is free. */
+  | 'name_cooldown';
 
 export interface ErrorBody {
   error: ErrorCode;
   message: string;
+  /** `name_taken` and refused names: free names close to the one asked for. */
+  suggestions?: string[];
 }
 
 export const Routes = {
@@ -121,6 +127,20 @@ export const Routes = {
   pushTokens: '/v1/push/tokens',
   /** GET, no token: the signed balance bundle for this game's rules, if any (step 76; feature `balance-bundles`). */
   balance: '/v1/balance',
+  /** GET: friends, requests, my friend code and privacy (step 59; feature `friends`). */
+  friends: '/v1/friends',
+  /** DELETE: stop being friends. */
+  friend: (playerId: string) => `/v1/friends/${encodeURIComponent(playerId)}`,
+  /** POST { name } | { code } | { playerId }: ask someone to be friends. */
+  friendRequests: '/v1/friends/requests',
+  /** POST { accept }: answer a request to me; DELETE: take back my own. */
+  friendRequest: (id: string) => `/v1/friends/requests/${encodeURIComponent(id)}`,
+  /** GET ?name=: one player by exact name (rate limited; respects their privacy). */
+  playerLookup: '/v1/players/lookup',
+  /** GET: one player by friend code (codes are shared on purpose). */
+  playerByCode: (code: string) => `/v1/players/code/${encodeURIComponent(code)}`,
+  /** PUT { findable?, showOnline? }: who can find me by name, and whether friends see when I was online. */
+  privacy: '/v1/me/privacy',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -169,10 +189,84 @@ export interface PlayerView {
   hallLevel: number;
   shieldUntil: number;
   groveId: string | null;
+  /** Protocol 8 (step 59): when the next name change is free (0: now). */
+  nameChangeAt?: number;
+  /** Protocol 8: staff and official accounts (shown with a badge nobody else can get). */
+  staff?: boolean;
 }
 
 export interface RenameRequest {
   name: string;
+}
+
+// ---------------------------------------------------------------- friends (roadmap step 59)
+
+/** Who may find a player by typing their name (friend codes always work). */
+export type Findable = 'everyone' | 'friends_of_friends' | 'nobody';
+
+/** A player as a profile card: lookups, friends and requests. */
+export interface PlayerCard {
+  id: string;
+  name: string;
+  /** Keep level. */
+  keep: number;
+  honor: number;
+  /** League id (ranks.json). */
+  league: string;
+  /** Their Alliance's name, if any. */
+  alliance: string | null;
+  /** Staff and official accounts. */
+  staff?: boolean;
+  /** Their previous name, for 28 days after a change. */
+  formerly?: string;
+  /** How this player relates to me. */
+  relation: 'self' | 'friend' | 'requested' | 'incoming' | 'none';
+}
+
+export interface FriendView extends PlayerCard {
+  /** Friends since (epoch ms). */
+  since: number;
+  /** Last time they were online, unless they hide it. */
+  lastSeen?: number;
+}
+
+export interface FriendRequestView {
+  id: string;
+  at: number;
+  /** Requests lapse after 14 days. */
+  expiresAt: number;
+  /** The other player (the sender for incoming, the receiver for outgoing). */
+  player: PlayerCard;
+}
+
+export interface FriendsResponse {
+  /** My friend code, e.g. "KAGE-7Q4M2K" (share it, or as a link or QR code). */
+  code: string;
+  findable: Findable;
+  showOnline: boolean;
+  friends: FriendView[];
+  incoming: FriendRequestView[];
+  outgoing: FriendRequestView[];
+  /** Most friends a player can have. */
+  max: number;
+}
+
+export interface FriendRequestBody {
+  name?: string;
+  code?: string;
+  playerId?: string;
+}
+
+/** `friends`: they had already asked me, so we are friends now. */
+export interface FriendRequestResult {
+  status: 'sent' | 'friends';
+  request?: FriendRequestView;
+  friend?: FriendView;
+}
+
+export interface PrivacyRequest {
+  findable?: Findable;
+  showOnline?: boolean;
 }
 
 /**

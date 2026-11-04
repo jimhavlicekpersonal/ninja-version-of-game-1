@@ -3,10 +3,11 @@ import pg from 'pg';
 import { contentHash } from './contentHash';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
-import { DELETED_PLAYER } from './repo';
+import { DELETED_PLAYER, NameTakenError } from './repo';
 import type {
   AttackRecord,
   Block,
+  FriendRequest,
   ChatRow,
   DeletionRequest,
   Donation,
@@ -63,7 +64,18 @@ const toPlayer = (r: Row): Player => ({
       }
     : {}),
   ...(num(r.honor_loss_day) >= 0 ? { honorLoss: { day: num(r.honor_loss_day), lost: num(r.honor_lost) } } : {}),
+  ...(r.name_key !== null && r.name_key !== undefined ? { nameKey: String(r.name_key) } : {}),
+  previousName: strOrNull(r.previous_name),
+  nameChangedAt: num(r.name_changed_at),
+  freeRenames: num(r.free_renames),
+  findable: (r.findable === 'nobody' || r.findable === 'friends_of_friends' ? r.findable : 'everyone') as Player['findable'],
+  showOnline: r.show_online !== false,
+  friendCode: strOrNull(r.friend_code),
+  staff: r.staff === true,
 });
+
+/** Postgres said a unique key (name or friend code) is already used. */
+const isUniqueClash = (e: unknown) => (e as { code?: string })?.code === '23505' && /name_key|friend_code/.test(String((e as { constraint?: string }).constraint ?? (e as Error).message));
 
 const toTicket = (r: Row): Ticket => {
   const t: Ticket = {
@@ -287,10 +299,12 @@ export class PgRepo implements Repo {
 
   async createPlayer(p: Player): Promise<void> {
     await this.db.query(
-      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0],
-    );
+      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until, name_key, free_renames)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0, p.nameKey ?? null, p.freeRenames ?? 0],
+    ).catch((e) => {
+      throw isUniqueClash(e) ? new NameTakenError() : e;
+    });
   }
 
   async playerByTokenHash(hash: string): Promise<Player | null> {
@@ -453,6 +467,14 @@ export class PgRepo implements Repo {
       mutedUntil: 'muted_until',
       bannedUntil: 'banned_until',
       banReason: 'ban_reason',
+      nameKey: 'name_key',
+      previousName: 'previous_name',
+      nameChangedAt: 'name_changed_at',
+      freeRenames: 'free_renames',
+      findable: 'findable',
+      showOnline: 'show_online',
+      friendCode: 'friend_code',
+      staff: 'staff',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];
@@ -483,7 +505,62 @@ export class PgRepo implements Repo {
     }
     if (!sets.length) return;
     vals.push(id);
-    await this.db.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals);
+    await this.db.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals).catch((e) => {
+      throw isUniqueClash(e) ? new NameTakenError() : e;
+    });
+  }
+
+  // names and friends (roadmap step 59)
+  async playerByNameKey(key: string): Promise<Player | null> {
+    const r = await this.rows('select * from players where name_key = $1', [key]);
+    return r[0] ? toPlayer(r[0]) : null;
+  }
+  async playerByFriendCode(code: string): Promise<Player | null> {
+    const r = await this.rows('select * from players where friend_code = $1', [code]);
+    return r[0] ? toPlayer(r[0]) : null;
+  }
+  async nameHold(key: string, now: number): Promise<{ playerId: string; until: number } | null> {
+    const r = await this.rows('select player_id, until from name_holds where name_key = $1 and until > $2', [key, now]);
+    return r[0] ? { playerId: String(r[0].player_id), until: num(r[0].until) } : null;
+  }
+  async holdName(key: string, playerId: string, until: number): Promise<void> {
+    await this.db.query('insert into name_holds (name_key, player_id, until) values ($1, $2, $3) on conflict (name_key) do update set player_id = excluded.player_id, until = excluded.until', [key, playerId, until]);
+  }
+  async playersWithoutNameKey(limit: number): Promise<Player[]> {
+    return (await this.rows('select * from players where name_key is null order by created_at, id limit $1', [limit])).map(toPlayer);
+  }
+  async addFriendship(a: string, b: string, at: number): Promise<void> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    await this.db.query('insert into friendships (a, b, since) values ($1, $2, $3) on conflict do nothing', [x, y, at]);
+  }
+  async removeFriendship(a: string, b: string): Promise<void> {
+    const [x, y] = a < b ? [a, b] : [b, a];
+    await this.db.query('delete from friendships where a = $1 and b = $2', [x, y]);
+  }
+  async friendsOf(playerId: string): Promise<{ id: string; since: number }[]> {
+    const r = await this.rows('select case when a = $1 then b else a end as id, since from friendships where a = $1 or b = $1', [playerId]);
+    return r.map((x) => ({ id: String(x.id), since: num(x.since) }));
+  }
+  async addFriendRequest(r: FriendRequest): Promise<void> {
+    await this.db.query('insert into friend_requests (id, from_id, to_id, at) values ($1, $2, $3, $4)', [r.id, r.fromId, r.toId, r.at]);
+  }
+  async getFriendRequest(id: string): Promise<FriendRequest | null> {
+    const r = await this.rows('select * from friend_requests where id = $1', [id]);
+    return r[0] ? { id: String(r[0].id), fromId: String(r[0].from_id), toId: String(r[0].to_id), at: num(r[0].at) } : null;
+  }
+  async friendRequestsOf(playerId: string, since: number): Promise<FriendRequest[]> {
+    const r = await this.rows('select * from friend_requests where (from_id = $1 or to_id = $1) and at > $2 order by at', [playerId, since]);
+    return r.map((x) => ({ id: String(x.id), fromId: String(x.from_id), toId: String(x.to_id), at: num(x.at) }));
+  }
+  async deleteFriendRequest(id: string): Promise<void> {
+    await this.db.query('delete from friend_requests where id = $1', [id]);
+  }
+  async deleteFriendRequestsBetween(a: string, b: string): Promise<void> {
+    await this.db.query('delete from friend_requests where (from_id = $1 and to_id = $2) or (from_id = $2 and to_id = $1)', [a, b]);
+  }
+  async pruneFriendRequests(before: number): Promise<number> {
+    const r = await this.db.query('delete from friend_requests where at < $1', [before]);
+    return r.rowCount ?? 0;
   }
 
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
@@ -635,6 +712,10 @@ export class PgRepo implements Repo {
       );
       // Blocks either way and their own reports go; reports about them close, without the evidence text.
       await q('delete from blocks where player_id = $1 or blocked_id = $1', [id]);
+      // Friends and requests go; name holds go (the name is free again).
+      await q('delete from friendships where a = $1 or b = $1', [id]);
+      await q('delete from friend_requests where from_id = $1 or to_id = $1', [id]);
+      await q('delete from name_holds where player_id = $1', [id]);
       await q('delete from reports where reporter_id = $1', [id]);
       await q(
         `update reports set target_id = $2, target_name = $3, text = null,

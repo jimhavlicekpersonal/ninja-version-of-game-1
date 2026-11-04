@@ -49,6 +49,8 @@ export class ApiError extends Error {
     readonly status: number,
     readonly code: import('../../src/backend/net/protocol').ErrorCode,
     message: string,
+    /** Free names close to a refused one (`name_taken`). */
+    readonly suggestions?: string[],
   ) {
     super(message);
   }
