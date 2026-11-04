@@ -8,6 +8,7 @@ import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFo
 import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../../gameplay/sim/save';
 import type { Building, Cost, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
+import { NAME_ERROR_TEXT, checkName } from '../../gameplay/sim/social/names';
 import { armyHousing, housingCapacity, troopUnlock } from '../../gameplay/sim/army';
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { replayable } from '../../gameplay/sim/battle/battle';
@@ -344,11 +345,15 @@ export class Hud {
         wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
         if (conn.player) {
-          const name = h('input', { class: 'text', type: 'text', maxlength: 24, value: conn.player.name }) as HTMLInputElement;
+          const name = h('input', { class: 'text', type: 'text', maxlength: 96, dir: 'auto', autocomplete: 'nickname', spellcheck: 'false', value: conn.player.name }) as HTMLInputElement;
           name.addEventListener('keydown', (e) => e.stopPropagation());
           const save = h('button', { class: 'btn ghost', type: 'button' }, 'Rename');
           save.addEventListener('click', () => {
-            void conn.rename(name.value).then(
+            // Any script works (names.ts); the server applies the same rules.
+            const checked = checkName(name.value);
+            if (checked.error) return this.toast(NAME_ERROR_TEXT[checked.error], 'error');
+            name.value = checked.name;
+            void conn.rename(checked.name).then(
               () => this.toast('Name saved.', 'success'),
               (e: Error) => this.toast(e.message, 'error'),
             );

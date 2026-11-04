@@ -1,10 +1,11 @@
 /** Real Groves: membership, filtered chat, troop requests and donations. */
 import { filterText } from '../../src/gameplay/sim/social/grove';
+import { isolateName } from '../../src/gameplay/sim/social/names';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummary, GroveView, GrovesResponse, InboxResponse, MemberView, RequestView, RequestsResponse } from '../../src/backend/net/protocol';
 import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
-import { cleanName } from './identity';
+import { chosenName } from './identity';
 import { maxReinforcementAt } from './pvp';
 
 
@@ -60,13 +61,13 @@ export async function listGroves(ctx: ServerContext, me: Player, query: string):
 
 export async function createGrove(ctx: ServerContext, me: Player, name: unknown): Promise<GroveView> {
   if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
-  const clean = cleanName(name, ctx);
+  const clean = chosenName(name, ctx);
   const colors = ctx.data.social.colors;
   const grove: Grove = { id: ctx.uuid(), name: clean, color: colors[Math.floor(ctx.random() * colors.length)], createdAt: ctx.now() };
   await ctx.repo.createGrove(grove);
   if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Leader', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
   await ctx.repo.updatePlayer(me.id, { groveId: grove.id });
-  await system(ctx, grove.id, `${me.name} founded ${grove.name}!`);
+  await system(ctx, grove.id, `${isolateName(me.name)} founded ${isolateName(grove.name)}!`);
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }
 
@@ -79,7 +80,7 @@ export async function joinGrove(ctx: ServerContext, me: Player, id: string): Pro
   if (rows.length >= maxMembers(ctx)) throw new ApiError(409, 'full', 'That Alliance is full.');
   if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Member', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
   await ctx.repo.updatePlayer(me.id, { groveId: grove.id });
-  await system(ctx, grove.id, `${me.name} joined the Alliance. Say hello!`);
+  await system(ctx, grove.id, `${isolateName(me.name)} joined the Alliance. Say hello!`);
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }
 
@@ -88,14 +89,14 @@ export async function leaveGrove(ctx: ServerContext, me: Player): Promise<void> 
   await ctx.repo.removeMember(grove.id, me.id);
   await ctx.repo.updatePlayer(me.id, { groveId: null });
   await ctx.repo.closeRequestsOf(me.id);
-  await system(ctx, grove.id, `${me.name} left the Alliance.`);
+  await system(ctx, grove.id, `${isolateName(me.name)} left the Alliance.`);
   if (role === 'Leader') {
     // Hand leadership to the longest-serving member.
     const rest = (await ctx.repo.members(grove.id)).sort((a, b) => (a.role === 'Elder' ? 0 : 1) - (b.role === 'Elder' ? 0 : 1) || a.joinedAt - b.joinedAt);
     if (rest[0]) {
       await ctx.repo.updateMember(grove.id, rest[0].playerId, { role: 'Leader' });
       const p = await ctx.repo.getPlayer(rest[0].playerId);
-      if (p) await system(ctx, grove.id, `${p.name} is the new leader.`);
+      if (p) await system(ctx, grove.id, `${isolateName(p.name)} is the new leader.`);
     }
   }
 }

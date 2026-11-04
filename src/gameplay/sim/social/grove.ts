@@ -77,10 +77,15 @@ export function groveLevel(xp: number, data: GameData): number {
 
 /** Replace blocked words with flowers. Chat is always filtered. */
 export function filterText(text: string, data: GameData): string {
-  let out = text.slice(0, 160);
+  let out = Array.from(text).slice(0, 160).join('');
   for (const word of data.social.profanity) {
-    const re = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+')}\\b`, 'gi');
-    out = out.replace(re, (m) => '✿'.repeat(Math.min(5, m.length)));
+    const body = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+');
+    // Word edges in every script; scripts written without spaces (Chinese, Japanese, Thai…) match anywhere.
+    const unspaced = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u.test(word);
+    const re = unspaced ? new RegExp(body, 'giu') : new RegExp(`(^|[^\\p{L}\\p{M}\\p{N}_])(${body})(?=$|[^\\p{L}\\p{M}\\p{N}_])`, 'giu');
+    out = unspaced
+      ? out.replace(re, (m) => '✿'.repeat(Math.min(5, Array.from(m).length)))
+      : out.replace(re, (_m, edge: string, w: string) => edge + '✿'.repeat(Math.min(5, Array.from(w).length)));
   }
   return out;
 }

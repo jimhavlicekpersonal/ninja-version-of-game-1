@@ -1,0 +1,244 @@
+/**
+ * Translation tooling for locales/ (see locales/CLAUDE.md). Pure functions; the
+ * CLI is i18n.mjs and the checks also run in tests/locales/locales.test.ts.
+ *
+ * Layout:
+ *   locales/languages.json      the 50 languages
+ *   locales/en/<ns>.json        English source: { key: text }
+ *   locales/<code>/<ns>.json    worksheet: { key: { en, text, old? } }
+ * "data" is generated from src/gameplay/data by extract(); other namespaces
+ * (for example "ui") are written by hand or by the text layer.
+ */
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+export const LOCALES = join(ROOT, 'locales');
+const DATA = join(ROOT, 'src', 'gameplay', 'data');
+
+// ------------------------------------------------------------------ languages
+
+export function languages() {
+  return JSON.parse(readFileSync(join(LOCALES, 'languages.json'), 'utf8'));
+}
+
+/** Target languages in translation order (wave, then list order). */
+export function targets() {
+  const { source, languages: all } = languages();
+  return all.filter((l) => l.code !== source).map((l, i) => ({ ...l, i })).sort((a, b) => a.wave - b.wave || a.i - b.i);
+}
+
+// ------------------------------------------------------------------ extract
+
+/** Fields whose string value is player-facing text. */
+const TEXT_KEYS = new Set(['name', 'description', 'text', 'label', 'title', 'summary']);
+/** Whole string lists that are player-facing (generated names, bot chat). */
+const LISTS = [/^names\.(placeFirst|placeSecond|playerFirst|playerSecond)$/, /^social\.chatLines\.\w+$/, /^social\.groveNames\.\w+$/];
+/** Never translated: comments, art descriptions, moderation lists, codes. */
+const SKIP = new Set(['$comment', 'look', 'visualStages', 'profanity', 'currency', 'productId']);
+
+function segment(item, index) {
+  if (item && typeof item === 'object' && !Array.isArray(item)) {
+    if (typeof item.id === 'string') return item.id;
+    if (typeof item.tier === 'number') return `tier${item.tier}`;
+  }
+  return String(index);
+}
+
+function walk(value, path, out) {
+  if (Array.isArray(value)) {
+    const p = path.join('.');
+    if (LISTS.some((re) => re.test(p))) {
+      value.forEach((s, i) => typeof s === 'string' && out.push([`${p}.${i}`, s]));
+      return;
+    }
+    value.forEach((item, i) => walk(item, [...path, segment(item, i)], out));
+    return;
+  }
+  if (value && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value)) {
+      if (SKIP.has(k)) continue;
+      if (typeof v === 'string') {
+        if (TEXT_KEYS.has(k) && /\p{L}/u.test(v)) out.push([[...path, k].join('.'), v]);
+      } else walk(v, [...path, k], out);
+    }
+  }
+}
+
+/** English source strings from the game data, keyed by stable ids. */
+export function extractData() {
+  const out = [];
+  for (const file of readdirSync(DATA).filter((f) => f.endsWith('.json')).sort()) {
+    walk(JSON.parse(readFileSync(join(DATA, file), 'utf8')), [file.replace(/\.json$/, '')], out);
+  }
+  const map = {};
+  for (const [k, v] of out) {
+    if (k in map && map[k] !== v) throw new Error(`Duplicate key with different text: ${k}`);
+    map[k] = v;
+  }
+  return map;
+}
+
+// ------------------------------------------------------------------ files
+
+const read = (p) => JSON.parse(readFileSync(p, 'utf8'));
+
+export function namespaces() {
+  return readdirSync(join(LOCALES, 'en')).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, '')).sort();
+}
+
+export function source(ns) {
+  return read(join(LOCALES, 'en', `${ns}.json`));
+}
+
+export function worksheetPath(code, ns) {
+  return join(LOCALES, code, `${ns}.json`);
+}
+
+export function worksheet(code, ns) {
+  const p = worksheetPath(code, ns);
+  return existsSync(p) ? read(p) : {};
+}
+
+/** One entry per line, so diffs and AI edits stay small. */
+export function formatSource(map) {
+  const lines = Object.entries(map).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`);
+  return `{\n${lines.join(',\n')}\n}\n`;
+}
+
+export function formatWorksheet(map) {
+  const lines = Object.entries(map).map(([k, e]) => {
+    const parts = [`"en": ${JSON.stringify(e.en)}`, `"text": ${JSON.stringify(e.text)}`];
+    if (e.old) parts.push(`"old": ${JSON.stringify(e.old)}`);
+    return `  ${JSON.stringify(k)}: { ${parts.join(', ')} }`;
+  });
+  return `{\n${lines.join(',\n')}\n}\n`;
+}
+
+export function writeSource(ns, map) {
+  mkdirSync(join(LOCALES, 'en'), { recursive: true });
+  writeFileSync(join(LOCALES, 'en', `${ns}.json`), formatSource(map));
+}
+
+// ------------------------------------------------------------------ sync
+
+/**
+ * Bring a worksheet up to date with English: new keys get an empty text,
+ * removed keys go, and a translation whose English changed is moved to `old`
+ * (shown to the translator as a hint) and the entry goes back on the to-do list.
+ */
+export function syncWorksheet(src, ws) {
+  const out = {};
+  let added = 0;
+  let changed = 0;
+  for (const [k, en] of Object.entries(src)) {
+    const e = ws[k];
+    if (!e) {
+      out[k] = { en, text: '' };
+      added++;
+    } else if (e.en !== en) {
+      out[k] = { en, text: '', ...(e.text || e.old ? { old: e.text || e.old } : {}) };
+      changed++;
+    } else {
+      out[k] = { en, text: e.text ?? '', ...(e.old && !e.text ? { old: e.old } : {}) };
+    }
+  }
+  const removed = Object.keys(ws).filter((k) => !(k in src)).length;
+  return { worksheet: out, added, changed, removed };
+}
+
+// ------------------------------------------------------------------ checks
+
+const PLACEHOLDER = /\{[A-Za-z0-9_]+\}/g;
+const placeholders = (s) => (s.match(PLACEHOLDER) ?? []).sort().join(' ');
+
+const SCRIPT = {
+  Latn: /\p{Script=Latin}/u,
+  Cyrl: /\p{Script=Cyrillic}/u,
+  Grek: /\p{Script=Greek}/u,
+  Arab: /\p{Script=Arabic}/u,
+  Hebr: /\p{Script=Hebrew}/u,
+  Hans: /\p{Script=Han}/u,
+  Hant: /\p{Script=Han}/u,
+  Jpan: /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u,
+  Kore: /[\p{Script=Hangul}\p{Script=Han}]/u,
+  Deva: /\p{Script=Devanagari}/u,
+  Beng: /\p{Script=Bengali}/u,
+  Guru: /\p{Script=Gurmukhi}/u,
+  Gujr: /\p{Script=Gujarati}/u,
+  Orya: /\p{Script=Oriya}/u,
+  Taml: /\p{Script=Tamil}/u,
+  Telu: /\p{Script=Telugu}/u,
+  Knda: /\p{Script=Kannada}/u,
+  Mlym: /\p{Script=Malayalam}/u,
+  Thai: /\p{Script=Thai}/u,
+  Ethi: /\p{Script=Ethiopic}/u,
+};
+
+/** Share of letters (outside placeholders) written in the expected script. */
+export function scriptShare(texts, script) {
+  const re = SCRIPT[script];
+  let total = 0;
+  let hit = 0;
+  for (const t of texts) {
+    for (const ch of t.replace(PLACEHOLDER, '')) {
+      if (!/\p{L}/u.test(ch)) continue;
+      total++;
+      if (re.test(ch)) hit++;
+    }
+  }
+  return total ? hit / total : 1;
+}
+
+/**
+ * Problems in one language. Errors fail `npm run i18n:check` and the test;
+ * warnings are for the translator to review.
+ */
+export function checkLanguage(lang) {
+  const errors = [];
+  const warnings = [];
+  const translated = [];
+  let total = 0;
+  let done = 0;
+  if (!SCRIPT[lang.script]) errors.push(`unknown script ${lang.script}`);
+  for (const ns of namespaces()) {
+    const src = source(ns);
+    const ws = worksheet(lang.code, ns);
+    if (!existsSync(worksheetPath(lang.code, ns))) {
+      errors.push(`${ns}: no worksheet (run npm run i18n:sync)`);
+      continue;
+    }
+    for (const k of Object.keys(ws)) if (!(k in src)) errors.push(`${ns}: ${k} is not in English (run npm run i18n:sync)`);
+    for (const [k, en] of Object.entries(src)) {
+      total++;
+      const e = ws[k];
+      if (!e) {
+        errors.push(`${ns}: ${k} missing (run npm run i18n:sync)`);
+        continue;
+      }
+      if (e.en !== en) errors.push(`${ns}: ${k} has stale English (run npm run i18n:sync)`);
+      const t = e.text ?? '';
+      if (typeof t !== 'string') {
+        errors.push(`${ns}: ${k} text is not a string`);
+        continue;
+      }
+      if (!t) continue;
+      done++;
+      translated.push(t);
+      if (placeholders(t) !== placeholders(en)) errors.push(`${ns}: ${k} placeholders ${placeholders(t) || 'none'} must be ${placeholders(en) || 'none'}`);
+      if (t !== t.trim()) errors.push(`${ns}: ${k} has leading or trailing spaces`);
+      if (t.includes('\n') && !en.includes('\n')) errors.push(`${ns}: ${k} has a line break the English does not`);
+      if (/[<>]/.test(t) && !/[<>]/.test(en)) errors.push(`${ns}: ${k} contains < or >`);
+      if (t !== t.normalize('NFC')) errors.push(`${ns}: ${k} is not NFC-normalized`);
+      if (/[‪-‮⁦-⁩​﻿]/.test(t)) errors.push(`${ns}: ${k} contains invisible direction or zero-width characters`);
+      if (lang.script !== 'Latn' && t === en && en.length > 3) warnings.push(`${ns}: ${k} is identical to English`);
+      if (t.length > en.length * 2.5 + 8) warnings.push(`${ns}: ${k} is ${(t.length / en.length).toFixed(1)}x the English length`);
+    }
+  }
+  if (translated.length >= 20 && SCRIPT[lang.script]) {
+    const share = scriptShare(translated, lang.script);
+    if (share < 0.7) errors.push(`only ${Math.round(share * 100)}% of letters are in the ${lang.script} script; is this the right language?`);
+  }
+  return { code: lang.code, total, done, errors, warnings };
+}

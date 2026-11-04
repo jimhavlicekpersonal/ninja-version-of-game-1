@@ -1,4 +1,5 @@
 import { filterText } from '../../src/gameplay/sim/social/grove';
+import { NAME_ERROR_TEXT, checkName } from '../../src/gameplay/sim/social/names';
 import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
@@ -9,9 +10,17 @@ export function hello(ctx: ServerContext): HelloResponse {
   return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: 6, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters'], };
 }
 
+/** A usable name from anything a client sends: never fails (registration falls back to 'Ruler'). */
 export function cleanName(raw: unknown, ctx: ServerContext): string {
-  const s = filterText(String(raw ?? '').replace(/\s+/g, ' ').trim(), ctx.data).slice(0, 24);
-  return s.length >= 2 ? s : 'Ruler';
+  const c = checkName(raw);
+  return c.error ? 'Ruler' : filterText(c.name, ctx.data);
+}
+
+/** A name the player chose: refused with a reason when it can't be used (src/gameplay/sim/social/names.ts). */
+export function chosenName(raw: unknown, ctx: ServerContext): string {
+  const c = checkName(raw);
+  if (c.error) throw new ApiError(400, 'bad_request', NAME_ERROR_TEXT[c.error]);
+  return filterText(c.name, ctx.data);
 }
 
 export async function register(ctx: ServerContext, name: unknown): Promise<RegisterResponse> {
@@ -51,7 +60,7 @@ export function playerView(p: Player): PlayerView {
 }
 
 export async function rename(ctx: ServerContext, me: Player, name: unknown): Promise<PlayerView> {
-  const clean = cleanName(name, ctx);
+  const clean = chosenName(name, ctx);
   await ctx.repo.updatePlayer(me.id, { name: clean, updatedAt: ctx.now() });
   return playerView({ ...me, name: clean });
 }

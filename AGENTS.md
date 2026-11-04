@@ -10,6 +10,7 @@ Kagemura is split so that each part can be upgraded by a **new, separate Claude 
 | **GUI & INTERACTION AI** | 1 | `src/presentation/render/`, `src/presentation/ui/` | `src/gameplay/**` rules and data, `server/` | "Read `src/presentation/CLAUDE.md`. Task: …" |
 | **GAME THEORY AI** | 2 | `src/gameplay/` (sim, data, control), `docs/game-theory/`, `tools/progression/` | art, UI layout, server code | "Read `src/gameplay/CLAUDE.md` and `docs/game-theory/PROGRESSION_MODEL.md`. Task: …" |
 | **BACKEND AI** | 3 | `src/backend/`, `server/`, `docs/PROTOCOL.md`, `docs/SHIPPING.md`, `ios/`, `android/`, `.github/` | game rules (it calls them, never forks them), art, UI | "Read `src/backend/CLAUDE.md`. Task: …" |
+| **TRANSLATION AI** | Localization | `locales/<one language code>/` only | `locales/en/`, `languages.json`, game code, tools | "Read `locales/CLAUDE.md`. Run `npm run i18n:status` and translate the next language." Run several at once, one language each. |
 | **INTEGRATION** | all | `src/main.ts`, `src/app.ts`, `compartments.json`, contract files, root docs | — | "Read `AGENTS.md`. Merge branches X, Y; resolve contract changes; run all checks." |
 
 ## Workflow
@@ -20,6 +21,7 @@ Kagemura is split so that each part can be upgraded by a **new, separate Claude 
    - ART → GUI: `docs/art/REQUESTS.md`
    - GUI → GAME THEORY: `docs/game-theory/REQUESTS.md`
    - anyone → BACKEND: `docs/backend/REQUESTS.md`
+   - TRANSLATION → anyone: list unclear English in your final message (never edit `locales/en/`)
 4. **Before you finish:** `npm test` (includes the boundary test) and `npm run build`, plus `npm run typecheck:server` for backend work. Update your compartment's `CLAUDE.md` if you changed how things work.
 5. **Integration session** merges the branches into `main`, applies requested contract changes (edit the contract file, then update every caller), bumps `SAVE_VERSION` / `PROTOCOL_VERSION` if needed, and runs every check.
 

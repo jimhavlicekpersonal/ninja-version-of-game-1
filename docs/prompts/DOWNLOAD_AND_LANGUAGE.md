@@ -9,12 +9,22 @@ You are working on **Kagemura: Ninja Clans**, a TypeScript + Phaser 3.90 base-bu
 - **System A, lean downloads:** players download the app, and its updates, as rarely and as small as possible, without losing features or breaking store rules.
 - **System B, instant language:** from the first frame after launch, the game is already in the player's language, picked automatically with no question asked, so a new player can tap straight through to the village. The player can change it any time.
 
-Both systems share one fact: text and fonts for 100 languages are the largest new download this game will ever add. Design them together.
+Both systems share one fact: text and fonts for many languages are the largest new download this game will ever add. Design them together.
+
+## The rule behind every decision: tap to play, even on one bar
+
+Players hate waiting, and many play on poor mobile connections. Every choice follows from three rules:
+
+1. **Nothing between the tap and play waits on the network.** Everything needed to start, including the player's language, is already on the phone.
+2. **Every download is small, happens in the background, survives a dropped connection, and is never needed to keep playing.**
+3. **A byte ships only if a player on a slow connection would want it.**
+
+The owner has already made the decisions in section 6 under this rule. Do not ask them again. Raise one only if a measurement shows it breaks the rule.
 
 ## 0. Rules for this session
 
-1. **Phase 1 is design only.** Measure, research and write the plan in `docs/backend/DOWNLOAD_AND_LANGUAGE_PLAN.md`. Do not change game code in Phase 1. When the plan is written, stop and ask the owner to approve it and to answer the owner decisions (section 6).
-2. Read first: `CLAUDE.md`, `AGENTS.md`, `compartments.json`, `src/backend/CLAUDE.md`, `src/presentation/CLAUDE.md`, `src/gameplay/CLAUDE.md`, `docs/backend/PVP_ROADMAP.md` (step 76: server-delivered data), `docs/SHIPPING.md`, `vite.config.ts`, `src/backend/pwa/sw.template.js`, `src/backend/pwa/register.ts`, `index.html`, `src/main.ts`, `src/presentation/render/fonts.ts`, `src/backend/platform/prefs.ts`, `capacitor.config.ts`, `ios/App/App/Info.plist`, `android/app/src/main/AndroidManifest.xml`.
+1. **Phase 1 is design only.** Measure, research and write the plan in `docs/backend/DOWNLOAD_AND_LANGUAGE_PLAN.md`. Do not change game code in Phase 1. When the plan is written, stop and ask the owner to approve it. The decisions in section 6 are already made.
+2. Read first: `CLAUDE.md`, `AGENTS.md`, `compartments.json`, `locales/CLAUDE.md`, `locales/languages.json`, `src/gameplay/sim/social/names.ts`, `src/backend/CLAUDE.md`, `src/presentation/CLAUDE.md`, `src/gameplay/CLAUDE.md`, `docs/backend/PVP_ROADMAP.md` (step 76: server-delivered data), `docs/SHIPPING.md`, `vite.config.ts`, `src/backend/pwa/sw.template.js`, `src/backend/pwa/register.ts`, `index.html`, `src/main.ts`, `src/presentation/render/fonts.ts`, `src/backend/platform/prefs.ts`, `capacitor.config.ts`, `ios/App/App/Info.plist`, `android/app/src/main/AndroidManifest.xml`.
 3. Respect the compartments. The work spans BACKEND (service worker, native projects, data bundles, CI), GUI (text layer, fonts, language picker), GAME THEORY (sim events must carry ids and numbers, not English sentences) and INTEGRATION (`index.html`, `main.ts`, contracts). The plan must say which compartment owns each step and which contract files change.
 4. Every claim about store rules, OS behaviour or platform sizes must be checked against current official docs (Apple, Google, WebKit, Android, MDN) and cited with a link and the date read. Mark anything you could not verify as "unverified". Several facts below are estimates from an earlier review and must be re-measured.
 5. Keep npm scripts cross-platform (Windows). No new runtime dependencies unless the plan justifies each one by size and need.
@@ -35,7 +45,13 @@ Build output today (`vite build`):
 - **Every deploy re-downloads everything.** The service worker cache name includes a build id that changes on every build, and old caches are deleted, so unchanged files (Phaser, fonts, icons) are fetched again. Phaser and the game share one hashed file, so any game change also re-downloads Phaser.
 - Native app size is estimated, not measured: about 4–8 MB on Android and 6–12 MB on iOS.
 - GitHub Pages has a soft limit of 100 GB per month of bandwidth.
-- **No translation system exists.** User-visible English is hard-coded in `src/presentation/ui/*.ts`, `src/app.ts`, `index.html` (boot card: "Lighting the lanterns…"), `src/gameplay/data/*.json` (display names, descriptions) and some sim text. A rough count found 1,000–1,800 strings, about 40–70 KB of English. Expect 25–40 KB gzip per language and 3–4 MB gzip for 100 languages.
+- **Translations live in `locales/`, a separate compartment (`locales/CLAUDE.md`).**
+  - The 50 languages are in `locales/languages.json`: every language the App Store lists (44 distinct) plus Swahili, Hausa, Yoruba, Amharic, Zulu and Igbo. Each language has its script, direction, translation wave and notes.
+  - The English for game data (637 strings, generated from `src/gameplay/data` by `npm run i18n:extract`) is in `locales/en/data.json`.
+  - Each other language has a worksheet `locales/<code>/data.json` that a TRANSLATION AI fills one language at a time (`npm run i18n:status`, `i18n:next`, `i18n:check`; `tests/locales/` guards them).
+  - The game does not read `locales/` yet. Interface English is still hard-coded in `src/presentation/ui/*.ts`, `src/app.ts`, `index.html` (boot card: "Lighting the lanterns…") and some sim text.
+  - A rough count: 1,000–1,800 strings in all, about 40–70 KB of English. Expect 25–40 KB gzip per language, about 1.5–2 MB gzip for all 50.
+- **Player and Alliance names already accept every script** (`src/gameplay/sim/social/names.ts`, on the client and the server). Names display through the system-font fallback in the CSS and canvas font stacks. Keep that fallback.
 - Fonts dominate. Latin, Cyrillic, Greek and Vietnamese are 30–150 KB each. Arabic, Hebrew, Indic and Southeast Asian scripts are 50–250 KB per script. Chinese (Simplified and Traditional), Japanese and Korean are 1.5–5 MB per font. The current fonts' full versions cover Japanese.
 - `Info.plist` declares only `CFBundleDevelopmentRegion = en`, with no `CFBundleLocalizations`. Android has `configChanges` including `locale` but no `localeConfig`.
 - The game already works offline except online PvP and social. Online attacks wait in a saved outbox and the server keeps tickets for 1 hour.
@@ -71,13 +87,13 @@ Include a short, cited section on why size matters for installs (for example Goo
    - Give each language its own chunk.
    - Rewrite the service worker so unchanged hashed files survive deploys. Cache by file, not by build.
    - Download updates in the background and apply them on the next launch.
-   - Never precache all 100 languages.
-5. **What goes inside the native binary vs. downloaded later.** Recommended starting point, to confirm or reject with measurements:
-   - The binary carries all *text* for all supported languages (small, so the first launch never needs a network), plus the Latin, Cyrillic and Greek fonts.
-   - Large-script fonts (Chinese, Japanese, Korean, and possibly others) use good system fonts at first, with the custom display font downloaded later and optionally.
-   - Compare with platform asset delivery: Play Asset Delivery, and Apple On-Demand Resources or Background Assets (check which Apple currently recommends) against a plain self-hosted CDN. Pick one approach that works the same on web, iOS and Android if possible.
-6. **Over-the-air updates of the app's web code inside the native shell** (Capgo-style live updates). The project rule today is "data only, never code". Present the rules (Apple Developer Program License Agreement on downloaded interpreted code, guideline 2.5.2, Google Play policy), the risks and the gains. Recommend, but make it an owner decision. Default: off.
-7. **Hosting.** Static hosting for the web build and the language and data packs once traffic passes GitHub Pages' soft limit (for example Cloudflare Pages or R2). Give costs at 10k, 100k and 1M monthly players.
+   - Never precache all 50 languages.
+5. **What goes inside the native binary (decided, section 6).**
+   - All 50 languages' text and the small Latin font subsets go in the binary. Every other script uses system fonts.
+   - Measure the real binary growth.
+   - Data packs come from the self-hosted CDN on every platform. Do not use Play Asset Delivery or Apple On-Demand Resources or Background Assets: one mechanism for web, iOS and Android.
+6. **Live code updates inside the native apps: decided no (section 6).** Keep the "data only, never code" rule. Write down the Apple and Google rules that make data packs allowed (Apple guideline 2.5.2; Google Play device and network abuse policy), with citations.
+7. **Hosting: decided Cloudflare (section 6).** Plan the move from GitHub Pages: deploy workflow, cache headers, HTTP/3, and costs at 10k, 100k and 1M monthly players.
 8. **A size budget enforced in CI.** A cross-platform script reports compressed sizes per chunk, per language pack and per font, and fails the build when a budget is exceeded. Propose the budgets, for example:
    - core JS ≤ 520 KB gzip
    - first-visit bytes ≤ 650 KB
@@ -131,7 +147,13 @@ Not allowed at first frame: IP geolocation, the store storefront country (asynch
   - a pseudo-locale (accented and lengthened) to catch truncation
   - a check that every key exists in English
   - a lint or test that fails on new hard-coded user-visible English
-- Propose the 100 languages, ranked by store market size and player reach, and the fallback chain for each (for example `gsw` → `de`, `es-MX` → `es-419` → `es`).
+- The language list is fixed: `locales/languages.json` (50 languages, with waves and `alsoFor` aliases such as `gl`/`eu` → `es`, `jv`/`su` → `id`, `no`/`nn` → `nb`). A missing translation falls back to English.
+- Build the text layer on `locales/`:
+  - Move interface strings into `locales/en/ui.json`. `npm run i18n:sync` then adds them to every worksheet.
+  - Pack each language's filled `text` values into one runtime file at build time.
+  - Make sim events carry ids and parameters.
+  - Add ICU plural support. When English becomes ICU messages, sync puts those entries back on the translators' to-do list automatically.
+- Names inserted into sentences go through `isolateName` (names.ts) or `<bdi>`, so a right-to-left name cannot reorder the sentence.
 - Localized App Store and Play listings (name, subtitle, keywords, screenshots) in the top languages, since these drive installs per country. This is an owner step; list it.
 
 ## 4. Verification the plan must include
@@ -152,34 +174,41 @@ Write `docs/backend/DOWNLOAD_AND_LANGUAGE_PLAN.md` with:
 
 1. Measured baselines (with the commands used) and targets for every metric.
 2. Decisions for each design question in sections 2 and 3, with the options weighed, the choice and the reason. Cite sources.
-3. The size budget table (core, per language, per font, native binary per platform), and the total for 100 languages under the recommended approach.
+3. The size budget table (core, per language, per font, native binary per platform), and the total for all 50 languages under the decided approach.
 4. A numbered step list. Each step names its compartment, the files it touches, the contract changes (and whether `SAVE_VERSION`, `SIM_RULES` or the protocol change), its tests, and a size or time estimate.
 5. Risks and what would make you change the plan.
 6. The owner decisions (section 6), each with a recommendation.
 
 Then stop. Do not start Phase 2 until the owner approves.
 
-## 6. Owner decisions to ask for
+## 6. Decisions (made by the owner under "tap to play, even on one bar")
 
-- Over-the-air web-code updates inside the native apps: yes or no (default no).
-- The 100-language list, and which languages launch first.
-- Translation source: professional, machine translation plus review, or a mix (with cost estimates).
-- Which custom fonts ship inside the binary and which are downloaded or replaced by system fonts.
-- Store release cadence, and the old-protocol support window.
-- Whether the language choice travels with "Copy save code".
-- Hosting for language and data packs once GitHub Pages' limit is near.
-
+| Question | Decision | Why |
+|---|---|---|
+| Live code updates inside the native apps | **No.** Code changes ship only in store releases. Balance numbers, events, offers and text ship as data packs. | Store updates already install in the background. A half-downloaded code bundle on a bad connection could stop the game from starting, and store-rule risk. |
+| Languages | **The 50 in `locales/languages.json`**, translated in waves 1–4 (largest reach first). | The whole world at launch: every App Store language plus Africa's largest written languages. |
+| Translation source | **AI translation, one language per session** (`locales/CLAUDE.md`, checked by `npm run i18n:check`). A native speaker reviews the store listing and tutorial for wave 1 before launch. | Every player gets their language on day one. Nobody waits for a later update. |
+| Fonts | **Never download a font.** Keep only the small Latin subsets of the two display fonts (extend to Latin Extended for Vietnamese, Yoruba, Igbo and Hausa if that adds ≤ 30 KB). Every other script uses the phone's own fonts, including Japanese: no 2–5 MB M PLUS 1 set. | The phone's fonts are already installed and tuned for its screen. Zero bytes, zero waiting. |
+| What the native app carries | **All 50 languages' text** (about 1.5–2 MB compressed), so the first launch never needs the network. | Text is small. Waiting for a language pack on one bar is not. |
+| What the web build loads | **Only the detected language**, fetched alongside the main bundle and kept offline. Others are fetched only when the player switches. | Smallest first visit. |
+| Store release cadence | **At most one store release a month.** Hotfixes only for crashes or lost progress. Data packs between releases. | Fewer store updates for players. |
+| Old app versions | **The server accepts the current and previous protocol for at least 90 days.** An outdated app never loses offline play; only online PvP pauses with "Update to play online". | No forced update ever blocks the game. |
+| Data packs | Signed, versioned, data only. Delta + brotli, about 20 KB typical. Downloaded when the app is idle, resumable, applied on the next launch, never mid-session. | Rule 2. |
+| Language and "Copy save code" | **The language is not part of the save.** It is a device preference. A new phone picks its own language in the first frame. | The language belongs to the reader and the device, not the village. |
+| Hosting for web, language and data packs | **Cloudflare (Pages + R2) before launch.** | Servers near the player, HTTP/3 (better on lossy mobile networks), free bandwidth. GitHub Pages has a soft limit of 100 GB a month. |
+| Online play on a bad connection | Prefetch 3 opponents while the signal is good. Sync every 60 s or on events (not 15 s). Compress requests. Keep the saved outbox. | Rule 1 for raids. These are BACKEND steps; add them to `docs/backend/PVP_ROADMAP.md`. |
+| Store listings | Localize the listing in all 44 App Store languages (owner step). Use Google Play's extra listing languages for the African six where Play supports them (verify which). Otherwise use the English or French listing. | Players install from listings in their own language. |
 ## 7. Phase 2 (after approval)
 
 Build in this order, one compartment branch per step as `AGENTS.md` describes, each with its tests and the size report:
 
 1. Size-budget script and CI gate.
 2. Chunk split and a service worker that keeps unchanged files.
-3. Text layer and string extraction, English only, with the pseudo-locale.
-4. Language matcher and inline boot script, with the native per-app language declarations.
+3. Text layer on `locales/`: interface strings into `locales/en/ui.json`, the runtime pack per language, the pseudo-locale.
+4. Language matcher and inline boot script, with the native per-app language declarations for all 50 codes.
 5. Language picker UI.
-6. Font strategy.
-7. Data bundles and the version window.
-8. Translations.
+6. System-font stacks per script.
+7. Data packs and the version window.
+8. Translations: start TRANSLATION AI sessions, one per language, in wave order (`locales/CLAUDE.md`). They can start on `data.json` today, in parallel with steps 1–7.
 
 After each step, report the measured bytes against the budget.

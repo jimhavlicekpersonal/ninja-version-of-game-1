@@ -77,6 +77,14 @@ describe('server HTTP adapter', () => {
     expect((await s.call('GET', Routes.me, 'nope')).status).toBe(401);
     expect((await s.call('GET', Routes.me, a.token)).body).toMatchObject({ name: 'Pip', groveId: null });
     expect((await s.call('PUT', Routes.me, a.token, { name: 'Pip the Bold' })).body.name).toBe('Pip the Bold');
+    // Native-script names are kept; look-alike mixes are refused with a reason and change nothing.
+    expect((await s.call('PUT', Routes.me, a.token, { name: '影村の風' })).body.name).toBe('影村の風');
+    expect((await s.call('PUT', Routes.me, a.token, { name: '‮محمد' })).body.name).toBe('محمد');
+    const spoof = await s.call('PUT', Routes.me, a.token, { name: 'pаypal' });
+    expect(spoof.status).toBe(400);
+    expect(spoof.body).toMatchObject({ error: 'bad_request' });
+    expect((await s.call('GET', Routes.me, a.token)).body.name).toBe('محمد');
+    expect((await s.call('PUT', Routes.me, a.token, { name: 'Pip the Bold' })).body.name).toBe('Pip the Bold');
     expect((await s.call('PUT', Routes.base, a.token, { base: sampleBase() })).status).toBe(204);
     const bad = await s.call('PUT', Routes.base, a.token, { base: { buildings: [] } });
     expect(bad.status).toBe(400);

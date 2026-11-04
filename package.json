@@ -28,7 +28,12 @@
     "brand": "node tools/brand/brand.mjs",
     "docs:progression": "node tools/progression/generate.mjs",
     "balance:armies": "node tools/balance/generate.mjs",
-    "balance:campaign": "node tools/balance/campaign.mjs"
+    "balance:campaign": "node tools/balance/campaign.mjs",
+    "i18n:extract": "node tools/i18n/i18n.mjs extract",
+    "i18n:sync": "node tools/i18n/i18n.mjs sync",
+    "i18n:status": "node tools/i18n/i18n.mjs status",
+    "i18n:check": "node tools/i18n/i18n.mjs check",
+    "i18n:next": "node tools/i18n/i18n.mjs next"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

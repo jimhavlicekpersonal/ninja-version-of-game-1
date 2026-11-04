@@ -5,6 +5,7 @@
  */
 import type { GroveSnapshot, GroveSource } from '../../backend/social/groveSource';
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
+import { NAME_ERROR_TEXT, checkName } from '../../gameplay/sim/social/names';
 import { groveRaidChest } from '../../gameplay/sim/social/groveRaid';
 import { hallLevel } from '../../gameplay/sim/village';
 import { clear, h, icon } from './dom';
@@ -148,10 +149,16 @@ export class GroveUi {
         ),
       );
     }
-    const name = h('input', { class: 'text', type: 'text', maxlength: 24, placeholder: 'Alliance name' }) as HTMLInputElement;
+    const name = h('input', { class: 'text', type: 'text', maxlength: 96, dir: 'auto', spellcheck: 'false', placeholder: 'Alliance name' }) as HTMLInputElement;
     name.addEventListener('keydown', (e) => e.stopPropagation());
     const create = h('button', { class: 'btn sky', type: 'button', disabled: this.busy }, 'Found Alliance');
-    create.addEventListener('click', () => void this.run(() => this.src.create(name.value), redraw, false));
+    create.addEventListener('click', () => {
+      // Any script works (names.ts); the server applies the same rules.
+      const checked = checkName(name.value);
+      if (checked.error) return this.d.kit.toast(NAME_ERROR_TEXT[checked.error], 'error');
+      name.value = checked.name;
+      void this.run(() => this.src.create(checked.name), redraw, false);
+    });
     body.append(h('h3', {}, 'Found your own Alliance'), h('div', { class: 'chat-input-row' }, name, create));
   }
 

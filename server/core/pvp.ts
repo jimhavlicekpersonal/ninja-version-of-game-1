@@ -12,6 +12,7 @@ import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
 import { applyLootPenalty, hallWindow, opponentForRank } from '../../src/gameplay/sim/matchmaking';
 import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
+import { sanitizeName } from '../../src/gameplay/sim/social/names';
 import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
@@ -94,7 +95,7 @@ export function normalizeBase(raw: unknown, data: GameData): { base: BaseLayout 
   const r = raw as BaseLayout | null;
   if (!r || typeof r !== 'object' || !Array.isArray(r.buildings)) return { error: 'bad base' };
   const base: BaseLayout = {
-    name: String(r.name ?? ''),
+    name: sanitizeName(r.name),
     hallLevel: Number(r.hallLevel),
     trophies: Number(r.trophies) || 0,
     buildings: r.buildings.map((b) => ({

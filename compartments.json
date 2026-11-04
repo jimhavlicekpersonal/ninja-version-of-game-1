@@ -105,6 +105,22 @@
         "*"
       ],
       "contracts": []
+    },
+    "locales": {
+      "section": "Localization (50 languages)",
+      "agent": "TRANSLATION AI (one language per session)",
+      "brief": "locales/CLAUDE.md",
+      "paths": [
+        "locales",
+        "tools/i18n"
+      ],
+      "mayImport": [],
+      "contracts": [
+        "locales/languages.json",
+        "locales/en",
+        "locales/GLOSSARY.md",
+        "tools/i18n"
+      ]
     }
   }
 }
