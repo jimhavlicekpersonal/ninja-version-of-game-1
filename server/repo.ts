@@ -6,6 +6,7 @@
  */
 import type { BaseLayout, BattleResult, Deployment } from '../src/gameplay/sim/battle/types';
 import type { GroveRole, ReportReason } from '../src/backend/net/protocol';
+import type { Rating } from '../src/gameplay/sim/rating';
 import { contentHash } from './contentHash';
 
 export interface Player {
@@ -22,9 +23,13 @@ export interface Player {
   lastSeenAt: number;
   /** A moderator muted their chat until this time (0 or absent: not muted). */
   mutedUntil?: number;
+  /** Hidden matchmaking ratings (roadmap Phase 3); absent means not rated yet. */
+  ratings?: { attack: Rating; base: Rating };
+  /** Honor lost as a defender on one UTC day (the daily cap). */
+  honorLoss?: { day: number; lost: number };
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss'>>;
 
 export interface Ticket {
   id: string;
@@ -342,6 +347,10 @@ export interface Repo {
   removeLink(playerId: string, provider: string): Promise<void>;
   /** Players by id, in the order asked (missing ones left out). */
   playersByIds(ids: string[]): Promise<Player[]>;
+  /** The Power Ranking (step 31): players with a base and at least `minBattles` rated attacks, by attack rating + beta x (Keep - 1). */
+  topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]>;
+  /** 1 + players on the Power Ranking above this power. */
+  powerRankOf(power: number, minBattles: number, beta: number): Promise<number>;
   /** Every ranked player (with a base), to rebuild a leaderboard index. */
   rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
   // tickets and attacks. Each base is stored once per distinct content
@@ -621,6 +630,19 @@ export class MemoryRepo implements Repo {
   }
   async playersByIds(ids: string[]): Promise<Player[]> {
     return ids.map((id) => this.players.get(id)).filter((p): p is Player => Boolean(p)).map(clone);
+  }
+  private powerOf(p: Player, beta: number): number {
+    return (p.ratings?.attack.rating ?? 1500) + beta * (Math.max(1, p.hallLevel) - 1);
+  }
+  async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
+    return [...this.players.values()]
+      .filter((p) => p.base && (p.ratings?.attack.battles ?? 0) >= minBattles)
+      .sort((a, b) => this.powerOf(b, beta) - this.powerOf(a, beta) || a.createdAt - b.createdAt)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
+    return 1 + [...this.players.values()].filter((p) => p.base && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power).length;
   }
   async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
     return [...this.players.values()].filter((p) => p.base).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));

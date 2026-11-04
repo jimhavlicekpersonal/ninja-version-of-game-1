@@ -48,6 +48,15 @@ const toPlayer = (r: Row): Player => ({
   updatedAt: num(r.updated_at),
   lastSeenAt: num(r.last_seen_at),
   mutedUntil: num(r.muted_until),
+  ...(num(r.attack_rated_at) > 0 || num(r.base_rated_at) > 0
+    ? {
+        ratings: {
+          attack: { rating: num(r.attack_rating), rd: num(r.attack_rd), battles: num(r.attack_battles), at: num(r.attack_rated_at) },
+          base: { rating: num(r.base_rating), rd: num(r.base_rd), battles: num(r.base_battles), at: num(r.base_rated_at) },
+        },
+      }
+    : {}),
+  ...(num(r.honor_loss_day) >= 0 ? { honorLoss: { day: num(r.honor_loss_day), lost: num(r.honor_lost) } } : {}),
 });
 
 const toTicket = (r: Row): Ticket => {
@@ -323,6 +332,25 @@ export class PgRepo implements Repo {
       vals.push(k === 'base' && v !== null ? JSON.stringify(v) : v);
       sets.push(`${col} = $${vals.length}`);
     }
+    const put = (col: string, v: unknown) => {
+      vals.push(v);
+      sets.push(col + ' = $' + vals.length);
+    };
+    if (patch.ratings) {
+      const { attack: a, base: b } = patch.ratings;
+      put('attack_rating', a.rating);
+      put('attack_rd', a.rd);
+      put('attack_battles', a.battles);
+      put('attack_rated_at', a.at);
+      put('base_rating', b.rating);
+      put('base_rd', b.rd);
+      put('base_battles', b.battles);
+      put('base_rated_at', b.at);
+    }
+    if (patch.honorLoss) {
+      put('honor_loss_day', patch.honorLoss.day);
+      put('honor_lost', patch.honorLoss.lost);
+    }
     if (!sets.length) return;
     vals.push(id);
     await this.db.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals);
@@ -355,6 +383,15 @@ export class PgRepo implements Repo {
     const r = (await this.rows('select * from players where id = any($1::text[])', [ids])).map(toPlayer);
     const byId = new Map(r.map((p) => [p.id, p]));
     return ids.map((id) => byId.get(id)).filter((p): p is Player => Boolean(p));
+  }
+
+  async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
+    return (await this.rows('select * from players where base is not null and attack_battles >= $2 order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1', [limit, minBattles, beta])).map(toPlayer);
+  }
+
+  async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
+    const r = await this.rows('select count(*) as n from players where base is not null and attack_battles >= $2 and attack_rating + $3 * (greatest(hall_level, 1) - 1) > $1', [power, minBattles, beta]);
+    return 1 + num(r[0]?.n);
   }
 
   async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {

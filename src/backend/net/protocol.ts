@@ -71,6 +71,7 @@ export const Routes = {
   attacks: '/v1/attacks',
   defenses: '/v1/defenses',
   leaderboard: '/v1/leaderboard',
+  powerLeaderboard: '/v1/leaderboard/power',
   groves: '/v1/groves',
   groveJoin: (id: string) => `/v1/groves/${encodeURIComponent(id)}/join`,
   grove: '/v1/grove',
@@ -249,6 +250,20 @@ export interface LeaderboardEntry {
   hallLevel: number;
   grove: string | null;
 }
+/** GET /v1/leaderboard/power (roadmap step 31): Attack Rating plus power, for players with enough rated attacks. */
+export interface PowerLeaderboardEntry {
+  rank: number;
+  name: string;
+  power: number;
+  hallLevel: number;
+  grove: string | null;
+}
+export interface PowerLeaderboardResponse {
+  players: PowerLeaderboardEntry[];
+  /** Null until the player has enough rated attacks. */
+  me: { rank: number; power: number; battles: number } | null;
+}
+
 export interface LeaderboardResponse {
   players: LeaderboardEntry[];
   me: { rank: number; trophies: number } | null;

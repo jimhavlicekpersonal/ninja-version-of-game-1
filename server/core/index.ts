@@ -46,6 +46,7 @@ export function createCore(ctx: ServerContext) {
     attack: pvp.attack.bind(null, ctx),
     defenses: pvp.defenses.bind(null, ctx),
     leaderboard: pvp.leaderboard.bind(null, ctx),
+    powerLeaderboard: pvp.powerLeaderboard.bind(null, ctx),
     listGroves: groves.listGroves.bind(null, ctx),
     createGrove: groves.createGrove.bind(null, ctx),
     joinGrove: groves.joinGrove.bind(null, ctx),

@@ -83,6 +83,9 @@ export class InProcessServerAdapter implements ServerPort {
   defenses(since: number) {
     return this.authed((me) => this.core.defenses(me, since));
   }
+  powerLeaderboard(limit = 50) {
+    return this.authed((me) => this.core.powerLeaderboard(me, limit));
+  }
   leaderboard(limit = 50) {
     return this.authed((me) => this.core.leaderboard(me, limit));
   }

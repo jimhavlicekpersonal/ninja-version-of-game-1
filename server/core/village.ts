@@ -11,7 +11,7 @@
  * chests) are applied here too (`applyServerResult`), inside the transaction
  * of the request that made them, and every resource change goes in the ledger.
  */
-import { capBaseLoot } from './pvp';
+import { capBaseLoot, layoutReset } from './pvp';
 import { villageToBase } from '../../src/gameplay/sim/defense';
 import { deserialize, serialize, type SaveFile } from '../../src/gameplay/sim/save';
 import { BATTLE_COMMANDS, economyHash, economyOf, PLAYER_COMMANDS } from '../../src/gameplay/sim/serverEconomy';
@@ -57,7 +57,8 @@ function view(row: VillageRow): VillageResponse {
 /** Keep the player's raid base in step with the village the server holds (layout, levels, real loot). */
 async function refreshBase(repo: Repo, ctx: ServerContext, me: { id: string; name: string }, state: VillageState, at: number): Promise<void> {
   const base = capBaseLoot(villageToBase(state, at, ctx.data, me.name), ctx.data);
-  await repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now() });
+  const player = await repo.getPlayer(me.id);
+  await repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), ...(player ? layoutReset(ctx, player, base) : {}) });
 }
 
 export async function getVillage(ctx: ServerContext, me: Player): Promise<VillageResponse> {

@@ -33,6 +33,7 @@ import {
   type MatchResponse,
   type MyGroveResponse,
   type PlayerView,
+  type PowerLeaderboardResponse,
   type RaidAttackResponse,
   type RaidClaimResponse,
   type RaidTicketResponse,
@@ -264,6 +265,10 @@ export class HttpServerAdapter implements ServerPort {
 
   defenses(since: number): Promise<DefensesResponse> {
     return this.req('GET', `${Routes.defenses}?since=${Math.floor(since)}`);
+  }
+
+  powerLeaderboard(limit = 50): Promise<PowerLeaderboardResponse> {
+    return this.req('GET', `${Routes.powerLeaderboard}?limit=${limit}`);
   }
 
   leaderboard(limit = 50): Promise<LeaderboardResponse> {

@@ -11,9 +11,10 @@ import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
 import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
 import { applyLootPenalty, hallWindow, opponentForRank } from '../../src/gameplay/sim/matchmaking';
 import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
+import { layoutChangedShare, newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
-import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
+import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
@@ -232,7 +233,7 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   const base = n.base;
   capBaseLoot(base, ctx.data);
   base.name = me.name;
-  await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now() });
+  await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), ...layoutReset(ctx, me, base) });
   // A player is ranked once they have a base.
   await ctx.board.set(me.id, me.trophies, me.createdAt);
 }
@@ -252,11 +253,16 @@ export async function match(ctx: ServerContext, me: Player): Promise<MatchRespon
     const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20 });
     const busy = await locks.lockedAmong(list.map((p) => p.id));
     const free = list.filter((p) => !busy.has(p.id));
-    // Start at a random candidate; the first one whose lock we get is ours (two attackers can't both get one).
+    // Step 29: after the Keep window and power floor, the base whose expected score is nearest the target
+    // (ties from a random start); the first one whose lock we get is ours (two attackers can't both get one).
     const start = free.length ? Math.floor(ctx.random() * free.length) : 0;
-    for (let i = 0; i < free.length && !found; i++) {
-      const p = free[(start + i) % free.length];
-      if (await locks.acquire(p.id, me.id, TICKET_LOCK_MS)) found = p;
+    const rotated = [...free.slice(start), ...free.slice(0, start)];
+    const order = orderByRating(ratingsOf(me, t, ctx).attack, me.hallLevel, rotated.map((p) => ({ item: p, base: ratingsOf(p, t, ctx).base, power: p.hallLevel })), t, data.ranks.rating);
+    for (const p of order) {
+      if (await locks.acquire(p.id, me.id, TICKET_LOCK_MS)) {
+        found = p;
+        break;
+      }
     }
     if (found) break;
   }
@@ -356,7 +362,20 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const playerTrophies = Math.max(0, me.trophies + delta);
   const attackId = ctx.uuid();
   const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies };
-  const defPatch: { trophies: number; shieldUntil?: number } = { trophies: Math.max(0, (defender?.trophies ?? 0) - delta) };
+  // Step 30: a defender loses at most defenderDailyHonorLossCap honor a UTC day (the attacker still gains in full).
+  const rdef = data.ranks.rating;
+  const day = Math.floor(t / 86_400_000);
+  const lostToday = defender?.honorLoss?.day === day ? defender.honorLoss.lost : 0;
+  const defLoss = delta > 0 ? Math.max(0, Math.min(delta, rdef.defenderDailyHonorLossCap - lostToday)) : delta;
+  const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
+  const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: Math.min(me.shieldUntil, t) };
+  if (defender) {
+    defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };
+    // Step 28: the attacker's Attack Rating and the defender's Base Rating move; bots never move a rating.
+    const rated = rateBattle(ratingsOf(me, t, ctx).attack, ratingsOf(defender, t, ctx).base, me.hallLevel, ticket.base.hallLevel ?? defender.hallLevel, result.stars, result.destruction, t, rdef);
+    mePatch.ratings = { attack: rated.attack, base: ratingsOf(me, t, ctx).base };
+    defPatch.ratings = { attack: ratingsOf(defender, t, ctx).attack, base: rated.base };
+  }
   const shield = shieldHoursFor(result.destruction, data);
   if (defender && shield > 0) defPatch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
   const settled = await repo.transaction(async (tx) => {
@@ -369,14 +388,14 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result, trophies: delta, playerTrophies }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
     ], attackId);
     if (mine && !mine.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${mine.message}`);
-    await tx.updatePlayer(me.id, { trophies: playerTrophies, shieldUntil: Math.min(me.shieldUntil, t) });
+    await tx.updatePlayer(me.id, mePatch);
     if (defender) {
       await tx.updatePlayer(defender.id, defPatch);
       // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
-      const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -delta };
+      const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
       const fallen = sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } }));
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
-      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -delta });
+      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: SIM_RULES, attackerTrophies: delta, defenderTrophies: -defLoss });
     }
     return true;
   });
@@ -397,6 +416,35 @@ export async function defenses(ctx: ServerContext, me: Player, since: number): P
   const list = await ctx.repo.defensesFor(me.id, Number(since) || 0, 20);
   return {
     defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, ...(a.reinforcements ? { reinforcements: a.reinforcements } : {}), base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, ...(a.infiltration ? { infiltration: true } : {}), ...(a.rules !== undefined ? { rules: a.rules } : {}), trophies: a.defenderTrophies })),
+  };
+}
+
+/** A player's ratings, new ones for a player never rated. */
+export function ratingsOf(p: Player, now: number, ctx: ServerContext): { attack: Rating; base: Rating } {
+  return p.ratings ?? { attack: newRating(now, ctx.data.ranks.rating), base: newRating(now, ctx.data.ranks.rating) };
+}
+
+/**
+ * Step 30: a base whose layout changed by more than layoutResetShare starts
+ * its Base Rating over (so a strong rating cannot hide a weak new layout).
+ */
+export function layoutReset(ctx: ServerContext, me: Player, next: BaseLayout): { ratings: { attack: Rating; base: Rating } } | Record<string, never> {
+  if (!me.ratings || !me.base) return {};
+  if (layoutChangedShare(me.base, next) <= ctx.data.ranks.rating.layoutResetShare) return {};
+  return { ratings: { attack: me.ratings.attack, base: newRating(ctx.now(), ctx.data.ranks.rating) } };
+}
+
+/** Step 31: the Power Ranking, Attack Rating plus power (Keep), for players with enough rated attacks. */
+export async function powerLeaderboard(ctx: ServerContext, me: Player, limit: number): Promise<PowerLeaderboardResponse> {
+  const def = ctx.data.ranks.rating;
+  const n = Math.max(1, Math.min(100, Number(limit) || 50));
+  const top = await ctx.repo.topByPower(n, def.powerBoardMinBattles, def.powerWeight);
+  const groveNames = new Map<string, string>();
+  for (const p of top) if (p.groveId && !groveNames.has(p.groveId)) groveNames.set(p.groveId, (await ctx.repo.getGrove(p.groveId))?.name ?? '');
+  const mine = me.ratings && me.ratings.attack.battles >= def.powerBoardMinBattles ? Math.round(powerRating(me.ratings.attack, me.hallLevel, def)) : null;
+  return {
+    players: top.map((p, i) => ({ rank: i + 1, name: p.name, power: Math.round(powerRating(ratingsOf(p, ctx.now(), ctx).attack, p.hallLevel, def)), hallLevel: p.hallLevel, grove: p.groveId ? groveNames.get(p.groveId) || null : null })),
+    me: mine === null ? null : { rank: await ctx.repo.powerRankOf(mine, def.powerBoardMinBattles, def.powerWeight), power: mine, battles: me.ratings!.attack.battles },
   };
 }
 

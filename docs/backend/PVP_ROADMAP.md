@@ -298,12 +298,12 @@ Makes balance, combat and data changes safe while old app builds are still in us
 - [x] 26. Protocol 7: update `docs/PROTOCOL.md` and the contract tests. `PROTOCOL_VERSION` 7, `minProtocol` 7 (older games are told to update); `ClientHeaders` on every request (`X-Protocol`, `X-Sim-Rules`, `X-Client-Build`, `Idempotency-Key` on writes; `426 version_mismatch` below `minProtocol`; requests counted by build and rules); idempotent writes (`idempotency_keys`, migration 0008, a day); the game moves its village to the server when it connects (`Connection.keepVillageOnServer`, refusals kept and shown). Tests: `server.test.ts`, `villageSync.test.ts`, contract test.
 
 ### Phase 3: Ranking (~2–3 weeks) [Code]
-- [ ] 27. `src/gameplay/sim/rating.ts` + `ranks.json` `rating` block + tests.
-- [ ] 28. Rating columns; update ratings in `attack()`; bots fixed or excluded.
-- [ ] 29. Matchmaking by BR closest to AR (~55% expected score), after the Keep window and power floor.
-- [ ] 30. Daily cap on defender Honor loss; BR reset on a big layout change.
-- [ ] 31. Power Ranking leaderboard + client panel.
-- [ ] 32. Simulate weeks of model players (`tests/gameplay/balance/`) through the matchmaker; check convergence.
+- [x] 27. `src/gameplay/sim/rating.ts` + `ranks.json` `rating` block + tests. Expected score with the power term, score from stars and destruction, K from the rating deviation (40 new, 16 settled), deviation growing while idle, `orderByRating`/`pickByRating`, `powerRating`, `layoutChangedShare`. Tests: `tests/gameplay/sim/rating.test.ts`.
+- [x] 28. Rating columns; update ratings in `attack()`; bots fixed or excluded. Migration 0009 (`attack_*`, `base_*` rating, deviation, battles, time); `attack()` rates attacker and defender in its transaction; bot battles are excluded (no rating moves). Tests: `tests/backend/server/ratings.test.ts`.
+- [x] 29. Matchmaking by BR closest to AR (~55% expected score), after the Keep window and power floor. `match()` orders the free candidates with `orderByRating` (ties from a random start) and takes the first lock it gets.
+- [x] 30. Daily cap on defender Honor loss; BR reset on a big layout change. `defenderDailyHonorLossCap` (150 a UTC day; the attacker still gains in full; the defense record shows what was really lost); a layout that changed by more than `layoutResetShare` (25%) starts its Base Rating over, for uploads and server-held villages.
+- [x] 31. Power Ranking leaderboard + client panel. `GET /v1/leaderboard/power` (Attack Rating + β·(Keep − 1), players with at least `powerBoardMinBattles` rated attacks; feature `power-ranking`); Settings → Online play → Leaderboard has Honor and Power tabs.
+- [x] 32. Simulate weeks of model players (`tests/gameplay/balance/`) through the matchmaker; check convergence. `rating-convergence.test.ts`: 120 model players with hidden skills, 4 weeks of 4 raids a day through `pickByRating`; ratings rank the true skills (Spearman > 0.85 for attack and base), settle (deviation under half the start), and pairings average an expected score within 0.08 of the 0.55 target. (Outcomes come from the hidden skills, not full battles: full-battle campaigns are `npm run balance:campaign`.)
 
 ### Phase 4: Payments (~3–4 weeks) [Owner + Code]
 - [ ] 33. [Owner] Create IAP products with the new ids in App Store Connect and the Play Console.

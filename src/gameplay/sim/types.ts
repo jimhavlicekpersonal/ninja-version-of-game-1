@@ -522,6 +522,33 @@ export interface LeagueDef {
   winBonus: Cost;
 }
 
+/** Settings for the hidden Attack and Base Ratings (ranks.json `rating`). */
+export interface RatingDef {
+  initial: number;
+  initialRd: number;
+  minRd: number;
+  /** Each rated battle multiplies the rating deviation by this (it settles). */
+  rdShrinkPerBattle: number;
+  /** Rating deviation added per day without a rated battle (uncertainty grows while away). */
+  rdGrowthPerIdleDay: number;
+  /** β: rating points one Keep level of power is worth. */
+  powerWeight: number;
+  /** K at the starting deviation, and once fully settled. */
+  kNew: number;
+  kSettled: number;
+  /** A battle's score: starWeight × stars/3 + destructionWeight × destruction. */
+  starWeight: number;
+  destructionWeight: number;
+  /** Matchmaking aims for this expected score. */
+  matchTarget: number;
+  /** A base whose layout moved by more than this share starts its Base Rating over. */
+  layoutResetShare: number;
+  /** Most honor a defender can lose in one UTC day. */
+  defenderDailyHonorLossCap: number;
+  /** Rated attacks needed to appear on the Power Ranking. */
+  powerBoardMinBattles: number;
+}
+
 export interface RanksDef {
   startingTrophies: number;
   attackWin: { base: number; perTrophyDiff: number; min: number; max: number };
@@ -547,6 +574,8 @@ export interface RanksDef {
     /** Opponents are at least the attacker's earned strength (Keep and research) minus this many hall levels. */
     powerSlack: number;
   };
+  /** Hidden matchmaking ratings (roadmap Phase 3, sim/rating.ts). */
+  rating: RatingDef;
   /** Loot multiplier when the target's Elder Toadstool is lower than the attacker's (index = difference). */
   lootPenaltyByHallDiff: number[];
 }

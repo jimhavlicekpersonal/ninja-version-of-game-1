@@ -359,20 +359,50 @@ export class Hud {
           });
           wrap.append(h('label', { class: 'muted small' }, 'Your name in online play'), h('div', { class: 'chat-input-row' }, name, save));
           const board = h('div', { class: 'events' }, 'Loading…');
-          const details = h('details', {}, h('summary', {}, 'Leaderboard'), board);
-          details.addEventListener('toggle', () => {
-            if (!details.open || !conn.port) return;
-            void conn.port.leaderboard(30).then(
-              (lb) => {
+          // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
+          let which: 'honor' | 'power' = 'honor';
+          const hasPower = Boolean(conn.server?.features.includes('power-ranking'));
+          const tabs = h('div', { class: 'shop-tabs' });
+          const load = () => {
+            const port = conn.port;
+            if (!port) return;
+            board.textContent = 'Loading…';
+            clear(tabs);
+            if (hasPower) {
+              for (const [id, label] of [['honor', 'Honor'], ['power', 'Power']] as const) {
+                const b = h('button', { type: 'button', class: id === which ? 'on' : '' }, label);
+                b.addEventListener('click', () => {
+                  which = id;
+                  load();
+                });
+                tabs.append(b);
+              }
+            }
+            const row = (rank: number, name: string, sub: string, value: string, chip: Node | null) =>
+              h('div', { class: `log-row${name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${rank}. ${name}`), h('div', { class: 'muted small' }, sub)), h('span', { class: 'chip' }, chip, value));
+            const fail = (e: Error) => {
+              board.textContent = e.message;
+            };
+            if (which === 'power') {
+              void port.powerLeaderboard(30).then((lb) => {
                 clear(board);
-                for (const p of lb.players) board.append(h('div', { class: `log-row${p.name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${p.rank}. ${p.name}`), h('div', { class: 'muted small' }, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${p.grove}` : ''}`)), h('span', { class: 'chip' }, icon(icons.leaf), String(p.trophies))));
-                if (lb.me) board.append(h('p', { class: 'muted small' }, `You are number ${lb.me.rank}.`));
-                if (!lb.players.length) board.append('Nobody is ranked yet.');
-              },
-              (e: Error) => {
-                board.textContent = e.message;
-              },
-            );
+                board.append(h('p', { class: 'muted small' }, 'Power is your skill as an attacker plus the strength of your Keep, from your rated raids.'));
+                for (const p of lb.players) board.append(row(p.rank, p.name, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${p.grove}` : ''}`, String(p.power), null));
+                board.append(h('p', { class: 'muted small' }, lb.me ? `You are number ${lb.me.rank}, with ${lb.me.power} power.` : 'Raid real players a few times to get on the Power Ranking.'));
+                if (!lb.players.length) board.append('Nobody is on it yet.');
+              }, fail);
+              return;
+            }
+            void port.leaderboard(30).then((lb) => {
+              clear(board);
+              for (const p of lb.players) board.append(row(p.rank, p.name, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${p.grove}` : ''}`, String(p.trophies), icon(icons.leaf)));
+              if (lb.me) board.append(h('p', { class: 'muted small' }, `You are number ${lb.me.rank}.`));
+              if (!lb.players.length) board.append('Nobody is ranked yet.');
+            }, fail);
+          };
+          const details = h('details', {}, h('summary', {}, 'Leaderboard'), tabs, board);
+          details.addEventListener('toggle', () => {
+            if (details.open) load();
           });
           wrap.append(details);
           if (conn.canKeepVillage || conn.serverVillage) wrap.append(this.villageBlock());

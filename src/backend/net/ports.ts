@@ -30,6 +30,7 @@ import type {
   LeaderboardResponse,
   MatchResponse,
   PlayerView,
+  PowerLeaderboardResponse,
   RaidAttackResponse,
   RaidClaimResponse,
   RaidTicketResponse,
@@ -83,6 +84,8 @@ export interface PvpPort {
   submitAttack(sub: BattleSubmission): Promise<AttackResponse>;
   defenses(since: number): Promise<DefensesResponse>;
   leaderboard(limit?: number): Promise<LeaderboardResponse>;
+  /** The Power Ranking (roadmap step 31). */
+  powerLeaderboard(limit?: number): Promise<PowerLeaderboardResponse>;
 }
 
 export interface GrovePort {
