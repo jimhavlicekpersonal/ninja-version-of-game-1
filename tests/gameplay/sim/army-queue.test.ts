@@ -3,7 +3,7 @@
  * cancel, refill, save, reload. Each block here guards a bug a player hit.
  */
 import { describe, expect, it } from 'vitest';
-import { armyHousing, armyReadyAt, fillCount, housingCapacity, queueFit, retimeQueue } from '../../../src/gameplay/sim/army';
+import { armyHousing, armyReadyAt, fillCount, housingCapacity, queueFits, retimeQueue, trainingReady } from '../../../src/gameplay/sim/army';
 import { armyView, researchRow, trainRow } from '../../../src/gameplay/sim/armyView';
 import { computeOfflineProgress } from '../../../src/gameplay/sim/offline';
 import { upcomingReminders } from '../../../src/gameplay/sim/reminders';
@@ -172,6 +172,67 @@ describe('cancelling from the queue', () => {
   });
 });
 
+describe('a warrior too big for the space left', () => {
+  const HERBALIST = 'herbalist'; // housing 3
+  const SABOTEUR = 'saboteur'; // housing 2
+  /** Beast's army: 58 of 60 space, two finished Herbalists stuck at the head, smaller warriors behind them. */
+  const stuck = () => {
+    const { state, clock } = armyVillage();
+    const now = clock.now();
+    const queue = (troop: string, startedAt: number, endsAt: number): TrainingItem => ({ troop, startedAt, endsAt, cost: { dew: 1 } });
+    const training = [queue(HERBALIST, now - 200_000, now - 140_000), queue(HERBALIST, now - 140_000, now - 80_000), queue(SABOTEUR, now - 11_000, now + 34_000), queue(SABOTEUR, now + 34_000, now + 79_000), queue(SHINOBI, now + 79_000, now + 99_000)];
+    const buildings = state.buildings.map((b) => (b.type === 'army_camp' ? { ...b, level: 5 } : b));
+    return { state: { ...state, buildings, training, army: { [ADEPT]: 10, beetle_brute: 6, [HERBALIST]: 6 } }, clock, now };
+  };
+
+  it('does not stop smaller warriors behind them using the free space', () => {
+    const { state, clock, now } = stuck();
+    expect(housingCapacity(state, data)).toBe(60);
+    expect(armyHousing(state.army, data)).toBe(58);
+    clock.advanceSeconds(35);
+    const s = advance(state, clock.now(), data).state;
+    expect(s.army[SABOTEUR]).toBe(1);
+    expect(armyHousing(s.army, data)).toBe(60);
+    expect(s.training.map((q) => q.troop)).toEqual([HERBALIST, HERBALIST, SABOTEUR, SHINOBI]);
+    expect(now).toBeLessThan(clock.now());
+  });
+
+  it('wakes the game loop for a warrior who fits behind one who does not', () => {
+    const { state, now } = stuck();
+    expect(trainingReady(state, now, data)).toBe(false);
+    expect(trainingReady(state, now + 34_000, data)).toBe(true);
+  });
+
+  it('files the warrior who will fit as training, and Jade can finish them', () => {
+    const { state, now } = stuck();
+    const v = armyView(state, now, data);
+    expect(v.stacks.map((st) => [st.troop, st.status, st.count])).toEqual([[HERBALIST, 'waiting', 2], [SABOTEUR, 'training', 1], [SABOTEUR, 'next', 1], [SHINOBI, 'next', 1]]);
+    expect(v.activeStatus).toBe('training');
+    expect(v.armyDoneAt).toBe(now + 34_000);
+    expect(v.skip?.seconds).toBe(34);
+    const after = must(state, { type: 'skipTraining' }, now);
+    expect(after.army[SABOTEUR]).toBe(1);
+    expect(validateVillage(after, data)).toEqual([]);
+  });
+
+  it('says how much space is free and how much the warrior needs, in warriors and space', () => {
+    const { state, now } = stuck();
+    const v = armyView(state, now, data);
+    expect(v.freeHousing).toBe(2);
+    expect(v.waitingNeeds).toBe(3);
+    expect([v.training, v.next, v.waiting]).toEqual([1, 2, 2]);
+    expect([v.trainingHousing, v.nextHousing, v.waitingHousing]).toEqual([2, 3, 6]);
+  });
+
+  it('with no room at all, a warrior in training is headed for the next army and nothing can be finished', () => {
+    const { state, now } = stuck();
+    const v = armyView({ ...state, army: { ...state.army, [SHINOBI]: 2 } }, now, data);
+    expect(v.activeStatus).toBe('next');
+    expect(v.skip).toBeNull();
+    expect(v.armyDoneAt).toBeNull();
+  });
+});
+
 describe('Fill', () => {
   it('fills the camps once, and only a second tap trains the next army', () => {
     const { state, clock } = armyVillage();
@@ -216,7 +277,7 @@ describe('the Army view', () => {
     const later = armyView(s, t0 + 21 * 20_000 + 1000, data);
     expect(later.readyHousing).toBe(20);
     expect(later.waiting).toBe(1);
-    expect([later.nextHousing, later.waitingHousing]).toEqual([2, 1]); // a warrior is counted once
+    expect([later.next, later.waiting]).toEqual([2, 1]); // a warrior is counted once
     expect(later.stacks.map((st) => [st.status, st.count])).toEqual([['waiting', 1], ['next', 2]]);
     expect(later.skip).toBeNull();
   });
@@ -348,7 +409,7 @@ describe('warriors over time', () => {
     const { state, clock } = armyVillage();
     const t0 = clock.now();
     const s = must(state, { type: 'train', troop: SHINOBI, count: 30 }, t0);
-    expect(queueFit(s, data)).toBe(20);
+    expect(queueFits(s, data).filter(Boolean)).toHaveLength(20);
     expect(armyReadyAt(s, data)).toBe(t0 + 400_000);
     expect(upcomingReminders(s, t0, data).find((r) => r.id === 'training')?.at).toBe(t0 + 400_000);
   });

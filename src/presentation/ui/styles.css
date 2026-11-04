@@ -440,11 +440,11 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .scout-report .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .scout-report p { margin: 2px 0; }
 /* Army panel: a pinned status strip, then one tab. */
-.army-strip {
-  position: sticky; top: -12px; z-index: 3; margin: -12px -16px 10px; padding: 10px 16px 8px;
+.army-head {
+  position: sticky; top: -12px; z-index: 3; margin: -12px -16px 10px; padding: 10px 16px 0;
   background: var(--cream); box-shadow: 0 2px 0 rgba(38, 48, 61, .1);
 }
-.army-strip p { margin: 4px 0 0; }
+.army-strip p { margin: 2px 0 6px; }
 .army-strip-head { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .army-strip-head b { white-space: nowrap; }
 .army-bar { flex: 1; display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: #e7dcc4; }
@@ -454,6 +454,10 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-strip-line { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-height: 42px; }
 .army-strip-line img { width: 34px; height: 32px; object-fit: contain; flex: none; }
 .army-active { flex: 1; min-width: 0; }
+.army-active-name { display: flex; gap: 6px; }
+.army-active-name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.army-active-name span { flex: none; }
+.chip.army-noroom { font-size: 11px; color: #8a4b12; }
 .army-strip-line .btn { min-height: 38px; padding: 4px 10px; font-size: 13px; }
 .progress.thin { height: 6px; margin-top: 3px; }
 .army-note { color: #8a4b12; font-weight: 700; }
@@ -474,9 +478,15 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-setup li { padding: 3px 0; color: var(--ink-soft); }
 .army-setup li.ok { color: var(--leaf-dark); }
 .army-setup li.ok::before { content: '✓ '; font-weight: 900; }
-.stack-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 6px 0; border-radius: 14px; background: #fff; box-shadow: 0 2px 0 rgba(38, 48, 61, .12); flex-wrap: wrap; }
-.stack-row img { width: 34px; height: 32px; object-fit: contain; }
-.stack-row > b { flex: 1; min-width: 110px; }
+.stack-row {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 2px 8px;
+  padding: 6px 8px; margin: 6px 0; border-radius: 14px; background: #fff; box-shadow: 0 2px 0 rgba(38, 48, 61, .12);
+}
+.stack-row img { grid-row: 1 / span 2; width: 34px; height: 32px; object-fit: contain; }
+.stack-row > b { grid-column: 2; }
+.stack-row > .chip { grid-column: 2; justify-self: start; font-size: 12px; }
+.stack-row > .row { grid-column: 3; grid-row: 1 / span 2; flex-wrap: nowrap; }
+.stack-row.refill { display: flex; flex-wrap: wrap; }
 .stack-row .grow { flex: 1; min-width: 150px; }
 .stack-row .btn { min-height: 38px; padding: 4px 12px; font-size: 13px; }
 .hud-bottom .round-btn { position: relative; }
@@ -488,7 +498,7 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-pill.busy { background: var(--sun-dark); }
 .takeover { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 16px; background: rgba(20, 26, 34, .72); }
 /* Sideways on a phone the pinned strip would take half the screen: let it scroll away. */
-@media (max-height: 480px) { .army-strip { position: static; } }
+@media (max-height: 480px) { .army-head { position: static; } }
 /* Keep the expanded roster filters comfortable to use on phones. */
 .training .actions select {
   min-height: 44px;

@@ -103,7 +103,7 @@ Details and remaining owner decisions: `docs/rebuild/HANDOFF.md` ("Gameplay audi
 
 ## Army overhaul (November 2026)
 
-The Army panel, training queue and saving were traced end to end in a browser. Queue and save fixes have tests (`tests/gameplay/sim/army-queue.test.ts`, `tests/backend/persist/saveStore.test.ts`). Panel behaviour (A11–A13, A16, A19) has no DOM test: there is no browser in `npm test`, so check it by hand.
+The Army panel, training queue and saving were traced end to end in a browser. Queue and save fixes have tests (`tests/gameplay/sim/army-queue.test.ts`, `tests/backend/persist/saveStore.test.ts`). Panel behaviour (A11–A13, A16, A19, A21) has no DOM test: there is no browser in `npm test`, so check it by hand.
 
 | # | Problem | Fix |
 |---|---|---|
@@ -126,6 +126,8 @@ The Army panel, training queue and saving were traced end to end in a browser. Q
 | A17 | The tutorial could stall on Finish training | The step ends when nothing more can be finished |
 | A18 | No army status on the village screen, none on coming back, donated warriors invisible | Army pill, `summary.trained`, Lodge row |
 | A19 | A warrior thumbnail asked for too early stayed blank | `thumbOf` remembers only real images |
+| A20 | A finished warrior too big for the space left blocked everyone behind it, so free space sat empty | `finishTraining` lets anyone who fits walk past; `queueFits` is the same rule for quotes and the panel |
+| A21 | "Army" meant space in one place and warriors in another; one line mixed both; the waiting warriors were listed last; timers and the missing Finish button went unexplained | Bar counts `Space`, everything else counts warriors; queue order; "needs N space", "Done in", "No room to finish" |
 
 ## Engagement features (and their limits)
 

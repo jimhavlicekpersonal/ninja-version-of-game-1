@@ -1,4 +1,4 @@
-import { armyHousing, armyReadyAt, fillCount, housingCapacity, queueFit, trainingQueueLimit } from './army';
+import { armyHousing, armyReadyAt, fillCount, housingCapacity, queueFits, trainingQueueLimit } from './army';
 import type { GameData, TrainingItem, VillageState } from './types';
 import { advance, researchStartQuoteOn, trainingSkipQuote, trainQuoteOn, type QuoteResult } from './village';
 
@@ -30,17 +30,25 @@ export interface ArmyView {
   capacity: number;
   /** Housing of warriors ready to attack. */
   readyHousing: number;
-  /** Housing on its way into the camps. */
+  /** Camp space nobody is in yet. */
+  freeHousing: number;
+  /** Warriors, and their housing, on their way into the camps. */
+  training: number;
   trainingHousing: number;
-  /** Housing still training that the camps won't have room for. */
+  /** Warriors, and their housing, still training that the camps won't have room for. */
+  next: number;
   nextHousing: number;
-  /** Finished warriors the camps have no room for. */
+  /** Finished warriors, and their housing, too big for the space left. */
   waiting: number;
   waitingHousing: number;
+  /** The space the smallest waiting warrior needs (0 when nobody waits). */
+  waitingNeeds: number;
   /** Most housing that can be ready and queued together. */
   queueLimit: number;
   /** The warrior in training right now. */
   active: TrainingItem | null;
+  /** Where that warrior is headed: into the camps, or the next army. */
+  activeStatus: QueueStatus | null;
   /** When the warriors who fit in the camps have all finished. */
   armyDoneAt: number | null;
   stacks: QueueStack[];
@@ -56,29 +64,25 @@ function buildState(s: VillageState, type: string): BuildState {
   return all.length ? 'building' : 'missing';
 }
 
-function statusAt(item: TrainingItem, index: number, fit: number, now: number): QueueStatus {
-  if (index < fit) return 'training';
+function statusOf(item: TrainingItem, fits: boolean, now: number): QueueStatus {
+  if (fits) return 'training';
   return item.endsAt <= now ? 'waiting' : 'next';
 }
 
 /** Everything the Army panel shows, from one settled copy of the village: the panel redraws often and must stay cheap. */
 export function armyView(village: VillageState, now: number, data: GameData): ArmyView {
   const s = advance(village, now, data).state;
-  const fit = queueFit(s, data);
+  const fits = queueFits(s, data);
   const stacks: QueueStack[] = [];
-  let trainingHousing = 0;
-  let nextHousing = 0;
-  let waiting = 0;
-  let waitingHousing = 0;
+  const count: Record<QueueStatus, number> = { training: 0, next: 0, waiting: 0 };
+  const housing: Record<QueueStatus, number> = { training: 0, next: 0, waiting: 0 };
+  let waitingNeeds = 0;
   s.training.forEach((item, i) => {
-    const status = statusAt(item, i, fit, now);
+    const status = statusOf(item, fits[i], now);
     const size = data.troops[item.troop]?.housing ?? 0;
-    if (status === 'training') trainingHousing += size;
-    else if (status === 'next') nextHousing += size;
-    else {
-      waiting++;
-      waitingHousing += size;
-    }
+    count[status]++;
+    housing[status] += size;
+    if (status === 'waiting') waitingNeeds = waitingNeeds ? Math.min(waitingNeeds, size) : size;
     const top = stacks[stacks.length - 1];
     if (top && top.troop === item.troop && top.status === status) {
       top.count++;
@@ -87,16 +91,24 @@ export function armyView(village: VillageState, now: number, data: GameData): Ar
       top.endsAt = item.endsAt;
     } else stacks.push({ troop: item.troop, status, count: 1, housing: size, lastIndex: i, endsAt: item.endsAt });
   });
+  const capacity = housingCapacity(s, data);
+  const readyHousing = armyHousing(s.army, data);
+  const activeAt = s.training.findIndex((q) => q.startedAt <= now && q.endsAt > now);
   return {
     state: s,
-    capacity: housingCapacity(s, data),
-    readyHousing: armyHousing(s.army, data),
-    trainingHousing,
-    nextHousing,
-    waiting,
-    waitingHousing,
+    capacity,
+    readyHousing,
+    freeHousing: Math.max(0, capacity - readyHousing),
+    training: count.training,
+    trainingHousing: housing.training,
+    next: count.next,
+    nextHousing: housing.next,
+    waiting: count.waiting,
+    waitingHousing: housing.waiting,
+    waitingNeeds,
     queueLimit: trainingQueueLimit(s, data),
-    active: s.training.find((q) => q.startedAt <= now && q.endsAt > now) ?? null,
+    active: activeAt >= 0 ? s.training[activeAt] : null,
+    activeStatus: activeAt >= 0 ? statusOf(s.training[activeAt], fits[activeAt], now) : null,
     armyDoneAt: armyReadyAt(s, data),
     stacks,
     skip: trainingSkipQuote(s, now, data),

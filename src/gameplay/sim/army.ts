@@ -32,29 +32,31 @@ export function barracksLevel(state: VillageState, data: GameData): number {
 
 /**
  * Move finished training into the army, as far as the camps have room. A
- * finished warrior with no room waits at the head of the queue (the next army,
- * trained ahead) and walks in as soon as space frees up. Mutates `state`. Only
- * troops that reach the army count toward tasks.
+ * finished warrior too big for the space left waits in the queue (the next army,
+ * trained ahead), and anyone behind who does fit walks in first, so free space
+ * never sits empty. Mutates `state`. Only troops that reach the army count
+ * toward tasks.
  */
 export function finishTraining(state: VillageState, now: number, data: GameData): string[] {
   const done: string[] = [];
   const cap = housingCapacity(state, data);
-  while (state.training.length && state.training[0].endsAt <= now) {
-    const item = state.training[0];
-    if (armyHousing(state.army, data) + (data.troops[item.troop]?.housing ?? 0) > cap) break;
-    state.training.shift();
+  let used = armyHousing(state.army, data);
+  state.training = state.training.filter((item) => {
+    const size = data.troops[item.troop]?.housing ?? 0;
+    if (item.endsAt > now || used + size > cap) return true;
+    used += size;
     state.army[item.troop] = (state.army[item.troop] ?? 0) + 1;
     if (state.stats) state.stats.troopsTrained++;
     done.push(item.troop);
-  }
+    return false;
+  });
   return done;
 }
 
-/** True when the first queued warrior has finished and there is camp room for it. */
+/** True when a finished warrior has camp room to walk in. */
 export function trainingReady(state: VillageState, now: number, data: GameData): boolean {
-  const head = state.training[0];
-  if (!head || head.endsAt > now) return false;
-  return armyHousing(state.army, data) + (data.troops[head.troop]?.housing ?? 0) <= housingCapacity(state, data);
+  const room = housingCapacity(state, data) - armyHousing(state.army, data);
+  return state.training.some((q) => q.endsAt <= now && (data.troops[q.troop]?.housing ?? 0) <= room);
 }
 
 /** How many times faster than base the Training Dojo trains (its highest finished level). */
@@ -97,23 +99,21 @@ export function retimeQueue(queue: TrainingItem[], now: number): void {
   }
 }
 
-/** How many warriors at the head of the queue fit in the camps as they stand, in queue order. */
-export function queueFit(state: VillageState, data: GameData): number {
+/** For each queued warrior, in order: will they fit in the camps as they stand? Whoever doesn't is passed, as in `finishTraining`. */
+export function queueFits(state: VillageState, data: GameData): boolean[] {
   let room = housingCapacity(state, data) - armyHousing(state.army, data);
-  let fit = 0;
-  for (const q of state.training) {
+  return state.training.map((q) => {
     const size = data.troops[q.troop]?.housing ?? 0;
-    if (size > room) break;
+    if (size > room) return false;
     room -= size;
-    fit++;
-  }
-  return fit;
+    return true;
+  });
 }
 
 /** When the last warrior who fits in the camps finishes (null when none of the queue fits). */
 export function armyReadyAt(state: VillageState, data: GameData): number | null {
-  const fit = queueFit(state, data);
-  return fit > 0 ? state.training[fit - 1].endsAt : null;
+  const fits = queueFits(state, data);
+  return state.training.filter((_, i) => fits[i]).at(-1)?.endsAt ?? null;
 }
 
 /**

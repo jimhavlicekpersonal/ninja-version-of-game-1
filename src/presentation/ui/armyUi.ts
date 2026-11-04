@@ -33,8 +33,6 @@ export interface ArmyUiDeps {
 }
 
 const BUILD_TEXT: Record<BuildState, string> = { ready: 'Built', building: 'Being built', missing: 'Not built yet' };
-/** Warrior stacks are listed in this order under these headings. */
-const NEXT_ARMY = ['next', 'waiting'] as const;
 
 export class ArmyUi {
   /** The tab stays where the player left it, between visits too. */
@@ -64,9 +62,11 @@ export class ArmyUi {
     const body = h('div', { class: 'training' });
     const strip = h('div', { class: 'army-strip' });
     const tabs = h('div', { class: 'shop-tabs army-tabs', role: 'tablist' });
+    // Strip and tabs are pinned together: another tab is always one tap away.
+    const head = h('div', { class: 'army-head' }, strip, tabs);
     const pane = h('div', { class: 'army-pane' });
     const codex = h('button', { class: 'btn sky', type: 'button', onclick: () => this.d.openCodex() }, icon(icons.scroll), `Warrior Codex (${WARRIORS.length} classes)`);
-    body.append(strip, tabs, pane, h('div', { class: 'actions' }, codex));
+    body.append(head, pane, h('div', { class: 'actions' }, codex));
 
     let tierFilter = 0;
     let roleFilter = '';
@@ -105,8 +105,7 @@ export class ArmyUi {
       });
 
     const drawTabs = (v: ArmyView) => {
-      const units = Object.values(v.state.army).reduce((a, b) => a + b, 0);
-      const labels: [ArmyTab, string][] = [['train', 'Train'], ['army', units ? `Army (${units})` : 'Army'], ['research', v.state.research.active.length ? `Research (${v.state.research.active.length})` : 'Research']];
+      const labels: [ArmyTab, string][] = [['train', 'Train'], ['army', 'Army'], ['research', v.state.research.active.length ? `Research (${v.state.research.active.length})` : 'Research']];
       const sig = JSON.stringify([this.tab, labels]);
       if (sig === tabSig) return;
       tabSig = sig;
@@ -164,7 +163,7 @@ export class ArmyUi {
 
     const drawArmyPane = (v: ArmyView) => {
       const s = v.state;
-      const sig = JSON.stringify(['army', s.army, lodgeTroops(s), v.stacks.map((st) => [st.troop, st.status, st.count, st.lastIndex, st.endsAt]), s.armyPresets, lastAttackArmy(s)]);
+      const sig = JSON.stringify(['army', s.army, v.freeHousing, v.waitingNeeds, lodgeTroops(s), v.stacks.map((st) => [st.troop, st.status, st.count, st.lastIndex, st.endsAt]), s.armyPresets, lastAttackArmy(s)]);
       if (sig === paneSig) return;
       paneSig = sig;
       pane.replaceChildren(this.armyPane(v, redraw));
@@ -186,7 +185,7 @@ export class ArmyUi {
       if (pressed) return;
       const now = c.now();
       const v = armyView(c.state, now, gd);
-      const nextStrip = JSON.stringify([v.capacity, v.readyHousing, v.trainingHousing, v.nextHousing, v.waiting, v.active?.troop, v.active?.endsAt, v.armyDoneAt, v.skip?.moonstones]);
+      const nextStrip = JSON.stringify([v.capacity, v.readyHousing, v.training, v.trainingHousing, v.next, v.waiting, v.active?.troop, v.active?.endsAt, v.activeStatus, v.armyDoneAt, v.skip?.moonstones]);
       if (nextStrip !== stripSig) {
         stripSig = nextStrip;
         this.drawStrip(strip, v, now, redraw);
@@ -241,18 +240,12 @@ export class ArmyUi {
       h('i', { class: 'ready', style: `width:${Math.min(100, (v.readyHousing / cap) * 100)}%` }),
       h('i', { class: 'coming', style: `width:${Math.min(100 - Math.min(100, (v.readyHousing / cap) * 100), (v.trainingHousing / cap) * 100)}%` }),
     );
-    strip.append(
-      h(
-        'div',
-        { class: 'army-strip-head' },
-        bar,
-        h('b', {}, `Army ${v.readyHousing} / ${v.capacity}`),
-      ),
-    );
+    strip.append(h('div', { class: 'army-strip-head' }, bar, h('b', { title: 'Space taken in the Squad Courtyards' }, `Space ${v.readyHousing} / ${v.capacity}`)));
+    // Warriors, like every stack below; only the bar above counts space.
     const detail: string[] = [];
-    if (v.trainingHousing) detail.push(`${v.trainingHousing} training`);
-    if (v.nextHousing) detail.push(`${v.nextHousing} next army`);
-    if (v.waiting) detail.push(`${v.waiting} waiting for room`);
+    if (v.training) detail.push(`${v.training} training`);
+    if (v.next) detail.push(`${v.next} next army`);
+    if (v.waiting) detail.push(`${v.waiting} waiting`);
     const line = h('div', { class: 'army-strip-line' });
     if (v.active) {
       const name = this.gd.troops[v.active.troop]?.name ?? v.active.troop;
@@ -261,24 +254,27 @@ export class ArmyUi {
         h(
           'div',
           { class: 'army-active' },
-          h('div', { class: 'small' }, h('b', {}, name), ' ', h('span', { 'data-ends': String(v.active.endsAt) }, formatDuration(v.active.endsAt - now))),
+          h('div', { class: 'small army-active-name' }, h('b', {}, v.activeStatus === 'training' ? name : `${name} · next army`), h('span', { 'data-ends': String(v.active.endsAt) }, formatDuration(v.active.endsAt - now))),
           h('div', { class: 'progress thin' }, h('i', { 'data-from': String(v.active.startedAt), 'data-to': String(v.active.endsAt) })),
         ),
       );
     } else {
       line.append(h('span', { class: 'muted small army-active' }, v.waiting ? 'Training finished' : 'Nobody is training'));
     }
-    if (v.armyDoneAt !== null && v.armyDoneAt > now) {
-      line.append(h('span', { class: 'chip', title: 'Time until everyone who fits in the Courtyards has finished' }, icon(icons.clock), h('span', { 'data-ends': String(v.armyDoneAt) }, formatDuration(v.armyDoneAt - now))));
+    if (v.armyDoneAt !== null && v.armyDoneAt > now && v.armyDoneAt !== v.active?.endsAt) {
+      line.append(h('span', { class: 'chip', title: 'Time until everyone who fits in the Squad Courtyards has finished' }, icon(icons.clock), h('span', { 'data-ends': String(v.armyDoneAt) }, formatDuration(v.armyDoneAt - now))));
     }
     if (v.skip) {
       const quote = v.skip;
       const fin = h('button', { class: 'btn gold', type: 'button' }, 'Finish ', h('span', { class: 'chip' }, icon(icons.moonstones), String(quote.moonstones)));
       fin.addEventListener('click', () => void this.d.econ.spendMoonstones('Finish training', 'Finish training the warriors who fit in your Squad Courtyards', quote.moonstones, () => this.c.dispatch({ type: 'skipTraining' }).ok).then(redraw));
       line.append(fin);
+    } else if (v.active) {
+      // Jade only finishes warriors who fit, so say why there is no button.
+      line.append(h('span', { class: 'chip army-noroom' }, 'No room to finish'));
     }
     // Always one line, even an empty one: the strip keeps its height, so nothing below it moves under a finger.
-    strip.append(line, h('p', { class: 'muted small army-detail' }, detail.join(' · ') || '\u00a0'));
+    strip.append(line, h('p', { class: 'muted small army-detail' }, detail.length ? `Warriors: ${detail.join(' · ')}` : '\u00a0'));
   }
 
   /** Shown until training is possible, so an empty panel always says what to do next. */
@@ -362,7 +358,8 @@ export class ArmyUi {
       ready.append(h('span', { class: 'army-chip' }, this.thumb(t), `${gd.troops[t]?.name ?? t} ×${n}`, x));
     }
     if (!ready.childElementCount) ready.append(h('span', { class: 'muted' }, 'No warriors ready yet.'));
-    wrap.append(h('h3', {}, 'Ready to attack'), ready);
+    const units = Object.values(s.army).reduce((a, b) => a + b, 0);
+    wrap.append(h('h3', {}, units ? `Ready to attack · ${units} warrior${units > 1 ? 's' : ''}` : 'Ready to attack'), ready);
     const lodge = Object.entries(lodgeTroops(s));
     if (lodge.length) {
       wrap.append(
@@ -374,13 +371,16 @@ export class ArmyUi {
 
     const training = v.stacks.filter((st) => st.status === 'training');
     if (training.length) wrap.append(h('h3', {}, 'Training'), ...training.map((st) => this.stackRow(st, redraw)));
-    const next = NEXT_ARMY.flatMap((status) => v.stacks.filter((st) => st.status === status));
+    // Queue order: whoever finished first is listed first, right under the note about them.
+    const next = v.stacks.filter((st) => st.status !== 'training');
     if (next.length) {
+      const who = `${v.waiting} finished warrior${v.waiting > 1 ? 's' : ''}`;
+      const why = v.freeHousing > 0 ? `${who} can't fit yet: ${v.freeHousing} space free, and the smallest needs ${v.waitingNeeds}.` : `${who} can't fit yet: the Squad Courtyards are full.`;
       wrap.append(
         h('h3', {}, 'Next army'),
         v.waiting
-          ? h('p', { class: 'army-note small' }, `${v.waiting} finished warrior${v.waiting > 1 ? 's are' : ' is'} waiting for room in the Squad Courtyards. They walk in by themselves after a raid, or when you dismiss warriors.`)
-          : h('p', { class: 'muted small' }, 'Trained ahead. They join your army when the Squad Courtyards have room.'),
+          ? h('p', { class: 'army-note small' }, `${why} They walk in by themselves after a raid, or when you dismiss warriors.`)
+          : h('p', { class: 'muted small' }, 'Trained ahead. They join your army when the Squad Courtyards have room. Jade can\'t finish them until then.'),
         ...next.map((st) => this.stackRow(st, redraw)),
       );
     }
@@ -435,7 +435,7 @@ export class ArmyUi {
       { class: 'stack-row' },
       this.thumb(st.troop),
       h('b', {}, `${name} ×${st.count}`),
-      st.status === 'waiting' ? h('span', { class: 'chip good' }, 'Ready, needs room') : h('span', { class: 'chip' }, icon(icons.clock), h('span', { 'data-ends': String(st.endsAt) }, '')),
+      st.status === 'waiting' ? h('span', { class: 'chip good' }, `Ready · needs ${gd.troops[st.troop]?.housing ?? 0} space`) : h('span', { class: 'chip', title: 'When the last of this stack finishes, after everyone ahead of it' }, icon(icons.clock), 'Done in ', h('span', { 'data-ends': String(st.endsAt) }, '')),
       h('span', { class: 'row' }, one, st.count > 1 ? all : null),
     );
   }

@@ -1,5 +1,5 @@
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
-import { armyHousing, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFit, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
+import { armyHousing, armyReadyAt, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES } from './battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
@@ -258,6 +258,7 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
     }
   }
   // Training runs back to back, so the finished items are a prefix of the queue.
+  // Each one is a moment the camps may have room for anyone finished so far.
   for (const item of next.training) {
     if (item.endsAt > now) break;
     timeline.push({ at: item.endsAt, seq: seq++, run: () => finishTraining(next, item.endsAt, data) });
@@ -671,9 +672,9 @@ function skipResearch(s: VillageState, troop: string | undefined, now: number, d
 
 /** Finishing training covers the warriors who fit in the camps: Jade never buys a warrior who would only wait for room. */
 export function trainingSkipQuote(state: VillageState, now: number, data: GameData): { seconds: number; moonstones: number } | null {
-  const last = state.training[queueFit(state, data) - 1];
-  if (!last || last.endsAt <= now) return null;
-  const seconds = Math.ceil((last.endsAt - now) / 1000);
+  const doneAt = armyReadyAt(state, data);
+  if (doneAt === null || doneAt <= now) return null;
+  const seconds = Math.ceil((doneAt - now) / 1000);
   return { seconds, moonstones: skipCost(seconds, data) };
 }
 
@@ -682,11 +683,13 @@ function skipTraining(s: VillageState, now: number, data: GameData): CommandResu
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
   if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
   s.resources.moonstones -= q.moonstones;
-  for (const item of s.training.slice(0, queueFit(s, data))) {
+  const fits = queueFits(s, data);
+  s.training.forEach((item, i) => {
+    if (!fits[i]) return;
     // Some of these never started: a timer must not end before it began (the save check rejects that).
     item.startedAt = Math.min(item.startedAt, now);
     item.endsAt = Math.min(item.endsAt, now);
-  }
+  });
   finishTraining(s, now, data);
   retimeQueue(s.training, now);
   return { ok: true, state: s, events: [{ kind: 'skip_used', what: 'training', seconds: q.seconds, moonstones: q.moonstones }] };
