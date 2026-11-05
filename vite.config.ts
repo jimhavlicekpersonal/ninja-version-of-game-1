@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
@@ -30,7 +31,51 @@ function serviceWorker(): Plugin {
   };
 }
 
-export default defineConfig({
+/**
+ * The start-up guard (src/backend/pwa/boot.js: polyfills, feature check, "Couldn't load" with
+ * Retry) runs inline before anything else, so it works even when the game's script never arrives.
+ */
+function bootGuard(): Plugin {
+  return {
+    name: 'tk-boot-guard',
+    transformIndexHtml() {
+      const source = readFileSync('src/backend/pwa/boot.js', 'utf8');
+      return [{ tag: 'script', children: source, injectTo: 'head-prepend' }];
+    },
+  };
+}
+
+/**
+ * Phaser's sources carry webpack-style feature flags (`if (typeof WEBGL_RENDERER)`). The custom
+ * build (`src/presentation/render/phaserBuild.js`) compiles them with the values Phaser's own
+ * dist build uses, minus sound: both renderers, no WebGL debug (it would pull in spector.js),
+ * no Camera3D / Facebook plugins.
+ */
+const PHASER_FLAGS: Record<string, boolean> = {
+  CANVAS_RENDERER: true,
+  WEBGL_RENDERER: true,
+  WEBGL_DEBUG: false,
+  EXPERIMENTAL: false,
+  PLUGIN_3D: false,
+  PLUGIN_CAMERA3D: false,
+  PLUGIN_FBINSTANT: false,
+  FEATURE_SOUND: false,
+};
+
+function phaserFlags(): Plugin {
+  const pattern = new RegExp(`typeof (${Object.keys(PHASER_FLAGS).join('|')})\\b`, 'g');
+  return {
+    name: 'tk-phaser-flags',
+    apply: 'build',
+    transform(code, id) {
+      if (!/[\\/]node_modules[\\/]phaser[\\/]src[\\/]/.test(id) || !code.includes('typeof ')) return null;
+      const out = code.replace(pattern, (_m, flag: string) => String(PHASER_FLAGS[flag]));
+      return out === code ? null : { code: out, map: null };
+    },
+  };
+}
+
+export default defineConfig(({ command }) => ({
   // Relative paths so the same build works on GitHub Pages, any static host, and later inside Capacitor.
   base: './',
   define: {
@@ -43,9 +88,11 @@ export default defineConfig({
     target: 'es2020',
     chunkSizeWarningLimit: 2000,
   },
-  plugins: [serviceWorker()],
+  // Production ships a smaller Phaser (no physics, sound, tilemaps: phaserBuild.js); dev and tests use the full package.
+  resolve: command === 'build' && !process.env.VITEST ? { alias: [{ find: /^phaser$/, replacement: fileURLToPath(new URL('./src/presentation/render/phaserBuild.js', import.meta.url)) }] } : {},
+  plugins: [bootGuard(), serviceWorker(), phaserFlags()],
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',
   },
-});
+}));

@@ -78,7 +78,7 @@ jobs:
           node tools/ops/restore.mjs "${{ steps.backup.outputs.file }}"
           DATABASE_URL=$TARGET_DATABASE_URL node tools/ops/restore-check.mjs
           npm run server:build
-          DATABASE_URL=$TARGET_DATABASE_URL DEPLOY_ENV=production ADMIN_TOKEN=drill-only-0123456789abcdef CORS_ORIGIN=https://drill.invalid PORT=8787 node dist-server/main.js > server.log 2>&1 &
+          DATABASE_URL=$TARGET_DATABASE_URL DEPLOY_ENV=production TRUST_PROXY=false ADMIN_TOKEN=drill-only-0123456789abcdef CORS_ORIGIN=https://drill.invalid PORT=8787 node dist-server/main.js > server.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:8787/readyz && break; sleep 1; done
           curl -sf http://localhost:8787/readyz || (cat server.log; exit 1)
           echo "Restore drill passed: the backup restores, checks out, and the server starts on it."

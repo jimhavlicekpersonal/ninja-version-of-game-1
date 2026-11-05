@@ -36,6 +36,13 @@ groups:
         annotations:
           summary: 'The event loop is blocked for >250 ms at p99: battle re-simulation needs the worker pool (roadmap step 57) or more instances.'
 
+      - alert: RedisDown
+        expr: min(tk_redis_up) == 0
+        for: 5m
+        labels: { severity: warn }
+        annotations:
+          summary: 'Redis is unreachable: rate limits fail open, the leaderboard reads the database and match locks fall back to tickets (re-audit). Fix it before load grows.'
+
       - alert: DatabasePoolSaturated
         expr: max(tk_db_pool_connections{state="waiting"}) > 0
         for: 5m

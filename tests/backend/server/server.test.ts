@@ -256,7 +256,8 @@ describe('server HTTP adapter', () => {
       expect(page.statusCode).toBe(200);
       expect(page.headers['content-type']).toMatch(/text\/html/);
       expect(page.headers['content-security-policy']).toMatch(/default-src 'none'/);
-      expect(page.body).toMatch(/Settings → Online play → Delete online account/);
+      expect(page.body).toMatch(/Settings → Online play → Account → Delete online account/);
+      expect(page.body).toMatch(/name="code"/);
       expect(page.body).toMatch(/v1\/account\/deletion-requests/);
       const ok = await s.call('POST', Routes.deletionRequests, undefined, { playerId: 'p-1', contact: 'me@example.com' });
       expect(ok.status).toBe(202);

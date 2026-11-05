@@ -93,8 +93,8 @@ describe('privacy defaults and declarations (GLOBAL-019)', () => {
     const page = deletionPage();
     expect(page).not.toMatch(/name="contact"|autocomplete="email"|email address\)/);
     expect(page).toContain("We don't ask for an email address");
-    // The script sends only the three fields it asks for.
-    expect(page).toContain('const body = { playerId: data.playerId, name: data.name, note: data.note };');
+    // The script sends only the three fields it asks for (re-audit: the one-time deletion code proves ownership).
+    expect(page).toContain('const body = { playerId: data.playerId, code: data.code, note: data.note };');
   });
   it('error messages lose URL parameters and email-like text before sending', () => {
     expect(scrubText('fetch failed https://api.example.test/v1/me?token=abc#x for ann@example.com')).toBe('fetch failed https://api.example.test/v1/me for [email]');

@@ -25,10 +25,12 @@ export class NativeReminders implements ReminderService {
   async schedule(list: Reminder[]): Promise<void> {
     await this.cancelAll();
     const now = Date.now();
+    // Reminders are never exact alarms: the app does not ask for SCHEDULE_EXACT_ALARM (removed from the merged
+    // Android manifest, re-audit), and exact ones would open the system's "Alarms & reminders" screen.
     const notifications = list
       .filter((r) => r.at > now + 5000)
       .slice(0, 20)
-      .map((r) => ({ id: numericId(r.id), title: r.title, body: r.body, schedule: { at: new Date(r.at), allowWhileIdle: true } }));
+      .map((r) => ({ id: numericId(r.id), title: r.title, body: r.body, schedule: { at: new Date(r.at), allowWhileIdle: true }, isExactNotification: false }));
     if (notifications.length) await LocalNotifications.schedule({ notifications });
   }
 

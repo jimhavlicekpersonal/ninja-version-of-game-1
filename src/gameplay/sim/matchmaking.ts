@@ -76,23 +76,44 @@ export function applyLootPenalty(base: BaseLayout, attackerHall: number, data: G
 }
 
 /**
- * How strong a player's army is, in hall units: Keep level minus 1, plus how
- * far their warriors' research has climbed toward that Keep's caps (0..1). A
- * Keep 15 player with maxed research is ~15; one who just arrived at Keep 15
- * with Keep 14 research is ~14.6. Counts the warriors they field (ready or
- * training), or every warrior they can train if none.
+ * The Keep whose research caps a warrior level matches, on the Keep's level scale (`troopLevelCap`
+ * in hall.json): a level at Keep K's cap reads K, a level between two Keeps' caps reads in between.
+ * Levels below the first cap read 0..1.
+ */
+export function researchKeep(level: number, data: GameData): number {
+  const caps = data.hall.levels.map((l) => l.troopLevelCap ?? 1);
+  if (level <= caps[0]) return Math.max(0, level / Math.max(1, caps[0]));
+  for (let k = 1; k < caps.length; k++) {
+    if (level <= caps[k]) {
+      // The first Keep reaching this level; Keeps that share a cap read the earliest.
+      let lo = k - 1;
+      while (lo > 0 && caps[lo - 1] === caps[lo]) lo--;
+      return caps[k] === caps[lo] ? lo + 1 : lo + 1 + (level - caps[lo]) / (caps[k] - caps[lo]);
+    }
+  }
+  return caps.length;
+}
+
+/**
+ * How strong a player's army is, in hall units: the Keep whose research caps its warriors'
+ * levels match (`researchKeep`), averaged over the warriors it fields (ready or training, or
+ * every warrior it can train if none), never above its own Keep. A Keep 15 player with maxed
+ * research is 15; one with Keep 14's research is 14.
  *
- * Levels are read on the Keep's research scale: a newer tier's level 1 is as
- * strong as an older warrior at level 1 + `levelCapOffset`, so swapping in
- * newly unlocked warriors at level 1 does not make the army look weaker (Keep 7
- * players with fresh Keep 7 warriors used to be matched with Keep 6 bases and
- * three-starred them).
+ * Levels are read on the Keep's research scale: a newer tier's level 1 is as strong as an
+ * older warrior at level 1 + `levelCapOffset`, so swapping in newly unlocked warriors at
+ * level 1 does not make the army look weaker than the army it replaced.
+ *
+ * Design re-audit (Nov 2026): this used to be Keep − 1 plus the share of the whole level
+ * scale reached, so an army two levels behind its Keep's caps still read ~0.9 of the Keep
+ * (Keep 12: 12 of 14 levels) and was matched with bases near their caps: casual players
+ * averaged 0.0–0.1 stars at Keeps 11–15. Now research behind the caps reads as the earlier
+ * Keep it matches, so an army meets bases of the research it has (honor can still raise them).
  */
 export function attackerStrength(state: VillageState, data: GameData): number {
   const hall = hallLevel(state, data);
   const fielded = new Set([...Object.keys(state.army), ...state.training.map((q) => q.troop)]);
   const troops = fielded.size ? [...fielded] : Object.keys(data.troops).filter((t) => troopUnlock(state, t, data).unlocked);
-  const scale = troopLevelCapAt(hall, data);
   let sum = 0;
   let n = 0;
   for (const t of troops) {
@@ -100,10 +121,11 @@ export function attackerStrength(state: VillageState, data: GameData): number {
     if (!def) continue;
     const offset = def.levelCapOffset ?? 0;
     const lvl = Math.min(troopLevelCapAt(hall, data, t), troopLevelOf(state, t)) + offset;
-    sum += scale > 1 ? Math.min(1, (lvl - 1) / (scale - 1)) : 1;
+    // At its own Keep's cap it is maxed for this Keep (Keeps that share a cap would read the earliest).
+    sum += lvl >= troopLevelCapAt(hall, data) ? hall : Math.min(hall, researchKeep(lvl, data));
     n++;
   }
-  return hall - 1 + (n ? sum / n : 0);
+  return n ? sum / n : hall - 1;
 }
 
 /**

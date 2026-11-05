@@ -378,7 +378,7 @@ describe('a Redis outage degrades instead of failing requests', () => {
   it('rate limits fail open, the leaderboard reads the database, locks fall back to tickets', async () => {
     const errors: string[] = [];
     const onError = (use: string) => void errors.push(use);
-    expect(await new RedisRateLimiter(down, DEFAULT_RATE_LIMITS, 'x:', onError).hit('ip', 'k', 0)).toEqual({ ok: true, retryAfterMs: 0 });
+    expect(await new RedisRateLimiter(down, DEFAULT_RATE_LIMITS, 'x:', onError).hit('ip', 'k')).toEqual({ ok: true, retryAfterMs: 0 });
     const repo = new MemoryRepo();
     const T = Date.UTC(2026, 10, 5);
     const p = (id: string, trophies: number): Player => ({ id, name: id, tokenHash: id, trophies, hallLevel: 1, shieldUntil: 0, base: { name: id, hallLevel: 1, buildings: [] }, groveId: null, createdAt: T, updatedAt: T, lastSeenAt: T });

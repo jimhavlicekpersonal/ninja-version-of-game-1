@@ -5,10 +5,13 @@
  * store listings. It posts to POST /v1/account/deletion-requests (same origin).
  * Self-contained: no external fonts, scripts or images.
  *
- * It asks only for a Player ID or player name and an optional note, never an
- * email address (worldwide audit GLOBAL-019): staff carry a request out by
- * Player ID (core/account.ts resolveDeletion) and never write back, so a contact
- * address would be data collected for nothing. The privacy policy and store
+ * It asks for the Player ID and the one-time deletion code from Settings →
+ * Online play → Account (re-audit: player ids are visible to other players,
+ * so an id alone does not show the request is the player's), and an optional
+ * note, never an email address (worldwide audit GLOBAL-019). A request with a
+ * valid code is marked verified and staff carry it out; one without is
+ * refused unless support checks ownership another way (core/account.ts
+ * resolveDeletion, 'override' with a note). The privacy policy and store
  * declarations say so.
  */
 
@@ -59,7 +62,7 @@ export function deletionPage(): string {
 
   <div class="card">
     <h2 style="margin-top:0">In the game (fastest)</h2>
-    <p>Open <b>Settings → Online play → Delete online account</b>. Your online account is deleted at once.</p>
+    <p>Open <b>Settings → Online play → Account → Delete online account</b>. Your online account is deleted at once. This works even if you switched to <b>Play offline</b>: the game connects just to delete it.</p>
   </div>
 
   <h2>What is deleted</h2>
@@ -76,14 +79,14 @@ export function deletionPage(): string {
   <p class="muted">A village saved on your device stays there: to remove it, uninstall the app, or clear the game site's data in your browser. Purchase records are kept without your Player ID, as tax and refund rules require.</p>
 
   <div class="card">
-    <h2 style="margin-top:0">Can't open the game any more?</h2>
-    <p>Send a request. Staff check it against the account and delete it within 30 days, usually much sooner. Your Player ID is in Settings → Online play → Account; a request with only a player name can be turned down if we cannot tell that the account is yours.</p>
-    <p class="muted">We don't ask for an email address. Keep the reference you get after sending: it identifies your request if you contact support.</p>
+    <h2 style="margin-top:0">Deleting from the web</h2>
+    <p>Other players can see Player IDs, so we need proof that the account is yours: a <b>deletion code</b>. Get one in the game under <b>Settings → Online play → Account → Get a deletion code</b> (it works once, for 30 days), then send it here with your Player ID from the same screen. Staff delete a request with a valid code within 30 days, usually much sooner.</p>
+    <p class="muted">No code, and you can't open the game any more? Send your Player ID anyway and contact support from the game's support page with the reference you get: we can only delete the account once we can confirm it is yours (for example through the Apple, Google or Game Center sign-in linked to it, or a store receipt). We don't ask for an email address here.</p>
     <form id="f" novalidate>
       <label for="playerId">Player ID</label>
       <input id="playerId" name="playerId" autocomplete="off" maxlength="64">
-      <label for="name">Player name <span>(if you don't have the ID)</span></label>
-      <input id="name" name="name" autocomplete="off" maxlength="40">
+      <label for="code">Deletion code <span>(from Settings → Online play → Account)</span></label>
+      <input id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="XXXXX-XXXXX">
       <label for="note">Anything else <span>(optional; please don't include contact details)</span></label>
       <textarea id="note" name="note" maxlength="1000"></textarea>
       <button id="send" type="submit">Request deletion</button>
@@ -98,10 +101,10 @@ export function deletionPage(): string {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
-    const body = { playerId: data.playerId, name: data.name, note: data.note };
-    if (!String(body.playerId || '').trim() && !String(body.name || '').trim()) {
+    const body = { playerId: data.playerId, code: data.code, note: data.note };
+    if (!String(body.playerId || '').trim()) {
       out.className = 'error';
-      out.textContent = 'Enter your Player ID or your player name.';
+      out.textContent = 'Enter your Player ID (Settings → Online play → Account).';
       return;
     }
     send.disabled = true;
@@ -111,8 +114,10 @@ export function deletionPage(): string {
       const res = await fetch(new URL('../v1/account/deletion-requests', location.href), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.message || 'The request did not go through. Try again later.');
-      out.className = 'ok';
-      out.textContent = 'Request received. Your reference: ' + json.id;
+      out.className = json.verified ? 'ok' : 'error';
+      out.textContent = json.verified
+        ? 'Request received and confirmed with your code. Your reference: ' + json.id
+        : 'Request received, but without a valid deletion code we cannot confirm the account is yours. Your reference: ' + json.id + '. Get a code in the game, or contact support with this reference.';
       form.reset();
     } catch (err) {
       out.className = 'error';

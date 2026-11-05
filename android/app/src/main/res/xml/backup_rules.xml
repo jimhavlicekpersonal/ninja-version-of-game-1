@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 11 and older (Auto Backup, android:fullBackupContent): the same
+  exclusions as data_extraction_rules.xml. localStorage (the online sign-in
+  token, the device's queue id and unsent actions) never leaves the device; the
+  village save in IndexedDB may be backed up.
+-->
+<full-backup-content>
+    <exclude domain="root" path="app_webview/Default/Local Storage/" />
+    <exclude domain="root" path="app_webview/Local Storage/" />
+    <exclude domain="root" path="app_webview/Default/Session Storage/" />
+    <exclude domain="root" path="app_webview/Default/Cookies" />
+</full-backup-content>

@@ -39,7 +39,7 @@ import { FakeClock } from '../../src/gameplay/sim/clock';
 import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
 import { botDeployments } from '../../src/gameplay/sim/defense';
 import { findFreeSpot } from '../../src/gameplay/sim/grid';
-import { opponentFor } from '../../src/gameplay/sim/matchmaking';
+import { attackerStrength, opponentFor } from '../../src/gameplay/sim/matchmaking';
 import { computeOfflineProgress } from '../../src/gameplay/sim/offline';
 import { researchLanes, troopLevels } from '../../src/gameplay/sim/research';
 import { capacity, collectorAmount } from '../../src/gameplay/sim/resources';
@@ -68,6 +68,9 @@ export interface RaidLog {
   destruction: number;
   loot: number;
   trophies: number;
+  /** The attacker's earned strength (Keep units) and the opponent's level bias, when it was scouted. */
+  strength?: number;
+  bias?: number;
 }
 
 export class ModelPlayer {
@@ -286,6 +289,7 @@ export class ModelPlayer {
         seed = next;
         base = opponentFor(seed, this.state, d);
       }
+      const strength = attackerStrength(this.state, d);
       const army = battleArmy(this.state);
       for (const t of Object.keys(army)) this.fielded.add(t);
       const levels = troopLevels(this.state, d);
@@ -297,7 +301,7 @@ export class ModelPlayer {
       if (!res.ok) throw new Error(`battleEnd failed: ${res.message}`);
       this.state = res.state;
       const rec = this.state.battleLog[this.state.battleLog.length - 1];
-      this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies });
+      this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies, strength });
       // Replays are not needed here, and cloning them on every command is slow.
       this.state.battleLog = [];
       this.raids++;

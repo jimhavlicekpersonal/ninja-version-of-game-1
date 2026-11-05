@@ -2,10 +2,13 @@
  * The Phaser 3.90 the production build ships (first-load size, client re-audit item 5).
  *
  * `vite.config.ts` points `import Phaser from 'phaser'` here for `vite build` only (dev and tests
- * use the full package). It is `phaser/src/phaser-core.js` plus the parts the game uses
- * (full Math, Display, Geom, Actions, Utils; Container and Particle game objects), and leaves
- * out physics (Arcade and Matter), sound, tilemaps, curves, bitmap text, mesh/shader/video
- * objects, the Facebook and Camera3D plugins. The `typeof WEBGL_RENDERER`-style feature flags
+ * use the full package). It is close to `phaser/src/phaser-core.js`: the namespaces the game
+ * names (`Phaser.Math.Clamp/Distance/Vector2`, `Scale`, `Scenes`, `Core`, `Textures`, `Tweens`,
+ * `Input.Pointer`) and the game objects it adds (image, graphics, text, container, particles,
+ * plus layer and sprite), the keyboard input plugin and the image loader. It leaves out physics
+ * (Arcade and Matter), sound, tilemaps, curves, gamepad, the other loader file types, bitmap
+ * text, mesh/shader/video objects and the Facebook and Camera3D plugins. Phaser's own modules
+ * still `require` whatever they need internally, so only unused namespaces are dropped. The `typeof WEBGL_RENDERER`-style feature flags
  * in Phaser's sources are replaced at build time by the same plugin (`phaserFlags`).
  *
  * Adding a Phaser feature: if the game starts using a module or game object listed as left out
@@ -16,7 +19,6 @@
 import CONST from 'phaser/src/const';
 import Extend from 'phaser/src/utils/object/Extend';
 
-import Actions from 'phaser/src/actions';
 import Animations from 'phaser/src/animations';
 import BlendModes from 'phaser/src/renderer/BlendModes';
 import Cache from 'phaser/src/cache';
@@ -24,15 +26,29 @@ import Cameras from 'phaser/src/cameras';
 import Core from 'phaser/src/core';
 import Class from 'phaser/src/utils/Class';
 import Data from 'phaser/src/data';
-import Display from 'phaser/src/display';
 import DOM from 'phaser/src/dom';
 import Events from 'phaser/src/events';
 import FX from 'phaser/src/fx';
 import Game from 'phaser/src/core/Game';
-import Geom from 'phaser/src/geom';
-import Input from 'phaser/src/input';
-import Loader from 'phaser/src/loader';
-import PMath from 'phaser/src/math';
+import InputConst from 'phaser/src/input/const';
+import InputEvents from 'phaser/src/input/events';
+import InputManager from 'phaser/src/input/InputManager';
+import InputPlugin from 'phaser/src/input/InputPlugin';
+import Pointer from 'phaser/src/input/Pointer';
+import Keyboard from 'phaser/src/input/keyboard'; // registers the keyboard plugin (VillageScene keys)
+import LoaderConst from 'phaser/src/loader/const';
+import LoaderEvents from 'phaser/src/loader/events';
+import LoaderPlugin from 'phaser/src/loader/LoaderPlugin';
+import LoaderFile from 'phaser/src/loader/File';
+import FileTypesManager from 'phaser/src/loader/FileTypesManager';
+import ImageFile from 'phaser/src/loader/filetypes/ImageFile'; // registers `load.image` (real art, artManifest.ts)
+import Clamp from 'phaser/src/math/Clamp';
+import Distance from 'phaser/src/math/distance';
+import Vector2 from 'phaser/src/math/Vector2';
+import Between from 'phaser/src/math/Between';
+import DegToRad from 'phaser/src/math/DegToRad';
+import RadToDeg from 'phaser/src/math/RadToDeg';
+import FloatBetween from 'phaser/src/math/FloatBetween';
 import Plugins from 'phaser/src/plugins';
 import Renderer from 'phaser/src/renderer';
 import Scale from 'phaser/src/scale';
@@ -43,7 +59,6 @@ import Structs from 'phaser/src/structs';
 import Textures from 'phaser/src/textures';
 import Time from 'phaser/src/time';
 import Tweens from 'phaser/src/tweens';
-import Utils from 'phaser/src/utils';
 
 import DisplayList from 'phaser/src/gameobjects/DisplayList';
 import GameObjectCreator from 'phaser/src/gameobjects/GameObjectCreator';
@@ -60,25 +75,24 @@ import Particles from 'phaser/src/gameobjects/particles';
 import Sprite from 'phaser/src/gameobjects/sprite/Sprite';
 import Text from 'phaser/src/gameobjects/text/Text';
 // Factories and creators register `scene.add.<kind>` / `scene.make.<kind>` when loaded.
-import ContainerFactory from 'phaser/src/gameobjects/container/ContainerFactory';
-import GraphicsFactory from 'phaser/src/gameobjects/graphics/GraphicsFactory';
-import ImageFactory from 'phaser/src/gameobjects/image/ImageFactory';
-import LayerFactory from 'phaser/src/gameobjects/layer/LayerFactory';
-import ParticlesFactory from 'phaser/src/gameobjects/particles/ParticleEmitterFactory';
-import SpriteFactory from 'phaser/src/gameobjects/sprite/SpriteFactory';
-import TextFactory from 'phaser/src/gameobjects/text/TextFactory';
-import ContainerCreator from 'phaser/src/gameobjects/container/ContainerCreator';
-import GraphicsCreator from 'phaser/src/gameobjects/graphics/GraphicsCreator';
-import ImageCreator from 'phaser/src/gameobjects/image/ImageCreator';
-import LayerCreator from 'phaser/src/gameobjects/layer/LayerCreator';
-import ParticlesCreator from 'phaser/src/gameobjects/particles/ParticleEmitterCreator';
-import SpriteCreator from 'phaser/src/gameobjects/sprite/SpriteCreator';
-import TextCreator from 'phaser/src/gameobjects/text/TextCreator';
+import 'phaser/src/gameobjects/container/ContainerFactory';
+import 'phaser/src/gameobjects/graphics/GraphicsFactory';
+import 'phaser/src/gameobjects/image/ImageFactory';
+import 'phaser/src/gameobjects/layer/LayerFactory';
+import 'phaser/src/gameobjects/particles/ParticleEmitterFactory';
+import 'phaser/src/gameobjects/sprite/SpriteFactory';
+import 'phaser/src/gameobjects/text/TextFactory';
+import 'phaser/src/gameobjects/container/ContainerCreator';
+import 'phaser/src/gameobjects/graphics/GraphicsCreator';
+import 'phaser/src/gameobjects/image/ImageCreator';
+import 'phaser/src/gameobjects/layer/LayerCreator';
+import 'phaser/src/gameobjects/particles/ParticleEmitterCreator';
+import 'phaser/src/gameobjects/sprite/SpriteCreator';
+import 'phaser/src/gameobjects/text/TextCreator';
 
 const Phaser = Extend(
   false,
   {
-    Actions,
     Animations,
     BlendModes,
     Cache,
@@ -86,7 +100,6 @@ const Phaser = Extend(
     Core,
     Class,
     Data,
-    Display,
     DOM,
     Events,
     FX,
@@ -106,13 +119,10 @@ const Phaser = Extend(
       Particles,
       Sprite,
       Text,
-      Factories: { Container: ContainerFactory, Graphics: GraphicsFactory, Image: ImageFactory, Layer: LayerFactory, Particles: ParticlesFactory, Sprite: SpriteFactory, Text: TextFactory },
-      Creators: { Container: ContainerCreator, Graphics: GraphicsCreator, Image: ImageCreator, Layer: LayerCreator, Particles: ParticlesCreator, Sprite: SpriteCreator, Text: TextCreator },
     },
-    Geom,
-    Input,
-    Loader,
-    Math: PMath,
+    Input: Extend(false, { Events: InputEvents, InputManager, InputPlugin, Pointer, Keyboard }, InputConst),
+    Loader: Extend(false, { Events: LoaderEvents, LoaderPlugin, File: LoaderFile, FileTypesManager, FileTypes: { ImageFile } }, LoaderConst),
+    Math: { Clamp, Distance, Vector2, Between, DegToRad, RadToDeg, FloatBetween },
     Plugins,
     Renderer,
     Scale,
@@ -123,7 +133,6 @@ const Phaser = Extend(
     Textures,
     Time,
     Tweens,
-    Utils,
   },
   CONST,
 );

@@ -10,6 +10,8 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(TkBillingPlugin.class);
         // Sign in with Google for account recovery (Credential Manager; same "TkAuth" name as the iPhone plugin).
         registerPlugin(TkAuthPlugin.class);
+        // The store's age signal (Play Age Signals API), used to set the age band before online play (re-audit).
+        registerPlugin(TkAgePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

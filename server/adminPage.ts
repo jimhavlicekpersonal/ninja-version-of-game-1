@@ -1,7 +1,9 @@
 /**
  * The admin tool's page (roadmap step 48): GET /admin, only when the server
- * has an ADMIN_TOKEN. Staff paste the token (kept in this tab only), find a
- * player, and use the staff API (/admin/v1/…). No player data is in the page
+ * has ADMIN_TOKENS or the legacy ADMIN_TOKEN. Staff paste their own token
+ * (kept in this tab only), find a player, and use the staff API (/admin/v1/…).
+ * With a per-staff token the log names the token's holder and the name field
+ * is ignored; it only labels actions done with the shared legacy token. No player data is in the page
  * itself; everything comes from the API with the token.
  */
 export const ADMIN_PAGE_CSP = "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; form-action 'none'; frame-ancestors 'none'; base-uri 'none'";
@@ -25,7 +27,7 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #eee;pad
 <body>
 <header><b>Kagemura staff</b>
 <input id="token" type="password" placeholder="Staff token" autocomplete="off">
-<input id="actor" placeholder="Your name (for the log)">
+<input id="actor" placeholder="Your name (shared token only)">
 <button id="save">Use</button>
 <span id="status" class="muted"></span></header>
 <main>
@@ -99,7 +101,7 @@ $('queues').onclick = async () => {
     const [reports, deletions] = await Promise.all([api('GET', '/admin/v1/reports'), api('GET', '/admin/v1/deletion-requests')]);
     $('detail').replaceChildren(
       el('section', {}, el('h3', {}, 'Open reports'), table(reports.reports, [['When', (r) => when(r.at)], ['About', (r) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); show(r.targetId); } }, r.targetName || r.targetId)], ['Reason', (r) => r.reason], ['Text', (r) => r.text || ''], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Resolve with POST /admin/v1/reports/:id (dismiss, remove_message, mute).')),
-      el('section', {}, el('h3', {}, 'Deletion requests'), table(deletions.requests, [['When', (r) => when(r.at)], ['Player', (r) => r.playerId || r.name], ['Contact', (r) => r.contact], ['Note', (r) => r.note], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Carry out with POST /admin/v1/deletion-requests/:id (delete or reject).')));
+      el('section', {}, el('h3', {}, 'Deletion requests'), table(deletions.requests, [['When', (r) => when(r.at)], ['Player', (r) => r.playerId || r.name], ['Verified', (r) => (r.verified ? 'yes (code)' : 'NO: check ownership')], ['Note', (r) => r.note], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Carry out with POST /admin/v1/deletion-requests/:id: delete (verified only), reject, or override with a note saying how ownership was checked.')));
   } catch (e) { status(e.message); }
 };
 $('log').onclick = async () => {

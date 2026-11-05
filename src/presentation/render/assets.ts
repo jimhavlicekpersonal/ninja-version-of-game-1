@@ -213,25 +213,35 @@ function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: s
   return { ctx, done: () => tex.refresh() };
 }
 
-/** Create every placeholder texture that real art has not already provided. */
-export function generatePlaceholders(
-  scene: Phaser.Scene,
-  buildingTypes: { type: string; size: number; maxLevel: number }[],
-  mapSize: number,
-  lazyTiers = quality().lazyTiers,
-): void {
-  if (!scene.textures.exists(Keys.ground)) {
+/** One slice of texture work; start-up runs these spread across frames (`prepareTextures`). */
+type Job = () => void;
+
+type BuildingType = { type: string; size: number; maxLevel: number };
+type TextureData = { buildings: Record<string, { size: number; levels?: unknown[] }>; economy: { mapSize: number }; cosmetics?: { hallSkins: { id: string; cap: string; spots: string }[] } };
+
+/** Every placeholder texture as a list of jobs, in the order `generatePlaceholders` paints them (fx shadow last). */
+function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: number, buildingTypes: BuildingType[], mapSize: number, lazyTiers: boolean): Job[] {
+  const jobs: Job[] = [];
+  const paint = (key: string, w: number, h: number, originY: number, scale: number | undefined, art: (ctx: Ctx) => void) =>
+    jobs.push(() => {
+      const c = canvasFor(textures, key, w, h, originY, scale);
+      if (c) {
+        art(c.ctx);
+        c.done();
+      }
+    });
+  jobs.push(() => {
+    if (textures.exists(Keys.ground)) return;
     const { w, h } = groundSize(mapSize);
-    const max = maxTextureSize(scene);
-    const s = Math.max(1, Math.min(GROUND_SCALE, max / w, max / h));
-    const tex = scene.textures.createCanvas(Keys.ground, Math.floor(w * s), Math.floor(h * s));
+    const s = Math.max(1, Math.min(GROUND_SCALE, maxSize / w, maxSize / h));
+    const tex = textures.createCanvas(Keys.ground, Math.floor(w * s), Math.floor(h * s));
     if (tex) {
       const ctx = tex.getContext();
       ctx.scale(s, s);
       paintGround(ctx, mapSize);
       tex.refresh();
     }
-  }
+  });
   for (const { type, size, maxLevel } of buildingTypes) {
     maxLevels.set(type, maxLevel);
     const p = buildingPainters[type] ?? { extra: size * 20, paint: (ctx: Ctx, s: number) => paintGeneric(ctx, s) };
@@ -240,13 +250,15 @@ export function generatePlaceholders(
     const tiers: Tier[] = maxLevel > 1 ? [1, 2, 3] : [1];
     for (const tier of tiers) {
       const key = Keys.buildingTier(type, tier);
-      paintOrDefer(scene.textures, key, (textures) => {
-        const c = canvasFor(textures, key, w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
-        if (c) {
-          p.paint(c.ctx, size, tier);
-          c.done();
-        }
-      }, lazyTiers);
+      jobs.push(() =>
+        paintOrDefer(textures, key, (t) => {
+          const c = canvasFor(t, key, w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
+          if (c) {
+            p.paint(c.ctx, size, tier);
+            c.done();
+          }
+        }, lazyTiers),
+      );
     }
     // The plain key (`building.<type>`) is only for real art now: code art never draws tier 1 twice.
   }
@@ -254,90 +266,47 @@ export function generatePlaceholders(
     const extra = 24 + size * 8;
     const w = size * TILE_W;
     const h = size * TILE_H + extra;
-    const c = canvasFor(scene, Keys.construction(size), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
-    if (c) {
-      paintConstruction(c.ctx, size);
-      c.done();
-    }
+    paint(Keys.construction(size), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE, (ctx) => paintConstruction(ctx, size));
   }
-  for (const r of ['acorns', 'dew']) {
-    const c = canvasFor(scene, Keys.bubble(r), 44, 54, 22);
-    if (c) {
-      paintBubble(c.ctx, r);
-      c.done();
-    }
-  }
-  const wave = canvasFor(scene, Keys.wave, 130, 44, 22);
-  if (wave) {
-    paintWave(wave.ctx);
-    wave.done();
-  }
-  const backdrop = canvasFor(scene, Keys.backdrop, 128, 128, 0, 1);
-  if (backdrop) {
-    backdrop.ctx.translate(-64, 0);
-    paintBackdrop(backdrop.ctx, 128, 128);
-    backdrop.done();
-  }
+  for (const r of ['acorns', 'dew']) paint(Keys.bubble(r), 44, 54, 22, undefined, (ctx) => paintBubble(ctx, r));
+  paint(Keys.wave, 130, 44, 22, undefined, paintWave);
+  paint(Keys.backdrop, 128, 128, 0, 1, (ctx) => {
+    ctx.translate(-64, 0);
+    paintBackdrop(ctx, 128, 128);
+  });
   for (const size of [1, 2, 3, 4]) {
     const w = size * TILE_W;
     const h = size * TILE_H + 10;
-    const c = canvasFor(scene, Keys.rubble(size), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
-    if (c) {
-      paintRubble(c.ctx, size);
-      c.done();
-    }
+    paint(Keys.rubble(size), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE, (ctx) => paintRubble(ctx, size));
   }
-  for (const [type, art] of Object.entries(troopArt)) {
-    const c = canvasFor(scene, Keys.troop(type), art.w, art.h, art.h - 6, HD_SCALE);
-    if (c) {
-      art.paint(c.ctx);
-      c.done();
-    }
-  }
-  for (const [id, art] of Object.entries(warriorIconArt)) {
-    const c = canvasFor(scene, Keys.warriorIcon(id), art.w, art.h, ICON_SIZE / 2, HD_SCALE);
-    if (c) {
-      art.paint(c.ctx);
-      c.done();
-    }
-  }
-  for (const [kind, art] of Object.entries(projectileArt)) {
-    const c = canvasFor(scene, Keys.projectile(kind), art.w, art.h, art.h / 2);
-    if (c) {
-      art.paint(c.ctx);
-      c.done();
-    }
-  }
+  for (const [type, art] of Object.entries(troopArt)) paint(Keys.troop(type), art.w, art.h, art.h - 6, HD_SCALE, (ctx) => art.paint(ctx));
+  for (const [id, art] of Object.entries(warriorIconArt)) paint(Keys.warriorIcon(id), art.w, art.h, ICON_SIZE / 2, HD_SCALE, (ctx) => art.paint(ctx));
+  for (const [kind, art] of Object.entries(projectileArt)) paint(Keys.projectile(kind), art.w, art.h, art.h / 2, undefined, (ctx) => art.paint(ctx));
   const fx: [string, number, number, (ctx: Ctx) => void][] = [
     [Keys.puff, 40, 34, paintPuff],
     [Keys.smoke, 64, 64, paintSmokeLobe],
     [Keys.jam, 28, 28, paintJam],
     [Keys.star, 24, 24, (ctx) => paintStar(ctx)],
     [Keys.starGrey, 24, 24, (ctx) => paintStar(ctx, '#8a8f99')],
+    // Keys.shadow is painted last: `ensureTextures` takes it as "every placeholder exists".
     [Keys.shadow, 36, 16, paintShadowDisc],
   ];
-  for (const [key, w, h, paint] of fx) {
-    const c = canvasFor(scene, key, w, h, h / 2);
-    if (c) {
-      paint(c.ctx);
-      c.done();
-    }
-  }
+  for (const [key, w, h, art] of fx) paint(key, w, h, h / 2, undefined, art);
+  return jobs;
 }
 
-/** Generate everything once per game (both scenes share the texture manager). */
-export function ensureTextures(
-  scene: Phaser.Scene,
-  data: { buildings: Record<string, { size: number; levels?: unknown[] }>; economy: { mapSize: number }; cosmetics?: { hallSkins: { id: string; cap: string; spots: string }[] } },
-): void {
-  if (!scene.textures.exists(Keys.shadow)) {
-    generatePlaceholders(
-      scene,
-      Object.entries(data.buildings).map(([type, d]) => ({ type, size: d.size, maxLevel: d.levels?.length ?? 1 })),
-      data.economy.mapSize,
-    );
-  }
+/** Create every placeholder texture that real art has not already provided. */
+export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: BuildingType[], mapSize: number, lazyTiers = quality().lazyTiers): void {
+  for (const job of placeholderJobs(scene.textures, maxTextureSize(scene), buildingTypes, mapSize, lazyTiers)) job();
+}
+
+function buildingTypesOf(data: TextureData): BuildingType[] {
+  return Object.entries(data.buildings).map(([type, d]) => ({ type, size: d.size, maxLevel: d.levels?.length ?? 1 }));
+}
+
+function hallSkinJobs(textures: Phaser.Textures.TextureManager, data: TextureData): Job[] {
   const hallSize = data.buildings.elder_toadstool?.size ?? 4;
+  const jobs: Job[] = [];
   for (const skin of data.cosmetics?.hallSkins ?? []) {
     if (skin.id === 'classic') continue;
     const p = keepSkin(skin.cap, skin.spots);
@@ -345,14 +314,55 @@ export function ensureTextures(
     const h = hallSize * TILE_H + p.extra;
     for (const tier of [1, 2, 3] as Tier[]) {
       const key = Keys.hallSkin(skin.id, tier);
-      paintOrDefer(scene.textures, key, (textures) => {
-        const c = canvasFor(textures, key, w, h, h - (hallSize * TILE_H) / 2, BUILDING_SCALE);
-        if (c) {
-          p.paint(c.ctx, hallSize, tier);
-          c.done();
-        }
-      }, quality().lazyTiers);
+      jobs.push(() =>
+        paintOrDefer(textures, key, (t) => {
+          const c = canvasFor(t, key, w, h, h - (hallSize * TILE_H) / 2, BUILDING_SCALE);
+          if (c) {
+            p.paint(c.ctx, hallSize, tier);
+            c.done();
+          }
+        }, quality().lazyTiers),
+      );
     }
+  }
+  return jobs;
+}
+
+/** Generate everything once per game (both scenes share the texture manager). */
+export function ensureTextures(scene: Phaser.Scene, data: TextureData): void {
+  if (!scene.textures.exists(Keys.shadow)) generatePlaceholders(scene, buildingTypesOf(data), data.economy.mapSize);
+  for (const job of hallSkinJobs(scene.textures, data)) job();
+}
+
+/**
+ * Start-up (client re-audit item 3): the same work as `ensureTextures`, plus the tier art of the
+ * buildings the village shows first (deferred on the low profile), spread over many short tasks
+ * so the page stays responsive and the splash can show progress. Each slice runs jobs for about
+ * `sliceMs`, then yields to the event loop. `ensureTextures` in the scenes then finds everything.
+ */
+export async function prepareTextures(
+  scene: Phaser.Scene,
+  data: TextureData,
+  shown: { type: string; level: number }[],
+  hallSkin: string,
+  onProgress?: (fraction: number) => void,
+  sliceMs = 12,
+): Promise<void> {
+  const textures = scene.textures;
+  const jobs: Job[] = textures.exists(Keys.shadow) ? [] : placeholderJobs(textures, maxTextureSize(scene), buildingTypesOf(data), data.economy.mapSize, quality().lazyTiers);
+  jobs.push(...hallSkinJobs(textures, data));
+  for (const b of shown) {
+    const size = data.buildings[b.type]?.size;
+    if (size) jobs.push(() => void villageTexture(textures, b.type, b.level, size, hallSkin));
+  }
+  const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  let i = 0;
+  while (i < jobs.length) {
+    const start = now();
+    do jobs[i++]();
+    while (i < jobs.length && now() - start < sliceMs);
+    onProgress?.(i / jobs.length);
+    if (i < jobs.length) await new Promise<void>((r) => setTimeout(r, 0));
   }
 }
 

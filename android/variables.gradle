@@ -18,4 +18,7 @@ ext {
     // Credential Manager + Google ID (Sign in with Google, TkAuthPlugin).
     androidxCredentialsVersion = '1.6.0'
     googleIdVersion = '1.2.1'
+    // Play Age Signals API (beta; re-audit: store age signals such as Texas SB 2420). 0.0.4 is the newest on
+    // Google Maven (checked 2026-11-05); its result has ageLower/ageUpper/ageRangeSource (no userStatus).
+    playAgeSignalsVersion = '0.0.4'
 }

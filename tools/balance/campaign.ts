@@ -15,7 +15,7 @@ export interface CampaignResult {
   reached: Record<number, number>;
   days: number;
   /** Raids by the attacker's Keep. */
-  byKeep: { keep: number; raids: number; stars: number; threeStar: number; destruction: number; opponentKeep: number }[];
+  byKeep: { keep: number; raids: number; stars: number; threeStar: number; destruction: number; opponentKeep: number; strength: number; honor: number }[];
   defenses: number;
 }
 
@@ -37,7 +37,7 @@ export function runCampaign(name: string, opts: ModelOptions, casual: boolean, m
     const rs = p.raidLog.filter((r) => r.hall === k);
     if (!rs.length) continue;
     const avg = (f: (r: (typeof rs)[number]) => number) => rs.reduce((a, r) => a + f(r), 0) / rs.length;
-    byKeep.push({ keep: k, raids: rs.length, stars: avg((r) => r.stars), threeStar: avg((r) => (r.stars === 3 ? 1 : 0)), destruction: avg((r) => r.destruction), opponentKeep: avg((r) => r.opponentHall) });
+    byKeep.push({ keep: k, raids: rs.length, stars: avg((r) => r.stars), threeStar: avg((r) => (r.stars === 3 ? 1 : 0)), destruction: avg((r) => r.destruction), opponentKeep: avg((r) => r.opponentHall), strength: avg((r) => r.strength ?? 0), honor: avg((r) => r.trophies) });
   }
   const reached = Object.fromEntries(Object.entries(p.hallReachedAt).map(([k, v]) => [Number(k), +(v / 24).toFixed(1)]));
   return { name, reached, days, byKeep, defenses: p.defenseLog.length };
@@ -49,8 +49,8 @@ export function campaignMarkdown(results: CampaignResult[]): string {
   for (const r of results) {
     L.push(`## ${r.name}`, '');
     L.push(`Keep reached (day): ${Object.entries(r.reached).map(([k, v]) => `${k}: ${v}`).join(' · ')}. Played ${r.days} days; ${r.defenses} raids against the village.`, '');
-    L.push('| Keep | Raids | Avg stars | 3★ rate | Destruction | Opponent Keep |', '|---|---|---|---|---|---|');
-    for (const k of r.byKeep) L.push(`| ${k.keep} | ${k.raids} | ${k.stars.toFixed(2)} | ${Math.round(k.threeStar * 100)}% | ${k.destruction.toFixed(0)}% | ${k.opponentKeep.toFixed(1)} |`);
+    L.push('| Keep | Raids | Avg stars | 3★ rate | Destruction | Opponent Keep | Army strength | Honor |', '|---|---|---|---|---|---|---|---|');
+    for (const k of r.byKeep) L.push(`| ${k.keep} | ${k.raids} | ${k.stars.toFixed(2)} | ${Math.round(k.threeStar * 100)}% | ${k.destruction.toFixed(0)}% | ${k.opponentKeep.toFixed(1)} | ${k.strength.toFixed(2)} | ${Math.round(k.honor)} |`);
     L.push('');
   }
   return L.join('\n') + '\n';

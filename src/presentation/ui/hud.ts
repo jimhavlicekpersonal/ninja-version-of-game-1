@@ -41,6 +41,7 @@ import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
+import { updateWebApp } from '../../backend/pwa/register';
 
 export interface HudDeps {
   root: HTMLElement;
@@ -359,11 +360,34 @@ export class Hud {
   /** Shown once per session when the server can no longer check this game (roadmap step 75). */
   private updateNoticeShown = false;
 
-  /** Open the store listing (apps) or reload (web, where the service worker brings the new version). */
+  /**
+   * Open the store listing (apps), or fetch the new build and reload (web: save first, wait for the
+   * service worker's new version, never reload into the same one; client re-audit item 11).
+   */
   private openUpdate(): void {
     const url = this.deps.connection.updateUrl;
-    if (url) window.open(url, '_blank', 'noopener');
-    else window.location.reload();
+    if (url) {
+      window.open(url, '_blank', 'noopener');
+      return;
+    }
+    if (Capacitor.isNativePlatform()) {
+      // A store build without a listing link: say what to do instead of doing nothing.
+      const store = Capacitor.getPlatform() === 'ios' ? 'the App Store' : 'Google Play';
+      this.modal('Update Kagemura', h('p', {}, `Open ${store}, find Kagemura and tap Update. Your village is saved on this device and on the server.`), [{ label: 'OK', primary: true, onClick: () => this.closeAllModals() }]);
+      return;
+    }
+    const status = h('p', { role: 'status' }, 'Saving your village…');
+    let close = () => {};
+    close = this.modal('Update Kagemura', status, []);
+    void updateWebApp(() => this.c.save(), (text) => (status.textContent = text)).then((r) => {
+      if (r === 'reloading') return;
+      status.textContent =
+        r === 'current'
+          ? 'No newer version is available here yet: it may still be on its way. Try again in a little while; your village keeps working on this device.'
+          : 'The new version could not be downloaded right now. Check your connection and try again.';
+      const foot = h('div', { class: 'modal-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => close() }, 'OK'));
+      status.after(foot);
+    });
   }
 
   private showUpdateNeeded(): void {
@@ -1729,6 +1753,10 @@ export class Hud {
     const backdrop = h('div', { class: 'modal-backdrop' });
     let closed = false;
     sound.play('open');
+    // Dialog accessibility (client re-audit item 15): named by its title, focus moves in, Tab
+    // stays inside the top dialog, and focus goes back where it was when the dialog closes.
+    const opener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
+    const titleId = `modal-title-${++Hud.modalSeq}`;
     const close = () => {
       if (closed) return;
       closed = true;
@@ -1737,10 +1765,38 @@ export class Hud {
       document.removeEventListener('keydown', onKey);
       this.openModals.delete(close);
       onClose?.();
+      // Back to the opener if it is still on screen, else into the dialog now on top.
+      const below = this.modalRoot.querySelector<HTMLElement>('.modal-backdrop:last-child .modal');
+      const target = opener && opener.isConnected && !opener.closest('[hidden]') ? opener : below;
+      if (target && !document.querySelector('.modal-backdrop .modal:focus-within')) target.focus({ preventScroll: true });
     };
     this.openModals.add(close);
+    const focusables = (): HTMLElement[] =>
+      [...panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])')].filter(
+        (el) => !el.closest('[hidden]') && el.getClientRects().length > 0,
+      );
     const onKey = (e: KeyboardEvent) => {
+      // Only the dialog on top answers (a confirm opened over Settings closes first).
+      if (backdrop !== this.modalRoot.lastElementChild) return;
       if (e.key === 'Escape') close();
+      else if (e.key === 'Tab') {
+        const items = focusables();
+        if (!items.length) {
+          e.preventDefault();
+          panel.focus();
+          return;
+        }
+        const first = items[0];
+        const last = items[items.length - 1];
+        const inside = panel.contains(document.activeElement);
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === panel || !inside)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (document.activeElement === last || !inside)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     const footer = h('div', { class: 'modal-foot' });
     for (const b of buttons) {
@@ -1749,8 +1805,8 @@ export class Hud {
     }
     const panel = h(
       'div',
-      { class: `modal ${size}`, role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
-      h('div', { class: 'modal-head' }, h('h2', {}, title), h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: close }, icon(icons.close))),
+      { class: `modal ${size}`, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId, tabindex: '-1' },
+      h('div', { class: 'modal-head' }, h('h2', { id: titleId }, title), h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: close }, icon(icons.close))),
       h('div', { class: 'modal-body' }, body),
       footer.childElementCount ? footer : null,
     );
@@ -1760,7 +1816,28 @@ export class Hud {
     });
     document.addEventListener('keydown', onKey);
     this.modalRoot.append(backdrop);
+    // The dialog itself takes focus (screen readers announce its title; no keyboard pops up for a text field).
+    panel.focus({ preventScroll: true });
     return close;
+  }
+
+  private static modalSeq = 0;
+
+  /**
+   * Close whatever is on top (Android Back, client re-audit item 6): the top dialog (including the
+   * in-game legal page frame), else the building sheet. Returns false when nothing was open.
+   */
+  closeTop(): boolean {
+    const top = [...this.openModals].pop();
+    if (top) {
+      top();
+      return true;
+    }
+    if (!this.sheet.hidden) {
+      this.bus.emit('select', null);
+      return true;
+    }
+    return false;
   }
 
   closeAllModals(): void {
