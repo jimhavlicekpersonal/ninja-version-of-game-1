@@ -193,6 +193,17 @@ Set up once: in Settings → Environments, create `staging` and `production` (gi
 
 **Building a different server later:** `docs/PROTOCOL.md` describes everything the game expects. The contract tests check any server against it.
 
+### 3i. Release order: server first (roadmap steps 72-78)
+
+Old app builds stay in use for weeks after an update (store review, players who don't update). The server therefore keeps the last 2-3 battle-rule versions, and every release goes in this order:
+
+1. **Before a release that changes combat** (bumps `SIM_RULES`): snapshot the rules the players have now, from the last release under them: `node tools/release/snapshot-rules.mjs --ref v<last release>`. Add the new `server/rules/v<N>` to `SNAPSHOTS` in `server/rules/index.ts`, then record its battles once: `RECORD_RULE_BATTLES=1 npx vitest run tests/backend/server/rule-versions.test.ts` (commit `tests/backend/fixtures/rules/v<N>.json`). Never edit a snapshot by hand (its checksums are tested). Number-only changes (costs, timers) need no snapshot: they change the data version, which tickets record.
+2. **Deploy the server first** (staging, contract tests with this and the previous client, then production by hand: section 3g). It now accepts the old and the new version.
+3. **Then ship the games:** the web build (push to `main`) and the store builds. CI refuses to publish a game whose battle rules production does not list (`tools/release/check-rules.mjs` against `VITE_SERVER_URL`, in `deploy.yml`, `android.yml` and `ios-testflight.yml`); if it fails, the server is not released yet.
+4. **Watch** the versions dashboard (`ops/grafana/versions-dashboard.json`, import it into Grafana): traffic by build and rules, desyncs per version, refused reports by reason. The alerts `DesyncsRising` (per rules version) and `VersionMismatchReports` fire when a release went out of order.
+5. **Retire the old version** when its share of traffic stays under ~2% (alert `OldRulesCanRetire`) or after 4-6 weeks: remove it from `SNAPSHOTS`, delete its folder and fixture, deploy the server. Games still on it then see "Update Kagemura".
+6. **Forcing an update** (a security or economy fix): set `MIN_CLIENT_BUILD` on the server (e.g. `0.3.0`, the version in `package.json`). Older games get `426` and show "Update Kagemura" with a store link: set the repository variables `VITE_APP_STORE_URL` and `VITE_PLAY_STORE_URL` once the listings exist (the web game reloads instead). Offline play goes on.
+
 ### 3h. Backups, instances, domain, alerts, staff tool (roadmap steps 44-48)
 
 - **Backups:** turn on your database host's point-in-time recovery first (Neon, Render, Supabase and Railway have it on paid plans). On top, `.github/workflows/backup.yml` makes an encrypted `pg_dump` every day (kept 35 days as a workflow artifact) and every Sunday restores it into an empty database, checks it and starts the server on it. In the `production` environment add `BACKUP_DATABASE_URL` (a read-only role) and `BACKUP_KEY` (`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`; keep a copy outside GitHub). To restore for real: `TARGET_DATABASE_URL=<new empty db> BACKUP_KEY=… node tools/ops/restore.mjs <file>`, then `DATABASE_URL=<new db> node tools/ops/restore-check.mjs`, then point the server at it.
@@ -211,6 +222,8 @@ The installed iOS/Android app schedules real local notifications when you leave 
 
 - **Google Play** needs a Google Play Console account ($25 one-time). Purchases in the Android app stay off until it is built with `VITE_PLAY_BILLING=1` (section 3c).
 - **Android sign-in** (Play Games / Google) still needs the Play services SDKs in `android/`.
+- **Server-delivered balance numbers** (roadmap step 76, optional): not built. Balance changes ship with an app release, in the order of section 3i.
+- **Live co-op strikes** (roadmap step 71): later, once asynchronous Gang Wars are proven.
 
 ## 5b. Store submission (roadmap steps 49-53, owner)
 

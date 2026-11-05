@@ -141,6 +141,26 @@ for (const [label, makeRepo] of repoFactories) {
       expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones - before).toBe(chest.chest.moonstones ?? 0);
     });
 
+    it('a player is in one Gang at a time and cannot hop to the enemy during or right after a war', async () => {
+      const w = world({ repo: await makeRepo() });
+      const [a1, a2] = await gang(w, 'Owls', ['Ann', 'Abe']);
+      const [b1] = await gang(w, 'Foxes', ['Bea', 'Bob']);
+      await befriend(b1, a2);
+      await b1.inviteToGang(a2.id);
+      const inv = (await a2.myGang()).invites[0];
+      // A shared member is impossible: Abe must leave the Owls first.
+      await expect(a2.answerGangInvite(inv.id, true)).rejects.toMatchObject({ code: 'conflict' });
+      await a1.queueGangWar();
+      await b1.queueGangWar();
+      // Roster swapping: nobody leaves, joins or is invited while the war runs.
+      await expect(a2.leaveGang()).rejects.toMatchObject({ code: 'conflict' });
+      await expect(b1.inviteToGang(a1.id)).rejects.toMatchObject({ code: 'conflict' });
+      w.advance((gw.prepHours + gw.battleHours) * HOUR + 1);
+      // After the war Abe may leave, but not join the enemy for a day.
+      await a2.leaveGang();
+      await expect(a2.answerGangInvite(inv.id, true)).rejects.toMatchObject({ code: 'cooldown' });
+    });
+
     it('never rematches recent opponents or pairs Gangs that are mostly one Alliance', async () => {
       const w = world({ repo: await makeRepo() });
       const [a1] = await gang(w, 'Owls', ['Ann', 'Abe']);

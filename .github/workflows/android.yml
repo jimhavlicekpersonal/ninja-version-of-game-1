@@ -34,6 +34,9 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+          # Where "Update Kagemura" sends players (roadmap step 75).
+          VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
+          VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}
       - run: npx cap sync android
       - name: Build debug APK
         working-directory: android
