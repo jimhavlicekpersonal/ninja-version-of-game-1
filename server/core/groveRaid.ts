@@ -208,7 +208,7 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
   const entry = pairing.roster[idx];
   if (!entry) throw new ApiError(404, 'not_found', 'No such enemy base.');
   const expiresAt = Math.min(t + TICKET_TTL_MS, ph.end + 10 * 60_000);
-  const ticket = { id: ctx.uuid(), kind: 'raid' as const, attackerId: me.id, defenderId: entry.playerId, defenderName: entry.name, base: entry.base, defenderTrophies: entry.trophies, createdAt: t, expiresAt, used: false, week: ph.week, groveId: grove.id, target: idx, seed: ctx.newSeed(), rules: engine.rules, dataVersion: engine.dataVersion };
+  const ticket = { id: ctx.uuid(), kind: 'raid' as const, attackerId: me.id, defenderId: entry.playerId, defenderName: entry.name, base: entry.base, defenderTrophies: entry.trophies, createdAt: t, expiresAt, used: false, week: ph.week, groveId: grove.id, target: idx, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
   await ctx.repo.createTicket(ticket);
   return { ticket: ticket.id, seed: ticket.seed, base: entry.base, expiresAt };
 }

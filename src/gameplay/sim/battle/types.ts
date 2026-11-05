@@ -45,6 +45,13 @@ export interface BattleSetup {
    * `levels`. Absent on battles from before donated levels were kept.
    */
   reinforcements?: Record<string, { count: number; level: number }>;
+  /**
+   * Relay assaults (SIM_RULES 3, roadmap step 64): HP each building already
+   * lost to an earlier strike on the same base, by building id. A building whose
+   * loss reaches its HP starts destroyed (it counts for destruction and stars,
+   * holds no loot, blocks nothing). `battleDamage` reads it back from a battle.
+   */
+  startDamage?: Record<string, number>;
 }
 
 /** Buildings being upgraded take no part in a battle: they don't fire, and their counter effect is off. */

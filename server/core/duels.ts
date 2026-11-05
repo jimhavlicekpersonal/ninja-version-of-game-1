@@ -96,7 +96,7 @@ export async function duelTicket(ctx: ServerContext, me: Player, req: DuelTicket
   }
   const { base, layout } = duelBase(friend, req?.layout);
   const t = ctx.now();
-  const ticket: Ticket = { id: ctx.uuid(), kind: 'duel', attackerId: me.id, defenderId: friend.id, defenderName: friend.name, base, defenderTrophies: friend.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: engine.rules, dataVersion: engine.dataVersion, ...(challengeId ? { challengeId } : {}) };
+  const ticket: Ticket = { id: ctx.uuid(), kind: 'duel', attackerId: me.id, defenderId: friend.id, defenderName: friend.name, base, defenderTrophies: friend.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion, ...(challengeId ? { challengeId } : {}) };
   await ctx.repo.createTicket(ticket);
   return { ticket: ticket.id, seed: ticket.seed!, base, opponent: { id: friend.id, name: friend.name, keep: base.hallLevel }, layout, expiresAt: ticket.expiresAt };
 }
@@ -126,7 +126,7 @@ export async function reportDuel(ctx: ServerContext, me: Player, sub: BattleSubm
   const response: DuelReportResponse = { duelId, result, rivalry: rivalry(defenderId, after, theirs), ...(challenge ? { challenge: challengeView(ctx, me, challenge, names) } : {}) };
   const done = await ctx.repo.transaction(async (tx) => {
     if (!(await tx.useTicket(ticket.id, response))) return false;
-    await tx.addDuel({ id: duelId, at: t, attackerId: me.id, attackerName: me.name, defenderId, defenderName: ticket.defenderName, challengeId: ticket.challengeId ?? null, seed, army, levels, base: ticket.base, deployments, ...(sub.endTick !== undefined ? { endTick: sub.endTick } : {}), result, rules: engine.rules });
+    await tx.addDuel({ id: duelId, at: t, attackerId: me.id, attackerName: me.name, defenderId, defenderName: ticket.defenderName, challengeId: ticket.challengeId ?? null, seed, army, levels, base: ticket.base, deployments, ...(sub.endTick !== undefined ? { endTick: sub.endTick } : {}), result, rules: ticket.rules ?? engine.rules });
     await tx.bumpDuelTally(me.id, defenderId, won, result.stars, result.destruction);
     if (ticket.challengeId && side) await tx.setChallengeResult(ticket.challengeId, side, { stars: result.stars, destruction: result.destruction });
     return true;

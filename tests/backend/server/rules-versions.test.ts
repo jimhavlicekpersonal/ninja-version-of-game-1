@@ -137,7 +137,7 @@ describe('old games on a new server (steps 73, 75)', () => {
     const s = setup(new RulesRegistry(liveEngine(data), { minClientBuild: '1.2.0' }));
     const p = await s.register('Pat');
     await s.call('PUT', Routes.base, p.token, { base: baseAt(2) });
-    const gone = await s.call('GET', Routes.match, p.token, undefined, game(SIM_RULES - 1, '1.3.0+ios'));
+    const gone = await s.call('GET', Routes.match, p.token, undefined, game(1, '1.3.0+ios'));
     expect(gone.status).toBe(426);
     expect(gone.body).toMatchObject({ error: 'version_mismatch' });
     const oldBuild = await s.call('GET', Routes.me, p.token, undefined, game(SIM_RULES, '1.1.9+android'));

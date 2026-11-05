@@ -276,7 +276,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   let ticket: Ticket;
   if (found?.base) {
     const base = applyLootPenalty(capBaseLoot({ ...structuredClone(found.base), name: found.name, trophies: found.trophies }, data), me.hallLevel, data);
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: engine.rules, dataVersion: engine.dataVersion };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
   } else {
     // Nobody fits: a generated base with the same matchmaking math the game uses offline.
     const seed = Math.floor(ctx.random() * 4294967296) >>> 0;
@@ -284,7 +284,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     const base = engine.opponentForRank(seed, me.trophies, me.hallLevel, engine.data, me.hallLevel - 0.5 - engine.data.ranks.matchmaking.powerSlack);
     const names = data.names;
     base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: engine.rules, dataVersion: engine.dataVersion };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
   }
   await repo.createTicket(ticket);
   return {
@@ -444,7 +444,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
-      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
+      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: ticket.rules ?? engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
     }
     return true;
   });

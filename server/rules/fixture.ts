@@ -12,6 +12,16 @@ import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import type { BattleSetup, Deployment } from '../../src/gameplay/sim/battle/types';
 import type { RulesEngine } from './registry';
 
+/** HP lost per building (the same as battleDamage in battle.ts; written out so archived engines need not export it). */
+function battleDamageOf(sim: { buildings: { id: string; destroyed: boolean; hp: number; maxHp: number }[] }): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const b of sim.buildings) {
+    const lost = b.destroyed ? b.maxHp : b.maxHp - b.hp;
+    if (lost > 0) out[b.id] = lost;
+  }
+  return out;
+}
+
 export interface RulesFixture {
   rules: number;
   dataVersion: string;
@@ -45,6 +55,11 @@ export function recordFixture(engine: RulesEngine): RulesFixture {
   }
   deployments.push({ tick: 60, troop: 'smoke_bomb', x: Math.floor(size / 2), y: Math.floor(size / 2) });
   const setup: BattleSetup = { seed: 424242, base, army };
+  // From rules 3 (relay assaults, step 64): the recorded battle is the second strike of a relay.
+  if (engine.rules >= 3) {
+    const first = engine.runBattle({ seed: 31337, base, army }, deployments.filter((_, i) => i % 2 === 0), engine.data);
+    setup.startDamage = battleDamageOf(first.sim);
+  }
   const { result } = engine.runBattle(setup, deployments, engine.data);
   return { rules: engine.rules, dataVersion: engine.dataVersion, setup, deployments, hash: result.hash, stars: result.stars, destruction: result.destruction };
 }

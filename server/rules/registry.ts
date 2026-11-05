@@ -17,7 +17,7 @@
  * test enforces that). No engine with the game's rules: the game must update
  * (`426 version_mismatch`).
  */
-import { runBattle as liveRunBattle, SIM_RULES } from '../../src/gameplay/sim/battle/battle';
+import { runBattle as liveRunBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from '../../src/gameplay/sim/battle/battle';
 import { opponentForRank as liveOpponentForRank } from '../../src/gameplay/sim/matchmaking';
 import type { GameData } from '../../src/gameplay/sim/types';
 import { compareBuilds, dataVersionOf } from '../../src/backend/net/dataVersion';
@@ -33,6 +33,8 @@ export interface RulesEngine {
   opponentForRank: typeof liveOpponentForRank;
   /** The engine built from today's code (exactly one). */
   live: boolean;
+  /** Older rules this engine plays out identically (`SIM_RULES_COMPATIBLE`), so it serves them too. */
+  compatible?: readonly number[];
 }
 
 /** What a request says about the game that sent it (protocol headers). */
@@ -46,7 +48,7 @@ export interface ClientInfo {
 }
 
 export function liveEngine(data: GameData): RulesEngine {
-  return { rules: SIM_RULES, dataVersion: dataVersionOf(data), data, runBattle: liveRunBattle, opponentForRank: liveOpponentForRank, live: true };
+  return { rules: SIM_RULES, dataVersion: dataVersionOf(data), data, runBattle: liveRunBattle, opponentForRank: liveOpponentForRank, live: true, compatible: SIM_RULES_COMPATIBLE };
 }
 
 export interface RegistryOptions {
@@ -64,8 +66,9 @@ export class RulesRegistry {
   readonly minClientBuild: string | undefined;
 
   constructor(live: RulesEngine, opts: RegistryOptions = {}) {
-    this.live = live;
     const retired = new Set((opts.retired ?? []).filter((r) => r !== live.rules));
+    if (retired.size) live = { ...live, compatible: (live.compatible ?? []).filter((r) => !retired.has(r)) };
+    this.live = live;
     // Newest rules first; within the same rules the live engine first.
     this.engines = [live, ...(opts.archived ?? []).filter((e) => !retired.has(e.rules) && !(e.rules === live.rules && e.dataVersion === live.dataVersion))].sort((a, b) => b.rules - a.rules || Number(b.live) - Number(a.live));
     this.minClientBuild = opts.minClientBuild?.trim() || undefined;
@@ -73,7 +76,12 @@ export class RulesRegistry {
 
   /** Every SIM_RULES version the server accepts, newest first (`/v1/hello` `supportedRules`). */
   supportedRules(): number[] {
-    return [...new Set(this.engines.map((e) => e.rules))];
+    return [...new Set(this.engines.flatMap((e) => [e.rules, ...(e.compatible ?? [])]))].sort((a, b) => b - a);
+  }
+
+  /** The rules a ticket records for this game: its own when the engine serves them, so its records replay on it. */
+  ticketRules(engine: RulesEngine, c: ClientInfo | undefined): number {
+    return c?.rules !== undefined && c.rules !== engine.rules && engine.compatible?.includes(c.rules) ? c.rules : engine.rules;
   }
 
   /** The engine for this game, or null if it must update. */
@@ -95,7 +103,8 @@ export class RulesRegistry {
   }
 
   private find(rules: number, dataVersion: string | undefined): RulesEngine | null {
-    const same = this.engines.filter((e) => e.rules === rules);
+    let same = this.engines.filter((e) => e.rules === rules);
+    if (!same.length) same = this.engines.filter((e) => e.compatible?.includes(rules));
     if (!same.length) return null;
     return (dataVersion && same.find((e) => e.dataVersion === dataVersion)) || same[0];
   }
