@@ -4,6 +4,12 @@
  * for their account to be deleted without the app; link this page from the
  * store listings. It posts to POST /v1/account/deletion-requests (same origin).
  * Self-contained: no external fonts, scripts or images.
+ *
+ * It asks only for a Player ID or player name and an optional note, never an
+ * email address (worldwide audit GLOBAL-019): staff carry a request out by
+ * Player ID (core/account.ts resolveDeletion) and never write back, so a contact
+ * address would be data collected for nothing. The privacy policy and store
+ * declarations say so.
  */
 
 export const DELETION_PAGE_CSP = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'";
@@ -58,7 +64,8 @@ export function deletionPage(): string {
 
   <h2>What is deleted</h2>
   <ul>
-    <li>Your player name and online account, and the base you shared for raids.</li>
+    <li>Your player name and online account, the base you shared for raids, and your village if it is kept on our server.</li>
+    <li>Your friends and friend requests, your Gang membership and your linked sign-ins.</li>
     <li>Raids on your village, your Alliance membership, your chat messages, troop requests and troops sent to you.</li>
   </ul>
   <h2>What other players keep</h2>
@@ -66,19 +73,18 @@ export function deletionPage(): string {
     <li>Replays of raids you made stay with the players you raided, shown as "Deleted player". Troops you sent and Alliance War results stay the same way, without your name.</li>
     <li>Copies of your base in other players' recent battles are removed within 30 days.</li>
   </ul>
-  <p class="muted">Your village itself is saved only on your device. To remove it, uninstall the app, or clear this site's data in your browser.</p>
+  <p class="muted">A village saved on your device stays there: to remove it, uninstall the app, or clear the game site's data in your browser. Purchase records are kept without your Player ID, as tax and refund rules require.</p>
 
   <div class="card">
     <h2 style="margin-top:0">Can't open the game any more?</h2>
-    <p>Send a request. We check that the account is yours and delete it within 30 days, usually much sooner. Your Player ID is in Settings → Online play.</p>
+    <p>Send a request. Staff check it against the account and delete it within 30 days, usually much sooner. Your Player ID is in Settings → Online play → Account; a request with only a player name can be turned down if we cannot tell that the account is yours.</p>
+    <p class="muted">We don't ask for an email address. Keep the reference you get after sending: it identifies your request if you contact support.</p>
     <form id="f" novalidate>
       <label for="playerId">Player ID</label>
       <input id="playerId" name="playerId" autocomplete="off" maxlength="64">
       <label for="name">Player name <span>(if you don't have the ID)</span></label>
-      <input id="name" name="name" autocomplete="nickname" maxlength="40">
-      <label for="contact">How we can reach you <span>(optional, e.g. an email address)</span></label>
-      <input id="contact" name="contact" autocomplete="email" maxlength="200">
-      <label for="note">Anything else <span>(optional)</span></label>
+      <input id="name" name="name" autocomplete="off" maxlength="40">
+      <label for="note">Anything else <span>(optional; please don't include contact details)</span></label>
       <textarea id="note" name="note" maxlength="1000"></textarea>
       <button id="send" type="submit">Request deletion</button>
       <div id="result" role="status" aria-live="polite"></div>
@@ -91,7 +97,8 @@ export function deletionPage(): string {
   const send = document.getElementById('send');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const body = Object.fromEntries(new FormData(form).entries());
+    const data = Object.fromEntries(new FormData(form).entries());
+    const body = { playerId: data.playerId, name: data.name, note: data.note };
     if (!String(body.playerId || '').trim() && !String(body.name || '').trim()) {
       out.className = 'error';
       out.textContent = 'Enter your Player ID or your player name.';

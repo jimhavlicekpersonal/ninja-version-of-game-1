@@ -186,8 +186,13 @@ for (const [label, makeRepo] of repoFactories) {
         expect(await a.submitAttack({ ticket: m1.ticket, seed: m1.seed, ...noTroops })).toEqual(first);
         expect((await a.me()).trophies).toBe(first.playerTrophies);
         const m2 = (await a.match())!;
-        w.advance(HOUR + 1);
-        expect(await code(a.submitAttack({ ticket: m2.ticket, seed: m2.seed, ...noTroops }))).toBe('expired');
+        // A raid reported after a long outage still counts (audit R02: up to 3 days after the ticket's hour) …
+        w.advance(HOUR + 48 * HOUR);
+        expect((await a.submitAttack({ ticket: m2.ticket, seed: m2.seed, ...noTroops })).result).toBeDefined();
+        // … but not forever.
+        const m3 = (await a.match())!;
+        w.advance(HOUR + 72 * HOUR + 1);
+        expect(await code(a.submitAttack({ ticket: m3.ticket, seed: m3.seed, ...noTroops }))).toBe('expired');
       });
 
       it('ranks players with bases on the leaderboard', async () => {
@@ -439,6 +444,8 @@ for (const [label, makeRepo] of repoFactories) {
         expect(Object.keys(real)).toEqual(['id']);
         expect(Object.keys(fake)).toEqual(['id']);
         const queue = (await w.core.admin.deletionQueue('open')).requests;
+        // An email sent by an old page is not kept (GLOBAL-019).
+        expect(JSON.stringify(queue)).not.toContain('ann@example.com');
         expect(queue.map((r) => [r.id, r.player?.name ?? null])).toEqual([
           [real.id, 'Ann'],
           [fake.id, null],

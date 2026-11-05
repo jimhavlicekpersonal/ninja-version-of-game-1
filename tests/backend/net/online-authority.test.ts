@@ -91,7 +91,7 @@ describe('F05: online loot is banked only when the server accepts the attack', (
     const before = { ...game.state.resources };
     const trophies = game.state.trophies;
     const { sub } = await onlineAttack(w, game, port);
-    w.advance(2 * HOUR);
+    w.advance(76 * HOUR); // longer than the three days a late report is accepted (audit R02)
     await conn.report('attack', sub);
     const rec = game.state.battleLog.at(-1)!;
     expect(rec.settlement).toBe('rejected');
@@ -99,6 +99,20 @@ describe('F05: online loot is banked only when the server accepts the attack', (
     expect(game.state.resources).toEqual(before);
     expect(game.state.trophies).toBe(trophies);
     expect(game.state.stats.raidsWon).toBe(0);
+  });
+
+  it('audit R02: a raid finished just before a two-day outage still settles with its loot and honor', async () => {
+    const w = world();
+    const game = village(w);
+    const port = new InProcessServerAdapter(w.core);
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv: memoryKv(), makePort: () => port, log: () => undefined });
+    await conn.sync();
+    const { sub } = await onlineAttack(w, game, port);
+    w.advance(48 * HOUR);
+    await conn.report('attack', sub);
+    const rec = game.state.battleLog.at(-1)!;
+    expect(rec.settlement).not.toBe('rejected');
+    expect(rec.settlement).not.toBe('pending');
   });
 
   it('a lost outbox and a lost answer still settle exactly once', async () => {

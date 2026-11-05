@@ -13,4 +13,9 @@ ext {
     androidxJunitVersion = '1.3.0'
     androidxEspressoCoreVersion = '3.7.0'
     cordovaAndroidVersion = '14.0.1'
+    // Play Billing Library 9.1.0 (2026-06-18); Play requires 8+ for new apps and updates.
+    playBillingVersion = '9.1.0'
+    // Credential Manager + Google ID (Sign in with Google, TkAuthPlugin).
+    androidxCredentialsVersion = '1.6.0'
+    googleIdVersion = '1.2.1'
 }

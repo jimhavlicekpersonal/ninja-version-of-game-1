@@ -35,6 +35,16 @@ export interface ProductRequest {
   accountToken?: string;
 }
 
+/** A product's price as this device's store shows it (GLOBAL-007): the storefront's currency, taxes and promotions. */
+export interface StorePrice {
+  /** The store's own formatted price, e.g. "R$ 24,90". */
+  formatted: string;
+  /** ISO 4217 code when the store gives one. */
+  currency?: string;
+  /** Price in micros of `currency` when known. */
+  micros?: number;
+}
+
 export interface PaymentProvider {
   readonly name: string;
   /** The store whose receipts this provider gives (none for the mock store). */
@@ -46,6 +56,11 @@ export interface PaymentProvider {
   finish?(receipt: StoreReceipt): Promise<void>;
   /** Paid but not finished yet: interrupted purchases, approvals that came while the game was closed. */
   unfinished?(): Promise<StoreReceipt[]>;
+  /**
+   * Prices from the store, keyed by store product id. A product the store did
+   * not return is missing: it cannot be bought in this storefront.
+   */
+  prices?(storeProductIds: string[]): Promise<Record<string, StorePrice>>;
 }
 
 /** The server's side of a purchase (roadmap Phase 4). */
@@ -53,6 +68,8 @@ export interface PurchaseVerifier {
   intent(store: PurchaseStore, productId: string, under18: boolean | null): Promise<{ accountToken: string; storeProductId: string }>;
   redeem(receipt: StoreReceipt): Promise<RedeemResponse>;
   history(): Promise<PurchaseView[]>;
+  /** The store said cancelled (frees the under-18 cap hold) or pending (holds it until approved): GLOBAL-005. */
+  release?(accountToken: string, outcome: 'cancelled' | 'pending'): Promise<void>;
 }
 
 export interface MockSale extends ProductRequest {

@@ -7,6 +7,19 @@
  * the Keep cannot have, timers that end absurdly late, and more Jade than
  * IMPORT_MAX_JADE. What passes becomes the server's village; from then on
  * every change is checked.
+ *
+ * Provenance (worldwide audit GLOBAL-002): legality is not proof. A village
+ * made in the testing sandbox is refused. Paid value is accepted only where
+ * this server checked the store purchase for this player: a premium Season
+ * Scroll needs a credited Scroll purchase this season, and Jade above what a
+ * player at that Keep could have earned for free (`freeJadeAllowance`, set
+ * well above the model player's measured balances) needs credited Jade
+ * purchases to cover it. What cannot be confirmed is held back (`import_holds`,
+ * reported to the game as `importHeld`), never thrown away: the device keeps
+ * its old village as a backup and staff can return what support confirms.
+ * Progress the device earned (buildings, research, resources within storage)
+ * still moves as it is: the server cannot tell an edited save from real
+ * offline play there, beyond the legality checks.
  */
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
 import { villageToBase } from '../../src/gameplay/sim/defense';
@@ -18,14 +31,58 @@ import { reinforcementHousing } from '../../src/gameplay/sim/social/grove';
 import type { GameData, VillageState } from '../../src/gameplay/sim/types';
 import { bindPlayer } from '../../src/gameplay/sim/net';
 import { hallLevel } from '../../src/gameplay/sim/village';
+import { productInfo } from '../../src/gameplay/sim/monetization';
+import { passSeason } from '../../src/gameplay/sim/pass';
 import type { VillageResponse } from '../../src/backend/net/protocol';
-import type { Player, VillageRow } from '../repo';
+import type { ImportHold, Player, PurchaseRow, VillageRow } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { maxReinforcementAt, normalizeBase } from './pvp';
 import { getVillage } from './village';
 
-/** Free Jade a player could have earned (starting Jade, tasks, pass, achievements) with room to spare; bought Jade moves with purchases (Phase 4). */
-export const IMPORT_MAX_JADE = 20_000;
+/** No village holds more Jade than this, earned or bought: refused outright. Below it, unconfirmed Jade is held back (`checkProvenance`). */
+export const IMPORT_MAX_JADE = 200_000;
+/**
+ * Free Jade a village at Keep k may bring without a checked purchase: the
+ * starting 500 plus room for tasks, chests, leagues, the free pass track,
+ * achievements and obstacles. Measured with the model players (tools/balance,
+ * 2026-11-05): the regular player holds about 500 Jade at Keep 4, 850 at Keep
+ * 10 and 2,600 at Keep 15 (day 200); the casual one about 790 at Keep 5, 1,750
+ * at Keep 10 and 3,700 at Keep 15 (day 420), roughly 7.6 a day. This allows
+ * 2,000 at Keep 1 up to 16,000 at Keep 15 (4-8x those balances), so real
+ * players are not cut while a forged new village cannot bring thousands. A
+ * player who hoarded beyond it is held for support, not refused.
+ */
+export function freeJadeAllowance(keep: number): number {
+  return 2_000 + 1_000 * (Math.max(1, keep) - 1);
+}
+
+/** What the server confirms about the village's paid value, and what it holds back. */
+export interface Provenance {
+  /** The village with unconfirmed paid value held back. */
+  state: VillageState;
+  held: { jade: number; premium: boolean; purchases: string[] } | null;
+}
+
+/**
+ * Hold back what this server cannot confirm (GLOBAL-002). `credited`: this
+ * player's purchases the server checked (any store), still credited.
+ */
+export function checkProvenance(s: VillageState, now: number, data: GameData, credited: PurchaseRow[]): Provenance {
+  const state = structuredClone(s);
+  const ok = new Set(credited.filter((p) => p.status === 'credited').map((p) => `${p.store}:${p.transactionId}`));
+  const confirmed = state.purchases.filter((p) => ok.has(p.id));
+  const unconfirmed = state.purchases.filter((p) => !ok.has(p.id)).map((p) => p.id);
+  const paidJade = confirmed.reduce((sum, p) => sum + (productInfo(data, p.productId)?.grants.moonstones ?? 0), 0);
+  const allowed = freeJadeAllowance(hallLevel(state, data)) + paidJade;
+  const jade = Math.max(0, Math.round(state.resources.moonstones - allowed));
+  state.resources.moonstones -= jade;
+  const season = passSeason(now, data);
+  const paidPass = confirmed.some((p) => productInfo(data, p.productId)?.kind === 'pass' && passSeason(p.at, data) === season);
+  const premium = state.pass.premium && !paidPass;
+  if (premium) state.pass.premium = false;
+  return { state, held: jade || premium || unconfirmed.length ? { jade, premium, purchases: unconfirmed } : null };
+}
+
 /** No timer may end later than this after the move (the longest Keep upgrade is about a week). */
 export const IMPORT_MAX_TIMER_MS = 30 * 24 * HOUR;
 
@@ -66,11 +123,19 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
     throw new ApiError(400, 'bad_request', `That village could not be read: ${(e as Error).message}`);
   }
   const t = ctx.now();
+  if (state.flags.sandbox) {
+    ctx.log('warn', 'village import refused', { player: me.id, problem: 'sandbox' });
+    throw new ApiError(400, 'bad_request', 'This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).');
+  }
   const problem = importProblem(state, t, ctx.data);
   if (problem) {
     ctx.log('warn', 'village import refused', { player: me.id, problem });
     throw new ApiError(400, 'bad_request', `This village cannot move to the server: ${problem}`);
   }
+  const checked = checkProvenance(state, t, ctx.data, await ctx.repo.purchasesOf(me.id, 1000));
+  state = checked.state;
+  const held: ImportHold | null = checked.held ? { id: ctx.uuid(), playerId: me.id, at: t, ...checked.held, status: 'held' } : null;
+  if (held) ctx.log('warn', 'village import held back unconfirmed paid value', { player: me.id, jade: held.jade, premium: held.premium, purchases: held.purchases.length });
   // Exactly as sent (no settling: the economy must stay the game's), with the server's own facts:
   // the player, honor, shield, and raids already seen.
   bindPlayer(state, me.id);
@@ -83,6 +148,8 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
     if (!(await tx.createVillage(row))) throw new ApiError(409, 'conflict', 'Your village is already kept on the server.');
     const opening = (Object.entries(state.resources) as [string, number][]).filter(([, v]) => v).map(([k, v]) => ({ playerId: me.id, at: t, resource: k, delta: Math.round(v), balance: Math.round(v), reason: 'import', ref: null }));
     await tx.saveVillage({ ...row, revision: 2 }, 1, opening, []);
+    if (held) await tx.addImportHold(held);
   });
-  return getVillage(ctx, me);
+  const out = await getVillage(ctx, me);
+  return held ? { ...out, importHeld: { jade: held.jade, premium: held.premium, purchases: held.purchases.length } } : out;
 }

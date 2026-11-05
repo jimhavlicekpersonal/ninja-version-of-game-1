@@ -1,8 +1,14 @@
 /** Small on/off preferences kept in localStorage (per device). */
 export type PrefKey = 'sessionReminder' | 'reminders' | 'crashReports';
 type Key = PrefKey;
-/** crashReports: send crash reports (no player data) when the build has a Sentry DSN; the player can switch it off. */
-const DEFAULTS: Record<Key, boolean> = { sessionReminder: true, reminders: false, crashReports: true };
+/**
+ * crashReports: send crash reports when the build has a Sentry DSN. Off until the player switches it on in Settings
+ * (opt-in, as the privacy policy and store declarations say). Devices that never touched the switch follow this
+ * default, so they stopped sending when it changed from on to off (worldwide audit GLOBAL-019); an explicit choice
+ * already stored ('1' or '0') is kept.
+ */
+export const PREF_DEFAULTS: Readonly<Record<Key, boolean>> = { sessionReminder: true, reminders: false, crashReports: false };
+const DEFAULTS = PREF_DEFAULTS;
 
 export const prefs = {
   get(k: Key): boolean {

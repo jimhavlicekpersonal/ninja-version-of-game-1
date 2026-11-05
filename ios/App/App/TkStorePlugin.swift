@@ -33,7 +33,7 @@ public class TkStorePlugin: CAPPlugin, CAPBridgedPlugin {
             do {
                 let products = try await Product.products(for: ids)
                 let list: [[String: Any]] = products.map { p in
-                    ["id": p.id, "displayName": p.displayName, "displayPrice": p.displayPrice, "price": NSDecimalNumber(decimal: p.price).doubleValue]
+                    ["id": p.id, "displayName": p.displayName, "displayPrice": p.displayPrice, "price": NSDecimalNumber(decimal: p.price).doubleValue, "currency": p.priceFormatStyle.currencyCode]
                 }
                 call.resolve(["products": list])
             } catch {

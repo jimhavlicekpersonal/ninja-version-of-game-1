@@ -1,6 +1,6 @@
 # Store listing texts (step 49, draft)
 
-Check every claim against the build you submit. Keep names as in the game ("Kagemura", "Clan Keep", "Jade"). Never mention another game.
+Check every claim against the build you submit. Keep names as in the game ("Kagemura", "Clan Keep", "Jade"). Never mention another game. The claims below were checked against the code on 2026-11-05 (worldwide audit GLOBAL-020); "Claims checked" at the end says what each rests on and what must not be claimed.
 
 ## Names
 
@@ -27,9 +27,10 @@ Lead a ninja clan. Build a hidden village in the mountains, train fifty kinds of
 - Throw Smoke Bombs as your warriors walk into tower range, and send Saboteurs to jam a defense.
 - A planned attack beats a big one.
 
-**Play together**
+**Play together** (online)
 - Join an Alliance: chat, ask for warriors and send them to your clanmates.
 - Fight in the weekly Alliance War.
+- Add friends, challenge them to Friendly Duels, and team up in Gangs of up to four for Gang Wars.
 - Climb the Honor leagues and the Power Ranking.
 
 **The Shadow Trials**
@@ -40,7 +41,7 @@ Lead a ninja clan. Build a hidden village in the mountains, train fifty kinds of
 - Generated opponents are always labelled as such.
 - Spending limits for players under 18, and reminders you choose (off until you turn them on).
 
-Kagemura is free to play. Jade can also be bought with real money; everything in the game can be earned by playing.
+Kagemura is free to download and play: every building, warrior, Keep level and game mode can be reached without paying, and there are no ads. Jade, the premium currency, is earned in small amounts by playing (achievements, leagues, the daily chest and the Season Scroll's free track) and can also be bought. Some things are sold only for real money: the Season Scroll's premium track (its extra rewards, faster building during the season and the Lantern Festival Keep look) and limited-time bundles of Jade and resources.
 
 ## Keywords (App Store, 100 characters, comma-separated)
 
@@ -50,10 +51,34 @@ ninja,clan,village,strategy,base builder,raid,defense,tower,shinobi,war,alliance
 
 - **App Store:** Games → Strategy (secondary: Simulation).
 - **Google Play:** Game → Strategy. Tags: Base building, Real-time strategy, Ninja.
-- **Support URL:** a page that tells players how to reach you, e.g. `https://<your site>/support` or the repository's Pages site with a contact address.
-- **Privacy policy URL:** publish `docs/store/PRIVACY_POLICY.md` (after review) at a public address, e.g. GitHub Pages.
-- **Account deletion URL (Play):** `https://<server>/account/delete` (the server's web form).
+- **Support URL:** `<web address of the game>/support.html` (shipped in `public/support.html`).
+- **Privacy policy URL:** `<web address of the game>/privacy.html` (shipped in `public/privacy.html`; the same page Settings → Privacy and help opens in the game).
+- **Community rules (Apple 1.2, Play UGC):** `<web address of the game>/community.html`.
+- **Account deletion URL (Play):** `https://<server>/account/delete` (the server's web form; it asks for a Player ID or name and an optional note, no email).
 - **Marketing URL (optional):** the game's web address.
+
+`<web address of the game>` is where `.github/workflows/deploy.yml` publishes the web build (GitHub Pages: `https://<owner>.github.io/<repository>/`, or a custom domain). The pages are plain HTML in the build, so they work with the game offline and need no server.
+
+## Publishing the pages (owner steps)
+
+1. Fill in `public/legal-config.js`: the publisher's legal name (`operator`), a support address that is read (`supportEmail`), the server's deletion page (`deletionUrl`), and `termsUrl` if you have full terms. Until a value is set, the pages show "not published yet" in its place rather than an invented one.
+2. Have the privacy policy and community rules reviewed for the countries you ship to (the text was written from the code, not by a lawyer), and set `policyUpdated` when the text changes.
+3. Optional build settings, if the pages live somewhere else: `VITE_PRIVACY_URL`, `VITE_SUPPORT_URL`, `VITE_COMMUNITY_URL` (full `https://` addresses), and `VITE_SUPPORT_EMAIL` (adds an Email button in Settings). In the iOS/Android apps, a page shipped with the game opens inside the game; a configured `https://` address opens in the browser.
+4. Deploy, then open each URL from a phone on mobile data, and from Settings → Privacy and help in the build you submit, before entering the URLs in App Store Connect and Play Console.
+
+## Claims checked (2026-11-05)
+
+| Claim | Rests on | Do not claim |
+|---|---|---|
+| Free to download and play; everything reachable without paying | Buildings, warriors, Keep levels, Trials and wars need no purchase; Jade comes from `achievements.json`, `ranks.json`, `daily.json`, the free track of `pass.json` | "Everything can be earned by playing": the premium Season Scroll (`pass.json`, product `lantern_pass`, real money only) gives extra rewards and 20% faster building, and the Lantern Festival Keep look (`cosmetics.json` `passOnly`) comes only with it |
+| Limited-time bundles | `offers.json`: Jade and resources only, real money, real deadlines | — |
+| No ads | No ad SDK in the code | — |
+| Nothing random is sold | Only the free daily chest is random (`daily.json`), odds shown first | — |
+| Fifty warriors, Keep 1 to 15, Shadow Trials | `troops.json`/`roster.json`, `hall.json`, `trials.json` | — |
+| Alliance War weekly, Friends, Duels, Gangs of up to 4 | Server features (`/v1/hello`); offline the Alliance is a labelled bot Alliance | Online features in a build without a server |
+| Under-18 spending limit | `store.json` `minorMonthlyCapUsd` | Age-appropriate social protections beyond that (audit R07) |
+| — | — | **Offline play** as a selling point: with a server, the village moves there on connection and raids, Alliances, friends and purchases need a connection (audit R01) |
+| — | — | **Languages**: the game is English only today (`locales/` worksheets are not read by the game yet). List English only and keep screenshots in English |
 
 ## Screenshots
 

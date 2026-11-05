@@ -106,7 +106,8 @@ export interface VillageState {
   cosmetics: { owned: string[]; hallSkin: string };
   /** Achievement id -> number of tiers claimed. */
   achievements: Record<string, number>;
-  flags: { longWaitSeen: boolean };
+  /** `sandbox`: made or played in the testing sandbox (time skips, free test store); never moves to a server (save v14). */
+  flags: { longWaitSeen: boolean; sandbox?: boolean };
   grove: GroveState;
   /** What a multiplayer server has already given this village (see sim/net.ts). */
   net: NetState;

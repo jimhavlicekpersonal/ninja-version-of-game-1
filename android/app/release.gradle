@@ -1,0 +1,63 @@
+// Release identity and signing for the Android app (audit GLOBAL-017).
+// Applied by app/build.gradle; plain Groovy, no Android plugin needed, so it can
+// be checked on its own. Sets:
+//   ext.tkVersionCode  increasing build number Play needs for every upload
+//   ext.tkVersionName  the version players see
+//   ext.tkSigning      [storeFile, storePassword, keyAlias, keyPassword] or null
+//
+// versionCode (first found): -PtkVersionCode=N, env ANDROID_VERSION_CODE, else 1.
+//   CI (.github/workflows/android.yml) passes GITHUB_RUN_NUMBER plus the
+//   repository variable ANDROID_VERSION_CODE_OFFSET, so each run is higher than
+//   the last. Local builds stay at 1 (never upload a local build to Play).
+// versionName (first found): -PtkVersionName=X, env ANDROID_VERSION_NAME, else
+//   "version" in the repository's package.json.
+// Upload-key signing for release builds (first found per value): env
+//   ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS,
+//   ANDROID_KEY_PASSWORD; else android/keystore.properties (storeFile,
+//   storePassword, keyAlias, keyPassword; git-ignored). Without all four, release
+//   builds are left unsigned and the build says so; debug builds always use the
+//   debug key.
+
+def readProp = { String name, String envName ->
+    def v = project.findProperty(name) ?: System.getenv(envName)
+    v != null && v.toString().trim() ? v.toString().trim() : null
+}
+
+def codeText = readProp('tkVersionCode', 'ANDROID_VERSION_CODE') ?: '1'
+if (!(codeText ==~ /\d+/)) throw new GradleException("versionCode must be a whole number, got '${codeText}'.")
+def code = codeText as long
+// Play's limit is 2100000000.
+if (code < 1 || code > 2100000000L) throw new GradleException("versionCode must be between 1 and 2100000000, got ${code}.")
+ext.tkVersionCode = code as int
+
+def name = readProp('tkVersionName', 'ANDROID_VERSION_NAME')
+if (!name) {
+    def pkg = rootProject.file('../package.json')
+    name = pkg.exists() ? new groovy.json.JsonSlurper().parse(pkg).version?.toString() : null
+}
+ext.tkVersionName = name ?: '1.0'
+
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file('keystore.properties')
+if (keystorePropsFile.exists()) keystorePropsFile.withInputStream { keystoreProps.load(it) }
+def signingValue = { String key, String envName ->
+    def v = System.getenv(envName) ?: keystoreProps.getProperty(key)
+    v != null && v.toString() ? v.toString() : null
+}
+def storePath = signingValue('storeFile', 'ANDROID_KEYSTORE_FILE')
+def storePassword = signingValue('storePassword', 'ANDROID_KEYSTORE_PASSWORD')
+def keyAlias = signingValue('keyAlias', 'ANDROID_KEY_ALIAS')
+def keyPassword = signingValue('keyPassword', 'ANDROID_KEY_PASSWORD')
+def given = [storePath, storePassword, keyAlias, keyPassword].findAll { it != null }.size()
+
+ext.tkSigning = null
+if (given == 4) {
+    def store = rootProject.file(storePath)
+    if (!store.exists()) throw new GradleException("The upload keystore ${store} does not exist (ANDROID_KEYSTORE_FILE / keystore.properties storeFile).")
+    ext.tkSigning = [storeFile: store, storePassword: storePassword, keyAlias: keyAlias, keyPassword: keyPassword]
+} else if (given > 0) {
+    throw new GradleException('Release signing is half set up: give all of ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD (or keystore.properties), or none.')
+} else {
+    logger.lifecycle('Kagemura: no upload key configured, so release builds are unsigned (debug builds are unaffected).')
+}
+logger.lifecycle("Kagemura: versionCode ${ext.tkVersionCode}, versionName ${ext.tkVersionName}, release signing ${ext.tkSigning ? 'on' : 'off'}.")

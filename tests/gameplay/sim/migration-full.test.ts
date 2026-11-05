@@ -23,7 +23,8 @@ it('a Phase 1 (v1) save loads in the latest version', () => {
     },
   };
   const village = deserialize(JSON.parse(JSON.stringify(v1)), data);
-  expect(SAVE_VERSION).toBe(13);
+  expect(SAVE_VERSION).toBe(14);
+  expect(village.flags.sandbox).toBeUndefined();
   expect(village.net.gangWars).toEqual([]);
   expect(village.seasonLog).toEqual([]);
   expect(village.armyPresets).toEqual([]);

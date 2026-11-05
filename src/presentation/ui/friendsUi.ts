@@ -17,6 +17,7 @@ import { formatDuration } from './format';
 import { REASON_LABELS } from './groveUi';
 import { qrSvg } from './qr';
 import type { SignInSource } from '../../backend/platform/auth';
+import { communityRulesAccepted, ensureCommunityRules } from './communityRules';
 
 export interface FriendsUiDeps {
   kit: UiKit;
@@ -72,6 +73,11 @@ export class FriendsUi {
 
   /** Open the screen; `search` (a name or a code from a friend link) is looked up straight away. */
   open(search?: string, tab: 'friends' | 'gang' = 'friends'): void {
+    // Friends, Gangs and duels are with real players: the community rules first, once (audit R06).
+    if (!communityRulesAccepted()) {
+      void ensureCommunityRules(this.d.kit).then((ok) => ok && this.open(search, tab));
+      return;
+    }
     this.tab = tab;
     const body = h('div', { class: 'friends' });
     this.body = body;

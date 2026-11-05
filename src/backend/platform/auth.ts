@@ -6,8 +6,11 @@
  * - Web: Google (Google Identity Services, VITE_GOOGLE_CLIENT_ID) and Sign
  *   in with Apple JS (VITE_APPLE_SERVICES_ID), loaded from the providers' own
  *   script hosts only when used.
- * - Android app: none yet (Play Games / Credential Manager need the Play
- *   services SDKs in the Android project; roadmap note under step 24).
+ * - Android app: Sign in with Google through Credential Manager, the native
+ *   "TkAuth" plugin (android/.../TkAuthPlugin.java), when the build has
+ *   VITE_GOOGLE_CLIENT_ID (the server/web OAuth client id: the ID token's
+ *   audience, which the server's GOOGLE_CLIENT_IDS must list). Play Games is
+ *   not offered (no Play Games SDK in the app).
  */
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import type { LinkCredential, LinkProvider } from '../net/protocol';
@@ -27,7 +30,8 @@ export interface SignInSource {
 }
 
 interface TkAuthPlugin {
-  signIn(o: { provider: 'apple' | 'gamecenter' }): Promise<LinkCredential>;
+  /** iPhone: 'apple' | 'gamecenter'. Android: 'google' with the server (web) client id. */
+  signIn(o: { provider: 'apple' | 'gamecenter' } | { provider: 'google'; serverClientId: string }): Promise<LinkCredential>;
   /** iOS 14.5+: the Game Center friends list (asks the player the first time). */
   gameCenterFriends(): Promise<{ ids: string[] }>;
 }
@@ -67,7 +71,12 @@ export function platformSignIn(opts: { googleClientId?: string; appleServicesId?
       return (await TkAuth.gameCenterFriends()).ids;
     },
     available() {
-      if (native) return plat === 'ios' ? ['apple', 'gamecenter'] : [];
+      if (native) {
+        if (plat === 'ios') return ['apple', 'gamecenter'];
+        // GLOBAL-008: account recovery on Android (reinstall, new phone).
+        if (plat === 'android' && opts.googleClientId) return ['google'];
+        return [];
+      }
       const out: LinkProvider[] = [];
       if (opts.appleServicesId) out.push('apple');
       if (opts.googleClientId) out.push('google');
@@ -75,7 +84,11 @@ export function platformSignIn(opts: { googleClientId?: string; appleServicesId?
     },
     async obtain(provider) {
       if (native) {
-        if (provider !== 'apple' && provider !== 'gamecenter') throw new Error('Not available on this device.');
+        if (plat === 'android') {
+          if (provider !== 'google' || !opts.googleClientId) throw new Error('Not available on this device.');
+          return TkAuth.signIn({ provider: 'google', serverClientId: opts.googleClientId });
+        }
+        if (plat !== 'ios' || (provider !== 'apple' && provider !== 'gamecenter')) throw new Error('Not available on this device.');
         return TkAuth.signIn({ provider });
       }
       if (provider === 'google' && opts.googleClientId) {

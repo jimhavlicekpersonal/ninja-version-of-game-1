@@ -21,6 +21,7 @@ import {
 import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
 import { TILE_H, TILE_W, mapBounds, worldToTile } from './iso';
 import { WARRIORS } from '../../gameplay/sim/progression';
+import { quality } from './quality';
 
 registerWarriorArt(WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })));
 
@@ -39,16 +40,17 @@ export { GROUND_PAD };
 export const TEX_SCALE = 2;
 
 /**
- * Buildings are drawn at 2.5x and warriors and badges at 3x (2.5x on low-density screens), so edges
- * stay smooth on high-density phones (iPhone 3x, Pixel 7 2.6x) and when zoomed in. Scenes size these
- * from the image itself (`buildingScale`, `troopSize`), so the values can change per device.
- * Buildings stop at 2.5x to keep texture memory well inside iOS Safari's canvas budget.
+ * High quality (`render/quality.ts`): buildings are drawn at 2.5x and warriors and badges at 3x
+ * (2.5x on low-density screens), so edges stay smooth on high-density phones (iPhone 3x, Pixel 7
+ * 2.6x) and when zoomed in. Buildings stop at 2.5x to keep texture memory inside iOS Safari's
+ * canvas budget. Low quality draws buildings at 1.5x and warriors and badges at 2x. Scenes size
+ * these from the image itself (`buildingScale`, `troopSize`), so the values can change per device.
  */
-export const BUILDING_SCALE = 2.5;
-export const HD_SCALE = typeof window !== 'undefined' && (window.devicePixelRatio || 1) >= 2 ? 3 : 2.5;
+export const BUILDING_SCALE = quality().buildingScale;
+export const HD_SCALE = Math.min(quality().hdScale, typeof window !== 'undefined' && (window.devicePixelRatio || 1) >= 2 ? 3 : 2.5);
 
-/** The island is big: drawn at 1.5x, or less if the GPU can't hold a texture that wide. */
-const GROUND_SCALE = 1.5;
+/** The island is big: drawn at 1.5x (1x in low quality), or less if the GPU can't hold a texture that wide. */
+const GROUND_SCALE = quality().groundScale;
 
 export const Keys = {
   ground: 'ground',
@@ -96,7 +98,28 @@ export function buildingTexture(textures: Phaser.Textures.TextureManager, type: 
   const specific = Keys.building(type, level);
   if (textures.exists(specific)) return specific;
   const tier = Keys.buildingTier(type, tierOf(type, level));
+  if (!textures.exists(tier)) paintPending(textures, tier);
   return textures.exists(tier) ? tier : Keys.buildingBase(type);
+}
+
+/**
+ * Low quality generates building tier art on first use (`QualitySettings.lazyTiers`): a village
+ * shows few of the ~3 tiers × building types at once. Each entry paints its texture once.
+ */
+const pending = new Map<string, (textures: Phaser.Textures.TextureManager) => void>();
+
+function paintPending(textures: Phaser.Textures.TextureManager, key: string): void {
+  const paint = pending.get(key);
+  if (!paint) return;
+  pending.delete(key);
+  paint(textures);
+}
+
+/** Paint now, or (lazy tiers) when `key` is first asked for. */
+function paintOrDefer(textures: Phaser.Textures.TextureManager, key: string, paint: (textures: Phaser.Textures.TextureManager) => void, lazy: boolean): void {
+  if (textures.exists(key)) return;
+  if (lazy) pending.set(key, paint);
+  else paint(textures);
 }
 
 /** Origin that puts the footprint centre of a building image on its world position. */
@@ -128,7 +151,7 @@ export function groundScale(textures: Phaser.Textures.TextureManager, mapSize: n
  * The world around the plateau: a dusk backdrop and slow wisps of the cloud sea.
  * Shared by the village and battle scenes.
  */
-export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = 60): void {
+export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = quality().wispCount): void {
   const mb = mapBounds(mapSize);
   const cx = mb.x + mb.width / 2;
   const cy = mb.y + mb.height / 2;
@@ -160,7 +183,10 @@ export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = 60
 /** Thumbnail key for the HUD: real art for the plain key wins, else the tier 1 drawing. */
 export function buildingThumbKey(textures: Phaser.Textures.TextureManager, type: string): string {
   const base = Keys.buildingBase(type);
-  return textures.exists(base) ? base : Keys.buildingTier(type, 1);
+  if (textures.exists(base)) return base;
+  const tier = Keys.buildingTier(type, 1);
+  if (!textures.exists(tier)) paintPending(textures, tier);
+  return tier;
 }
 
 function maxTextureSize(scene: Phaser.Scene): number {
@@ -174,9 +200,10 @@ function maxTextureSize(scene: Phaser.Scene): number {
 
 type Ctx = CanvasRenderingContext2D;
 
-function canvasFor(scene: Phaser.Scene, key: string, w: number, h: number, originY: number, scale = TEX_SCALE): { ctx: Ctx; done: () => void } | null {
-  if (scene.textures.exists(key)) return null; // real art (or an earlier run) already provided it
-  const tex = scene.textures.createCanvas(key, Math.ceil(w * scale), Math.ceil(h * scale));
+function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, scale = TEX_SCALE): { ctx: Ctx; done: () => void } | null {
+  const textures = target instanceof Phaser.Textures.TextureManager ? target : target.textures;
+  if (textures.exists(key)) return null; // real art (or an earlier run) already provided it
+  const tex = textures.createCanvas(key, Math.ceil(w * scale), Math.ceil(h * scale));
   if (!tex) return null;
   const ctx = tex.getContext();
   ctx.scale(scale, scale);
@@ -187,7 +214,12 @@ function canvasFor(scene: Phaser.Scene, key: string, w: number, h: number, origi
 }
 
 /** Create every placeholder texture that real art has not already provided. */
-export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type: string; size: number; maxLevel: number }[], mapSize: number): void {
+export function generatePlaceholders(
+  scene: Phaser.Scene,
+  buildingTypes: { type: string; size: number; maxLevel: number }[],
+  mapSize: number,
+  lazyTiers = quality().lazyTiers,
+): void {
   if (!scene.textures.exists(Keys.ground)) {
     const { w, h } = groundSize(mapSize);
     const max = maxTextureSize(scene);
@@ -207,11 +239,14 @@ export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: { type:
     const h = size * TILE_H + p.extra;
     const tiers: Tier[] = maxLevel > 1 ? [1, 2, 3] : [1];
     for (const tier of tiers) {
-      const c = canvasFor(scene, Keys.buildingTier(type, tier), w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
-      if (c) {
-        p.paint(c.ctx, size, tier);
-        c.done();
-      }
+      const key = Keys.buildingTier(type, tier);
+      paintOrDefer(scene.textures, key, (textures) => {
+        const c = canvasFor(textures, key, w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
+        if (c) {
+          p.paint(c.ctx, size, tier);
+          c.done();
+        }
+      }, lazyTiers);
     }
     // The plain key (`building.<type>`) is only for real art now: code art never draws tier 1 twice.
   }
@@ -309,11 +344,14 @@ export function ensureTextures(
     const w = hallSize * TILE_W;
     const h = hallSize * TILE_H + p.extra;
     for (const tier of [1, 2, 3] as Tier[]) {
-      const c = canvasFor(scene, Keys.hallSkin(skin.id, tier), w, h, h - (hallSize * TILE_H) / 2, BUILDING_SCALE);
-      if (c) {
-        p.paint(c.ctx, hallSize, tier);
-        c.done();
-      }
+      const key = Keys.hallSkin(skin.id, tier);
+      paintOrDefer(scene.textures, key, (textures) => {
+        const c = canvasFor(textures, key, w, h, h - (hallSize * TILE_H) / 2, BUILDING_SCALE);
+        if (c) {
+          p.paint(c.ctx, hallSize, tier);
+          c.done();
+        }
+      }, quality().lazyTiers);
     }
   }
 }
@@ -322,6 +360,7 @@ export function ensureTextures(
 export function villageTexture(textures: Phaser.Textures.TextureManager, type: string, level: number, size: number, hallSkin: string): string {
   if (type === 'elder_toadstool' && level >= 1 && hallSkin !== 'classic') {
     const key = Keys.hallSkin(hallSkin, tierOf(type, level));
+    if (!textures.exists(key)) paintPending(textures, key);
     if (textures.exists(key)) return key;
   }
   return buildingTexture(textures, type, level, size);

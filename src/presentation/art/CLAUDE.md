@@ -21,5 +21,6 @@ You are the **ART AI**. You own `src/presentation/art/`, `src/presentation/audio
 - Keys are the contract (`docs/art/ASSET_KEYS.md`). Never rename a key. To ask for a new key or animation, write to `docs/art/REQUESTS.md`.
 - Original IP only: no franchise look-alikes, real crests, religious symbols or Clash of Clans resemblance. The clan crest is three kunai in a ring (`crest()`).
 - Readability on a phone beats detail: silhouettes at 40 px, icons at 48 px.
+- Painters are resolution-independent: `render/assets.ts` draws them at 2.5x (buildings) and 3x (warriors, badges) in high quality and at 1.5x and 2x in low quality (`render/quality.ts`), and may paint a building tier only when it is first shown. Check new art at both (`?quality=low`); thin lines and small marks must still read at 1.5x. Emulated texture sums (`npm run perf:lowend -- --quality`): a new village holds ~115 MB at high (buildings 65, island 35) and ~24 MB at low; low with every tier painted would be ~46 MB.
 - Preview with `npm run art` (gallery of every texture and tier). Check in game with `npm run dev`.
 - Finish with `npm test` and `npm run build`.

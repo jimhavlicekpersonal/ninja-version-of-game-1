@@ -22,6 +22,9 @@ import m0014 from './0014_ticket_rules.sql?raw';
 import m0015 from './0015_friends.sql?raw';
 import m0016 from './0016_duels_gangs.sql?raw';
 import m0017 from './0017_gang_wars.sql?raw';
+import m0018 from './0018_spending_protection.sql?raw';
+import m0019 from './0019_device_command_numbers.sql?raw';
+import m0020 from './0020_import_holds.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -41,4 +44,7 @@ export const migrations = loadMigrations({
   '0015_friends.sql': m0015,
   '0016_duels_gangs.sql': m0016,
   '0017_gang_wars.sql': m0017,
+  '0018_spending_protection.sql': m0018,
+  '0019_device_command_numbers.sql': m0019,
+  '0020_import_holds.sql': m0020,
 });

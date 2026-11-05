@@ -25,6 +25,8 @@ import { ApiError, MIN, type ServerContext } from './context';
 export const MAX_BATCH = 200;
 /** Commands that re-run a battle (trials, abandoned raids) per batch: they cost real CPU. */
 export const MAX_BATTLES_PER_BATCH = 3;
+/** Devices whose command numbers a village remembers (GLOBAL-009). */
+export const MAX_DEVICES = 16;
 /** A command may be dated this far ahead of the server's clock (phone clocks drift); later times count as now. */
 export const CLOCK_SKEW_MS = 2 * MIN;
 
@@ -116,12 +118,17 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
     if (!c || !Number.isInteger(c.seq) || c.seq < 1 || !Number.isFinite(c.t) || !c.command || typeof c.command.type !== 'string') throw badBatch('Each command needs a seq, a time and a command.');
   }
   const sorted = [...list].sort((a, b) => a.seq - b.seq);
+  const device = typeof body!.device === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(body!.device) ? body!.device : null;
   return ctx.repo.transaction(async (tx) => {
     const loaded = await load(tx, ctx, me.id, true);
     if (!loaded) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
     const { row } = loaded;
     let state = loaded.state;
+    // `seq` is the village's own counter (the command log's key); with a device id the
+    // batch's numbers are that device's, tracked in `deviceSeqs` (GLOBAL-009).
     let seq = row.seq;
+    const deviceSeqs = { ...(row.deviceSeqs ?? {}) };
+    let deviceSeq = device ? (deviceSeqs[device] ?? 0) : 0;
     let at = row.at;
     let battles = 0;
     const now = ctx.now();
@@ -129,12 +136,13 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
     const log: CommandLogRow[] = [];
     const results: CommandOutcome[] = [];
     for (const c of sorted) {
-      if (c.seq <= seq) continue; // applied before: a retried batch
+      if (device ? c.seq <= deviceSeq : c.seq <= seq) continue; // applied before: a retried batch
       const clientAt = Number(c.t);
       const when = Math.max(at, clientAt > now + CLOCK_SKEW_MS ? now : clientAt);
       const type = c.command.type;
       let error: string | null = null;
       if (!PLAYER_COMMANDS.has(type)) error = 'NOT_ALLOWED';
+      else if (type === 'setProfile' && (c.command as { under18?: unknown }).under18 === false && (await tx.getAgeGroup(me.id))?.under18) error = 'LOCKED'; // GLOBAL-006: under 18 stays (staff can reset)
       else if (BATTLE_COMMANDS.has(type) && ++battles > MAX_BATTLES_PER_BATCH) error = 'TOO_MANY_BATTLES';
       else {
         let r: ReturnType<typeof applyCommand>;
@@ -143,6 +151,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
         } catch {
           r = { ok: false, code: 'INVALID_BATTLE', message: 'That command could not be read.' };
         }
+        if (r.ok && type === 'setProfile' && (c.command as { under18?: unknown }).under18 === true) await tx.setAgeGroup(me.id, true, now);
         if (r.ok) {
           ledger.push(...ledgerDiff(me.id, state.resources, r.state.resources, when, `command:${type}`, String(c.seq)));
           state = r.state;
@@ -150,17 +159,28 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
       }
       ctx.metrics.count('tk_village_commands_total', { result: error ? 'refused' : 'ok' });
       results.push(error ? { seq: c.seq, ok: false, error } : { seq: c.seq, ok: true });
-      log.push({ playerId: me.id, seq: c.seq, at: when, clientAt, type, command: c.command, ok: !error, error });
-      seq = c.seq;
+      if (device) {
+        seq += 1;
+        deviceSeq = c.seq;
+      } else seq = c.seq;
+      log.push({ playerId: me.id, seq, at: when, clientAt, type, command: c.command, ok: !error, error });
       at = when;
     }
     const stateHash = economyHash(state);
     if (results.length) {
-      const next: VillageRow = { ...row, file: serialize(state, at), revision: row.revision + 1, seq, at, stateHash, updatedAt: now };
+      if (device) {
+        // Most recent devices first; an old device beyond the limit starts over safely with a new id.
+        delete deviceSeqs[device];
+        const kept = Object.entries(deviceSeqs).slice(-(MAX_DEVICES - 1));
+        Object.keys(deviceSeqs).forEach((k) => delete deviceSeqs[k]);
+        for (const [k, v] of kept) deviceSeqs[k] = v;
+        deviceSeqs[device] = deviceSeq;
+      }
+      const next: VillageRow = { ...row, file: serialize(state, at), revision: row.revision + 1, seq, at, stateHash, updatedAt: now, ...(device ? { deviceSeqs } : {}) };
       if (!(await tx.saveVillage(next, row.revision, ledger, log))) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
       await refreshBase(tx, ctx, me, state, at);
     }
-    const out: CommandBatchResponse = { ackSeq: Math.max(seq, row.seq), revision: results.length ? row.revision + 1 : row.revision, stateHash, results };
+    const out: CommandBatchResponse = { ackSeq: device ? deviceSeq : Math.max(seq, row.seq), revision: results.length ? row.revision + 1 : row.revision, stateHash, results };
     if (typeof body!.stateHash !== 'string' || body!.stateHash !== stateHash) {
       out.corrections = { economy: economyOf(state), at };
       ctx.metrics.count('tk_village_corrections_total');

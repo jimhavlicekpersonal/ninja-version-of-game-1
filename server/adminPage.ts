@@ -79,12 +79,14 @@ function render(d) {
   const resKind = el('select', {}, ...['moonstones', 'acorns', 'dew', 'nightsap'].map((k) => el('option', { value: k }, k)));
   const amount = el('input', { type: 'number', value: '0', style: 'width:8em' });
   const note = el('input', { placeholder: 'Why (ledger and staff log)' });
+  const ageNote = el('input', { placeholder: 'What support checked' });
   const which = el('select', {}, el('option', { value: 'both' }, 'both'), el('option', { value: 'attack' }, 'attack'), el('option', { value: 'base' }, 'base'));
   const act = (path, body) => async () => { try { render(await api('POST', '/admin/v1/players/' + encodeURIComponent(p.id) + path, body())); status('Done.', true); } catch (e) { status(e.message); } };
   box.append(el('section', {}, el('h3', {}, 'Actions'),
     el('div', { class: 'row' }, 'Suspend for', hours, 'hours', reason, el('button', { onclick: act('/ban', () => ({ hours: Number(hours.value), reason: reason.value })) }, 'Suspend'), el('button', { onclick: act('/ban', () => ({ hours: 0 })) }, 'Lift suspension')),
     el('div', { class: 'row' }, 'Give (or take, with a minus)', amount, resKind, note, el('button', { onclick: act('/adjust', () => ({ resources: { [resKind.value]: Number(amount.value) }, note: note.value })) }, 'Apply'), el('span', { class: 'muted' }, d.village ? '' : 'Village on the device: cannot be changed here.')),
-    el('div', { class: 'row' }, 'Reset ratings', which, el('button', { onclick: act('/reset-rating', () => ({ which: which.value })) }, 'Reset'))));
+    el('div', { class: 'row' }, 'Reset ratings', which, el('button', { onclick: act('/reset-rating', () => ({ which: which.value })) }, 'Reset')),
+    el('div', { class: 'row' }, 'Age group: ' + (d.ageGroup ? (d.ageGroup.under18 ? 'under 18' : '18 or older') + ' since ' + when(d.ageGroup.at) : 'not stated'), ageNote, el('button', { onclick: act('/reset-age', () => ({ note: ageNote.value })) }, 'Clear (after a support check)'))));
   if (d.village) box.append(el('section', {}, el('h3', {}, 'Village on the server'), el('pre', {}, JSON.stringify({ revision: d.village.revision, at: when(d.village.at), resources: d.village.resources, army: d.village.army, buildings: d.village.buildings }, null, 1))));
   box.append(el('section', {}, el('h3', {}, 'Ledger'), table(d.ledger, [['When', (l) => when(l.at)], ['Resource', (l) => l.resource], ['Change', (l) => l.delta], ['Balance', (l) => l.balance], ['Why', (l) => l.reason]])));
   box.append(el('section', {}, el('h3', {}, 'Purchases'), table(d.purchases, [['When', (x) => when(x.at)], ['Store', (x) => x.store], ['Product', (x) => x.productId], ['USD', (x) => (x.cents / 100).toFixed(2)], ['Env', (x) => x.environment], ['Status', (x) => x.status]])));

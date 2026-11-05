@@ -299,6 +299,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
 
   // Purchases (roadmap Phase 4): ask, redeem once, history; store notifications carry their own signatures.
   app.post(Routes.purchaseIntent, rate('moderation'), authed(async (me, req) => core.purchaseIntent(me, req.body as never)));
+  app.post(Routes.purchaseIntentRelease, rate('moderation'), authed(async (me, req) => core.releaseIntent(me, req.body as never)));
   app.post(Routes.purchases, { ...rate('moderation'), bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.redeem(me, req.body as never)));
   app.get(Routes.purchases, authed(async (me) => core.purchaseHistory(me)));
   app.post(Routes.appleNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
@@ -401,6 +402,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.post('/admin/v1/players/:id/adjust', staff(async (req) => core.admin.adjust(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/ban', staff(async (req) => core.admin.ban(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
+    app.post('/admin/v1/players/:id/reset-age', staff(async (req) => core.admin.resetAge(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
     app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));

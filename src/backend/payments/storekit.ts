@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
-import type { PaymentProvider, PaymentResult, ProductRequest, StoreReceipt } from './provider';
+import type { PaymentProvider, PaymentResult, ProductRequest, StorePrice, StoreReceipt } from './provider';
 
 interface AppleTransaction {
   transactionId: string;
@@ -9,7 +9,7 @@ interface AppleTransaction {
 }
 
 interface TkStorePlugin {
-  getProducts(opts: { ids: string[] }): Promise<{ products: { id: string; displayName: string; displayPrice: string; price: number }[] }>;
+  getProducts(opts: { ids: string[] }): Promise<{ products: { id: string; displayName: string; displayPrice: string; price: number; currency?: string }[] }>;
   purchase(opts: { productId: string; appAccountToken?: string }): Promise<AppleTransaction>;
   finish(opts: { transactionId: string }): Promise<void>;
   unfinished(): Promise<{ transactions: AppleTransaction[] }>;
@@ -47,6 +47,15 @@ export class StoreKitPaymentProvider implements PaymentProvider {
 
   async unfinished(): Promise<StoreReceipt[]> {
     return (await TkStore.unfinished()).transactions.map(receiptOf);
+  }
+
+  /** The App Store's own prices for this storefront (displayPrice: currency, taxes and promotions included). */
+  async prices(storeProductIds: string[]): Promise<Record<string, StorePrice>> {
+    const out: Record<string, StorePrice> = {};
+    for (const p of (await TkStore.getProducts({ ids: storeProductIds })).products) {
+      out[p.id] = { formatted: p.displayPrice, ...(p.currency ? { currency: p.currency } : {}), ...(Number.isFinite(p.price) ? { micros: Math.round(p.price * 1e6) } : {}) };
+    }
+    return out;
   }
 
   /** Purchases approved later (Ask to Buy) are delivered through this callback. */

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Keys, TEX_SCALE } from './assets';
+import { quality } from './quality';
 
 const CONFETTI = 'fx.confetti';
 const DOT = 'fx.dot';
@@ -47,7 +48,8 @@ function burst(scene: Phaser.Scene, x: number, y: number, texture: string, count
   const lifespan = typeof config.lifespan === 'number' ? config.lifespan : 900;
   const em = scene.add.particles(x, y, texture, { ...config, emitting: false });
   em.setDepth(depth);
-  em.explode(count);
+  // Decoration only: low quality and reduced motion emit fewer particles (render/quality.ts).
+  em.explode(Math.max(1, Math.round(count * quality().particleScale)));
   scene.time.delayedCall(lifespan + 200, () => em.destroy());
 }
 

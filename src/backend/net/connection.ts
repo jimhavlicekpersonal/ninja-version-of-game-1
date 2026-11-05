@@ -43,6 +43,8 @@ export interface GameLink {
 export interface KeyValue {
   get(key: string): string | null;
   set(key: string, value: string | null): void;
+  /** Like `set`, but false when the write failed (storage full or blocked): GLOBAL-010. */
+  trySet?(key: string, value: string | null): boolean;
 }
 
 export const browserKeyValue: KeyValue = {
@@ -54,11 +56,15 @@ export const browserKeyValue: KeyValue = {
     }
   },
   set(key, value) {
+    browserKeyValue.trySet!(key, value);
+  },
+  trySet(key, value) {
     try {
       if (value === null) localStorage.removeItem(key);
       else localStorage.setItem(key, value);
+      return true;
     } catch {
-      /* ignore */
+      return false;
     }
   },
 };
@@ -202,6 +208,9 @@ export class Connection {
       intent: async (s, productId, under18) => (await ready()).purchaseIntent({ store: s, productId, under18 }),
       redeem: async (r) => (await ready()).redeem({ store: r.store, storeProductId: r.storeProductId, receipt: r.receipt }),
       history: async () => (checks && this.port && this.online ? (await this.port.purchaseHistory()).purchases : []),
+      release: async (accountToken, outcome) => {
+        if (checks && this.port && this.online) await this.port.releaseIntent({ accountToken, outcome });
+      },
     };
   }
 
@@ -780,8 +789,26 @@ export class Connection {
     }
   }
 
+  /**
+   * The outbox could not be written (storage full or blocked): battles waiting
+   * for the server live only in memory until they are sent (GLOBAL-010).
+   */
+  outboxStorageProblem = false;
+
+  /** A queue on this device could not be stored: the player is told, and it is sent as soon as possible. */
+  get storageProblem(): boolean {
+    return this.outboxStorageProblem || Boolean(this.village?.storageProblem);
+  }
+
   private saveOutbox(items: OutboxItem[]): void {
-    this.kv.set(this.outboxKey, items.length ? JSON.stringify(items) : null);
+    const value = items.length ? JSON.stringify(items) : null;
+    let ok = true;
+    if (this.kv.trySet) ok = this.kv.trySet(this.outboxKey, value);
+    else this.kv.set(this.outboxKey, value);
+    if (ok !== !this.outboxStorageProblem) {
+      this.outboxStorageProblem = !ok;
+      this.emit();
+    }
   }
 
   /** Queue a finished battle for the server and try to send it now. */

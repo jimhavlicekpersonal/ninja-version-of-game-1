@@ -12,6 +12,7 @@ import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
+import { quality, renderScaleFor } from './presentation/render/quality';
 import { App } from './app';
 import { browserKeyValue, Connection, resolveServerUrl } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
@@ -126,7 +127,7 @@ async function boot(): Promise<void> {
   // before the village loads (never mid-session, never in the sandbox, never without the public key).
   const balance = sandbox ? null : new BalanceLoader(browserKeyValue, defaultData, SIM_RULES, (import.meta.env.VITE_BALANCE_PUBLIC_KEY as string | undefined) ?? '');
   await balance?.applyCached();
-  const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl });
+  const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl, sandbox });
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
@@ -141,14 +142,54 @@ async function boot(): Promise<void> {
     });
   if (storeKit) void storeKit.listen(deliverLater);
   if (play) void play.listen(deliverLater);
-  let deliveredOnline = false;
+  // Paid purchases not delivered yet are retried on every reconnection (not only the first one
+  // after start), and again with a bounded backoff while some are still waiting (GLOBAL-013).
+  // Each one is delivered once: the village records its store transaction id.
+  let wasOnline = false;
+  let recoverTimer: ReturnType<typeof setTimeout> | undefined;
+  let recoverTry = 0;
+  let recovering = false;
+  const recoverPurchases = () => {
+    clearTimeout(recoverTimer);
+    if (recovering) return;
+    recovering = true;
+    void controller
+      .deliverUnfinishedReport()
+      .then(({ delivered, left }) => {
+        if (delivered) hud?.toast(`Your purchase${delivered === 1 ? ' has' : 's have'} been delivered.`, 'success');
+        if (left > 0 && (connection.online || !connection.enabled)) recoverTimer = setTimeout(recoverPurchases, Math.min(15_000 * 2 ** recoverTry++, 15 * 60_000));
+        else recoverTry = 0;
+      })
+      .finally(() => (recovering = false));
+  };
+  // Things the player must hear about once: a queue this device could not store (GLOBAL-010),
+  // and what the server held back when the village moved (GLOBAL-002).
+  let toldStorage = false;
   connection.subscribe(() => {
-    if (!connection.online || deliveredOnline) return;
-    deliveredOnline = true;
-    void controller.deliverUnfinished();
-    void syncPush();
+    if (connection.storageProblem && !toldStorage) {
+      toldStorage = true;
+      hud?.toast('This device could not store your latest actions (storage full or blocked). They are being sent to the server now; free some space to keep playing offline safely.', 'error');
+    } else if (!connection.storageProblem) toldStorage = false;
+    const held = connection.village?.importHeld;
+    if (held) {
+      connection.village!.importHeld = null;
+      const parts = [held.jade ? `${held.jade.toLocaleString()} Jade` : '', held.premium ? 'the premium Season Scroll' : ''].filter(Boolean).join(' and ');
+      if (parts) hud?.toast(`Your village is on the server now. ${parts} could not be matched to a purchase we checked, so it is held for review: contact support from Settings. Your old village is kept as a backup.`, 'info');
+    }
   });
-  if (!connection.enabled) void controller.deliverUnfinished();
+  connection.subscribe(() => {
+    const on = connection.online;
+    if (on && !wasOnline) {
+      recoverTry = 0;
+      recoverPurchases();
+      void syncPush();
+    }
+    wasOnline = on;
+  });
+  // Coming back to the app: approvals and payments may have finished in the meantime.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && (connection.online || !connection.enabled)) recoverPurchases();
+  });
   // Server push (step 40): the types switched on in Settings, only while notifications are on.
   const syncPush = () =>
     connection
@@ -158,8 +199,10 @@ async function boot(): Promise<void> {
 
   await loadInterfaceFonts();
   const host = document.getElementById('game')!;
-  // Draw at the screen's real density (iPhone 3x, Pixel 7 2.6x) so lines and text are smooth, not upscaled.
-  const renderScale = Math.min(window.devicePixelRatio || 1, 3);
+  // Draw at the screen's real density (iPhone 3x, Pixel 7 2.6x) so lines and text are smooth, not upscaled;
+  // low quality (cheap phones, ?quality=low, Settings) stops at 2x and 30 FPS (render/quality.ts).
+  const q = quality();
+  const renderScale = renderScaleFor(q);
   const size = () => ({ w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) });
   const { w, h } = size();
   const bus = new Bus<UiEvents>();
@@ -170,9 +213,10 @@ async function boot(): Promise<void> {
     banner: false,
     disableContextMenu: true,
     scale: { mode: Phaser.Scale.NONE, width: w * renderScale, height: h * renderScale, zoom: 1 / renderScale },
-    render: { antialias: true, powerPreference: 'high-performance' },
+    render: { antialias: true, powerPreference: q.powerPreference },
     input: { activePointers: 3, mouse: { preventDefaultWheel: true } },
-    fps: { target: 60 },
+    // The limit sits just above 30 so a 60/90/120 Hz display reliably steps every 2nd/3rd/4th frame.
+    fps: q.fps < 60 ? { target: q.fps, limit: q.fps + 1 } : { target: 60 },
   });
   const init: VillageSceneInit = { controller, bus, renderScale };
   game.scene.add('village', VillageScene, true, init);
@@ -252,6 +296,8 @@ async function boot(): Promise<void> {
   });
 
   connection.start();
+  // Without a server, paid-but-undelivered purchases are delivered from the store now (the HUD exists for its toast).
+  if (!connection.enabled) recoverPurchases();
 
   // A friend link (?friend=KAGE-XXXXXX) opens Friends on that player once the game is online.
   const friendParam = new URLSearchParams(location.search).get('friend');

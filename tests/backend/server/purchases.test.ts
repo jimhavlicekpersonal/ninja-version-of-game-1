@@ -174,8 +174,57 @@ for (const [label, makeRepo] of repoFactories) {
       // Next month the cap starts over.
       w.setTime(Date.UTC(2026, 4, 1, 1));
       expect((await kid.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: true })).accountToken).toMatch(/^[0-9a-f-]{36}$/);
-      // No age group: asked first. A store this server is not set up for: refused before paying.
-      await expect(kid.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: null })).rejects.toMatchObject({ code: 'purchase_refused' });
+      // No age group: asked first (a new player). The server remembers the kid's answer (GLOBAL-006).
+      const fresh = await w.player('Fresh');
+      await expect(fresh.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: null })).rejects.toMatchObject({ code: 'purchase_refused' });
+      expect(await kid.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: null })).toMatchObject({ storeProductId: 'jade_pouch' });
+    });
+
+    it('reserves the cap atomically: simultaneous intents cannot both pass it (GLOBAL-004)', async () => {
+      const { w } = await setup();
+      const kid = await w.player('Kid');
+      // Two $49.99 intents at once (two taps, two devices): only one fits the $50 cap.
+      const both = await Promise.allSettled([1, 2, 3].map(() => kid.purchaseIntent({ store: 'apple', productId: 'moonstones_5', under18: true })));
+      expect(both.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+      expect(both.filter((r) => r.status === 'rejected').map((r) => (r as PromiseRejectedResult).reason.code)).toEqual(['purchase_refused', 'purchase_refused']);
+    });
+
+    it('frees the cap when a purchase is cancelled and holds it while one is pending (GLOBAL-005)', async () => {
+      const { w } = await setup();
+      const kid = await w.player('Kid');
+      const first = await kid.purchaseIntent({ store: 'apple', productId: 'moonstones_5', under18: true });
+      await expect(kid.purchaseIntent({ store: 'apple', productId: 'moonstones_5', under18: true })).rejects.toMatchObject({ code: 'purchase_refused' });
+      // The player closed the store sheet: nothing was charged, the hold ends now.
+      expect(await kid.releaseIntent({ accountToken: first.accountToken, outcome: 'cancelled' })).toEqual({ changed: true });
+      const second = await kid.purchaseIntent({ store: 'apple', productId: 'moonstones_5', under18: true });
+      // Ask to Buy: still held well past the normal 30 minutes, so a late approval cannot pass the cap.
+      await kid.releaseIntent({ accountToken: second.accountToken, outcome: 'pending' });
+      w.advance(3 * 24 * 3_600_000);
+      await expect(kid.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: true })).rejects.toMatchObject({ code: 'purchase_refused' });
+      // A "cancelled" for an intent already used, or someone else's, changes nothing.
+      const other = await w.player('Other');
+      expect(await other.releaseIntent({ accountToken: second.accountToken, outcome: 'cancelled' })).toEqual({ changed: false });
+      await kid.redeem({ store: 'apple', storeProductId: 'jade_vault', receipt: appleTxn('jade_vault', second.accountToken) });
+      expect(await kid.releaseIntent({ accountToken: second.accountToken, outcome: 'cancelled' })).toEqual({ changed: false });
+      // The approved purchase counts this month.
+      await expect(kid.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: true })).rejects.toMatchObject({ code: 'purchase_refused' });
+    });
+
+    it('keeps under 18 once said: no device or village can switch it back; staff can (GLOBAL-006)', async () => {
+      const { w } = await setup();
+      const kid = await w.player('Kid');
+      await kid.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: true });
+      await kid.startVillage();
+      // The game sends "adult" (another device, an edited client, a new village): ignored.
+      await kid.sendCommands({ stateHash: '', commands: [{ seq: 1, t: w.now(), command: { type: 'setProfile', under18: false } }] });
+      expect(deserialize((await kid.getVillage())!.file, data).profile.under18).not.toBe(false);
+      w.advance(31 * 24 * 3_600_000);
+      await kid.purchaseIntent({ store: 'apple', productId: 'moonstones_5', under18: false });
+      await expect(kid.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: false })).rejects.toMatchObject({ code: 'purchase_refused' });
+      // Support checked: staff clear it, and the player is asked again.
+      await w.core.admin.resetAge('staff', kid.id, { note: 'parent confirmed adult account holder' });
+      expect(deserialize((await kid.getVillage())!.file, data).profile.under18).toBeNull();
+      await expect(w.core.admin.resetAge('staff', kid.id, {})).rejects.toMatchObject({ code: 'bad_request' });
     });
 
     it('takes refunded Jade back from a server-held village, as far as it is still there (App Store notification)', async () => {

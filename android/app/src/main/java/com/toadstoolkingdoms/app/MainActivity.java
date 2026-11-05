@@ -8,6 +8,8 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // Google Play Billing (roadmap step 36); the game uses it only in builds made with VITE_PLAY_BILLING=1.
         registerPlugin(TkBillingPlugin.class);
+        // Sign in with Google for account recovery (Credential Manager; same "TkAuth" name as the iPhone plugin).
+        registerPlugin(TkAuthPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

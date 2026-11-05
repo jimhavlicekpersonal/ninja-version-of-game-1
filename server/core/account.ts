@@ -29,7 +29,7 @@ export async function requestDeletion(ctx: ServerContext, body: DeletionRequestB
   const playerId = text(body?.playerId, 64);
   const name = text(body?.name, 40);
   if (!playerId && !name) throw new ApiError(400, 'bad_request', 'Enter your Player ID (Settings → Online play) or your player name.');
-  const r: DeletionRequest = { id: ctx.uuid(), at: ctx.now(), playerId, name, contact: text(body?.contact, 200), note: text(body?.note, 1000), status: 'open', resolvedAt: null, resolution: null };
+  const r: DeletionRequest = { id: ctx.uuid(), at: ctx.now(), playerId, name, contact: '' /* GLOBAL-019: no email is collected or kept (an older page may still send one) */, note: text(body?.note, 1000), status: 'open', resolvedAt: null, resolution: null };
   await ctx.repo.addDeletionRequest(r);
   return { id: r.id };
 }

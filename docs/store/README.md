@@ -4,7 +4,7 @@ Everything here was prepared from the code so the owner can fill the store forms
 
 | Step | What | Prepared here |
 |---|---|---|
-| 49 | Listings: screenshots, description, support and privacy URLs | `LISTING.md` (texts), `npm run build && npm run store:screenshots` (real screens at App Store and Play sizes, into `docs/store/screenshots/`, not committed), `PRIVACY_POLICY.md` (a draft policy to publish at a public URL) |
+| 49 | Listings: screenshots, description, support and privacy URLs | `LISTING.md` (texts, checked claims, publishing the pages), `npm run build && npm run store:screenshots` (real screens at App Store and Play sizes, into `docs/store/screenshots/`, not committed), the privacy, support and community-rules pages shipped with the game (`public/privacy.html`, `support.html`, `community.html`; owner facts in `public/legal-config.js`; see `PRIVACY_POLICY.md`) |
 | 50 | Privacy label, Data Safety form, IARC rating, user-generated content | `PRIVACY.md` (answers taken from what the code collects) |
 | 51 | Apple review notes | `REVIEW_NOTES.md` (text to paste, and what to check before sending) |
 | 52 | Closed testing | `TESTING.md` (TestFlight groups, Google closed track with 12+ testers for 14 days, a test script) |

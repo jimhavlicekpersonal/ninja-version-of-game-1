@@ -123,6 +123,8 @@ export const Routes = {
   deletionPage: '/account/delete',
   /** POST: ask before paying (age cap); returns the token the store purchase carries back. */
   purchaseIntent: '/v1/purchases/intent',
+  /** POST: a purchase was cancelled (frees the age-cap hold) or is pending approval (holds longer). */
+  purchaseIntentRelease: '/v1/purchases/intent/release',
   /** POST: redeem a store receipt (verified, credited once); GET: purchase history. */
   purchases: '/v1/purchases',
   /** POST, no token: App Store Server Notifications v2 (signed by Apple). */
@@ -516,7 +518,7 @@ export interface DeletionRequestBody {
   playerId?: string;
   /** The player name, if the ID is unknown. One of the two is needed. */
   name?: string;
-  /** How staff can reach the player to confirm (optional, kept only for this request). */
+  /** Ignored and never stored (worldwide audit GLOBAL-019: the deletion flow needs no email). Older pages may still send it. */
   contact?: string;
   note?: string;
 }
@@ -805,6 +807,12 @@ export interface VillageResponse {
   at: number;
   /** economyHash of the village. */
   stateHash: string;
+  /**
+   * Only on a village move (POST /v1/village/import, GLOBAL-002): what the
+   * server held back because it could not confirm where it came from. The
+   * game takes the server's village and keeps its own as a backup.
+   */
+  importHeld?: { jade: number; premium: boolean; purchases: number };
 }
 
 /** One player action, numbered by the game (`seq` goes up by one per command) and timed by its clock. */
@@ -820,6 +828,13 @@ export interface CommandBatch {
   /** The game's economy hash right after its last command in this batch. */
   stateHash: string;
   commands: VillageCommand[];
+  /**
+   * The sending queue's id (GLOBAL-009). With it, `seq` numbers are this
+   * device's own: the server skips numbers it already processed for this
+   * device and answers `ackSeq` in them. Without it (older games), `seq` is
+   * compared with the village's single counter, as before.
+   */
+  device?: string;
 }
 
 export interface CommandOutcome {
@@ -974,6 +989,21 @@ export interface PurchaseIntentResponse {
   accountToken: string;
   /** The product's id in that store. */
   storeProductId: string;
+}
+
+/**
+ * POST /v1/purchases/intent/release: what became of an intent that did not end in a receipt.
+ * `cancelled` (the player closed the store sheet; nothing was charged) frees its share of the
+ * under-18 cap at once; `pending` (Ask to Buy, a cash payment) keeps holding it for
+ * `pendingHoldHours` so a late approval still counts. Anything else leaves the normal hold.
+ */
+export interface IntentReleaseRequest {
+  accountToken: string;
+  outcome: 'cancelled' | 'pending';
+}
+export interface IntentReleaseResponse {
+  /** False when the intent was already used, belongs to someone else, or is unknown. */
+  changed: boolean;
 }
 
 export interface RedeemRequest {

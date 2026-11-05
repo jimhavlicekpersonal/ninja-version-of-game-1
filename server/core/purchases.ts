@@ -17,16 +17,23 @@
  *    Purchases API): the record is marked refunded and a server-held village
  *    gives back what is still there (`revokePurchase`, ledger `refund:<store>`).
  */
-import type { PurchaseHistoryResponse, PurchaseIntentResponse, PurchaseStore, RedeemResponse } from '../../src/backend/net/protocol';
+import type { IntentReleaseResponse, PurchaseHistoryResponse, PurchaseIntentResponse, PurchaseStore, RedeemResponse } from '../../src/backend/net/protocol';
 import { monthStart, productForStoreId, productInfo, storeProductId } from '../../src/gameplay/sim/monetization';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { PurchaseError } from '../payments/apple';
 import type { Player, PurchaseRow, Repo } from '../repo';
-import { ApiError, MIN, type ServerContext } from './context';
+import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult } from './village';
 
 /** How long an unused intent holds its share of an under-18 player's monthly cap. */
 export const INTENT_HOLD_MS = 30 * MIN;
+/**
+ * How long an intent the store reported pending (Ask to Buy, a cash payment
+ * still to be made) keeps holding the cap. Longer than the stores' own
+ * approval windows, so a late approval cannot take a minor past the cap; an
+ * abandoned one frees itself after this.
+ */
+export const PENDING_HOLD_MS = 7 * 24 * HOUR;
 const STORES: readonly PurchaseStore[] = ['apple', 'google'];
 
 const cents = (usd: number) => Math.round(usd * 100);
@@ -49,25 +56,66 @@ async function serverVillageProfile(repo: Repo, ctx: ServerContext, playerId: st
   return row ? deserialize(row.file, ctx.data).profile : null;
 }
 
+/**
+ * The age group the cap applies to (GLOBAL-006). The server keeps what the
+ * player said: under 18 is sticky (a later "adult" from any device or village
+ * is ignored; staff can reset it after a support check), and a first answer
+ * comes from the server-held village or the game. Self-declared: this is a
+ * spending protection, not age verification.
+ */
+export async function ageGroupFor(repo: Repo, ctx: ServerContext, playerId: string, stated: unknown): Promise<boolean | null> {
+  const kept = await repo.getAgeGroup(playerId);
+  if (kept?.under18) return true;
+  const held = await serverVillageProfile(repo, ctx, playerId);
+  const said = held && held.under18 !== null ? held.under18 : typeof stated === 'boolean' ? stated : null;
+  if (said === true || (said === false && !kept)) await repo.setAgeGroup(playerId, said, ctx.now());
+  if (said === null) return kept ? kept.under18 : null;
+  return said;
+}
+
 export async function purchaseIntent(ctx: ServerContext, me: Player, body: { store?: unknown; productId?: unknown; under18?: unknown } | undefined): Promise<PurchaseIntentResponse> {
   storeOf(ctx, body?.store);
   const product = productInfo(ctx.data, String(body?.productId ?? ''));
   if (!product) throw new ApiError(400, 'bad_request', 'That item is not available.');
-  // A village the server holds says the age group itself; otherwise the game does.
-  const held = await serverVillageProfile(ctx.repo, ctx, me.id);
-  const under18 = held ? held.under18 : typeof body?.under18 === 'boolean' ? body.under18 : null;
+  const under18 = await ageGroupFor(ctx.repo, ctx, me.id, body?.under18);
   if (under18 === null) throw new ApiError(403, 'purchase_refused', 'Please tell us your age group first.');
-  const now = ctx.now();
-  if (under18) {
-    const cap = cents(ctx.data.store.minorMonthlyCapUsd);
-    const spent = await ctx.repo.spentCents(me.id, monthStart(now), now - INTENT_HOLD_MS);
-    if (spent + cents(product.usd) > cap) {
-      throw new ApiError(403, 'purchase_refused', `Monthly spending limit of $${(cap / 100).toFixed(2)} reached for players under 18. Nothing was charged.`);
+  // Check and reserve in one locked step (GLOBAL-004): two taps, two devices or two
+  // server instances cannot both pass the cap with the same headroom.
+  return ctx.repo.transaction(async (tx) => {
+    await tx.lockPurchases(me.id);
+    const now = ctx.now();
+    if (under18) {
+      const cap = cents(ctx.data.store.minorMonthlyCapUsd);
+      const spent = await tx.spentCents(me.id, monthStart(now), now);
+      if (spent + cents(product.usd) > cap) {
+        throw new ApiError(403, 'purchase_refused', `Monthly spending limit of $${(cap / 100).toFixed(2)} reached for players under 18. Nothing was charged.`);
+      }
     }
-  }
-  const id = ctx.uuid().toLowerCase();
-  await ctx.repo.addIntent({ id, playerId: me.id, productId: product.id, cents: cents(product.usd), at: now, used: false });
-  return { accountToken: id, storeProductId: storeProductId(ctx.data, product.id) };
+    const id = ctx.uuid().toLowerCase();
+    await tx.addIntent({ id, playerId: me.id, productId: product.id, cents: cents(product.usd), at: now, used: false, holdUntil: now + INTENT_HOLD_MS });
+    return { accountToken: id, storeProductId: storeProductId(ctx.data, product.id) };
+  });
+}
+
+/**
+ * POST /v1/purchases/intent/release (GLOBAL-005). `cancelled` comes from the
+ * store's own "user cancelled" answer, when nothing can have been charged:
+ * the hold ends now. `pending` holds for PENDING_HOLD_MS. A purchase that
+ * still arrives for a released intent is credited (it was paid) and counts
+ * from then on. Only the player's own unused intents change.
+ */
+export async function releaseIntent(ctx: ServerContext, me: Player, body: { accountToken?: unknown; outcome?: unknown } | undefined): Promise<IntentReleaseResponse> {
+  const id = typeof body?.accountToken === 'string' ? body.accountToken.toLowerCase() : '';
+  const outcome = body?.outcome;
+  if (!id || (outcome !== 'cancelled' && outcome !== 'pending')) throw new ApiError(400, 'bad_request', 'Say which purchase, and whether it was cancelled or is pending.');
+  return ctx.repo.transaction(async (tx) => {
+    await tx.lockPurchases(me.id);
+    const intent = await tx.getIntent(id);
+    if (!intent || intent.playerId !== me.id || intent.used) return { changed: false };
+    const now = ctx.now();
+    const until = outcome === 'cancelled' ? Math.min(intent.holdUntil, now) : Math.max(intent.holdUntil, now + PENDING_HOLD_MS);
+    return { changed: await tx.holdIntent(id, me.id, until) };
+  });
 }
 
 interface Checked {

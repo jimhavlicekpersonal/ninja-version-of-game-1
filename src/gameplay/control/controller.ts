@@ -23,9 +23,20 @@ export interface ControllerDeps {
   payments?: PaymentProvider;
   /** False when the online server provides real raids instead of bots. */
   botRaids?: boolean;
+  /**
+   * The testing sandbox (time skips, a free test store): every village played
+   * here is marked, and a server refuses to take a marked village (GLOBAL-002).
+   */
+  sandbox?: boolean;
 }
 
-export type PurchaseOutcome = { ok: true; grants: Cost } | { ok: false; code: string; message: string };
+/**
+ * `unsaved`: delivered into the village on screen, but this device could not
+ * save it yet (storage full or blocked). The store transaction stays open, so
+ * the purchase is delivered again on the next start if the save never lands
+ * (GLOBAL-003); it is finished as soon as a save succeeds.
+ */
+export type PurchaseOutcome = { ok: true; grants: Cost; unsaved?: boolean } | { ok: false; code: string; message: string };
 
 export interface StartResult {
   controller: GameController;
@@ -48,6 +59,9 @@ export interface VillageBackup {
 
 type Listener = (finished: FinishedUpgrade[]) => void;
 
+/** The id a village records a store purchase under ("apple:…", "google:…"), the same on every path. */
+const receiptId = (r: StoreReceipt) => `${r.store}:${r.storeTransactionId}`;
+
 /**
  * Owns the live village state. Rendering reads `state` and sends commands
  * through `dispatch`. No Phaser here, so it can be tested in Node.
@@ -66,6 +80,12 @@ export class GameController {
    */
   purchaseVerifier: () => PurchaseVerifier | null = () => null;
   private saveChain: Promise<void> = Promise.resolve();
+  /**
+   * Store receipts delivered into the village but not yet in a save that
+   * landed. They are finished only after one does (GLOBAL-003): a store
+   * transaction finished before the grant is on disk could be lost for good.
+   */
+  private awaitingSave: StoreReceipt[] = [];
   private saveErrorListeners = new Set<(e: Error) => void>();
   /** Another tab or window took this village over: nothing here may be saved any more. */
   private takenOver = false;
@@ -81,6 +101,11 @@ export class GameController {
     public state: VillageState,
   ) {
     this.payments = deps.payments ?? new MockPaymentProvider(() => deps.clock.now());
+  }
+
+  /** Mark a sandbox village (`flags.sandbox`), so its progress never reaches a server. */
+  private static marked(state: VillageState, deps: ControllerDeps): VillageState {
+    return deps.sandbox && !state.flags.sandbox ? { ...state, flags: { ...state.flags, sandbox: true } } : state;
   }
 
   static async start(deps: ControllerDeps): Promise<StartResult> {
@@ -104,12 +129,12 @@ export class GameController {
       }
     }
     if (!state) {
-      const controller = new GameController(deps, createNewVillage(now, deps.data));
+      const controller = new GameController(deps, GameController.marked(createNewVillage(now, deps.data), deps));
       await controller.save();
       return { controller, offline: null, isNew: true, loadError };
     }
     const { state: caughtUp, summary } = computeOfflineProgress(state, now, deps.data, { botRaids: deps.botRaids });
-    const controller = new GameController(deps, caughtUp);
+    const controller = new GameController(deps, GameController.marked(caughtUp, deps));
     await controller.save();
     const show = summary.awayMs >= deps.data.economy.welcomeBackMinAwaySeconds * 1000;
     return { controller, offline: show ? summary : null, isNew: false, loadError };
@@ -273,14 +298,36 @@ export class GameController {
       }
     }
     const pay = await this.payments.purchase({ productId, name: check.product.name, usd: check.product.usd, storeProductId: ask.storeProductId, accountToken: ask.accountToken });
-    if (!pay.ok) return { ok: false, code: pay.reason, message: pay.reason === 'pending' ? 'The purchase is waiting for approval. It will be delivered once it is approved.' : pay.message };
+    if (!pay.ok) {
+      // GLOBAL-005: a cancelled purchase frees its share of the under-18 cap now; a pending one holds it until approved.
+      if (verifier?.release && ask.accountToken && (pay.reason === 'cancelled' || pay.reason === 'pending')) {
+        await verifier.release(ask.accountToken, pay.reason).catch(() => undefined);
+      }
+      return { ok: false, code: pay.reason, message: pay.reason === 'pending' ? 'The purchase is waiting for approval. It will be delivered once it is approved.' : pay.message };
+    }
     if (verifier && pay.receipt) return this.deliverVerified(pay.receipt, verifier);
-    const r = this.dispatch({ type: 'grantPurchase', productId, transactionId: pay.transactionId });
+    // The same id the store's receipt gives later (deliverReceipt), so a re-delivery after a crash is recognised.
+    const transactionId = pay.receipt ? receiptId(pay.receipt) : pay.transactionId;
+    if (this.state.purchases.some((p) => p.id === transactionId)) {
+      return pay.receipt ? this.settleReceipt(pay.receipt, check.product.grants) : { ok: true, grants: check.product.grants };
+    }
+    const r = this.dispatch({ type: 'grantPurchase', productId, transactionId });
     if (!r.ok) return { ok: false, code: r.code, message: r.message };
-    this.deps.analytics.log('purchase', { productId, usd: check.product.usd, kind: check.product.kind, transactionId: pay.transactionId, provider: this.payments.name });
-    await this.save();
-    if (pay.receipt) await this.payments.finish?.(pay.receipt).catch(() => undefined);
-    return { ok: true, grants: check.product.grants };
+    this.deps.analytics.log('purchase', { productId, usd: check.product.usd, kind: check.product.kind, transactionId, provider: this.payments.name });
+    if (!pay.receipt) return { ok: true, grants: check.product.grants, ...((await this.persist()) ? {} : { unsaved: true }) };
+    return this.settleReceipt(pay.receipt, check.product.grants);
+  }
+
+  /**
+   * The grant is in the village: finish the store transaction once a save
+   * holding it has landed. If saving fails the transaction stays open (the
+   * store gives it back at the next start; `purchases` recognises it, so it is
+   * never delivered twice) and is finished after the next save that works.
+   */
+  private async settleReceipt(receipt: StoreReceipt, grants: Cost): Promise<PurchaseOutcome> {
+    if (!this.awaitingSave.some((r) => receiptId(r) === receiptId(receipt))) this.awaitingSave.push(receipt);
+    const saved = await this.persist();
+    return { ok: true, grants, ...(saved ? {} : { unsaved: true }) };
   }
 
   /** Send a store receipt to the server, deliver what it confirmed, then finish the store transaction. */
@@ -302,9 +349,14 @@ export class GameController {
       if (!g.ok) return { ok: false, code: g.code, message: g.message };
       this.deps.analytics.log('purchase', { productId: r.productId, usd: r.usd, kind: product.kind, transactionId: r.transactionId, provider: this.payments.name, verified: true });
     }
-    await this.save();
-    await this.payments.finish?.(receipt).catch(() => undefined);
-    return { ok: true, grants: product.grants };
+    if (r.heldOnServer) {
+      // The server's village holds it (and gives it back to any device): safe to finish now.
+      await this.save();
+      await this.payments.finish?.(receipt).catch(() => undefined);
+      return { ok: true, grants: product.grants };
+    }
+    // Delivered on this device only: finish once it is saved here (GLOBAL-003).
+    return this.settleReceipt(receipt, product.grants);
   }
 
   /** Deliver one receipt the store gave outside a purchase call (Ask to Buy approved, a pending payment completed). */
@@ -314,21 +366,34 @@ export class GameController {
     // No server checks receipts: trusted on this device, as before Phase 4.
     const product = productForStoreId(this.deps.data, receipt.storeProductId);
     if (!product) return { ok: false, code: 'UNKNOWN_PRODUCT', message: 'That item is not available.' };
-    const id = `${receipt.store}:${receipt.storeTransactionId}`;
+    const id = receiptId(receipt);
     if (!this.state.purchases.some((p) => p.id === id)) {
       const g = this.dispatch({ type: 'grantPurchase', productId: product.id, transactionId: id, verified: true });
       if (!g.ok) return { ok: false, code: g.code, message: g.message };
-      await this.save();
     }
-    await this.payments.finish?.(receipt).catch(() => undefined);
-    return { ok: true, grants: product.grants };
+    return this.settleReceipt(receipt, product.grants);
   }
 
   /** Deliver purchases the store says are paid but not finished (call at start and from Restore purchases). Returns how many were delivered. */
   async deliverUnfinished(): Promise<number> {
-    let n = 0;
-    for (const receipt of (await this.payments.unfinished?.().catch(() => [])) ?? []) if ((await this.deliverReceipt(receipt)).ok) n++;
-    return n;
+    return (await this.deliverUnfinishedReport()).delivered;
+  }
+
+  /**
+   * Like `deliverUnfinished`, and also says how many could not be delivered
+   * yet (server unreachable, not saved): main.ts tries again on the next
+   * reconnection with a bounded backoff (GLOBAL-013).
+   */
+  async deliverUnfinishedReport(): Promise<{ delivered: number; left: number }> {
+    let delivered = 0;
+    let left = 0;
+    for (const receipt of (await this.payments.unfinished?.().catch(() => [])) ?? []) {
+      const r = await this.deliverReceipt(receipt);
+      if (r.ok && !r.unsaved) delivered++;
+      else if (!r.ok && r.code === 'PENDING') left++;
+      else if (r.ok) left++;
+    }
+    return { delivered, left };
   }
 
   /**
@@ -480,7 +545,7 @@ export class GameController {
 
   /** Replace the whole village (import or reset). */
   async replace(state: VillageState): Promise<void> {
-    this.state = state;
+    this.state = GameController.marked(state, this.deps);
     this.emit([]);
     await this.save();
   }
@@ -489,20 +554,39 @@ export class GameController {
     await this.replace(createNewVillage(this.now(), this.deps.data));
   }
 
-  /** Saves are queued so they always land in order. */
+  /** Saves are queued so they always land in order. Never rejects: failures go to `onSaveError`. */
   save(): Promise<void> {
-    if (this.takenOver) return this.saveChain;
+    return this.persist().then(() => undefined);
+  }
+
+  /**
+   * Save now and say whether this save landed (`save()` cannot: it always
+   * resolves). Store receipts delivered before it are finished once it has.
+   */
+  persist(): Promise<boolean> {
+    if (this.takenOver) return this.saveChain.then(() => false);
     const now = this.now();
     this.state = { ...this.state, lastSeenAt: now };
     const file = serialize(this.state, now);
-    this.saveChain = this.saveChain
+    // Everything delivered so far is in this file.
+    const covered = this.awaitingSave.slice();
+    const run = this.saveChain
       .then(() => this.deps.store.save(file))
-      .catch((e) => {
-        if (e instanceof SaveConflictError) this.takenOver = true;
-        else console.warn('save failed', e);
-        for (const fn of this.saveErrorListeners) fn(e instanceof Error ? e : new Error(String(e)));
-      });
-    return this.saveChain;
+      .then(
+        () => {
+          this.awaitingSave = this.awaitingSave.filter((r) => !covered.includes(r));
+          for (const r of covered) void this.payments.finish?.(r).catch(() => undefined);
+          return true;
+        },
+        (e) => {
+          if (e instanceof SaveConflictError) this.takenOver = true;
+          else console.warn('save failed', e);
+          for (const fn of this.saveErrorListeners) fn(e instanceof Error ? e : new Error(String(e)));
+          return false;
+        },
+      );
+    this.saveChain = run.then(() => undefined);
+    return run;
   }
 
   subscribe(fn: Listener): () => void {

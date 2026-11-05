@@ -9,6 +9,21 @@
  * until the server has them. The server replays each batch; when its economy
  * differs, its answer wins (`adoptEconomy`), and anything queued since is
  * replayed on top of it.
+ *
+ * Several devices can hold the same village (cloud save). Each queue has its
+ * own device id and numbers its commands itself; the server keeps the last
+ * number it processed per device (GLOBAL-009), so two devices' "command 1"
+ * are two commands, and a retried batch from one device is still skipped.
+ * Whatever one device did is replayed on the server's village as it stands;
+ * the other device takes the result as a correction and replays its own
+ * queue on top (the rebase). Commands the server refused (the village had
+ * changed: the building was already upgraded elsewhere) are counted in
+ * `refused`, never dropped silently.
+ *
+ * The queue is the only copy of offline actions until the server has them, so
+ * a failed write is not ignored (GLOBAL-010): `storageProblem` says so, the
+ * Connection tells the player, and the queue is sent at once to make the
+ * server hold it instead.
  */
 import { deserialize, serialize } from '../../gameplay/sim/save';
 import { economyHash, economyOf, PLAYER_COMMANDS, type Economy } from '../../gameplay/sim/serverEconomy';
@@ -29,6 +44,17 @@ export interface SyncGame {
 export interface SyncStore {
   get(key: string): string | null;
   set(key: string, value: string | null): void;
+  /** Like `set`, but false when the write failed (storage full or blocked). */
+  trySet?(key: string, value: string | null): boolean;
+}
+
+/** A new random device id for a queue (GLOBAL-009). */
+export function newDeviceId(): string {
+  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (c?.randomUUID) return c.randomUUID().replace(/-/g, '');
+  let out = '';
+  for (let i = 0; i < 32; i++) out += Math.floor(Math.random() * 16).toString(16);
+  return out;
 }
 
 interface Queued extends VillageCommand {
@@ -39,6 +65,8 @@ interface Queued extends VillageCommand {
 interface Stored {
   /** The server keeps this player's village. */
   active: boolean;
+  /** This queue's own id: the server numbers commands per device (absent on queues from before). */
+  device?: string;
   /** The last command number used. */
   seq: number;
   queue: Queued[];
@@ -55,6 +83,12 @@ export class VillageSync {
   private unsubscribe: (() => void) | null = null;
   /** Corrections taken from the server since start (for Settings and tests). */
   corrections = 0;
+  /** Commands the server refused since start (the village had changed, e.g. on another device). */
+  refused = 0;
+  /** What the server held back when this village moved (GLOBAL-002), to tell the player once. */
+  importHeld: { jade: number; premium: boolean; purchases: number } | null = null;
+  /** The last write of the queue failed: actions since then live only in memory until the server has them. */
+  storageProblem = false;
   /** Called after anything changes (Settings redraws). */
   onChange: () => void = () => undefined;
 
@@ -71,16 +105,35 @@ export class VillageSync {
   private load(): Stored {
     try {
       const v = JSON.parse(this.kv.get(this.key) ?? 'null') as Stored | null;
-      if (v && typeof v.seq === 'number' && Array.isArray(v.queue)) return v;
+      if (v && typeof v.seq === 'number' && Array.isArray(v.queue)) return { ...v, device: v.device ?? newDeviceId() };
     } catch {
       /* a damaged queue starts empty: the server's state is the truth anyway */
     }
-    return { active: false, seq: 0, queue: [] };
+    return { active: false, device: newDeviceId(), seq: 0, queue: [] };
   }
 
-  private persist(): void {
-    this.kv.set(this.key, this.stored.active || this.stored.queue.length ? JSON.stringify(this.stored) : null);
+  /** A fresh queue for a village this device starts on (a new device id, so old numbers never clash). */
+  private fresh(active: boolean, seq: number): Stored {
+    return { active, device: newDeviceId(), seq, queue: [] };
+  }
+
+  private persist(): boolean {
+    const value = this.stored.active || this.stored.queue.length ? JSON.stringify(this.stored) : null;
+    let ok = true;
+    if (this.kv.trySet) ok = this.kv.trySet(this.key, value);
+    else {
+      try {
+        this.kv.set(this.key, value);
+      } catch {
+        ok = false;
+      }
+    }
+    const was = this.storageProblem;
+    this.storageProblem = !ok;
     this.onChange();
+    // Not stored here: get it to the server, which keeps it (GLOBAL-010).
+    if (!ok && !was && this.stored.queue.length) void this.flush().catch(() => undefined);
+    return ok;
   }
 
   /** The server keeps this village. */
@@ -100,15 +153,16 @@ export class VillageSync {
 
   /** Forget everything (account deleted, or the server no longer has the village). */
   reset(): void {
-    this.stored = { active: false, seq: 0, queue: [] };
+    this.stored = this.fresh(false, 0);
     this.persist();
   }
 
   private record(cmd: Command, at: number): void {
     if (!this.stored.active || !PLAYER_COMMANDS.has(cmd.type)) return;
     this.stored.queue.push({ seq: ++this.stored.seq, t: at, command: JSON.parse(JSON.stringify(cmd)) as Command, hash: economyHash(this.game.state) });
-    this.persist();
-    if (this.stored.queue.length >= FLUSH_AT) void this.flush().catch(() => undefined);
+    const stored = this.persist();
+    if (stored && this.stored.queue.length >= FLUSH_AT) void this.flush().catch(() => undefined);
+    else if (!stored) void this.flush().catch(() => undefined);
   }
 
   /**
@@ -122,14 +176,19 @@ export class VillageSync {
     if (how === 'move') {
       // This village goes to the server (roadmap step 25); its economy is unchanged, so there is nothing to adopt.
       const v = await port.importVillage(serialize(this.game.state, this.game.state.lastSeenAt));
-      this.stored = { active: true, seq: v.seq, queue: [] };
-      if (economyHash(this.game.state) !== v.stateHash) this.adopt(economyOf(deserialize(v.file, this.game.data)));
+      this.stored = this.fresh(true, v.seq);
+      if (v.importHeld) {
+        // GLOBAL-002: the server held back paid value it could not confirm. Take its village
+        // whole (Jade and the Scroll included); the one here is kept as a backup for support.
+        this.importHeld = v.importHeld;
+        await this.game.adoptVillage(deserialize(v.file, this.game.data));
+      } else if (economyHash(this.game.state) !== v.stateHash) this.adopt(economyOf(deserialize(v.file, this.game.data)));
       this.persist();
       return;
     }
     const v = await port.startVillage();
     await this.game.adoptVillage(deserialize(v.file, this.game.data));
-    this.stored = { active: true, seq: v.seq, queue: [] };
+    this.stored = this.fresh(true, v.seq);
     this.persist();
   }
 
@@ -151,7 +210,7 @@ export class VillageSync {
       // First time this device meets the server's village (signed in on a new device: cloud save):
       // take the whole village; the one here becomes a backup.
       await this.game.adoptVillage(deserialize(v.file, this.game.data));
-      this.stored = { active: true, seq: v.seq, queue: [] };
+      this.stored = this.fresh(true, v.seq);
       this.persist();
       return;
     }
@@ -179,7 +238,7 @@ export class VillageSync {
       const batch = this.stored.queue.slice(0, BATCH_SIZE);
       let r;
       try {
-        r = await port.sendCommands({ stateHash: batch[batch.length - 1].hash, commands: batch.map(({ seq, t, command }) => ({ seq, t, command })) });
+        r = await port.sendCommands({ stateHash: batch[batch.length - 1].hash, commands: batch.map(({ seq, t, command }) => ({ seq, t, command })), ...(this.stored.device ? { device: this.stored.device } : {}) });
       } catch (e) {
         if (e instanceof ServerError && e.code === 'no_village') {
           // The server no longer keeps this village: it lives here again.
@@ -189,6 +248,7 @@ export class VillageSync {
         throw e;
       }
       this.stored.queue = this.stored.queue.filter((q) => q.seq > r.ackSeq);
+      this.refused += r.results.filter((x) => !x.ok).length;
       if (r.corrections) this.adopt(r.corrections.economy);
       this.persist();
     }

@@ -199,3 +199,64 @@ describe('server-owned village: the game side', () => {
   });
 });
 
+
+describe('worldwide audit: several devices and storage failures', () => {
+  it('GLOBAL-009: two devices numbering their own commands both get applied, and a retry is still skipped', async () => {
+    const w = world();
+    const a = await setup(w);
+    await a.conn.village!.enable();
+    // The same account on a second device (one in-process client = one sign-in).
+    const clock = { now: () => w.now() };
+    const { controller: c2 } = await GameController.start({ clock, store: new MemorySaveStore(), data: w.data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false });
+    const conn2 = new Connection({ game: c2, builtInUrl: 'test.server', kv: memoryKv(), makePort: () => a.port, log: () => undefined });
+    await conn2.sync();
+    expect(conn2.serverVillage).toBe(true);
+    const count = async (r: string) => deserialize((await a.port.getVillage())!.file, w.data).buildings.filter((b) => w.data.buildings[b.type].produces === r).length;
+    const acorns0 = await count('acorns');
+    const dew0 = await count('dew');
+    // Both act before either sends: each queue's first command is its own "1".
+    expect(placeCollector(a.controller, 'acorns').ok).toBe(true);
+    // Device 2 builds on the far side of the map (the same tile would be a real conflict, refused and counted).
+    const dewType = Object.keys(w.data.hall.levels[0].limits).find((k) => w.data.buildings[k]?.produces === 'dew' && w.data.hall.levels[0].limits[k].count > 0)!;
+    const far = (() => {
+      for (let y = w.data.economy.mapSize - 1; y >= 0; y--) for (let x = w.data.economy.mapSize - 1; x >= 0; x--) if (canPlace(c2.state, w.data, dewType, x, y).ok) return { x, y };
+      throw new Error('no room');
+    })();
+    expect(c2.dispatch({ type: 'place', buildingType: dewType, ...far }).ok).toBe(true);
+    await a.conn.village!.flush();
+    await conn2.village!.flush();
+    expect(a.conn.village!.pending).toBe(0);
+    expect(conn2.village!.pending).toBe(0);
+    expect(conn2.village!.refused).toBe(0);
+    // Before the fix the second device's "command 1" was acknowledged without being applied.
+    expect(await count('acorns')).toBe(acorns0 + 1);
+    expect(await count('dew')).toBe(dew0 + 1);
+    // Device 2 took the server's village (device 1's collector included) as a correction.
+    expect(economyHash(c2.state)).toBe(await serverHash(a));
+    // A batch sent again (its answer was lost) changes nothing.
+    const before = (await a.port.getVillage())!.revision;
+    const device = JSON.parse([...a.kv.map.values()].find((v) => v.includes('"device"'))!).device as string;
+    const again = await a.port.sendCommands({ stateHash: '', device, commands: [{ seq: 1, t: w.now(), command: { type: 'collect', id: 'b1' } }] });
+    expect(again.results).toEqual([]);
+    expect((await a.port.getVillage())!.revision).toBe(before);
+  });
+
+  it('GLOBAL-010: a queue that cannot be stored is reported and sent at once', async () => {
+    const kv = memoryKv();
+    let full = false;
+    const failing: KeyValue & { map: Map<string, string> } = { ...kv, trySet: (k, v) => (full ? false : (kv.set(k, v), true)) };
+    const s = await setup(world(), failing);
+    await s.conn.village!.enable();
+    full = true;
+    expect(placeCollector(s.controller).ok).toBe(true);
+    expect(s.conn.village!.storageProblem).toBe(true);
+    expect(s.conn.storageProblem).toBe(true);
+    // Sent straight away, so the server holds it even though this device could not.
+    await s.conn.village!.flush();
+    expect(s.conn.village!.pending).toBe(0);
+    expect(economyHash(s.controller.state)).toBe(await serverHash(s));
+    full = false;
+    placeCollector(s.controller, 'dew');
+    expect(s.conn.storageProblem).toBe(false);
+  });
+});

@@ -78,6 +78,8 @@ export type Command =
   /** Staff add or take resources (support; the admin tool, server only). Never below zero. */
   | { type: 'staffAdjust'; resources: Partial<Record<ResourceKind, number>> }
   | { type: 'setProfile'; under18: boolean }
+  /** Staff cleared the age group after a support check (server only; the player is asked again). */
+  | { type: 'staffResetAge' }
   | { type: 'buySkin'; skin: string }
   | { type: 'equipSkin'; skin: string }
   | { type: 'claimTask'; id: string; kind: 'daily' | 'weekly' }
@@ -548,7 +550,13 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       }
       return { ok: true, state: s, events: [] };
     case 'setProfile':
+      // GLOBAL-006: the spending protection only gets stricter in the game. Under 18 is
+      // not switched back by the player (support resets it on the server after a check).
+      if (s.profile.under18 === true && cmd.under18 === false) return fail('LOCKED', 'Only our support team can change the age group back to 18 or older.');
       s.profile.under18 = cmd.under18;
+      return { ok: true, state: s, events: [] };
+    case 'staffResetAge':
+      s.profile.under18 = null;
       return { ok: true, state: s, events: [] };
     case 'buySkin':
       return buySkin(s, cmd.skin, data);

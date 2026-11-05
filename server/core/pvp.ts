@@ -26,6 +26,15 @@ import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './v
 export const TICKET_LOCK_MS = 5 * MIN;
 /** How long the attacker has to report the battle (3 minutes of play plus slack for bad connections). */
 export const TICKET_TTL_MS = HOUR;
+/**
+ * A finished raid (pvp ticket) may still be reported this long after its
+ * ticket expired (worldwide audit R02): a phone that lost its connection
+ * after the battle keeps its loot and honor through an outage of up to three
+ * days. Loot comes from the base snapshot taken at match time and the
+ * defender's losses are capped by what is there when it settles, so waiting
+ * gains nothing; the defender's lock is still only TICKET_LOCK_MS.
+ */
+export const LATE_REPORT_MS = 72 * HOUR;
 
 /** Fields an uploaded base may carry. Trial-only multipliers and labels are never accepted from a player. */
 const BASE_FIELDS = new Set(['name', 'hallLevel', 'buildings', 'trophies']);
@@ -309,7 +318,8 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
     if (ticket.response !== undefined) return { ticket, answered: ticket.response };
     throw new ApiError(409, 'conflict', 'This battle was already reported.');
   }
-  if (ctx.now() > ticket.expiresAt) throw new ApiError(410, 'expired', 'This battle took too long to report.');
+  const deadline = ticket.kind === 'pvp' ? ticket.expiresAt + LATE_REPORT_MS : ticket.expiresAt;
+  if (ctx.now() > deadline) throw new ApiError(410, 'expired', 'This battle took too long to report.');
   return { ticket };
 }
 

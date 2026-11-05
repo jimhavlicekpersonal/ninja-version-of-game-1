@@ -7,6 +7,11 @@
 - [ ] Products approved in both stores with the store ids (`docs/SHIPPING.md` 3b); App Store Server Notifications and Play RTDN point at production.
 - [ ] Listing texts, screenshots, privacy URL, support URL, privacy label / Data safety, age rating, review notes (this folder).
 - [ ] Tag the release `v<version>` (the release workflow tests the next server against this client).
+- [ ] The "Test, build and deploy" run is green, including its `server` job: the built server on a freshly migrated Postgres passed the protocol contract (audit GLOBAL-016).
+- [ ] **Android:** the `aab` job of the Android workflow ran (not skipped for missing secrets) and its log shows: Play Billing 8 or later in the release dependency graph (9.1.0 today), `jar verified` with the upload certificate Play Console expects, a `versionCode` above the last upload, and "No native libraries" (otherwise confirm 16 KB support in Play Console's App bundle explorer). Play Console shows no Billing Library deprecation warning for the upload. `targetSdkVersion` meets Play's current target-API rule (36 in `android/variables.gradle`; recheck the rule each year, never lower `minSdkVersion` 24 without evidence).
+- [ ] **iPhone:** the TestFlight run's "Use the newest installed Xcode" step shows an iOS SDK App Store Connect currently accepts (no SDK warning). Sign in with Apple, Game Center, push and StoreKit capabilities enabled for the App ID.
+- [ ] Both apps were built with `VITE_PUBLIC_URL` and `VITE_GOOGLE_CLIENT_ID` set (friend links open the web game; Android Sign in with Google), and the server's `GOOGLE_CLIENT_IDS` lists that client id.
+- [ ] The device checks in `TESTING.md` ("Native checks before production") passed on real phones with the store-installed build.
 
 ## Rollout
 

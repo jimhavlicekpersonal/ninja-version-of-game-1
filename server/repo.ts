@@ -424,6 +424,8 @@ export interface VillageRow {
   stateHash: string;
   createdAt: number;
   updatedAt: number;
+  /** The last command number processed per sending device (GLOBAL-009); absent before any device-numbered batch. */
+  deviceSeqs?: Record<string, number>;
 }
 
 /** One change to a server-held resource (append-only). */
@@ -491,6 +493,25 @@ export interface PurchaseIntent {
   cents: number;
   at: number;
   used: boolean;
+  /**
+   * Until when this intent holds its share of an under-18 player's monthly cap
+   * (GLOBAL-005): `at` + 30 min when asked; now when the purchase was
+   * cancelled; longer while a store reports it pending (Ask to Buy).
+   */
+  holdUntil: number;
+}
+
+/** What a village move held back because the server could not confirm where it came from (GLOBAL-002). */
+export interface ImportHold {
+  id: string;
+  playerId: string;
+  at: number;
+  jade: number;
+  /** A premium Season Scroll with no purchase this server checked. */
+  premium: boolean;
+  /** Purchase records in the village that this server never credited (ids as the village has them). */
+  purchases: string[];
+  status: 'held' | 'resolved';
 }
 
 /** A device that receives server push (roadmap step 40). */
@@ -534,6 +555,8 @@ export interface PruneCutoffs {
    * attack refers to any more and nobody used since this time.
    */
   staleBefore: number;
+  /** Unused tickets that expired before this go (defaults to `staleBefore`; later for raids that may still be reported late). */
+  ticketsBefore?: number;
   /** Handled reports (with their evidence) resolved before this time are deleted. */
   resolvedReportsBefore?: number;
   /** Command log lines before this time are deleted (the ledger is kept). */
@@ -601,11 +624,26 @@ export interface Repo {
   purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]>;
   /** False if it already had that status. */
   setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
-  /** Cents of credited purchases since `since`, plus open intents asked since `intentsSince` (reserved by the age cap). */
-  spentCents(playerId: string, since: number, intentsSince: number): Promise<number>;
+  /** Cents of credited purchases since `since`, plus unused intents still holding at `now` (reserved by the age cap). */
+  spentCents(playerId: string, since: number, now: number): Promise<number>;
+  /**
+   * Serialise a player's purchase intents (GLOBAL-004): inside a transaction,
+   * only one request per player gets past this until it commits, on any
+   * instance (Postgres advisory lock; memory transactions already run one at a
+   * time). Outside a transaction it does nothing.
+   */
+  lockPurchases(playerId: string): Promise<void>;
   addIntent(i: PurchaseIntent): Promise<void>;
   getIntent(id: string): Promise<PurchaseIntent | null>;
   useIntent(id: string): Promise<void>;
+  /** Set an unused intent's hold (the player's own only); false when nothing changed. */
+  holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean>;
+  /** The age group the server keeps for a player (GLOBAL-006), or null when never stated. */
+  getAgeGroup(playerId: string): Promise<{ under18: boolean; at: number } | null>;
+  setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void>;
+  addImportHold(h: ImportHold): Promise<void>;
+  /** Newest first. */
+  importHoldsOf(playerId: string): Promise<ImportHold[]>;
   // push (roadmap step 40)
   /** Adds or refreshes a device (a token that moved to another player now belongs to them). */
   putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void>;
@@ -881,6 +919,8 @@ export class MemoryRepo implements Repo {
   purchaseRows: PurchaseRow[] = [];
   staffRows: StaffAction[] = [];
   intentRows: PurchaseIntent[] = [];
+  ageRows = new Map<string, { under18: boolean; at: number }>();
+  importHoldRows: ImportHold[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
   commandRows: CommandLogRow[] = [];
@@ -1035,10 +1075,33 @@ export class MemoryRepo implements Repo {
     p.refundedAt = status === 'refunded' ? at : null;
     return true;
   }
-  async spentCents(playerId: string, since: number, intentsSince: number): Promise<number> {
+  async spentCents(playerId: string, since: number, now: number): Promise<number> {
     const bought = this.purchaseRows.filter((p) => p.playerId === playerId && p.status === 'credited' && p.at >= since).reduce((s, p) => s + p.cents, 0);
-    const held = this.intentRows.filter((i) => i.playerId === playerId && !i.used && i.at >= intentsSince).reduce((s, i) => s + i.cents, 0);
+    const held = this.intentRows.filter((i) => i.playerId === playerId && !i.used && i.holdUntil > now).reduce((s, i) => s + i.cents, 0);
     return bought + held;
+  }
+  async lockPurchases(): Promise<void> {
+    /* memory transactions already run one at a time */
+  }
+  async holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean> {
+    const i = this.intentRows.find((x) => x.id === id && x.playerId === playerId && !x.used);
+    if (!i || i.holdUntil === holdUntil) return false;
+    i.holdUntil = holdUntil;
+    return true;
+  }
+  async getAgeGroup(playerId: string): Promise<{ under18: boolean; at: number } | null> {
+    const a = this.ageRows.get(playerId);
+    return a ? { ...a } : null;
+  }
+  async setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void> {
+    if (under18 === null) this.ageRows.delete(playerId);
+    else this.ageRows.set(playerId, { under18, at });
+  }
+  async addImportHold(h: ImportHold): Promise<void> {
+    this.importHoldRows.push(clone(h));
+  }
+  async importHoldsOf(playerId: string): Promise<ImportHold[]> {
+    return clone(this.importHoldRows.filter((h) => h.playerId === playerId).reverse());
   }
   async addIntent(i: PurchaseIntent): Promise<void> {
     this.intentRows.push(clone(i));
@@ -1389,7 +1452,7 @@ export class MemoryRepo implements Repo {
     this.attacks = this.attacks.filter((a) => a.at >= c.recordsBefore);
     let tickets = 0;
     for (const [id, t] of this.tickets) {
-      if (t.createdAt < c.recordsBefore || (!t.used && t.expiresAt < c.staleBefore)) {
+      if (t.createdAt < c.recordsBefore || (!t.used && t.expiresAt < (c.ticketsBefore ?? c.staleBefore))) {
         this.tickets.delete(id);
         tickets++;
       }
@@ -1463,6 +1526,8 @@ export class MemoryRepo implements Repo {
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
     this.linkRows = this.linkRows.filter((l) => l.playerId !== id);
     this.intentRows = this.intentRows.filter((i) => i.playerId !== id);
+    this.ageRows.delete(id);
+    this.importHoldRows = this.importHoldRows.filter((h) => h.playerId !== id);
     this.pushRows = this.pushRows.filter((t) => t.playerId !== id);
     // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
     for (const p of this.purchaseRows) if (p.playerId === id) p.playerId = D.id;

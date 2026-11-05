@@ -1,7 +1,22 @@
-name: Android app (installable APK)
+name: Android app (debug APK and signed release AAB)
 
-# Builds a debug APK you can install on an Android phone (e.g. a Pixel 7).
-# Download it from the run's "Artifacts" section. See docs/SHIPPING.md.
+# Two builds (see docs/SHIPPING.md, "Android", and docs/store/RELEASE.md):
+# - apk: a debug APK to install by hand on a test phone (e.g. a Pixel 7). No
+#   Play Billing (purchases need a Play-installed build). Same artifact as before.
+# - aab: the Google Play release (audit GLOBAL-017): built with
+#   VITE_PLAY_BILLING=1, an increasing versionCode, signed with the upload key.
+#   Upload the AAB in Play Console (internal testing first).
+#
+# Owner setup for the release AAB (repository secrets):
+#   ANDROID_KEYSTORE_BASE64    the upload keystore (.jks), base64-encoded
+#   ANDROID_KEYSTORE_PASSWORD  its store password
+#   ANDROID_KEY_ALIAS          the upload key's alias
+#   ANDROID_KEY_PASSWORD       the upload key's password
+# Without all four the aab job says so and builds nothing (the debug APK still builds).
+# Repository variables: ANDROID_VERSION_CODE_OFFSET (added to the run number so
+# versionCode stays above any build already uploaded; default 0),
+# VITE_PUBLIC_URL (the web game's address: friend links shared from the app),
+# VITE_GOOGLE_CLIENT_ID (Sign in with Google: the server/web OAuth client id).
 on:
   push:
     branches: [main]
@@ -32,6 +47,8 @@ jobs:
       - run: npm run build
         env:
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          # Friend links shared from the app open the web game (R09).
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
           # Store listings for "Update Kagemura" (roadmap step 75); set once the listings exist.
           VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
           VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}
@@ -49,3 +66,116 @@ jobs:
           name: toadstool-kingdoms-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
+
+  aab:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+    steps:
+      - name: Upload key present?
+        id: key
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=No signed Android release::The release AAB was not built: set the repository secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD (docs/SHIPPING.md, Android). The debug APK job is unaffected."
+          fi
+      - if: steps.key.outputs.ready == 'true'
+        uses: actions/checkout@v7
+      - if: steps.key.outputs.ready == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - if: steps.key.outputs.ready == 'true'
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - if: steps.key.outputs.ready == 'true'
+        run: npm ci
+      - name: Server first (roadmap step 74)
+        if: steps.key.outputs.ready == 'true'
+        run: node tools/release/check-server-rules.mjs
+        env:
+          SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+      - name: Build the game (commercial configuration)
+        if: steps.key.outputs.ready == 'true'
+        run: npm run build
+        env:
+          # Google Play Billing on (payments/select.ts); the server must check Google receipts.
+          VITE_PLAY_BILLING: '1'
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
+          VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
+          VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}
+          VITE_BALANCE_PUBLIC_KEY: ${{ vars.VITE_BALANCE_PUBLIC_KEY }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+      - if: steps.key.outputs.ready == 'true'
+        run: npx cap sync android
+      - name: Install the upload key
+        if: steps.key.outputs.ready == 'true'
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+      - name: Version
+        if: steps.key.outputs.ready == 'true'
+        env:
+          OFFSET: ${{ vars.ANDROID_VERSION_CODE_OFFSET || '0' }}
+        run: |
+          code=$(( ${{ github.run_number }} + OFFSET ))
+          name=$(node -p "require('./package.json').version")
+          echo "ANDROID_VERSION_CODE=$code" >> "$GITHUB_ENV"
+          echo "ANDROID_VERSION_NAME=$name" >> "$GITHUB_ENV"
+          echo "versionCode $code, versionName $name"
+      - name: Check the release dependency graph (Play Billing 8+)
+        if: steps.key.outputs.ready == 'true'
+        working-directory: android
+        run: |
+          deps=$(./gradlew -q :app:dependencies --configuration releaseRuntimeClasspath --no-daemon)
+          echo "$deps" | grep -E 'billingclient|androidx.credentials|identity.googleid' | sort -u
+          v=$(echo "$deps" | grep -oE 'com\.android\.billingclient:billing:[0-9][0-9.]*( -> [0-9][0-9.]*)?' | head -1 | grep -oE '[0-9][0-9.]*$')
+          if [ -z "$v" ] || [ "${v%%.*}" -lt 8 ]; then
+            echo "::error::The release resolves Play Billing '${v:-none}'; Google Play requires 8 or later."
+            exit 1
+          fi
+          echo "Play Billing $v"
+      - name: Build signed release AAB
+        if: steps.key.outputs.ready == 'true'
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon
+      - name: Check the signature
+        if: steps.key.outputs.ready == 'true'
+        run: |
+          aab=android/app/build/outputs/bundle/release/app-release.aab
+          jarsigner -verify "$aab" | tail -1
+          jarsigner -verify "$aab" | grep -q 'jar verified' || { echo "::error::The AAB is not signed."; exit 1; }
+          # Compare with Play Console -> Test and release -> App integrity -> Upload key certificate.
+          keytool -printcert -jarfile "$aab" | grep -E 'Owner|SHA256:' | head -2
+      - name: Native libraries (16 KB page size)
+        if: steps.key.outputs.ready == 'true'
+        run: |
+          # Play requires 16 KB-aligned native code for apps targeting Android 15+. AGP 8.5.1+
+          # aligns uncompressed .so files; this lists any that a dependency brings in.
+          libs=$(unzip -Z1 android/app/build/outputs/bundle/release/app-release.aab | grep '\.so$' || true)
+          if [ -z "$libs" ]; then
+            echo "No native libraries in the bundle: nothing to align."
+          else
+            echo "$libs"
+            echo "::warning::The bundle has native libraries: confirm 16 KB support in Play Console (App bundle explorer) or with zipalign -c -P 16 on an APK built from it."
+          fi
+      - if: steps.key.outputs.ready == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: kagemura-android-release-aab-${{ env.ANDROID_VERSION_CODE }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+      - name: Remove the upload key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"

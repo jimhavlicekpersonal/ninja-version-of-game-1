@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -148,6 +148,13 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // v12 -> v13: Gang War chests collected (roadmap step 65) start empty.
     const net = v.net as { gangWars?: string[] } | undefined;
     if (net && typeof net === 'object') net.gangWars = net.gangWars ?? [];
+  }
+  if (out.version < 14 && v && typeof v === 'object') {
+    // v13 -> v14 (worldwide audit GLOBAL-002): `flags.sandbox` marks a village made in the testing
+    // sandbox (time skips, a free test store). Older villages were not made there (the sandbox
+    // never went online), so they start unmarked.
+    const flags = v.flags as { sandbox?: boolean } | undefined;
+    if (flags && typeof flags === 'object' && flags.sandbox !== true) delete flags.sandbox;
   }
   repairTrainingQueue(v);
   out.version = SAVE_VERSION;

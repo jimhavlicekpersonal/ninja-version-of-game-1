@@ -5,11 +5,35 @@ Everything that can be built and tested without your personal accounts is in the
 ## 1. Play on your devices right now (no accounts needed)
 
 - **Web app (all devices):** https://jimhavlicekpersonal.github.io/toadstool-kingdoms/ (see the README for installing it to your home screen). The public web build has **no store** (purchases show as unavailable) and runs on real time. The instant mock store and the time-skip tools exist only in the **testing sandbox**: open the game with `?sandbox` (or `?debug`). The sandbox keeps a separate village and never goes online, so test purchases and skipped time can't reach a real village or a server. Before a competitive online launch, decide whether the server should own the economy (inventory, research, timers); see `docs/PROTOCOL.md`, "Trust".
-- **Android app on your Pixel 7:** every push to `main` builds an installable APK.
-  1. On GitHub, open **Actions → Android app (installable APK)** and click the latest green run.
+- **Android app on your Pixel 7:** every push to `main` builds an installable debug APK (and, once the upload key is set up, a signed Play release: section 1b).
+  1. On GitHub, open **Actions → Android app (debug APK and signed release AAB)** and click the latest green run.
   2. Under **Artifacts**, download `toadstool-kingdoms-android-apk` and unzip it (you get `app-debug.apk`).
   3. Send the APK to the phone (Google Drive, email, or a USB cable), open it, and allow "Install unknown apps" for that app when Android asks.
-  4. In-app purchases are switched off in the Android app until Google Play Billing is added (see section 5).
+  4. In-app purchases are off in this debug APK (Play only sells to a Play-installed build). The release AAB has them on.
+
+## 1b. Android: the Google Play release (signed AAB, owner)
+
+The `aab` job of the Android workflow builds the Play release (audit GLOBAL-017): the game with `VITE_PLAY_BILLING=1` (Play Billing Library 9.1.0, `android/variables.gradle`), a `versionCode` that grows with every run, signed with your **upload key**. Without the key it builds nothing and the run shows a warning saying which secrets are missing; the debug APK is unaffected.
+
+1. **Make an upload key once** (keep the file and passwords safe; with Play App Signing a lost upload key can be reset, the app signing key never leaves Google):
+
+   ```bash
+   keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000
+   base64 -w0 upload.jks > upload.jks.b64     # macOS: base64 -i upload.jks -o upload.jks.b64
+   ```
+
+2. **GitHub → Settings → Secrets and variables → Actions → Secrets:** `ANDROID_KEYSTORE_BASE64` (the contents of `upload.jks.b64`), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`upload`), `ANDROID_KEY_PASSWORD`.
+3. **Variables:** `ANDROID_VERSION_CODE_OFFSET` (optional, default 0): `versionCode` = run number + offset, so raise the offset once if Play already holds a higher code. `versionName` comes from `package.json` `version`. Also `VITE_SERVER_URL` (with Google receipt checks on the server, section 3c), `VITE_PUBLIC_URL` (friend links, below) and `VITE_GOOGLE_CLIENT_ID` (Sign in with Google, below).
+4. **Play Console:** create the app (`com.toadstoolkingdoms.app` or your new id, section 6), turn on Play App Signing, upload the first AAB (artifact `kagemura-android-release-aab-<versionCode>`) to **internal testing**. The run prints the upload certificate's SHA-256; it must match **Test and release → App integrity → Upload key certificate**. The run also lists the Play Billing / Credential Manager versions it resolved and any native libraries (16 KB page-size check).
+5. **Local release builds** (optional): put `storeFile`, `storePassword`, `keyAlias`, `keyPassword` in `android/keystore.properties` (git-ignored), or set the same `ANDROID_*` environment variables, and run `./gradlew bundleRelease -PtkVersionCode=<n>`. A local build without `-PtkVersionCode` is version code 1: don't upload it.
+
+**Sign in with Google on Android (account recovery, audit GLOBAL-008).** Settings → Account → Sign-ins offers Google in the Android app when it is built with `VITE_GOOGLE_CLIENT_ID`. It uses Credential Manager (`TkAuthPlugin.java`); the ID token's audience is that **web** client id. In Google Cloud Console (APIs & Services → Credentials, one project):
+- a **Web application** OAuth client: its id is `VITE_GOOGLE_CLIENT_ID` (GitHub variable) and goes into the server's `GOOGLE_CLIENT_IDS`;
+- an **Android** OAuth client for the package name with the SHA-1 of the **Play app signing key** (Play Console → App integrity), and another with the SHA-1 of the upload key (and the debug key, for debug APKs). Google refuses the sign-in from an app whose certificate is not registered;
+- the OAuth consent screen published (not "Testing"), or only listed test users can sign in.
+Then check on a phone: link Google, uninstall, reinstall from Play, **Sign in here** with Google: the village comes back from the server. Also on a second phone.
+
+**Friend links from the apps (R09).** Set the variable `VITE_PUBLIC_URL` to the web game's address (e.g. `https://<you>.github.io/<repo>/`): links and QR codes shared from the apps then open the web game with `?friend=…`. Opening such a link *in the app* (Android App Links, iOS Universal Links) is not set up yet, because the app cannot read the opened address: it needs `@capacitor/app` and an `appUrlOpen` handler in `src/main.ts` (an integration change), a domain you control serving `/.well-known/assetlinks.json` (package name + the Play app signing SHA-256) and `/.well-known/apple-app-site-association` at its root (a GitHub Pages *project* site cannot serve the root), then an `autoVerify` intent filter in `AndroidManifest.xml` and the Associated Domains capability (`applinks:<domain>`) in Xcode.
 
 ## 2. iPhone: TestFlight and a sandbox purchase
 
@@ -157,7 +181,7 @@ The server checks every store purchase before it is delivered (`server/payments/
 
 - **App Store** (step 35): `APPLE_BUNDLE_IDS` = the app's bundle id (defaults to `GAMECENTER_BUNDLE_IDS`). Receipts are StoreKit 2 signed transactions, checked against Apple Root CA - G3, which is built in by its SHA-256 fingerprint; compare it once with the certificate on https://www.apple.com/certificateauthority/ (`APPLE_ROOT_CA_SHA256` overrides it). `APPLE_ENVIRONMENTS` defaults to `Production,Sandbox` (App Review buys in the sandbox against the production server). No App Store Server API key is needed for this; keep the `.p8` for later use of that API.
   - **Refunds:** App Store Connect → the app → App Information → App Store Server Notifications: set Version 2 and the URL `https://<server>/v1/webhooks/apple` for production and for sandbox (staging's address there).
-- **Google Play** (step 36): `GOOGLE_PLAY_PACKAGE` (the application id) and `GOOGLE_SERVICE_ACCOUNT_JSON` (a service account key, as one line of JSON; invite the service account in Play Console → Users and permissions with "View financial data" and "Manage orders"). Refunds: create a Pub/Sub topic, set it in Play Console → Monetization setup → Real-time developer notifications, and add a **push** subscription to `https://<server>/v1/webhooks/google` with authentication on; set `GOOGLE_RTDN_AUDIENCE` (the subscription's audience) and `GOOGLE_RTDN_SERVICE_ACCOUNT` (its service account email). The server also reads the Voided Purchases API every hour. Build the Android app with the GitHub variable `VITE_PLAY_BILLING=1` to turn purchases on there (off until then; the Play Billing library is in `android/app/build.gradle`).
+- **Google Play** (step 36): `GOOGLE_PLAY_PACKAGE` (the application id) and `GOOGLE_SERVICE_ACCOUNT_JSON` (a service account key, as one line of JSON; invite the service account in Play Console → Users and permissions with "View financial data" and "Manage orders"). Refunds: create a Pub/Sub topic, set it in Play Console → Monetization setup → Real-time developer notifications, and add a **push** subscription to `https://<server>/v1/webhooks/google` with authentication on; set `GOOGLE_RTDN_AUDIENCE` (the subscription's audience) and `GOOGLE_RTDN_SERVICE_ACCOUNT` (its service account email). The server also reads the Voided Purchases API every hour. The Android release AAB (section 1b) is built with `VITE_PLAY_BILLING=1`, so purchases are on there; the debug APK leaves them off.
 - `/v1/hello` lists `purchases-apple` / `purchases-google` when a store is set up. A village kept on the server can buy only through a server that checks its store; a village on the device is trusted as before.
 
 ### 3d. Test purchases (roadmap step 39, owner)
@@ -234,8 +258,9 @@ The installed iOS/Android app schedules real local notifications when you leave 
 
 ## 5. Not done yet (decisions for later)
 
-- **Google Play** needs a Google Play Console account ($25 one-time). Purchases in the Android app stay off until it is built with `VITE_PLAY_BILLING=1` (section 3c).
-- **Android sign-in** (Play Games / Google) still needs the Play services SDKs in `android/`.
+- **Google Play** needs a Google Play Console account ($25 one-time). The release AAB (section 1b) has purchases on; the debug APK does not.
+- **Android sign-in:** Sign in with Google is in the app (section 1b; needs the OAuth clients). **Play Games** sign-in and Play Games friends are not (no Play Games SDK in `android/`).
+- **Links that open the app** (App Links / Universal Links): see section 1b, "Friend links from the apps".
 
 ## 5b. Store submission (roadmap steps 49-53, owner)
 

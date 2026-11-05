@@ -18,6 +18,8 @@ import {
   type CommandBatchResponse,
   type LedgerResponse,
   type PurchaseHistoryResponse,
+  type IntentReleaseRequest,
+  type IntentReleaseResponse,
   type PurchaseIntentRequest,
   type PurchaseIntentResponse,
   type PushTokenRequest,
@@ -126,6 +128,8 @@ export interface HttpAdapterOptions {
   dataVersion?: () => string;
 }
 
+const TOO_SLOW = 'The server took too long to answer.';
+
 /** A fresh id for an Idempotency-Key. */
 function newKey(): string {
   const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
@@ -175,10 +179,34 @@ export class HttpServerAdapter implements ServerPort {
     this.tokens.set(null);
   }
 
+  /**
+   * One HTTP exchange. The deadline covers the whole answer: headers, body
+   * and JSON parsing (worldwide audit GLOBAL-012). A stalled body is aborted
+   * and rejects with the same retryable `network` error as slow headers; a
+   * cut-off or unreadable successful answer is a retryable `network` error
+   * too (its outcome is unknown, exactly like a timeout). Retries keep the
+   * rules in `req`: only reads are retried here, writes stay with their
+   * tickets and the outbox, and each attempt carries its own Idempotency-Key.
+   */
   private async once<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const token = this.tokens.get();
     const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timer = ctrl ? setTimeout(() => ctrl.abort(), this.timeoutMs) : null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Rejects at the deadline even if a fetch or body stream ignores the abort signal.
+    const deadline = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        ctrl?.abort();
+        reject(new ServerError(0, 'network', TOO_SLOW));
+      }, this.timeoutMs);
+    });
+    try {
+      return await Promise.race([this.exchange<T>(method, path, body, ctrl), deadline]);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private async exchange<T>(method: string, path: string, body: unknown, ctrl: AbortController | null): Promise<T> {
+    const token = this.tokens.get();
     let res: Response;
     try {
       res = await this.fetchFn(`${this.baseUrl}${path}`, {
@@ -196,22 +224,30 @@ export class HttpServerAdapter implements ServerPort {
         signal: ctrl?.signal,
       });
     } catch (e) {
-      throw new ServerError(0, 'network', ctrl?.signal.aborted ? 'The server took too long to answer.' : `Could not reach the server (${(e as Error)?.message ?? e}).`);
-    } finally {
-      if (timer) clearTimeout(timer);
+      throw new ServerError(0, 'network', ctrl?.signal.aborted ? TOO_SLOW : `Could not reach the server (${(e as Error)?.message ?? e}).`);
     }
     if (res.status === 204) return undefined as T;
-    const text = await res.text().catch(() => '');
+    let text: string;
+    try {
+      text = await res.text();
+    } catch {
+      if (ctrl?.signal.aborted) throw new ServerError(0, 'network', TOO_SLOW);
+      if (!res.ok) text = '';
+      else throw new ServerError(0, 'network', 'The connection dropped while the server was answering.');
+    }
     let json: unknown = null;
+    let unreadable = false;
     try {
       json = text ? JSON.parse(text) : null;
     } catch {
-      json = null;
+      unreadable = true;
     }
     if (!res.ok) {
       const err = (json ?? {}) as Partial<ErrorBody>;
       throw new ServerError(res.status, err.error ?? (res.status >= 500 ? 'network' : 'bad_request'), err.message ?? `Server answered ${res.status}.`);
     }
+    // A successful answer that does not parse was cut off or mangled on the way: never hand it on as "no data".
+    if (unreadable) throw new ServerError(0, 'network', 'The server\'s answer was cut off. Check your connection and try again.');
     return json as T;
   }
 
@@ -500,6 +536,10 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   // ---------------------------------------------------------------- purchases and push
+
+  releaseIntent(req: IntentReleaseRequest): Promise<IntentReleaseResponse> {
+    return this.req('POST', Routes.purchaseIntentRelease, req);
+  }
 
   purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse> {
     return this.req('POST', Routes.purchaseIntent, req);

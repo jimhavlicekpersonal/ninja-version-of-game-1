@@ -88,6 +88,7 @@ export function createCore(ctx: ServerContext) {
     blocks: moderation.blocks.bind(null, ctx),
     requestDeletion: account.requestDeletion.bind(null, ctx),
     purchaseIntent: purchases.purchaseIntent.bind(null, ctx),
+    releaseIntent: purchases.releaseIntent.bind(null, ctx),
     redeem: purchases.redeem.bind(null, ctx),
     purchaseHistory: purchases.purchaseHistory.bind(null, ctx),
     appleNotification: purchases.appleNotification.bind(null, ctx),
@@ -131,6 +132,7 @@ export function createCore(ctx: ServerContext) {
       adjust: admin.adjust.bind(null, ctx),
       ban: admin.ban.bind(null, ctx),
       resetRating: admin.resetRating.bind(null, ctx),
+      resetAge: admin.resetAge.bind(null, ctx),
       actions: admin.actions.bind(null, ctx),
     },
   };

@@ -32,6 +32,7 @@ import type {
   PruneCutoffs,
   PruneResult,
   PurchaseIntent,
+  ImportHold,
   PurchaseRow,
   PushToken,
   RaidAttack,
@@ -172,6 +173,7 @@ const toVillage = (r: Row): VillageRow => ({
   stateHash: String(r.state_hash),
   createdAt: num(r.created_at),
   updatedAt: num(r.updated_at),
+  ...(r.device_seqs ? { deviceSeqs: r.device_seqs as Record<string, number> } : {}),
 });
 const toLedger = (r: Row): LedgerEntry => ({ playerId: String(r.player_id), at: num(r.at), resource: String(r.resource), delta: num(r.delta), balance: num(r.balance), reason: String(r.reason), ref: strOrNull(r.ref) });
 const toCommand = (r: Row): CommandLogRow => ({ playerId: String(r.player_id), seq: num(r.seq), at: num(r.at), clientAt: num(r.client_at), type: String(r.type), command: r.command, ok: Boolean(r.ok), error: strOrNull(r.error) });
@@ -410,26 +412,62 @@ export class PgRepo implements Repo {
     return (r.rowCount ?? 0) > 0;
   }
 
-  async spentCents(playerId: string, since: number, intentsSince: number): Promise<number> {
+  async spentCents(playerId: string, since: number, now: number): Promise<number> {
     const r = await this.rows(
       `select coalesce((select sum(cents) from purchases where player_id = $1 and status = 'credited' and at >= $2), 0)
-            + coalesce((select sum(cents) from purchase_intents where player_id = $1 and not used and at >= $3), 0) as cents`,
-      [playerId, since, intentsSince],
+            + coalesce((select sum(cents) from purchase_intents where player_id = $1 and not used and coalesce(hold_until, at + 1800000) > $3), 0) as cents`,
+      [playerId, since, now],
     );
     return num(r[0]?.cents);
   }
 
+  async lockPurchases(playerId: string): Promise<void> {
+    // Held until the transaction ends; every instance shares the database, so this is cross-instance.
+    if (this.client) await this.client.query(`select pg_advisory_xact_lock(hashtextextended('purchases:' || $1, 0))`, [playerId]);
+  }
+
   async addIntent(i: PurchaseIntent): Promise<void> {
-    await this.db.query('insert into purchase_intents (id, player_id, product_id, cents, at, used) values ($1,$2,$3,$4,$5,$6)', [i.id, i.playerId, i.productId, i.cents, i.at, i.used]);
+    await this.db.query('insert into purchase_intents (id, player_id, product_id, cents, at, used, hold_until) values ($1,$2,$3,$4,$5,$6,$7)', [i.id, i.playerId, i.productId, i.cents, i.at, i.used, i.holdUntil]);
   }
 
   async getIntent(id: string): Promise<PurchaseIntent | null> {
     const r = await this.rows('select * from purchase_intents where id = $1', [id]);
-    return r[0] ? { id: String(r[0].id), playerId: String(r[0].player_id), productId: String(r[0].product_id), cents: num(r[0].cents), at: num(r[0].at), used: Boolean(r[0].used) } : null;
+    return r[0] ? { id: String(r[0].id), playerId: String(r[0].player_id), productId: String(r[0].product_id), cents: num(r[0].cents), at: num(r[0].at), used: Boolean(r[0].used), holdUntil: r[0].hold_until == null ? num(r[0].at) + 1_800_000 : num(r[0].hold_until) } : null;
   }
 
   async useIntent(id: string): Promise<void> {
     await this.db.query('update purchase_intents set used = true where id = $1', [id]);
+  }
+
+  async holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean> {
+    const r = await this.db.query('update purchase_intents set hold_until = $3 where id = $1 and player_id = $2 and not used and hold_until is distinct from $3', [id, playerId, holdUntil]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async getAgeGroup(playerId: string): Promise<{ under18: boolean; at: number } | null> {
+    const r = await this.rows('select under18, at from player_age where player_id = $1', [playerId]);
+    return r[0] ? { under18: Boolean(r[0].under18), at: num(r[0].at) } : null;
+  }
+
+  async addImportHold(h: ImportHold): Promise<void> {
+    await this.db.query('insert into import_holds (id, player_id, at, jade, premium, purchases, status) values ($1,$2,$3,$4,$5,$6,$7)', [h.id, h.playerId, h.at, h.jade, h.premium, JSON.stringify(h.purchases), h.status]);
+  }
+
+  async importHoldsOf(playerId: string): Promise<ImportHold[]> {
+    return (await this.rows('select * from import_holds where player_id = $1 order by at desc', [playerId])).map((r) => ({
+      id: String(r.id),
+      playerId: String(r.player_id),
+      at: num(r.at),
+      jade: num(r.jade),
+      premium: Boolean(r.premium),
+      purchases: (r.purchases as string[]) ?? [],
+      status: r.status === 'resolved' ? 'resolved' : 'held',
+    }));
+  }
+
+  async setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void> {
+    if (under18 === null) await this.db.query('delete from player_age where player_id = $1', [playerId]);
+    else await this.db.query('insert into player_age (player_id, under18, at) values ($1,$2,$3) on conflict (player_id) do update set under18 = excluded.under18, at = excluded.at', [playerId, under18, at]);
   }
 
   // ------------------------------------------------------------ push (step 40)
@@ -852,7 +890,7 @@ export class PgRepo implements Repo {
 
   async prune(c: PruneCutoffs): Promise<PruneResult> {
     const attacks = await this.db.query('delete from attacks where at < $1', [c.recordsBefore]);
-    const tickets = await this.db.query('delete from tickets where created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.staleBefore]);
+    const tickets = await this.db.query('delete from tickets where created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.ticketsBefore ?? c.staleBefore]);
     // last_used_at guards a base that a new ticket is referring to right now (its insert refreshes it).
     const bases = await this.db.query(
       `delete from base_versions b where b.last_used_at < $1
@@ -949,6 +987,8 @@ export class PgRepo implements Repo {
       await q('delete from player_tokens where player_id = $1', [id]);
       await q('delete from identity_links where player_id = $1', [id]);
       await q('delete from purchase_intents where player_id = $1', [id]);
+      await q('delete from player_age where player_id = $1', [id]);
+      await q('delete from import_holds where player_id = $1', [id]);
       await q('delete from push_tokens where player_id = $1', [id]);
       // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
       await q('update purchases set player_id = $2 where player_id = $1', [id, D.id]);
@@ -1003,8 +1043,8 @@ export class PgRepo implements Repo {
       return await this.transaction(async (tx) => {
         const db = (tx as PgRepo).db;
         const r = await db.query(
-          `update villages set file = $2, revision = $3, seq = $4, at = $5, state_hash = $6, updated_at = $7 where player_id = $1 and revision = $8`,
-          [v.playerId, JSON.stringify(v.file), v.revision, v.seq, v.at, v.stateHash, v.updatedAt, expectedRevision],
+          `update villages set file = $2, revision = $3, seq = $4, at = $5, state_hash = $6, updated_at = $7, device_seqs = coalesce($9::jsonb, device_seqs) where player_id = $1 and revision = $8`,
+          [v.playerId, JSON.stringify(v.file), v.revision, v.seq, v.at, v.stateHash, v.updatedAt, expectedRevision, v.deviceSeqs ? JSON.stringify(v.deviceSeqs) : null],
         );
         if ((r.rowCount ?? 0) === 0) throw stale;
         for (const l of ledger) {

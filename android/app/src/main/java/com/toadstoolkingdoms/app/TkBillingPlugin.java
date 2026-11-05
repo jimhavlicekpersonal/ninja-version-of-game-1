@@ -10,7 +10,9 @@ import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
+import com.android.billingclient.api.UnfetchedProduct;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -26,22 +28,38 @@ import java.util.List;
  * The game's PlayBillingPaymentProvider calls it; the game turns it on only
  * in builds made with VITE_PLAY_BILLING=1.
  *
+ * Play Billing Library 9 (com.android.billingclient:billing:9.1.0; the 7.x line
+ * stopped being accepted by Play on 2026-08-31 / 2026-11-01, audit GLOBAL-001):
+ * - pending purchases are enabled for one-time products (required since 8);
+ * - the library reconnects to the Play service on its own
+ *   (enableAutoServiceReconnection, 8+); the first connection is still started here;
+ * - product queries answer a QueryProductDetailsResult (8+), whose unfetched
+ *   products are reported back as unavailable;
+ * - purchase history (queryPurchaseHistoryAsync) no longer exists: restoring
+ *   uses queryPurchasesAsync, which lists every paid, unconsumed purchase.
+ *
  * Every product is a one-time consumable. The server checks the purchase
- * token with the Play Developer API and consumes it once delivered; `consume`
- * here is only for a game with no server to ask. A purchase that is paid but
- * not yet consumed is listed by `unfinished`, so it is delivered on the next
- * start.
+ * token with the Play Developer API and consumes it once delivered; the game
+ * calls `consume` only after delivery (GameController finish), and a game with
+ * no server to ask relies on it. A purchase that is paid but not yet consumed is
+ * listed by `unfinished`, so it is delivered on the next start or by
+ * Store, Restore purchases.
  */
 @CapacitorPlugin(name = "TkBilling")
 public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener {
     private BillingClient client;
     private PluginCall pendingPurchase;
+    /** Calls waiting for the first connection (startConnection must not run twice at once). */
+    private final List<Runnable> waiting = new ArrayList<>();
+    private final List<PluginCall> waitingCalls = new ArrayList<>();
+    private boolean connecting = false;
 
     @Override
     public void load() {
         client = BillingClient.newBuilder(getContext())
             .setListener(this)
             .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+            .enableAutoServiceReconnection()
             .build();
     }
 
@@ -51,16 +69,37 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
             then.run();
             return;
         }
+        synchronized (waiting) {
+            waiting.add(then);
+            waitingCalls.add(call);
+            if (connecting) return;
+            connecting = true;
+        }
         client.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult result) {
-                if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) then.run();
-                else call.reject("Google Play Billing is not available: " + result.getDebugMessage(), "unavailable");
+                List<Runnable> runs;
+                List<PluginCall> calls;
+                synchronized (waiting) {
+                    connecting = false;
+                    runs = new ArrayList<>(waiting);
+                    calls = new ArrayList<>(waitingCalls);
+                    waiting.clear();
+                    waitingCalls.clear();
+                }
+                boolean ok = result.getResponseCode() == BillingClient.BillingResponseCode.OK;
+                for (int i = 0; i < runs.size(); i++) {
+                    if (ok) runs.get(i).run();
+                    else calls.get(i).reject("Google Play Billing is not available: " + result.getDebugMessage(), "unavailable");
+                }
             }
 
             @Override
             public void onBillingServiceDisconnected() {
-                // The next call reconnects.
+                // enableAutoServiceReconnection: the library reconnects when it is next used.
+                synchronized (waiting) {
+                    connecting = false;
+                }
             }
         });
     }
@@ -73,7 +112,7 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
         return o;
     }
 
-    private List<QueryProductDetailsParams.Product> productList(List<String> ids) {
+    private static List<QueryProductDetailsParams.Product> productList(List<String> ids) {
         List<QueryProductDetailsParams.Product> list = new ArrayList<>();
         for (String id : ids) {
             list.add(QueryProductDetailsParams.Product.newBuilder().setProductId(id).setProductType(BillingClient.ProductType.INAPP).build());
@@ -81,36 +120,58 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
         return list;
     }
 
+    /**
+     * The store's own listing: localized name and price for each product sold
+     * to this account in its country. `unavailable` lists the ids Play did not
+     * return (not set up, not sold in this country, or a temporary error).
+     */
     @PluginMethod
     public void getProducts(PluginCall call) {
         JSArray ids = call.getArray("ids", new JSArray());
-        List<String> list = new ArrayList<>();
+        List<String> list;
         try {
             list = ids.toList();
         } catch (Exception e) {
             call.reject("Bad product ids", "failed");
             return;
         }
+        if (list.isEmpty()) {
+            JSObject ret = new JSObject();
+            ret.put("products", new JSArray());
+            ret.put("unavailable", new JSArray());
+            call.resolve(ret);
+            return;
+        }
         final List<String> wanted = list;
         connected(call, () -> client.queryProductDetailsAsync(
             QueryProductDetailsParams.newBuilder().setProductList(productList(wanted)).build(),
-            (result, details) -> {
+            (BillingResult result, QueryProductDetailsResult found) -> {
                 if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                     call.reject("Could not load products: " + result.getDebugMessage(), "unavailable");
                     return;
                 }
                 JSArray out = new JSArray();
-                for (ProductDetails d : details) {
+                JSArray missing = new JSArray();
+                for (ProductDetails d : found.getProductDetailsList()) {
                     ProductDetails.OneTimePurchaseOfferDetails offer = d.getOneTimePurchaseOfferDetails();
+                    if (offer == null) {
+                        missing.put(d.getProductId());
+                        continue;
+                    }
                     JSObject o = new JSObject();
                     o.put("id", d.getProductId());
                     o.put("displayName", d.getName());
-                    o.put("displayPrice", offer != null ? offer.getFormattedPrice() : "");
-                    o.put("price", offer != null ? offer.getPriceAmountMicros() / 1_000_000.0 : 0);
+                    // Play's own localized text, with the buyer's currency and taxes as Play shows them.
+                    o.put("displayPrice", offer.getFormattedPrice());
+                    o.put("currencyCode", offer.getPriceCurrencyCode());
+                    o.put("priceMicros", offer.getPriceAmountMicros());
+                    o.put("price", offer.getPriceAmountMicros() / 1_000_000.0);
                     out.put(o);
                 }
+                for (UnfetchedProduct u : found.getUnfetchedProductList()) missing.put(u.getProductId());
                 JSObject ret = new JSObject();
                 ret.put("products", out);
+                ret.put("unavailable", missing);
                 call.resolve(ret);
             }));
     }
@@ -129,9 +190,10 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
         }
         connected(call, () -> client.queryProductDetailsAsync(
             QueryProductDetailsParams.newBuilder().setProductList(productList(Collections.singletonList(productId))).build(),
-            (result, details) -> {
+            (BillingResult result, QueryProductDetailsResult found) -> {
+                List<ProductDetails> details = found.getProductDetailsList();
                 if (result.getResponseCode() != BillingClient.BillingResponseCode.OK || details.isEmpty()) {
-                    call.reject("This item is not available in Google Play yet.", "unavailable");
+                    call.reject("This item is not available in Google Play here.", "unavailable");
                     return;
                 }
                 BillingFlowParams.Builder params = BillingFlowParams.newBuilder()
@@ -144,10 +206,24 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
                     BillingResult launch = client.launchBillingFlow(getActivity(), params.build());
                     if (launch.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                         pendingPurchase = null;
-                        call.reject("Purchase failed: " + launch.getDebugMessage(), "failed");
+                        rejectPurchase(call, launch);
                     }
                 });
             }));
+    }
+
+    private static void rejectPurchase(PluginCall call, BillingResult result) {
+        int code = result.getResponseCode();
+        if (code == BillingClient.BillingResponseCode.USER_CANCELED) {
+            call.reject("Purchase cancelled.", "cancelled");
+        } else if (code == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            // An earlier purchase of this item is paid but not delivered (consumed) yet.
+            call.reject("An earlier purchase of this item is still being delivered. Use Store, Restore purchases, or restart the game.", "already_owned");
+        } else if (code == BillingClient.BillingResponseCode.ITEM_UNAVAILABLE || code == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE) {
+            call.reject("Purchases are not available here: " + result.getDebugMessage(), "unavailable");
+        } else {
+            call.reject("Purchase failed: " + result.getDebugMessage(), "failed");
+        }
     }
 
     @Override
@@ -163,32 +239,38 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
                         call.resolve(describe(p));
                         answered = true;
                     } else {
-                        // Paid later (a pending payment completed): the game delivers it.
-                        notifyListeners("purchase", describe(p));
+                        // Paid later (a pending payment completed): the game delivers it. Kept until
+                        // the game listens, so a payment that completes during start-up is not lost
+                        // (`unfinished` also lists it on the next start).
+                        notifyListeners("purchase", describe(p), true);
                     }
                 } else if (call != null && !answered && p.getPurchaseState() == Purchase.PurchaseState.PENDING) {
+                    // Cash or another slow payment method: nothing is delivered until Play says PURCHASED.
                     call.reject("The purchase is waiting for payment.", "pending");
                     answered = true;
                 }
             }
             if (call != null && !answered) call.reject("Purchase failed.", "failed");
         } else if (call != null) {
-            if (code == BillingClient.BillingResponseCode.USER_CANCELED) call.reject("Purchase cancelled.", "cancelled");
-            else call.reject("Purchase failed: " + result.getDebugMessage(), "failed");
+            rejectPurchase(call, result);
         }
     }
 
-    /** Paid but not consumed yet: to deliver on start. */
+    /** Paid but not consumed yet: to deliver on start and for Store, Restore purchases. */
     @PluginMethod
     public void unfinished(PluginCall call) {
         connected(call, () -> client.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
-            (result, list) -> {
+            (BillingResult result, List<Purchase> list) -> {
+                if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                    // Not "nothing to deliver": the game tries again on the next start or connection.
+                    call.reject("Could not ask Google Play for purchases: " + result.getDebugMessage(), "unavailable");
+                    return;
+                }
                 JSArray out = new JSArray();
-                if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    for (Purchase p : list) {
-                        if (p.getPurchaseState() == Purchase.PurchaseState.PURCHASED) out.put(describe(p));
-                    }
+                for (Purchase p : list) {
+                    // PENDING purchases are not paid yet; they arrive through onPurchasesUpdated later.
+                    if (p.getPurchaseState() == Purchase.PurchaseState.PURCHASED) out.put(describe(p));
                 }
                 JSObject ret = new JSObject();
                 ret.put("purchases", out);
@@ -196,7 +278,11 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
             }));
     }
 
-    /** Consume a delivered purchase (the server does this itself when it checks the token). */
+    /**
+     * Consume a delivered purchase. The game calls this only after delivery; the
+     * server usually consumed it already when it checked the token, so "not owned"
+     * (already consumed) counts as done.
+     */
     @PluginMethod
     public void consume(PluginCall call) {
         String token = call.getString("purchaseToken");
@@ -206,6 +292,10 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
         }
         connected(call, () -> client.consumeAsync(
             ConsumeParams.newBuilder().setPurchaseToken(token).build(),
-            (result, consumedToken) -> call.resolve()));
+            (BillingResult result, String consumedToken) -> {
+                int code = result.getResponseCode();
+                if (code == BillingClient.BillingResponseCode.OK || code == BillingClient.BillingResponseCode.ITEM_NOT_OWNED) call.resolve();
+                else call.reject("Could not finish the purchase in Google Play: " + result.getDebugMessage(), "failed");
+            }));
     }
 }

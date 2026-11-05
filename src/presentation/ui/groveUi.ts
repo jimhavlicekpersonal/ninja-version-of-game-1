@@ -14,6 +14,7 @@ import type { UiKit } from './economyUi';
 import { rewardChips } from './economyUi';
 import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
+import { ensureCommunityRules } from './communityRules';
 
 export interface GroveUiDeps {
   kit: UiKit;
@@ -191,8 +192,10 @@ export class GroveUi {
     }
     if (!snap.chat.length) list.append(h('p', { class: 'muted' }, 'No messages yet. Say hello!'));
     const input = h('input', { class: 'text', type: 'text', maxlength: 160, placeholder: 'Say something nice…', value: keep }) as HTMLInputElement;
-    const send = () => {
+    const send = async () => {
       const text = input.value;
+      // Real players (an online Alliance): the community rules, once (audit R06).
+      if (snap.moderation && !(await ensureCommunityRules(this.d.kit))) return;
       void this.run(() => this.src.send(text), redraw).then((ok) => {
         if (ok) {
           const el = body.querySelector<HTMLInputElement>('input.text');
@@ -202,9 +205,9 @@ export class GroveUi {
     };
     input.addEventListener('keydown', (e) => {
       e.stopPropagation();
-      if (e.key === 'Enter') send();
+      if (e.key === 'Enter') void send();
     });
-    body.append(list, h('div', { class: 'chat-input-row' }, input, h('button', { class: 'btn primary', type: 'button', onclick: send, disabled: this.busy }, 'Send')));
+    body.append(list, h('div', { class: 'chat-input-row' }, input, h('button', { class: 'btn primary', type: 'button', onclick: () => void send(), disabled: this.busy }, 'Send')));
     window.setTimeout(() => {
       list.scrollTop = list.scrollHeight;
       if (keepFocus) input.focus();

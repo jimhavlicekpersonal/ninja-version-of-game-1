@@ -6,7 +6,7 @@
  * checked and delivered it; without a server the game consumes it itself.
  */
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
-import type { PaymentProvider, PaymentResult, ProductRequest, StoreReceipt } from './provider';
+import type { PaymentProvider, PaymentResult, ProductRequest, StorePrice, StoreReceipt } from './provider';
 
 interface PlayPurchase {
   purchaseToken: string;
@@ -14,7 +14,21 @@ interface PlayPurchase {
   orderId: string | null;
 }
 
+/** One product as Google Play lists it for this account and country (TkBillingPlugin.getProducts). */
+interface PlayProduct {
+  id: string;
+  displayName: string;
+  /** Play's own formatted price (OneTimePurchaseOfferDetails.getFormattedPrice). */
+  displayPrice: string;
+  /** ISO 4217 (getPriceCurrencyCode). */
+  currencyCode?: string;
+  /** getPriceAmountMicros. */
+  priceMicros?: number;
+}
+
 interface TkBillingPlugin {
+  /** `unavailable`: ids Play did not return (not set up, or not sold in this country). */
+  getProducts(opts: { ids: string[] }): Promise<{ products: PlayProduct[]; unavailable?: string[] }>;
   purchase(opts: { productId: string; accountId?: string }): Promise<PlayPurchase>;
   unfinished(): Promise<{ purchases: PlayPurchase[] }>;
   consume(opts: { purchaseToken: string }): Promise<void>;
@@ -42,6 +56,27 @@ export class PlayBillingPaymentProvider implements PaymentProvider {
       const reason = err.code === 'cancelled' ? 'cancelled' : err.code === 'unavailable' ? 'unavailable' : err.code === 'pending' ? 'pending' : 'failed';
       return { ok: false, reason, message: err.message ?? 'The purchase did not go through.' };
     }
+  }
+
+  /**
+   * Play's localized prices (GLOBAL-007), keyed by store product id. A product
+   * Play did not return is missing: it cannot be bought in this storefront.
+   * Throws when Play cannot be reached (the shop then shows no price).
+   */
+  async prices(storeProductIds: string[]): Promise<Record<string, StorePrice>> {
+    const out: Record<string, StorePrice> = {};
+    const ids = [...new Set(storeProductIds.filter(Boolean))];
+    if (!ids.length) return out;
+    const { products } = await TkBilling.getProducts({ ids });
+    for (const p of products) {
+      if (!ids.includes(p.id) || !p.displayPrice) continue;
+      out[p.id] = {
+        formatted: p.displayPrice,
+        ...(p.currencyCode ? { currency: p.currencyCode } : {}),
+        ...(Number.isFinite(p.priceMicros) ? { micros: p.priceMicros } : {}),
+      };
+    }
+    return out;
   }
 
   async finish(receipt: StoreReceipt): Promise<void> {

@@ -57,6 +57,7 @@ export async function detail(ctx: ServerContext, id: string) {
   return {
     player: { ...summary(p, now), shieldUntil: p.shieldUntil, mutedUntil: p.mutedUntil ?? 0, groveId: p.groveId, hasBase: Boolean(p.base), ratings: p.ratings ?? null },
     links: (await ctx.repo.linksOf(p.id)).map((l) => ({ provider: l.provider, linkedAt: l.linkedAt })),
+    ageGroup: await ctx.repo.getAgeGroup(p.id),
     alliance: membership ? { id: membership.groveId, role: membership.role } : null,
     village,
     ledger: await ctx.repo.ledgerOf(p.id, 30),
@@ -110,6 +111,24 @@ export async function resetRating(ctx: ServerContext, actor: string, id: string,
   const current = p.ratings ?? { attack: fresh, base: fresh };
   await ctx.repo.updatePlayer(p.id, { ratings: { attack: which === 'base' ? current.attack : fresh, base: which === 'attack' ? current.base : fresh } });
   await audit(ctx, actor, 'reset-rating', p.id, { which, note: text(body?.note, 200) });
+  return detail(ctx, p.id);
+}
+
+/**
+ * Clear a player's age group after a support check (GLOBAL-006): the game
+ * never turns "under 18" back to adult on its own, so a wrong answer is
+ * fixed here. The player is asked again before the next purchase.
+ */
+export async function resetAge(ctx: ServerContext, actor: string, id: string, body: { note?: unknown } | undefined) {
+  const p = await playerOr404(ctx, id);
+  const note = text(body?.note, 200);
+  if (!note) throw new ApiError(400, 'bad_request', 'Say what was checked (note): it goes in the staff log.');
+  const before = await ctx.repo.getAgeGroup(p.id);
+  await ctx.repo.transaction(async (tx) => {
+    await tx.setAgeGroup(p.id, null, ctx.now());
+    await applyServerResult(tx, ctx, p, [{ cmd: { type: 'staffResetAge' }, reason: 'staff:age-reset' }], `staff:${actor || 'staff'}`);
+  });
+  await audit(ctx, actor, 'reset-age', p.id, { before: before?.under18 ?? null, note });
   return detail(ctx, p.id);
 }
 

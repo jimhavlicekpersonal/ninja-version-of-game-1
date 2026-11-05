@@ -62,7 +62,9 @@ export class App {
     const c = this.d.controller;
     // A village the server keeps raids only through the server (offline loot could not be checked).
     if (this.d.connection.serverVillage && !this.d.connection.online) {
-      const msg = 'Your village is kept on the server, so attacks need a connection. Try again when you are online.';
+      // Audit R01: say what still works offline (building, training, research, collecting,
+      // Shadow Trials and practice battles are queued for the server or need nothing from it).
+      const msg = 'Raids on other players need a connection. Offline you can still build, train, research, collect, fight Shadow Trials and practice battles: they are sent to the server when you are back.';
       if (this.battleHud) this.battleHud.toast(msg);
       else this.d.hud.toast(msg, 'error');
       return;

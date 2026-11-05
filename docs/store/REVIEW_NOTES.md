@@ -10,11 +10,16 @@
 >
 > **Random rewards:** only the free daily chest is random; its odds are shown before it opens, and it is never sold. Nothing random is sold.
 >
-> **Account deletion:** Settings → Online play → Account → **Delete account**. There is also a web form at https://<server>/account/delete.
+> **Account deletion:** Settings → Online play → Account → **Delete online account**. There is also a web form at https://<server>/account/delete.
+>
+> **Privacy policy, support and community rules:** Settings (gear, bottom left) → **Privacy and help**.
+>
+> **Crash reports:** off until the player turns them on in Settings.
 >
 > **Notifications:** off until the player turns them on in Settings; quiet hours and a daily limit apply.
 
 Before sending:
+- Fill in `public/legal-config.js` and check that Settings → Privacy and help opens the privacy policy, support and community pages in the submitted build, with no "not published yet" notes.
 - Replace `<server>` with the production address, and check it answers (`node tools/ops/check-domain.mjs https://<server>`), on IPv6 too (App Review uses IPv6-only networks).
 - The production server must accept sandbox purchases (`APPLE_ENVIRONMENTS` includes `Sandbox`, the default) because App Review buys in the sandbox.
 - Make sure at least one other real or seeded player exists at low Keeps, or the reviewer only meets generated bases (still labelled, still fine).

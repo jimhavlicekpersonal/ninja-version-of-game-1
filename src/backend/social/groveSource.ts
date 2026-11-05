@@ -255,6 +255,10 @@ export class LocalGroveSource implements GroveSource {
 // -------------------------------------------------------------------- remote
 
 const ONLINE_WINDOW_MS = 10 * 60_000;
+/** Alliance polling (audit R04): the healthy rate, how often a poll is a full refresh, and the slowest backoff. */
+const POLL_MS = 4000;
+const POLL_FULL_EVERY = 5;
+const POLL_MAX_MS = 60_000;
 
 /** A real Grove on the multiplayer server. Village-side effects (troops, XP) go through commands. */
 export class RemoteGroveSource implements GroveSource {
@@ -328,15 +332,106 @@ export class RemoteGroveSource implements GroveSource {
     this.emit();
   }
 
+  /**
+   * Live updates while the Grove screen is open. Visible and healthy: chat and
+   * requests every 4 s, everything every 5th poll (20 s), as before. The next
+   * poll waits for the previous one, so a slow network never stacks requests.
+   * Hidden: no polling at all; a full refresh as soon as the page is visible
+   * again. Failures back off exponentially (8, 16, 32 s … up to 60 s, with
+   * jitter); a slow answer stretches the next wait to twice its time. The
+   * first good answer, the page becoming visible or the device coming back
+   * online returns to the normal rate (audit R04).
+   */
   watch(): () => void {
-    void this.refresh(true);
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let inFlight = false;
     let n = 0;
-    const timer = setInterval(() => {
-      n++;
-      void this.refresh(n % 5 === 0); // chat and requests every 4 s, everything every 20 s
-    }, 4000);
+    let failures = 0;
+    /** Set when a poll was skipped while hidden (or asked for during one): run it as soon as possible. */
+    let wanted: boolean | null = null;
+    const doc = (globalThis as { document?: { visibilityState?: string; hidden?: boolean; addEventListener?: (t: string, f: () => void) => void; removeEventListener?: (t: string, f: () => void) => void } }).document;
+    const win = globalThis as { addEventListener?: (t: string, f: () => void) => void; removeEventListener?: (t: string, f: () => void) => void };
+    const hidden = () => Boolean(doc && (doc.visibilityState === 'hidden' || doc.hidden === true));
+
+    const schedule = (ms: number) => {
+      if (stopped) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        n++;
+        void poll(n % POLL_FULL_EVERY === 0);
+      }, ms);
+    };
+
+    const poll = async (full: boolean): Promise<void> => {
+      if (stopped) return;
+      if (inFlight) {
+        // One request chain at a time; the running one schedules the next.
+        wanted = Boolean(wanted) || full;
+        return;
+      }
+      if (hidden()) {
+        wanted = true; // resume with a full refresh when visible
+        return;
+      }
+      inFlight = true;
+      const started = Date.now();
+      await this.refresh(full);
+      const took = Date.now() - started;
+      inFlight = false;
+      if (stopped) return;
+      if (hidden()) {
+        wanted = true; // paused: no requests while nobody can see the screen
+        return;
+      }
+      if (wanted !== null) {
+        const f = wanted;
+        wanted = null;
+        void poll(f);
+        return;
+      }
+      if (this.error) {
+        failures++;
+        const backoff = Math.min(POLL_MAX_MS, POLL_MS * 2 ** failures);
+        schedule(Math.round(backoff * (0.85 + Math.random() * 0.3)));
+      } else {
+        failures = 0;
+        schedule(took > POLL_MS / 2 ? Math.min(POLL_MAX_MS, took * 2) : POLL_MS - took);
+      }
+    };
+
+    const wake = () => {
+      if (stopped || hidden()) return;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      const full = (wanted ?? false) || failures > 0;
+      wanted = null;
+      void poll(full);
+    };
+    const onVisibility = () => {
+      if (hidden()) {
+        // Stop the pending poll; the next one is a full refresh when the screen is seen again.
+        if (timer) clearTimeout(timer);
+        timer = null;
+        wanted = true;
+      } else if (wanted !== null && !inFlight) wake();
+    };
+    const onOnline = () => {
+      if (failures > 0 && !inFlight) wake();
+    };
+    doc?.addEventListener?.('visibilitychange', onVisibility);
+    win.addEventListener?.('online', onOnline);
+
+    void poll(true);
     return () => {
-      clearInterval(timer);
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      timer = null;
+      doc?.removeEventListener?.('visibilitychange', onVisibility);
+      win.removeEventListener?.('online', onOnline);
     };
   }
 

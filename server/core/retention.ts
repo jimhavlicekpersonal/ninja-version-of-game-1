@@ -11,6 +11,7 @@ import type { PruneResult } from '../repo';
 import { HOUR, type ServerContext } from './context';
 import { RESOLVED_REPORT_RETENTION_DAYS } from './moderation';
 import { FRIEND_REQUEST_DAYS } from './friends';
+import { LATE_REPORT_MS } from './pvp';
 
 export const REPLAY_RETENTION_DAYS = 30;
 export const REPLAY_RETENTION_MS = REPLAY_RETENTION_DAYS * 24 * HOUR;
@@ -26,6 +27,8 @@ export async function prune(ctx: ServerContext): Promise<PruneResult & { friendR
   const result = await ctx.repo.prune({
     recordsBefore: t - REPLAY_RETENTION_MS,
     staleBefore: t - STALE_MS,
+    // A raid may be reported up to LATE_REPORT_MS after its ticket expired (audit R02).
+    ticketsBefore: t - STALE_MS - LATE_REPORT_MS,
     resolvedReportsBefore: t - RESOLVED_REPORT_RETENTION_DAYS * 24 * HOUR,
     commandsBefore: t - REPLAY_RETENTION_MS,
     idempotencyBefore: t - STALE_MS,

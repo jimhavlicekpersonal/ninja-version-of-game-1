@@ -4,9 +4,11 @@
  * (no fetch, no globals), shared by the browser reporter
  * (analytics/crashReports.ts) and the server (server/observability.ts).
  *
- * Privacy: reports carry the error, the stack (file names without query
- * strings), the build, the platform and a few tags. Never a player name, id,
- * token, chat text or save.
+ * Privacy: reports carry the error message (URL query strings and email-like
+ * text scrubbed, see scrubText), the stack (file names without query
+ * strings), the build, the platform and a few tags. The game never attaches a
+ * player name, id, token, chat text or save, but an error message can quote
+ * whatever text the code was handling, so this is not a guarantee.
  */
 
 export interface SentryDsn {
@@ -83,9 +85,17 @@ export function eventId(random: () => number = Math.random): string {
   return s;
 }
 
+/**
+ * Best-effort scrub of an error message: query strings and fragments of URLs in it (they can carry tokens) and
+ * anything shaped like an email address. It cannot recognise every piece of player data a message might quote.
+ */
+export function scrubText(text: string): string {
+  return text.replace(/(\b[a-z][a-z0-9+.-]*:\/\/[^\s?#"'<>]*)[?#][^\s"'<>]*/gi, '$1').replace(/[^\s@"'<>]+@[^\s@"'<>]+\.[a-z]{2,}/gi, '[email]');
+}
+
 function exceptionOf(error: unknown): { type: string; value: string; stack?: string } {
-  if (error instanceof Error) return { type: error.name || 'Error', value: error.message.slice(0, 1000), stack: error.stack };
-  return { type: 'Error', value: String(error).slice(0, 1000) };
+  if (error instanceof Error) return { type: error.name || 'Error', value: scrubText(error.message).slice(0, 1000), stack: error.stack };
+  return { type: 'Error', value: scrubText(String(error)).slice(0, 1000) };
 }
 
 /** One envelope (newline-delimited JSON) holding one error event. */

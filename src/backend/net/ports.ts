@@ -7,6 +7,8 @@
  *     directly, for tests and local sandboxes.
  */
 import type {
+  IntentReleaseRequest,
+  IntentReleaseResponse,
   AttackResponse,
   BalanceResponse,
   ChallengesResponse,
@@ -194,6 +196,8 @@ export interface VillagePort {
 /** Store purchases checked by the server (roadmap Phase 4; features `purchases-apple`, `purchases-google`). */
 export interface PurchasePort {
   purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse>;
+  /** A purchase was cancelled or is pending (GLOBAL-005). */
+  releaseIntent(req: IntentReleaseRequest): Promise<IntentReleaseResponse>;
   redeem(req: RedeemRequest): Promise<RedeemResponse>;
   purchaseHistory(): Promise<PurchaseHistoryResponse>;
 }

@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
 import type { SaveStore } from '../../backend/persist/saveStore';
@@ -39,6 +40,7 @@ import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
+import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
 
 export interface HudDeps {
   root: HTMLElement;
@@ -1493,6 +1495,7 @@ export class Hud {
       h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, 'Replay the tutorial')),
       h('h3', {}, 'Display'),
       h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'),
+      this.qualityRow(),
     );
 
     // Testing tools: only in the sandbox, which has its own village and never goes online.
@@ -1521,10 +1524,15 @@ export class Hud {
       );
     }
     if (this.deps.crashReports) {
+      // Opt-in (off until switched on): matches the privacy policy and store declarations (worldwide audit GLOBAL-019).
       const crashToggle = h('input', { type: 'checkbox', checked: prefs.get('crashReports') }) as HTMLInputElement;
       crashToggle.addEventListener('change', () => prefs.set('crashReports', crashToggle.checked));
-      body.append(h('label', { class: 'toggle' }, crashToggle, ' Send crash reports'), h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error and the game version to help fix it. Never your name, village, chat or anything typed.'));
+      body.append(
+        h('label', { class: 'toggle' }, crashToggle, ' Send crash reports (off until you turn it on)'),
+        h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error message, where in the code it happened, the game version and the platform, to help fix it. It does not add your name, Player ID, village or chat, but an error message can sometimes include text the game was working on.'),
+      );
     }
+    body.append(this.privacySection());
     body.append(h('details', {}, h('summary', {}, 'Analytics events (this device)'), events));
     void this.deps.analytics.recent(60).then((list) => {
       clear(events);
@@ -1541,6 +1549,69 @@ export class Hud {
       h('p', { class: 'muted small' }, `Kagemura: Ninja Clans ${this.deps.build.version} · built ${this.deps.build.builtAt}`),
     );
     this.modal('Settings', body, [], 'wide');
+  }
+
+  /**
+   * Settings → Privacy and help (worldwide audit GLOBAL-015, R06): the privacy policy, support, community rules and
+   * account deletion. Each address comes from the build (VITE_PRIVACY_URL, VITE_SUPPORT_URL, VITE_COMMUNITY_URL,
+   * VITE_SUPPORT_EMAIL), else the pages shipped with the game in public/, which work without a connection. On the
+   * web they open in a new tab. Inside the iOS/Android app a shipped page is not on the open web (a system browser
+   * could not load it), so it opens in a frame inside the game instead; a configured public address opens outside.
+   */
+  /** Settings → Display → Graphics (audit R03): Auto / Smooth on older phones (low) / Sharp (high); applies after a restart. */
+  private qualityRow(): HTMLElement {
+    const now = quality();
+    const select = h(
+      'select',
+      { class: 'text', 'aria-label': 'Graphics quality' },
+      ...(
+        [
+          ['auto', `Automatic (now: ${now.profile === 'low' ? 'lighter' : 'sharp'})`],
+          ['low', 'Lighter: for older or low-memory phones, saves battery'],
+          ['high', 'Sharp: full detail'],
+        ] as [QualityChoice, string][]
+      ).map(([v, label]) => h('option', { value: v, ...(getQualityChoice() === v ? { selected: true } : {}) }, label)),
+    ) as HTMLSelectElement;
+    const note = h('p', { class: 'muted small' }, `Graphics: ${now.profile === 'low' ? 'lighter' : 'sharp'} (${now.reason}).`);
+    select.addEventListener('change', () => {
+      if (setQualityChoice(select.value as QualityChoice)) {
+        note.textContent = 'Restart the game to apply the new graphics setting.';
+        const restart = h('button', { class: 'btn ghost', type: 'button', onclick: () => location.reload() }, 'Restart now');
+        note.append(' ', restart);
+      }
+    });
+    return h('div', {}, h('label', { class: 'toggle' }, 'Graphics ', select), note);
+  }
+
+  private privacySection(): HTMLElement {
+    const env = import.meta.env as Record<string, string | undefined>;
+    const native = Capacitor.isNativePlatform();
+    const link = (label: string, configured: string | undefined, shipped: string) => {
+      const url = configured?.trim() || shipped;
+      if (native && !/^https?:/i.test(url)) {
+        return h('button', { class: 'btn ghost', type: 'button', onclick: () => this.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, label);
+      }
+      return h('a', { class: 'btn ghost', href: url, target: '_blank', rel: 'noopener' }, label);
+    };
+    const email = env.VITE_SUPPORT_EMAIL?.trim();
+    const serverUrl = this.deps.connection.url;
+    const section = h(
+      'div',
+      { class: 'privacy-links' },
+      h('h3', {}, 'Privacy and help'),
+      h(
+        'div',
+        { class: 'actions' },
+        link('Privacy policy', env.VITE_PRIVACY_URL, './privacy.html'),
+        link('Support', env.VITE_SUPPORT_URL, './support.html'),
+        link('Community rules', env.VITE_COMMUNITY_URL, './community.html'),
+        ...(email ? [h('a', { class: 'btn ghost', href: `mailto:${email}?subject=${encodeURIComponent('Kagemura support')}` }, `Email ${email}`)] : []),
+      ),
+      serverUrl
+        ? h('p', { class: 'muted small' }, 'Delete your online account: Settings → Online play → Account, or on the web: ', h('a', { href: `${serverUrl}/account/delete`, target: '_blank', rel: 'noopener' }, 'account deletion page'), '.')
+        : h('p', { class: 'muted small' }, 'Online play is off, so there is no online account: your village is kept only on this device. "Start a new village" below erases it; uninstalling the app or clearing this site\'s data removes it completely.'),
+    );
+    return section;
   }
 
   private exportSave(box: HTMLTextAreaElement): void {
