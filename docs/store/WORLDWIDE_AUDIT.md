@@ -364,3 +364,7 @@ Status words: **fixed** (code + automated evidence), **partly** (improved, targe
 | Generic motifs | fixed | Roof materials by family, original kamon set |
 
 **Remaining for the owner (no code can close these):** physical-device and store testing on both platforms; App Store / Play product setup (new `jade_pinch`, `clan_stipend`); Apple/Google keys and capabilities; publisher facts and legal review of the drafts; UK OSA responsible person; Japan seller facts and the unused-balance report; the COPPA position; market selection (`docs/legal/MARKETS.md`); deploy the server before the game (save v16, SIM_RULES 4, migrations 0018–0024); a native-speaker cultural review; real-player playtests of the casual curve.
+
+## Third pass (2026-11-05, state-of-the-game report)
+
+A third, read-only audit at `2a4b222` across ten areas (hardware, art, economy, game theory, store compliance, backend, languages, code quality, retention and marketing, missed items) is recorded in [`docs/audit/STATE_OF_THE_GAME.md`](../audit/STATE_OF_THE_GAME.md), with seven detailed area reports under `docs/audit/areas/` and screenshots under `docs/audit/screenshots/`. It re-checked a sample of the fix claims above (its section 4 lists the ones that do not hold in current code, e.g. attack-commit, texture memory bounds, the auto-quality fill test, the Play Age Signals plugin) and lists the owner tasks needed to publish (its section 6). No findings above are closed by it; nothing in the game was changed.
