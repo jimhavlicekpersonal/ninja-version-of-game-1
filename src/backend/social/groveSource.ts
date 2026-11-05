@@ -104,6 +104,8 @@ export interface RaidBattle {
   target: number;
   /** Server ticket of an online Alliance War attack. */
   ticket?: string;
+  /** A Gang War strike (step 67): reported to the Gang War. */
+  channel?: 'gangwar';
   /** Bank the attack. The record is kept in the battle log so it can be replayed. */
   finish(deployments: Deployment[], endTick: number | undefined): { stars: number; destruction: number; record: BattleRecord } | null;
 }

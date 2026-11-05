@@ -31,7 +31,7 @@ export interface FriendsUiDeps {
   /** Watch a duel's replay. */
   onReplay?(record: BattleRecord): void;
   /** The Gang War section of the Gang tab (step 67). */
-  war?(body: HTMLElement, redraw: () => void): void;
+  war?(body: HTMLElement, redraw: () => void, leader: boolean, members: number): void;
 }
 
 const LEAGUE = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
@@ -58,7 +58,7 @@ export class FriendsUi {
   readonly gang: GangUi;
 
   constructor(private readonly d: FriendsUiDeps) {
-    this.gang = new GangUi({ kit: d.kit, connection: d.connection, friends: () => this.data?.friends ?? [], redraw: () => this.draw(), war: d.war ? (body) => d.war!(body, () => this.draw()) : undefined });
+    this.gang = new GangUi({ kit: d.kit, connection: d.connection, friends: () => this.data?.friends ?? [], redraw: () => this.draw(), war: d.war ? (body, leader, members) => d.war!(body, () => this.draw(), leader, members) : undefined });
   }
 
   private get conn() {

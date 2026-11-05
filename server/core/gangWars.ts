@@ -216,6 +216,19 @@ async function warView(ctx: ServerContext, me: Player, w: GangWar, side: 'a' | '
     myIndex,
     outcome: phase === 'ended' ? gangWarOutcome(total.ours, total.theirs) : null,
     claimed: phase === 'ended' && (await ctx.repo.gangClaimed(w.id, me.id)),
+    log: attacks
+      .slice()
+      .sort((x, y) => y.at - x.at)
+      .slice(0, 30)
+      .map((a) => ({
+        at: a.at,
+        by: w[a.side].roster.find((e) => e.playerId === a.attackerId)?.name ?? 'A former member',
+        ours: a.side === side,
+        target: w[other(a.side)].roster.find((e) => e.index === a.target)?.name ?? `Base ${a.target + 1}`,
+        stars: a.stars,
+        destruction: a.destruction,
+        relay: a.relay,
+      })),
   };
 }
 

@@ -20,7 +20,7 @@ export interface GangUiDeps {
   /** Redraw the whole Friends screen. */
   redraw(): void;
   /** Gang War section (step 67), drawn under the Gang. */
-  war?(body: HTMLElement): void;
+  war?(body: HTMLElement, leader: boolean, members: number): void;
 }
 
 export class GangUi {
@@ -149,7 +149,7 @@ export class GangUi {
         body.append(h('div', { class: 'row find-row' }, pick, h('button', { class: 'btn primary', type: 'button', disabled: this.busy, onclick: () => void this.run(() => this.conn.squadInvite(pick.value), 'Invite sent.') }, 'Invite')));
       } else body.append(h('p', { class: 'muted small' }, 'Every friend you could invite is already here or invited. Add friends in the Friends tab.'));
     }
-    this.d.war?.(body);
+    this.d.war?.(body, leader, g.members.length);
     this.requestsBox(body);
     this.chatBox(body);
     const leave = h('button', { class: 'btn danger', type: 'button', disabled: this.busy || g.locked }, 'Leave Gang');

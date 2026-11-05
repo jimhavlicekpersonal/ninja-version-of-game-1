@@ -833,5 +833,7 @@ export interface PendingBattle {
   deployments: import('./battle/types').Deployment[];
   /** Server ticket for an online raid, so the report can still be sent. */
   ticket?: string;
+  /** A Gang War strike (kind 'war'): its report goes to the Gang War, not the Alliance War (step 67). */
+  channel?: 'gangwar';
   at: number;
 }

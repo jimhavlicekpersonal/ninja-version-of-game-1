@@ -110,6 +110,16 @@ export class App {
     this.open(new BattleSession(setup, c.data, 'scout'));
   }
 
+  /** A Gang War strike (step 67): solo, or a relay strike from the Gang's damage so far. */
+  async gangWarAttack(target: number, relay: boolean, enemyName: string, bot: boolean): Promise<void> {
+    try {
+      const battle = await this.d.connection.gangWarBattle(target, relay, enemyName, bot);
+      this.open(new BattleSession(battle.setup, this.d.controller.data, 'scout'), undefined, battle);
+    } catch (e) {
+      this.d.hud.toast((e as Error).message, 'error');
+    }
+  }
+
   /** Attack an enemy base in the Grove Raid (no loot or trophies). */
   async groveAttack(target: number): Promise<void> {
     const battle = await this.d.groveSource.raidBattle(target);
@@ -198,7 +208,7 @@ export class App {
       session,
       myTrophies: c.state.trophies,
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
-      grove: grove ? { enemyName: grove.enemyName } : undefined,
+      grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? 'Gang War relay' : 'Gang War' } : {}) } : undefined,
       practice,
       trial:
         trialTier !== undefined
@@ -287,7 +297,7 @@ export class App {
           lastTrack = Date.now();
           if (session.sim.ended && !c.state.pendingBattle) return;
           const kind = grove ? 'war' : trialTier !== undefined ? 'trial' : 'raid';
-          c.trackBattle({ kind, tier: trialTier, target: grove?.target, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: startedAt, rules: SIM_RULES });
+          c.trackBattle({ kind, tier: trialTier, target: grove?.target, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: startedAt, rules: SIM_RULES, ...(grove?.channel ? { channel: grove.channel } : {}) });
         };
         if (!lastTrack) track();
         else if (!trackTimer) trackTimer = window.setTimeout(track, Math.max(0, 1500 - (Date.now() - lastTrack)));

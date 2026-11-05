@@ -24,6 +24,7 @@ import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
 import { FriendsUi } from './friendsUi';
+import { GangWarUi } from './gangWarUi';
 import { GroveUi } from './groveUi';
 import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
@@ -63,6 +64,8 @@ export interface HudDeps {
   onPractice(army: Record<string, number>): void;
   /** A Friendly Duel (step 62). */
   onDuel?(friendId: string, friendName: string, opts?: { layout?: 'live' | 'duel'; challengeId?: string }): void;
+  /** A Gang War strike (step 67). */
+  onGangWarAttack?(target: number, relay: boolean, enemyName: string, bot: boolean): void;
   prefs: { get(k: 'sessionReminder' | 'reminders' | 'crashReports'): boolean; set(k: 'sessionReminder' | 'reminders' | 'crashReports', v: boolean): void };
   /** This build sends crash reports (it has a Sentry DSN): show the switch. */
   crashReports?: boolean;
@@ -144,7 +147,13 @@ export class Hud {
       troopThumb: (t) => this.deps.troopThumb(t),
       onGroveAttack: (i) => this.deps.onGroveAttack(i),
     });
+    const gangWar = new GangWarUi({
+      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      connection: this.deps.connection,
+      onAttack: this.deps.onGangWarAttack ? (t, relay, name, bot) => this.deps.onGangWarAttack!(t, relay, name, bot) : undefined,
+    });
     this.friends = new FriendsUi({
+      war: (body, redraw, leader, members) => gangWar.draw(body, redraw, leader, members),
       kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
       connection: this.deps.connection,
       shareBase: () => this.deps.friendLinkBase?.() ?? null,

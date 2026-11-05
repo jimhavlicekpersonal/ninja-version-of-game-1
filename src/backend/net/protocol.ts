@@ -462,6 +462,8 @@ export interface GangWarView {
   myIndex: number | null;
   outcome: 'win' | 'draw' | 'loss' | null;
   claimed: boolean;
+  /** The war so far, newest first: who hit which base (yours: replays in your battle log). */
+  log: { at: number; by: string; ours: boolean; target: string; stars: number; destruction: number; relay: boolean }[];
 }
 export interface GangWarResponse {
   war: GangWarView | null;

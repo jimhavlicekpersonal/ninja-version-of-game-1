@@ -20,7 +20,8 @@ export interface BattleHudDeps {
   /** Set when watching a replay. */
   replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
   /** Set for Grove Raid attacks (no loot, no Next). */
-  grove?: { enemyName: string };
+  /** Alliance War, or a Gang War strike (`title`, step 67). */
+  grove?: { enemyName: string; title?: string };
   /** A practice battle (nothing spent or won, no Next). */
   practice?: boolean;
   /** Set for Shadow Trials (practice ladder: no loot from buildings, no honor, no Next). */
@@ -80,7 +81,7 @@ export class BattleHud {
             ? `Replay: ${deps.replayOf.opponentName} attacks · loot taken`
             : 'Replay · loot won'
           : deps.grove
-            ? `Alliance War vs ${deps.grove.enemyName}`
+            ? `${deps.grove.title ?? 'Alliance War'} vs ${deps.grove.enemyName}`
             : deps.trial
               ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
               : deps.practice

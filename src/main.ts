@@ -214,6 +214,7 @@ async function boot(): Promise<void> {
     onTrial: (tier) => app?.trial(tier),
     onPractice: (army) => app?.practice(army),
     onDuel: (friendId, name, opts) => void app?.duel(friendId, name, opts),
+    onGangWarAttack: (target, relay, enemyName, bot) => void app?.gangWarAttack(target, relay, enemyName, bot),
     prefs,
     notifyPrefs,
     onRemindersEnabled: async () => {
@@ -268,9 +269,9 @@ async function boot(): Promise<void> {
     const { pending, record } = interrupted;
     if (pending.ticket) {
       const sub = { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, reinforcements: pending.setup.reinforcements, deployments: pending.deployments };
-      void connection.report(pending.kind === 'war' ? 'raid' : 'attack', sub);
+      void connection.report(pending.channel === 'gangwar' ? 'gangwar' : pending.kind === 'war' ? 'raid' : 'attack', sub);
     }
-    const what = pending.kind === 'war' ? 'Alliance War attack' : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
+    const what = pending.channel === 'gangwar' ? 'Gang War attack' : pending.kind === 'war' ? 'Alliance War attack' : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
     hud.toast(`Your ${what} on ${pending.opponentName} was interrupted and has been played out: ${record.result.stars}★, ${record.result.destruction}%. See the battle log.`, 'info');
   }
 

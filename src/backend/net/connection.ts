@@ -13,10 +13,13 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, ChallengesResponse, ChallengeView, ChatResponse, ChatView, DuelReportResponse, DuelsResponse, DuelTicketRequest, DuelTicketResponse, RequestsResponse, RequestView, SquadResponse, FriendRequestBody, FriendRequestResult, FriendsResponse, HelloResponse, LinkCredential, LinkProvider, PlayerCard, PlayerView, PrivacyRequest, PurchaseStore, ReportReason } from './protocol';
+import type { BattleSubmission, GangWarResponse, ChallengesResponse, ChallengeView, ChatResponse, ChatView, DuelReportResponse, DuelsResponse, DuelTicketRequest, DuelTicketResponse, RequestsResponse, RequestView, SquadResponse, FriendRequestBody, FriendRequestResult, FriendsResponse, HelloResponse, LinkCredential, LinkProvider, PlayerCard, PlayerView, PrivacyRequest, PurchaseStore, ReportReason } from './protocol';
 import { normalizeFriendCode } from './names';
 import { troopLevels } from '../../gameplay/sim/research';
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
+import { battleLoadout } from '../../gameplay/sim/village';
+import type { BattleSetup } from '../../gameplay/sim/battle/types';
+import type { RaidBattle } from '../social/groveSource';
 // Name rules for instant hints in the UI (the server decides; step 59).
 export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './names';
 import type { PurchaseVerifier } from '../payments/provider';
@@ -77,7 +80,7 @@ export type ConnectionStatus =
 
 export interface OutboxItem {
   id: string;
-  kind: 'attack' | 'raid';
+  kind: 'attack' | 'raid' | 'gangwar';
   sub: BattleSubmission;
   at: number;
 }
@@ -138,6 +141,7 @@ export class Connection {
   private readonly listeners = new Set<() => void>();
   private syncing: Promise<void> | null = null;
   private triedWeeks = new Set<number>();
+  private triedGangWars = new Set<string>();
   private timers: ReturnType<typeof setInterval>[] = [];
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private retryDelay = 15_000;
@@ -385,6 +389,50 @@ export class Connection {
     await this.port_().squadDonate(requestId, { troop, count: 1, level });
     g.dispatch({ type: 'spendDonation', troop, count: 1, xp: 0 });
   }
+  get canGangWars(): boolean {
+    return this.online && Boolean(this.server?.features.includes('gang-wars'));
+  }
+  gangWar(): Promise<GangWarResponse> {
+    return this.port_().gangWar();
+  }
+  gangWarQueue(): Promise<GangWarResponse> {
+    return this.port_().gangWarQueue();
+  }
+  gangWarCancel(): Promise<GangWarResponse> {
+    return this.port_().gangWarCancel();
+  }
+  gangWarBase(): Promise<GangWarResponse> {
+    return this.port_().gangWarBase();
+  }
+  /**
+   * A Gang War strike (step 67): the ticket, and the battle to play. Finishing
+   * spends the warriors and keeps the replay (as in an Alliance War); the
+   * report goes through the outbox, so it survives a lost connection.
+   */
+  async gangWarBattle(target: number, relay: boolean, enemyName: string, bot: boolean): Promise<RaidBattle> {
+    const g = this.o.game;
+    const t = await this.port_().gangWarTicket({ target, relay });
+    const base = structuredClone(t.base);
+    if (bot) base.practice = 'Generated Gang (no Gang fitted yours)';
+    const setup: BattleSetup = { seed: t.seed >>> 0, base, ...battleLoadout(g.state, g.data), infiltration: true, ...(t.startDamage ? { startDamage: t.startDamage } : {}) };
+    const at = g.now();
+    return {
+      setup,
+      enemyName,
+      target,
+      ticket: t.ticket,
+      channel: 'gangwar',
+      finish: (deployments, endTick) => {
+        const r = g.dispatch({ type: 'remoteGroveBattleEnd', target, record: { at, opponentName: base.name, setup, deployments, endTick } });
+        if (!r.ok) return null;
+        const e = r.events.find((x) => x.kind === 'grove_attack');
+        if (!e || e.kind !== 'grove_attack') return null;
+        void this.report('gangwar', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick, clientHash: e.record.result.hash, rules: SIM_RULES });
+        return { stars: e.stars, destruction: e.destruction, record: e.record };
+      },
+    };
+  }
+
   reportChat(messageId: string, reason: ReportReason, note: string, block: boolean): Promise<unknown> {
     return this.port_().report({ kind: 'chat', messageId, reason, note, block });
   }
@@ -555,6 +603,7 @@ export class Connection {
       await this.pullDefenses(port);
       await this.pullDonations(port);
       await this.claimChests(port);
+      await this.claimGangChests(port);
       await this.flush();
       this.player = await port.me();
       g.dispatch({ type: 'syncRank', trophies: this.player.trophies, shieldUntil: this.player.shieldUntil });
@@ -669,6 +718,32 @@ export class Connection {
     await port.ackInbox(donations.map((d) => d.id));
   }
 
+  /** Gang War chests (step 65) the server lists for this player that this village has not received yet. */
+  private async claimGangChests(port: ServerPort): Promise<void> {
+    if (!this.server?.features.includes('gang-wars')) return;
+    const g = this.o.game;
+    let view: GangWarResponse;
+    try {
+      view = await port.gangWar();
+    } catch (e) {
+      if (e instanceof ServerError && e.code === 'not_found') return; // not in a Gang
+      throw e;
+    }
+    for (const w of view.recent) {
+      if ((g.state.net.gangWars ?? []).includes(w.id) || this.triedGangWars.has(w.id)) continue;
+      this.triedGangWars.add(w.id);
+      try {
+        const c = await port.gangWarClaim(w.id);
+        g.dispatch({ type: 'claimGangChest', warId: c.warId, outcome: c.outcome });
+      } catch (e) {
+        if (!(e instanceof ServerError) || e.retryable) {
+          this.triedGangWars.delete(w.id);
+          throw e;
+        }
+      }
+    }
+  }
+
   /** Grove Raid chests the server lists for this player that this village has not received yet. */
   private async claimChests(port: ServerPort): Promise<void> {
     const g = this.o.game;
@@ -743,6 +818,8 @@ export class Connection {
           const r = await port.submitAttack(item.sub);
           g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies });
           g.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
+        } else if (item.kind === 'gangwar') {
+          await port.gangWarAttack(item.sub);
         } else {
           await port.submitRaidAttack(item.sub);
         }
