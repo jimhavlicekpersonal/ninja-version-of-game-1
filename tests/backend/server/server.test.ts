@@ -106,11 +106,16 @@ describe('server HTTP adapter', () => {
     expect(m.status).toBe(200);
     expect(m.body.opponent).toMatchObject({ name: 'Defender', kind: 'player' });
     const { army, deployments } = rush(20);
-    expect(Number.isInteger(m.body.seed) && m.body.seed >= 0 && m.body.seed < 2 ** 32).toBe(true);
-    const atk = await s.call('POST', Routes.attacks, attacker.token, { ticket: m.body.ticket, seed: m.body.seed, army, deployments });
+    // Protocol 10 (ledger audit A1): no seed with the match; POST /v1/attacks/start returns it.
+    expect(m.body.seed).toBeUndefined();
+    const started = await s.call('POST', Routes.attackStart, attacker.token, { ticket: m.body.ticket });
+    expect(started.status).toBe(200);
+    const seed = started.body.seed;
+    expect(Number.isInteger(seed) && seed >= 0 && seed < 2 ** 32).toBe(true);
+    const atk = await s.call('POST', Routes.attacks, attacker.token, { ticket: m.body.ticket, seed, army, deployments });
     expect(atk.status).toBe(200);
-    expect(atk.body.result.hash).toBe(runBattle({ seed: m.body.seed, base: m.body.base, army, infiltration: true }, deployments, data).result.hash);
-    const again = await s.call('POST', Routes.attacks, attacker.token, { ticket: m.body.ticket, seed: m.body.seed, army, deployments });
+    expect(atk.body.result.hash).toBe(runBattle({ seed, base: m.body.base, army, infiltration: true }, deployments, data).result.hash);
+    const again = await s.call('POST', Routes.attacks, attacker.token, { ticket: m.body.ticket, seed, army, deployments });
     // Idempotent: a retried report returns the first answer instead of applying it twice.
     expect(again.status).toBe(200);
     expect(again.body).toEqual(atk.body);

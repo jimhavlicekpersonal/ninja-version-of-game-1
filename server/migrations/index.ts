@@ -29,6 +29,7 @@ import m0021 from './0021_refund_notices.sql?raw';
 import m0022 from './0022_ticket_commitment.sql?raw';
 import m0023 from './0023_purchase_storefront.sql?raw';
 import m0024 from './0024_accounts_minors.sql?raw';
+import m0025 from './0025_ticket_scout.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -55,4 +56,5 @@ export const migrations = loadMigrations({
   '0022_ticket_commitment.sql': m0022,
   '0023_purchase_storefront.sql': m0023,
   '0024_accounts_minors.sql': m0024,
+  '0025_ticket_scout.sql': m0025,
 });

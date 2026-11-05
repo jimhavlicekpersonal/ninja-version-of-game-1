@@ -236,6 +236,12 @@ export interface Ticket {
    */
   seed?: number;
   /**
+   * Raid tickets of a server-held village (ledger audit A1/E15): the village's
+   * scout seed when the ticket was issued. The same scout gets the same ticket
+   * back; a new opponent needs a new (paid) scout.
+   */
+  scoutSeed?: number;
+  /**
    * The battle rules (SIM_RULES) and data version the ticket was issued under
    * (roadmap step 73): the report is re-simulated with that engine. Absent on
    * tickets from before protocol 8 (the live engine).
@@ -675,6 +681,12 @@ export interface Repo {
    * time). Outside a transaction it does nothing.
    */
   lockPurchases(playerId: string): Promise<void>;
+  /**
+   * Inside a transaction: hold this player until it ends (ledger audit A6: two raid reports, or a report
+   * and a forfeit, read and wrote one player's honor and village at the same time). Lock several players
+   * in ascending id order (`lockPlayers` in core/pvp.ts) so two transactions never wait on each other.
+   */
+  lockPlayer(playerId: string): Promise<void>;
   addIntent(i: PurchaseIntent): Promise<void>;
   getIntent(id: string): Promise<PurchaseIntent | null>;
   useIntent(id: string): Promise<void>;
@@ -1176,6 +1188,9 @@ export class MemoryRepo implements Repo {
     return bought + held;
   }
   async lockPurchases(): Promise<void> {
+    /* memory transactions already run one at a time */
+  }
+  async lockPlayer(): Promise<void> {
     /* memory transactions already run one at a time */
   }
   async holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean> {

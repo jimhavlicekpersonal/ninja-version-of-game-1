@@ -37,7 +37,8 @@ export interface BattleHudDeps {
   canPayFee(): boolean;
   onHome(): void;
   onNext(): void;
-  onAttack(): void;
+  /** Resolves false when the battle could not start (an online raid needs the server's go and seed). */
+  onAttack(): boolean | Promise<boolean>;
   /** Called once when a live battle ends; returns the loot actually banked. */
   /** `banked` is what reached storage (bonuses included); `overflow` is what was won but did not fit. */
   onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean } | null;
@@ -379,17 +380,7 @@ export class BattleHud {
             class: 'btn danger big-attack',
             type: 'button',
             disabled: !hasArmy,
-            onclick: () => {
-              this.deps.onAttack();
-              this.pathChip = null;
-              this.renderBottom();
-              this.renderTroops();
-              // The scout drawer and its buttons are gone: frame every open point again for the first tap.
-              window.requestAnimationFrame(() => {
-                this.placeToasts();
-                this.view?.fit();
-              });
-            },
+            onclick: (ev: Event) => void this.attackTapped(ev.currentTarget as HTMLButtonElement),
           },
           hasArmy ? 'Attack!' : 'Train troops first',
         ),
@@ -508,6 +499,31 @@ export class BattleHud {
     }
   }
 
+
+  /**
+   * Attack tapped. An online raid waits for the server (it sends the battle seed only now: ledger audit A1),
+   * so the button says so and stays put if the raid could not start.
+   */
+  private async attackTapped(btn: HTMLButtonElement): Promise<void> {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const label = btn.textContent;
+    btn.textContent = 'Starting…';
+    const ok = await this.deps.onAttack();
+    if (!ok) {
+      btn.disabled = false;
+      btn.textContent = label;
+      return;
+    }
+    this.pathChip = null;
+    this.renderBottom();
+    this.renderTroops();
+    // The scout drawer and its buttons are gone: frame every open point again for the first tap.
+    window.requestAnimationFrame(() => {
+      this.placeToasts();
+      this.view?.fit();
+    });
+  }
   private confirmEnd(): void {
     const close = this.modal(
       'End the battle?',

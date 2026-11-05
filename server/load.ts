@@ -101,12 +101,15 @@ export async function runLoad(o: LoadOptions): Promise<LoadReport> {
     try {
       const m = await timed('match', () => p.port.match());
       if (!m) return;
+      // Protocol 10 (ledger audit A1): the seed comes when the raid starts.
+      const started = p.port.startAttack ? await timed('start', () => p.port.startAttack!(m.ticket)) : null;
+      const seed = started?.seed ?? m.seed ?? 0;
       const army = botArmy(p.keep, 1, o.data);
       const levels: Record<string, number> = {};
       for (const t of Object.keys(army)) levels[t] = Math.max(1, Math.min(troopLevelCapAt(p.keep, o.data, t), o.data.troops[t].levels.length));
-      const probe = createBattle({ seed: m.seed, base: m.base, army, levels, infiltration: true }, o.data);
+      const probe = createBattle({ seed, base: m.base, army, levels, infiltration: true }, o.data);
       const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(++seq), o.data, levels, probe.entry);
-      const r = await timed('attack', () => p.port.submitAttack({ ticket: m.ticket, seed: m.seed, army, levels, deployments }));
+      const r = await timed('attack', () => p.port.submitAttack({ ticket: m.ticket, seed, army, levels, deployments }));
       if (r) battles++;
       await timed('me', () => p.port.me());
     } finally {

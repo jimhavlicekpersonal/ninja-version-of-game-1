@@ -176,7 +176,8 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
         vb.collector = { stored: have - take, accrueFrom: vb.upgrade && vb.upgrade.endsAt > t ? vb.upgrade.endsAt : t };
         fromCollectors[k] = (fromCollectors[k] ?? 0) + Math.floor(take);
       } else {
-        const take = Math.min(s.resources[k], v);
+        // Never negative: a village in debt (ledger audit A5) has nothing in storage to lose.
+        const take = Math.max(0, Math.min(s.resources[k], v));
         s.resources[k] -= take;
         fromStorage[k] = (fromStorage[k] ?? 0) + take;
       }

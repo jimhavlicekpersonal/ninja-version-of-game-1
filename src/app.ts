@@ -87,7 +87,11 @@ export class App {
         // Same scout seed as last time (Home, then Attack): show the same base
         // while its ticket is still valid, so leaving never rerolls for free.
         const kept = this.onlineMatch && this.onlineMatch.seed === r.seed && Date.now() < this.onlineMatch.expiresAt - TICKET_MARGIN_MS ? this.onlineMatch : null;
-        if (!kept) await conn.ensureFreshBase();
+        if (!kept) {
+          // Ledger audit A1: a started raid whose report has not arrived counts as a loss at the next match.
+          await conn.sendReportsBeforeMatch();
+          await conn.ensureFreshBase();
+        }
         const m = kept ?? (await conn.port.match());
         if (m) {
           this.onlineMatch = kept ?? { seed: r.seed, battleSeed: typeof m.seed === 'number' ? m.seed >>> 0 : mixSeed(r.seed, 0xba771e), ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
@@ -273,10 +277,20 @@ export class App {
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
       onHome: () => this.home(),
       onNext: () => this.scout(true),
-      onAttack: () => {
+      onAttack: async () => {
+        // An online raid counts from here (re-audit): the server settles it as a loss if it is never
+        // reported, and only now sends the battle seed (ledger audit A1). No seed, no battle.
+        if (!grove && !duel && trialTier === undefined && !practice && this.ticket) {
+          try {
+            const seed = await this.d.connection.startAttack(this.ticket);
+            if (seed !== undefined) session.reseed(seed);
+          } catch (e) {
+            this.battleHud?.toast((e as Error).message);
+            return false;
+          }
+        }
         session.start();
-        // An online raid counts from here (re-audit): the server settles it as a loss if it is never reported.
-        if (!grove && !duel && trialTier === undefined && !practice && this.ticket) this.d.connection.startAttack(this.ticket);
+        return true;
       },
       onFinished: () => {
         if (practice) {

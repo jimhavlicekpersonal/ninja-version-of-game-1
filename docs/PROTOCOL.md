@@ -1,6 +1,14 @@
-# Kagemura multiplayer protocol (version 9)
+# Kagemura multiplayer protocol (version 10)
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
+
+**Version 10 (ledger audit, docs/audit/STATE_OF_THE_GAME.md section 5 step 1; servers accept 7, except `GET /v1/match`, which needs 10):**
+- **The battle seed comes when the raid starts:** `GET /v1/match` no longer sends `seed`. `POST /v1/attacks/start` `{ ticket }` → `{ started: true, seed }` (feature `seed-at-start`; the same seed on a retry; `409` for a used ticket, `410` for an unstarted one past its hour). The game asks on Attack and does not begin the battle without the answer. `GET /v1/match` from a game older than 10 gets `426 version_mismatch`.
+- **Unreported raids count sooner:** a started raid with no report `REPORT_GRACE_MS` (8 minutes) after Attack is settled as a 0-star loss (honor and Attack Rating) when its attacker next asks for a match; its late report then gets `410`. The game sends its waiting reports before it asks (`Connection.sendReportsBeforeMatch`). The hourly sweep still settles the rest 72 hours after the ticket's hour.
+- **Rerolls cost Next for server-held villages:** a new opponent needs a new scout in the village (the free first look after a raid, or a paid Next, both replayed from the game's `scout` command). Asking again with the same scout gets the same open ticket back; with no scout at all, `409`.
+- **Under-18 cap at redeem:** a receipt with no open intent of this player (none, an already used one, a pruned one) is credited only if the month leaves room under the cap; otherwise `403 purchase_refused`, nothing credited, and the store transaction stays unfinished.
+- **Village import by account age:** above Keep 5, `POST /v1/village/import` needs an account at least half as old as the days the regular model player took to reach that Keep (Keep 6: 5.2 days … Keep 15: 60.6), else `403 cooldown` with the wait in the message (the game tries again a day later). Imports also have a per-IP limit (`villageImport`, 60 an hour).
+- **Gang War chests:** `POST /v1/squad/war/claim` answers `generated: true` for a war against a generated Gang; its chest pays no Jade, and the game applies `claimGangChest` with `generated`.
 
 **Version 9 (roadmap steps 57 and 62-70; servers still accept 7):**
 - **Battle rules 3:** `BattleSetup.startDamage` (relay strikes). Rules 3 plays every rules 2 battle exactly, so servers list `supportedRules: [3, 2]` and keep serving rules 2 games; only relay strikes need 3 (`426` otherwise).

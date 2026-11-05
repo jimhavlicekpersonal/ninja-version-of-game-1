@@ -401,12 +401,14 @@ export async function claim(ctx: ServerContext, me: Player, warId: unknown): Pro
   await rateIfEnded(ctx, w);
   const { ours, theirs } = await totals(ctx, w, side, w.endsAt);
   const outcome = gangWarOutcome(sideTotal(ours), sideTotal(theirs));
+  const generated = w[other(side)].bot;
   const fresh = await ctx.repo.transaction(async (tx) => {
     const first = await tx.addGangClaim(w.id, me.id, outcome, ctx.now());
-    // A village the server keeps gets the chest with the claim (once).
-    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimGangChest', warId: w.id, outcome }, reason: 'gangwar:chest' }], `gangwar:${w.id}`);
+    // A village the server keeps gets the chest with the claim (once). Ledger audit E13: no Jade
+    // from a war against a generated Gang (the game applies the same command with `generated`).
+    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimGangChest', warId: w.id, outcome, generated }, reason: 'gangwar:chest' }], `gangwar:${w.id}`);
     return first;
   });
-  return { warId: w.id, outcome, alreadyClaimed: !fresh };
+  return { warId: w.id, outcome, alreadyClaimed: !fresh, generated };
 }
 

@@ -11,7 +11,7 @@ import { canPlace } from '../../../src/gameplay/sim/grid';
 import { applyCommand, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION } from '../../../src/gameplay/sim/save';
 import type { GameData, VillageState } from '../../../src/gameplay/sim/types';
-import { baseAt, HOUR, rush, world } from '../server/harness';
+import { baseAt, HOUR, rush, world, startSeed } from '../server/harness';
 
 function memoryKv(): KeyValue & { map: Map<string, string> } {
   const map = new Map<string, string>();
@@ -120,7 +120,7 @@ describe('Connection', () => {
     await conn.uploadBase();
     const m = (await bob.match())!;
     expect(m.opponent.kind).toBe('player');
-    const r = await bob.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(20) });
+    const r = await bob.submitAttack({ ticket: m.ticket, seed: await startSeed(bob, m.ticket), ...rush(20) });
     const before = game.state.resources.acorns;
     await conn.sync();
     await conn.sync();
@@ -190,7 +190,8 @@ describe('Connection', () => {
     port.submitAttack = async () => {
       throw new ServerError(0, 'network', 'offline');
     };
-    await conn.report('attack', { ticket: m.ticket, seed: m.seed, ...rush(10) });
+    const s1 = await startSeed(port, m.ticket);
+    await conn.report('attack', { ticket: m.ticket, seed: s1, ...rush(10) });
     expect(conn.outbox()).toHaveLength(1);
     // The outbox survives a restart (it is in storage).
     const restarted = connect(w, game, kv, port).conn;
@@ -203,7 +204,7 @@ describe('Connection', () => {
       throw new ServerError(429, 'rate_limited', 'Too many battle reports at once. Try again in 30 seconds.');
     };
     const m2 = (await port.match())!;
-    await restarted.report('attack', { ticket: m2.ticket, seed: m2.seed, ...rush(10) });
+    await restarted.report('attack', { ticket: m2.ticket, seed: await startSeed(port, m2.ticket), ...rush(10) });
     expect(restarted.outbox().map((i) => i.id)).toEqual([m2.ticket]);
     expect(restarted.status).toBe('online');
     expect(restarted.lastError).toMatch(/Try again/);
@@ -211,7 +212,50 @@ describe('Connection', () => {
     await restarted.sync();
     expect(restarted.outbox()).toHaveLength(0);
     // A report the server refuses (already used ticket) is dropped, not retried forever.
-    await restarted.report('attack', { ticket: m.ticket, seed: m.seed, ...rush(10) });
+    await restarted.report('attack', { ticket: m.ticket, seed: s1, ...rush(10) });
     expect(restarted.outbox()).toHaveLength(0);
+  });
+});
+
+describe('ledger audit A1: the game asks for the seed on Attack and sends waiting reports before the next match', () => {
+  it('startAttack returns the server seed; without a connection the raid does not start', async () => {
+    const w = world();
+    const game = village(w);
+    const { conn, port } = connect(w, game);
+    await conn.sync();
+    await w.player('Dot', baseAt(1, 3));
+    const m = (await port.match())!;
+    expect(m.seed).toBeUndefined();
+    const seed = await conn.startAttack(m.ticket);
+    expect(seed).toBe((await w.repo.getTicket(m.ticket))!.seed);
+    // A connection that never reached the server (status offline) refuses to start the raid.
+    const offline = connect(w, game, memoryKv(), port).conn;
+    (offline as unknown as { server: unknown }).server = (conn as unknown as { server: unknown }).server;
+    expect(offline.online).toBe(false);
+    await expect(offline.startAttack(m.ticket)).rejects.toThrow(/No connection/);
+    // A server that refuses (this ticket is someone else's) says why, and the raid does not start either.
+    const other = connect(w, village(w), memoryKv()).conn;
+    await other.sync();
+    await expect(other.startAttack(m.ticket)).rejects.toThrow(/Unknown ticket/);
+  });
+
+  it('sendReportsBeforeMatch empties the outbox first', async () => {
+    const w = world();
+    const game = village(w);
+    const { conn, port } = connect(w, game);
+    await conn.sync();
+    const m = (await port.match())!;
+    const seed = await startSeed(port, m.ticket);
+    const submit = port.submitAttack.bind(port);
+    // Rate limited: the report waits in the outbox and the connection stays online.
+    port.submitAttack = async () => {
+      throw new ServerError(429, 'rate_limited', 'Too many battle reports at once.');
+    };
+    await conn.report('attack', { ticket: m.ticket, seed, ...rush(10) });
+    expect(conn.outbox()).toHaveLength(1);
+    expect(conn.online).toBe(true);
+    port.submitAttack = submit;
+    await conn.sendReportsBeforeMatch();
+    expect(conn.outbox()).toHaveLength(0);
   });
 });

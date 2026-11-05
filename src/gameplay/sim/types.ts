@@ -774,6 +774,10 @@ export interface SocialDef {
     epoch: number;
     durationHours: number;
     attacksPerMember: number;
+    /** Ledger audit E12: own attacks in a war before its chest (and Alliance XP) is paid. */
+    chestMinAttacks: number;
+    /** Ledger audit E12: at most this many ended wars are paid when a player comes back. */
+    settleWeeksMax: number;
     prepOfferHours: number;
     starOdds: { base3: number; base2: number; base1: number; perHallDiff: number };
     rewards: Record<'win' | 'draw' | 'loss', Cost & { xp: number }>;
@@ -787,6 +791,8 @@ export interface SocialDef {
     attacksPerMember: number;
     /** Share of a relay strike's damage the next strike starts from. */
     relayCarry: number;
+    /** Ledger audit E13: whether a war against a generated Gang pays the chest's Jade. */
+    generatedOpponentJade: boolean;
     botAfterMinutes: number;
     recentOpponents: number;
     rewards: Record<'win' | 'draw' | 'loss', Cost>;

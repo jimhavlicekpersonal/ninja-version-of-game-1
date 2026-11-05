@@ -39,6 +39,8 @@ export interface RulesEngine {
 
 /** What a request says about the game that sent it (protocol headers). */
 export interface ClientInfo {
+  /** x-protocol. Absent: tools, tests and webhooks. */
+  protocol?: number;
   /** x-sim-rules. Absent: tools and tests, served with the live engine. */
   rules?: number;
   /** x-data-version (protocol 8). */

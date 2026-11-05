@@ -124,9 +124,10 @@ describe('old games on a new server (steps 73, 75)', () => {
       await s.call('PUT', Routes.base, atk.token, { base: baseAt(3, 5) });
       const m = await s.call('GET', Routes.match, atk.token, undefined, game(rules));
       expect(m.status).toBe(200);
-      const r = await s.call('POST', Routes.attacks, atk.token, { ticket: m.body.ticket, seed: m.body.seed, army, deployments, rules }, game(rules));
+      const seed = (await s.call('POST', Routes.attackStart, atk.token, { ticket: m.body.ticket }, game(rules))).body.seed;
+      const r = await s.call('POST', Routes.attacks, atk.token, { ticket: m.body.ticket, seed, army, deployments, rules }, game(rules));
       expect(r.status).toBe(200);
-      expect(r.body.result.hash).toBe(engine.runBattle({ seed: m.body.seed, base: m.body.base, army, infiltration: true }, deployments, engine.data).result.hash);
+      expect(r.body.result.hash).toBe(engine.runBattle({ seed, base: m.body.base, army, infiltration: true }, deployments, engine.data).result.hash);
       s.advance(2 * 3_600_000);
     }
     // The old game's battle went through the old engine (once on the server, once in this test's check), the new one's did not.

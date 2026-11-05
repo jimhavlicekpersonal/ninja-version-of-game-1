@@ -157,19 +157,27 @@ export function ensureRaid(state: VillageState, t: number, data: GameData): Grov
 
 /**
  * Pay out any Grove Raid that has ended (exactly once). Mutates. Returns the
- * rewards paid, if any.
+ * rewards paid, if any. Ledger audit E12: a war pays its chest and XP only if
+ * the player attacked in it (`chestMinAttacks`), and only the last
+ * `settleWeeksMax` ended wars are settled; older ones are skipped unpaid.
  */
 export function settleRaids(state: VillageState, now: number, hall: number, data: GameData): { week: number; outcome: 'win' | 'draw' | 'loss'; reward: Cost }[] {
   const g = state.grove;
   const paid: { week: number; outcome: 'win' | 'draw' | 'loss'; reward: Cost }[] = [];
   if (!g.joined) return paid;
+  const def = data.social.groveRaid;
+  let lastEnded = g.settledWeek;
+  while (raidWindow(lastEnded + 1, data).end <= now) lastEnded++;
+  g.settledWeek = Math.max(g.settledWeek, lastEnded - def.settleWeeksMax);
   for (let week = g.settledWeek + 1; raidWindow(week, data).end <= now; week++) {
     const { end } = raidWindow(week, data);
     const raid: GroveRaidState = g.raid && g.raid.week === week ? g.raid : { week, attacks: [], paidOut: false, result: null };
     const score = raidScore(state, week, end, hall, data);
     const outcome = score.ours > score.theirs ? 'win' : score.ours < score.theirs ? 'loss' : 'draw';
-    const { xp, ...base } = data.social.groveRaid.rewards[outcome];
-    const chest = scaleReward(base, hall, data);
+    const fought = raid.attacks.length >= def.chestMinAttacks;
+    const { xp: fullXp, ...base } = def.rewards[outcome];
+    const xp = fought ? fullXp : 0;
+    const chest = fought ? scaleReward(base, hall, data) : {};
     const soft: Cost = {};
     for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) {
       if (k === 'moonstones') state.resources.moonstones += v;

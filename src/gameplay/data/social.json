@@ -169,6 +169,9 @@
     "epoch": 1767398400000,
     "durationHours": 48,
     "attacksPerMember": 2,
+    "$commentLedger": "Ledger audit E12: the offline (computer) Alliance War pays its chest only to a player who attacked at least chestMinAttacks times that week, and a returning player is paid for at most the last settleWeeksMax wars (a year away used to pay 52 chests at once).",
+    "chestMinAttacks": 1,
+    "settleWeeksMax": 2,
     "prepOfferHours": 24,
     "starOdds": {
       "base3": 0.2,
@@ -204,6 +207,8 @@
     "prepHours": 2,
     "battleHours": 22,
     "attacksPerMember": 2,
+    "$commentLedger": "Ledger audit E13: a war against a generated Gang (paired after botAfterMinutes, any time of day) pays its chest in resources only; Jade comes only from wars against real Gangs.",
+    "generatedOpponentJade": false,
     "relayCarry": 0.5,
     "botAfterMinutes": 3,
     "recentOpponents": 3,

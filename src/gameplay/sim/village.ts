@@ -111,7 +111,8 @@ export type Command =
   | { type: 'spendDonation'; troop: string; count: number; xp: number }
   | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number }
   /** A Gang War chest the server confirmed (step 65), once per war. */
-  | { type: 'claimGangChest'; warId: string; outcome: 'win' | 'draw' | 'loss' }
+  /** `generated`: the war was against a generated Gang (ledger audit E13: no Jade). */
+  | { type: 'claimGangChest'; warId: string; outcome: 'win' | 'draw' | 'loss'; generated?: boolean }
   /** `known`: server only, the result it has just simulated from this setup (see battleEnd). */
   | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
   /**
@@ -580,7 +581,10 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'staffAdjust':
       for (const [k, v] of Object.entries(cmd.resources) as [ResourceKind, number][]) {
         if (!(k in s.resources) || !Number.isFinite(v)) return fail('NOT_FOUND', 'Unknown resource.');
-        s.resources[k] = Math.max(0, Math.round(s.resources[k] + v));
+        // A staff take never creates a debt or deepens one; a grant pays a debt back first (ledger audit A5:
+        // the old zero floor wiped a refund debt whenever a reversed refund was given back).
+        const next = s.resources[k] + v;
+        s.resources[k] = Math.round(v < 0 ? Math.max(Math.min(s.resources[k], 0), next) : next);
       }
       return { ok: true, state: s, events: [] };
     case 'setProfile':
@@ -664,7 +668,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       if (!spendDonation(s, cmd.troop, cmd.count, cmd.xp)) return fail('NOT_AVAILABLE', 'Not enough of that troop.');
       return { ok: true, state: s, events: [{ kind: 'donation', troop: cmd.troop, count: cmd.count, xp: cmd.xp }] };
     case 'claimGangChest': {
-      const chest = claimGangChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data);
+      const chest = claimGangChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data, cmd.generated === true);
       return chest ? { ok: true, state: s, events: [] } : fail('ALREADY_CLAIMED', 'This Gang War chest was already collected.');
     }
     case 'claimRaidChest': {
@@ -905,10 +909,11 @@ function grantPurchase(s: VillageState, productId: string, transactionId: string
 }
 
 /**
- * Take back a refunded purchase: what it gave, as far as it is still there
- * (spent Jade cannot be taken back; the ledger shows what was), and the
- * premium Season Scroll if it was this season's. The purchase stays listed so
- * the same transaction can never be delivered again.
+ * Take back a refunded purchase: everything it gave, and the premium Season
+ * Scroll if it was this season's. What was already spent becomes a debt (a
+ * negative balance, paid back from income before anything can be bought with
+ * it). The purchase stays listed so the same transaction can never be
+ * delivered again.
  */
 function revokePurchase(s: VillageState, transactionId: string, now: number, data: GameData): CommandResult {
   const p = s.purchases.find((x) => x.id === transactionId);
@@ -918,9 +923,10 @@ function revokePurchase(s: VillageState, transactionId: string, now: number, dat
   // Save v16: a purchase keeps what it really delivered (offers scale with the Keep); older ones had the catalog contents.
   if (product.kind === 'stipend') s.stipend.left = Math.max(0, (s.stipend?.left ?? 0) - (data.store.stipend?.payments ?? 0));
   for (const [k, v] of Object.entries(p.grants ?? product.grants) as [ResourceKind, number][]) {
-    // Re-audit: refunded Jade that was already spent becomes a debt (a negative balance): nothing can be
-    // bought with Jade until earned Jade pays it back. Other resources stop at zero.
-    if (v > 0) s.resources[k] = k === 'moonstones' ? s.resources[k] - v : Math.max(0, s.resources[k] - v);
+    // Re-audit: refunded Jade that was already spent becomes a debt (a negative balance). Ledger audit A5:
+    // every resource does. An offer's coins and rice were spent on an upgrade within seconds, and taking
+    // back only what was left gave a free upgrade per refund (save v17).
+    if (v > 0) s.resources[k] -= v;
   }
   if (product.kind === 'pass' && passSeason(p.at, data) === passSeason(now, data)) s.pass.premium = false;
   return { ok: true, state: s, events: [] };
@@ -1400,8 +1406,9 @@ function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, n
       c.b.collector = { stored: have - take, accrueFrom: c.b.upgrade && c.b.upgrade.endsAt > now ? c.b.upgrade.endsAt : now };
       left -= take;
     }
-    // Collected since the raid (or not traceable): it is in storage now.
-    s.resources[k] = Math.max(0, s.resources[k] - left);
+    // Collected since the raid (or not traceable): it is in storage now. A debt (negative balance,
+    // ledger audit A5) has nothing to take and is never wiped by a raid.
+    s.resources[k] -= Math.max(0, Math.min(s.resources[k], left));
   }
 }
 

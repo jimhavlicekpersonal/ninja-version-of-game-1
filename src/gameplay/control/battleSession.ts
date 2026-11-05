@@ -1,5 +1,6 @@
 import { createBattle, deploy, deploymentsByTick, end, result, step, type BattleSim, type SimEvent } from '../sim/battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from '../sim/battle/types';
+import { createRng } from '../sim/rng';
 import type { GameData } from '../sim/types';
 
 export type BattleMode = 'scout' | 'live' | 'replay';
@@ -32,6 +33,16 @@ export class BattleSession {
       this.replayDeps = deploymentsByTick(replay.deployments);
       this.replayEndTick = replay.endTick;
     }
+  }
+
+  /**
+   * Use the seed the server sent when Attack was pressed (protocol 10, ledger audit A1). Only while
+   * scouting: no tick has run, so nothing has drawn from the old seed yet.
+   */
+  reseed(seed: number): void {
+    if (this.mode !== 'scout' || this.sim.tick !== 0) return;
+    this.setup.seed = seed >>> 0;
+    this.sim.rng = createRng(this.setup.seed);
   }
 
   /** Begin the live battle (the timer starts). */

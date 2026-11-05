@@ -8,7 +8,7 @@ import { checkConfig, deployEnv } from '../../../server/config';
 import { ServerPush, type PushMessage, type PushTransport } from '../../../server/push/push';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { inQuietHours } from '../../../src/gameplay/sim/reminders';
-import { baseAt, HOUR, rush, world } from './harness';
+import { baseAt, HOUR, rush, world, startSeed } from './harness';
 import { freshPgRepo, repoFactories } from './pg';
 
 function fakeTransport() {
@@ -55,7 +55,7 @@ for (const [label, makeRepo] of repoFactories) {
       await w.repo.updatePlayer(ann.id, { shieldUntil: 0 });
       const m = (await ann.match())!;
       expect(m.opponent.name).toBe('Dot');
-      await ann.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(20) });
+      await ann.submitAttack({ ticket: m.ticket, seed: await startSeed(ann, m.ticket), ...rush(20) });
       await settle();
       expect(f.sent).toEqual([expect.objectContaining({ platform: 'ios', token: TOKEN_A, m: expect.objectContaining({ type: 'raided', title: 'Ann raided your village' }) })]);
       expect(w.core.hello().features).toContain('push');

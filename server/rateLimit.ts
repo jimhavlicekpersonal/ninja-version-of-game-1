@@ -46,6 +46,8 @@ export interface RateLimits {
   battleCommands: RateRule;
   /** Purchase intents, releases, receipts and history, per player (its own budget: never blocked by reports or Gang invites). */
   purchase: RateRule;
+  /** Village imports per IP address (ledger audit A2: throwaway accounts each bringing a forged village). */
+  villageImport: RateRule;
 }
 
 const MIN = 60_000;
@@ -70,6 +72,8 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   battleCommands: { limit: BATTLE_COMMANDS_PER_MINUTE, windowMs: MIN },
   // A shop session with retries, restores and a few Ask to Buy releases stays far below this.
   purchase: { limit: 120, windowMs: HOUR },
+  // A player moves a village once in its life; a whole carrier NAT pool still fits.
+  villageImport: { limit: 60, windowMs: HOUR },
 };
 
 /**

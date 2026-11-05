@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { newRating } from '../../../src/gameplay/sim/rating';
 import type { GameData } from '../../../src/gameplay/sim/types';
-import { baseAt, HOUR, rush, world } from './harness';
+import { baseAt, HOUR, rush, world, startSeed } from './harness';
 import { repoFactories } from './pg';
 
 const def = defaultData.ranks.rating;
@@ -25,14 +25,14 @@ for (const [label, makeRepo] of repoFactories) {
       w.pastShields();
       const bot = (await ann.match())!;
       expect(bot.opponent.kind).toBe('bot');
-      await ann.submitAttack({ ticket: bot.ticket, seed: bot.seed, ...rush(20) });
+      await ann.submitAttack({ ticket: bot.ticket, seed: await startSeed(ann, bot.ticket), ...rush(20) });
       expect((await w.repo.getPlayer(ann.id))!.ratings).toBeUndefined();
       const dot = await w.player('Dot', baseAt(1, 77));
       await w.repo.updatePlayer(dot.id, { shieldUntil: 0 });
       w.advance(HOUR + 1); // the bot is no longer "recent"; Dot is
       const m = (await ann.match())!;
       expect(m.opponent.name).toBe('Dot');
-      const r = await ann.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(20) });
+      const r = await ann.submitAttack({ ticket: m.ticket, seed: await startSeed(ann, m.ticket), ...rush(20) });
       const a = (await w.repo.getPlayer(ann.id))!.ratings!;
       const d = (await w.repo.getPlayer(dot.id))!.ratings!;
       expect(a.attack.battles).toBe(1);
@@ -56,7 +56,7 @@ for (const [label, makeRepo] of repoFactories) {
         await w.repo.updatePlayer(dot.id, { shieldUntil: 0 });
         const m = (await who.match())!;
         expect(m.opponent.name).toBe('Dot');
-        return who.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(20) });
+        return who.submitAttack({ ticket: m.ticket, seed: await startSeed(who, m.ticket), ...rush(20) });
       };
       await w.repo.updatePlayer(dot.id, { trophies: 500 }); // honor to lose
       const start = (await dot.me()).trophies;

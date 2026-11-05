@@ -92,12 +92,14 @@ const MAX_GANG_WARS = 20;
  * to the Keep, once per war. Returns what it gave, or null if this war's
  * chest was already collected. Mutates.
  */
-export function claimGangChest(state: VillageState, warId: string, outcome: 'win' | 'draw' | 'loss', hall: number, data: GameData): Cost | null {
+export function claimGangChest(state: VillageState, warId: string, outcome: 'win' | 'draw' | 'loss', hall: number, data: GameData, generated = false): Cost | null {
   state.net.gangWars = state.net.gangWars ?? [];
   if (state.net.gangWars.includes(warId)) return null;
   state.net.gangWars.push(warId);
   if (state.net.gangWars.length > MAX_GANG_WARS) state.net.gangWars.shift();
   const chest = scaleReward(data.social.gangWar.rewards[outcome], hall, data);
+  // Ledger audit E13: a generated Gang is always there to fight, so its wars pay no Jade.
+  if (generated && !data.social.gangWar.generatedOpponentJade) delete chest.moonstones;
   const soft: Cost = {};
   for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) {
     if (k === 'moonstones') state.resources.moonstones += v;

@@ -80,6 +80,7 @@ import {
   type RequestView,
   type RequestsResponse,
   type UploadBaseRequest,
+  type AttackStartResponse,
 } from './protocol';
 
 /** Where this device keeps its player token for a server. */
@@ -470,7 +471,7 @@ export class HttpServerAdapter implements ServerPort {
     return this.orNull(this.req<MatchResponse>('GET', Routes.match), 'no_opponents');
   }
 
-  startAttack(ticket: string): Promise<{ started: boolean }> {
+  startAttack(ticket: string): Promise<AttackStartResponse> {
     return this.req('POST', Routes.attackStart, { ticket });
   }
 

@@ -17,8 +17,8 @@ import { layoutChangedShare, newRating, orderByRating, powerRating, rateBattle, 
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { sanitizeName } from '../../src/gameplay/sim/social/names';
 import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
-import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
-import type { Player, Ticket } from '../repo';
+import type { AttackResponse, AttackStartResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
+import type { Player, Repo, Ticket } from '../repo';
 import type { ClientInfo, RulesEngine } from '../rules/registry';
 import { ResimBusyError, type ResimOutcome } from '../resim/resim';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
@@ -41,6 +41,21 @@ export const TICKET_TTL_MS = HOUR;
 export const LATE_REPORT_MS = 72 * HOUR;
 /** A ticket whose reports were refused this many times after a re-simulation is burned (re-audit: re-sim DoS). */
 export const MAX_TICKET_FAILURES = 3;
+/**
+ * Ledger audit A1: a started raid whose report has not arrived this long after
+ * Attack (a 3-minute battle plus room for a slow connection) is settled as a
+ * loss as soon as its attacker looks for the next opponent, instead of 73 hours
+ * later. The game sends its waiting reports before it asks for a match.
+ */
+export const REPORT_GRACE_MS = 8 * MIN;
+/**
+ * Ledger audit A1: the first protocol whose game asks for the battle seed when
+ * Attack is pressed (`POST /v1/attacks/start`). `match` no longer sends it, so
+ * a battle cannot be played to its end, privately, before it counts. Older
+ * games are told to update before they scout (they would play with a seed of
+ * their own and be refused afterwards).
+ */
+export const SEED_AT_START_PROTOCOL = 10;
 
 /** Fields an uploaded base may carry. Trial-only multipliers and labels are never accepted from a player. */
 const BASE_FIELDS = new Set(['name', 'hallLevel', 'buildings', 'trophies']);
@@ -268,14 +283,35 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   const win = hallWindow(me.hallLevel, data);
   const recent = await repo.recentTargets(me.id, t - HOUR);
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
+  if (client?.protocol !== undefined && client.protocol < SEED_AT_START_PROTOCOL) {
+    ctx.metrics.count('tk_refused_total', { reason: 'protocol_too_old', rules: String(client.rules ?? '?') });
+    throw new ApiError(426, 'version_mismatch', UPDATE_MESSAGE);
+  }
+  // Ledger audit A1/E15: for a village the server keeps, a new opponent needs a new scout in that village
+  // (the first look after a raid is free; Next costs coins, replayed from the game's own command). The
+  // same scout gets its open ticket back: the seed hides little (a guessed seed predicts a raid's win or
+  // loss about 98% of the time), so free rerolls were the way to pick only raids a simulation says win.
+  const kept = await repo.getVillage(me.id);
+  const scoutSeed = kept ? deserialize(kept.file, data).scout?.seed : undefined;
+  if (kept && scoutSeed === undefined) throw new ApiError(409, 'conflict', 'Look for an opponent from the Attack button first.');
+  if (scoutSeed !== undefined) {
+    const same = (await repo.openTickets(me.id, 'pvp')).find((o) => o.startedAt === undefined && o.scoutSeed === scoutSeed && t < o.expiresAt);
+    if (same) return matchAnswer(same);
+  }
   // Re-audit: one open raid at a time. An unstarted ticket is voided (Next, or a scout left behind);
-  // a started one still waiting for its report keeps its defender out of this match.
+  // a started one still waiting for its report keeps its defender out of this match, and once it is
+  // past REPORT_GRACE_MS it counts as a loss now (ledger audit A1: hiding a lost raid gained 73 hours).
   const held: string[] = [];
+  let forfeited = false;
   for (const open of await repo.openTickets(me.id, 'pvp')) {
     if (open.startedAt === undefined) {
       if (await repo.useTicket(open.id, { voided: true })) if (open.defenderId) await ctx.locks.release(open.defenderId, me.id);
+    } else if (t > open.startedAt + REPORT_GRACE_MS) {
+      forfeited = (await forfeitTicket(ctx, open)) || forfeited;
     } else if (open.defenderId) held.push(open.defenderId);
   }
+  // The honor (and Attack Rating) a forfeit just took is what this match uses.
+  if (forfeited) me = (await repo.getPlayer(me.id)) ?? me;
   const exclude = [me.id, ...recent, ...mates, ...held];
   let found: Player | null = null;
   const locks = ctx.locks;
@@ -300,7 +336,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   let ticket: Ticket;
   if (found?.base) {
     const base = applyLootPenalty(capBaseLoot({ ...structuredClone(found.base), name: found.name, trophies: found.trophies }, data), me.hallLevel, data);
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: found.id, defenderName: found.name, base, defenderTrophies: found.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion, ...(scoutSeed !== undefined ? { scoutSeed } : {}) };
   } else {
     // Nobody fits: a generated base with the same matchmaking math the game uses offline.
     const seed = Math.floor(ctx.random() * 4294967296) >>> 0;
@@ -308,12 +344,16 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     const base = engine.opponentForRank(seed, me.trophies, me.hallLevel, engine.data, me.hallLevel - 0.5 - engine.data.ranks.matchmaking.powerSlack);
     const names = data.names;
     base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
-    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
+    ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion, ...(scoutSeed !== undefined ? { scoutSeed } : {}) };
   }
   await repo.createTicket(ticket);
+  return matchAnswer(ticket);
+}
+
+/** What `match` sends. Ledger audit A1: no seed; it comes with POST /v1/attacks/start, when the raid starts to count. */
+function matchAnswer(ticket: Ticket): MatchResponse {
   return {
     ticket: ticket.id,
-    seed: ticket.seed!,
     base: ticket.base,
     opponent: { name: ticket.defenderName, trophies: ticket.defenderTrophies, hallLevel: ticket.base.hallLevel, kind: ticket.defenderId ? 'player' : 'bot' },
     expiresAt: ticket.expiresAt,
@@ -368,12 +408,18 @@ export async function burnAfterFailures(ctx: ServerContext, ticket: Ticket, e: u
 
 /**
  * POST /v1/attacks/start (re-audit): the player tapped Attack. From now on the battle counts: it can no
- * longer be voided, and if it is never reported it settles as a 0-star loss (`forfeitExpired`).
+ * longer be voided, and if it is never reported it settles as a 0-star loss (`forfeitTicket`). Ledger
+ * audit A1: the answer carries the battle seed, which `match` no longer sends, so a raid cannot be played
+ * out privately and then only reported if it was won. Asking again for a started ticket gives the same
+ * seed (a retry after a lost answer).
  */
-export async function startAttack(ctx: ServerContext, me: Player, body: { ticket?: unknown } | undefined): Promise<{ started: boolean }> {
+export async function startAttack(ctx: ServerContext, me: Player, body: { ticket?: unknown } | undefined): Promise<AttackStartResponse> {
   const ticket = typeof body?.ticket === 'string' ? await ctx.repo.getTicket(body.ticket) : null;
   if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw new ApiError(404, 'not_found', 'Unknown ticket.');
-  return { started: await ctx.repo.startTicket(ticket.id, ctx.now()) };
+  if (ticket.used) throw new ApiError(409, 'conflict', 'This opponent is no longer available. Find a new one.');
+  if (ticket.startedAt === undefined && ctx.now() > ticket.expiresAt) throw new ApiError(410, 'expired', 'This scout has expired. Find a new opponent.');
+  if (!(await ctx.repo.startTicket(ticket.id, ctx.now()))) throw new ApiError(409, 'conflict', 'This opponent is no longer available. Find a new one.');
+  return { started: true, ...(ticket.seed !== undefined ? { seed: ticket.seed } : {}) };
 }
 
 /**
@@ -391,33 +437,60 @@ export async function voidAttack(ctx: ServerContext, me: Player, body: { ticket?
 }
 
 /**
+ * Lock players for the rest of a transaction, in one global order (ascending id) so two
+ * transactions locking the same pair never wait on each other. Nulls (generated bases) are skipped.
+ */
+export async function lockPlayers(tx: Repo, ids: (string | null | undefined)[]): Promise<void> {
+  for (const id of [...new Set(ids.filter((x): x is string => typeof x === 'string'))].sort()) await tx.lockPlayer(id);
+}
+
+/**
+ * Settle a started raid that was never reported as a 0-star loss for its attacker: honor and, against
+ * a real player's base, the Attack Rating (ledger audit A1: forfeits used to leave the rating untouched,
+ * so hidden losses never reached matchmaking). The defender is untouched. Idempotent with the ticket.
+ */
+export async function forfeitTicket(ctx: ServerContext, ticket: Ticket): Promise<boolean> {
+  const t = ctx.now();
+  const out = await ctx.repo.transaction(async (tx) => {
+    await lockPlayers(tx, [ticket.attackerId, ticket.defenderId]);
+    const me = await tx.getPlayer(ticket.attackerId);
+    if (!me) return (await tx.useTicket(ticket.id, { forfeit: true, trophies: 0 })) ? null : false;
+    const delta = -lossTrophies(me.trophies, ticket.defenderTrophies, ctx.data);
+    if (!(await tx.useTicket(ticket.id, { forfeit: true, trophies: delta }))) return false;
+    const trophies = Math.max(0, me.trophies + delta);
+    const patch: { trophies: number; ratings?: { attack: Rating; base: Rating } } = { trophies };
+    const defender = ticket.defenderId ? await tx.getPlayer(ticket.defenderId) : null;
+    if (defender) {
+      const rated = rateBattle(ratingsOf(me, t, ctx).attack, ratingsOf(defender, t, ctx).base, me.hallLevel, ticket.base.hallLevel ?? defender.hallLevel, 0, 0, t, ctx.data.ranks.rating);
+      patch.ratings = { attack: rated.attack, base: ratingsOf(me, t, ctx).base };
+    }
+    await tx.updatePlayer(me.id, patch);
+    return { me, trophies };
+  });
+  if (out === false) return false;
+  if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, ticket.attackerId);
+  if (out) {
+    if (out.me.base) await ctx.board.set(out.me.id, out.trophies, out.me.createdAt);
+    ctx.metrics.count('tk_forfeits_total', {});
+  }
+  return true;
+}
+
+/**
  * Raids never reported (re-audit: a lost battle could be hidden by not reporting it). Once a started
- * pvp ticket is past its report deadline and unused, it settles as a 0-star loss for the attacker
- * (honor only: the defender's village is untouched). Run hourly with retention. A modified game can
- * still skip the start call; only server-timed input would close that (documented limitation).
+ * pvp ticket is past its report deadline and unused, it settles as a loss (`forfeitTicket`). Run hourly
+ * with retention; `match` does the same sooner (REPORT_GRACE_MS). A ticket never started lapses: the
+ * player only looked, and its seed was never sent (ledger audit A1).
  */
 export async function forfeitExpired(ctx: ServerContext, limit = 500): Promise<number> {
   const t = ctx.now();
   let n = 0;
   for (const ticket of await ctx.repo.expiredOpenTickets('pvp', t - LATE_REPORT_MS, limit)) {
-    // Never started: the player only looked (leaving and coming back keeps the same base, so that
-    // must stay free). It just lapses.
     if (ticket.startedAt === undefined) {
       await ctx.repo.useTicket(ticket.id, { lapsed: true });
       continue;
     }
-    const me = await ctx.repo.getPlayer(ticket.attackerId);
-    if (!me) {
-      await ctx.repo.useTicket(ticket.id, { forfeit: true, trophies: 0 });
-      continue;
-    }
-    const delta = -lossTrophies(me.trophies, ticket.defenderTrophies, ctx.data);
-    if (!(await ctx.repo.useTicket(ticket.id, { forfeit: true, trophies: delta }))) continue;
-    const trophies = Math.max(0, me.trophies + delta);
-    await ctx.repo.updatePlayer(me.id, { trophies });
-    if (me.base) await ctx.board.set(me.id, trophies, me.createdAt);
-    ctx.metrics.count('tk_forfeits_total', {});
-    n++;
+    if (await forfeitTicket(ctx, ticket)) n++;
   }
   return n;
 }
@@ -511,14 +584,15 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const seed = battleSeed(ticket, sub);
   const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const t = ctx.now();
   // Re-audit: someone else's raid shielded this defender after the ticket was issued. Paying again
   // would bypass the shield (held tickets paid the same loot three times): the battle counts as practice.
-  if (ticket.defenderId && (await repo.defensesFor(ticket.defenderId, ticket.createdAt, 1)).length > 0) {
+  // Checked here to skip the re-simulation, and again under the lock before anything is written.
+  const protectedNow = async () => {
     await repo.useTicket(ticket.id, undefined);
     if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
-    throw new ApiError(409, 'defender_protected', 'Another raid reached this village first and it is shielded now, so this battle counts as practice.');
-  }
+    return new ApiError(409, 'defender_protected', 'Another raid reached this village first and it is shielded now, so this battle counts as practice.');
+  };
+  if (ticket.defenderId && (await repo.defensesFor(ticket.defenderId, ticket.createdAt, 1)).length > 0) throw await protectedNow();
   // Re-audit: a server-held village that lacks these warriors is refused before the costly re-simulation.
   await requireArmyOnServer(ctx, me, army);
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
@@ -526,58 +600,67 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
     await burnAfterFailures(ctx, ticket, e);
     throw e;
   });
-  const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
-  const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
-  const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
-  const playerTrophies = Math.max(0, me.trophies + delta);
+  const t = ctx.now();
   const attackId = ctx.uuid();
-  const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies };
-  // Step 30: a defender loses at most defenderDailyHonorLossCap honor a UTC day (the attacker still gains in full).
   const rdef = data.ranks.rating;
   const day = Math.floor(t / 86_400_000);
-  const lostToday = defender?.honorLoss?.day === day ? defender.honorLoss.lost : 0;
-  const defLoss = delta > 0 ? Math.max(0, Math.min(delta, rdef.defenderDailyHonorLossCap - lostToday)) : delta;
-  const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
-  const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: Math.min(me.shieldUntil, t) };
-  if (defender) {
-    defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };
-    // Step 28: the attacker's Attack Rating and the defender's Base Rating move; bots never move a rating.
-    const rated = rateBattle(ratingsOf(me, t, ctx).attack, ratingsOf(defender, t, ctx).base, me.hallLevel, ticket.base.hallLevel ?? defender.hallLevel, result.stars, result.destruction, t, rdef);
-    mePatch.ratings = { attack: rated.attack, base: ratingsOf(me, t, ctx).base };
-    defPatch.ratings = { attack: ratingsOf(defender, t, ctx).attack, base: rated.base };
-  }
-  const shield = shieldHoursFor(result.destruction, data);
-  if (defender && shield > 0) defPatch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
   const settled = await repo.transaction(async (tx) => {
+    // Ledger audit A6: both players are locked and read again here. Two late reports on one defender
+    // (or a report racing the attacker's forfeit) used to pass the shield check together and write
+    // honor computed from stale reads; now the second waits, sees the first raid, and is practice.
+    await lockPlayers(tx, [me.id, ticket.defenderId]);
+    if (ticket.defenderId && (await tx.defensesFor(ticket.defenderId, ticket.createdAt, 1)).length > 0) return 'protected' as const;
+    const attacker = (await tx.getPlayer(me.id)) ?? me;
+    const defender = ticket.defenderId ? await tx.getPlayer(ticket.defenderId) : null;
+    const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
+    const delta = result.stars >= 1 ? winTrophies(attacker.trophies, defTrophies, data) : -lossTrophies(attacker.trophies, defTrophies, data);
+    const playerTrophies = Math.max(0, attacker.trophies + delta);
+    const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies };
+    // Step 30: a defender loses at most defenderDailyHonorLossCap honor a UTC day (the attacker still gains in full).
+    const lostToday = defender?.honorLoss?.day === day ? defender.honorLoss.lost : 0;
+    const defLoss = delta > 0 ? Math.max(0, Math.min(delta, rdef.defenderDailyHonorLossCap - lostToday)) : delta;
+    const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
+    const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: Math.min(attacker.shieldUntil, t) };
+    if (defender) {
+      defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };
+      // Step 28: the attacker's Attack Rating and the defender's Base Rating move; bots never move a rating.
+      const rated = rateBattle(ratingsOf(attacker, t, ctx).attack, ratingsOf(defender, t, ctx).base, attacker.hallLevel, ticket.base.hallLevel ?? defender.hallLevel, result.stars, result.destruction, t, rdef);
+      mePatch.ratings = { attack: rated.attack, base: ratingsOf(attacker, t, ctx).base };
+      defPatch.ratings = { attack: ratingsOf(defender, t, ctx).attack, base: rated.base };
+    }
+    const shield = shieldHoursFor(result.destruction, data);
+    if (defender && shield > 0) defPatch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
     // Marking the ticket used and storing the answer comes first: only the first report applies anything.
-    if (!(await tx.useTicket(ticket.id, response))) return false;
+    if (!(await tx.useTicket(ticket.id, response))) return 'used' as const;
     // A village the server keeps: the troops must be there, they are spent, and the loot is banked.
     const lootFrom = !defender ? 'generated-base' : (await hasServerVillage(tx, defender.id)) ? 'server-village' : 'uploaded-base';
-    const mine = await applyServerResult(tx, ctx, me, [
+    const mine = await applyServerResult(tx, ctx, attacker, [
       { cmd: { type: 'battleEnd', record: { at: t, opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick, ticket: ticket.id }, known: result }, reason: 'attack:troops' },
       { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result, trophies: delta, playerTrophies }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
     ], attackId);
     if (mine && !mine.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${mine.message}`);
-    await tx.updatePlayer(me.id, mePatch);
+    await tx.updatePlayer(attacker.id, mePatch);
     if (defender) {
       await tx.updatePlayer(defender.id, defPatch);
       // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
-      const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
+      const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: attacker.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
-      await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: ticket.rules ?? engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
+      await tx.addAttack({ id: attackId, at: t, attackerId: attacker.id, attackerName: attacker.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: ticket.rules ?? engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
     }
-    return true;
+    return { response, attacker, defender, defTrophies: defPatch.trophies };
   });
-  if (!settled) {
+  if (settled === 'protected') throw await protectedNow();
+  if (settled === 'used') {
     const again = await repo.getTicket(ticket.id);
     if (again?.response !== undefined) return again.response as AttackResponse;
     throw new ApiError(409, 'conflict', 'This battle was already reported.');
   }
-  if (me.base) await ctx.board.set(me.id, playerTrophies, me.createdAt);
+  const { response, attacker, defender } = settled;
+  if (attacker.base) await ctx.board.set(attacker.id, response.playerTrophies, attacker.createdAt);
   if (defender) {
-    if (defender.base) await ctx.board.set(defender.id, defPatch.trophies, defender.createdAt);
+    if (defender.base) await ctx.board.set(defender.id, settled.defTrophies, defender.createdAt);
     await ctx.locks.release(defender.id, me.id);
-    ctx.push.notify(defender.id, { type: 'raided', title: `${me.name} raided your village`, body: `${result.stars} star${result.stars === 1 ? '' : 's'}, ${Math.round(result.destruction)}% destroyed. See the replay in your defense log.` });
+    ctx.push.notify(defender.id, { type: 'raided', title: `${attacker.name} raided your village`, body: `${result.stars} star${result.stars === 1 ? '' : 's'}, ${Math.round(result.destruction)}% destroyed. See the replay in your defense log.` });
   }
   return response;
 }

@@ -6,76 +6,7 @@
  *   - InProcessServerAdapter (server/inProcess.ts): calls our server core
  *     directly, for tests and local sandboxes.
  */
-import type {
-  AgeRequest,
-  AgeResponse,
-  DeletionCodeResponse,
-  NoticesResponse,
-  RevokeOthersResponse,
-  IntentReleaseRequest,
-  IntentReleaseResponse,
-  AttackResponse,
-  BalanceResponse,
-  ChallengesResponse,
-  ChallengeView,
-  DuelLayoutRequest,
-  DuelReportResponse,
-  DuelsResponse,
-  DuelTicketRequest,
-  DuelTicketResponse,
-  SquadResponse,
-  GangWarAttackResponse,
-  GangWarClaimResponse,
-  GangWarResponse,
-  GangWarTicketRequest,
-  GangWarTicketResponse,
-  FriendRequestBody,
-  FriendRequestResult,
-  FriendsResponse,
-  PlayerCard,
-  PlatformFriendsRequest,
-  PlatformFriendsResponse,
-  PrivacyRequest,
-  BattleSubmission,
-  BlocksResponse,
-  CommandBatch,
-  CommandBatchResponse,
-  LedgerResponse,
-  LinkCredential,
-  LinkProvider,
-  LinksResponse,
-  VillageResponse,
-  ChatResponse,
-  ChatView,
-  DefensesResponse,
-  DonateRequest,
-  DonateResponse,
-  ErrorCode,
-  GroveView,
-  GrovesResponse,
-  HelloResponse,
-  InboxResponse,
-  LeaderboardResponse,
-  MatchResponse,
-  PlayerView,
-  PowerLeaderboardResponse,
-  PurchaseHistoryResponse,
-  PurchaseIntentRequest,
-  PurchaseIntentResponse,
-  PushTokenRequest,
-  RedeemRequest,
-  RedeemResponse,
-  RaidAttackResponse,
-  RaidClaimResponse,
-  RaidTicketResponse,
-  RaidView,
-  RegisterResponse,
-  ReportRequest,
-  ReportResponse,
-  RequestView,
-  RequestsResponse,
-  UploadBaseRequest,
-} from './protocol';
+import type { AgeRequest, AgeResponse, AttackResponse, AttackStartResponse, BalanceResponse, BattleSubmission, BlocksResponse, ChallengeView, ChallengesResponse, ChatResponse, ChatView, CommandBatch, CommandBatchResponse, DefensesResponse, DeletionCodeResponse, DonateRequest, DonateResponse, DuelLayoutRequest, DuelReportResponse, DuelTicketRequest, DuelTicketResponse, DuelsResponse, ErrorCode, FriendRequestBody, FriendRequestResult, FriendsResponse, GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GroveView, GrovesResponse, HelloResponse, InboxResponse, IntentReleaseRequest, IntentReleaseResponse, LeaderboardResponse, LedgerResponse, LinkCredential, LinkProvider, LinksResponse, MatchResponse, NoticesResponse, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PlayerView, PowerLeaderboardResponse, PrivacyRequest, PurchaseHistoryResponse, PurchaseIntentRequest, PurchaseIntentResponse, PushTokenRequest, RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, RedeemRequest, RedeemResponse, RegisterResponse, ReportRequest, ReportResponse, RequestView, RequestsResponse, RevokeOthersResponse, SquadResponse, UploadBaseRequest, VillageResponse } from './protocol';
 
 /** A failed server call, with the protocol error code. */
 export class ServerError extends Error {
@@ -157,8 +88,8 @@ export interface PvpPort {
   /** Null when there is nobody to attack right now. */
   match(): Promise<MatchResponse | null>;
   submitAttack(sub: BattleSubmission): Promise<AttackResponse>;
-  /** The player tapped Attack: the raid now counts (feature `attack-commit`, re-audit). */
-  startAttack?(ticket: string): Promise<{ started: boolean }>;
+  /** The player tapped Attack: the raid now counts and its seed is sent (feature `attack-commit`, re-audit; seed: protocol 10). */
+  startAttack?(ticket: string): Promise<AttackStartResponse>;
   /** Leave a scouted base without attacking (only before it started). */
   voidAttack?(ticket: string): Promise<{ voided: boolean }>;
   defenses(since: number): Promise<DefensesResponse>;

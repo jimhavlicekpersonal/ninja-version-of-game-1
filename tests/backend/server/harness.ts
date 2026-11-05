@@ -11,6 +11,17 @@ import type { GameData } from '../../../src/gameplay/sim/types';
 
 export const HOUR = 3_600_000;
 
+/**
+ * Ledger audit A1 (protocol 10): the battle seed comes from POST /v1/attacks/start, when the raid starts
+ * to count, not with the match. Asking again for a started ticket gives the same seed.
+ */
+export async function startSeed(c: { startAttack?(ticket: string): Promise<{ seed?: number }> }, ticket: string): Promise<number> {
+  if (!c.startAttack) throw new Error('this port cannot start raids');
+  const r = await c.startAttack(ticket);
+  if (typeof r.seed !== 'number') throw new Error('the server sent no battle seed');
+  return r.seed;
+}
+
 export function world(opts: { data?: GameData; repo?: Repo; start?: number; shared?: SharedStores } = {}) {
   const data = opts.data ?? defaultData;
   const repo = opts.repo ?? new MemoryRepo();

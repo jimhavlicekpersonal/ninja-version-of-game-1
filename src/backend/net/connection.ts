@@ -182,6 +182,13 @@ export class Connection {
 
   /** Why the server would not take this village (protocol 7 auto-move), if it refused. */
   get villageMoveRefused(): string | null {
+    // A refusal that only says "not yet" (ledger audit A2: the account is too new for this Keep) is
+    // forgotten after a day, so the move is tried again.
+    const retryAt = Number(this.kv.get(`tk.net.villageMoveRetryAt:${this.url}`) ?? 0);
+    if (retryAt && this.o.game.now() >= retryAt) {
+      this.kv.set(`tk.net.villageMoveRefused:${this.url}`, null);
+      this.kv.set(`tk.net.villageMoveRetryAt:${this.url}`, null);
+    }
     return this.kv.get(`tk.net.villageMoveRefused:${this.url}`);
   }
 
@@ -195,8 +202,10 @@ export class Connection {
     try {
       await this.village.enable('move');
     } catch (e) {
-      if (e instanceof ServerError && !e.retryable) this.kv.set(`tk.net.villageMoveRefused:${this.url}`, e.message);
-      else throw e;
+      if (e instanceof ServerError && !e.retryable) {
+        this.kv.set(`tk.net.villageMoveRefused:${this.url}`, e.message);
+        if (e.code === 'cooldown') this.kv.set(`tk.net.villageMoveRetryAt:${this.url}`, String(this.o.game.now() + 24 * 3_600_000));
+      } else throw e;
     }
   }
 
@@ -648,7 +657,7 @@ export class Connection {
     await port.deleteAccount();
     const g = this.o.game;
     for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'account_deleted' });
-    for (const k of [`tk.net.outbox:${url}`, `tk.net.village:${url}`, `tk.net.push:${url}`, `tk.net.villageMoveRefused:${url}`]) this.kv.set(k, null);
+    for (const k of [`tk.net.outbox:${url}`, `tk.net.village:${url}`, `tk.net.push:${url}`, `tk.net.villageMoveRefused:${url}`, `tk.net.villageMoveRetryAt:${url}`]) this.kv.set(k, null);
     this.kv.set(NAME_KEY, null);
     this.emit();
   }
@@ -788,6 +797,8 @@ export class Connection {
         void this.refreshNotices();
       } else {
         this.player = await port.me(); // Grove membership may have changed
+        // A move refused with "not yet" (ledger audit A2) is due again after a day, even in a long session.
+        await this.autoMoveVillage();
       }
       await this.pullDefenses(port);
       await this.pullDonations(port);
@@ -923,7 +934,7 @@ export class Connection {
       this.triedGangWars.add(w.id);
       try {
         const c = await port.gangWarClaim(w.id);
-        g.dispatch({ type: 'claimGangChest', warId: c.warId, outcome: c.outcome });
+        g.dispatch({ type: 'claimGangChest', warId: c.warId, outcome: c.outcome, ...(c.generated ? { generated: true } : {}) });
       } catch (e) {
         if (!(e instanceof ServerError) || e.retryable) {
           this.triedGangWars.delete(w.id);
@@ -992,13 +1003,34 @@ export class Connection {
   }
 
   /**
-   * The player tapped Attack on an online raid (re-audit): tell the server the battle counts now.
-   * Best effort and never blocking the battle; without a connection the report settles it as usual.
+   * The player tapped Attack on an online raid (re-audit): tell the server the battle counts now, and
+   * get the battle seed it holds back until then (protocol 10, ledger audit A1). Resolves with the seed,
+   * or undefined from a server that sent it with the match. Rejects when the raid could not start (no
+   * connection, the scout expired): the battle must not begin, it would be played with the wrong seed.
    */
-  startAttack(ticket: string): void {
+  async startAttack(ticket: string): Promise<number | undefined> {
     const port = this.port;
-    if (!port?.startAttack || !this.online || !this.server?.features.includes('attack-commit')) return;
-    void port.startAttack(ticket).catch((e) => this.log('Online play: could not mark the raid as started', e));
+    if (!port?.startAttack || !this.server?.features.includes('attack-commit')) return undefined;
+    if (!this.online) throw new Error('No connection: the raid could not start. Try again when you are back online.');
+    try {
+      const r = await port.startAttack(ticket);
+      return typeof r.seed === 'number' ? r.seed >>> 0 : undefined;
+    } catch (e) {
+      this.log('Online play: could not start the raid', e);
+      throw new Error(e instanceof ServerError && !e.retryable ? e.message : 'Could not reach the server to start the raid. Try again in a moment.');
+    }
+  }
+
+  /**
+   * Before asking for an opponent: send the battle reports still waiting (ledger audit A1). The server
+   * settles a started raid that has no report a few minutes after Attack as a loss when the next match
+   * is asked for, so a won raid must reach it first. Bounded, so a slow connection never blocks scouting.
+   */
+  async sendReportsBeforeMatch(timeoutMs = 8_000): Promise<void> {
+    if (!this.port || !this.online || this.outbox().length === 0) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([this.flush().catch((e) => this.handleError(e)), new Promise<void>((resolve) => (timer = setTimeout(resolve, timeoutMs)))]);
+    if (timer !== undefined) clearTimeout(timer);
   }
 
   /** Queue a finished battle for the server and try to send it now. */

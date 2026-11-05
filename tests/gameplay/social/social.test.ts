@@ -155,9 +155,29 @@ describe('Grove Raid (a full week, fast-forwarded)', () => {
     const again = advance(s, clock.now() + 24 * HOUR, data).state;
     expect(again.resources.moonstones).toBe(s.resources.moonstones);
     expect(again.grove.raidHistory).toHaveLength(1);
-    // The next week's raid pays once too, even if the player skips it.
+    // The next week's raid is settled once too; skipped, it pays nothing (ledger audit E12).
     const later = advance(s, raidWindow(phase.week + 1, data).end + HOUR, data).state;
     expect(later.grove.raidHistory).toHaveLength(2);
+    expect(later.grove.raidHistory[1].reward).toEqual({});
+    expect(later.resources.moonstones).toBe(s.resources.moonstones);
+    expect(later.grove.xp).toBe(s.grove.xp);
+  });
+
+  it('pays a returning player for at most the last wars, and only those fought (ledger audit E12)', () => {
+    const { clock, state } = newGame();
+    let s = must(state, { type: 'joinGrove' }, clock.now());
+    const xp = s.grove.xp;
+    // A year away: 52 wars ended. Only the last settleWeeksMax are settled, none was fought, nothing is paid
+    // (the same village outside the Alliance ends the year with the same Jade from its other sources).
+    const back = advance(s, clock.now() + 365 * 24 * HOUR, data).state;
+    const alone = advance(state, clock.now() + 365 * 24 * HOUR, data).state;
+    expect(back.grove.raidHistory).toHaveLength(data.social.groveRaid.settleWeeksMax);
+    expect(back.grove.raidHistory.every((h) => Object.keys(h.reward).length === 0)).toBe(true);
+    expect(back.resources.moonstones).toBe(alone.resources.moonstones);
+    expect(back.grove.xp).toBe(xp);
+    // And nothing more is owed afterwards.
+    s = advance(back, clock.now() + 365 * 24 * HOUR + HOUR, data).state;
+    expect(s.grove.raidHistory).toHaveLength(data.social.groveRaid.settleWeeksMax);
   });
 
   it('raids before you joined are not paid', () => {

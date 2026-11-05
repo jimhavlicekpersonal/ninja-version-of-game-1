@@ -106,6 +106,17 @@ for (const [label, makeRepo] of repoFactories) {
       const c1 = await ann.gangWarClaim(id);
       const c2 = await ann.gangWarClaim(id);
       expect([c1.alreadyClaimed, c2.alreadyClaimed]).toEqual([false, true]);
+      // Ledger audit E13: this war was against a generated Gang, so its chest pays no Jade.
+      expect(c1.generated).toBe(true);
+      const paid = (generated: boolean) => {
+        const v0 = createNewVillage(w.now(), data);
+        const r = applyCommand(v0, { type: 'claimGangChest', warId: id, outcome: c1.outcome, generated }, w.now(), data);
+        if (!r.ok) throw new Error(r.message);
+        return { jade: r.state.resources.moonstones - v0.resources.moonstones, acorns: r.state.resources.acorns - v0.resources.acorns };
+      };
+      expect(paid(true).jade).toBe(0);
+      expect(paid(true).acorns).toBe(paid(false).acorns);
+      expect(paid(false).jade).toBeGreaterThan(0);
       // And the game banks a chest once per war, whatever the server says twice.
       const v = createNewVillage(w.now(), data);
       const r1 = applyCommand(v, { type: 'claimGangChest', warId: id, outcome: c1.outcome }, w.now(), data);

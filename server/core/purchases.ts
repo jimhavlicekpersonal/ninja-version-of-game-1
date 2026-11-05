@@ -179,6 +179,27 @@ async function finish(ctx: ServerContext, c: Checked): Promise<void> {
   }
 }
 
+/**
+ * Ledger audit A4: a paid purchase that reserved nothing under the cap. For a player under 18 it is
+ * credited only if this month's spending leaves room; otherwise nothing is credited and the store
+ * transaction is left unfinished: the game offers it again at every start (delivered once a new month
+ * leaves room), Google Play refunds a purchase that is never acknowledged within 3 days, and an App
+ * Store purchase can be refunded by Apple. Call inside the redeem transaction, after `lockPurchases`.
+ */
+async function holdOverCap(tx: Repo, ctx: ServerContext, me: Player, usd: number, now: number): Promise<void> {
+  if (!(await ageGroupFor(tx, ctx, me.id, undefined))) return;
+  const cap = cents(ctx.data.store.minorMonthlyCapUsd);
+  if ((await tx.spentCents(me.id, monthStart(now), now)) + cents(usd) <= cap) return;
+  ctx.metrics.count('tk_refused_total', { reason: 'minor_cap_at_redeem' });
+  ctx.log('warn', 'purchase over the under-18 cap held at redeem', { player: me.id });
+  const limit = (cap / 100).toFixed(2);
+  throw new ApiError(
+    403,
+    'purchase_refused',
+    'This purchase would go past the $' + limit + " monthly limit for players under 18, so it was not delivered. It stays with the store: it is delivered when next month's limit leaves room, or the store can refund it (Google Play refunds an undelivered purchase within 3 days).",
+  );
+}
+
 export async function redeem(ctx: ServerContext, me: Player, body: { store?: unknown; storeProductId?: unknown; receipt?: unknown } | undefined): Promise<RedeemResponse> {
   const store = storeOf(ctx, body?.store);
   const c = await check(ctx, store, String(body?.storeProductId ?? ''), body?.receipt);
@@ -200,11 +221,6 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     await finish(ctx, c);
     return out;
   }
-  if (c.accountToken) {
-    const intent = await ctx.repo.getIntent(c.accountToken);
-    // An intent we no longer have (pruned) is fine; one that names someone else is not.
-    if (intent && intent.playerId !== me.id) throw new ApiError(409, 'conflict', 'This purchase belongs to another player.');
-  }
   const now = ctx.now();
   // Re-audit: Sandbox/test purchases cost nothing; on production only a small total is credited per player
   // (App Review needs purchases to work; public TestFlight must not mint Jade for the live ladder).
@@ -217,6 +233,13 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     }
   }
   const result = await ctx.repo.transaction(async (tx) => {
+    // Ledger audit A4: the under-18 cap is checked here too, not only at the intent. A receipt with no
+    // intent of this player still open (no token: a modified game, a purchase started from the store page;
+    // a token already used by an earlier purchase; a pruned one) reserved nothing, so it counts now.
+    await tx.lockPurchases(me.id);
+    const intent = c.accountToken ? await tx.getIntent(c.accountToken) : null;
+    if (intent && intent.playerId !== me.id) throw new ApiError(409, 'conflict', 'This purchase belongs to another player.');
+    if (!intent || intent.used) await holdOverCap(tx, ctx, me, product.usd, now);
     const heldOnServer = Boolean(await tx.getVillage(me.id));
     const row: PurchaseRow = {
       store,
@@ -243,7 +266,7 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
       // Already in the village (delivered before it moved to the server): recorded, nothing added twice.
       if (r && !r.ok) ctx.log('warn', 'purchase already in the village', { store, transactionId: c.transactionId, message: r.message });
     }
-    if (c.accountToken) await tx.useIntent(c.accountToken);
+    if (intent && !intent.used) await tx.useIntent(intent.id);
     return answer(row, false);
   });
   if (!result.already) ctx.metrics.count('tk_purchases_total', { store, environment: c.environment });

@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -181,6 +181,9 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
       for (const k of ['defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction']) st[k] = st[k] ?? (st === stats ? 0 : stats?.[k] ?? 0);
     }
   }
+  // v16 -> v17 (ledger audit A5): no field changes. A refund now takes back every resource it gave,
+  // so any balance may be negative (a debt paid from income). The version moves so that an older
+  // build stops at a newer save (NewerSaveError) instead of calling such a village damaged.
   repairTrainingQueue(v);
   out.version = SAVE_VERSION;
   return out;
@@ -207,7 +210,8 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v.resources) problems.push('resources missing');
   if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
   // Jade may be negative: a refunded purchase whose Jade was already spent (a debt, re-audit).
-  else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k]) || (k !== 'moonstones' && v.resources[k] < 0)) problems.push(`bad ${k}`);
+  // Save v17 (ledger audit A5): a refunded purchase leaves a debt (a negative balance) in any resource.
+  else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);
   if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];
   const map = data.economy.mapSize;
   const ids = new Set<string>();

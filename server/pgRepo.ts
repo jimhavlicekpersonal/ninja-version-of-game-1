@@ -110,6 +110,7 @@ const toTicket = (r: Row): Ticket => {
     used: Boolean(r.used),
   };
   if (r.seed !== null && r.seed !== undefined) t.seed = num(r.seed);
+  if (r.scout_seed !== null && r.scout_seed !== undefined) t.scoutSeed = num(r.scout_seed);
   if (r.rules !== null && r.rules !== undefined) t.rules = num(r.rules);
   if (r.challenge_id !== null && r.challenge_id !== undefined) t.challengeId = String(r.challenge_id);
   if (r.war_id !== null && r.war_id !== undefined) t.warId = String(r.war_id);
@@ -438,6 +439,10 @@ export class PgRepo implements Repo {
   async lockPurchases(playerId: string): Promise<void> {
     // Held until the transaction ends; every instance shares the database, so this is cross-instance.
     if (this.client) await this.client.query(`select pg_advisory_xact_lock(hashtextextended('purchases:' || $1, 0))`, [playerId]);
+  }
+
+  async lockPlayer(playerId: string): Promise<void> {
+    if (this.client) await this.client.query(`select pg_advisory_xact_lock(hashtextextended('player:' || $1, 0))`, [playerId]);
   }
 
   async addIntent(i: PurchaseIntent): Promise<void> {
@@ -865,9 +870,9 @@ export class PgRepo implements Repo {
     // The base version and the ticket in one statement: retention never sees one without the other.
     await this.db.query(
       `${PUT_BASE}
-       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed, rules, data_version, challenge_id, war_id, relay, start_damage)
-       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`,
-      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null, t.rules ?? null, t.dataVersion ?? null, t.challengeId ?? null, t.warId ?? null, t.relay ?? null, t.startDamage ? JSON.stringify(t.startDamage) : null],
+       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed, rules, data_version, challenge_id, war_id, relay, start_damage, scout_seed)
+       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
+      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null, t.rules ?? null, t.dataVersion ?? null, t.challengeId ?? null, t.warId ?? null, t.relay ?? null, t.startDamage ? JSON.stringify(t.startDamage) : null, t.scoutSeed ?? null],
     );
   }
 

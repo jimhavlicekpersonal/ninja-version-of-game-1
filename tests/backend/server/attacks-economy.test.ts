@@ -12,7 +12,7 @@ import { deserialize } from '../../../src/gameplay/sim/save';
 import type { GameData, VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, type Command } from '../../../src/gameplay/sim/village';
 import { emulator, placeCollector, placeType } from './economyHarness';
-import { baseAt, rush, world } from './harness';
+import { baseAt, rush, world, startSeed } from './harness';
 import { repoFactories } from './pg';
 
 async function code(p: Promise<unknown>): Promise<string> {
@@ -52,6 +52,9 @@ for (const [label, makeRepo] of repoFactories) {
       expect((await ann.sendCommands(annGame.batch())).corrections).toBeUndefined();
       expect((await dot.sendCommands(dotGame.batch())).corrections).toBeUndefined();
       w.pastShields(); // also long enough for the training to finish and loot to pile up
+      // The game scouts before it asks for an opponent (ledger audit A1/E15: a new opponent needs a new scout).
+      expect(annGame.do({ type: 'scout', paid: false }, w.now())).toMatchObject({ ok: true });
+      expect((await ann.sendCommands(annGame.batch())).corrections).toBeUndefined();
       return { w, ann, dot, annGame, dotGame };
     }
 
@@ -61,7 +64,8 @@ for (const [label, makeRepo] of repoFactories) {
       expect(m.opponent).toMatchObject({ name: 'Dot', kind: 'player' });
       const { army, deployments } = rush(10);
       const at = w.now();
-      const r = await ann.submitAttack({ ticket: m.ticket, seed: m.seed, army, deployments });
+      const seed = await startSeed(ann, m.ticket);
+      const r = await ann.submitAttack({ ticket: m.ticket, seed, army, deployments });
       // The warriors who fought are gone from the server's army.
       const annAfter = deserialize((await ann.getVillage())!.file, w.data);
       expect(annAfter.army.hedgehog_roller ?? 0).toBe(10 - (r.result.used.hedgehog_roller ?? 0));
@@ -74,7 +78,7 @@ for (const [label, makeRepo] of repoFactories) {
       const dotAfter = deserialize((await dot.getVillage())!.file, w.data);
       expect(dotAfter.defenseLog.map((d) => d.id)).toEqual([r.attackId]);
       // The games apply the same results the way connection.ts does, and land on the server's economy.
-      annGame.state = applyLocal(annGame.state, { type: 'battleEnd', record: { at, opponentName: 'Dot', setup: { seed: m.seed, base: m.base, army, levels: {}, infiltration: true }, deployments, ticket: m.ticket } }, at, w.data);
+      annGame.state = applyLocal(annGame.state, { type: 'battleEnd', record: { at, opponentName: 'Dot', setup: { seed, base: m.base, army, levels: {}, infiltration: true }, deployments, ticket: m.ticket } }, at, w.data);
       annGame.state = applyLocal(annGame.state, { type: 'settleOnlineAttack', ticket: m.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies }, at, w.data);
       expect((await ann.sendCommands(annGame.batch())).corrections).toBeUndefined();
       const d = (await dot.defenses(0)).defenses[0];
@@ -90,11 +94,11 @@ for (const [label, makeRepo] of repoFactories) {
       const before = await ann.getVillage();
       const lines = (await ann.ledger(50)).entries.length;
       // Legal for the Keep (the camp holds 20), but only 10 were trained.
-      expect(await code(ann.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(20) }))).toBe('bad_request');
+      expect(await code(ann.submitAttack({ ticket: m.ticket, seed: await startSeed(ann, m.ticket), ...rush(20) }))).toBe('bad_request');
       expect(await ann.getVillage()).toEqual(before);
       expect((await ann.ledger(50)).entries).toHaveLength(lines);
       // The ticket was not used up: the attack with the real army still goes through.
-      const ok = await ann.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(10) });
+      const ok = await ann.submitAttack({ ticket: m.ticket, seed: await startSeed(ann, m.ticket), ...rush(10) });
       expect(ok.result.used.hedgehog_roller).toBeGreaterThan(0);
     });
 

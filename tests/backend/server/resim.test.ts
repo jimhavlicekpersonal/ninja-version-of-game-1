@@ -180,8 +180,9 @@ describe('real worker threads', () => {
       const atk = await call('POST', Routes.players, undefined, { name: 'Attacker' });
       await call('PUT', Routes.base, atk.token, { base: baseAt(3, 5) });
       const m = await call('GET', Routes.match, atk.token);
-      const r = await call('POST', Routes.attacks, atk.token, { ticket: m.ticket, seed: m.seed, ...rush(20) });
-      return { result: r.result, base: m.base, seed: m.seed };
+      const { seed } = await call('POST', Routes.attackStart, atk.token, { ticket: m.ticket });
+      const r = await call('POST', Routes.attacks, atk.token, { ticket: m.ticket, seed, ...rush(20) });
+      return { result: r.result, base: m.base, seed };
     };
     // The server picks a fresh seed per ticket, so compare with the same battle run here.
     for (const resim of [pool, new InlineResimulator()]) {

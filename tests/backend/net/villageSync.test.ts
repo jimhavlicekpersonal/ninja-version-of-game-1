@@ -197,6 +197,27 @@ describe('server-owned village: the game side', () => {
     expect(conn2.villageMoveRefused).toMatch(/Jade/);
     expect(conn2.status).toBe('online');
   });
+
+  it('ledger audit A2: a village too far along for a new account moves by itself once the account is old enough', async () => {
+    const w = world();
+    const clock = { now: () => w.now() };
+    const { controller } = await GameController.start({ clock, store: new MemorySaveStore(), data: w.data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false });
+    controller.state.buildings.find((b) => w.data.buildings[b.type].category === 'hall')!.level = 7;
+    const kv = memoryKv();
+    const conn = new Connection({ game: controller, builtInUrl: 'test.server', kv, makePort: () => new InProcessServerAdapter(w.core), log: () => undefined, keepVillageOnServer: true });
+    await conn.sync();
+    expect(conn.serverVillage).toBe(false);
+    expect(conn.villageMoveRefused).toMatch(/Keep 7 can move to the server once this online account is 9 days old/);
+    // Not tried again the same day…
+    w.advance(12 * HOUR);
+    await conn.sync();
+    expect(conn.serverVillage).toBe(false);
+    // …but once the account is old enough, the next day's sync moves it.
+    w.advance(9 * 24 * HOUR);
+    await conn.sync();
+    expect(conn.villageMoveRefused).toBeNull();
+    expect(conn.serverVillage).toBe(true);
+  });
 });
 
 

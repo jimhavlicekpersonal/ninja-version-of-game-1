@@ -219,7 +219,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     }
     const rules = (req.routeOptions?.config as RateConfig | undefined)?.rate;
     for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
-      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' ? ip : who, t);
+      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' ? ip : who, t);
       if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookup' || rule === 'lookupDay' ? 'Too many player searches. Try again later.' : 'Slow down a little.', rule);
     }
   });
@@ -306,7 +306,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   const client = (req: FastifyRequest): ClientInfo => {
     const h = (k: string) => (typeof req.headers[k] === 'string' ? (req.headers[k] as string).slice(0, 60) : undefined);
     const rules = h(ClientHeaders.simRules);
-    return { rules: rules !== undefined && /^\d+$/.test(rules) ? Number(rules) : undefined, dataVersion: h(ClientHeaders.dataVersion), build: h(ClientHeaders.clientBuild) };
+    const protocol = h(ClientHeaders.protocol);
+    return { protocol: protocol !== undefined && /^\d+$/.test(protocol) ? Number(protocol) : undefined, rules: rules !== undefined && /^\d+$/.test(rules) ? Number(rules) : undefined, dataVersion: h(ClientHeaders.dataVersion), build: h(ClientHeaders.clientBuild) };
   };
   const query = (req: FastifyRequest) => (req.query ?? {}) as Record<string, string | undefined>;
   const param = (req: FastifyRequest, k: string) => String((req.params as Record<string, string>)[k] ?? '');
@@ -378,7 +379,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Server-owned village (roadmap Phase 2)
   app.get(Routes.village, authed(async (me) => core.getVillage(me)));
   app.post(Routes.village, authed(async (me) => core.startVillage(me)));
-  app.post(Routes.villageImport, { bodyLimit: BODY_LIMITS.battle * 4 }, authed(async (me, req) => core.importVillage(me, req.body as never)));
+  app.post(Routes.villageImport, { ...rate('villageImport'), bodyLimit: BODY_LIMITS.battle * 4 }, authed(async (me, req) => core.importVillage(me, req.body as never)));
   app.post(Routes.villageCommands, { ...rate('commands'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.villageCommands(me, req.body as never)));
   app.get(Routes.villageLedger, authed(async (me, req) => core.ledger(me, query(req).limit)));
 

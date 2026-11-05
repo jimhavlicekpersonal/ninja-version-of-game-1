@@ -15,7 +15,7 @@ import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import { applyCommand, createNewVillage, hallLevel } from '../../../src/gameplay/sim/village';
 import { achievementValue } from '../../../src/gameplay/sim/achievements';
 import { signJws, TEST_BUNDLE, testAppleVerifier } from '../fixtures/appstore/sign';
-import { baseAt, HOUR, world } from './harness';
+import { baseAt, HOUR, world, startSeed } from './harness';
 
 const T = Date.UTC(2026, 3, 6, 12);
 const appleTxn = (productId: string, id: string, token: string | null, extra: Record<string, unknown> = {}) =>
@@ -100,18 +100,22 @@ describe('held tickets, shields and unreported battles (re-audit)', () => {
     w.advance(6 * 60_000);
     const held = (await a.match())!;
     expect(held.opponent.name).toBe('Dot');
-    await expect(a.submitAttack({ ticket: first.ticket, seed: first.seed, army: {}, deployments: [] })).rejects.toMatchObject({ code: 'conflict' });
+    // The voided ticket can neither start nor be reported.
+    await expect(a.startAttack(first.ticket)).rejects.toMatchObject({ code: 'conflict' });
+    await expect(a.submitAttack({ ticket: first.ticket, seed: 1, army: {}, deployments: [] })).rejects.toMatchObject({ code: 'conflict' });
+    const heldSeed = await startSeed(a, held.ticket);
     // Ben raids Dot once Ann's 5-minute lock is over, and shields it.
     w.advance(6 * 60_000);
     const mb = (await b.match())!;
     expect(mb.opponent.name).toBe('Dot');
-    const shot = best(mb, n);
-    await b.submitAttack({ ticket: mb.ticket, seed: mb.seed, army: shot.army, deployments: shot.deployments });
+    const bSeed = await startSeed(b, mb.ticket);
+    const shot = best({ seed: bSeed, base: mb.base }, n);
+    await b.submitAttack({ ticket: mb.ticket, seed: bSeed, army: shot.army, deployments: shot.deployments });
     expect((await d.me()).shieldUntil).toBeGreaterThan(w.now());
     // Ann's held ticket, reported a day later, pays nothing (it paid the same loot again before the fix).
     w.advance(24 * HOUR);
-    const r = best(held, n);
-    await expect(a.submitAttack({ ticket: held.ticket, seed: held.seed, army: r.army, deployments: r.deployments })).rejects.toMatchObject({ code: 'defender_protected' });
+    const r = best({ seed: heldSeed, base: held.base }, n);
+    await expect(a.submitAttack({ ticket: held.ticket, seed: heldSeed, army: r.army, deployments: r.deployments })).rejects.toMatchObject({ code: 'defender_protected' });
     expect((await d.defenses(0)).defenses).toHaveLength(1);
   });
 
@@ -123,7 +127,7 @@ describe('held tickets, shields and unreported battles (re-audit)', () => {
     w.pastShields();
     await w.repo.updatePlayer(a.id, { trophies: 400 });
     const m = (await a.match())!;
-    expect(await a.startAttack(m.ticket)).toEqual({ started: true });
+    expect(await a.startAttack(m.ticket)).toEqual({ started: true, seed: expect.any(Number) });
     await expect(a.voidAttack(m.ticket)).rejects.toMatchObject({ code: 'conflict' });
     w.advance(TICKET_TTL_MS + LATE_REPORT_MS + 1);
     expect(await forfeitExpired(w.core.ctx)).toBe(1);
@@ -145,13 +149,16 @@ describe('held tickets, shields and unreported battles (re-audit)', () => {
     await a.startVillage(); // a server-held village with no warriors
     await w.player('Dot', baseAt(1, 77, 3000));
     w.pastShields();
+    await a.sendCommands({ stateHash: '', commands: [{ seq: 1, t: w.now(), command: { type: 'scout', paid: false } }] });
     const m = (await a.match())!;
-    for (let i = 0; i < 10; i++) await a.submitAttack({ ticket: m.ticket, seed: m.seed, army: { hedgehog_roller: 20 }, deployments: [] }).catch(() => undefined);
+    const sa = await startSeed(a, m.ticket);
+    for (let i = 0; i < 10; i++) await a.submitAttack({ ticket: m.ticket, seed: sa, army: { hedgehog_roller: 20 }, deployments: [] }).catch(() => undefined);
     expect(runs).toBe(0);
     // A device village with a report the server refuses after re-simulating: at most MAX_TICKET_FAILURES runs.
     const b = await w.player('Ben', baseAt(2, 9));
     const mb = (await b.match())!;
-    for (let i = 0; i < 10; i++) await b.submitAttack({ ticket: mb.ticket, seed: mb.seed, army: { hedgehog_roller: 1 }, deployments: [], clientHash: 'x', endTick: -5 } as never).catch(() => undefined);
+    const sb = await startSeed(b, mb.ticket);
+    for (let i = 0; i < 10; i++) await b.submitAttack({ ticket: mb.ticket, seed: sb, army: { hedgehog_roller: 1 }, deployments: [], clientHash: 'x', endTick: -5 } as never).catch(() => undefined);
     expect(runs).toBeLessThanOrEqual(MAX_TICKET_FAILURES + 1);
   });
 });

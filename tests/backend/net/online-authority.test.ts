@@ -22,7 +22,7 @@ import { raidWindow } from '../../../src/gameplay/sim/social/groveRaid';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, battleLoadout, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
-import { baseAt, HOUR, rush, world } from '../server/harness';
+import { baseAt, HOUR, rush, world, startSeed } from '../server/harness';
 
 function memoryKv(): KeyValue {
   const map = new Map<string, string>();
@@ -49,7 +49,8 @@ function village(w: ReturnType<typeof world>): GameLink & { state: VillageState 
 async function onlineAttack(w: ReturnType<typeof world>, game: ReturnType<typeof village>, port: ServerPort) {
   const m = (await port.match())!;
   const { deployments } = rush(20);
-  const setup: BattleSetup = { seed: m.seed, base: m.base, ...battleLoadout(game.state, data), infiltration: true };
+  // Ledger audit A1: the seed arrives when the raid starts (protocol 10), as App does on Attack.
+  const setup: BattleSetup = { seed: await startSeed(port, m.ticket), base: m.base, ...battleLoadout(game.state, data), infiltration: true };
   const r = game.dispatch({ type: 'battleEnd', record: { at: w.now(), opponentName: m.base.name, setup, deployments, ticket: m.ticket } });
   expect(r.ok).toBe(true);
   const sub = { ticket: m.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments };

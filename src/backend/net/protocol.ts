@@ -26,8 +26,15 @@ import type { Command } from '../../gameplay/sim/village';
  * `gang-wars`), relay strikes (SIM_RULES 3, `BattleSetup.startDamage`),
  * `503 busy` from the re-simulation queue. All additions: servers still
  * accept 7.
+ *
+ * v10 (ledger audit A1): `GET /v1/match` no longer sends the battle seed;
+ * `POST /v1/attacks/start` returns it (`AttackStartResponse.seed`) when the
+ * player taps Attack, and the raid counts from then on. A started raid not
+ * reported REPORT_GRACE_MS after Attack is settled as a loss when its
+ * attacker next asks for a match, so the game sends its waiting reports
+ * first. Servers refuse `match` from games older than 10 with 426.
  */
-export const PROTOCOL_VERSION = 9;
+export const PROTOCOL_VERSION = 10;
 
 /** Headers the game sends with every request (protocol 7). */
 export const ClientHeaders = {
@@ -518,6 +525,8 @@ export interface GangWarClaimResponse {
   warId: string;
   outcome: 'win' | 'draw' | 'loss';
   alreadyClaimed: boolean;
+  /** The war was against a generated Gang: its chest pays no Jade (ledger audit E13; absent from older servers). */
+  generated?: boolean;
 }
 
 export interface PrivacyRequest {
@@ -571,11 +580,12 @@ export interface OpponentView {
 export interface MatchResponse {
   ticket: string;
   /**
-   * The battle seed for this ticket, chosen by the server. The client plays
-   * the battle with it and sends it back in `BattleSubmission.seed`. Servers
-   * from before server seeds leave it out; the client then picks its own.
+   * Protocol 7–9 only. Since protocol 10 the seed comes from
+   * `POST /v1/attacks/start` (`AttackStartResponse.seed`), so a raid cannot be
+   * played out before it counts (ledger audit A1). When neither answer has
+   * one, the client picks its own (servers from before server seeds).
    */
-  seed: number;
+  seed?: number;
   /** The base to attack, loot already reduced by the attacker's loot penalty. */
   base: BaseLayout;
   opponent: OpponentView;
@@ -583,11 +593,23 @@ export interface MatchResponse {
   expiresAt: number;
 }
 
+/** POST /v1/attacks/start (feature `attack-commit`): the raid now counts. */
+export interface AttackStartResponse {
+  started: boolean;
+  /**
+   * The battle seed the server issued with the ticket (protocol 10, ledger
+   * audit A1). The game plays the battle with it and sends it back in
+   * `BattleSubmission.seed`. Absent from older servers, which sent it with
+   * the match.
+   */
+  seed?: number;
+}
+
 /** The battle a client played; the server re-runs it from seed + deployments. */
 export interface BattleSubmission {
   ticket: string;
   /**
-   * The ticket's seed (`MatchResponse.seed` / `RaidTicketResponse.seed`). The
+   * The ticket's seed (`AttackStartResponse.seed` / `RaidTicketResponse.seed`). The
    * server re-simulates with the seed it issued; a different one is refused
    * with `bad_request` (an old client that picks its own seed must update).
    */
