@@ -48,7 +48,8 @@ describe('progression pacing (model player)', () => {
     expect(p.state.trophies).toBeLessThan(2600);
     const h6 = p.hallReachedAt[6];
     expect(h6).toBeDefined();
-    expect(h6 / 24).toBeGreaterThanOrEqual(11);
+    // Design re-audit: Keep 5 -> 6 costs x5 (was x6.5, the casual drop-off), so this arrives ~a day sooner.
+    expect(h6 / 24).toBeGreaterThanOrEqual(9);
     expect(h6 / 24).toBeLessThanOrEqual(17);
   });
 });

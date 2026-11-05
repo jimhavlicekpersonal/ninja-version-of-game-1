@@ -57,7 +57,7 @@ The audit measured a 13-hour serial refill for a Keep 15 army and 6.7 years of s
 
 Tasks are chosen when a day or week begins, only from ones the village can still do (`taskEligible`): no obstacle challenge without obstacles, no upgrade task when nothing fits in the period, research and Shadow Trial tasks as alternatives.
 
-The pacing model player (`tests/gameplay/balance/progression.test.ts`) still reaches Keep 6 in 11–17 days. `policies.test.ts` checks the same pace for a defensive planner that builds the counters and an explorer that fields the newer warriors of every family and plays Trials, tasks and the pass.
+The pacing model player (`tests/gameplay/balance/progression.test.ts`) reaches Keep 6 in 9–17 days (about 10.4 since the design re-audit smoothed Keep 5 → 6). `policies.test.ts` checks the same pace for a defensive planner that builds the counters and an explorer that fields the newer warriors of every family and plays Trials, tasks and the pass.
 
 ## How to change it (GAME THEORY AI checklist)
 

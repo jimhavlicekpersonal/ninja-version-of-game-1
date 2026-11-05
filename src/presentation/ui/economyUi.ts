@@ -3,25 +3,39 @@ import { achievementViews } from '../../gameplay/sim/achievements';
 import { activeOffers, offerReturns, offerRule } from '../../gameplay/sim/offers';
 import { bandFromProfile } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
-import { productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
+import { canPurchase, productGrantsFor, productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
+import { stipendStatus } from '../../gameplay/sim/stipend';
 import type { StorePrice } from '../../backend/payments/provider';
-import { currentTasks, passSeasonEndsAt, unlockedTier } from '../../gameplay/sim/pass';
+import { currentTasks, passPremiumValue, passSaleOpen, passSeasonEndsAt, unlockedTier } from '../../gameplay/sim/pass';
 import type { Cost, OfferRule, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { hallLevel, passTierReward, rewardOverflow } from '../../gameplay/sim/village';
 import { clear, h, icon } from './dom';
 import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
+import { Capacitor } from '@capacitor/core';
 
 export interface UiKit {
   c: GameController;
   modal(title: string, body: HTMLElement, buttons?: ({ label: string; primary?: boolean; danger?: boolean; onClick: () => void } | null | false | undefined)[], size?: 'normal' | 'wide', onClose?: () => void): () => void;
-  confirm(title: string, message: string, confirmLabel: string, danger?: boolean, cancelLabel?: string): Promise<boolean>;
+  /** A plain message, or an element (the purchase confirm carries links). */
+  confirm(title: string, message: string | HTMLElement, confirmLabel: string, danger?: boolean, cancelLabel?: string): Promise<boolean>;
   toast(text: string, kind?: 'info' | 'error' | 'success'): void;
   closeAllModals(): void;
 }
 
 const usd = (n: number) => `$${n.toFixed(2)}`;
+/** The device's language is Japanese (the purchase confirm then links the Japanese notices). */
+function japaneseDevice(): boolean {
+  try {
+    const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+    return /^ja\b/i.test(langs[0] ?? '');
+  } catch {
+    return false;
+  }
+}
+/** A small padlock for things that can't be claimed yet. */
+const LOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.5 7V5.2a3.5 3.5 0 0 1 7 0V7h.6c.5 0 .9.4.9.9v6.2c0 .5-.4.9-.9.9H3.9a.9.9 0 0 1-.9-.9V7.9c0-.5.4-.9.9-.9h.6Zm1.8 0h3.4V5.2a1.7 1.7 0 0 0-3.4 0V7Z"/></svg>';
 const RES_NAME: Record<ResourceKind, string> = { acorns: 'Coins', dew: 'Provisions', nightsap: 'Shadow Ink', moonstones: 'Jade' };
 
 export function rewardChips(r: Cost & { skin?: string }, skinName?: (id: string) => string): HTMLElement {
@@ -42,6 +56,8 @@ export class EconomyUi {
   }
 
   private skinName = (id: string) => this.c.data.cosmetics.hallSkins.find((s) => s.id === id)?.name ?? id;
+  /** The pass-only Keep look, by its data name (it was hard-coded as "Lantern Elder"; the data calls it Lantern Festival). */
+  private passLookName = () => this.c.data.cosmetics.hallSkins.find((s) => s.passOnly)?.name ?? 'season';
 
   /**
    * Prices as this device's store shows them (GLOBAL-007), keyed by store
@@ -65,7 +81,7 @@ export class EconomyUi {
     if (!pay.prices || !pay.available() || this.storePrices === 'loading' || this.pricesComplete || this.pricesAskedBy === redraw) return;
     this.pricesAskedBy = redraw;
     const d = this.c.data;
-    const ids = [...new Set([...d.store.packs.map((p) => p.id), d.pass.productId, ...d.offers.rules.map((o) => o.productId)].map((id) => storeProductId(d, id)))];
+    const ids = [...new Set([...d.store.packs.map((p) => p.id), d.pass.productId, ...d.offers.rules.map((o) => o.productId), ...(d.store.stipend ? [d.store.stipend.id] : [])].map((id) => storeProductId(d, id)))];
     // A partial answer stays on screen while the store is asked again.
     if (this.storePrices === null || this.storePrices === 'failed') this.storePrices = 'loading';
     pay.prices(ids).then(
@@ -123,10 +139,26 @@ export class EconomyUi {
     const pr = this.price(productId);
     if (!pr.buyable) return;
     // Player-facing names, never internal resource ids (GLOBAL-007).
-    const contents = Object.entries(p.grants).filter(([, v]) => v).map(([k, v]) => `${formatNumber(v as number)} ${RES_NAME[k as ResourceKind] ?? k}`).join(', ');
-    const what = p.kind === 'pass' ? `${p.name}: premium rewards and 20% faster builds until the season ends (${this.seasonEndsText()}).` : `${p.name}${contents ? `: ${contents}` : ''}.`;
+    // What buying it now really delivers (offers are sized for the Keep and storage-capped: productGrantsFor).
+    const real = productGrantsFor(this.c.state, productId, this.c.data);
+    const contents = Object.entries(real?.grants ?? p.grants).filter(([, v]) => v).map(([k, v]) => `${formatNumber(v as number)} ${RES_NAME[k as ResourceKind] ?? k}`).join(', ');
+    const st = this.c.data.store.stipend;
+    const what = p.kind === 'stipend' && st
+      ? `${p.name}: ${st.payments} daily payments of ${st.jadePerPayment} Jade, claimed one a day when you open the game. It does not renew and nothing is charged again.`
+      : p.kind === 'pass' ? `${p.name}: premium rewards and 20% faster builds until the season ends (${this.seasonEndsText()}).` : `${p.name}${contents ? `: ${contents}` : ''}.`;
     const note = this.c.payments.prices ? ' The store shows the final price, including any taxes, before you pay.' : '';
-    const ok = await this.kit.confirm('Confirm purchase', `${what} Price: ${pr.label}.${note}`, `Buy for ${pr.label}`, false, 'Cancel');
+    // EU/UK digital content (re-audit design item 13): delivery starts at once, so the player acknowledges the loss of
+    // the 14-day right to cancel before paying. Japanese devices also get the legally required notices.
+    const message = h(
+      'div',
+      { class: 'purchase-confirm' },
+      h('p', {}, `${what} Price: ${pr.label}.${note}`),
+      h('p', { class: 'muted small withdrawal' }, 'The item is delivered at once; by buying you agree that you lose the right to cancel, as the law allows for digital content.'),
+      japaneseDevice()
+        ? h('p', { class: 'small legal-ja', lang: 'ja' }, this.legalLink('特定商取引法に基づく表記', './tokushoho.html'), ' · ', this.legalLink('資金決済法に基づく表示', './shikin-kessai.html'))
+        : null,
+    );
+    const ok = await this.kit.confirm('Confirm purchase', message, `Buy for ${pr.label}`, false, 'Cancel');
     if (!ok) return;
     if (this.c.state.profile.under18) {
       const ok2 = await this.kit.confirm('Check with a grown-up', `You are about to spend ${pr.label} of real money. Make sure a parent or guardian says it's OK.`, 'Yes, buy it', false, 'Cancel');
@@ -136,6 +168,14 @@ export class EconomyUi {
     if (r.ok && r.unsaved) this.kit.toast('Your purchase is here, but this device could not save it (storage full?). Free some space: it stays open in the store and is delivered again if needed.', 'error');
     else if (r.ok) this.kit.toast('Thank you! Your purchase has been delivered.', 'success');
     else this.kit.toast(r.message, r.code === 'PENDING' || r.code === 'pending' ? 'info' : 'error');
+  }
+
+  /** A shipped legal page: a new tab on the web, a frame inside the app (a system browser can't open a bundled page). */
+  private legalLink(label: string, url: string): HTMLElement {
+    if (Capacitor.isNativePlatform()) {
+      return h('button', { class: 'link-btn', type: 'button', onclick: () => this.kit.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, label);
+    }
+    return h('a', { href: url, target: '_blank', rel: 'noopener' }, label);
   }
 
   /** Confirm a Moonstone spend, then run it. */
@@ -168,7 +208,11 @@ export class EconomyUi {
           return b;
         })),
       );
-      if (current === 'moonstones') body.append(this.packsGrid());
+      if (current === 'moonstones') {
+        const claim = this.stipendCard(draw);
+        if (claim) body.append(claim);
+        body.append(this.packsGrid());
+      }
       else if (current === 'offers') body.append(this.offersList());
       else if (current === 'pass') body.append(this.passProduct(draw));
       else body.append(this.looksGrid(draw));
@@ -218,7 +262,37 @@ export class EconomyUi {
       );
       grid.append(card);
     });
+    // Clan Stipend: a one-time purchase paid out daily, never a subscription.
+    const st = this.c.data.store.stipend;
+    const ss = stipendStatus(this.c.state, this.c.now(), this.c.data);
+    if (st && ss.offered) {
+      grid.append(
+        h(
+          'div',
+          { class: 'shop-card pack stipend' },
+          h('div', { class: 'pack-gems' }, icon(icons.moonstones), h('span', { class: 'stipend-x' }, `× ${st.payments}`)),
+          h('div', { class: 'shop-name' }, st.name),
+          h('div', { class: 'small' }, `${st.payments} daily payments of ${st.jadePerPayment} Jade; does not renew.`),
+          ss.left > 0 ? h('div', { class: 'chip good' }, `${ss.left} payment${ss.left === 1 ? '' : 's'} left`) : null,
+          ss.canBuy ? this.buyButton(st.id, 'primary') : h('span', { class: 'claim-flat' }, 'Buy again when all are claimed'),
+        ),
+      );
+    }
     return grid;
+  }
+
+  /** "Clan Stipend: claim 20 Jade (12 left)" while a payment is waiting today (no reminders: it waits for the player). */
+  stipendCard(after?: () => void): HTMLElement | null {
+    const ss = stipendStatus(this.c.state, this.c.now(), this.c.data);
+    if (!ss.claimable) return null;
+    const btn = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), `Claim ${ss.jade}`);
+    btn.addEventListener('click', () => {
+      const r = this.c.dispatch({ type: 'claimStipend' });
+      if (!r.ok) this.kit.toast(r.message, 'error');
+      else this.kit.toast(`+${ss.jade} Jade from your Clan Stipend.`, 'success');
+      after?.();
+    });
+    return h('div', { class: 'log-row stipend-card' }, h('div', {}, h('b', {}, `Clan Stipend: claim ${ss.jade} Jade`), h('div', { class: 'muted small' }, `${ss.left} payment${ss.left === 1 ? '' : 's'} left, one a day. A missed day is never lost.`)), btn);
   }
 
   private offersList(): HTMLElement {
@@ -232,12 +306,25 @@ export class EconomyUi {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, rule.title), h('div', { class: 'muted small' }, rule.description), h('div', { class: 'row' }, rewardChips(rule.contents), h('span', { class: 'chip' }, icon(icons.clock), this.offerTimeText(rule, a.expiresAt)))),
+          h('div', {}, h('b', {}, rule.title), h('div', { class: 'muted small' }, rule.description), h('div', { class: 'row' }, rewardChips(this.offerContents(rule.productId, rule.contents)), h('span', { class: 'chip' }, icon(icons.clock), this.offerTimeText(rule, a.expiresAt))), this.convertedNote(rule.productId)),
           this.buyButton(rule.productId, 'primary'),
         ),
       );
     }
     return wrap;
+  }
+
+  /** What an offer delivers to this village now (sized for the Keep, capped by storage). */
+  private offerContents(productId: string, fallback: Cost): Cost {
+    return productGrantsFor(this.c.state, productId, this.c.data)?.grants ?? fallback;
+  }
+
+  /** "12,000 Coins don't fit: +40 Jade instead" (bought resources never sit above storage). */
+  private convertedNote(productId: string): HTMLElement | null {
+    const g = productGrantsFor(this.c.state, productId, this.c.data);
+    if (!g || g.convertedJade <= 0) return null;
+    const what = RESOURCE_KINDS.filter((k) => g.converted[k]).map((k) => `${formatNumber(g.converted[k]!)} ${RES_NAME[k]}`).join(' and ');
+    return h('div', { class: 'muted small' }, `${what} ${what.includes(' and ') ? "don't" : "doesn't"} fit in your storage: +${formatNumber(g.convertedJade)} Jade instead (included above).`);
   }
 
   /** "Season ends in 12 days" (re-audit: the pass card and its confirm say when the season ends). */
@@ -261,11 +348,19 @@ export class EconomyUi {
     const d = this.c.data;
     if (this.c.state.pass.premium) return h('p', { class: 'chip good' }, 'You have the premium Season Scroll this season.');
     const ends = this.seasonEndsText();
+    const now = this.c.now();
+    // An honest value line (passPremiumValue): only tiers still reachable this season count.
+    const v = passPremiumValue(this.c.state, now, d);
+    const sale = passSaleOpen(now, d, this.c.state);
+    const check = canPurchase(this.c.state, d.pass.productId, now, d);
+    const closed = !sale.open && !check.ok && check.code === 'SEASON_ENDING';
+    const value = h('div', { class: 'small pass-value' }, `≈ ${formatNumber(v.total)} Jade value · ${v.tiers}/${v.tiersTotal} tiers reachable · ${v.daysLeft} day${v.daysLeft === 1 ? '' : 's'} left`);
+    const buy = closed ? h('span', { class: 'claim-flat' }, 'Not on sale') : this.buyButton(d.pass.productId, 'gold', redraw);
     return h(
       'div',
       { class: 'pass-premium' },
-      h('div', {}, h('b', {}, `${d.pass.name}: premium track`), h('div', { class: 'muted small' }, `Until the season ends: 20% faster builds, the Lantern Elder look and bigger rewards on every tier. Rewards you already earned unlock right away.`), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`)),
-      this.buyButton(d.pass.productId, 'gold', redraw),
+      h('div', {}, h('b', {}, `${d.pass.name}: premium track`), h('div', { class: 'muted small' }, `Until the season ends: 20% faster builds, the ${this.passLookName()} look and bigger rewards on every tier. Rewards you already earned unlock right away.`), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`), value, closed && !check.ok ? h('p', { class: 'note' }, check.message) : null),
+      buy,
     );
   }
 
@@ -305,7 +400,8 @@ export class EconomyUi {
       'div',
       { class: 'offer' },
       h('p', {}, rule.description),
-      h('div', { class: 'row' }, rewardChips(rule.contents)),
+      h('div', { class: 'row' }, rewardChips(this.offerContents(rule.productId, rule.contents))),
+      this.convertedNote(rule.productId),
       a ? h('p', { class: 'muted small' }, `Available for ${formatDuration(a.expiresAt - this.c.now())}${offerReturns(rule) ? ', and it comes back from time to time' : ''}. You can also find it in the Store.`) : null,
     );
     const close = this.kit.modal(rule.title, body, [
@@ -333,7 +429,7 @@ export class EconomyUi {
           h(
             'div',
             { class: 'pass-premium' },
-            h('div', {}, h('b', {}, 'Premium track'), h('div', { class: 'muted small' }, '20% faster builds this season, the Lantern Elder look, and bigger rewards on every tier.')),
+            h('div', {}, h('b', {}, 'Premium track'), h('div', { class: 'muted small' }, `20% faster builds this season, the ${this.passLookName()} look, and bigger rewards on every tier.`)),
             h('button', { class: 'btn gold', type: 'button', onclick: () => this.openStore('pass') }, 'Get premium'),
           ),
         );
@@ -342,8 +438,12 @@ export class EconomyUi {
       }
       body.append(h('h3', {}, 'Tasks'));
       for (const t of currentTasks(s, hallLevel(s, d), d)) {
-        const btn = h('button', { class: 'btn primary', type: 'button', disabled: t.claimed || t.progress < t.target }, t.claimed ? 'Done' : `+${t.points}`);
-        btn.addEventListener('click', () => {
+        // Only a claim that can be made looks like a button (re-audit design item 9); the rest is a flat, locked tag.
+        const ready = !t.claimed && t.progress >= t.target;
+        const btn = ready
+          ? h('button', { class: 'btn primary', type: 'button' }, `+${t.points}`)
+          : h('span', { class: `claim-flat${t.claimed ? ' done' : ''}`, 'aria-label': t.claimed ? 'Claimed' : `Locked: ${t.points} points when done` }, t.claimed ? '✓ Done' : icon(LOCK), t.claimed ? '' : `+${t.points}`);
+        if (ready) btn.addEventListener('click', () => {
           const r = this.c.dispatch({ type: 'claimTask', id: t.id, kind: t.kind });
           if (!r.ok) this.kit.toast(r.message, 'error');
           draw();
@@ -358,6 +458,12 @@ export class EconomyUi {
           const can = tr.tier <= tier && !claimed && (track === 'free' || s.pass.premium);
           // Rewards are sized for your Clan Keep, like chests and league rewards.
           const reward = passTierReward(s, tr.tier, track, d) ?? {};
+          if (!can && !claimed) {
+            // Not claimable: flat, with a lock and (on the next tier) how far along it is, never a greyed button.
+            const why = tr.tier > tier ? `Tier ${tr.tier}: ${Math.max(0, tr.tier * d.pass.pointsPerTier - s.pass.points)} more points` : 'Premium track';
+            const bar = tr.tier === tier + 1 ? h('span', { class: 'tier-bar' }, h('i', { style: `width:${Math.max(0, Math.min(100, (into / d.pass.pointsPerTier) * 100))}%` })) : null;
+            return h('div', { class: `tier-cell ${track} locked`, 'aria-label': `${why} (locked)` }, icon(LOCK, 'icon tier-lock'), rewardChips(reward, this.skinName), bar);
+          }
           const el = h('button', { class: `tier-cell ${track}${claimed ? ' claimed' : ''}${can ? ' ready' : ''}`, type: 'button', disabled: !can }, rewardChips(reward, this.skinName));
           el.addEventListener('click', async () => {
             // Each tier can be claimed once: warn before part of it is lost to full storage.

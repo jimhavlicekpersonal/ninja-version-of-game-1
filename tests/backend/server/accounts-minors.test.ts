@@ -109,7 +109,7 @@ describe('Game Center keys and JWKS refetching', () => {
     const cer = readFileSync(new URL('../fixtures/gamecenter-test.cer', import.meta.url));
     let fetches = 0;
     let mode: 'ok' | 'big' | 'stall' = 'ok';
-    const fetch = async (url: string, init?: { signal?: AbortSignal }) => {
+    const fetch = async (_url: string, init?: { signal?: AbortSignal }) => {
       fetches++;
       if (mode === 'stall') return new Promise<never>((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))));
       const bytes = mode === 'big' ? Buffer.alloc(20_000, 1) : cer;

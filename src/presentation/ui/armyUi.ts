@@ -66,11 +66,12 @@ export class ArmyUi {
     const body = h('div', { class: 'training' });
     const strip = h('div', { class: 'army-strip' });
     const tabs = h('div', { class: 'shop-tabs army-tabs', role: 'tablist' });
-    // Strip and tabs are pinned together: another tab is always one tap away.
-    const head = h('div', { class: 'army-head' }, strip, tabs);
+    // Strip and tabs are pinned together: another tab is always one tap away. The Codex sits beside the tabs
+    // (re-audit design item 7), a small button rather than a "50 classes" banner on a new player's first visit.
+    const codex = h('button', { class: 'btn ghost codex-btn', type: 'button', title: `Warrior Codex: all ${WARRIORS.length} classes`, onclick: () => this.d.openCodex() }, icon(icons.scroll), 'Codex');
+    const head = h('div', { class: 'army-head' }, strip, h('div', { class: 'army-tabrow' }, tabs, codex));
     const pane = h('div', { class: 'army-pane' });
-    const codex = h('button', { class: 'btn sky', type: 'button', onclick: () => this.d.openCodex() }, icon(icons.scroll), `Warrior Codex (${WARRIORS.length} classes)`);
-    body.append(head, pane, h('div', { class: 'actions' }, codex));
+    body.append(head, pane);
 
     let tierFilter = 0;
     let roleFilter = '';
@@ -157,7 +158,8 @@ export class ArmyUi {
       pane.replaceChildren(
         ...[
           !ready ? this.setupCard(v) : null,
-          v.dojo === 'ready' ? filters : null,
+          // Filters only once there is something to filter (re-audit design item 4: 5 tiers and 10 roles for 2 warriors).
+          v.dojo === 'ready' && scopeCount >= 5 ? filters : null,
           speed > 1 ? h('p', { class: 'muted small' }, `Your Training Dojo trains ${speed}× faster than a level 1 Dojo.`) : null,
           trainList,
           !list.length && v.dojo === 'ready' ? trainEmpty : null,

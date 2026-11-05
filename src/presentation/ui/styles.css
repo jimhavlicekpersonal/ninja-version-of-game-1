@@ -35,9 +35,13 @@
   --plum: #2c2440;
   --water: #1f2a36;
   --shadow-soft: 0 6px 0 rgba(38, 48, 61, 0.22), 0 10px 24px rgba(15, 20, 30, 0.28);
-  --font: 'M PLUS 1', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  /* The bundled faces are Latin subsets: other scripts fall through, in order, to the platform's own font for that script
+     (Japanese/Chinese: Hiragino on Apple, Yu Gothic UI/Meiryo on Windows, Noto Sans CJK on Android; then Arabic,
+     Devanagari, Thai, Hebrew; then the system UI font), so weights stay close to M PLUS 1 (re-audit design item 12). */
+  --font-fallback: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, 'Noto Sans Arabic', 'Geeza Pro', 'Segoe UI Arabic', 'Noto Sans Devanagari', 'Kohinoor Devanagari', Nirmala UI, 'Noto Sans Thai', Thonburi, 'Leelawadee UI', 'Noto Sans Hebrew', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font: 'M PLUS 1', var(--font-fallback);
   /* Titles and big labels. One weight only: always use it at 400, or the browser fakes a bold. */
-  --font-display: 'Dela Gothic One', 'M PLUS 1', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Dela Gothic One', 'M PLUS 1', var(--font-fallback);
   /* Washi paper: warm light from the top, a faint fibre grain. */
   --paper: radial-gradient(130% 90% at 50% -10%, #fffcf4 0%, #f7f0e1 50%, #efe3c9 100%);
   /* Lacquered panel edge: a white inner bevel and a fine gold-leaf rule. */
@@ -281,10 +285,14 @@ html, body {
 
 /* ---------- modals ---------- */
 .modal-backdrop {
-  position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 45%, rgba(20, 26, 34, .32), rgba(12, 16, 22, .62)); display: grid; place-items: center;
+  position: absolute; inset: 0; background: rgba(12, 16, 22, .55); display: grid; place-items: center;
+  /* Each dialog paints as one layer (re-audit design item 7): a sticky header inside one can never show through the next. */
+  isolation: isolate;
   padding: calc(12px + var(--safe-t)) calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) calc(12px + var(--safe-l));
-  animation: fade .18s ease-out; backdrop-filter: blur(3px) saturate(.9); -webkit-backdrop-filter: blur(3px) saturate(.9);
+  animation: fade .18s ease-out; backdrop-filter: blur(4px) saturate(.9); -webkit-backdrop-filter: blur(4px) saturate(.9);
 }
+/* Blur costs a full-screen pass on every frame behind it: the low quality profile (render/quality.ts) skips it. */
+html.q-low .modal-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(12, 16, 22, .62); }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .modal {
   width: min(440px, 100%); max-height: 100%; display: flex; flex-direction: column;
@@ -440,7 +448,9 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .side-rail .round-btn { width: 50px; height: 50px; position: relative; }
 .side-rail .round-btn .icon { width: 28px; height: 28px; }
 .badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; border-radius: 10px; background: linear-gradient(#ea6a52, var(--berry-dark)); color: #fff; font: 800 11px var(--font); display: grid; place-items: center; padding: 0 5px; box-shadow: 0 0 0 2px #fffaf0, 0 2px 0 rgba(120, 20, 20, .35); }
-.pack .pack-gems { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; min-height: 52px; align-items: center; }
+.pack .pack-gems { display: flex; flex-wrap: nowrap; justify-content: center; gap: 2px; height: 52px; align-items: center; overflow: hidden; }
+.shop-card.pack { justify-content: flex-start; }
+.shop-card.pack > .btn:last-child { margin-top: auto; width: 100%; }
 .pack .pack-gems .icon { width: 24px; height: 24px; }
 .pack-amount { font: 800 18px var(--font); display: flex; align-items: center; gap: 4px; color: var(--plum); }
 .store-note { text-align: center; margin-top: 12px !important; }
@@ -747,7 +757,8 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
   #battle-hud .b-bottom { bottom: calc(10px + var(--safe-b)); right: auto; }
   #battle-hud[data-mode='scout'] .b-bottom { left: auto; right: calc(8px + var(--safe-r)); width: min(380px, 47%); }
   #battle-hud[data-mode='scout'] .b-troops { left: calc(8px + var(--safe-l)); max-width: calc(53% - 28px - var(--safe-l)); }
-  #battle-hud .scout-report { bottom: calc(76px + var(--safe-b)); right: auto; max-width: min(520px, 60%); margin: 0; }
+  /* Sideways the scout drawer sits between the top cards, so the map keeps the middle of a short screen. */
+  #battle-hud .scout-report { top: calc(8px + var(--safe-t)); bottom: auto; left: calc(min(46%, 440px) + 16px + var(--safe-l)); right: calc(104px + var(--safe-r)); max-width: none; margin: 0; }
 }
 /* Result screen: a banner for a flawless raid, stars that slam in, loot that counts up (all instant with reduced motion). */
 .result-banner {
@@ -762,4 +773,79 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 .star.big.slam { animation: star-slam .42s cubic-bezier(.2, 1.4, .4, 1) both; }
 @keyframes star-slam { 0% { transform: scale(2.8) rotate(-28deg); opacity: 0; } 55% { transform: scale(.86) rotate(5deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
 .count-num { font-variant-numeric: tabular-nums; }
+
+/* ---------- re-audit design: fonts, tutorial, rail, chips, store, pass, codex, grove, settings ---------- */
+/* Player and Alliance names in the text face at 800 (Dela Gothic has no glyphs outside Latin, so mixed scripts fell apart). */
+.b-name bdi, .modal h2 bdi, .grove-head bdi, .raid-score bdi, .sheet h2 bdi { font-family: var(--font); font-weight: 800; letter-spacing: 0; }
+.b-name bdi { min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
+.b-name .level { white-space: nowrap; flex: none; }
+
+/* Tutorial: the Sensei's portrait, the step count, a bubble that stays out of the way. */
+.tut-face { overflow: hidden; }
+.tut-face svg { display: block; width: 100%; height: 100%; }
+.tut-step { margin: 0 0 2px !important; font-size: 11px; font-weight: 800 !important; letter-spacing: .4px; color: var(--ink-soft); text-transform: uppercase; }
+.tut-bubble { max-width: 440px; margin: 0 auto; }
+
+/* Side rail: a fold toggle and the Events pill. */
+.rail-toggle .rail-caret::before { content: '›'; font: 900 22px/1 var(--font); }
+.rail-toggle.collapsed .rail-caret::before { content: '‹'; }
+.side-rail .round-btn.rail-toggle { width: 40px; height: 40px; justify-self: center; }
+.rail-pill {
+  position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); padding: 1px 6px; border-radius: 999px; white-space: nowrap;
+  background: linear-gradient(#fff4d6, #ffe3a6); color: #6a3d00; font: 800 10px var(--font); box-shadow: 0 0 0 1.5px #fffaf0, 0 2px 0 rgba(120, 80, 10, .3);
+}
+.rail-pill.live { background: linear-gradient(#ffd7a0, #f2a03a); }
+@media (max-height: 480px) {
+  .side-rail { grid-template-rows: repeat(5, 46px); }
+  .side-rail .round-btn.rail-toggle { width: 46px; height: 46px; }
+}
+
+/* The Keep-unlock preview: one line and a dismiss button (it used to be a truncated two-line banner). */
+.unlock-chip { display: flex; align-items: center; gap: 4px; pointer-events: auto; max-width: 100%; }
+.unlock-chip .unlocks { padding: 5px 12px 5px 6px; border-radius: 999px; min-height: 36px; }
+.unlock-chip .unlocks .icon { width: 22px; height: 22px; }
+.unlock-chip .unlock-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.unlock-x { width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(247, 240, 225, .9); display: grid; place-items: center; cursor: pointer; position: relative; box-shadow: var(--hairline), 0 2px 0 rgba(38, 48, 61, .2); }
+.unlock-x::after { content: ''; position: absolute; inset: -6px; }
+.unlock-x .icon { width: 13px; height: 13px; }
+.small-btn { min-height: 40px; padding: 6px 12px; font-size: 13px; margin-bottom: 8px; }
+
+/* Pass: only claimable things look like buttons; locked ones are flat with a lock. */
+.claim-flat { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 4px 10px; border-radius: 12px; background: #ebe2cf; color: var(--ink-soft); font: 800 13px var(--font); white-space: nowrap; }
+.claim-flat .icon { width: 14px; height: 14px; }
+.claim-flat.done { background: #e3f9d6; color: #2b6a1f; }
+.tier-cell.locked { cursor: default; background: #efe7d6; box-shadow: inset 0 0 0 1px rgba(38, 48, 61, .08); flex-wrap: wrap; gap: 4px; position: relative; filter: saturate(.6); }
+.tier-cell.locked .chip { background: transparent; box-shadow: none; color: var(--ink-soft); }
+.tier-cell .tier-lock { width: 13px; height: 13px; color: var(--ink-soft); }
+.tier-bar { flex-basis: 100%; height: 4px; border-radius: 2px; background: #d8ccb2; overflow: hidden; }
+.tier-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--sun-dark), var(--sun)); }
+
+/* Army panel: the Codex beside the tabs. */
+.army-tabrow { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; }
+.army-tabrow .army-tabs { flex: 1; min-width: 0; }
+.btn.codex-btn { min-height: 36px; padding: 4px 12px; font-size: 13px; flex: none; }
+
+/* Offline Alliance: always labelled as computer players. */
+.chip.bot-label { margin: 2px 0; background: #e6ecf5; color: #2a3f5f; font-size: 11px; }
+.bot-tag { font-weight: 700; color: var(--ink-soft); font-size: 11px; }
+.note-info { background: #eef3fa; border-radius: 12px; padding: 8px 10px; font-size: 13px; }
+
+/* Settings groups. */
+.settings h3.settings-group { margin-top: 22px; padding-top: 10px; border-top: 2px solid rgba(201, 154, 62, .35); font-size: 16px; }
+.settings h4 { margin: 14px 0 4px; font: 800 14px var(--font); }
+.settings-advanced { padding: 2px 0 0; }
+
+/* Purchase confirm. */
+.purchase-confirm .withdrawal { border-left: 3px solid rgba(38, 48, 61, .2); padding-left: 8px; }
+.legal-ja a, .link-btn { color: var(--sky-dark); font-weight: 700; }
+.link-btn { border: none; background: none; padding: 0; text-decoration: underline; font: inherit; cursor: pointer; min-height: 32px; }
+
+/* Daily chest stage (ART's chest art and reveal). */
+.chest-stage { display: flex; justify-content: center; margin: 2px 0 6px; min-height: 96px; }
+.chest-stage > svg { width: 96px; height: 96px; }
+.chest-reveal-reward { display: flex; justify-content: center; }
+
+/* One panel family: the building sheet takes the dialogs' edge and depth. */
+.sheet { border-radius: 26px; box-shadow: var(--edge), 0 0 0 1.5px rgba(38, 48, 61, .22), 0 6px 0 rgba(20, 26, 34, .2), 0 18px 40px rgba(10, 14, 20, .35); }
+#battle-hud .scout-report { background: var(--paper); box-shadow: var(--edge), var(--hairline), var(--shadow-soft); }
 

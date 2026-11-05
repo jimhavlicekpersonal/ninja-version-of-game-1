@@ -114,14 +114,14 @@
 | `icon.warrior.grapple_raider.s2` | `public/art/icons/warriors/grapple_raider_s2.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 2 (6-10) | yes |
 | `icon.warrior.grapple_raider.s3` | `public/art/icons/warriors/grapple_raider_s3.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 3 (11-15) | yes |
 | `icon.warrior.grapple_raider.s4` | `public/art/icons/warriors/grapple_raider_s4.png` | 256 | Grapple Raider (Infiltrator, Veteran) | 4 (16-20) | yes |
-| `icon.warrior.mole_king.s1` | `public/art/icons/warriors/mole_king_s1.png` | 256 | Mole King (Infiltrator, Master) | 1 (1-5) | yes |
-| `icon.warrior.mole_king.s2` | `public/art/icons/warriors/mole_king_s2.png` | 256 | Mole King (Infiltrator, Master) | 2 (6-10) | yes |
-| `icon.warrior.mole_king.s3` | `public/art/icons/warriors/mole_king_s3.png` | 256 | Mole King (Infiltrator, Master) | 3 (11-15) | yes |
-| `icon.warrior.mole_king.s4` | `public/art/icons/warriors/mole_king_s4.png` | 256 | Mole King (Infiltrator, Master) | 4 (16-20) | yes |
-| `icon.warrior.phantom_gate.s1` | `public/art/icons/warriors/phantom_gate_s1.png` | 256 | Phantom Gate (Infiltrator, Legend) | 1 (1-5) | yes |
-| `icon.warrior.phantom_gate.s2` | `public/art/icons/warriors/phantom_gate_s2.png` | 256 | Phantom Gate (Infiltrator, Legend) | 2 (6-10) | yes |
-| `icon.warrior.phantom_gate.s3` | `public/art/icons/warriors/phantom_gate_s3.png` | 256 | Phantom Gate (Infiltrator, Legend) | 3 (11-15) | yes |
-| `icon.warrior.phantom_gate.s4` | `public/art/icons/warriors/phantom_gate_s4.png` | 256 | Phantom Gate (Infiltrator, Legend) | 4 (16-20) | yes |
+| `icon.warrior.mole_king.s1` | `public/art/icons/warriors/mole_king_s1.png` | 256 | Burrow Ambusher (Infiltrator, Master) | 1 (1-5) | yes |
+| `icon.warrior.mole_king.s2` | `public/art/icons/warriors/mole_king_s2.png` | 256 | Burrow Ambusher (Infiltrator, Master) | 2 (6-10) | yes |
+| `icon.warrior.mole_king.s3` | `public/art/icons/warriors/mole_king_s3.png` | 256 | Burrow Ambusher (Infiltrator, Master) | 3 (11-15) | yes |
+| `icon.warrior.mole_king.s4` | `public/art/icons/warriors/mole_king_s4.png` | 256 | Burrow Ambusher (Infiltrator, Master) | 4 (16-20) | yes |
+| `icon.warrior.phantom_gate.s1` | `public/art/icons/warriors/phantom_gate_s1.png` | 256 | Wall Phantom (Infiltrator, Legend) | 1 (1-5) | yes |
+| `icon.warrior.phantom_gate.s2` | `public/art/icons/warriors/phantom_gate_s2.png` | 256 | Wall Phantom (Infiltrator, Legend) | 2 (6-10) | yes |
+| `icon.warrior.phantom_gate.s3` | `public/art/icons/warriors/phantom_gate_s3.png` | 256 | Wall Phantom (Infiltrator, Legend) | 3 (11-15) | yes |
+| `icon.warrior.phantom_gate.s4` | `public/art/icons/warriors/phantom_gate_s4.png` | 256 | Wall Phantom (Infiltrator, Legend) | 4 (16-20) | yes |
 | `icon.warrior.kite_raider.s1` | `public/art/icons/warriors/kite_raider_s1.png` | 256 | Kite Raider (Sky, Initiate) | 1 (1-5) | yes |
 | `icon.warrior.kite_raider.s2` | `public/art/icons/warriors/kite_raider_s2.png` | 256 | Kite Raider (Sky, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.kite_raider.s3` | `public/art/icons/warriors/kite_raider_s3.png` | 256 | Kite Raider (Sky, Initiate) | 3 (11-15) | yes |
@@ -138,10 +138,10 @@
 | `icon.warrior.thunder_kite.s2` | `public/art/icons/warriors/thunder_kite_s2.png` | 256 | Thunder Kite (Sky, Master) | 2 (6-10) | yes |
 | `icon.warrior.thunder_kite.s3` | `public/art/icons/warriors/thunder_kite_s3.png` | 256 | Thunder Kite (Sky, Master) | 3 (11-15) | yes |
 | `icon.warrior.thunder_kite.s4` | `public/art/icons/warriors/thunder_kite_s4.png` | 256 | Thunder Kite (Sky, Master) | 4 (16-20) | yes |
-| `icon.warrior.dragon_kite_armada.s1` | `public/art/icons/warriors/dragon_kite_armada_s1.png` | 256 | Dragon Kite Armada (Sky, Legend) | 1 (1-5) | yes |
-| `icon.warrior.dragon_kite_armada.s2` | `public/art/icons/warriors/dragon_kite_armada_s2.png` | 256 | Dragon Kite Armada (Sky, Legend) | 2 (6-10) | yes |
-| `icon.warrior.dragon_kite_armada.s3` | `public/art/icons/warriors/dragon_kite_armada_s3.png` | 256 | Dragon Kite Armada (Sky, Legend) | 3 (11-15) | yes |
-| `icon.warrior.dragon_kite_armada.s4` | `public/art/icons/warriors/dragon_kite_armada_s4.png` | 256 | Dragon Kite Armada (Sky, Legend) | 4 (16-20) | yes |
+| `icon.warrior.dragon_kite_armada.s1` | `public/art/icons/warriors/dragon_kite_armada_s1.png` | 256 | Dragon Kite Crew (Sky, Legend) | 1 (1-5) | yes |
+| `icon.warrior.dragon_kite_armada.s2` | `public/art/icons/warriors/dragon_kite_armada_s2.png` | 256 | Dragon Kite Crew (Sky, Legend) | 2 (6-10) | yes |
+| `icon.warrior.dragon_kite_armada.s3` | `public/art/icons/warriors/dragon_kite_armada_s3.png` | 256 | Dragon Kite Crew (Sky, Legend) | 3 (11-15) | yes |
+| `icon.warrior.dragon_kite_armada.s4` | `public/art/icons/warriors/dragon_kite_armada_s4.png` | 256 | Dragon Kite Crew (Sky, Legend) | 4 (16-20) | yes |
 | `icon.warrior.herbalist.s1` | `public/art/icons/warriors/herbalist_s1.png` | 256 | Herbalist (Mystic, Initiate) | 1 (1-5) | yes |
 | `icon.warrior.herbalist.s2` | `public/art/icons/warriors/herbalist_s2.png` | 256 | Herbalist (Mystic, Initiate) | 2 (6-10) | yes |
 | `icon.warrior.herbalist.s3` | `public/art/icons/warriors/herbalist_s3.png` | 256 | Herbalist (Mystic, Initiate) | 3 (11-15) | yes |
@@ -250,13 +250,13 @@
 | `troop.mole_digger` | `public/art/troops/tunnel_runner.png` | 128 | Tunnel Runner battle sprite |  | yes |
 | `troop.wall_climber` | `public/art/troops/wall_climber.png` | 128 | Wall Climber battle sprite |  | yes |
 | `troop.grapple_raider` | `public/art/troops/grapple_raider.png` | 128 | Grapple Raider battle sprite |  | yes |
-| `troop.mole_king` | `public/art/troops/mole_king.png` | 128 | Mole King battle sprite |  | yes |
-| `troop.phantom_gate` | `public/art/troops/phantom_gate.png` | 128 | Phantom Gate battle sprite |  | yes |
+| `troop.mole_king` | `public/art/troops/mole_king.png` | 128 | Burrow Ambusher battle sprite |  | yes |
+| `troop.phantom_gate` | `public/art/troops/phantom_gate.png` | 128 | Wall Phantom battle sprite |  | yes |
 | `troop.owl_bomber` | `public/art/troops/kite_raider.png` | 128 | Kite Raider battle sprite |  | yes |
 | `troop.crane_glider` | `public/art/troops/crane_glider.png` | 128 | Crane Glider battle sprite |  | yes |
 | `troop.lantern_balloon` | `public/art/troops/lantern_balloon.png` | 128 | Lantern Balloon battle sprite |  | yes |
 | `troop.thunder_kite` | `public/art/troops/thunder_kite.png` | 128 | Thunder Kite battle sprite |  | yes |
-| `troop.dragon_kite_armada` | `public/art/troops/dragon_kite_armada.png` | 128 | Dragon Kite Armada battle sprite |  | yes |
+| `troop.dragon_kite_armada` | `public/art/troops/dragon_kite_armada.png` | 128 | Dragon Kite Crew battle sprite |  | yes |
 | `troop.herbalist` | `public/art/troops/herbalist.png` | 128 | Herbalist battle sprite |  | yes |
 | `troop.drum_monk` | `public/art/troops/drum_monk.png` | 128 | Drum Monk battle sprite |  | yes |
 | `troop.mist_weaver` | `public/art/troops/mist_weaver.png` | 128 | Mist Weaver battle sprite |  | yes |
@@ -313,11 +313,11 @@
 | `icon.building.acorn_orchard.s3` | `public/art/icons/buildings/acorn_orchard_s3.png` | 256 | Coin Mint (collector) | 3 (10-14) | yes |
 | `icon.building.acorn_orchard.s4` | `public/art/icons/buildings/acorn_orchard_s4.png` | 256 | Coin Mint (collector) | 4 (15-19) | yes |
 | `icon.building.acorn_orchard.s5` | `public/art/icons/buildings/acorn_orchard_s5.png` | 256 | Coin Mint (collector) | 5 (20-24) | yes |
-| `icon.building.dewdrop_well.s1` | `public/art/icons/buildings/dewdrop_well_s1.png` | 256 | Rice Paddy (collector) | 1 (1-4) | yes |
-| `icon.building.dewdrop_well.s2` | `public/art/icons/buildings/dewdrop_well_s2.png` | 256 | Rice Paddy (collector) | 2 (5-9) | yes |
-| `icon.building.dewdrop_well.s3` | `public/art/icons/buildings/dewdrop_well_s3.png` | 256 | Rice Paddy (collector) | 3 (10-14) | yes |
-| `icon.building.dewdrop_well.s4` | `public/art/icons/buildings/dewdrop_well_s4.png` | 256 | Rice Paddy (collector) | 4 (15-19) | yes |
-| `icon.building.dewdrop_well.s5` | `public/art/icons/buildings/dewdrop_well_s5.png` | 256 | Rice Paddy (collector) | 5 (20-24) | yes |
+| `icon.building.dewdrop_well.s1` | `public/art/icons/buildings/dewdrop_well_s1.png` | 256 | Terraced Farm (collector) | 1 (1-4) | yes |
+| `icon.building.dewdrop_well.s2` | `public/art/icons/buildings/dewdrop_well_s2.png` | 256 | Terraced Farm (collector) | 2 (5-9) | yes |
+| `icon.building.dewdrop_well.s3` | `public/art/icons/buildings/dewdrop_well_s3.png` | 256 | Terraced Farm (collector) | 3 (10-14) | yes |
+| `icon.building.dewdrop_well.s4` | `public/art/icons/buildings/dewdrop_well_s4.png` | 256 | Terraced Farm (collector) | 4 (15-19) | yes |
+| `icon.building.dewdrop_well.s5` | `public/art/icons/buildings/dewdrop_well_s5.png` | 256 | Terraced Farm (collector) | 5 (20-24) | yes |
 | `icon.building.acorn_silo.s1` | `public/art/icons/buildings/acorn_silo_s1.png` | 256 | Treasury (storage) | 1 (1-4) | yes |
 | `icon.building.acorn_silo.s2` | `public/art/icons/buildings/acorn_silo_s2.png` | 256 | Treasury (storage) | 2 (5-8) | yes |
 | `icon.building.acorn_silo.s3` | `public/art/icons/buildings/acorn_silo_s3.png` | 256 | Treasury (storage) | 3 (9-13) | yes |
@@ -349,11 +349,11 @@
 | `icon.building.pinecone_catapult.s3` | `public/art/icons/buildings/pinecone_catapult_s3.png` | 256 | Firework Mortar (defense) | 3 (4-5) | yes |
 | `icon.building.pinecone_catapult.s4` | `public/art/icons/buildings/pinecone_catapult_s4.png` | 256 | Firework Mortar (defense) | 4 (6-7) | yes |
 | `icon.building.pinecone_catapult.s5` | `public/art/icons/buildings/pinecone_catapult_s5.png` | 256 | Firework Mortar (defense) | 5 (8-9) | yes |
-| `icon.building.wasp_nest.s1` | `public/art/icons/buildings/wasp_nest_s1.png` | 256 | Shuriken Pagoda (defense) | 1 (1-2) | yes |
-| `icon.building.wasp_nest.s2` | `public/art/icons/buildings/wasp_nest_s2.png` | 256 | Shuriken Pagoda (defense) | 2 (3-5) | yes |
-| `icon.building.wasp_nest.s3` | `public/art/icons/buildings/wasp_nest_s3.png` | 256 | Shuriken Pagoda (defense) | 3 (6-7) | yes |
-| `icon.building.wasp_nest.s4` | `public/art/icons/buildings/wasp_nest_s4.png` | 256 | Shuriken Pagoda (defense) | 4 (8-10) | yes |
-| `icon.building.wasp_nest.s5` | `public/art/icons/buildings/wasp_nest_s5.png` | 256 | Shuriken Pagoda (defense) | 5 (11-13) | yes |
+| `icon.building.wasp_nest.s1` | `public/art/icons/buildings/wasp_nest_s1.png` | 256 | Shuriken Tower (defense) | 1 (1-2) | yes |
+| `icon.building.wasp_nest.s2` | `public/art/icons/buildings/wasp_nest_s2.png` | 256 | Shuriken Tower (defense) | 2 (3-5) | yes |
+| `icon.building.wasp_nest.s3` | `public/art/icons/buildings/wasp_nest_s3.png` | 256 | Shuriken Tower (defense) | 3 (6-7) | yes |
+| `icon.building.wasp_nest.s4` | `public/art/icons/buildings/wasp_nest_s4.png` | 256 | Shuriken Tower (defense) | 4 (8-10) | yes |
+| `icon.building.wasp_nest.s5` | `public/art/icons/buildings/wasp_nest_s5.png` | 256 | Shuriken Tower (defense) | 5 (11-13) | yes |
 | `icon.building.firefly_tower.s1` | `public/art/icons/buildings/firefly_tower_s1.png` | 256 | Sky Bow Tower (defense) | 1 (1-2) | yes |
 | `icon.building.firefly_tower.s2` | `public/art/icons/buildings/firefly_tower_s2.png` | 256 | Sky Bow Tower (defense) | 2 (3-4) | yes |
 | `icon.building.firefly_tower.s3` | `public/art/icons/buildings/firefly_tower_s3.png` | 256 | Sky Bow Tower (defense) | 3 (5-6) | yes |
@@ -376,8 +376,8 @@
 | `icon.building.sap_puddle.s5` | `public/art/icons/buildings/sap_puddle_s5.png` | 256 | Caltrop Field (trap) | 5 (6-7) | yes |
 | `icon.building.flower_bed.s1` | `public/art/icons/buildings/flower_bed_s1.png` | 256 | Bonsai Planter (decor) | 1 (1-1) | yes |
 | `icon.building.lantern_post.s1` | `public/art/icons/buildings/lantern_post_s1.png` | 256 | Stone Lantern (decor) | 1 (1-1) | yes |
-| `icon.building.mushroom_ring.s1` | `public/art/icons/buildings/mushroom_ring_s1.png` | 256 | Zen Garden (decor) | 1 (1-1) | yes |
-| `icon.building.mossy_statue.s1` | `public/art/icons/buildings/mossy_statue_s1.png` | 256 | Fox Guardian Statue (decor) | 1 (1-1) | yes |
+| `icon.building.mushroom_ring.s1` | `public/art/icons/buildings/mushroom_ring_s1.png` | 256 | Rock Garden (decor) | 1 (1-1) | yes |
+| `icon.building.mossy_statue.s1` | `public/art/icons/buildings/mossy_statue_s1.png` | 256 | Stone Sentinel Statue (decor) | 1 (1-1) | yes |
 | `icon.building.grove_lodge.s1` | `public/art/icons/buildings/grove_lodge_s1.png` | 256 | Alliance Lodge (social) | 1 (1-2) | yes |
 | `icon.building.grove_lodge.s2` | `public/art/icons/buildings/grove_lodge_s2.png` | 256 | Alliance Lodge (social) | 2 (3-4) | yes |
 | `icon.building.grove_lodge.s3` | `public/art/icons/buildings/grove_lodge_s3.png` | 256 | Alliance Lodge (social) | 3 (5-6) | yes |
@@ -408,16 +408,16 @@
 | `icon.building.sky_net.s3` | `public/art/icons/buildings/sky_net_s3.png` | 256 | Sky Net (trap) | 3 (3-3) |  |
 | `icon.building.sky_net.s4` | `public/art/icons/buildings/sky_net_s4.png` | 256 | Sky Net (trap) | 4 (4-4) |  |
 | `icon.building.sky_net.s5` | `public/art/icons/buildings/sky_net_s5.png` | 256 | Sky Net (trap) | 5 (5-6) |  |
-| `icon.building.hero_shrine.s1` | `public/art/icons/buildings/hero_shrine_s1.png` | 256 | Hero Shrine (military) | 1 (1-2) |  |
-| `icon.building.hero_shrine.s2` | `public/art/icons/buildings/hero_shrine_s2.png` | 256 | Hero Shrine (military) | 2 (3-4) |  |
-| `icon.building.hero_shrine.s3` | `public/art/icons/buildings/hero_shrine_s3.png` | 256 | Hero Shrine (military) | 3 (5-6) |  |
-| `icon.building.hero_shrine.s4` | `public/art/icons/buildings/hero_shrine_s4.png` | 256 | Hero Shrine (military) | 4 (7-8) |  |
-| `icon.building.hero_shrine.s5` | `public/art/icons/buildings/hero_shrine_s5.png` | 256 | Hero Shrine (military) | 5 (9-10) |  |
-| `icon.building.temple_bell_tower.s1` | `public/art/icons/buildings/temple_bell_tower_s1.png` | 256 | Temple Bell Tower (defense) | 1 (1-2) |  |
-| `icon.building.temple_bell_tower.s2` | `public/art/icons/buildings/temple_bell_tower_s2.png` | 256 | Temple Bell Tower (defense) | 2 (3-4) |  |
-| `icon.building.temple_bell_tower.s3` | `public/art/icons/buildings/temple_bell_tower_s3.png` | 256 | Temple Bell Tower (defense) | 3 (5-7) |  |
-| `icon.building.temple_bell_tower.s4` | `public/art/icons/buildings/temple_bell_tower_s4.png` | 256 | Temple Bell Tower (defense) | 4 (8-9) |  |
-| `icon.building.temple_bell_tower.s5` | `public/art/icons/buildings/temple_bell_tower_s5.png` | 256 | Temple Bell Tower (defense) | 5 (10-12) |  |
+| `icon.building.hero_shrine.s1` | `public/art/icons/buildings/hero_shrine_s1.png` | 256 | Hero Hall (military) | 1 (1-2) |  |
+| `icon.building.hero_shrine.s2` | `public/art/icons/buildings/hero_shrine_s2.png` | 256 | Hero Hall (military) | 2 (3-4) |  |
+| `icon.building.hero_shrine.s3` | `public/art/icons/buildings/hero_shrine_s3.png` | 256 | Hero Hall (military) | 3 (5-6) |  |
+| `icon.building.hero_shrine.s4` | `public/art/icons/buildings/hero_shrine_s4.png` | 256 | Hero Hall (military) | 4 (7-8) |  |
+| `icon.building.hero_shrine.s5` | `public/art/icons/buildings/hero_shrine_s5.png` | 256 | Hero Hall (military) | 5 (9-10) |  |
+| `icon.building.temple_bell_tower.s1` | `public/art/icons/buildings/temple_bell_tower_s1.png` | 256 | Alarm Bell Tower (defense) | 1 (1-2) |  |
+| `icon.building.temple_bell_tower.s2` | `public/art/icons/buildings/temple_bell_tower_s2.png` | 256 | Alarm Bell Tower (defense) | 2 (3-4) |  |
+| `icon.building.temple_bell_tower.s3` | `public/art/icons/buildings/temple_bell_tower_s3.png` | 256 | Alarm Bell Tower (defense) | 3 (5-7) |  |
+| `icon.building.temple_bell_tower.s4` | `public/art/icons/buildings/temple_bell_tower_s4.png` | 256 | Alarm Bell Tower (defense) | 4 (8-9) |  |
+| `icon.building.temple_bell_tower.s5` | `public/art/icons/buildings/temple_bell_tower_s5.png` | 256 | Alarm Bell Tower (defense) | 5 (10-12) |  |
 | `icon.building.clan_forge.s1` | `public/art/icons/buildings/clan_forge_s1.png` | 256 | Clan Forge (military) | 1 (1-2) |  |
 | `icon.building.clan_forge.s2` | `public/art/icons/buildings/clan_forge_s2.png` | 256 | Clan Forge (military) | 2 (3-4) |  |
 | `icon.building.clan_forge.s3` | `public/art/icons/buildings/clan_forge_s3.png` | 256 | Clan Forge (military) | 3 (5-6) |  |
@@ -438,11 +438,11 @@
 | `icon.building.flame_trench.s3` | `public/art/icons/buildings/flame_trench_s3.png` | 256 | Flame Trench (defense) | 3 (5-7) |  |
 | `icon.building.flame_trench.s4` | `public/art/icons/buildings/flame_trench_s4.png` | 256 | Flame Trench (defense) | 4 (8-9) |  |
 | `icon.building.flame_trench.s5` | `public/art/icons/buildings/flame_trench_s5.png` | 256 | Flame Trench (defense) | 5 (10-12) |  |
-| `icon.building.thunder_shrine.s1` | `public/art/icons/buildings/thunder_shrine_s1.png` | 256 | Thunder Shrine (defense) | 1 (1-2) |  |
-| `icon.building.thunder_shrine.s2` | `public/art/icons/buildings/thunder_shrine_s2.png` | 256 | Thunder Shrine (defense) | 2 (3-4) |  |
-| `icon.building.thunder_shrine.s3` | `public/art/icons/buildings/thunder_shrine_s3.png` | 256 | Thunder Shrine (defense) | 3 (5-7) |  |
-| `icon.building.thunder_shrine.s4` | `public/art/icons/buildings/thunder_shrine_s4.png` | 256 | Thunder Shrine (defense) | 4 (8-9) |  |
-| `icon.building.thunder_shrine.s5` | `public/art/icons/buildings/thunder_shrine_s5.png` | 256 | Thunder Shrine (defense) | 5 (10-12) |  |
+| `icon.building.thunder_shrine.s1` | `public/art/icons/buildings/thunder_shrine_s1.png` | 256 | Thunder Spire (defense) | 1 (1-2) |  |
+| `icon.building.thunder_shrine.s2` | `public/art/icons/buildings/thunder_shrine_s2.png` | 256 | Thunder Spire (defense) | 2 (3-4) |  |
+| `icon.building.thunder_shrine.s3` | `public/art/icons/buildings/thunder_shrine_s3.png` | 256 | Thunder Spire (defense) | 3 (5-7) |  |
+| `icon.building.thunder_shrine.s4` | `public/art/icons/buildings/thunder_shrine_s4.png` | 256 | Thunder Spire (defense) | 4 (8-9) |  |
+| `icon.building.thunder_shrine.s5` | `public/art/icons/buildings/thunder_shrine_s5.png` | 256 | Thunder Spire (defense) | 5 (10-12) |  |
 | `icon.building.ninja_watch_post.s1` | `public/art/icons/buildings/ninja_watch_post_s1.png` | 256 | Ninja Watch Post (defense) | 1 (1-2) |  |
 | `icon.building.ninja_watch_post.s2` | `public/art/icons/buildings/ninja_watch_post_s2.png` | 256 | Ninja Watch Post (defense) | 2 (3-4) |  |
 | `icon.building.ninja_watch_post.s3` | `public/art/icons/buildings/ninja_watch_post_s3.png` | 256 | Ninja Watch Post (defense) | 3 (5-6) |  |
@@ -483,11 +483,11 @@
 | `icon.building.clockwork_repairer.s3` | `public/art/icons/buildings/clockwork_repairer_s3.png` | 256 | Clockwork Repair Crane (support) | 3 (5-6) | yes |
 | `icon.building.clockwork_repairer.s4` | `public/art/icons/buildings/clockwork_repairer_s4.png` | 256 | Clockwork Repair Crane (support) | 4 (7-8) | yes |
 | `icon.building.clockwork_repairer.s5` | `public/art/icons/buildings/clockwork_repairer_s5.png` | 256 | Clockwork Repair Crane (support) | 5 (9-10) | yes |
-| `icon.building.bitter_incense_burner.s1` | `public/art/icons/buildings/bitter_incense_burner_s1.png` | 256 | Bitter Incense Burner (support) | 1 (1-2) | yes |
-| `icon.building.bitter_incense_burner.s2` | `public/art/icons/buildings/bitter_incense_burner_s2.png` | 256 | Bitter Incense Burner (support) | 2 (3-4) | yes |
-| `icon.building.bitter_incense_burner.s3` | `public/art/icons/buildings/bitter_incense_burner_s3.png` | 256 | Bitter Incense Burner (support) | 3 (5-6) | yes |
-| `icon.building.bitter_incense_burner.s4` | `public/art/icons/buildings/bitter_incense_burner_s4.png` | 256 | Bitter Incense Burner (support) | 4 (7-8) | yes |
-| `icon.building.bitter_incense_burner.s5` | `public/art/icons/buildings/bitter_incense_burner_s5.png` | 256 | Bitter Incense Burner (support) | 5 (9-10) | yes |
+| `icon.building.bitter_incense_burner.s1` | `public/art/icons/buildings/bitter_incense_burner_s1.png` | 256 | Bitter Smoke Brazier (support) | 1 (1-2) | yes |
+| `icon.building.bitter_incense_burner.s2` | `public/art/icons/buildings/bitter_incense_burner_s2.png` | 256 | Bitter Smoke Brazier (support) | 2 (3-4) | yes |
+| `icon.building.bitter_incense_burner.s3` | `public/art/icons/buildings/bitter_incense_burner_s3.png` | 256 | Bitter Smoke Brazier (support) | 3 (5-6) | yes |
+| `icon.building.bitter_incense_burner.s4` | `public/art/icons/buildings/bitter_incense_burner_s4.png` | 256 | Bitter Smoke Brazier (support) | 4 (7-8) | yes |
+| `icon.building.bitter_incense_burner.s5` | `public/art/icons/buildings/bitter_incense_burner_s5.png` | 256 | Bitter Smoke Brazier (support) | 5 (9-10) | yes |
 | `icon.building.straw_scarecrow.s1` | `public/art/icons/buildings/straw_scarecrow_s1.png` | 256 | Straw Scarecrow (trap) | 1 (1-1) |  |
 | `icon.building.straw_scarecrow.s2` | `public/art/icons/buildings/straw_scarecrow_s2.png` | 256 | Straw Scarecrow (trap) | 2 (2-2) |  |
 | `icon.building.straw_scarecrow.s3` | `public/art/icons/buildings/straw_scarecrow_s3.png` | 256 | Straw Scarecrow (trap) | 3 (3-3) |  |
@@ -548,11 +548,11 @@
 | `icon.building.longbow_yagura.s3` | `public/art/icons/buildings/longbow_yagura_s3.png` | 256 | Longbow Yagura (defense) | 3 (5-6) | yes |
 | `icon.building.longbow_yagura.s4` | `public/art/icons/buildings/longbow_yagura_s4.png` | 256 | Longbow Yagura (defense) | 4 (7-8) | yes |
 | `icon.building.longbow_yagura.s5` | `public/art/icons/buildings/longbow_yagura_s5.png` | 256 | Longbow Yagura (defense) | 5 (9-10) | yes |
-| `icon.building.lightning_rod_pagoda.s1` | `public/art/icons/buildings/lightning_rod_pagoda_s1.png` | 256 | Lightning Rod Pagoda (defense) | 1 (1-1) |  |
-| `icon.building.lightning_rod_pagoda.s2` | `public/art/icons/buildings/lightning_rod_pagoda_s2.png` | 256 | Lightning Rod Pagoda (defense) | 2 (2-3) |  |
-| `icon.building.lightning_rod_pagoda.s3` | `public/art/icons/buildings/lightning_rod_pagoda_s3.png` | 256 | Lightning Rod Pagoda (defense) | 3 (4-4) |  |
-| `icon.building.lightning_rod_pagoda.s4` | `public/art/icons/buildings/lightning_rod_pagoda_s4.png` | 256 | Lightning Rod Pagoda (defense) | 4 (5-6) |  |
-| `icon.building.lightning_rod_pagoda.s5` | `public/art/icons/buildings/lightning_rod_pagoda_s5.png` | 256 | Lightning Rod Pagoda (defense) | 5 (7-8) |  |
+| `icon.building.lightning_rod_pagoda.s1` | `public/art/icons/buildings/lightning_rod_pagoda_s1.png` | 256 | Lightning Rod Tower (defense) | 1 (1-1) |  |
+| `icon.building.lightning_rod_pagoda.s2` | `public/art/icons/buildings/lightning_rod_pagoda_s2.png` | 256 | Lightning Rod Tower (defense) | 2 (2-3) |  |
+| `icon.building.lightning_rod_pagoda.s3` | `public/art/icons/buildings/lightning_rod_pagoda_s3.png` | 256 | Lightning Rod Tower (defense) | 3 (4-4) |  |
+| `icon.building.lightning_rod_pagoda.s4` | `public/art/icons/buildings/lightning_rod_pagoda_s4.png` | 256 | Lightning Rod Tower (defense) | 4 (5-6) |  |
+| `icon.building.lightning_rod_pagoda.s5` | `public/art/icons/buildings/lightning_rod_pagoda_s5.png` | 256 | Lightning Rod Tower (defense) | 5 (7-8) |  |
 
 ## ability
 
@@ -571,7 +571,7 @@
 | `icon.ability.needle_rain` | `public/art/icons/abilities/needle_rain.png` | 128 | Needle Rain |  | yes |
 | `icon.ability.stand_firm` | `public/art/icons/abilities/stand_firm.png` | 128 | Stand Firm |  | yes |
 | `icon.ability.iron_skin` | `public/art/icons/abilities/iron_skin.png` | 128 | Iron Skin |  | yes |
-| `icon.ability.temple_bell` | `public/art/icons/abilities/temple_bell.png` | 128 | Temple Bell |  | yes |
+| `icon.ability.temple_bell` | `public/art/icons/abilities/temple_bell.png` | 128 | Alarm Bell |  | yes |
 | `icon.ability.great_wall` | `public/art/icons/abilities/great_wall.png` | 128 | Great Wall |  | yes |
 | `icon.ability.oni_smash` | `public/art/icons/abilities/oni_smash.png` | 128 | Oni Smash |  | yes |
 | `icon.ability.sabotage` | `public/art/icons/abilities/sabotage.png` | 128 | Sabotage |  | yes |
@@ -588,7 +588,7 @@
 | `icon.ability.swift_glide` | `public/art/icons/abilities/swift_glide.png` | 128 | Swift Glide |  | yes |
 | `icon.ability.ember_drop` | `public/art/icons/abilities/ember_drop.png` | 128 | Ember Drop |  | yes |
 | `icon.ability.chain_lightning` | `public/art/icons/abilities/chain_lightning.png` | 128 | Chain Lightning |  | yes |
-| `icon.ability.armada` | `public/art/icons/abilities/armada.png` | 128 | Armada |  | yes |
+| `icon.ability.armada` | `public/art/icons/abilities/armada.png` | 128 | Bomber Crew |  | yes |
 | `icon.ability.mend` | `public/art/icons/abilities/mend.png` | 128 | Mend |  | yes |
 | `icon.ability.war_drum` | `public/art/icons/abilities/war_drum.png` | 128 | War Drum |  | yes |
 | `icon.ability.veil` | `public/art/icons/abilities/veil.png` | 128 | Veil |  | yes |
@@ -631,7 +631,7 @@
 | `icon.league.fern` | `public/art/icons/leagues/fern.png` | 192 | Cedar League |  | yes |
 | `icon.league.oak` | `public/art/icons/leagues/oak.png` | 192 | Iron League |  | yes |
 | `icon.league.elder` | `public/art/icons/leagues/elder.png` | 192 | Obsidian League |  | yes |
-| `icon.league.jade` | `public/art/icons/leagues/jade.png` | 192 | Jade League |  | yes |
+| `icon.league.jade` | `public/art/icons/leagues/jade.png` | 192 | Ember League |  | yes |
 | `icon.league.storm` | `public/art/icons/leagues/storm.png` | 192 | Storm League |  | yes |
 | `icon.league.shadow` | `public/art/icons/leagues/shadow.png` | 192 | Shadow League |  | yes |
 | `icon.league.kage` | `public/art/icons/leagues/kage.png` | 192 | Kage League |  | yes |

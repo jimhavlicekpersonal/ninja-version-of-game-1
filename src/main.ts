@@ -29,6 +29,9 @@ import { pushDevice } from './backend/platform/push';
 import { choosePaymentProvider, isSandbox, paymentPath } from './backend/payments/select';
 import { planNotifications, upcomingReminders } from './gameplay/sim/reminders';
 import { Tutorial } from './presentation/ui/tutorial';
+import { provideUiArt } from './presentation/ui/feedback';
+import { senseiPortrait } from './presentation/art/portraits';
+import { chestSvg, revealChest } from './presentation/art/chest';
 import { OffsetClock, SystemClock } from './gameplay/sim/clock';
 import { defaultData } from './gameplay/sim/data';
 import { Bus, type UiEvents } from './presentation/ui/bus';
@@ -354,6 +357,8 @@ async function boot(): Promise<void> {
   let app: App | null = null;
   let tutorial: Tutorial | null = null;
   const reminders: ReminderService = isNative() ? new NativeReminders() : new WebReminders();
+  // Art the HUD may not import itself (only art contract files are open to GUI): the Sensei portrait and the chest.
+  provideUiArt({ senseiPortrait, chestSvg, revealChest });
   const hud = new Hud({
     root: document.getElementById('hud')!,
     controller,

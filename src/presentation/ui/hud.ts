@@ -42,6 +42,7 @@ import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
+import { uiArt } from './feedback';
 
 export interface HudDeps {
   root: HTMLElement;
@@ -124,12 +125,16 @@ export class Hud {
   readonly econ: EconomyUi;
   readonly grove: GroveUi;
   readonly friends: FriendsUi;
-  private friendsBtn: HTMLElement | null = null;
   readonly daily: DailyUi;
   private readonly army: ArmyUi;
   private armyPill = h('span', { class: 'army-pill' });
   private eventChip!: HTMLElement;
   private railBadges: Record<string, HTMLElement> = {};
+  /** Rail buttons by label, shown as the player gets to them (re-audit design item 4). */
+  private railBtns: Record<string, HTMLElement> = {};
+  private railToggle!: HTMLButtonElement;
+  private railCollapsed = false;
+  private unlockChip!: HTMLElement;
   /** True while a finger/mouse is pressed on the panel: never rebuild it mid-tap. */
   private sheetPressed = false;
   private sheetSig = '';
@@ -138,6 +143,8 @@ export class Hud {
     this.c = deps.controller;
     this.bus = deps.bus;
     this.root = deps.root;
+    // The low quality profile drops costly CSS (dialog blur) too (re-audit design item 10).
+    document.documentElement.classList.toggle('q-low', quality().profile === 'low');
     try {
       this.showFps = localStorage.getItem('tk.showFps') === '1';
     } catch {
@@ -250,7 +257,17 @@ export class Hud {
     top.append(this.netPill);
 
     this.unlocksEl = h('button', { class: 'unlocks', type: 'button', onclick: () => this.openUnlocks() });
-    this.eventChip = h('button', { class: 'event-chip', type: 'button', 'aria-label': 'Events', onclick: () => this.daily.openEvents() });
+    // Events live in the rail (re-audit design item 4): its pill shows the countdown.
+    this.eventChip = h('span', { class: 'rail-pill' });
+    try {
+      this.railCollapsed = localStorage.getItem('tk.railCollapsed') === '1';
+    } catch {
+      /* storage blocked: expanded */
+    }
+    // The Keep-unlock preview is a one-line chip the player can dismiss (until the next Keep level); the full list is
+    // on the Keep's sheet.
+    const unlockX = h('button', { class: 'unlock-x', type: 'button', 'aria-label': 'Hide the Keep unlock preview', onclick: () => this.dismissUnlockChip() }, icon(icons.close));
+    this.unlockChip = h('div', { class: 'unlock-chip' }, this.unlocksEl, unlockX);
     this.toasts = h('div', { class: 'toasts', 'aria-live': 'polite' });
     this.fpsEl = h('div', { class: 'fps' });
     this.fpsEl.hidden = !this.showFps;
@@ -292,22 +309,28 @@ export class Hud {
     this.sheet.addEventListener('pointerleave', release);
     this.modalRoot = h('div', { class: 'modal-root' });
 
-    const head = h('div', { class: 'hud-head' }, top, h('div', { class: 'head-row' }, this.unlocksEl, this.eventChip), this.toasts);
-    const railBtn = (label: string, ic: string, onClick: () => void) => {
+    const head = h('div', { class: 'hud-head' }, top, h('div', { class: 'head-row' }, this.unlockChip), this.toasts);
+    const railBtn = (label: string, ic: string, onClick: () => void, extra?: HTMLElement) => {
       const badge = h('span', { class: 'badge' });
       badge.hidden = true;
       this.railBadges[label] = badge;
-      return h('button', { class: 'round-btn', type: 'button', 'aria-label': label, onclick: onClick }, icon(ic), badge);
+      const b = h('button', { class: 'round-btn', type: 'button', 'aria-label': label, title: label, onclick: onClick }, icon(ic), badge, extra ?? null);
+      this.railBtns[label] = b;
+      return b;
     };
+    // Collapsible (re-audit design item 4): folded, one button shows how many things are waiting.
+    this.railToggle = h('button', { class: 'round-btn rail-toggle', type: 'button', onclick: () => this.toggleRail() }, h('span', { class: 'rail-caret', 'aria-hidden': 'true' }), h('span', { class: 'badge' })) as HTMLButtonElement;
     const rail = h(
       'div',
       { class: 'side-rail' },
+      this.railToggle,
       railBtn('Daily', icons.chest, () => this.daily.openDaily()),
       railBtn('Store', icons.moonstones, () => this.econ.openStore(activeOffers(this.c.state, this.c.now()).length ? 'offers' : 'moonstones')),
+      railBtn('Events', icons.clock, () => this.daily.openEvents(), this.eventChip),
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => this.grove.open()),
-      (this.friendsBtn = railBtn('Friends', icons.friends, () => this.friends.open())),
+      railBtn('Friends', icons.friends, () => this.friends.open()),
       railBtn('Trials', icons.leaf, () => this.openTrials()),
     );
     this.rail = rail;
@@ -332,9 +355,66 @@ export class Hud {
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
     this.trophiesEl.textContent = String(s.trophies);
     this.updateShield();
+    this.updateRail();
     this.updateBadges();
     this.renderUnlockChip();
     this.renderSheet();
+  }
+
+  /**
+   * Progressive disclosure (re-audit design item 4): a new clan sees the free chest and the store; the rest of the
+   * rail appears as the player gets to it (Pass, Goals, Events and Alliance after the tutorial or Keep 2, Trials after
+   * the first raid, Friends only when online play offers them). Nothing is taken away from a player who has it.
+   */
+  private updateRail(): void {
+    if (!this.railToggle) return;
+    const s = this.c.state;
+    const keep = hallLevel(s, this.c.data);
+    const settled = s.tutorial.done || keep >= 2;
+    const raided = s.battleLog.some((r) => r.kind === 'attack') || s.trials.best > 0;
+    const show: Record<string, boolean> = {
+      Daily: true,
+      Store: true,
+      Events: settled,
+      Pass: settled,
+      Goals: settled,
+      Alliance: settled || s.grove.joined,
+      Friends: this.deps.connection.canFriends,
+      Trials: raided,
+    };
+    for (const [label, b] of Object.entries(this.railBtns)) b.hidden = this.railCollapsed || !show[label];
+    const shown = Object.entries(show).filter(([, v]) => v).length;
+    // A rail of one or two buttons needs no fold.
+    this.railToggle.hidden = shown <= 2;
+    this.railToggle.classList.toggle('collapsed', this.railCollapsed);
+    this.railToggle.setAttribute('aria-expanded', String(!this.railCollapsed));
+    this.railToggle.setAttribute('aria-label', this.railCollapsed ? 'Show the side buttons' : 'Hide the side buttons');
+    if (this.railToggle.hidden && this.railCollapsed) {
+      this.railCollapsed = false;
+      this.updateRail();
+    }
+  }
+
+  private toggleRail(): void {
+    this.railCollapsed = !this.railCollapsed;
+    try {
+      localStorage.setItem('tk.railCollapsed', this.railCollapsed ? '1' : '0');
+    } catch {
+      /* storage blocked: this session only */
+    }
+    this.updateRail();
+    this.updateBadges();
+  }
+
+  /** The Events button's pill: time left on the running event, else when the next starts. */
+  private updateEventPill(): void {
+    const text = DailyUi.chipText(this.c.now(), this.c);
+    const live = !text.startsWith('Next') && text !== 'Events';
+    const short = text.includes('·') ? text.split('·').pop()!.replace(' left', '').trim() : text.replace(/^Next: .* in /, '');
+    this.eventChip.textContent = short;
+    this.eventChip.classList.toggle('live', live);
+    this.railBtns.Events?.setAttribute('aria-label', `Events: ${text}`);
+    this.railBtns.Events?.setAttribute('title', text);
   }
 
   private updateBadges(): void {
@@ -360,12 +440,20 @@ export class Hud {
     const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
     set('Pass', tiersReady + tasksReady);
     set('Goals', achievementViews(s, hl, gd).filter((v) => v.claimable).length);
+    set('Events', 0);
     const live = raidPhase(this.c.now(), gd);
     if (this.deps.groveSource.kind === 'online') {
       const g = this.deps.groveSource.snapshot();
       set('Alliance', g.joined ? (g.raid.phase === 'live' ? g.raid.attacksLeft : 0) + g.requests.length : g.loading ? 0 : 1);
     } else {
       set('Alliance', s.grove.joined ? (live.phase === 'live' ? attacksLeft(s, live.week, gd) : 0) + s.grove.requests.length : 1);
+    }
+    // Folded rail: the toggle carries the total of what its hidden buttons are waiting on.
+    const tb = this.railToggle?.querySelector<HTMLElement>('.badge');
+    if (tb) {
+      const total = Object.entries(this.railBadges).filter(([k, b]) => !b.hidden && this.railBtns[k] && (this.railCollapsed || !this.railBtns[k].hidden)).reduce((a, [, b]) => a + Number(b.textContent || 0), 0);
+      tb.hidden = !this.railCollapsed || total <= 0;
+      tb.textContent = String(total);
     }
   }
 
@@ -427,7 +515,7 @@ export class Hud {
 
   private updateNet(): void {
     const conn = this.deps.connection;
-    if (this.friendsBtn) this.friendsBtn.hidden = !conn.canFriends;
+    this.updateRail();
     if (conn.status === 'incompatible' && !this.updateNoticeShown) {
       this.updateNoticeShown = true;
       this.showUpdateNeeded();
@@ -457,7 +545,7 @@ export class Hud {
       if (env && env !== 'production') wrap.append(h('p', { class: 'muted small' }, `This is a ${env} server for testing: villages and purchases here are separate from the real game.`));
       if (conn.server?.notice) wrap.append(h('p', { class: 'store-note' }, conn.server.notice));
       if (!conn.enabled) {
-        wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Alliance are friendly bots. Enter a Kagemura: Ninja Clans server address to raid real players and join real Alliances.'));
+        wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Alliance are friendly bots (always labelled as computer players). To raid real players and join real Alliances, enter a Kagemura: Ninja Clans server address under Advanced, below.'));
         // Re-audit: "Play offline" keeps the online account; it can still be deleted from here.
         for (const url of conn.storedAccounts()) wrap.append(this.storedAccountBlock(url, draw));
       } else {
@@ -536,25 +624,7 @@ export class Hud {
         });
         if (conn.status !== 'online') wrap.append(h('div', { class: 'actions' }, retry));
       }
-      const chosen = Connection.chosen();
-      const addr = h('input', { class: 'text', type: 'url', inputmode: 'url', autocapitalize: 'off', spellcheck: 'false', placeholder: 'https://your-server.example.com', value: chosen && chosen !== 'off' ? chosen : '' }) as HTMLInputElement;
-      addr.addEventListener('keydown', (e) => e.stopPropagation());
-      const apply = (value: string) => {
-        Connection.choose(value);
-        this.toast('Restarting to switch servers…', 'info');
-        void this.c.save().then(() => window.setTimeout(() => location.reload(), 600));
-      };
-      wrap.append(
-        h('label', { class: 'muted small' }, 'Server address'),
-        h('div', { class: 'chat-input-row' }, addr, h('button', { class: 'btn ghost', type: 'button', onclick: () => apply(addr.value || '') }, 'Use')),
-        h(
-          'div',
-          { class: 'actions' },
-          conn.enabled ? h('button', { class: 'btn ghost', type: 'button', onclick: () => apply('off') }, 'Play offline') : null,
-          chosen ? h('button', { class: 'btn ghost', type: 'button', onclick: () => apply('') }, 'Use the built-in setting') : null,
-        ),
-        h('p', { class: 'muted small' }, 'Switching servers restarts the game. Your village stays on this device either way.'),
-      );
+      if (conn.enabled) wrap.append(h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('off') }, 'Play offline')));
     };
     draw();
     const unsub = conn.subscribe(draw);
@@ -570,6 +640,34 @@ export class Hud {
   }
 
   /** A ledger reason in words (the codes come from the server: command:<type>, attack:loot, …). */
+  /** Switch servers ('' = the built-in setting, 'off' = play offline): the game restarts. */
+  private chooseServer(value: string): void {
+    Connection.choose(value);
+    this.toast('Restarting to switch servers…', 'info');
+    void this.c.save().then(() => window.setTimeout(() => location.reload(), 600));
+  }
+
+  /** Settings → Advanced → Server address (moved out of the first screen of Settings, re-audit design item 8). */
+  private serverAddressBlock(): HTMLElement {
+    const conn = this.deps.connection;
+    const chosen = Connection.chosen();
+    const addr = h('input', { class: 'text', type: 'url', inputmode: 'url', autocapitalize: 'off', spellcheck: 'false', placeholder: 'https://your-server.example.com', value: chosen && chosen !== 'off' ? chosen : '' }) as HTMLInputElement;
+    addr.addEventListener('keydown', (e) => e.stopPropagation());
+    return h(
+      'div',
+      {},
+      h('h4', {}, 'Server address'),
+      h('div', { class: 'chat-input-row' }, addr, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer(addr.value || '') }, 'Use')),
+      h(
+        'div',
+        { class: 'actions' },
+        conn.enabled ? h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('off') }, 'Play offline') : null,
+        chosen ? h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('') }, 'Use the built-in setting') : null,
+      ),
+      h('p', { class: 'muted small' }, 'Switching servers restarts the game. Your village stays on this device either way.'),
+    );
+  }
+
   static ledgerReason(code: string): string {
     const words: Record<string, string> = {
       start: 'Starting resources',
@@ -897,7 +995,7 @@ export class Hud {
 
   private everySecond(): void {
     this.updateShield();
-    this.eventChip.textContent = DailyUi.chipText(this.c.now(), this.c);
+    this.updateEventPill();
     this.updateBadges();
     const s = this.c.state;
     const bs = builderStatus(s, this.c.data, this.c.now());
@@ -968,16 +1066,41 @@ export class Hud {
     return shown.join(', ');
   }
 
+  /** The Keep level whose unlock chip the player dismissed (the chip comes back for the next level). */
+  private unlockDismissed(): number {
+    try {
+      return Number(localStorage.getItem('tk.unlockChipHidden') ?? 0);
+    } catch {
+      return 0;
+    }
+  }
+
+  private dismissUnlockChip(): void {
+    try {
+      localStorage.setItem('tk.unlockChipHidden', String(hallLevel(this.c.state, this.c.data)));
+    } catch {
+      /* storage blocked: hidden for this session */
+    }
+    this.unlockChip.hidden = true;
+    this.toast('The full list of Keep unlocks is on the Clan Keep: tap it, then "What the next level unlocks".', 'info');
+  }
+
+  /**
+   * One short line (re-audit design item 4: the old two-line banner was truncated mid-word): "Keep Lv 3 · 7 unlocks".
+   * Hidden during the tutorial, at the top level and once dismissed for this Keep level.
+   */
   private renderUnlockChip(): void {
-    const level = hallLevel(this.c.state, this.c.data);
+    const s = this.c.state;
+    const level = hallLevel(s, this.c.data);
     const items = hallUnlocks(level, this.c.data);
     clear(this.unlocksEl);
-    this.unlocksEl.append(icon(icons.toadstool));
-    if (!items.length) {
-      this.unlocksEl.append(h('span', {}, h('b', {}, `Clan Keep Lv ${level}`), ' — top level for now'));
-      return;
-    }
-    this.unlocksEl.append(h('span', { class: 'unlock-text' }, h('b', {}, `Clan Keep Lv ${level + 1} unlocks: `), this.unlockSummary(items)));
+    this.unlockChip.hidden = !s.tutorial.done || !items.length || this.unlockDismissed() >= level;
+    if (this.unlockChip.hidden) return;
+    const troops = troopCapUnlock(level, this.c.data) ? 1 : 0;
+    const n = items.length + troops;
+    this.unlocksEl.title = `Clan Keep Lv ${level + 1} unlocks: ${this.unlockSummary(items)}`;
+    this.unlocksEl.setAttribute('aria-label', this.unlocksEl.title);
+    this.unlocksEl.append(icon(icons.toadstool), h('span', { class: 'unlock-text' }, h('b', {}, `Keep Lv ${level + 1}`), ` · ${n} unlock${n === 1 ? '' : 's'} `, h('span', { 'aria-hidden': 'true' }, '▸')));
   }
 
   private openUnlocks(): void {
@@ -1022,6 +1145,8 @@ export class Hud {
     }
     this.sheetSig = this.sheetSignature();
     this.sheet.dataset.id = b.id;
+    // The tutorial points only at the right building's buttons (re-audit design item 3).
+    this.sheet.dataset.type = b.type;
     const gd = this.c.data;
     const now = this.c.now();
     const def = buildingDef(gd, b.type);
@@ -1061,6 +1186,10 @@ export class Hud {
     }
     if (def.category === 'hedge' && ld) stats.append(h('span', { class: 'chip' }, `${formatNumber(ld.hp)} HP`));
     if (stats.childElementCount) this.sheet.append(stats);
+    // The Keep's sheet carries the unlock preview (the village screen only has a dismissible one-line chip).
+    if (def.category === 'hall' && hallUnlocks(level, gd).length) {
+      this.sheet.append(h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => this.openUnlocks() }, icon(icons.toadstool), `What Keep Lv ${level + 1} unlocks`));
+    }
 
     // Upgrade in progress
     if (b.upgrade && now < b.upgrade.endsAt) {
@@ -1094,7 +1223,7 @@ export class Hud {
     const actions = h('div', { class: 'actions' });
     if (def.produces && level >= 1) {
       actions.append(
-        h('button', { class: 'btn', type: 'button', onclick: () => this.collect(b) }, icon(icons[def.produces as 'acorns' | 'dew']), 'Collect'),
+        h('button', { class: 'btn collect', type: 'button', onclick: () => this.collect(b) }, icon(icons[def.produces as 'acorns' | 'dew']), 'Collect'),
       );
     }
     if (b.upgrade && now < b.upgrade.endsAt) {
@@ -1217,7 +1346,7 @@ export class Hud {
       clear(body);
       body.append(
         h('div', { class: 'shop-tabs' }, ...visible.map(([id, label]) => {
-          const b = h('button', { type: 'button', class: id === this.shopTab ? 'on' : '' }, label);
+          const b = h('button', { type: 'button', class: id === this.shopTab ? 'on' : '', 'data-tab': id }, label);
           b.addEventListener('click', () => {
             this.shopTab = id;
             draw();
@@ -1246,8 +1375,15 @@ export class Hud {
       return true;
     };
     const tq = topUpQuote(this.c.state, action, this.c.now(), gd);
-    // Collected enough meanwhile: no Jade needed.
     if (!tq) {
+      // A building priced in Jade (an Artisan's Hut): the same Jade confirm before anything is spent (re-audit design item 6).
+      const pq = placeQuote(this.c.state, gd, type, this.c.now());
+      const jade = pq.quote?.cost.moonstones ?? 0;
+      if (jade > 0) {
+        await this.econ.spendMoonstones(`Build ${gd.buildings[type].name}`, `Build ${gd.buildings[type].name} here`, jade, () => placed(this.c.dispatch(action)));
+        return;
+      }
+      // Collected enough meanwhile: no Jade needed.
       placed(this.c.dispatch(action));
       return;
     }
@@ -1267,12 +1403,15 @@ export class Hud {
       const lim = limitFor(this.c.state, gd, type);
       const have = countOfType(this.c.state, type);
       const first = def.levels[0];
+      // The real price: an Artisan's Hut costs Jade (`builderHutCosts`), not its level-1 cost ("Free").
+      const price = q.quote?.cost ?? first.cost;
       const thumb = this.deps.thumbnail(type);
       const card = h(
         'button',
         {
           class: `shop-card${q.ok || tq ? '' : ' disabled'}`,
           type: 'button',
+          'data-type': type,
           'aria-disabled': !q.ok && !tq,
           onclick: () => {
             if (!q.ok && !tq) {
@@ -1280,13 +1419,19 @@ export class Hud {
               return;
             }
             close();
-            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !q.ok });
+            // Jade-priced buildings (Artisan's Hut) also go through the HUD's confirm when the spot is chosen.
+            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !q.ok || Boolean(price.moonstones) });
           },
         },
         thumb ? h('img', { src: thumb, alt: '' }) : h('div', { class: 'thumb-ph' }),
         h('div', { class: 'shop-name' }, def.name),
         h('div', { class: 'shop-count' }, `Built ${have}/${lim.count}`),
-        h('div', { class: 'shop-cost' }, costChips(first.cost, missingFor(this.c.state.resources, first.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(first.buildSeconds * 1000))),
+        h(
+          'div',
+          { class: 'shop-cost' },
+          def.category === 'builder' && !q.quote ? null : costChips(price, missingFor(this.c.state.resources, price)),
+          first.buildSeconds ? h('span', { class: 'chip' }, icon(icons.clock), formatDuration(first.buildSeconds * 1000)) : null,
+        ),
         tq
           ? h('div', { class: 'shop-buy' }, 'Buy missing ', h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)))
           : !q.ok
@@ -1538,55 +1683,35 @@ export class Hud {
 
   // ------------------------------------------------------------ settings
 
+  /**
+   * Settings, in the order players look for things (re-audit design item 8): Sound, Notifications, Graphics, Privacy
+   * and help, Account (online play, age group and spending); then Advanced (save code, earlier villages, server
+   * address, testing tools, frame rate, analytics, start over). Opened from the net pill, online play comes first.
+   */
   private openSettings(online = false): void {
     const body = h('div', { class: 'settings' });
     const net = this.onlineSection();
     if (online) body.append(net);
 
-    // Save transfer
-    const codeBox = h('textarea', { class: 'code', rows: 4, spellcheck: 'false', autocapitalize: 'off', placeholder: 'Paste a save code here to load a village from another device' }) as HTMLTextAreaElement;
-    body.append(
-      h('h3', {}, 'Your village'),
-      h('p', { class: 'muted' }, this.deps.store.persistent ? 'Your village saves automatically on this device. To move it to another device, copy a save code here and load it there.' : 'This browser mode cannot save. Your village will be lost when you close the page.'),
-      codeBox,
-      h(
-        'div',
-        { class: 'actions' },
-        h('button', { class: 'btn', type: 'button', onclick: () => this.exportSave(codeBox) }, 'Copy save code'),
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.importSave(codeBox.value) }, 'Load from code'),
-      ),
-    );
-
-    // Villages kept after a save could not be read.
-    const earlier = h('div', {});
-    body.append(earlier);
-    void this.c.backups().then((list) => {
-      if (!list.length) return;
-      earlier.append(
-        h('h3', {}, 'Earlier villages'),
-        h('p', { class: 'muted small' }, 'Kept when a save could not be read. Restoring one swaps it with your current village, which is kept here instead.'),
-        ...list.map((b) => h('div', { class: 'log-row' }, h('div', {}, h('b', {}, this.backupTitle(b)), h('div', { class: 'muted small' }, new Date(b.savedAt).toLocaleString())), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.restoreVillage(b.key) }, 'Restore'))),
-      );
-    });
-
-    if (!online) body.append(net);
-    body.append(this.econ.spendSection());
-
-    // Display
-    const fpsToggle = h('input', { type: 'checkbox', checked: this.showFps }) as HTMLInputElement;
-    fpsToggle.addEventListener('change', () => {
-      this.showFps = fpsToggle.checked;
-      this.fpsEl.hidden = !this.showFps;
-      try {
-        localStorage.setItem('tk.showFps', this.showFps ? '1' : '0');
-      } catch {
-        /* ignore */
-      }
-    });
+    // Sound
     const sfxToggle = h('input', { type: 'checkbox', checked: sound.settings.sfx }) as HTMLInputElement;
     sfxToggle.addEventListener('change', () => sound.setSfx(sfxToggle.checked));
     const musicToggle = h('input', { type: 'checkbox', checked: sound.settings.music }) as HTMLInputElement;
     musicToggle.addEventListener('change', () => sound.setMusic(musicToggle.checked));
+    const hs = uiArt.hapticsSetting;
+    const hapticToggle = hs ? (h('input', { type: 'checkbox', checked: hs.get() }) as HTMLInputElement) : null;
+    hapticToggle?.addEventListener('change', () => {
+      hs!.set(hapticToggle.checked);
+      if (hapticToggle.checked) uiArt.haptic('selection');
+    });
+    body.append(
+      h('h3', {}, 'Sound'),
+      h('label', { class: 'toggle' }, sfxToggle, ' Sound effects'),
+      h('label', { class: 'toggle' }, musicToggle, ' Music'),
+    );
+    if (hapticToggle) body.append(h('label', { class: 'toggle' }, hapticToggle, ' Vibration (on phones that support it)'));
+
+    // Notifications
     const prefs = this.deps.prefs;
     const breakToggle = h('input', { type: 'checkbox', checked: prefs.get('sessionReminder') }) as HTMLInputElement;
     breakToggle.addEventListener('change', () => prefs.set('sessionReminder', breakToggle.checked));
@@ -1612,27 +1737,74 @@ export class Hud {
       else this.deps.onNotificationsChanged?.();
     });
     body.append(
-      h('h3', {}, 'Sound'),
-      h('label', { class: 'toggle' }, sfxToggle, ' Sound effects'),
-      h('label', { class: 'toggle' }, musicToggle, ' Music'),
-      h('h3', {}, 'Reminders and healthy play'),
+      h('h3', {}, 'Notifications and healthy play'),
       h('label', { class: 'toggle' }, remindToggle, ' Send me notifications (off until you turn it on)'),
       typeBox,
       h('label', { class: 'toggle' }, breakToggle, ' Suggest a break after an hour of play'),
       h('p', { class: 'muted small' }, this.deps.reminderNote),
       h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, 'Replay the tutorial')),
-      h('h3', {}, 'Display'),
-      h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'),
-      this.qualityRow(),
     );
+
+    // Graphics
+    body.append(h('h3', {}, 'Graphics'), this.qualityRow());
+
+    // Privacy and help (crash reports are a privacy choice, so they sit here)
+    body.append(this.privacySection());
+    const prefsCrash = this.deps.crashReports;
+    if (prefsCrash) {
+      // Opt-in (off until switched on): matches the privacy policy and store declarations (worldwide audit GLOBAL-019).
+      const crashToggle = h('input', { type: 'checkbox', checked: prefs.get('crashReports') }) as HTMLInputElement;
+      crashToggle.addEventListener('change', () => prefs.set('crashReports', crashToggle.checked));
+      body.append(
+        h('label', { class: 'toggle' }, crashToggle, ' Send crash reports (off until you turn it on)'),
+        h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error message, where in the code it happened, the game version and the platform, to help fix it. It does not add your name, Player ID, village or chat, but an error message can sometimes include text the game was working on.'),
+      );
+    }
+
+    // Account: online play, age group and spending
+    body.append(h('h3', { class: 'settings-group' }, 'Account'));
+    if (!online) body.append(net);
+    body.append(this.econ.spendSection());
+
+    // Advanced
+    const adv = h('div', { class: 'settings-advanced' });
+    body.append(h('h3', { class: 'settings-group' }, 'Advanced'), adv);
+
+    // Save transfer
+    const codeBox = h('textarea', { class: 'code', rows: 4, spellcheck: 'false', autocapitalize: 'off', placeholder: 'Paste a save code here to load a village from another device' }) as HTMLTextAreaElement;
+    adv.append(
+      h('h4', {}, 'Move your village (save code)'),
+      h('p', { class: 'muted' }, this.deps.store.persistent ? 'Your village saves automatically on this device. To move it to another device, copy a save code here and load it there.' : 'This browser mode cannot save. Your village will be lost when you close the page.'),
+      codeBox,
+      h(
+        'div',
+        { class: 'actions' },
+        h('button', { class: 'btn', type: 'button', onclick: () => this.exportSave(codeBox) }, 'Copy save code'),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.importSave(codeBox.value) }, 'Load from code'),
+      ),
+    );
+
+    // Villages kept after a save could not be read.
+    const earlier = h('div', {});
+    adv.append(earlier);
+    void this.c.backups().then((list) => {
+      if (!list.length) return;
+      earlier.append(
+        h('h4', {}, 'Earlier villages'),
+        h('p', { class: 'muted small' }, 'Kept when a save could not be read. Restoring one swaps it with your current village, which is kept here instead.'),
+        ...list.map((b) => h('div', { class: 'log-row' }, h('div', {}, h('b', {}, this.backupTitle(b)), h('div', { class: 'muted small' }, new Date(b.savedAt).toLocaleString())), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.restoreVillage(b.key) }, 'Restore'))),
+      );
+    });
+
+    adv.append(this.serverAddressBlock());
 
     // Testing tools: only in the sandbox, which has its own village and never goes online.
     const offsetText = () => (this.deps.debugTime.offsetMs() ? `Sandbox clock is ${formatDuration(this.deps.debugTime.offsetMs())} ahead of real time.` : 'Sandbox clock matches real time.');
     const offsetEl = h('p', { class: 'muted' }, offsetText());
     const events = h('div', { class: 'events' }, 'Loading…');
     if (this.deps.sandbox) {
-      body.append(
-        h('h3', {}, 'Testing tools (sandbox)'),
+      adv.append(
+        h('h4', {}, 'Testing tools (sandbox)'),
         h('p', { class: 'muted' }, 'This is the testing sandbox: a separate practice village with online play off. Skipping time moves the sandbox clock ahead for good; your real village is never affected.'),
         offsetEl,
         h(
@@ -1645,23 +1817,25 @@ export class Hud {
         h('p', { class: 'muted small' }, 'New villages start with a 24-hour shield. Remove it, then simulate time away, to see raiders attack your village.'),
       );
     } else {
-      body.append(
-        h('h3', {}, 'Testing tools'),
+      adv.append(
+        h('h4', {}, 'Testing tools'),
         h('p', { class: 'muted small' }, 'Time skips and test purchases live in a separate testing sandbox, so they can never change your real village or online play.'),
         h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { location.search = '?sandbox'; } }, 'Open the testing sandbox')),
       );
     }
-    if (this.deps.crashReports) {
-      // Opt-in (off until switched on): matches the privacy policy and store declarations (worldwide audit GLOBAL-019).
-      const crashToggle = h('input', { type: 'checkbox', checked: prefs.get('crashReports') }) as HTMLInputElement;
-      crashToggle.addEventListener('change', () => prefs.set('crashReports', crashToggle.checked));
-      body.append(
-        h('label', { class: 'toggle' }, crashToggle, ' Send crash reports (off until you turn it on)'),
-        h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error message, where in the code it happened, the game version and the platform, to help fix it. It does not add your name, Player ID, village or chat, but an error message can sometimes include text the game was working on.'),
-      );
-    }
-    body.append(this.privacySection());
-    body.append(h('details', {}, h('summary', {}, 'Analytics events (this device)'), events));
+
+    const fpsToggle = h('input', { type: 'checkbox', checked: this.showFps }) as HTMLInputElement;
+    fpsToggle.addEventListener('change', () => {
+      this.showFps = fpsToggle.checked;
+      this.fpsEl.hidden = !this.showFps;
+      try {
+        localStorage.setItem('tk.showFps', this.showFps ? '1' : '0');
+      } catch {
+        /* ignore */
+      }
+    });
+    adv.append(h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'));
+    adv.append(h('details', {}, h('summary', {}, 'Analytics events (this device)'), events));
     void this.deps.analytics.recent(60).then((list) => {
       clear(events);
       if (!list.length) events.append('No events yet.');
@@ -1671,11 +1845,11 @@ export class Hud {
     });
 
     // Reset
-    body.append(
-      h('h3', {}, 'Start over'),
+    adv.append(
+      h('h4', {}, 'Start over'),
       h('div', { class: 'actions' }, h('button', { class: 'btn danger', type: 'button', onclick: () => this.resetVillage() }, 'Start a new village')),
-      h('p', { class: 'muted small' }, `Kagemura: Ninja Clans ${this.deps.build.version} · built ${this.deps.build.builtAt}`),
     );
+    body.append(h('p', { class: 'muted small' }, `Kagemura: Ninja Clans ${this.deps.build.version} · built ${this.deps.build.builtAt}`));
     this.modal('Settings', body, [], 'wide');
   }
 
@@ -1733,6 +1907,7 @@ export class Hud {
         link('Privacy policy', env.VITE_PRIVACY_URL, './privacy.html'),
         link('Support', env.VITE_SUPPORT_URL, './support.html'),
         link('Community rules', env.VITE_COMMUNITY_URL, './community.html'),
+        link('Terms of service', env.VITE_TERMS_URL, './terms.html'),
         ...(email ? [h('a', { class: 'btn ghost', href: `mailto:${email}?subject=${encodeURIComponent('Kagemura support')}` }, `Email ${email}`)] : []),
       ),
       serverUrl
@@ -1950,12 +2125,12 @@ export class Hud {
     for (const close of [...this.openModals]) close();
   }
 
-  confirm(title: string, message: string, confirmLabel: string, danger = false, cancelLabel = 'Keep it'): Promise<boolean> {
+  confirm(title: string, message: string | HTMLElement, confirmLabel: string, danger = false, cancelLabel = 'Keep it'): Promise<boolean> {
     return new Promise((resolve) => {
       let answer = false;
       const close = this.modal(
         title,
-        h('p', {}, message),
+        typeof message === 'string' ? h('p', {}, message) : message,
         [
           { label: cancelLabel, onClick: () => close() },
           { label: confirmLabel, primary: !danger, danger, onClick: () => { answer = true; close(); } },

@@ -13,11 +13,11 @@
 | Guardian (`guardian`) | 5 | 0.8 | 0.1 | defense |  |  | 1 | 39 | Armoured frontliner that walks into defenses and soaks fire. |
 | Saboteur (`saboteur`) | 2 | 0.6 | 0.22 | defense |  | yes | 0.72 | 25 | Specialist that disables defenses for a short time. |
 | Infiltrator (`infiltrator`) | 2 | 0.6 | 0.22 | any |  | yes | 0.95 | 6.25 | Gets past walls by tunnel, rope or rooftop. |
-| Sky (`sky`) | 4 | 0.5 | 0.2 | defense | yes | yes | 0.494 | 2.7 | Flies over everything; only anti-air can touch it, so it is fragile and hits lighter. |
-| Mystic (`mystic`) | 3 | 3 | 0.15 | support |  |  | 0.7 | 12 | Supports nearby warriors: heals, haste, shields. |
+| Sky (`sky`) | 4 | 0.5 | 0.2 | defense | yes | yes | 0.568 | 2.7 | Flies over everything; only anti-air can touch it, so it is fragile and hits lighter. |
+| Mystic (`mystic`) | 3 | 3 | 0.15 | support |  |  | 0.82 | 13.64 | Supports nearby warriors: heals, haste, shields. |
 | Siege (`siege`) | 3 | 1 | 0.12 | walls |  |  | 0.9 | 3 | Breaks walls and buildings fast; weak against defenses. |
 | Beast (`beast`) | 3 | 0.6 | 0.2 | any |  |  | 0.95 | 8 | Handlers and their animals: numbers and charges. |
-| Shadow (`shadow`) | 2 | 0.6 | 0.2 | any |  |  | 0.8 | 4 | Stealth: unseen until it strikes. |
+| Shadow (`shadow`) | 2 | 0.6 | 0.2 | any |  |  | 1.2 | 4 | Stealth: unseen until it strikes. |
 
 ## Every warrior at unlock and at the pinnacle (Keep 15)
 
@@ -35,7 +35,7 @@
 | 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 46 | 12 | 480 / 84 | 14k | yes (`thousand_needle`) |
 | 11 | **Armored Guardian** `armored_guardian` | Guardian | 1 Initiate | 2 | Stand Firm: Walks straight into defenses and soaks their fire. | 755 / 19 | 20 | 11k / 280 | 37k | yes (`beetle_brute`) |
 | 12 | **Iron Monk** `iron_monk` | Guardian | 2 Adept | 4 | Iron Skin: Warriors beside him take 15% less damage. | 918 / 24 | 18 | 11k / 293 | 43k | yes (`iron_monk`) |
-| 13 | **Bell Warden** `bell_warden` | Guardian | 3 Veteran | 7 | Temple Bell: Rings a bell that makes defenses in range target him first. | 1729 / 44 | 16 | 12k / 305 | 51k | yes (`bell_warden`) |
+| 13 | **Bell Warden** `bell_warden` | Guardian | 3 Veteran | 7 | Alarm Bell: Rings a bell that makes defenses in range target him first. | 1729 / 44 | 16 | 12k / 305 | 51k | yes (`bell_warden`) |
 | 14 | **Mountain Shield** `mountain_shield` | Guardian | 4 Master | 10 | Great Wall: Carries a tower shield that absorbs splash for allies behind him. | 3258 / 84 | 14 | 12k / 318 | 61k | yes (`mountain_shield`) |
 | 15 | **Oni Breaker** `oni_breaker` | Guardian | 5 Legend | 13 | Oni Smash: Huge health; smashes walls for five times damage. | 7119 / 183 | 12 | 13k / 331 | 72k | yes (`oni_breaker`) |
 | 16 | **Saboteur** `saboteur` | Saboteur | 1 Initiate | 1 | Sabotage: Jams the nearest working defense for 6 seconds (once per Saboteur). | 150 / 6 | 20 | 2516 / 101 | 13k | yes (`saboteur`) |
@@ -46,18 +46,18 @@
 | 21 | **Tunnel Runner** `tunnel_runner` | Infiltrator | 1 Initiate | 4 | Tunnel: Digs under walls to reach any building. | 135 / 22 | 20 | 1678 / 268 | 18k | yes (`mole_digger`) |
 | 22 | **Wall Climber** `wall_climber` | Infiltrator | 2 Adept | 5 | Climb: Climbs over walls and goes for storehouses first. | 162 / 26 | 18 | 1741 / 279 | 21k | yes (`wall_climber`) |
 | 23 | **Grapple Raider** `grapple_raider` | Infiltrator | 3 Veteran | 8 | Grapple Line: Swings over walls straight to the nearest defense. | 305 / 49 | 16 | 1812 / 290 | 25k | yes (`grapple_raider`) |
-| 24 | **Mole King** `mole_king` | Infiltrator | 4 Master | 11 | Surface Stun: Bursts out of the ground beside a defense, stunning it for 2 seconds. | 667 / 107 | 14 | 1885 / 302 | 29k | yes (`mole_king`) |
-| 25 | **Phantom Gate** `phantom_gate` | Infiltrator | 5 Legend | 14 | Open Path: Walls near it crumble, opening a path for everyone. | 1457 / 233 | 12 | 1961 / 314 | 34k | yes (`phantom_gate`) |
-| 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 78 / 29 | 20 | 1132 / 419 | 58k | yes (`owl_bomber`) |
-| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 111 / 41 | 18 | 1190 / 441 | 69k | yes (`crane_glider`) |
-| 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 208 / 77 | 16 | 1238 / 458 | 82k | yes (`lantern_balloon`) |
-| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 456 / 169 | 14 | 1288 / 477 | 97k | yes (`thunder_kite`) |
-| 30 | **Dragon Kite Armada** `dragon_kite_armada` | Sky | 5 Legend | 14 | Armada: A heavy dragon kite carrying a crew of bombers. | 996 / 369 | 12 | 1340 / 496 | 115k | yes (`dragon_kite_armada`) |
-| 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals nearby warriors over time. | 177 / 15 | 20 | 2563 / 214 | 8772 | yes (`herbalist`) |
-| 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack. | 248 / 21 | 18 | 2667 / 222 | 10k | yes (`drum_monk`) |
-| 33 | **Mist Weaver** `mist_weaver` | Mystic | 3 Veteran | 8 | Veil: Wraps nearby warriors in thin mist (a small moving smoke cloud). | 467 / 39 | 16 | 2774 / 231 | 12k | yes (`mist_weaver`) |
-| 34 | **Spirit Caller** `spirit_caller` | Mystic | 4 Master | 11 | Second Wind: Brings one fallen warrior back to its feet. | 1021 / 85 | 14 | 2886 / 241 | 15k | yes (`spirit_caller`) |
-| 35 | **Sage of Clouds** `sage_of_clouds` | Mystic | 5 Legend | 14 | Cloud Shelter: Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds. | 2232 / 186 | 12 | 3003 / 250 | 17k | yes (`sage_of_clouds`) |
+| 24 | **Burrow Ambusher** `mole_king` | Infiltrator | 4 Master | 11 | Surface Stun: Bursts out of the ground beside a defense, stunning it for 2 seconds. | 667 / 107 | 14 | 1885 / 302 | 29k | yes (`mole_king`) |
+| 25 | **Wall Phantom** `phantom_gate` | Infiltrator | 5 Legend | 14 | Open Path: Walls near it crumble, opening a path for everyone. | 1457 / 233 | 12 | 1961 / 314 | 34k | yes (`phantom_gate`) |
+| 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 89 / 33 | 20 | 1302 / 482 | 58k | yes (`owl_bomber`) |
+| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 128 / 47 | 18 | 1369 / 507 | 69k | yes (`crane_glider`) |
+| 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 239 / 89 | 16 | 1423 / 527 | 82k | yes (`lantern_balloon`) |
+| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 525 / 194 | 14 | 1481 / 549 | 97k | yes (`thunder_kite`) |
+| 30 | **Dragon Kite Crew** `dragon_kite_armada` | Sky | 5 Legend | 14 | Bomber Crew: A heavy dragon kite carrying a crew of bombers. | 1146 / 424 | 12 | 1541 / 571 | 115k | yes (`dragon_kite_armada`) |
+| 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals nearby warriors over time. | 222 / 16 | 20 | 3204 / 235 | 8772 | yes (`herbalist`) |
+| 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack. | 310 / 23 | 18 | 3334 / 245 | 10k | yes (`drum_monk`) |
+| 33 | **Mist Weaver** `mist_weaver` | Mystic | 3 Veteran | 8 | Veil: Wraps nearby warriors in thin mist (a small moving smoke cloud). | 584 / 43 | 16 | 3467 / 254 | 12k | yes (`mist_weaver`) |
+| 34 | **Spirit Caller** `spirit_caller` | Mystic | 4 Master | 11 | Second Wind: Brings one fallen warrior back to its feet. | 1277 / 94 | 14 | 3607 / 265 | 15k | yes (`spirit_caller`) |
+| 35 | **Sage of Clouds** `sage_of_clouds` | Mystic | 5 Legend | 14 | Cloud Shelter: Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds. | 2790 / 205 | 12 | 3754 / 275 | 17k | yes (`sage_of_clouds`) |
 | 36 | **Ram Crew** `ram_crew` | Siege | 1 Initiate | 3 | Battering Ram: Four times damage against walls and gates. | 114 / 38 | 20 | 1648 / 549 | 8772 | yes (`ram_crew`) |
 | 37 | **Fire Monk** `fire_monk` | Siege | 2 Adept | 6 | Flame Breath: Short-range fire that burns a small area of buildings. | 185 / 62 | 18 | 1714 / 571 | 10k | yes (`fire_monk`) |
 | 38 | **Bomb Carrier** `bomb_carrier` | Siege | 3 Veteran | 9 | Big Bang: Runs to the nearest wall or defense and explodes. | 404 / 135 | 16 | 1783 / 594 | 12k | yes (`bomb_carrier`) |
@@ -68,11 +68,11 @@
 | 43 | **Boar Rider** `boar_rider` | Beast | 3 Veteran | 9 | Charge: Charges through the first wall in its way. | 697 / 87 | 16 | 3074 / 384 | 12k | yes (`boar_rider`) |
 | 44 | **Bear Warrior** `bear_warrior` | Beast | 4 Master | 12 | Rage: Hits much harder below half health. | 1313 / 164 | 14 | 3199 / 400 | 15k | yes (`bear_warrior`) |
 | 45 | **Tiger Lord** `tiger_lord` | Beast | 5 Legend | 15 | Pride: Arrives with two war tigers. Rider and tigers share one health and damage budget. | 3328 / 416 | 12 | 3328 / 416 | 17k | yes (`tiger_lord`) |
-| 46 | **Shadow Stalker** `shadow_stalker` | Shadow | 1 Initiate | 3 | Unseen: Cannot be targeted until it attacks for the first time. | 78 / 19 | 20 | 1127 / 282 | 5848 | yes (`shadow_stalker`) |
-| 47 | **Mirage Twin** `mirage_twin` | Shadow | 2 Adept | 6 | Decoy: Leaves a decoy that draws fire for 4 seconds. | 127 / 32 | 18 | 1173 / 293 | 6920 | yes (`mirage_twin`) |
-| 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 277 / 69 | 16 | 1220 / 305 | 8190 | yes (`night_blade`) |
-| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 521 / 130 | 14 | 1270 / 317 | 9692 | yes (`void_walker`) |
-| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1321 / 330 | 12 | 1321 / 330 | 11k | yes (`eclipse_ninja`) |
+| 46 | **Shadow Stalker** `shadow_stalker` | Shadow | 1 Initiate | 3 | Unseen: Cannot be targeted until it attacks for the first time. | 117 / 29 | 20 | 1691 / 423 | 5848 | yes (`shadow_stalker`) |
+| 47 | **Mirage Twin** `mirage_twin` | Shadow | 2 Adept | 6 | Decoy: Leaves a decoy that draws fire for 4 seconds. | 191 / 48 | 18 | 1760 / 440 | 6920 | yes (`mirage_twin`) |
+| 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 416 / 104 | 16 | 1830 / 458 | 8190 | yes (`night_blade`) |
+| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 782 / 195 | 14 | 1905 / 476 | 9692 | yes (`void_walker`) |
+| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1982 / 495 | 12 | 1982 / 495 | 11k | yes (`eclipse_ninja`) |
 
 ## Heroes
 
@@ -110,13 +110,13 @@
 | Tunnel Runner | · | · | · | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Wall Climber | · | · | · | · | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
 | Grapple Raider | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
-| Mole King | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 10 | 12 | 14 |
-| Phantom Gate | · | · | · | · | · | · | · | · | · | · | · | · | · | 10 | 12 |
+| Burrow Ambusher | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 10 | 12 | 14 |
+| Wall Phantom | · | · | · | · | · | · | · | · | · | · | · | · | · | 10 | 12 |
 | Kite Raider | · | · | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Crane Glider | · | · | · | · | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
 | Lantern Balloon | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
 | Thunder Kite | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 10 | 12 | 14 |
-| Dragon Kite Armada | · | · | · | · | · | · | · | · | · | · | · | · | · | 10 | 12 |
+| Dragon Kite Crew | · | · | · | · | · | · | · | · | · | · | · | · | · | 10 | 12 |
 | Herbalist | · | 2 | 2 | 3 | 4 | 5 | 7 | 8 | 10 | 11 | 13 | 14 | 16 | 18 | 20 |
 | Drum Monk | · | · | · | · | 2 | 3 | 5 | 6 | 8 | 9 | 11 | 12 | 14 | 16 | 18 |
 | Mist Weaver | · | · | · | · | · | · | · | 4 | 6 | 7 | 9 | 10 | 12 | 14 | 16 |
@@ -186,7 +186,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **Clan Keep** `elder_toadstool` | hall | 1 | · | · | · | · | · | · | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | yes |
 | **Coin Mint** `acorn_orchard` | collector | 1 | 2 | 4 | 6 | 8 | 10 | 11 | 12 | 14 | 15 | 17 | 18 | 20 | 21 | 23 | 24 | yes |
-| **Rice Paddy** `dewdrop_well` | collector | 1 | 2 | 4 | 6 | 8 | 10 | 11 | 12 | 14 | 15 | 17 | 18 | 20 | 21 | 23 | 24 | yes |
+| **Terraced Farm** `dewdrop_well` | collector | 1 | 2 | 4 | 6 | 8 | 10 | 11 | 12 | 14 | 15 | 17 | 18 | 20 | 21 | 23 | 24 | yes |
 | **Treasury** `acorn_silo` | storage | 1 | 1 | 3 | 6 | 8 | 9 | 10 | 11 | 13 | 14 | 15 | 17 | 18 | 19 | 21 | 22 | yes |
 | **Provision Storehouse** `dew_cistern` | storage | 1 | 1 | 3 | 6 | 8 | 9 | 10 | 11 | 13 | 14 | 15 | 17 | 18 | 19 | 21 | 22 | yes |
 | **Artisan's Hut** `beaver_lodge` | builder | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | yes |
@@ -194,28 +194,28 @@
 | **Squad Courtyard** `army_camp` | military | 1 | 1 | 3 | 3 | 5 | 5 | 7 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | 14 | 15 | yes |
 | **Kunai Tower** `acorn_cannon` | defense | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | 14 | 15 | yes |
 | **Firework Mortar** `pinecone_catapult` | defense | 3 | · | · | 1 | 2 | 3 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | 8 | 8 | 9 | yes |
-| **Shuriken Pagoda** `wasp_nest` | defense | 2 | · | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | yes |
+| **Shuriken Tower** `wasp_nest` | defense | 2 | · | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | yes |
 | **Sky Bow Tower** `firefly_tower` | defense | 4 | · | · | · | 1 | 2 | 3 | 4 | 5 | 5 | 6 | 7 | 8 | 8 | 9 | 10 | yes |
 | **Stone Wall** `bramble_hedge` | hedge | 1 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 8 | 9 | 10 | 11 | 11 | 12 | 13 | yes |
 | **Spike Pit** `thorn_snare` | trap | 3 | · | · | 2 | 3 | 3 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | 8 | 8 | 9 | yes |
 | **Caltrop Field** `sap_puddle` | trap | 3 | · | · | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | 7 | 7 | yes |
 | **Bonsai Planter** `flower_bed` | decor | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | yes |
 | **Stone Lantern** `lantern_post` | decor | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | yes |
-| **Zen Garden** `mushroom_ring` | decor | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | yes |
-| **Fox Guardian Statue** `mossy_statue` | decor | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | yes |
+| **Rock Garden** `mushroom_ring` | decor | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | yes |
+| **Stone Sentinel Statue** `mossy_statue` | decor | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | yes |
 | **Alliance Lodge** `grove_lodge` | social | 2 | · | 1 | 2 | 3 | 4 | 5 | 6 | 6 | 7 | 8 | 8 | 9 | 10 | 10 | 11 | yes |
 | **Scroll Library** `scroll_library` | research | 7 | · | · | · | · | · | · | 1 | 3 | 5 | 6 | 8 | 10 | 12 | 13 | 15 | planned |
 | **Shadow Ink Well** `shadow_ink_well` | collector | 7 | · | · | · | · | · | · | 1 | 2 | 4 | 5 | 7 | 8 | 9 | 11 | 12 | planned |
 | **Shadow Ink Vault** `shadow_ink_vault` | storage | 7 | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | planned |
 | **Reinforced Gate** `reinforced_gate` | hedge | 5 | · | · | · | · | 1 | 2 | 4 | 5 | 7 | 8 | 9 | 11 | 12 | 14 | 15 | planned |
 | **Sky Net** `sky_net` | trap | 7 | · | · | · | · | · | · | 1 | 2 | 2 | 3 | 4 | 4 | 5 | 5 | 6 | planned |
-| **Hero Shrine** `hero_shrine` | military | 7 | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | planned |
-| **Temple Bell Tower** `temple_bell_tower` | defense | 8 | · | · | · | · | · | · | · | 1 | 3 | 4 | 6 | 7 | 9 | 10 | 12 | planned |
+| **Hero Hall** `hero_shrine` | military | 7 | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | planned |
+| **Alarm Bell Tower** `temple_bell_tower` | defense | 8 | · | · | · | · | · | · | · | 1 | 3 | 4 | 6 | 7 | 9 | 10 | 12 | planned |
 | **Clan Forge** `clan_forge` | military | 9 | · | · | · | · | · | · | · | · | 1 | 3 | 4 | 6 | 7 | 9 | 10 | planned |
 | **Wind Chime Wire** `wind_chime_wire` | trap | 9 | · | · | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 4 | 5 | 6 | planned |
 | **Repeating Crossbow Bastion** `crossbow_bastion` | defense | 9 | · | · | · | · | · | · | · | · | 1 | 3 | 5 | 8 | 10 | 12 | 14 | planned |
 | **Flame Trench** `flame_trench` | defense | 10 | · | · | · | · | · | · | · | · | · | 1 | 3 | 5 | 8 | 10 | 12 | planned |
-| **Thunder Shrine** `thunder_shrine` | defense | 11 | · | · | · | · | · | · | · | · | · | · | 1 | 4 | 7 | 9 | 12 | planned |
+| **Thunder Spire** `thunder_shrine` | defense | 11 | · | · | · | · | · | · | · | · | · | · | 1 | 4 | 7 | 9 | 12 | planned |
 | **Ninja Watch Post** `ninja_watch_post` | defense | 12 | · | · | · | · | · | · | · | · | · | · | · | 1 | 4 | 7 | 10 | planned |
 | **Great Dragon Cannon** `great_dragon_cannon` | defense | 13 | · | · | · | · | · | · | · | · | · | · | · | · | 1 | 5 | 8 | planned |
 | **Whirling Blade Tower** `whirling_blade_tower` | defense | 4 | · | · | · | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | planned |
@@ -224,7 +224,7 @@
 | **Listening Jars** `listening_jars` | trap | 5 | · | · | · | · | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | 6 | planned |
 | **Living Bamboo Wall** `living_bamboo_wall` | hedge | 6 | · | · | · | · | · | 1 | 2 | 3 | 5 | 6 | 7 | 8 | 10 | 11 | 12 | planned |
 | **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | · | · | · | · | · | 2 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | yes |
-| **Bitter Incense Burner** `bitter_incense_burner` | support | 6 | · | · | · | · | · | 2 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | yes |
+| **Bitter Smoke Brazier** `bitter_incense_burner` | support | 6 | · | · | · | · | · | 2 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | yes |
 | **Straw Scarecrow** `straw_scarecrow` | trap | 6 | · | · | · | · | · | 1 | 2 | 2 | 3 | 3 | 4 | 4 | 5 | 5 | 6 | planned |
 | **Bronze Mirror Screen** `mirror_screen` | defense | 7 | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9 | 10 | planned |
 | **Sand Bucket Post** `sand_bucket_post` | support | 7 | · | · | · | · | · | · | 1 | 2 | 3 | 4 | 5 | 5 | 6 | 7 | 8 | planned |
@@ -237,7 +237,7 @@
 | **Moonlit Gravel Garden** `moonlit_gravel` | trap | 12 | · | · | · | · | · | · | · | · | · | · | · | 1 | 3 | 4 | 6 | planned |
 | **Ink Seal Post** `ink_seal_post` | support | 12 | · | · | · | · | · | · | · | · | · | · | · | 1 | 3 | 6 | 8 | planned |
 | **Longbow Yagura** `longbow_yagura` | defense | 12 | · | · | · | · | · | · | · | · | · | · | · | 7 | 8 | 9 | 10 | yes |
-| **Lightning Rod Pagoda** `lightning_rod_pagoda` | defense | 13 | · | · | · | · | · | · | · | · | · | · | · | · | 1 | 5 | 8 | planned |
+| **Lightning Rod Tower** `lightning_rod_pagoda` | defense | 13 | · | · | · | · | · | · | · | · | · | · | · | · | 1 | 5 | 8 | planned |
 
 ## Buildings designed against the warriors (planned)
 
@@ -248,23 +248,23 @@ Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.t
 | **Whirling Blade Tower** `whirling_blade_tower` | defense | 4 | Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back. | Shinobi, Twin-Fang Dancer, Hound Handler, Trap Breaker | Armored Guardian, Siege Bombardier, Iron Monk |
 | **Paper Lantern Line** `paper_lantern_line` | trap | 5 | Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden. | Shadow Stalker, Mist Weaver, Eclipse Ninja | Kite Raider, Shuriken Storm, Fire Monk |
 | **Rain Barrel Tower** `rain_barrel_tower` | defense | 5 | Douses fire and rinses venom: burning and poison on buildings within 2.5 tiles end after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though. | Fire Monk, Volcano Cannoneer, Kite Raider, Blowgun Hunter | Thunder Kite, Storm Sovereign, Ram Crew |
-| **Listening Jars** `listening_jars` | trap | 5 | Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed. | Tunnel Runner, Mole King, Shadow Stalker | Lantern Balloon, Trap Breaker, Wall Climber |
-| **Living Bamboo Wall** `living_bamboo_wall` | hedge | 6 | A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x). | Ram Crew, Oni Breaker, Phantom Gate, Wall Climber | Fire Monk, Volcano Cannoneer, Tunnel Runner |
-| **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle. | Saboteur, Gearbreaker, Ghost Engineer, Hawk Tamer | Fuse Master, Tunnel Runner, Phantom Gate |
-| **Bitter Incense Burner** `bitter_incense_burner` | support | 6 | Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them. | Herbalist, Drum Monk, Iron Monk, Sage of Clouds | Blowgun Hunter, Kunai Adept, Dragon Kite Armada |
+| **Listening Jars** `listening_jars` | trap | 5 | Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed. | Tunnel Runner, Burrow Ambusher, Shadow Stalker | Lantern Balloon, Trap Breaker, Wall Climber |
+| **Living Bamboo Wall** `living_bamboo_wall` | hedge | 6 | A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x). | Ram Crew, Oni Breaker, Wall Phantom, Wall Climber | Fire Monk, Volcano Cannoneer, Tunnel Runner |
+| **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle. | Saboteur, Gearbreaker, Ghost Engineer, Hawk Tamer | Fuse Master, Tunnel Runner, Wall Phantom |
+| **Bitter Smoke Brazier** `bitter_incense_burner` | support | 6 | Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them. | Herbalist, Drum Monk, Iron Monk, Sage of Clouds | Blowgun Hunter, Kunai Adept, Dragon Kite Crew |
 | **Straw Scarecrow** `straw_scarecrow` | trap | 6 | Animals cannot resist it, and birds are terrified of it. Beasts, their companions and charging mounts within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable. | Hound Handler, Boar Rider, Crane Glider | Shuriken Storm, Lantern Balloon, Fire Monk |
 | **Bronze Mirror Screen** `mirror_screen` | defense | 7 | Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it. | Kunai Adept, Chain-Sickle Reaper, Siege Bombardier | Oni Breaker, Wind-Step Assassin, Tiger Lord |
 | **Sand Bucket Post** `sand_bucket_post` | support | 7 | A bucket crew that smothers explosions and embers: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle. | Fuse Master, Bomb Carrier, Shuriken Storm, Lantern Balloon | Hound Handler, Boar Rider, Twin-Fang Dancer |
-| **Kite-Cutter Ballista** `kite_cutter_ballista` | defense | 8 | Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds. | Crane Glider, Thunder Kite, Dragon Kite Armada, Lantern Balloon | Saboteur, Shadow Stalker, Mole King |
+| **Kite-Cutter Ballista** `kite_cutter_ballista` | defense | 8 | Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds. | Crane Glider, Thunder Kite, Dragon Kite Crew, Lantern Balloon | Saboteur, Shadow Stalker, Burrow Ambusher |
 | **Discipline Banner** `discipline_banner` | support | 9 | A clan banner that keeps nearby defenders focused: defenses within 3 tiles ignore taunting bells and decoys. | Bell Warden, Mirage Twin | Gearbreaker, Ghost Engineer, Moonblade Master |
 | **Spotter's Perch** `spotter_perch` | support | 9 | A lookout who calls targets: defenses within 3 tiles retarget instantly onto warriors that dash, swing or shadow-step into range. | Void Walker, Wind-Step Assassin, Grapple Raider | Thousand Needle, Bomb Carrier, Night Blade |
 | **Steam Vent** `steam_vent` | defense | 9 | Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged. | Eclipse Ninja, Night Blade, Wind-Step Assassin | Thousand Needle, Kunai Adept, Mountain Shield, Hawk Tamer |
 | **Sleep Dart Tower** `sleep_dart_tower` | defense | 10 | Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters. | Bear Warrior, Oni Breaker, Armored Guardian, Moonblade Master | Sage of Clouds, Mist Weaver, Drum Monk |
 | **Rolling Log Chute** `rolling_log_chute` | trap | 8 | Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads. | Mountain Shield, Iron Monk, Drum Monk, Tiger Lord | Crane Glider, Bear Warrior, Spirit Caller |
 | **Moonlit Gravel Garden** `moonlit_gravel` | trap | 12 | Raked gravel that crunches: anything that teleports, lands or rushes onto it is stunned for 1.5 seconds. | Void Walker, Grapple Raider, Bomb Carrier | Eclipse Ninja, Trap Breaker, Kite Raider |
-| **Ink Seal Post** `ink_seal_post` | support | 12 | Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them. | Spirit Caller, Dragon Kite Armada | Herbalist, Void Walker, Iron Monk |
+| **Ink Seal Post** `ink_seal_post` | support | 12 | Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them. | Spirit Caller, Dragon Kite Crew | Herbalist, Void Walker, Iron Monk |
 | **Longbow Yagura** `longbow_yagura` | defense | 12 | A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles. | Siege Bombardier, Thousand Needle, Hawk Tamer | Shinobi, Grapple Raider, Mirage Twin |
-| **Lightning Rod Pagoda** `lightning_rod_pagoda` | defense | 13 | Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back. | Storm Sovereign, Thunder Kite | Mole King, Chain-Sickle Reaper, Bell Warden |
+| **Lightning Rod Tower** `lightning_rod_pagoda` | defense | 13 | Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back. | Storm Sovereign, Thunder Kite | Burrow Ambusher, Chain-Sickle Reaper, Bell Warden |
 
 ## Expected attack power and Shadow Trial ladder
 

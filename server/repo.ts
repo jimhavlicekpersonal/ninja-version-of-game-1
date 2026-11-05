@@ -493,7 +493,7 @@ export interface TokenRow {
   playerId: string;
   createdAt: number;
   label: string;
-  /** The sign-in provider that issued it (null: registration, or from before migration 0025). */
+  /** The sign-in provider that issued it (null: registration, or from before migration 0024). */
   provider?: string | null;
   lastUsedAt?: number | null;
 }

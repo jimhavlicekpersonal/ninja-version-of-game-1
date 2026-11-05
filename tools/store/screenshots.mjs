@@ -5,6 +5,7 @@
  *
  *   npm run build && npm run store:screenshots            -> docs/store/screenshots/
  *   npm run store:screenshots -- --out=/tmp/shots
+ *   npm run store:screenshots -- --keep=12 --devices=iphone-6.9 --dist=<built dir>
  *
  * The shots show a mid-game village, not a brand-new lawn (art re-audit item 12): a legal Keep 10
  * village built by the game's own base generator (`showcaseVillage.ts`, loaded through Vite's SSR
@@ -22,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=')[1] ?? d;
 const out = arg('out', join(ROOT, 'docs/store/screenshots'));
-const dist = join(ROOT, 'dist');
+const dist = arg('dist', join(ROOT, 'dist'));
 if (!existsSync(join(dist, 'index.html'))) {
   console.error('Build the game first: npm run build');
   process.exit(1);
@@ -65,12 +66,14 @@ else {
 }
 
 // Store sizes (portrait): iPhone 6.9" and 6.5", iPad 13", Android phone.
-const devices = [
+const allDevices = [
   { name: 'iphone-6.9', width: 440, height: 956, scale: 3 },
   { name: 'iphone-6.5', width: 414, height: 896, scale: 3 },
   { name: 'ipad-13', width: 1032, height: 1376, scale: 2 },
   { name: 'android-phone', width: 412, height: 915, scale: 2.625 },
 ];
+const only = arg('devices', '');
+const devices = only ? allDevices.filter((d) => only.split(',').includes(d.name)) : allDevices;
 const screens = [
   { name: '1-village', open: null },
   { name: '3-army', open: 'Army' },

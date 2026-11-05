@@ -2,7 +2,7 @@
  * Age bands on the server (re-audit: minors online; src/gameplay/sim/age.ts).
  * The game asks a neutral age screen (or the store's age signal) before it
  * first goes online and sends the band (PUT /v1/me/age). The server keeps the
- * strictest band it heard (`player_age.band`, migration 0025), like the older
+ * strictest band it heard (`player_age.band`, migration 0024), like the older
  * under-18 answer: only stricter changes are taken; staff clear it after a
  * support check (admin `reset-age`).
  *

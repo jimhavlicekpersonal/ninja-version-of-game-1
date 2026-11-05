@@ -290,7 +290,10 @@ export async function reinstate(ctx: ServerContext, store: PurchaseStore, transa
   return ctx.repo.transaction(async (tx) => {
     if (!(await tx.setPurchaseStatus(store, transactionId, 'credited', ctx.now()))) return false;
     const player = await tx.getPlayer(row.playerId);
-    const grants = productInfo(ctx.data, row.productId)?.grants ?? {};
+    // What the purchase really delivered (the village keeps it on the record), else the catalog contents.
+    const held = player ? await tx.getVillage(player.id) : null;
+    const recorded = held ? deserialize(held.file, ctx.data).purchases.find((p) => p.id === villageId(store, transactionId))?.grants : undefined;
+    const grants = recorded ?? productInfo(ctx.data, row.productId)?.grants ?? {};
     const resources = Object.fromEntries(Object.entries(grants).filter(([, v]) => (v ?? 0) > 0)) as Record<string, number>;
     if (player && Object.keys(resources).length) {
       await applyServerResult(tx, ctx, player, [{ cmd: { type: 'staffAdjust', resources }, reason: `refund-reversed:${store}` }], villageId(store, transactionId));

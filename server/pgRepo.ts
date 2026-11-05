@@ -1050,7 +1050,7 @@ export class PgRepo implements Repo {
     );
   }
 
-  // ------------------------------------------------------------ account protections (re-audit, migration 0025)
+  // ------------------------------------------------------------ account protections (re-audit, migration 0024)
 
   async getAgeBand(playerId: string): Promise<{ band: AgeBand | null; under18: boolean; at: number } | null> {
     const r = await this.rows('select under18, band, at from player_age where player_id = $1', [playerId]);

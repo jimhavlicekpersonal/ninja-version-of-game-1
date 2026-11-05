@@ -1,4 +1,4 @@
--- Migration 0025 (re-audit: accounts, minors, moderation notices, sessions).
+-- Migration 0024 (re-audit: accounts, minors, moderation notices, sessions).
 
 -- The age band a player stated (src/gameplay/sim/age.ts: under13, 13to17, adult).
 -- Null on rows from before bands (only under18 was asked). Like under18, it only

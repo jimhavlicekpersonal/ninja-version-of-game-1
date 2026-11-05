@@ -4,7 +4,7 @@
  * their account). At link time the game also sends the one-time
  * `authorizationCode`; the server exchanges it for a refresh token at
  * https://appleid.apple.com/auth/token and keeps it (identity_links,
- * migration 0025). Deleting the account or unlinking Apple calls
+ * migration 0024). Deleting the account or unlinking Apple calls
  * https://appleid.apple.com/auth/revoke with it.
  *
  * The client secret is an ES256 JWT signed with the team's Sign in with Apple

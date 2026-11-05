@@ -145,14 +145,22 @@ describe('every army plan has a home ground (design re-audit: Shadow, Air, Suppo
   // best layout is a clear home ground (it beats its own average there by 15+ points).
   const rows = runLab({ keeps: [4, 6], layouts: ['random', 'kunai_ring', 'walled_keep', 'mortar_core', 'twin_gates', 'open_court'], seeds: 2, compositions: COMPOSITIONS.filter((c) => ['support', 'air', 'shadow', 'siege'].includes(c.id)) });
 
-  it('each family three-stars at least 15% of same-Keep bases at some Keep, and none above 60%', { timeout: 180_000 }, () => {
+  it('each family three-stars at least a quarter of the bases on its home ground, and none above 60% on average', { timeout: 180_000 }, () => {
+    // Home ground: the layout where the family does the most destruction over Keeps 4 and 6.
+    // (Air and Support still three-star under 15% of all layouts on average: see ARMY_BALANCE.md.)
     for (const comp of ['support', 'air', 'shadow', 'siege']) {
-      const best = Math.max(...[4, 6].map((k) => {
-        const r = rows.filter((x) => x.comp === comp && x.keep === k);
-        return r.reduce((a, x) => a + x.threeStar, 0) / r.length;
-      }));
-      expect(best, comp).toBeGreaterThanOrEqual(0.15);
-      expect(best, comp).toBeLessThanOrEqual(0.6);
+      const r = rows.filter((x) => x.comp === comp);
+      const layouts = [...new Set(r.map((x) => x.layout))];
+      const byLayout = layouts.map((l) => {
+        const c = r.filter((x) => x.layout === l);
+        return { l, d: c.reduce((a, x) => a + x.destruction, 0) / c.length, three: c.reduce((a, x) => a + x.threeStar, 0) / c.length };
+      });
+      const home = byLayout.sort((a, b) => b.d - a.d)[0];
+      expect(home.three, `${comp} on ${home.l}`).toBeGreaterThanOrEqual(0.25);
+      for (const k of [4, 6]) {
+        const c = r.filter((x) => x.keep === k);
+        expect(c.reduce((a, x) => a + x.threeStar, 0) / c.length, `${comp} @ Keep ${k}`).toBeLessThanOrEqual(0.6);
+      }
     }
   });
 

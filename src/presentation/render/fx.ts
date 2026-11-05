@@ -391,6 +391,8 @@ export class VillageLife {
     artTexture(scene, 'fx.streamer', 40, 14, 7, (ctx) => { ctx.translate(-18, 0); paintStreamer(ctx); }, HD_SCALE);
     for (let v = 0; v < 4; v++) artTexture(scene, `fx.villager.${v}`, 28, 30, 26, (ctx) => paintVillager(ctx, v), HD_SCALE);
     this.scheduleBird();
+    this.cloudShadows();
+    this.petals();
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroy());
   }
 
@@ -513,6 +515,56 @@ export class VillageLife {
         s.tweens.add({ targets: b, x: x1, y: y0 - 120 + Math.random() * 80, duration: 9000 + Math.random() * 4000, onComplete: () => b.destroy() });
       },
     });
+  }
+
+  /** Soft cloud shadows sliding over the plateau (ground only: below every building). */
+  private cloudShadows(): void {
+    const s = this.scene;
+    artTexture(s, 'fx.cloudshadow', 128, 64, 32, (ctx) => {
+      for (const [x, y, r] of [[-26, 4, 26], [8, -4, 30], [34, 6, 22]] as const) {
+        const g = ctx.createRadialGradient(x, y, 2, x, y, r);
+        g.addColorStop(0, 'rgba(20,30,50,0.9)');
+        g.addColorStop(1, 'rgba(20,30,50,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.ellipse(x, y, r * 1.3, r * 0.75, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }, 1);
+    const mb = mapBounds(this.mapSize);
+    const n = Math.max(1, Math.round(2 * quality().particleScale));
+    for (let i = 0; i < n; i++) {
+      const y = mb.y + mb.height * (0.3 + i * 0.35);
+      const c = s.add.image(mb.x - 400, y, 'fx.cloudshadow').setScale(7, 5).setAlpha(0.14).setDepth(-9);
+      s.tweens.add({ targets: c, x: mb.x + mb.width + 400, y: y + 160, duration: 70000, delay: i * 30000, repeat: -1 });
+    }
+  }
+
+  /** A few sakura petals drifting down over the village. */
+  private petals(): void {
+    const s = this.scene;
+    artTexture(s, 'fx.petal', 8, 6, 3, (ctx) => {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 3.4, 2, 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = '#f7c6d4';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(-0.8, -0.5, 1.4, 0.7, 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff0f4';
+      ctx.fill();
+    }, HD_SCALE);
+    const mb = mapBounds(this.mapSize);
+    const n = Math.max(2, Math.round(8 * quality().particleScale));
+    for (let i = 0; i < n; i++) {
+      const p = s.add.image(0, 0, 'fx.petal').setScale(1.4 / HD_SCALE).setDepth(this.overlayDepth - 30).setAlpha(0.9);
+      const fly = () => {
+        const x = mb.x + Math.random() * mb.width;
+        const y = mb.y + Math.random() * mb.height * 0.6;
+        p.setPosition(x, y);
+        s.tweens.add({ targets: p, x: x + 160 + Math.random() * 120, y: y + 220 + Math.random() * 120, angle: 360 * (Math.random() < 0.5 ? 1 : -1), duration: 7000 + Math.random() * 5000, delay: Math.random() * 3000, onComplete: fly });
+      };
+      fly();
+    }
   }
 
   private clear(): void {

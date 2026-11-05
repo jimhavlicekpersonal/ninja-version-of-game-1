@@ -1,12 +1,13 @@
 /**
- * Feel and art the HUD borrows from the ART compartment (re-audit design items 11, 14, 15): haptics, the Sensei
- * portrait and the daily chest. GUI may import only the art contract files (compartments.json), so the composition
- * root (`src/main.ts`) hands these in once with `provideUiArt`; until then they are no-ops and the HUD falls back to
- * its icons. Everything a result screen does for feel goes through `celebrate`, in one place.
+ * Feel and art the HUD borrows from the ART compartment (re-audit design items 11, 14, 15): haptics (re-exported by
+ * the art contract `audio/sound.ts`), the Sensei portrait and the daily chest. `art/portraits.ts` and `art/chest.ts`
+ * are not art contract files (compartments.json), so the composition root (`src/main.ts`) hands them in once with
+ * `provideUiArt`; until then the HUD falls back to its icons. Everything a result screen does for feel goes through
+ * `celebrate`, in one place.
  */
-import { sound } from '../audio/sound';
+import { haptic, hapticsEnabled, setHapticsEnabled, sound, type HapticKind } from '../audio/sound';
 
-export type HapticKind = 'light' | 'medium' | 'heavy' | 'success' | 'selection';
+export type { HapticKind };
 export type SenseiMood = 'calm' | 'smile' | 'stern' | 'surprised';
 
 export interface UiArtHooks {
@@ -22,7 +23,7 @@ export interface UiArtHooks {
   hapticsSetting: { get(): boolean; set(on: boolean): void } | null;
 }
 
-export const uiArt: UiArtHooks = { haptic: () => undefined, senseiPortrait: null, chestSvg: null, revealChest: null, hapticsSetting: null };
+export const uiArt: UiArtHooks = { haptic, senseiPortrait: null, chestSvg: null, revealChest: null, hapticsSetting: { get: hapticsEnabled, set: setHapticsEnabled } };
 
 /** Called once by the composition root. */
 export function provideUiArt(hooks: Partial<UiArtHooks>): void {
@@ -43,6 +44,7 @@ export function celebrate(moment: 'star' | 'victory' | 'defeat' | 'perfect'): vo
     sound.play('star');
     uiArt.haptic('success');
   } else if (moment === 'perfect') {
+    sound.play('perfect');
     uiArt.haptic('heavy');
   } else {
     sound.play(moment);

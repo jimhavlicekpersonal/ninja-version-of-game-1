@@ -794,7 +794,7 @@
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.bell_warden.s2",
@@ -808,7 +808,7 @@
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.bell_warden.s3",
@@ -822,7 +822,7 @@
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.bell_warden.s4",
@@ -836,7 +836,7 @@
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Temple Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.bell_warden",
@@ -1502,130 +1502,130 @@
       "file": "public/art/icons/warriors/mole_king_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mole King (Infiltrator, Master)",
+      "subject": "Burrow Ambusher (Infiltrator, Master)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Burrow Ambusher, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.mole_king.s2",
       "file": "public/art/icons/warriors/mole_king_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mole King (Infiltrator, Master)",
+      "subject": "Burrow Ambusher (Infiltrator, Master)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Burrow Ambusher, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.mole_king.s3",
       "file": "public/art/icons/warriors/mole_king_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mole King (Infiltrator, Master)",
+      "subject": "Burrow Ambusher (Infiltrator, Master)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Burrow Ambusher, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.mole_king.s4",
       "file": "public/art/icons/warriors/mole_king_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Mole King (Infiltrator, Master)",
+      "subject": "Burrow Ambusher (Infiltrator, Master)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Mole King, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Burrow Ambusher, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Surface Stun. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.mole_king",
       "file": "public/art/troops/mole_king.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Mole King battle sprite",
+      "subject": "Burrow Ambusher battle sprite",
       "live": true,
-      "prompt": "Full-body battle sprite of Mole King, facing right, feet on the bottom edge, readable at 40 px tall. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm."
+      "prompt": "Full-body battle sprite of Burrow Ambusher, facing right, feet on the bottom edge, readable at 40 px tall. #5a3a1e outfit, #e9b44c accents, iron digging claws, miner helm."
     },
     {
       "key": "icon.warrior.phantom_gate.s1",
       "file": "public/art/icons/warriors/phantom_gate_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Phantom Gate (Infiltrator, Legend)",
+      "subject": "Wall Phantom (Infiltrator, Legend)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Wall Phantom, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.phantom_gate.s2",
       "file": "public/art/icons/warriors/phantom_gate_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Phantom Gate (Infiltrator, Legend)",
+      "subject": "Wall Phantom (Infiltrator, Legend)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Wall Phantom, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.phantom_gate.s3",
       "file": "public/art/icons/warriors/phantom_gate_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Phantom Gate (Infiltrator, Legend)",
+      "subject": "Wall Phantom (Infiltrator, Legend)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Wall Phantom, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.phantom_gate.s4",
       "file": "public/art/icons/warriors/phantom_gate_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Phantom Gate (Infiltrator, Legend)",
+      "subject": "Wall Phantom (Infiltrator, Legend)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Phantom Gate, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Wall Phantom, a infiltrator warrior (gets past walls by tunnel, rope or rooftop.) Signature: Open Path. #2a2a3a outfit, #b48cff accents, key-shaped staff. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.phantom_gate",
       "file": "public/art/troops/phantom_gate.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Phantom Gate battle sprite",
+      "subject": "Wall Phantom battle sprite",
       "live": true,
-      "prompt": "Full-body battle sprite of Phantom Gate, facing right, feet on the bottom edge, readable at 40 px tall. #2a2a3a outfit, #b48cff accents, key-shaped staff."
+      "prompt": "Full-body battle sprite of Wall Phantom, facing right, feet on the bottom edge, readable at 40 px tall. #2a2a3a outfit, #b48cff accents, key-shaped staff."
     },
     {
       "key": "icon.warrior.kite_raider.s1",
@@ -1892,65 +1892,65 @@
       "file": "public/art/icons/warriors/dragon_kite_armada_s1.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Dragon Kite Armada (Sky, Legend)",
+      "subject": "Dragon Kite Crew (Sky, Legend)",
       "stage": 1,
       "levels": [
         1,
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Dragon Kite Crew, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Bomber Crew. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.dragon_kite_armada.s2",
       "file": "public/art/icons/warriors/dragon_kite_armada_s2.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Dragon Kite Armada (Sky, Legend)",
+      "subject": "Dragon Kite Crew (Sky, Legend)",
       "stage": 2,
       "levels": [
         6,
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Dragon Kite Crew, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Bomber Crew. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.dragon_kite_armada.s3",
       "file": "public/art/icons/warriors/dragon_kite_armada_s3.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Dragon Kite Armada (Sky, Legend)",
+      "subject": "Dragon Kite Crew (Sky, Legend)",
       "stage": 3,
       "levels": [
         11,
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Dragon Kite Crew, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Bomber Crew. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.dragon_kite_armada.s4",
       "file": "public/art/icons/warriors/dragon_kite_armada_s4.png",
       "size": 256,
       "group": "warrior",
-      "subject": "Dragon Kite Armada (Sky, Legend)",
+      "subject": "Dragon Kite Crew (Sky, Legend)",
       "stage": 4,
       "levels": [
         16,
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Dragon Kite Armada, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Armada. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Dragon Kite Crew, a sky warrior (flies over everything; only anti-air can touch it, so it is fragile and hits lighter.) Signature: Bomber Crew. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.dragon_kite_armada",
       "file": "public/art/troops/dragon_kite_armada.png",
       "size": 128,
       "group": "sprite",
-      "subject": "Dragon Kite Armada battle sprite",
+      "subject": "Dragon Kite Crew battle sprite",
       "live": true,
-      "prompt": "Full-body battle sprite of Dragon Kite Armada, facing right, feet on the bottom edge, readable at 40 px tall. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Shown airborne."
+      "prompt": "Full-body battle sprite of Dragon Kite Crew, facing right, feet on the bottom edge, readable at 40 px tall. #2a1a1a outfit, #e9b44c accents, bomb racks, riding/with long dragon kite. Shown airborne."
     },
     {
       "key": "icon.warrior.herbalist.s1",
@@ -3621,70 +3621,70 @@
       "file": "public/art/icons/buildings/dewdrop_well_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Rice Paddy (collector)",
+      "subject": "Terraced Farm (collector)",
       "stage": 1,
       "levels": [
         1,
         4
       ],
       "live": true,
-      "prompt": "Isometric icon of the Rice Paddy. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Terraced Farm. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.dewdrop_well.s2",
       "file": "public/art/icons/buildings/dewdrop_well_s2.png",
       "size": 256,
       "group": "building",
-      "subject": "Rice Paddy (collector)",
+      "subject": "Terraced Farm (collector)",
       "stage": 2,
       "levels": [
         5,
         9
       ],
       "live": true,
-      "prompt": "Isometric icon of the Rice Paddy. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Terraced Farm. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.dewdrop_well.s3",
       "file": "public/art/icons/buildings/dewdrop_well_s3.png",
       "size": 256,
       "group": "building",
-      "subject": "Rice Paddy (collector)",
+      "subject": "Terraced Farm (collector)",
       "stage": 3,
       "levels": [
         10,
         14
       ],
       "live": true,
-      "prompt": "Isometric icon of the Rice Paddy. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Terraced Farm. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.dewdrop_well.s4",
       "file": "public/art/icons/buildings/dewdrop_well_s4.png",
       "size": 256,
       "group": "building",
-      "subject": "Rice Paddy (collector)",
+      "subject": "Terraced Farm (collector)",
       "stage": 4,
       "levels": [
         15,
         19
       ],
       "live": true,
-      "prompt": "Isometric icon of the Rice Paddy. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Terraced Farm. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.dewdrop_well.s5",
       "file": "public/art/icons/buildings/dewdrop_well_s5.png",
       "size": 256,
       "group": "building",
-      "subject": "Rice Paddy (collector)",
+      "subject": "Terraced Farm (collector)",
       "stage": 5,
       "levels": [
         20,
         24
       ],
       "live": true,
-      "prompt": "Isometric icon of the Rice Paddy. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Terraced Farm. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.acorn_silo.s1",
@@ -4125,70 +4125,70 @@
       "file": "public/art/icons/buildings/wasp_nest_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Shuriken Pagoda (defense)",
+      "subject": "Shuriken Tower (defense)",
       "stage": 1,
       "levels": [
         1,
         2
       ],
       "live": true,
-      "prompt": "Isometric icon of the Shuriken Pagoda. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Shuriken Tower. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.wasp_nest.s2",
       "file": "public/art/icons/buildings/wasp_nest_s2.png",
       "size": 256,
       "group": "building",
-      "subject": "Shuriken Pagoda (defense)",
+      "subject": "Shuriken Tower (defense)",
       "stage": 2,
       "levels": [
         3,
         5
       ],
       "live": true,
-      "prompt": "Isometric icon of the Shuriken Pagoda. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Shuriken Tower. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.wasp_nest.s3",
       "file": "public/art/icons/buildings/wasp_nest_s3.png",
       "size": 256,
       "group": "building",
-      "subject": "Shuriken Pagoda (defense)",
+      "subject": "Shuriken Tower (defense)",
       "stage": 3,
       "levels": [
         6,
         7
       ],
       "live": true,
-      "prompt": "Isometric icon of the Shuriken Pagoda. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Shuriken Tower. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.wasp_nest.s4",
       "file": "public/art/icons/buildings/wasp_nest_s4.png",
       "size": 256,
       "group": "building",
-      "subject": "Shuriken Pagoda (defense)",
+      "subject": "Shuriken Tower (defense)",
       "stage": 4,
       "levels": [
         8,
         10
       ],
       "live": true,
-      "prompt": "Isometric icon of the Shuriken Pagoda. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Shuriken Tower. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.wasp_nest.s5",
       "file": "public/art/icons/buildings/wasp_nest_s5.png",
       "size": 256,
       "group": "building",
-      "subject": "Shuriken Pagoda (defense)",
+      "subject": "Shuriken Tower (defense)",
       "stage": 5,
       "levels": [
         11,
         13
       ],
       "live": true,
-      "prompt": "Isometric icon of the Shuriken Pagoda. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Shuriken Tower. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.firefly_tower.s1",
@@ -4503,28 +4503,28 @@
       "file": "public/art/icons/buildings/mushroom_ring_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Zen Garden (decor)",
+      "subject": "Rock Garden (decor)",
       "stage": 1,
       "levels": [
         1,
         1
       ],
       "live": true,
-      "prompt": "Isometric icon of the Zen Garden. Stage 1 of 1: timber and plaster, simple."
+      "prompt": "Isometric icon of the Rock Garden. Stage 1 of 1: timber and plaster, simple."
     },
     {
       "key": "icon.building.mossy_statue.s1",
       "file": "public/art/icons/buildings/mossy_statue_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Fox Guardian Statue (decor)",
+      "subject": "Stone Sentinel Statue (decor)",
       "stage": 1,
       "levels": [
         1,
         1
       ],
       "live": true,
-      "prompt": "Isometric icon of the Fox Guardian Statue. Stage 1 of 1: timber and plaster, simple."
+      "prompt": "Isometric icon of the Stone Sentinel Statue. Stage 1 of 1: timber and plaster, simple."
     },
     {
       "key": "icon.building.grove_lodge.s1",
@@ -4951,140 +4951,140 @@
       "file": "public/art/icons/buildings/hero_shrine_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Hero Shrine (military)",
+      "subject": "Hero Hall (military)",
       "stage": 1,
       "levels": [
         1,
         2
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Shrine: Home of a clan hero; one shrine per hero.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.hero_shrine.s2",
       "file": "public/art/icons/buildings/hero_shrine_s2.png",
       "size": 256,
       "group": "building",
-      "subject": "Hero Shrine (military)",
+      "subject": "Hero Hall (military)",
       "stage": 2,
       "levels": [
         3,
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Shrine: Home of a clan hero; one shrine per hero.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.hero_shrine.s3",
       "file": "public/art/icons/buildings/hero_shrine_s3.png",
       "size": 256,
       "group": "building",
-      "subject": "Hero Shrine (military)",
+      "subject": "Hero Hall (military)",
       "stage": 3,
       "levels": [
         5,
         6
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Shrine: Home of a clan hero; one shrine per hero.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.hero_shrine.s4",
       "file": "public/art/icons/buildings/hero_shrine_s4.png",
       "size": 256,
       "group": "building",
-      "subject": "Hero Shrine (military)",
+      "subject": "Hero Hall (military)",
       "stage": 4,
       "levels": [
         7,
         8
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Shrine: Home of a clan hero; one shrine per hero.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.hero_shrine.s5",
       "file": "public/art/icons/buildings/hero_shrine_s5.png",
       "size": 256,
       "group": "building",
-      "subject": "Hero Shrine (military)",
+      "subject": "Hero Hall (military)",
       "stage": 5,
       "levels": [
         9,
         10
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Shrine: Home of a clan hero; one shrine per hero.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.temple_bell_tower.s1",
       "file": "public/art/icons/buildings/temple_bell_tower_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Temple Bell Tower (defense)",
+      "subject": "Alarm Bell Tower (defense)",
       "stage": 1,
       "levels": [
         1,
         2
       ],
       "live": false,
-      "prompt": "Isometric icon of the Temple Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Alarm Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.temple_bell_tower.s2",
       "file": "public/art/icons/buildings/temple_bell_tower_s2.png",
       "size": 256,
       "group": "building",
-      "subject": "Temple Bell Tower (defense)",
+      "subject": "Alarm Bell Tower (defense)",
       "stage": 2,
       "levels": [
         3,
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Temple Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Alarm Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.temple_bell_tower.s3",
       "file": "public/art/icons/buildings/temple_bell_tower_s3.png",
       "size": 256,
       "group": "building",
-      "subject": "Temple Bell Tower (defense)",
+      "subject": "Alarm Bell Tower (defense)",
       "stage": 3,
       "levels": [
         5,
         7
       ],
       "live": false,
-      "prompt": "Isometric icon of the Temple Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Alarm Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.temple_bell_tower.s4",
       "file": "public/art/icons/buildings/temple_bell_tower_s4.png",
       "size": 256,
       "group": "building",
-      "subject": "Temple Bell Tower (defense)",
+      "subject": "Alarm Bell Tower (defense)",
       "stage": 4,
       "levels": [
         8,
         9
       ],
       "live": false,
-      "prompt": "Isometric icon of the Temple Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Alarm Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.temple_bell_tower.s5",
       "file": "public/art/icons/buildings/temple_bell_tower_s5.png",
       "size": 256,
       "group": "building",
-      "subject": "Temple Bell Tower (defense)",
+      "subject": "Alarm Bell Tower (defense)",
       "stage": 5,
       "levels": [
         10,
         12
       ],
       "live": false,
-      "prompt": "Isometric icon of the Temple Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Alarm Bell Tower: Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.clan_forge.s1",
@@ -5308,7 +5308,7 @@
         2
       ],
       "live": false,
-      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under ground troops.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under warriors on the ground.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.flame_trench.s2",
@@ -5322,7 +5322,7 @@
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under ground troops.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under warriors on the ground.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.flame_trench.s3",
@@ -5336,7 +5336,7 @@
         7
       ],
       "live": false,
-      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under ground troops.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under warriors on the ground.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.flame_trench.s4",
@@ -5350,7 +5350,7 @@
         9
       ],
       "live": false,
-      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under ground troops.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under warriors on the ground.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.flame_trench.s5",
@@ -5364,77 +5364,77 @@
         12
       ],
       "live": false,
-      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under ground troops.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Flame Trench: A trench that bursts into flame under warriors on the ground.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.thunder_shrine.s1",
       "file": "public/art/icons/buildings/thunder_shrine_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Thunder Shrine (defense)",
+      "subject": "Thunder Spire (defense)",
       "stage": 1,
       "levels": [
         1,
         2
       ],
       "live": false,
-      "prompt": "Isometric icon of the Thunder Shrine: Chain lightning that jumps between flyers.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Thunder Spire: Chain lightning that jumps between flyers.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.thunder_shrine.s2",
       "file": "public/art/icons/buildings/thunder_shrine_s2.png",
       "size": 256,
       "group": "building",
-      "subject": "Thunder Shrine (defense)",
+      "subject": "Thunder Spire (defense)",
       "stage": 2,
       "levels": [
         3,
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Thunder Shrine: Chain lightning that jumps between flyers.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Thunder Spire: Chain lightning that jumps between flyers.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.thunder_shrine.s3",
       "file": "public/art/icons/buildings/thunder_shrine_s3.png",
       "size": 256,
       "group": "building",
-      "subject": "Thunder Shrine (defense)",
+      "subject": "Thunder Spire (defense)",
       "stage": 3,
       "levels": [
         5,
         7
       ],
       "live": false,
-      "prompt": "Isometric icon of the Thunder Shrine: Chain lightning that jumps between flyers.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Thunder Spire: Chain lightning that jumps between flyers.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.thunder_shrine.s4",
       "file": "public/art/icons/buildings/thunder_shrine_s4.png",
       "size": 256,
       "group": "building",
-      "subject": "Thunder Shrine (defense)",
+      "subject": "Thunder Spire (defense)",
       "stage": 4,
       "levels": [
         8,
         9
       ],
       "live": false,
-      "prompt": "Isometric icon of the Thunder Shrine: Chain lightning that jumps between flyers.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Thunder Spire: Chain lightning that jumps between flyers.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.thunder_shrine.s5",
       "file": "public/art/icons/buildings/thunder_shrine_s5.png",
       "size": 256,
       "group": "building",
-      "subject": "Thunder Shrine (defense)",
+      "subject": "Thunder Spire (defense)",
       "stage": 5,
       "levels": [
         10,
         12
       ],
       "live": false,
-      "prompt": "Isometric icon of the Thunder Shrine: Chain lightning that jumps between flyers.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Thunder Spire: Chain lightning that jumps between flyers.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.ninja_watch_post.s1",
@@ -6001,70 +6001,70 @@
       "file": "public/art/icons/buildings/bitter_incense_burner_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Bitter Incense Burner (support)",
+      "subject": "Bitter Smoke Brazier (support)",
       "stage": 1,
       "levels": [
         1,
         2
       ],
       "live": true,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Bitter Smoke Brazier: Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.bitter_incense_burner.s2",
       "file": "public/art/icons/buildings/bitter_incense_burner_s2.png",
       "size": 256,
       "group": "building",
-      "subject": "Bitter Incense Burner (support)",
+      "subject": "Bitter Smoke Brazier (support)",
       "stage": 2,
       "levels": [
         3,
         4
       ],
       "live": true,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Bitter Smoke Brazier: Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.bitter_incense_burner.s3",
       "file": "public/art/icons/buildings/bitter_incense_burner_s3.png",
       "size": 256,
       "group": "building",
-      "subject": "Bitter Incense Burner (support)",
+      "subject": "Bitter Smoke Brazier (support)",
       "stage": 3,
       "levels": [
         5,
         6
       ],
       "live": true,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Bitter Smoke Brazier: Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.bitter_incense_burner.s4",
       "file": "public/art/icons/buildings/bitter_incense_burner_s4.png",
       "size": 256,
       "group": "building",
-      "subject": "Bitter Incense Burner (support)",
+      "subject": "Bitter Smoke Brazier (support)",
       "stage": 4,
       "levels": [
         7,
         8
       ],
       "live": true,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Bitter Smoke Brazier: Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.bitter_incense_burner.s5",
       "file": "public/art/icons/buildings/bitter_incense_burner_s5.png",
       "size": 256,
       "group": "building",
-      "subject": "Bitter Incense Burner (support)",
+      "subject": "Bitter Smoke Brazier (support)",
       "stage": 5,
       "levels": [
         9,
         10
       ],
       "live": true,
-      "prompt": "Isometric icon of the Bitter Incense Burner: Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Bitter Smoke Brazier: Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.straw_scarecrow.s1",
@@ -6911,70 +6911,70 @@
       "file": "public/art/icons/buildings/lightning_rod_pagoda_s1.png",
       "size": 256,
       "group": "building",
-      "subject": "Lightning Rod Pagoda (defense)",
+      "subject": "Lightning Rod Tower (defense)",
       "stage": 1,
       "levels": [
         1,
         1
       ],
       "live": false,
-      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.lightning_rod_pagoda.s2",
       "file": "public/art/icons/buildings/lightning_rod_pagoda_s2.png",
       "size": 256,
       "group": "building",
-      "subject": "Lightning Rod Pagoda (defense)",
+      "subject": "Lightning Rod Tower (defense)",
       "stage": 2,
       "levels": [
         2,
         3
       ],
       "live": false,
-      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.lightning_rod_pagoda.s3",
       "file": "public/art/icons/buildings/lightning_rod_pagoda_s3.png",
       "size": 256,
       "group": "building",
-      "subject": "Lightning Rod Pagoda (defense)",
+      "subject": "Lightning Rod Tower (defense)",
       "stage": 3,
       "levels": [
         4,
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.lightning_rod_pagoda.s4",
       "file": "public/art/icons/buildings/lightning_rod_pagoda_s4.png",
       "size": 256,
       "group": "building",
-      "subject": "Lightning Rod Pagoda (defense)",
+      "subject": "Lightning Rod Tower (defense)",
       "stage": 4,
       "levels": [
         5,
         6
       ],
       "live": false,
-      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.lightning_rod_pagoda.s5",
       "file": "public/art/icons/buildings/lightning_rod_pagoda_s5.png",
       "size": 256,
       "group": "building",
-      "subject": "Lightning Rod Pagoda (defense)",
+      "subject": "Lightning Rod Tower (defense)",
       "stage": 5,
       "levels": [
         7,
         8
       ],
       "live": false,
-      "prompt": "Isometric icon of the Lightning Rod Pagoda: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.ability.smoke_bomb",
@@ -7098,9 +7098,9 @@
       "file": "public/art/icons/abilities/temple_bell.png",
       "size": 128,
       "group": "ability",
-      "subject": "Temple Bell",
+      "subject": "Alarm Bell",
       "live": true,
-      "prompt": "Ability icon \"Temple Bell\": Rings a bell that makes defenses in range target him first. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Alarm Bell\": Rings a bell that makes defenses in range target him first. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.great_wall",
@@ -7251,9 +7251,9 @@
       "file": "public/art/icons/abilities/armada.png",
       "size": 128,
       "group": "ability",
-      "subject": "Armada",
+      "subject": "Bomber Crew",
       "live": true,
-      "prompt": "Ability icon \"Armada\": A heavy dragon kite carrying a crew of bombers. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Bomber Crew\": A heavy dragon kite carrying a crew of bombers. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.mend",
@@ -7548,9 +7548,9 @@
       "file": "public/art/icons/leagues/jade.png",
       "size": 192,
       "group": "league",
-      "subject": "Jade League",
+      "subject": "Ember League",
       "live": true,
-      "prompt": "League badge for the Jade League: a shield-shaped crest with jade material and the clan crest."
+      "prompt": "League badge for the Ember League: a shield-shaped crest with ember material and the clan crest."
     },
     {
       "key": "icon.league.storm",

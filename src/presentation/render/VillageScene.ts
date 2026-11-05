@@ -1,3 +1,4 @@
+import { provideBuildingLocator, type ScreenRect } from './anchors';
 import Phaser from 'phaser';
 import { BODY_FONT, DISPLAY_FONT } from './fonts';
 import { queueArt } from './artManifest';
@@ -128,7 +129,10 @@ export class VillageScene extends Phaser.Scene {
     cam.setBounds(mb.x - BOUNDS_MARGIN_X, mb.y - BOUNDS_MARGIN_Y, mb.width + BOUNDS_MARGIN_X * 2, mb.height + BOUNDS_MARGIN_Y * 2);
     const cssWidth = this.scale.width / this.renderScale;
     // Start close on the village (art re-audit item 10): the Keep and its neighbours fill a phone screen.
-    this.userZoom = Phaser.Math.Clamp(cssWidth / (9 * 64), Math.max(0.45, this.minZoom()), 1.3);
+    // Sideways the HUD takes the top and bottom of a short screen, so start further out (re-audit design item 4).
+    const cssHeight = this.scale.height / this.renderScale;
+    const startZoom = cssWidth > cssHeight * 1.2 ? Math.min(cssWidth / (22 * 64), cssHeight / (16 * 32)) : cssWidth / (9 * 64);
+    this.userZoom = Phaser.Math.Clamp(startZoom, Math.max(0.45, this.minZoom()), 1.3);
     this.applyZoom();
     this.scale.on(Phaser.Scale.Events.RESIZE, () => this.zoomAt(this.scale.width / 2, this.scale.height / 2, this.userZoom));
     const hall = this.controller.state.buildings.find((b) => buildingDef(gd, b.type).category === 'hall');
@@ -163,6 +167,8 @@ export class VillageScene extends Phaser.Scene {
       }),
       this.bus.on('camera:focus', ({ id }) => this.focusOn(id)),
     );
+    // The tutorial ring points at buildings on the map (render/anchors.ts).
+    this.unsubs.push(provideBuildingLocator((type) => this.buildingRect(type)));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unsubs.forEach((u) => u()));
 
     this.setupInput();
@@ -467,6 +473,24 @@ export class VillageScene extends Phaser.Scene {
   }
 
   /** Never zoom out so far that the view is bigger than the map area (keeps the map centred and filling the screen). */
+  /** Screen rect (CSS px, viewport) of the first building of a type, or null when there is none or it is off screen. */
+  private buildingRect(type: string): ScreenRect | null {
+    if (!this.ready || !this.scene.isActive()) return null;
+    const b = this.controller.state.buildings.find((x) => x.type === type);
+    const v = b && this.views.get(b.id);
+    if (!v) return null;
+    const cam = this.cameras.main;
+    const k = 1 / this.renderScale;
+    const r = this.game.canvas.getBoundingClientRect();
+    const wb = v.image.getBounds();
+    const left = r.left + (wb.x - cam.worldView.x) * cam.zoom * k;
+    const top = r.top + (wb.y - cam.worldView.y) * cam.zoom * k;
+    const width = wb.width * cam.zoom * k;
+    const height = wb.height * cam.zoom * k;
+    if (left + width < 0 || top + height < 0 || left > r.right || top > r.bottom) return null;
+    return { left, top, width, height };
+  }
+
   private minZoom(): number {
     const b = this.cameras.main.getBounds();
     const cssW = this.scale.width / this.renderScale;

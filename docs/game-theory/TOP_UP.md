@@ -25,9 +25,9 @@ We calculated what an open "spend Jade, get Coins/Provisions" market would do:
 |---|---|---|---|
 | 1 | 0.22 | 69 | 33 |
 | 2 | 0.30 | 89 | 82 |
-| 5 | 1.00 | 268 | 2,636 |
+| 5 | 1.00 | 268 | 1,664 |
 | 8 | 2.29 | 557 | 3,914 |
-| 10 | 3.91 | 793 | 5,295 |
+| 10 | 3.91 | 793 | 4,920 |
 | 15 | 15.12 | 2,428 | – |
 
 The scale is `(average loot at Keep / average loot at Keep 5) ^ 0.5`, lowered where needed so that rushing the next Keep still costs more at every Keep (balance fix #20). Regenerate it with `node tools/balance/topup.mjs` after changing loot, Keep costs or either curve.

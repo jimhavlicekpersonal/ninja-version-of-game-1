@@ -484,6 +484,22 @@ export class GameController {
     if (p.kind === 'trial' && p.tier !== undefined) {
       const t = this.finishTrial(p.tier, p.setup, p.deployments, undefined);
       if (t) return { pending: p, record: t.record };
+    } else if (p.kind === 'bounty' || p.kind === 'rematch') {
+      // Re-audit: a goal-event fortress or a settle-the-score rematch never banks raid loot or honor.
+      const record = { at: p.at, opponentName: p.opponentName, setup: p.setup, deployments: p.deployments };
+      const r =
+        p.kind === 'bounty' && p.eventKey !== undefined
+          ? this.dispatch({ type: 'bountyEnd', eventKey: p.eventKey, record })
+          : p.kind === 'rematch' && p.defenseId !== undefined
+            ? this.dispatch({ type: 'rematchEnd', defenseId: p.defenseId, record })
+            : null;
+      if (r?.ok) {
+        const e = r.events.find((x) => x.kind === 'bounty_end' || x.kind === 'rematch_end');
+        const rec = e && 'record' in e ? (e as { record: BattleRecord }).record : null;
+        if (rec) return { pending: p, record: rec };
+        if (this.state.pendingBattle) this.trackBattle(null);
+        return null;
+      }
     } else if (p.kind === 'war' && p.target !== undefined) {
       // Alliance War attacks are protected too: closing the app can't save the troops or the attempt.
       const w = p.ticket

@@ -6,5 +6,6 @@ import { defaultData } from './sim/data';
 import { opponentForRank } from './sim/matchmaking';
 
 export function engine(): RulesEngine {
-  return { rules: SIM_RULES, dataVersion: dataVersionOf(defaultData), data: defaultData, runBattle, opponentForRank, live: false };
+  // An archive's types are its own (they drift from the live ones by design); the registry only passes data through.
+  return { rules: SIM_RULES, dataVersion: dataVersionOf(defaultData), data: defaultData as unknown as RulesEngine['data'], runBattle: runBattle as unknown as RulesEngine['runBattle'], opponentForRank: opponentForRank as unknown as RulesEngine['opponentForRank'], live: false };
 }

@@ -158,8 +158,10 @@ export class BattleHud {
     const vh = window.innerHeight;
     const box = (el: Element | null) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
     const root = this.deps.root;
-    const tops = [box(root.querySelector('.b-left')), box(root.querySelector('.b-right'))].filter((r): r is DOMRect => Boolean(r));
-    const lows = [box(this.troopsEl), box(this.bottomEl), box(this.scoutEl)].filter((r): r is DOMRect => Boolean(r) && r!.height > 0);
+    // Anything in the upper half (the cards; sideways also the scout drawer) bounds the top, the rest the bottom.
+    const all = [box(root.querySelector('.b-left')), box(root.querySelector('.b-right')), box(this.troopsEl), box(this.bottomEl), box(this.scoutEl)].filter((r): r is DOMRect => Boolean(r) && r!.height > 0);
+    const tops = all.filter((r) => r.top < vh / 2);
+    const lows = all.filter((r) => r.top >= vh / 2);
     let top = Math.max(0, ...tops.map((r) => r.bottom)) + 4;
     if (!this.toastsBeside()) top += 44;
     const bottom = vh - Math.min(vh, ...lows.map((r) => r.top)) + 4;

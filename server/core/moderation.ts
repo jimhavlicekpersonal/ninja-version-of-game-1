@@ -13,7 +13,7 @@
  * - Every decision is explained (re-audit, EU DSA art. 16(5) and 17): the
  *   reporters get the outcome, and the affected player the decision, the
  *   reason and how to appeal (SUPPORT_CONTACT), as notices in their inbox
- *   (GET /v1/notices; migration 0025). A muted chat send says why and until when.
+ *   (GET /v1/notices; migration 0024). A muted chat send says why and until when.
  */
 import { isolateName } from '../../src/gameplay/sim/social/names';
 import { REPORT_REASONS, type BlocksResponse, type NoticesResponse, type ReportReason, type ReportRequest, type ReportResponse } from '../../src/backend/net/protocol';

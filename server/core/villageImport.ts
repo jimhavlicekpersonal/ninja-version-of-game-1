@@ -73,7 +73,8 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
   const ok = new Set(credited.filter((p) => p.status === 'credited').map((p) => `${p.store}:${p.transactionId}`));
   const confirmed = state.purchases.filter((p) => ok.has(p.id));
   const unconfirmed = state.purchases.filter((p) => !ok.has(p.id)).map((p) => p.id);
-  const paidJade = confirmed.reduce((sum, p) => sum + (productInfo(data, p.productId)?.grants.moonstones ?? 0), 0);
+  // What each purchase really delivered (offers may convert to Jade; the record keeps it), else the catalog.
+  const paidJade = confirmed.reduce((sum, p) => sum + ((p.grants ?? productInfo(data, p.productId)?.grants)?.moonstones ?? 0), 0);
   const allowed = freeJadeAllowance(hallLevel(state, data)) + paidJade;
   const jade = Math.max(0, Math.round(state.resources.moonstones - allowed));
   state.resources.moonstones -= jade;
