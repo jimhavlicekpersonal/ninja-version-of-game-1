@@ -33,7 +33,9 @@
     "i18n:sync": "node tools/i18n/i18n.mjs sync",
     "i18n:status": "node tools/i18n/i18n.mjs status",
     "i18n:check": "node tools/i18n/i18n.mjs check",
-    "i18n:next": "node tools/i18n/i18n.mjs next"
+    "i18n:next": "node tools/i18n/i18n.mjs next",
+    "perf:lowend": "node tools/perf/lowend.mjs",
+    "perf:profile": "node tools/perf/profile.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",
