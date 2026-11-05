@@ -96,6 +96,62 @@ describe('protocol contract', () => {
     expect((await c.rename(`Bold Pip ${tag}`)).name).toBe(`Bold Pip ${tag}`);
   });
 
+  /** Two friends, ready for duels and Gangs. */
+  async function friendPair(a: string, b: string) {
+    const x = client();
+    const y = client();
+    const rx = await x.register(`${a} ${tag}`);
+    const ry = await y.register(`${b} ${tag}`);
+    for (const c of [x, y]) await c.uploadBase({ base: generateOpponent(303 + a.length, 3, data) });
+    await x.sendFriendRequest({ playerId: ry.playerId });
+    await y.sendFriendRequest({ playerId: rx.playerId });
+    return { x: Object.assign(x, { id: rx.playerId }), y: Object.assign(y, { id: ry.playerId }) };
+  }
+
+  it('duels: ticket, report, history, layout, challenges (step 62)', async () => {
+    if (!(await client().hello()).features.includes('duels')) return;
+    const { x, y } = await friendPair('Duo', 'Rival');
+    const t = await x.duelTicket({ friendId: y.id });
+    expect(t.base.buildings.every((b) => !Object.values(b.loot ?? {}).some(Boolean))).toBe(true);
+    const r = await x.reportDuel({ ticket: t.ticket, seed: t.seed, army: { hedgehog_roller: 1 }, deployments: [] });
+    expect(r.rivalry).toMatchObject({ friendId: y.id, duels: 1 });
+    expect((await y.duels()).duels[0]).toMatchObject({ side: 'defense', seed: t.seed });
+    await y.setDuelLayout({ base: generateOpponent(77, 3, data) });
+    expect((await x.duelTicket({ friendId: y.id, layout: 'duel' })).layout).toBe('duel');
+    const c = await x.challenge(y.id);
+    expect((await y.challenges()).challenges.map((v) => v.id)).toContain(c.id);
+  });
+
+  it('Gangs and Gang Wars: found, invite, join, chat, requests, queue, leave (steps 63, 65)', async () => {
+    const features = (await client().hello()).features;
+    if (!features.includes('gangs')) return;
+    const { x, y } = await friendPair('Lead', 'Mate');
+    await x.createSquad(`Crew ${tag}`);
+    await x.squadInvite(y.id);
+    const inv = (await y.squad()).invites[0];
+    expect((await y.answerSquadInvite(inv.id, true)).squad!.members).toHaveLength(2);
+    const m = await y.postSquadChat('hello');
+    expect((await x.squadChat()).messages.map((v) => v.id)).toContain(m.id);
+    expect(Array.isArray((await x.squadRequests()).requests)).toBe(true);
+    if (features.includes('gang-wars')) {
+      const q = await x.gangWarQueue();
+      expect(q.war !== null || q.queued !== null).toBe(true);
+      if (!q.war) expect((await x.gangWarCancel()).queued).toBeNull();
+      expect((await errorOf(x.gangWarClaim('no-such-war'))).status).toBe(404);
+    }
+    if (!(await x.gangWar().catch(() => null))?.war) {
+      await y.leaveSquad();
+      expect((await y.squad()).squad).toBeNull();
+    }
+  });
+
+  it('platform friends need a linked platform (step 61)', async () => {
+    if (!(await client().hello()).features.includes('platform-friends')) return;
+    const c = client();
+    await c.register(`Lonely ${tag}`);
+    expect((await errorOf(c.platformFriends({ provider: 'gamecenter', ids: ['x'] }))).status).toBe(403);
+  });
+
   it('friends: exact name lookup, codes, requests, privacy (step 59)', async () => {
     const hello = await client().hello();
     if (!hello.features.includes('friends')) return;

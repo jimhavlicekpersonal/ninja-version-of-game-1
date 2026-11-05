@@ -21,9 +21,13 @@ import type { Command } from '../../gameplay/sim/village';
  * 72–75): the game also sends `x-data-version`; tickets are checked with the
  * battle rules they were issued under, and `/v1/hello` lists `supportedRules`
  * and `minClientBuild` so an old game can say "Update Kagemura". Servers
- * still accept 7 (it already sends `x-sim-rules`).
+ * still accept 7 (it already sends `x-sim-rules`). 9 (roadmap steps 57-70):
+ * Friendly Duels, Gangs and Gang Wars (features `duels`, `gangs`,
+ * `gang-wars`), relay strikes (SIM_RULES 3, `BattleSetup.startDamage`),
+ * `503 busy` from the re-simulation queue. All additions: servers still
+ * accept 7.
  */
-export const PROTOCOL_VERSION = 8;
+export const PROTOCOL_VERSION = 9;
 
 /** Headers the game sends with every request (protocol 7). */
 export const ClientHeaders = {
