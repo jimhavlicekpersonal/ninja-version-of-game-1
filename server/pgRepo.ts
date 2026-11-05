@@ -441,6 +441,17 @@ export class PgRepo implements Repo {
     if (this.client) await this.client.query(`select pg_advisory_xact_lock(hashtextextended('purchases:' || $1, 0))`, [playerId]);
   }
 
+  async claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean> {
+    const r = await this.db.query(
+      `insert into job_leases (name, holder, until) values ($1, $2, $3)
+       on conflict (name) do update set holder = excluded.holder, until = excluded.until
+       where job_leases.until <= $4 or job_leases.holder = excluded.holder
+       returning name`,
+      [name, holder, now + leaseMs, now],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+
   async lockPlayer(playerId: string): Promise<void> {
     if (this.client) await this.client.query(`select pg_advisory_xact_lock(hashtextextended('player:' || $1, 0))`, [playerId]);
   }

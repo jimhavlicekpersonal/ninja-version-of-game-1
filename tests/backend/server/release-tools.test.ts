@@ -3,7 +3,9 @@
  * every game release, and the game-versions dashboard.
  */
 import { execFile } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { describe, expect, it } from 'vitest';
@@ -57,5 +59,38 @@ describe('game-versions dashboard (step 78)', () => {
     const names = new Set(dash.panels.flatMap((p) => p.targets.flatMap((t) => [...t.expr.matchAll(/\b(tk_[a-z_]+?)(?:_bucket|_sum|_count)?\b/g)].map((m) => m[1]))));
     expect(names.size).toBeGreaterThan(3);
     for (const n of names) expect(Object.keys(METRIC_HELP), n).toContain(n);
+  });
+});
+
+describe('report section 5 step 2: a release that did nothing says so', () => {
+  const deploy = (env: Record<string, string>) =>
+    new Promise<{ code: number; stdout: string; summary: string }>((resolve) => {
+      const summary = join(mkdtempSync(join(tmpdir(), 'tk-ci-')), 'summary.md');
+      writeFileSync(summary, '');
+      const clean = Object.fromEntries(Object.entries(process.env).filter(([k]) => !['DEPLOY_HOOK', 'SERVER_URL', 'TARGET', 'GITHUB_STEP_SUMMARY'].includes(k)));
+      execFile(process.execPath, ['tools/release/deploy.mjs'], { env: { ...clean, IMAGE: 'ghcr.io/x/y', TAG: 'abc', GITHUB_STEP_SUMMARY: summary, ...env } }, (err, stdout) => {
+        resolve({ code: err ? Number((err as { code?: number }).code ?? 1) : 0, stdout, summary: readFileSync(summary, 'utf8') });
+      });
+    });
+
+  it('staging without a deploy hook passes with a warning on the run and in the summary', async () => {
+    const r = await deploy({ TARGET: 'staging' });
+    expect(r.code).toBe(0);
+    expect(r.stdout).toMatch(/^::warning title=Server not deployed::/m);
+    expect(r.summary).toMatch(/Server not deployed/);
+  });
+
+  it('a production deploy without a hook fails', async () => {
+    const r = await deploy({ TARGET: 'production' });
+    expect(r.code).toBe(1);
+    expect(r.stdout).toMatch(/^::error title=Production not deployed::/m);
+  });
+
+  it('the workflows warn when a release job or contract tests are skipped', () => {
+    const server = readFileSync('.github/workflows/server.yml', 'utf8');
+    expect(server).toMatch(/TARGET: staging/);
+    expect(server).toMatch(/TARGET: production/);
+    expect(server).toMatch(/::warning title=No staging contract tests::/);
+    expect(readFileSync('.github/workflows/android.yml', 'utf8')).toMatch(/GITHUB_STEP_SUMMARY/);
   });
 });

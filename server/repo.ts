@@ -687,6 +687,13 @@ export interface Repo {
    * in ascending id order (`lockPlayers` in core/pvp.ts) so two transactions never wait on each other.
    */
   lockPlayer(playerId: string): Promise<void>;
+  /**
+   * Claim a periodic job (retention, voided purchases, Gang War reminders) for
+   * `leaseMs`: true when this holder may run it now (no lease, a lapsed one,
+   * or its own). One instance runs each job; another takes over when a lease
+   * lapses (report section 5 step 2, backend A21; migration 0026).
+   */
+  claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean>;
   addIntent(i: PurchaseIntent): Promise<void>;
   getIntent(id: string): Promise<PurchaseIntent | null>;
   useIntent(id: string): Promise<void>;
@@ -1192,6 +1199,13 @@ export class MemoryRepo implements Repo {
   }
   async lockPlayer(): Promise<void> {
     /* memory transactions already run one at a time */
+  }
+  private jobLeases = new Map<string, { holder: string; until: number }>();
+  async claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean> {
+    const l = this.jobLeases.get(name);
+    if (l && l.until > now && l.holder !== holder) return false;
+    this.jobLeases.set(name, { holder, until: now + leaseMs });
+    return true;
   }
   async holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean> {
     const i = this.intentRows.find((x) => x.id === id && x.playerId === playerId && !x.used);

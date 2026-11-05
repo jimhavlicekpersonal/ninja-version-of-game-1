@@ -18,7 +18,7 @@
  */
 import type { Repo } from './repo';
 import type { RateDecision, RateLimiter, RateLimits } from './rateLimit';
-import { DEFAULT_RATE_LIMITS } from './rateLimit';
+import { DEFAULT_RATE_LIMITS, MemoryRateLimiter } from './rateLimit';
 import type { RedisCommander, RespValue } from './redis';
 import type { Metrics } from './observability';
 
@@ -272,21 +272,33 @@ const HIT = `local n = redis.call('INCR', KEYS[1]) if n == 1 then redis.call('PE
  * the database, body limits and per-route caps in the core still hold.
  */
 export class RedisRateLimiter implements RateLimiter {
+  /**
+   * While Redis does not answer, limits are counted here, per instance (report section 5 step 2,
+   * backend A8: they used to fail fully open, so a Redis outage switched off every limit on every
+   * instance, registration and battle reports included). Per instance is looser than shared, but
+   * nothing goes unlimited.
+   */
+  private readonly fallback: RateLimiter;
+
   constructor(
     private readonly redis: RedisCommander,
     private readonly limits: RateLimits = DEFAULT_RATE_LIMITS,
     private readonly prefix = 'tk:rate:',
     private readonly onError?: RedisErrorHandler,
-  ) {}
+    fallback?: RateLimiter,
+  ) {
+    this.fallback = fallback ?? new MemoryRateLimiter(limits);
+  }
 
-  async hit(rule: keyof RateLimits, key: string): Promise<RateDecision> {
+  async hit(rule: keyof RateLimits, key: string, now: number = Date.now()): Promise<RateDecision> {
     const r = this.limits[rule];
     try {
       const [count, ttl] = (await this.redis.command('EVAL', HIT, 1, `${this.prefix}${rule}:${key}`, r.windowMs)) as RespValue[] as number[];
       if (count > r.limit) return { ok: false, retryAfterMs: ttl > 0 ? ttl : r.windowMs };
+      return { ok: true, retryAfterMs: 0 };
     } catch (e) {
       this.onError?.('rateLimit', e as Error);
+      return this.fallback.hit(rule, key, now);
     }
-    return { ok: true, retryAfterMs: 0 };
   }
 }

@@ -8,6 +8,7 @@
 // before protocol 8 and lists no rules. Fails when the server is unreachable or
 // does not list this build's rules: deploy the server first (docs/SHIPPING.md,
 // "Releasing a balance change").
+import { ciNote } from './ci-note.mjs';
 import { readFileSync } from 'node:fs';
 
 const url = (process.env.SERVER_URL ?? '').trim().replace(/\/+$/, '');
@@ -19,7 +20,7 @@ if (!m) {
 }
 const rules = Number(m[1]);
 if (!url) {
-  console.log(`No server configured (VITE_SERVER_URL unset): nothing to check. This build plays battle rules ${rules}.`);
+  ciNote('notice', 'Web build without an online server', `VITE_SERVER_URL is not set, so the published game plays offline only (battle rules ${rules}); there was no server to check.`);
   process.exit(0);
 }
 let hello;

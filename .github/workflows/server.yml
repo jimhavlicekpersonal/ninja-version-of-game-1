@@ -119,7 +119,13 @@ jobs:
           DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
           SERVER_URL: ${{ vars.SERVER_URL }}
           TAG: ${{ needs.image.outputs.tag }}
+          TARGET: staging
         run: node tools/release/deploy.mjs
+      - name: Say that no contract tests ran (no staging server)
+        if: vars.SERVER_URL == ''
+        run: |
+          echo "::warning title=No staging contract tests::The SERVER_URL variable of the staging environment is not set, so this build was never tested against a running server."
+          echo "⚠️ **No staging contract tests.** The SERVER_URL variable of the staging environment is not set, so this build was never tested against a running server." >> "$GITHUB_STEP_SUMMARY"
       - name: Contract tests against staging (this build's client)
         if: vars.SERVER_URL != ''
         env:
@@ -146,7 +152,13 @@ jobs:
           DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
           SERVER_URL: ${{ vars.SERVER_URL }}
           TAG: ${{ needs.image.outputs.tag }}
+          TARGET: production
         run: node tools/release/deploy.mjs
+      - name: Say that production was not checked (no SERVER_URL)
+        if: vars.SERVER_URL == ''
+        run: |
+          echo "::warning title=Production not checked::The SERVER_URL variable of the production environment is not set, so no smoke check ran."
+          echo "⚠️ **Production not checked.** The SERVER_URL variable of the production environment is not set, so no smoke check ran." >> "$GITHUB_STEP_SUMMARY"
       - name: Smoke check (read-only; production is never used for contract tests)
         if: vars.SERVER_URL != ''
         run: |

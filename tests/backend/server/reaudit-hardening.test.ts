@@ -375,10 +375,16 @@ describe('a Redis outage degrades instead of failing requests', () => {
     close: async () => undefined,
   };
 
-  it('rate limits fail open, the leaderboard reads the database, locks fall back to tickets', async () => {
+  it('rate limits count on the instance, the leaderboard reads the database, locks fall back to tickets', async () => {
     const errors: string[] = [];
     const onError = (use: string) => void errors.push(use);
-    expect(await new RedisRateLimiter(down, DEFAULT_RATE_LIMITS, 'x:', onError).hit('ip', 'k')).toEqual({ ok: true, retryAfterMs: 0 });
+    // Report section 5 step 2 (A8): no longer fully open while Redis is down; each instance counts its own.
+    const limits = { ...DEFAULT_RATE_LIMITS, register: { limit: 2, windowMs: 60_000 } };
+    const limiter = new RedisRateLimiter(down, limits, 'x:', onError);
+    expect(await limiter.hit('register', 'k', 0)).toEqual({ ok: true, retryAfterMs: 0 });
+    expect(await limiter.hit('register', 'k', 1)).toEqual({ ok: true, retryAfterMs: 0 });
+    expect((await limiter.hit('register', 'k', 2)).ok).toBe(false);
+    expect((await limiter.hit('register', 'other', 3)).ok).toBe(true);
     const repo = new MemoryRepo();
     const T = Date.UTC(2026, 10, 5);
     const p = (id: string, trophies: number): Player => ({ id, name: id, tokenHash: id, trophies, hallLevel: 1, shieldUntil: 0, base: { name: id, hallLevel: 1, buildings: [] }, groveId: null, createdAt: T, updatedAt: T, lastSeenAt: T });

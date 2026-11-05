@@ -217,6 +217,8 @@ Run two separate servers, each with its own database (and Redis, Sentry environm
 
 Set up once: in Settings → Environments, create `staging` and `production` (give `production` required reviewers). In each, add the secret `DEPLOY_HOOK` (the host's deploy URL; it receives `{ "image", "tag" }` and must run `node dist-server/migrate.js` before starting the new image: Render and Railway deploy hooks, or a small script on your host) and the variable `SERVER_URL`. Tag each store release `v<version>` so later releases are tested against it.
 
+**What a host must allow (report section 5 step 2):** the server stops cleanly on SIGTERM: `/readyz` answers 503 for `SHUTDOWN_DRAIN_MS` (default 5 s; set it to the load balancer's health-check interval), then requests in flight finish and everything closes, within `SHUTDOWN_DEADLINE_MS` (25 s). Keep the host's kill timeout above that (Render, Fly and Railway default to about 30 s). Retention, voided purchases and Gang War reminders run on one instance at a time (leases in `job_leases`), so any number of instances is safe. A run whose deploy did nothing shows a warning on the run and in its summary; a production deploy without `DEPLOY_HOOK` fails.
+
 **Running a server locally:** run `npm run server:dev`. It uses memory instead of Postgres when `DATABASE_URL` is not set. In the game, set the server address to `http://localhost:8787`, or to `http://<laptop-ip>:8787` from a phone on the same Wi-Fi, using `npm run dev:lan`.
 
 **Building a different server later:** `docs/PROTOCOL.md` describes everything the game expects. The contract tests check any server against it.

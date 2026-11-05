@@ -25,9 +25,9 @@
  * - REDIS_URL: redis:// or rediss:// (Upstash). Shares the leaderboard, match
  *   locks and rate-limit counters between instances. Unset: the database
  *   holds the leaderboard and locks, and each instance counts its own limits.
- *   While Redis is down the instance degrades (limits fail open, the
- *   database answers) and stays ready; REDIS_REQUIRED=1 makes /readyz fail
- *   instead. REDIS_TIMEOUT_MS (500): per-command timeout.
+ *   While Redis is down the instance degrades (each instance counts its own
+ *   limits, the database answers) and stays ready; REDIS_REQUIRED=1 makes
+ *   /readyz fail instead. REDIS_TIMEOUT_MS (500): per-command timeout.
  * - SENTRY_DSN (+ SENTRY_ENVIRONMENT, default 'production'): server errors to Sentry.
  * - METRICS_TOKEN: serve Prometheus metrics at /metrics to this bearer token.
  * - LOG_LEVEL: debug | info (default) | warn | error.
@@ -56,8 +56,22 @@
  *   signed bundle made by tools/balance/bundle.mjs) and BALANCE_PUBLIC_KEY (the
  *   key games check it with). The server refuses to start with a bundle that
  *   does not check out.
+ * - Shutdown (server/shutdown.ts): on SIGTERM or SIGINT, /readyz answers 503
+ *   for SHUTDOWN_DRAIN_MS (5000; match the load balancer's check interval),
+ *   then requests in flight finish and the workers, Redis and the database
+ *   close; SHUTDOWN_DEADLINE_MS (25000) later the process exits regardless.
+ *   Keep the host's kill timeout above the deadline.
+ * - Outbound calls (Google Play, FCM, sign-in key sets, Play Games) give up
+ *   after OUTBOUND_TIMEOUT_MS (10000), body included (server/outbound.ts).
+ * - Periodic jobs (retention, voided purchases, Gang War reminders) run on one
+ *   instance at a time, through leases in the database (server/jobs.ts).
  */
+import { randomUUID } from 'node:crypto';
+import { hostname } from 'node:os';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
+import { runLeased } from './jobs';
+import { OUTBOUND_TIMEOUT_MS, timedFetch } from './outbound';
+import { gracefulShutdown, SHUTDOWN_DEADLINE_MS, SHUTDOWN_DRAIN_MS } from './shutdown';
 import { availableParallelism } from 'node:os';
 import { Worker } from 'node:worker_threads';
 import { WorkerResimulator, type Resimulator } from './resim/resim';
@@ -135,11 +149,17 @@ async function main(): Promise<void> {
   let rateLimiter: RateLimiter | undefined;
   const readiness: Record<string, () => Promise<unknown>> = {};
   const metrics = new PromMetrics();
+  let redis: RedisClient | undefined;
+  // Report section 5 step 2 (A9): a stopping instance says so before it stops accepting.
+  let draining = false;
+  readiness.draining = async () => {
+    if (draining) throw new Error('shutting down');
+  };
   if (process.env.REDIS_URL) {
-    const redis = RedisClient.fromUrl(process.env.REDIS_URL, process.env.REDIS_TIMEOUT_MS ? { timeoutMs: Number(process.env.REDIS_TIMEOUT_MS) } : {});
+    redis = RedisClient.fromUrl(process.env.REDIS_URL, process.env.REDIS_TIMEOUT_MS ? { timeoutMs: Number(process.env.REDIS_TIMEOUT_MS) } : {});
     // An instance without Redis still serves (degraded), so it stays ready unless REDIS_REQUIRED=1.
-    if (process.env.REDIS_REQUIRED === '1') readiness.redis = () => redis.command('PING');
-    metrics.gauge('tk_redis_up', () => [{ labels: {}, value: redis.available ? 1 : 0 }]);
+    if (process.env.REDIS_REQUIRED === '1') readiness.redis = () => redis!.command('PING');
+    metrics.gauge('tk_redis_up', () => [{ labels: {}, value: redis!.available ? 1 : 0 }]);
     const onError = redisErrorReporter(metrics, (msg, fields) => console.warn(msg, fields));
     const board = new RedisLeaderboard(redis, undefined, { repo, onError });
     try {
@@ -152,10 +172,12 @@ async function main(): Promise<void> {
     shared = { board, locks: new RedisLocks(redis, undefined, onError) };
     rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits }, undefined, onError);
   }
+  // Every outbound call has a deadline, body included (report section 5 step 2, A10).
+  const timed = timedFetch(globalThis.fetch, Number(process.env.OUTBOUND_TIMEOUT_MS) || OUTBOUND_TIMEOUT_MS);
+  const fetchFn = timed as unknown as Fetch;
   // Account linking: whichever sign-in providers are configured (APPLE_CLIENT_IDS, GOOGLE_CLIENT_IDS, GAMECENTER_BUNDLE_IDS, PLAYGAMES_CLIENT_ID/SECRET).
-  shared = { ...shared, identity: verifierFromEnv(process.env), account: accountFromEnv(process.env, undefined, undefined, (lvl, msg, fields) => console[lvl === 'info' ? 'log' : lvl](msg, fields ?? '')) };
+  shared = { ...shared, identity: verifierFromEnv(process.env, timed as unknown as Parameters<typeof verifierFromEnv>[1]), account: accountFromEnv(process.env, undefined, undefined, (lvl, msg, fields) => console[lvl === 'info' ? 'log' : lvl](msg, fields ?? '')) };
   // Store receipts (Phase 4) and server push (step 40): whichever keys are configured.
-  const fetchFn = globalThis.fetch as unknown as Fetch;
   // Gauges for alerts (step 47): database pool and event-loop delay.
   if (repo instanceof PgRepo) {
     const pgRepo = repo;
@@ -236,31 +258,50 @@ async function main(): Promise<void> {
     (n) => n && app.log.info({ named: n }, 'name migration'),
     (e) => app.log.error(e, 'name migration failed'),
   );
+  // Periodic jobs run on one instance at a time (report section 5 step 2, A21): each run claims its lease first.
+  const holder = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
+  const timers: ReturnType<typeof setInterval>[] = [];
+  const job = (name: string, everyMs: number, run: () => Promise<unknown>) => () =>
+    void runLeased(repo, holder, Date.now(), name, everyMs, run).catch((e) => app.log.error(e, `${name} failed`));
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.
-  const prune = () =>
-    app.core.prune().then(
-      (r) => app.log.info({ pruned: r }, 'retention'),
-      (e) => app.log.error(e, 'retention failed'),
-    );
+  const prune = job('retention', 3_600_000, () => app.core.prune().then((r) => app.log.info({ pruned: r }, 'retention')));
   // Gang War pushes (step 68): battle day begins, 2 hours left. Every 5 minutes; each sent once per war.
-  const gangWarTimer = setInterval(() => {
-    void app.core.gangWarReminders().catch((e) => app.log.error(e, 'gang war reminders failed'));
-  }, 5 * 60_000);
-  gangWarTimer.unref();
+  const reminders = job('gang-war-reminders', 5 * 60_000, () => app.core.gangWarReminders());
+  timers.push(setInterval(reminders, 5 * 60_000));
   // Google's Voided Purchases API (refunds that a notification missed): the last 3 days, hourly.
-  const voided = () =>
-    app.core.pollVoided(Date.now() - 3 * 86_400_000).then(
-      (n) => n && app.log.info({ revoked: n }, 'voided purchases'),
-      (e) => app.log.error(e, 'voided purchases failed'),
-    );
-  setTimeout(() => {
-    void prune();
-    void voided();
-    setInterval(() => {
-      void prune();
-      void voided();
-    }, 3_600_000).unref();
-  }, Math.floor(Math.random() * 3_600_000)).unref();
+  const voided = job('voided-purchases', 3_600_000, () => app.core.pollVoided(Date.now() - 3 * 86_400_000).then((n) => n && app.log.info({ revoked: n }, 'voided purchases')));
+  const firstHourly = setTimeout(() => {
+    prune();
+    voided();
+    const hourly = setInterval(() => {
+      prune();
+      voided();
+    }, 3_600_000);
+    hourly.unref();
+    timers.push(hourly);
+  }, Math.floor(Math.random() * 3_600_000));
+  for (const t of timers) t.unref();
+  firstHourly.unref();
+
+  // Graceful shutdown (report section 5 step 2, A9).
+  const onSignal = gracefulShutdown({
+    drainMs: process.env.SHUTDOWN_DRAIN_MS !== undefined ? Math.max(0, Number(process.env.SHUTDOWN_DRAIN_MS) || 0) : SHUTDOWN_DRAIN_MS,
+    deadlineMs: Number(process.env.SHUTDOWN_DEADLINE_MS) || SHUTDOWN_DEADLINE_MS,
+    setDraining: () => {
+      draining = true;
+      clearTimeout(firstHourly);
+      for (const t of timers) clearInterval(t);
+    },
+    steps: [
+      { name: 'http', run: () => app.close() },
+      ...(resim ? [{ name: 'resim', run: () => resim!.close() }] : []),
+      ...(redis ? [{ name: 'redis', run: () => redis!.close() }] : []),
+      ...(repo instanceof PgRepo ? [{ name: 'database', run: () => (repo as PgRepo).close() }] : []),
+    ],
+    log: (lvl, msg, fields) => app.log[lvl](fields ?? {}, msg),
+    exit: (code) => process.exit(code),
+  });
+  for (const s of ['SIGTERM', 'SIGINT'] as const) process.on(s, () => void onSignal(s));
 }
 
 main().catch((e) => {

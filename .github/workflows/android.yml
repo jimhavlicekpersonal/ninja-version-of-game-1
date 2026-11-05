@@ -83,6 +83,7 @@ jobs:
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "::warning title=No signed Android release::The release AAB was not built: set the repository secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD (docs/SHIPPING.md, Android). The debug APK job is unaffected."
+            echo "⚠️ **No signed Android release.** The release AAB was not built: the upload-key secrets are not set (docs/SHIPPING.md, Android). The debug APK job is unaffected." >> "$GITHUB_STEP_SUMMARY"
           fi
       - if: steps.key.outputs.ready == 'true'
         uses: actions/checkout@v7
