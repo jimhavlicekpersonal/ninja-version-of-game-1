@@ -14,6 +14,7 @@
  */
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import type { LinkCredential, LinkProvider } from '../net/protocol';
+import { bandFromAgeRange, type AgeBand } from '../../gameplay/sim/age';
 
 export interface SignInSource {
   /** Providers this device can sign in with. */
@@ -37,6 +38,29 @@ interface TkAuthPlugin {
 }
 const TkAuth = registerPlugin<TkAuthPlugin>('TkAuth');
 
+/** The store's age signal (re-audit): iOS 26+ Declared Age Range, Android Play Age Signals (TkAgePlugin.swift / .java). */
+interface TkAgePlugin {
+  ageRange(): Promise<{ status: 'range'; lower: number; upper?: number; source?: string } | { status: 'unavailable'; reason?: string }>;
+}
+const TkAge = registerPlugin<TkAgePlugin>('TkAge');
+
+/**
+ * The age band the device's store reports (sim/age.ts `bandFromAgeRange`: the
+ * youngest age in the range decides), or null when there is no signal: the web,
+ * older iOS, regions where the store shares no age, a declined request, an app
+ * not installed from the store, or any error. The game then shows its own age
+ * screen. Never throws. Unverified on devices (no Xcode/Android SDK where it was written).
+ */
+export async function storeAgeBand(): Promise<AgeBand | null> {
+  if (!Capacitor.isNativePlatform()) return null;
+  try {
+    const r = await TkAge.ageRange();
+    return r.status === 'range' ? bandFromAgeRange(r.lower, r.upper ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const PROVIDER_NAMES: Record<LinkProvider, string> = { apple: 'Apple', google: 'Google', gamecenter: 'Game Center', playgames: 'Play Games' };
 
 function loadScript(src: string): Promise<void> {
@@ -55,7 +79,7 @@ interface GoogleId {
   accounts: { id: { initialize(o: { client_id: string; callback: (r: { credential?: string }) => void; cancel_on_tap_outside?: boolean }): void; prompt(cb?: (n: { isNotDisplayed(): boolean; isSkippedMoment(): boolean }) => void): void } };
 }
 interface AppleIdJs {
-  auth: { init(o: { clientId: string; scope: string; redirectURI: string; usePopup: boolean }): void; signIn(): Promise<{ authorization: { id_token: string } }> };
+  auth: { init(o: { clientId: string; scope: string; redirectURI: string; usePopup: boolean }): void; signIn(): Promise<{ authorization: { id_token: string; code?: string } }> };
 }
 
 export function platformSignIn(opts: { googleClientId?: string; appleServicesId?: string } = {}): SignInSource {
@@ -106,7 +130,8 @@ export function platformSignIn(opts: { googleClientId?: string; appleServicesId?
         const AppleID = (window as unknown as { AppleID: AppleIdJs }).AppleID;
         AppleID.auth.init({ clientId: opts.appleServicesId, scope: '', redirectURI: location.origin + location.pathname, usePopup: true });
         const r = await AppleID.auth.signIn();
-        return { idToken: r.authorization.id_token };
+        // The code lets the server revoke the Apple tokens when the account is deleted (App Review 5.1.1(v)).
+        return { idToken: r.authorization.id_token, ...(r.authorization.code ? { authorizationCode: r.authorization.code } : {}) };
       }
       throw new Error('Not available on this device.');
     },

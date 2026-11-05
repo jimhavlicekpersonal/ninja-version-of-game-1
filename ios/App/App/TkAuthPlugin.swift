@@ -51,7 +51,13 @@ public class TkAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorizationControlle
             call.reject("Sign in with Apple gave no token.", "failed")
             return
         }
-        call.resolve(["idToken": token])
+        // The one-time authorization code lets the server get a refresh token it can revoke when the
+        // account is deleted or Apple is unlinked (App Review 5.1.1(v); server/identity/appleTokens.ts).
+        var out: [String: Any] = ["idToken": token]
+        if let codeData = credential.authorizationCode, let code = String(data: codeData, encoding: .utf8) {
+            out["authorizationCode"] = code
+        }
+        call.resolve(out)
     }
 
     public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {

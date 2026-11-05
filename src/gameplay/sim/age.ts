@@ -69,3 +69,16 @@ export function bandFromProfile(p: { under18: boolean | null; ageBand?: AgeBand 
   if (p.ageBand) return p.ageBand;
   return p.under18 === false ? 'adult' : null;
 }
+
+/**
+ * The band for an age range from the store (Apple Declared Age Range, Play Age
+ * Signals): the youngest age the range allows decides, so a range across a
+ * boundary gives the stricter band. Null bounds: unknown lower = under 13.
+ */
+export function bandFromAgeRange(lower: number | null, upper: number | null): AgeBand | null {
+  if ((lower === null || !Number.isFinite(lower)) && (upper === null || !Number.isFinite(upper))) return null;
+  const youngest = lower !== null && Number.isFinite(lower) ? lower : 0;
+  if (youngest < 13) return 'under13';
+  if (youngest < 18) return '13to17';
+  return 'adult';
+}

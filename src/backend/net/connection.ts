@@ -26,6 +26,8 @@ import type { PurchaseVerifier } from '../payments/provider';
 import { VillageSync, type SyncGame } from './villageSync';
 import { SIM_RULES } from '../../gameplay/sim/battle/battle';
 import { updateNeeded } from './versionCheck';
+import { bandFromProfile, type AgeBand } from '../../gameplay/sim/age';
+import type { DeletionCodeResponse, NoticeView } from './protocol';
 
 /** What the connection needs from the game. GameController provides it. */
 export interface GameLink {
@@ -151,6 +153,18 @@ export class Connection {
   private timers: ReturnType<typeof setInterval>[] = [];
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private retryDelay = 15_000;
+
+  /**
+   * Re-audit (minors online): asked once before this device first goes online
+   * while the village has no age band. The HUD sets it (the store's age signal,
+   * else the neutral age screen); null when the player chose not to answer, so
+   * online play waits (Settings → Connect now asks again). Without a gate (tests,
+   * tools) connecting does not wait for an age.
+   */
+  ageGate: (() => Promise<AgeBand | null>) | null = null;
+  private ageDeclined = false;
+  /** Moderation notices from the server (feature `notices`), newest first; read on connecting and from Settings. */
+  notices: NoticeView[] = [];
 
   constructor(private readonly o: ConnectionOptions) {
     this.kv = o.kv ?? browserKeyValue;
@@ -524,6 +538,126 @@ export class Connection {
     this.setStatus('off');
   }
 
+  // ---------------------------------------------------------------- account protections (re-audit)
+
+  /** The age band of this village (null: not asked yet). */
+  get ageBand(): AgeBand | null {
+    return bandFromProfile(this.o.game.state.profile);
+  }
+
+  /** Ask the age question again (it was dismissed); the next sync shows it. */
+  askAgeAgain(): void {
+    this.ageDeclined = false;
+  }
+
+  /** Make the band stricter on the device (the game refuses anything else). */
+  private applyBand(band: AgeBand): void {
+    const r = this.o.game.dispatch({ type: 'setProfile', under18: band !== 'adult', ageBand: band });
+    if (r.ok) this.emit();
+  }
+
+  private async ensureAge(): Promise<boolean> {
+    if (this.ageBand || !this.ageGate) return true;
+    if (this.ageDeclined) return false;
+    const band = await this.ageGate().catch(() => null);
+    if (!band) {
+      this.ageDeclined = true;
+      return false;
+    }
+    this.applyBand(band);
+    return Boolean(this.ageBand);
+  }
+
+  /** Tell the server the band (it keeps the strictest); a stricter one from the server (another device) is adopted. */
+  private async syncAge(port: ServerPort): Promise<void> {
+    if (!this.server?.features.includes('age-bands') || !port.stateAge) return;
+    try {
+      const r = await port.stateAge({ band: this.ageBand });
+      if (r.band && r.band !== this.ageBand) this.applyBand(r.band);
+    } catch (e) {
+      this.log('Online play: could not send the age group', e);
+    }
+  }
+
+  /** The server lists moderation notices (feature `notices`). */
+  get canNotices(): boolean {
+    return this.online && Boolean(this.server?.features.includes('notices') && this.port?.notices);
+  }
+
+  /** Read moderation notices (report outcomes, decisions with reasons and appeals). */
+  async refreshNotices(): Promise<NoticeView[]> {
+    if (!this.canNotices) return this.notices;
+    try {
+      this.notices = (await this.port!.notices!()).notices;
+      this.emit();
+    } catch (e) {
+      this.log('Online play: could not read notices', e);
+    }
+    return this.notices;
+  }
+
+  async markNoticesRead(ids: string[]): Promise<void> {
+    if (!ids.length || !this.canNotices) return;
+    await this.port!.markNoticesRead!(ids);
+    for (const n of this.notices) if (ids.includes(n.id)) n.read = true;
+    this.emit();
+  }
+
+  /** A one-time code for the web deletion page (feature `deletion-codes`). */
+  async deletionCode(): Promise<DeletionCodeResponse> {
+    const port = this.port_();
+    if (!this.server?.features.includes('deletion-codes') || !port.deletionCode) throw new Error('This server does not give deletion codes yet. Delete the account here instead.');
+    return port.deletionCode();
+  }
+
+  /** Sign out every other device of this account (feature `sessions`); how many were signed out. */
+  async revokeOtherSessions(): Promise<number> {
+    const port = this.port_();
+    if (!this.server?.features.includes('sessions') || !port.revokeOtherSessions) throw new Error('This server cannot sign out other devices yet.');
+    return (await port.revokeOtherSessions()).revoked;
+  }
+
+  /**
+   * Servers this device still holds an online account token for, although
+   * online play with them is off here (Settings → Play offline). The account
+   * still exists on the server, so Settings offers to delete it (re-audit).
+   */
+  storedAccounts(): string[] {
+    const out: string[] = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k?.startsWith('tk.net.token:') && localStorage.getItem(k)) out.push(k.slice('tk.net.token:'.length));
+      }
+    } catch {
+      /* storage blocked: nothing to list */
+    }
+    return out.filter((u) => u && u !== this.url);
+  }
+
+  /**
+   * Delete the online account this device holds a token for on `url`,
+   * connecting just for that (online play stays off). Raids still waiting for
+   * that server become practice results, as with `deleteAccount`.
+   */
+  async deleteStoredAccount(url: string): Promise<void> {
+    const port = (this.o.makePort ?? ((u) => new HttpServerAdapter(u, { build: this.o.build, dataVersion: this.o.dataVersion })))(url);
+    if (!port.hasIdentity()) return;
+    await port.deleteAccount();
+    const g = this.o.game;
+    for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'account_deleted' });
+    for (const k of [`tk.net.outbox:${url}`, `tk.net.village:${url}`, `tk.net.push:${url}`, `tk.net.villageMoveRefused:${url}`]) this.kv.set(k, null);
+    this.kv.set(NAME_KEY, null);
+    this.emit();
+  }
+
+  /** A deletion code for an account this device holds a token for while online play is off. */
+  async storedDeletionCode(url: string): Promise<DeletionCodeResponse> {
+    const port = (this.o.makePort ?? ((u) => new HttpServerAdapter(u, { build: this.o.build, dataVersion: this.o.dataVersion })))(url);
+    if (!port.hasIdentity() || !port.deletionCode) throw new Error('No online account on this device for that server.');
+    return port.deletionCode();
+  }
+
   /** Link a sign-in (Apple, Google, Game Center, Play Games) to this player, so it can be restored on other devices. */
   async link(provider: LinkProvider, credential: LinkCredential): Promise<void> {
     if (!this.port) throw new Error('No server configured.');
@@ -596,7 +730,13 @@ export class Connection {
           const what = await this.o.balance.offer(offered);
           if (what === 'refused') this.log('Online play: the server offered a balance bundle this game refused');
         }
+        // Re-audit: the age band is known before this device registers or goes online.
+        if (!(await this.ensureAge())) {
+          this.setStatus('offline', 'Online play starts once you tell us your age: Settings → Online play → Connect now.');
+          return;
+        }
         await this.ensurePlayer(port);
+        await this.syncAge(port);
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
         // The real Grove replaces the bot Grove while playing online.
         if (g.state.grove.joined) g.dispatch({ type: 'leaveLocalGrove' });
@@ -606,6 +746,7 @@ export class Connection {
         await this.autoMoveVillage();
         this.retryDelay = 15_000;
         this.setStatus('online');
+        void this.refreshNotices();
       } else {
         this.player = await port.me(); // Grove membership may have changed
       }

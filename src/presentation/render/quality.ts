@@ -9,7 +9,19 @@
  *
  * The profile is picked once at start-up (textures are generated from it), from, in order:
  * `?quality=low|high` in the address, the player's stored choice (`tk.quality`), then cheap
- * device signals. A new choice takes effect on the next start.
+ * device signals (`autoProfile`). A new choice takes effect on the next start.
+ *
+ * The automatic rule (client re-audit item 4):
+ * - Browsers that report memory (Chrome, Android WebView): low at 3 GB or less, and at 4 GB on a
+ *   touch device (a 4 GB, 8-core, 2.6x Android phone is mid-range: a 3x canvas plus 2.5x/3x
+ *   textures is too much for it). Desktops with 4 GB stay high.
+ * - Safari and Firefox report no memory, and iOS reports 4 cores on every iPhone, so cores say
+ *   nothing there. On iOS: home-button iPhones (a 320/375/414 x 568/667/736 screen: SE, 6s-8 Plus,
+ *   2-3 GB) are low; every other iPhone and iPad is high unless the canvas benchmark is slow.
+ *   Elsewhere without memory: a touch device with 4 cores or fewer is low.
+ * - A short canvas benchmark (`measureFillMs`, ~2 ms on a recent phone, run only when the browser
+ *   reports no memory) sends a device to low when drawing is several times slower than a mid-range
+ *   phone (`SLOW_FILL_MS`), whatever the other signals say. It never raises a device to high.
  *
  * Browser emulation and texture sums (`npm run perf:lowend -- --quality`) are estimates, not a
  * physical cheap-phone measurement.
@@ -58,6 +70,22 @@ export interface QualitySignals {
   coarsePointer?: boolean;
   /** `prefers-reduced-motion: reduce`: lowers effects only, never the profile. */
   reducedMotion?: boolean;
+  /** iPhone, iPad or iPod (WebKit on iOS reports 4 cores everywhere and no memory). */
+  ios?: boolean;
+  /** Longer screen side in CSS pixels. */
+  screenLong?: number;
+  /** `measureFillMs()`: the canvas benchmark, best of three, in ms (only without `deviceMemory`). */
+  fillMs?: number;
+}
+
+/** A canvas benchmark slower than this (best of three) means a slow phone: ~5x a 2024 laptop core, ~2x a mid-range phone. */
+export const SLOW_FILL_MS = 12;
+
+/** Home-button iPhones (SE 1st-3rd gen, 6s-8 and Plus): 2-3 GB of memory, the oldest iOS 15 devices. */
+function homeButtonIphone(s: QualitySignals): boolean {
+  const short = s.screenShort ?? 0;
+  const long = s.screenLong ?? 0;
+  return Boolean(s.ios) && short > 0 && short <= 414 && long > 0 && long <= 736;
 }
 
 const HIGH: Omit<QualitySettings, 'profile' | 'reason'> = {
@@ -88,18 +116,60 @@ function isProfile(v: unknown): v is QualityProfile {
   return v === 'high' || v === 'low';
 }
 
-/** Pick a profile from device signals alone. */
+/** Pick a profile from device signals alone (the rule is in the header comment). */
 export function autoProfile(s: QualitySignals): { profile: QualityProfile; reason: string } {
-  if (s.deviceMemory !== undefined && s.deviceMemory <= 3) return { profile: 'low', reason: `device memory ${s.deviceMemory} GB` };
+  if (s.deviceMemory !== undefined) {
+    if (s.deviceMemory <= 3) return { profile: 'low', reason: `device memory ${s.deviceMemory} GB` };
+    if (s.deviceMemory <= 4 && s.coarsePointer) return { profile: 'low', reason: `${s.deviceMemory} GB phone or tablet` };
+    return { profile: 'high', reason: `device memory ${s.deviceMemory} GB` };
+  }
+  if (s.fillMs !== undefined && s.fillMs > SLOW_FILL_MS) return { profile: 'low', reason: `slow drawing (${s.fillMs.toFixed(1)} ms test)` };
+  if (s.ios) {
+    if (homeButtonIphone(s)) return { profile: 'low', reason: 'older iPhone (home-button screen)' };
+    return { profile: 'high', reason: 'iPhone or iPad' };
+  }
   // Core count alone is weak evidence on a desktop (Safari/Firefox hide memory), so it only counts on phones and tablets.
-  if (s.hardwareConcurrency !== undefined && s.hardwareConcurrency <= 4 && (s.deviceMemory ?? 4) <= 4 && (s.coarsePointer || s.deviceMemory !== undefined)) {
+  if (s.coarsePointer && s.hardwareConcurrency !== undefined && s.hardwareConcurrency <= 4) {
     return { profile: 'low', reason: `${s.hardwareConcurrency} CPU cores` };
   }
-  // A small 3x screen on a 4 GB phone: a 3x canvas plus 3x textures is the heaviest case for the least gain.
-  if (s.deviceMemory !== undefined && s.deviceMemory <= 4 && (s.devicePixelRatio ?? 1) >= 3 && (s.screenShort ?? Infinity) <= 480) {
-    return { profile: 'low', reason: `${s.deviceMemory} GB phone with a 3x screen` };
-  }
   return { profile: 'high', reason: 'device signals' };
+}
+
+/**
+ * A ~2 ms canvas test (best of three): gradient-filled curves on a small canvas, then a one-pixel
+ * read so the drawing really happens. The game's start-up cost is this kind of drawing (textures
+ * are painted in code), so it is the signal that matters when the browser hides its memory.
+ */
+export function measureFillMs(): number | undefined {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 128;
+    const ctx = c.getContext('2d');
+    if (!ctx || typeof performance === 'undefined') return undefined;
+    let best = Infinity;
+    for (let run = 0; run < 3; run++) {
+      const t0 = performance.now();
+      for (let i = 0; i < 16; i++) {
+        const g = ctx.createLinearGradient(0, 0, 128, 128);
+        g.addColorStop(0, `hsl(${i * 7 + run},60%,50%)`);
+        g.addColorStop(1, '#223');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(10 + i, 20);
+        ctx.bezierCurveTo(120, 10 + i, 10, 120, 110 - i, 110);
+        ctx.closePath();
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      ctx.getImageData(0, 0, 1, 1);
+      best = Math.min(best, performance.now() - t0);
+    }
+    return Number.isFinite(best) ? best : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Decide the settings from the address, the stored choice and the device. Pure, for tests. */
@@ -157,8 +227,14 @@ export function readSignals(): QualitySignals {
   };
   const sw = window.screen?.width || window.innerWidth || 0;
   const sh = window.screen?.height || window.innerHeight || 0;
+  const deviceMemory = typeof nav.deviceMemory === 'number' ? nav.deviceMemory : undefined;
+  const ios = /iPhone|iPad|iPod/.test(nav.userAgent) || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
   return {
-    deviceMemory: typeof nav.deviceMemory === 'number' ? nav.deviceMemory : undefined,
+    deviceMemory,
+    ios,
+    screenLong: sw && sh ? Math.max(sw, sh) : undefined,
+    // Only when memory is hidden (Safari, Firefox): Chrome's memory figure is enough.
+    fillMs: deviceMemory === undefined ? measureFillMs() : undefined,
     hardwareConcurrency: typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency > 0 ? nav.hardwareConcurrency : undefined,
     devicePixelRatio: window.devicePixelRatio || 1,
     screenShort: sw && sh ? Math.min(sw, sh) : undefined,

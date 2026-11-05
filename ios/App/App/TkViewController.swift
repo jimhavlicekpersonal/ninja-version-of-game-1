@@ -6,5 +6,6 @@ class TkViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(TkStorePlugin())
         bridge?.registerPluginInstance(TkAuthPlugin())
+        bridge?.registerPluginInstance(TkAgePlugin())
     }
 }

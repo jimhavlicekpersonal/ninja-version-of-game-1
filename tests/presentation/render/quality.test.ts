@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { autoProfile, getQualityChoice, quality, QUALITY_STORAGE_KEY, renderScaleFor, resolveQuality, setQualityChoice } from '../../../src/presentation/render/quality';
+import { autoProfile, getQualityChoice, quality, QUALITY_STORAGE_KEY, renderScaleFor, resolveQuality, setQualityChoice, SLOW_FILL_MS } from '../../../src/presentation/render/quality';
 
 const phone = { devicePixelRatio: 3, screenShort: 360, coarsePointer: true };
 
@@ -33,12 +33,31 @@ describe('rendering quality (audit R03)', () => {
     expect(autoProfile({ ...phone, deviceMemory: 0.5 }).profile).toBe('low');
     expect(autoProfile({ ...phone, hardwareConcurrency: 4 }).profile).toBe('low'); // Safari: no deviceMemory
     expect(autoProfile({ ...phone, deviceMemory: 4, hardwareConcurrency: 8 }).profile).toBe('low'); // 4 GB phone, 3x screen
+    // Client re-audit item 4: a mid-range 4 GB, 8-core, 2.6x Android phone was sent to high.
+    expect(autoProfile({ devicePixelRatio: 2.625, screenShort: 412, coarsePointer: true, deviceMemory: 4, hardwareConcurrency: 8 }).profile).toBe('low');
+    // Home-button iPhones (SE, 6s-8 Plus: 2-3 GB), whatever the core count WebKit reports.
+    const iphone = { ios: true, coarsePointer: true, hardwareConcurrency: 4 };
+    expect(autoProfile({ ...iphone, devicePixelRatio: 2, screenShort: 375, screenLong: 667, fillMs: 3 }).profile).toBe('low');
+    expect(autoProfile({ ...iphone, devicePixelRatio: 2, screenShort: 320, screenLong: 568 }).profile).toBe('low');
+    expect(autoProfile({ ...iphone, devicePixelRatio: 3, screenShort: 414, screenLong: 736 }).profile).toBe('low');
+    // A slow canvas benchmark demotes any browser that hides its memory.
+    expect(autoProfile({ ...iphone, devicePixelRatio: 3, screenShort: 390, screenLong: 844, fillMs: SLOW_FILL_MS + 5 }).profile).toBe('low');
+    expect(autoProfile({ devicePixelRatio: 1, screenShort: 800, coarsePointer: false, fillMs: 40 }).profile).toBe('low');
+  });
+
+  it('never sends a current iPhone or iPad to low on its reported cores (WebKit says 4 everywhere)', () => {
+    const iphone = { ios: true, coarsePointer: true, hardwareConcurrency: 4, devicePixelRatio: 3 };
+    expect(autoProfile({ ...iphone, screenShort: 390, screenLong: 844, fillMs: 2 }).profile).toBe('high'); // iPhone 12-14
+    expect(autoProfile({ ...iphone, screenShort: 430, screenLong: 932, fillMs: 1.5 }).profile).toBe('high'); // Pro Max
+    expect(autoProfile({ ...iphone, screenShort: 375, screenLong: 812 }).profile).toBe('high'); // X / mini
+    expect(autoProfile({ ...iphone, devicePixelRatio: 2, screenShort: 820, screenLong: 1180, fillMs: 2 }).profile).toBe('high'); // iPad
+    // A 4 GB desktop (no touch) stays high: Chrome on a laptop.
+    expect(autoProfile({ deviceMemory: 4, hardwareConcurrency: 4, coarsePointer: false, devicePixelRatio: 1.25 }).profile).toBe('high');
   });
 
   it('keeps high on capable phones and desktops', () => {
     expect(autoProfile({ ...phone, deviceMemory: 8, hardwareConcurrency: 8 }).profile).toBe('high'); // Pixel 7
     expect(autoProfile({ ...phone, hardwareConcurrency: 6 }).profile).toBe('high'); // recent iPhone
-    expect(autoProfile({ devicePixelRatio: 2.625, screenShort: 412, coarsePointer: true, deviceMemory: 4, hardwareConcurrency: 8 }).profile).toBe('high');
     expect(autoProfile({ devicePixelRatio: 1.5, screenShort: 900, coarsePointer: false, hardwareConcurrency: 4 }).profile).toBe('high'); // desktop Safari/Firefox
     expect(autoProfile({}).profile).toBe('high');
   });
