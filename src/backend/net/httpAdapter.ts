@@ -36,6 +36,14 @@ import {
   type GroveView,
   type GrovesResponse,
   type BalanceResponse,
+  type ChallengesResponse,
+  type ChallengeView,
+  type DuelLayoutRequest,
+  type DuelReportResponse,
+  type DuelsResponse,
+  type DuelTicketRequest,
+  type DuelTicketResponse,
+  type SquadResponse,
   type FriendRequestBody,
   type FriendRequestResult,
   type FriendsResponse,
@@ -263,6 +271,58 @@ export class HttpServerAdapter implements ServerPort {
 
   setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
     return this.req('PUT', Routes.privacy, req);
+  }
+
+  duelTicket(req: DuelTicketRequest): Promise<DuelTicketResponse> {
+    return this.req('POST', Routes.duelTicket, req);
+  }
+  reportDuel(sub: BattleSubmission): Promise<DuelReportResponse> {
+    return this.req('POST', Routes.duels, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
+  }
+  duels(since = 0): Promise<DuelsResponse> {
+    return this.req('GET', `${Routes.duels}?since=${since}`);
+  }
+  async setDuelLayout(req: DuelLayoutRequest): Promise<void> {
+    await this.req('PUT', Routes.duelLayout, req);
+  }
+  challenge(friendId: string): Promise<ChallengeView> {
+    return this.req('POST', Routes.duelChallenges, { friendId });
+  }
+  challenges(): Promise<ChallengesResponse> {
+    return this.req('GET', Routes.duelChallenges);
+  }
+  squad(): Promise<SquadResponse> {
+    return this.req('GET', Routes.squad);
+  }
+  createSquad(name: string): Promise<SquadResponse> {
+    return this.req('POST', Routes.squad, { name });
+  }
+  squadInvite(friendId: string): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadInvites, { friendId });
+  }
+  answerSquadInvite(id: string, accept: boolean): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadInvite(id), { accept });
+  }
+  leaveSquad(): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadLeave, {});
+  }
+  squadLeader(playerId: string): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadLeader, { playerId });
+  }
+  squadChat(after?: string): Promise<ChatResponse> {
+    return this.req('GET', `${Routes.squadChat}${after ? `?after=${encodeURIComponent(after)}` : ''}`);
+  }
+  postSquadChat(text: string): Promise<ChatView> {
+    return this.req('POST', Routes.squadChat, { text });
+  }
+  squadRequests(): Promise<RequestsResponse> {
+    return this.req('GET', Routes.squadRequests);
+  }
+  squadRequestTroops(capacity: number): Promise<RequestView> {
+    return this.req('POST', Routes.squadRequests, { capacity });
+  }
+  squadDonate(requestId: string, req: DonateRequest): Promise<DonateResponse> {
+    return this.req('POST', Routes.squadDonate(requestId), req);
   }
 
   balance(): Promise<BalanceResponse> {

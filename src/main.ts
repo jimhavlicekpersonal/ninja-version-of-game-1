@@ -213,6 +213,7 @@ async function boot(): Promise<void> {
     onGroveAttack: (target) => app?.groveAttack(target),
     onTrial: (tier) => app?.trial(tier),
     onPractice: (army) => app?.practice(army),
+    onDuel: (friendId, name, opts) => void app?.duel(friendId, name, opts),
     prefs,
     notifyPrefs,
     onRemindersEnabled: async () => {

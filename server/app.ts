@@ -346,6 +346,27 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.groveInbox, authed(async (me) => core.inbox(me)));
   app.post(Routes.groveInboxAck, authed(async (me, req) => core.ackInbox(me, body<{ ids: string[] }>(req).ids)));
 
+  // Friendly Duels (step 62): re-simulated like attacks, so they count against the battle limit.
+  app.post(Routes.duelTicket, rate('match'), authed(async (me, req) => core.duelTicket(me, req.body as never, client(req))));
+  app.post(Routes.duels, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.reportDuel(me, req.body as never)));
+  app.get(Routes.duels, authed(async (me, req) => core.duels(me, query(req).since)));
+  app.put(Routes.duelLayout, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.setDuelLayout(me, req.body as never, client(req))));
+  app.post(Routes.duelChallenges, rate('moderation'), authed(async (me, req) => core.challenge(me, body<{ friendId: string }>(req).friendId)));
+  app.get(Routes.duelChallenges, authed(async (me) => core.challenges(me)));
+
+  // Gangs (step 63)
+  app.get(Routes.squad, authed(async (me) => core.squad(me)));
+  app.post(Routes.squad, rate('moderation'), authed(async (me, req) => core.createSquad(me, body<{ name: string }>(req).name)));
+  app.post(Routes.squadInvites, rate('moderation'), authed(async (me, req) => core.squadInvite(me, body<{ friendId: string }>(req).friendId)));
+  app.post('/v1/squad/invites/:id', authed(async (me, req) => core.answerSquadInvite(me, param(req, 'id'), body<{ accept: boolean }>(req).accept)));
+  app.post(Routes.squadLeave, authed(async (me) => core.leaveSquad(me)));
+  app.post(Routes.squadLeader, authed(async (me, req) => core.squadLeader(me, body<{ playerId: string }>(req).playerId)));
+  app.get(Routes.squadChat, authed(async (me, req) => core.squadChat(me, query(req).after)));
+  app.post(Routes.squadChat, authed(async (me, req, reply) => reply.code(201).send(await core.postSquadChat(me, body<{ text: string }>(req).text))));
+  app.get(Routes.squadRequests, authed(async (me) => core.squadRequests(me)));
+  app.post(Routes.squadRequests, authed(async (me, req, reply) => reply.code(201).send(await core.squadRequestTroops(me, body<{ capacity: number }>(req).capacity))));
+  app.post('/v1/squad/requests/:id/donate', authed(async (me, req) => core.squadDonate(me, param(req, 'id'), req.body as never)));
+
   // Grove Raid
   app.get(Routes.groveRaid, authed(async (me) => core.raid(me)));
   app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target, client(req))));

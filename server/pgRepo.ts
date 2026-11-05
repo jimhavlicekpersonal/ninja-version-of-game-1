@@ -1,13 +1,20 @@
 /** Postgres storage adapter for the Repo port (tables in server/migrations/). Bases and battle records are JSONB. */
 import pg from 'pg';
 import { contentHash } from './contentHash';
+import type { Rating } from '../src/gameplay/sim/rating';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
 import { DELETED_PLAYER, NameTakenError } from './repo';
 import type {
   AttackRecord,
   Block,
+  DuelChallenge,
+  DuelRecord,
+  DuelTally,
   FriendRequest,
+  Squad,
+  SquadInvite,
+  SquadMember,
   ChatRow,
   DeletionRequest,
   Donation,
@@ -72,6 +79,8 @@ const toPlayer = (r: Row): Player => ({
   showOnline: r.show_online !== false,
   friendCode: strOrNull(r.friend_code),
   staff: r.staff === true,
+  duelBase: (r.duel_base as Player['duelBase']) ?? null,
+  squadLeftAt: num(r.squad_left_at),
 });
 
 /** Postgres said a unique key (name or friend code) is already used. */
@@ -80,7 +89,7 @@ const isUniqueClash = (e: unknown) => (e as { code?: string })?.code === '23505'
 const toTicket = (r: Row): Ticket => {
   const t: Ticket = {
     id: String(r.id),
-    kind: r.kind === 'raid' ? 'raid' : 'pvp',
+    kind: r.kind === 'raid' ? 'raid' : r.kind === 'duel' ? 'duel' : 'pvp',
     attackerId: String(r.attacker_id),
     defenderId: strOrNull(r.defender_id),
     defenderName: String(r.defender_name ?? ''),
@@ -93,6 +102,7 @@ const toTicket = (r: Row): Ticket => {
   };
   if (r.seed !== null && r.seed !== undefined) t.seed = num(r.seed);
   if (r.rules !== null && r.rules !== undefined) t.rules = num(r.rules);
+  if (r.challenge_id !== null && r.challenge_id !== undefined) t.challengeId = String(r.challenge_id);
   if (r.data_version !== null && r.data_version !== undefined) t.dataVersion = String(r.data_version);
   if (r.week !== null && r.week !== undefined) t.week = num(r.week);
   if (r.grove_id !== null && r.grove_id !== undefined) t.groveId = String(r.grove_id);
@@ -475,13 +485,15 @@ export class PgRepo implements Repo {
       showOnline: 'show_online',
       friendCode: 'friend_code',
       staff: 'staff',
+      duelBase: 'duel_base',
+      squadLeftAt: 'squad_left_at',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];
     for (const [k, col] of Object.entries(cols)) {
       if (!(k in patch)) continue;
       const v = (patch as Record<string, unknown>)[k];
-      vals.push(k === 'base' && v !== null ? JSON.stringify(v) : v);
+      vals.push((k === 'base' || k === 'duelBase') && v !== null && v !== undefined ? JSON.stringify(v) : v);
       sets.push(`${col} = $${vals.length}`);
     }
     const put = (col: string, v: unknown) => {
@@ -563,6 +575,110 @@ export class PgRepo implements Repo {
     return r.rowCount ?? 0;
   }
 
+  // duels (roadmap step 62): the record (with its base) is one jsonb column; duels are few and kept 30 days.
+  async addDuel(d: DuelRecord): Promise<void> {
+    await this.db.query('insert into duels (id, at, attacker_id, defender_id, record) values ($1, $2, $3, $4, $5)', [d.id, d.at, d.attackerId, d.defenderId, JSON.stringify(d)]);
+  }
+  async duelsOf(playerId: string, since: number, limit: number): Promise<DuelRecord[]> {
+    const r = await this.rows('select record from duels where (attacker_id = $1 or defender_id = $1) and at > $2 order by at desc limit $3', [playerId, since, limit]);
+    return r.map((x) => x.record as DuelRecord);
+  }
+  async bumpDuelTally(attackerId: string, defenderId: string, won: boolean, stars: number, destruction: number): Promise<void> {
+    await this.db.query(
+      `insert into duel_tallies (attacker_id, defender_id, duels, wins, best_stars, best_destruction) values ($1, $2, 1, $3, $4, $5)
+       on conflict (attacker_id, defender_id) do update set duels = duel_tallies.duels + 1, wins = duel_tallies.wins + excluded.wins,
+         best_stars = greatest(duel_tallies.best_stars, excluded.best_stars), best_destruction = greatest(duel_tallies.best_destruction, excluded.best_destruction)`,
+      [attackerId, defenderId, won ? 1 : 0, stars, destruction],
+    );
+  }
+  async duelTallies(playerId: string): Promise<DuelTally[]> {
+    const r = await this.rows('select * from duel_tallies where attacker_id = $1 or defender_id = $1', [playerId]);
+    return r.map((x) => ({ attackerId: String(x.attacker_id), defenderId: String(x.defender_id), duels: num(x.duels), wins: num(x.wins), bestStars: num(x.best_stars), bestDestruction: num(x.best_destruction) }));
+  }
+  async addChallenge(c: DuelChallenge): Promise<void> {
+    await this.db.query('insert into duel_challenges (id, from_id, to_id, created_at, expires_at, from_result, to_result) values ($1, $2, $3, $4, $5, $6, $7)', [c.id, c.fromId, c.toId, c.createdAt, c.expiresAt, c.fromResult ? JSON.stringify(c.fromResult) : null, c.toResult ? JSON.stringify(c.toResult) : null]);
+  }
+  private toChallenge = (x: Row): DuelChallenge => ({ id: String(x.id), fromId: String(x.from_id), toId: String(x.to_id), createdAt: num(x.created_at), expiresAt: num(x.expires_at), fromResult: (x.from_result as DuelChallenge['fromResult']) ?? null, toResult: (x.to_result as DuelChallenge['toResult']) ?? null });
+  async getChallenge(id: string): Promise<DuelChallenge | null> {
+    const r = await this.rows('select * from duel_challenges where id = $1', [id]);
+    return r[0] ? this.toChallenge(r[0]) : null;
+  }
+  async challengesOf(playerId: string, since: number): Promise<DuelChallenge[]> {
+    return (await this.rows('select * from duel_challenges where (from_id = $1 or to_id = $1) and created_at > $2 order by created_at desc', [playerId, since])).map(this.toChallenge);
+  }
+  async setChallengeResult(id: string, side: 'from' | 'to', r: { stars: number; destruction: number }): Promise<boolean> {
+    const col = side === 'from' ? 'from_result' : 'to_result';
+    const q = await this.db.query(`update duel_challenges set ${col} = $2 where id = $1 and ${col} is null`, [id, JSON.stringify(r)]);
+    return (q.rowCount ?? 0) > 0;
+  }
+  async pruneDuels(before: number): Promise<number> {
+    const a = await this.db.query('delete from duels where at < $1', [before]);
+    const b = await this.db.query('delete from duel_challenges where expires_at < $1', [before]);
+    return (a.rowCount ?? 0) + (b.rowCount ?? 0);
+  }
+
+  // Gangs (roadmap step 63)
+  async createSquad(s: Squad): Promise<void> {
+    await this.db.query('insert into squads (id, name, created_at, rating) values ($1, $2, $3, $4)', [s.id, s.name, s.createdAt, s.rating ? JSON.stringify(s.rating) : null]);
+  }
+  async getSquad(id: string): Promise<Squad | null> {
+    const r = await this.rows('select * from squads where id = $1', [id]);
+    return r[0] ? { id: String(r[0].id), name: String(r[0].name), createdAt: num(r[0].created_at), ...(r[0].rating ? { rating: r[0].rating as Rating } : {}) } : null;
+  }
+  async updateSquad(id: string, patch: Partial<Pick<Squad, 'name' | 'rating'>>): Promise<void> {
+    if (patch.name !== undefined) await this.db.query('update squads set name = $2 where id = $1', [id, patch.name]);
+    if (patch.rating !== undefined) await this.db.query('update squads set rating = $2 where id = $1', [id, JSON.stringify(patch.rating)]);
+  }
+  async deleteSquad(id: string): Promise<void> {
+    await this.transaction(async (tx) => {
+      const q = (sql: string, vals: unknown[]) => (tx as unknown as PgRepo).db.query(sql, vals);
+      await q('delete from squad_invites where squad_id = $1', [id]);
+      await q('delete from squad_members where squad_id = $1', [id]);
+      await q('delete from squads where id = $1', [id]);
+    });
+  }
+  private toMember = (x: Row): SquadMember => ({ playerId: String(x.player_id), squadId: String(x.squad_id), role: x.role === 'leader' ? 'leader' : 'member', joinedAt: num(x.joined_at) });
+  async squadMembers(squadId: string): Promise<SquadMember[]> {
+    return (await this.rows('select * from squad_members where squad_id = $1 order by joined_at, player_id', [squadId])).map(this.toMember);
+  }
+  async squadOf(playerId: string): Promise<SquadMember | null> {
+    const r = await this.rows('select * from squad_members where player_id = $1', [playerId]);
+    return r[0] ? this.toMember(r[0]) : null;
+  }
+  async addSquadMember(m: SquadMember): Promise<boolean> {
+    const r = await this.db.query('insert into squad_members (player_id, squad_id, role, joined_at) values ($1, $2, $3, $4) on conflict (player_id) do nothing', [m.playerId, m.squadId, m.role, m.joinedAt]);
+    return (r.rowCount ?? 0) > 0;
+  }
+  async removeSquadMember(playerId: string): Promise<void> {
+    await this.db.query('delete from squad_members where player_id = $1', [playerId]);
+  }
+  async setSquadRole(playerId: string, role: SquadMember['role']): Promise<void> {
+    await this.db.query('update squad_members set role = $2 where player_id = $1', [playerId, role]);
+  }
+  private toInvite = (x: Row): SquadInvite => ({ id: String(x.id), squadId: String(x.squad_id), fromId: String(x.from_id), toId: String(x.to_id), at: num(x.at) });
+  async addSquadInvite(i: SquadInvite): Promise<void> {
+    await this.db.query('insert into squad_invites (id, squad_id, from_id, to_id, at) values ($1, $2, $3, $4, $5)', [i.id, i.squadId, i.fromId, i.toId, i.at]);
+  }
+  async getSquadInvite(id: string): Promise<SquadInvite | null> {
+    const r = await this.rows('select * from squad_invites where id = $1', [id]);
+    return r[0] ? this.toInvite(r[0]) : null;
+  }
+  async squadInvitesTo(playerId: string, since: number): Promise<SquadInvite[]> {
+    return (await this.rows('select * from squad_invites where to_id = $1 and at > $2 order by at', [playerId, since])).map(this.toInvite);
+  }
+  async squadInvitesFrom(squadId: string, since: number): Promise<SquadInvite[]> {
+    return (await this.rows('select * from squad_invites where squad_id = $1 and at > $2 order by at', [squadId, since])).map(this.toInvite);
+  }
+  async deleteSquadInvite(id: string): Promise<void> {
+    await this.db.query('delete from squad_invites where id = $1', [id]);
+  }
+  async deleteSquadInvitesTo(playerId: string): Promise<void> {
+    await this.db.query('delete from squad_invites where to_id = $1', [playerId]);
+  }
+  async deleteSquadInvitesFrom(squadId: string): Promise<void> {
+    await this.db.query('delete from squad_invites where squad_id = $1', [squadId]);
+  }
+
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
     const r = await this.rows(
       `select * from players p
@@ -611,9 +727,9 @@ export class PgRepo implements Repo {
     // The base version and the ticket in one statement: retention never sees one without the other.
     await this.db.query(
       `${PUT_BASE}
-       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed, rules, data_version)
-       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16)`,
-      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null, t.rules ?? null, t.dataVersion ?? null],
+       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed, rules, data_version, challenge_id)
+       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16, $17)`,
+      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null, t.rules ?? null, t.dataVersion ?? null, t.challengeId ?? null],
     );
   }
 
@@ -716,6 +832,12 @@ export class PgRepo implements Repo {
       await q('delete from friendships where a = $1 or b = $1', [id]);
       await q('delete from friend_requests where from_id = $1 or to_id = $1', [id]);
       await q('delete from name_holds where player_id = $1', [id]);
+      // Duels, tallies and challenges either way; Gang membership and invites (the core hands leadership over first).
+      await q('delete from duels where attacker_id = $1 or defender_id = $1', [id]);
+      await q('delete from duel_tallies where attacker_id = $1 or defender_id = $1', [id]);
+      await q('delete from duel_challenges where from_id = $1 or to_id = $1', [id]);
+      await q('delete from squad_members where player_id = $1', [id]);
+      await q('delete from squad_invites where to_id = $1 or from_id = $1', [id]);
       await q('delete from reports where reporter_id = $1', [id]);
       await q(
         `update reports set target_id = $2, target_name = $3, text = null,

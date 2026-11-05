@@ -149,6 +149,29 @@ export class App {
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, true);
   }
 
+  /**
+   * A Friendly Duel (roadmap step 62): your army against a friend's village or
+   * duel layout. Nothing is spent or won; the server re-checks it and keeps
+   * the rivalry tally and the replay for both of you.
+   */
+  async duel(friendId: string, friendName: string, opts: { layout?: 'live' | 'duel'; challengeId?: string } = {}): Promise<void> {
+    const c = this.d.controller;
+    const loadout = battleLoadout(c.state, c.data);
+    if (!Object.values(loadout.army).some((n) => n > 0)) {
+      this.d.hud.toast('Train some warriors first: duels use your army (none are spent).', 'error');
+      return;
+    }
+    try {
+      const t = await this.d.connection.duelTicket({ friendId, ...opts });
+      const base = structuredClone(t.base);
+      base.practice = `Friendly duel with ${t.opponent.name} (nothing spent or won)`;
+      const setup: BattleSetup = { seed: t.seed >>> 0, base, ...loadout, infiltration: true };
+      this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, true, { ticket: t.ticket, friendName: t.opponent.name || friendName });
+    } catch (e) {
+      this.d.hud.toast((e as Error).message, 'error');
+    }
+  }
+
   replay(record: BattleRecord): void {
     this.open(new BattleSession(record.setup, this.d.controller.data, 'replay', record), record);
   }
@@ -165,7 +188,7 @@ export class App {
     sound.music('village');
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, practice = false): void {
+  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, practice = false, duel?: { ticket: string; friendName: string }): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
     this.session = session;
@@ -196,6 +219,14 @@ export class App {
           // Never banked: a record only for "Watch replay".
           const result = session.result();
           lastRecord = { id: 'practice', kind: 'attack', at: c.now(), opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick, result, rules: SIM_RULES };
+          if (duel) {
+            const sub = { ticket: duel.ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: result.hash, rules: SIM_RULES };
+            void this.d.connection.reportDuel(sub).then(
+              (r) => this.d.hud.toast(`Duel recorded. Against ${duel.friendName}: ${r.rivalry.wins} win${r.rivalry.wins === 1 ? '' : 's'} in ${r.rivalry.duels} duel${r.rivalry.duels === 1 ? '' : 's'}.`, 'success'),
+              (e: Error) => this.d.hud.toast(`The duel could not be recorded: ${e.message}`, 'error'),
+            );
+            return { result, banked: {}, trophies: 0, note: `Friendly duel with ${duel.friendName}: no warriors were spent and nothing was won.` };
+          }
           return { result, banked: {}, trophies: 0, note: 'Practice battle: no troops were spent and nothing was won.' };
         }
         if (grove) {

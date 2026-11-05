@@ -6,7 +6,9 @@
 import * as account from './account';
 import * as admin from './admin';
 import type { ServerContext } from './context';
+import * as duels from './duels';
 import * as friends from './friends';
+import * as squads from './squads';
 import * as groves from './groves';
 import * as names from './names';
 import * as groveRaid from './groveRaid';
@@ -42,6 +44,23 @@ export function createCore(ctx: ServerContext) {
     unfriend: friends.unfriend.bind(null, ctx),
     setPrivacy: friends.setPrivacy.bind(null, ctx),
     platformFriends: friends.platformFriends.bind(null, ctx),
+    duelTicket: duels.duelTicket.bind(null, ctx),
+    reportDuel: duels.reportDuel.bind(null, ctx),
+    duels: duels.duels.bind(null, ctx),
+    setDuelLayout: duels.setDuelLayout.bind(null, ctx),
+    challenge: duels.challenge.bind(null, ctx),
+    challenges: duels.challenges.bind(null, ctx),
+    squad: squads.mySquad.bind(null, ctx),
+    createSquad: squads.createSquad.bind(null, ctx),
+    squadInvite: squads.invite.bind(null, ctx),
+    answerSquadInvite: squads.answerInvite.bind(null, ctx),
+    leaveSquad: (me: Parameters<typeof squads.leave>[1]) => squads.leave(ctx, me),
+    squadLeader: squads.handOver.bind(null, ctx),
+    squadChat: squads.chat.bind(null, ctx),
+    postSquadChat: squads.postChat.bind(null, ctx),
+    squadRequests: squads.requests.bind(null, ctx),
+    squadRequestTroops: squads.requestTroops.bind(null, ctx),
+    squadDonate: squads.donate.bind(null, ctx),
     /** Start-up: give players from before unique names their name key (step 59). */
     migrateNames: () => names.migrateNames(ctx),
     links: links.links.bind(null, ctx),

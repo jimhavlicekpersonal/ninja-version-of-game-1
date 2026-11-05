@@ -8,10 +8,13 @@ import type { DeletionRequestBody, DeletionRequestResponse } from '../../src/bac
 import type { DeletionRequest, Player } from '../repo';
 import { ApiError, type ServerContext } from './context';
 import { leaveGrove } from './groves';
+import { leave as leaveSquad } from './squads';
 
 /** Delete the caller's online account. Leaves their Alliance first (handing over leadership), without naming them. */
 export async function deleteAccount(ctx: ServerContext, me: Player): Promise<void> {
   if (await ctx.repo.getMembership(me.id)) await leaveGrove(ctx, me, { quiet: true });
+  // A Gang leader hands over first (step 63); a war's roster lock does not stop a deletion.
+  if (await ctx.repo.squadOf(me.id)) await leaveSquad(ctx, me, { quiet: true });
   await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
   await ctx.board.remove(me.id);
 }

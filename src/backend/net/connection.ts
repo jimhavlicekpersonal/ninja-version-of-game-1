@@ -13,8 +13,10 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, FriendRequestBody, FriendRequestResult, FriendsResponse, HelloResponse, LinkCredential, LinkProvider, PlayerCard, PlayerView, PrivacyRequest, PurchaseStore, ReportReason } from './protocol';
+import type { BattleSubmission, ChallengesResponse, ChallengeView, ChatResponse, ChatView, DuelReportResponse, DuelsResponse, DuelTicketRequest, DuelTicketResponse, RequestsResponse, RequestView, SquadResponse, FriendRequestBody, FriendRequestResult, FriendsResponse, HelloResponse, LinkCredential, LinkProvider, PlayerCard, PlayerView, PrivacyRequest, PurchaseStore, ReportReason } from './protocol';
 import { normalizeFriendCode } from './names';
+import { troopLevels } from '../../gameplay/sim/research';
+import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
 // Name rules for instant hints in the UI (the server decides; step 59).
 export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './names';
 import type { PurchaseVerifier } from '../payments/provider';
@@ -302,6 +304,91 @@ export class Connection {
   async platformFriends(provider: 'gamecenter' | 'playgames', ids: string[]): Promise<PlayerCard[]> {
     return (await this.port_().platformFriends({ provider, ids })).players;
   }
+  // ------------------------------------------------------------ duels and Gangs (roadmap steps 62-63)
+
+  get canDuels(): boolean {
+    return this.online && Boolean(this.server?.features.includes('duels'));
+  }
+  get canGangs(): boolean {
+    return this.online && Boolean(this.server?.features.includes('gangs'));
+  }
+  duelTicket(req: DuelTicketRequest): Promise<DuelTicketResponse> {
+    return this.port_().duelTicket(req);
+  }
+  /**
+   * Report a duel. Duels change nothing in the village, so no outbox: a few
+   * quick retries, then the error (the duel is simply not counted).
+   */
+  async reportDuel(sub: BattleSubmission): Promise<DuelReportResponse> {
+    for (let i = 0; ; i++) {
+      try {
+        return await this.port_().reportDuel(sub);
+      } catch (e) {
+        if (i >= 2 || !(e instanceof ServerError) || !e.retryable) throw e;
+        await new Promise((r) => setTimeout(r, 800 * (i + 1)));
+      }
+    }
+  }
+  duels(): Promise<DuelsResponse> {
+    return this.port_().duels(0);
+  }
+  /** Friends duel against this village's current layout from now on (a snapshot; null: the live village again). */
+  setDuelLayoutFromVillage(use: boolean): Promise<void> {
+    const g = this.o.game;
+    return this.port_().setDuelLayout({ base: use ? villageToBase(g.state, g.now(), g.data, this.player?.name) : null });
+  }
+  challenge(friendId: string): Promise<ChallengeView> {
+    return this.port_().challenge(friendId);
+  }
+  challenges(): Promise<ChallengesResponse> {
+    return this.port_().challenges();
+  }
+  squad(): Promise<SquadResponse> {
+    return this.port_().squad();
+  }
+  createSquad(name: string): Promise<SquadResponse> {
+    return this.port_().createSquad(name);
+  }
+  squadInvite(friendId: string): Promise<SquadResponse> {
+    return this.port_().squadInvite(friendId);
+  }
+  answerSquadInvite(id: string, accept: boolean): Promise<SquadResponse> {
+    return this.port_().answerSquadInvite(id, accept);
+  }
+  leaveSquad(): Promise<SquadResponse> {
+    return this.port_().leaveSquad();
+  }
+  squadLeader(playerId: string): Promise<SquadResponse> {
+    return this.port_().squadLeader(playerId);
+  }
+  squadChat(after?: string): Promise<ChatResponse> {
+    return this.port_().squadChat(after);
+  }
+  postSquadChat(text: string): Promise<ChatView> {
+    return this.port_().postSquadChat(text);
+  }
+  squadRequests(): Promise<RequestsResponse> {
+    return this.port_().squadRequests();
+  }
+  /** Ask the Gang for warriors to fill the Lodge's free space. */
+  squadAsk(): Promise<RequestView> {
+    const g = this.o.game;
+    const free = reinforcementCapacity(g.state, g.data) - reinforcementHousing(g.state, g.data);
+    if (free <= 0) return Promise.reject(new Error('Your Alliance Lodge is full (or not built yet).'));
+    return this.port_().squadRequestTroops(free);
+  }
+  /** Give one warrior to a Gang mate's request; it leaves this army once the server accepts. */
+  async squadDonate(requestId: string, troop: string): Promise<void> {
+    const g = this.o.game;
+    if ((g.state.army[troop] ?? 0) < 1) throw new Error('Not enough of that warrior.');
+    const level = troopLevels(g.state, g.data)[troop] ?? 1;
+    await this.port_().squadDonate(requestId, { troop, count: 1, level });
+    g.dispatch({ type: 'spendDonation', troop, count: 1, xp: 0 });
+  }
+  reportChat(messageId: string, reason: ReportReason, note: string, block: boolean): Promise<unknown> {
+    return this.port_().report({ kind: 'chat', messageId, reason, note, block });
+  }
+
   blockPlayer(playerId: string): Promise<void> {
     return this.port_().block(playerId);
   }

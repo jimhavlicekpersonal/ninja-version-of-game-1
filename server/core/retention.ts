@@ -17,10 +17,12 @@ export const REPLAY_RETENTION_MS = REPLAY_RETENTION_DAYS * 24 * HOUR;
 /** How long an expired, unused ticket (and an unreferenced base version) is kept. */
 export const STALE_MS = 24 * HOUR;
 
-export async function prune(ctx: ServerContext): Promise<PruneResult & { friendRequests: number }> {
+export async function prune(ctx: ServerContext): Promise<PruneResult & { friendRequests: number; duels: number }> {
   const t = ctx.now();
   // Friend requests lapse after 14 days (step 59).
   const friendRequests = await ctx.repo.pruneFriendRequests(t - FRIEND_REQUEST_DAYS * 24 * HOUR);
+  // Duels and challenges keep 30 days, like replays (step 62).
+  const duels = await ctx.repo.pruneDuels(t - REPLAY_RETENTION_MS);
   const result = await ctx.repo.prune({
     recordsBefore: t - REPLAY_RETENTION_MS,
     staleBefore: t - STALE_MS,
@@ -30,5 +32,5 @@ export async function prune(ctx: ServerContext): Promise<PruneResult & { friendR
     // Ask to Buy can take days; after 90 a purchase still redeems, just without its intent.
     intentsBefore: t - 90 * 24 * HOUR,
   });
-  return { ...result, friendRequests };
+  return { ...result, friendRequests, duels };
 }

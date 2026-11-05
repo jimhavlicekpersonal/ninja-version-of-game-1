@@ -20,6 +20,7 @@ import m0012 from './0012_server_meta.sql?raw';
 import m0013 from './0013_staff_tools.sql?raw';
 import m0014 from './0014_ticket_rules.sql?raw';
 import m0015 from './0015_friends.sql?raw';
+import m0016 from './0016_duels_gangs.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -37,4 +38,5 @@ export const migrations = loadMigrations({
   '0013_staff_tools.sql': m0013,
   '0014_ticket_rules.sql': m0014,
   '0015_friends.sql': m0015,
+  '0016_duels_gangs.sql': m0016,
 });

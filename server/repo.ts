@@ -49,15 +49,81 @@ export interface Player {
   friendCode?: string | null;
   /** Staff and official accounts (a badge nobody else can get). */
   staff?: boolean;
+  /** The layout friends duel against (step 62); null or absent: their village. */
+  duelBase?: BaseLayout | null;
+  /** When they last left a Gang (step 63: 24 hours before joining another). */
+  squadLeftAt?: number;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt'>>;
 
 /** Two players asked to change to the same name at once: the second one gets this (the store's unique key said no). */
 export class NameTakenError extends Error {
   constructor() {
     super('That name was just taken.');
   }
+}
+
+/** A Friendly Duel, kept 30 days with its replay (roadmap step 62). Never pays and never moves a rating. */
+export interface DuelRecord {
+  id: string;
+  at: number;
+  attackerId: string;
+  attackerName: string;
+  defenderId: string;
+  defenderName: string;
+  challengeId: string | null;
+  seed: number;
+  army: Record<string, number>;
+  levels: Record<string, number>;
+  base: BaseLayout;
+  deployments: Deployment[];
+  endTick?: number;
+  result: BattleResult;
+  rules: number;
+}
+
+/** One direction of a rivalry: how `attackerId` did against `defenderId`. */
+export interface DuelTally {
+  attackerId: string;
+  defenderId: string;
+  duels: number;
+  wins: number;
+  bestStars: number;
+  bestDestruction: number;
+}
+
+/** A duel challenge: both attack each other within 24 h. */
+export interface DuelChallenge {
+  id: string;
+  fromId: string;
+  toId: string;
+  createdAt: number;
+  expiresAt: number;
+  fromResult: { stars: number; destruction: number } | null;
+  toResult: { stars: number; destruction: number } | null;
+}
+
+/** A Gang of 2-4 friends (roadmap step 63). Its chat and troop requests use the Alliance tables with the Gang's id. */
+export interface Squad {
+  id: string;
+  name: string;
+  createdAt: number;
+  /** Gang Rating (step 66); absent until the first war. */
+  rating?: Rating;
+}
+export interface SquadMember {
+  playerId: string;
+  squadId: string;
+  role: 'leader' | 'member';
+  joinedAt: number;
+}
+export interface SquadInvite {
+  id: string;
+  squadId: string;
+  fromId: string;
+  toId: string;
+  at: number;
 }
 
 /** A friend request (roadmap step 59). */
@@ -81,7 +147,7 @@ export interface StaffAction {
 
 export interface Ticket {
   id: string;
-  kind: 'pvp' | 'raid';
+  kind: 'pvp' | 'raid' | 'duel';
   attackerId: string;
   /** Null for a server-generated (bot) opponent. */
   defenderId: string | null;
@@ -104,6 +170,8 @@ export interface Ticket {
    */
   rules?: number;
   dataVersion?: string;
+  /** Duel tickets for a challenge (step 62). */
+  challengeId?: string;
   /** Grove Raid tickets only. */
   week?: number;
   groveId?: string;
@@ -556,6 +624,43 @@ export interface Repo {
   deleteFriendRequestsBetween(a: string, b: string): Promise<void>;
   /** Retention: requests made before `before`; returns how many went. */
   pruneFriendRequests(before: number): Promise<number>;
+  // duels (roadmap step 62)
+  addDuel(d: DuelRecord): Promise<void>;
+  /** Duels the player fought or defended after `since`, newest first. */
+  duelsOf(playerId: string, since: number, limit: number): Promise<DuelRecord[]>;
+  /** Add one duel to the attacker's tally against the defender. */
+  bumpDuelTally(attackerId: string, defenderId: string, won: boolean, stars: number, destruction: number): Promise<void>;
+  /** Every tally the player is in, either side. */
+  duelTallies(playerId: string): Promise<DuelTally[]>;
+  addChallenge(c: DuelChallenge): Promise<void>;
+  getChallenge(id: string): Promise<DuelChallenge | null>;
+  /** Challenges to or from the player created after `since`. */
+  challengesOf(playerId: string, since: number): Promise<DuelChallenge[]>;
+  /** Record one side's attack; false if that side already attacked. */
+  setChallengeResult(id: string, side: 'from' | 'to', r: { stars: number; destruction: number }): Promise<boolean>;
+  /** Retention: duels and challenges from before `before`. */
+  pruneDuels(before: number): Promise<number>;
+  // Gangs (roadmap step 63)
+  createSquad(s: Squad): Promise<void>;
+  getSquad(id: string): Promise<Squad | null>;
+  updateSquad(id: string, patch: Partial<Pick<Squad, 'name' | 'rating'>>): Promise<void>;
+  deleteSquad(id: string): Promise<void>;
+  squadMembers(squadId: string): Promise<SquadMember[]>;
+  squadOf(playerId: string): Promise<SquadMember | null>;
+  /** False if the player is already in a Gang. */
+  addSquadMember(m: SquadMember): Promise<boolean>;
+  removeSquadMember(playerId: string): Promise<void>;
+  setSquadRole(playerId: string, role: SquadMember['role']): Promise<void>;
+  addSquadInvite(i: SquadInvite): Promise<void>;
+  getSquadInvite(id: string): Promise<SquadInvite | null>;
+  /** Invites to the player made after `since`. */
+  squadInvitesTo(playerId: string, since: number): Promise<SquadInvite[]>;
+  /** Invites a Gang sent after `since`. */
+  squadInvitesFrom(squadId: string, since: number): Promise<SquadInvite[]>;
+  deleteSquadInvite(id: string): Promise<void>;
+  /** Every invite to the player (on joining a Gang) or from a Gang (when it closes). */
+  deleteSquadInvitesTo(playerId: string): Promise<void>;
+  deleteSquadInvitesFrom(squadId: string): Promise<void>;
   // reports and blocks (roadmap step 15)
   /** False (and nothing stored) if the reporter already has an open report on that message or player. */
   addReport(r: Report): Promise<boolean>;
@@ -650,6 +755,12 @@ export class MemoryRepo implements Repo {
   nameHolds = new Map<string, { playerId: string; until: number }>();
   friendshipRows: { a: string; b: string; since: number }[] = [];
   friendRequestRows: FriendRequest[] = [];
+  duelRows: DuelRecord[] = [];
+  duelTallyRows: DuelTally[] = [];
+  challengeRows: DuelChallenge[] = [];
+  squadRows = new Map<string, Squad>();
+  squadMemberRows: SquadMember[] = [];
+  squadInviteRows: SquadInvite[] = [];
   villageRows = new Map<string, VillageRow>();
   tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
   linkRows: IdentityLink[] = [];
@@ -907,6 +1018,107 @@ export class MemoryRepo implements Repo {
     this.friendRequestRows = this.friendRequestRows.filter((r) => r.at >= before);
     return n - this.friendRequestRows.length;
   }
+  async addDuel(d: DuelRecord): Promise<void> {
+    this.duelRows.push(clone(d));
+  }
+  async duelsOf(playerId: string, since: number, limit: number): Promise<DuelRecord[]> {
+    return this.duelRows
+      .filter((d) => (d.attackerId === playerId || d.defenderId === playerId) && d.at > since)
+      .sort((a, b) => b.at - a.at)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async bumpDuelTally(attackerId: string, defenderId: string, won: boolean, stars: number, destruction: number): Promise<void> {
+    let t = this.duelTallyRows.find((x) => x.attackerId === attackerId && x.defenderId === defenderId);
+    if (!t) this.duelTallyRows.push((t = { attackerId, defenderId, duels: 0, wins: 0, bestStars: 0, bestDestruction: 0 }));
+    t.duels++;
+    if (won) t.wins++;
+    t.bestStars = Math.max(t.bestStars, stars);
+    t.bestDestruction = Math.max(t.bestDestruction, destruction);
+  }
+  async duelTallies(playerId: string): Promise<DuelTally[]> {
+    return this.duelTallyRows.filter((t) => t.attackerId === playerId || t.defenderId === playerId).map(clone);
+  }
+  async addChallenge(c: DuelChallenge): Promise<void> {
+    this.challengeRows.push(clone(c));
+  }
+  async getChallenge(id: string): Promise<DuelChallenge | null> {
+    const c = this.challengeRows.find((x) => x.id === id);
+    return c ? clone(c) : null;
+  }
+  async challengesOf(playerId: string, since: number): Promise<DuelChallenge[]> {
+    return this.challengeRows.filter((c) => (c.fromId === playerId || c.toId === playerId) && c.createdAt > since).map(clone);
+  }
+  async setChallengeResult(id: string, side: 'from' | 'to', r: { stars: number; destruction: number }): Promise<boolean> {
+    const c = this.challengeRows.find((x) => x.id === id);
+    const key = side === 'from' ? 'fromResult' : 'toResult';
+    if (!c || c[key]) return false;
+    c[key] = { ...r };
+    return true;
+  }
+  async pruneDuels(before: number): Promise<number> {
+    const n = this.duelRows.length + this.challengeRows.length;
+    this.duelRows = this.duelRows.filter((d) => d.at >= before);
+    this.challengeRows = this.challengeRows.filter((c) => c.expiresAt >= before);
+    return n - this.duelRows.length - this.challengeRows.length;
+  }
+  async createSquad(s: Squad): Promise<void> {
+    this.squadRows.set(s.id, clone(s));
+  }
+  async getSquad(id: string): Promise<Squad | null> {
+    const s = this.squadRows.get(id);
+    return s ? clone(s) : null;
+  }
+  async updateSquad(id: string, patch: Partial<Pick<Squad, 'name' | 'rating'>>): Promise<void> {
+    const s = this.squadRows.get(id);
+    if (s) Object.assign(s, clone(patch));
+  }
+  async deleteSquad(id: string): Promise<void> {
+    this.squadRows.delete(id);
+    this.squadMemberRows = this.squadMemberRows.filter((m) => m.squadId !== id);
+    this.squadInviteRows = this.squadInviteRows.filter((i) => i.squadId !== id);
+  }
+  async squadMembers(squadId: string): Promise<SquadMember[]> {
+    return this.squadMemberRows.filter((m) => m.squadId === squadId).sort((a, b) => a.joinedAt - b.joinedAt).map(clone);
+  }
+  async squadOf(playerId: string): Promise<SquadMember | null> {
+    const m = this.squadMemberRows.find((x) => x.playerId === playerId);
+    return m ? clone(m) : null;
+  }
+  async addSquadMember(m: SquadMember): Promise<boolean> {
+    if (this.squadMemberRows.some((x) => x.playerId === m.playerId)) return false;
+    this.squadMemberRows.push(clone(m));
+    return true;
+  }
+  async removeSquadMember(playerId: string): Promise<void> {
+    this.squadMemberRows = this.squadMemberRows.filter((m) => m.playerId !== playerId);
+  }
+  async setSquadRole(playerId: string, role: SquadMember['role']): Promise<void> {
+    const m = this.squadMemberRows.find((x) => x.playerId === playerId);
+    if (m) m.role = role;
+  }
+  async addSquadInvite(i: SquadInvite): Promise<void> {
+    this.squadInviteRows.push(clone(i));
+  }
+  async getSquadInvite(id: string): Promise<SquadInvite | null> {
+    const i = this.squadInviteRows.find((x) => x.id === id);
+    return i ? clone(i) : null;
+  }
+  async squadInvitesTo(playerId: string, since: number): Promise<SquadInvite[]> {
+    return this.squadInviteRows.filter((i) => i.toId === playerId && i.at > since).map(clone);
+  }
+  async squadInvitesFrom(squadId: string, since: number): Promise<SquadInvite[]> {
+    return this.squadInviteRows.filter((i) => i.squadId === squadId && i.at > since).map(clone);
+  }
+  async deleteSquadInvite(id: string): Promise<void> {
+    this.squadInviteRows = this.squadInviteRows.filter((i) => i.id !== id);
+  }
+  async deleteSquadInvitesTo(playerId: string): Promise<void> {
+    this.squadInviteRows = this.squadInviteRows.filter((i) => i.toId !== playerId);
+  }
+  async deleteSquadInvitesFrom(squadId: string): Promise<void> {
+    this.squadInviteRows = this.squadInviteRows.filter((i) => i.squadId !== squadId);
+  }
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
     const since = q.lockedSince;
     const locked = new Set(since === null ? [] : [...this.tickets.values()].filter((t) => !t.used && t.defenderId && t.createdAt > since).map((t) => t.defenderId));
@@ -1045,6 +1257,12 @@ export class MemoryRepo implements Repo {
     this.friendshipRows = this.friendshipRows.filter((f) => f.a !== id && f.b !== id);
     this.friendRequestRows = this.friendRequestRows.filter((r) => r.fromId !== id && r.toId !== id);
     for (const [k, h] of this.nameHolds) if (h.playerId === id) this.nameHolds.delete(k);
+    // Duels, tallies and challenges either way; Gang membership and invites (the core hands leadership over first).
+    this.duelRows = this.duelRows.filter((d) => d.attackerId !== id && d.defenderId !== id);
+    this.duelTallyRows = this.duelTallyRows.filter((t) => t.attackerId !== id && t.defenderId !== id);
+    this.challengeRows = this.challengeRows.filter((c) => c.fromId !== id && c.toId !== id);
+    this.squadMemberRows = this.squadMemberRows.filter((m) => m.playerId !== id);
+    this.squadInviteRows = this.squadInviteRows.filter((i) => i.toId !== id && i.fromId !== id);
     // A server-held village, its ledger and command log, other devices' tokens and linked sign-ins are only theirs.
     this.villageRows.delete(id);
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);

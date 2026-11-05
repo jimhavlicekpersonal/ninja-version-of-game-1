@@ -145,6 +145,28 @@ export const Routes = {
   privacy: '/v1/me/privacy',
   /** POST { provider, ids }: which of my Game Center / Play Games friends play Kagemura (step 61, opt-in). */
   platformFriends: '/v1/friends/platform',
+  /** Friendly Duels (step 62; feature `duels`). POST { friendId, layout?, challengeId? }: a duel ticket. */
+  duelTicket: '/v1/duels/ticket',
+  /** POST BattleSubmission: report a duel; GET ?since=: my duels both ways, with replays. */
+  duels: '/v1/duels',
+  /** PUT { base | null }: the layout friends duel against (or none: my village). */
+  duelLayout: '/v1/duels/layout',
+  /** POST { friendId }: challenge a friend (both attack within 24 h); GET: my challenges. */
+  duelChallenges: '/v1/duels/challenges',
+  /** Gangs (step 63; feature `gangs`). GET: my Gang (or null) and invites to me; POST { name }: found one. */
+  squad: '/v1/squad',
+  /** POST { friendId }: invite a friend (leader only). */
+  squadInvites: '/v1/squad/invites',
+  /** POST { accept }: answer an invite to me. */
+  squadInvite: (id: string) => `/v1/squad/invites/${encodeURIComponent(id)}`,
+  squadLeave: '/v1/squad/leave',
+  /** POST { playerId }: make another member the leader. */
+  squadLeader: '/v1/squad/leader',
+  /** GET ?after= / POST { text }: Gang chat (filtered, rate limited, reportable). */
+  squadChat: '/v1/squad/chat',
+  /** GET / POST { capacity }: troop requests inside the Gang; gifts arrive in the usual inbox. */
+  squadRequests: '/v1/squad/requests',
+  squadDonate: (id: string) => `/v1/squad/requests/${encodeURIComponent(id)}/donate`,
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -276,6 +298,124 @@ export interface PlatformFriendsRequest {
 export interface PlatformFriendsResponse {
   /** Kagemura players among them (not blocked either way, not hidden from search). */
   players: PlayerCard[];
+}
+
+// ---------------------------------------------------------------- duels (roadmap step 62)
+
+/** Duel against the friend's village, or their duel layout if they set one. */
+export interface DuelTicketRequest {
+  friendId: string;
+  layout?: 'live' | 'duel';
+  /** Attack for a duel challenge (each side once). */
+  challengeId?: string;
+}
+export interface DuelTicketResponse {
+  ticket: string;
+  seed: number;
+  /** Their base, without loot (duels never pay). */
+  base: BaseLayout;
+  opponent: { id: string; name: string; keep: number };
+  /** Which layout this is. */
+  layout: 'live' | 'duel';
+  expiresAt: number;
+}
+
+/** Wins, best stars and best destruction as the attacker, both ways. */
+export interface RivalryView {
+  friendId: string;
+  duels: number;
+  wins: number;
+  bestStars: number;
+  bestDestruction: number;
+  theirDuels: number;
+  theirWins: number;
+  theirBestStars: number;
+  theirBestDestruction: number;
+}
+
+export interface DuelView {
+  id: string;
+  at: number;
+  /** 'attack': I attacked; 'defense': they attacked my base. */
+  side: 'attack' | 'defense';
+  opponent: { id: string; name: string };
+  challengeId?: string;
+  seed: number;
+  army: Record<string, number>;
+  levels: Record<string, number>;
+  base: BaseLayout;
+  deployments: Deployment[];
+  endTick?: number;
+  result: BattleResult;
+  rules: number;
+}
+export interface DuelsResponse {
+  duels: DuelView[];
+  rivalries: RivalryView[];
+}
+export interface DuelReportResponse {
+  duelId: string;
+  result: BattleResult;
+  rivalry: RivalryView;
+  challenge?: ChallengeView;
+}
+
+export interface DuelLayoutRequest {
+  base: BaseLayout | null;
+}
+
+/** A duel challenge: both attack each other within 24 h; more stars, then destruction, wins. */
+export interface ChallengeView {
+  id: string;
+  createdAt: number;
+  expiresAt: number;
+  opponent: { id: string; name: string };
+  /** I sent it. */
+  mine: boolean;
+  my: { stars: number; destruction: number } | null;
+  their: { stars: number; destruction: number } | null;
+  /** Decided when both attacked or time ran out. */
+  outcome: 'win' | 'loss' | 'draw' | null;
+}
+export interface ChallengesResponse {
+  challenges: ChallengeView[];
+}
+
+// ---------------------------------------------------------------- Gangs (roadmap step 63)
+
+export interface SquadMemberView {
+  id: string;
+  name: string;
+  keep: number;
+  honor: number;
+  role: 'leader' | 'member';
+  joinedAt: number;
+  lastSeen?: number;
+  you: boolean;
+}
+export interface SquadView {
+  id: string;
+  name: string;
+  members: SquadMemberView[];
+  /** Invites the leader sent that are still open. */
+  invited: { id: string; name: string; at: number }[];
+  max: number;
+  /** Gang Rating (step 66), shown as a number. */
+  rating: number;
+  /** Leaving or joining waits while a Gang War runs (the roster is locked). */
+  locked: boolean;
+}
+export interface SquadInviteView {
+  id: string;
+  at: number;
+  squad: { id: string; name: string; members: number };
+  from: { id: string; name: string };
+}
+export interface SquadResponse {
+  squad: SquadView | null;
+  invites: SquadInviteView[];
+  /** When this player may join a Gang again after leaving one (0: now). */
+  canJoinAt: number;
 }
 
 export interface PrivacyRequest {

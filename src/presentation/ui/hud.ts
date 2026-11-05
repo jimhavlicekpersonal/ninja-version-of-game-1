@@ -61,6 +61,8 @@ export interface HudDeps {
   onTrial(tier: number): void;
   /** Open a practice battle with this army (nothing spent or won). */
   onPractice(army: Record<string, number>): void;
+  /** A Friendly Duel (step 62). */
+  onDuel?(friendId: string, friendName: string, opts?: { layout?: 'live' | 'duel'; challengeId?: string }): void;
   prefs: { get(k: 'sessionReminder' | 'reminders' | 'crashReports'): boolean; set(k: 'sessionReminder' | 'reminders' | 'crashReports', v: boolean): void };
   /** This build sends crash reports (it has a Sentry DSN): show the switch. */
   crashReports?: boolean;
@@ -147,6 +149,8 @@ export class Hud {
       connection: this.deps.connection,
       shareBase: () => this.deps.friendLinkBase?.() ?? null,
       platform: this.deps.signIn,
+      onDuel: (id, name, opts) => this.deps.onDuel?.(id, name, opts),
+      onReplay: (r) => this.deps.onReplay(r),
       // Real raiders (never simulated ones) and Alliance mates.
       suggestions: () => [
         ...this.c.state.battleLog.filter((r) => r.kind === 'defense' && !r.simulated).map((r) => r.opponentName),

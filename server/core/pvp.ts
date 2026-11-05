@@ -349,7 +349,7 @@ export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleS
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission, engine: RulesEngine = ctx.rules.live): Promise<ResimOutcome> {
+export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel' | 'war', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission, engine: RulesEngine = ctx.rules.live): Promise<ResimOutcome> {
   let out: ResimOutcome;
   try {
     // Step 57: in a worker thread in production, so a long battle never stalls other requests.

@@ -9,6 +9,14 @@
 import type {
   AttackResponse,
   BalanceResponse,
+  ChallengesResponse,
+  ChallengeView,
+  DuelLayoutRequest,
+  DuelReportResponse,
+  DuelsResponse,
+  DuelTicketRequest,
+  DuelTicketResponse,
+  SquadResponse,
   FriendRequestBody,
   FriendRequestResult,
   FriendsResponse,
@@ -97,6 +105,25 @@ export interface IdentityPort {
   setPrivacy(req: PrivacyRequest): Promise<FriendsResponse>;
   /** Step 61: which of my platform friends play Kagemura. */
   platformFriends(req: PlatformFriendsRequest): Promise<PlatformFriendsResponse>;
+  /** Friendly Duels (step 62; feature `duels`). */
+  duelTicket(req: DuelTicketRequest): Promise<DuelTicketResponse>;
+  reportDuel(sub: BattleSubmission): Promise<DuelReportResponse>;
+  duels(since?: number): Promise<DuelsResponse>;
+  setDuelLayout(req: DuelLayoutRequest): Promise<void>;
+  challenge(friendId: string): Promise<ChallengeView>;
+  challenges(): Promise<ChallengesResponse>;
+  /** Gangs (step 63; feature `gangs`). */
+  squad(): Promise<SquadResponse>;
+  createSquad(name: string): Promise<SquadResponse>;
+  squadInvite(friendId: string): Promise<SquadResponse>;
+  answerSquadInvite(id: string, accept: boolean): Promise<SquadResponse>;
+  leaveSquad(): Promise<SquadResponse>;
+  squadLeader(playerId: string): Promise<SquadResponse>;
+  squadChat(after?: string): Promise<ChatResponse>;
+  postSquadChat(text: string): Promise<ChatView>;
+  squadRequests(): Promise<RequestsResponse>;
+  squadRequestTroops(capacity: number): Promise<RequestView>;
+  squadDonate(requestId: string, req: DonateRequest): Promise<DonateResponse>;
   /** Linked sign-ins (roadmap step 24). */
   links(): Promise<LinksResponse>;
   link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse>;

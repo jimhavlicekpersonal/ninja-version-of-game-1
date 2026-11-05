@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, FriendRequestBody, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -77,6 +77,57 @@ export class InProcessServerAdapter implements ServerPort {
   }
   unfriend(playerId: string) {
     return this.authed((me) => this.core.unfriend(me, playerId));
+  }
+  duelTicket(req: DuelTicketRequest) {
+    return this.authed((me) => this.core.duelTicket(me, wire(req)));
+  }
+  reportDuel(sub: BattleSubmission) {
+    return this.authed((me) => this.core.reportDuel(me, wire(sub)));
+  }
+  duels(since = 0) {
+    return this.authed((me) => this.core.duels(me, since));
+  }
+  async setDuelLayout(req: DuelLayoutRequest) {
+    await this.authed((me) => this.core.setDuelLayout(me, wire(req)));
+  }
+  challenge(friendId: string) {
+    return this.authed((me) => this.core.challenge(me, friendId));
+  }
+  challenges() {
+    return this.authed((me) => this.core.challenges(me));
+  }
+  squad() {
+    return this.authed((me) => this.core.squad(me));
+  }
+  createSquad(name: string) {
+    return this.authed((me) => this.core.createSquad(me, name));
+  }
+  squadInvite(friendId: string) {
+    return this.authed((me) => this.core.squadInvite(me, friendId));
+  }
+  answerSquadInvite(id: string, accept: boolean) {
+    return this.authed((me) => this.core.answerSquadInvite(me, id, accept));
+  }
+  leaveSquad() {
+    return this.authed((me) => this.core.leaveSquad(me));
+  }
+  squadLeader(playerId: string) {
+    return this.authed((me) => this.core.squadLeader(me, playerId));
+  }
+  squadChat(after?: string) {
+    return this.authed((me) => this.core.squadChat(me, after));
+  }
+  postSquadChat(text: string) {
+    return this.authed((me) => this.core.postSquadChat(me, text));
+  }
+  squadRequests() {
+    return this.authed((me) => this.core.squadRequests(me));
+  }
+  squadRequestTroops(capacity: number) {
+    return this.authed((me) => this.core.squadRequestTroops(me, capacity));
+  }
+  squadDonate(requestId: string, req: DonateRequest) {
+    return this.authed((me) => this.core.squadDonate(me, requestId, wire(req)));
   }
   platformFriends(req: PlatformFriendsRequest) {
     return this.authed((me) => this.core.platformFriends(me, wire(req)));

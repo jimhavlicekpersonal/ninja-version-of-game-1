@@ -455,6 +455,8 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .friends .friend-qr svg { width: min(200px, 60vw); height: auto; border-radius: 6px; }
 .friends label.row { gap: 8px; align-items: center; margin: 6px 0; }
 .chip.staff { margin-left: 6px; background: #26303d; color: #ffe08a; font-size: 11px; }
+.friends .chat { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; margin: 6px 0; }
+.friends .actions { margin-top: 14px; }
 .report-quote { margin: 0 0 8px; padding: 8px 12px; background: #fff; border-left: 4px solid var(--plum); border-radius: 8px; font-size: 14px; word-break: break-word; }
 .report-reasons { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 12px; margin: 8px 0; }
 .report-reason { display: flex; align-items: center; gap: 8px; min-height: 36px; font-size: 14px; cursor: pointer; }
