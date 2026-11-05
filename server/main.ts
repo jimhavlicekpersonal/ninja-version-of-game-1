@@ -30,12 +30,18 @@
  * - Game versions (roadmap steps 73, 75; docs/SHIPPING.md "Releasing a balance
  *   change"): RETIRED_RULES ("1,2": archived battle-rule versions no longer
  *   accepted) and MIN_CLIENT_BUILD ("1.2.0": older games are asked to update).
+ * - RESIM_WORKERS: re-simulation worker threads (step 57; default: CPU cores - 1,
+ *   at least 1; 0 runs battles on the main thread). RESIM_QUEUE (default 200)
+ *   battles may wait; more get 503 busy (the game retries).
  * - Balance bundles (step 76, docs/SHIPPING.md 3j): BALANCE_BUNDLE_FILE (a
  *   signed bundle made by tools/balance/bundle.mjs) and BALANCE_PUBLIC_KEY (the
  *   key games check it with). The server refuses to start with a bundle that
  *   does not check out.
  */
 import { monitorEventLoopDelay } from 'node:perf_hooks';
+import { availableParallelism } from 'node:os';
+import { Worker } from 'node:worker_threads';
+import { WorkerResimulator, type Resimulator } from './resim/resim';
 import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
 import type { SharedStores } from './nodeContext';
@@ -157,8 +163,21 @@ async function main(): Promise<void> {
   }
   // Battle rules (step 73): today's, plus archived versions still in use by older games.
   const rules = new RulesRegistry(liveEngine(data), { archived: ARCHIVED_ENGINES.map((e) => e()), retired: parseRetired(process.env.RETIRED_RULES), minClientBuild: process.env.MIN_CLIENT_BUILD });
-  shared = { ...shared, payments, push, rules, balance };
-  console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
+  // Re-simulation off the main thread (step 57): the same engines in each worker.
+  const workers = process.env.RESIM_WORKERS !== undefined ? Math.max(0, Number(process.env.RESIM_WORKERS) || 0) : Math.max(1, availableParallelism() - 1);
+  let resim: Resimulator | undefined;
+  if (workers > 0) {
+    const pool = new WorkerResimulator({
+      size: workers,
+      maxQueue: Number(process.env.RESIM_QUEUE) || 200,
+      spawn: () => new Worker(new URL('./resimWorker.js', import.meta.url), { workerData: { data } }) as never,
+      log: (lvl, msg, f) => console[lvl](msg, f ?? {}),
+    });
+    metrics.gauge('tk_resim_queue', () => [{ labels: {}, value: pool.queued }]);
+    resim = pool;
+  }
+  shared = { ...shared, payments, push, rules, balance, resim };
+  console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Re-simulation workers: ${workers || 'none (main thread)'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
     repo,

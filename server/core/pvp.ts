@@ -17,6 +17,7 @@ import type { GameData, ResourceKind } from '../../src/gameplay/sim/types';
 import type { AttackResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Ticket } from '../repo';
 import type { ClientInfo, RulesEngine } from '../rules/registry';
+import { ResimBusyError, type ResimOutcome } from '../resim/resim';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 
@@ -348,11 +349,21 @@ export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleS
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission, engine: RulesEngine = ctx.rules.live): ReturnType<typeof runBattle> {
-  const t0 = performance.now();
-  const out = engine.runBattle(setup, deployments, engine.data, sub.endTick);
+export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission, engine: RulesEngine = ctx.rules.live): Promise<ResimOutcome> {
+  let out: ResimOutcome;
+  try {
+    // Step 57: in a worker thread in production, so a long battle never stalls other requests.
+    out = await ctx.resim.run(engine, setup, deployments, sub.endTick);
+  } catch (e) {
+    if (e instanceof ResimBusyError) {
+      ctx.metrics.count('tk_resim_busy_total', { kind });
+      throw new ApiError(503, 'busy', e.message);
+    }
+    throw e;
+  }
   const rules = String(engine.rules);
-  ctx.metrics.observe('tk_resim_ms', performance.now() - t0, { kind });
+  ctx.metrics.observe('tk_resim_ms', out.ms, { kind });
+  ctx.metrics.observe('tk_resim_wait_ms', out.waitMs, { kind });
   ctx.metrics.count('tk_battles_total', { kind, rules });
   if (typeof sub.clientHash === 'string' && sub.clientHash !== out.result.hash) {
     ctx.metrics.count('tk_desyncs_total', { kind, rules });
@@ -394,7 +405,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { sim, result } = resimulate(ctx, 'pvp', setup, deployments, sub, engine);
+  const { result, fallen } = await resimulate(ctx, 'pvp', setup, deployments, sub, engine);
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);
@@ -432,7 +443,6 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       await tx.updatePlayer(defender.id, defPatch);
       // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: me.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
-      const fallen = sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...b.loot } }));
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
       await tx.addAttack({ id: attackId, at: t, attackerId: me.id, attackerName: me.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
     }

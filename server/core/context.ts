@@ -15,6 +15,8 @@ export interface ServerContext {
   data: GameData;
   /** Battle-rule versions this server can check (roadmap step 73). */
   rules: RulesRegistry;
+  /** Where battles are re-simulated: worker threads in production (step 57), in place otherwise. */
+  resim: import('../resim/resim').Resimulator;
   /** The signed balance bundle in force (step 76; `data` already has its numbers), or null. */
   balance: import('../../src/backend/net/balanceBundle').BalanceBundle | null;
   now(): number;

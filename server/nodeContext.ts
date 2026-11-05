@@ -10,6 +10,7 @@ import type { AppleVerifier } from './payments/apple';
 import type { GoogleVerifier } from './payments/google';
 import { noPush, type Pusher } from './push/push';
 import { liveEngine, RulesRegistry } from './rules/registry';
+import { InlineResimulator, type Resimulator } from './resim/resim';
 
 /**
  * Optional shared stores (Redis, roadmap step 16; without them the database
@@ -25,6 +26,8 @@ export interface SharedStores {
   log?: (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
   /** Battle-rule versions (step 73); defaults to today's rules only. */
   rules?: RulesRegistry;
+  /** Re-simulation (step 57): a worker pool in production; in place by default. */
+  resim?: Resimulator;
   /** The signed balance bundle served at /v1/balance (step 76); `data` must already carry its numbers. */
   balance?: import('../src/backend/net/balanceBundle').BalanceBundle | null;
 }
@@ -34,6 +37,7 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     repo,
     data,
     rules: shared.rules ?? new RulesRegistry(liveEngine(data)),
+    resim: shared.resim ?? new InlineResimulator(),
     balance: shared.balance ?? null,
     board: shared.board ?? new RepoLeaderboard(repo),
     locks: shared.locks ?? new TicketLocks(),

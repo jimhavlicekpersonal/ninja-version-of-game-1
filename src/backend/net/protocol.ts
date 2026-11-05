@@ -67,7 +67,9 @@ export type ErrorCode =
   /** 409: that name belongs to someone else (or is held for its previous owner); `suggestions` lists free ones. */
   | 'name_taken'
   /** 429: one name change per 28 days; the message says when the next one is free. */
-  | 'name_cooldown';
+  | 'name_cooldown'
+  /** 503: the server is too busy to check a battle right now (step 57); retried like any server error. */
+  | 'busy';
 
 export interface ErrorBody {
   error: ErrorCode;

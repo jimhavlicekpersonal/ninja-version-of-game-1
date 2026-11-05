@@ -338,7 +338,7 @@ Makes balance, combat and data changes safe while old app builds are still in us
 - [ ] 54. Weekly review: economy, rating convergence, desync rate, refund rate; rebalance through the data files.
 - [ ] 55. Seasons: Honor reset, league chests, leaderboard archive.
 - [ ] 56. Moderation, support, account-deletion requests within legal time limits.
-- [ ] 57. Scale when needed: re-sim worker pool, read replica, partition `attacks`, replays to object storage. (The worker pool is needed early: step 18 measured up to ~0.45 s per late-Keep re-sim, which blocks an instance's event loop.)
+- [x] 57. Scale when needed: re-sim worker pool, read replica, partition `attacks`, replays to object storage. (The worker pool is needed early: step 18 measured up to ~0.45 s per late-Keep re-sim, which blocks an instance's event loop.) **Done (worker pool):** `server/resim/` (`WorkerResimulator`: worker threads with the same rule engines, one battle each, a queue capped by `RESIM_QUEUE`, `503 busy` when full, a stuck or crashed worker replaced; `RESIM_WORKERS`, default CPU cores − 1; `dist-server/resimWorker.js`). Load test on a 4-core machine at 8 battles/s: main thread only 5.5/s, opponent search p50 1,172 ms, attack p50 1,241 ms, 51 errors; with 3 workers 7.96/s, 4 ms, 199 ms, no errors. Tests: `tests/backend/server/resim.test.ts` (real worker threads built from the bundle give the same results; the main loop stays free). Read replica, partitioning `attacks` and replays in object storage stay for real scale (owner hosting).
 - [ ] 58. Rotate keys yearly; renew Apple membership; keep up with yearly SDK and target deadlines.
 
 ### Phase 9: Friends and Gangs (~6–9 weeks) [Code, design in section 5]
