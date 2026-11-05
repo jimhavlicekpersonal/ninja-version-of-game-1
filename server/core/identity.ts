@@ -1,4 +1,4 @@
-import { filterText } from '../../src/gameplay/sim/social/grove';
+import { censorText } from '../../src/gameplay/sim/social/grove';
 import { NAME_ERROR_TEXT, checkName } from '../../src/gameplay/sim/social/names';
 import { PROTOCOL_VERSION, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
@@ -13,14 +13,14 @@ export function hello(ctx: ServerContext): HelloResponse {
 /** A usable name from anything a client sends: never fails (registration falls back to 'Ruler'). */
 export function cleanName(raw: unknown, ctx: ServerContext): string {
   const c = checkName(raw);
-  return c.error ? 'Ruler' : filterText(c.name, ctx.data);
+  return c.error ? 'Ruler' : censorText(c.name, ctx.data);
 }
 
 /** A name the player chose: refused with a reason when it can't be used (src/gameplay/sim/social/names.ts). */
 export function chosenName(raw: unknown, ctx: ServerContext): string {
   const c = checkName(raw);
   if (c.error) throw new ApiError(400, 'bad_request', NAME_ERROR_TEXT[c.error]);
-  return filterText(c.name, ctx.data);
+  return censorText(c.name, ctx.data);
 }
 
 export async function register(ctx: ServerContext, name: unknown): Promise<RegisterResponse> {

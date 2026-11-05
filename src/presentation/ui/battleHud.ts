@@ -1,3 +1,4 @@
+import { isolateName } from '../../gameplay/sim/social/names';
 import type { BattleSession } from '../../gameplay/control/battleSession';
 import type { BattleHooks } from '../render/BattleScene';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
@@ -71,16 +72,16 @@ export class BattleHud {
     const left = h(
       'div',
       { class: 'panel b-left' },
-      h('div', { class: 'b-name' }, baseName, h('span', { class: 'level' }, `Lv ${this.s.setup.base.hallLevel}`)),
+      h('div', { class: 'b-name' }, h('bdi', {}, baseName), h('span', { class: 'level' }, `Lv ${this.s.setup.base.hallLevel}`)),
       h(
         'div',
         { class: 'muted small' },
         this.s.mode === 'replay'
           ? deps.replayOf?.kind === 'defense'
-            ? `Replay: ${deps.replayOf.opponentName} attacks · loot taken`
+            ? `Replay: ${isolateName(deps.replayOf.opponentName)} attacks · loot taken`
             : 'Replay · loot won'
           : deps.grove
-            ? `Alliance War vs ${deps.grove.enemyName}`
+            ? `Alliance War vs ${isolateName(deps.grove.enemyName)}`
             : deps.trial
               ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
               : deps.practice

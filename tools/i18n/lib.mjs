@@ -191,10 +191,53 @@ export function scriptShare(texts, script) {
   return total ? hit / total : 1;
 }
 
-/**
- * Problems in one language. Errors fail `npm run i18n:check` and the test;
- * warnings are for the translator to review.
- */
+/** Validate one parsed worksheet without touching the filesystem. */
+export function checkWorksheet(lang, ns, src, ws) {
+  const errors = [];
+  const warnings = [];
+  const translated = [];
+  const total = Object.keys(src).length;
+  let done = 0;
+  if (!ws || typeof ws !== 'object' || Array.isArray(ws)) {
+    return { total, done, errors: [`${ns}: worksheet must be an object`], warnings, translated };
+  }
+  for (const k of Object.keys(ws)) if (!Object.hasOwn(src, k)) errors.push(`${ns}: ${k} is not in English (run npm run i18n:sync)`);
+  for (const [k, en] of Object.entries(src)) {
+    if (!Object.hasOwn(ws, k)) {
+      errors.push(`${ns}: ${k} missing (run npm run i18n:sync)`);
+      continue;
+    }
+    const e = ws[k];
+    if (!e || typeof e !== 'object' || Array.isArray(e)) {
+      errors.push(`${ns}: ${k} must be an entry object`);
+      continue;
+    }
+    if (e.en !== en) errors.push(`${ns}: ${k} has stale English (run npm run i18n:sync)`);
+    const t = e.text;
+    if (typeof t !== 'string') {
+      errors.push(`${ns}: ${k} text is not a string`);
+      continue;
+    }
+    if (!t) continue;
+    done++;
+    translated.push(t);
+    if (placeholders(t) !== placeholders(en)) errors.push(`${ns}: ${k} placeholders ${placeholders(t) || 'none'} must be ${placeholders(en) || 'none'}`);
+    if (t !== t.trim()) errors.push(`${ns}: ${k} has leading or trailing spaces`);
+    if (t.includes('\n') && !en.includes('\n')) errors.push(`${ns}: ${k} has a line break the English does not`);
+    if (/[<>]/.test(t) && !/[<>]/.test(en)) errors.push(`${ns}: ${k} contains < or >`);
+    if (t !== t.normalize('NFC')) errors.push(`${ns}: ${k} is not NFC-normalized`);
+    // ZWJ/ZWNJ are spelling characters in Indic/Arabic scripts. Refuse the
+    // other invisible controls, including CGJ, fillers and stray selectors.
+    const visible = t.replace(/[\u200C\u200D]/g, '').replace(/(\p{Extended_Pictographic}|[0-9#*])[\uFE0E\uFE0F]/gu, '$1');
+    if (/[\p{Default_Ignorable_Code_Point}\p{Cc}]/u.test(visible.replace(/\n/g, ''))) errors.push(`${ns}: ${k} contains invisible direction or control characters`);
+    if (t === en && /\p{L}/u.test(en)) warnings.push(`${ns}: ${k} is identical to English`);
+    if (SCRIPT[lang.script] && t !== en && scriptShare([t], lang.script) < 0.7) warnings.push(`${ns}: ${k} mostly uses a different script`);
+    if (t.length > en.length * 2.5 + 8) warnings.push(`${ns}: ${k} is ${(t.length / en.length).toFixed(1)}x the English length`);
+  }
+  return { total, done, errors, warnings, translated };
+}
+
+/** Problems in a language; errors fail the CLI and tests, warnings need review. */
 export function checkLanguage(lang) {
   const errors = [];
   const warnings = [];
@@ -204,37 +247,25 @@ export function checkLanguage(lang) {
   if (!SCRIPT[lang.script]) errors.push(`unknown script ${lang.script}`);
   for (const ns of namespaces()) {
     const src = source(ns);
-    const ws = worksheet(lang.code, ns);
+    let ws;
+    try {
+      ws = worksheet(lang.code, ns);
+    } catch (e) {
+      total += Object.keys(src).length;
+      errors.push(`${ns}: cannot read worksheet: ${e.message}`);
+      continue;
+    }
     if (!existsSync(worksheetPath(lang.code, ns))) {
+      total += Object.keys(src).length;
       errors.push(`${ns}: no worksheet (run npm run i18n:sync)`);
       continue;
     }
-    for (const k of Object.keys(ws)) if (!(k in src)) errors.push(`${ns}: ${k} is not in English (run npm run i18n:sync)`);
-    for (const [k, en] of Object.entries(src)) {
-      total++;
-      const e = ws[k];
-      if (!e) {
-        errors.push(`${ns}: ${k} missing (run npm run i18n:sync)`);
-        continue;
-      }
-      if (e.en !== en) errors.push(`${ns}: ${k} has stale English (run npm run i18n:sync)`);
-      const t = e.text ?? '';
-      if (typeof t !== 'string') {
-        errors.push(`${ns}: ${k} text is not a string`);
-        continue;
-      }
-      if (!t) continue;
-      done++;
-      translated.push(t);
-      if (placeholders(t) !== placeholders(en)) errors.push(`${ns}: ${k} placeholders ${placeholders(t) || 'none'} must be ${placeholders(en) || 'none'}`);
-      if (t !== t.trim()) errors.push(`${ns}: ${k} has leading or trailing spaces`);
-      if (t.includes('\n') && !en.includes('\n')) errors.push(`${ns}: ${k} has a line break the English does not`);
-      if (/[<>]/.test(t) && !/[<>]/.test(en)) errors.push(`${ns}: ${k} contains < or >`);
-      if (t !== t.normalize('NFC')) errors.push(`${ns}: ${k} is not NFC-normalized`);
-      if (/[‪-‮⁦-⁩​﻿]/.test(t)) errors.push(`${ns}: ${k} contains invisible direction or zero-width characters`);
-      if (lang.script !== 'Latn' && t === en && en.length > 3) warnings.push(`${ns}: ${k} is identical to English`);
-      if (t.length > en.length * 2.5 + 8) warnings.push(`${ns}: ${k} is ${(t.length / en.length).toFixed(1)}x the English length`);
-    }
+    const result = checkWorksheet(lang, ns, src, ws);
+    total += result.total;
+    done += result.done;
+    errors.push(...result.errors);
+    warnings.push(...result.warnings);
+    translated.push(...result.translated);
   }
   if (translated.length >= 20 && SCRIPT[lang.script]) {
     const share = scriptShare(translated, lang.script);

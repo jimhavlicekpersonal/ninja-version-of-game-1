@@ -19,6 +19,8 @@
  *   so a full-width name fits the same space as a Latin one.
  */
 
+import { splitGraphemes } from 'unicode-segmenter/grapheme';
+
 /** Display width limits (a Latin letter is 1, a CJK character 2). */
 export const NAME_MIN_WIDTH = 2;
 export const NAME_MAX_WIDTH = 24;
@@ -45,7 +47,18 @@ const SCRIPTS = [
   'Telugu', 'Kannada', 'Malayalam', 'Sinhala', 'Ol_Chiki', 'Meetei_Mayek', 'Thai', 'Lao', 'Tibetan', 'Myanmar',
   'Khmer', 'Mongolian', 'Javanese', 'Balinese', 'Sundanese', 'Tai_Viet', 'Han', 'Hiragana', 'Katakana', 'Bopomofo',
   'Hangul', 'Yi', 'Lisu', 'Canadian_Aboriginal', 'Cherokee', 'Osage',
-].map((s) => [s, new RegExp(`\\p{Script=${s}}`, 'u')] as const);
+  'Hanifi_Rohingya', 'Chakma', 'Lepcha', 'Limbu', 'Tai_Tham', 'Tai_Le', 'New_Tai_Lue', 'Buginese',
+  'Batak', 'Cham', 'Kayah_Li', 'Saurashtra', 'Syloti_Nagri', 'Tagalog', 'Hanunoo', 'Buhid', 'Tagbanwa',
+  'Rejang', 'Mro', 'Bassa_Vah', 'Mende_Kikakui', 'Warang_Citi', 'Pahawh_Hmong', 'Pau_Cin_Hau',
+  'Miao', 'Newa', 'Masaram_Gondi', 'Gunjala_Gondi', 'Makasar', 'Wancho', 'Dives_Akuru', 'Tangsa', 'Toto',
+].flatMap((s) => {
+  try {
+    return [[s, new RegExp(`\\p{Script=${s}}`, 'u')] as const];
+  } catch {
+    // Older Unicode engines may not know newer scripts. They must still boot.
+    return [];
+  }
+});
 
 /** Letters whose script is "Common" but that belong in names: the kana long-vowel mark and Arabic tatweel. */
 const COMMON_LETTERS = new Map([
@@ -66,6 +79,7 @@ const MARK = /\p{M}/u;
 const DIGIT = /\p{Nd}/u;
 const EMOJI = /[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}]/u;
 const EMOJI_PART = /[️⃣\u{1F3FB}-\u{1F3FF}]/u;
+const IGNORABLE = /\p{Default_Ignorable_Code_Point}/u;
 const WIDE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Bopomofo}\p{Script=Hangul}\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}゠-ヿㇰ-ㇿ　-〿]/u;
 
 function scriptOf(ch: string): string | null {
@@ -80,6 +94,10 @@ const isEmojiish = (ch: string | undefined) => !!ch && (EMOJI.test(ch) || EMOJI_
 /** Is `ch` (at position i of chars) a character a name may keep? */
 function keep(chars: string[], i: number): boolean {
   const ch = chars[i];
+  // Some invisible fillers are letters or marks, so test before those categories.
+  // Joiners are handled below; emoji presentation selectors need an emoji base.
+  if (ch === '\uFE0E' || ch === '\uFE0F') return isEmojiish(chars[i - 1]) || /[0-9#*]/.test(chars[i - 1] ?? '');
+  if (IGNORABLE.test(ch) && ch !== ZWJ && ch !== ZWNJ) return false;
   if (ch === ' ') return true;
   if (PUNCTUATION.has(ch)) return true;
   if (LETTER.test(ch)) return scriptOf(ch) !== null;
@@ -98,16 +116,15 @@ function keep(chars: string[], i: number): boolean {
   return false;
 }
 
-const segmenter: { segment(s: string): Iterable<{ segment: string }> } | null =
-  typeof Intl !== 'undefined' && 'Segmenter' in Intl ? new (Intl as unknown as { Segmenter: new (l?: string, o?: object) => { segment(s: string): Iterable<{ segment: string }> } }).Segmenter(undefined, { granularity: 'grapheme' }) : null;
-
-function graphemes(s: string): string[] {
-  return segmenter ? Array.from(segmenter.segment(s), (g) => g.segment) : Array.from(s);
-}
+// Use one pinned UAX #29 implementation on every phone and server. Intl.Segmenter
+// is missing on older phones and its Unicode version varies between runtimes.
+const graphemes = splitGraphemes;
 
 /** Width of a name as the game measures it (CJK and emoji 2, others 1 per character). */
 export function nameWidth(s: string): number {
-  return graphemes(s).reduce((w, g) => w + (WIDE.test(g) && !/[｡-ﾟ]/.test(g) ? 2 : 1), 0);
+  let width = 0;
+  for (const g of graphemes(s)) width += WIDE.test(g) && !/[｡-ﾟ]/.test(g) ? 2 : 1;
+  return width;
 }
 
 /** Clean a name without judging it: safe characters only, normalised, cut to the width limit. */
@@ -124,17 +141,26 @@ export function sanitizeName(raw: unknown): string {
   let width = 0;
   let out = '';
   for (let g of graphemes(s)) {
-    const marks = Array.from(g).filter((c) => MARK.test(c));
-    if (marks.length > MAX_MARKS) {
-      let n = 0;
-      g = Array.from(g).filter((c) => !MARK.test(c) || ++n <= MAX_MARKS).join('');
+    // Orphan marks can attach to surrounding UI or pad a one-letter name.
+    if (!/[\p{L}\p{Nd}\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}]/u.test(g)) {
+      g = Array.from(g).filter((c) => !MARK.test(c) && !EMOJI_PART.test(c)).join('');
     }
+    // A conjunct can contain many letters, each with its own marks. Count per
+    // base character, including marks inside precomposed letters, not per cluster.
+    let marks = 0;
+    g = Array.from(g.normalize('NFD')).filter((c) => {
+      if (MARK.test(c)) return ++marks <= MAX_MARKS;
+      if (LETTER.test(c) || DIGIT.test(c) || EMOJI.test(c)) marks = 0;
+      return true;
+    }).join('').normalize('NFC');
     const w = nameWidth(g);
     if (width + w > NAME_MAX_WIDTH) break;
     width += w;
     out += g;
   }
-  return out.trim();
+  // Truncation may remove the letter after a spelling joiner.
+  const finalChars = Array.from(out.trim().normalize('NFC'));
+  return finalChars.filter((c, i) => (c !== ZWJ && c !== ZWNJ) || keep(finalChars, i)).join('');
 }
 
 /** The scripts a name's letters and non-ASCII digits use. */

@@ -136,4 +136,20 @@ describe('server HTTP adapter', () => {
     expect((await s.call('GET', Routes.groveRaid, a.token)).body.phase).toBeTruthy();
     expect((await s.call('POST', Routes.groveLeave, b.token)).status).toBe(204);
   });
+
+  it('refuses invisible-only names and keeps native-script names intact end to end', async () => {
+    const s = setup();
+    const a = await s.register('\u1160\u1160');
+    expect((await s.call('GET', Routes.me, a.token)).body.name).toBe('Ruler');
+    expect((await s.call('PUT', Routes.me, a.token, { name: '\u0301a' })).status).toBe(400);
+    expect((await s.call('POST', Routes.groves, a.token, { name: '\u1160\u1160' })).status).toBe(400);
+    // 24 visible clusters, over 160 code points. Chat's limit must not truncate names.
+    const name = ('क्'.repeat(4) + 'क').repeat(24);
+    expect((await s.call('PUT', Routes.me, a.token, { name })).body.name).toBe(name);
+    const g = await s.call('POST', Routes.groves, a.token, { name: 'قرية الظل' });
+    expect(g.status).toBe(201);
+    expect(g.body.name).toBe('قرية الظل');
+    const chat = await s.call('GET', Routes.groveChat, a.token);
+    expect(chat.body.messages[0].text).toContain('⁨قرية الظل⁩');
+  });
 });

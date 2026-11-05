@@ -42,3 +42,5 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 ## After changing numbers
 
 `npm test`, `npm run balance:armies` for combat changes (equal-housing armies × Keeps × layouts → `docs/game-theory/ARMY_BALANCE.md`), `npm run balance:campaign` for pacing and late-game raids (→ `docs/game-theory/CAMPAIGN.md`), then `npm run docs:progression` to regenerate `docs/game-theory/ROSTER.md` and the icon manifest. Research/training curves: `node tools/progression/pacing.mjs`; a role's budget: `node tools/progression/rolecut.mjs`; a measured per-warrior DPS tax: `dpsScale` in `roster.json` plus the matching live damage.
+
+- `sim/social/names.ts`: shared name validation. Grapheme segmentation comes from pinned `unicode-segmenter/grapheme` so older phones without `Intl.Segmenter` use the server’s rules. Marks are capped per base character, including decomposed accents; legitimate Indic conjuncts are preserved. `filterText` limits chat to 160 code points; `censorText` moderates names without that chat limit.

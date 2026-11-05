@@ -59,6 +59,7 @@ function status() {
 
 function check() {
   const want = new Set(args);
+  if (!validCodes(want)) return;
   let failed = 0;
   for (const lang of targets().filter((l) => !want.size || want.has(l.code))) {
     const r = checkLanguage(lang);
@@ -77,23 +78,38 @@ function check() {
 
 function next() {
   const code = args[0];
+  if (code && !validCodes(new Set([code]))) return;
   const lang = targets().find((l) => (code ? l.code === code : (() => { const r = checkLanguage(l); return r.done < r.total || r.errors.length; })()));
   if (!lang) return console.log('All languages complete.');
+  const result = checkLanguage(lang);
+  for (const e of result.errors) console.log(`  error: ${e}`);
   console.log(`${lang.code}: ${lang.name} (${lang.native}), script ${lang.script}, ${lang.dir}${lang.note ? `\nNote: ${lang.note}` : ''}`);
   const limit = Number(args[1]) || 40;
   let shown = 0;
   let left = 0;
   for (const ns of namespaces()) {
-    for (const [k, e] of Object.entries(worksheet(lang.code, ns))) {
-      if (e.text) continue;
+    let ws;
+    try { ws = worksheet(lang.code, ns); } catch { continue; }
+    for (const [k, en] of Object.entries(source(ns))) {
+      const e = ws?.[k];
+      if (e?.text && e.en === en) continue;
       left++;
       if (shown < limit) {
-        console.log(`  ${ns}  ${k}: ${JSON.stringify(e.en)}${e.old ? `   (old: ${JSON.stringify(e.old)})` : ''}`);
+        console.log(`  ${ns}  ${k}: ${JSON.stringify(en)}${e?.old ? `   (old: ${JSON.stringify(e.old)})` : ''}`);
         shown++;
       }
     }
   }
   console.log(`\n${left} untranslated in locales/${lang.code}/. Fill "text" in place, then: npm run i18n:check -- ${lang.code}`);
+}
+
+function validCodes(codes) {
+  const known = new Set(targets().map((l) => l.code));
+  const unknown = [...codes].filter((c) => !known.has(c));
+  if (!unknown.length) return true;
+  console.error(`Unknown target language(s): ${unknown.join(', ')}. Use a code from npm run i18n:status.`);
+  process.exitCode = 1;
+  return false;
 }
 
 const commands = { extract, sync, status, check, next };

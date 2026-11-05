@@ -4,9 +4,10 @@
  * && npm run i18n:sync`, or when a translation breaks a placeholder or script rule.
  */
 import { existsSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { LOCALES, checkLanguage, extractData, formatSource, languages, scriptShare, syncWorksheet, targets } from '../../tools/i18n/lib.mjs';
+import { ROOT, LOCALES, checkLanguage, checkWorksheet, extractData, formatSource, languages, scriptShare, syncWorksheet, targets } from '../../tools/i18n/lib.mjs';
 
 describe('locales', () => {
   it('ships 50 distinct languages, including every App Store language family and six African ones', () => {
@@ -56,5 +57,36 @@ describe('locales', () => {
     expect(scriptShare(['忍者の村', '{n}枚のコイン'], 'Jpan')).toBe(1);
     expect(scriptShare(['Collect {n} Coins'], 'Arab')).toBe(0);
     expect(scriptShare(['اجمع {n} عملة'], 'Arab')).toBe(1);
+  });
+});
+
+
+describe('translation validation regressions', () => {
+  const lang = targets().find((l) => l.code === 'es')!;
+  const src = { a: 'Collect {n} Coins' };
+  it('rejects malformed entries without throwing or treating them as empty', () => {
+    for (const ws of [null, [], { a: null }, { a: 42 }, { a: { en: src.a } }, { a: { en: src.a, text: null } }]) {
+      const r = checkWorksheet(lang, 'data', src, ws);
+      expect(r.total).toBe(1);
+      expect(r.errors.length).toBeGreaterThan(0);
+    }
+  });
+  it('checks placeholders, invisible characters and unchanged Latin-script text', () => {
+    const check = (text: string) => checkWorksheet(lang, 'data', src, { a: { en: src.a, text } });
+    expect(check('Recoge monedas').errors.join()).toContain('placeholders');
+    for (const hidden of ['\u0000', '\u034f', '\u1160', '\u202e', '\u2067', '\u200b']) {
+      expect(check(`Recoge {n} monedas${hidden}`).errors.join()).toContain('invisible');
+    }
+    expect(check(src.a).warnings.join()).toContain('identical to English');
+    expect(check('Recoge {n} monedas').errors).toEqual([]);
+    expect(check('اجمع {n} عملة می‌خواهم').errors).toEqual([]); // ZWNJ can be needed in spelling
+  });
+  it('rejects unknown language selections instead of reporting a successful check', () => {
+    for (const command of ['check', 'next']) {
+      const r = spawnSync(process.execPath, ['tools/i18n/i18n.mjs', command, 'not-a-language'], { cwd: ROOT, encoding: 'utf8' });
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain('Unknown target language');
+      expect(r.stdout).not.toContain('All languages complete');
+    }
   });
 });

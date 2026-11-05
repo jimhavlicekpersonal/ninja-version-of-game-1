@@ -77,9 +77,15 @@ export function groveLevel(xp: number, data: GameData): number {
 
 /** Replace blocked words with flowers. Chat is always filtered. */
 export function filterText(text: string, data: GameData): string {
-  let out = Array.from(text).slice(0, 160).join('');
+  return censorText(Array.from(text).slice(0, 160).join(''), data);
+}
+
+/** Censor without chat's length limit: names already have a grapheme width cap. */
+export function censorText(text: string, data: GameData): string {
+  let out = text.normalize('NFC');
   for (const word of data.social.profanity) {
-    const body = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+');
+    if (!word.trim()) continue;
+    const body = word.normalize('NFC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+');
     // Word edges in every script; scripts written without spaces (Chinese, Japanese, Thai…) match anywhere.
     const unspaced = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u.test(word);
     const re = unspaced ? new RegExp(body, 'giu') : new RegExp(`(^|[^\\p{L}\\p{M}\\p{N}_])(${body})(?=$|[^\\p{L}\\p{M}\\p{N}_])`, 'giu');

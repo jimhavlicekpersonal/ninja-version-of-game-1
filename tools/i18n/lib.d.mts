@@ -28,4 +28,5 @@ export function formatWorksheet(map: Record<string, Entry>): string;
 export function writeSource(ns: string, map: Record<string, string>): void;
 export function syncWorksheet(src: Record<string, string>, ws: Record<string, Entry>): { worksheet: Record<string, Entry>; added: number; changed: number; removed: number };
 export function scriptShare(texts: string[], script: string): number;
+export function checkWorksheet(lang: Language, ns: string, src: Record<string, string>, ws: unknown): { total: number; done: number; errors: string[]; warnings: string[]; translated: string[] };
 export function checkLanguage(lang: Language): { code: string; total: number; done: number; errors: string[]; warnings: string[] };

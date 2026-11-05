@@ -22,7 +22,7 @@ function walk(dir: string): string[] {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) out = out.concat(walk(p));
-    else if (/\.ts$/.test(name)) out.push(p);
+    else if (/\.(?:ts|js|mjs)$/.test(name)) out.push(p);
   }
   return out;
 }
@@ -45,7 +45,7 @@ function owner(file: string): string | null {
 
 function resolveImport(fromAbs: string, spec: string): string | null {
   const base = normalize(join(dirname(fromAbs), spec.replace(/\?.*$/, '')));
-  for (const cand of [base, `${base}.ts`, join(base, 'index.ts')]) {
+  for (const cand of [base, `${base}.ts`, `${base}.js`, `${base}.mjs`, join(base, 'index.ts')]) {
     try {
       if (statSync(cand).isFile()) return rel(cand);
     } catch {
@@ -56,7 +56,7 @@ function resolveImport(fromAbs: string, spec: string): string | null {
 }
 
 const IMPORT = /(?:from|import)\s*\(?\s*['"](\.{1,2}\/[^'"]+)['"]/g;
-const sources = [...walk(join(ROOT, 'src')), ...walk(join(ROOT, 'server'))];
+const sources = ['src', 'server', 'locales', 'tools/i18n'].flatMap((p) => walk(join(ROOT, p)));
 
 describe('compartment boundaries', () => {
   it('every source file belongs to exactly one compartment', () => {
@@ -81,7 +81,7 @@ describe('compartment boundaries', () => {
           violations.push(`${from} -> ${target} (${fromId} may not import ${toId})`);
           continue;
         }
-        if (toC.contracts !== '*' && !toC.contracts.includes(target)) {
+        if (toC.contracts !== '*' && !toC.contracts.some((p) => target === p || target.startsWith(p + '/'))) {
           violations.push(`${from} -> ${target} (not a contract file of ${toId})`);
         }
       }

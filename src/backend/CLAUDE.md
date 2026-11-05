@@ -27,3 +27,5 @@ You are the **BACKEND AI**. You own `src/backend/` (net, social, payments, platf
 ## Checks
 
 `npm test` (server tests use memory; set `TEST_DATABASE_URL` for Postgres), `npm run typecheck:server`, `npm run server:build`, `CONTRACT_URL=… npm run test:contract` against a deployed server.
+
+Names use the shared `sim/social/names.ts` validator. Apply `censorText` after validation, never chat’s `filterText` limit: a valid 24-grapheme Indic name can exceed 160 code points. Isolate names when constructing system messages or appending labels such as `(you)`.

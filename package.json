@@ -44,7 +44,8 @@
     "@capacitor/local-notifications": "^8.3.1",
     "fastify": "^5.12.7",
     "pg": "^8.23.1",
-    "phaser": "^3.90.0"
+    "phaser": "^3.90.0",
+    "unicode-segmenter": "0.17.3"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0",

@@ -3,6 +3,7 @@
  * actions; it does not know whether the Grove is the offline bot Grove
  * (LocalGroveSource) or a real Grove on a server (RemoteGroveSource).
  */
+import { isolateName } from '../../gameplay/sim/social/names';
 import type { BattleRecord, BattleSetup, Deployment } from '../../gameplay/sim/battle/types';
 import type { Connection } from '../net/connection';
 import { ServerError } from '../net/ports';
@@ -338,7 +339,7 @@ export class RemoteGroveSource implements GroveSource {
       level: groveLevel(s.grove.xp, gd),
       xp: s.grove.xp,
       maxMembers: g?.maxMembers ?? gd.social.membersMax,
-      members: (g?.members ?? []).map((m) => ({ id: m.id, name: m.id === meId ? `${m.name} (you)` : m.name, role: m.role, hall: m.hallLevel, trophies: m.trophies, online: m.id === meId || now - m.lastSeenAt < ONLINE_WINDOW_MS, you: m.id === meId })),
+      members: (g?.members ?? []).map((m) => ({ id: m.id, name: m.id === meId ? `${isolateName(m.name)} (you)` : m.name, role: m.role, hall: m.hallLevel, trophies: m.trophies, online: m.id === meId || now - m.lastSeenAt < ONLINE_WINDOW_MS, you: m.id === meId })),
       chat: this.chatRows.map((m) => ({ id: m.id, who: m.from ? (m.from.id === meId ? 'You' : m.from.name) : '', mine: m.from?.id === meId, text: m.text, at: m.at, kind: m.kind })),
       requests: this.reqs.filter((r) => !r.mine).map((r) => ({ id: r.id, name: r.name, size: r.size, filled: r.filled })),
       ask,

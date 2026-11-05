@@ -8,7 +8,7 @@ import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFo
 import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../../gameplay/sim/save';
 import type { Building, Cost, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
-import { NAME_ERROR_TEXT, checkName } from '../../gameplay/sim/social/names';
+import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/social/names';
 import { armyHousing, housingCapacity, troopUnlock } from '../../gameplay/sim/army';
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { replayable } from '../../gameplay/sim/battle/battle';
@@ -345,7 +345,7 @@ export class Hud {
         wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
         if (conn.player) {
-          const name = h('input', { class: 'text', type: 'text', maxlength: 96, dir: 'auto', autocomplete: 'nickname', spellcheck: 'false', value: conn.player.name }) as HTMLInputElement;
+          const name = h('input', { class: 'text', type: 'text', dir: 'auto', autocomplete: 'nickname', spellcheck: 'false', value: conn.player.name }) as HTMLInputElement;
           name.addEventListener('keydown', (e) => e.stopPropagation());
           const save = h('button', { class: 'btn ghost', type: 'button' }, 'Rename');
           save.addEventListener('click', () => {
@@ -366,7 +366,7 @@ export class Hud {
             void conn.port.leaderboard(30).then(
               (lb) => {
                 clear(board);
-                for (const p of lb.players) board.append(h('div', { class: `log-row${p.name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${p.rank}. ${p.name}`), h('div', { class: 'muted small' }, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${p.grove}` : ''}`)), h('span', { class: 'chip' }, icon(icons.leaf), String(p.trophies))));
+                for (const p of lb.players) board.append(h('div', { class: `log-row${p.name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${p.rank}. ${isolateName(p.name)}`), h('div', { class: 'muted small' }, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${isolateName(p.grove)}` : ''}`)), h('span', { class: 'chip' }, icon(icons.leaf), String(p.trophies))));
                 if (lb.me) board.append(h('p', { class: 'muted small' }, `You are number ${lb.me.rank}.`));
                 if (!lb.players.length) board.append('Nobody is ranked yet.');
               },
@@ -1012,7 +1012,7 @@ export class Hud {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${r.opponentName}${r.setup.base.practice ? ' (practice)' : ''}` : `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, 'No loot'))),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${isolateName(r.opponentName)}${r.setup.base.practice ? ' (practice)' : ''}` : `${isolateName(r.opponentName)}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, 'No loot'))),
           replay,
         ),
       );
@@ -1040,7 +1040,7 @@ export class Hud {
     }
     for (const r of s.raids) {
       const lost = RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => `${formatNumber(r.result.loot[k]!)} ${RES_LABEL[k]}`).join(' and ');
-      list.append(h('li', {}, `${r.opponentName}${r.simulated ? ' (simulated raider)' : ''} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
+      list.append(h('li', {}, `${isolateName(r.opponentName)}${r.simulated ? ' (simulated raider)' : ''} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
     }
     if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, this.c.data) > 0)) {
       list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));

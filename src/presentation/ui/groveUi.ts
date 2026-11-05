@@ -5,7 +5,7 @@
  */
 import type { GroveSnapshot, GroveSource } from '../../backend/social/groveSource';
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
-import { NAME_ERROR_TEXT, checkName } from '../../gameplay/sim/social/names';
+import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/social/names';
 import { groveRaidChest } from '../../gameplay/sim/social/groveRaid';
 import { hallLevel } from '../../gameplay/sim/village';
 import { clear, h, icon } from './dom';
@@ -63,7 +63,7 @@ export class GroveUi {
           'div',
           { class: 'grove-head' },
           h('span', { class: 'grove-badge', style: `background:${snap.color}` }, icon(icons.leaf)),
-          h('div', {}, h('b', {}, snap.name), h('div', { class: 'muted small' }, `${snap.members.length}${snap.kind === 'online' ? `/${snap.maxMembers}` : ''} members · your Alliance level ${snap.level} (${formatNumber(snap.xp)} XP)${snap.kind === 'online' ? ' · online' : ''}`)),
+          h('div', {}, h('b', {}, h('bdi', {}, snap.name)), h('div', { class: 'muted small' }, `${snap.members.length}${snap.kind === 'online' ? `/${snap.maxMembers}` : ''} members · your Alliance level ${snap.level} (${formatNumber(snap.xp)} XP)${snap.kind === 'online' ? ' · online' : ''}`)),
         ),
       );
       const tabs: [Tab, string][] = [
@@ -144,12 +144,12 @@ export class GroveUi {
         h(
           'div',
           { class: 'log-row' },
-          h('div', { class: 'row' }, h('span', { class: 'grove-badge', style: `background:${g.color}` }, icon(icons.leaf)), h('div', {}, h('b', {}, g.name), h('div', { class: 'muted small' }, `${g.members}/${g.maxMembers} members · about ${formatNumber(g.averageTrophies)} honor`))),
+          h('div', { class: 'row' }, h('span', { class: 'grove-badge', style: `background:${g.color}` }, icon(icons.leaf)), h('div', {}, h('b', {}, h('bdi', {}, g.name)), h('div', { class: 'muted small' }, `${g.members}/${g.maxMembers} members · about ${formatNumber(g.averageTrophies)} honor`))),
           join,
         ),
       );
     }
-    const name = h('input', { class: 'text', type: 'text', maxlength: 96, dir: 'auto', spellcheck: 'false', placeholder: 'Alliance name' }) as HTMLInputElement;
+    const name = h('input', { class: 'text', type: 'text', dir: 'auto', spellcheck: 'false', placeholder: 'Alliance name' }) as HTMLInputElement;
     name.addEventListener('keydown', (e) => e.stopPropagation());
     const create = h('button', { class: 'btn sky', type: 'button', disabled: this.busy }, 'Found Alliance');
     create.addEventListener('click', () => {
@@ -169,8 +169,8 @@ export class GroveUi {
         h(
           'div',
           { class: `chat-msg ${m.mine ? 'mine' : ''} ${m.kind}` },
-          m.who ? h('span', { class: 'chat-who' }, m.who) : null,
-          h('span', { class: 'chat-text' }, m.text),
+          m.who ? h('bdi', { class: 'chat-who' }, m.who) : null,
+          h('span', { class: 'chat-text', dir: 'auto', style: 'unicode-bidi:plaintext' }, m.text),
           h('span', { class: 'chat-time' }, `${formatDuration(Math.max(0, this.c.now() - m.at))} ago`),
         ),
       );
@@ -222,7 +222,7 @@ export class GroveUi {
     );
     if (!snap.requests.length) body.append(h('p', { class: 'muted' }, 'No requests right now.'));
     for (const r of snap.requests) {
-      const row = h('div', { class: 'log-row' }, h('div', {}, h('b', {}, r.name), h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(r.filled / r.size) * 100}%` })), h('span', { class: 'small' }, `${r.filled}/${r.size}`))));
+      const row = h('div', { class: 'log-row' }, h('div', {}, h('b', {}, h('bdi', {}, r.name)), h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(r.filled / r.size) * 100}%` })), h('span', { class: 'small' }, `${r.filled}/${r.size}`))));
       const btns = h('div', { class: 'row' });
       for (const [t, n] of Object.entries(s.army)) {
         if (n <= 0) continue;
@@ -243,7 +243,7 @@ export class GroveUi {
         h(
           'div',
           { class: `log-row${r.you ? ' current' : ''}` },
-          h('div', {}, h('b', {}, `${i + 1}. ${r.name}`), h('div', { class: 'muted small' }, `${r.role} · Clan Keep ${r.hall}`)),
+          h('div', {}, h('b', {}, `${i + 1}. ${isolateName(r.name)}`), h('div', { class: 'muted small' }, `${r.role} · Clan Keep ${r.hall}`)),
           h('div', { class: 'row' }, h('span', { class: `dot ${r.online ? 'on' : ''}` }), h('span', { class: 'chip' }, icon(icons.leaf), String(r.trophies))),
         ),
       );
@@ -283,7 +283,7 @@ export class GroveUi {
     }
     const left = p.attacksLeft;
     body.append(
-      h('div', { class: 'raid-score' }, h('div', {}, h('b', {}, 'Us'), h('span', { class: 'big' }, `★ ${p.ours}`)), h('div', { class: 'muted' }, 'vs'), h('div', {}, h('b', {}, p.enemyName), h('span', { class: 'big' }, `★ ${p.theirs}`))),
+      h('div', { class: 'raid-score' }, h('div', {}, h('b', {}, 'Us'), h('span', { class: 'big' }, `★ ${p.ours}`)), h('div', { class: 'muted' }, 'vs'), h('div', {}, h('b', {}, h('bdi', {}, p.enemyName)), h('span', { class: 'big' }, `★ ${p.theirs}`))),
       h('p', { class: 'muted small' }, p.eligible ? `Ends in ${formatDuration(p.end - now)} · You have ${left} attack${left === 1 ? '' : 's'} left.` : `Ends in ${formatDuration(p.end - now)} · You joined during this raid, so you can attack from next week.`),
       h('h3', {}, 'Enemy bases'),
     );
@@ -295,7 +295,7 @@ export class GroveUi {
         this.d.kit.closeAllModals();
         this.d.onGroveAttack(b.index);
       });
-      body.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `${b.index + 1}. ${b.name}`), h('div', { class: 'row' }, h('span', { class: 'muted small' }, `Clan Keep ${b.hall}`), starEl)), atk));
+      body.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, `${b.index + 1}. ${isolateName(b.name)}`), h('div', { class: 'row' }, h('span', { class: 'muted small' }, `Clan Keep ${b.hall}`), starEl)), atk));
     }
   }
 }

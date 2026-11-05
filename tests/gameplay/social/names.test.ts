@@ -1,5 +1,5 @@
 /** Player and Alliance names in every script (src/gameplay/sim/social/names.ts). */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { checkName, isolateName, nameWidth, sanitizeName, scriptsMayMix } from '../../../src/gameplay/sim/social/names';
 import { filterText } from '../../../src/gameplay/sim/social/grove';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
@@ -45,6 +45,8 @@ describe('names in native scripts', () => {
       'Adébáyọ̀',
       'Ọ̀kọ̀nkwọ',
       'Ɗanjuma',
+      '𑄇𑄟𑄣', // Chakma
+      '𐴀𐴁', // Hanifi Rohingya
       'Çağrı Öztürk',
       'Zoë-Ann O’Neil',
       'Ali علي',
@@ -137,5 +139,41 @@ describe('the word filter works in every script', () => {
     const withRu = { ...data, social: { ...data.social, profanity: ['дурак'] } };
     expect(filterText('ты дурак!', withRu)).toBe('ты ✿✿✿✿✿!');
     expect(filterText('дураки', withRu)).toBe('дураки');
+  });
+});
+
+
+describe('name validation regressions', () => {
+  it('removes invisible letters, orphan marks and selectors unrelated to emoji', () => {
+    for (const hidden of ['\u034f', '\u1160', '\u3164', '\uffa0', '\ufe0f']) {
+      expect(sanitizeName(`Pi${hidden}p`)).toBe('Pip');
+    }
+    expect(checkName('\u1160\u1160').error).toBe('empty');
+    expect(checkName('\u0301a').error).toBe('short');
+    expect(sanitizeName('Pip \u0301')).toBe('Pip');
+    expect(sanitizeName('Kai ❤️')).toBe('Kai ❤️');
+    expect(sanitizeName('ع'.repeat(24) + '‌ع')).toBe('ع'.repeat(24));
+    expect(sanitizeName('a\u034f\u0301bc')).toBe('ábc');
+    const conjunct = 'क्'.repeat(8) + 'क';
+    expect(sanitizeName(conjunct)).toBe(conjunct);
+    expect(sanitizeName('é' + '\u0301'.repeat(10)).normalize('NFD')).toBe('e' + '\u0301'.repeat(5));
+  });
+  it('keeps complete graphemes even without the browser Segmenter API', async () => {
+    const expected = sanitizeName('नमस्ते'.repeat(10));
+    vi.stubGlobal('Intl', {});
+    vi.resetModules();
+    try {
+      const oldPhone = await import('../../../src/gameplay/sim/social/names');
+      expect(oldPhone.nameWidth('नमस्ते')).toBe(3);
+      expect(oldPhone.nameWidth('👨‍👩‍👧')).toBe(2);
+      expect(oldPhone.sanitizeName('नमस्ते'.repeat(10))).toBe(expected);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    }
+  });
+  it('normalizes moderation words and input before Unicode matching', () => {
+    const withAccents = { ...data, social: { ...data.social, profanity: ['café'] } };
+    expect(filterText('un cafe\u0301!', withAccents)).toBe('un ✿✿✿✿!');
   });
 });
