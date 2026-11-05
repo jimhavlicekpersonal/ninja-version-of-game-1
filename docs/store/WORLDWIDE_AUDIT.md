@@ -256,3 +256,111 @@ Verification for the whole pass, on the fixing commit: `npm test` with `TEST_DAT
 | R08 | open | Android target/compile 36, min 24, no native libraries in the added AARs (16 KB safe); CI lists native libraries; iOS workflow prints Xcode/SDK and warns below iOS SDK 26; RELEASE.md checklist. | All native submission behaviour on devices and in store review. |
 | R09 | open | `VITE_PUBLIC_URL` added to the Android and iOS workflows, so shared links open the web game. | `@capacitor/app` + `appUrlOpen`, a domain serving `assetlinks.json` / `apple-app-site-association`, then App Links / Associated Domains (`docs/SHIPPING.md` 1b). |
 | R10 | open (mitigated) | Page zoom allowed (canvas keeps pinch via `touch-action`), close/toggle targets ≥44 px, invisible 44 px hit areas on small pills, a global reduced-motion block. | Real pinch-zoom check on devices, screen-reader menus, larger-text support in px-sized HUD, canvas alternatives. |
+
+## Re-audit (2026-11-05, second pass) and fix record
+
+A deeper re-audit the same day, at HEAD `f378ce2`, used five independent read-only reviews: server/payments (adversarial, including the first fix pass), client runtime (Chromium with CDP CPU/network throttling), store compliance and legal congruency (official policy pages rechecked where reachable), game design/psychology, and art/game feel (screenshots of the running game). The owner then asked for every finding to be fixed. Fixes landed in the commits up to `b93e8f4` (work-in-progress snapshots `6493237` … `e18a800`, integrated in `b93e8f4`).
+
+**Verification on `b93e8f4`:** `npm test` with Postgres 16 and Redis (117 files, 1,147 passed, 1 skipped); `npm run build`; `npm run typecheck:server` (0 errors); `npm run server:build`; `npm run server:migrate` on an empty database (24 migrations); `npm run test:contract` against the built server (17/17); Playwright smoke of the built public and sandbox game at 360×640, 390×844 and 844×390 (no page errors). The reviewers' reproduction scripts were rerun after each fix where named below. **Still not done anywhere:** physical phones, signed store builds, real storefronts, App Review / Play review, live URLs, legal review, real players.
+
+Status words: **fixed** (code + automated evidence), **partly** (improved, target not fully met), **owner** (needs owner, legal, store or device action; code or drafts prepared).
+
+### Server, payments and battle integrity
+
+| Finding (re-audit) | Status | Fix and evidence |
+|---|---|---|
+| Refund before redeem was dropped; the kept receipt then credited for good (reproduced: Jade 500 → 780) | fixed | `refund_notices` (migration 0021); `redeem` refuses a refunded/voided transaction; `reaudit-integrity.test.ts` |
+| Unreported battles cost nothing (offline replay of a known seed, report only wins; war tickets unlimited) | partly | Raids: `POST /v1/attacks/start` on Attack; a started raid never reported settles as a 0-star loss (`forfeitExpired`, hourly); one open raid ticket per attacker (a new match voids an unstarted one). Wars: an issued ticket uses the attack. **Limit:** a modified client can skip the start call and void unstarted tickets; only server-timed input or attestation closes that. |
+| Held tickets bypassed the defender's shield (reproduced: three 3-star payouts after a 16 h shield); the R02 late window made it practical | fixed | Settlement after someone else's raid is practice (`409 defender_protected`); one open raid per attacker; reproduction now refused (`reaudit-integrity.test.ts`) |
+| Backdated commands ("time travel": import dated a year back, a Keep upgrade already finished) | fixed | Import dated by the server clock; command time clamped to `now − MAX_BACKDATE_MS` (12 h); `reaudit-hardening.test.ts` |
+| Battles on the request thread with a client base (`abandonBattle` 0.8–1.2 s for a forged base) | fixed | `abandonBattle` no longer simulates (spends the deployed warriors); battle commands capped per minute (6, shared limiter) |
+| One ticket re-simulated forever | fixed | Server-held troops checked before re-simulating; ticket burned after 3 refused reports |
+| IP rate limits spoofable (`TRUST_PROXY=true`) or global (unset) | fixed | Production requires a hop count/CIDR/`false`; IPv6 keyed by /64; CGNAT-sized limits; restore drill sets `TRUST_PROXY=false` |
+| Game Center fetched any `*.apple.com` URL, unbounded | fixed | Only `static.gc.apple.com/public-key/*.cer`, 16 KB cap, 5 s timeout, LRU |
+| Refused commands filled the DB (10.6 GB/day/token) | fixed | Refused commands logged by type only, size cap, no village rewrite when nothing applied (repro: 0.0 MB) |
+| Idempotency lookup before auth/limits | fixed | Moved after the limiter and auth |
+| GLOBAL-002 import gaps (forged stats/achievements/pass points/pass-only look) | fixed | Reached counters count as claimed; unpaid pass looks dropped; recorded purchase grants used |
+| Sandbox purchases credited on production | fixed | `SANDBOX_CREDIT_CAP_USD` (default $10/player) on production |
+| Spend-then-refund kept the value; reversals not re-granted; repeat refunders unchecked | fixed | Refunded spent Jade becomes a debt (negative balance); `REFUND_REVERSED` re-grants; 3 refunds in 90 days pause purchases. Apple `CONSUMPTION_REQUEST` is not answered (needs customer consent the game does not collect: documented choice). |
+| Postgres pool defaults, unverified TLS (and `sslmode` overriding `ssl`) | fixed | Pool/timeouts env; TLS verified unless explicitly allowed; production refuses unverified |
+| Redis outage stalled every request 5 s | fixed | 500 ms timeout, fail-open limiter, DB leaderboard fallback, `RedisDown` alert |
+| Match-lock griefing | fixed | One open raid per attacker; voided tickets release locks |
+| Purchases shared the moderation rate bucket | fixed | Own `purchase` rule |
+| Legacy batch silently dropped after device numbering | fixed | `426 version_mismatch` |
+| Tokens never revoked; JWKS refetched per unknown `kid` | fixed | Provider-scoped tokens revoked on unlink, "sign out other devices", 400-day prune; JWKS refetch throttled |
+| One shared admin secret | fixed | `ADMIN_TOKENS` per staff member, `ADMIN_ALLOW_IPS` |
+| No response compression | fixed | gzip/br for JSON ≥ 1 KB |
+| Backups to GitHub artifacts won't scale | owner | `docs/SHIPPING.md` §3h (PITR/WAL to an owned bucket) |
+
+### Client runtime (Chromium emulation; not device results)
+
+| Finding | Status | Fix and evidence |
+|---|---|---|
+| Permanent splash if the main script fails | fixed | Inline ES5 boot guard with Retry (`src/backend/pwa/boot.js`); `boot.test.ts`; reviewer t2 |
+| `structuredClone`/`.at()` missing on iOS 15.0–15.3 / old WebViews | fixed | Polyfills + "needs a newer browser" check; t11 boots |
+| 4–14 s main-thread freeze after the splash; start-up toasts lost | fixed | Texture painting in slices, splash until first frame, queued toasts, persistent banners. Longest block at CPU×6: high 13.8 → 4.5 s, low 4.9 → 2.4 s. The island painter (~4 s at CPU×6) is still one task. |
+| Auto quality picked high for 4 GB Android, low for every iPhone | fixed | New rule + 2 ms canvas fill test; threshold not calibrated on devices |
+| ~600 KB first load, full Phaser | partly | Custom Phaser build: 526 → 389 KB gz on the same snapshot (current tree 422 KB with the new features). Lazy-loading Friends/Gang panels (~20 KB) not done (needs a HUD restructure). |
+| Android Back unhandled | fixed | `@capacitor/app`, Back closes the top dialog / leaves battle / confirms exit (not run on a device) |
+| Safari 7-day eviction silently erases web villages | fixed | `persisted()` check, weekly "Keep it safe" banner (Home Screen, sign-in, save code) |
+| iOS zoom on inputs < 16 px | fixed | Inputs `max(16px, 1em)` |
+| IndexedDB hang / lost connection | fixed | 5 s open timeout → memory with banner; reconnect on close/errors; `idb.test.ts` |
+| SW downloaded everything twice | fixed | Hashed assets from the HTTP cache (t1: 2× → 1×) |
+| Update loop; newer-save dead end | fixed | Save → `registration.update()` → wait → reload; boot error with Update/Copy save code |
+| Store prices cached forever / no timeout | fixed | 10 s timeout, empty/partial = retry |
+| Connection ignored online/offline/resume | fixed | Event-driven sync; `connectionNetwork.test.ts` |
+| Real memory ≈ 2× texture figures | fixed / corrected | Third copy (blank ImageData) removed. Measured process growth at 360×640@3x: high ≈480 → ≈345 MB, low ≈180 → ≈160 MB (R03 figures above counted textures only). |
+| iPhone flagships may get 30 FPS | partly | Core count no longer decides on iOS; device check needed |
+| Dialog a11y, UTF-16 maxlength, idle battery | fixed | Focus trap/labels; code-point limits; village idles at 20 FPS (CPU 102% → 37% in emulation) |
+
+### Compliance and legal (drafts are not legal advice)
+
+| Finding | Status | Fix |
+|---|---|---|
+| No store age signals (Texas SB 2420 since 2026-06-04, Play Age Signals) | partly / owner | iOS Declared Age Range (iOS 26+) and Play Age Signals 0.0.4 plugins + neutral age screen (bands under 13 / 13–17 / adult, one-way stricter). Native code unverified on devices; PermissionKit significant-change flow not built. |
+| iOS entitlements missing (Apple sign-in, Game Center, push) | fixed / owner | `App.entitlements` + `CODE_SIGN_ENTITLEMENTS`; owner enables capabilities on the App ID |
+| Minors online unprotected; public discovery defaults | fixed / owner | Under 13: preset chat phrases only, generated name, not findable; 13–17: private defaults; no offers for under 18. COPPA decision for under-13 accounts is the owner's. |
+| UK Online Safety Act duties | owner | `docs/legal/ONLINE_SAFETY_UK.md` (risk assessments, measures, gaps, complaints); links/emails/phone numbers stripped from chat |
+| Web deletion: name-only requests unusable; anyone could request another's deletion | fixed | One-time deletion code from Settings; staff act on verified requests only |
+| Sign in with Apple tokens not revoked | fixed / owner | Code exchange, revoke on delete/unlink, server notifications endpoint; owner sets Apple keys and registers the URL |
+| Data safety / age rating / GDPR Art. 13 / terms / Japan / other markets | owner | `PRIVACY.md` re-walked (chat = Messages, name = Personal info), age rating 13+ guidance, rewritten `privacy.html`, draft `terms.html`, `tokushoho.html`, `shikin-kessai.html`, `docs/legal/JAPAN.md`, `docs/legal/MARKETS.md`. Publisher facts in `public/legal-config.js` stay empty until filled. |
+| Offers' pressure (first-session pop-ups, post-loss offer after simulated raids, under-18) | fixed | All offers ≥ 24 h account age, the post-loss trigger retired, no offers for under-18/unknown age, "back again later" wording |
+| DSA statement of reasons for moderation | fixed | Notices to reporters and affected players with reason and appeal route |
+| Japan paid-balance tracking | partly / owner | Storefront, currency and price recorded per purchase (migration 0023); the staff report for the ¥10M threshold is specified in `docs/legal/JAPAN.md`, not built |
+| Season Scroll product type ambiguous; season end not shown | fixed / owner | Consumable in both stores (documented); "season ends in N days" on card and confirm; sale closes in the last 4 days unless 15 tiers are unlocked |
+| Android exact-alarm permission; backup copied tokens | fixed | Permission removed; backup rules exclude WebView localStorage (paths not verified on a device) |
+| Export compliance key missing | fixed | `ITSAppUsesNonExemptEncryption=false` |
+
+### Game design and psychology (model-player numbers, not players)
+
+| Finding | Status | Fix and evidence |
+|---|---|---|
+| Day-2 return: unwinnable bot 3-star then a $2.99 pop-up | fixed | First 3 bot raids capped (held 12/12 test raids with the tutorial's Kunai Tower), post-loss offer retired, "settle the score" rematch, held defenses pay 5% loot |
+| First raid: points off-screen on portrait/landscape | fixed | Camera fits all open points, edge chevrons, first-raid coach; real taps deployed on all 6 points at 360/390/844 widths |
+| Offline Alliance presented bots as people | fixed | "Training Alliance (computer clan)" on every surface |
+| Late-game failure loop | partly | Strength = Keep the research matches: regular Keep 15 avg stars 0.50 → 1.40; casual with the new suggested army 1.1–2.2 at Keeps 9–15 and Keep 15 on day 266 (was 390). The pure "explorer" casual policy stays under 1 star. |
+| Shadow/Air/Support armies non-viable | partly | Shadow ×1.5 budget + stealth: Keep 15 destruction 44 → 66%, 11% three-star; Air and Support reach 15% three-stars only on their home layouts |
+| "Free" Artisan's Hut took Jade | fixed | Price shown, Jade confirm |
+| No sub-$2 entry, no monthly product | fixed / owner | $0.99 Pinch of Jade, $2.99 Clan Stipend (30 daily claims); owner creates the store products |
+| Offers unscaled; false Artisan's Bundle copy | fixed | `productGrantsFor` (Keep-scaled, storage-capped, excess as Jade); trigger guarded |
+| Pass looked worse than a pack; day-29 sales | fixed | 340 premium Jade, "≈ N Jade value", late-season sale rule |
+| Impossible star tasks | fixed | Adaptive targets from the recent star rate, destruction tasks |
+| Keep 5→6 wall, flat 168 h builds | partly | Keep 6 cost 850k → 500k, Keeps 10–15 4–6.5 days; casual 5→6 still ~26–28 days |
+| Events were passive buffs | partly | Bounty Hunt goal event implemented; Trial tower and Gang shared goal specified only |
+| Too many concepts early; collecting/defending untaught | fixed | Progressive rail, filters hidden until 5 warriors, tutorial steps for Collect and a Kunai Tower, waiting taught before Jade |
+| Leftover/pastiche names; religious objects as weapons | fixed / owner | Renames (Ember League, Shuriken Tower, Stone Sentinel Statue, Bitter Smoke Brazier, Alarm Bell Tower, "Hollow" raid targets, Japanese bot surnames); keeping "Jade" and a native cultural review are owner decisions |
+| No story, cast, differentiation, empty world at launch | owner | Sensei Hoshi portrait and moods added; story chapters, heroes, regional launch and NPC rival clans are product decisions |
+
+### Art and game feel (emulation screenshots; not judged on devices)
+
+| Finding | Status | Fix |
+|---|---|---|
+| 37 of 50 warriors looked identical | fixed | Role silhouettes, matching badges, role rings, larger tier 4–5 |
+| Upgrades invisible for many levels | fixed | Keep 6 tiers, defenses 5, a visible change at every level (tested) |
+| Village barely moved; flat first impression | fixed | Smoke, shimmer, banners, sparring, villagers, birds, mountains/fog/sun, tighter camera (the pixel-change measure moved little: 1.95% → ~2%) |
+| Flat destruction/victory; unreadable fights | fixed | Ruins by family, Keep collapse with slow motion, star slams, 100% banner, loot count-up, readable projectiles, tracers, hit flashes, death puffs |
+| No haptics; chiptune sound | fixed | `@capacitor/haptics` (Settings switch), koto/shamisen/taiko sound (not listened to by a person) |
+| Chest, mentor, Codex stacking, crowded HUD, Settings order, disabled buttons, fonts | fixed | Chest reveal, Sensei portrait, isolated dialogs, top stack 21.8% → 11.4% at 390×844, Advanced section, locked tags, name font stack (no extra font files: size) |
+| Generic motifs | fixed | Roof materials by family, original kamon set |
+
+**Remaining for the owner (no code can close these):** physical-device and store testing on both platforms; App Store / Play product setup (new `jade_pinch`, `clan_stipend`); Apple/Google keys and capabilities; publisher facts and legal review of the drafts; UK OSA responsible person; Japan seller facts and the unused-balance report; the COPPA position; market selection (`docs/legal/MARKETS.md`); deploy the server before the game (save v16, SIM_RULES 4, migrations 0018–0024); a native-speaker cultural review; real-player playtests of the casual curve.
