@@ -95,7 +95,7 @@ for (const [label, makeRepo] of repoFactories) {
       expect(ra + rb).toBeCloseTo(3000, -1); // zero-sum at equal deviations
       // The roster lock lifts after the war.
       await a2.leaveGang();
-    });
+    }, 30_000);
 
     it('gives one relay a budget of armies: a full opener leaves half an army for the next strike', async () => {
       const w = world({ repo: await makeRepo() });

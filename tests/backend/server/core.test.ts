@@ -308,6 +308,7 @@ for (const [label, makeRepo] of repoFactories) {
         expect((await cat.raid()).opponent!.name).toBe('Acorn Army');
 
         const stars: number[] = [];
+        const wrecked: number[] = [];
         for (const who of [ann, ann, ben]) {
           const t = await who.raidTicket(0);
           expect(Number.isInteger(t.seed)).toBe(true);
@@ -315,6 +316,7 @@ for (const [label, makeRepo] of repoFactories) {
           expect(t.base.buildings.every((b) => !Object.values(b.loot ?? {}).some((v) => v))).toBe(true); // no loot in Grove Raids
           const r = await who.submitRaidAttack({ ticket: t.ticket, seed: t.seed, ...rush(20) });
           stars.push(r.stars);
+          wrecked.push(r.result.destruction);
         }
         expect(await code(ann.raidTicket(1))).toBe('no_attacks_left');
         const best = Math.max(...stars);
@@ -326,14 +328,15 @@ for (const [label, makeRepo] of repoFactories) {
         expect(await code(ann.claimRaid(week))).toBe('raid_not_ended');
         w.setTime(w.raidEnd(week) + 1);
         const done = await ann.raid();
-        expect(done.result).toMatchObject({ ours: best, theirs: 0, outcome: best > 0 ? 'win' : 'draw' });
+        // Equal stars go to destruction (F34), so a starless attack that broke something still wins.
+        expect(done.result).toMatchObject({ ours: best, theirs: 0, outcome: best > 0 || Math.max(...wrecked) > 0 ? 'win' : 'draw' });
         expect(done.chests).toEqual([{ week, claimed: false }]);
         const claim = await ann.claimRaid(week);
         expect(claim).toMatchObject({ week, outcome: done.result!.outcome, alreadyClaimed: false });
         expect((await ann.claimRaid(week)).alreadyClaimed).toBe(true);
         expect((await ann.raid()).claimed).toBe(true);
         expect((await ann.raid()).chests).toEqual([{ week, claimed: true }]);
-        expect((await cat.claimRaid(week)).outcome).toBe(best > 0 ? 'loss' : 'draw');
+        expect((await cat.claimRaid(week)).outcome).toBe(best > 0 || Math.max(...wrecked) > 0 ? 'loss' : 'draw');
       });
 
       it('gives a Grove with no free rival a bot Grove whose stars grow during the event', async () => {

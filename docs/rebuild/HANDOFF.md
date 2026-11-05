@@ -72,7 +72,7 @@ Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. Wh
 
 ## PvP server roadmap progress (2026-11-04)
 
-`docs/backend/PVP_ROADMAP.md` marks each finished step (protocol 7 since step 26), each with tests (`tests/backend/`, `tests/gameplay/`):
+`docs/backend/PVP_ROADMAP.md` marks each finished step (protocol 7 since step 26, 8 since steps 70-75), each with tests (`tests/backend/`, `tests/gameplay/`):
 
 - **Phase 1, hardening (10–18):** server-issued battle seeds; each base stored once by content hash, 30-day replay retention; versioned migrations as a release step (`npm run server:migrate`); rate and body limits; account deletion in Settings and on the web (`/account/delete`) with a staff queue; chat report/block, auto-hide after 3 reporters, mutes and a moderation queue (`ADMIN_TOKEN`); optional Redis for the leaderboard, match locks and shared rate limits; JSON logs with request ids, Sentry (server and game, no SDK), `/healthz` + `/readyz`, Prometheus metrics; `npm run server:bench`.
 - **Phase 2, server-owned village (19–23, beta, opt-in):** `villages`, an append-only `ledger` and `command_log`; the command endpoint replays the game's own commands with the shared simulation and corrects the game when the economy hashes differ; the game queues its commands and takes the server's economy; attacks, war attacks, war chests and gifts settle server-held villages in one transaction with the result.
@@ -84,7 +84,8 @@ Measured after the fixes (`ARMY_BALANCE.md`, `CAMPAIGN.md`): see those files. Wh
 - **Phase 6, operations (44–48):** backups with a weekly restore drill, two instances, IPv6/HSTS, a load test (one instance: ~3 battles/s; the worker pool, step 57, is needed before launch), alert rules, the staff tool at `/admin`.
 - **Phase 7 (49–53, owner):** `docs/store/` (listing, privacy answers, review notes, testing plan, release checklist) and `npm run store:screenshots`.
 - **Phase 8, after launch (54–58):** weekly review, seasons on the server, legal time limits for staff queues and `/support`, the re-simulation worker pool (step 57's partitioning and object storage are left for when they are needed), secret rotation and maintenance reminders (`docs/OPERATIONS.md`).
-- **Phase 9 so far (59–63):** unique names, friends (codes, share links, QR, lookup, privacy, suggestions, Game Center import; Play Games import waits for Android sign-in), Friendly Duels, Gangs, and the Friends panel.
+- **Phase 9 (59–70):** unique names, friends (codes, share links, QR, lookup, privacy, suggestions, Game Center import; Play Games import waits for Android sign-in), Friendly Duels, Gangs, the Friends panel, and **Gang Wars**: battle rules 3 (relay strikes start from the Gang's damage, `startDamage`), the war server (queue, matching, labelled generated Gangs, prep, locked rosters, solo and relay strikes sharing 1.5 armies, scoring, one chest per member), Gang Rating, the war section in Friends → Gang with replays, pushes, a balance test and abuse tests. Step 71 (live co-op) is left for later on purpose. Defending Gangs cannot reinforce war bases (the battle has no defending troops); Gang troop gifts fill the Lodge used in strikes.
+- **Phase 1.5, surviving game updates (72–78):** tickets record the game's battle rules and data version and reports must match; the server keeps the last 2–3 rule versions (`server/rules/`, v2 snapshot) for re-simulation, army checks and loot caps; "Update Kagemura" when the server no longer serves a game (`supportedRules`, `MIN_CLIENT_BUILD`); release order server first with a CI check before every game release; a versions dashboard and alerts. Step 76 (server-delivered balance data, optional) is not built.
 - **Owner steps** (Phase 0, 33, 34, 39, 41, 49–53) stay unticked; the roadmap says what was prepared for each.
 - **Hosting checklist:** `docs/SHIPPING.md` (pre-deploy `server:migrate`, `TRUST_PROXY`, `REDIS_URL`, `ADMIN_TOKEN`, `SENTRY_DSN`, `METRICS_TOKEN`, health checks, the deletion URL for Google Play).
 
@@ -101,7 +102,7 @@ Further checks from the audit, now handled: the last deployments are saved at on
 
 ## Online features: honest status
 
-Real PvP, real Alliances and Alliance Wars work **only with a hosted server** (`VITE_SERVER_URL` or Settings → Online play). Without one, everything social is bot-driven and labelled as practice. Game and server must both be protocol 6; deploy the server from the same commit as the game (run `npm run server:migrate` first). Villages stay on the device unless a player opts into the server-owned village (beta).
+Real PvP, real Alliances and Alliance Wars work **only with a hosted server** (`VITE_SERVER_URL` or Settings → Online play). Without one, everything social is bot-driven and labelled as practice. Games speak protocol 8 (the server still serves protocol 7 games and their battle rules); release the server first, then the games (`docs/SHIPPING.md` 3i; run `npm run server:migrate` first). Villages stay on the device unless a player opts into the server-owned village (beta).
 
 ## Next sessions
 

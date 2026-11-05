@@ -6,7 +6,7 @@
 >
 > Tags: **[Owner]** = needs the human owner (accounts, money, legal). **[Code]** = can be done in the repo.
 
-## 0. Current state (facts from the code, protocol v7)
+## 0. Current state (facts from the code as the plan was written; the steps below record what changed since, up to protocol 8)
 
 - Server: `server/core/*` (rules, no HTTP/DB), `server/app.ts` (Fastify adapter), `Repo` port with `MemoryRepo` / `PgRepo`, versioned migrations in `server/migrations/` (applied by `npm run server:migrate` as a release step; step 12). Stateless API; all state in Postgres.
 - Battles are played on the device; the server re-simulates every attack with `runBattle` (10 ticks/s, ≤1,800 ticks) and its result is authoritative. Tickets are single-use and idempotent (`tickets.response`).

@@ -53,6 +53,7 @@ Open http://localhost:5173 (add `?debug` for the `window.tk` testing hook).
 | `npm run server:dev` | Build and run the PvP server locally (memory storage) |
 | `npm run server:migrate` | Apply database migrations (the release step before a new server starts; needs `DATABASE_URL`) |
 | `npm run server:bench` | Time battle re-simulation per Keep on this machine (after `npm run server:build`) |
+| `node tools/release/snapshot-rules.mjs --ref <tag>` | Snapshot released battle rules for the server before a rules bump (`docs/SHIPPING.md` 3i) |
 | `npm run cap:android` / `npm run cap:ios` | Copy the web build into the native projects and open Android Studio / Xcode |
 
 ## Project layout: three compartments
@@ -61,7 +62,7 @@ Open http://localhost:5173 (add `?debug` for the `window.tk` testing hook).
 src/presentation/   1. Art, GUI, animation: procedural art and audio, Phaser scenes, HUD, tutorial
 src/gameplay/       2. Game theory and mechanics: pure deterministic rules, balance data, commands
 src/backend/        3. Backend: protocol, connection, payments, platform, saves, analytics, PWA
-server/             3. Fastify + Postgres (+ optional Redis) PvP server: re-simulates every attack, can hold villages
+server/             3. Fastify + Postgres (+ optional Redis) PvP server: re-simulates every attack (with the battle rules each game played), can hold villages; Friends, Gangs, duels and Gang Wars
 tools/              Art gallery, progression doc generator
 docs/               Rebuild analysis and handoff, architecture, game theory, art brief and manifest
 ```
@@ -75,7 +76,7 @@ Each compartment has a `CLAUDE.md` brief, so a **separate AI session** can upgra
 - `docs/rebuild/02-ARCHITECTURE.md`: structure, dependency rules and research sources
 - `docs/game-theory/PROGRESSION_MODEL.md` and `ROSTER.md`: one power budget for all 50 warriors, buildings, EXP and difficulty
 - `docs/art/ART_AI_BRIEF.md` and `ICON_MANIFEST.md`: instructions and the full list of icons for an ART AI
-- `docs/PROTOCOL.md` (v7) and `docs/SHIPPING.md`: multiplayer protocol and store and hosting steps
+- `docs/PROTOCOL.md` (v8) and `docs/SHIPPING.md`: multiplayer protocol, store and hosting steps, and the release order (server first)
 - `docs/backend/PVP_ROADMAP.md`: the PvP server plan and step list (each finished step is marked)
 - `docs/OPERATIONS.md`: the server's recurring work (weekly review, seasons, staff queues, scaling, rotating secrets)
 - `docs/store/`: the store submission kit (listing, privacy answers, review notes, testing, release)

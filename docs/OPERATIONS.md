@@ -25,6 +25,14 @@ Nothing to do: at the start of each UTC month the server closes the last season 
 - Reads that may lag (leaderboards, defense logs, staff reports) can go to a replica: set `DATABASE_READ_URL`.
 - Not done yet, because not needed at launch volumes: partitioning `attacks` by month (prune deletes by time and an index covers it), and moving replays to object storage (replays are kept only 30 days and bases are stored once).
 
+## Every release: versions (steps 72-78)
+
+Follow `docs/SHIPPING.md` section 3i (server first, then the games; CI's release-order check refuses a game production can't serve). After each release, watch the versions dashboard (`ops/grafana/versions-dashboard.json`) for a day: the new build taking over in "Requests by game build and battle rules", the desync rate per rules version (alert `DesyncsRising`), refused reports by reason (alert `VersionMismatchReports`: players were refused for `rules_mismatch` or `data_mismatch`, so a release went out of order or a version was retired too early). Retire a kept rules version when `OldRulesCanRetire` fires (under ~2% of traffic for 3 days) or after 4-6 weeks. Use `MIN_CLIENT_BUILD` only to force an update (it turns older games away with "Update Kagemura").
+
+## Gang Wars
+
+Nothing to run by hand: the server pairs queued Gangs on each request, offers a generated Gang after a few minutes, rates real wars once when they end and pushes "ends soon" hourly. In the weekly review, Gang War chests show in the ledger as `gangwar:chest`. Balance numbers are in `social.json` `gangWar` (rerun `tests/gameplay/balance/gang-war.test.ts` after changing them).
+
 ## Rotating secrets (step 58)
 
 Every secret that callers present can hold two values while it changes:
