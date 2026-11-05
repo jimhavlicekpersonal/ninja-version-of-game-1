@@ -20,7 +20,8 @@ import { activeOffers } from '../../gameplay/sim/offers';
 import { currentTasks, unlockedTier } from '../../gameplay/sim/pass';
 import { ArmyUi } from './armyUi';
 import { costChips, RES_LABEL } from './chips';
-import { PROVIDER_NAMES } from '../../backend/platform/auth';
+import { PROVIDER_NAMES, storeAgeBand } from '../../backend/platform/auth';
+import { askAgeBand } from './ageScreen';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -181,7 +182,16 @@ export class Hud {
     });
     this.buildSkeleton();
     this.c.subscribe(() => this.refresh());
+    // Re-audit (minors online): before this device first goes online, the store's age signal or,
+    // without one, the neutral age screen sets the age band. "Not now" keeps online play off.
+    this.deps.connection.ageGate = async () =>
+      (await storeAgeBand()) ??
+      askAgeBand(
+        { c: this.c, modal: (...a) => this.modal(...a) },
+        'Online play connects you with other players. Please enter your year of birth so we can choose the right settings for your age.',
+      );
     this.deps.connection.subscribe(() => this.updateNet());
+    this.deps.connection.subscribe(() => this.showNewNotices());
     this.updateNet();
     this.deps.groveSource.subscribe(() => this.refresh());
     this.c.onOffer((rule) => this.econ.showOffer(rule));
@@ -443,6 +453,8 @@ export class Hud {
       if (conn.server?.notice) wrap.append(h('p', { class: 'store-note' }, conn.server.notice));
       if (!conn.enabled) {
         wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Alliance are friendly bots. Enter a Kagemura: Ninja Clans server address to raid real players and join real Alliances.'));
+        // Re-audit: "Play offline" keeps the online account; it can still be deleted from here.
+        for (const url of conn.storedAccounts()) wrap.append(this.storedAccountBlock(url, draw));
       } else {
         wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
@@ -513,7 +525,10 @@ export class Hud {
           wrap.append(this.accountBlock());
         }
         const retry = h('button', { class: 'btn ghost', type: 'button' }, 'Connect now');
-        retry.addEventListener('click', () => void conn.sync().then(draw));
+        retry.addEventListener('click', () => {
+          conn.askAgeAgain();
+          void conn.sync().then(draw);
+        });
         if (conn.status !== 'online') wrap.append(h('div', { class: 'actions' }, retry));
       }
       const chosen = Connection.chosen();
@@ -665,6 +680,13 @@ export class Hud {
     const del = h('button', { class: 'btn danger', type: 'button' }, 'Delete online account');
     del.addEventListener('click', () => void this.deleteOnlineAccount());
     const webForm = `${conn.url}/account/delete`;
+    // Re-audit: a one-time code proves a web deletion request is yours; other devices can be signed out.
+    const codeBox = h('div', {});
+    const getCode = h('button', { class: 'btn ghost', type: 'button' }, 'Get a deletion code');
+    getCode.addEventListener('click', () => void conn.deletionCode().then((c) => this.showDeletionCode(codeBox, c, webForm), (e: Error) => this.toast(e.message, 'error')));
+    const others = h('button', { class: 'btn ghost', type: 'button' }, 'Sign out other devices');
+    others.addEventListener('click', () => void this.signOutOthers());
+    const noticesBox = h('div', {});
     // Blocked players (blocked from Alliance chat or the member list), with Unblock.
     const blockedList = h('div', { class: 'events' });
     const blockedWrap = conn.server?.features.includes('blocks') ? h('div', {}, h('label', { class: 'muted small' }, 'Blocked players'), blockedList) : null;
@@ -735,12 +757,17 @@ export class Hud {
       blockedWrap,
       h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and troop requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
       h('div', { class: 'actions' }, del),
-      h('p', { class: 'muted small' }, 'No longer have the game? Ask for deletion on the web: ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm)),
+      h('p', { class: 'muted small' }, 'Deleting from another device or the web: get a one-time deletion code here, then enter it with your Player ID on ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm), '. It works once, for 30 days.'),
+      conn.server?.features.includes('deletion-codes') ? h('div', { class: 'actions' }, getCode) : null,
+      codeBox,
+      conn.server?.features.includes('sessions') ? h('div', {}, h('p', { class: 'muted small' }, 'Lost a phone, or signed in somewhere you no longer use? Sign every other device out of this account; only this one stays signed in.'), h('div', { class: 'actions' }, others)) : null,
+      conn.server?.features.includes('notices') ? h('div', {}, h('label', { class: 'muted small' }, 'Messages from our moderators'), noticesBox) : null,
     );
     details.addEventListener('toggle', () => {
       if (!details.open) return;
       loadBlocked();
       loadLinks();
+      void conn.refreshNotices().then((list) => this.drawNotices(noticesBox, list));
     });
     return details;
   }
@@ -764,6 +791,78 @@ export class Hud {
     } catch (e) {
       this.toast((e as Error).message, 'error');
     }
+  }
+
+  /** Show a deletion code once, with Copy (re-audit: web deletion needs it). */
+  private showDeletionCode(box: HTMLElement, c: { code: string; expiresAt: number }, webForm: string): void {
+    clear(box);
+    const field = h('input', { class: 'text mono', type: 'text', readonly: true, value: c.code, 'aria-label': 'Deletion code' }) as HTMLInputElement;
+    field.addEventListener('focus', () => field.select());
+    const copy = h('button', { class: 'btn ghost', type: 'button' }, 'Copy');
+    copy.addEventListener('click', () => {
+      field.select();
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(c.code).then(() => this.toast('Deletion code copied.', 'success'), () => this.toast('Select the code and copy it.', 'info'));
+      else this.toast('Select the code and copy it.', 'info');
+    });
+    box.append(
+      h('div', { class: 'chat-input-row' }, field, copy),
+      h('p', { class: 'muted small' }, `Enter it with your Player ID on ${webForm} before ${new Date(c.expiresAt).toLocaleDateString()}. Keep it private: anyone with it and your Player ID can ask for this account to be deleted. Getting a new code cancels this one.`),
+    );
+  }
+
+  private async signOutOthers(): Promise<void> {
+    const ok = await this.confirm('Sign out other devices?', 'Every other phone, tablet or browser signed in to this account is signed out. They can sign in again with a linked sign-in. This device stays signed in.', 'Sign out others', false, 'Cancel');
+    if (!ok) return;
+    try {
+      const n = await this.deps.connection.revokeOtherSessions();
+      this.toast(n ? `Signed out ${n} other device${n === 1 ? '' : 's'}.` : 'No other device was signed in.', 'success');
+    } catch (e) {
+      this.toast((e as Error).message, 'error');
+    }
+  }
+
+  /** Moderation notices (re-audit, EU DSA): what was decided, why, and how to appeal. */
+  private drawNotices(box: HTMLElement, list: import('../../backend/net/protocol').NoticeView[]): void {
+    clear(box);
+    if (!list.length) {
+      box.append(h('p', { class: 'muted small' }, 'None.'));
+      return;
+    }
+    for (const n of list) box.append(h('div', { class: `log-row notice${n.read ? '' : ' unread'}` }, h('div', {}, h('div', { class: 'muted small' }, new Date(n.at).toLocaleString()), h('div', { dir: 'auto' }, n.text))));
+    const unread = list.filter((n) => !n.read).map((n) => n.id);
+    if (unread.length) void this.deps.connection.markNoticesRead(unread).catch(() => undefined);
+  }
+
+  private toldNotices = new Set<string>();
+  /** A new moderation notice is shown once as a toast; all of them are in Settings → Online play → Account. */
+  private showNewNotices(): void {
+    for (const n of this.deps.connection.notices) {
+      if (n.read || this.toldNotices.has(n.id)) continue;
+      this.toldNotices.add(n.id);
+      this.toast(`${n.kind === 'report_outcome' ? 'About your report' : 'From our moderators'}: ${n.text}`, 'info');
+    }
+  }
+
+  /** "Play offline" left an online account on a server (re-audit): it can still be deleted, connecting just for that. */
+  private storedAccountBlock(url: string, redraw: () => void): HTMLElement {
+    const conn = this.deps.connection;
+    const box = h('div', {});
+    const del = h('button', { class: 'btn danger', type: 'button' }, 'Delete online account');
+    del.addEventListener('click', () => {
+      void this.confirm('Delete your online account?', `Your player name, shared base, Alliance and Gang membership, friends, chat messages and any village kept on ${url} are deleted from that server now. Online play stays off; your village on this device stays. This cannot be undone.`, 'Delete account', true).then(async (ok) => {
+        if (!ok) return;
+        try {
+          await conn.deleteStoredAccount(url);
+          this.toast('Your online account was deleted.', 'success');
+          redraw();
+        } catch (e) {
+          this.toast(`Could not delete the account: ${(e as Error).message}`, 'error');
+        }
+      });
+    });
+    const code = h('button', { class: 'btn ghost', type: 'button' }, 'Get a deletion code');
+    code.addEventListener('click', () => void conn.storedDeletionCode(url).then((c) => this.showDeletionCode(box, c, `${url}/account/delete`), (e: Error) => this.toast(e.message, 'error')));
+    return h('div', { class: 'account-settings' }, h('p', {}, 'This device still holds your online account on ', h('span', { class: 'mono' }, url), '. Online play is off, but the account exists on the server.'), h('div', { class: 'actions' }, del, code), box);
   }
 
   private async deleteOnlineAccount(): Promise<void> {
@@ -1633,7 +1732,9 @@ export class Hud {
       ),
       serverUrl
         ? h('p', { class: 'muted small' }, 'Delete your online account: Settings → Online play → Account, or on the web: ', h('a', { href: `${serverUrl}/account/delete`, target: '_blank', rel: 'noopener' }, 'account deletion page'), '.')
-        : h('p', { class: 'muted small' }, 'Online play is off, so there is no online account: your village is kept only on this device. "Start a new village" below erases it; uninstalling the app or clearing this site\'s data removes it completely.'),
+        : this.deps.connection.storedAccounts().length
+          ? h('p', { class: 'muted small' }, 'Online play is off on this device, but your online account still exists on the server: delete it under Settings → Online play. Your village on this device: "Start a new village" below erases it; uninstalling the app or clearing this site\'s data removes it completely.')
+          : h('p', { class: 'muted small' }, 'There is no online account on this device: your village is kept only here. "Start a new village" below erases it; uninstalling the app or clearing this site\'s data removes it completely.'),
     );
     return section;
   }

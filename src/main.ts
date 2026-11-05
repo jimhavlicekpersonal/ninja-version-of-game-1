@@ -4,12 +4,12 @@ import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './b
 import { CrashReporter } from './backend/analytics/crashReports';
 import { platformSignIn } from './backend/platform/auth';
 import { GameController } from './gameplay/control/controller';
-import { openGameDb } from './backend/persist/idb';
+import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
-import { registerServiceWorker } from './backend/pwa/register';
-import { Keys, buildingThumbKey } from './presentation/render/assets';
+import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
+import { Keys, buildingThumbKey, prepareTextures } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
-import { loadArtManifest } from './presentation/render/artManifest';
+import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
 import { quality, renderScaleFor } from './presentation/render/quality';
@@ -33,11 +33,51 @@ import { OffsetClock, SystemClock } from './gameplay/sim/clock';
 import { defaultData } from './gameplay/sim/data';
 import { Bus, type UiEvents } from './presentation/ui/bus';
 import { Hud } from './presentation/ui/hud';
+import { encodeExportCode, NewerSaveError, serialize, type SaveFile } from './gameplay/sim/save';
 
 declare const __APP_VERSION__: string;
 declare const __BUILD_TIME__: string;
 
 const DEBUG_OFFSET_KEY = 'tk.debugTimeOffsetMs';
+
+/** The inline start-up guard from index.html (src/backend/pwa/boot.js). */
+const bootGuard = (window as unknown as { __tkBoot?: { done(): void; stop(): void } }).__tkBoot;
+// Every module loaded: from here on boot() reports its own errors (the guard keeps its timer).
+(window as unknown as { __tkStarted?: boolean }).__tkStarted = true;
+
+/** The splash's status line (start-up progress). */
+function bootStatus(text: string): void {
+  const el = document.querySelector<HTMLElement>('#boot .boot-status');
+  if (el) el.textContent = text;
+}
+
+/**
+ * A banner across the top of the screen for things that stay true for the whole session
+ * (the browser can't save; the browser may delete the save). Toasts disappear unseen.
+ */
+function showBanner(id: string, text: string, actions: { label: string; onClick: (close: () => void) => void }[] = []): () => void {
+  document.getElementById(id)?.remove();
+  const el = document.createElement('div');
+  el.id = id;
+  el.className = 'tk-banner';
+  el.setAttribute('role', 'status');
+  const p = document.createElement('span');
+  p.textContent = text;
+  el.append(p);
+  const close = () => el.remove();
+  for (const a of actions) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = a.label;
+    b.addEventListener('click', () => a.onClick(close));
+    el.append(b);
+  }
+  document.body.append(el);
+  return close;
+}
+
+/** The save store this boot opened, for the error screen's "Copy save code". */
+let bootStore: SaveStore | null = null;
 
 /** The testing tool's time skip, kept in localStorage so a reload keeps it. */
 function createDebugTime() {
@@ -69,18 +109,52 @@ function platformName(): string {
   return 'other';
 }
 
-async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events: EventStore }> {
+async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events: EventStore; db: IDBDatabase | null }> {
   try {
+    // Gives up after 5 s (some iOS versions never answer): the game then runs on memory with a banner.
     const db = await openGameDb();
     const events = new IdbEventStore(db);
     void events.prune().catch(() => undefined);
-    // Ask the browser not to evict our save (granted automatically for installed apps on most browsers).
-    void navigator.storage?.persist?.().catch(() => undefined);
     // The testing sandbox has its own village: time skips and test purchases never touch the real one.
-    return { store: new IdbSaveStore(db, sandbox ? SANDBOX_SAVE_KEY : undefined), events };
+    return { store: new IdbSaveStore(db, sandbox ? SANDBOX_SAVE_KEY : undefined), events, db };
   } catch (e) {
     console.warn('Falling back to in-memory storage', e);
-    return { store: new MemorySaveStore(), events: new MemoryEventStore() };
+    return { store: new MemorySaveStore(), events: new MemoryEventStore(), db: null };
+  }
+}
+
+/**
+ * Ask the browser not to evict the save (client re-audit item 7). Safari deletes a site's storage
+ * after 7 days without a visit unless the game is on the Home Screen, and `persist()` is often
+ * refused there. Returns false when the save may be evicted.
+ */
+async function storageKept(): Promise<boolean> {
+  const s = navigator.storage;
+  if (!s?.persisted) return true; // nothing to ask: assume the browser's normal rules
+  try {
+    if (await s.persisted()) return true;
+    return Boolean(await s.persist?.());
+  } catch {
+    return true;
+  }
+}
+
+const PERSIST_PROMPT_KEY = 'tk.persistPromptUntil';
+const WEEK_MS = 7 * 24 * 3600_000;
+
+function persistPromptDue(): boolean {
+  try {
+    return Date.now() >= Number(localStorage.getItem(PERSIST_PROMPT_KEY) || 0);
+  } catch {
+    return true;
+  }
+}
+
+function snoozePersistPrompt(): void {
+  try {
+    localStorage.setItem(PERSIST_PROMPT_KEY, String(Date.now() + WEEK_MS));
+  } catch {
+    /* storage blocked: asked again next start */
   }
 }
 
@@ -105,7 +179,9 @@ async function boot(): Promise<void> {
   crashReporter.install();
   const debugTime = sandbox ? createDebugTime() : { offsetMs: () => 0, skip: () => undefined };
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
-  const [{ store, events }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
+  bootStatus('Opening your village…');
+  const [{ store, events, db }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
+  bootStore = store;
   const analytics = new Analytics(events, clock);
   // Payments: StoreKit on iPhone; Google Play Billing on Android only in builds made with
   // VITE_PLAY_BILLING=1; none on the public web build; the instant mock store only in the
@@ -216,11 +292,47 @@ async function boot(): Promise<void> {
     render: { antialias: true, powerPreference: q.powerPreference },
     input: { activePointers: 3, mouse: { preventDefaultWheel: true } },
     // The limit sits just above 30 so a 60/90/120 Hz display reliably steps every 2nd/3rd/4th frame.
-    fps: q.fps < 60 ? { target: q.fps, limit: q.fps + 1 } : { target: 60 },
+    // High has no real limit (1000), but a limit makes Phaser use its limiting step, so the idle
+    // throttle below can lower the rate at run time without restarting the loop.
+    fps: q.fps < 60 ? { target: q.fps, limit: q.fps + 1 } : { target: 60, limit: 1000 },
   });
+  // The map is drawn on a canvas: name it for screen readers (client re-audit item 15).
+  game.canvas?.setAttribute('role', 'img');
+  game.canvas?.setAttribute('aria-label', 'Village map. Drag to look around, pinch or scroll to zoom, tap a building to select it. Every action is also on the buttons around the map.');
   const init: VillageSceneInit = { controller, bus, renderScale };
-  game.scene.add('village', VillageScene, true, init);
+  // Start-up (client re-audit item 3): a small first scene loads any real art, then paints the
+  // generated textures in short slices (the splash shows progress and the page keeps answering),
+  // then starts the village. The splash stays until the village's first frame is on screen.
+  const gd = controller.data;
+  let resolveFirstFrame: () => void = () => undefined;
+  const firstFrame = new Promise<void>((resolve) => (resolveFirstFrame = resolve));
+  class PrepareScene extends Phaser.Scene {
+    constructor() {
+      super('prepare');
+    }
+    preload(): void {
+      bootStatus('Unpacking the scrolls…');
+      queueArt(this);
+    }
+    create(): void {
+      bootStatus('Painting the village…');
+      // No frames while painting: on a slow phone each frame between slices would cost as much as a slice.
+      game.loop.sleep();
+      const st = controller.state;
+      void prepareTextures(this, gd, st.buildings, st.cosmetics.hallSkin, (f) => bootStatus(`Painting the village… ${Math.round(f * 100)}%`))
+        .catch((e) => console.warn('Texture preparation failed; the scenes paint what is missing', e))
+        .then(() => {
+          bootStatus('Lighting the lanterns…');
+          game.loop.wake();
+          const village = this.scene.get('village');
+          village.events.once(Phaser.Scenes.Events.CREATE, () => game.events.once(Phaser.Core.Events.POST_RENDER, () => resolveFirstFrame()));
+          this.scene.start('village', init);
+        });
+    }
+  }
+  game.scene.add('village', VillageScene, false);
   game.scene.add('battle', BattleScene, false);
+  game.scene.add('prepare', PrepareScene, true);
 
   const onResize = () => {
     const s = size();
@@ -283,6 +395,64 @@ async function boot(): Promise<void> {
     friendLinkBase: () => (isNative() ? (env.VITE_PUBLIC_URL ?? null) || null : `${location.origin}${location.pathname}`),
   });
 
+  // Toasts raised before the first frame (interrupted raid, sandbox notice, load errors, purchases
+  // delivered at start) wait for it: under the splash they would expire unseen.
+  let shown = false;
+  const earlyToasts: Parameters<Hud['toast']>[] = [];
+  const showToast = hud.toast.bind(hud);
+  hud.toast = (text, kind = 'info') => {
+    if (shown) showToast(text, kind);
+    else earlyToasts.push([text, kind]);
+  };
+
+  // How to keep the village when the browser may delete it (client re-audit item 7): Settings
+  // shows this note every time; the village screen shows a banner at most once a week.
+  let persistAdvice = false;
+  const copySaveCode = () => {
+    const code = encodeExportCode(serialize(controller.state, controller.now()));
+    const done = () => hud.toast('Save code copied. Keep it somewhere safe (a note or a message to yourself).', 'success');
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(code).then(done, () => hud.toast('Open Settings → Copy save code to copy it by hand.', 'info'));
+    else hud.toast('Open Settings → Copy save code to copy it by hand.', 'info');
+  };
+  const persistNote = (): HTMLElement => {
+    const box = document.createElement('div');
+    box.className = 'note';
+    const ios = platformName() === 'ios';
+    const p = document.createElement('p');
+    p.textContent = ios
+      ? 'Safari may delete this village after a week without a visit. To keep it: add Kagemura to your Home Screen (Share → Add to Home Screen) and play from there, link a sign-in under Online play, or copy a save code.'
+      : 'This browser may delete this village if you stay away for a while. To keep it: install Kagemura (the browser menu → Install app or Add to Home screen), link a sign-in under Online play, or copy a save code.';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn';
+    b.textContent = 'Copy save code';
+    b.addEventListener('click', copySaveCode);
+    box.append(p, b);
+    return box;
+  };
+  const openPersistAdvice = () => hud.modal('Keep your village safe', persistNote(), [{ label: 'OK', primary: true, onClick: () => hud.closeAllModals() }]);
+  const rawModal = hud.modal.bind(hud);
+  hud.modal = (title, body, ...rest) => {
+    if (title === 'Settings' && persistAdvice) body.prepend(persistNote());
+    return rawModal(title, body, ...rest);
+  };
+
+  /** Android Back during a battle: close its dialog, else ask to end the battle (or leave scouting / a replay). */
+  const battleBack = () => {
+    const hudEl = document.getElementById('battle-hud');
+    if (!hudEl) return;
+    const dialogs = hudEl.querySelectorAll<HTMLElement>('.modal-backdrop');
+    const top = dialogs[dialogs.length - 1];
+    if (top) {
+      // A dialog with a close button (End the battle?) closes; the results screen goes home.
+      (top.querySelector<HTMLButtonElement>('.modal-head .icon-btn') ?? top.querySelector<HTMLButtonElement>('.modal-foot .btn.primary'))?.click();
+      return;
+    }
+    const buttons = [...hudEl.querySelectorAll<HTMLButtonElement>('button')].filter((b) => b.offsetParent !== null);
+    const pick = (label: string) => buttons.find((b) => b.textContent?.trim() === label);
+    (pick('End battle') ?? pick('Exit replay') ?? pick('Home'))?.click();
+  };
+
   app = new App({
     game,
     controller,
@@ -327,13 +497,9 @@ async function boot(): Promise<void> {
     (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection };
   }
 
-  if (offline) {
-    hud.showWelcomeBack(offline, () => {
-      if (offline.raids.some((r) => r.result.destruction >= 50)) controller.triggerOffer('heavy_defense_loss');
-    });
-  }
+  // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
+  if (offline) hud.showWelcomeBack(offline, () => undefined);
   if (loadError) hud.toast(`${loadError} A backup was kept and a new village started.`, 'error');
-  if (!store.persistent) hud.toast('This browser mode cannot save your village.', 'error');
   tutorial = new Tutorial(controller, analytics, document.body);
   tutorial.start();
   // A village kept after a failed load, further along than this one: offer it back.
@@ -411,23 +577,162 @@ async function boot(): Promise<void> {
   });
   // A failed save is shown (at most once a minute), never only logged.
   let lastSaveWarning = 0;
+  let retryingSave = false;
   controller.onSaveError((e) => {
     if (e instanceof SaveConflictError) {
       hud.showTakenOver();
       return;
+    }
+    // iOS closed the IndexedDB connection (app in the background): reopen it and save once more.
+    if (db && !retryingSave) {
+      retryingSave = true;
+      void reconnected(db, e).then((ok) => {
+        if (ok) void controller.save();
+        setTimeout(() => (retryingSave = false), 5000);
+      });
+      if (!lastSaveWarning) {
+        // The first lost connection is retried quietly; a second failure is shown below.
+        lastSaveWarning = 1;
+        return;
+      }
     }
     if (Date.now() - lastSaveWarning < 60_000) return;
     lastSaveWarning = Date.now();
     hud.toast(`Your village could not be saved (${e.message}). Free some device storage, and copy a save code in Settings to keep it safe.`, 'error');
   });
 
-  if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
+  // Android Back (client re-audit item 6): close what is on top, leave a battle with a confirm, else ask before leaving.
+  if (isNative() && platform() === 'android') {
+    void import('@capacitor/app')
+      .then(({ App: CapApp }) =>
+        CapApp.addListener('backButton', () => {
+          if (app?.inBattle) return battleBack();
+          if (hud.closeTop()) return;
+          void hud.confirm('Leave Kagemura?', 'Your village is saved, and your Artisans keep working while you are away.', 'Leave', false, 'Stay').then((leave) => {
+            if (leave) void controller.save().finally(() => void CapApp.exitApp());
+          });
+        }),
+      )
+      .catch((e) => console.warn('Back button unavailable', e));
+  }
+
+  // Battery (client re-audit item 17): the village drops to ~20 FPS after a few seconds without
+  // input or game events, and comes back at the first touch, key, wheel or event. Never in battle.
+  const loop = game.loop as unknown as { _limitRate: number; hasFpsLimit: boolean };
+  const activeRate = loop._limitRate;
+  const IDLE_RATE = 1000 / 21;
+  const IDLE_AFTER_MS = 5000;
+  let lastActive = performance.now();
+  let idle = false;
+  const active = () => {
+    lastActive = performance.now();
+    if (idle) {
+      idle = false;
+      loop._limitRate = activeRate;
+    }
+  };
+  for (const t of ['pointerdown', 'pointermove', 'wheel', 'keydown', 'touchstart']) window.addEventListener(t, active, { capture: true, passive: true });
+  controller.onEvents(() => active());
+  window.setInterval(() => {
+    if (app?.inBattle) return active();
+    if (!idle && loop.hasFpsLimit && activeRate < IDLE_RATE && performance.now() - lastActive > IDLE_AFTER_MS) {
+      idle = true;
+      loop._limitRate = IDLE_RATE;
+    }
+  }, 1000);
+
+  // The splash goes once the village's first frame is drawn; then the queued toasts and banners.
+  await firstFrame;
   document.getElementById('boot')?.classList.add('done');
+  bootGuard?.done();
+  shown = true;
+  earlyToasts.forEach(([text, kind], i) => setTimeout(() => showToast(text, kind), i * 1200));
+  if (!store.persistent) {
+    showBanner('tk-banner-save', "This browser can't save your village: progress is lost when this page closes. Use a normal (not private) window, or copy a save code in Settings.", [{ label: 'Hide', onClick: (close) => close() }]);
+  } else if (!sandbox && !isNative()) {
+    void storageKept().then((kept) => {
+      if (kept) return;
+      // Safari (outside the Home Screen) and other browsers that refuse to keep storage may delete
+      // the village after a week away: say how to keep it, at most once a week.
+      persistAdvice = true;
+      if (!persistPromptDue()) return;
+      showBanner('tk-banner-persist', 'This browser may delete your village if you stay away for a week.', [
+        { label: 'Keep it safe', onClick: (close) => { close(); snoozePersistPrompt(); openPersistAdvice(); } },
+        { label: 'Not now', onClick: (close) => { close(); snoozePersistPrompt(); } },
+      ]);
+    });
+  }
+  if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
 }
 
 boot().catch((e) => {
   console.error(e);
+  bootGuard?.stop();
   crashReporter?.report(e, { kind: 'boot' });
   const el = document.getElementById('boot');
-  if (el) el.innerHTML = `<div class="err">Something went wrong starting the game.<br><small>${String((e as Error)?.message ?? e)}</small></div>`;
+  if (!el) return;
+  el.classList.remove('done');
+  // Built with textContent: an error message is never markup (client re-audit item 11).
+  const card = document.createElement('div');
+  card.className = 'err';
+  card.setAttribute('role', 'alert');
+  const line = (text: string, cls?: string) => {
+    const p = document.createElement('p');
+    p.textContent = text;
+    if (cls) p.className = cls;
+    card.append(p);
+    return p;
+  };
+  const button = (label: string, onClick: () => void) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn primary';
+    b.textContent = label;
+    b.style.margin = '8px 4px 0';
+    b.addEventListener('click', onClick);
+    card.append(b);
+    return b;
+  };
+  const newer = e instanceof NewerSaveError;
+  if (newer) {
+    line('Your village was saved by a newer version of Kagemura, so this version cannot open it. It is safe and unchanged.');
+    line(isNative() ? `Update Kagemura from ${platform() === 'ios' ? 'the App Store' : 'Google Play'}, then open it again.` : 'Tap Update to get the newest version. You can also copy a save code to open the village on another device.', 'small');
+  } else {
+    line('Something went wrong starting the game.');
+    line(String((e as Error)?.message ?? e), 'small');
+  }
+  const status = line('', 'small');
+  const retry = button(newer && !isNative() ? 'Update' : 'Retry', () => {
+    retry.disabled = true;
+    if (newer && !isNative()) void updateWebApp(async () => undefined, (t) => (status.textContent = t)).then((r) => {
+      if (r !== 'reloading') location.reload();
+    });
+    else location.reload();
+  });
+  if (newer) {
+    button('Copy save code', () => {
+      void (async () => {
+        const raw = (await bootStore?.load().catch(() => null)) as SaveFile | null;
+        if (!raw?.village) {
+          status.textContent = 'No save could be read on this device.';
+          return;
+        }
+        const code = encodeExportCode(raw);
+        try {
+          await navigator.clipboard.writeText(code);
+          status.textContent = 'Save code copied. Load it in Settings on a device with the newest version.';
+        } catch {
+          // No clipboard: show it for copying by hand.
+          const box = document.createElement('textarea');
+          box.readOnly = true;
+          box.value = code;
+          box.style.cssText = 'width:100%;min-height:80px;margin-top:8px;font-size:16px';
+          card.append(box);
+          box.select();
+          status.textContent = 'Copy this save code by hand.';
+        }
+      })();
+    });
+  }
+  el.replaceChildren(card);
 });

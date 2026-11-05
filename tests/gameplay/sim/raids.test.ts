@@ -20,7 +20,9 @@ function raidable(): { state: VillageState; t0: number } {
   s = must(s, { type: 'place', buildingType: 'acorn_silo', x: 25, y: 14 }, g.clock.now());
   g.clock.advanceSeconds(10);
   s = advance(s, g.clock.now(), data).state;
-  return { state: { ...s, shieldUntil: 0, resources: { ...s.resources, acorns: 2000 } }, t0: g.clock.now() };
+  // Past the gentler first raids (raids.newPlayerRaids, tested in reaudit-design.test.ts): full raiders from here.
+  const stats = { ...s.stats, defensesFaced: data.raids.newPlayerRaids?.count ?? 0 };
+  return { state: { ...s, stats, shieldUntil: 0, resources: { ...s.resources, acorns: 2000 } }, t0: g.clock.now() };
 }
 
 describe('raid schedule (#9)', () => {

@@ -167,14 +167,29 @@ describe('trophy equilibrium (#4)', () => {
 });
 
 describe('matchmaking follows earned power, not only honor (audit F22)', () => {
+  it('research behind the caps reads as the Keep it matches (design re-audit)', () => {
+    const v = atHall(newGame().state, 12);
+    const at = (lvl: number) => attackerStrength({ ...v, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: lvl }, active: [] } }, data);
+    const caps = data.hall.levels.map((l) => l.troopLevelCap!);
+    expect(at(caps[11])).toBeCloseTo(12, 5);
+    expect(at(caps[10])).toBeCloseTo(11, 5);
+    // Two levels behind Keep 12's caps used to read 11.9 (of the whole level scale) and met near-capped Keep 12 bases.
+    expect(at(caps[11] - 2)).toBeLessThan(11);
+    expect(at(caps[11] - 2)).toBeGreaterThan(9.9);
+  });
+
   it('a Keep 15 attacker with maxed research meets Keep 15 bases even while its honor lags a Keep behind', () => {
     const { state } = newGame();
     const village = atHall(state, 15);
     const lagging = { ...village, trophies: 14 * data.ranks.matchmaking.trophiesPerHall - 200 };
     const fresh = opponentFor(7, { ...lagging, army: { hedgehog_roller: 10 } }, data);
     const maxed = opponentFor(7, { ...lagging, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: troopLevelCapAt(15, data, 'hedgehog_roller') }, active: [] } }, data);
-    expect(attackerStrength({ ...lagging, army: { hedgehog_roller: 10 } }, data)).toBeCloseTo(14, 5);
+    // Design re-audit: strength is the Keep the research matches (level 1 Shinobi: Keep 1), so
+    // honor decides; the match window still keeps a Keep 15 village on Keep 14-15 bases.
+    expect(attackerStrength({ ...lagging, army: { hedgehog_roller: 10 } }, data)).toBeCloseTo(1, 5);
+    expect(attackerStrength({ ...lagging, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: troopLevelCapAt(15, data, 'hedgehog_roller') }, active: [] } }, data)).toBeCloseTo(15, 5);
     expect(fresh.hallLevel).toBeLessThanOrEqual(14);
+    expect(fresh.hallLevel).toBeGreaterThanOrEqual(14);
     expect(maxed.hallLevel).toBe(15);
     // Same Keep: no loot penalty.
     expect(totalLoot(maxed).acorns!).toBeGreaterThan(0);
@@ -187,12 +202,15 @@ describe('matchmaking follows earned power, not only honor (audit F22)', () => {
     const fresh = { ...village, army: { wind_step_assassin: 10 }, research: { levels: {}, active: [] } };
     expect(data.troops.wind_step_assassin.levelCapOffset).toBeGreaterThan(0);
     expect(attackerStrength(fresh, data)).toBeGreaterThanOrEqual(attackerStrength(old, data) - 1e-9);
-    expect(attackerStrength(fresh, data)).toBeGreaterThan(6.5);
+    // Level 1 of the new tier has exactly the research power of a Keep 6-maxed army (design re-audit:
+    // strength is the Keep the research matches), so it meets the top of Keep 6 or Keep 7 bases.
+    expect(attackerStrength(fresh, data)).toBeGreaterThanOrEqual(6 - 1e-9);
+    for (let seed = 1; seed <= 20; seed++) expect(opponentFor(seed, { ...fresh, trophies: 0 }, data).hallLevel).toBeGreaterThanOrEqual(6);
     // Fully researched new tier: the top of Keep 7.
     const maxed = { ...fresh, research: { levels: { wind_step_assassin: troopLevelCapAt(7, data, 'wind_step_assassin') }, active: [] } };
     expect(attackerStrength(maxed, data)).toBeCloseTo(7, 5);
-    // So Keep 7 attackers meet Keep 7 bases, not the Keep 6 bases they used to flatten.
-    for (let seed = 1; seed <= 20; seed++) expect(opponentFor(seed, { ...fresh, trophies: 0 }, data).hallLevel).toBe(7);
+    // So researched Keep 7 attackers meet Keep 7 bases, not the Keep 6 bases they used to flatten.
+    for (let seed = 1; seed <= 20; seed++) expect(opponentFor(seed, { ...maxed, trophies: 0 }, data).hallLevel).toBe(7);
   });
 });
 

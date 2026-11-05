@@ -15,6 +15,7 @@ import { rewardChips } from './economyUi';
 import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { ensureCommunityRules } from './communityRules';
+import { presetChatRow } from './ageScreen';
 
 export interface GroveUiDeps {
   kit: UiKit;
@@ -142,7 +143,7 @@ export class GroveUi {
       return;
     }
     // Online: real Groves to browse, or found a new one.
-    const search = h('input', { class: 'text', type: 'search', maxlength: 24, placeholder: 'Search Alliances…' }) as HTMLInputElement;
+    const search = h('input', { class: 'text', type: 'search', dir: 'auto', placeholder: 'Search Alliances…' }) as HTMLInputElement;
     search.addEventListener('keydown', (e) => {
       e.stopPropagation();
       if (e.key === 'Enter') void this.src.search(search.value);
@@ -191,7 +192,7 @@ export class GroveUi {
       );
     }
     if (!snap.chat.length) list.append(h('p', { class: 'muted' }, 'No messages yet. Say hello!'));
-    const input = h('input', { class: 'text', type: 'text', maxlength: 160, placeholder: 'Say something nice…', value: keep }) as HTMLInputElement;
+    const input = h('input', { class: 'text', type: 'text', dir: 'auto', /* 160 code points, as filterText (a UTF-16 maxlength cut emoji and other scripts short) */ oninput: (e: Event) => { const el = e.target as HTMLInputElement; const cps = Array.from(el.value); if (cps.length > 160) el.value = cps.slice(0, 160).join(''); }, placeholder: 'Say something nice…', value: keep }) as HTMLInputElement;
     const send = async () => {
       const text = input.value;
       // Real players (an online Alliance): the community rules, once (audit R06).
@@ -207,7 +208,17 @@ export class GroveUi {
       e.stopPropagation();
       if (e.key === 'Enter') void send();
     });
-    body.append(list, h('div', { class: 'chat-input-row' }, input, h('button', { class: 'btn primary', type: 'button', onclick: () => void send(), disabled: this.busy }, 'Send')));
+    // Under 13 in a real Alliance (re-audit): ready-made messages only (the server refuses free text).
+    if (snap.moderation && this.c.state.profile.ageBand === 'under13') {
+      body.append(
+        list,
+        presetChatRow((text) => {
+          void ensureCommunityRules(this.d.kit).then((ok) => {
+            if (ok) void this.run(() => this.src.send(text), redraw);
+          });
+        }, this.busy),
+      );
+    } else body.append(list, h('div', { class: 'chat-input-row' }, input, h('button', { class: 'btn primary', type: 'button', onclick: () => void send(), disabled: this.busy }, 'Send')));
     window.setTimeout(() => {
       list.scrollTop = list.scrollHeight;
       if (keepFocus) input.focus();

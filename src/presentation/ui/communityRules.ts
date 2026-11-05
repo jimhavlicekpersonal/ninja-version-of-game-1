@@ -6,7 +6,7 @@
  * (bump COMMUNITY_RULES_VERSION). Nothing here moderates: reports, blocks,
  * the word filter and staff tools do that.
  */
-export const COMMUNITY_RULES_VERSION = 1;
+export const COMMUNITY_RULES_VERSION = 2;
 const KEY = 'tk.community.accepted';
 
 export function communityRulesAccepted(): boolean {
@@ -30,7 +30,7 @@ export async function ensureCommunityRules(kit: { confirm(title: string, message
   if (communityRulesAccepted()) return true;
   const ok = await kit.confirm(
     'Community rules',
-    'Kagemura is for everyone. Be respectful: no harassment, hate, threats, sexual content, or sharing anyone\'s personal details (including your own). No cheating or selling accounts. Use ⋯ to report or block anyone breaking the rules; staff can remove messages, mute chat and suspend accounts. The full rules are in Settings → Privacy and help.',
+    'Kagemura is played by people of many ages, so we ask everyone\'s age before online play and protect younger players (players under 13 chat with ready-made messages only and cannot be found by name). Be respectful: no harassment, hate, threats, sexual content, or sharing anyone\'s personal details (including your own). No cheating or selling accounts. Use ⋯ to report or block anyone breaking the rules; staff can remove messages, mute chat and suspend accounts. The full rules are in Settings → Privacy and help.',
     'I agree',
     false,
     'Not now',

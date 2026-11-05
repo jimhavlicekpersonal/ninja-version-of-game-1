@@ -11,7 +11,7 @@
  * Painters work in the ninja's local space (facing right, feet at y = 0,
  * head centre at y = -31, hand near (8, -17)).
  */
-import { crest, INK, ninja, type NinjaLook } from './ninja';
+import { crest, INK, ninja, troopArt, type NinjaLook } from './ninja';
 import { darken, lighten, rgba, type Ctx } from './toolkit';
 
 interface Pt {
@@ -396,8 +396,8 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
   },
   // ---------------------------------------------------------------- infiltrator
   tunnel_runner: {
-    role: 'infiltrator', tier: 1, prop: 'spade and straw hat',
-    look: { gi: '#6b4a2e', band: IRON, weapon: 'shovel', hat: 'kasa' },
+    role: 'infiltrator', tier: 1, prop: 'spade and a spray of dug earth',
+    look: { gi: '#6b4a2e', band: IRON, weapon: 'shovel' },
   },
   wall_climber: {
     role: 'infiltrator', tier: 2, prop: 'climbing claws scaling a brick wall',
@@ -594,7 +594,7 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
   // ---------------------------------------------------------------- siege
   ram_crew: {
     role: 'siege', tier: 1, prop: 'iron-capped log ram',
-    look: { gi: '#5e3a22', band: IRON, weapon: 'none', hat: 'kasa' },
+    look: { gi: '#5e3a22', band: IRON, weapon: 'none' },
     front(ctx) {
       poly(ctx, [{ x: -10, y: -20 }, { x: 22, y: -20 }, { x: 22, y: -12 }, { x: -10, y: -12 }], WOOD, 1.1);
       for (const x of [-4, 4, 12]) line(ctx, [{ x, y: -19 }, { x: x + 2, y: -13 }], WOOD_DARK, 0.8);
@@ -807,6 +807,104 @@ export const warriorIconDefs: Record<string, WarriorIconDef> = {
   },
 };
 
+// ------------------------------------------------------------------ role silhouettes
+
+/**
+ * Each role has its own outline, so warriors read by shape at battle size (~20 CSS px) before
+ * colour or props (docs/art/ART_AI_BRIEF.md, "Role silhouettes"): blades lean into a dash,
+ * throwers wear a wide kasa, guardians a crested kabuto and shoulder plates, saboteurs squat
+ * with a knotted head cloth and tool belt, infiltrators creep low in a spray of earth, mystics
+ * wear a long robe with a bare topknot and a soft glow, siege crews carry a boxy frame, shadows
+ * trail long hood tails with glowing eyes. Shared by the battle sprite and the badge.
+ */
+interface RoleStyle {
+  look: Partial<NinjaLook>;
+  /** Pose applied around the whole figure (props included), so held items stay in the hand. */
+  lean?: number;
+  crouch?: number;
+  back?: (ctx: Ctx, def: WarriorIconDef) => void;
+  front?: (ctx: Ctx, def: WarriorIconDef) => void;
+}
+
+const dust = (ctx: Ctx) => {
+  for (const [x, y, r] of [[-14, -2, 4.5], [-20, -5, 3.4], [-9, 1, 3]] as const) circle(ctx, x, y, r, rgba('#c9a77a', 0.75), 0);
+};
+
+const ROLE_STYLE: Record<string, RoleStyle> = {
+  blade: { look: {}, lean: 0.18 },
+  thrower: { look: { hat: 'kasa' } },
+  guardian: { look: { hat: 'helm', pauldrons: true } },
+  saboteur: { look: { hat: 'wrap', belt: true }, crouch: 0.45 },
+  infiltrator: { look: {}, crouch: 0.75, lean: 0.24, back: dust },
+  sky: { look: {} },
+  mystic: {
+    look: { hat: 'topknot', robe: true },
+    back(ctx, def) {
+      const c = def.look.band ?? GOLD;
+      const g = ctx.createRadialGradient(0, -24, 2, 0, -24, 24);
+      g.addColorStop(0, rgba(c, 0.45));
+      g.addColorStop(1, rgba(c, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, -24, 24, 0, Math.PI * 2);
+      ctx.fill();
+    },
+  },
+  siege: { look: { pack: 'frame' } },
+  beast: { look: {} },
+  shadow: { look: { hat: 'hood' } },
+};
+
+/** Draw one warrior in the ninja's local space (facing right, feet at y = 0): role silhouette, look and signature prop. */
+export function paintWarriorFigure(ctx: Ctx, def: WarriorIconDef): void {
+  const style = ROLE_STYLE[def.role] ?? { look: {} };
+  ctx.save();
+  if (style.crouch) ctx.scale(1 + style.crouch * 0.12, 1 - style.crouch * 0.2);
+  if (style.lean) ctx.transform(1, 0, -style.lean, 1, 0, 0);
+  style.back?.(ctx, def);
+  def.back?.(ctx);
+  ctx.save();
+  if (def.alpha !== undefined) ctx.globalAlpha = def.alpha;
+  const look: NinjaLook = { ...def.look, ...style.look, eyes: def.role === 'shadow' ? def.look.band : def.look.eyes };
+  // A role hat wins over an older per-warrior one; a guardian keeps its own armour colour on the kabuto.
+  if (def.role === 'guardian') look.armor = def.look.armor ?? def.look.band;
+  ninja(ctx, look);
+  ctx.restore();
+  style.front?.(ctx, def);
+  def.front?.(ctx);
+  ctx.restore();
+}
+
+/** Bright ring colours under warriors in battle, one per role (the badge discs use darker tones of the same hues). */
+export const ROLE_RING: Record<string, string> = {
+  blade: '#6f9bff',
+  thrower: '#3fd0a0',
+  guardian: '#ff5a40',
+  saboteur: '#c6e04a',
+  infiltrator: '#e0a050',
+  sky: '#62d4ff',
+  mystic: '#c08cff',
+  siege: '#ff9a30',
+  beast: '#ffd84a',
+  shadow: '#9a8cc8',
+};
+
+/** Live troop ids that differ from the roster id (the six original warriors kept their internal ids). */
+const LIVE_ID: Record<string, string> = {
+  shinobi: 'hedgehog_roller',
+  kunai_adept: 'frog_lobber',
+  armored_guardian: 'beetle_brute',
+  tunnel_runner: 'mole_digger',
+  kite_raider: 'owl_bomber',
+};
+
+/** Role of a live troop id (`troop.<id>` texture key), or of a summoned companion (`<id>.companion`). */
+export function roleOfTroop(troopId: string): string | undefined {
+  if (troopId.endsWith('.companion')) return 'beast';
+  const rosterId = Object.keys(LIVE_ID).find((k) => LIVE_ID[k] === troopId) ?? troopId;
+  return warriorIconDefs[rosterId]?.role;
+}
+
 // ------------------------------------------------------------------ badge
 
 const ROLE_COLOURS: Record<string, string> = {
@@ -856,12 +954,7 @@ export function paintWarriorIcon(ctx: Ctx, id: string): void {
   ctx.clip();
   ctx.translate(-2, 18);
   ctx.scale(0.68, 0.68);
-  def.back?.(ctx);
-  ctx.save();
-  if (def.alpha !== undefined) ctx.globalAlpha = def.alpha;
-  ninja(ctx, def.look);
-  ctx.restore();
-  def.front?.(ctx);
+  paintWarriorFigure(ctx, def);
   ctx.restore();
   ring(ctx, def);
 }
@@ -870,3 +963,42 @@ export function paintWarriorIcon(ctx: Ctx, id: string): void {
 export const warriorIconArt: Record<string, WarriorIconArt> = Object.fromEntries(
   Object.keys(warriorIconDefs).map((id) => [id, { w: ICON_SIZE, h: ICON_SIZE, paint: (ctx: Ctx) => paintWarriorIcon(ctx, id) }]),
 );
+
+/**
+ * Battle sprites (`troop.<id>`): the same figure as the badge, so the card a player taps matches
+ * the warrior on the field. Guardians are drawn 1.22x, tiers 4-5 another 1.15x (with a soft aura),
+ * so the strongest warriors stand out. The canvas leaves room for props and kites; scenes size
+ * sprites from `w`/`h`, so figures keep the same on-screen scale as before.
+ */
+export const warriorSpriteArt: Record<string, WarriorIconArt> = Object.fromEntries(
+  Object.entries(warriorIconDefs).map(([id, def]) => {
+    const big = def.tier >= 4 ? 1.15 : 1;
+    const k = (def.role === 'guardian' ? 1.22 : 1) * big;
+    const sky = def.role === 'sky';
+    const w = Math.ceil((sky ? 68 : 64) * k);
+    const h = Math.ceil((sky ? 66 : 64) * k);
+    return [LIVE_ID[id] ?? id, {
+      w, h,
+      paint(ctx: Ctx) {
+        ctx.save();
+        ctx.scale(k, k);
+        if (def.tier >= 4) {
+          // Aura: a soft halo in the warrior's accent colour (strongest at tier 5).
+          const c = def.look.band ?? GOLD;
+          const g = ctx.createRadialGradient(0, -26, 3, 0, -24, 28);
+          g.addColorStop(0, rgba(c, def.tier === 5 ? 0.5 : 0.32));
+          g.addColorStop(1, rgba(c, 0));
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.ellipse(0, -24, 26, 30, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        paintWarriorFigure(ctx, def);
+        ctx.restore();
+      },
+    }];
+  }),
+);
+// The battle sprite registry (`troopArt`, ninja.ts) takes these in place of the shared template;
+// `registerWarriorArt` then only adds what is still missing (beast companions).
+Object.assign(troopArt, warriorSpriteArt);

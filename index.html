@@ -13,6 +13,14 @@
     <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>Kagemura: Ninja Clans</title>
+    <style>
+      /* Session-long notices (main.ts showBanner): above the map and HUD layer, under dialogs. */
+      .tk-banner { position: fixed; z-index: 9; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 104px); max-width: 520px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-radius: 14px; background: #f7f0e1; color: #26303d; box-shadow: 0 6px 24px rgba(0, 0, 0, .35); font: 600 14px/1.35 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+      .tk-banner span { flex: 1 1 220px; }
+      .tk-banner button { min-height: 40px; padding: 6px 14px; border: 0; border-radius: 10px; background: #26303d; color: #f7f0e1; font: 700 14px system-ui, -apple-system, sans-serif; cursor: pointer; }
+      #boot .err p { margin: 0 0 8px; }
+      #boot .err .small { font-weight: 500; font-size: 13px; color: #5f6b78; word-break: break-word; }
+    </style>
   </head>
   <body>
     <div id="game"></div>

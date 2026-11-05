@@ -22,22 +22,24 @@ const maxStorage = (h: number) => {
 };
 
 describe('Elder Toadstool curve (#14, #15)', () => {
-  it('upgrade times grow by a steady factor, reaching about a week at hall 10', () => {
-    const ratios: number[] = [];
-    for (let l = 3; l < hallLv.length; l++) {
-      if (hallLv[l].buildSeconds === 7 * 86400) {
-        expect(hallLv[l].buildSeconds).toBeGreaterThanOrEqual(hallLv[l - 1].buildSeconds);
-        continue;
-      }
-      ratios.push(hallLv[l].buildSeconds / hallLv[l - 1].buildSeconds);
+  it('upgrade times grow by a steady factor to Keep 9, then climb gently to under a week (design re-audit)', () => {
+    // Keeps 3-9: x2.2-3 per Keep (balance fix #14: the old curve jumped x36 at hall 4).
+    for (let l = 3; l < 9; l++) {
+      const r = hallLv[l].buildSeconds / hallLv[l - 1].buildSeconds;
+      expect(r, `Keep ${l + 1}`).toBeGreaterThanOrEqual(2.2);
+      expect(r, `Keep ${l + 1}`).toBeLessThanOrEqual(3);
     }
-    for (const r of ratios) {
-      expect(r).toBeGreaterThanOrEqual(2.2);
-      expect(r).toBeLessThanOrEqual(3);
+    // Keeps 10-15 used to be a flat 168 h each, the longest waits exactly where players drop off.
+    // Now every Keep still takes longer than the one before, by at most about x1.5, and none takes a week.
+    for (let l = 9; l < hallLv.length; l++) {
+      const r = hallLv[l].buildSeconds / hallLv[l - 1].buildSeconds;
+      expect(r, `Keep ${l + 1}`).toBeGreaterThan(1);
+      expect(r, `Keep ${l + 1}`).toBeLessThanOrEqual(1.55);
+      expect(hallLv[l].buildSeconds, `Keep ${l + 1}`).toBeLessThan(7 * 86400);
     }
     const hall10Days = hallLv[9].buildSeconds / 86400;
-    expect(hall10Days).toBeGreaterThan(5);
-    expect(hall10Days).toBeLessThan(9);
+    expect(hall10Days).toBeGreaterThanOrEqual(3);
+    expect(hall10Days).toBeLessThan(6);
   });
 
   it('early upgrade costs grow by a multiplier that never shrinks; late costs stay affordable', () => {
@@ -46,6 +48,9 @@ describe('Elder Toadstool curve (#14, #15)', () => {
       const m = hallLv[l].cost.acorns! / hallLv[l - 1].cost.acorns!;
       expect(m).toBeGreaterThanOrEqual(last);
       expect(m).toBeGreaterThanOrEqual(3);
+      // Design re-audit: Keep 5 -> 6 was x6.5 (130k -> 850k), about 30 days for a casual player,
+      // where players drop off. No early step is above x5 now.
+      expect(m).toBeLessThanOrEqual(5);
       last = m;
     }
     for (let l = 6; l < hallLv.length; l++) {

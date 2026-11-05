@@ -55,7 +55,7 @@
       {
         "level": 5,
         "cost": {
-          "acorns": 130000
+          "acorns": 100000
         },
         "buildSeconds": 4320,
         "hp": 3600,
@@ -67,7 +67,7 @@
       {
         "level": 6,
         "cost": {
-          "acorns": 850000
+          "acorns": 500000
         },
         "buildSeconds": 11700,
         "hp": 4200,
@@ -117,7 +117,7 @@
         "cost": {
           "acorns": 3757430
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 20749,
         "storage": {
           "acorns": 57720,
@@ -129,7 +129,7 @@
         "cost": {
           "acorns": 5448274
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 388800,
         "hp": 27678,
         "storage": {
           "acorns": 89466,
@@ -141,7 +141,7 @@
         "cost": {
           "acorns": 7899997
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 432000,
         "hp": 36925,
         "storage": {
           "acorns": 138672,
@@ -153,7 +153,7 @@
         "cost": {
           "acorns": 11454996
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 475200,
         "hp": 49255,
         "storage": {
           "acorns": 214942,
@@ -165,7 +165,7 @@
         "cost": {
           "acorns": 16609744
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 518400,
         "hp": 65707,
         "storage": {
           "acorns": 333161,
@@ -177,7 +177,7 @@
         "cost": {
           "acorns": 24084129
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 561600,
         "hp": 87653,
         "storage": {
           "acorns": 516399,

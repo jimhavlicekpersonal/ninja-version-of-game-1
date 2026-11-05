@@ -172,13 +172,21 @@ Every battle report must also be checked:
 | `GET /v1/me` | | `PlayerView` `{ id, name, trophies, hallLevel, shieldUntil, groveId }` |
 | `PUT /v1/me` | `{ name }` | `PlayerView` |
 | `DELETE /v1/me` | | `204` (the online account is deleted; the token stops working) |
-| `POST /v1/account/deletion-requests` | `{ playerId?, name?, contact?, note? }` (no token) | `202 { id }` |
+| `POST /v1/account/deletion-requests` | `{ playerId?, name?, code?, note? }` (no token; `contact` is ignored) | `202 { id, verified }` |
 | `GET /account/delete` | | the web deletion page (HTML), for store listings |
+| `POST /v1/me/deletion-code` | | `{ code: "XXXXX-XXXXX", expiresAt }` (feature `deletion-codes`; one at a time, 30 days, only its hash is kept) |
+| `PUT /v1/me/age` | `{ band: 'under13' \| '13to17' \| 'adult' \| null }` | `{ band }`: the strictest band the server keeps (feature `age-bands`) |
+| `GET /v1/notices` · `POST /v1/notices/read` | · `{ ids }` | `{ notices: [{ id, at, kind, text, read }] }` · `204` (feature `notices`) |
+| `POST /v1/sessions/revoke-others` | | `{ revoked }`: every other device token of this account is signed out (feature `sessions`) |
+| `POST /v1/webhooks/apple-signin` | `{ payload: JWT }` (Apple, no token) | `{ ok: true }`; `consent-revoked` unlinks Apple, `account-delete` deletes the player |
 
 - New players start with `ranks.startingTrophies` and a shield of `raids.newPlayerShieldHours`.
 - Names are trimmed, filtered for bad words, and 2–24 characters long. Anything else becomes "Ruler".
 - **Deleting an account** (`DELETE /v1/me`, Apple 5.1.1(v)) leaves the player's Alliance (leadership passes on; the notice does not name them) and deletes the player, their shared base, tickets they hold, raids on them, their chat lines, troop requests and gifts to them, war claims and Alliance notices naming them. What other players keep stays without the name: replays of raids they made (attacker "Deleted player"), troops they gave, war rosters and war attacks (a war's score must not change). Copies of their base inside other players' recent tickets go with the 30-day retention. The game also turns its pending online attacks into practice results and switches online play off on that device, so it does not quietly register a new player.
-- **Deletion requests from the web** (`POST /v1/account/deletion-requests`, 5 an hour per IP address) need a `playerId` or a `name`. The answer is the same whether or not the player exists. Staff verify and carry them out with the admin API (`docs/SHIPPING.md`); the admin API is our server's, not part of this protocol.
+- **Deletion requests from the web** (`POST /v1/account/deletion-requests`, 5 an hour per IP address) need a `playerId` (or a `name`) and, to be carried out, the one-time `code` from Settings (`POST /v1/me/deletion-code`): Player IDs are visible to other players, so an ID alone proves nothing. A request with a valid code answers `verified: true` and uses the code up; anything else answers `verified: false`, whether or not the player exists. Staff carry out only verified requests (an unverified one needs `override` with a note saying how ownership was checked); the admin API is our server's, not part of this protocol.
+- **Age bands** (re-audit): the game sends the band from its age screen or the store's age signal before it registers or goes online. The server keeps the strictest one it heard (an `adult` after a minor band is ignored; staff can reset it). `under13`: chat accepts only the `PRESET_CHAT` phrases (`403 age_restricted` otherwise), no renames (`403 age_restricted`), never found by name or in platform-friend lists, `findable` stays `nobody`. `13to17`, the first time it is stated: `findable` `friends_of_friends` (if it was `everyone`) and `showOnline` off; later choices are kept.
+- **Notices** (EU DSA art. 16(5)/17): when staff act on a report, each reporter gets the outcome and the affected player gets the decision, the reason and how to appeal (`SUPPORT_CONTACT`); suspensions add one too. A muted chat send (`403 muted`) says the reason and until when.
+- **Sessions**: each device token remembers the sign-in that made it; unlinking that provider signs those devices out (not the one asking). Extra device tokens unused for 400 days are deleted by retention; the first device's token is the account itself and stays.
 
 ### PvP
 

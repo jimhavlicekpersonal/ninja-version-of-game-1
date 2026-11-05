@@ -100,7 +100,7 @@ export async function ban(ctx: ServerContext, actor: string, id: string, body: {
   if (until) await ctx.board.remove(p.id);
   else if (p.base) await ctx.board.set(p.id, p.trophies, p.createdAt);
   // Statement of reasons with the appeal route (re-audit, EU DSA art. 17); the 403 on every request says it too.
-  await notify(ctx, p.id, 'moderation_action', hours > 0 ? `Your account is suspended from online play until ${new Date(until).toUTCString()}. Reason: ${reason}. ${appealText(ctx)}` : 'The suspension of your account has been lifted.');
+  if (hours > 0 || (p.bannedUntil ?? 0) > ctx.now()) await notify(ctx, p.id, 'moderation_action', hours > 0 ? `Your account is suspended from online play until ${new Date(until).toUTCString()}. Reason: ${reason}. ${appealText(ctx)}` : 'The suspension of your account has been lifted.');
   await audit(ctx, actor, hours > 0 ? 'ban' : 'unban', p.id, { hours, reason });
   return detail(ctx, p.id);
 }

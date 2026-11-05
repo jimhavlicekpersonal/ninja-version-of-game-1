@@ -13,8 +13,20 @@
 import { TILE_H, TILE_W } from '../render/iso';
 import { artRng, darken, lighten, mix, rgba, softShadow, type Ctx } from './toolkit';
 
-export type Tier = 1 | 2 | 3;
-export type Painter = (ctx: Ctx, size: number, tier: Tier) => void;
+/** Visual tier. Most buildings use 1-3 (thirds of their levels); the Keep uses 1-6 and defenses 1-5 (`tierFor`). */
+export type Tier = 1 | 2 | 3 | 4 | 5 | 6;
+/** Where a level sits: its tier, and its step inside that tier (every level shows a small change). */
+export interface LevelInfo {
+  level: number;
+  maxLevel: number;
+  tier: Tier;
+  /** Number of tiers this building type has. */
+  tiers: number;
+  /** 0-based position of this level inside its tier, and how many levels that tier spans. */
+  step: number;
+  steps: number;
+}
+export type Painter = (ctx: Ctx, size: number, tier: Tier, lv?: LevelInfo) => void;
 export interface PainterDef {
   /** Pixels of art above the footprint diamond. */
   extra: number;
@@ -135,6 +147,8 @@ function block(ctx: Ctx, hw: number, hh: number, base: number, height: number, f
 
 /** Stone plinth (ishigaki-style) with staggered block joints. */
 function stoneBase(ctx: Ctx, hw: number, hh: number, base: number, height: number, color = STONE): number {
+  // Each level inside a tier raises the plinth a little (a visible change even between tier looks).
+  if (LV && hw > 12) height += Math.min(3, LV.step) * 2.5;
   const top = block(ctx, hw, hh, base, height, color, { top: lighten(color, 0.15) });
   ctx.strokeStyle = rgba(INK, 0.35);
   ctx.lineWidth = 0.9;
@@ -176,8 +190,17 @@ function stoneBase(ctx: Ctx, hw: number, hh: number, base: number, height: numbe
  * Japanese hip roof with upturned corners and tile rows.
  * Eave diamond half sizes (hw, hh) at y = eave; apex `rise` above.
  */
-function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, color = ROOF, opts: { flare?: number; ridge?: string; finial?: string; tips?: string } = {}): number {
-  const flare = opts.flare ?? Math.min(10, hw * 0.16);
+/**
+ * Roof materials tell building families apart (item 11 of the art re-audit): `tile` kawara rows
+ * (storehouses, military), `thatch` straw (producers and huts: shaggy, no flare), `shingle` cedar
+ * bark (young defenses), `copper` verdigris standing seams (late defenses, the Keep's upper tiers).
+ */
+export type RoofMaterial = 'tile' | 'thatch' | 'shingle' | 'copper';
+export const ROOF_COLOURS: Record<RoofMaterial, string> = { tile: ROOF, thatch: '#c9a65e', shingle: '#7a5236', copper: '#4f9a86' };
+
+function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, color = ROOF, opts: { flare?: number; ridge?: string; finial?: string; tips?: string; material?: RoofMaterial } = {}): number {
+  const material = opts.material ?? 'tile';
+  const flare = opts.flare ?? (material === 'thatch' ? 2 : Math.min(10, hw * 0.16));
   const apex = { x: 0, y: eave - rise };
   const L = { x: -hw, y: eave - flare };
   const R = { x: hw, y: eave - flare };
@@ -210,9 +233,62 @@ function roof(ctx: Ctx, hw: number, hh: number, eave: number, rise: number, colo
   };
   face(L, B, slope(L, B, 0.2, -0.04));
   face(B, R, slope(B, R, -0.02, 0.2));
-  // Tile rows: runs from eave to ridge, and courses parallel to the eave.
   ctx.save();
-  for (const [a, b, alpha] of [[L, B, 0.16], [B, R, 0.09]] as const) {
+  if (material === 'thatch') {
+    // Straw: many short strokes down the slope, and a thick trimmed eave.
+    const r = artRng(Math.round(hw * 3 + rise));
+    for (const [a, b] of [[L, B], [B, R]] as const) {
+      const n = Math.max(14, Math.round(Math.hypot(b.x - a.x, b.y - a.y) / 2.2));
+      for (let i = 0; i < n; i++) {
+        const f = (i + r() * 0.8) / n;
+        const t = 0.25 + r() * 0.7;
+        const p = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f + 2 };
+        const q = { x: apex.x + (p.x - apex.x) * t, y: apex.y + (p.y - apex.y) * t };
+        const len = 0.18 + r() * 0.12;
+        line(ctx, [q, { x: q.x + (p.x - apex.x) * len, y: q.y + (p.y - apex.y) * len }], r() < 0.5 ? rgba(darken(color, 0.4), 0.45) : rgba(lighten(color, 0.4), 0.5), 0.8);
+      }
+    }
+    line(ctx, [{ x: L.x, y: L.y + 1.5 }, { x: B.x, y: B.y + 1.5 }, { x: R.x, y: R.y + 1.5 }], darken(color, 0.35), 3.2);
+    line(ctx, [{ x: L.x, y: L.y + 0.4 }, { x: B.x, y: B.y + 0.4 }, { x: R.x, y: R.y + 0.4 }], lighten(color, 0.25), 1);
+    ctx.restore();
+    // Ridge bundle tied with cord.
+    line(ctx, [B, apex], darken(color, 0.5), 3.4);
+    for (const f of [0.3, 0.6]) circle(ctx, B.x + (apex.x - B.x) * f, B.y + (apex.y - B.y) * f, 1.6, darken(color, 0.6), 0);
+    return apex.y;
+  }
+  if (material === 'copper' || material === 'shingle') {
+    // Copper: standing seams from ridge to eave with a bright edge. Shingle: fine courses of cedar bark.
+    const seams = material === 'copper';
+    for (const [a, b, alpha] of [[L, B, 0.3], [B, R, 0.18]] as const) {
+      const runs = Math.max(6, Math.round(Math.hypot(b.x - a.x, b.y - a.y) / (seams ? 6 : 9)));
+      for (let i = 1; i < runs; i++) {
+        const f = i / runs;
+        const p = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f + 2 };
+        if (seams) {
+          line(ctx, [p, { x: apex.x + (p.x - apex.x) * 0.12, y: apex.y + (p.y - apex.y) * 0.12 }], rgba(darken(color, 0.45), 0.55), 0.9);
+          line(ctx, [{ x: p.x - 0.8, y: p.y }, { x: apex.x + (p.x - apex.x) * 0.12 - 0.8, y: apex.y + (p.y - apex.y) * 0.12 }], rgba('#e6fff4', alpha), 0.6);
+        }
+      }
+      const courses = seams ? [0.5] : [0.2, 0.35, 0.5, 0.65, 0.8];
+      for (const t of courses) {
+        const p = { x: apex.x + (a.x - apex.x) * t, y: apex.y + (a.y - apex.y) * t + 3 * t };
+        const q = { x: apex.x + (b.x - apex.x) * t, y: apex.y + (b.y - apex.y) * t + 3 * t };
+        line(ctx, [p, q], rgba(seams ? darken(color, 0.4) : INK, seams ? 0.3 : 0.22), seams ? 0.7 : 0.8);
+      }
+    }
+    if (seams) {
+      // Patina streaks.
+      const r = artRng(Math.round(hw * 5));
+      for (let i = 0; i < 6; i++) {
+        const f = r();
+        const a = i % 2 ? L : R;
+        const p = { x: a.x + (B.x - a.x) * f, y: a.y + (B.y - a.y) * f };
+        line(ctx, [{ x: apex.x + (p.x - apex.x) * 0.4, y: apex.y + (p.y - apex.y) * 0.4 }, { x: apex.x + (p.x - apex.x) * 0.8, y: apex.y + (p.y - apex.y) * 0.8 }], rgba('#9fe0c8', 0.28), 1.6);
+      }
+    }
+  }
+  // Tile rows: runs from eave to ridge, and courses parallel to the eave.
+  for (const [a, b, alpha] of material === 'tile' ? ([[L, B, 0.16], [B, R, 0.09]] as const) : []) {
     const runs = Math.max(5, Math.round(Math.hypot(b.x - a.x, b.y - a.y) / 7));
     for (let i = 1; i < runs; i++) {
       const f = i / runs;
@@ -1536,11 +1612,100 @@ export const buildingPainters: Record<string, PainterDef> = {
   longbow_yagura: longbowYagura,
 };
 
-/** Visual tier for a level: the level range is split into thirds. */
-export function tierFor(level: number, maxLevel: number): Tier {
+/** Legacy visual tier (1-3, thirds of the level range): the tier keys real art uses (`building.<type>.t<1-3>`). */
+export function thirdOf(level: number, maxLevel: number): 1 | 2 | 3 {
   if (maxLevel <= 1) return 1;
   const f = (level - 1) / (maxLevel - 1);
   return f < 0.34 ? 1 : f < 0.67 ? 2 : 3;
+}
+
+/**
+ * Explicit level -> tier maps. The Keep has six looks and defenses five, so an upgrade never sits
+ * unseen for long (the old thirds kept the Keep identical from level 1 to 5); every other level
+ * inside a tier still adds a small change (`levelMarks`, plinth height, lanterns).
+ */
+const TIER_MAPS: Record<string, number[]> = {
+  elder_toadstool: [1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6],
+};
+/** Defenses use five tiers spread evenly over their levels. */
+const FIVE_TIERS = new Set(['acorn_cannon', 'pinecone_catapult', 'wasp_nest', 'firefly_tower', 'kite_cutter_ballista', 'longbow_yagura']);
+
+function tierTable(type: string | undefined, maxLevel: number): number[] {
+  const map = type ? TIER_MAPS[type] : undefined;
+  if (map && map.length === maxLevel) return map;
+  const n = type && (FIVE_TIERS.has(type) || TIER_MAPS[type]) ? Math.min(type in TIER_MAPS ? 6 : 5, maxLevel) : Math.min(3, maxLevel);
+  return Array.from({ length: maxLevel }, (_, i) => (maxLevel <= 1 ? 1 : Math.min(n, 1 + Math.floor((i * n) / maxLevel))));
+}
+
+/** Visual tier for a level. Without a type: thirds (1-3), as before. */
+export function tierFor(level: number, maxLevel: number, type?: string): Tier {
+  if (maxLevel <= 1) return 1;
+  if (!type) return thirdOf(level, maxLevel);
+  const t = tierTable(type, maxLevel);
+  return t[Math.max(0, Math.min(maxLevel, level) - 1)] as Tier;
+}
+
+export function levelInfo(type: string, level: number, maxLevel: number): LevelInfo {
+  const max = Math.max(1, maxLevel);
+  const lvl = Math.max(1, Math.min(max, level));
+  const t = tierTable(type, max);
+  const tier = t[lvl - 1] as Tier;
+  const first = t.indexOf(tier);
+  const steps = t.lastIndexOf(tier) - first + 1;
+  return { level: lvl, maxLevel: max, tier, tiers: t[max - 1], step: lvl - 1 - first, steps };
+}
+
+/** The level being painted (read by the shared helpers: plinths grow a little with each level). */
+let LV: LevelInfo | null = null;
+
+/** Paint one building at one exact level: its tier art plus the per-level marks. */
+export function paintBuildingLevel(ctx: Ctx, type: string, size: number, level: number, maxLevel: number, def: PainterDef | undefined = buildingPainters[type]): void {
+  const info = levelInfo(type, level, maxLevel);
+  LV = maxLevel > 1 ? info : null;
+  try {
+    if (def) def.paint(ctx, size, info.tier, LV ?? undefined);
+    else paintGeneric(ctx, size);
+    if (LV) levelMarks(ctx, type, size, info);
+  } finally {
+    LV = null;
+  }
+}
+
+/**
+ * Small marks that change at every level, on top of the tier art: one stone lantern per step on
+ * the plate's front edge (left corner first), and a gold kerb at the top level. Walls (1x1) show
+ * their level in the coping colour instead (`stoneWall`).
+ */
+function levelMarks(ctx: Ctx, type: string, size: number, lv: LevelInfo): void {
+  const { hw, hh } = half(size);
+  if (size >= 2 && type !== 'paper_lantern_line') {
+    const spots = [0.12, 0.88, 0.5];
+    for (let i = 0; i < Math.min(3, lv.step); i++) {
+      const f = spots[i];
+      const front = f <= 0.5;
+      const x = front ? -hw + hw * (f / 0.5) * 0.5 + 6 : hw * ((f - 0.5) / 0.5) - 6;
+      const y = front ? hh * (f / 0.5) * 0.5 - 1 : hh * (1 - (f - 0.5) / 0.5) - 1;
+      toro(ctx, f === 0.5 ? 0 : x, f === 0.5 ? hh - 7 : y, 0.75 + size * 0.05);
+    }
+  }
+  if (lv.level === lv.maxLevel && size >= 2) {
+    const k = hw - 4;
+    line(ctx, [{ x: -k, y: 1 }, { x: 0, y: hh - 1 }, { x: k, y: 1 }], rgba(GOLD, 0.9), 1.6);
+  }
+}
+
+/** A small stone lantern (toro) with a warm light. */
+function toro(ctx: Ctx, x: number, y: number, s = 1): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  softShadow(ctx, 5, 2, 0, 0.25);
+  line(ctx, [{ x: 0, y: 0 }, { x: 0, y: -8 }], '#8a8f99', 2.6);
+  poly(ctx, [{ x: -3.6, y: -8 }, { x: 3.6, y: -8 }, { x: 3.2, y: -13 }, { x: -3.2, y: -13 }], '#b4b9c1', 0.9);
+  glow(ctx, 0, -10.5, 7);
+  poly(ctx, [{ x: -1.6, y: -9 }, { x: 1.6, y: -9 }, { x: 1.6, y: -12 }, { x: -1.6, y: -12 }], '#ffd27a', 0);
+  poly(ctx, [{ x: -5, y: -13 }, { x: 0, y: -17 }, { x: 5, y: -13 }], '#8a8f99', 0.9);
+  ctx.restore();
 }
 
 export function paintGeneric(ctx: Ctx, size: number): void {
@@ -1671,8 +1836,26 @@ export interface NinjaLook {
   scale?: number;
   weapon?: 'katana' | 'kunai' | 'grapple' | 'shovel' | 'club' | 'none';
   armor?: string;
-  hat?: 'kasa' | 'helm' | null;
-  pack?: 'satchel' | 'bombs' | null;
+  /**
+   * Head silhouette (the strongest role cue at battle size): `kasa` wide straw hat (throwers),
+   * `helm` kabuto with a crescent crest and neck guard (guardians), `wrap` head cloth with a knot
+   * on top (saboteurs), `hood` dark hood with long tails streaming back (shadows), `topknot` bare
+   * head with a tied topknot (mystics).
+   */
+  hat?: 'kasa' | 'helm' | 'wrap' | 'hood' | 'topknot' | null;
+  pack?: 'satchel' | 'bombs' | 'frame' | null;
+  /** Long robe over the legs (mystics). */
+  robe?: boolean;
+  /** Big lacquered shoulder plates (guardians). */
+  pauldrons?: boolean;
+  /** Tool belt with pouches (saboteurs). */
+  belt?: boolean;
+  /** Glowing eye colour (shadows). */
+  eyes?: string;
+  /** Forward lean: x shifts by `lean` px per px of height (blades dash, infiltrators creep). */
+  lean?: number;
+  /** 0..1: squat lower and wider (saboteurs, infiltrators). */
+  crouch?: number;
 }
 
 /** Chibi ninja, facing right, feet at y = 0. Shared by every warrior and their icons. */
@@ -1681,6 +1864,9 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
   ctx.save();
   ctx.scale(s, s);
   softShadow(ctx, 11, 4, 0, 0.3);
+  // Pose: a crouch squats about the feet; a lean shears the figure forward (x grows with height).
+  if (look.crouch) ctx.scale(1 + look.crouch * 0.12, 1 - look.crouch * 0.2);
+  if (look.lean) ctx.transform(1, 0, -look.lean, 1, 0, 0);
   const gi = look.gi;
   // Cloth lit from the upper left: a soft horizontal ramp across each part.
   const ramp = (x0: number, x1: number, c: string, light = 0.18, dark = 0.22) => {
@@ -1705,38 +1891,155 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
     for (const y of [-18, -15]) line(ctx, [{ x: -9, y }, { x: 9, y }], darken(look.armor, 0.35), 0.9);
     line(ctx, [{ x: -8, y: -20 }, { x: 0, y: -20 }], rgba('#ffffff', 0.35), 0.8);
   }
+  if (look.robe) {
+    // Long robe flaring to the ankles: a bell shape instead of two legs.
+    ctx.beginPath();
+    ctx.moveTo(-9, -13);
+    ctx.lineTo(9, -13);
+    ctx.quadraticCurveTo(11, -5, 13, 0);
+    ctx.lineTo(-13, 0);
+    ctx.quadraticCurveTo(-11, -5, -9, -13);
+    ctx.closePath();
+    ctx.fillStyle = ramp(-13, 13, darken(gi, 0.06), 0.2, 0.26);
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    line(ctx, [{ x: -12.4, y: -1.6 }, { x: 12.4, y: -1.6 }], look.band ?? VERMILION, 1.6);
+    for (const x of [-4, 3]) line(ctx, [{ x, y: -11 }, { x: x * 1.3, y: -2 }], rgba(INK, 0.22), 0.8);
+  }
+  if (look.belt) {
+    // Tool belt: three pouches and a hanging coil of rope.
+    for (const x of [-7, -1.5, 4]) poly(ctx, [{ x, y: -12 }, { x: x + 4.4, y: -12 }, { x: x + 4, y: -6.5 }, { x: x + 0.4, y: -6.5 }], '#6b4a2e', 0.8);
+    ctx.beginPath();
+    ctx.ellipse(-11, -9, 3.6, 4.6, 0.3, 0, Math.PI * 2);
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = '#b8a888';
+    ctx.stroke();
+  }
+  if (look.pauldrons) {
+    // Lacquered shoulder plates (sode): the broad guardian outline.
+    const plate = look.armor ?? '#5d636e';
+    for (const s of [-1, 1]) {
+      poly(ctx, [{ x: s * 6, y: -23 }, { x: s * 15, y: -22 }, { x: s * 16, y: -13 }, { x: s * 8, y: -14 }], vramp(ctx, -23, -13, plate), 1.2);
+      for (const y of [-19.5, -16.5]) line(ctx, [{ x: s * 7.5, y: y + 0.4 }, { x: s * 15.5, y }], rgba(GOLD, 0.75), 0.8);
+    }
+  }
   if (look.pack === 'satchel') poly(ctx, [{ x: -12, y: -20 }, { x: -6, y: -20 }, { x: -6, y: -11 }, { x: -12, y: -11 }], WOOD, 1);
   if (look.pack === 'bombs') for (const y of [-19, -13]) circle(ctx, -10, y, 3, INK, 0.8, '#000');
-  // Head with hood and mask.
-  const hood = look.mask ?? gi;
+  if (look.pack === 'frame') {
+    // A boxy carrying frame (siege crews): the square back that makes them read as heavy.
+    poly(ctx, [{ x: -16, y: -27 }, { x: -6, y: -27 }, { x: -6, y: -7 }, { x: -16, y: -7 }], vramp(ctx, -27, -7, WOOD), 1.2);
+    for (const y of [-21, -14]) line(ctx, [{ x: -16, y }, { x: -6, y }], WOOD_DARK, 1.2);
+  }
+  if (look.hat === 'hood') {
+    // Long hood tails streaming back: the shadow silhouette.
+    for (const [dy, len, w] of [[0, 26, 4.2], [5, 21, 3.2]] as const) {
+      ctx.beginPath();
+      ctx.moveTo(-6, -36 + dy);
+      ctx.bezierCurveTo(-14, -40 + dy, -20, -30 + dy, -6 - len, -31 + dy + len * 0.25);
+      ctx.lineWidth = w + 1.6;
+      ctx.strokeStyle = INK;
+      ctx.stroke();
+      ctx.lineWidth = w;
+      ctx.strokeStyle = lighten(look.mask ?? gi, 0.12);
+      ctx.stroke();
+    }
+  }
+  // Head with hood and mask (a mystic's topknot leaves the head bare, with dark hair at the back).
+  const bare = look.hat === 'topknot';
+  const hood = bare ? look.skin ?? '#f1c9a0' : look.mask ?? gi;
   const hg = ctx.createRadialGradient(-3.5, -35, 1, 0, -31, 11);
   hg.addColorStop(0, lighten(hood, 0.28));
   hg.addColorStop(0.6, hood);
   hg.addColorStop(1, darken(hood, 0.25));
   circle(ctx, 0, -31, 10, hg, 1.4);
-  poly(ctx, [{ x: -7, y: -34 }, { x: 10, y: -34 }, { x: 10, y: -28 }, { x: -7, y: -28 }], look.skin ?? '#f1c9a0', 0);
-  line(ctx, [{ x: -7, y: -34 }, { x: 10, y: -34 }], INK, 0.8);
-  line(ctx, [{ x: -7, y: -28 }, { x: 10, y: -28 }], INK, 0.8);
-  // Determined eyes
-  line(ctx, [{ x: 2, y: -32.2 }, { x: 5, y: -31.4 }], INK, 1.6);
-  line(ctx, [{ x: 6.5, y: -31.6 }, { x: 9, y: -32.4 }], INK, 1.6);
-  // Headband with flowing tails.
-  line(ctx, [{ x: -9, y: -37 }, { x: 9, y: -38 }], look.band ?? VERMILION, 2.4);
-  ctx.beginPath();
-  ctx.moveTo(-9, -37);
-  ctx.quadraticCurveTo(-15, -38, -18, -33);
-  ctx.moveTo(-9, -37);
-  ctx.quadraticCurveTo(-14, -34, -16, -29);
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = look.band ?? VERMILION;
-  ctx.stroke();
-  if (look.hat === 'kasa') {
-    poly(ctx, [{ x: -14, y: -38 }, { x: 0, y: -47 }, { x: 14, y: -38 }], ramp(-14, 14, RICE, 0.2, 0.2), 1.2);
-    for (const f of [0.35, 0.7]) line(ctx, [{ x: -14 * f, y: -47 + 9 * f }, { x: 14 * f, y: -47 + 9 * f }], rgba(darken(RICE, 0.5), 0.45), 0.7);
+  if (!bare) {
+    poly(ctx, [{ x: -7, y: -34 }, { x: 10, y: -34 }, { x: 10, y: -28 }, { x: -7, y: -28 }], look.skin ?? '#f1c9a0', 0);
+    line(ctx, [{ x: -7, y: -34 }, { x: 10, y: -34 }], INK, 0.8);
+    line(ctx, [{ x: -7, y: -28 }, { x: 10, y: -28 }], INK, 0.8);
+  } else {
+    ctx.beginPath();
+    ctx.arc(0, -31, 10, Math.PI * 0.62, Math.PI * 1.62);
+    ctx.closePath();
+    ctx.fillStyle = '#2b2b2b';
+    ctx.fill();
   }
-  if (look.hat === 'helm') {
-    poly(ctx, [{ x: -11, y: -35 }, { x: -8, y: -43 }, { x: 8, y: -43 }, { x: 11, y: -35 }], ramp(-11, 11, look.armor ?? '#5d636e', 0.28, 0.3), 1.2);
-    poly(ctx, [{ x: -3, y: -43 }, { x: 0, y: -50 }, { x: 3, y: -43 }], GOLD, 0.9);
+  // Determined eyes (glowing for shadows).
+  const eye = look.eyes ?? INK;
+  if (look.eyes) {
+    glow(ctx, 5.5, -31.6, 7);
+    ctx.shadowColor = look.eyes;
+    ctx.shadowBlur = 3;
+  }
+  line(ctx, [{ x: 2, y: -32.2 }, { x: 5, y: -31.4 }], eye, 1.6);
+  line(ctx, [{ x: 6.5, y: -31.6 }, { x: 9, y: -32.4 }], eye, 1.6);
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  const hat = look.hat ?? null;
+  if (hat !== 'topknot') {
+    // Headband with flowing tails (hidden under a kasa brim's shadow, but its tails still fly).
+    line(ctx, [{ x: -9, y: -37 }, { x: 9, y: -38 }], look.band ?? VERMILION, 2.4);
+    ctx.beginPath();
+    ctx.moveTo(-9, -37);
+    ctx.quadraticCurveTo(-15, -38, -18, -33);
+    ctx.moveTo(-9, -37);
+    ctx.quadraticCurveTo(-14, -34, -16, -29);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = look.band ?? VERMILION;
+    ctx.stroke();
+  }
+  if (hat === 'kasa') {
+    // A wide, shallow straw cone: much wider than the head, so throwers read as a flat triangle.
+    poly(ctx, [{ x: -18, y: -37 }, { x: 0, y: -49 }, { x: 18, y: -37 }, { x: 0, y: -35 }], ramp(-18, 18, RICE, 0.22, 0.24), 1.3);
+    for (const f of [0.35, 0.68]) line(ctx, [{ x: -18 * f, y: -49 + 12 * f }, { x: 18 * f, y: -49 + 12 * f }], rgba(darken(RICE, 0.5), 0.5), 0.8);
+    line(ctx, [{ x: -17, y: -36.6 }, { x: 0, y: -34.6 }, { x: 17, y: -36.6 }], rgba(INK, 0.35), 1);
+    circle(ctx, 0, -49.5, 1.4, darken(RICE, 0.4), 0.6);
+  }
+  if (hat === 'helm') {
+    // Kabuto: a riveted bowl, a flared neck guard and a gold crescent crest.
+    const steel = look.armor ?? '#5d636e';
+    poly(ctx, [{ x: -14, y: -32 }, { x: -10, y: -38 }, { x: 10, y: -38 }, { x: 14, y: -32 }, { x: 11, y: -30 }, { x: -11, y: -30 }], ramp(-14, 14, darken(steel, 0.08), 0.22, 0.3), 1.2);
+    ctx.beginPath();
+    ctx.moveTo(-11, -37);
+    ctx.quadraticCurveTo(-11, -46, 0, -46.5);
+    ctx.quadraticCurveTo(11, -46, 11, -37);
+    ctx.closePath();
+    ctx.fillStyle = ramp(-11, 11, steel, 0.3, 0.3);
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    for (const x of [-5, 0, 5]) line(ctx, [{ x, y: -45.5 }, { x: x * 1.15, y: -38.5 }], rgba(INK, 0.3), 0.7);
+    // Crescent maedate.
+    ctx.beginPath();
+    ctx.moveTo(-9, -52);
+    ctx.quadraticCurveTo(0, -42, 9, -52);
+    ctx.quadraticCurveTo(0, -46.5, -9, -52);
+    ctx.closePath();
+    ctx.fillStyle = GOLD;
+    ctx.fill();
+    ctx.lineWidth = 0.9;
+    ctx.strokeStyle = darken(GOLD, 0.5);
+    ctx.stroke();
+  }
+  if (hat === 'wrap') {
+    // Head cloth tied with a big knot on top: the saboteur's bunny-eared silhouette.
+    const cloth = look.band ?? VERMILION;
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(s * 4, -45, 3, 5.2, s * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = cloth;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = INK;
+      ctx.stroke();
+    }
+    circle(ctx, 0, -41.5, 2.4, darken(cloth, 0.2), 1);
+  }
+  if (hat === 'topknot') {
+    circle(ctx, -1, -43, 3.6, '#2b2b2b', 1);
+    line(ctx, [{ x: -4, y: -41 }, { x: 2, y: -41.5 }], look.band ?? VERMILION, 1.6);
   }
   // Arm and weapon
   const w = look.weapon ?? 'katana';
@@ -1801,8 +2104,10 @@ function vramp(ctx: Ctx, y0: number, y1: number, c: string, light = 0.25, dark =
 /** Register code-drawn catalog warriors. Rendering supplies metadata across the art contract. */
 export function registerWarriorArt(warriors: { id: string; role: string; tier: number; look: Record<string, string> }[]): void {
   for (const w of warriors) {
-    if (troopArt[w.id]) continue;
     const role = w.role;
+    if (role === 'beast' && !troopArt[`${w.id}.companion`]) troopArt[`${w.id}.companion`] = companionArt(w);
+    // warriorIcons.ts registers a role-silhouette sprite for every roster warrior; this template is the fallback.
+    if (troopArt[w.id]) continue;
     const large = role === 'guardian';
     const flying = role === 'sky';
     troopArt[w.id] = {
@@ -1851,21 +2156,25 @@ export function registerWarriorArt(warriors: { id: string; role: string; tier: n
         for (let i = 0; i < w.tier; i++) circle(ctx, -8 + i * 4, -2, 1.3, accent, 0);
       },
     };
-    if (role === 'beast') troopArt[`${w.id}.companion`] = {
-      w: 40, h: 32,
-      paint(ctx) {
-        const fur = w.tier === 5 ? '#f4ead6' : '#b88750';
-        ctx.beginPath(); ctx.ellipse(0, -10, 13, 7, 0, 0, Math.PI * 2);
-        ctx.fillStyle = vramp(ctx, -17, -3, fur); ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.stroke();
-        circle(ctx, 11, -18, 7, vramp(ctx, -25, -11, fur), 1.4);
-        poly(ctx, [{ x: 7, y: -23 }, { x: 7, y: -29 }, { x: 12, y: -24 }], fur, 1);
-        for (const x of [-9, -3, 5, 10]) line(ctx, [{ x, y: -8 }, { x: x + 1, y: -2 }], fur, 3);
-        line(ctx, [{ x: -12, y: -11 }, { x: -18, y: -19 }], fur, 3);
-        circle(ctx, 14, -19, 1, INK, 0);
-        line(ctx, [{ x: 6, y: -14 }, { x: 13, y: -12 }], w.look.accent, 2.5);
-      },
-    };
   }
+}
+
+/** A summoned beast companion (`troop.<id>.companion`). */
+function companionArt(w: { tier: number; look: Record<string, string> }): TroopArt {
+  return {
+    w: 40, h: 32,
+    paint(ctx) {
+      const fur = w.tier === 5 ? '#f4ead6' : '#b88750';
+      ctx.beginPath(); ctx.ellipse(0, -10, 13, 7, 0, 0, Math.PI * 2);
+      ctx.fillStyle = vramp(ctx, -17, -3, fur); ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.stroke();
+      circle(ctx, 11, -18, 7, vramp(ctx, -25, -11, fur), 1.4);
+      poly(ctx, [{ x: 7, y: -23 }, { x: 7, y: -29 }, { x: 12, y: -24 }], fur, 1);
+      for (const x of [-9, -3, 5, 10]) line(ctx, [{ x, y: -8 }, { x: x + 1, y: -2 }], fur, 3);
+      line(ctx, [{ x: -12, y: -11 }, { x: -18, y: -19 }], fur, 3);
+      circle(ctx, 14, -19, 1, INK, 0);
+      line(ctx, [{ x: 6, y: -14 }, { x: 13, y: -12 }], w.look.accent, 2.5);
+    },
+  };
 }
 
 const kunai = (ctx: Ctx, s: number) => {

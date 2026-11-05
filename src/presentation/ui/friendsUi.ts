@@ -438,13 +438,16 @@ export class FriendsUi {
     const select = h('select', { class: 'text', 'aria-label': 'Who can find me by name' }) as HTMLSelectElement;
     for (const k of Object.keys(FINDABLE_LABEL) as Findable[]) select.append(h('option', { value: k, selected: f.findable === k }, FINDABLE_LABEL[k]));
     select.addEventListener('change', () => void this.run(() => this.conn.setPrivacy({ findable: select.value as Findable }), 'Saved.'));
+    // Under 13 (re-audit): found by friend code only; the server refuses anything else.
+    const young = this.conn.ageBand === 'under13';
+    if (young) select.disabled = true;
     const online = h('input', { type: 'checkbox', checked: f.showOnline }) as HTMLInputElement;
     online.addEventListener('change', () => void this.run(() => this.conn.setPrivacy({ showOnline: online.checked }), 'Saved.'));
     body.append(
       h('h3', {}, 'Privacy'),
       h('label', { class: 'row' }, 'Who can find me by name ', select),
       h('label', { class: 'row' }, online, ' Friends can see when I was last online'),
-      h('p', { class: 'muted small' }, 'Your friend code always works: share it only with people you want to add.'),
+      h('p', { class: 'muted small' }, young ? 'Players under 13 can only be found by friend code: share it only with people you know.' : 'Your friend code always works: share it only with people you want to add.'),
     );
     if (this.conn.canDuels) {
       body.append(

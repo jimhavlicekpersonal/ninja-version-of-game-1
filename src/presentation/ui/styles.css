@@ -54,6 +54,8 @@
 * { box-sizing: border-box; }
 /* Buttons and fields don't inherit fonts by default; every control uses the interface font. */
 button, input, select, textarea { font-family: inherit; }
+/* iOS Safari zooms the page into any field under 16px when it gets focus (page zoom is allowed): every field is at least 16px. */
+input, select, textarea { font-size: max(16px, 1em); }
 [hidden] { display: none !important; }
 
 html, body {
@@ -225,7 +227,7 @@ html, body {
 .level { font-family: var(--font); font-weight: 800; color: #fff; font-size: 12px; background: linear-gradient(#3d3458, var(--plum)); padding: 2px 9px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 0 rgba(20, 16, 30, .3); letter-spacing: .3px; }
 .desc { margin: 4px 0 8px; font-size: 13px; }
 .muted { color: var(--ink-soft); }
-.text.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+.text.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: max(16px, 1em); }
 .account-settings { margin-top: 10px; }
 .account-settings a { color: inherit; word-break: break-all; }
 .small { font-size: 12px; }
@@ -337,10 +339,12 @@ html, body {
 .shop-why { font-size: 11px; font-weight: 700; color: #b0392b; }
 .shop-buy { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: #6b4500; }
 
-.settings textarea.code, textarea.chat-input, input.text {
-  width: 100%; font: 13px ui-monospace, Menlo, Consolas, monospace; border: 2px solid #ddcfb2; border-radius: 14px; padding: 9px; box-shadow: inset 0 2px 3px rgba(38, 48, 61, .08);
+/* Names and chat use the interface font (with system fallbacks for every script); only the save code is monospace. */
+.settings textarea.code, textarea.chat-input, input.text, select.text, textarea.text {
+  width: 100%; font: 500 max(16px, 1em)/1.3 var(--font); border: 2px solid #ddcfb2; border-radius: 14px; padding: 9px; box-shadow: inset 0 2px 3px rgba(38, 48, 61, .08);
   background: #fff; resize: vertical; -webkit-user-select: text; user-select: text; color: var(--ink);
 }
+.settings textarea.code { font: 400 max(16px, 1em)/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
 .toggle { display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 6px 0; }
 .toggle input { width: 22px; height: 22px; accent-color: var(--leaf-dark); }
 .events { max-height: 220px; overflow: auto; font-size: 12px; background: #fff; border-radius: 12px; padding: 6px 8px; }
@@ -495,7 +499,7 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .chat-text { font-size: 14px; }
 .chat-time { font-size: 10px; color: var(--ink-soft); align-self: flex-end; }
 .chat-input-row { display: flex; gap: 8px; margin-top: 8px; }
-.chat-input-row input { flex: 1; font-family: var(--font); font-size: 15px; }
+.chat-input-row input { flex: 1; font-family: var(--font); font-size: max(16px, 1em); }
 .donate-btn { min-height: 38px; padding: 4px 8px; }
 .donate-btn img { width: 26px; height: 24px; object-fit: contain; }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: #c9bea4; display: inline-block; }
@@ -681,3 +685,10 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
   .modal-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+
+/* Re-audit: the neutral age screen, under-13 ready-made chat, moderation notices. */
+.age-screen .age-field { display: grid; gap: 4px; margin: 10px 0; font-weight: 600; }
+.age-screen select { min-height: 44px; }
+.preset-chat-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.preset-chat-buttons .btn { min-height: 44px; }
+.log-row.notice.unread { border-left: 3px solid currentColor; padding-left: 8px; }

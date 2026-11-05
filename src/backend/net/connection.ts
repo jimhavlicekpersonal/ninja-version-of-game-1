@@ -565,6 +565,8 @@ export class Connection {
       return false;
     }
     this.applyBand(band);
+    // A village that already said "under 18" never becomes adult: it keeps the older answer's band.
+    if (!this.ageBand && this.o.game.state.profile.under18 === true) this.applyBand('13to17');
     return Boolean(this.ageBand);
   }
 

@@ -338,7 +338,10 @@ export function ensureTextures(scene: Phaser.Scene, data: TextureData): void {
  * Start-up (client re-audit item 3): the same work as `ensureTextures`, plus the tier art of the
  * buildings the village shows first (deferred on the low profile), spread over many short tasks
  * so the page stays responsive and the splash can show progress. Each slice runs jobs for about
- * `sliceMs`, then yields to the event loop. `ensureTextures` in the scenes then finds everything.
+ * `sliceMs` (40 ms: shorter slices cost more in yields than they win on a slow phone), then yields
+ * to the event loop. The island is one job (`paintGround`), the longest one left (high: ~4.3 s
+ * under CPU ×6 emulation, ~0.7 s unthrottled; low: ~1.9 s / ~0.3 s). `ensureTextures` in the
+ * scenes then finds everything.
  */
 export async function prepareTextures(
   scene: Phaser.Scene,
@@ -346,7 +349,7 @@ export async function prepareTextures(
   shown: { type: string; level: number }[],
   hallSkin: string,
   onProgress?: (fraction: number) => void,
-  sliceMs = 12,
+  sliceMs = 40,
 ): Promise<void> {
   const textures = scene.textures;
   const jobs: Job[] = textures.exists(Keys.shadow) ? [] : placeholderJobs(textures, maxTextureSize(scene), buildingTypesOf(data), data.economy.mapSize, quality().lazyTiers);

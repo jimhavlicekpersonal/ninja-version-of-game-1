@@ -1,6 +1,8 @@
 import type { GameController } from '../../gameplay/control/controller';
 import { achievementViews } from '../../gameplay/sim/achievements';
-import { activeOffers, offerRule } from '../../gameplay/sim/offers';
+import { activeOffers, offerReturns, offerRule } from '../../gameplay/sim/offers';
+import { bandFromProfile } from '../../gameplay/sim/age';
+import { askAgeBand } from './ageScreen';
 import { productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
 import type { StorePrice } from '../../backend/payments/provider';
 import { currentTasks, passSeasonEndsAt, unlockedTier } from '../../gameplay/sim/pass';
@@ -89,35 +91,15 @@ export class EconomyUi {
     return b;
   }
 
-  /** Ask once whether the player is under 18 (sets the spending cap). */
+  /**
+   * Ask once for the age (sets the spending protection), with the same neutral
+   * age screen as online play (re-audit: no preselected answer, equal buttons).
+   */
   private async ensureAge(): Promise<boolean> {
     if (this.c.state.profile.under18 !== null) return true;
-    return new Promise((resolve) => {
-      let answered = false;
-      const choose = (under18: boolean) => {
-        answered = true;
-        this.c.dispatch({ type: 'setProfile', under18 });
-        close();
-        resolve(true);
-      };
-      const close = this.kit.modal(
-        'Before you buy',
-        h(
-          'div',
-          {},
-          h('p', {}, 'Please tell us your age group.'),
-          h('p', { class: 'muted small' }, `Players under 18 have a monthly spending limit (${usd(this.c.data.store.minorMonthlyCapUsd)} in list prices) and an extra confirmation step. You can switch to under 18 later in Settings; switching back to 18 or older needs our support team.`),
-        ),
-        [
-          { label: "I'm under 18", onClick: () => choose(true) },
-          { label: "I'm 18 or older", primary: true, onClick: () => choose(false) },
-        ],
-        'normal',
-        () => {
-          if (!answered) resolve(false);
-        },
-      );
-    });
+    const band = await askAgeBand(this.kit, 'Before your first purchase, please enter your year of birth. It sets the right spending protections for your age.');
+    if (!band) return false;
+    return this.c.dispatch({ type: 'setProfile', under18: band !== 'adult', ageBand: band }).ok;
   }
 
   /** Full purchase flow: age group, clear confirm step, provider, result. */
@@ -129,7 +111,7 @@ export class EconomyUi {
     if (!pr.buyable) return;
     // Player-facing names, never internal resource ids (GLOBAL-007).
     const contents = Object.entries(p.grants).filter(([, v]) => v).map(([k, v]) => `${formatNumber(v as number)} ${RES_NAME[k as ResourceKind] ?? k}`).join(', ');
-    const what = p.kind === 'pass' ? `${p.name}: premium rewards and 20% faster builds until the season ends.` : `${p.name}${contents ? `: ${contents}` : ''}.`;
+    const what = p.kind === 'pass' ? `${p.name}: premium rewards and 20% faster builds until the season ends (${this.seasonEndsText()}).` : `${p.name}${contents ? `: ${contents}` : ''}.`;
     const note = this.c.payments.prices ? ' The store shows the final price, including any taxes, before you pay.' : '';
     const ok = await this.kit.confirm('Confirm purchase', `${what} Price: ${pr.label}.${note}`, `Buy for ${pr.label}`, false, 'Cancel');
     if (!ok) return;
@@ -237,7 +219,7 @@ export class EconomyUi {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, rule.title), h('div', { class: 'muted small' }, rule.description), h('div', { class: 'row' }, rewardChips(rule.contents), h('span', { class: 'chip' }, icon(icons.clock), `Ends in ${formatDuration(a.expiresAt - this.c.now())}`))),
+          h('div', {}, h('b', {}, rule.title), h('div', { class: 'muted small' }, rule.description), h('div', { class: 'row' }, rewardChips(rule.contents), h('span', { class: 'chip' }, icon(icons.clock), this.offerTimeText(rule, a.expiresAt)))),
           this.buyButton(rule.productId, 'primary'),
         ),
       );
@@ -245,13 +227,31 @@ export class EconomyUi {
     return wrap;
   }
 
+  /** "Season ends in 12 days" (re-audit: the pass card and its confirm say when the season ends). */
+  private seasonEndsText(): string {
+    const left = passSeasonEndsAt(this.c.now(), this.c.data) - this.c.now();
+    const days = Math.floor(left / 86_400_000);
+    return days >= 1 ? `the season ends in ${days} day${days === 1 ? '' : 's'}` : `the season ends in ${formatDuration(left)}`;
+  }
+
+  /**
+   * How long an offer is shown (re-audit, EU CPC: no false last chance). An
+   * offer with a cooldown comes back later, and says so; a one-time offer
+   * just says how long it is here.
+   */
+  private offerTimeText(rule: OfferRule, expiresAt: number): string {
+    const left = formatDuration(Math.max(0, expiresAt - this.c.now()));
+    return offerReturns(rule) ? `Here for ${left} · back again later` : `Here for ${left}`;
+  }
+
   private passProduct(redraw: () => void): HTMLElement {
     const d = this.c.data;
     if (this.c.state.pass.premium) return h('p', { class: 'chip good' }, 'You have the premium Season Scroll this season.');
+    const ends = this.seasonEndsText();
     return h(
       'div',
       { class: 'pass-premium' },
-      h('div', {}, h('b', {}, `${d.pass.name}: premium track`), h('div', { class: 'muted small' }, 'Until the season ends: 20% faster builds, the Lantern Elder look and bigger rewards on every tier. Rewards you already earned unlock right away.')),
+      h('div', {}, h('b', {}, `${d.pass.name}: premium track`), h('div', { class: 'muted small' }, `Until the season ends: 20% faster builds, the Lantern Elder look and bigger rewards on every tier. Rewards you already earned unlock right away.`), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`)),
       this.buyButton(d.pass.productId, 'gold', redraw),
     );
   }
@@ -293,7 +293,7 @@ export class EconomyUi {
       { class: 'offer' },
       h('p', {}, rule.description),
       h('div', { class: 'row' }, rewardChips(rule.contents)),
-      a ? h('p', { class: 'muted small' }, `Available for ${formatDuration(a.expiresAt - this.c.now())}. You can also find it in the Store.`) : null,
+      a ? h('p', { class: 'muted small' }, `Available for ${formatDuration(a.expiresAt - this.c.now())}${offerReturns(rule) ? ', and it comes back from time to time' : ''}. You can also find it in the Store.`) : null,
     );
     const close = this.kit.modal(rule.title, body, [
       { label: 'No thanks', onClick: () => close() },
@@ -406,15 +406,17 @@ export class EconomyUi {
   /** Spend summary and age group, for Settings. */
   spendSection(): HTMLElement {
     const s = this.c.state;
-    const age = s.profile.under18 === null ? 'Not set' : s.profile.under18 ? 'Under 18' : '18 or older';
-    // GLOBAL-006: the spending protection only ever gets stricter from here. Under 18 cannot be
-    // switched back in the game (the server keeps it too); our support team can after a check.
-    const change = h('button', { class: 'btn ghost', type: 'button' }, s.profile.under18 === null ? 'Set age group' : "I'm under 18");
+    const band = bandFromProfile(s.profile);
+    const age = band === 'under13' ? 'Under 13' : band === '13to17' ? '13 to 17' : band === 'adult' ? '18 or older' : s.profile.under18 ? 'Under 18' : 'Not set';
+    // GLOBAL-006 and the re-audit: the age group only ever gets stricter from here (the server keeps it too);
+    // our support team can correct it after a check. The same neutral age screen as online play.
+    const change = h('button', { class: 'btn ghost', type: 'button' }, band || s.profile.under18 ? 'Correct my age' : 'Set age group');
     change.addEventListener('click', () => {
-      const close = this.kit.modal('Age group', h('p', {}, 'Players under 18 have a monthly spending limit and an extra purchase confirmation. Once set to under 18, only our support team can change it back.'), [
-        { label: "I'm under 18", onClick: () => { this.c.dispatch({ type: 'setProfile', under18: true }); close(); } },
-        s.profile.under18 === null && { label: "I'm 18 or older", primary: true, onClick: () => { this.c.dispatch({ type: 'setProfile', under18: false }); close(); } },
-      ]);
+      void askAgeBand(this.kit, 'Enter your year of birth. It sets the protections for your age group (spending limits, and for online play who can find you and how you chat).').then((b) => {
+        if (!b) return;
+        const r = this.c.dispatch({ type: 'setProfile', under18: b !== 'adult', ageBand: b });
+        if (!r.ok) this.kit.toast('Your age group can only be made stricter here. To correct it, contact support from Settings → Privacy and help.', 'info');
+      });
     });
     return h(
       'div',
@@ -423,7 +425,7 @@ export class EconomyUi {
       h('p', {}, `This month: ${usd(spentThisMonth(s, this.c.now()))} · All time: ${usd(spentTotal(s))} · ${s.purchases.length} purchase${s.purchases.length === 1 ? '' : 's'}`),
       h('p', { class: 'muted small' }, 'Amounts are the items\' US-dollar list prices; your store receipts show what you actually paid in your currency.'),
       h('p', { class: 'muted small' }, `Age group: ${age}${s.profile.under18 ? ` (limit ${usd(this.c.data.store.minorMonthlyCapUsd)} a month in list prices). To change it, contact support from Settings.` : '.'}`),
-      s.profile.under18 ? null : h('div', { class: 'actions' }, change),
+      band === 'under13' ? null : h('div', { class: 'actions' }, change),
     );
   }
 }

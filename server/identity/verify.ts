@@ -308,7 +308,8 @@ export function combineVerifiers(v: { apple?: JwtVerifier | null; google?: JwtVe
           if (!j) throw new IdentityError(`${provider === 'apple' ? 'Sign in with Apple' : 'Google sign-in'} is not set up on this server.`);
           const claims = await j.verify((credential as { idToken?: unknown } | null)?.idToken);
           const aud = Array.isArray(claims.aud) ? String(claims.aud[0]) : String(claims.aud);
-          return { provider, subject: String(claims.sub), audience: aud };
+          // Apple: the client id the code was issued to (token exchange/revocation, appleTokens.ts).
+          return { provider, subject: String(claims.sub), ...(provider === 'apple' ? { audience: aud } : {}) };
         }
         case 'gamecenter':
           if (!v.gamecenter) throw new IdentityError('Game Center is not set up on this server.');

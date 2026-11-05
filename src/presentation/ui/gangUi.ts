@@ -11,6 +11,7 @@ import { REPORT_REASONS, type ChatView, type FriendView, type ReportReason, type
 import { h } from './dom';
 import type { UiKit } from './economyUi';
 import { formatDuration } from './format';
+import { presetChatRow } from './ageScreen';
 import { REASON_LABELS } from './groveUi';
 
 export interface GangUiDeps {
@@ -121,7 +122,7 @@ export class GangUi {
       }
     }
     if (d.canJoinAt) body.append(h('p', { class: 'note' }, `You left a Gang lately: you can found or join one in ${formatDuration(d.canJoinAt - this.now())}.`));
-    const name = h('input', { class: 'text', type: 'text', maxlength: 24, placeholder: 'Gang name (3–24 characters)', 'aria-label': 'Gang name' }) as HTMLInputElement;
+    const name = h('input', { class: 'text', type: 'text', dir: 'auto', placeholder: 'Gang name (3–24 characters)', 'aria-label': 'Gang name' }) as HTMLInputElement;
     name.addEventListener('keydown', (e) => e.stopPropagation());
     body.append(
       h('h3', {}, 'Found a Gang'),
@@ -184,7 +185,7 @@ export class GangUi {
       list.append(h('div', { class: `chat-msg ${m.kind}` }, m.from ? h('span', { class: 'chat-who' }, `${isolateName(m.from.name)} `) : null, h('span', { class: 'chat-text', dir: 'auto', style: 'unicode-bidi:plaintext' }, m.text), more));
     }
     if (!this.chat.length) list.append(h('p', { class: 'muted small' }, 'No messages yet.'));
-    const input = h('input', { class: 'text', type: 'text', maxlength: 200, placeholder: 'Message your Gang', 'aria-label': 'Message your Gang' }) as HTMLInputElement;
+    const input = h('input', { class: 'text', type: 'text', dir: 'auto', /* 160 code points, as the server's chat filter (a UTF-16 maxlength splits emoji and counts other scripts wrongly) */ oninput: (e: Event) => { const el = e.target as HTMLInputElement; const cps = Array.from(el.value); if (cps.length > 160) el.value = cps.slice(0, 160).join(''); }, placeholder: 'Message your Gang', 'aria-label': 'Message your Gang' }) as HTMLInputElement;
     const send = () => {
       const text = input.value;
       if (!text.trim()) return;
@@ -194,7 +195,9 @@ export class GangUi {
       e.stopPropagation();
       if (e.key === 'Enter') send();
     });
-    body.append(list, h('div', { class: 'row find-row' }, input, h('button', { class: 'btn primary', type: 'button', disabled: this.busy, onclick: send }, 'Send'), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.load() }, 'Refresh')));
+    // Under 13 (re-audit): ready-made messages only (the server refuses free text).
+    if (this.conn.ageBand === 'under13') body.append(list, presetChatRow((text) => void this.run(() => this.conn.postSquadChat(text)), this.busy), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.load() }, 'Refresh'));
+    else body.append(list, h('div', { class: 'row find-row' }, input, h('button', { class: 'btn primary', type: 'button', disabled: this.busy, onclick: send }, 'Send'), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.load() }, 'Refresh')));
   }
 
   private report(m: ChatView): void {

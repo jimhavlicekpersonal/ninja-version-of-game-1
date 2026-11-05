@@ -6,7 +6,7 @@ import { MemorySaveStore } from '../../../src/backend/persist/saveStore';
 import { FakeClock } from '../../../src/gameplay/sim/clock';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { skipCost, topUpOne } from '../../../src/gameplay/sim/economy';
-import { spentThisMonth } from '../../../src/gameplay/sim/monetization';
+import { productGrantsFor, spentThisMonth } from '../../../src/gameplay/sim/monetization';
 import { currentTasks, unlockedTier } from '../../../src/gameplay/sim/pass';
 import { migrate } from '../../../src/gameplay/sim/save';
 import { advance, applyCommand, builderStatus, createNewVillage, upgradeQuote } from '../../../src/gameplay/sim/village';
@@ -46,7 +46,8 @@ describe('Moonstone prices', () => {
 
   it('bigger packs give more Moonstones per dollar; prices match the spec', () => {
     const packs = data.store.packs;
-    expect(packs.map((p) => p.usd)).toEqual([1.99, 4.99, 9.99, 19.99, 49.99, 99.99]);
+    // Design re-audit: a $0.99 pack for markets where $1.99 is a lot.
+    expect(packs.map((p) => p.usd)).toEqual([0.99, 1.99, 4.99, 9.99, 19.99, 49.99, 99.99]);
     for (let i = 1; i < packs.length; i++) expect(packs[i].moonstones / packs[i].usd).toBeGreaterThan(packs[i - 1].moonstones / packs[i - 1].usd);
   });
 });
@@ -186,8 +187,12 @@ describe('purchases end to end with the mock provider (all logged in analytics)'
     // Only one offer per session, even when another trigger fires.
     expect(c.triggerOffer('heavy_defense_loss')).toBeNull();
     const before = c.state.resources.moonstones;
+    // Offers deliver what productGrantsFor says at this Keep (design re-audit): Coins and Provisions
+    // scaled by the Keep, and what does not fit in storage as Jade; the offer's own Jade in full.
+    const expected = productGrantsFor(c.state, 'offer_starter', data)!.grants;
+    expect(expected.moonstones).toBeGreaterThanOrEqual(300);
     expect((await c.purchase('offer_starter')).ok).toBe(true);
-    expect(c.state.resources.moonstones).toBe(before + 300);
+    expect(c.state.resources.moonstones).toBe(before + expected.moonstones!);
     expect(c.state.offers.active).toHaveLength(0);
     // Expired or already-bought offers cannot be bought.
     expect((await c.purchase('offer_starter')).ok).toBe(false);
