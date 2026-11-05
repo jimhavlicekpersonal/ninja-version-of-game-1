@@ -4,7 +4,7 @@ Things the art compartment made that the GUI session wires up (AGENTS.md: ART wr
 
 ## Art re-audit, November 2026
 
-All of these are exported from contract files (`compartments.json`), so `ui/` may import them.
+All of these are exported from contract files (`compartments.json`), so `ui/` may import them. Status on 2026-11-05: the GUI session already wired the troop-card tick, the chest, the reveal and the portrait through `ui/feedback.ts` (`provideUiArt` from `src/main.ts`); the Settings switch reads `uiArt.hapticsSetting`. Keep this table as the reference for what each export does.
 
 | What | Import | Where it goes |
 |---|---|---|

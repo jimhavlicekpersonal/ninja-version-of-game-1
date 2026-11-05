@@ -850,10 +850,13 @@ export class BattleScene extends Phaser.Scene {
         if (tv) tv.flashUntil = this.time.now + 60;
       } else if (e.k === 'buildingHit') {
         const v = this.bviews[e.building];
-        if (v && !v.destroyed && this.time.now - v.flashAt > 240) {
+        if (v && !v.destroyed && this.time.now - v.flashAt > 400) {
+          // A 60 ms white flash: an additive white copy at partial strength, so the building lights
+          // up without turning into a flat silhouette (its ground plate included).
           v.flashAt = this.time.now;
-          v.flashUntil = this.time.now + 60;
-          v.image.setTintFill(0xffffff);
+          const im = v.image;
+          const glow = this.add.image(im.x, im.y, im.texture.key).setOrigin(im.originX, im.originY).setScale(im.scaleX, im.scaleY).setDepth(im.depth + 0.5).setTintFill(0xffffff).setAlpha(0.32).setBlendMode(Phaser.BlendModes.ADD);
+          this.time.delayedCall(60, () => glow.destroy());
         }
         if (v && !v.destroyed && !this.tweens.isTweening(v.image)) {
           const sx = v.image.scaleX;

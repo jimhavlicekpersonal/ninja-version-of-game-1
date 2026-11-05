@@ -204,9 +204,11 @@ export class Tutorial {
     let r: ScreenRect | null = null;
     const targets = typeof step.targets === 'function' ? step.targets(this.c.state) : step.targets ?? [];
     for (const sel of targets) {
+      // With a dialog open, only something inside the top dialog can be tapped: never ring a button under it.
+      const top = [...document.querySelectorAll('.modal-backdrop')].pop() ?? null;
       const found = [...document.querySelectorAll(sel)].find((e) => {
         const b = e.getBoundingClientRect();
-        return b.width > 0 && b.height > 0 && !e.closest('[hidden]');
+        return b.width > 0 && b.height > 0 && !e.closest('[hidden]') && (!top || top.contains(e));
       });
       if (found) {
         r = found.getBoundingClientRect();
