@@ -14,6 +14,7 @@ import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { botDeployments } from '../../../src/gameplay/sim/defense';
 import { botArmy } from '../../../src/gameplay/sim/matchmaking';
 import { createRng } from '../../../src/gameplay/sim/rng';
+import { carryRelayDamage } from '../../../src/gameplay/sim/social/gangWar';
 import { baseAt, HOUR, world } from './harness';
 import { repoFactories } from './pg';
 
@@ -106,7 +107,7 @@ for (const [label, makeRepo] of repoFactories) {
       const r2 = await bo.gangWarAttack({ ticket: t2.ticket, seed: t2.seed, army: s2.army, deployments: s2.deployments });
       const t3 = await ann.gangWarTicket({ target: 1, relay: true });
       const firstRun = runBattle(s2.setup, s2.deployments, data);
-      expect(t3.startDamage).toEqual(battleDamage(firstRun.sim));
+      expect(t3.startDamage).toEqual(carryRelayDamage(battleDamage(firstRun.sim), data));
       const s3 = strikeOn(t3.base, t3.seed, t3.startDamage);
       const r3 = await ann.gangWarAttack({ ticket: t3.ticket, seed: t3.seed, army: s3.army, deployments: s3.deployments });
       expect(r3.result.destruction).toBeGreaterThanOrEqual(r2.result.destruction);

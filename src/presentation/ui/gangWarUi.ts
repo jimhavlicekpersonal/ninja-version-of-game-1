@@ -87,7 +87,7 @@ export class GangWarUi {
         h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.load(redraw) }, 'Refresh'), leader ? h('button', { class: 'btn ghost', type: 'button', disabled: this.busy, onclick: () => void this.run(() => this.d.connection.gangWarCancel(), redraw, 'Search stopped.') }, 'Stop looking') : null),
       );
     } else {
-      body.append(h('p', { class: 'muted small' }, 'Two to four friends against another Gang of the same size: 2 hours to prepare, then 22 hours with 2 attacks each. Strike alone, or relay: each strike starts from the damage your Gang already did to that base. No honor is won or lost; everyone gets a chest.'));
+      body.append(h('p', { class: 'muted small' }, 'Two to four friends against another Gang of the same size: 2 hours to prepare, then 22 hours with 2 attacks each. Strike alone, or relay: a relay strike starts from half the damage of your Gang’s last strike on that base (defenders patch up in between). No honor is won or lost; everyone gets a chest.'));
       if (leader) body.append(h('button', { class: 'btn primary', type: 'button', disabled: this.busy || members < 2, onclick: () => void this.run(() => this.d.connection.gangWarQueue(), redraw) }, members < 2 ? 'Invite a friend to start a war' : 'Find a Gang War'));
       else body.append(h('p', { class: 'muted small' }, 'Your leader starts Gang Wars.'));
     }
@@ -136,7 +136,7 @@ export class GangWarUi {
       'div',
       { class: 'log-row' },
       h('div', {}, h('b', {}, `${b.index + 1}. ${b.name}`), h('div', { class: 'muted small' }, `Clan Keep ${b.keep} · best ${stars(b.best.stars)} ${Math.round(b.best.destruction)}%${relayText}${busy}`)),
-      can ? h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => go(false) }, 'Attack'), h('button', { class: 'btn primary', type: 'button', disabled: Boolean(r?.busy), title: 'Start from the damage your Gang already did', onclick: () => go(true) }, r && r.strikes ? 'Continue relay' : 'Start relay')) : null,
+      can ? h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => go(false) }, 'Attack'), h('button', { class: 'btn primary', type: 'button', disabled: Boolean(r?.busy), title: 'Start from half the damage your Gang last did', onclick: () => go(true) }, r && r.strikes ? 'Continue relay' : 'Start relay')) : null,
     );
   }
 

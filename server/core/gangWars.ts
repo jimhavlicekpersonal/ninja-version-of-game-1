@@ -10,9 +10,9 @@
  *   loot; members can copy it again after moving defenses. Rosters are locked
  *   until the war ends (squads.ts).
  * - Battle day (`battleHours`): `attacksPerMember` attacks each. A solo strike
- *   attacks the base fresh; a relay strike starts from the damage the Gang's
- *   earlier relay strikes on that base left (SIM_RULES 3, step 64), one
- *   striker at a time. Each base counts its best result, solo or relay.
+ *   attacks the base fresh; a relay strike starts from `relayCarry` (half) of
+ *   the damage the Gang's last relay strike on that base left (SIM_RULES 3,
+ *   step 64; measured in step 69), one striker at a time. Each base counts its best result, solo or relay.
  * - More stars wins, then more destruction. Every member claims a fixed chest
  *   scaled to their Keep (social.json gangWar.rewards). Honor never moves.
  * - Gang Rating (step 66): `rateTeams` once a war between two real Gangs ends.
@@ -21,7 +21,7 @@ import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import { newRating, rateTeams, type Rating } from '../../src/gameplay/sim/rating';
 import { mixSeed } from '../../src/gameplay/sim/rng';
-import { botGangScores, gangWarOutcome, gangWarPhase, gangWarTimes, sideTotal, type BaseScore } from '../../src/gameplay/sim/social/gangWar';
+import { botGangScores, carryRelayDamage, gangWarOutcome, gangWarPhase, gangWarTimes, sideTotal, type BaseScore } from '../../src/gameplay/sim/social/gangWar';
 import type { BattleSubmission, GangWarAttackResponse, GangWarBaseView, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GangWarView } from '../../src/backend/net/protocol';
 import type { GangQueueEntry, GangRelay, GangWar, GangWarAttack, GangWarEntry, GangWarSide, Player, Squad, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
@@ -332,7 +332,7 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
     await tx.addWarAttack({ id: ctx.uuid(), warId: w.id, side, attackerId: me.id, target, relay: Boolean(ticket.relay), stars: result.stars, destruction: result.destruction, at: t });
     if (ticket.relay) {
       const prev = await tx.getRelay(w.id, side, target);
-      await tx.putRelay({ warId: w.id, side, target, damage: out.damage, stars: result.stars, destruction: result.destruction, strikes: (prev?.strikes ?? 0) + 1, lastBy: me.name, holder: null, holdUntil: 0 });
+      await tx.putRelay({ warId: w.id, side, target, damage: carryRelayDamage(out.damage, ctx.data), stars: result.stars, destruction: result.destruction, strikes: (prev?.strikes ?? 0) + 1, lastBy: me.name, holder: null, holdUntil: 0 });
     }
     // A village the server keeps spends the warriors who fought (as in an Alliance War).
     const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'remoteGroveBattleEnd', target, record: { at: ctx.now(), opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick }, known: result }, reason: 'gangwar:troops' }], ticket.id);
@@ -368,7 +368,7 @@ export async function gangWarReminders(ctx: ServerContext): Promise<number> {
     const left = (id: string) => ctx.data.social.gangWar.attacksPerMember - attacks.filter((a) => a.attackerId === id).length;
     if (!notified.battle && t >= w.prepEndsAt) {
       notified.battle = true;
-      for (const side of [w.a, w.b]) if (!side.bot) notifyGang(ctx, side, 'The Gang War battle day has begun', `Attack ${(side === w.a ? w.b : w.a).name}: ${ctx.data.social.gangWar.attacksPerMember} attacks each. Relay strikes carry your Gang's damage over.`);
+      for (const side of [w.a, w.b]) if (!side.bot) notifyGang(ctx, side, 'The Gang War battle day has begun', `Attack ${(side === w.a ? w.b : w.a).name}: ${ctx.data.social.gangWar.attacksPerMember} attacks each. Relay strikes start from half your Gang's damage.`);
       sent++;
     }
     if (!notified.ending && t >= w.endsAt - 2 * 3_600_000) {

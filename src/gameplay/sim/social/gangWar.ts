@@ -57,3 +57,16 @@ export function botGangScores(seed: number, ourKeeps: number[], botKeeps: number
   }
   return best;
 }
+
+/**
+ * The damage a relay strike hands to the next one (roadmap step 69): each
+ * building keeps `relayCarry` of what it lost, because defenders patch up
+ * between strikes. A destroyed building comes back damaged, not destroyed.
+ * Without this, two full strikes 3-starred nearly every base.
+ */
+export function carryRelayDamage(damage: Record<string, number>, data: GameData): Record<string, number> {
+  const k = data.social.gangWar.relayCarry;
+  const out: Record<string, number> = {};
+  for (const [id, lost] of Object.entries(damage)) if (lost > 0) out[id] = lost * k;
+  return out;
+}

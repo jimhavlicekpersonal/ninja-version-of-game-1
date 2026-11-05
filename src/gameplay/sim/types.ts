@@ -736,6 +736,8 @@ export interface SocialDef {
     prepHours: number;
     battleHours: number;
     attacksPerMember: number;
+    /** Share of a relay strike's damage the next strike starts from. */
+    relayCarry: number;
     botAfterMinutes: number;
     recentOpponents: number;
     rewards: Record<'win' | 'draw' | 'loss', Cost>;
