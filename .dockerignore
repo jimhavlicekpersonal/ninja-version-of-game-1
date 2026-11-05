@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-server
+android
+ios
+docs
+public
+tools
+tests
+.git
+.github
+*.log

@@ -65,6 +65,22 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
   return out.sort((a, b) => a.at - b.at);
 }
 
+const HOUR_MS = 3_600_000;
+const DAY_MS = 24 * HOUR_MS;
+
+/** True when `at` falls in quiet hours on a device `tzOffsetMinutes` behind UTC (Date#getTimezoneOffset). */
+export function inQuietHours(at: number, tzOffsetMinutes: number, data: GameData): boolean {
+  const { start, end } = data.notifications.quietHours;
+  const local = at - tzOffsetMinutes * 60_000;
+  const h = Math.floor((((local % DAY_MS) + DAY_MS) % DAY_MS) / HOUR_MS);
+  return start > end ? h >= start || h < end : h >= start && h < end;
+}
+
+/** The device's local day number (for `maxPerDay`). */
+export function localDay(at: number, tzOffsetMinutes: number): number {
+  return Math.floor((at - tzOffsetMinutes * 60_000) / DAY_MS);
+}
+
 /**
  * Apply the player's notification choices. `enabled` lists the types they
  * switched on; `tzOffsetMinutes` is Date#getTimezoneOffset (minutes behind

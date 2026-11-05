@@ -31,7 +31,8 @@ src/
     payments/                PaymentProvider: mock, StoreKit, unavailable (Android)
     platform/  persist/  analytics/  pwa/
   main.ts, app.ts          composition root: wires the sections together (INTEGRATION only)
-server/                    SECTION 3  Fastify + Postgres PvP server (re-simulates battles)
+server/                    SECTION 3  Fastify + Postgres (+ optional Redis) PvP server (re-simulates battles,
+                                       versioned migrations, can hold villages: docs/backend/PVP_ROADMAP.md)
 tools/                     art gallery, progression doc generator
 tests/                     mirrors the sections; tests/architecture enforces the boundaries
 ```

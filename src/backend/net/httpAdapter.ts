@@ -3,12 +3,30 @@
  * protocol in protocol.ts (ours in server/, or a future one). Handles the
  * bearer token, timeouts, retries for safe reads, and protocol errors.
  */
+import { SIM_RULES } from '../../gameplay/sim/battle/battle';
+import { defaultData } from '../../gameplay/sim/data';
+import { dataVersionOf } from './dataVersion';
 import { ServerError, type ServerPort } from './ports';
 import {
+  ClientHeaders,
   PROTOCOL_VERSION,
   Routes,
   type AttackResponse,
   type BattleSubmission,
+  type BlocksResponse,
+  type CommandBatch,
+  type CommandBatchResponse,
+  type LedgerResponse,
+  type PurchaseHistoryResponse,
+  type PurchaseIntentRequest,
+  type PurchaseIntentResponse,
+  type PushTokenRequest,
+  type RedeemRequest,
+  type RedeemResponse,
+  type LinkCredential,
+  type LinkProvider,
+  type LinksResponse,
+  type VillageResponse,
   type ChatResponse,
   type ChatView,
   type DefensesResponse,
@@ -17,17 +35,41 @@ import {
   type ErrorBody,
   type GroveView,
   type GrovesResponse,
+  type BalanceResponse,
+  type ChallengesResponse,
+  type ChallengeView,
+  type DuelLayoutRequest,
+  type DuelReportResponse,
+  type DuelsResponse,
+  type DuelTicketRequest,
+  type DuelTicketResponse,
+  type SquadResponse,
+  type GangWarAttackResponse,
+  type GangWarClaimResponse,
+  type GangWarResponse,
+  type GangWarTicketRequest,
+  type GangWarTicketResponse,
+  type FriendRequestBody,
+  type FriendRequestResult,
+  type FriendsResponse,
+  type PlayerCard,
+  type PlatformFriendsRequest,
+  type PlatformFriendsResponse,
+  type PrivacyRequest,
   type HelloResponse,
   type InboxResponse,
   type LeaderboardResponse,
   type MatchResponse,
   type MyGroveResponse,
   type PlayerView,
+  type PowerLeaderboardResponse,
   type RaidAttackResponse,
   type RaidClaimResponse,
   type RaidTicketResponse,
   type RaidView,
   type RegisterResponse,
+  type ReportRequest,
+  type ReportResponse,
   type RequestView,
   type RequestsResponse,
   type UploadBaseRequest,
@@ -74,6 +116,21 @@ export interface HttpAdapterOptions {
   retries?: number;
   /** Wait between retries (tests set 0). */
   retryDelayMs?: number;
+  /** The game's version and platform for X-Client-Build, e.g. "0.1.0+ios". */
+  build?: string;
+  /**
+   * The data version for X-Data-Version (protocol 8): the balance data this
+   * game runs with, including a balance bundle applied at start (step 76).
+   * Defaults to the built-in data.
+   */
+  dataVersion?: () => string;
+}
+
+/** A fresh id for an Idempotency-Key. */
+function newKey(): string {
+  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 
 /** Normalise a server address typed by a player: adds https://, drops a trailing slash. */
@@ -91,6 +148,8 @@ export class HttpServerAdapter implements ServerPort {
   private readonly timeoutMs: number;
   private readonly retries: number;
   private readonly retryDelayMs: number;
+  private readonly build: string;
+  private readonly dataVersion: () => string;
 
   constructor(
     readonly baseUrl: string,
@@ -103,6 +162,8 @@ export class HttpServerAdapter implements ServerPort {
     this.timeoutMs = opts.timeoutMs ?? 15_000;
     this.retries = opts.retries ?? 2;
     this.retryDelayMs = opts.retryDelayMs ?? 600;
+    this.build = opts.build ?? 'unknown';
+    this.dataVersion = opts.dataVersion ?? (() => dataVersionOf(defaultData));
   }
 
   hasIdentity(): boolean {
@@ -122,7 +183,15 @@ export class HttpServerAdapter implements ServerPort {
     try {
       res = await this.fetchFn(`${this.baseUrl}${path}`, {
         method,
-        headers: { ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...(token ? { authorization: `Bearer ${token}` } : {}) },
+        headers: {
+          ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+          [ClientHeaders.protocol]: String(PROTOCOL_VERSION),
+          [ClientHeaders.simRules]: String(SIM_RULES),
+          [ClientHeaders.dataVersion]: this.dataVersion(),
+          [ClientHeaders.clientBuild]: this.build,
+          ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: newKey() } : {}),
+        },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: ctrl?.signal,
       });
@@ -146,14 +215,15 @@ export class HttpServerAdapter implements ServerPort {
     return json as T;
   }
 
-  private async req<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown): Promise<T> {
+  private async req<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
     let attempt = 0;
     for (;;) {
       try {
         return await this.once<T>(method, path, body);
       } catch (e) {
         // Only reads are retried here; writes are made safe by tickets and the outbox.
-        if (method !== 'GET' || !(e instanceof ServerError) || !e.retryable || attempt >= this.retries) throw e;
+        // A rate limit is not retried at once: the caller tries again on its next round.
+        if (method !== 'GET' || !(e instanceof ServerError) || !e.retryable || e.code === 'rate_limited' || attempt >= this.retries) throw e;
         attempt++;
         if (this.retryDelayMs) await new Promise((r) => setTimeout(r, this.retryDelayMs * attempt));
       }
@@ -172,6 +242,120 @@ export class HttpServerAdapter implements ServerPort {
   // ---------------------------------------------------------------- identity
 
   /** The server's description; throws version_mismatch when this game and the server cannot talk. */
+  friends(): Promise<FriendsResponse> {
+    return this.req('GET', Routes.friends);
+  }
+
+  lookupPlayer(name: string): Promise<PlayerCard> {
+    return this.req('GET', `${Routes.playerLookup}?name=${encodeURIComponent(name)}`);
+  }
+
+  playerByCode(code: string): Promise<PlayerCard> {
+    return this.req('GET', Routes.playerByCode(code));
+  }
+
+  sendFriendRequest(req: FriendRequestBody): Promise<FriendRequestResult> {
+    return this.req('POST', Routes.friendRequests, req);
+  }
+
+  async answerFriendRequest(id: string, accept: boolean): Promise<void> {
+    await this.req('POST', Routes.friendRequest(id), { accept });
+  }
+
+  async cancelFriendRequest(id: string): Promise<void> {
+    await this.req('DELETE', Routes.friendRequest(id));
+  }
+
+  async unfriend(playerId: string): Promise<void> {
+    await this.req('DELETE', Routes.friend(playerId));
+  }
+
+  platformFriends(req: PlatformFriendsRequest): Promise<PlatformFriendsResponse> {
+    return this.req('POST', Routes.platformFriends, req);
+  }
+
+  setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
+    return this.req('PUT', Routes.privacy, req);
+  }
+
+  duelTicket(req: DuelTicketRequest): Promise<DuelTicketResponse> {
+    return this.req('POST', Routes.duelTicket, req);
+  }
+  reportDuel(sub: BattleSubmission): Promise<DuelReportResponse> {
+    return this.req('POST', Routes.duels, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
+  }
+  duels(since = 0): Promise<DuelsResponse> {
+    return this.req('GET', `${Routes.duels}?since=${since}`);
+  }
+  async setDuelLayout(req: DuelLayoutRequest): Promise<void> {
+    await this.req('PUT', Routes.duelLayout, req);
+  }
+  challenge(friendId: string): Promise<ChallengeView> {
+    return this.req('POST', Routes.duelChallenges, { friendId });
+  }
+  challenges(): Promise<ChallengesResponse> {
+    return this.req('GET', Routes.duelChallenges);
+  }
+  squad(): Promise<SquadResponse> {
+    return this.req('GET', Routes.squad);
+  }
+  createSquad(name: string): Promise<SquadResponse> {
+    return this.req('POST', Routes.squad, { name });
+  }
+  squadInvite(friendId: string): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadInvites, { friendId });
+  }
+  answerSquadInvite(id: string, accept: boolean): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadInvite(id), { accept });
+  }
+  leaveSquad(): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadLeave, {});
+  }
+  squadLeader(playerId: string): Promise<SquadResponse> {
+    return this.req('POST', Routes.squadLeader, { playerId });
+  }
+  squadChat(after?: string): Promise<ChatResponse> {
+    return this.req('GET', `${Routes.squadChat}${after ? `?after=${encodeURIComponent(after)}` : ''}`);
+  }
+  postSquadChat(text: string): Promise<ChatView> {
+    return this.req('POST', Routes.squadChat, { text });
+  }
+  squadRequests(): Promise<RequestsResponse> {
+    return this.req('GET', Routes.squadRequests);
+  }
+  squadRequestTroops(capacity: number): Promise<RequestView> {
+    return this.req('POST', Routes.squadRequests, { capacity });
+  }
+  squadDonate(requestId: string, req: DonateRequest): Promise<DonateResponse> {
+    return this.req('POST', Routes.squadDonate(requestId), req);
+  }
+
+  gangWar(): Promise<GangWarResponse> {
+    return this.req('GET', Routes.squadWar);
+  }
+  gangWarQueue(): Promise<GangWarResponse> {
+    return this.req('POST', Routes.squadWarQueue, {});
+  }
+  gangWarCancel(): Promise<GangWarResponse> {
+    return this.req('DELETE', Routes.squadWarQueue);
+  }
+  gangWarBase(): Promise<GangWarResponse> {
+    return this.req('POST', Routes.squadWarBase, {});
+  }
+  gangWarTicket(req: GangWarTicketRequest): Promise<GangWarTicketResponse> {
+    return this.req('POST', Routes.squadWarTicket, req);
+  }
+  gangWarAttack(sub: BattleSubmission): Promise<GangWarAttackResponse> {
+    return this.req('POST', Routes.squadWarAttacks, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
+  }
+  gangWarClaim(warId: string): Promise<GangWarClaimResponse> {
+    return this.req('POST', Routes.squadWarClaim, { warId });
+  }
+
+  balance(): Promise<BalanceResponse> {
+    return this.req('GET', Routes.balance);
+  }
+
   async hello(): Promise<HelloResponse> {
     const h = await this.req<HelloResponse>('GET', Routes.hello);
     if (!h || h.name !== 'toadstool-kingdoms') throw new ServerError(0, 'version_mismatch', 'That address is not a Kagemura: Ninja Clans server.');
@@ -194,6 +378,29 @@ export class HttpServerAdapter implements ServerPort {
     return this.req('PUT', Routes.me, { name });
   }
 
+  links(): Promise<LinksResponse> {
+    return this.req('GET', Routes.links);
+  }
+
+  link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse> {
+    return this.req('POST', Routes.links, { provider, credential });
+  }
+
+  unlink(provider: LinkProvider): Promise<LinksResponse> {
+    return this.req('DELETE', Routes.link(provider));
+  }
+
+  async signIn(provider: LinkProvider, credential: LinkCredential, device?: string): Promise<RegisterResponse> {
+    const r = await this.req<RegisterResponse>('POST', Routes.sessions, { provider, credential, device });
+    this.tokens.set(r.token);
+    return r;
+  }
+
+  async deleteAccount(): Promise<void> {
+    await this.req<void>('DELETE', Routes.me);
+    this.tokens.set(null);
+  }
+
   // ---------------------------------------------------------------- PvP
 
   uploadBase(req: UploadBaseRequest): Promise<void> {
@@ -205,11 +412,15 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   submitAttack(sub: BattleSubmission): Promise<AttackResponse> {
-    return this.req('POST', Routes.attacks, sub);
+    return this.req('POST', Routes.attacks, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
   }
 
   defenses(since: number): Promise<DefensesResponse> {
     return this.req('GET', `${Routes.defenses}?since=${Math.floor(since)}`);
+  }
+
+  powerLeaderboard(limit = 50): Promise<PowerLeaderboardResponse> {
+    return this.req('GET', `${Routes.powerLeaderboard}?limit=${limit}`);
   }
 
   leaderboard(limit = 50): Promise<LeaderboardResponse> {
@@ -266,6 +477,68 @@ export class HttpServerAdapter implements ServerPort {
     return this.req('POST', Routes.groveInboxAck, { ids });
   }
 
+  // ---------------------------------------------------------------- server-owned village
+
+  getVillage(): Promise<VillageResponse | null> {
+    return this.orNull(this.req<VillageResponse>('GET', Routes.village), 'no_village');
+  }
+
+  startVillage(): Promise<VillageResponse> {
+    return this.req('POST', Routes.village, {});
+  }
+
+  importVillage(file: unknown): Promise<VillageResponse> {
+    return this.req('POST', Routes.villageImport, { file });
+  }
+
+  sendCommands(batch: CommandBatch): Promise<CommandBatchResponse> {
+    return this.req('POST', Routes.villageCommands, batch);
+  }
+
+  ledger(limit = 50): Promise<LedgerResponse> {
+    return this.req('GET', `${Routes.villageLedger}?limit=${limit}`);
+  }
+
+  // ---------------------------------------------------------------- purchases and push
+
+  purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse> {
+    return this.req('POST', Routes.purchaseIntent, req);
+  }
+
+  redeem(req: RedeemRequest): Promise<RedeemResponse> {
+    return this.req('POST', Routes.purchases, req);
+  }
+
+  purchaseHistory(): Promise<PurchaseHistoryResponse> {
+    return this.req('GET', Routes.purchases);
+  }
+
+  async putPushToken(req: PushTokenRequest): Promise<void> {
+    await this.req('PUT', Routes.pushTokens, req);
+  }
+
+  async deletePushToken(token: string): Promise<void> {
+    await this.req('DELETE', `${Routes.pushTokens}?token=${encodeURIComponent(token)}`);
+  }
+
+  // ---------------------------------------------------------------- reports and blocks
+
+  report(req: ReportRequest): Promise<ReportResponse> {
+    return this.req('POST', Routes.reports, req);
+  }
+
+  block(playerId: string): Promise<void> {
+    return this.req('POST', Routes.blocks, { playerId });
+  }
+
+  unblock(playerId: string): Promise<void> {
+    return this.req('DELETE', Routes.block(playerId));
+  }
+
+  blocks(): Promise<BlocksResponse> {
+    return this.req('GET', Routes.blocks);
+  }
+
   // ---------------------------------------------------------------- Grove Raid
 
   raid(): Promise<RaidView> {
@@ -277,7 +550,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   submitRaidAttack(sub: BattleSubmission): Promise<RaidAttackResponse> {
-    return this.req('POST', Routes.groveRaidAttacks, sub);
+    return this.req('POST', Routes.groveRaidAttacks, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
   }
 
   claimRaid(week: number): Promise<RaidClaimResponse> {

@@ -128,7 +128,7 @@ export function nameWidth(s: string): number {
 }
 
 /** Clean a name without judging it: safe characters only, normalised, cut to the width limit. */
-export function sanitizeName(raw: unknown): string {
+export function sanitizeName(raw: unknown, maxWidth = NAME_MAX_WIDTH): string {
   let s = String(raw ?? '').normalize('NFC');
   s = s.replace(/[！-～]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
   s = s.replace(/[\s\p{Zs}]+/gu, ' ');
@@ -154,7 +154,7 @@ export function sanitizeName(raw: unknown): string {
       return true;
     }).join('').normalize('NFC');
     const w = nameWidth(g);
-    if (width + w > NAME_MAX_WIDTH) break;
+    if (width + w > maxWidth) break;
     width += w;
     out += g;
   }

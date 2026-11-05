@@ -25,9 +25,21 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
+      - name: Server first (roadmap step 74)
+        run: node tools/release/check-server-rules.mjs
+        env:
+          SERVER_URL: ${{ vars.VITE_SERVER_URL }}
       - run: npm run build
         env:
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          # Store listings for "Update Kagemura" (roadmap step 75); set once the listings exist.
+          VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
+          VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}
+          # Public key that checks balance bundles (roadmap step 76); without it bundles are never used.
+          VITE_BALANCE_PUBLIC_KEY: ${{ vars.VITE_BALANCE_PUBLIC_KEY }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
       - run: npx cap sync android
       - name: Build debug APK
         working-directory: android

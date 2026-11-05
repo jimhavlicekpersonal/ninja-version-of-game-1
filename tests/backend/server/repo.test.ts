@@ -4,9 +4,23 @@
  * database adapter only needs a factory added in ./pg.ts.
  */
 import { describe, expect, it } from 'vitest';
-import type { Player, Repo, Ticket } from '../../../server/repo';
+import { canonicalJson, contentHash } from '../../../server/contentHash';
+import { noticesNaming } from '../../../server/repo';
+import { PgRepo } from '../../../server/pgRepo';
+import type { AttackRecord, Player, Repo, Ticket } from '../../../server/repo';
 import { baseAt } from './harness';
 import { repoFactories } from './pg';
+
+const DAY = 24 * 3_600_000;
+
+describe('content hashes for stored bases', () => {
+  it('ignore key order, keep array order, and drop undefined fields', () => {
+    expect(canonicalJson({ b: { d: [1, 2], c: 'x' }, a: 1, z: undefined })).toBe('{"a":1,"b":{"c":"x","d":[1,2]}}');
+    expect(contentHash({ a: 1, b: { c: 2 } })).toBe(contentHash({ b: { c: 2 }, a: 1 }));
+    expect(contentHash({ a: [1, 2] })).not.toBe(contentHash({ a: [2, 1] }));
+    expect(contentHash(baseAt(1))).toMatch(/^[0-9a-f]{64}$/);
+  });
+});
 
 const T = Date.UTC(2026, 5, 1);
 
@@ -83,6 +97,101 @@ for (const [label, make] of repoFactories) {
       expect((await repo.defensesFor('b', 0, 2)).map((a) => a.id)).toEqual(['x2', 'x3']);
       expect(await repo.recentTargets('a', T + 2)).toEqual(['b']);
       expect(await repo.recentTargets('a', T + 3)).toEqual([]);
+    });
+
+    it('stores each base version once, and prunes old replays, stale tickets and unreferenced bases', async () => {
+      await fresh();
+      await repo.createPlayer(player('a'));
+      await repo.createPlayer(player('b'));
+      const A = baseAt(1, 3);
+      const B = baseAt(2, 4);
+      const attack = (id: string, at: number, base = A): AttackRecord => ({ id, at, attackerId: 'a', attackerName: 'A', defenderId: 'b', seed: 1, army: {}, levels: {}, base, deployments: [], result: { stars: 0, destruction: 0, loot: {}, used: {}, ticks: 1, hallDestroyed: false, endReason: 'time', hash: 'h' }, attackerTrophies: 0, defenderTrophies: 0 });
+      // Three tickets and an old attack share base A; one ticket has base B.
+      await repo.createTicket(ticket('old', 'a', 'b', { base: A, createdAt: T - 40 * DAY, expiresAt: T - 40 * DAY + 3_600_000 }));
+      await repo.createTicket(ticket('used', 'a', 'b', { base: A, createdAt: T - 2 * DAY, expiresAt: T - 2 * DAY + 3_600_000 }));
+      await repo.useTicket('old', { answer: 1 });
+      await repo.useTicket('used', { answer: 2 });
+      await repo.createTicket(ticket('stale', 'a', 'b', { base: B, createdAt: T - 2 * DAY, expiresAt: T - 2 * DAY + 3_600_000 }));
+      await repo.createTicket(ticket('fresh', 'a', 'b', { base: A, createdAt: T, expiresAt: T + 3_600_000 }));
+      await repo.addAttack(attack('x-old', T - 40 * DAY));
+      await repo.addAttack(attack('x-new', T - DAY, B));
+      // Every read gets the whole base back.
+      expect((await repo.getTicket('fresh'))!.base).toEqual(A);
+      expect((await repo.getTicket('stale'))!.base).toEqual(B);
+      expect((await repo.defensesFor('b', 0, 10)).map((x) => x.base)).toEqual([A, B]);
+      const r = await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY });
+      // 'old' is past retention, 'stale' expired unused; 'used' keeps its answer for retries.
+      expect(r).toEqual({ attacks: 1, tickets: 2, bases: 0 , reports: 0, commands: 0, idempotency: 0 }); // A and B are both still referred to
+      expect(await repo.getTicket('old')).toBeNull();
+      expect(await repo.getTicket('stale')).toBeNull();
+      expect(await repo.getTicket('used')).toMatchObject({ base: A, used: true, response: { answer: 2 } });
+      expect((await repo.defensesFor('b', 0, 10)).map((x) => x.id)).toEqual(['x-new']);
+      // Once nothing refers to them, both versions go (each was stored once).
+      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 2, bases: 2 , reports: 0, commands: 0, idempotency: 0 });
+      expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 0, tickets: 0, bases: 0 , reports: 0, commands: 0, idempotency: 0 });
+    });
+
+    it('keeps a base version that was used again recently, even when nothing refers to it yet', async () => {
+      await fresh();
+      await repo.createPlayer(player('a'));
+      const A = baseAt(1, 3);
+      await repo.createTicket(ticket('t1', 'a', null, { base: A, createdAt: T - 3 * DAY, expiresAt: T - 3 * DAY + 3_600_000 }));
+      await repo.createTicket(ticket('t2', 'a', null, { base: A, createdAt: T, expiresAt: T + 3_600_000 }));
+      expect(await repo.prune({ recordsBefore: T - 30 * DAY, staleBefore: T - DAY })).toEqual({ attacks: 0, tickets: 1, bases: 0 , reports: 0, commands: 0, idempotency: 0 });
+      expect((await repo.getTicket('t2'))!.base).toEqual(A);
+    });
+
+    it('keeps server-owned villages with a revision check, an append-only ledger and a command log', async () => {
+      await fresh();
+      await repo.createPlayer(player('a'));
+      const v = { playerId: 'a', file: { version: 12, savedAt: T, village: { note: 'v1' } }, revision: 1, seq: 0, at: T, stateHash: 'h1', createdAt: T, updatedAt: T };
+      expect(await repo.createVillage(v)).toBe(true);
+      expect(await repo.createVillage(v)).toBe(false); // one per player
+      expect(await repo.createVillage({ ...v, playerId: 'nobody' })).toBe(false); // players only
+      expect(await repo.getVillage('a')).toEqual(v);
+      const next = { ...v, file: { version: 12, savedAt: T + 5, village: { note: 'v2' } }, revision: 2, seq: 3, at: T + 5, stateHash: 'h2', updatedAt: T + 5 };
+      const led = [
+        { playerId: 'a', at: T + 5, resource: 'acorns', delta: -100, balance: 900, reason: 'command:upgrade', ref: '1' },
+        { playerId: 'a', at: T + 5, resource: 'dew', delta: 50, balance: 550, reason: 'command:collect', ref: '2' },
+      ];
+      const cmds = [1, 2, 3].map((seq) => ({ playerId: 'a', seq, at: T + seq, clientAt: T + seq, type: 'collect', command: { type: 'collect', id: 'b1' }, ok: seq !== 3, error: seq === 3 ? 'NOTHING_TO_COLLECT' : null }));
+      expect(await repo.saveVillage(next, 1, led, cmds)).toBe(true);
+      // A writer that read revision 1 is too late now, and writes nothing at all.
+      expect(await repo.saveVillage({ ...next, revision: 2, stateHash: 'stale' }, 1, led, [])).toBe(false);
+      expect(await repo.getVillage('a')).toEqual(next);
+      expect((await repo.ledgerOf('a', 10)).map((l) => l.reason)).toEqual(['command:collect', 'command:upgrade']);
+      expect((await repo.commandsOf('a', 1, 10)).map((c) => [c.seq, c.ok, c.error])).toEqual([
+        [2, true, null],
+        [3, false, 'NOTHING_TO_COLLECT'],
+      ]);
+      expect((await repo.prune({ recordsBefore: 0, staleBefore: 0, commandsBefore: T + 2 })).commands).toBe(1);
+      await repo.deletePlayer('a', 'a', T + 9);
+      expect(await repo.getVillage('a')).toBeNull();
+      expect(await repo.ledgerOf('a', 10)).toEqual([]);
+      expect(await repo.commandsOf('a', 0, 10)).toEqual([]);
+    });
+
+    it('runs transactions all or nothing, a failed nested one undoing only its own writes', async () => {
+      await fresh();
+      await expect(
+        repo.transaction(async (tx) => {
+          await tx.createPlayer(player('x'));
+          throw new Error('boom');
+        }),
+      ).rejects.toThrow('boom');
+      expect(await repo.getPlayer('x')).toBeNull();
+      await repo.transaction(async (tx) => {
+        await tx.createPlayer(player('y'));
+        await tx
+          .transaction(async (inner) => {
+            await inner.createPlayer(player('z'));
+            throw new Error('inner');
+          })
+          .catch(() => undefined);
+        await tx.updatePlayer('y', { trophies: 7 });
+      });
+      expect((await repo.getPlayer('y'))!.trophies).toBe(7);
+      expect(await repo.getPlayer('z')).toBeNull();
     });
 
     it('lists Groves with member counts and activity, and manages members', async () => {
@@ -170,3 +279,56 @@ for (const [label, make] of repoFactories) {
     });
   });
 }
+
+describe.skipIf(!repoFactories.some(([l]) => l === 'postgres'))('PgRepo: rows from before base versions', () => {
+  it('still reads tickets and attacks that carry their own copy of the base', async () => {
+    const repo = (await repoFactories.find(([l]) => l === 'postgres')![1]()) as PgRepo;
+    const pool = (repo as unknown as { pool: import('pg').Pool }).pool;
+    await repo.createPlayer(player('a'));
+    await repo.createPlayer(player('b'));
+    const A = baseAt(1, 3);
+    await pool.query(`insert into tickets (id, kind, attacker_id, defender_id, defender_name, base, defender_trophies, created_at, expires_at, used) values ('legacy', 'pvp', 'a', 'b', 'x', $1, 0, $2, $3, false)`, [JSON.stringify(A), T, T + 3_600_000]);
+    const rec = { id: 'old', at: T, attackerId: 'a', attackerName: 'A', defenderId: 'b', seed: 1, army: {}, levels: {}, base: A, deployments: [], result: { stars: 0, destruction: 0, loot: {}, used: {}, ticks: 1, hallDestroyed: false, endReason: 'time', hash: 'h' }, attackerTrophies: 0, defenderTrophies: 0 };
+    await pool.query(`insert into attacks (id, at, attacker_id, defender_id, record) values ('old', $1, 'a', 'b', $2)`, [T, JSON.stringify(rec)]);
+    expect((await repo.getTicket('legacy'))!.base).toEqual(A);
+    expect((await repo.defensesFor('b', 0, 10))[0].base).toEqual(A);
+    // Retention removes them like any other row.
+    expect(await repo.prune({ recordsBefore: T + 1, staleBefore: T + 1 })).toEqual({ attacks: 1, tickets: 1, bases: 0 , reports: 0, commands: 0, idempotency: 0 });
+  });
+
+  it('stores a base once in base_versions however many tickets use it', async () => {
+    const repo = (await repoFactories.find(([l]) => l === 'postgres')![1]()) as PgRepo;
+    const pool = (repo as unknown as { pool: import('pg').Pool }).pool;
+    await repo.createPlayer(player('a'));
+    for (let i = 0; i < 5; i++) await repo.createTicket(ticket(`t${i}`, 'a', null, { base: baseAt(1, 3), createdAt: T + i }));
+    expect(Number((await pool.query('select count(*) as n from base_versions')).rows[0].n)).toBe(1);
+    expect((await pool.query('select base from tickets where base is not null')).rows).toHaveLength(0);
+  });
+});
+
+describe.skipIf(!repoFactories.some(([l]) => l === 'postgres'))('PgRepo: the ledger', () => {
+  it('refuses to change a ledger row', async () => {
+    const repo = (await repoFactories.find(([l]) => l === 'postgres')![1]()) as PgRepo;
+    const pool = (repo as unknown as { pool: import('pg').Pool }).pool;
+    await repo.createPlayer(player('a'));
+    await repo.createVillage({ playerId: 'a', file: {}, revision: 1, seq: 0, at: T, stateHash: 'h', createdAt: T, updatedAt: T });
+    await repo.saveVillage({ playerId: 'a', file: {}, revision: 2, seq: 0, at: T, stateHash: 'h', createdAt: T, updatedAt: T }, 1, [{ playerId: 'a', at: T, resource: 'acorns', delta: 5, balance: 5, reason: 'test', ref: null }], []);
+    await expect(pool.query('update ledger set delta = 500')).rejects.toThrow(/append-only/);
+  });
+});
+
+
+describe('deleting names from notices', () => {
+  it('matches legacy and isolated native-script notices without matching other players', () => {
+    for (const name of ['Ann', 'محمد', '影']) {
+      const match = noticesNaming(name);
+      for (const n of [name, `⁨${name}⁩`]) {
+        expect(match(`${n} founded ⁨قرية الظل⁩!`)).toBe(true);
+        expect(match(`${n} joined the Alliance. Say hello!`)).toBe(true);
+        expect(match(`${n} leads the Gang now.`)).toBe(true);
+      }
+      expect(match(`${name} Other founded a village!`)).toBe(false);
+      expect(match('A member left the Alliance.')).toBe(false);
+    }
+  });
+});

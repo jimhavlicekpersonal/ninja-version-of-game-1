@@ -9,9 +9,39 @@
  * Pure types and constants only (shared by browser and Node).
  */
 import type { BaseLayout, BattleResult, Deployment } from '../../gameplay/sim/battle/types';
+import type { SaveFile } from '../../gameplay/sim/save';
+import type { Economy } from '../../gameplay/sim/serverEconomy';
+import type { Command } from '../../gameplay/sim/village';
 
-/** Bump when a change would break older clients; servers report the oldest they accept. */
-export const PROTOCOL_VERSION = 6;
+/**
+ * Bump when a change would break older clients; servers report the oldest
+ * they accept. 7 (roadmap step 26): the server owns the economy (villages are
+ * kept on the server), every request says which game it comes from
+ * (`ClientHeaders`), and writes carry an Idempotency-Key. 8 (roadmap steps
+ * 72–75): the game also sends `x-data-version`; tickets are checked with the
+ * battle rules they were issued under, and `/v1/hello` lists `supportedRules`
+ * and `minClientBuild` so an old game can say "Update Kagemura". Servers
+ * still accept 7 (it already sends `x-sim-rules`). 9 (roadmap steps 57-70):
+ * Friendly Duels, Gangs and Gang Wars (features `duels`, `gangs`,
+ * `gang-wars`), relay strikes (SIM_RULES 3, `BattleSetup.startDamage`),
+ * `503 busy` from the re-simulation queue. All additions: servers still
+ * accept 7.
+ */
+export const PROTOCOL_VERSION = 9;
+
+/** Headers the game sends with every request (protocol 7). */
+export const ClientHeaders = {
+  /** PROTOCOL_VERSION of the game. Older than the server's minProtocol: 426 version_mismatch. */
+  protocol: 'x-protocol',
+  /** SIM_RULES the game simulates battles with. */
+  simRules: 'x-sim-rules',
+  /** Hash of the game's balance data (src/gameplay/data), so a server can tell builds apart. */
+  dataVersion: 'x-data-version',
+  /** The game's version and platform, e.g. "0.1.0+ios". */
+  clientBuild: 'x-client-build',
+  /** On writes: a fresh id per action; the same key again (by the same player) gets the first answer back. */
+  idempotencyKey: 'idempotency-key',
+} as const;
 
 export type ErrorCode =
   | 'unauthorized'
@@ -27,11 +57,29 @@ export type ErrorCode =
   | 'raid_not_ended'
   | 'no_attacks_left'
   | 'no_opponents'
-  | 'version_mismatch';
+  | 'version_mismatch'
+  /** 429: too many requests; wait for the Retry-After header (seconds), then try again. */
+  | 'rate_limited'
+  /** 403: a moderator muted this player's chat for a while (the message says until when). */
+  | 'muted'
+  /** 404: this player's village is not kept on the server (it lives on the device). */
+  | 'no_village'
+  /** 403: the purchase is not allowed (the under-18 monthly cap, or purchases not set up on this server); nothing was charged. */
+  | 'purchase_refused'
+  /** 403: staff suspended this account from online play (the message says why and until when). */
+  | 'banned'
+  /** 409: that name belongs to someone else (or is held for its previous owner); `suggestions` lists free ones. */
+  | 'name_taken'
+  /** 429: one name change per 28 days; the message says when the next one is free. */
+  | 'name_cooldown'
+  /** 503: the server is too busy to check a battle right now (step 57); retried like any server error. */
+  | 'busy';
 
 export interface ErrorBody {
   error: ErrorCode;
   message: string;
+  /** `name_taken` and refused names: free names close to the one asked for. */
+  suggestions?: string[];
 }
 
 export const Routes = {
@@ -43,6 +91,7 @@ export const Routes = {
   attacks: '/v1/attacks',
   defenses: '/v1/defenses',
   leaderboard: '/v1/leaderboard',
+  powerLeaderboard: '/v1/leaderboard/power',
   groves: '/v1/groves',
   groveJoin: (id: string) => `/v1/groves/${encodeURIComponent(id)}/join`,
   grove: '/v1/grove',
@@ -56,6 +105,84 @@ export const Routes = {
   groveRaidTicket: '/v1/grove/raid/ticket',
   groveRaidAttacks: '/v1/grove/raid/attacks',
   groveRaidClaim: '/v1/grove/raid/claim',
+  links: '/v1/links',
+  link: (provider: string) => `/v1/links/${encodeURIComponent(provider)}`,
+  /** POST, no token: sign in on this device with a linked account. */
+  sessions: '/v1/sessions',
+  village: '/v1/village',
+  villageCommands: '/v1/village/commands',
+  /** POST { file }: move this device's village to the server (once, with sanity limits for its Keep). */
+  villageImport: '/v1/village/import',
+  villageLedger: '/v1/village/ledger',
+  reports: '/v1/reports',
+  blocks: '/v1/blocks',
+  block: (playerId: string) => `/v1/blocks/${encodeURIComponent(playerId)}`,
+  /** POST, no token: a deletion request from the web form, for players who cannot open the game. */
+  deletionRequests: '/v1/account/deletion-requests',
+  /** GET (HTML): the web account-deletion page to link from store listings. Not part of the game's API. */
+  deletionPage: '/account/delete',
+  /** POST: ask before paying (age cap); returns the token the store purchase carries back. */
+  purchaseIntent: '/v1/purchases/intent',
+  /** POST: redeem a store receipt (verified, credited once); GET: purchase history. */
+  purchases: '/v1/purchases',
+  /** POST, no token: App Store Server Notifications v2 (signed by Apple). */
+  appleNotifications: '/v1/webhooks/apple',
+  /** POST, no token: Google Play Real-time Developer Notifications (Pub/Sub push, OIDC-signed). */
+  googleNotifications: '/v1/webhooks/google',
+  /** PUT: this device's push token and choices; DELETE (?token=): stop pushing to it. */
+  pushTokens: '/v1/push/tokens',
+  /** GET, no token: the signed balance bundle for this game's rules, if any (step 76; feature `balance-bundles`). */
+  balance: '/v1/balance',
+  /** GET: friends, requests, my friend code and privacy (step 59; feature `friends`). */
+  friends: '/v1/friends',
+  /** DELETE: stop being friends. */
+  friend: (playerId: string) => `/v1/friends/${encodeURIComponent(playerId)}`,
+  /** POST { name } | { code } | { playerId }: ask someone to be friends. */
+  friendRequests: '/v1/friends/requests',
+  /** POST { accept }: answer a request to me; DELETE: take back my own. */
+  friendRequest: (id: string) => `/v1/friends/requests/${encodeURIComponent(id)}`,
+  /** GET ?name=: one player by exact name (rate limited; respects their privacy). */
+  playerLookup: '/v1/players/lookup',
+  /** GET: one player by friend code (codes are shared on purpose). */
+  playerByCode: (code: string) => `/v1/players/code/${encodeURIComponent(code)}`,
+  /** PUT { findable?, showOnline? }: who can find me by name, and whether friends see when I was online. */
+  privacy: '/v1/me/privacy',
+  /** POST { provider, ids }: which of my Game Center / Play Games friends play Kagemura (step 61, opt-in). */
+  platformFriends: '/v1/friends/platform',
+  /** Friendly Duels (step 62; feature `duels`). POST { friendId, layout?, challengeId? }: a duel ticket. */
+  duelTicket: '/v1/duels/ticket',
+  /** POST BattleSubmission: report a duel; GET ?since=: my duels both ways, with replays. */
+  duels: '/v1/duels',
+  /** PUT { base | null }: the layout friends duel against (or none: my village). */
+  duelLayout: '/v1/duels/layout',
+  /** POST { friendId }: challenge a friend (both attack within 24 h); GET: my challenges. */
+  duelChallenges: '/v1/duels/challenges',
+  /** Gangs (step 63; feature `gangs`). GET: my Gang (or null) and invites to me; POST { name }: found one. */
+  squad: '/v1/squad',
+  /** POST { friendId }: invite a friend (leader only). */
+  squadInvites: '/v1/squad/invites',
+  /** POST { accept }: answer an invite to me. */
+  squadInvite: (id: string) => `/v1/squad/invites/${encodeURIComponent(id)}`,
+  squadLeave: '/v1/squad/leave',
+  /** POST { playerId }: make another member the leader. */
+  squadLeader: '/v1/squad/leader',
+  /** GET ?after= / POST { text }: Gang chat (filtered, rate limited, reportable). */
+  squadChat: '/v1/squad/chat',
+  /** GET / POST { capacity }: troop requests inside the Gang; gifts arrive in the usual inbox. */
+  squadRequests: '/v1/squad/requests',
+  squadDonate: (id: string) => `/v1/squad/requests/${encodeURIComponent(id)}/donate`,
+  /** Gang Wars (steps 65-66; feature `gang-wars`). GET: the current war, the search, recent wars and chests. */
+  squadWar: '/v1/squad/war',
+  /** POST: the leader starts looking for an opposing Gang; DELETE: stop looking. */
+  squadWarQueue: '/v1/squad/war/queue',
+  /** POST: during prep, copy my current village into the war again (moved defenses). */
+  squadWarBase: '/v1/squad/war/base',
+  /** POST { target, relay }: a war ticket (a relay strike starts from the damage so far). */
+  squadWarTicket: '/v1/squad/war/ticket',
+  /** POST BattleSubmission: report a war strike. */
+  squadWarAttacks: '/v1/squad/war/attacks',
+  /** POST { warId }: claim my chest once the war has ended. */
+  squadWarClaim: '/v1/squad/war/claim',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -68,6 +195,25 @@ export interface HelloResponse {
   /** Server clock (epoch ms), so all players agree on Grove Raid times. */
   serverTime: number;
   features: string[];
+  /** 'staging' or 'development' on a test server (the game says so in Settings); absent or 'production' otherwise. */
+  environment?: string;
+  /** A message from the operators for every player (maintenance, an incident), shown in Settings → Online play. */
+  notice?: string;
+  /**
+   * Protocol 8 (roadmap step 75): the battle-rule versions (SIM_RULES) this
+   * server can check, newest first. A game whose SIM_RULES is not listed must
+   * update before playing online (it shows "Update Kagemura").
+   */
+  supportedRules?: number[];
+  /** Protocol 8: the oldest game build allowed online (e.g. "1.2.0"); older builds must update. */
+  minClientBuild?: string;
+  /** Protocol 8: the server's live data version (for support and dashboards). */
+  dataVersion?: string;
+}
+
+/** GET /v1/balance (roadmap step 76): the operators' signed number changes, or null. */
+export interface BalanceResponse {
+  bundle: import('./balanceBundle').BalanceBundle | null;
 }
 
 export interface RegisterRequest {
@@ -85,10 +231,298 @@ export interface PlayerView {
   hallLevel: number;
   shieldUntil: number;
   groveId: string | null;
+  /** Protocol 8 (step 59): when the next name change is free (0: now). */
+  nameChangeAt?: number;
+  /** Protocol 8: staff and official accounts (shown with a badge nobody else can get). */
+  staff?: boolean;
 }
 
 export interface RenameRequest {
   name: string;
+}
+
+// ---------------------------------------------------------------- friends (roadmap step 59)
+
+/** Who may find a player by typing their name (friend codes always work). */
+export type Findable = 'everyone' | 'friends_of_friends' | 'nobody';
+
+/** A player as a profile card: lookups, friends and requests. */
+export interface PlayerCard {
+  id: string;
+  name: string;
+  /** Keep level. */
+  keep: number;
+  honor: number;
+  /** League id (ranks.json). */
+  league: string;
+  /** Their Alliance's name, if any. */
+  alliance: string | null;
+  /** Staff and official accounts. */
+  staff?: boolean;
+  /** Their previous name, for 28 days after a change. */
+  formerly?: string;
+  /** How this player relates to me. */
+  relation: 'self' | 'friend' | 'requested' | 'incoming' | 'none';
+}
+
+export interface FriendView extends PlayerCard {
+  /** Friends since (epoch ms). */
+  since: number;
+  /** Last time they were online, unless they hide it. */
+  lastSeen?: number;
+}
+
+export interface FriendRequestView {
+  id: string;
+  at: number;
+  /** Requests lapse after 14 days. */
+  expiresAt: number;
+  /** The other player (the sender for incoming, the receiver for outgoing). */
+  player: PlayerCard;
+}
+
+export interface FriendsResponse {
+  /** My friend code, e.g. "KAGE-7Q4M2K" (share it, or as a link or QR code). */
+  code: string;
+  findable: Findable;
+  showOnline: boolean;
+  friends: FriendView[];
+  incoming: FriendRequestView[];
+  outgoing: FriendRequestView[];
+  /** Most friends a player can have. */
+  max: number;
+}
+
+export interface FriendRequestBody {
+  name?: string;
+  code?: string;
+  playerId?: string;
+}
+
+/** `friends`: they had already asked me, so we are friends now. */
+export interface FriendRequestResult {
+  status: 'sent' | 'friends';
+  request?: FriendRequestView;
+  friend?: FriendView;
+}
+
+/** Step 61: friend ids from Game Center (teamPlayerID) or Play Games, read on the device with the player's permission. */
+export interface PlatformFriendsRequest {
+  provider: 'gamecenter' | 'playgames';
+  ids: string[];
+}
+export interface PlatformFriendsResponse {
+  /** Kagemura players among them (not blocked either way, not hidden from search). */
+  players: PlayerCard[];
+}
+
+// ---------------------------------------------------------------- duels (roadmap step 62)
+
+/** Duel against the friend's village, or their duel layout if they set one. */
+export interface DuelTicketRequest {
+  friendId: string;
+  layout?: 'live' | 'duel';
+  /** Attack for a duel challenge (each side once). */
+  challengeId?: string;
+}
+export interface DuelTicketResponse {
+  ticket: string;
+  seed: number;
+  /** Their base, without loot (duels never pay). */
+  base: BaseLayout;
+  opponent: { id: string; name: string; keep: number };
+  /** Which layout this is. */
+  layout: 'live' | 'duel';
+  expiresAt: number;
+}
+
+/** Wins, best stars and best destruction as the attacker, both ways. */
+export interface RivalryView {
+  friendId: string;
+  duels: number;
+  wins: number;
+  bestStars: number;
+  bestDestruction: number;
+  theirDuels: number;
+  theirWins: number;
+  theirBestStars: number;
+  theirBestDestruction: number;
+}
+
+export interface DuelView {
+  id: string;
+  at: number;
+  /** 'attack': I attacked; 'defense': they attacked my base. */
+  side: 'attack' | 'defense';
+  opponent: { id: string; name: string };
+  challengeId?: string;
+  seed: number;
+  army: Record<string, number>;
+  levels: Record<string, number>;
+  base: BaseLayout;
+  deployments: Deployment[];
+  endTick?: number;
+  result: BattleResult;
+  rules: number;
+}
+export interface DuelsResponse {
+  duels: DuelView[];
+  rivalries: RivalryView[];
+}
+export interface DuelReportResponse {
+  duelId: string;
+  result: BattleResult;
+  rivalry: RivalryView;
+  challenge?: ChallengeView;
+}
+
+export interface DuelLayoutRequest {
+  base: BaseLayout | null;
+}
+
+/** A duel challenge: both attack each other within 24 h; more stars, then destruction, wins. */
+export interface ChallengeView {
+  id: string;
+  createdAt: number;
+  expiresAt: number;
+  opponent: { id: string; name: string };
+  /** I sent it. */
+  mine: boolean;
+  my: { stars: number; destruction: number } | null;
+  their: { stars: number; destruction: number } | null;
+  /** Decided when both attacked or time ran out. */
+  outcome: 'win' | 'loss' | 'draw' | null;
+}
+export interface ChallengesResponse {
+  challenges: ChallengeView[];
+}
+
+// ---------------------------------------------------------------- Gangs (roadmap step 63)
+
+export interface SquadMemberView {
+  id: string;
+  name: string;
+  keep: number;
+  honor: number;
+  role: 'leader' | 'member';
+  joinedAt: number;
+  lastSeen?: number;
+  you: boolean;
+}
+export interface SquadView {
+  id: string;
+  name: string;
+  members: SquadMemberView[];
+  /** Invites the leader sent that are still open. */
+  invited: { id: string; name: string; at: number }[];
+  max: number;
+  /** Gang Rating (step 66), shown as a number. */
+  rating: number;
+  /** Leaving or joining waits while a Gang War runs (the roster is locked). */
+  locked: boolean;
+}
+export interface SquadInviteView {
+  id: string;
+  at: number;
+  squad: { id: string; name: string; members: number };
+  from: { id: string; name: string };
+}
+export interface SquadResponse {
+  squad: SquadView | null;
+  invites: SquadInviteView[];
+  /** When this player may join a Gang again after leaving one (0: now). */
+  canJoinAt: number;
+}
+
+// ---------------------------------------------------------------- Gang Wars (roadmap steps 65-66)
+
+export interface GangWarBaseView {
+  index: number;
+  name: string;
+  keep: number;
+  /** The layout (enemy bases, to attack; our own, to see what they face). */
+  base: BaseLayout;
+  /** Its best result so far (a relay counts as one combined result). */
+  best: { stars: number; destruction: number };
+  /** The relay on it: damage so far, strikes, who struck last, and whether someone holds the next strike. */
+  relay: { stars: number; destruction: number; strikes: number; lastBy: string | null; busy: boolean } | null;
+}
+export interface GangWarView {
+  id: string;
+  phase: 'prep' | 'battle' | 'ended';
+  prepEndsAt: number;
+  endsAt: number;
+  size: number;
+  opponent: { name: string; bot: boolean };
+  ours: { stars: number; destruction: number };
+  theirs: { stars: number; destruction: number };
+  /** Our bases and what the enemy did to them. */
+  mine: GangWarBaseView[];
+  /** Their bases and what we did to them. */
+  enemy: GangWarBaseView[];
+  /** My attacks left (0 outside the battle day, or for a member who joined after it started). */
+  attacksLeft: number;
+  /** My index in our roster (null: not in this war). */
+  myIndex: number | null;
+  outcome: 'win' | 'draw' | 'loss' | null;
+  claimed: boolean;
+  /** The war so far, newest first: who hit which base (yours: replays in your battle log). */
+  log: { at: number; by: string; ours: boolean; target: string; stars: number; destruction: number; relay: boolean }[];
+}
+export interface GangWarResponse {
+  war: GangWarView | null;
+  /** The leader is looking for an opponent; a generated Gang is offered from `botAt`. */
+  queued: { since: number; botAt: number } | null;
+  /** Ended wars this player took part in, newest first, with whether the chest was claimed. */
+  recent: { id: string; opponent: string; bot: boolean; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number; endsAt: number; claimed: boolean }[];
+}
+export interface GangWarTicketRequest {
+  target: number;
+  relay?: boolean;
+}
+export interface GangWarTicketResponse {
+  ticket: string;
+  seed: number;
+  base: BaseLayout;
+  /** A relay strike: the damage it starts from (BattleSetup.startDamage). */
+  startDamage?: Record<string, number>;
+  expiresAt: number;
+}
+export interface GangWarAttackResponse {
+  result: BattleResult;
+  ours: { stars: number; destruction: number };
+  theirs: { stars: number; destruction: number };
+}
+export interface GangWarClaimResponse {
+  warId: string;
+  outcome: 'win' | 'draw' | 'loss';
+  alreadyClaimed: boolean;
+}
+
+export interface PrivacyRequest {
+  findable?: Findable;
+  showOnline?: boolean;
+}
+
+/**
+ * DELETE /v1/me deletes the caller's online account (204): the player, their
+ * base, raids on them, Alliance membership, chat lines, troop requests and
+ * gifts to them. Replays of raids they made stay with the defenders, as
+ * "Deleted player". The token stops working. The village on the device is
+ * not touched (it never left it).
+ */
+export interface DeletionRequestBody {
+  /** The Player ID shown in Settings → Online play. */
+  playerId?: string;
+  /** The player name, if the ID is unknown. One of the two is needed. */
+  name?: string;
+  /** How staff can reach the player to confirm (optional, kept only for this request). */
+  contact?: string;
+  note?: string;
+}
+export interface DeletionRequestResponse {
+  /** Reference for the player; the request is handled by staff. */
+  id: string;
 }
 
 // ---------------------------------------------------------------- PvP
@@ -108,6 +542,12 @@ export interface OpponentView {
 
 export interface MatchResponse {
   ticket: string;
+  /**
+   * The battle seed for this ticket, chosen by the server. The client plays
+   * the battle with it and sends it back in `BattleSubmission.seed`. Servers
+   * from before server seeds leave it out; the client then picks its own.
+   */
+  seed: number;
   /** The base to attack, loot already reduced by the attacker's loot penalty. */
   base: BaseLayout;
   opponent: OpponentView;
@@ -118,6 +558,11 @@ export interface MatchResponse {
 /** The battle a client played; the server re-runs it from seed + deployments. */
 export interface BattleSubmission {
   ticket: string;
+  /**
+   * The ticket's seed (`MatchResponse.seed` / `RaidTicketResponse.seed`). The
+   * server re-simulates with the seed it issued; a different one is refused
+   * with `bad_request` (an old client that picks its own seed must update).
+   */
   seed: number;
   army: Record<string, number>;
   levels?: Record<string, number>;
@@ -125,6 +570,17 @@ export interface BattleSubmission {
   reinforcements?: Record<string, { count: number; level: number }>;
   deployments: Deployment[];
   endTick?: number;
+  /**
+   * The result hash the client's own simulation got. Only for spotting
+   * desyncs (counted and logged by the server); never trusted.
+   */
+  clientHash?: string;
+  /**
+   * The SIM_RULES and data version the game played the battle with (protocol
+   * 8). Must match the ticket's; the server re-simulates with the ticket's.
+   */
+  rules?: number;
+  dataVersion?: string;
 }
 
 export interface AttackResponse {
@@ -168,6 +624,20 @@ export interface LeaderboardEntry {
   hallLevel: number;
   grove: string | null;
 }
+/** GET /v1/leaderboard/power (roadmap step 31): Attack Rating plus power, for players with enough rated attacks. */
+export interface PowerLeaderboardEntry {
+  rank: number;
+  name: string;
+  power: number;
+  hallLevel: number;
+  grove: string | null;
+}
+export interface PowerLeaderboardResponse {
+  players: PowerLeaderboardEntry[];
+  /** Null until the player has enough rated attacks. */
+  me: { rank: number; power: number; battles: number } | null;
+}
+
 export interface LeaderboardResponse {
   players: LeaderboardEntry[];
   me: { rank: number; trophies: number } | null;
@@ -228,9 +698,15 @@ export interface ChatView {
 }
 
 export interface ChatResponse {
+  /** Newer messages, without hidden ones or ones from players the caller blocked. */
   messages: ChatView[];
   /** Pass back as ?after= to get only newer messages. */
   cursor: string;
+  /**
+   * Ids of recent messages that moderation has removed (they may already be
+   * on screen): drop them. Absent from servers without moderation.
+   */
+  hidden?: string[];
 }
 
 export interface PostChatRequest {
@@ -287,6 +763,136 @@ export interface AckRequest {
   ids: string[];
 }
 
+// ---------------------------------------------------------------- Linked sign-ins (roadmap step 24)
+
+export type LinkProvider = 'apple' | 'google' | 'gamecenter' | 'playgames';
+
+/**
+ * What a provider's sign-in gives the game, passed through to the server:
+ * apple/google `{ idToken }`; gamecenter `{ teamPlayerId, bundleId,
+ * timestamp, salt, signature, publicKeyUrl }`; playgames `{ serverAuthCode }`.
+ */
+export type LinkCredential = Record<string, unknown>;
+
+/** GET /v1/links; POST /v1/links { provider, credential } links; DELETE /v1/links/:provider unlinks. */
+export interface LinksResponse {
+  /** Providers this server can check. */
+  providers: LinkProvider[];
+  links: { provider: LinkProvider; linkedAt: number }[];
+}
+
+/** POST /v1/sessions (no token): `{ provider, credential, device? }` → `RegisterResponse` for the linked player. */
+export interface SignInRequest {
+  provider: LinkProvider;
+  credential: LinkCredential;
+  device?: string;
+}
+
+// ---------------------------------------------------------------- Server-owned village (roadmap Phase 2)
+
+/**
+ * A village kept on the server (feature `server-economy`). GET /v1/village
+ * returns it (404 `no_village` if the village lives on the device); POST
+ * /v1/village starts one on the server (or returns the one there).
+ */
+export interface VillageResponse {
+  /** The whole village as a save file (the game loads it with deserialize). */
+  file: SaveFile;
+  revision: number;
+  /** The last command of this player the server applied. */
+  seq: number;
+  /** The time the village is settled to. */
+  at: number;
+  /** economyHash of the village. */
+  stateHash: string;
+}
+
+/** One player action, numbered by the game (`seq` goes up by one per command) and timed by its clock. */
+export interface VillageCommand {
+  seq: number;
+  /** When the player did it (the game's clock, epoch ms). */
+  t: number;
+  command: Command;
+}
+
+/** POST /v1/village/commands: what the player did since the last batch. */
+export interface CommandBatch {
+  /** The game's economy hash right after its last command in this batch. */
+  stateHash: string;
+  commands: VillageCommand[];
+}
+
+export interface CommandOutcome {
+  seq: number;
+  ok: boolean;
+  /** Why it was refused (a sim error code, NOT_ALLOWED, TOO_MANY_BATTLES). */
+  error?: string;
+}
+
+export interface CommandBatchResponse {
+  /** Every command up to here was processed (applied or refused); drop them from the queue. */
+  ackSeq: number;
+  revision: number;
+  /** The server's economy hash after the batch. */
+  stateHash: string;
+  /** Commands that were in this batch (repeats of already-applied ones are left out). */
+  results: CommandOutcome[];
+  /**
+   * Present when the server's economy differs from the game's: the game puts
+   * this economy in place (the server is the truth) and replays any commands
+   * it has queued since.
+   */
+  corrections?: { economy: Economy; at: number };
+}
+
+export interface LedgerEntryView {
+  at: number;
+  resource: string;
+  delta: number;
+  balance: number;
+  reason: string;
+}
+export interface LedgerResponse {
+  entries: LedgerEntryView[];
+}
+
+// ---------------------------------------------------------------- Reports and blocks
+
+export type ReportReason = 'harassment' | 'hate' | 'sexual' | 'spam' | 'cheating' | 'name' | 'other';
+export const REPORT_REASONS: readonly ReportReason[] = ['harassment', 'hate', 'sexual', 'spam', 'cheating', 'name', 'other'];
+
+/** POST /v1/reports: report a chat message (the server keeps its text as it was) or a player. */
+export interface ReportRequest {
+  kind: 'chat' | 'player';
+  /** kind 'chat': a message in the caller's Alliance chat. */
+  messageId?: string;
+  /** kind 'player': whom to report. */
+  playerId?: string;
+  reason: ReportReason;
+  note?: string;
+  /** Also block the player (hide their messages and requests from the caller). */
+  block?: boolean;
+}
+export interface ReportResponse {
+  /** Null when the caller already has an open report on it (nothing new was filed). */
+  id: string | null;
+  alreadyReported: boolean;
+  blocked: boolean;
+}
+
+export interface BlockRequest {
+  playerId: string;
+}
+export interface BlockView {
+  id: string;
+  name: string;
+  at: number;
+}
+/** GET /v1/blocks. POST /v1/blocks { playerId } blocks (204); DELETE /v1/blocks/:id unblocks (204). */
+export interface BlocksResponse {
+  blocked: BlockView[];
+}
+
 // ---------------------------------------------------------------- Grove Raid
 
 export interface RaidMemberView {
@@ -326,6 +932,8 @@ export interface RaidTicketRequest {
 }
 export interface RaidTicketResponse {
   ticket: string;
+  /** The battle seed for this ticket, chosen by the server (see MatchResponse.seed). */
+  seed: number;
   base: BaseLayout;
   expiresAt: number;
 }
@@ -349,3 +957,64 @@ export interface RaidClaimResponse {
   /** True when this claim was already made (safe to retry). */
   alreadyClaimed: boolean;
 }
+
+// ---------------------------------------------------------------- purchases (roadmap Phase 4)
+
+export type PurchaseStore = 'apple' | 'google';
+
+export interface PurchaseIntentRequest {
+  store: PurchaseStore;
+  /** The game's product id (store.json packs, pass.json, offers.json). */
+  productId: string;
+  /** The player's age group from the game; ignored when the server holds the village (it knows). */
+  under18: boolean | null;
+}
+export interface PurchaseIntentResponse {
+  /** A UUID: Apple appAccountToken / Google obfuscatedAccountId. */
+  accountToken: string;
+  /** The product's id in that store. */
+  storeProductId: string;
+}
+
+export interface RedeemRequest {
+  store: PurchaseStore;
+  /** The product's id in that store (Google needs it to look the token up). */
+  storeProductId: string;
+  /** Apple: the transaction's JWS (jwsRepresentation). Google: the purchase token. */
+  receipt: string;
+}
+export interface RedeemResponse {
+  /** The id the village records the purchase under ("apple:…", "google:…"). */
+  transactionId: string;
+  /** The game's product id. */
+  productId: string;
+  usd: number;
+  /** The server delivered it into the village it holds; otherwise the game delivers it. */
+  heldOnServer: boolean;
+  /** It was redeemed before (a retry): nothing new was credited. */
+  already: boolean;
+}
+
+export interface PurchaseView {
+  transactionId: string;
+  store: PurchaseStore;
+  productId: string;
+  usd: number;
+  at: number;
+  status: 'credited' | 'refunded';
+}
+export interface PurchaseHistoryResponse {
+  purchases: PurchaseView[];
+}
+
+// ---------------------------------------------------------------- push (roadmap step 40)
+
+export interface PushTokenRequest {
+  token: string;
+  platform: 'ios' | 'android';
+  /** Notification types this device switched on (notifications.json ids). */
+  types: string[];
+  /** Date#getTimezoneOffset on the device, for quiet hours and the daily limit. */
+  tzOffsetMinutes: number;
+}
+

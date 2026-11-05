@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
+import { CrashReporter } from './backend/analytics/crashReports';
+import { platformSignIn } from './backend/platform/auth';
 import { GameController } from './gameplay/control/controller';
 import { openGameDb } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
@@ -12,6 +14,8 @@ import { VillageScene, type VillageSceneInit } from './presentation/render/Villa
 import { BattleScene } from './presentation/render/BattleScene';
 import { App } from './app';
 import { browserKeyValue, Connection, resolveServerUrl } from './backend/net/connection';
+import { BalanceLoader } from './backend/net/balance';
+import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { LocalGroveSource, RemoteGroveSource, type GroveSource } from './backend/social/groveSource';
 import { sound } from './presentation/audio/sound';
 import { notifyPrefs, prefs } from './backend/platform/prefs';
@@ -19,6 +23,8 @@ import { WebReminders, type ReminderService } from './backend/platform/reminders
 import { NativeReminders, isNative, platform } from './backend/platform/native';
 import { MockPaymentProvider, type PaymentProvider } from './backend/payments/provider';
 import { StoreKitPaymentProvider, UnavailablePaymentProvider } from './backend/payments/storekit';
+import { PlayBillingPaymentProvider } from './backend/payments/playBilling';
+import { pushDevice } from './backend/platform/push';
 import { choosePaymentProvider, isSandbox, paymentPath } from './backend/payments/select';
 import { planNotifications, upcomingReminders } from './gameplay/sim/reminders';
 import { Tutorial } from './presentation/ui/tutorial';
@@ -77,6 +83,9 @@ async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events
   }
 }
 
+/** Set up first thing in boot(), so a failed start is reported too. */
+let crashReporter: CrashReporter | null = null;
+
 async function boot(): Promise<void> {
   const params = new URLSearchParams(location.search);
   // Testing tools (time skips, instant test purchases) exist only in the
@@ -84,16 +93,28 @@ async function boot(): Promise<void> {
   // own save and never goes online, so neither its clock nor its free
   // purchases can reach a real village or a shared economy.
   const sandbox = isSandbox(location.search);
+  // Crash reports (VITE_SENTRY_DSN builds only; Settings can switch them off; never from the sandbox).
+  crashReporter = new CrashReporter({
+    dsn: sandbox ? undefined : (import.meta.env.VITE_SENTRY_DSN as string | undefined),
+    release: `kagemura@${__APP_VERSION__}`,
+    environment: isNative() ? platform() : 'web',
+    enabled: () => prefs.get('crashReports'),
+    tags: { device: platformName() },
+  });
+  crashReporter.install();
   const debugTime = sandbox ? createDebugTime() : { offsetMs: () => 0, skip: () => undefined };
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   const [{ store, events }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
   const analytics = new Analytics(events, clock);
-  // Payments: StoreKit on iPhone; nothing yet on Android or the public web build;
-  // the instant mock store only in the sandbox (clearly labelled there).
-  const path = paymentPath(platform(), sandbox);
+  // Payments: StoreKit on iPhone; Google Play Billing on Android only in builds made with
+  // VITE_PLAY_BILLING=1; none on the public web build; the instant mock store only in the
+  // sandbox (clearly labelled there).
+  const path = paymentPath(platform(), sandbox, import.meta.env.VITE_PLAY_BILLING === '1');
   const storeKit = path === 'storekit' ? new StoreKitPaymentProvider() : null;
+  const play = path === 'play' ? new PlayBillingPaymentProvider() : null;
   const payments: PaymentProvider = choosePaymentProvider(path, {
     storekit: () => storeKit!,
+    play: () => play!,
     mock: () => new MockPaymentProvider(() => clock.now()),
     unavailable: () => new UnavailablePaymentProvider(),
   });
@@ -101,15 +122,38 @@ async function boot(): Promise<void> {
   const builtInUrl = (import.meta.env.VITE_SERVER_URL as string | undefined) || '';
   // With a server, real players raid this village instead of bots (never in the sandbox).
   const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl);
+  // Balance bundles (roadmap step 76): the operators' signed number changes from the last session, applied
+  // before the village loads (never mid-session, never in the sandbox, never without the public key).
+  const balance = sandbox ? null : new BalanceLoader(browserKeyValue, defaultData, SIM_RULES, (import.meta.env.VITE_BALANCE_PUBLIC_KEY as string | undefined) ?? '');
+  await balance?.applyCached();
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl });
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox });
+  // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
+  const env = import.meta.env as Record<string, string | undefined>;
+  const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}) });
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
-  if (storeKit) {
-    void storeKit.listen((productId, transactionId) => {
-      const r = controller.dispatch({ type: 'grantPurchase', productId, transactionId });
-      if (r.ok) analytics.log('purchase', { productId, transactionId, provider: 'storekit', deferred: true });
+  // Store receipts go to the server when it checks them (roadmap Phase 4).
+  controller.purchaseVerifier = () => (payments.store ? connection.purchaseVerifier(payments.store) : null);
+  // Purchases approved later (Ask to Buy, pending payments), and paid ones not yet delivered.
+  const deliverLater = (receipt: Parameters<GameController['deliverReceipt']>[0]) =>
+    void controller.deliverReceipt(receipt).then((r) => {
+      if (r.ok) hud?.toast('Your purchase has been delivered.', 'success');
     });
-  }
+  if (storeKit) void storeKit.listen(deliverLater);
+  if (play) void play.listen(deliverLater);
+  let deliveredOnline = false;
+  connection.subscribe(() => {
+    if (!connection.online || deliveredOnline) return;
+    deliveredOnline = true;
+    void controller.deliverUnfinished();
+    void syncPush();
+  });
+  if (!connection.enabled) void controller.deliverUnfinished();
+  // Server push (step 40): the types switched on in Settings, only while notifications are on.
+  const syncPush = () =>
+    connection
+      .syncPush(prefs.get('reminders') ? [...notifyPrefs.enabledSet(controller.data.notifications.types)] : [], new Date().getTimezoneOffset(), pushDevice)
+      .catch((e) => console.warn('push registration failed', e));
   analytics.log('session_start', { isNew, awayMs: offline?.awayMs ?? 0, platform: platformName(), standalone: matchMedia('(display-mode: standalone)').matches });
 
   await loadInterfaceFonts();
@@ -169,6 +213,8 @@ async function boot(): Promise<void> {
     onGroveAttack: (target) => app?.groveAttack(target),
     onTrial: (tier) => app?.trial(tier),
     onPractice: (army) => app?.practice(army),
+    onDuel: (friendId, name, opts) => void app?.duel(friendId, name, opts),
+    onGangWarAttack: (target, relay, enemyName, bot) => void app?.gangWarAttack(target, relay, enemyName, bot),
     prefs,
     notifyPrefs,
     onRemindersEnabled: async () => {
@@ -177,14 +223,20 @@ async function boot(): Promise<void> {
         prefs.set('reminders', false);
         hud.toast('Notifications are blocked. You can allow them in your device settings.', 'error');
       }
+      void syncPush();
     },
+    onNotificationsChanged: () => void syncPush(),
     reminderNote: reminders.note,
     onReplayTutorial: () => tutorial?.restart(),
     debugTime,
     sandbox,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
+    crashReports: crashReporter.configured,
+    signIn: platformSignIn({ googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined, appleServicesId: import.meta.env.VITE_APPLE_SERVICES_ID as string | undefined }),
     groveSource,
     connection,
+    // Friend links (step 59): the web game's own address; in the apps, VITE_PUBLIC_URL (the web game) if set.
+    friendLinkBase: () => (isNative() ? (env.VITE_PUBLIC_URL ?? null) || null : `${location.origin}${location.pathname}`),
   });
 
   app = new App({
@@ -201,15 +253,25 @@ async function boot(): Promise<void> {
 
   connection.start();
 
+  // A friend link (?friend=KAGE-XXXXXX) opens Friends on that player once the game is online.
+  const friendParam = new URLSearchParams(location.search).get('friend');
+  if (friendParam && !sandbox) {
+    const stop = connection.subscribe(() => {
+      if (!connection.canFriends) return;
+      stop();
+      hud.openFriends(friendParam);
+    });
+  }
+
   // A raid the app closed in the middle of plays out now, so it can't be erased by quitting.
   const interrupted = controller.resolvePendingBattle();
   if (interrupted) {
     const { pending, record } = interrupted;
     if (pending.ticket) {
       const sub = { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, reinforcements: pending.setup.reinforcements, deployments: pending.deployments };
-      void connection.report(pending.kind === 'war' ? 'raid' : 'attack', sub);
+      void connection.report(pending.channel === 'gangwar' ? 'gangwar' : pending.kind === 'war' ? 'raid' : 'attack', sub);
     }
-    const what = pending.kind === 'war' ? 'Alliance War attack' : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
+    const what = pending.channel === 'gangwar' ? 'Gang War attack' : pending.kind === 'war' ? 'Alliance War attack' : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
     hud.toast(`Your ${what} on ${pending.opponentName} was interrupted and has been played out: ${record.result.stars}★, ${record.result.destruction}%. See the battle log.`, 'info');
   }
 
@@ -285,7 +347,10 @@ async function boot(): Promise<void> {
       if (prefs.get('reminders')) {
         // Opt-in only: the player's chosen types, no quiet-hours pings, a daily cap.
         const gd = controller.data;
-        const planned = planNotifications(upcomingReminders(controller.state, controller.now(), gd), notifyPrefs.enabledSet(gd.notifications.types), controller.now(), new Date().getTimezoneOffset(), gd);
+        // A type the server pushes (the Alliance War) is not also scheduled on the device.
+        const enabled = notifyPrefs.enabledSet(gd.notifications.types);
+        for (const t of connection.pushTypes) enabled.delete(t);
+        const planned = planNotifications(upcomingReminders(controller.state, controller.now(), gd), enabled, controller.now(), new Date().getTimezoneOffset(), gd);
         void reminders.schedule(planned);
       }
     } else {
@@ -316,6 +381,7 @@ async function boot(): Promise<void> {
 
 boot().catch((e) => {
   console.error(e);
+  crashReporter?.report(e, { kind: 'boot' });
   const el = document.getElementById('boot');
   if (el) el.innerHTML = `<div class="err">Something went wrong starting the game.<br><small>${String((e as Error)?.message ?? e)}</small></div>`;
 });

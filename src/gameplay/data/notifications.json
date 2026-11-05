@@ -39,6 +39,31 @@
       "id": "shield",
       "label": "Shield runs out",
       "default": false
+    },
+    {
+      "id": "raided",
+      "label": "Your village was raided (online)",
+      "default": true
+    },
+    {
+      "id": "donations",
+      "label": "Warriors arrive from your Alliance (online)",
+      "default": false
+    },
+    {
+      "id": "gangWar",
+      "label": "Gang War found, battle day, 2 hours left, relay turn, under attack (online)",
+      "default": true
+    },
+    {
+      "id": "friends",
+      "label": "Friend requests, duels and duel challenges (online)",
+      "default": true
+    },
+    {
+      "id": "gang",
+      "label": "Gang invites (online)",
+      "default": true
     }
   ]
 }

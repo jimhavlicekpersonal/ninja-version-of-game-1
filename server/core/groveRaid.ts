@@ -3,14 +3,15 @@
  * Grove when no rival is free). Same schedule, attack allowance, star scoring
  * and chests as the game's offline Grove Raid (src/sim/social/groveRaid.ts).
  */
-import { runBattle } from '../../src/gameplay/sim/battle/battle';
 import { createRng, int, mixSeed, next } from '../../src/gameplay/sim/rng';
 import { enemyGrove, raidPhase, raidWindow } from '../../src/gameplay/sim/social/groveRaid';
 import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, BattleSubmission } from '../../src/backend/net/protocol';
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';
-import { checkArmy, takeTicket, TICKET_TTL_MS } from './pvp';
+import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS } from './pvp';
+import type { ClientInfo } from '../rules/registry';
+import { applyServerResult } from './village';
 
 const ACTIVE_WINDOW_MS = 3 * 24 * HOUR;
 
@@ -75,15 +76,25 @@ async function ensurePairing(ctx: ServerContext, groveId: string, week: number):
       { week, groveId, opponentGroveId: rival.id, opponentName: rival.name, botSeed: 0, roster: theirRoster, ourSize: size, ourHall: mine.hall, createdAt: t },
       { week, groveId: rival.id, opponentGroveId: groveId, opponentName: ourName, botSeed: 0, roster: ourRoster, ourSize: size, ourHall: theirs.hall, createdAt: t },
     ]);
-    if (ok) return (await ctx.repo.getPairing(week, groveId))!;
+    if (ok) {
+      await warFound(ctx, groveId, rival.name);
+      await warFound(ctx, rival.id, ourName);
+      return (await ctx.repo.getPairing(week, groveId))!;
+    }
   }
   // No rival free: a bot Grove generated from this Grove's id, sized to match.
   const seed = mixSeed(hashString(groveId), week);
   const enemy = enemyGrove(seed, week, mine.hall, ctx.data);
   const count = Math.max(1, mine.size);
   const roster: RosterEntry[] = enemy.bases.slice(0, Math.max(count, 1)).map((b, i) => ({ index: i, name: enemy.members[i] ?? b.name, hallLevel: b.hallLevel, trophies: b.trophies ?? 0, base: b, playerId: null }));
-  await ctx.repo.createPairings([{ week, groveId, opponentGroveId: null, opponentName: enemy.name, botSeed: seed, roster, ourSize: count, ourHall: mine.hall, createdAt: t }]);
+  if (await ctx.repo.createPairings([{ week, groveId, opponentGroveId: null, opponentName: enemy.name, botSeed: seed, roster, ourSize: count, ourHall: mine.hall, createdAt: t }])) await warFound(ctx, groveId, `${enemy.name} (generated)`);
   return (await ctx.repo.getPairing(week, groveId))!;
+}
+
+/** Push to every member: the war has an opponent (roadmap step 40). */
+async function warFound(ctx: ServerContext, groveId: string, opponent: string): Promise<void> {
+  if (!ctx.push.enabled) return;
+  for (const m of await ctx.repo.members(groveId)) ctx.push.notify(m.playerId, { type: 'groveRaid', title: 'The Alliance War has started!', body: `Your Alliance faces ${opponent}. Use both attacks to win the reward chest.` });
 }
 
 /** Stars the bot Grove has taken from our side by time `t` (deterministic). */
@@ -181,7 +192,8 @@ export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
   };
 }
 
-export async function raidTicket(ctx: ServerContext, me: Player, target: unknown): Promise<RaidTicketResponse> {
+export async function raidTicket(ctx: ServerContext, me: Player, target: unknown, client?: ClientInfo): Promise<RaidTicketResponse> {
+  const engine = engineForClient(ctx, client);
   const { grove, joinedAt } = await requireGrove(ctx, me);
   const t = ctx.now();
   const ph = raidPhase(t, ctx.data);
@@ -196,9 +208,9 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
   const entry = pairing.roster[idx];
   if (!entry) throw new ApiError(404, 'not_found', 'No such enemy base.');
   const expiresAt = Math.min(t + TICKET_TTL_MS, ph.end + 10 * 60_000);
-  const ticket = { id: ctx.uuid(), kind: 'raid' as const, attackerId: me.id, defenderId: entry.playerId, defenderName: entry.name, base: entry.base, defenderTrophies: entry.trophies, createdAt: t, expiresAt, used: false, week: ph.week, groveId: grove.id, target: idx };
+  const ticket = { id: ctx.uuid(), kind: 'raid' as const, attackerId: me.id, defenderId: entry.playerId, defenderName: entry.name, base: entry.base, defenderTrophies: entry.trophies, createdAt: t, expiresAt, used: false, week: ph.week, groveId: grove.id, target: idx, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
   await ctx.repo.createTicket(ticket);
-  return { ticket: ticket.id, base: entry.base, expiresAt };
+  return { ticket: ticket.id, seed: ticket.seed, base: entry.base, expiresAt };
 }
 
 export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<RaidAttackResponse> {
@@ -210,16 +222,24 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
     const s = await scores(ctx, (await ctx.repo.getPairing(week, ticket.groveId!))!, ctx.now());
     return { result: a.result, stars: a.result.stars, ours: s.ours, theirs: s.theirs };
   }
-  const { army, levels, reinforcements } = checkArmy(sub, me, ctx.data);
+  const engine = engineForTicket(ctx, ticket, sub);
+  const seed = battleSeed(ticket, sub);
+  const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
   const pairing = (await ctx.repo.getPairing(week, ticket.groveId!))!;
   const sideAttacks = await ctx.repo.raidAttacks(week, ticket.groveId!);
   const used = sideAttacks.filter((a) => a.attackerId === me.id).length;
   if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const { result } = runBattle({ seed: Number(sub.seed) >>> 0, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) }, deployments, ctx.data, sub.endTick);
-  if (!(await ctx.repo.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
+  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
+  const { result } = await resimulate(ctx, 'raid', setup, deployments, sub, engine);
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
-  await ctx.repo.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
+  await ctx.repo.transaction(async (tx) => {
+    if (!(await tx.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
+    // A village the server keeps spends the warriors who fought (roadmap step 22).
+    const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'remoteGroveBattleEnd', target: ticket.target!, record: { at: ctx.now(), opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick }, known: result }, reason: 'war:troops' }], ticket.id);
+    if (spent && !spent.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${spent.message}`);
+    await tx.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
+  });
   const s = await scores(ctx, pairing, ctx.now());
   return { result, stars: result.stars, ours: s.ours, theirs: s.theirs };
 }
@@ -242,6 +262,11 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
   if (!pairing) throw new ApiError(404, 'not_found', 'Your Alliance did not take part in that Alliance War.');
   const s = await scores(ctx, pairing, end);
   const outcome = outcomeOf(s);
-  const fresh = await ctx.repo.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });
+  const fresh = await ctx.repo.transaction(async (tx) => {
+    const first = await tx.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });
+    // A village the server keeps gets the chest with the claim (once: only the first claim).
+    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimRaidChest', week: w, outcome, ours: s.ours, theirs: s.theirs }, reason: 'war:chest' }], `week:${w}`);
+    return first;
+  });
   return { week: w, outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: !fresh };
 }

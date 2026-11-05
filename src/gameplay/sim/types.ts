@@ -158,6 +158,8 @@ export interface NetState {
   donations: string[];
   /** Server Grove Raid weeks whose chest was collected. */
   raidWeeks: number[];
+  /** Gang Wars whose chest was collected (step 65; the latest few). */
+  gangWars: string[];
 }
 
 export interface ChatMessage {
@@ -522,6 +524,33 @@ export interface LeagueDef {
   winBonus: Cost;
 }
 
+/** Settings for the hidden Attack and Base Ratings (ranks.json `rating`). */
+export interface RatingDef {
+  initial: number;
+  initialRd: number;
+  minRd: number;
+  /** Each rated battle multiplies the rating deviation by this (it settles). */
+  rdShrinkPerBattle: number;
+  /** Rating deviation added per day without a rated battle (uncertainty grows while away). */
+  rdGrowthPerIdleDay: number;
+  /** β: rating points one Keep level of power is worth. */
+  powerWeight: number;
+  /** K at the starting deviation, and once fully settled. */
+  kNew: number;
+  kSettled: number;
+  /** A battle's score: starWeight × stars/3 + destructionWeight × destruction. */
+  starWeight: number;
+  destructionWeight: number;
+  /** Matchmaking aims for this expected score. */
+  matchTarget: number;
+  /** A base whose layout moved by more than this share starts its Base Rating over. */
+  layoutResetShare: number;
+  /** Most honor a defender can lose in one UTC day. */
+  defenderDailyHonorLossCap: number;
+  /** Rated attacks needed to appear on the Power Ranking. */
+  powerBoardMinBattles: number;
+}
+
 export interface RanksDef {
   startingTrophies: number;
   attackWin: { base: number; perTrophyDiff: number; min: number; max: number };
@@ -547,6 +576,8 @@ export interface RanksDef {
     /** Opponents are at least the attacker's earned strength (Keep and research) minus this many hall levels. */
     powerSlack: number;
   };
+  /** Hidden matchmaking ratings (roadmap Phase 3, sim/rating.ts). */
+  rating: RatingDef;
   /** Loot multiplier when the target's Elder Toadstool is lower than the attacker's (index = difference). */
   lootPenaltyByHallDiff: number[];
 }
@@ -591,6 +622,13 @@ export interface StoreDef {
   /** Multiplies the time price of finishing army training with Jade (per Keep, 1-15; tools/balance/topup.mjs). */
   trainingSkipScaleByHall: number[];
   minorMonthlyCapUsd: number;
+  /**
+   * The id each product has in App Store Connect and the Play Console, by the
+   * game's own product id (pack ids, `pass.productId`, offer `productId`). The
+   * game's ids stay stable (they are in saves); only these change with a new
+   * store listing. A product missing here uses its own id.
+   */
+  storeProductIds?: Record<string, string>;
 }
 
 export type OfferTrigger = 'first_long_wait' | 'all_builders_busy' | 'grove_raid_soon' | 'heavy_defense_loss';
@@ -691,6 +729,19 @@ export interface SocialDef {
     starOdds: { base3: number; base2: number; base1: number; perHallDiff: number };
     rewards: Record<'win' | 'draw' | 'loss', Cost & { xp: number }>;
   };
+  /** Gang Wars (roadmap steps 65-66). */
+  gangWar: {
+    minSize: number;
+    maxSize: number;
+    prepHours: number;
+    battleHours: number;
+    attacksPerMember: number;
+    /** Share of a relay strike's damage the next strike starts from. */
+    relayCarry: number;
+    botAfterMinutes: number;
+    recentOpponents: number;
+    rewards: Record<'win' | 'draw' | 'loss', Cost>;
+  };
 }
 
 export interface DailyDef {
@@ -784,5 +835,7 @@ export interface PendingBattle {
   deployments: import('./battle/types').Deployment[];
   /** Server ticket for an online raid, so the report can still be sent. */
   ticket?: string;
+  /** A Gang War strike (kind 'war'): its report goes to the Gang War, not the Alliance War (step 67). */
+  channel?: 'gangwar';
   at: number;
 }

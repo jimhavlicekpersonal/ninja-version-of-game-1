@@ -19,10 +19,13 @@ import { activeOffers } from '../../gameplay/sim/offers';
 import { currentTasks, unlockedTier } from '../../gameplay/sim/pass';
 import { ArmyUi } from './armyUi';
 import { costChips, RES_LABEL } from './chips';
+import { PROVIDER_NAMES } from '../../backend/platform/auth';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
+import { FriendsUi } from './friendsUi';
+import { GangWarUi } from './gangWarUi';
 import { GroveUi } from './groveUi';
 import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
@@ -60,15 +63,27 @@ export interface HudDeps {
   onTrial(tier: number): void;
   /** Open a practice battle with this army (nothing spent or won). */
   onPractice(army: Record<string, number>): void;
-  prefs: { get(k: 'sessionReminder' | 'reminders'): boolean; set(k: 'sessionReminder' | 'reminders', v: boolean): void };
+  /** A Friendly Duel (step 62). */
+  onDuel?(friendId: string, friendName: string, opts?: { layout?: 'live' | 'duel'; challengeId?: string }): void;
+  /** A Gang War strike (step 67). */
+  onGangWarAttack?(target: number, relay: boolean, enemyName: string, bot: boolean): void;
+  prefs: { get(k: 'sessionReminder' | 'reminders' | 'crashReports'): boolean; set(k: 'sessionReminder' | 'reminders' | 'crashReports', v: boolean): void };
+  /** This build sends crash reports (it has a Sentry DSN): show the switch. */
+  crashReports?: boolean;
+  /** Sign-ins this device can give (account linking, roadmap step 24). */
+  signIn?: import('../../backend/platform/auth').SignInSource;
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
   onRemindersEnabled(): Promise<void>;
+  /** Notifications switched on or off, or a type changed (server push follows the choices). */
+  onNotificationsChanged?(): void;
   reminderNote: string;
   onReplayTutorial(): void;
   /** Where the Grove screen gets its Grove: the bot Grove offline, a real one online. */
   groveSource: GroveSource;
   /** Online play (status 'off' when no server is configured). */
   connection: Connection;
+  /** The address a friend link opens (step 59); null: share codes only. */
+  friendLinkBase?: () => string | null;
 }
 
 /** localStorage: the kept village already offered at start-up. */
@@ -100,6 +115,8 @@ export class Hud {
   private openModals = new Set<() => void>();
   readonly econ: EconomyUi;
   readonly grove: GroveUi;
+  readonly friends: FriendsUi;
+  private friendsBtn: HTMLElement | null = null;
   readonly daily: DailyUi;
   private readonly army: ArmyUi;
   private armyPill = h('span', { class: 'army-pill' });
@@ -130,6 +147,25 @@ export class Hud {
       source: this.deps.groveSource,
       troopThumb: (t) => this.deps.troopThumb(t),
       onGroveAttack: (i) => this.deps.onGroveAttack(i),
+    });
+    const gangWar = new GangWarUi({
+      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      connection: this.deps.connection,
+      onAttack: this.deps.onGangWarAttack ? (t, relay, name, bot) => this.deps.onGangWarAttack!(t, relay, name, bot) : undefined,
+    });
+    this.friends = new FriendsUi({
+      war: (body, redraw, leader, members) => gangWar.draw(body, redraw, leader, members),
+      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      connection: this.deps.connection,
+      shareBase: () => this.deps.friendLinkBase?.() ?? null,
+      platform: this.deps.signIn,
+      onDuel: (id, name, opts) => this.deps.onDuel?.(id, name, opts),
+      onReplay: (r) => this.deps.onReplay(r),
+      // Real raiders (never simulated ones) and Alliance mates.
+      suggestions: () => [
+        ...this.c.state.battleLog.filter((r) => r.kind === 'defense' && !r.simulated).map((r) => r.opponentName),
+        ...this.deps.groveSource.snapshot().members.filter((m) => !m.you && this.deps.groveSource.snapshot().kind === 'online').map((m) => m.name),
+      ],
     });
     this.daily = new DailyUi({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() });
     this.army = new ArmyUi({
@@ -254,6 +290,7 @@ export class Hud {
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => this.grove.open()),
+      (this.friendsBtn = railBtn('Friends', icons.friends, () => this.friends.open())),
       railBtn('Trials', icons.leaf, () => this.openTrials()),
     );
     this.rail = rail;
@@ -315,10 +352,45 @@ export class Hud {
     }
   }
 
-  private static readonly NET_LABEL: Record<string, string> = { off: 'Offline play', connecting: 'Connecting…', online: 'Online', offline: 'No connection', incompatible: 'Update needed' };
+  private static readonly NET_LABEL: Record<string, string> = { off: 'Offline play', connecting: 'Connecting…', online: 'Online', offline: 'No connection', incompatible: 'Update needed', suspended: 'Suspended' };
+
+  /** Shown once per session when the server can no longer check this game (roadmap step 75). */
+  private updateNoticeShown = false;
+
+  /** Open the store listing (apps) or reload (web, where the service worker brings the new version). */
+  private openUpdate(): void {
+    const url = this.deps.connection.updateUrl;
+    if (url) window.open(url, '_blank', 'noopener');
+    else window.location.reload();
+  }
+
+  private showUpdateNeeded(): void {
+    const conn = this.deps.connection;
+    const body = h(
+      'div',
+      {},
+      h('p', {}, conn.lastError || 'A new version of Kagemura is out, and online play needs it.'),
+      h('p', { class: 'muted' }, 'Online battles, raids and your Alliance pause until you update. Your village is safe: everything else keeps working on this device.'),
+    );
+    let close = () => {};
+    close = this.modal('Update Kagemura', body, [
+      { label: 'Later', onClick: () => close() },
+      { label: conn.updateUrl ? 'Update' : 'Reload', primary: true, onClick: () => this.openUpdate() },
+    ]);
+  }
+
+  /** Open Friends, looking up a name or code (a friend link). */
+  openFriends(search?: string): void {
+    this.friends.open(search);
+  }
 
   private updateNet(): void {
     const conn = this.deps.connection;
+    if (this.friendsBtn) this.friendsBtn.hidden = !conn.canFriends;
+    if (conn.status === 'incompatible' && !this.updateNoticeShown) {
+      this.updateNoticeShown = true;
+      this.showUpdateNeeded();
+    }
     this.netPill.hidden = !conn.enabled;
     this.netPill.className = `net-pill ${conn.status}`;
     this.netPill.textContent = Hud.NET_LABEL[conn.status] ?? conn.status;
@@ -339,11 +411,16 @@ export class Hud {
       clear(wrap);
       const status = h('p', {}, h('span', { class: `net-pill inline ${conn.status}` }, Hud.NET_LABEL[conn.status] ?? conn.status), ' ', conn.enabled ? h('span', { class: 'muted small' }, conn.url) : '');
       wrap.append(h('h3', {}, 'Online play'), status);
+      // A test server says so (roadmap step 42): progress there is not the real game's.
+      const env = conn.server?.environment;
+      if (env && env !== 'production') wrap.append(h('p', { class: 'muted small' }, `This is a ${env} server for testing: villages and purchases here are separate from the real game.`));
+      if (conn.server?.notice) wrap.append(h('p', { class: 'store-note' }, conn.server.notice));
       if (!conn.enabled) {
         wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Alliance are friendly bots. Enter a Kagemura: Ninja Clans server address to raid real players and join real Alliances.'));
       } else {
         wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
+        if (conn.status === 'incompatible') wrap.append(h('p', {}, h('button', { class: 'btn primary', type: 'button', onclick: () => this.openUpdate() }, conn.updateUrl ? 'Update Kagemura' : 'Reload to update')));
         if (conn.player) {
           const name = h('input', { class: 'text', type: 'text', dir: 'auto', autocomplete: 'nickname', spellcheck: 'false', value: conn.player.name }) as HTMLInputElement;
           name.addEventListener('keydown', (e) => e.stopPropagation());
@@ -360,22 +437,54 @@ export class Hud {
           });
           wrap.append(h('label', { class: 'muted small' }, 'Your name in online play'), h('div', { class: 'chat-input-row' }, name, save));
           const board = h('div', { class: 'events' }, 'Loading…');
-          const details = h('details', {}, h('summary', {}, 'Leaderboard'), board);
-          details.addEventListener('toggle', () => {
-            if (!details.open || !conn.port) return;
-            void conn.port.leaderboard(30).then(
-              (lb) => {
+          // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
+          let which: 'honor' | 'power' = 'honor';
+          const hasPower = Boolean(conn.server?.features.includes('power-ranking'));
+          const tabs = h('div', { class: 'shop-tabs' });
+          const load = () => {
+            const port = conn.port;
+            if (!port) return;
+            board.textContent = 'Loading…';
+            clear(tabs);
+            if (hasPower) {
+              for (const [id, label] of [['honor', 'Honor'], ['power', 'Power']] as const) {
+                const b = h('button', { type: 'button', class: id === which ? 'on' : '' }, label);
+                b.addEventListener('click', () => {
+                  which = id;
+                  load();
+                });
+                tabs.append(b);
+              }
+            }
+            const row = (rank: number, name: string, sub: string, value: string, chip: Node | null) =>
+              h('div', { class: `log-row${name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${rank}. ${isolateName(name)}`), h('div', { class: 'muted small' }, sub)), h('span', { class: 'chip' }, chip, value));
+            const fail = (e: Error) => {
+              board.textContent = e.message;
+            };
+            if (which === 'power') {
+              void port.powerLeaderboard(30).then((lb) => {
                 clear(board);
-                for (const p of lb.players) board.append(h('div', { class: `log-row${p.name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${p.rank}. ${isolateName(p.name)}`), h('div', { class: 'muted small' }, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${isolateName(p.grove)}` : ''}`)), h('span', { class: 'chip' }, icon(icons.leaf), String(p.trophies))));
-                if (lb.me) board.append(h('p', { class: 'muted small' }, `You are number ${lb.me.rank}.`));
-                if (!lb.players.length) board.append('Nobody is ranked yet.');
-              },
-              (e: Error) => {
-                board.textContent = e.message;
-              },
-            );
+                board.append(h('p', { class: 'muted small' }, 'Power is your skill as an attacker plus the strength of your Keep, from your rated raids.'));
+                for (const p of lb.players) board.append(row(p.rank, p.name, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${isolateName(p.grove)}` : ''}`, String(p.power), null));
+                board.append(h('p', { class: 'muted small' }, lb.me ? `You are number ${lb.me.rank}, with ${lb.me.power} power.` : 'Raid real players a few times to get on the Power Ranking.'));
+                if (!lb.players.length) board.append('Nobody is on it yet.');
+              }, fail);
+              return;
+            }
+            void port.leaderboard(30).then((lb) => {
+              clear(board);
+              for (const p of lb.players) board.append(row(p.rank, p.name, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${isolateName(p.grove)}` : ''}`, String(p.trophies), icon(icons.leaf)));
+              if (lb.me) board.append(h('p', { class: 'muted small' }, `You are number ${lb.me.rank}.`));
+              if (!lb.players.length) board.append('Nobody is ranked yet.');
+            }, fail);
+          };
+          const details = h('details', {}, h('summary', {}, 'Leaderboard'), tabs, board);
+          details.addEventListener('toggle', () => {
+            if (details.open) load();
           });
           wrap.append(details);
+          if (conn.canKeepVillage || conn.serverVillage) wrap.append(this.villageBlock());
+          wrap.append(this.accountBlock());
         }
         const retry = h('button', { class: 'btn ghost', type: 'button' }, 'Connect now');
         retry.addEventListener('click', () => void conn.sync().then(draw));
@@ -412,6 +521,242 @@ export class Hud {
     });
     window.setTimeout(() => obs.observe(document.body, { childList: true, subtree: true }), 0);
     return wrap;
+  }
+
+  /** A ledger reason in words (the codes come from the server: command:<type>, attack:loot, …). */
+  static ledgerReason(code: string): string {
+    const words: Record<string, string> = {
+      start: 'Starting resources',
+      'command:collect': 'Collected',
+      'command:place': 'Built',
+      'command:upgrade': 'Upgrade',
+      'command:cancel': 'Cancelled (refund)',
+      'command:clear': 'Cleared',
+      'command:train': 'Training',
+      'command:trainArmy': 'Training',
+      'command:dismiss': 'Sent warriors home',
+      'command:cancelTraining': 'Training cancelled',
+      'command:research': 'Research',
+      'command:cancelResearch': 'Research cancelled',
+      'command:skip': 'Finished with Jade',
+      'command:skipTraining': 'Finished with Jade',
+      'command:skipResearch': 'Finished with Jade',
+      'command:topUp': 'Bought with Jade',
+      'command:openDailyChest': 'Daily chest',
+      'command:scout': 'Next opponent',
+      'command:trialEnd': 'Shadow Trial',
+      'command:buySkin': 'Look bought',
+      'command:claimTask': 'Task reward',
+      'command:claimTier': 'Pass reward',
+      'command:claimAchievement': 'Achievement',
+      'purchase:unverified': 'Purchase',
+      'attack:loot': 'Raid loot',
+      'attack:loot:uploaded-base': 'Raid loot',
+      'attack:loot:generated-base': 'Raid loot',
+      'defense:loss': 'Raided',
+      'war:chest': 'Alliance War chest',
+      'donation:sent': 'Warriors sent',
+      'donation:received': 'Warriors received',
+    };
+    return words[code] ?? code;
+  }
+
+  /** Settings → Online play → Village on the server (beta, roadmap Phase 2). */
+  private villageBlock(): HTMLElement {
+    const conn = this.deps.connection;
+    const sync = conn.village!;
+    const box = h('div', { class: 'village-server' }, h('h3', {}, 'Village on the server (beta)'));
+    if (sync.active) {
+      box.append(
+        h('p', { class: 'muted small' }, 'Your village is kept on the server: every change to its resources, buildings, army and research is checked there, so it cannot be lost with this device. What you do is sent as you play; while offline it waits and goes when you reconnect.'),
+        h('p', { class: 'small' }, sync.pending ? `${sync.pending} action${sync.pending === 1 ? '' : 's'} waiting to send.` : 'Everything is sent.'),
+      );
+      const list = h('div', { class: 'events' }, 'Loading…');
+      const ledger = h('details', {}, h('summary', {}, 'Recent changes'), list);
+      ledger.addEventListener('toggle', () => {
+        if (!ledger.open || !conn.port) return;
+        void conn.port.ledger(30).then(
+          ({ entries }) => {
+            clear(list);
+            if (!entries.length) list.append('Nothing yet.');
+            for (const e of entries) list.append(h('div', { class: 'event' }, h('b', {}, `${e.delta > 0 ? '+' : ''}${formatNumber(e.delta)} ${RES_LABEL[e.resource as keyof typeof RES_LABEL] ?? e.resource}`), ` ${Hud.ledgerReason(e.reason)} · ${new Date(e.at).toLocaleString()}`));
+          },
+          (e: Error) => {
+            list.textContent = e.message;
+          },
+        );
+      });
+      box.append(ledger);
+      return box;
+    }
+    const go = (how: 'new' | 'move') => async () => {
+      const ok = await this.confirm(
+        how === 'move' ? 'Move this village to the server?' : 'Start a new village on the server?',
+        how === 'move'
+          ? 'Your village moves to the server as it is, if it is a village its Keep could really have. From then on every change is checked there, and you can play it on other devices by linking a sign-in.'
+          : 'This starts a new village that is kept on the server. The village on this device stays as a backup you can restore in Settings.',
+        how === 'move' ? 'Move it' : 'Start a new one',
+        false,
+        'Not now',
+      );
+      if (!ok) return;
+      try {
+        await sync.enable(how);
+        this.toast(how === 'move' ? 'Your village is now kept on the server.' : 'Your new village is kept on the server.', 'success');
+        this.closeAllModals();
+      } catch (e) {
+        this.toast((e as Error).message, 'error');
+      }
+    };
+    const canMove = Boolean(conn.server?.features.includes('village-import'));
+    const move = h('button', { class: 'btn primary', type: 'button' }, 'Move this village to the server');
+    move.addEventListener('click', () => void go('move')());
+    const start = h('button', { class: 'btn ghost', type: 'button' }, canMove ? 'Start a new one there' : 'Start a village on the server');
+    start.addEventListener('click', () => void go('new')());
+    const refused = conn.villageMoveRefused;
+    box.append(h('p', { class: 'muted small' }, 'Keep your village on the server, so it cannot be lost with this device and every change is checked there.'));
+    if (refused) box.append(h('p', { class: 'note' }, `The server could not take this village: ${refused}`));
+    box.append(h('div', { class: 'actions' }, canMove && !refused ? move : null, start));
+    return box;
+  }
+
+  /**
+   * Settings → Online play → Account: the Player ID (for support and the web
+   * deletion form) and in-game account deletion (Apple 5.1.1(v)).
+   */
+  private accountBlock(): HTMLElement {
+    const conn = this.deps.connection;
+    const id = conn.player?.id ?? '';
+    const idBox = h('input', { class: 'text mono', type: 'text', readonly: true, value: id, 'aria-label': 'Player ID' }) as HTMLInputElement;
+    idBox.addEventListener('focus', () => idBox.select());
+    const copy = h('button', { class: 'btn ghost', type: 'button' }, 'Copy');
+    copy.addEventListener('click', () => {
+      idBox.select();
+      const done = () => this.toast('Player ID copied.', 'success');
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(id).then(done, () => this.toast('Select the ID and copy it.', 'info'));
+      else this.toast('Select the ID and copy it.', 'info');
+    });
+    const del = h('button', { class: 'btn danger', type: 'button' }, 'Delete online account');
+    del.addEventListener('click', () => void this.deleteOnlineAccount());
+    const webForm = `${conn.url}/account/delete`;
+    // Blocked players (blocked from Alliance chat or the member list), with Unblock.
+    const blockedList = h('div', { class: 'events' });
+    const blockedWrap = conn.server?.features.includes('blocks') ? h('div', {}, h('label', { class: 'muted small' }, 'Blocked players'), blockedList) : null;
+    const loadBlocked = () => {
+      const port = conn.port;
+      if (!port || !blockedWrap) return;
+      void port.blocks().then(
+        ({ blocked }) => {
+          clear(blockedList);
+          if (!blocked.length) blockedList.append(h('p', { class: 'muted small' }, 'Nobody. To block a player, tap ⋯ next to their name in Alliance chat or the member list.'));
+          for (const b of blocked) {
+            const un = h('button', { class: 'btn ghost', type: 'button' }, 'Unblock');
+            un.addEventListener('click', () => void port.unblock(b.id).then(loadBlocked, (e: Error) => this.toast(e.message, 'error')));
+            blockedList.append(h('div', { class: 'log-row' }, h('b', {}, b.name), un));
+          }
+        },
+        (e: Error) => {
+          blockedList.textContent = e.message;
+        },
+      );
+    };
+    // Linked sign-ins: keep this account on other devices (cloud save), or switch this device to one.
+    const signIns = h('div', {});
+    const loadLinks = () => {
+      const port = conn.port;
+      const source = this.deps.signIn;
+      if (!port || !source) return;
+      void port.links().then(
+        ({ providers, links }) => {
+          clear(signIns);
+          const here = source.available().filter((p) => providers.includes(p));
+          if (!here.length) return;
+          signIns.append(h('label', { class: 'muted small' }, 'Sign-ins (play this account on other devices)'));
+          for (const p of here) {
+            const linked = links.some((l) => l.provider === p);
+            const name = PROVIDER_NAMES[p];
+            const act = h('button', { class: 'btn ghost', type: 'button' }, linked ? 'Unlink' : `Link ${name}`);
+            act.addEventListener('click', () => {
+              const run = linked ? port.unlink(p) : source.obtain(p).then((cred) => conn.link(p, cred));
+              void run.then(
+                () => {
+                  this.toast(linked ? `${name} unlinked.` : `${name} linked. Sign in with it on another device to play this account there.`, 'success');
+                  loadLinks();
+                },
+                (e: Error) => this.toast(e.message, 'error'),
+              );
+            });
+            signIns.append(h('div', { class: 'log-row' }, h('b', {}, `${name}${linked ? ' · linked' : ''}`), act));
+          }
+          const switchRow = h('div', { class: 'actions' });
+          for (const p of here) {
+            const b = h('button', { class: 'btn ghost', type: 'button' }, `Sign in with ${PROVIDER_NAMES[p]}`);
+            b.addEventListener('click', () => void this.switchAccount(p));
+            switchRow.append(b);
+          }
+          signIns.append(h('p', { class: 'muted small' }, 'Already linked an account on another device? Sign in with it here to play that account.'), switchRow);
+        },
+        () => clear(signIns),
+      );
+    };
+    const details = h(
+      'details',
+      { class: 'account-settings' },
+      h('summary', {}, 'Account'),
+      h('label', { class: 'muted small' }, 'Player ID (for support, and for deletion requests)'),
+      h('div', { class: 'chat-input-row' }, idBox, copy),
+      signIns,
+      blockedWrap,
+      h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and troop requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
+      h('div', { class: 'actions' }, del),
+      h('p', { class: 'muted small' }, 'No longer have the game? Ask for deletion on the web: ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm)),
+    );
+    details.addEventListener('toggle', () => {
+      if (!details.open) return;
+      loadBlocked();
+      loadLinks();
+    });
+    return details;
+  }
+
+  /** Switch this device to the account linked to a sign-in (cloud save). */
+  private async switchAccount(provider: import('../../backend/net/protocol').LinkProvider): Promise<void> {
+    const source = this.deps.signIn;
+    if (!source) return;
+    const ok = await this.confirm(
+      `Sign in with ${PROVIDER_NAMES[provider]}?`,
+      'This device will play the account linked to that sign-in. If its village is kept on the server, it replaces the village here, which stays as a backup in Settings. Your current online account is not deleted.',
+      'Sign in',
+      false,
+      'Not now',
+    );
+    if (!ok) return;
+    try {
+      await this.deps.connection.signIn(provider, await source.obtain(provider));
+      this.toast(`Signed in as ${this.deps.connection.player?.name ?? 'your account'}.`, 'success');
+      this.closeAllModals();
+    } catch (e) {
+      this.toast((e as Error).message, 'error');
+    }
+  }
+
+  private async deleteOnlineAccount(): Promise<void> {
+    const conn = this.deps.connection;
+    const ok = await this.confirm(
+      'Delete your online account?',
+      'Your player name, shared base, Alliance membership, chat messages and troop requests are deleted from the server now. Online attacks still waiting for the server become practice results. Online play turns off on this device; your village stays. This cannot be undone.',
+      'Delete account',
+      true,
+    );
+    if (!ok) return;
+    try {
+      await conn.deleteAccount();
+    } catch (e) {
+      this.toast(`Could not delete the account: ${(e as Error).message}`, 'error');
+      return;
+    }
+    this.toast('Your online account was deleted. Restarting offline…', 'success');
+    void this.c.save().then(() => window.setTimeout(() => location.reload(), 1200));
   }
 
   private updateShield(): void {
@@ -1121,7 +1466,10 @@ export class Hud {
     const typeToggles: HTMLInputElement[] = [];
     for (const t of nd.types) {
       const tg = h('input', { type: 'checkbox', checked: this.deps.notifyPrefs.get(t.id, t.default), disabled: !prefs.get('reminders') }) as HTMLInputElement;
-      tg.addEventListener('change', () => this.deps.notifyPrefs.set(t.id, tg.checked));
+      tg.addEventListener('change', () => {
+        this.deps.notifyPrefs.set(t.id, tg.checked);
+        this.deps.onNotificationsChanged?.();
+      });
       typeToggles.push(tg);
       typeBox.append(h('label', { class: 'toggle sub' }, tg, ` ${t.label}`));
     }
@@ -1131,6 +1479,7 @@ export class Hud {
       prefs.set('reminders', remindToggle.checked);
       for (const tg of typeToggles) tg.disabled = !remindToggle.checked;
       if (remindToggle.checked) void this.deps.onRemindersEnabled();
+      else this.deps.onNotificationsChanged?.();
     });
     body.append(
       h('h3', {}, 'Sound'),
@@ -1170,6 +1519,11 @@ export class Hud {
         h('p', { class: 'muted small' }, 'Time skips and test purchases live in a separate testing sandbox, so they can never change your real village or online play.'),
         h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { location.search = '?sandbox'; } }, 'Open the testing sandbox')),
       );
+    }
+    if (this.deps.crashReports) {
+      const crashToggle = h('input', { type: 'checkbox', checked: prefs.get('crashReports') }) as HTMLInputElement;
+      crashToggle.addEventListener('change', () => prefs.set('crashReports', crashToggle.checked));
+      body.append(h('label', { class: 'toggle' }, crashToggle, ' Send crash reports'), h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error and the game version to help fix it. Never your name, village, chat or anything typed.'));
     }
     body.append(h('details', {}, h('summary', {}, 'Analytics events (this device)'), events));
     void this.deps.analytics.recent(60).then((list) => {

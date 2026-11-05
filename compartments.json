@@ -90,6 +90,8 @@
         "src/backend/payments/provider.ts",
         "src/backend/net/connection.ts",
         "src/backend/net/protocol.ts",
+        "src/backend/net/villageSync.ts",
+        "src/backend/platform/auth.ts",
         "src/backend/social/groveSource.ts"
       ]
     },

@@ -77,14 +77,14 @@ describe('game client against a running server', () => {
     await alice.uploadBase();
     const m = (await bob.match())!;
     expect(m.opponent).toMatchObject({ kind: 'player', name: alice.player!.name });
-    await bob.submitAttack({ ticket: m.ticket, seed: 3, ...rush(20) });
+    await bob.submitAttack({ ticket: m.ticket, seed: m.seed, ...rush(20) });
 
     await alice.sync();
     expect(village.state.defenseLog.map((d) => d.opponentName)).toEqual(['Bob']);
 
     // And Alice attacks back through her outbox.
     const back = (await alice.port!.match())!;
-    await alice.report('attack', { ticket: back.ticket, seed: 4, ...rush(20) });
+    await alice.report('attack', { ticket: back.ticket, seed: back.seed, ...rush(20) });
     expect(alice.outbox()).toHaveLength(0);
     expect((await bob.defenses(0)).defenses.map((d) => d.attackerName)).toContain(alice.player!.name);
   });

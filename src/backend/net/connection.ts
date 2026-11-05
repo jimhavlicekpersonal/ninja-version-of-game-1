@@ -13,7 +13,19 @@ import type { Command, CommandResult } from '../../gameplay/sim/village';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { HttpServerAdapter, normalizeServerUrl } from './httpAdapter';
 import { ServerError, type ServerPort } from './ports';
-import type { BattleSubmission, HelloResponse, PlayerView } from './protocol';
+import type { BattleSubmission, GangWarResponse, ChallengesResponse, ChallengeView, ChatResponse, ChatView, DuelReportResponse, DuelsResponse, DuelTicketRequest, DuelTicketResponse, RequestsResponse, RequestView, SquadResponse, FriendRequestBody, FriendRequestResult, FriendsResponse, HelloResponse, LinkCredential, LinkProvider, PlayerCard, PlayerView, PrivacyRequest, PurchaseStore, ReportReason } from './protocol';
+import { normalizeFriendCode } from './names';
+import { troopLevels } from '../../gameplay/sim/research';
+import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
+import { battleLoadout } from '../../gameplay/sim/village';
+import type { BattleSetup } from '../../gameplay/sim/battle/types';
+import type { RaidBattle } from '../social/groveSource';
+// Name rules for instant hints in the UI (the server decides; step 59).
+export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './names';
+import type { PurchaseVerifier } from '../payments/provider';
+import { VillageSync, type SyncGame } from './villageSync';
+import { SIM_RULES } from '../../gameplay/sim/battle/battle';
+import { updateNeeded } from './versionCheck';
 
 /** What the connection needs from the game. GameController provides it. */
 export interface GameLink {
@@ -21,6 +33,10 @@ export interface GameLink {
   readonly state: VillageState;
   now(): number;
   dispatch(cmd: Command): CommandResult;
+  /** For a village kept on the server (roadmap step 21); without them the village always stays on the device. */
+  onCommand?: SyncGame['onCommand'];
+  adoptEconomy?: SyncGame['adoptEconomy'];
+  adoptVillage?: SyncGame['adoptVillage'];
 }
 
 /** Small key-value storage (localStorage in the browser). */
@@ -54,12 +70,17 @@ export type ConnectionStatus =
   | 'online'
   /** Server configured but not reachable right now; retrying. */
   | 'offline'
-  /** The server and this game cannot talk (protocol versions). */
-  | 'incompatible';
+  /**
+   * The server and this game cannot talk: protocol versions, or the server no
+   * longer checks this game's battle rules or build (`updateUrl`, step 75).
+   */
+  | 'incompatible'
+  /** Staff suspended this account from online play (`lastError` says why and until when); tried again on the next start. */
+  | 'suspended';
 
 export interface OutboxItem {
   id: string;
-  kind: 'attack' | 'raid';
+  kind: 'attack' | 'raid' | 'gangwar';
   sub: BattleSubmission;
   at: number;
 }
@@ -85,6 +106,19 @@ export interface ConnectionOptions {
   makePort?: (url: string) => ServerPort;
   /** Force online play off (the testing sandbox: its clock and test purchases must never reach a server). */
   offline?: boolean;
+  /** The game's version and platform, sent as X-Client-Build. */
+  build?: string;
+  /**
+   * Protocol 7: move this village to the server as soon as the server can
+   * take it (the real game sets this; tests leave it off to stay on the device).
+   */
+  keepVillageOnServer?: boolean;
+  /** The balance data version this game runs with (step 76 bundles change it); sent as X-Data-Version. */
+  dataVersion?: () => string;
+  /** Balance bundles (step 76): what the server offers is checked and kept for the next start. */
+  balance?: { offer(b: import('./balanceBundle').BalanceBundle | null): Promise<string> };
+  /** Where "Update Kagemura" sends the player (the App Store / Play listing); the web build reloads instead. */
+  updateUrl?: string;
   log?: (msg: string, err?: unknown) => void;
 }
 
@@ -96,11 +130,18 @@ export class Connection {
   player: PlayerView | null = null;
   port: ServerPort | null = null;
   readonly url: string;
+  /** Where the player gets the new version (step 75); empty on the web, where a reload updates. */
+  get updateUrl(): string {
+    return this.o.updateUrl ?? '';
+  }
+  /** The server-owned village queue (roadmap step 21); null when the game cannot keep one on a server. */
+  readonly village: VillageSync | null = null;
 
   private readonly kv: KeyValue;
   private readonly listeners = new Set<() => void>();
   private syncing: Promise<void> | null = null;
   private triedWeeks = new Set<number>();
+  private triedGangWars = new Set<string>();
   private timers: ReturnType<typeof setInterval>[] = [];
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private retryDelay = 15_000;
@@ -109,9 +150,100 @@ export class Connection {
     this.kv = o.kv ?? browserKeyValue;
     this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl);
     if (this.url) {
-      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u)))(this.url);
+      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build, dataVersion: o.dataVersion })))(this.url);
       this.status = 'connecting';
+      const g = o.game;
+      if (g.onCommand && g.adoptEconomy && g.adoptVillage) {
+        this.village = new VillageSync(g as GameLink & SyncGame, () => this.port, this.kv, `tk.net.village:${this.url}`);
+        this.village.onChange = () => this.emit();
+      }
     }
+  }
+
+  /** Why the server would not take this village (protocol 7 auto-move), if it refused. */
+  get villageMoveRefused(): string | null {
+    return this.kv.get(`tk.net.villageMoveRefused:${this.url}`);
+  }
+
+  /**
+   * Protocol 7: the server owns the economy, so the village moves there the
+   * first time it can. If the server refuses it (a village its Keep could not
+   * hold), it stays on the device, and Settings says why.
+   */
+  private async autoMoveVillage(): Promise<void> {
+    if (!this.o.keepVillageOnServer || !this.village || this.serverVillage || !this.server?.features.includes('village-import') || this.villageMoveRefused) return;
+    try {
+      await this.village.enable('move');
+    } catch (e) {
+      if (e instanceof ServerError && !e.retryable) this.kv.set(`tk.net.villageMoveRefused:${this.url}`, e.message);
+      else throw e;
+    }
+  }
+
+  /**
+   * The server's side of purchases from `store` (roadmap Phase 4), or null to
+   * trust the store on this device (no server, or a server that does not check
+   * that store while the village lives on the device). A village kept on the
+   * server buys only through a server that checks the store: otherwise the
+   * purchase is refused before anything is charged.
+   */
+  purchaseVerifier(store: PurchaseStore): PurchaseVerifier | null {
+    if (!this.port) return null;
+    const checks = Boolean(this.server?.features.includes(`purchases-${store}`));
+    if (!checks && !this.serverVillage) return null;
+    const ready = async () => {
+      if (!checks) throw new ServerError(403, 'purchase_refused', 'Purchases are not set up on this server yet. Nothing was charged.');
+      if (!this.port || !this.online) throw new ServerError(0, 'network', 'Connect to the internet to buy.');
+      // The server reads the age group from a village it keeps: send what is queued first.
+      await this.village?.flush().catch(() => undefined);
+      return this.port;
+    };
+    return {
+      intent: async (s, productId, under18) => (await ready()).purchaseIntent({ store: s, productId, under18 }),
+      redeem: async (r) => (await ready()).redeem({ store: r.store, storeProductId: r.storeProductId, receipt: r.receipt }),
+      history: async () => (checks && this.port && this.online ? (await this.port.purchaseHistory()).purchases : []),
+    };
+  }
+
+  /** Notification types this device gets as server push (roadmap step 40); empty when none. */
+  get pushTypes(): string[] {
+    const saved = this.kv.get(`tk.net.push:${this.url}`);
+    return saved && this.server?.features.includes('push') ? ((JSON.parse(saved) as { types?: string[] }).types ?? []) : [];
+  }
+
+  /**
+   * Tell the server where to push and what (roadmap step 40), or stop when no
+   * type is switched on. `device` asks the platform for a token (and the
+   * permission) only when something is switched on.
+   */
+  async syncPush(types: string[], tzOffsetMinutes: number, device: () => Promise<{ token: string; platform: 'ios' | 'android' } | null>): Promise<void> {
+    if (!this.port || !this.online || !this.server?.features.includes('push')) return;
+    const key = `tk.net.push:${this.url}`;
+    const saved = this.kv.get(key);
+    const prev = saved ? (JSON.parse(saved) as { token: string; sig: string; types: string[] }) : null;
+    if (!types.length) {
+      if (prev) {
+        await this.port.deletePushToken(prev.token).catch(() => undefined);
+        this.kv.set(key, null);
+      }
+      return;
+    }
+    const d = await device();
+    if (!d) return;
+    const sig = JSON.stringify([d.platform, [...types].sort(), tzOffsetMinutes]);
+    if (prev?.token === d.token && prev.sig === sig) return;
+    await this.port.putPushToken({ token: d.token, platform: d.platform, types, tzOffsetMinutes });
+    this.kv.set(key, JSON.stringify({ token: d.token, sig, types }));
+  }
+
+  /** The server keeps this player's village (its economy is the truth). */
+  get serverVillage(): boolean {
+    return Boolean(this.village?.active);
+  }
+
+  /** The server offers keeping villages (feature `server-economy`). */
+  get canKeepVillage(): boolean {
+    return Boolean(this.village && this.online && this.server?.features.includes('server-economy'));
   }
 
   /** A server is configured (real raids replace bot raids, the real Grove replaces the bot Grove). */
@@ -121,6 +253,195 @@ export class Connection {
 
   get online(): boolean {
     return this.status === 'online';
+  }
+
+  // ------------------------------------------------------------ friends (roadmap steps 59-60)
+
+  /** The server has friends (and this game is online with it). */
+  get canFriends(): boolean {
+    return this.online && Boolean(this.server?.features.includes('friends'));
+  }
+
+  private port_(): ServerPort {
+    if (!this.port || !this.online) throw new Error('Friends need online play. Check your connection.');
+    return this.port;
+  }
+
+  friends(): Promise<FriendsResponse> {
+    return this.port_().friends();
+  }
+  /**
+   * One player by exact name or by friend code: text starting with "KAGE" is a
+   * code; otherwise the name is tried first, then the text as a code (codes may
+   * be typed without the prefix).
+   */
+  async findPlayer(text: string): Promise<PlayerCard> {
+    const code = normalizeFriendCode(text);
+    if (code && /^\s*kage/i.test(text)) return this.port_().playerByCode(code);
+    try {
+      return await this.port_().lookupPlayer(text);
+    } catch (e) {
+      if (code && e instanceof ServerError && e.code === 'not_found') return this.port_().playerByCode(code);
+      throw e;
+    }
+  }
+  addFriend(req: FriendRequestBody): Promise<FriendRequestResult> {
+    return this.port_().sendFriendRequest(req);
+  }
+  answerFriendRequest(id: string, accept: boolean): Promise<void> {
+    return this.port_().answerFriendRequest(id, accept);
+  }
+  cancelFriendRequest(id: string): Promise<void> {
+    return this.port_().cancelFriendRequest(id);
+  }
+  unfriend(playerId: string): Promise<void> {
+    return this.port_().unfriend(playerId);
+  }
+  setPrivacy(req: PrivacyRequest): Promise<FriendsResponse> {
+    return this.port_().setPrivacy(req);
+  }
+  /** The sign-ins linked to this account (to offer importing that platform's friends). */
+  async linkedProviders(): Promise<LinkProvider[]> {
+    return (await this.port_().links()).links.map((l) => l.provider);
+  }
+  /** Step 61: which of these platform friends play Kagemura (ids read on the device, with the player's permission). */
+  async platformFriends(provider: 'gamecenter' | 'playgames', ids: string[]): Promise<PlayerCard[]> {
+    return (await this.port_().platformFriends({ provider, ids })).players;
+  }
+  // ------------------------------------------------------------ duels and Gangs (roadmap steps 62-63)
+
+  get canDuels(): boolean {
+    return this.online && Boolean(this.server?.features.includes('duels'));
+  }
+  get canGangs(): boolean {
+    return this.online && Boolean(this.server?.features.includes('gangs'));
+  }
+  duelTicket(req: DuelTicketRequest): Promise<DuelTicketResponse> {
+    return this.port_().duelTicket(req);
+  }
+  /**
+   * Report a duel. Duels change nothing in the village, so no outbox: a few
+   * quick retries, then the error (the duel is simply not counted).
+   */
+  async reportDuel(sub: BattleSubmission): Promise<DuelReportResponse> {
+    for (let i = 0; ; i++) {
+      try {
+        return await this.port_().reportDuel(sub);
+      } catch (e) {
+        if (i >= 2 || !(e instanceof ServerError) || !e.retryable) throw e;
+        await new Promise((r) => setTimeout(r, 800 * (i + 1)));
+      }
+    }
+  }
+  duels(): Promise<DuelsResponse> {
+    return this.port_().duels(0);
+  }
+  /** Friends duel against this village's current layout from now on (a snapshot; null: the live village again). */
+  setDuelLayoutFromVillage(use: boolean): Promise<void> {
+    const g = this.o.game;
+    return this.port_().setDuelLayout({ base: use ? villageToBase(g.state, g.now(), g.data, this.player?.name) : null });
+  }
+  challenge(friendId: string): Promise<ChallengeView> {
+    return this.port_().challenge(friendId);
+  }
+  challenges(): Promise<ChallengesResponse> {
+    return this.port_().challenges();
+  }
+  squad(): Promise<SquadResponse> {
+    return this.port_().squad();
+  }
+  createSquad(name: string): Promise<SquadResponse> {
+    return this.port_().createSquad(name);
+  }
+  squadInvite(friendId: string): Promise<SquadResponse> {
+    return this.port_().squadInvite(friendId);
+  }
+  answerSquadInvite(id: string, accept: boolean): Promise<SquadResponse> {
+    return this.port_().answerSquadInvite(id, accept);
+  }
+  leaveSquad(): Promise<SquadResponse> {
+    return this.port_().leaveSquad();
+  }
+  squadLeader(playerId: string): Promise<SquadResponse> {
+    return this.port_().squadLeader(playerId);
+  }
+  squadChat(after?: string): Promise<ChatResponse> {
+    return this.port_().squadChat(after);
+  }
+  postSquadChat(text: string): Promise<ChatView> {
+    return this.port_().postSquadChat(text);
+  }
+  squadRequests(): Promise<RequestsResponse> {
+    return this.port_().squadRequests();
+  }
+  /** Ask the Gang for warriors to fill the Lodge's free space. */
+  squadAsk(): Promise<RequestView> {
+    const g = this.o.game;
+    const free = reinforcementCapacity(g.state, g.data) - reinforcementHousing(g.state, g.data);
+    if (free <= 0) return Promise.reject(new Error('Your Alliance Lodge is full (or not built yet).'));
+    return this.port_().squadRequestTroops(free);
+  }
+  /** Give one warrior to a Gang mate's request; it leaves this army once the server accepts. */
+  async squadDonate(requestId: string, troop: string): Promise<void> {
+    const g = this.o.game;
+    if ((g.state.army[troop] ?? 0) < 1) throw new Error('Not enough of that warrior.');
+    const level = troopLevels(g.state, g.data)[troop] ?? 1;
+    await this.port_().squadDonate(requestId, { troop, count: 1, level });
+    g.dispatch({ type: 'spendDonation', troop, count: 1, xp: 0 });
+  }
+  get canGangWars(): boolean {
+    return this.online && Boolean(this.server?.features.includes('gang-wars'));
+  }
+  gangWar(): Promise<GangWarResponse> {
+    return this.port_().gangWar();
+  }
+  gangWarQueue(): Promise<GangWarResponse> {
+    return this.port_().gangWarQueue();
+  }
+  gangWarCancel(): Promise<GangWarResponse> {
+    return this.port_().gangWarCancel();
+  }
+  gangWarBase(): Promise<GangWarResponse> {
+    return this.port_().gangWarBase();
+  }
+  /**
+   * A Gang War strike (step 67): the ticket, and the battle to play. Finishing
+   * spends the warriors and keeps the replay (as in an Alliance War); the
+   * report goes through the outbox, so it survives a lost connection.
+   */
+  async gangWarBattle(target: number, relay: boolean, enemyName: string, bot: boolean): Promise<RaidBattle> {
+    const g = this.o.game;
+    const t = await this.port_().gangWarTicket({ target, relay });
+    const base = structuredClone(t.base);
+    if (bot) base.practice = 'Generated Gang (no Gang fitted yours)';
+    const setup: BattleSetup = { seed: t.seed >>> 0, base, ...battleLoadout(g.state, g.data), infiltration: true, ...(t.startDamage ? { startDamage: t.startDamage } : {}) };
+    const at = g.now();
+    return {
+      setup,
+      enemyName,
+      target,
+      ticket: t.ticket,
+      channel: 'gangwar',
+      finish: (deployments, endTick) => {
+        const r = g.dispatch({ type: 'remoteGroveBattleEnd', target, record: { at, opponentName: base.name, setup, deployments, endTick } });
+        if (!r.ok) return null;
+        const e = r.events.find((x) => x.kind === 'grove_attack');
+        if (!e || e.kind !== 'grove_attack') return null;
+        void this.report('gangwar', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick, clientHash: e.record.result.hash, rules: SIM_RULES });
+        return { stars: e.stars, destruction: e.destruction, record: e.record };
+      },
+    };
+  }
+
+  reportChat(messageId: string, reason: ReportReason, note: string, block: boolean): Promise<unknown> {
+    return this.port_().report({ kind: 'chat', messageId, reason, note, block });
+  }
+
+  blockPlayer(playerId: string): Promise<void> {
+    return this.port_().block(playerId);
+  }
+  reportPlayer(playerId: string, reason: ReportReason, note: string, block: boolean): Promise<unknown> {
+    return this.port_().report({ kind: 'player', playerId, reason, note, block });
   }
 
   /** Save a server address chosen in Settings: a URL, '' for the built-in one, or 'off'. Takes effect on reload. */
@@ -171,12 +492,62 @@ export class Connection {
     this.emit();
   }
 
+  /**
+   * Delete this player's online account (Settings; Apple 5.1.1(v)). Online
+   * attacks the server has not confirmed yet become practice results (no
+   * loot or honor), as a refused report would. Online play is
+   * then switched off on this device, so the next start does not quietly make
+   * a new account; choosing a server again in Settings does. The village on
+   * this device is not touched. Call reload afterwards for a clean start.
+   */
+  async deleteAccount(): Promise<void> {
+    if (!this.port) return;
+    await this.port.deleteAccount();
+    this.stop();
+    this.village?.reset();
+    this.village?.stop();
+    const g = this.o.game;
+    for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'account_deleted' });
+    this.saveOutbox([]);
+    this.kv.set(NAME_KEY, null);
+    Connection.choose('off', this.kv);
+    this.player = null;
+    this.setStatus('off');
+  }
+
+  /** Link a sign-in (Apple, Google, Game Center, Play Games) to this player, so it can be restored on other devices. */
+  async link(provider: LinkProvider, credential: LinkCredential): Promise<void> {
+    if (!this.port) throw new Error('No server configured.');
+    await this.port.link(provider, credential);
+    this.emit();
+  }
+
+  /**
+   * Sign in on this device as the player linked to this sign-in (cloud save,
+   * roadmap step 24). Battle reports waiting here belong to the current
+   * player, so they are sent first. Afterwards the connection syncs as that
+   * player; a village the server keeps for them replaces the one here (which
+   * becomes a backup).
+   */
+  async signIn(provider: LinkProvider, credential: LinkCredential): Promise<void> {
+    if (!this.port) throw new Error('No server configured.');
+    await this.flush();
+    await this.port.signIn(provider, credential, 'game');
+    this.village?.reset();
+    this.player = null;
+    this.status = 'connecting';
+    this.server = null;
+    await this.sync();
+  }
+
   /** Begin connecting, and keep in touch: light sync every minute, base upload every 2 minutes. */
   start(): void {
     if (!this.port) return;
     void this.sync();
     this.timers.push(setInterval(() => void this.sync(), 60_000));
     this.timers.push(setInterval(() => void this.uploadBase(), 120_000));
+    // A server-held village: send waiting actions every 15 s.
+    this.timers.push(setInterval(() => void this.village?.flush().catch((e) => this.handleError(e)), 15_000));
   }
 
   stop(): void {
@@ -188,7 +559,7 @@ export class Connection {
 
   /** Connect if needed, then bring everything in. Concurrent calls share one run. */
   sync(): Promise<void> {
-    if (!this.port || this.status === 'incompatible') return Promise.resolve();
+    if (!this.port || this.status === 'incompatible' || this.status === 'suspended') return Promise.resolve();
     if (!this.syncing) {
       this.syncing = this.runSync().finally(() => {
         this.syncing = null;
@@ -204,11 +575,26 @@ export class Connection {
       if (!this.online) {
         if (this.status !== 'connecting') this.setStatus('connecting');
         this.server = await port.hello();
+        // Step 75: a game the server can no longer check pauses online play (the village keeps working offline).
+        const update = updateNeeded(this.server, SIM_RULES, this.o.build);
+        if (update) {
+          this.setStatus('incompatible', update);
+          return;
+        }
+        // Step 76: the operators' number changes, kept for the next start (never applied mid-session).
+        if (this.o.balance) {
+          const offered = this.server.features.includes('balance-bundles') && port.balance ? (await port.balance()).bundle : null;
+          const what = await this.o.balance.offer(offered);
+          if (what === 'refused') this.log('Online play: the server offered a balance bundle this game refused');
+        }
         await this.ensurePlayer(port);
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
         // The real Grove replaces the bot Grove while playing online.
         if (g.state.grove.joined) g.dispatch({ type: 'leaveLocalGrove' });
         await this.uploadBase();
+        // Learn whether the server keeps this village, and reconcile with it.
+        if (this.server.features.includes('server-economy')) await this.village?.connect();
+        await this.autoMoveVillage();
         this.retryDelay = 15_000;
         this.setStatus('online');
       } else {
@@ -217,6 +603,7 @@ export class Connection {
       await this.pullDefenses(port);
       await this.pullDonations(port);
       await this.claimChests(port);
+      await this.claimGangChests(port);
       await this.flush();
       this.player = await port.me();
       g.dispatch({ type: 'syncRank', trophies: this.player.trophies, shieldUntil: this.player.shieldUntil });
@@ -231,10 +618,15 @@ export class Connection {
       this.setStatus('incompatible', e.message);
       return;
     }
+    if (e instanceof ServerError && e.code === 'banned') {
+      this.setStatus('suspended', e.message);
+      return;
+    }
     const msg = e instanceof Error ? e.message : String(e);
     this.log('Online play: sync failed', e);
-    if (e instanceof ServerError && !e.retryable && this.online) {
-      // A rule said no to one call; the connection itself is fine.
+    if (e instanceof ServerError && (!e.retryable || e.code === 'rate_limited') && this.online) {
+      // A rule said no to one call (or asked us to slow down); the connection itself is
+      // fine. Queued battle reports stay in the outbox for the next sync.
       this.lastError = msg;
       this.emit();
       return;
@@ -266,7 +658,8 @@ export class Connection {
 
   /** Share the village layout so other players can attack it. */
   async uploadBase(): Promise<void> {
-    if (!this.port || !this.player) return;
+    // A village the server keeps is its own base there.
+    if (!this.port || !this.player || this.serverVillage) return;
     const g = this.o.game;
     try {
       await this.port.uploadBase({ base: villageToBase(g.state, g.now(), g.data, this.player.name), name: this.player.name });
@@ -282,6 +675,11 @@ export class Connection {
    */
   async ensureFreshBase(): Promise<void> {
     if (!this.port || !this.player) return;
+    // A server-held village: the server needs our latest actions (the troops we will attack with, a new Keep).
+    if (this.serverVillage) {
+      await this.village!.flush();
+      return;
+    }
     const g = this.o.game;
     const hall = villageToBase(g.state, g.now(), g.data).hallLevel;
     if (hall === this.player.hallLevel) return;
@@ -318,6 +716,32 @@ export class Connection {
     if (!donations.length) return;
     this.o.game.dispatch({ type: 'receiveDonations', items: donations });
     await port.ackInbox(donations.map((d) => d.id));
+  }
+
+  /** Gang War chests (step 65) the server lists for this player that this village has not received yet. */
+  private async claimGangChests(port: ServerPort): Promise<void> {
+    if (!this.server?.features.includes('gang-wars')) return;
+    const g = this.o.game;
+    let view: GangWarResponse;
+    try {
+      view = await port.gangWar();
+    } catch (e) {
+      if (e instanceof ServerError && e.code === 'not_found') return; // not in a Gang
+      throw e;
+    }
+    for (const w of view.recent) {
+      if ((g.state.net.gangWars ?? []).includes(w.id) || this.triedGangWars.has(w.id)) continue;
+      this.triedGangWars.add(w.id);
+      try {
+        const c = await port.gangWarClaim(w.id);
+        g.dispatch({ type: 'claimGangChest', warId: c.warId, outcome: c.outcome });
+      } catch (e) {
+        if (!(e instanceof ServerError) || e.retryable) {
+          this.triedGangWars.delete(w.id);
+          throw e;
+        }
+      }
+    }
   }
 
   /** Grove Raid chests the server lists for this player that this village has not received yet. */
@@ -384,6 +808,8 @@ export class Connection {
   private async runFlush(): Promise<void> {
     const port = this.port!;
     const g = this.o.game;
+    // Actions first: an attack's troops must be on the server before its report.
+    await this.village?.flush();
     this.requeuePending();
     for (const item of this.outbox()) {
       try {
@@ -392,6 +818,8 @@ export class Connection {
           const r = await port.submitAttack(item.sub);
           g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies });
           g.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
+        } else if (item.kind === 'gangwar') {
+          await port.gangWarAttack(item.sub);
         } else {
           await port.submitRaidAttack(item.sub);
         }
@@ -418,7 +846,7 @@ export class Connection {
     let added = false;
     for (const r of this.o.game.state.battleLog) {
       if (r.settlement !== 'pending' || !r.ticket || queued.has(r.ticket)) continue;
-      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick } });
+      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick, clientHash: r.result.hash, ...(r.rules !== undefined ? { rules: r.rules } : {}) } });
       added = true;
     }
     if (added) this.saveOutbox(items);

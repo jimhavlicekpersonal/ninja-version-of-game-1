@@ -31,6 +31,19 @@ jobs:
         env:
           # Set this repository variable to your PvP server's URL to turn on online play.
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          # Store listings for "Update Kagemura" (roadmap step 75); set once the listings exist.
+          VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
+          VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}
+          # Public key that checks balance bundles (roadmap step 76); without it bundles are never used.
+          VITE_BALANCE_PUBLIC_KEY: ${{ vars.VITE_BALANCE_PUBLIC_KEY }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+      - name: Server first (roadmap step 74)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: node tools/release/check-server-rules.mjs
+        env:
+          SERVER_URL: ${{ vars.VITE_SERVER_URL }}
       - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:
@@ -57,6 +70,9 @@ jobs:
       TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/tk_test
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The previous release's client (latest v* tag) is checked out for its contract tests (step 77).
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -70,6 +86,8 @@ jobs:
           DATABASE_URL=$TEST_DATABASE_URL PORT=8787 node dist-server/main.js > server.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:8787/healthz && break; sleep 1; done
           CONTRACT_URL=http://localhost:8787 npm run test:contract || (cat server.log; exit 1)
+          # Step 77: the game players still have (the previous v* release) must keep working with this server.
+          CONTRACT_URL=http://localhost:8787 node tools/release/previous-client-contract.mjs || (cat server.log; exit 1)
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

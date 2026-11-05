@@ -49,7 +49,7 @@ function village(w: ReturnType<typeof world>): GameLink & { state: VillageState 
 async function onlineAttack(w: ReturnType<typeof world>, game: ReturnType<typeof village>, port: ServerPort) {
   const m = (await port.match())!;
   const { deployments } = rush(20);
-  const setup: BattleSetup = { seed: 9, base: m.base, ...battleLoadout(game.state, data), infiltration: true };
+  const setup: BattleSetup = { seed: m.seed, base: m.base, ...battleLoadout(game.state, data), infiltration: true };
   const r = game.dispatch({ type: 'battleEnd', record: { at: w.now(), opponentName: m.base.name, setup, deployments, ticket: m.ticket } });
   expect(r.ok).toBe(true);
   const sub = { ticket: m.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments };
@@ -173,7 +173,7 @@ describe('F34: Alliance Wars pair equal rosters', () => {
     // The bigger Alliance gets 1 base × 2 attacks in total, like the smaller one.
     for (const who of [ann, ben]) {
       const t = await who.raidTicket(0);
-      await who.submitRaidAttack({ ticket: t.ticket, seed: 1, ...rush(5) });
+      await who.submitRaidAttack({ ticket: t.ticket, seed: t.seed, ...rush(5) });
     }
     await expect(cat.raidTicket(0)).rejects.toMatchObject({ code: 'no_attacks_left' });
     expect((await cat.raid()).attacksLeft).toBe(0);
@@ -230,6 +230,37 @@ describe('F18: replays are tied to the battle rules they were fought under', () 
   it('new records carry the current rules; old ones are not offered for replay', () => {
     expect(replayable({ rules: SIM_RULES })).toBe(true);
     expect(replayable({})).toBe(false);
-    expect(replayable({ rules: SIM_RULES - 1 })).toBe(false);
+    // Rules 3 only added relay strikes, so rules 2 replays play out the same (SIM_RULES_COMPATIBLE); rules 1 does not.
+    expect(replayable({ rules: SIM_RULES - 1 })).toBe(true);
+    expect(replayable({ rules: 1 })).toBe(false);
   });
 });
+
+describe('Account deletion from the game (roadmap step 14)', () => {
+  it('deletes the account, settles pending attacks as practice, and turns online play off on this device', async () => {
+    const w = world();
+    const game = village(w);
+    const kv = memoryKv();
+    const port = new InProcessServerAdapter(w.core);
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await conn.sync();
+    const id = conn.player!.id;
+    const { sub } = await onlineAttack(w, game, port);
+    expect(game.state.battleLog.at(-1)!.settlement).toBe('pending');
+    const before = { ...game.state.resources };
+    await conn.deleteAccount();
+    expect(await w.repo.getPlayer(id)).toBeNull();
+    expect(conn.status).toBe('off');
+    expect(conn.player).toBeNull();
+    expect(port.hasIdentity()).toBe(false);
+    expect(game.state.battleLog.at(-1)!.settlement).toBe('rejected'); // a practice result: no loot or honor
+    expect(game.state.resources).toEqual(before);
+    expect(conn.outbox()).toHaveLength(0);
+    // The next start stays offline, so no new account appears by itself.
+    expect(Connection.chosen(kv)).toBe('off');
+    expect(new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined }).enabled).toBe(false);
+    // And the old report can no longer be sent.
+    await expect(port.submitAttack(sub)).rejects.toMatchObject({ code: 'unauthorized' });
+  });
+});
+

@@ -6,8 +6,13 @@ import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummar
 import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { chosenName } from './identity';
+import { blockedIds, checkNotMuted } from './moderation';
 import { maxReinforcementAt } from './pvp';
+import { applyServerResult } from './village';
 
+
+/** Longest chat message accepted (the game's input allows 160 characters). */
+export const CHAT_MAX_CHARS = 200;
 
 export function maxMembers(ctx: ServerContext): number {
   return ctx.data.social.membersMax;
@@ -84,12 +89,13 @@ export async function joinGrove(ctx: ServerContext, me: Player, id: string): Pro
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }
 
-export async function leaveGrove(ctx: ServerContext, me: Player): Promise<void> {
+/** `quiet`: the player is deleting their account, so the notice does not name them. */
+export async function leaveGrove(ctx: ServerContext, me: Player, opts: { quiet?: boolean } = {}): Promise<void> {
   const { grove, role } = await requireGrove(ctx, me);
   await ctx.repo.removeMember(grove.id, me.id);
   await ctx.repo.updatePlayer(me.id, { groveId: null });
   await ctx.repo.closeRequestsOf(me.id);
-  await system(ctx, grove.id, `${isolateName(me.name)} left the Alliance.`);
+  await system(ctx, grove.id, opts.quiet ? 'A member left the Alliance.' : `${isolateName(me.name)} left the Alliance.`);
   if (role === 'Leader') {
     // Hand leadership to the longest-serving member.
     const rest = (await ctx.repo.members(grove.id)).sort((a, b) => (a.role === 'Elder' ? 0 : 1) - (b.role === 'Elder' ? 0 : 1) || a.joinedAt - b.joinedAt);
@@ -110,16 +116,32 @@ export async function myGrove(ctx: ServerContext, me: Player): Promise<GroveView
 
 export async function chat(ctx: ServerContext, me: Player, after: string | undefined): Promise<ChatResponse> {
   const { grove } = await requireGrove(ctx, me);
+  return chatIn(ctx, me, grove.id, after);
+}
+
+/** Chat of an Alliance or a Gang (step 63: Gangs keep their chat in the same table, under the Gang's id). */
+export async function chatIn(ctx: ServerContext, me: Player, scopeId: string, after: string | undefined): Promise<ChatResponse> {
+  const grove = { id: scopeId };
   const afterSeq = Number(after ?? 0) || 0;
   const rows = await ctx.repo.chatAfter(grove.id, afterSeq, 100);
   const cursor = rows.length ? String(rows[rows.length - 1].seq) : String(afterSeq);
-  return { messages: rows.map(chatView), cursor };
+  // Players the caller blocked are not shown to them; hidden messages are not shown to anyone.
+  const blocked = await blockedIds(ctx, me);
+  const messages = rows.filter((r) => !r.playerId || !blocked.has(r.playerId)).map(chatView);
+  return { messages, cursor, hidden: await ctx.repo.hiddenChatIds(grove.id, 100) };
 }
 
 export async function postChat(ctx: ServerContext, me: Player, text: unknown): Promise<ChatView> {
   const { grove } = await requireGrove(ctx, me);
+  return postChatIn(ctx, me, grove.id, text);
+}
+
+export async function postChatIn(ctx: ServerContext, me: Player, scopeId: string, text: unknown): Promise<ChatView> {
+  const grove = { id: scopeId };
   const raw = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (!raw) throw new ApiError(400, 'bad_request', 'Type a message first.');
+  if (raw.length > CHAT_MAX_CHARS) throw new ApiError(400, 'bad_request', `Keep messages under ${CHAT_MAX_CHARS} characters.`);
+  checkNotMuted(ctx, me);
   if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');
   // Chat is always filtered (also for players who are not under 18).
   const row = await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: filterText(raw, ctx.data), kind: 'chat' });
@@ -132,7 +154,13 @@ function requestView(r: TroopRequest, me: Player): RequestView {
 
 export async function requests(ctx: ServerContext, me: Player): Promise<RequestsResponse> {
   const { grove } = await requireGrove(ctx, me);
-  const list = await ctx.repo.openRequests(grove.id, ctx.now() - ctx.data.social.requestLifetimeHours * HOUR);
+  return requestsIn(ctx, me, grove.id);
+}
+
+export async function requestsIn(ctx: ServerContext, me: Player, scopeId: string): Promise<RequestsResponse> {
+  const grove = { id: scopeId };
+  const blocked = await blockedIds(ctx, me);
+  const list = (await ctx.repo.openRequests(grove.id, ctx.now() - ctx.data.social.requestLifetimeHours * HOUR)).filter((r) => !blocked.has(r.playerId));
   const last = await ctx.repo.lastRequestAt(me.id);
   const next = last ? last + ctx.data.social.requestCooldownMinutes * MIN : 0;
   return { requests: list.map((r) => requestView(r, me)), nextRequestAt: next > ctx.now() ? next : 0 };
@@ -140,6 +168,12 @@ export async function requests(ctx: ServerContext, me: Player): Promise<Requests
 
 export async function requestTroops(ctx: ServerContext, me: Player, capacity: unknown): Promise<RequestView> {
   const { grove } = await requireGrove(ctx, me);
+  return requestTroopsIn(ctx, me, grove.id, capacity);
+}
+
+/** A troop request in an Alliance or a Gang. A player has one open request at a time (their Lodge is one Lodge). */
+export async function requestTroopsIn(ctx: ServerContext, me: Player, scopeId: string, capacity: unknown): Promise<RequestView> {
+  const grove = { id: scopeId };
   const t = ctx.now();
   const last = await ctx.repo.lastRequestAt(me.id);
   if (last && t < last + ctx.data.social.requestCooldownMinutes * MIN) throw new ApiError(429, 'cooldown', 'You can ask again soon.');
@@ -154,6 +188,12 @@ export async function requestTroops(ctx: ServerContext, me: Player, capacity: un
 
 export async function donate(ctx: ServerContext, me: Player, requestId: string, req: DonateRequest): Promise<DonateResponse> {
   const { grove } = await requireGrove(ctx, me);
+  return donateIn(ctx, me, grove.id, requestId, req, true);
+}
+
+/** Fill a request in an Alliance (with Alliance XP) or a Gang (`xpToAlliance` false). */
+export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, requestId: string, req: DonateRequest, xpToAlliance: boolean): Promise<DonateResponse> {
+  const grove = { id: scopeId };
   const r = await ctx.repo.getRequest(String(requestId));
   if (!r || r.groveId !== grove.id || !r.open || ctx.now() - r.at > ctx.data.social.requestLifetimeHours * HOUR) throw new ApiError(404, 'not_found', 'That request is gone.');
   if (r.playerId === me.id) throw new ApiError(400, 'bad_request', 'You cannot fill your own request.');
@@ -163,14 +203,28 @@ export async function donate(ctx: ServerContext, me: Player, requestId: string, 
   if (!def || count <= 0) throw new ApiError(400, 'bad_request', 'Pick a troop to donate.');
   if (me.hallLevel < (def.unlockKeep ?? 1) || level < 1 || level > Math.min(troopLevelCapAt(me.hallLevel, ctx.data, req!.troop), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop level');
   const housing = def.housing * count;
-  const updated = await ctx.repo.fillRequest(r.id, housing);
-  if (!updated) throw new ApiError(409, 'full', 'That request does not have room for those troops.');
   const xp = housing * ctx.data.social.xpPerHousing;
-  const mine = await ctx.repo.getMembership(me.id);
-  await ctx.repo.updateMember(grove.id, me.id, { xp: (mine?.xp ?? 0) + xp });
-  await ctx.repo.addDonation({ id: ctx.uuid(), requestId: r.id, groveId: grove.id, fromId: me.id, fromName: me.name, toId: r.playerId, troop: req.troop, count, level, at: ctx.now(), delivered: false });
-  await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: `Sent ${count} ${def.name}${count > 1 ? 's' : ''} to ${r.name}.`, kind: 'donation' });
-  return { request: requestView(updated, me), xp };
+  const donationId = ctx.uuid();
+  // One transaction: the request's room, the gift, and (roadmap step 23) server-held armies on both sides.
+  const updated = await ctx.repo.transaction(async (tx) => {
+    const filled = await tx.fillRequest(r.id, housing);
+    if (!filled) throw new ApiError(409, 'full', 'That request does not have room for those troops.');
+    // A donor whose village the server keeps gives warriors from that real army.
+    const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'spendDonation', troop: req.troop, count, xp: xpToAlliance ? xp : 0 }, reason: 'donation:sent' }], donationId);
+    if (spent && !spent.ok) throw new ApiError(400, 'bad_request', 'Your army on the server does not have those warriors.');
+    if (xpToAlliance) {
+      const mine = await tx.getMembership(me.id);
+      await tx.updateMember(grove.id, me.id, { xp: (mine?.xp ?? 0) + xp });
+    }
+    await tx.addDonation({ id: donationId, requestId: r.id, groveId: grove.id, fromId: me.id, fromName: me.name, toId: r.playerId, troop: req.troop, count, level, at: ctx.now(), delivered: false });
+    await tx.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: `Sent ${count} ${def.name}${count > 1 ? 's' : ''} to ${r.name}.`, kind: 'donation' });
+    // A receiver whose village the server keeps gets them in its Lodge now (same donation id, so the game's own copy is not added twice).
+    const to = await tx.getPlayer(r.playerId);
+    if (to) await applyServerResult(tx, ctx, to, [{ cmd: { type: 'receiveDonations', items: [{ id: donationId, troop: req.troop, count, fromName: me.name, level }] }, reason: 'donation:received' }], donationId);
+    return filled;
+  });
+  ctx.push.notify(r.playerId, { type: 'donations', title: 'Warriors arrived', body: `${me.name} sent you ${count} ${def.name}${count > 1 ? 's' : ''}.` });
+  return { request: requestView(updated, me), xp: xpToAlliance ? xp : 0 };
 }
 
 export async function inbox(ctx: ServerContext, me: Player): Promise<InboxResponse> {

@@ -196,5 +196,33 @@
         "xp": 60
       }
     }
+  },
+  "gangWar": {
+    "$comment": "Gang Wars (roadmap steps 65-66): 2v2 to 4v4 between Gangs of friends, a 2 h prep then a 22 h battle day, 2 attacks each; relay strikes carry damage over. Chests are fixed (scaled by Keep), nothing random, never sold. Honor never moves; the Gang Rating does (not against bots). relayCarry: the share of a relay strike's damage the next strike starts from (defenders patch up between strikes); measured in tests/gameplay/balance/gang-war.test.ts so a relay beats solo strikes by a clear but limited margin.",
+    "minSize": 2,
+    "maxSize": 4,
+    "prepHours": 2,
+    "battleHours": 22,
+    "attacksPerMember": 2,
+    "relayCarry": 0.5,
+    "botAfterMinutes": 3,
+    "recentOpponents": 3,
+    "rewards": {
+      "win": {
+        "acorns": 60000,
+        "dew": 60000,
+        "moonstones": 15
+      },
+      "draw": {
+        "acorns": 35000,
+        "dew": 35000,
+        "moonstones": 8
+      },
+      "loss": {
+        "acorns": 15000,
+        "dew": 15000,
+        "moonstones": 3
+      }
+    }
   }
 }

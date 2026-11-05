@@ -3,7 +3,8 @@
  * same screen shows the offline bot Grove or a real Grove on a server.
  * The Grove Lodge (donated troops) and raid history are village state.
  */
-import type { GroveSnapshot, GroveSource } from '../../backend/social/groveSource';
+import { REPORT_REASONS, type ReportReason } from '../../backend/net/protocol';
+import type { GroveSnapshot, GroveSource, ReportTarget } from '../../backend/social/groveSource';
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
 import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/social/names';
 import { groveRaidChest } from '../../gameplay/sim/social/groveRaid';
@@ -22,6 +23,16 @@ export interface GroveUiDeps {
 }
 
 type Tab = 'chat' | 'requests' | 'members' | 'raid';
+
+export const REASON_LABELS: Record<ReportReason, string> = {
+  harassment: 'Bullying or harassment',
+  hate: 'Hate or slurs',
+  sexual: 'Sexual content',
+  spam: 'Spam or scams',
+  cheating: 'Cheating',
+  name: 'Offensive name',
+  other: 'Something else',
+};
 
 export class GroveUi {
   private tab: Tab = 'chat';
@@ -165,11 +176,14 @@ export class GroveUi {
   private chatTab(body: HTMLElement, snap: GroveSnapshot, keep: string, keepFocus: boolean, redraw: () => void): void {
     const list = h('div', { class: 'chat-list' });
     for (const m of snap.chat.slice(-50)) {
+      // Report or block another player's message (Apple 1.2); never on your own, system lines or bots.
+      const more = snap.moderation && m.fromId && !m.mine ? h('button', { class: 'chat-more', type: 'button', title: 'Report or block', 'aria-label': `Report or block ${m.who}` }, '⋯') : null;
+      more?.addEventListener('click', () => this.moderate({ playerId: m.fromId, name: m.who, messageId: m.id }, m.text, false, redraw));
       list.append(
         h(
           'div',
           { class: `chat-msg ${m.mine ? 'mine' : ''} ${m.kind}` },
-          m.who ? h('bdi', { class: 'chat-who' }, m.who) : null,
+          m.who ? h('bdi', { class: 'chat-who' }, m.who, more) : null,
           h('span', { class: 'chat-text', dir: 'auto', style: 'unicode-bidi:plaintext' }, m.text),
           h('span', { class: 'chat-time' }, `${formatDuration(Math.max(0, this.c.now() - m.at))} ago`),
         ),
@@ -239,12 +253,14 @@ export class GroveUi {
 
   private membersTab(body: HTMLElement, snap: GroveSnapshot, redraw: () => void): void {
     snap.members.forEach((r, i) => {
+      const more = snap.moderation && !r.you ? h('button', { class: 'chat-more', type: 'button', title: 'Report or block', 'aria-label': `Report or block ${r.name}` }, '⋯') : null;
+      more?.addEventListener('click', () => this.moderate({ playerId: r.id, name: r.name }, null, r.blocked, redraw));
       body.append(
         h(
           'div',
           { class: `log-row${r.you ? ' current' : ''}` },
           h('div', {}, h('b', {}, `${i + 1}. ${isolateName(r.name)}`), h('div', { class: 'muted small' }, `${r.role} · Clan Keep ${r.hall}`)),
-          h('div', { class: 'row' }, h('span', { class: `dot ${r.online ? 'on' : ''}` }), h('span', { class: 'chip' }, icon(icons.leaf), String(r.trophies))),
+          h('div', { class: 'row' }, r.blocked ? h('span', { class: 'chip blocked' }, 'Blocked') : null, h('span', { class: `dot ${r.online ? 'on' : ''}` }), h('span', { class: 'chip' }, icon(icons.leaf), String(r.trophies)), more),
         ),
       );
     });
@@ -256,6 +272,46 @@ export class GroveUi {
       });
       body.append(h('div', { class: 'actions' }, leave));
     }
+  }
+
+  /**
+   * Report a message or a player to the moderators, with a reason, an
+   * optional note and an "also block" box; or just block (or unblock) them.
+   */
+  private moderate(target: ReportTarget, quote: string | null, blocked: boolean, redraw: () => void): void {
+    const body = h('div', { class: 'report-form' });
+    if (quote) body.append(h('blockquote', { class: 'report-quote' }, h('b', {}, target.name), ' ', quote));
+    body.append(h('p', { class: 'muted small' }, quote ? 'Moderators see the message exactly as it was sent.' : `Tell the moderators what ${target.name} did.`));
+    const reasons = h('div', { class: 'report-reasons', role: 'radiogroup', 'aria-label': 'Reason' });
+    for (const r of REPORT_REASONS) reasons.append(h('label', { class: 'report-reason' }, h('input', { type: 'radio', name: 'report-reason', value: r }), REASON_LABELS[r]));
+    const note = h('textarea', { class: 'text', maxlength: 500, rows: 2, placeholder: 'Anything else they should know (optional)' }) as HTMLTextAreaElement;
+    note.addEventListener('keydown', (e) => e.stopPropagation());
+    const also = h('input', { type: 'checkbox' }) as HTMLInputElement;
+    body.append(reasons, note);
+    if (!blocked) body.append(h('label', { class: 'report-block' }, also, ` Also block ${target.name}`));
+    const close = this.d.kit.modal(
+      quote ? 'Report message' : `Report ${target.name}`,
+      body,
+      [
+        blocked
+          ? { label: 'Unblock', onClick: () => (close(), void this.run(() => this.src.unblock(target.playerId), redraw, false)) }
+          : { label: 'Block only', onClick: () => (close(), void this.run(() => this.src.block(target.playerId), redraw, false)) },
+        {
+          label: 'Send report',
+          primary: true,
+          onClick: () => {
+            const reason = body.querySelector<HTMLInputElement>('input[name="report-reason"]:checked')?.value as ReportReason | undefined;
+            if (!reason) {
+              this.d.kit.toast('Pick a reason first.', 'error');
+              return;
+            }
+            close();
+            void this.run(() => this.src.report(target, reason, also.checked, note.value), redraw, false);
+          },
+        },
+      ],
+      'normal',
+    );
   }
 
   private raidTab(body: HTMLElement, snap: GroveSnapshot): void {

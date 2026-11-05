@@ -19,12 +19,22 @@ import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isH
  * under, and replays of other versions are not shown, because they would no
  * longer show the fight the player had. `tests/gameplay/battle/rules-version.test.ts`
  * fails when combat data changes without a bump.
+ *
+ * 3 (roadmap step 64): `BattleSetup.startDamage` (relay assaults). Nothing
+ * else changed, so a battle without it plays out exactly as under 2.
  */
-export const SIM_RULES = 2;
+export const SIM_RULES = 3;
+
+/**
+ * Older rules this code plays out identically (their battles never use the
+ * newer setup fields). Their replays stay watchable, and the server checks
+ * their battles with this code. Empty it on the next change to combat itself.
+ */
+export const SIM_RULES_COMPATIBLE: readonly number[] = [2];
 
 /** Whether a record can be replayed faithfully with the current rules. */
 export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {
-  return record.rules === SIM_RULES;
+  return record.rules === SIM_RULES || (record.rules !== undefined && SIM_RULES_COMPATIBLE.includes(record.rules));
 }
 
 export interface SimBuilding {
@@ -273,9 +283,21 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       effect, uses: effect?.uses ?? 0, repairedUntil: -1, repairedSlowUntil: -1,
     };
   });
+  // Relay assaults (step 64): damage an earlier strike already did.
+  const lostHp = setup.startDamage ?? {};
+  for (const b of buildings) {
+    const lost = lostHp[b.id];
+    if (!(typeof lost === 'number' && lost > 0)) continue;
+    if (lost >= b.maxHp) {
+      b.hp = 0;
+      b.destroyed = true;
+      b.hidden = false;
+      b.loot = {};
+    } else b.hp = b.maxHp - lost;
+  }
   const cells = new Uint8Array(size * size);
   buildings.forEach((b) => {
-    if (b.kind === 'trap') return;
+    if (b.kind === 'trap' || b.destroyed) return;
     for (let y = b.y; y < b.y + b.size; y++) for (let x = b.x; x < b.x + b.size; x++) cells[y * size + x] = b.kind === 'hedge' ? HEDGE : BLOCKED;
   });
   const m = data.battle.deployMarginTiles;
@@ -299,9 +321,9 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     remaining: { ...setup.army },
     used: {},
     loot: {},
-    destroyedCount: 0,
+    destroyedCount: buildings.filter((b) => b.destroyed && b.kind !== 'hedge' && b.kind !== 'trap').length,
     countable: buildings.filter((b) => b.kind !== 'hedge' && b.kind !== 'trap').length,
-    hallDestroyed: false,
+    hallDestroyed: buildings.some((b) => b.destroyed && b.kind === 'hall'),
     ended: false,
     endReason: null,
     events: [],
@@ -852,6 +874,19 @@ export function deploymentsByTick(list: Deployment[]): Map<number, Deployment[]>
     else m.set(d.tick, [d]);
   }
   return m;
+}
+
+/**
+ * HP each building has lost by now, by id (destroyed buildings and sprung traps
+ * count their full HP): the `startDamage` of the next strike in a relay assault.
+ */
+export function battleDamage(sim: BattleSim): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const b of sim.buildings) {
+    const lost = b.destroyed ? b.maxHp : b.maxHp - b.hp;
+    if (lost > 0) out[b.id] = lost;
+  }
+  return out;
 }
 
 /** Run a whole battle from its seed and deployments (used for replays and to verify results). */

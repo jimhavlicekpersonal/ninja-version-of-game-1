@@ -51,6 +51,8 @@ Open http://localhost:5173 (add `?debug` for the `window.tk` testing hook).
 | `npm run art` | Art gallery: every generated texture at every upgrade tier |
 | `npm run docs:progression` | Regenerate the roster tables and the 504-entry icon manifest from the progression model |
 | `npm run server:dev` | Build and run the PvP server locally (memory storage) |
+| `npm run server:migrate` | Apply database migrations (the release step before a new server starts; needs `DATABASE_URL`) |
+| `npm run server:bench` | Time battle re-simulation per Keep on this machine (after `npm run server:build`) |
 | `npm run cap:android` / `npm run cap:ios` | Copy the web build into the native projects and open Android Studio / Xcode |
 
 ## Project layout: three compartments
@@ -59,7 +61,7 @@ Open http://localhost:5173 (add `?debug` for the `window.tk` testing hook).
 src/presentation/   1. Art, GUI, animation: procedural art and audio, Phaser scenes, HUD, tutorial
 src/gameplay/       2. Game theory and mechanics: pure deterministic rules, balance data, commands
 src/backend/        3. Backend: protocol, connection, payments, platform, saves, analytics, PWA
-server/             3. Fastify + Postgres PvP server (re-simulates every attack)
+server/             3. Fastify + Postgres (+ optional Redis) PvP server: re-simulates every attack, can hold villages
 tools/              Art gallery, progression doc generator
 docs/               Rebuild analysis and handoff, architecture, game theory, art brief and manifest
 ```
@@ -73,4 +75,6 @@ Each compartment has a `CLAUDE.md` brief, so a **separate AI session** can upgra
 - `docs/rebuild/02-ARCHITECTURE.md`: structure, dependency rules and research sources
 - `docs/game-theory/PROGRESSION_MODEL.md` and `ROSTER.md`: one power budget for all 50 warriors, buildings, EXP and difficulty
 - `docs/art/ART_AI_BRIEF.md` and `ICON_MANIFEST.md`: instructions and the full list of icons for an ART AI
-- `docs/PROTOCOL.md` (v3) and `docs/SHIPPING.md`: multiplayer protocol and store and hosting steps
+- `docs/PROTOCOL.md` (v7) and `docs/SHIPPING.md`: multiplayer protocol and store and hosting steps
+- `docs/backend/PVP_ROADMAP.md`: the PvP server plan and step list (each finished step is marked)
+- `docs/store/`: the store submission kit (listing, privacy answers, review notes, testing, release)

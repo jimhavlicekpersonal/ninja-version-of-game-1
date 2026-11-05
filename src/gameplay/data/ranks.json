@@ -139,5 +139,22 @@
     0.5,
     0.25,
     0.05
-  ]
+  ],
+  "rating": {
+    "$comment": "Hidden ratings for matchmaking (roadmap Phase 3, src/gameplay/sim/rating.ts). Attack Rating (AR) is an attacker's skill, Base Rating (BR) how hard a base is to raid. Honor stays the visible ladder.",
+    "initial": 1500,
+    "initialRd": 350,
+    "minRd": 60,
+    "rdShrinkPerBattle": 0.93,
+    "rdGrowthPerIdleDay": 6,
+    "powerWeight": 150,
+    "kNew": 40,
+    "kSettled": 16,
+    "starWeight": 0.6,
+    "destructionWeight": 0.4,
+    "matchTarget": 0.55,
+    "layoutResetShare": 0.25,
+    "defenderDailyHonorLossCap": 150,
+    "powerBoardMinBattles": 5
+  }
 }
