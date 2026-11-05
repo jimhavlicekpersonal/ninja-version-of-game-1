@@ -695,7 +695,10 @@ export class PgRepo implements Repo {
     const r = await this.rows('select * from squad_wars where id = $1', [id]);
     return r[0] ? this.toWar(r[0]) : null;
   }
-  async updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b'>>): Promise<void> {
+  async activeWars(now: number, limit: number): Promise<GangWar[]> {
+    return (await this.rows('select * from squad_wars where ends_at > $1 order by ends_at limit $2', [now, limit])).map(this.toWar);
+  }
+  async updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b' | 'notified'>>): Promise<void> {
     await this.db.query('update squad_wars set record = record || $2::jsonb where id = $1', [id, JSON.stringify(patch)]);
   }
   async markWarRated(id: string): Promise<boolean> {

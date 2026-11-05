@@ -220,6 +220,7 @@ export async function request(ctx: ServerContext, me: Player, body: FriendReques
   if (s.friends.size >= MAX_FRIENDS) throw new ApiError(409, 'full', `You have ${MAX_FRIENDS} friends, the most you can have. Remove someone first.`);
   const r: FriendRequest = { id: ctx.uuid(), fromId: me.id, toId: p.id, at: ctx.now() };
   await ctx.repo.addFriendRequest(r);
+  ctx.push.notify(p.id, { type: 'friends', title: `${me.name} wants to be friends`, body: 'Open Friends to answer.' });
   ctx.metrics.count('tk_friend_requests_total', { via: body?.code ? 'code' : body?.name ? 'name' : 'card' });
   return { status: 'sent', request: await requestView(ctx, r, p, 'requested') };
 }
@@ -238,6 +239,7 @@ export async function answer(ctx: ServerContext, me: Player, id: unknown, accept
     return undefined;
   }
   const since = await becomeFriends(ctx, me, from);
+  ctx.push.notify(from.id, { type: 'friends', title: `${me.name} accepted your friend request`, body: 'Duel them, or invite them to your Gang.' });
   return { status: 'friends', friend: await friendView(ctx, from, since) };
 }
 

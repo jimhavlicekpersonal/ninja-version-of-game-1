@@ -354,6 +354,36 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
   return response;
 }
 
+/**
+ * Every few minutes (server/main.ts, step 68): tell members when the battle
+ * day begins, and when 2 hours are left (only those with attacks left). Each
+ * once per war; players choose the type in Settings (gangWar).
+ */
+export async function gangWarReminders(ctx: ServerContext): Promise<number> {
+  const t = ctx.now();
+  let sent = 0;
+  for (const w of await ctx.repo.activeWars(t, 500)) {
+    const notified = { ...(w.notified ?? {}) };
+    const attacks = await ctx.repo.warAttacks(w.id);
+    const left = (id: string) => ctx.data.social.gangWar.attacksPerMember - attacks.filter((a) => a.attackerId === id).length;
+    if (!notified.battle && t >= w.prepEndsAt) {
+      notified.battle = true;
+      for (const side of [w.a, w.b]) if (!side.bot) notifyGang(ctx, side, 'The Gang War battle day has begun', `Attack ${(side === w.a ? w.b : w.a).name}: ${ctx.data.social.gangWar.attacksPerMember} attacks each. Relay strikes carry your Gang's damage over.`);
+      sent++;
+    }
+    if (!notified.ending && t >= w.endsAt - 2 * 3_600_000) {
+      notified.ending = true;
+      for (const side of [w.a, w.b]) {
+        if (side.bot) continue;
+        for (const e of side.roster) if (e.playerId && left(e.playerId) > 0) ctx.push.notify(e.playerId, { type: 'gangWar', title: '2 hours left in the Gang War', body: `You still have ${left(e.playerId)} attack${left(e.playerId) === 1 ? '' : 's'}.` });
+      }
+      sent++;
+    }
+    if (notified.battle !== w.notified?.battle || notified.ending !== w.notified?.ending) await ctx.repo.updateWar(w.id, { notified });
+  }
+  return sent;
+}
+
 /** POST /v1/squad/war/claim { warId }: once the war has ended, each member's chest, once. */
 export async function claim(ctx: ServerContext, me: Player, warId: unknown): Promise<GangWarClaimResponse> {
   const w = await ctx.repo.getWar(String(warId ?? ''));

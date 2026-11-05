@@ -69,6 +69,8 @@ export function createCore(ctx: ServerContext) {
     gangWarTicket: gangWars.warTicket.bind(null, ctx),
     gangWarAttack: gangWars.warAttack.bind(null, ctx),
     gangWarClaim: gangWars.claim.bind(null, ctx),
+    /** Every few minutes: battle-day and 2-hours-left pushes (step 68). */
+    gangWarReminders: () => gangWars.gangWarReminders(ctx),
     /** Start-up: give players from before unique names their name key (step 59). */
     migrateNames: () => names.migrateNames(ctx),
     links: links.links.bind(null, ctx),

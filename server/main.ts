@@ -218,6 +218,11 @@ async function main(): Promise<void> {
       (r) => app.log.info({ pruned: r }, 'retention'),
       (e) => app.log.error(e, 'retention failed'),
     );
+  // Gang War pushes (step 68): battle day begins, 2 hours left. Every 5 minutes; each sent once per war.
+  const gangWarTimer = setInterval(() => {
+    void app.core.gangWarReminders().catch((e) => app.log.error(e, 'gang war reminders failed'));
+  }, 5 * 60_000);
+  gangWarTimer.unref();
   // Google's Voided Purchases API (refunds that a notification missed): the last 3 days, hourly.
   const voided = () =>
     app.core.pollVoided(Date.now() - 3 * 86_400_000).then(

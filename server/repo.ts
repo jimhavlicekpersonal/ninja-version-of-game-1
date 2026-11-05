@@ -154,6 +154,8 @@ export interface GangWar {
   b: GangWarSide;
   /** The Gang Ratings were updated after it ended (step 66; never for a bot war). */
   rated: boolean;
+  /** Pushes already sent (step 68): the battle day began; 2 hours left. */
+  notified?: { battle?: boolean; ending?: boolean };
 }
 export interface GangWarAttack {
   id: string;
@@ -732,7 +734,9 @@ export interface Repo {
   // Gang Wars (roadmap steps 65-66)
   createWar(w: GangWar): Promise<void>;
   getWar(id: string): Promise<GangWar | null>;
-  updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b'>>): Promise<void>;
+  updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b' | 'notified'>>): Promise<void>;
+  /** Wars that have not ended at `now` (the reminder job). */
+  activeWars(now: number, limit: number): Promise<GangWar[]>;
   /** Set `rated` once; false if it already was. */
   markWarRated(id: string): Promise<boolean>;
   /** The Gang's war that has not ended at `now`, if any. */
@@ -1223,9 +1227,12 @@ export class MemoryRepo implements Repo {
     const w = this.warRows.get(id);
     return w ? clone(w) : null;
   }
-  async updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b'>>): Promise<void> {
+  async updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b' | 'notified'>>): Promise<void> {
     const w = this.warRows.get(id);
     if (w) Object.assign(w, clone(patch));
+  }
+  async activeWars(now: number, limit: number): Promise<GangWar[]> {
+    return [...this.warRows.values()].filter((w) => w.endsAt > now).slice(0, limit).map(clone);
   }
   async markWarRated(id: string): Promise<boolean> {
     const w = this.warRows.get(id);
