@@ -36,9 +36,10 @@
   --water: #1f2a36;
   --shadow-soft: 0 6px 0 rgba(38, 48, 61, 0.22), 0 10px 24px rgba(15, 20, 30, 0.28);
   /* The bundled faces are Latin subsets: other scripts fall through, in order, to the platform's own font for that script
-     (Japanese/Chinese: Hiragino on Apple, Yu Gothic UI/Meiryo on Windows, Noto Sans CJK on Android; then Arabic,
+     (Cyrillic, Greek and Latin extras first in a proportional UI font, because CJK fonts draw them full-width;
+     Japanese/Chinese: Hiragino on Apple, Yu Gothic UI/Meiryo on Windows, Noto Sans CJK on Android; then Arabic,
      Devanagari, Thai, Hebrew; then the system UI font), so weights stay close to M PLUS 1 (re-audit design item 12). */
-  --font-fallback: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, 'Noto Sans Arabic', 'Geeza Pro', 'Segoe UI Arabic', 'Noto Sans Devanagari', 'Kohinoor Devanagari', Nirmala UI, 'Noto Sans Thai', Thonburi, 'Leelawadee UI', 'Noto Sans Hebrew', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font-fallback: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Noto Sans JP', 'Noto Sans CJK JP', Meiryo, 'Noto Sans Arabic', 'Geeza Pro', 'Segoe UI Arabic', 'Noto Sans Devanagari', 'Kohinoor Devanagari', Nirmala UI, 'Noto Sans Thai', Thonburi, 'Leelawadee UI', 'Noto Sans Hebrew', system-ui, -apple-system, Roboto, sans-serif;
   --font: 'M PLUS 1', var(--font-fallback);
   /* Titles and big labels. One weight only: always use it at 400, or the browser fakes a bold. */
   --font-display: 'Dela Gothic One', 'M PLUS 1', var(--font-fallback);

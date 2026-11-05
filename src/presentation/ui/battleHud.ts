@@ -324,7 +324,7 @@ export class BattleHud {
       if (!named.length || named.some((n) => (army[n.id] ?? 0) > 0)) return [tip];
       // "Defenses cover each other: jam one with a Saboteur, and throw smoke…" without Saboteurs: keep the smoke half.
       const smoke = tip.match(/^(.*?:)\s.*?(throw smoke .*)$/i);
-      return smoke ? [`${smoke[1]} ${smoke[2].charAt(0).toUpperCase()}${smoke[2].slice(1)}`] : [];
+      return smoke ? [`${smoke[1]} ${smoke[2]}`] : [];
     });
   }
 
@@ -552,7 +552,7 @@ export class BattleHud {
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),
-      used ? h('p', { class: 'muted small' }, `Troops used: ${used}`) : null,
+      used ? h('p', { class: 'muted small' }, `Warriors used: ${used}`) : null,
       // The settlement says exactly what did not fit; nothing is inferred from totals.
       overflow && Object.values(overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, 'Did not fit in your storage: ', lootChips(overflow)) : null,
     );
