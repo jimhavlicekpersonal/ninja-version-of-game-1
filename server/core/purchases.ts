@@ -34,6 +34,9 @@ export const INTENT_HOLD_MS = 30 * MIN;
  * abandoned one frees itself after this.
  */
 export const PENDING_HOLD_MS = 7 * 24 * HOUR;
+/** Refunds in this window that pause new purchases (re-audit: refund abuse). */
+export const REFUND_WINDOW_MS = 90 * 24 * HOUR;
+export const REFUNDS_BEFORE_PAUSE = 3;
 const STORES: readonly PurchaseStore[] = ['apple', 'google'];
 
 const cents = (usd: number) => Math.round(usd * 100);
@@ -79,6 +82,13 @@ export async function purchaseIntent(ctx: ServerContext, me: Player, body: { sto
   if (!product) throw new ApiError(400, 'bad_request', 'That item is not available.');
   const under18 = await ageGroupFor(ctx.repo, ctx, me.id, body?.under18);
   if (under18 === null) throw new ApiError(403, 'purchase_refused', 'Please tell us your age group first.');
+  // Re-audit: buy, spend, refund, repeat. After several refunds, purchases pause until support has a look.
+  const since = ctx.now() - REFUND_WINDOW_MS;
+  const refunds = (await ctx.repo.purchasesOf(me.id, 100)).filter((p) => p.status === 'refunded' && (p.refundedAt ?? p.at) >= since).length;
+  if (refunds >= REFUNDS_BEFORE_PAUSE) {
+    ctx.metrics.count('tk_refused_total', { reason: 'refund_pause' });
+    throw new ApiError(403, 'purchase_refused', 'Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.');
+  }
   // Check and reserve in one locked step (GLOBAL-004): two taps, two devices or two
   // server instances cannot both pass the cap with the same headroom.
   return ctx.repo.transaction(async (tx) => {
@@ -125,6 +135,9 @@ interface Checked {
   environment: string;
   accountToken: string | null;
   ref: string;
+  storefront: string | null;
+  currency: string | null;
+  priceMicros: number | null;
   /** Google: consume once credited. */
   finish: (() => Promise<void>) | null;
 }
@@ -134,7 +147,7 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
     if (store === 'apple') {
       const t = ctx.payments.apple!.transaction(receipt);
       if (t.revocationDate !== null) throw new PurchaseError('This purchase was refunded.');
-      return { store, transactionId: t.transactionId, storeProductId: t.productId, environment: t.environment, accountToken: t.appAccountToken, ref: t.originalTransactionId, finish: null };
+      return { store, transactionId: t.transactionId, storeProductId: t.productId, environment: t.environment, accountToken: t.appAccountToken, ref: t.originalTransactionId, storefront: t.storefront, currency: t.currency, priceMicros: t.priceMicros, finish: null };
     }
     const google = ctx.payments.google!;
     const p = await google.purchase(storeProductId, receipt);
@@ -145,6 +158,9 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
       environment: p.environment,
       accountToken: p.accountToken,
       ref: p.purchaseToken,
+      storefront: p.regionCode,
+      currency: null,
+      priceMicros: null,
       finish: p.consumed ? null : () => google.consume(p.productId, p.purchaseToken),
     };
   } catch (e) {
@@ -168,6 +184,12 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
   const c = await check(ctx, store, String(body?.storeProductId ?? ''), body?.receipt);
   const product = productForStoreId(ctx.data, c.storeProductId);
   if (!product) throw new ApiError(400, 'bad_request', 'The game does not sell that product.');
+  // Re-audit: the store refunded or voided this purchase before it reached us (an offline or modified game
+  // kept the receipt). The receipt the device holds still looks valid; the notice says otherwise.
+  if ((await ctx.repo.refundNotice(store, c.transactionId)) || (await ctx.repo.refundNotice(store, c.ref))) {
+    ctx.metrics.count('tk_refused_total', { reason: 'refunded_before_redeem' });
+    throw new ApiError(400, 'bad_request', 'This purchase was refunded.');
+  }
   const answer = (row: PurchaseRow, already: boolean): RedeemResponse => {
     if (row.playerId !== me.id) throw new ApiError(409, 'conflict', 'This purchase belongs to another player.');
     return { transactionId: villageId(store, row.transactionId), productId: row.productId, usd: row.cents / 100, heldOnServer: row.heldOnServer, already };
@@ -184,6 +206,16 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     if (intent && intent.playerId !== me.id) throw new ApiError(409, 'conflict', 'This purchase belongs to another player.');
   }
   const now = ctx.now();
+  // Re-audit: Sandbox/test purchases cost nothing; on production only a small total is credited per player
+  // (App Review needs purchases to work; public TestFlight must not mint Jade for the live ladder).
+  const testCap = ctx.payments.testCreditCapUsd;
+  if (testCap !== undefined && c.environment !== 'Production') {
+    const testSpent = (await ctx.repo.purchasesOf(me.id, 100)).filter((p) => p.environment !== 'Production').reduce((sum, p) => sum + p.cents, 0);
+    if (testSpent + cents(product.usd) > cents(testCap)) {
+      ctx.metrics.count('tk_refused_total', { reason: 'test_purchase_cap' });
+      throw new ApiError(403, 'purchase_refused', 'Test purchases are limited on the live server.');
+    }
+  }
   const result = await ctx.repo.transaction(async (tx) => {
     const heldOnServer = Boolean(await tx.getVillage(me.id));
     const row: PurchaseRow = {
@@ -198,6 +230,9 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
       refundedAt: null,
       ref: c.ref,
       heldOnServer,
+      storefront: c.storefront,
+      currency: c.currency,
+      priceMicros: c.priceMicros,
     };
     if (!(await tx.addPurchase(row))) {
       const again = await tx.getPurchase(store, c.transactionId);
@@ -226,7 +261,10 @@ export async function purchaseHistory(ctx: ServerContext, me: Player): Promise<P
 export async function revoke(ctx: ServerContext, store: PurchaseStore, find: { transactionId?: string; ref?: string }, at: number, why: string): Promise<boolean> {
   const row = find.transactionId ? await ctx.repo.getPurchase(store, find.transactionId) : find.ref ? await ctx.repo.purchaseByRef(store, find.ref) : null;
   if (!row) {
-    ctx.log('warn', 'refund for an unknown purchase', { store, ...find, why });
+    // Re-audit: remember it, so the receipt is refused if the game redeems it later.
+    const key = find.transactionId ?? find.ref;
+    if (key) await ctx.repo.addRefundNotice(store, key, at, why);
+    ctx.log('warn', 'refund for a purchase not redeemed yet: kept so its receipt is refused', { store, ...find, why });
     return false;
   }
   const changed = await ctx.repo.transaction(async (tx) => {
@@ -240,6 +278,25 @@ export async function revoke(ctx: ServerContext, store: PurchaseStore, find: { t
   });
   if (changed) ctx.metrics.count('tk_refunds_total', { store, why });
   return changed;
+}
+
+/**
+ * A refund was reversed (re-audit): the record counts again and a server-held village gets back what
+ * the refund took (the same grants, ledger `refund-reversed:<store>`). Idempotent with the status.
+ */
+export async function reinstate(ctx: ServerContext, store: PurchaseStore, transactionId: string): Promise<boolean> {
+  const row = await ctx.repo.getPurchase(store, transactionId);
+  if (!row || row.status !== 'refunded') return false;
+  return ctx.repo.transaction(async (tx) => {
+    if (!(await tx.setPurchaseStatus(store, transactionId, 'credited', ctx.now()))) return false;
+    const player = await tx.getPlayer(row.playerId);
+    const grants = productInfo(ctx.data, row.productId)?.grants ?? {};
+    const resources = Object.fromEntries(Object.entries(grants).filter(([, v]) => (v ?? 0) > 0)) as Record<string, number>;
+    if (player && Object.keys(resources).length) {
+      await applyServerResult(tx, ctx, player, [{ cmd: { type: 'staffAdjust', resources }, reason: `refund-reversed:${store}` }], villageId(store, transactionId));
+    }
+    return true;
+  });
 }
 
 /** App Store Server Notifications v2 (`{ signedPayload }`). */
@@ -258,8 +315,11 @@ export async function appleNotification(ctx: ServerContext, body: { signedPayloa
   if (n.notificationType === 'REFUND' || n.notificationType === 'REVOKE') {
     await revoke(ctx, 'apple', { transactionId: t.transactionId }, t.revocationDate ?? ctx.now(), n.notificationType.toLowerCase());
   } else if (n.notificationType === 'REFUND_REVERSED') {
-    // The refund was reversed: the record counts again. What was taken back stays a support matter (Admin grant).
-    await ctx.repo.setPurchaseStatus('apple', t.transactionId, 'credited', ctx.now());
+    await reinstate(ctx, 'apple', t.transactionId);
+  } else if (n.notificationType === 'CONSUMPTION_REQUEST') {
+    // Apple asks for consumption data to decide a refund. Sending it requires the customer's consent
+    // (`customerConsented`), which the game does not collect, so nothing is sent (re-audit: documented choice).
+    ctx.metrics.count('tk_consumption_requests_total', {});
   }
 }
 

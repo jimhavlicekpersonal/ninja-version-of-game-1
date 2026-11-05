@@ -11,6 +11,8 @@ import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
 import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
 import { applyLootPenalty, hallWindow } from '../../src/gameplay/sim/matchmaking';
 import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
+import { deserialize } from '../../src/gameplay/sim/save';
+import { advance } from '../../src/gameplay/sim/village';
 import { layoutChangedShare, newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { sanitizeName } from '../../src/gameplay/sim/social/names';
@@ -30,11 +32,15 @@ export const TICKET_TTL_MS = HOUR;
  * A finished raid (pvp ticket) may still be reported this long after its
  * ticket expired (worldwide audit R02): a phone that lost its connection
  * after the battle keeps its loot and honor through an outage of up to three
- * days. Loot comes from the base snapshot taken at match time and the
- * defender's losses are capped by what is there when it settles, so waiting
- * gains nothing; the defender's lock is still only TICKET_LOCK_MS.
+ * days. The re-audit showed that holding several tickets on one defender let
+ * them all pay out after the first raid shielded it, so: an attacker holds one
+ * open raid at a time (a new match voids an unstarted one), never two on the
+ * same defender, and a report whose defender was raided by someone else after
+ * the ticket was issued settles as practice (`defender_protected`).
  */
 export const LATE_REPORT_MS = 72 * HOUR;
+/** A ticket whose reports were refused this many times after a re-simulation is burned (re-audit: re-sim DoS). */
+export const MAX_TICKET_FAILURES = 3;
 
 /** Fields an uploaded base may carry. Trial-only multipliers and labels are never accepted from a player. */
 const BASE_FIELDS = new Set(['name', 'hallLevel', 'buildings', 'trophies']);
@@ -262,7 +268,15 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   const win = hallWindow(me.hallLevel, data);
   const recent = await repo.recentTargets(me.id, t - HOUR);
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
-  const exclude = [me.id, ...recent, ...mates];
+  // Re-audit: one open raid at a time. An unstarted ticket is voided (Next, or a scout left behind);
+  // a started one still waiting for its report keeps its defender out of this match.
+  const held: string[] = [];
+  for (const open of await repo.openTickets(me.id, 'pvp')) {
+    if (open.startedAt === undefined) {
+      if (await repo.useTicket(open.id, { voided: true })) if (open.defenderId) await ctx.locks.release(open.defenderId, me.id);
+    } else if (open.defenderId) held.push(open.defenderId);
+  }
+  const exclude = [me.id, ...recent, ...mates, ...held];
   let found: Player | null = null;
   const locks = ctx.locks;
   for (const range of [data.ranks.matchTrophyRange, 200, 400, 1_000_000]) {
@@ -315,6 +329,10 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
   const ticket = id ? await ctx.repo.getTicket(String(id)) : null;
   if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw new ApiError(404, 'not_found', 'Unknown ticket.');
   if (ticket.used) {
+    // Re-audit: a ticket the server closed without a battle (voided, lapsed, forfeited, burned) has no answer to repeat.
+    const closed = ticket.response as { voided?: boolean; lapsed?: boolean; forfeit?: boolean } | undefined;
+    if (closed?.voided || closed?.lapsed) throw new ApiError(409, 'conflict', 'This battle was cancelled before it started.');
+    if (closed?.forfeit) throw new ApiError(410, 'expired', 'This battle took too long to report and counted as a loss.');
     if (ticket.response !== undefined) return { ticket, answered: ticket.response };
     throw new ApiError(409, 'conflict', 'This battle was already reported.');
   }
@@ -324,6 +342,85 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
 }
 
 export { takeTicket };
+
+/**
+ * Refuse, before re-simulating, a report whose warriors a server-held village does not have
+ * (re-audit: the same ticket could be re-simulated forever). Device villages are checked by checkArmy.
+ */
+export async function requireArmyOnServer(ctx: ServerContext, me: Player, army: Record<string, number>): Promise<void> {
+  const row = await ctx.repo.getVillage(me.id);
+  if (!row) return;
+  // Settled to now first: warriors whose training ended are in the army (applyServerResult does the same).
+  const have = advance(deserialize(row.file, ctx.data), Math.max(row.at, ctx.now()), ctx.data).state.army;
+  const short = Object.entries(army).find(([t, n]) => n > 0 && (have[t] ?? 0) < n);
+  if (short) throw new ApiError(400, 'bad_request', `Your village on the server has fewer ${ctx.data.troops[short[0]]?.name ?? short[0]} than this battle used.`);
+}
+
+/** Count a refused report; after MAX_TICKET_FAILURES the ticket is used up (no more re-simulations). */
+export async function burnAfterFailures(ctx: ServerContext, ticket: Ticket, e: unknown): Promise<void> {
+  // A busy queue or a server fault is not the player's failure: only refusals count.
+  if (!(e instanceof ApiError) || e.status >= 500 || e.status === 429) return;
+  if ((await ctx.repo.bumpTicketFailures(ticket.id)) >= MAX_TICKET_FAILURES) {
+    await ctx.repo.useTicket(ticket.id, undefined);
+    if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, ticket.attackerId);
+  }
+}
+
+/**
+ * POST /v1/attacks/start (re-audit): the player tapped Attack. From now on the battle counts: it can no
+ * longer be voided, and if it is never reported it settles as a 0-star loss (`forfeitExpired`).
+ */
+export async function startAttack(ctx: ServerContext, me: Player, body: { ticket?: unknown } | undefined): Promise<{ started: boolean }> {
+  const ticket = typeof body?.ticket === 'string' ? await ctx.repo.getTicket(body.ticket) : null;
+  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw new ApiError(404, 'not_found', 'Unknown ticket.');
+  return { started: await ctx.repo.startTicket(ticket.id, ctx.now()) };
+}
+
+/**
+ * POST /v1/attacks/void: leave a scouted base without attacking (Home, Next, the app closed on the
+ * scout screen). Refused once the battle has started.
+ */
+export async function voidAttack(ctx: ServerContext, me: Player, body: { ticket?: unknown } | undefined): Promise<{ voided: boolean }> {
+  const ticket = typeof body?.ticket === 'string' ? await ctx.repo.getTicket(body.ticket) : null;
+  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw new ApiError(404, 'not_found', 'Unknown ticket.');
+  if (ticket.used) return { voided: Boolean((ticket.response as { voided?: boolean } | undefined)?.voided) };
+  if (ticket.startedAt !== undefined) throw new ApiError(409, 'conflict', 'This battle has started: it can only be reported.');
+  const voided = await ctx.repo.useTicket(ticket.id, { voided: true });
+  if (voided && ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
+  return { voided };
+}
+
+/**
+ * Raids never reported (re-audit: a lost battle could be hidden by not reporting it). Once a started
+ * pvp ticket is past its report deadline and unused, it settles as a 0-star loss for the attacker
+ * (honor only: the defender's village is untouched). Run hourly with retention. A modified game can
+ * still skip the start call; only server-timed input would close that (documented limitation).
+ */
+export async function forfeitExpired(ctx: ServerContext, limit = 500): Promise<number> {
+  const t = ctx.now();
+  let n = 0;
+  for (const ticket of await ctx.repo.expiredOpenTickets('pvp', t - LATE_REPORT_MS, limit)) {
+    // Never started: the player only looked (leaving and coming back keeps the same base, so that
+    // must stay free). It just lapses.
+    if (ticket.startedAt === undefined) {
+      await ctx.repo.useTicket(ticket.id, { lapsed: true });
+      continue;
+    }
+    const me = await ctx.repo.getPlayer(ticket.attackerId);
+    if (!me) {
+      await ctx.repo.useTicket(ticket.id, { forfeit: true, trophies: 0 });
+      continue;
+    }
+    const delta = -lossTrophies(me.trophies, ticket.defenderTrophies, ctx.data);
+    if (!(await ctx.repo.useTicket(ticket.id, { forfeit: true, trophies: delta }))) continue;
+    const trophies = Math.max(0, me.trophies + delta);
+    await ctx.repo.updatePlayer(me.id, { trophies });
+    if (me.base) await ctx.board.set(me.id, trophies, me.createdAt);
+    ctx.metrics.count('tk_forfeits_total', {});
+    n++;
+  }
+  return n;
+}
 
 const UPDATE_MESSAGE = 'This version of Kagemura is too old for online battles. Update the game to keep playing online.';
 
@@ -415,8 +512,20 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const t = ctx.now();
+  // Re-audit: someone else's raid shielded this defender after the ticket was issued. Paying again
+  // would bypass the shield (held tickets paid the same loot three times): the battle counts as practice.
+  if (ticket.defenderId && (await repo.defensesFor(ticket.defenderId, ticket.createdAt, 1)).length > 0) {
+    await repo.useTicket(ticket.id, undefined);
+    if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
+    throw new ApiError(409, 'defender_protected', 'Another raid reached this village first and it is shielded now, so this battle counts as practice.');
+  }
+  // Re-audit: a server-held village that lacks these warriors is refused before the costly re-simulation.
+  await requireArmyOnServer(ctx, me, army);
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
-  const { result, fallen } = await resimulate(ctx, 'pvp', setup, deployments, sub, engine);
+  const { result, fallen } = await resimulate(ctx, 'pvp', setup, deployments, sub, engine).catch(async (e) => {
+    await burnAfterFailures(ctx, ticket, e);
+    throw e;
+  });
   const defender = ticket.defenderId ? await repo.getPlayer(ticket.defenderId) : null;
   const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
   const delta = result.stars >= 1 ? winTrophies(me.trophies, defTrophies, data) : -lossTrophies(me.trophies, defTrophies, data);

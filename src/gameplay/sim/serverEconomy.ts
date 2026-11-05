@@ -117,7 +117,11 @@ export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['ty
   'claimTask',
   'claimTier',
   'claimAchievement',
+  // Save v16 (design re-audit): Clan Stipend claims, Bounty Hunt attacks and settle-the-score rematches.
+  'claimStipend',
+  'bountyEnd',
+  'rematchEnd',
 ]);
 
 /** Commands that re-run a whole battle on the server (CPU): a batch may carry only a few. */
-export const BATTLE_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['type']>(['trialEnd', 'abandonBattle']);
+export const BATTLE_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['type']>(['trialEnd', 'abandonBattle', 'bountyEnd', 'rematchEnd']);

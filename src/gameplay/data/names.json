@@ -25,7 +25,7 @@
     "Ridge",
     "Terrace",
     "Valley",
-    "Shrine",
+    "Hollow",
     "Gate",
     "Harbor",
     "Fortress",
@@ -50,17 +50,17 @@
     "Kira"
   ],
   "playerSecond": [
-    "Swiftwind",
-    "Ironpine",
-    "Quietstep",
-    "Ashblade",
-    "Moonfall",
-    "Stonebrook",
-    "Cedarhand",
-    "Nightfern",
-    "Emberleaf",
-    "Cloudpeak",
-    "Rainshadow",
-    "Duskriver"
+    "Mori",
+    "Takeda",
+    "Kawamura",
+    "Ishida",
+    "Hayashi",
+    "Sakamoto",
+    "Okada",
+    "Kimura",
+    "Matsuda",
+    "Ueda",
+    "Nakano",
+    "Fujita"
   ]
 }

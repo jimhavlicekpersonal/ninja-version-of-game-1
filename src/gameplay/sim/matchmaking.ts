@@ -136,7 +136,11 @@ export function hallWindow(ownHall: number, data: GameData): { min: number; max:
 
 export interface BotAttacker {
   hall: number;
+  /** 0..1 inside that hall (how close the raider's own base is to the hall's caps). */
+  bias: number;
   trophies: number;
+  /** One of a village's first raids (`raids.newPlayerRaids`): a smaller, less researched army. */
+  softened?: boolean;
   army: Record<string, number>;
   levels: Record<string, number>;
 }
@@ -166,13 +170,27 @@ export function botArmy(hall: number, bias: number, data: GameData): Record<stri
   return army;
 }
 
-/** The bot that raids a village: matched by the defender's trophies, with a full army for its hall. */
+/**
+ * The bot that raids a village: matched by the defender's trophies, with a full army for its hall.
+ * A village's first `raids.newPlayerRaids.count` raids (counted by `stats.defensesFaced`) bring
+ * `housingShare` of that army, `levelsBelowCap` research levels lower: a new village that has built
+ * its first Kunai Tower usually holds its first defense instead of losing three stars at once.
+ */
 export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotAttacker {
   const st = matchStrength(rng, state.trophies, hallLevel(state, data), data, true);
   const cap = troopLevelCapAt(st.hall, data);
-  const lvl = Math.max(1, cap - (st.bias < 0.5 ? 1 : 0));
-  const army = botArmy(st.hall, st.bias, data);
+  const soft = data.raids.newPlayerRaids;
+  const softened = Boolean(soft && (state.stats?.defensesFaced ?? 0) < soft.count);
+  const lvl = Math.max(1, cap - (st.bias < 0.5 ? 1 : 0) - (softened ? soft!.levelsBelowCap : 0));
+  const full = botArmy(st.hall, st.bias, data);
+  const army: Record<string, number> = {};
+  if (softened) {
+    for (const [t, n] of Object.entries(full)) {
+      const m = Math.floor(n * soft!.housingShare);
+      if (m > 0) army[t] = m;
+    }
+  } else Object.assign(army, full);
   const levels: Record<string, number> = {};
-  for (const t of Object.keys(army)) levels[t] = Math.min(lvl, troopLevelCapAt(st.hall, data, t), troopDef(data, t).levels.length);
-  return { hall: st.hall, trophies: st.trophies, army, levels };
+  for (const t of Object.keys(army)) levels[t] = Math.max(1, Math.min(lvl, troopLevelCapAt(st.hall, data, t), troopDef(data, t).levels.length));
+  return { hall: st.hall, bias: st.bias, trophies: st.trophies, army, levels, ...(softened ? { softened } : {}) };
 }

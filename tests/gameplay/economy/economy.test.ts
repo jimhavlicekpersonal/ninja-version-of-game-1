@@ -177,7 +177,8 @@ describe('purchases end to end with the mock provider (all logged in analytics)'
     const shown: string[] = [];
     c.onOffer((rule) => shown.push(rule.id));
     // Build up to an upgrade that takes over an hour.
-    await c.replace({ ...c.state, resources: { ...c.state.resources, acorns: 200000, dew: 200000 }, buildings: c.state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 4 } : b)) });
+    // Offers wait until the account is a day old (minAccountHours >= 24 for every offer).
+    await c.replace({ ...c.state, createdAt: c.now() - 25 * 3_600_000, resources: { ...c.state.resources, acorns: 200000, dew: 200000 }, buildings: c.state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 4 } : b)) });
     const hall = c.state.buildings.find((b) => b.type === 'elder_toadstool')!;
     expect(c.dispatch({ type: 'upgrade', id: hall.id }).ok).toBe(true);
     expect(shown).toEqual(['starter_pack']);

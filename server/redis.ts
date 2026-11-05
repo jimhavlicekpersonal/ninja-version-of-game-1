@@ -5,6 +5,12 @@
  * connection; a dropped connection fails the commands in flight and reconnects
  * on the next command.
  *
+ * Redis must never make every request slow (re-audit): commands time out after
+ * 500 ms, a connection attempt after 1 s, and after a failed connection or a
+ * timeout the client fails fast for `retryMs` (1 s) instead of making each
+ * request wait again. The callers degrade (server/shared.ts: rate limits fail
+ * open, the leaderboard reads the database, match locks fall back to tickets).
+ *
  * URLs: redis://[user:password@]host:port[/db], rediss:// for TLS (Upstash,
  * most managed Redis).
  */
@@ -19,6 +25,8 @@ export class RedisError extends Error {}
 export interface RedisCommander {
   command(...args: (string | number)[]): Promise<RespValue>;
   close(): Promise<void>;
+  /** False while the client is failing fast after an outage (undefined: always assumed up). */
+  readonly available?: boolean;
 }
 
 /** Encode one command as a RESP array of bulk strings. */
@@ -102,9 +110,15 @@ export interface RedisOptions {
   username?: string;
   password?: string;
   db?: number;
-  /** Fail a command that gets no answer within this time (default 5 s). */
+  /** Fail a command that gets no answer within this time (default 500 ms). */
   timeoutMs?: number;
+  /** Give up connecting after this long (default 1 s). */
+  connectTimeoutMs?: number;
+  /** After a failed connection or a timeout, fail fast for this long before trying again (default 1 s). */
+  retryMs?: number;
 }
+
+export const REDIS_DEFAULTS = { timeoutMs: 500, connectTimeoutMs: 1000, retryMs: 1000 } as const;
 
 export function parseRedisUrl(url: string): RedisOptions {
   const u = new URL(url);
@@ -126,22 +140,38 @@ export class RedisClient implements RedisCommander {
   private parser = new RespParser();
   private pending: Pending[] = [];
   private closed = false;
+  /** Until when commands fail at once (a failed connection or a timeout). */
+  private downUntil = 0;
 
   constructor(private readonly o: RedisOptions) {}
 
-  static fromUrl(url: string): RedisClient {
-    return new RedisClient(parseRedisUrl(url));
+  static fromUrl(url: string, o: Pick<RedisOptions, 'timeoutMs' | 'connectTimeoutMs' | 'retryMs'> = {}): RedisClient {
+    return new RedisClient({ ...parseRedisUrl(url), ...o });
+  }
+
+  get available(): boolean {
+    return Date.now() >= this.downUntil;
+  }
+
+  private trip(): void {
+    this.downUntil = Date.now() + (this.o.retryMs ?? REDIS_DEFAULTS.retryMs);
   }
 
   private open(): Promise<void> {
     if (this.ready) return this.ready;
     this.ready = new Promise<void>((resolve, reject) => {
+      let connected = false;
+      const connectTimer = setTimeout(() => s.destroy(new RedisError('Redis did not connect in time')), this.o.connectTimeoutMs ?? REDIS_DEFAULTS.connectTimeoutMs);
       const onConnect = () => {
+        clearTimeout(connectTimer);
         // Authenticate and pick the database before anything else is sent.
         const hello: Promise<RespValue>[] = [];
         if (this.o.password) hello.push(this.send(this.o.username ? ['AUTH', this.o.username, this.o.password] : ['AUTH', this.o.password]));
         if (this.o.db) hello.push(this.send(['SELECT', this.o.db]));
-        Promise.all(hello).then(() => resolve(), reject);
+        Promise.all(hello).then(() => {
+          connected = true;
+          resolve();
+        }, reject);
       };
       const s = this.o.tls ? tlsConnect({ host: this.o.host, port: this.o.port, servername: this.o.host }, onConnect) : tcpConnect({ host: this.o.host, port: this.o.port }, onConnect);
       s.setNoDelay(true);
@@ -161,6 +191,9 @@ export class RedisClient implements RedisCommander {
         }
       });
       const fail = (e?: Error) => {
+        clearTimeout(connectTimer);
+        // A connection that never came up trips the breaker; a dropped one just reconnects on the next command.
+        if (!connected && this.socket === s) this.trip();
         const err = e ?? new RedisError('Redis connection closed');
         for (const p of this.pending.splice(0)) p.reject(err);
         this.socket = null;
@@ -179,8 +212,9 @@ export class RedisClient implements RedisCommander {
     return new Promise<RespValue>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new RedisError(`Redis did not answer ${String(args[0])} in time`));
+        this.trip();
         this.socket?.destroy();
-      }, this.o.timeoutMs ?? 5000);
+      }, this.o.timeoutMs ?? REDIS_DEFAULTS.timeoutMs);
       this.pending.push({
         resolve: (v) => {
           clearTimeout(timer);
@@ -197,6 +231,7 @@ export class RedisClient implements RedisCommander {
 
   async command(...args: (string | number)[]): Promise<RespValue> {
     if (this.closed) throw new RedisError('Redis client is closed');
+    if (!this.available) throw new RedisError('Redis is unavailable (retrying shortly)');
     await this.open();
     return this.send(args);
   }

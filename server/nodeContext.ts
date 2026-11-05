@@ -21,19 +21,27 @@ export interface SharedStores {
   locks?: MatchLocks;
   metrics?: Metrics;
   identity?: IdentityVerifier;
-  payments?: { apple?: AppleVerifier | null; google?: GoogleVerifier | null };
+  payments?: { apple?: AppleVerifier | null; google?: GoogleVerifier | null; testCreditCapUsd?: number };
   push?: Pusher;
   log?: (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
   /** Battle-rule versions (step 73); defaults to today's rules only. */
   rules?: RulesRegistry;
   /** Re-simulation (step 57): a worker pool in production; in place by default. */
   resim?: Resimulator;
+  /**
+   * The HTTP adapter's rate limiter (Redis when shared), so limits the core
+   * applies itself (battle commands per minute, server/core/village.ts) hold
+   * across instances too. Without it the core counts in this process.
+   */
+  limiter?: import('./rateLimit').RateLimiter;
   /** The signed balance bundle served at /v1/balance (step 76); `data` must already carry its numbers. */
   balance?: import('../src/backend/net/balanceBundle').BalanceBundle | null;
+  /** SUPPORT_CONTACT and the Sign in with Apple key (re-audit: appeals, token revocation). */
+  account?: import('./identity/appleTokens').AccountSettings;
 }
 
 export function nodeContext(repo: Repo, data: GameData, now: () => number = () => Date.now(), random: () => number = Math.random, shared: SharedStores = {}): ServerContext {
-  return {
+  const ctx: ServerContext = {
     repo,
     data,
     rules: shared.rules ?? new RulesRegistry(liveEngine(data)),
@@ -43,7 +51,8 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     locks: shared.locks ?? new TicketLocks(),
     metrics: shared.metrics ?? noMetrics,
     identity: shared.identity ?? noIdentity,
-    payments: { apple: shared.payments?.apple ?? null, google: shared.payments?.google ?? null },
+    account: shared.account ?? {},
+    payments: { apple: shared.payments?.apple ?? null, google: shared.payments?.google ?? null, ...(shared.payments?.testCreditCapUsd !== undefined ? { testCreditCapUsd: shared.payments.testCreditCapUsd } : {}) },
     push: shared.push ?? noPush,
     log: shared.log ?? (() => undefined),
     now,
@@ -53,4 +62,6 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     random,
     newSeed: () => randomBytes(4).readUInt32LE(0),
   };
+  // Not part of ServerContext (core/context.ts): read by server/core/village.ts `limiterOf`.
+  return shared.limiter ? Object.assign(ctx, { limiter: shared.limiter }) : ctx;
 }

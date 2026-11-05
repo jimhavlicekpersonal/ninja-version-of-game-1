@@ -9,11 +9,38 @@
  * - Match locks: SET NX with an expiry, so two attackers can never be handed
  *   the same defender at once, and matchmaking no longer scans tickets.
  * - Rate limits: one counter per window shared by every instance.
+ *
+ * A Redis outage degrades instead of failing requests (re-audit): rate limits
+ * fail open, the leaderboard answers from the database (and rebuilds its set
+ * once Redis is back), and match locks fall back to open tickets. Each of
+ * them reports the failure through `onError` (a metric and a throttled log
+ * line: `redisErrorReporter`).
  */
 import type { Repo } from './repo';
 import type { RateDecision, RateLimiter, RateLimits } from './rateLimit';
 import { DEFAULT_RATE_LIMITS } from './rateLimit';
 import type { RedisCommander, RespValue } from './redis';
+import type { Metrics } from './observability';
+
+/** Called when a Redis-backed store could not reach Redis and degraded. */
+export type RedisErrorHandler = (use: 'rateLimit' | 'leaderboard' | 'locks', e: Error) => void;
+
+/** Counts every Redis failure (`tk_redis_errors_total`) and logs at most one line per `everyMs`. */
+export function redisErrorReporter(metrics: Metrics, log: (msg: string, fields: Record<string, unknown>) => void, everyMs = 10_000): RedisErrorHandler {
+  let last = 0;
+  let missed = 0;
+  return (use, e) => {
+    metrics.count('tk_redis_errors_total', { use });
+    const t = Date.now();
+    if (t - last < everyMs) {
+      missed++;
+      return;
+    }
+    log('Redis unavailable: degraded to the database / no shared limits', { use, error: e.message, since: missed });
+    last = t;
+    missed = 0;
+  };
+}
 
 // ------------------------------------------------------------------ leaderboard
 
@@ -50,29 +77,92 @@ export function boardScore(trophies: number, createdAt: number): number {
 }
 
 export class RedisLeaderboard implements Leaderboard {
+  /** A write was lost while Redis was down: rebuild the set from the database once it answers again. */
+  private stale = false;
+  private rebuilding: Promise<unknown> | null = null;
+
+  /**
+   * `fallback`: the database to answer from while Redis is down (and to
+   * rebuild from afterwards). Without it, Redis errors reach the caller.
+   */
   constructor(
     private readonly redis: RedisCommander,
     readonly key = 'tk:leaderboard',
+    private readonly fallback?: { repo: Repo; onError?: RedisErrorHandler },
   ) {}
 
+  private failed(e: unknown): void {
+    if (!this.fallback) throw e;
+    this.fallback.onError?.('leaderboard', e as Error);
+  }
+
+  /** The set may have missed changes (Redis was down at start): rebuild it from the database once Redis answers. */
+  markStale(): void {
+    this.stale = true;
+  }
+
+  /** After an outage: replace the set with the database's ranking (built aside, then renamed: atomic). */
+  private heal(): void {
+    if (!this.stale || this.rebuilding || !this.fallback || this.redis.available === false) return;
+    const repo = this.fallback.repo;
+    this.rebuilding = (async () => {
+      const tmp = `${this.key}:rebuild`;
+      await this.redis.command('DEL', tmp);
+      const all = await repo.rankedPlayers();
+      for (let i = 0; i < all.length; i += 500) {
+        const args: (string | number)[] = [];
+        for (const p of all.slice(i, i + 500)) args.push(boardScore(p.trophies, p.createdAt), p.id);
+        await this.redis.command('ZADD', tmp, ...args);
+      }
+      if (all.length) await this.redis.command('RENAME', tmp, this.key);
+      else await this.redis.command('DEL', this.key);
+      this.stale = false;
+    })()
+      .catch((e) => this.fallback?.onError?.('leaderboard', e as Error))
+      .finally(() => (this.rebuilding = null));
+  }
+
   async set(playerId: string, trophies: number, createdAt: number): Promise<void> {
-    await this.redis.command('ZADD', this.key, boardScore(trophies, createdAt), playerId);
+    try {
+      await this.redis.command('ZADD', this.key, boardScore(trophies, createdAt), playerId);
+      this.heal();
+    } catch (e) {
+      this.failed(e);
+      this.stale = true;
+    }
   }
 
   async remove(playerId: string): Promise<void> {
-    await this.redis.command('ZREM', this.key, playerId);
+    try {
+      await this.redis.command('ZREM', this.key, playerId);
+      this.heal();
+    } catch (e) {
+      this.failed(e);
+      this.stale = true;
+    }
   }
 
   async top(limit: number): Promise<{ id: string; trophies: number }[]> {
-    const r = (await this.redis.command('ZREVRANGE', this.key, 0, Math.max(0, limit - 1), 'WITHSCORES')) as string[];
-    const out: { id: string; trophies: number }[] = [];
-    for (let i = 0; i + 1 < r.length; i += 2) out.push({ id: r[i], trophies: Math.floor(Number(r[i + 1])) });
-    return out;
+    try {
+      const r = (await this.redis.command('ZREVRANGE', this.key, 0, Math.max(0, limit - 1), 'WITHSCORES')) as string[];
+      const out: { id: string; trophies: number }[] = [];
+      for (let i = 0; i + 1 < r.length; i += 2) out.push({ id: r[i], trophies: Math.floor(Number(r[i + 1])) });
+      this.heal();
+      return out;
+    } catch (e) {
+      this.failed(e);
+      return new RepoLeaderboard(this.fallback!.repo).top(limit);
+    }
   }
 
   async rankOf(trophies: number): Promise<number> {
-    // Everyone with more honor scores at least trophies + 1.
-    return 1 + Number(await this.redis.command('ZCOUNT', this.key, Math.floor(trophies) + 1, '+inf'));
+    try {
+      // Everyone with more honor scores at least trophies + 1.
+      return 1 + Number(await this.redis.command('ZCOUNT', this.key, Math.floor(trophies) + 1, '+inf'));
+    } catch (e) {
+      this.failed(e);
+      return new RepoLeaderboard(this.fallback!.repo).rankOf(trophies);
+    }
   }
 
   /** Fill the set from the database when it is missing (a new or flushed Redis). Returns how many players were added. */
@@ -120,24 +210,53 @@ export class TicketLocks implements MatchLocks {
 const RELEASE = `if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) else return 0 end`;
 
 export class RedisLocks implements MatchLocks {
-  readonly external = true;
+  /**
+   * `onError`: degrade while Redis is down instead of failing the match: the
+   * database's open tickets are the locks again (`external` reads false while
+   * the client fails fast), and a lock that cannot be taken is granted (a rare
+   * double match during an outage, never a failed request).
+   */
   constructor(
     private readonly redis: RedisCommander,
     private readonly prefix = 'tk:lock:',
+    private readonly onError?: RedisErrorHandler,
   ) {}
+
+  get external(): boolean {
+    return !this.onError || this.redis.available !== false;
+  }
+
+  private failed(e: unknown): void {
+    if (!this.onError) throw e;
+    this.onError('locks', e as Error);
+  }
 
   async lockedAmong(ids: string[]): Promise<Set<string>> {
     if (!ids.length) return new Set();
-    const r = (await this.redis.command('MGET', ...ids.map((id) => this.prefix + id))) as (string | null)[];
-    return new Set(ids.filter((_, i) => r[i] !== null));
+    try {
+      const r = (await this.redis.command('MGET', ...ids.map((id) => this.prefix + id))) as (string | null)[];
+      return new Set(ids.filter((_, i) => r[i] !== null));
+    } catch (e) {
+      this.failed(e);
+      return new Set();
+    }
   }
 
   async acquire(defenderId: string, attackerId: string, ttlMs: number): Promise<boolean> {
-    return (await this.redis.command('SET', this.prefix + defenderId, attackerId, 'NX', 'PX', Math.max(1, Math.floor(ttlMs)))) === 'OK';
+    try {
+      return (await this.redis.command('SET', this.prefix + defenderId, attackerId, 'NX', 'PX', Math.max(1, Math.floor(ttlMs)))) === 'OK';
+    } catch (e) {
+      this.failed(e);
+      return true;
+    }
   }
 
   async release(defenderId: string, attackerId: string): Promise<void> {
-    await this.redis.command('EVAL', RELEASE, 1, this.prefix + defenderId, attackerId);
+    try {
+      await this.redis.command('EVAL', RELEASE, 1, this.prefix + defenderId, attackerId);
+    } catch (e) {
+      this.failed(e); // the lock runs out by itself
+    }
   }
 }
 
@@ -146,18 +265,28 @@ export class RedisLocks implements MatchLocks {
 /** INCR the window's counter; the first hit sets its expiry. Returns [count, ms left]. */
 const HIT = `local n = redis.call('INCR', KEYS[1]) if n == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end return {n, redis.call('PTTL', KEYS[1])}`;
 
-/** Rate limits counted in Redis, so every instance shares one budget per caller. */
+/**
+ * Rate limits counted in Redis, so every instance shares one budget per
+ * caller. While Redis is down it fails open (the request goes through,
+ * `onError` counts it): a limiter outage must not take the game offline, and
+ * the database, body limits and per-route caps in the core still hold.
+ */
 export class RedisRateLimiter implements RateLimiter {
   constructor(
     private readonly redis: RedisCommander,
     private readonly limits: RateLimits = DEFAULT_RATE_LIMITS,
     private readonly prefix = 'tk:rate:',
+    private readonly onError?: RedisErrorHandler,
   ) {}
 
   async hit(rule: keyof RateLimits, key: string): Promise<RateDecision> {
     const r = this.limits[rule];
-    const [count, ttl] = (await this.redis.command('EVAL', HIT, 1, `${this.prefix}${rule}:${key}`, r.windowMs)) as RespValue[] as number[];
-    if (count > r.limit) return { ok: false, retryAfterMs: ttl > 0 ? ttl : r.windowMs };
+    try {
+      const [count, ttl] = (await this.redis.command('EVAL', HIT, 1, `${this.prefix}${rule}:${key}`, r.windowMs)) as RespValue[] as number[];
+      if (count > r.limit) return { ok: false, retryAfterMs: ttl > 0 ? ttl : r.windowMs };
+    } catch (e) {
+      this.onError?.('rateLimit', e as Error);
+    }
     return { ok: true, retryAfterMs: 0 };
   }
 }

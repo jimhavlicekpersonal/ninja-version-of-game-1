@@ -7,6 +7,7 @@
 import type { BaseLayout, BattleResult, Deployment } from '../src/gameplay/sim/battle/types';
 import type { GroveRole, ReportReason } from '../src/backend/net/protocol';
 import type { Rating } from '../src/gameplay/sim/rating';
+import type { AgeBand } from '../src/gameplay/sim/age';
 import { contentHash } from './contentHash';
 import { isolateName } from '../src/gameplay/sim/social/names';
 
@@ -24,6 +25,8 @@ export interface Player {
   lastSeenAt: number;
   /** A moderator muted their chat until this time (0 or absent: not muted). */
   mutedUntil?: number;
+  /** Why (shown with the mute, with how to appeal; re-audit, EU DSA art. 17). */
+  muteReason?: string | null;
   /** Hidden matchmaking ratings (roadmap Phase 3); absent means not rated yet. */
   ratings?: { attack: Rating; base: Rating };
   /** Honor lost as a defender on one UTC day (the daily cap). */
@@ -54,9 +57,11 @@ export interface Player {
   duelBase?: BaseLayout | null;
   /** When they last left a Gang (step 63: 24 hours before joining another). */
   squadLeftAt?: number;
+  /** Runtime only, never stored: the token hash this request came with (set by `authenticate`). */
+  session?: string;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'muteReason' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt'>>;
 
 /** Two players asked to change to the same name at once: the second one gets this (the store's unique key said no). */
 export class NameTakenError extends Error {
@@ -249,6 +254,10 @@ export interface Ticket {
   target?: number;
   /** The answer given when the ticket was used, so a repeated report gets the same answer (idempotent). */
   response?: unknown;
+  /** When the game said this battle started (the player tapped Attack): from then on it counts (re-audit). */
+  startedAt?: number;
+  /** Reports refused after a re-simulation; the ticket is burned after MAX_TICKET_FAILURES. */
+  failures?: number;
 }
 
 export interface AttackRecord {
@@ -462,6 +471,31 @@ export interface IdentityLink {
   subject: string;
   playerId: string;
   linkedAt: number;
+  /** Sign in with Apple: the refresh token from the authorization code, to revoke on deletion/unlink (re-audit). */
+  refreshToken?: string | null;
+  /** The client id (bundle id or Services ID) the refresh token was issued to. */
+  clientId?: string | null;
+}
+
+/** A notice to a player (re-audit, EU DSA art. 16(5)/17): a report's outcome, or a decision about them. */
+export interface PlayerNotice {
+  id: string;
+  playerId: string;
+  at: number;
+  kind: 'report_outcome' | 'moderation_action' | 'account';
+  text: string;
+  read: boolean;
+}
+
+/** A device token (each sign-in on another device gets its own). */
+export interface TokenRow {
+  tokenHash: string;
+  playerId: string;
+  createdAt: number;
+  label: string;
+  /** The sign-in provider that issued it (null: registration, or from before migration 0025). */
+  provider?: string | null;
+  lastUsedAt?: number | null;
 }
 
 /** A store purchase the server checked (roadmap steps 35-37): each store transaction once. */
@@ -483,6 +517,10 @@ export interface PurchaseRow {
   ref: string;
   /** Delivered into a village the server holds (else the device delivered it). */
   heldOnServer: boolean;
+  /** Storefront country, currency and price in micros as the store reported them (re-audit; absent before migration 0023). */
+  storefront?: string | null;
+  currency?: string | null;
+  priceMicros?: number | null;
 }
 
 /** Asked before paying: the age cap was checked, and the store purchase carries this id back (Apple appAccountToken, Google obfuscatedAccountId). */
@@ -543,6 +581,8 @@ export interface DeletionRequest {
   status: 'open' | 'done' | 'rejected';
   resolvedAt: number | null;
   resolution: string | null;
+  /** The request carried the player's one-time deletion code (re-audit): staff may carry it out. */
+  verified?: boolean;
 }
 
 /** What `prune` removes (roadmap step 11: 30-day replay retention). */
@@ -559,6 +599,8 @@ export interface PruneCutoffs {
   ticketsBefore?: number;
   /** Handled reports (with their evidence) resolved before this time are deleted. */
   resolvedReportsBefore?: number;
+  /** Handled account-deletion requests resolved before this time are deleted (re-audit: they were kept for ever). */
+  deletionRequestsBefore?: number;
   /** Command log lines before this time are deleted (the ledger is kept). */
   commandsBefore?: number;
   /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
@@ -603,7 +645,7 @@ export interface Repo {
   /** 1 + number of players (with a base) who have more trophies. */
   rankOf(trophies: number): Promise<number>;
   /** Another device's token for a player (signing in with a linked account). */
-  addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void>;
+  addToken(playerId: string, tokenHash: string, at: number, label: string, provider?: string): Promise<void>;
   linksOf(playerId: string): Promise<IdentityLink[]>;
   playerByIdentity(provider: string, subject: string): Promise<string | null>;
   /** False if that sign-in is linked to someone, or this player already has one from that provider. */
@@ -668,6 +710,17 @@ export interface Repo {
    * already was (prevents double submits; the stored answer is returned on a retry).
    */
   useTicket(id: string, response?: unknown): Promise<boolean>;
+  /** Mark an unused ticket started (first call wins); false when it is used or unknown. */
+  startTicket(id: string, at: number): Promise<boolean>;
+  /** Count one refused report on a ticket; returns the new count. */
+  bumpTicketFailures(id: string): Promise<number>;
+  /** This attacker's unused tickets of a kind (any expiry, newest first). */
+  openTickets(attackerId: string, kind: Ticket['kind']): Promise<Ticket[]>;
+  /** Unused tickets of a kind that expired before `before` (oldest first), to settle as forfeits. */
+  expiredOpenTickets(kind: Ticket['kind'], before: number, limit: number): Promise<Ticket[]>;
+  /** A store refund or void we heard about for a purchase we had not recorded (re-audit). */
+  addRefundNotice(store: string, key: string, at: number, why: string): Promise<void>;
+  refundNotice(store: string, key: string): Promise<{ at: number; why: string } | null>;
   addAttack(a: AttackRecord): Promise<void>;
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
   recentTargets(attackerId: string, since: number): Promise<string[]>;
@@ -691,6 +744,29 @@ export interface Repo {
   getDeletionRequest(id: string): Promise<DeletionRequest | null>;
   /** False if it was already resolved. */
   resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean>;
+  // account protections (re-audit: minors, sessions, Apple tokens, deletion codes, notices)
+  /** The age band the server keeps (with the older under18 answer); null when never stated. */
+  getAgeBand(playerId: string): Promise<{ band: AgeBand | null; under18: boolean; at: number } | null>;
+  /** Store a band (under18 follows it). The core checks that it only gets stricter. */
+  setAgeBand(playerId: string, band: AgeBand, at: number): Promise<void>;
+  /** A device token was used (at most about once a minute per player). */
+  touchToken(tokenHash: string, at: number): Promise<void>;
+  /** Sign out the devices a provider's sign-in made (unlink), except `except`; how many. */
+  revokeTokens(playerId: string, provider: string, except?: string): Promise<number>;
+  /** Sign out every device but `keepHash` (which becomes the player's main token); how many. */
+  revokeOtherTokens(playerId: string, keepHash: string): Promise<number>;
+  /** Delete extra device tokens last used (or made) before this time; how many. */
+  pruneTokens(unusedBefore: number): Promise<number>;
+  setLinkToken(provider: string, subject: string, refreshToken: string | null, clientId: string | null): Promise<void>;
+  /** Links of this player that hold a refresh token. */
+  linkTokensOf(playerId: string): Promise<{ provider: string; subject: string; refreshToken: string; clientId: string | null }[]>;
+  setDeletionCode(playerId: string, codeHash: string, at: number, expiresAt: number): Promise<void>;
+  deletionCodeOf(playerId: string): Promise<{ codeHash: string; expiresAt: number } | null>;
+  clearDeletionCode(playerId: string): Promise<void>;
+  addNotice(n: PlayerNotice): Promise<void>;
+  /** Newest first. */
+  noticesOf(playerId: string, limit: number): Promise<PlayerNotice[]>;
+  markNoticesRead(playerId: string, ids: string[]): Promise<void>;
   // groves
   createGrove(g: Grove): Promise<void>;
   getGrove(id: string): Promise<Grove | null>;
@@ -822,6 +898,13 @@ export interface Repo {
    * `expectedRevision`: someone else wrote first.
    */
   saveVillage(v: VillageRow, expectedRevision: number, ledger: LedgerEntry[], commands: CommandLogRow[]): Promise<boolean>;
+  /**
+   * A batch that changed nothing (every command refused): store the next
+   * revision, the command numbers (`seq`, `deviceSeqs` when given) and the log
+   * lines, without rewriting the village file. False (nothing written) if the
+   * stored revision is no longer `expectedRevision`.
+   */
+  recordVillageCommands(v: Pick<VillageRow, 'playerId' | 'revision' | 'seq' | 'updatedAt' | 'deviceSeqs'>, expectedRevision: number, commands: CommandLogRow[]): Promise<boolean>;
   /** Newest first. */
   ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
   /** Oldest first, after `sinceSeq`. */
@@ -914,12 +997,14 @@ export class MemoryRepo implements Repo {
   gangQueueRows: GangQueueEntry[] = [];
   gangClaimRows: { warId: string; playerId: string; outcome: string; at: number }[] = [];
   villageRows = new Map<string, VillageRow>();
-  tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
+  tokenRows: TokenRow[] = [];
+  deletionCodeRows = new Map<string, { codeHash: string; createdAt: number; expiresAt: number }>();
+  noticeRows: PlayerNotice[] = [];
   linkRows: IdentityLink[] = [];
   purchaseRows: PurchaseRow[] = [];
   staffRows: StaffAction[] = [];
   intentRows: PurchaseIntent[] = [];
-  ageRows = new Map<string, { under18: boolean; at: number }>();
+  ageRows = new Map<string, { under18: boolean; at: number; band?: AgeBand | null }>();
   importHoldRows: ImportHold[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
@@ -987,6 +1072,16 @@ export class MemoryRepo implements Repo {
     }
     return true;
   }
+  async recordVillageCommands(v: Pick<VillageRow, 'playerId' | 'revision' | 'seq' | 'updatedAt' | 'deviceSeqs'>, expectedRevision: number, commands: CommandLogRow[]): Promise<boolean> {
+    const cur = this.villageRows.get(v.playerId);
+    if (!cur || cur.revision !== expectedRevision) return false;
+    this.villageRows.set(v.playerId, { ...cur, revision: v.revision, seq: v.seq, updatedAt: v.updatedAt, ...(v.deviceSeqs ? { deviceSeqs: clone(v.deviceSeqs) } : {}) });
+    for (const c of commands) {
+      this.commandRows = this.commandRows.filter((x) => !(x.playerId === c.playerId && x.seq === c.seq));
+      this.commandRows.push(clone(c));
+    }
+    return true;
+  }
   async ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]> {
     return this.ledgerRows
       .filter((l) => l.playerId === playerId)
@@ -1013,8 +1108,8 @@ export class MemoryRepo implements Repo {
     const p = t ? this.players.get(t.playerId) : undefined;
     return p ? clone(p) : null;
   }
-  async addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void> {
-    this.tokenRows.push({ tokenHash, playerId, createdAt: at, label });
+  async addToken(playerId: string, tokenHash: string, at: number, label: string, provider?: string): Promise<void> {
+    this.tokenRows.push({ tokenHash, playerId, createdAt: at, label, provider: provider ?? null, lastUsedAt: null });
   }
   async linksOf(playerId: string): Promise<IdentityLink[]> {
     return this.linkRows.filter((l) => l.playerId === playerId).map(clone);
@@ -1095,7 +1190,7 @@ export class MemoryRepo implements Repo {
   }
   async setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void> {
     if (under18 === null) this.ageRows.delete(playerId);
-    else this.ageRows.set(playerId, { under18, at });
+    else this.ageRows.set(playerId, { ...this.ageRows.get(playerId), under18, at });
   }
   async addImportHold(h: ImportHold): Promise<void> {
     this.importHoldRows.push(clone(h));
@@ -1434,6 +1529,32 @@ export class MemoryRepo implements Repo {
     if (response !== undefined) t.response = clone(response);
     return true;
   }
+  async startTicket(id: string, at: number): Promise<boolean> {
+    const t = this.tickets.get(id);
+    if (!t || t.used) return false;
+    if (t.startedAt === undefined) t.startedAt = at;
+    return true;
+  }
+  async bumpTicketFailures(id: string): Promise<number> {
+    const t = this.tickets.get(id);
+    if (!t) return 0;
+    t.failures = (t.failures ?? 0) + 1;
+    return t.failures;
+  }
+  async openTickets(attackerId: string, kind: Ticket['kind']): Promise<Ticket[]> {
+    return [...this.tickets.values()].filter((t) => !t.used && t.attackerId === attackerId && t.kind === kind).sort((a, b) => b.createdAt - a.createdAt).map((t) => this.withBase(t));
+  }
+  async expiredOpenTickets(kind: Ticket['kind'], before: number, limit: number): Promise<Ticket[]> {
+    return [...this.tickets.values()].filter((t) => !t.used && t.kind === kind && t.expiresAt < before).sort((a, b) => a.expiresAt - b.expiresAt).slice(0, limit).map((t) => this.withBase(t));
+  }
+  refundRows = new Map<string, { at: number; why: string }>();
+  async addRefundNotice(store: string, key: string, at: number, why: string): Promise<void> {
+    if (!this.refundRows.has(`${store}:${key}`)) this.refundRows.set(`${store}:${key}`, { at, why });
+  }
+  async refundNotice(store: string, key: string): Promise<{ at: number; why: string } | null> {
+    const r = this.refundRows.get(`${store}:${key}`);
+    return r ? { ...r } : null;
+  }
   async addAttack(a: AttackRecord): Promise<void> {
     const { base, ...rest } = clone(a);
     this.attacks.push({ ...rest, baseHash: this.putBase(base, a.at) });
@@ -1471,6 +1592,8 @@ export class MemoryRepo implements Repo {
     const commands = this.commandRows.length;
     const cmdBefore = c.commandsBefore;
     if (cmdBefore !== undefined) this.commandRows = this.commandRows.filter((r) => r.at >= cmdBefore);
+    const delBefore = c.deletionRequestsBefore;
+    if (delBefore !== undefined) this.deletionRows = this.deletionRows.filter((r) => r.status === 'open' || (r.resolvedAt ?? 0) >= delBefore);
     const intentsBefore = c.intentsBefore;
     if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
     let idempotency = 0;
@@ -1525,6 +1648,8 @@ export class MemoryRepo implements Repo {
     this.villageRows.delete(id);
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
     this.linkRows = this.linkRows.filter((l) => l.playerId !== id);
+    this.deletionCodeRows.delete(id);
+    this.noticeRows = this.noticeRows.filter((n) => n.playerId !== id);
     this.intentRows = this.intentRows.filter((i) => i.playerId !== id);
     this.ageRows.delete(id);
     this.importHoldRows = this.importHoldRows.filter((h) => h.playerId !== id);
@@ -1543,6 +1668,67 @@ export class MemoryRepo implements Repo {
   }
   async addDeletionRequest(r: DeletionRequest): Promise<void> {
     this.deletionRows.push(clone(r));
+  }
+  async getAgeBand(playerId: string): Promise<{ band: AgeBand | null; under18: boolean; at: number } | null> {
+    const a = this.ageRows.get(playerId);
+    return a ? { band: a.band ?? null, under18: a.under18, at: a.at } : null;
+  }
+  async setAgeBand(playerId: string, band: AgeBand, at: number): Promise<void> {
+    this.ageRows.set(playerId, { under18: band !== 'adult', band, at });
+  }
+  async touchToken(tokenHash: string, at: number): Promise<void> {
+    const t = this.tokenRows.find((x) => x.tokenHash === tokenHash);
+    if (t) t.lastUsedAt = at;
+  }
+  async revokeTokens(playerId: string, provider: string, except?: string): Promise<number> {
+    const before = this.tokenRows.length;
+    this.tokenRows = this.tokenRows.filter((t) => !(t.playerId === playerId && t.provider === provider && t.tokenHash !== except));
+    return before - this.tokenRows.length;
+  }
+  async revokeOtherTokens(playerId: string, keepHash: string): Promise<number> {
+    const p = this.players.get(playerId);
+    if (!p) return 0;
+    const mine = this.tokenRows.filter((t) => t.playerId === playerId);
+    if (p.tokenHash !== keepHash && !mine.some((t) => t.tokenHash === keepHash)) return 0;
+    let n = mine.filter((t) => t.tokenHash !== keepHash).length;
+    if (p.tokenHash !== keepHash) {
+      p.tokenHash = keepHash;
+      n += 1;
+    }
+    this.tokenRows = this.tokenRows.filter((t) => t.playerId !== playerId);
+    return n;
+  }
+  async pruneTokens(unusedBefore: number): Promise<number> {
+    const before = this.tokenRows.length;
+    this.tokenRows = this.tokenRows.filter((t) => (t.lastUsedAt ?? t.createdAt) >= unusedBefore);
+    return before - this.tokenRows.length;
+  }
+  async setLinkToken(provider: string, subject: string, refreshToken: string | null, clientId: string | null): Promise<void> {
+    const l = this.linkRows.find((x) => x.provider === provider && x.subject === subject);
+    if (l) Object.assign(l, { refreshToken, clientId });
+  }
+  async linkTokensOf(playerId: string): Promise<{ provider: string; subject: string; refreshToken: string; clientId: string | null }[]> {
+    return this.linkRows.filter((l) => l.playerId === playerId && l.refreshToken).map((l) => ({ provider: l.provider, subject: l.subject, refreshToken: l.refreshToken!, clientId: l.clientId ?? null }));
+  }
+  async setDeletionCode(playerId: string, codeHash: string, at: number, expiresAt: number): Promise<void> {
+    this.deletionCodeRows.set(playerId, { codeHash, createdAt: at, expiresAt });
+  }
+  async deletionCodeOf(playerId: string): Promise<{ codeHash: string; expiresAt: number } | null> {
+    const c = this.deletionCodeRows.get(playerId);
+    return c ? { codeHash: c.codeHash, expiresAt: c.expiresAt } : null;
+  }
+  async clearDeletionCode(playerId: string): Promise<void> {
+    this.deletionCodeRows.delete(playerId);
+  }
+  async addNotice(n: PlayerNotice): Promise<void> {
+    if (this.players.has(n.playerId)) this.noticeRows.push(clone(n));
+  }
+  async noticesOf(playerId: string, limit: number): Promise<PlayerNotice[]> {
+    return this.noticeRows.filter((n) => n.playerId === playerId).sort((a, b) => b.at - a.at).slice(0, limit).map(clone);
+  }
+  async markNoticesRead(playerId: string, ids: string[]): Promise<void> {
+    const set = new Set(ids);
+    for (const n of this.noticeRows) if (n.playerId === playerId && set.has(n.id)) n.read = true;
   }
   async deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]> {
     return this.deletionRows.filter((r) => status === 'all' || r.status === 'open').slice(0, limit).map(clone);

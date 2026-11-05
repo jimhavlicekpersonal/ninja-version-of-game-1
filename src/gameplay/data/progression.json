@@ -282,7 +282,7 @@
     },
     {
       "id": "dewdrop_well",
-      "name": "Rice Paddy",
+      "name": "Terraced Farm",
       "category": "collector",
       "unlockKeep": 1,
       "liveMaxLevel": 11,
@@ -354,7 +354,7 @@
     },
     {
       "id": "wasp_nest",
-      "name": "Shuriken Pagoda",
+      "name": "Shuriken Tower",
       "category": "defense",
       "unlockKeep": 2,
       "liveMaxLevel": 6,
@@ -417,7 +417,7 @@
     },
     {
       "id": "mushroom_ring",
-      "name": "Zen Garden",
+      "name": "Rock Garden",
       "category": "decor",
       "unlockKeep": 1,
       "liveMaxLevel": 1,
@@ -426,7 +426,7 @@
     },
     {
       "id": "mossy_statue",
-      "name": "Fox Guardian Statue",
+      "name": "Stone Sentinel Statue",
       "category": "decor",
       "unlockKeep": 1,
       "liveMaxLevel": 1,
@@ -489,16 +489,16 @@
     },
     {
       "id": "hero_shrine",
-      "name": "Hero Shrine",
+      "name": "Hero Hall",
       "category": "military",
       "unlockKeep": 7,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Home of a clan hero; one shrine per hero."
+      "description": "Home of a clan hero; one hall per hero."
     },
     {
       "id": "temple_bell_tower",
-      "name": "Temple Bell Tower",
+      "name": "Alarm Bell Tower",
       "category": "defense",
       "unlockKeep": 8,
       "pinnacleMaxLevel": 12,
@@ -539,11 +539,11 @@
       "unlockKeep": 10,
       "pinnacleMaxLevel": 12,
       "live": false,
-      "description": "A trench that bursts into flame under ground troops."
+      "description": "A trench that bursts into flame under warriors on the ground."
     },
     {
       "id": "thunder_shrine",
-      "name": "Thunder Shrine",
+      "name": "Thunder Spire",
       "category": "defense",
       "unlockKeep": 11,
       "pinnacleMaxLevel": 12,
@@ -723,12 +723,12 @@
     },
     {
       "id": "bitter_incense_burner",
-      "name": "Bitter Incense Burner",
+      "name": "Bitter Smoke Brazier",
       "category": "support",
       "unlockKeep": 6,
       "pinnacleMaxLevel": 10,
       "live": true,
-      "description": "Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.",
+      "description": "Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.",
       "effect": {
         "kind": "anti_heal",
         "radius": 3,
@@ -1042,7 +1042,7 @@
     },
     {
       "id": "lightning_rod_pagoda",
-      "name": "Lightning Rod Pagoda",
+      "name": "Lightning Rod Tower",
       "category": "defense",
       "unlockKeep": 13,
       "pinnacleMaxLevel": 8,

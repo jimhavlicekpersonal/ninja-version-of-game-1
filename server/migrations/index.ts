@@ -25,6 +25,10 @@ import m0017 from './0017_gang_wars.sql?raw';
 import m0018 from './0018_spending_protection.sql?raw';
 import m0019 from './0019_device_command_numbers.sql?raw';
 import m0020 from './0020_import_holds.sql?raw';
+import m0021 from './0021_refund_notices.sql?raw';
+import m0022 from './0022_ticket_commitment.sql?raw';
+import m0023 from './0023_purchase_storefront.sql?raw';
+import m0025 from './0025_accounts_minors.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -47,4 +51,8 @@ export const migrations = loadMigrations({
   '0018_spending_protection.sql': m0018,
   '0019_device_command_numbers.sql': m0019,
   '0020_import_holds.sql': m0020,
+  '0021_refund_notices.sql': m0021,
+  '0022_ticket_commitment.sql': m0022,
+  '0023_purchase_storefront.sql': m0023,
+  '0025_accounts_minors.sql': m0025,
 });

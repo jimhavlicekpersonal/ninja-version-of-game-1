@@ -77,7 +77,19 @@ export function groveLevel(xp: number, data: GameData): number {
 
 /** Replace blocked words with flowers. Chat is always filtered. */
 export function filterText(text: string, data: GameData): string {
-  return censorText(Array.from(text).slice(0, 160).join(''), data);
+  return censorText(stripContacts(Array.from(text).slice(0, 160).join('')), data);
+}
+
+/**
+ * Links, email addresses and phone numbers are removed from chat (re-audit: UK Online Safety Act
+ * gap; the usual first step of scams and grooming is moving a player off the game).
+ */
+export function stripContacts(text: string): string {
+  return text
+    .replace(/\b(?:https?:\/\/|www\.)\S+/giu, '[link removed]')
+    .replace(/[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/gu, '[contact removed]')
+    .replace(/\b[\p{L}\p{N}-]{2,}\s?(?:\.|\s?dot\s?)\s?(?:com|net|org|io|gg|me|app|xyz|ru|cn|ly|link|site|online|top|info|biz|co)\b(?:\/\S*)?/giu, '[link removed]')
+    .replace(/(?:\+?\d[\s().-]?){7,}/gu, '[contact removed]');
 }
 
 /** Censor without chat's length limit: names already have a grapheme width cap. */
@@ -164,7 +176,7 @@ export function advanceGrove(state: VillageState, now: number, data: GameData): 
       } else if (roll < so.chatChancePerSlot + so.requestChancePerSlot && !g.requests.some((r) => r.member === mi)) {
         const req: BotRequest = { id: `q${si}-${mi}`, at: t + mi * 1000, member: mi, troop: pick(rng, so.requestTroops), size: pick(rng, so.requestSizes), donated: 0 };
         g.requests.push(req);
-        pushChat(g, { at: req.at, from: mi, text: `Could use ${req.size} housing of troops, please!`, kind: 'request' }, data);
+        pushChat(g, { at: req.at, from: mi, text: `Could use warriors for ${req.size} Lodge space, please!`, kind: 'request' }, data);
       }
     });
   }
@@ -244,7 +256,7 @@ export function donate(state: VillageState, requestId: string, troop: string, co
   const req = g.requests.find((r) => r.id === requestId);
   const def = data.troops[troop];
   if (!req || !def) return { ok: false, message: 'That request is gone.' };
-  if ((state.army[troop] ?? 0) < count || count <= 0) return { ok: false, message: 'Not enough of that troop.' };
+  if ((state.army[troop] ?? 0) < count || count <= 0) return { ok: false, message: 'Not enough of that warrior.' };
   const room = req.size - req.donated;
   const n = Math.min(count, Math.floor(room / def.housing));
   if (n <= 0) return { ok: false, message: 'That request is full.' };
@@ -266,7 +278,7 @@ export function donate(state: VillageState, requestId: string, troop: string, co
 export function canRequest(state: VillageState, now: number, data: GameData): { ok: boolean; message: string; readyAt?: number } {
   const g = state.grove;
   if (!g.joined) return { ok: false, message: 'Join an Alliance first.' };
-  if (reinforcementCapacity(state, data) <= 0) return { ok: false, message: 'Build an Alliance Lodge to receive troops.' };
+  if (reinforcementCapacity(state, data) <= 0) return { ok: false, message: 'Build an Alliance Lodge to receive warriors.' };
   if (reinforcementHousing(state, data) >= reinforcementCapacity(state, data)) return { ok: false, message: 'Your Alliance Lodge is full.' };
   const last = g.myRequest?.at ?? -Infinity;
   const lastAny = g.chat.filter((c) => c.from === -1 && c.kind === 'request').map((c) => c.at).pop() ?? -Infinity;
@@ -277,5 +289,5 @@ export function canRequest(state: VillageState, now: number, data: GameData): { 
 
 export function requestTroops(state: VillageState, now: number, data: GameData): void {
   state.grove.myRequest = { at: now, chunks: 0 };
-  pushChat(state.grove, { at: now, from: -1, text: 'Could anyone spare some troops?', kind: 'request' }, data);
+  pushChat(state.grove, { at: now, from: -1, text: 'Could anyone spare some warriors?', kind: 'request' }, data);
 }

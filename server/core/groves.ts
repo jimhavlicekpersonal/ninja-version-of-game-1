@@ -7,6 +7,7 @@ import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { chosenName } from './identity';
 import { blockedIds, checkNotMuted } from './moderation';
+import { checkChatAllowed } from './age';
 import { maxReinforcementAt } from './pvp';
 import { applyServerResult } from './village';
 
@@ -142,6 +143,8 @@ export async function postChatIn(ctx: ServerContext, me: Player, scopeId: string
   if (!raw) throw new ApiError(400, 'bad_request', 'Type a message first.');
   if (raw.length > CHAT_MAX_CHARS) throw new ApiError(400, 'bad_request', `Keep messages under ${CHAT_MAX_CHARS} characters.`);
   checkNotMuted(ctx, me);
+  // Under 13 (re-audit): the fixed phrases only, never free text.
+  await checkChatAllowed(ctx, me, raw);
   if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');
   // Chat is always filtered (also for players who are not under 18).
   const row = await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: filterText(raw, ctx.data), kind: 'chat' });

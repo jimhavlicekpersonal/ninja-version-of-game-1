@@ -19,6 +19,7 @@ import { censorText } from '../../src/gameplay/sim/social/grove';
 import { nameWidth, sanitizeName } from '../../src/gameplay/sim/social/names';
 import { NameTakenError, type Player } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
+import { ageBandOf } from './age';
 
 const DAY = 24 * HOUR;
 
@@ -103,6 +104,8 @@ export async function nameForNewPlayer(ctx: ServerContext, wanted: unknown): Pro
  * free names. Keeps the old name for them for 35 days.
  */
 export async function changeName(ctx: ServerContext, me: Player, wanted: unknown): Promise<Player> {
+  // Under 13 (re-audit): no chosen names, which could carry personal details; the generated one stays.
+  if ((await ageBandOf(ctx.repo, me.id)) === 'under13') throw new ApiError(403, 'age_restricted', 'Players under 13 keep the name the game gave them.');
   const t = ctx.now();
   const name = tidyName(wanted);
   const problem = nameProblem(ctx, name);

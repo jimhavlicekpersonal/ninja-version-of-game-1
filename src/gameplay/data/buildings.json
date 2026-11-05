@@ -413,8 +413,8 @@
     ]
   },
   "dewdrop_well": {
-    "name": "Rice Paddy",
-    "description": "Terraced paddies that grow Provisions for your warriors. Holds 8 hours of output.",
+    "name": "Terraced Farm",
+    "description": "Terraced fields that grow Provisions for your warriors. Holds 8 hours of output.",
     "size": 3,
     "category": "collector",
     "produces": "dew",
@@ -891,7 +891,7 @@
   },
   "dew_cistern": {
     "name": "Provision Storehouse",
-    "description": "Stores rice sacks and supplies. Raiders can only carry off part of what is inside.",
+    "description": "Stores Provisions for your warriors. Raiders can only carry off part of what is inside.",
     "size": 3,
     "category": "storage",
     "inShop": true,
@@ -1427,7 +1427,7 @@
   },
   "acorn_cannon": {
     "name": "Kunai Tower",
-    "description": "A lookout that throws volleys of kunai at ground troops. Cannot hit flyers.",
+    "description": "A lookout that throws volleys of kunai at warriors on the ground. Cannot hit flyers.",
     "size": 3,
     "category": "defense",
     "inShop": true,
@@ -1578,7 +1578,7 @@
   },
   "pinecone_catapult": {
     "name": "Firework Mortar",
-    "description": "Launches bursting fireworks that splash groups of ground troops. Slow, and blind to troops right beside it.",
+    "description": "Launches bursting fireworks that splash groups of warriors on the ground. Slow, and blind to warriors right beside it.",
     "size": 3,
     "category": "defense",
     "inShop": true,
@@ -1676,8 +1676,8 @@
     ]
   },
   "wasp_nest": {
-    "name": "Shuriken Pagoda",
-    "description": "Spinning shuriken strike troops on the ground and in the air.",
+    "name": "Shuriken Tower",
+    "description": "Spinning shuriken strike warriors on the ground and in the air.",
     "size": 2,
     "category": "defense",
     "inShop": true,
@@ -1810,7 +1810,7 @@
   },
   "firefly_tower": {
     "name": "Sky Bow Tower",
-    "description": "Archers with great bows that hit flying troops hard. Ignores ground troops.",
+    "description": "Archers with great bows that hit flying warriors hard. Ignores warriors on the ground.",
     "size": 2,
     "category": "defense",
     "inShop": true,
@@ -1916,7 +1916,7 @@
   },
   "bramble_hedge": {
     "name": "Stone Wall",
-    "description": "Fitted mountain stone. Troops walk around it or break through it. Higher levels add iron-banded gates. Builds instantly.",
+    "description": "Fitted mountain stone. Warriors walk around it or break through it. Higher levels add iron-banded gates. Builds instantly.",
     "size": 1,
     "category": "hedge",
     "inShop": true,
@@ -2029,7 +2029,7 @@
   },
   "thorn_snare": {
     "name": "Spike Pit",
-    "description": "A hidden pit of bamboo spikes that springs when ground troops step close. Unseen until it goes off.",
+    "description": "A hidden pit of bamboo spikes that springs when warriors on the ground step close. Unseen until it goes off.",
     "size": 1,
     "category": "trap",
     "inShop": true,
@@ -2127,7 +2127,7 @@
   },
   "sap_puddle": {
     "name": "Caltrop Field",
-    "description": "Hidden iron caltrops that slow ground troops to half speed for a few seconds.",
+    "description": "Hidden iron caltrops that slow warriors on the ground to half speed for a few seconds.",
     "size": 1,
     "category": "trap",
     "inShop": true,
@@ -2240,7 +2240,7 @@
     ]
   },
   "mushroom_ring": {
-    "name": "Zen Garden",
+    "name": "Rock Garden",
     "description": "Raked gravel and three quiet stones. Purely decorative.",
     "size": 2,
     "category": "decor",
@@ -2257,8 +2257,8 @@
     ]
   },
   "mossy_statue": {
-    "name": "Fox Guardian Statue",
-    "description": "A weathered fox guardian that watches the gate. Purely decorative.",
+    "name": "Stone Sentinel Statue",
+    "description": "A weathered stone sentinel that watches the gate. Purely decorative.",
     "size": 2,
     "category": "decor",
     "inShop": true,
@@ -2670,8 +2670,8 @@
     ]
   },
   "bitter_incense_burner": {
-    "name": "Bitter Incense Burner",
-    "description": "Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.",
+    "name": "Bitter Smoke Brazier",
+    "description": "Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.",
     "size": 2,
     "category": "support",
     "inShop": true,

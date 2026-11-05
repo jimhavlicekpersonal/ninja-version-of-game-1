@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, GangWarTicketRequest, IntentReleaseRequest, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { AgeRequest, BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, GangWarTicketRequest, IntentReleaseRequest, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -53,6 +53,22 @@ export class InProcessServerAdapter implements ServerPort {
   }
   me() {
     return this.authed((me) => this.core.me(me));
+  }
+  // Re-audit: account protections.
+  stateAge(req: AgeRequest) {
+    return this.authed((me) => this.core.stateAge(me, wire(req)));
+  }
+  deletionCode() {
+    return this.authed((me) => this.core.deletionCode(me));
+  }
+  notices() {
+    return this.authed((me) => this.core.notices(me));
+  }
+  async markNoticesRead(ids: string[]) {
+    await this.authed((me) => this.core.markNoticesRead(me, wire(ids)));
+  }
+  revokeOtherSessions() {
+    return this.authed((me) => this.core.revokeOtherSessions(me));
   }
   rename(name: string) {
     return this.authed((me) => this.core.rename(me, name));
@@ -179,6 +195,12 @@ export class InProcessServerAdapter implements ServerPort {
   }
   match() {
     return this.authed((me) => this.core.match(me));
+  }
+  startAttack(ticket: string) {
+    return this.authed((me) => this.core.startAttack(me, { ticket }));
+  }
+  voidAttack(ticket: string) {
+    return this.authed((me) => this.core.voidAttack(me, { ticket }));
   }
   submitAttack(sub: BattleSubmission) {
     return this.authed((me) => this.core.attack(me, wire(sub)));

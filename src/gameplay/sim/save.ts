@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 16;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -156,6 +156,31 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     const flags = v.flags as { sandbox?: boolean } | undefined;
     if (flags && typeof flags === 'object' && flags.sandbox !== true) delete flags.sandbox;
   }
+  if (out.version < 15 && v && typeof v === 'object') {
+    // v14 -> v15 (re-audit: minors online): `profile.ageBand` (sim/age.ts). "18 or older" becomes
+    // adult; "under 18" stays unknown, so the age screen asks again (it can never answer adult).
+    const profile = v.profile as { under18?: boolean | null; ageBand?: string | null } | undefined;
+    if (profile && typeof profile === 'object' && profile.ageBand === undefined) profile.ageBand = profile.under18 === false ? 'adult' : null;
+  }
+  if (out.version < 16 && v && typeof v === 'object') {
+    // v15 -> v16 (design re-audit): Clan Stipend payments, goal event progress, new counters
+    // (raids faced and held, rematches won, raid destruction) in the lifetime stats and both task
+    // baselines. Raids faced starts at the defenses still in the log, so a village that has not
+    // been raided yet still gets the gentler first raids (raids.newPlayerRaids).
+    v.stipend = v.stipend ?? { left: 0, lastDay: -1 };
+    v.goalEvent = v.goalEvent ?? null;
+    const log = Array.isArray(v.defenseLog) ? (v.defenseLog as { result?: { stars?: number } }[]) : [];
+    const tasks = v.tasks as { dayBaseline?: Record<string, number>; weekBaseline?: Record<string, number> } | undefined;
+    const stats = v.stats as Record<string, number> | undefined;
+    if (stats && typeof stats === 'object') {
+      stats.defensesFaced = stats.defensesFaced ?? log.length;
+      stats.defensesWon = stats.defensesWon ?? log.filter((d) => (d?.result?.stars ?? 1) === 0).length;
+    }
+    for (const st of [stats, tasks?.dayBaseline, tasks?.weekBaseline] as (Record<string, number> | undefined)[]) {
+      if (!st || typeof st !== 'object') continue;
+      for (const k of ['defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction']) st[k] = st[k] ?? (st === stats ? 0 : stats?.[k] ?? 0);
+    }
+  }
   repairTrainingQueue(v);
   out.version = SAVE_VERSION;
   return out;
@@ -181,7 +206,8 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Number.isFinite(v.createdAt) || !Number.isFinite(v.lastSeenAt)) problems.push('bad timestamps');
   if (!v.resources) problems.push('resources missing');
   if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
-  else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k]) || v.resources[k] < 0) problems.push(`bad ${k}`);
+  // Jade may be negative: a refunded purchase whose Jade was already spent (a debt, re-audit).
+  else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k]) || (k !== 'moonstones' && v.resources[k] < 0)) problems.push(`bad ${k}`);
   if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];
   const map = data.economy.mapSize;
   const ids = new Set<string>();

@@ -38,8 +38,14 @@ export interface ServerContext {
   metrics: Metrics;
   /** Checks sign-ins from Apple, Google, Game Center and Play Games (account linking). */
   identity: IdentityVerifier;
+  /** Support contact for appeals and Sign in with Apple token revocation (re-audit); absent: none configured. */
+  account?: import('../identity/appleTokens').AccountSettings;
   /** Store receipt checkers (roadmap Phase 4); null for a store this server is not set up for. */
-  payments: { apple: AppleVerifier | null; google: GoogleVerifier | null };
+  /**
+   * `testCreditCapUsd`: on production, the most Sandbox/test purchases (which cost nothing)
+   * a player is credited in all (re-audit); absent = no cap (staging, tests).
+   */
+  payments: { apple: AppleVerifier | null; google: GoogleVerifier | null; testCreditCapUsd?: number };
   /** Server-sent push (roadmap step 40); a no-op without APNs/FCM keys. */
   push: Pusher;
   /** A structured log line (the request's logger in the HTTP adapter). */

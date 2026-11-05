@@ -1,7 +1,9 @@
 /*
- * Fills the publisher facts from legal-config.js into privacy.html, support.html and community.html.
- * <x data-legal="supportEmail"> gets the value (an email or web address becomes a link); an empty value shows
- * a visible "not set yet" note instead of an invented one. <x data-legal-if="termsUrl"> shows only when set.
+ * Fills the publisher facts from legal-config.js into the pages shipped with the game (privacy, support,
+ * community rules, terms, and the Japanese notices). <x data-legal="supportEmail"> gets the value (an email,
+ * a web address or a page shipped next to this one, "./terms.html", becomes a link); an empty value shows a
+ * visible "not set yet" note instead of an invented one. <x data-legal-if="termsUrl"> shows only when set;
+ * <x data-legal-unless="termsEffective"> shows only while it is empty (the draft banner of terms.html).
  */
 (function () {
   var cfg = window.KAGEMURA_LEGAL || {};
@@ -17,9 +19,9 @@
         s.className = 'unset';
         s.textContent = el.getAttribute('data-unset') || 'not published yet';
         el.appendChild(s);
-      } else if (/^[^\s@]+@[^\s@]+$/.test(v) || /^https?:\/\//i.test(v)) {
+      } else if (/^[^\s@]+@[^\s@]+$/.test(v) || /^https?:\/\//i.test(v) || /^\.\/[\w.-]+$/.test(v)) {
         var a = document.createElement('a');
-        a.href = /^https?:/i.test(v) ? v : 'mailto:' + v;
+        a.href = /^[^\s@]+@[^\s@]+$/.test(v) ? 'mailto:' + v : v;
         a.textContent = el.getAttribute('data-label') || v;
         el.appendChild(a);
       } else {
@@ -28,6 +30,8 @@
     }
     var opt = document.querySelectorAll('[data-legal-if]');
     for (var j = 0; j < opt.length; j++) opt[j].hidden = !String(cfg[opt[j].getAttribute('data-legal-if')] || '').trim();
+    var neg = document.querySelectorAll('[data-legal-unless]');
+    for (var k = 0; k < neg.length; k++) neg[k].hidden = !!String(cfg[neg[k].getAttribute('data-legal-unless')] || '').trim();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
   else fill();

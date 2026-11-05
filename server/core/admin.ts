@@ -10,6 +10,7 @@ import { deserialize } from '../../src/gameplay/sim/save';
 import { RESOURCE_KINDS, type ResourceKind } from '../../src/gameplay/sim/types';
 import type { Player } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
+import { appealText, notify } from './moderation';
 import { applyServerResult } from './village';
 
 const text = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
@@ -98,6 +99,8 @@ export async function ban(ctx: ServerContext, actor: string, id: string, body: {
   await ctx.repo.updatePlayer(p.id, { bannedUntil: until, banReason: hours > 0 ? reason : null });
   if (until) await ctx.board.remove(p.id);
   else if (p.base) await ctx.board.set(p.id, p.trophies, p.createdAt);
+  // Statement of reasons with the appeal route (re-audit, EU DSA art. 17); the 403 on every request says it too.
+  await notify(ctx, p.id, 'moderation_action', hours > 0 ? `Your account is suspended from online play until ${new Date(until).toUTCString()}. Reason: ${reason}. ${appealText(ctx)}` : 'The suspension of your account has been lifted.');
   await audit(ctx, actor, hours > 0 ? 'ban' : 'unban', p.id, { hours, reason });
   return detail(ctx, p.id);
 }

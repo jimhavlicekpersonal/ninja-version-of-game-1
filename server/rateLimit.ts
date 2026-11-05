@@ -3,8 +3,16 @@
  * (a player's token, or the caller's IP address). This memory limiter counts
  * per server instance; with several instances behind a load balancer each
  * enforces its own share, which still caps abuse. Step 16 moves the counters
- * to Redis behind the same RateLimiter port.
+ * to Redis behind the same RateLimiter port (REDIS_URL); without Redis every
+ * limit below is per instance, so N instances allow up to N times as much.
+ *
+ * Per-IP limits are deliberately loose (re-audit): carrier-grade NAT puts
+ * thousands of phones behind one IPv4 address in much of South and Southeast
+ * Asia, Africa and Latin America, so the per-token limits do the real work and
+ * the IP limits only stop floods. IPv6 callers are counted per /64 (`ipKey`),
+ * the block one subscriber gets.
  */
+import { BlockList, isIP, isIPv6 } from 'node:net';
 
 export interface RateRule {
   /** At most `limit` requests per `windowMs`. */
@@ -34,15 +42,24 @@ export interface RateLimits {
   lookup: RateRule;
   /** The same, per day. */
   lookupDay: RateRule;
+  /** Battle commands (trialEnd, abandonBattle) in village batches, per player: each runs a battle on the request thread. */
+  battleCommands: RateRule;
+  /** Purchase intents, releases, receipts and history, per player (its own budget: never blocked by reports or Gang invites). */
+  purchase: RateRule;
 }
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
 
+/** Battle commands one player may send per minute (`battleCommands`; server/core/village.ts). */
+export const BATTLE_COMMANDS_PER_MINUTE = 6;
+
 export const DEFAULT_RATE_LIMITS: RateLimits = {
-  ip: { limit: 600, windowMs: MIN },
+  // One IPv4 address can be a whole mobile carrier's NAT pool: ~50 req/s only stops floods.
+  ip: { limit: 3000, windowMs: MIN },
   player: { limit: 240, windowMs: MIN },
-  register: { limit: 30, windowMs: HOUR },
+  // New players (and sign-ins) per IPv4 address or IPv6 /64: a busy CGNAT address registers many real players an hour.
+  register: { limit: 300, windowMs: HOUR },
   match: { limit: 30, windowMs: MIN },
   battle: { limit: 20, windowMs: MIN },
   moderation: { limit: 30, windowMs: HOUR },
@@ -50,7 +67,28 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   commands: { limit: 30, windowMs: MIN },
   lookup: { limit: 30, windowMs: MIN },
   lookupDay: { limit: 300, windowMs: 24 * HOUR },
+  battleCommands: { limit: BATTLE_COMMANDS_PER_MINUTE, windowMs: MIN },
+  // A shop session with retries, restores and a few Ask to Buy releases stays far below this.
+  purchase: { limit: 120, windowMs: HOUR },
 };
+
+/**
+ * The key per-IP rules count under: an IPv4 address as it is (also when it
+ * arrives IPv4-mapped, ::ffff:a.b.c.d), an IPv6 address by its /64, so one
+ * subscriber cannot rotate through its 2^64 addresses to dodge a limit.
+ */
+export function ipKey(ip: string): string {
+  if (unmapped(ip) !== ip) return unmapped(ip);
+  if (!isIPv6(ip)) return ip;
+  const [head, tail = ''] = ip.split('::');
+  const left = head ? head.split(':') : [];
+  const right = tail ? tail.split(':') : [];
+  const groups = ip.includes('::') ? [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill('0'), ...right] : left;
+  return `${groups
+    .slice(0, 4)
+    .map((g) => (parseInt(g, 16) || 0).toString(16))
+    .join(':')}::/64`;
+}
 
 export interface RateDecision {
   ok: boolean;
@@ -94,6 +132,35 @@ export class MemoryRateLimiter implements RateLimiter {
   get size(): number {
     return this.windows.size;
   }
+}
+
+/** An IPv4-mapped IPv6 address (::ffff:a.b.c.d) as plain IPv4; anything else as it is. */
+const unmapped = (ip: string) => /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip)?.[1] ?? ip;
+
+/**
+ * Parse addresses and CIDR ranges ("203.0.113.7, 10.0.0.0/8, 2001:db8::/32").
+ * Throws on anything else, so a typo stops the server instead of opening it.
+ */
+export function parseCidrs(list: string[]): { address: string; prefix: number; family: 'ipv4' | 'ipv6' }[] {
+  return list.map((item) => {
+    const [addr, bits, extra] = item.trim().split('/');
+    const v = isIP(unmapped(addr ?? ''));
+    const max = v === 4 ? 32 : 128;
+    const prefix = bits === undefined ? max : Number(bits);
+    if (!v || extra !== undefined || !Number.isInteger(prefix) || prefix < 0 || prefix > max || (bits !== undefined && !/^\d+$/.test(bits))) throw new Error(`"${item}" is not an IP address or CIDR range.`);
+    return { address: unmapped(addr), prefix, family: v === 4 ? 'ipv4' : 'ipv6' };
+  });
+}
+
+/** A matcher for addresses and CIDR ranges (ADMIN_ALLOW_IPS). */
+export function ipAllowList(list: string[]): (ip: string) => boolean {
+  const blocks = new BlockList();
+  for (const c of parseCidrs(list)) blocks.addSubnet(c.address, c.prefix, c.family);
+  return (ip) => {
+    const a = unmapped(ip);
+    const v = isIP(a);
+    return v !== 0 && blocks.check(a, v === 4 ? 'ipv4' : 'ipv6');
+  };
 }
 
 /** Largest request bodies, in bytes. Everything else gets `default`. */

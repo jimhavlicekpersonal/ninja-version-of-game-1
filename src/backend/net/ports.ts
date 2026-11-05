@@ -7,6 +7,11 @@
  *     directly, for tests and local sandboxes.
  */
 import type {
+  AgeRequest,
+  AgeResponse,
+  DeletionCodeResponse,
+  NoticesResponse,
+  RevokeOthersResponse,
   IntentReleaseRequest,
   IntentReleaseResponse,
   AttackResponse,
@@ -152,6 +157,10 @@ export interface PvpPort {
   /** Null when there is nobody to attack right now. */
   match(): Promise<MatchResponse | null>;
   submitAttack(sub: BattleSubmission): Promise<AttackResponse>;
+  /** The player tapped Attack: the raid now counts (feature `attack-commit`, re-audit). */
+  startAttack?(ticket: string): Promise<{ started: boolean }>;
+  /** Leave a scouted base without attacking (only before it started). */
+  voidAttack?(ticket: string): Promise<{ voided: boolean }>;
   defenses(since: number): Promise<DefensesResponse>;
   leaderboard(limit?: number): Promise<LeaderboardResponse>;
   /** The Power Ranking (roadmap step 31). */
@@ -216,8 +225,22 @@ export interface ModerationPort {
   blocks(): Promise<BlocksResponse>;
 }
 
+/**
+ * Account protections (re-audit: minors, deletion, notices, sessions). Optional,
+ * so test ports and adapters for older servers can leave them out; the game
+ * also checks the server's features (`age-bands`, `deletion-codes`, `notices`,
+ * `sessions`) before calling.
+ */
+export interface AccountPort {
+  stateAge?(req: AgeRequest): Promise<AgeResponse>;
+  deletionCode?(): Promise<DeletionCodeResponse>;
+  notices?(): Promise<NoticesResponse>;
+  markNoticesRead?(ids: string[]): Promise<void>;
+  revokeOtherSessions?(): Promise<RevokeOthersResponse>;
+}
+
 /** Everything a multiplayer server provides. */
-export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort {
+export interface ServerPort extends IdentityPort, PvpPort, GrovePort, GroveRaidPort, ModerationPort, VillagePort, PurchasePort, PushPort, AccountPort {
   /** Human-readable, e.g. the server URL. */
   readonly label: string;
   /** Credentials for this device's player, if registered. */

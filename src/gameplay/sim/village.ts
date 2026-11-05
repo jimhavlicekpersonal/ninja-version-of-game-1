@@ -11,7 +11,10 @@ import { chestContents, chestOutcome, emptyDaily, streakAfterClaim } from './dai
 import { eventEffect } from './events';
 import { achievementViews } from './achievements';
 import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
-import { canPurchase, productInfo } from './monetization';
+import { canPurchase, productGrantsFor, productInfo } from './monetization';
+import { addStipend, claimStipend, emptyStipend } from './stipend';
+import { activeGoalEvent, bountyBase, ladderReward, recordBountyResult } from './goalEvents';
+import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
 import { triggerOffer } from './offers';
 import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unlockedTier } from './pass';
@@ -23,6 +26,7 @@ import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState, PendingBattle } from './types';
 import { RESOURCE_KINDS } from './types';
+import { bandChangeAllowed, isAgeBand, type AgeBand } from './age';
 
 // ---------- Commands ----------
 
@@ -77,7 +81,11 @@ export type Command =
   | { type: 'revokePurchase'; transactionId: string }
   /** Staff add or take resources (support; the admin tool, server only). Never below zero. */
   | { type: 'staffAdjust'; resources: Partial<Record<ResourceKind, number>> }
-  | { type: 'setProfile'; under18: boolean }
+  /**
+   * Age protections: `ageBand` from the age screen or the store (under18 is then
+   * derived from it); a plain `under18` from older games. Only ever stricter.
+   */
+  | { type: 'setProfile'; under18: boolean; ageBand?: AgeBand }
   /** Staff cleared the age group after a support check (server only; the player is asked again). */
   | { type: 'staffResetAge' }
   | { type: 'buySkin'; skin: string }
@@ -114,7 +122,13 @@ export type Command =
   | { type: 'settleOnlineAttack'; ticket: string; result?: BattleResult; trophies?: number; playerTrophies?: number; rejected?: string }
   /** An interrupted battle that can no longer be banked: its deployed troops are spent, nothing is won. */
   | { type: 'abandonBattle'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
-  | { type: 'leaveLocalGrove' };
+  | { type: 'leaveLocalGrove' }
+  /** Claim today's Clan Stipend payment (sim/stipend.ts). */
+  | { type: 'claimStipend' }
+  /** An attack on the running goal event's bounty fortress (`eventKey`, sim/goalEvents.ts); the base is rebuilt, never taken from the client. */
+  | { type: 'bountyEnd'; eventKey: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /** Settle the score with a bot raider (`defenseId`, sim/rematch.ts); the raider's base is rebuilt from the defense record. */
+  | { type: 'rematchEnd'; defenseId: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> };
 
 /** The actions a top-up can pay for. */
 export type TopUpAction = Extract<Command, { type: 'upgrade' | 'place' | 'train' | 'research' }>;
@@ -160,6 +174,10 @@ export type SimEvent =
   | { kind: 'scout'; seed: number; fee: number }
   | { kind: 'raid_end'; record: BattleRecord }
   | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost }
+  /** A bounty attack: the ladder steps it newly reached and what they paid (`reward`, really added; `overflow` did not fit). */
+  | { kind: 'bounty_end'; record: BattleRecord; eventKey: string; steps: number[]; reward: Cost; overflow?: Cost }
+  | { kind: 'rematch_end'; record: BattleRecord; defenseId: string; won: boolean; reward: Cost; overflow?: Cost }
+  | { kind: 'stipend_claimed'; moonstones: number; left: number }
   | { kind: 'skip_used'; what: string; seconds: number; moonstones: number }
   /** Jade bought exactly these missing resources, spent at once by the action that follows. */
   | { kind: 'top_up'; missing: Cost; moonstones: number }
@@ -220,7 +238,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     raidCheckAt: now,
     stats: emptyStats(),
     purchases: [],
-    profile: { under18: null },
+    profile: { under18: null, ageBand: null },
     offers: { active: [], lastShown: {}, bought: [] },
     pass: { season: passSeason(now, data), points: 0, premium: false, claimedFree: [], claimedPremium: [] },
     tasks: { day: dayIndex(now, data), dayBaseline: emptyStats(), dayClaimed: [], week: Math.floor(dayIndex(now, data) / 7), weekBaseline: emptyStats(), weekClaimed: [] },
@@ -235,6 +253,8 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     pendingBattle: null,
     seasonLog: [],
     armyPresets: [],
+    stipend: emptyStipend(),
+    goalEvent: null,
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -371,6 +391,18 @@ function costText(cost: Cost): string {
     .join(', ');
 }
 
+/**
+ * Whether another Artisan's Hut can still be hired (bought with Jade): the Keep allows another hut
+ * and `builderHutCosts` has a price for it. The Artisan's Bundle offer (Jade "to hire another
+ * Village Artisan") is only raised while this is true.
+ */
+export function canHireArtisan(state: VillageState, data: GameData): boolean {
+  const type = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'builder' && data.buildings[t].inShop);
+  if (!type) return false;
+  const have = countOfType(state, type);
+  return have >= 2 && data.economy.builderHutCosts[have - 2] !== undefined && have < limitFor(state, data, type).count;
+}
+
 /** Can a new building of this type be bought right now (ignoring where it goes)? */
 export function placeQuote(state: VillageState, data: GameData, type: BuildingType, now: number): QuoteResult {
   const s = advance(state, now, data).state;
@@ -460,11 +492,13 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
         s.flags.longWaitSeen = true;
         events.push({ kind: 'trigger', trigger: 'first_long_wait' });
       }
-      if (e.seconds > 0 && builderStatus(s, data, now).free === 0) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
+      // The Artisan's Bundle is Jade for another Artisan's Hut: only offer it while one can still be hired.
+      if (e.seconds > 0 && builderStatus(s, data, now).free === 0 && canHireArtisan(s, data)) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
     } else if (e.kind === 'raid_end' && e.record.kind === 'attack' && e.record.settlement !== 'pending') {
       // Online attacks count once the server has confirmed them (see settleOnlineAttack).
       if (e.record.result.stars >= 1) s.stats.raidsWon++;
       s.stats.starsEarned += e.record.result.stars;
+      s.stats.raidDestruction = (s.stats.raidDestruction ?? 0) + e.record.result.destruction;
     }
   }
   const spent = moonBefore - s.resources.moonstones;
@@ -553,10 +587,22 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       // GLOBAL-006: the spending protection only gets stricter in the game. Under 18 is
       // not switched back by the player (support resets it on the server after a check).
       if (s.profile.under18 === true && cmd.under18 === false) return fail('LOCKED', 'Only our support team can change the age group back to 18 or older.');
+      if (cmd.ageBand !== undefined) {
+        // Age bands (sim/age.ts): the same or stricter only; under18 follows the band.
+        if (!isAgeBand(cmd.ageBand)) return fail('NOT_FOUND', 'Unknown age group.');
+        if (!bandChangeAllowed(s.profile.ageBand ?? null, s.profile.under18, cmd.ageBand)) return fail('LOCKED', 'Only our support team can make the age group less strict.');
+        s.profile.ageBand = cmd.ageBand;
+        s.profile.under18 = cmd.ageBand !== 'adult';
+        return { ok: true, state: s, events: [] };
+      }
       s.profile.under18 = cmd.under18;
+      // An older game's answer: "under 18" makes an adult band 13to17 (a younger band stays); "18 or older" fills an unknown band.
+      if (cmd.under18 && (s.profile.ageBand ?? 'adult') === 'adult') s.profile.ageBand = s.profile.ageBand ? '13to17' : null;
+      else if (!cmd.under18 && !s.profile.ageBand) s.profile.ageBand = 'adult';
       return { ok: true, state: s, events: [] };
     case 'staffResetAge':
       s.profile.under18 = null;
+      s.profile.ageBand = null;
       return { ok: true, state: s, events: [] };
     case 'buySkin':
       return buySkin(s, cmd.skin, data);
@@ -641,10 +687,23 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'abandonBattle': {
       s.pendingBattle = null;
       if (checkBattleSetup(s, cmd.record.setup, data)) return { ok: true, state: s, events: [] };
-      const { result } = runBattle(cmd.record.setup, cmd.record.deployments, data, cmd.record.endTick);
-      spendTroops(s, result.used, cmd.record.setup);
+      // Re-audit: no simulation here. An abandoned battle wins nothing, so it only has to spend the
+      // warriors the player sent in: count the deployments (each warrior once, never more than the army
+      // and the Lodge hold). Running the battle cost a server up to a second for a forged base.
+      spendTroops(s, deployedTroops(cmd.record.setup, cmd.record.deployments, data), cmd.record.setup);
       return { ok: true, state: s, events: [] };
     }
+    case 'claimStipend': {
+      const jade = claimStipend(s, now, data);
+      if (jade === null) return fail('NOT_AVAILABLE', s.stipend?.left > 0 ? "Today's stipend is already claimed. Come back tomorrow." : 'No Clan Stipend payments left.');
+      return { ok: true, state: s, events: [{ kind: 'stipend_claimed', moonstones: jade, left: s.stipend.left }] };
+    }
+    case 'bountyEnd':
+      s.pendingBattle = null;
+      return bountyEnd(s, cmd.eventKey, cmd.record, now, data);
+    case 'rematchEnd':
+      s.pendingBattle = null;
+      return rematchEnd(s, cmd.defenseId, cmd.record, now, data);
     case 'leaveLocalGrove':
       // Playing online: the real Grove replaces the bot one (XP, Lodge troops and history stay).
       s.grove.joined = false;
@@ -663,6 +722,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       s.grove.prepOfferWeek = cmd.week;
       return { ok: true, state: s, events: [] };
     case 'triggerOffer': {
+      if (cmd.trigger === 'all_builders_busy' && !canHireArtisan(s, data)) return fail('NO_OFFER', 'No offer right now.');
       const rule = triggerOffer(s, cmd.trigger, now, data);
       if (!rule) return fail('NO_OFFER', 'No offer right now.');
       const active = s.offers.active.find((a) => a.id === rule.id)!;
@@ -826,8 +886,10 @@ function grantPurchase(s: VillageState, productId: string, transactionId: string
   }
   const product = productInfo(data, productId);
   if (!product) return fail('PURCHASE_REFUSED', 'That item is not available.');
-  s.purchases.push({ id: transactionId, productId, usd: product.usd, at: now });
-  const grants = { ...product.grants };
+  // What this village gets now: offers scale with the Keep and never stockpile above storage (productGrantsFor).
+  const grants = productGrantsFor(s, productId, data)?.grants ?? { ...product.grants };
+  s.purchases.push({ id: transactionId, productId, usd: product.usd, at: now, grants: { ...grants } });
+  if (product.kind === 'stipend') addStipend(s, data);
   if (product.kind === 'pass') {
     s.pass.premium = true;
     s.pass.season = passSeason(now, data);
@@ -837,7 +899,7 @@ function grantPurchase(s: VillageState, productId: string, transactionId: string
     if (!s.offers.bought.includes(rule.id)) s.offers.bought.push(rule.id);
     s.offers.active = s.offers.active.filter((a) => a.id !== rule.id);
   }
-  // Bought resources are always delivered in full, even beyond storage.
+  // Delivered in full: productGrantsFor already fitted the resources to storage (the rest came as Jade).
   for (const [k, v] of Object.entries(grants) as [ResourceKind, number][]) s.resources[k] += v;
   return { ok: true, state: s, events: [{ kind: 'purchase_granted', productId, usd: product.usd, grants }] };
 }
@@ -853,8 +915,12 @@ function revokePurchase(s: VillageState, transactionId: string, now: number, dat
   if (!p) return fail('NOT_FOUND', 'No such purchase in this village.');
   const product = productInfo(data, p.productId);
   if (!product) return { ok: true, state: s, events: [] };
-  for (const [k, v] of Object.entries(product.grants) as [ResourceKind, number][]) {
-    if (v > 0) s.resources[k] = Math.max(0, s.resources[k] - v);
+  // Save v16: a purchase keeps what it really delivered (offers scale with the Keep); older ones had the catalog contents.
+  if (product.kind === 'stipend') s.stipend.left = Math.max(0, (s.stipend?.left ?? 0) - (data.store.stipend?.payments ?? 0));
+  for (const [k, v] of Object.entries(p.grants ?? product.grants) as [ResourceKind, number][]) {
+    // Re-audit: refunded Jade that was already spent becomes a debt (a negative balance): nothing can be
+    // bought with Jade until earned Jade pays it back. Other resources stop at zero.
+    if (v > 0) s.resources[k] = k === 'moonstones' ? s.resources[k] - v : Math.max(0, s.resources[k] - v);
   }
   if (product.kind === 'pass' && passSeason(p.at, data) === passSeason(now, data)) s.pass.premium = false;
   return { ok: true, state: s, events: [] };
@@ -1022,7 +1088,7 @@ export function trainQuote(state: VillageState, troop: string, now: number, data
 /** `trainQuote` for a village already settled up to `now`. Nothing is copied: `train` asks once per warrior and the Army panel once per row. */
 export function trainQuoteOn(s: VillageState, troop: string, now: number, data: GameData): QuoteResult {
   const def = data.troops[troop];
-  if (!def) return fail('NOT_FOUND', 'Unknown troop.');
+  if (!def) return fail('NOT_FOUND', 'Unknown warrior.');
   const level = troopLevelOf(s, troop);
   const cost = discounted(troopLevel(data, troop, level).cost, eventEffect(now, data).trainingDiscount);
   const quote: Quote = { toLevel: level, cost, seconds: trainSecondsFor(s, troop, data) };
@@ -1035,7 +1101,7 @@ export function trainQuoteOn(s: VillageState, troop: string, now: number, data: 
   const cap = housingCapacity(s, data);
   // The camps hold one army; the queue may train the next one ahead.
   if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > trainingQueueLimit(s, data)) {
-    return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards and the next-army queue are full.' : 'Build a Squad Courtyard to house troops.'), quote };
+    return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards and the next-army queue are full.' : 'Build a Squad Courtyard to house warriors.'), quote };
   }
   if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost)}).`), quote };
   return { ok: true, quote };
@@ -1429,6 +1495,7 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   if (cmd.playerTrophies !== undefined) s.trophies = Math.max(0, cmd.playerTrophies);
   if (result.stars >= 1) s.stats.raidsWon++;
   s.stats.starsEarned += result.stars;
+  s.stats.raidDestruction = (s.stats.raidDestruction ?? 0) + result.destruction;
   void now;
   return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'confirmed' }] };
 }
@@ -1473,16 +1540,85 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
   } else if (!cleared && tier === nextTrialTier(s.trials.best)) {
     s.trials.failedTier = tier;
   }
-  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, ...(hasAny(overflow) ? { overflow } : {}) };
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, trial: tier, ...(hasAny(overflow) ? { overflow } : {}) };
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
   return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward }] };
 }
 
 /**
+ * An attack on a goal event's bounty fortress (sim/goalEvents.ts): the event must be running
+ * when the attack began, the base is rebuilt for this village (never taken from the client),
+ * the battle is re-simulated, troops are spent, no loot from buildings and no honor. Each
+ * ladder step the result newly reaches pays once (Keep-scaled, storage-capped).
+ */
+function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const at = Math.min(now, rec.at ?? now);
+  const ev = activeGoalEvent(at, data);
+  if (!ev || ev.key !== key || ev.goal.kind !== 'bounty') return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  const keep = hallLevel(s, data);
+  // The Keep the attack began with: the current one, or one below if a Keep upgrade finished mid-battle.
+  const asked = rec.setup.base?.hallLevel;
+  const baseKeep = asked === keep - 1 ? asked : keep;
+  const setup: BattleSetup = { ...rec.setup, base: bountyBase(s.seed, key, baseKeep, ev.goal, data) };
+  const bad = checkBattleSetup(s, setup, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used, setup);
+  const steps = recordBountyResult(s, key, ev.goal, result.stars, result.destruction);
+  let wanted: Cost = {};
+  for (const i of steps) wanted = sumCost(wanted, ladderReward(ev.goal.ladder[i], baseKeep, data));
+  const { granted: reward, overflow } = grantResources(s, wanted, data);
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, goalEvent: key, ...(hasAny(overflow) ? { overflow } : {}) };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'bounty_end', record, eventKey: key, steps, reward, ...(hasAny(overflow) ? { overflow } : {}) }] };
+}
+
+/**
+ * Settle the score with a bot raider (sim/rematch.ts): once per defense record, within the
+ * window, against the raider's own generated base (rebuilt from the record). No honor and no
+ * loot from buildings; a win pays the small fixed rematch reward.
+ */
+function rematchEnd(s: VillageState, defenseId: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const at = Math.min(now, rec.at ?? now);
+  const status = rematchStatus(s, defenseId, at, data);
+  if (!status.ok) return fail('NOT_AVAILABLE', status.message);
+  const base = rematchBase(status.record, data)!;
+  const setup: BattleSetup = { ...rec.setup, base };
+  const bad = checkBattleSetup(s, setup, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used, setup);
+  status.record.rematch = `r${s.nextSeed}`;
+  const won = result.stars >= 1;
+  let reward: Cost = {};
+  let overflow: Cost = {};
+  if (won) {
+    s.stats.rematchesWon = (s.stats.rematchesWon ?? 0) + 1;
+    ({ granted: reward, overflow } = grantResources(s, rematchReward(result.stars, hallLevel(s, data), data), data));
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, rematch: defenseId, ...(hasAny(overflow) ? { overflow } : {}) };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'rematch_end', record, defenseId, won, reward, ...(hasAny(overflow) ? { overflow } : {}) }] };
+}
+
+/**
  * Use donated (Lodge) troops first, then your own army: the battle deploys the
  * donated ones first too, so the troops spent are the ones that fought. Mutates.
  */
+/** Warriors sent into a battle, from its deployments (abilities are not warriors), capped by what the battle had. */
+export function deployedTroops(setup: BattleSetup, deployments: readonly { troop: string }[], data: GameData): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const d of deployments) {
+    if (!data.troops[d.troop]) continue;
+    const cap = (setup.army[d.troop] ?? 0) + (setup.reinforcements?.[d.troop]?.count ?? 0);
+    if ((out[d.troop] ?? 0) < cap) out[d.troop] = (out[d.troop] ?? 0) + 1;
+  }
+  return out;
+}
+
 function spendTroops(s: VillageState, used: Record<string, number>, setup?: BattleSetup): void {
   for (const [t, n0] of Object.entries(used)) {
     let n = n0;

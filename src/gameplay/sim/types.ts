@@ -98,11 +98,15 @@ export interface VillageState {
   stats: Stats;
   /** Real-money purchases (for the spend summary and the minor spending cap). */
   purchases: PurchaseRecord[];
-  profile: { under18: boolean | null };
+  /**
+   * Age protections (sim/age.ts). `under18` is derived from `ageBand` once it
+   * is known (and kept for older servers and saves); both only get stricter.
+   */
+  profile: { under18: boolean | null; ageBand?: import('./age').AgeBand | null };
   offers: { active: ActiveOffer[]; lastShown: Record<string, number>; bought: string[] };
   pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[] };
   /** Task periods; `dayIds`/`weekIds` are the tasks chosen when the period began (absent on older saves until the next roll). */
-  tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[] };
+  tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[]; dayTargets?: Record<string, number>; weekTargets?: Record<string, number> };
   cosmetics: { owned: string[]; hallSkin: string };
   /** Achievement id -> number of tiers claimed. */
   achievements: Record<string, number>;
@@ -130,6 +134,27 @@ export interface VillageState {
   seasonLog: import('./ranks').SeasonReward[];
   /** Saved army presets for one-tap retraining (see sim/army.ts `trainPlan`). */
   armyPresets: ArmyPreset[];
+  /** Clan Stipend (sim/stipend.ts, save v16): daily Jade payments left to claim, and the day the last one was claimed. */
+  stipend: StipendState;
+  /** Goal events (sim/goalEvents.ts, save v16): progress in the current goal event occurrence. */
+  goalEvent: GoalEventState | null;
+}
+
+export interface StipendState {
+  /** Daily payments still to claim (0 = no stipend). */
+  left: number;
+  /** Day index (pass days) of the last claim; -1 = never. */
+  lastDay: number;
+}
+
+/** Progress in one goal event occurrence (`key` = schedule id + repeat number). */
+export interface GoalEventState {
+  key: string;
+  /** Best result so far: stars and destruction (bounty), or the count reached (counting goals). */
+  best: number;
+  bestDestruction: number;
+  /** Ladder steps already paid (indexes into the event's `ladder`). */
+  claimed: number[];
 }
 
 /** A saved army: troop counts to refill to. */
@@ -217,9 +242,10 @@ export interface GroveState {
  * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
  * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
  */
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared';
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction';
 export type Stats = Record<StatKey, number>;
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared'];
+/** `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won "settle the score" rematches; `raidDestruction`: summed destruction % of settled raids (save v16). */
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }
@@ -229,6 +255,8 @@ export interface PurchaseRecord {
   productId: string;
   usd: number;
   at: number;
+  /** What was delivered (save v16): offers scale with the Keep and storage, so a refund takes back this, not the catalog contents. */
+  grants?: Cost;
 }
 
 export interface ActiveOffer {
@@ -604,6 +632,12 @@ export interface RaidsDef {
   botArmyMix: Record<string, number>[];
   /** Most of each resource raiders can take from storages, by the defender's hall level. */
   storageLootCapByHall: number[];
+  /** The first `count` bot raids a village faces bring `housingShare` of a full army, `levelsBelowCap` levels under the research cap. */
+  newPlayerRaids?: { count: number; housingShare: number; levelsBelowCap: number };
+  /** A bot raid held to 0 stars pays this share of the Keep's lowest raid loot. */
+  defenseWin?: { shareOfRaidLoot: number };
+  /** Settle-the-score rematches against a bot raider's base (sim/rematch.ts). */
+  rematch?: { windowHours: number; shareOfRaidLoot: number };
 }
 
 export interface PackDef {
@@ -630,6 +664,8 @@ export interface StoreDef {
    * store listing. A product missing here uses its own id.
    */
   storeProductIds?: Record<string, string>;
+  /** Clan Stipend (sim/stipend.ts): a consumable that adds `payments` daily Jade payments, one claimable per day. */
+  stipend?: { id: string; name: string; usd: number; payments: number; jadePerPayment: number };
 }
 
 export type OfferTrigger = 'first_long_wait' | 'all_builders_busy' | 'grove_raid_soon' | 'heavy_defense_loss';
@@ -647,6 +683,8 @@ export interface OfferRule {
   cooldownHours: number;
   /** Do not show this offer to brand-new players. */
   minAccountHours?: number;
+  /** Never shown again (its product still delivers a purchase made before). */
+  retired?: boolean;
 }
 
 export interface OffersDef {
@@ -666,6 +704,8 @@ export interface TaskTemplate {
   stat: StatKey;
   base: number;
   perHall: number;
+  /** Star/win tasks: raids assumed in the period; the target follows the recent star or win rate (sim/pass.ts). */
+  adaptive?: number;
 }
 
 export interface PassDef {
@@ -676,6 +716,12 @@ export interface PassDef {
   productId: string;
   usd: number;
   premiumBuildSpeedBonus: number;
+  /** The premium Scroll is not sold in the last days of a season (too few tiers left to earn). */
+  noSaleLastDays?: number;
+  /** ...unless the player has already unlocked this many tiers (they get them at once). */
+  noSaleUnlessTiers?: number;
+  /** How star/win task targets follow recent raids. */
+  adaptiveTasks?: { recentRaids: number; minRecent: number; minExpected: number };
   tiers: { tier: number; free: Cost & { skin?: string }; premium: Cost & { skin?: string } }[];
   dailyTaskPoints: number;
   weeklyChallengePoints: number;
@@ -759,11 +805,29 @@ export interface EventEffect {
   trainingDiscount?: number;
 }
 
+/** A goal event's reward ladder: each step pays once per occurrence when `at` is reached. */
+export interface GoalLadderStep {
+  /** Stars (bounty) or count (counting goals) needed. */
+  at: number;
+  /** Bounty only: destruction % needed instead of stars (the step is reached by either). */
+  destruction?: number;
+  /** Soft resources are scaled by the Keep (`rewardScaleByHall`); Jade is not. */
+  reward: Cost;
+}
+
+/** What a goal event asks for. `bounty`: attack the occurrence's bounty fortress (a generated base at your Keep, the same for every attempt). */
+export interface GoalDef {
+  kind: 'bounty';
+  /** Defense power multiplier on the bounty fortress (1 = a same-Keep base at mid levels). */
+  power: number;
+  ladder: GoalLadderStep[];
+}
+
 export interface EventsDef {
   /** Schedule start (UTC ms); the schedule repeats every `periodDays`. */
   epoch: number;
   periodDays: number;
-  schedule: { id: string; name: string; description: string; startHour: number; durationHours: number; effect: EventEffect }[];
+  schedule: { id: string; name: string; description: string; startHour: number; durationHours: number; effect: EventEffect; goal?: GoalDef }[];
 }
 
 export interface NotificationsDef {
@@ -825,7 +889,10 @@ export interface TrialsDef {
 
 /** An attack that has started (troops deployed) but not been banked yet. */
 export interface PendingBattle {
-  kind: 'raid' | 'trial' | 'war';
+  /** 'bounty' (a goal event's fortress, `eventKey`) and 'rematch' (`defenseId`) settle with `bountyEnd` / `rematchEnd`. */
+  kind: 'raid' | 'trial' | 'war' | 'bounty' | 'rematch';
+  eventKey?: string;
+  defenseId?: string;
   tier?: number;
   /** Alliance War: the enemy base attacked. */
   target?: number;

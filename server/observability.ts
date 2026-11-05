@@ -42,6 +42,13 @@ export const METRIC_HELP: Record<string, string> = {
   tk_purchases_total: 'Store purchases credited, by store and environment (Production, Sandbox, Test).',
   tk_refunds_total: 'Purchases refunded or revoked, by store and reason.',
   tk_push_total: 'Server pushes, by type and result (sent, quiet, limit, off, invalid, failed).',
+  tk_age_bands_total: 'Age bands stated by games (re-audit), by band kept and whether it changed.',
+  tk_notices_total: 'Moderation notices sent to players, by kind (report_outcome, moderation_action, account).',
+  tk_apple_revocations_total: 'Sign in with Apple token revocations, by trigger (delete, unlink, notification) and result (ok, failed, skipped).',
+  tk_sessions_revoked_total: 'Device tokens signed out, by reason (unlink, others, prune).',
+  tk_redis_errors_total: 'Redis calls that failed and degraded (rate limits let the request through, leaderboard read the database, locks fell back to tickets), by use.',
+  tk_redis_up: 'Whether this instance can reach Redis right now (1) or is failing fast after an outage (0).',
+  tk_http_compressed_total: 'Responses sent compressed, by encoding (gzip, br).',
 };
 
 const DEFAULT_BUCKETS = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];

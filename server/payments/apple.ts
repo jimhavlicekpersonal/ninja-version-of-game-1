@@ -38,6 +38,10 @@ export interface AppleTransaction {
   appAccountToken: string | null;
   revocationDate: number | null;
   type: string;
+  /** Storefront country (ISO 3166-1 alpha-3), currency (ISO 4217) and price in micros, when Apple sends them. */
+  storefront: string | null;
+  currency: string | null;
+  priceMicros: number | null;
 }
 
 export interface AppleNotification {
@@ -142,5 +146,9 @@ function toTransaction(t: Record<string, unknown>): AppleTransaction {
     appAccountToken: typeof t.appAccountToken === 'string' && t.appAccountToken ? t.appAccountToken.toLowerCase() : null,
     revocationDate: Number.isFinite(Number(t.revocationDate)) && t.revocationDate != null ? Number(t.revocationDate) : null,
     type: String(t.type ?? ''),
+    storefront: typeof t.storefront === 'string' ? t.storefront : null,
+    currency: typeof t.currency === 'string' ? t.currency : null,
+    // Apple's `price` is in milli-units of the currency.
+    priceMicros: Number.isFinite(Number(t.price)) && t.price != null ? Math.round(Number(t.price) * 1000) : null,
   };
 }

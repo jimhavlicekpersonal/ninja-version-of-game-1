@@ -11,7 +11,7 @@
       },
       {
         "id": "dew_flask",
-        "label": "Rice Sack",
+        "label": "Provision Sack",
         "weight": 30,
         "reward": {
           "dew": 20000

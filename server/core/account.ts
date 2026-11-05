@@ -4,19 +4,59 @@
  * form (GET /account/delete) that staff verify and carry out through the admin
  * API, for players who can no longer open the game.
  */
-import type { DeletionRequestBody, DeletionRequestResponse } from '../../src/backend/net/protocol';
+import { FRIEND_CODE_ALPHABET } from '../../src/backend/net/names';
+import type { DeletionCodeResponse, DeletionRequestBody, DeletionRequestResponse } from '../../src/backend/net/protocol';
 import type { DeletionRequest, Player } from '../repo';
-import { ApiError, type ServerContext } from './context';
+import { ApiError, HOUR, type ServerContext } from './context';
 import { leaveGrove } from './groves';
+import { revokeAppleTokens } from './links';
 import { leave as leaveSquad } from './squads';
 
-/** Delete the caller's online account. Leaves their Alliance first (handing over leadership), without naming them. */
+/**
+ * Delete the caller's online account. Leaves their Alliance first (handing over leadership), without naming them.
+ * Sign in with Apple refresh tokens are revoked afterwards (App Review 5.1.1(v)): best effort, logged,
+ * never holding the deletion up.
+ */
 export async function deleteAccount(ctx: ServerContext, me: Player): Promise<void> {
   if (await ctx.repo.getMembership(me.id)) await leaveGrove(ctx, me, { quiet: true });
   // A Gang leader hands over first (step 63); a war's roster lock does not stop a deletion.
   if (await ctx.repo.squadOf(me.id)) await leaveSquad(ctx, me, { quiet: true });
+  const appleTokens = await ctx.repo.linkTokensOf(me.id).catch(() => []);
   await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
   await ctx.board.remove(me.id);
+  await revokeAppleTokens(ctx, appleTokens, 'delete').catch((e) => ctx.log('warn', 'Sign in with Apple: revocation after deletion failed', { error: String(e) }));
+}
+
+/** How long a deletion code works. */
+export const DELETION_CODE_DAYS = 30;
+const CODE_LENGTH = 10;
+
+/** Codes are typed by hand: letters and digits that don't look alike, any case, dashes and spaces ignored. */
+export function normalizeDeletionCode(v: unknown): string {
+  return String(v ?? '').toUpperCase().replace(/[\s-]/g, '').slice(0, 32);
+}
+
+/**
+ * POST /v1/me/deletion-code: a one-time code that proves, on the web deletion
+ * page, that a request is this player's (re-audit: player ids are visible to
+ * other players, so an id alone proves nothing). Only its hash is kept, for
+ * DELETION_CODE_DAYS; asking again replaces it.
+ */
+export async function deletionCode(ctx: ServerContext, me: Player): Promise<DeletionCodeResponse> {
+  // ctx.newToken is cryptographically random; its characters pick from the friend-code alphabet.
+  const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  let code = '';
+  while (code.length < CODE_LENGTH) {
+    for (const ch of ctx.newToken()) {
+      const v = B64.indexOf(ch);
+      // 62 of the 64 values map evenly onto the 31 letters (no bias).
+      if (v >= 0 && v < 62 && code.length < CODE_LENGTH) code += FRIEND_CODE_ALPHABET[v % FRIEND_CODE_ALPHABET.length];
+    }
+  }
+  const at = ctx.now();
+  const expiresAt = at + DELETION_CODE_DAYS * 24 * HOUR;
+  await ctx.repo.setDeletionCode(me.id, await ctx.hash(`deletion:${code}`), at, expiresAt);
+  return { code: `${code.slice(0, 5)}-${code.slice(5)}`, expiresAt };
 }
 
 const text = (v: unknown, max: number): string => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
@@ -25,13 +65,23 @@ const text = (v: unknown, max: number): string => String(v ?? '').replace(/\s+/g
  * Store a web deletion request. The answer never says whether the player
  * exists (no way to probe for players); staff check that later.
  */
-export async function requestDeletion(ctx: ServerContext, body: DeletionRequestBody | undefined): Promise<DeletionRequestResponse> {
+export async function requestDeletion(ctx: ServerContext, body: DeletionRequestBody | undefined): Promise<DeletionRequestResponse & { verified: boolean }> {
   const playerId = text(body?.playerId, 64);
   const name = text(body?.name, 40);
-  if (!playerId && !name) throw new ApiError(400, 'bad_request', 'Enter your Player ID (Settings → Online play) or your player name.');
-  const r: DeletionRequest = { id: ctx.uuid(), at: ctx.now(), playerId, name, contact: '' /* GLOBAL-019: no email is collected or kept (an older page may still send one) */, note: text(body?.note, 1000), status: 'open', resolvedAt: null, resolution: null };
+  if (!playerId && !name) throw new ApiError(400, 'bad_request', 'Enter your Player ID (Settings → Online play → Account).');
+  // The one-time code from Settings proves the request is the player's own (re-audit). It is used up.
+  const code = normalizeDeletionCode(body?.code);
+  let verified = false;
+  if (playerId && code) {
+    const kept = await ctx.repo.deletionCodeOf(playerId);
+    if (kept && kept.expiresAt > ctx.now() && kept.codeHash === (await ctx.hash(`deletion:${code}`))) {
+      verified = true;
+      await ctx.repo.clearDeletionCode(playerId);
+    }
+  }
+  const r: DeletionRequest = { id: ctx.uuid(), at: ctx.now(), playerId, name, contact: '' /* GLOBAL-019: no email is collected or kept (an older page may still send one) */, note: text(body?.note, 1000), status: 'open', resolvedAt: null, resolution: null, verified };
   await ctx.repo.addDeletionRequest(r);
-  return { id: r.id };
+  return { id: r.id, verified };
 }
 
 export interface DeletionQueueEntry extends DeletionRequest {
@@ -49,18 +99,32 @@ export async function deletionQueue(ctx: ServerContext, status: 'open' | 'all'):
   return { requests: out };
 }
 
-/** Staff: carry out ('delete') or turn down ('reject') a request. */
+/**
+ * Staff: carry out ('delete') or turn down ('reject') a request. Only a
+ * verified request (it carried the player's one-time code) can be deleted
+ * directly: anyone can type someone else's Player ID. An unverified one is
+ * rejected, or deleted with 'override' and a note saying how ownership was
+ * checked (support contact, a linked sign-in, a store receipt).
+ */
 export async function resolveDeletion(ctx: ServerContext, id: string, action: unknown, note: unknown): Promise<DeletionRequest> {
   const r = await ctx.repo.getDeletionRequest(String(id));
   if (!r) throw new ApiError(404, 'not_found', 'No such deletion request.');
   if (r.status !== 'open') throw new ApiError(409, 'conflict', 'That request was already handled.');
-  if (action !== 'delete' && action !== 'reject') throw new ApiError(400, 'bad_request', "action must be 'delete' or 'reject'");
+  if (action !== 'delete' && action !== 'reject' && action !== 'override') throw new ApiError(400, 'bad_request', "action must be 'delete', 'reject' or 'override'");
   let resolution = text(note, 500);
-  if (action === 'delete') {
+  if (action === 'delete' && !r.verified) {
+    throw new ApiError(409, 'conflict', "This request did not carry the player's deletion code, so it may not be theirs. Reject it, or use 'override' with a note saying how you checked the account is theirs.");
+  }
+  if (action === 'override') {
+    if (resolution.length < 10) throw new ApiError(400, 'bad_request', 'An override needs a note (at least 10 characters) saying how ownership was checked.');
+    resolution = `Staff override: ${resolution}`;
+  }
+  if (action === 'delete' || action === 'override') {
     const p = r.playerId ? await ctx.repo.getPlayer(r.playerId) : null;
     if (p) await deleteAccount(ctx, p);
     resolution = resolution || (p ? 'Account deleted.' : 'No account with that ID (nothing to delete).');
   }
-  await ctx.repo.resolveDeletionRequest(r.id, action === 'delete' ? 'done' : 'rejected', resolution, ctx.now());
+  if (action === 'reject' && !resolution && !r.verified) resolution = 'Not verified: the request did not carry the deletion code from the game.';
+  await ctx.repo.resolveDeletionRequest(r.id, action === 'reject' ? 'rejected' : 'done', resolution, ctx.now());
   return (await ctx.repo.getDeletionRequest(r.id))!;
 }

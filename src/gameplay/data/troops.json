@@ -290,7 +290,7 @@
   },
   "frog_lobber": {
     "name": "Kunai Adept",
-    "description": "Throws kunai from a distance. Fragile, so keep it behind sturdier troops.",
+    "description": "Throws kunai from a distance. Fragile, so keep it behind sturdier warriors.",
     "housing": 1,
     "attackIntervalTicks": 10,
     "range": 3.5,
@@ -870,7 +870,7 @@
   },
   "owl_bomber": {
     "name": "Kite Raider",
-    "description": "Glides over walls on a war kite and drops firebombs on defenses. Sky Bow Towers and Shuriken Pagodas can hit it.",
+    "description": "Glides over walls on a war kite and drops firebombs on defenses. Sky Bow Towers and Shuriken Towers can hit it.",
     "housing": 4,
     "attackIntervalTicks": 15,
     "range": 0.5,
@@ -5870,7 +5870,7 @@
     ]
   },
   "mole_king": {
-    "name": "Mole King",
+    "name": "Burrow Ambusher",
     "description": "Bursts out of the ground beside a defense, stunning it for 2 seconds.",
     "housing": 2,
     "attackIntervalTicks": 10,
@@ -6082,7 +6082,7 @@
     "abilityCharges": 1
   },
   "phantom_gate": {
-    "name": "Phantom Gate",
+    "name": "Wall Phantom",
     "description": "Walls near it crumble, opening a path for everyone.",
     "housing": 2,
     "attackIntervalTicks": 10,
@@ -6994,7 +6994,7 @@
     "projectileSpeed": 0.8
   },
   "dragon_kite_armada": {
-    "name": "Dragon Kite Armada",
+    "name": "Dragon Kite Crew",
     "description": "A heavy dragon kite carrying a crew of bombers.",
     "housing": 4,
     "attackIntervalTicks": 10,

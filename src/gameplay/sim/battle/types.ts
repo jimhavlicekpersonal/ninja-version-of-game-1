@@ -117,4 +117,14 @@ export interface BattleRecord {
   rejected?: string;
   /** An Alliance War attack (no loot or honor; stars count for the war). */
   war?: boolean;
+  /**
+   * Defenses (save v16): the raider's own generated base, for one "settle the score" rematch
+   * (sim/rematch.ts). `rematch` on a defense record is set once the rematch was fought; on an
+   * attack record it names the defense it answered. `goalEvent` marks a goal event attack.
+   */
+  raider?: { seed: number; hall: number; bias: number };
+  rematch?: string;
+  goalEvent?: string;
+  /** A Shadow Trial attack: its tier (save v16; older trial records have none). */
+  trial?: number;
 }

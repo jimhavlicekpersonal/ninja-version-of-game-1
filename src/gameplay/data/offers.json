@@ -18,7 +18,7 @@
       "durationHours": 72,
       "oncePerAccount": true,
       "cooldownHours": 0,
-      "minAccountHours": 0
+      "minAccountHours": 24
     },
     {
       "id": "builder_pack",
@@ -33,13 +33,13 @@
       "durationHours": 48,
       "oncePerAccount": false,
       "cooldownHours": 168,
-      "minAccountHours": 6
+      "minAccountHours": 24
     },
     {
       "id": "war_prep_pack",
       "trigger": "grove_raid_soon",
       "title": "War Supplies",
-      "description": "Get ready for the Alliance War: Provisions for troops and Jade.",
+      "description": "Get ready for the Alliance War: Provisions for your warriors, and Jade.",
       "productId": "offer_war_prep",
       "usd": 2.99,
       "contents": {
@@ -49,7 +49,7 @@
       "durationHours": 24,
       "oncePerAccount": false,
       "cooldownHours": 144,
-      "minAccountHours": 0
+      "minAccountHours": 24
     },
     {
       "id": "rebuild_pack",
@@ -66,7 +66,8 @@
       "durationHours": 24,
       "oncePerAccount": false,
       "cooldownHours": 72,
-      "minAccountHours": 0
+      "minAccountHours": 24,
+      "retired": true
     }
   ]
 }

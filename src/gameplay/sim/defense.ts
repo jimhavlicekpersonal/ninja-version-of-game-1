@@ -10,7 +10,7 @@ import { MS_PER_HOUR } from './clock';
 import { buildingDef, levelDef, troopDef, troopLevel } from './data';
 import { attackerFor, lootPenalty } from './matchmaking';
 import { lossTrophies, winTrophies } from './ranks';
-import { collectorAmount } from './resources';
+import { capacity, collectorAmount } from './resources';
 import { createRng, int, mixSeed, next, pick, type Rng } from './rng';
 import type { Cost, GameData, ResourceKind, VillageState } from './types';
 import { advance, hallLevel } from './village';
@@ -188,6 +188,13 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   s.trophies = Math.max(0, s.trophies + delta);
   const shield = shieldHoursFor(result.destruction, data);
   if (shield > 0) s.shieldUntil = Math.max(s.shieldUntil, t + shield * MS_PER_HOUR);
+  s.stats.defensesFaced = (s.stats.defensesFaced ?? 0) + 1;
+  // A held defense (no star lost) pays a little, and counts (save v16).
+  let defenseReward: Cost = {};
+  if (result.stars === 0) {
+    s.stats.defensesWon = (s.stats.defensesWon ?? 0) + 1;
+    defenseReward = defenseWinReward(s, data);
+  }
   const record: BattleRecord = {
     id: `d${s.nextSeed++}`,
     at: t,
@@ -199,10 +206,38 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
     trophies: delta,
     simulated: true,
     rules: SIM_RULES,
+    // The raider's own base, for one "settle the score" rematch (sim/rematch.ts).
+    raider: { seed: mixSeed(setup.seed, 0x7e3a7c), hall: attacker.hall, bias: attacker.bias },
+    ...(hasPositive(defenseReward) ? { banked: defenseReward } : {}),
   };
   s.defenseLog.push(record);
   while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();
   return { record, fromStorage, fromCollectors };
+}
+
+/**
+ * What holding off a bot raid pays (`raids.defenseWin`): a share of the Keep's lowest generated
+ * raid loot in Coins and Provisions, as far as storage has room. Mutates; returns what was added.
+ */
+function defenseWinReward(s: VillageState, data: GameData): Cost {
+  const share = data.raids.defenseWin?.shareOfRaidLoot ?? 0;
+  const hl = hallLevel(s, data);
+  const amount = Math.floor((data.battle.generatedLootByHall[hl - 1]?.min ?? 0) * share);
+  if (amount <= 0) return {};
+  const cap = capacity(s, data);
+  const out: Cost = {};
+  for (const k of ['acorns', 'dew'] as const) {
+    const add = Math.max(0, Math.min(amount, cap[k] - s.resources[k]));
+    if (add > 0) {
+      s.resources[k] += add;
+      out[k] = add;
+    }
+  }
+  return out;
+}
+
+function hasPositive(c: Cost): boolean {
+  return Object.values(c).some((v) => (v ?? 0) > 0);
 }
 
 function sumCosts(a: Cost, b: Cost): Cost {

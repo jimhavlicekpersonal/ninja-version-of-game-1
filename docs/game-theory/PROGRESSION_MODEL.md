@@ -39,7 +39,7 @@ Every warrior, building, EXP track and difficulty tier is priced in one currency
 | Building level | power ×1.16, cost ×1.45, time `10 s × 2.2^(level−1)` ≤ 7 days | `buildings` |
 | Building mastery | defenses earn EXP by defending, collectors by producing; bonus → +15% | `buildingMastery` |
 | Max building level | live tables to Keep 6, then a straight climb to `pinnacleMaxLevel` at Keep 15 | `buildingCatalog` |
-| Shadow Trial t | Keep `min(6, 1 + ⌊(t−1)/4⌋)`; past tier 24, power ×1.06^(t−24); ×2 walls every 5th, ×1.2 defenses every 10th | `trials.json` |
+| Shadow Trial t | Keep `min(15, 1 + ⌊(t−1)/4⌋)` (every Keep level); past tier 60, power ×1.06^(t−60); ×2 walls every 5th, ×1.2 defenses every 10th | `trials.json` |
 | Trial reward | `25% × hall's min raid loot × (1 + 0.1·log₂ t)`, once; 5 Jade every 10th tier | `trials.json` |
 
 ## Pacing targets (gameplay audit, November 2026)

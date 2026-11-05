@@ -4,8 +4,8 @@
   "schedule": [
     {
       "id": "harvest_moon",
-      "name": "Rice Harvest Festival",
-      "description": "Collecting from Coin Mints and Rice Paddies gives 30% extra.",
+      "name": "Harvest Festival",
+      "description": "Collecting from Coin Mints and Terraced Farms gives 30% extra.",
       "startHour": 0,
       "durationHours": 48,
       "effect": {
@@ -30,6 +30,24 @@
       "durationHours": 48,
       "effect": {
         "trainingDiscount": 0.25
+      }
+    },
+    {
+      "id": "bounty_hunt",
+      "name": "Bounty Hunt",
+      "description": "A rival warlord's fortress has a bounty on it. Attack it as often as you like while the hunt lasts: each mark on the reward ladder pays once.",
+      "startHour": 216,
+      "durationHours": 72,
+      "effect": {},
+      "goal": {
+        "kind": "bounty",
+        "power": 1,
+        "ladder": [
+          { "at": 0, "destruction": 30, "reward": { "acorns": 15000, "dew": 15000 } },
+          { "at": 1, "reward": { "acorns": 30000, "dew": 30000 } },
+          { "at": 2, "reward": { "acorns": 45000, "dew": 45000, "moonstones": 10 } },
+          { "at": 3, "reward": { "acorns": 60000, "dew": 60000, "moonstones": 25 } }
+        ]
       }
     },
     {

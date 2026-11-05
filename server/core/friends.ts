@@ -18,6 +18,7 @@ import { leagueFor } from '../../src/gameplay/sim/ranks';
 import type { FriendRequestBody, FriendRequestResult, FriendRequestView, FriendsResponse, FriendView, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PrivacyRequest } from '../../src/backend/net/protocol';
 import { NameTakenError, type FriendRequest, type Player } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
+import { ageBandOf } from './age';
 
 const DAY = 24 * HOUR;
 /** Most friends a player can have. */
@@ -148,6 +149,8 @@ async function findableBy(ctx: ServerContext, me: Player, p: Player, s: Social):
   if (p.id === me.id || s.friends.has(p.id)) return true;
   if (p.bannedUntil && p.bannedUntil > ctx.now()) return false;
   if (await blockedEitherWay(ctx, me, p, s)) return false;
+  // Under 13 (re-audit): never found by name, whatever the setting says.
+  if ((await ageBandOf(ctx.repo, p.id)) === 'under13') return false;
   const who = p.findable ?? 'everyone';
   if (who === 'everyone') return true;
   if (who === 'nobody') return false;
@@ -278,6 +281,7 @@ export async function platformFriends(ctx: ServerContext, me: Player, req: Platf
     if (!playerId || playerId === me.id) continue;
     const p = await ctx.repo.getPlayer(playerId);
     if (!p || (p.findable ?? 'everyone') === 'nobody' || (p.bannedUntil && p.bannedUntil > ctx.now())) continue;
+    if ((await ageBandOf(ctx.repo, p.id)) === 'under13') continue;
     if (await blockedEitherWay(ctx, me, p, s)) continue;
     players.push(await card(ctx, p, relationTo(me, s, p.id)));
   }
@@ -290,6 +294,7 @@ export async function setPrivacy(ctx: ServerContext, me: Player, req: PrivacyReq
   const patch: { findable?: Player['findable']; showOnline?: boolean } = {};
   if (req?.findable !== undefined) {
     if (!FINDABLE.includes(req.findable)) throw new ApiError(400, 'bad_request', 'findable must be everyone, friends_of_friends or nobody.');
+    if (req.findable !== 'nobody' && (await ageBandOf(ctx.repo, me.id)) === 'under13') throw new ApiError(403, 'age_restricted', 'Players under 13 can be found by friend code only.');
     patch.findable = req.findable;
   }
   if (req?.showOnline !== undefined) patch.showOnline = req.showOnline === true;

@@ -811,6 +811,16 @@ export class Connection {
     }
   }
 
+  /**
+   * The player tapped Attack on an online raid (re-audit): tell the server the battle counts now.
+   * Best effort and never blocking the battle; without a connection the report settles it as usual.
+   */
+  startAttack(ticket: string): void {
+    const port = this.port;
+    if (!port?.startAttack || !this.online || !this.server?.features.includes('attack-commit')) return;
+    void port.startAttack(ticket).catch((e) => this.log('Online play: could not mark the raid as started', e));
+  }
+
   /** Queue a finished battle for the server and try to send it now. */
   report(kind: OutboxItem['kind'], sub: BattleSubmission): Promise<void> {
     const items = this.outbox();

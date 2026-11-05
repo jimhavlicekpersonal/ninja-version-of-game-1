@@ -35,7 +35,7 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
   }
   // When the camps are full: warriors training ahead for the next army don't change that.
   const armyDone = armyReadyAt(state, data);
-  if (armyDone !== null && armyDone > now) out.push({ id: 'training', type: 'army', at: armyDone, title: 'Your army is ready', body: 'All troops have finished training. Time to raid!' });
+  if (armyDone !== null && armyDone > now) out.push({ id: 'training', type: 'army', at: armyDone, title: 'Your army is ready', body: 'All your warriors have finished training. Time to raid!' });
   // Earliest time a collector fills up.
   let fullAt = Infinity;
   for (const b of state.buildings) {

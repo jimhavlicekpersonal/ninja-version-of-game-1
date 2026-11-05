@@ -4,6 +4,7 @@ import { PROTOCOL_VERSION, type BalanceResponse, type HelloResponse, type Player
 import type { Player } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { purchaseFeatures } from './purchases';
+import { appealText } from './moderation';
 import { changeName, nameChangeAt, nameForNewPlayer } from './names';
 import { NameTakenError } from '../repo';
 
@@ -17,7 +18,7 @@ export const MIN_PROTOCOL = 7;
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}) };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', 'age-bands', 'deletion-codes', 'notices', 'sessions', 'attack-commit', ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}) };
 }
 
 /** GET /v1/balance (step 76): the signed number changes in force, for games with the same battle rules. */
@@ -73,11 +74,14 @@ export async function register(ctx: ServerContext, name: unknown): Promise<Regis
 
 /** Find the player behind a bearer token, and note that they were seen. */
 export async function authenticate(ctx: ServerContext, token: string | undefined): Promise<Player> {
-  const p = token ? await ctx.repo.playerByTokenHash(await ctx.hash(token)) : null;
+  const hash = token ? await ctx.hash(token) : '';
+  const p = hash ? await ctx.repo.playerByTokenHash(hash) : null;
   if (!p) throw new ApiError(401, 'unauthorized', 'Unknown or missing player token.');
+  // Which device token this is (re-audit: unlink and "sign out other devices" keep this one).
+  p.session = hash;
   const t = ctx.now();
   if (p.bannedUntil) {
-    if (p.bannedUntil > t) throw new ApiError(403, 'banned', `This account is suspended from online play until ${new Date(p.bannedUntil).toUTCString()}${p.banReason ? `: ${p.banReason}` : ''}. Your village on this device is not affected.`);
+    if (p.bannedUntil > t) throw new ApiError(403, 'banned', `This account is suspended from online play until ${new Date(p.bannedUntil).toUTCString()}${p.banReason ? `: ${p.banReason}` : ''}. Your village on this device is not affected. ${appealText(ctx)}`);
     // The suspension is over: back on the ladders.
     await ctx.repo.updatePlayer(p.id, { bannedUntil: 0, banReason: null });
     if (p.base) await ctx.board.set(p.id, p.trophies, p.createdAt);
@@ -85,6 +89,8 @@ export async function authenticate(ctx: ServerContext, token: string | undefined
   }
   if (t - p.lastSeenAt > MIN) {
     await ctx.repo.updatePlayer(p.id, { lastSeenAt: t });
+    // Device tokens unused for a long time are pruned (links.ts): note this one's use.
+    if (hash !== p.tokenHash) await ctx.repo.touchToken(hash, t);
     p.lastSeenAt = t;
   }
   return p;

@@ -135,6 +135,8 @@ for (const [label, makeRepo] of repoFactories) {
         const w = await W();
         const a = await w.player('Ann', baseAt(1));
         const m1 = (await a.match())!;
+        // Started, so the next match keeps it open (an unstarted ticket is voided by a new match: re-audit).
+        await a.startAttack(m1.ticket);
         const m2 = (await a.match())!;
         expect(m1.seed).not.toBe(m2.seed);
         const { army, deployments } = rush(20);
@@ -435,28 +437,55 @@ for (const [label, makeRepo] of repoFactories) {
         for (let i = 0; i < 4; i++) expect((await dot.match())!.opponent.name).not.toBe('Ann');
       });
 
-      it('takes web deletion requests without saying whether the player exists; staff carry them out', async () => {
+      it('takes web deletion requests without saying whether the player exists; staff carry out only verified ones', async () => {
         const w = await W();
         const ann = await w.player('Ann', baseAt(1));
+        const ben = await w.player('Ben', baseAt(1));
         expect(await code(w.core.requestDeletion({}))).toBe('bad_request');
-        const real = await w.core.requestDeletion({ playerId: ann.id, contact: 'ann@example.com', note: 'lost my phone' });
-        const fake = await w.core.requestDeletion({ playerId: 'nobody', name: 'Ghost' });
-        expect(Object.keys(real)).toEqual(['id']);
-        expect(Object.keys(fake)).toEqual(['id']);
+        // Re-audit: a Player ID alone proves nothing (other players see it); the one-time code from Settings does.
+        const { code: annCode, expiresAt } = await ann.deletionCode!();
+        expect(expiresAt).toBe(w.now() + 30 * 24 * 3_600_000);
+        const real = await w.core.requestDeletion({ playerId: ann.id, contact: 'ann@example.com', note: 'lost my phone', code: annCode });
+        const fake = await w.core.requestDeletion({ playerId: 'nobody', name: 'Ghost', code: annCode });
+        const wrong = await w.core.requestDeletion({ playerId: ben.id, code: 'AAAAA-AAAAA' });
+        expect(Object.keys(real).sort()).toEqual(['id', 'verified']);
+        expect([real.verified, fake.verified, wrong.verified]).toEqual([true, false, false]);
+        // The code is used up.
+        expect((await w.core.requestDeletion({ playerId: ann.id, code: annCode })).verified).toBe(false);
         const queue = (await w.core.admin.deletionQueue('open')).requests;
         // An email sent by an old page is not kept (GLOBAL-019).
         expect(JSON.stringify(queue)).not.toContain('ann@example.com');
-        expect(queue.map((r) => [r.id, r.player?.name ?? null])).toEqual([
-          [real.id, 'Ann'],
-          [fake.id, null],
+        expect(queue.map((r) => [r.id, r.player?.name ?? null, r.verified])).toEqual([
+          [real.id, 'Ann', true],
+          [fake.id, null, false],
+          [wrong.id, 'Ben', false],
+          [expect.any(String), 'Ann', false],
         ]);
+        // Unverified: no plain delete; an override needs a note saying how ownership was checked.
+        expect(await code(w.core.admin.resolveDeletion(wrong.id, 'delete', ''))).toBe('conflict');
+        expect(await code(w.core.admin.resolveDeletion(wrong.id, 'override', 'ok'))).toBe('bad_request');
+        expect(await w.repo.getPlayer(ben.id)).not.toBeNull();
         expect(await w.core.admin.resolveDeletion(real.id, 'delete', '')).toMatchObject({ status: 'done', resolution: 'Account deleted.' });
         expect(await w.repo.getPlayer(ann.id)).toBeNull();
         expect(await code(w.core.admin.resolveDeletion(real.id, 'delete', ''))).toBe('conflict');
         expect(await code(w.core.admin.resolveDeletion(fake.id, 'maybe', ''))).toBe('bad_request');
         expect(await w.core.admin.resolveDeletion(fake.id, 'reject', 'Could not confirm ownership.')).toMatchObject({ status: 'rejected', resolution: 'Could not confirm ownership.' });
-        expect((await w.core.admin.deletionQueue('open')).requests).toHaveLength(0);
-        expect((await w.core.admin.deletionQueue('all')).requests).toHaveLength(2);
+        expect(await w.core.admin.resolveDeletion(wrong.id, 'override', 'Owner wrote from the Apple ID linked to this account.')).toMatchObject({ status: 'done', resolution: 'Staff override: Owner wrote from the Apple ID linked to this account.' });
+        expect(await w.repo.getPlayer(ben.id)).toBeNull();
+        expect((await w.core.admin.deletionQueue('open')).requests).toHaveLength(1);
+        expect((await w.core.admin.deletionQueue('all')).requests).toHaveLength(4);
+      });
+
+      it('a deletion code expires after 30 days and a new one replaces the old', async () => {
+        const w = await W();
+        const ann = await w.player('Ann', baseAt(1));
+        const first = await ann.deletionCode!();
+        const second = await ann.deletionCode!();
+        expect((await w.core.requestDeletion({ playerId: ann.id, code: first.code })).verified).toBe(false);
+        w.advance(31 * 24 * 3_600_000);
+        expect((await w.core.requestDeletion({ playerId: ann.id, code: second.code })).verified).toBe(false);
+        const third = await ann.deletionCode!();
+        expect((await w.core.requestDeletion({ playerId: ann.id, code: third.code.replace('-', ' ') })).verified).toBe(true);
       });
     });
 

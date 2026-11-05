@@ -6,6 +6,8 @@
  */
 import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
+import { brotliCompress, constants as zlibConstants, gzip } from 'node:zlib';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
 import { MIN_PROTOCOL } from './core/identity';
@@ -14,7 +16,7 @@ import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
 import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext, type SharedStores } from './nodeContext';
 import { PromMetrics, type ServerSentry } from './observability';
-import { BODY_LIMITS, DEFAULT_RATE_LIMITS, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
+import { BODY_LIMITS, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
 import type { Player, Repo } from './repo';
 import type { ClientInfo } from './rules/registry';
 
@@ -43,11 +45,20 @@ export interface ServerOptions {
    */
   trustProxy?: boolean | number | string;
   /**
-   * Staff token for the admin API (/admin/v1/…: deletion requests, the
-   * moderation queue). At least 24 characters; without it the admin API does
-   * not exist (404).
+   * Legacy shared staff token for the admin API (/admin/v1/…: deletion
+   * requests, the moderation queue). At least 24 characters. Its actor is
+   * whatever `x-staff-name` says (default "staff"). Without it and without
+   * `adminTokens` the admin API does not exist (404).
    */
   adminToken?: string;
+  /**
+   * Per-staff tokens (ADMIN_TOKENS "name:token,…", config.ts
+   * `parseAdminTokens`): name → token, each at least 24 characters. The staff
+   * log names whoever's token it was; `x-staff-name` is ignored for them.
+   */
+  adminTokens?: Record<string, string>;
+  /** ADMIN_ALLOW_IPS: only these addresses or CIDR ranges reach /admin… (everyone else gets 404). */
+  adminAllowIps?: string[];
   /** Metrics (always collected); served at GET /metrics only with `metricsToken`. */
   metrics?: PromMetrics;
   /** Bearer token for GET /metrics (Prometheus or a Grafana agent). Without it /metrics is 404. */
@@ -65,6 +76,22 @@ export interface ServerOptions {
 }
 
 const sameSecret = (got: string | undefined, want: Buffer) => timingSafeEqual(createHash('sha256').update(got ?? '').digest(), want);
+
+/** Answers smaller than this are sent as they are (compression would not pay for its headers). */
+export const COMPRESS_MIN_BYTES = 1024;
+
+/** br, else gzip, as an Accept-Encoding header allows (q=0 refuses one); null for neither. */
+export function pickEncoding(header: string | string[] | undefined): 'br' | 'gzip' | null {
+  const q = new Map<string, number>();
+  for (const part of String(header ?? '').toLowerCase().split(',')) {
+    const [name, ...params] = part.trim().split(';');
+    if (!name) continue;
+    const qp = params.map((p) => p.trim()).find((p) => p.startsWith('q='));
+    q.set(name, qp ? Number(qp.slice(2)) || 0 : 1);
+  }
+  const ok = (e: string) => (q.has(e) ? q.get(e)! : (q.get('*') ?? 0)) > 0;
+  return ok('br') ? 'br' : ok('gzip') ? 'gzip' : null;
+}
 
 /** Route option: which extra rate rule the route counts against. */
 type RateConfig = { rate?: keyof RateLimits | (keyof RateLimits)[] };
@@ -90,14 +117,16 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       return typeof h === 'string' && /^[\w-]{8,64}$/.test(h) ? h : randomUUID();
     },
   });
+  // The same limiter serves the routes and the core's own limits (battle commands per minute).
+  const limiter = opts.rateLimiter ?? new MemoryRateLimiter({ ...DEFAULT_RATE_LIMITS, ...opts.rateLimits });
   const ctx = nodeContext(opts.repo, opts.data, now, opts.random, {
     ...opts.shared,
+    limiter,
     metrics,
     log: (lvl, msg, fields) => fastify.log[lvl](fields ?? {}, msg),
   });
   const core: ServerCore = createCore(ctx);
   const app = Object.assign(fastify, { core, metrics });
-  const limiter = opts.rateLimiter ?? new MemoryRateLimiter({ ...DEFAULT_RATE_LIMITS, ...opts.rateLimits });
   const started = Date.now();
 
   // CORS without an extra dependency. corsOrigin: '*' (default; fine because
@@ -142,17 +171,11 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (req.method === 'GET' || req.method === 'OPTIONS' || typeof key !== 'string' || !token || key.length > 100) return null;
     return { scope: createHash('sha256').update(token).digest('hex').slice(0, 32), key };
   };
-  app.addHook('onRequest', async (req, reply) => {
-    const id = idemScope(req);
-    if (!id) return;
-    const seen = await opts.repo.getIdempotent(id.scope, id.key);
-    if (!seen) return;
-    reply.header('idempotent-replay', 'true');
-    return reply.code(seen.status).send(seen.body ?? undefined);
-  });
+  /** Players whose token the idempotency check already verified (the route reuses it). */
+  const verified = new WeakMap<FastifyRequest, Player>();
   app.addHook('onSend', async (req, reply, payload) => {
     const id = idemScope(req);
-    if (!id || reply.getHeader('idempotent-replay') || reply.statusCode >= 300) return payload;
+    if (!id || !verified.has(req) || reply.getHeader('idempotent-replay') || reply.statusCode >= 300) return payload;
     let body: unknown = null;
     try {
       body = typeof payload === 'string' && payload ? JSON.parse(payload) : null;
@@ -183,7 +206,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.addHook('onRequest', async (req, reply) => {
     if (req.method === 'OPTIONS' || req.url === '/healthz' || req.url === '/readyz' || req.url === '/metrics') return;
     const t = now();
-    const ip = `ip:${req.ip}`;
+    // IPv6 by /64 (one subscriber's block); IPv4 as it is (rateLimit.ts: why the IP limits are loose).
+    const ip = `ip:${ipKey(req.ip)}`;
     let d = await limiter.hit('ip', ip, t);
     if (!d.ok) return tooMany(reply, d, 'Too many requests from your network.', 'ip');
     const token = bearer(req);
@@ -198,6 +222,57 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' ? ip : who, t);
       if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookup' || rule === 'lookupDay' ? 'Too many player searches. Try again later.' : 'Slow down a little.', rule);
     }
+  });
+
+  // ADMIN_ALLOW_IPS: the staff tool and API answer only these addresses (everyone else sees nothing there).
+  const adminAllowed = opts.adminAllowIps?.length ? ipAllowList(opts.adminAllowIps) : null;
+  if (adminAllowed) {
+    app.addHook('onRequest', async (req, reply) => {
+      if ((req.url === '/admin' || req.url.startsWith('/admin/') || req.url.startsWith('/admin?')) && !adminAllowed(req.ip)) {
+        metrics.count('tk_errors_total', { code: 'admin_ip_refused' });
+        return reply.code(404).send({ error: 'not_found', message: 'Not found.' } satisfies ErrorBody);
+      }
+    });
+  }
+
+  // Idempotent writes, looked up only after the rate limits and the token check (re-audit): junk tokens
+  // never reach the idempotency table, and a banned or deleted player's token gets no stored answer back.
+  app.addHook('onRequest', async (req, reply) => {
+    const id = idemScope(req);
+    if (!id) return;
+    try {
+      verified.set(req, await core.authenticate(bearer(req)));
+    } catch {
+      return; // the route answers 401 / 403 itself
+    }
+    const seen = await opts.repo.getIdempotent(id.scope, id.key);
+    if (!seen) return;
+    reply.header('idempotent-replay', 'true');
+    return reply.code(seen.status).send(seen.body ?? undefined);
+  });
+
+  // Compression (re-audit): a village file is ~290 KB and ~5 KB gzipped, and many players are on slow,
+  // metered networks. Text answers over 1 KB, br or gzip as the caller accepts (browsers and the
+  // WebViews decode it themselves). Registered after the idempotency hook, which reads the plain text.
+  const gzipAsync = promisify(gzip);
+  const brotliAsync = promisify(brotliCompress);
+  app.addHook('onSend', async (req, reply, payload) => {
+    if (typeof payload !== 'string' && !Buffer.isBuffer(payload)) return payload;
+    if (req.method === 'HEAD' || reply.getHeader('content-encoding')) return payload;
+    const size = Buffer.byteLength(payload);
+    if (size < COMPRESS_MIN_BYTES || !/json|text|javascript/.test(String(reply.getHeader('content-type') ?? ''))) return payload;
+    const vary = String(reply.getHeader('vary') ?? '');
+    if (!/accept-encoding/i.test(vary)) reply.header('vary', vary ? `${vary}, Accept-Encoding` : 'Accept-Encoding');
+    const enc = pickEncoding(req.headers['accept-encoding']);
+    if (!enc) return payload;
+    const out =
+      enc === 'br'
+        ? await brotliAsync(payload, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 5, [zlibConstants.BROTLI_PARAM_SIZE_HINT]: size } })
+        : await gzipAsync(payload, { level: 6 });
+    reply.header('content-encoding', enc);
+    reply.removeHeader('content-length');
+    metrics.count('tk_http_compressed_total', { encoding: enc });
+    return out;
   });
 
   app.setErrorHandler((err, req, reply) => {
@@ -221,7 +296,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   type Handler = (me: Player, req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
   /** A route that needs a registered player. Undefined results become 204. */
   const authed = (h: Handler) => async (req: FastifyRequest, reply: FastifyReply) => {
-    const me = await core.authenticate(bearer(req));
+    const me = verified.get(req) ?? (await core.authenticate(bearer(req)));
     const out = await h(me, req, reply);
     if (out === undefined) return reply.code(204).send();
     return out;
@@ -289,6 +364,16 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.links, rate('moderation'), authed(async (me, req) => core.link(me, req.body as never)));
   app.delete('/v1/links/:provider', authed(async (me, req) => core.unlink(me, param(req, 'provider'))));
   app.post(Routes.sessions, rate('register'), async (req) => core.signIn(req.body as never));
+  // Re-audit: account protections (age bands, notices, deletion codes, signing out other devices, Apple notifications).
+  app.put(Routes.meAge, rate('moderation'), authed(async (me, req) => core.stateAge(me, req.body as never)));
+  app.post(Routes.deletionCode, rate('moderation'), authed(async (me) => core.deletionCode(me)));
+  app.get(Routes.notices, authed(async (me) => core.notices(me)));
+  app.post(Routes.noticesRead, authed(async (me, req) => core.markNoticesRead(me, body<{ ids: string[] }>(req).ids)));
+  app.post(Routes.sessionsRevokeOthers, rate('moderation'), authed(async (me) => core.revokeOtherSessions(me)));
+  app.post(Routes.appleSignInNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
+    await core.appleSignInNotification(req.body as never);
+    return { ok: true };
+  });
 
   // Server-owned village (roadmap Phase 2)
   app.get(Routes.village, authed(async (me) => core.getVillage(me)));
@@ -298,10 +383,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.villageLedger, authed(async (me, req) => core.ledger(me, query(req).limit)));
 
   // Purchases (roadmap Phase 4): ask, redeem once, history; store notifications carry their own signatures.
-  app.post(Routes.purchaseIntent, rate('moderation'), authed(async (me, req) => core.purchaseIntent(me, req.body as never)));
-  app.post(Routes.purchaseIntentRelease, rate('moderation'), authed(async (me, req) => core.releaseIntent(me, req.body as never)));
-  app.post(Routes.purchases, { ...rate('moderation'), bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.redeem(me, req.body as never)));
-  app.get(Routes.purchases, authed(async (me) => core.purchaseHistory(me)));
+  app.post(Routes.purchaseIntent, rate('purchase'), authed(async (me, req) => core.purchaseIntent(me, req.body as never)));
+  app.post(Routes.purchaseIntentRelease, rate('purchase'), authed(async (me, req) => core.releaseIntent(me, req.body as never)));
+  app.post(Routes.purchases, { ...rate('purchase'), bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.redeem(me, req.body as never)));
+  app.get(Routes.purchases, rate('purchase'), authed(async (me) => core.purchaseHistory(me)));
   app.post(Routes.appleNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
     await core.appleNotification(req.body as never);
     return { ok: true };
@@ -329,6 +414,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.put(Routes.base, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.uploadBase(me, req.body as never, client(req))));
   app.get(Routes.match, rate('match'), authed(async (me, req) => core.match(me, client(req))));
   app.post(Routes.attacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.attack(me, req.body as never)));
+  app.post(Routes.attackStart, rate('battle'), authed(async (me, req) => core.startAttack(me, req.body as never)));
+  app.post(Routes.attackVoid, rate('battle'), authed(async (me, req) => core.voidAttack(me, req.body as never)));
   app.get(Routes.defenses, authed(async (me, req) => core.defenses(me, Number(query(req).since ?? 0))));
   app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50))));
   app.get(Routes.powerLeaderboard, authed(async (me, req) => core.powerLeaderboard(me, Number(query(req).limit ?? 50))));
@@ -383,12 +470,24 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.groveRaidAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.raidAttack(me, req.body as never)));
   app.post(Routes.groveRaidClaim, authed(async (me, req) => core.claimRaid(me, body<{ week: number }>(req).week)));
 
-  // Staff API: only with a strong ADMIN_TOKEN, compared in constant time.
-  if (opts.adminToken !== undefined) {
-    if (opts.adminToken.length < 24) throw new Error('ADMIN_TOKEN must be at least 24 characters.');
-    const want = createHash('sha256').update(opts.adminToken).digest();
+  // Staff API: only with strong tokens, compared in constant time. Per-staff tokens (ADMIN_TOKENS) name
+  // their holder in the staff log; the legacy shared ADMIN_TOKEN takes the name from x-staff-name.
+  // ADMIN_ALLOW_IPS keeps /admin… to the office or VPN addresses.
+  const staffTokens = [
+    ...Object.entries(opts.adminTokens ?? {}).map(([name, token]) => ({ name, token, named: true })),
+    ...(opts.adminToken !== undefined ? [{ name: 'staff', token: opts.adminToken, named: false }] : []),
+  ];
+  if (staffTokens.length) {
+    for (const t of staffTokens) if (t.token.length < 24) throw new Error(t.named ? `ADMIN_TOKENS: the token for "${t.name}" must be at least 24 characters.` : 'ADMIN_TOKEN must be at least 24 characters.');
+    const wants = staffTokens.map((t) => ({ name: t.name, named: t.named, hash: createHash('sha256').update(t.token).digest() }));
+    const staffBy = new WeakMap<FastifyRequest, { name: string; named: boolean }>();
     const staff = <T>(h: (req: FastifyRequest) => Promise<T>) => async (req: FastifyRequest) => {
-      if (!sameSecret(bearer(req), want)) throw new ApiError(401, 'unauthorized', 'Staff token required.');
+      const got = createHash('sha256').update(bearer(req) ?? '').digest();
+      let who: { name: string; named: boolean } | null = null;
+      // Every token is compared (no early exit), each in constant time.
+      for (const w of wants) if (timingSafeEqual(got, w.hash) && !who) who = w;
+      if (!who) throw new ApiError(401, 'unauthorized', 'Staff token required.');
+      staffBy.set(req, who);
       return h(req);
     };
     app.get('/admin/v1/deletion-requests', staff(async (req) => core.admin.deletionQueue(query(req).status === 'all' ? 'all' : 'open')));
@@ -396,7 +495,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.get('/admin/v1/reports', staff(async (req) => core.admin.reportQueue(query(req).status === 'all' ? 'all' : 'open')));
     app.post('/admin/v1/reports/:id', staff(async (req) => core.admin.resolveReport(param(req, 'id'), req.body as never)));
     // The admin tool (roadmap step 48): player lookup, give/take, suspend, rating reset, staff log.
-    const actor = (req: FastifyRequest) => String(req.headers['x-staff-name'] ?? 'staff').slice(0, 40);
+    const actor = (req: FastifyRequest) => {
+      const who = staffBy.get(req);
+      return who?.named ? who.name : String(req.headers['x-staff-name'] ?? 'staff').slice(0, 40);
+    };
     app.get('/admin/v1/players', staff(async (req) => core.admin.search(query(req).q)));
     app.get('/admin/v1/players/:id', staff(async (req) => core.admin.player(param(req, 'id'))));
     app.post('/admin/v1/players/:id/adjust', staff(async (req) => core.admin.adjust(actor(req), param(req, 'id'), req.body as never)));

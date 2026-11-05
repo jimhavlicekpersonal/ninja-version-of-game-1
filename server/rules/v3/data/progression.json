@@ -1,0 +1,1066 @@
+{
+  "$comment": "The single progression model (docs/game-theory/PROGRESSION_MODEL.md). Every warrior, building, EXP and difficulty number in the design catalog derives from these constants. The live game (Keep 1-6) is pinned by tests to match it.",
+  "keepLevels": 15,
+  "liveKeepLevels": 6,
+  "powerPerHousing": 21,
+  "levelGrowth": 1.16,
+  "tierPowerMult": 1.4,
+  "levelCapOffsetPerTier": 2,
+  "warriorMaxLevel": 20,
+  "troopLevelCapByKeep": [
+    1,
+    2,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    10,
+    11,
+    13,
+    14,
+    16,
+    18,
+    20
+  ],
+  "armyHousingByKeep": [
+    20,
+    40,
+    80,
+    120,
+    180,
+    240,
+    255,
+    270,
+    285,
+    300,
+    300,
+    315,
+    330,
+    345,
+    360
+  ],
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "Initiate",
+      "firstKeep": 1
+    },
+    {
+      "tier": 2,
+      "name": "Adept",
+      "firstKeep": 4
+    },
+    {
+      "tier": 3,
+      "name": "Veteran",
+      "firstKeep": 7
+    },
+    {
+      "tier": 4,
+      "name": "Master",
+      "firstKeep": 10
+    },
+    {
+      "tier": 5,
+      "name": "Legend",
+      "firstKeep": 13
+    }
+  ],
+  "visualStages": [
+    {
+      "stage": 1,
+      "levels": [
+        1,
+        5
+      ],
+      "look": "plain cloth, wooden or iron gear, no trim"
+    },
+    {
+      "stage": 2,
+      "levels": [
+        6,
+        10
+      ],
+      "look": "dyed cloth with a coloured sash, polished steel, one clan crest"
+    },
+    {
+      "stage": 3,
+      "levels": [
+        11,
+        15
+      ],
+      "look": "lacquered armour plates, silver trim, crest on the back, faint aura"
+    },
+    {
+      "stage": 4,
+      "levels": [
+        16,
+        20
+      ],
+      "look": "gold leaf trim, glowing weapon edge, flowing scarf, strong aura"
+    }
+  ],
+  "training": {
+    "costPerHousing": 20,
+    "costGrowth": 1.3,
+    "tierCostMult": 2.0,
+    "secondsPerHousing": 20,
+    "tierTimeMult": 1.35
+  },
+  "research": {
+    "costBase": 4000,
+    "costGrowth": 1.55,
+    "tierCostMult": 3.0,
+    "secondsBase": 1800,
+    "timeGrowth": 1.6,
+    "maxSeconds": 216000
+  },
+  "mastery": {
+    "xpBase": 50,
+    "xpGrowth": 1.35,
+    "maxBonus": 0.3,
+    "bonusRate": 0.08,
+    "xpPerHousingUsed": 1,
+    "xpPerStar": 2
+  },
+  "buildingMastery": {
+    "xpBase": 100,
+    "xpGrowth": 1.35,
+    "maxBonus": 0.15,
+    "bonusRate": 0.06
+  },
+  "buildings": {
+    "levelGrowth": 1.16,
+    "costGrowth": 1.45,
+    "timeBaseSeconds": 10,
+    "timeGrowth": 2.2,
+    "maxSeconds": 604800,
+    "visualStages": 5
+  },
+  "roles": {
+    "blade": {
+      "name": "Blade",
+      "efficiency": 1.0,
+      "hpPerDps": 5.7,
+      "housing": 1,
+      "range": 0.6,
+      "speed": 0.17,
+      "targets": "any",
+      "air": false,
+      "wallBypass": false,
+      "summary": "Fast melee that strikes the nearest building."
+    },
+    "thrower": {
+      "name": "Thrower",
+      "efficiency": 0.627,
+      "hpPerDps": 3.43,
+      "housing": 1,
+      "range": 3.5,
+      "speed": 0.15,
+      "targets": "any",
+      "air": false,
+      "wallBypass": false,
+      "summary": "Fragile ranged damage from behind the front line."
+    },
+    "guardian": {
+      "name": "Guardian",
+      "efficiency": 1.0,
+      "hpPerDps": 39,
+      "housing": 5,
+      "range": 0.8,
+      "speed": 0.1,
+      "targets": "defense",
+      "air": false,
+      "wallBypass": false,
+      "summary": "Armoured frontliner that walks into defenses and soaks fire."
+    },
+    "saboteur": {
+      "name": "Saboteur",
+      "efficiency": 0.72,
+      "hpPerDps": 25,
+      "housing": 2,
+      "range": 0.6,
+      "speed": 0.22,
+      "targets": "defense",
+      "air": false,
+      "wallBypass": true,
+      "summary": "Specialist that disables defenses for a short time."
+    },
+    "infiltrator": {
+      "name": "Infiltrator",
+      "efficiency": 0.95,
+      "hpPerDps": 6.25,
+      "housing": 2,
+      "range": 0.6,
+      "speed": 0.22,
+      "targets": "any",
+      "air": false,
+      "wallBypass": true,
+      "summary": "Gets past walls by tunnel, rope or rooftop."
+    },
+    "sky": {
+      "name": "Sky",
+      "efficiency": 0.494,
+      "hpPerDps": 2.7,
+      "housing": 4,
+      "range": 0.5,
+      "speed": 0.2,
+      "targets": "defense",
+      "air": true,
+      "wallBypass": true,
+      "summary": "Flies over everything; only anti-air can touch it, so it is fragile and hits lighter."
+    },
+    "mystic": {
+      "name": "Mystic",
+      "efficiency": 0.7,
+      "hpPerDps": 12,
+      "housing": 3,
+      "range": 3.0,
+      "speed": 0.15,
+      "targets": "support",
+      "air": false,
+      "wallBypass": false,
+      "summary": "Supports nearby warriors: heals, haste, shields."
+    },
+    "siege": {
+      "name": "Siege",
+      "efficiency": 0.9,
+      "hpPerDps": 3.0,
+      "housing": 3,
+      "range": 1.0,
+      "speed": 0.12,
+      "targets": "walls",
+      "air": false,
+      "wallBypass": false,
+      "summary": "Breaks walls and buildings fast; weak against defenses."
+    },
+    "beast": {
+      "name": "Beast",
+      "efficiency": 0.95,
+      "hpPerDps": 8,
+      "housing": 3,
+      "range": 0.6,
+      "speed": 0.2,
+      "targets": "any",
+      "air": false,
+      "wallBypass": false,
+      "summary": "Handlers and their animals: numbers and charges."
+    },
+    "shadow": {
+      "name": "Shadow",
+      "efficiency": 0.8,
+      "hpPerDps": 4,
+      "housing": 2,
+      "range": 0.6,
+      "speed": 0.2,
+      "targets": "any",
+      "air": false,
+      "wallBypass": false,
+      "summary": "Stealth: unseen until it strikes."
+    }
+  },
+  "buildingCatalog": [
+    {
+      "id": "elder_toadstool",
+      "name": "Clan Keep",
+      "category": "hall",
+      "unlockKeep": 1,
+      "liveMaxLevel": 6,
+      "pinnacleMaxLevel": 15,
+      "live": true
+    },
+    {
+      "id": "acorn_orchard",
+      "name": "Coin Mint",
+      "category": "collector",
+      "unlockKeep": 1,
+      "liveMaxLevel": 11,
+      "pinnacleMaxLevel": 24,
+      "live": true
+    },
+    {
+      "id": "dewdrop_well",
+      "name": "Rice Paddy",
+      "category": "collector",
+      "unlockKeep": 1,
+      "liveMaxLevel": 11,
+      "pinnacleMaxLevel": 24,
+      "live": true
+    },
+    {
+      "id": "acorn_silo",
+      "name": "Treasury",
+      "category": "storage",
+      "unlockKeep": 1,
+      "liveMaxLevel": 10,
+      "pinnacleMaxLevel": 22,
+      "live": true
+    },
+    {
+      "id": "dew_cistern",
+      "name": "Provision Storehouse",
+      "category": "storage",
+      "unlockKeep": 1,
+      "liveMaxLevel": 10,
+      "pinnacleMaxLevel": 22,
+      "live": true
+    },
+    {
+      "id": "beaver_lodge",
+      "name": "Artisan's Hut",
+      "category": "builder",
+      "unlockKeep": 1,
+      "liveMaxLevel": 1,
+      "pinnacleMaxLevel": 1,
+      "live": true
+    },
+    {
+      "id": "burrow_barracks",
+      "name": "Training Dojo",
+      "category": "military",
+      "unlockKeep": 1,
+      "liveMaxLevel": 6,
+      "pinnacleMaxLevel": 13,
+      "live": true
+    },
+    {
+      "id": "army_camp",
+      "name": "Squad Courtyard",
+      "category": "military",
+      "unlockKeep": 1,
+      "liveMaxLevel": 7,
+      "pinnacleMaxLevel": 15,
+      "live": true
+    },
+    {
+      "id": "acorn_cannon",
+      "name": "Kunai Tower",
+      "category": "defense",
+      "unlockKeep": 1,
+      "liveMaxLevel": 7,
+      "pinnacleMaxLevel": 15,
+      "live": true
+    },
+    {
+      "id": "pinecone_catapult",
+      "name": "Firework Mortar",
+      "category": "defense",
+      "unlockKeep": 3,
+      "liveMaxLevel": 4,
+      "pinnacleMaxLevel": 9,
+      "live": true
+    },
+    {
+      "id": "wasp_nest",
+      "name": "Shuriken Pagoda",
+      "category": "defense",
+      "unlockKeep": 2,
+      "liveMaxLevel": 6,
+      "pinnacleMaxLevel": 13,
+      "live": true
+    },
+    {
+      "id": "firefly_tower",
+      "name": "Sky Bow Tower",
+      "category": "defense",
+      "unlockKeep": 4,
+      "liveMaxLevel": 3,
+      "pinnacleMaxLevel": 10,
+      "live": true
+    },
+    {
+      "id": "bramble_hedge",
+      "name": "Stone Wall",
+      "category": "hedge",
+      "unlockKeep": 1,
+      "liveMaxLevel": 6,
+      "pinnacleMaxLevel": 13,
+      "live": true
+    },
+    {
+      "id": "thorn_snare",
+      "name": "Spike Pit",
+      "category": "trap",
+      "unlockKeep": 3,
+      "liveMaxLevel": 4,
+      "pinnacleMaxLevel": 9,
+      "live": true
+    },
+    {
+      "id": "sap_puddle",
+      "name": "Caltrop Field",
+      "category": "trap",
+      "unlockKeep": 3,
+      "liveMaxLevel": 3,
+      "pinnacleMaxLevel": 7,
+      "live": true
+    },
+    {
+      "id": "flower_bed",
+      "name": "Bonsai Planter",
+      "category": "decor",
+      "unlockKeep": 1,
+      "liveMaxLevel": 1,
+      "pinnacleMaxLevel": 1,
+      "live": true
+    },
+    {
+      "id": "lantern_post",
+      "name": "Stone Lantern",
+      "category": "decor",
+      "unlockKeep": 1,
+      "liveMaxLevel": 1,
+      "pinnacleMaxLevel": 1,
+      "live": true
+    },
+    {
+      "id": "mushroom_ring",
+      "name": "Zen Garden",
+      "category": "decor",
+      "unlockKeep": 1,
+      "liveMaxLevel": 1,
+      "pinnacleMaxLevel": 1,
+      "live": true
+    },
+    {
+      "id": "mossy_statue",
+      "name": "Fox Guardian Statue",
+      "category": "decor",
+      "unlockKeep": 1,
+      "liveMaxLevel": 1,
+      "pinnacleMaxLevel": 1,
+      "live": true
+    },
+    {
+      "id": "grove_lodge",
+      "name": "Alliance Lodge",
+      "category": "social",
+      "unlockKeep": 2,
+      "liveMaxLevel": 5,
+      "pinnacleMaxLevel": 11,
+      "live": true
+    },
+    {
+      "id": "scroll_library",
+      "name": "Scroll Library",
+      "category": "research",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 15,
+      "live": false,
+      "description": "Moves warrior research out of the Training Dojo and studies mastery scrolls."
+    },
+    {
+      "id": "shadow_ink_well",
+      "name": "Shadow Ink Well",
+      "category": "collector",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "Distils Shadow Ink, the third currency, used for Veteran-tier warriors and heroes."
+    },
+    {
+      "id": "shadow_ink_vault",
+      "name": "Shadow Ink Vault",
+      "category": "storage",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Stores Shadow Ink."
+    },
+    {
+      "id": "reinforced_gate",
+      "name": "Reinforced Gate",
+      "category": "hedge",
+      "unlockKeep": 5,
+      "pinnacleMaxLevel": 15,
+      "live": false,
+      "description": "A wall segment with an iron-banded gate; tougher than stone and opens only for defenders."
+    },
+    {
+      "id": "sky_net",
+      "name": "Sky Net",
+      "category": "trap",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Hidden net that snares flyers for a few seconds."
+    },
+    {
+      "id": "hero_shrine",
+      "name": "Hero Shrine",
+      "category": "military",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Home of a clan hero; one shrine per hero."
+    },
+    {
+      "id": "temple_bell_tower",
+      "name": "Temple Bell Tower",
+      "category": "defense",
+      "unlockKeep": 8,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby."
+    },
+    {
+      "id": "clan_forge",
+      "name": "Clan Forge",
+      "category": "military",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Forges equipment that adds small bonuses to one role at a time."
+    },
+    {
+      "id": "wind_chime_wire",
+      "name": "Wind Chime Wire",
+      "category": "trap",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Tripwire that slows and reveals everything that crosses it."
+    },
+    {
+      "id": "crossbow_bastion",
+      "name": "Repeating Crossbow Bastion",
+      "category": "defense",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 14,
+      "live": false,
+      "description": "Fires at three targets at once."
+    },
+    {
+      "id": "flame_trench",
+      "name": "Flame Trench",
+      "category": "defense",
+      "unlockKeep": 10,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "A trench that bursts into flame under ground troops."
+    },
+    {
+      "id": "thunder_shrine",
+      "name": "Thunder Shrine",
+      "category": "defense",
+      "unlockKeep": 11,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "Chain lightning that jumps between flyers."
+    },
+    {
+      "id": "ninja_watch_post",
+      "name": "Ninja Watch Post",
+      "category": "defense",
+      "unlockKeep": 12,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Sends out defending ninja who chase attackers."
+    },
+    {
+      "id": "great_dragon_cannon",
+      "name": "Great Dragon Cannon",
+      "category": "defense",
+      "unlockKeep": 13,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "The keep's last word: enormous damage, very slow."
+    },
+    {
+      "id": "whirling_blade_tower",
+      "name": "Whirling Blade Tower",
+      "category": "defense",
+      "unlockKeep": 4,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "Short-range spinning blades hit every ground warrior within 1.2 tiles. Punishes cheap melee swarms; useless against anything that stands back.",
+      "effect": {
+        "kind": "spin_aoe",
+        "radius": 1.2,
+        "groundOnly": true
+      },
+      "counters": [
+        "shinobi",
+        "twin_fang_dancer",
+        "hound_handler",
+        "trap_breaker"
+      ],
+      "counteredBy": [
+        "armored_guardian",
+        "siege_bombardier",
+        "iron_monk"
+      ]
+    },
+    {
+      "id": "paper_lantern_line",
+      "name": "Paper Lantern Line",
+      "category": "trap",
+      "unlockKeep": 5,
+      "pinnacleMaxLevel": 6,
+      "live": true,
+      "description": "Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.",
+      "effect": {
+        "kind": "reveal_line",
+        "radius": 2,
+        "seconds": 4,
+        "vulnerablePct": 0.15
+      },
+      "counters": [
+        "shadow_stalker",
+        "mist_weaver",
+        "eclipse_ninja"
+      ],
+      "counteredBy": [
+        "kite_raider",
+        "shuriken_storm",
+        "fire_monk"
+      ]
+    },
+    {
+      "id": "rain_barrel_tower",
+      "name": "Rain Barrel Tower",
+      "category": "defense",
+      "unlockKeep": 5,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Douses fire and rinses venom: burning and poison on buildings within 2.5 tiles end after 1 second, and firebomb splash there is 25% smaller. Wet ground conducts lightning, though.",
+      "effect": {
+        "kind": "extinguish",
+        "radius": 2.5,
+        "burnMaxSeconds": 1,
+        "splashCutPct": 0.25
+      },
+      "counters": [
+        "fire_monk",
+        "volcano_cannoneer",
+        "kite_raider",
+        "blowgun_hunter"
+      ],
+      "counteredBy": [
+        "thunder_kite",
+        "storm_sovereign",
+        "ram_crew"
+      ]
+    },
+    {
+      "id": "listening_jars",
+      "name": "Listening Jars",
+      "category": "trap",
+      "unlockKeep": 5,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Buried clay jars that amplify every sound underfoot. Diggers within 3 tiles are forced to the surface and stunned for 1 second; unseen walkers within 2 tiles are revealed.",
+      "effect": {
+        "kind": "detect_underground",
+        "radius": 3,
+        "stunSeconds": 1,
+        "revealRadius": 2
+      },
+      "counters": [
+        "tunnel_runner",
+        "mole_king",
+        "shadow_stalker"
+      ],
+      "counteredBy": [
+        "lantern_balloon",
+        "trap_breaker",
+        "wall_climber"
+      ]
+    },
+    {
+      "id": "living_bamboo_wall",
+      "name": "Living Bamboo Wall",
+      "category": "hedge",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 12,
+      "live": false,
+      "description": "A wall that grows back 3% of its health every second and is too springy to climb. Wall-breaking multipliers count half (a 4x ram hits for 2.5x).",
+      "effect": {
+        "kind": "regrow_wall",
+        "regenPctPerSecond": 0.03,
+        "wallMultDamp": 0.5,
+        "noClimb": true
+      },
+      "counters": [
+        "ram_crew",
+        "oni_breaker",
+        "phantom_gate",
+        "wall_climber"
+      ],
+      "counteredBy": [
+        "fire_monk",
+        "volcano_cannoneer",
+        "tunnel_runner"
+      ]
+    },
+    {
+      "id": "clockwork_repairer",
+      "name": "Clockwork Repair Crane",
+      "category": "support",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 10,
+      "live": true,
+      "description": "A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.",
+      "effect": {
+        "kind": "shorten_disables",
+        "radius": 3,
+        "pct": 0.5,
+        "uses": 3
+      },
+      "counters": [
+        "saboteur",
+        "gearbreaker",
+        "ghost_engineer",
+        "hawk_tamer"
+      ],
+      "counteredBy": [
+        "fuse_master",
+        "tunnel_runner",
+        "phantom_gate"
+      ]
+    },
+    {
+      "id": "bitter_incense_burner",
+      "name": "Bitter Incense Burner",
+      "category": "support",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 10,
+      "live": true,
+      "description": "Burns foul incense: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.",
+      "effect": {
+        "kind": "anti_heal",
+        "radius": 3,
+        "healCutPct": 0.5,
+        "auraCutPct": 0.5
+      },
+      "counters": [
+        "herbalist",
+        "drum_monk",
+        "iron_monk",
+        "sage_of_clouds"
+      ],
+      "counteredBy": [
+        "blowgun_hunter",
+        "kunai_adept",
+        "dragon_kite_armada"
+      ]
+    },
+    {
+      "id": "straw_scarecrow",
+      "name": "Straw Scarecrow",
+      "category": "trap",
+      "unlockKeep": 6,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Animals cannot resist it, and birds are terrified of it. Beasts, their companions and charging mounts within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.",
+      "effect": {
+        "kind": "beast_decoy",
+        "radius": 3,
+        "scaresBirds": true
+      },
+      "counters": [
+        "hound_handler",
+        "boar_rider",
+        "crane_glider"
+      ],
+      "counteredBy": [
+        "shuriken_storm",
+        "lantern_balloon",
+        "fire_monk"
+      ]
+    },
+    {
+      "id": "mirror_screen",
+      "name": "Bronze Mirror Screen",
+      "category": "defense",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.",
+      "effect": {
+        "kind": "reflect_projectiles",
+        "every": 3
+      },
+      "counters": [
+        "kunai_adept",
+        "chain_sickle_reaper",
+        "siege_bombardier"
+      ],
+      "counteredBy": [
+        "oni_breaker",
+        "wind_step_assassin",
+        "tiger_lord"
+      ]
+    },
+    {
+      "id": "sand_bucket_post",
+      "name": "Sand Bucket Post",
+      "category": "support",
+      "unlockKeep": 7,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "A bucket crew that smothers explosions and embers: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.",
+      "effect": {
+        "kind": "smother_splash",
+        "radius": 3,
+        "splashCutPct": 0.3,
+        "defuses": 2
+      },
+      "counters": [
+        "fuse_master",
+        "bomb_carrier",
+        "shuriken_storm",
+        "lantern_balloon"
+      ],
+      "counteredBy": [
+        "hound_handler",
+        "boar_rider",
+        "twin_fang_dancer"
+      ]
+    },
+    {
+      "id": "kite_cutter_ballista",
+      "name": "Kite-Cutter Ballista",
+      "category": "defense",
+      "unlockKeep": 8,
+      "pinnacleMaxLevel": 10,
+      "live": true,
+      "description": "Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.",
+      "effect": {
+        "kind": "ground_flyers",
+        "seconds": 3,
+        "immuneSeconds": 3,
+        "airOnly": true
+      },
+      "counters": [
+        "crane_glider",
+        "thunder_kite",
+        "dragon_kite_armada",
+        "lantern_balloon"
+      ],
+      "counteredBy": [
+        "saboteur",
+        "shadow_stalker",
+        "mole_king"
+      ]
+    },
+    {
+      "id": "discipline_banner",
+      "name": "Discipline Banner",
+      "category": "support",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "A clan banner that keeps nearby defenders focused: defenses within 3 tiles ignore taunting bells and decoys.",
+      "effect": {
+        "kind": "focus_aura",
+        "radius": 3,
+        "ignores": [
+          "taunt",
+          "decoy"
+        ]
+      },
+      "counters": [
+        "bell_warden",
+        "mirage_twin"
+      ],
+      "counteredBy": [
+        "gearbreaker",
+        "ghost_engineer",
+        "moonblade_master"
+      ]
+    },
+    {
+      "id": "spotter_perch",
+      "name": "Spotter's Perch",
+      "category": "support",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "A lookout who calls targets: defenses within 3 tiles retarget instantly onto warriors that dash, swing or shadow-step into range.",
+      "effect": {
+        "kind": "instant_retarget",
+        "radius": 3
+      },
+      "counters": [
+        "void_walker",
+        "wind_step_assassin",
+        "grapple_raider"
+      ],
+      "counteredBy": [
+        "thousand_needle",
+        "bomb_carrier",
+        "night_blade"
+      ]
+    },
+    {
+      "id": "steam_vent",
+      "name": "Steam Vent",
+      "category": "defense",
+      "unlockKeep": 9,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.",
+      "effect": {
+        "kind": "no_projectile_aoe",
+        "radius": 2,
+        "clearsSmoke": true
+      },
+      "counters": [
+        "eclipse_ninja",
+        "night_blade",
+        "wind_step_assassin"
+      ],
+      "counteredBy": [
+        "thousand_needle",
+        "kunai_adept",
+        "mountain_shield",
+        "hawk_tamer"
+      ]
+    },
+    {
+      "id": "sleep_dart_tower",
+      "name": "Sleep Dart Tower",
+      "category": "defense",
+      "unlockKeep": 10,
+      "pinnacleMaxLevel": 10,
+      "live": false,
+      "description": "Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters.",
+      "effect": {
+        "kind": "sleep",
+        "seconds": 2,
+        "oncePerTarget": true
+      },
+      "counters": [
+        "bear_warrior",
+        "oni_breaker",
+        "armored_guardian",
+        "moonblade_master"
+      ],
+      "counteredBy": [
+        "sage_of_clouds",
+        "mist_weaver",
+        "drum_monk"
+      ]
+    },
+    {
+      "id": "rolling_log_chute",
+      "name": "Rolling Log Chute",
+      "category": "trap",
+      "unlockKeep": 8,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads.",
+      "effect": {
+        "kind": "line_crush",
+        "width": 1,
+        "length": 6
+      },
+      "counters": [
+        "mountain_shield",
+        "iron_monk",
+        "drum_monk",
+        "tiger_lord"
+      ],
+      "counteredBy": [
+        "crane_glider",
+        "bear_warrior",
+        "spirit_caller"
+      ]
+    },
+    {
+      "id": "moonlit_gravel",
+      "name": "Moonlit Gravel Garden",
+      "category": "trap",
+      "unlockKeep": 12,
+      "pinnacleMaxLevel": 6,
+      "live": false,
+      "description": "Raked gravel that crunches: anything that teleports, lands or rushes onto it is stunned for 1.5 seconds.",
+      "effect": {
+        "kind": "arrival_stun",
+        "stunSeconds": 1.5
+      },
+      "counters": [
+        "void_walker",
+        "grapple_raider",
+        "bomb_carrier"
+      ],
+      "counteredBy": [
+        "eclipse_ninja",
+        "trap_breaker",
+        "kite_raider"
+      ]
+    },
+    {
+      "id": "ink_seal_post",
+      "name": "Ink Seal Post",
+      "category": "support",
+      "unlockKeep": 12,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.",
+      "effect": {
+        "kind": "no_revive",
+        "radius": 3
+      },
+      "counters": [
+        "spirit_caller",
+        "dragon_kite_armada"
+      ],
+      "counteredBy": [
+        "herbalist",
+        "void_walker",
+        "iron_monk"
+      ]
+    },
+    {
+      "id": "longbow_yagura",
+      "name": "Longbow Yagura",
+      "category": "defense",
+      "unlockKeep": 12,
+      "pinnacleMaxLevel": 10,
+      "live": true,
+      "description": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.",
+      "effect": {
+        "kind": "counter_artillery",
+        "range": 13,
+        "minRange": 2,
+        "prefersBeyond": 3.5
+      },
+      "counters": [
+        "siege_bombardier",
+        "thousand_needle",
+        "hawk_tamer"
+      ],
+      "counteredBy": [
+        "shinobi",
+        "grapple_raider",
+        "mirage_twin"
+      ]
+    },
+    {
+      "id": "lightning_rod_pagoda",
+      "name": "Lightning Rod Pagoda",
+      "category": "defense",
+      "unlockKeep": 13,
+      "pinnacleMaxLevel": 8,
+      "live": false,
+      "description": "Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.",
+      "effect": {
+        "kind": "absorb_lightning",
+        "radius": 3
+      },
+      "counters": [
+        "storm_sovereign",
+        "thunder_kite"
+      ],
+      "counteredBy": [
+        "mole_king",
+        "chain_sickle_reaper",
+        "bell_warden"
+      ]
+    }
+  ]
+}

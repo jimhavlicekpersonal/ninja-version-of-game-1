@@ -32,7 +32,8 @@ import type { GameData, VillageState } from '../../src/gameplay/sim/types';
 import { bindPlayer } from '../../src/gameplay/sim/net';
 import { hallLevel } from '../../src/gameplay/sim/village';
 import { productInfo } from '../../src/gameplay/sim/monetization';
-import { passSeason } from '../../src/gameplay/sim/pass';
+import { passSeason, unlockedTier } from '../../src/gameplay/sim/pass';
+import { achievementValue } from '../../src/gameplay/sim/achievements';
 import type { VillageResponse } from '../../src/backend/net/protocol';
 import type { ImportHold, Player, PurchaseRow, VillageRow } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
@@ -80,6 +81,25 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
   const paidPass = confirmed.some((p) => productInfo(data, p.productId)?.kind === 'pass' && passSeason(p.at, data) === season);
   const premium = state.pass.premium && !paidPass;
   if (premium) state.pass.premium = false;
+  // Re-audit: counters and claims are not proof either. Whatever the imported counters already
+  // reached counts as claimed, so forged stats, pass points or task progress pay out nothing more
+  // (real players lose only rewards they had not collected yet before the move).
+  for (const def of data.achievements) {
+    const value = achievementValue(state, def, hallLevel(state, data));
+    const reached = def.tiers.filter((tier) => value >= tier[0]).length;
+    state.achievements[def.id] = Math.max(state.achievements[def.id] ?? 0, reached);
+  }
+  const tiers = Array.from({ length: unlockedTier(state, data) }, (_, i) => i);
+  state.pass.claimedFree = [...new Set([...state.pass.claimedFree, ...tiers])];
+  state.pass.claimedPremium = [...new Set([...state.pass.claimedPremium, ...tiers])];
+  state.tasks = { ...state.tasks, dayBaseline: { ...state.stats }, weekBaseline: { ...state.stats } };
+  // A Season Scroll look nobody paid for (this server never credited a Scroll purchase) does not move.
+  const anyPass = confirmed.some((p) => productInfo(data, p.productId)?.kind === 'pass');
+  const passOnly = new Set(data.cosmetics.hallSkins.filter((k) => k.passOnly).map((k) => k.id));
+  if (!anyPass && state.cosmetics.owned.some((id) => passOnly.has(id))) {
+    state.cosmetics.owned = state.cosmetics.owned.filter((id) => !passOnly.has(id));
+    if (passOnly.has(state.cosmetics.hallSkin)) state.cosmetics.hallSkin = state.cosmetics.owned[0] ?? 'classic';
+  }
   return { state, held: jade || premium || unconfirmed.length ? { jade, premium, purchases: unconfirmed } : null };
 }
 
@@ -142,7 +162,9 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
   state.trophies = me.trophies;
   state.shieldUntil = me.shieldUntil;
   state.net.defensesSince = Math.max(state.net.defensesSince, t);
-  const at = Math.min(t, Math.max(state.lastSeenAt, state.createdAt));
+  // Re-audit: dated now, never by the device's clock. A save dated a year back let commands be dated
+  // a year back too (a finished Keep upgrade, months of collector output in one batch).
+  const at = t;
   const row: VillageRow = { playerId: me.id, file: serialize(state, at), revision: 1, seq: 0, at, stateHash: economyHash(state), createdAt: t, updatedAt: t };
   await ctx.repo.transaction(async (tx) => {
     if (!(await tx.createVillage(row))) throw new ApiError(409, 'conflict', 'Your village is already kept on the server.');

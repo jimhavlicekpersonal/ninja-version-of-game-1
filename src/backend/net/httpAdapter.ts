@@ -8,6 +8,11 @@ import { defaultData } from '../../gameplay/sim/data';
 import { dataVersionOf } from './dataVersion';
 import { ServerError, type ServerPort } from './ports';
 import {
+  type AgeRequest,
+  type AgeResponse,
+  type DeletionCodeResponse,
+  type NoticesResponse,
+  type RevokeOthersResponse,
   ClientHeaders,
   PROTOCOL_VERSION,
   Routes,
@@ -437,6 +442,24 @@ export class HttpServerAdapter implements ServerPort {
     this.tokens.set(null);
   }
 
+  // ---------------------------------------------------------------- account protections (re-audit)
+
+  stateAge(req: AgeRequest): Promise<AgeResponse> {
+    return this.req('PUT', Routes.meAge, req);
+  }
+  deletionCode(): Promise<DeletionCodeResponse> {
+    return this.req('POST', Routes.deletionCode, {});
+  }
+  notices(): Promise<NoticesResponse> {
+    return this.req('GET', Routes.notices);
+  }
+  async markNoticesRead(ids: string[]): Promise<void> {
+    await this.req('POST', Routes.noticesRead, { ids });
+  }
+  revokeOtherSessions(): Promise<RevokeOthersResponse> {
+    return this.req('POST', Routes.sessionsRevokeOthers, {});
+  }
+
   // ---------------------------------------------------------------- PvP
 
   uploadBase(req: UploadBaseRequest): Promise<void> {
@@ -445,6 +468,14 @@ export class HttpServerAdapter implements ServerPort {
 
   match(): Promise<MatchResponse | null> {
     return this.orNull(this.req<MatchResponse>('GET', Routes.match), 'no_opponents');
+  }
+
+  startAttack(ticket: string): Promise<{ started: boolean }> {
+    return this.req('POST', Routes.attackStart, { ticket });
+  }
+
+  voidAttack(ticket: string): Promise<{ voided: boolean }> {
+    return this.req('POST', Routes.attackVoid, { ticket });
   }
 
   submitAttack(sub: BattleSubmission): Promise<AttackResponse> {

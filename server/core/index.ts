@@ -4,6 +4,7 @@
  * directly. A future server can reuse it with other adapters.
  */
 import * as account from './account';
+import * as age from './age';
 import * as admin from './admin';
 import type { ServerContext } from './context';
 import * as duels from './duels';
@@ -77,6 +78,15 @@ export function createCore(ctx: ServerContext) {
     link: links.link.bind(null, ctx),
     unlink: links.unlink.bind(null, ctx),
     signIn: links.signIn.bind(null, ctx),
+    /** Re-audit: account protections (age bands, deletion codes, notices, sessions, Sign in with Apple notifications). */
+    stateAge: age.stateAge.bind(null, ctx),
+    deletionCode: account.deletionCode.bind(null, ctx),
+    notices: moderation.notices.bind(null, ctx),
+    markNoticesRead: moderation.markNoticesRead.bind(null, ctx),
+    revokeOtherSessions: links.revokeOthers.bind(null, ctx),
+    appleSignInNotification: (body: { payload?: unknown } | undefined) => links.appleSignInNotification(ctx, body, (p) => account.deleteAccount(ctx, p)),
+    /** Hourly with retention: extra device tokens unused for 400 days. */
+    pruneTokens: () => links.pruneTokens(ctx),
     getVillage: village.getVillage.bind(null, ctx),
     startVillage: village.startVillage.bind(null, ctx),
     importVillage: villageImport.importVillage.bind(null, ctx),
@@ -100,6 +110,8 @@ export function createCore(ctx: ServerContext) {
     uploadBase: pvp.uploadBase.bind(null, ctx),
     match: pvp.match.bind(null, ctx),
     attack: pvp.attack.bind(null, ctx),
+    startAttack: pvp.startAttack.bind(null, ctx),
+    voidAttack: pvp.voidAttack.bind(null, ctx),
     defenses: pvp.defenses.bind(null, ctx),
     leaderboard: pvp.leaderboard.bind(null, ctx),
     powerLeaderboard: pvp.powerLeaderboard.bind(null, ctx),

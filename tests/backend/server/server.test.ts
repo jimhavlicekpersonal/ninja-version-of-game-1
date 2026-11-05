@@ -272,12 +272,15 @@ describe('server HTTP adapter', () => {
       const s = setup({ adminToken: ADMIN });
       const a = await s.register('Ann');
       const me = (await s.call('GET', Routes.me, a.token)).body;
-      await s.call('POST', Routes.deletionRequests, undefined, { playerId: me.id });
+      // Re-audit: the one-time code from Settings proves the request is the player's own.
+      const code = (await s.call('POST', Routes.deletionCode, a.token, {})).body.code as string;
+      expect(code).toMatch(/^[2-9A-Z]{5}-[2-9A-Z]{5}$/);
+      expect((await s.call('POST', Routes.deletionRequests, undefined, { playerId: me.id, code: code.toLowerCase() })).body.verified).toBe(true);
       expect((await s.call('GET', '/admin/v1/deletion-requests')).status).toBe(401);
       expect((await s.call('GET', '/admin/v1/deletion-requests', a.token)).status).toBe(401);
       const queue = await s.call('GET', '/admin/v1/deletion-requests', ADMIN);
       expect(queue.status).toBe(200);
-      expect(queue.body.requests).toEqual([expect.objectContaining({ playerId: me.id, status: 'open', player: expect.objectContaining({ name: 'Ann' }) })]);
+      expect(queue.body.requests).toEqual([expect.objectContaining({ playerId: me.id, status: 'open', verified: true, player: expect.objectContaining({ name: 'Ann' }) })]);
       const done = await s.call('POST', `/admin/v1/deletion-requests/${queue.body.requests[0].id}`, ADMIN, { action: 'delete' });
       expect(done.body).toMatchObject({ status: 'done' });
       expect((await s.call('GET', Routes.me, a.token)).status).toBe(401);

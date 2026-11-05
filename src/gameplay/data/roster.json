@@ -215,7 +215,7 @@
       "tier": 3,
       "ability": {
         "id": "temple_bell",
-        "name": "Temple Bell",
+        "name": "Alarm Bell",
         "text": "Rings a bell that makes defenses in range target him first."
       },
       "look": {
@@ -401,7 +401,7 @@
     },
     {
       "id": "mole_king",
-      "name": "Mole King",
+      "name": "Burrow Ambusher",
       "role": "infiltrator",
       "tier": 4,
       "ability": {
@@ -419,7 +419,7 @@
     },
     {
       "id": "phantom_gate",
-      "name": "Phantom Gate",
+      "name": "Wall Phantom",
       "role": "infiltrator",
       "tier": 5,
       "ability": {
@@ -508,12 +508,12 @@
     },
     {
       "id": "dragon_kite_armada",
-      "name": "Dragon Kite Armada",
+      "name": "Dragon Kite Crew",
       "role": "sky",
       "tier": 5,
       "ability": {
         "id": "armada",
-        "name": "Armada",
+        "name": "Bomber Crew",
         "text": "A heavy dragon kite carrying a crew of bombers."
       },
       "look": {

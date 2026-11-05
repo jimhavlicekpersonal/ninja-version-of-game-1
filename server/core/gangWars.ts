@@ -26,7 +26,7 @@ import type { BattleSubmission, GangWarAttackResponse, GangWarBaseView, GangWarC
 import type { GangQueueEntry, GangRelay, GangWar, GangWarAttack, GangWarEntry, GangWarSide, Player, Squad, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
 import { ApiError, MIN, type ServerContext } from './context';
-import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS } from './pvp';
+import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer } from './pvp';
 import { requireSquad, setRosterLock } from './squads';
 import { applyServerResult } from './village';
 
@@ -288,8 +288,11 @@ export async function warTicket(ctx: ServerContext, me: Player, req: GangWarTick
   const t = ctx.now();
   if (gangWarPhase(t, w) !== 'battle') throw new ApiError(409, 'raid_not_live', 'The battle day has not started yet.');
   if (!entry) throw new ApiError(404, 'not_found', 'You joined your Gang after this war started.');
-  const used = (await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
-  if (used >= ctx.data.social.gangWar.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Gang War attacks.');
+  // Re-audit: a ticket is the attack. One that is never reported (a loss hidden by not sending it)
+  // still uses the attack, so unreported tickets count until the war ends.
+  const reported = (await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
+  const unreported = (await ctx.repo.openTickets(me.id, 'war')).filter((x) => x.warId === w.id).length;
+  if (reported + unreported >= ctx.data.social.gangWar.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Gang War attacks (an attack counts from the moment it is begun).');
   const target = Math.floor(Number(req?.target));
   const enemy = w[other(side)].roster.find((e) => e.index === target);
   if (!enemy) throw new ApiError(404, 'not_found', 'No such enemy base.');
@@ -322,7 +325,11 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
   const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(ticket.relay && ticket.startDamage ? { startDamage: ticket.startDamage } : {}) };
-  const out = await resimulate(ctx, 'war', setup, deployments, sub, engine);
+  await requireArmyOnServer(ctx, me, army);
+  const out = await resimulate(ctx, 'war', setup, deployments, sub, engine).catch(async (e) => {
+    await burnAfterFailures(ctx, ticket, e);
+    throw e;
+  });
   const { result } = out;
   const t = Math.min(ctx.now(), w.endsAt - 1);
   const target = ticket.target!;

@@ -64,6 +64,8 @@ export interface GooglePurchase {
   /** What the game passed as `obfuscatedAccountId`: our purchase intent. */
   accountToken: string | null;
   consumed: boolean;
+  /** Billing country (ISO 3166-1 alpha-2) when Google sends it. */
+  regionCode: string | null;
 }
 
 export interface VoidedPurchase {
@@ -131,6 +133,7 @@ export class GoogleVerifier {
       environment: test ? 'Test' : 'Production',
       accountToken: typeof p.obfuscatedExternalAccountId === 'string' && p.obfuscatedExternalAccountId ? p.obfuscatedExternalAccountId.toLowerCase() : null,
       consumed: Number(p.consumptionState ?? 0) === 1,
+      regionCode: typeof p.regionCode === 'string' ? p.regionCode : null,
     };
   }
 

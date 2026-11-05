@@ -226,7 +226,11 @@ export class App {
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
       onHome: () => this.home(),
       onNext: () => this.scout(true),
-      onAttack: () => session.start(),
+      onAttack: () => {
+        session.start();
+        // An online raid counts from here (re-audit): the server settles it as a loss if it is never reported.
+        if (!grove && !duel && trialTier === undefined && !practice && this.ticket) this.d.connection.startAttack(this.ticket);
+      },
       onFinished: () => {
         if (practice) {
           // Never banked: a record only for "Watch replay".

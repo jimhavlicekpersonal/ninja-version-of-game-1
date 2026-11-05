@@ -157,7 +157,7 @@ The top bar shows the connection: **Online**, **Connecting…** or **No connecti
 
 ### 3b. In-app products to create (roadmap step 33, owner)
 
-Create these in App Store Connect (In-App Purchases) and the Play Console (In-app products), with the **store id** in the first column. The game keeps its own ids (they are in saves) and maps them to these in `src/gameplay/data/store.json` (`storeProductIds`, roadmap step 38); to use other store ids, change only that map. Prices are the game's USD prices; pick the matching price tier in each store. Every product is a consumable in Google Play (the server consumes each purchase once it is delivered).
+Create these in App Store Connect (In-App Purchases) and the Play Console (In-app products), with the **store id** in the first column. The game keeps its own ids (they are in saves) and maps them to these in `src/gameplay/data/store.json` (`storeProductIds`, roadmap step 38); to use other store ids, change only that map. Prices are the game's USD prices; pick the matching price tier in each store. Every product is a **consumable in both stores** (Google Play: the server consumes each purchase once it is delivered; App Store: the game finishes the transaction after delivery).
 
 | Store id | Game id | Type | USD | What it gives |
 |---|---|---|---|---|
@@ -167,11 +167,13 @@ Create these in App Store Connect (In-App Purchases) and the Play Console (In-ap
 | `jade_chest` | `moonstones_4` | Consumable | 19.99 | 1,300 Jade (Chest of Jade) |
 | `jade_vault` | `moonstones_5` | Consumable | 49.99 | 3,500 Jade (Vault of Jade) |
 | `jade_hoard` | `moonstones_6` | Consumable | 99.99 | 7,500 Jade (Dragon Hoard of Jade) |
-| `season_scroll` | `lantern_pass` | Non-consumable per season (Apple: consumable or non-renewing subscription; the game tracks the season; Store → Restore purchases brings it back) | 4.99 | Season Scroll premium track |
+| `season_scroll` | `lantern_pass` | **Consumable in both stores** (decided 2026-11-05; see below) | 4.99 | Season Scroll premium track |
 | `offer_starter` | `offer_starter` | Consumable (the game allows it once per account) | 1.99 | Starter offer |
 | `offer_builder` | `offer_builder` | Consumable | 4.99 | Builder offer |
 | `offer_war_prep` | `offer_war_prep` | Consumable | 2.99 | War prep offer |
 | `offer_rebuild` | `offer_rebuild` | Consumable | 2.99 | Rebuild offer |
+
+**Season Scroll product type (decided):** a consumable in App Store Connect and Play Console, so the same product can be bought again each season (a non-consumable can be bought only once per Apple ID / Google account, ever; a non-renewing subscription would make Apple require restore across all the user's devices and a duration Apple does not enforce). The game, not the store, knows the season: `grantPurchase` gives the premium track until the season ends (`pass.json`), and a second purchase in the same season is refused before the store sheet opens. **Restore** is the server's purchase history for the same online account: Store → Restore purchases (`controller.restorePurchases`) asks `GET /v1/purchases` and gives back this season's Scroll if a credited, unrefunded Scroll purchase exists. On a new device that only works on the same account, so recommend linking Sign in with Apple / Google (Settings → Online play → Account → Sign-ins) in the Store's Scroll card and in support. App Review accepts restore through your own account system for consumables; say so in the review notes (`docs/store/REVIEW_NOTES.md`). Option (not needed, owner may add): set `SKIncludeConsumableInAppPurchaseHistory` = YES in `ios/App/App/Info.plist` (iOS 18+) so StoreKit 2's `Transaction.all` / current-entitlement history also lists finished consumables; the native plugin could then restore a Scroll from Apple's own history for a player who never linked a sign-in, after the server checks the JWS as usual.
 
 Nothing random is sold, so no odds disclosure is needed for these. Real prices are shown only in the Store and its confirm step.
 

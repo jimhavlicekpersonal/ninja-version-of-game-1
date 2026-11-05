@@ -1,5 +1,5 @@
 {
-  "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses hall min(6, 1 + floor((t-1)/tiersPerHall)); past the last hall, defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier.",
+  "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses Keep min(15, 1 + floor((t-1)/tiersPerHall)) (the last Keep level in hall.json); past it (tier 60), defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier.",
   "tiersPerHall": 4,
   "powerGrowthPerTier": 0.06,
   "maxPower": 1000000000,

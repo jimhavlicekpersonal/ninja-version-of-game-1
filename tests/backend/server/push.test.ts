@@ -118,7 +118,7 @@ describe('deployments (step 42)', () => {
     expect(bare).toMatch(/DATABASE_URL/);
     expect(bare).toMatch(/ADMIN_TOKEN/);
     expect(bare).toMatch(/CORS_ORIGIN/);
-    const prod = { DEPLOY_ENV: 'production', DATABASE_URL: 'postgres://x', ADMIN_TOKEN: 'x'.repeat(32), CORS_ORIGIN: 'https://game.example,capacitor://localhost' };
+    const prod = { DEPLOY_ENV: 'production', DATABASE_URL: 'postgres://x', ADMIN_TOKEN: 'x'.repeat(32), CORS_ORIGIN: 'https://game.example,capacitor://localhost', TRUST_PROXY: '1' };
     expect(checkConfig(prod).errors).toEqual([]);
     expect(checkConfig({ ...prod, APNS_SANDBOX: '1' }).errors).toHaveLength(1);
     expect(checkConfig({ ...prod, CORS_ORIGIN: '*' }).errors).toHaveLength(1);

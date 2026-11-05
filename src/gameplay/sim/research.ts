@@ -47,7 +47,7 @@ export type ResearchQuote =
 /** What researching the next level of `troop` costs, and whether it can start (resources are checked by the caller). */
 export function researchQuote(state: VillageState, troop: string, hallLevel: number, data: GameData): ResearchQuote {
   const def = data.troops[troop];
-  if (!def) return { ok: false, code: 'NOT_FOUND', message: 'Unknown troop.' };
+  if (!def) return { ok: false, code: 'NOT_FOUND', message: 'Unknown warrior.' };
   const cur = troopLevelOf(state, troop);
   if (cur >= maxTroopLevel(data, troop)) return { ok: false, code: 'MAX_LEVEL', message: `${def.name} is fully researched.` };
   const next = troopLevel(data, troop, cur + 1);

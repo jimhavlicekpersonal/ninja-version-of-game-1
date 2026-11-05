@@ -1,5 +1,20 @@
 {
   "newPlayerShieldHours": 24,
+  "newPlayerRaids": {
+    "$comment": "The first `count` bot raids a village ever faces (after the new-player shield) bring a smaller, less researched army, so a new village with its first Kunai Tower usually holds (sim/defense.ts attackerFor).",
+    "count": 3,
+    "housingShare": 0.5,
+    "levelsBelowCap": 2
+  },
+  "defenseWin": {
+    "$comment": "A bot raid that wins no star pays the defender this share of its Keep's lowest generated raid loot, in Coins and Provisions (storage-capped).",
+    "shareOfRaidLoot": 0.05
+  },
+  "rematch": {
+    "$comment": "Settle the score: once per bot raid, within `windowHours`, attack the raider's own generated base. No loot from buildings and no honor; a win (1+ stars) pays `shareOfRaidLoot` x stars/3 of the Keep's lowest raid loot.",
+    "windowHours": 72,
+    "shareOfRaidLoot": 0.15
+  },
   "shieldTiers": [
     {
       "destruction": 30,

@@ -2,6 +2,12 @@
   "currency": "USD",
   "packs": [
     {
+      "id": "moonstones_0",
+      "name": "Pinch of Jade",
+      "usd": 0.99,
+      "moonstones": 45
+    },
+    {
       "id": "moonstones_1",
       "name": "Pouch of Jade",
       "usd": 1.99,
@@ -122,6 +128,7 @@
     15.1187
   ],
   "storeProductIds": {
+    "moonstones_0": "jade_pinch",
     "moonstones_1": "jade_pouch",
     "moonstones_2": "jade_bag",
     "moonstones_3": "jade_box",
@@ -132,6 +139,15 @@
     "offer_starter": "offer_starter",
     "offer_builder": "offer_builder",
     "offer_war_prep": "offer_war_prep",
-    "offer_rebuild": "offer_rebuild"
+    "offer_rebuild": "offer_rebuild",
+    "clan_stipend": "clan_stipend"
+  },
+  "stipend": {
+    "$comment": "Clan Stipend: a consumable (not auto-renewing). Buying it adds `payments` daily Jade payments; one can be claimed per UTC day while the game is open. Missed days are not lost: the stipend lasts until every payment is claimed. It can be bought again once no payments are left.",
+    "id": "clan_stipend",
+    "name": "Clan Stipend",
+    "usd": 2.99,
+    "payments": 30,
+    "jadePerPayment": 20
   }
 }

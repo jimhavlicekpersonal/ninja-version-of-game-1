@@ -1,7 +1,9 @@
 /** Postgres storage adapter for the Repo port (tables in server/migrations/). Bases and battle records are JSONB. */
+import { pgPoolSettings, pgTls, type PgPoolSettings } from './config';
 import pg from 'pg';
 import { contentHash } from './contentHash';
 import type { Rating } from '../src/gameplay/sim/rating';
+import { isAgeBand, type AgeBand } from '../src/gameplay/sim/age';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
 import { DELETED_PLAYER, NameTakenError, nameNoticePatterns } from './repo';
@@ -26,6 +28,7 @@ import type {
   GroveMember,
   GroveSummaryRow,
   IdentityLink,
+  PlayerNotice,
   OpponentQuery,
   Player,
   PlayerPatch,
@@ -65,6 +68,7 @@ const toPlayer = (r: Row): Player => ({
   updatedAt: num(r.updated_at),
   lastSeenAt: num(r.last_seen_at),
   mutedUntil: num(r.muted_until),
+  muteReason: strOrNull(r.mute_reason),
   bannedUntil: num(r.banned_until),
   banReason: strOrNull(r.ban_reason),
   ...(num(r.attack_rated_at) > 0 || num(r.base_rated_at) > 0
@@ -116,6 +120,8 @@ const toTicket = (r: Row): Ticket => {
   if (r.grove_id !== null && r.grove_id !== undefined) t.groveId = String(r.grove_id);
   if (r.target !== null && r.target !== undefined) t.target = num(r.target);
   if (r.response !== null && r.response !== undefined) t.response = r.response;
+  if (r.started_at !== null && r.started_at !== undefined) t.startedAt = num(r.started_at);
+  if (r.failures) t.failures = num(r.failures);
   return t;
 };
 
@@ -233,6 +239,7 @@ const toDeletion = (r: Row): DeletionRequest => ({
   status: r.status as DeletionRequest['status'],
   resolvedAt: r.resolved_at === null || r.resolved_at === undefined ? null : num(r.resolved_at),
   resolution: strOrNull(r.resolution),
+  verified: Boolean(r.verified),
 });
 const toClaim = (r: Row): RaidClaim => ({ week: num(r.week), playerId: String(r.player_id), groveId: String(r.grove_id), outcome: r.outcome as RaidClaim['outcome'], at: num(r.at) });
 
@@ -283,8 +290,15 @@ export class PgRepo implements Repo {
     }
   }
 
-  static fromUrl(url: string): PgRepo {
-    return new PgRepo(new pg.Pool({ connectionString: url, ssl: /sslmode=require/.test(url) ? { rejectUnauthorized: false } : undefined }));
+  /**
+   * A pool for DATABASE_URL with the TLS and pool settings of server/config.ts
+   * (`pgTls`, `pgPoolSettings`: PG_CA_CERT, PG_SSL_ALLOW_UNVERIFIED,
+   * PG_POOL_MAX, PG_*_TIMEOUT_MS). Without `settings` (the migration tool) the
+   * statement timeout is off, so a long migration is not cancelled.
+   */
+  static fromUrl(url: string, settings: PgPoolSettings = pgPoolSettings(process.env, { migrations: true }), env: Record<string, string | undefined> = process.env): PgRepo {
+    const tls = pgTls(url, env);
+    return new PgRepo(new pg.Pool({ ...settings, connectionString: tls.connectionString, ssl: tls.ssl || undefined }));
   }
 
   /** Connections in the pool (for the tk_db_pool_connections gauge, step 47). */
@@ -331,8 +345,8 @@ export class PgRepo implements Repo {
     return r[0] ? toPlayer(r[0]) : null;
   }
 
-  async addToken(playerId: string, tokenHash: string, at: number, label: string): Promise<void> {
-    await this.db.query('insert into player_tokens (token_hash, player_id, created_at, label) values ($1,$2,$3,$4)', [tokenHash, playerId, at, label]);
+  async addToken(playerId: string, tokenHash: string, at: number, label: string, provider?: string): Promise<void> {
+    await this.db.query('insert into player_tokens (token_hash, player_id, created_at, label, provider) values ($1,$2,$3,$4,$5)', [tokenHash, playerId, at, label, provider ?? null]);
   }
 
   async linksOf(playerId: string): Promise<IdentityLink[]> {
@@ -383,9 +397,9 @@ export class PgRepo implements Repo {
 
   async addPurchase(p: PurchaseRow): Promise<boolean> {
     const r = await this.db.query(
-      `insert into purchases (store, transaction_id, player_id, product_id, cents, at, environment, status, refunded_at, ref, held_on_server)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) on conflict do nothing`,
-      [p.store, p.transactionId, p.playerId, p.productId, p.cents, p.at, p.environment, p.status, p.refundedAt, p.ref, p.heldOnServer],
+      `insert into purchases (store, transaction_id, player_id, product_id, cents, at, environment, status, refunded_at, ref, held_on_server, storefront, currency, price_micros)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) on conflict do nothing`,
+      [p.store, p.transactionId, p.playerId, p.productId, p.cents, p.at, p.environment, p.status, p.refundedAt, p.ref, p.heldOnServer, p.storefront ?? null, p.currency ?? null, p.priceMicros ?? null],
     );
     return (r.rowCount ?? 0) > 0;
   }
@@ -520,6 +534,7 @@ export class PgRepo implements Repo {
       updatedAt: 'updated_at',
       lastSeenAt: 'last_seen_at',
       mutedUntil: 'muted_until',
+      muteReason: 'mute_reason',
       bannedUntil: 'banned_until',
       banReason: 'ban_reason',
       nameKey: 'name_key',
@@ -866,6 +881,35 @@ export class PgRepo implements Repo {
     return (r.rowCount ?? 0) > 0;
   }
 
+  async startTicket(id: string, at: number): Promise<boolean> {
+    const r = await this.db.query('update tickets set started_at = coalesce(started_at, $2) where id = $1 and used = false', [id, at]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async bumpTicketFailures(id: string): Promise<number> {
+    const r = await this.rows('update tickets set failures = failures + 1 where id = $1 returning failures', [id]);
+    return r[0] ? num(r[0].failures) : 0;
+  }
+
+  async openTickets(attackerId: string, kind: Ticket['kind']): Promise<Ticket[]> {
+    const r = await this.rows('select t.*, b.base as stored_base from tickets t left join base_versions b on b.hash = t.base_hash where t.attacker_id = $1 and t.kind = $2 and not t.used order by t.created_at desc limit 50', [attackerId, kind]);
+    return r.map(toTicket);
+  }
+
+  async expiredOpenTickets(kind: Ticket['kind'], before: number, limit: number): Promise<Ticket[]> {
+    const r = await this.rows('select t.*, b.base as stored_base from tickets t left join base_versions b on b.hash = t.base_hash where t.kind = $1 and not t.used and t.expires_at < $2 order by t.expires_at limit $3', [kind, before, limit]);
+    return r.map(toTicket);
+  }
+
+  async addRefundNotice(store: string, key: string, at: number, why: string): Promise<void> {
+    await this.db.query('insert into refund_notices (store, key, at, why) values ($1,$2,$3,$4) on conflict do nothing', [store, key, at, why]);
+  }
+
+  async refundNotice(store: string, key: string): Promise<{ at: number; why: string } | null> {
+    const r = await this.rows('select at, why from refund_notices where store = $1 and key = $2', [store, key]);
+    return r[0] ? { at: num(r[0].at), why: String(r[0].why) } : null;
+  }
+
   async addAttack(a: AttackRecord): Promise<void> {
     const { base, ...record } = a;
     await this.db.query(
@@ -902,6 +946,7 @@ export class PgRepo implements Repo {
     const commands = c.commandsBefore === undefined ? null : await this.db.query('delete from command_log where at < $1', [c.commandsBefore]);
     const idem = c.idempotencyBefore === undefined ? null : await this.db.query('delete from idempotency_keys where created_at < $1', [c.idempotencyBefore]);
     if (c.intentsBefore !== undefined) await this.db.query('delete from purchase_intents where at < $1', [c.intentsBefore]);
+    if (c.deletionRequestsBefore !== undefined) await this.db.query(`delete from deletion_requests where status <> 'open' and resolved_at < $1`, [c.deletionRequestsBefore]);
     return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
   }
 
@@ -1000,9 +1045,81 @@ export class PgRepo implements Repo {
 
   async addDeletionRequest(r: DeletionRequest): Promise<void> {
     await this.db.query(
-      'insert into deletion_requests (id, at, player_id, name, contact, note, status, resolved_at, resolution) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-      [r.id, r.at, r.playerId, r.name, r.contact, r.note, r.status, r.resolvedAt, r.resolution],
+      'insert into deletion_requests (id, at, player_id, name, contact, note, status, resolved_at, resolution, verified) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
+      [r.id, r.at, r.playerId, r.name, r.contact, r.note, r.status, r.resolvedAt, r.resolution, r.verified === true],
     );
+  }
+
+  // ------------------------------------------------------------ account protections (re-audit, migration 0025)
+
+  async getAgeBand(playerId: string): Promise<{ band: AgeBand | null; under18: boolean; at: number } | null> {
+    const r = await this.rows('select under18, band, at from player_age where player_id = $1', [playerId]);
+    return r[0] ? { band: isAgeBand(r[0].band) ? r[0].band : null, under18: Boolean(r[0].under18), at: num(r[0].at) } : null;
+  }
+
+  async setAgeBand(playerId: string, band: AgeBand, at: number): Promise<void> {
+    await this.db.query('insert into player_age (player_id, under18, band, at) values ($1,$2,$3,$4) on conflict (player_id) do update set under18 = excluded.under18, band = excluded.band, at = excluded.at', [playerId, band !== 'adult', band, at]);
+  }
+
+  async touchToken(tokenHash: string, at: number): Promise<void> {
+    await this.db.query('update player_tokens set last_used_at = $2 where token_hash = $1', [tokenHash, at]);
+  }
+
+  async revokeTokens(playerId: string, provider: string, except?: string): Promise<number> {
+    const r = await this.db.query('delete from player_tokens where player_id = $1 and provider = $2 and token_hash <> $3', [playerId, provider, except ?? '']);
+    return r.rowCount ?? 0;
+  }
+
+  async revokeOtherTokens(playerId: string, keepHash: string): Promise<number> {
+    // One statement: the kept token becomes the main one (if it was another device's) and every other token goes.
+    const r = await this.rows(
+      `with p as (select token_hash from players where id = $1),
+       ok as (select 1 from p where p.token_hash = $2 or exists (select 1 from player_tokens where player_id = $1 and token_hash = $2)),
+       del as (delete from player_tokens where player_id = $1 and exists (select 1 from ok) returning token_hash),
+       upd as (update players set token_hash = $2 where id = $1 and token_hash <> $2 and exists (select 1 from ok) returning 1)
+       select (select count(*) from del where token_hash <> $2) + (select count(*) from upd) as n`,
+      [playerId, keepHash],
+    );
+    return num(r[0]?.n ?? 0);
+  }
+
+  async pruneTokens(unusedBefore: number): Promise<number> {
+    const r = await this.db.query('delete from player_tokens where coalesce(last_used_at, created_at) < $1', [unusedBefore]);
+    return r.rowCount ?? 0;
+  }
+
+  async setLinkToken(provider: string, subject: string, refreshToken: string | null, clientId: string | null): Promise<void> {
+    await this.db.query('update identity_links set refresh_token = $3, client_id = $4 where provider = $1 and subject = $2', [provider, subject, refreshToken, clientId]);
+  }
+
+  async linkTokensOf(playerId: string): Promise<{ provider: string; subject: string; refreshToken: string; clientId: string | null }[]> {
+    return (await this.rows('select provider, subject, refresh_token, client_id from identity_links where player_id = $1 and refresh_token is not null', [playerId])).map((r) => ({ provider: String(r.provider), subject: String(r.subject), refreshToken: String(r.refresh_token), clientId: strOrNull(r.client_id) }));
+  }
+
+  async setDeletionCode(playerId: string, codeHash: string, at: number, expiresAt: number): Promise<void> {
+    await this.db.query('insert into deletion_codes (player_id, code_hash, created_at, expires_at) values ($1,$2,$3,$4) on conflict (player_id) do update set code_hash = excluded.code_hash, created_at = excluded.created_at, expires_at = excluded.expires_at', [playerId, codeHash, at, expiresAt]);
+  }
+
+  async deletionCodeOf(playerId: string): Promise<{ codeHash: string; expiresAt: number } | null> {
+    const r = await this.rows('select code_hash, expires_at from deletion_codes where player_id = $1', [playerId]);
+    return r[0] ? { codeHash: String(r[0].code_hash), expiresAt: num(r[0].expires_at) } : null;
+  }
+
+  async clearDeletionCode(playerId: string): Promise<void> {
+    await this.db.query('delete from deletion_codes where player_id = $1', [playerId]);
+  }
+
+  async addNotice(n: PlayerNotice): Promise<void> {
+    // A notice for a player deleted meanwhile is dropped (no orphan rows).
+    await this.db.query('insert into player_notices (id, player_id, at, kind, text, read) select $1,$2,$3,$4,$5,$6 where exists (select 1 from players where id = $2)', [n.id, n.playerId, n.at, n.kind, n.text, n.read]);
+  }
+
+  async noticesOf(playerId: string, limit: number): Promise<PlayerNotice[]> {
+    return (await this.rows('select * from player_notices where player_id = $1 order by at desc limit $2', [playerId, limit])).map((r) => ({ id: String(r.id), playerId: String(r.player_id), at: num(r.at), kind: r.kind as PlayerNotice['kind'], text: String(r.text), read: Boolean(r.read) }));
+  }
+
+  async markNoticesRead(playerId: string, ids: string[]): Promise<void> {
+    if (ids.length) await this.db.query('update player_notices set read = true where player_id = $1 and id = any($2::text[])', [playerId, ids]);
   }
 
   async deletionRequests(status: 'open' | 'all', limit: number): Promise<DeletionRequest[]> {
@@ -1055,6 +1172,46 @@ export class PgRepo implements Repo {
             `insert into command_log (player_id, seq, at, client_at, type, command, ok, error) values ($1,$2,$3,$4,$5,$6,$7,$8)
              on conflict (player_id, seq) do update set at = excluded.at, client_at = excluded.client_at, type = excluded.type, command = excluded.command, ok = excluded.ok, error = excluded.error`,
             [c.playerId, c.seq, c.at, c.clientAt, c.type, JSON.stringify(c.command), c.ok, c.error],
+          );
+        }
+        return true;
+      });
+    } catch (e) {
+      if (e === stale) return false;
+      throw e;
+    }
+  }
+
+  async recordVillageCommands(v: Pick<VillageRow, 'playerId' | 'revision' | 'seq' | 'updatedAt' | 'deviceSeqs'>, expectedRevision: number, commands: CommandLogRow[]): Promise<boolean> {
+    const stale = new Error('stale revision');
+    try {
+      return await this.transaction(async (tx) => {
+        const db = (tx as PgRepo).db;
+        const r = await db.query(`update villages set revision = $3, seq = $4, updated_at = $5, device_seqs = coalesce($6::jsonb, device_seqs) where player_id = $1 and revision = $2`, [
+          v.playerId,
+          expectedRevision,
+          v.revision,
+          v.seq,
+          v.updatedAt,
+          v.deviceSeqs ? JSON.stringify(v.deviceSeqs) : null,
+        ]);
+        if ((r.rowCount ?? 0) === 0) throw stale;
+        if (commands.length) {
+          // One statement for the whole batch (up to MAX_BATCH short lines).
+          await db.query(
+            `insert into command_log (player_id, seq, at, client_at, type, command, ok, error)
+             select $1, s, a, ca, t, c::jsonb, o, e from unnest($2::bigint[], $3::bigint[], $4::bigint[], $5::text[], $6::text[], $7::boolean[], $8::text[]) as x(s, a, ca, t, c, o, e)
+             on conflict (player_id, seq) do update set at = excluded.at, client_at = excluded.client_at, type = excluded.type, command = excluded.command, ok = excluded.ok, error = excluded.error`,
+            [
+              v.playerId,
+              commands.map((c) => c.seq),
+              commands.map((c) => c.at),
+              commands.map((c) => c.clientAt),
+              commands.map((c) => c.type),
+              commands.map((c) => JSON.stringify(c.command)),
+              commands.map((c) => c.ok),
+              commands.map((c) => c.error),
+            ],
           );
         }
         return true;
@@ -1352,5 +1509,8 @@ function toPurchase(r: Record<string, unknown>): PurchaseRow {
     refundedAt: r.refunded_at == null ? null : num(r.refunded_at),
     ref: String(r.ref),
     heldOnServer: Boolean(r.held_on_server),
+    storefront: strOrNull(r.storefront),
+    currency: strOrNull(r.currency),
+    priceMicros: r.price_micros == null ? null : num(r.price_micros),
   };
 }

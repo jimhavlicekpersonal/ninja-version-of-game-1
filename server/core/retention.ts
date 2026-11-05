@@ -11,15 +11,19 @@ import type { PruneResult } from '../repo';
 import { HOUR, type ServerContext } from './context';
 import { RESOLVED_REPORT_RETENTION_DAYS } from './moderation';
 import { FRIEND_REQUEST_DAYS } from './friends';
-import { LATE_REPORT_MS } from './pvp';
+import { forfeitExpired, LATE_REPORT_MS } from './pvp';
+import { pruneTokens } from './links';
 
 export const REPLAY_RETENTION_DAYS = 30;
 export const REPLAY_RETENTION_MS = REPLAY_RETENTION_DAYS * 24 * HOUR;
 /** How long an expired, unused ticket (and an unreferenced base version) is kept. */
 export const STALE_MS = 24 * HOUR;
 
-export async function prune(ctx: ServerContext): Promise<PruneResult & { friendRequests: number; duels: number }> {
+export async function prune(ctx: ServerContext): Promise<PruneResult & { friendRequests: number; duels: number; forfeits: number }> {
   const t = ctx.now();
+  // Raids never reported settle as losses before their tickets can be pruned (re-audit).
+  let forfeits = 0;
+  for (let n = -1; n !== 0; ) forfeits += n = await forfeitExpired(ctx);
   // Friend requests lapse after 14 days (step 59).
   const friendRequests = await ctx.repo.pruneFriendRequests(t - FRIEND_REQUEST_DAYS * 24 * HOUR);
   // Duels and challenges keep 30 days, like replays (step 62).
@@ -34,6 +38,10 @@ export async function prune(ctx: ServerContext): Promise<PruneResult & { friendR
     idempotencyBefore: t - STALE_MS,
     // Ask to Buy can take days; after 90 a purchase still redeems, just without its intent.
     intentsBefore: t - 90 * 24 * HOUR,
+    // Handled deletion requests are kept a year as the record that it was done, then go (re-audit).
+    deletionRequestsBefore: t - 365 * 24 * HOUR,
   });
-  return { ...result, friendRequests, duels };
+  // Extra device tokens unused for 400 days are signed out (re-audit; links.ts TOKEN_UNUSED_DAYS).
+  await pruneTokens(ctx);
+  return { ...result, friendRequests, duels, forfeits };
 }

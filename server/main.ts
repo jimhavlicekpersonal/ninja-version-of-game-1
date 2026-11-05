@@ -4,21 +4,40 @@
  * - CORS_ORIGIN: '*' or a comma-separated list of origins;
  * - MIGRATE_ON_BOOT=1: single-instance hosts only, apply pending migrations on
  *   start instead of in a release step;
- * - TRUST_PROXY: behind a load balancer (Render, Fly.io, Railway, …) set
- *   'true' (or a hop count, or the proxy addresses) so rate limits see each
- *   player's IP instead of the proxy's;
+ * - TRUST_PROXY: how many proxies stand in front of the server ('1' behind
+ *   one load balancer: Render, Fly.io, Railway, …), or their addresses/CIDRs,
+ *   so rate limits see each player's IP instead of the proxy's; 'false' when
+ *   players connect directly. Production requires it and refuses 'true'
+ *   (which lets a client choose its IP through X-Forwarded-For);
  * - RATE_LIMITS: optional JSON overriding rules of DEFAULT_RATE_LIMITS, e.g.
  *   {"register":{"limit":200,"windowMs":3600000}} on a staging server.
- * - ADMIN_TOKEN: a long random secret that turns on the staff API
- *   (/admin/v1/…: deletion requests, moderation queue). Unset: no staff API.
+ * - ADMIN_TOKENS: per-staff tokens "name:token,name2:token2" (each token at
+ *   least 24 characters) that turn on the staff API (/admin/v1/…: deletion
+ *   requests, moderation queue, player tools); the staff log names the token's
+ *   holder. ADMIN_TOKEN: the legacy single shared token (actor from
+ *   x-staff-name). ADMIN_ALLOW_IPS: optional addresses/CIDRs that alone may
+ *   reach /admin…. None set: no staff API.
+ * - Postgres (server/config.ts): PG_POOL_MAX (10), PG_CONNECT_TIMEOUT_MS
+ *   (5000), PG_IDLE_TIMEOUT_MS (30000), PG_STATEMENT_TIMEOUT_MS (30000),
+ *   PG_IDLE_TX_TIMEOUT_MS (60000); TLS: PG_CA_CERT (PEM or file) verifies the
+ *   server, sslmode=verify-full verifies against system CAs,
+ *   PG_SSL_ALLOW_UNVERIFIED=1 accepts sslmode=require without verification.
  * - REDIS_URL: redis:// or rediss:// (Upstash). Shares the leaderboard, match
  *   locks and rate-limit counters between instances. Unset: the database
  *   holds the leaderboard and locks, and each instance counts its own limits.
+ *   While Redis is down the instance degrades (limits fail open, the
+ *   database answers) and stays ready; REDIS_REQUIRED=1 makes /readyz fail
+ *   instead. REDIS_TIMEOUT_MS (500): per-command timeout.
  * - SENTRY_DSN (+ SENTRY_ENVIRONMENT, default 'production'): server errors to Sentry.
  * - METRICS_TOKEN: serve Prometheus metrics at /metrics to this bearer token.
  * - LOG_LEVEL: debug | info (default) | warn | error.
  * - RELEASE: the build name shown by /healthz and Sentry (default: package version).
  * - SERVER_NOTICE: a message shown to every player in Settings (maintenance, an incident).
+ * - SUPPORT_CONTACT: where players appeal moderation decisions (an email address or URL),
+ *   named in moderation notices (re-audit, EU DSA art. 17).
+ * - Sign in with Apple token revocation (re-audit, App Review 5.1.1(v)): APPLE_TEAM_ID,
+ *   APPLE_KEY_ID, APPLE_PRIVATE_KEY (the .p8 PEM) with APPLE_CLIENT_IDS. Unset: refresh
+ *   tokens are neither fetched nor revoked (logged).
  * - HOST: the address to listen on (default '::', IPv6 and IPv4).
  * - DEPLOY_ENV: development (default) | staging | production (server/config.ts:
  *   what production requires; a database belongs to one deployment).
@@ -49,7 +68,7 @@ import { PgRepo } from './pgRepo';
 import { DEFAULT_RATE_LIMITS, type RateLimiter, type RateLimits } from './rateLimit';
 import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
-import { RedisLeaderboard, RedisLocks, RedisRateLimiter } from './shared';
+import { RedisLeaderboard, RedisLocks, RedisRateLimiter, redisErrorReporter } from './shared';
 import { PromMetrics, ServerSentry } from './observability';
 import { ARCHIVED_ENGINES } from './rules/archive';
 import { liveEngine, parseRetired, RulesRegistry } from './rules/registry';
@@ -58,17 +77,12 @@ import { patchedData, verifyBundle, type BalanceBundle } from '../src/backend/ne
 import { SIM_RULES } from '../src/gameplay/sim/battle/battle';
 import type { GameData } from '../src/gameplay/sim/types';
 import { verifierFromEnv } from './identity/verify';
-import { checkConfig, paymentsFromEnv } from './config';
+import { accountFromEnv } from './identity/appleTokens';
+import { checkConfig, paymentsFromEnv, parseAdminTokens, parseTrustProxy, pgPoolSettings } from './config';
 import { pushTransportFromEnv, ServerPush } from './push/push';
 import type { Fetch } from './payments/google';
 
 declare const __APP_VERSION__: string;
-
-function trustProxy(v: string | undefined): boolean | number | string {
-  if (!v || v === 'false' || v === '0') return false;
-  if (v === 'true') return true;
-  return /^\d+$/.test(v) ? Number(v) : v;
-}
 
 const release = process.env.RELEASE || `kagemura-server@${__APP_VERSION__}`;
 const sentry = ServerSentry.fromDsn(process.env.SENTRY_DSN, release, process.env.SENTRY_ENVIRONMENT || 'production');
@@ -93,7 +107,7 @@ async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;
   let repo: Repo;
   if (url) {
-    const pg = PgRepo.fromUrl(url);
+    const pg = PgRepo.fromUrl(url, pgPoolSettings(process.env));
     // Migrations are a release step (npm run server:migrate), not part of every boot.
     const status = await pg.migrationStatus();
     if (status.unknown.length) console.warn(`The database has migrations this server does not know (${status.unknown.join(', ')}): it is newer than this build.`);
@@ -120,20 +134,28 @@ async function main(): Promise<void> {
   let shared: SharedStores | undefined;
   let rateLimiter: RateLimiter | undefined;
   const readiness: Record<string, () => Promise<unknown>> = {};
+  const metrics = new PromMetrics();
   if (process.env.REDIS_URL) {
-    const redis = RedisClient.fromUrl(process.env.REDIS_URL);
-    readiness.redis = () => redis.command('PING');
-    const board = new RedisLeaderboard(redis);
-    const added = await board.rebuildIfMissing(repo);
-    if (added) console.log(`Leaderboard rebuilt in Redis from the database (${added} players).`);
-    shared = { board, locks: new RedisLocks(redis) };
-    rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits });
+    const redis = RedisClient.fromUrl(process.env.REDIS_URL, process.env.REDIS_TIMEOUT_MS ? { timeoutMs: Number(process.env.REDIS_TIMEOUT_MS) } : {});
+    // An instance without Redis still serves (degraded), so it stays ready unless REDIS_REQUIRED=1.
+    if (process.env.REDIS_REQUIRED === '1') readiness.redis = () => redis.command('PING');
+    metrics.gauge('tk_redis_up', () => [{ labels: {}, value: redis.available ? 1 : 0 }]);
+    const onError = redisErrorReporter(metrics, (msg, fields) => console.warn(msg, fields));
+    const board = new RedisLeaderboard(redis, undefined, { repo, onError });
+    try {
+      const added = await board.rebuildIfMissing(repo);
+      if (added) console.log(`Leaderboard rebuilt in Redis from the database (${added} players).`);
+    } catch (e) {
+      console.warn('Redis is not reachable at start: the database serves the leaderboard until it is.', (e as Error).message);
+      board.markStale();
+    }
+    shared = { board, locks: new RedisLocks(redis, undefined, onError) };
+    rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits }, undefined, onError);
   }
   // Account linking: whichever sign-in providers are configured (APPLE_CLIENT_IDS, GOOGLE_CLIENT_IDS, GAMECENTER_BUNDLE_IDS, PLAYGAMES_CLIENT_ID/SECRET).
-  shared = { ...shared, identity: verifierFromEnv(process.env) };
+  shared = { ...shared, identity: verifierFromEnv(process.env), account: accountFromEnv(process.env, undefined, undefined, (lvl, msg, fields) => console[lvl === 'info' ? 'log' : lvl](msg, fields ?? '')) };
   // Store receipts (Phase 4) and server push (step 40): whichever keys are configured.
   const fetchFn = globalThis.fetch as unknown as Fetch;
-  const metrics = new PromMetrics();
   // Gauges for alerts (step 47): database pool and event-loop delay.
   if (repo instanceof PgRepo) {
     const pgRepo = repo;
@@ -184,11 +206,13 @@ async function main(): Promise<void> {
     data,
     corsOrigin: process.env.CORS_ORIGIN,
     logger: level,
-    trustProxy: trustProxy(process.env.TRUST_PROXY),
+    trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
     rateLimits,
     rateLimiter,
     shared,
     adminToken: process.env.ADMIN_TOKEN || undefined,
+    adminTokens: process.env.ADMIN_TOKENS ? parseAdminTokens(process.env.ADMIN_TOKENS) : undefined,
+    adminAllowIps: process.env.ADMIN_ALLOW_IPS ? process.env.ADMIN_ALLOW_IPS.split(',').map((x) => x.trim()).filter(Boolean) : undefined,
     metricsToken: process.env.METRICS_TOKEN || undefined,
     sentry,
     version: release,

@@ -21,7 +21,7 @@ Ability numbers live in `src/gameplay/data/troops.json` (`kit`); shared limits l
 
 ## Limits
 
-- Gearbreaker, Ghost Engineer, Mole King and Saboteur share ten seconds of defense immunity after recovery. Blackout affects at most three defenses and has one charge.
+- Gearbreaker, Ghost Engineer, Burrow Ambusher and Saboteur share ten seconds of defense immunity after recovery. Blackout affects at most three defenses and has one charge.
 - Identical resistance, haste, healing and mist auras do not stack. Mist covers two tiles for three seconds out of each eight-second cycle and uses the Smoke Bomb range floor.
 - Identical poison on one building refreshes its strongest application. Overlapping same-type burning ground applies only its strongest damage to each building per tick. Ground effects persist after their caster falls.
 - A Sage casts once. Each recipient can receive its heal/shield only once per ten seconds; shields expire after four seconds and absorb one hit up to 50% of the recipient's maximum health.
@@ -29,7 +29,7 @@ Ability numbers live in `src/gameplay/data/troops.json` (`kit`); shared limits l
 - Each handler keeps 60% of the original HP/damage budget; each of two pets receives 20%. Pets never summon, use inventory, or add training/mastery credit. Decoys cannot attack and expire after four seconds.
 - Eclipse stealth ends on the first attack. Criticals use seeded battle RNG.
 - Artillery stops while firing and must approach its target. New specialized abilities make the numerical budget a starting point, not proof of balanced win rates.
-- DPS taxes (`dpsScale` in `roster.json`, gameplay audit Nov 2026) for warriors that measured too strong in battle: Siege Bombardier 0.5, Thousand Needle 0.6, Hawk Tamer 0.6. Kit trims: Wind-Step first hit ×2 (was ×3), Storm Sovereign arcs 35% (was 50%), Thunder Kite 35% (was 45%); the Dragon Kite Armada now splashes three buildings within 2.5 tiles at 35%, so the tier-5 kite is worth its price over the Thunder Kite. Measured in `docs/game-theory/ARMY_BALANCE.md`.
+- DPS taxes (`dpsScale` in `roster.json`, gameplay audit Nov 2026) for warriors that measured too strong in battle: Siege Bombardier 0.5, Thousand Needle 0.6, Hawk Tamer 0.6. Kit trims: Wind-Step first hit ×2 (was ×3), Storm Sovereign arcs 35% (was 50%), Thunder Kite 35% (was 45%); the Dragon Kite Crew (`dragon_kite_armada`) now splashes three buildings within 2.5 tiles at 35%, so the tier-5 kite is worth its price over the Thunder Kite. Measured in `docs/game-theory/ARMY_BALANCE.md`.
 
 ## Validation
 

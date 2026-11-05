@@ -58,15 +58,34 @@ describe('offer deadlines', () => {
   it('a shown offer keeps its deadline: triggering again neither resets nor extends it', () => {
     const { state, clock } = newGame();
     const s = structuredClone(state);
-    const t0 = clock.now() + 10 * HOUR;
-    const rule = triggerOffer(s, 'heavy_defense_loss', t0, data)!;
+    s.profile = { under18: false, ageBand: 'adult' };
+    const t0 = clock.now() + 30 * HOUR;
+    const rule = triggerOffer(s, 'all_builders_busy', t0, data)!;
     expect(rule).not.toBeNull();
     const expires = s.offers.active[0].expiresAt;
-    expect(triggerOffer(s, 'heavy_defense_loss', t0 + HOUR, data)).toBeNull();
+    expect(triggerOffer(s, 'all_builders_busy', t0 + HOUR, data)).toBeNull();
     expect(s.offers.active[0].expiresAt).toBe(expires);
     // After it runs out, it does not come straight back: the cooldown applies.
-    expect(triggerOffer(s, 'heavy_defense_loss', expires + 1, data)).toBeNull();
+    expect(triggerOffer(s, 'all_builders_busy', expires + 1, data)).toBeNull();
     expect(s.offers.active).toHaveLength(0);
-    expect(triggerOffer(s, 'heavy_defense_loss', t0 + rule.cooldownHours * HOUR, data)).not.toBeNull();
+    expect(triggerOffer(s, 'all_builders_busy', t0 + rule.cooldownHours * HOUR, data)).not.toBeNull();
+  });
+
+  it('no offer pops up for a new account, an unknown age or an under-18 band, and retired triggers never fire (re-audit)', () => {
+    const { state, clock } = newGame();
+    for (const r of data.offers.rules) expect(r.minAccountHours ?? 0).toBeGreaterThanOrEqual(24);
+    const t0 = clock.now() + 30 * HOUR;
+    const unknown = structuredClone(state);
+    expect(triggerOffer(unknown, 'all_builders_busy', t0, data)).toBeNull();
+    for (const band of ['under13', '13to17'] as const) {
+      const minor = structuredClone(state);
+      minor.profile = { under18: true, ageBand: band };
+      expect(triggerOffer(minor, 'all_builders_busy', t0, data)).toBeNull();
+    }
+    const adult = structuredClone(state);
+    adult.profile = { under18: false, ageBand: 'adult' };
+    expect(triggerOffer(adult, 'all_builders_busy', clock.now() + HOUR, data)).toBeNull(); // too new
+    expect(triggerOffer(adult, 'heavy_defense_loss', t0, data)).toBeNull(); // retired
+    expect(triggerOffer(adult, 'all_builders_busy', t0, data)).not.toBeNull();
   });
 });

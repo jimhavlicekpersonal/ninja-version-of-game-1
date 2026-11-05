@@ -23,7 +23,8 @@ it('a Phase 1 (v1) save loads in the latest version', () => {
     },
   };
   const village = deserialize(JSON.parse(JSON.stringify(v1)), data);
-  expect(SAVE_VERSION).toBe(14);
+  expect(SAVE_VERSION).toBe(15);
+  expect(village.profile).toEqual({ under18: null, ageBand: null });
   expect(village.flags.sandbox).toBeUndefined();
   expect(village.net.gangWars).toEqual([]);
   expect(village.seasonLog).toEqual([]);
@@ -43,4 +44,13 @@ it('a Phase 1 (v1) save loads in the latest version', () => {
   const { state, summary } = computeOfflineProgress(village, t + 24 * 3_600_000, data);
   expect(state.buildings.find((b) => b.id === 'b4')!.level).toBe(3);
   expect(summary.awayMs).toBe(24 * 3_600_000);
+});
+
+it('v14 -> v15: an adult answer becomes the adult band; "under 18" is asked again and can never become adult', () => {
+  const t = Date.UTC(2026, 10, 1, 20, 0, 0);
+  const base = { createdAt: t - 3_600_000, lastSeenAt: t, resources: { acorns: 1200, dew: 900, nightsap: 0, moonstones: 0 }, nextId: 2, buildings: [{ id: 'b1', type: 'elder_toadstool', level: 1, x: 18, y: 18, upgrade: null, collector: null }] };
+  const adult = deserialize({ version: 1, savedAt: t, village: { ...base, profile: { under18: false } } }, data);
+  expect(adult.profile).toEqual({ under18: false, ageBand: 'adult' });
+  const minor = deserialize({ version: 1, savedAt: t, village: { ...base, profile: { under18: true } } }, data);
+  expect(minor.profile).toEqual({ under18: true, ageBand: null });
 });

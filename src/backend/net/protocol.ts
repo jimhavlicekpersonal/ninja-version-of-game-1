@@ -49,6 +49,8 @@ export type ErrorCode =
   | 'not_found'
   | 'conflict'
   | 'expired'
+  /** 409: another raid shielded this defender after the ticket was issued; the battle counts as practice (re-audit). */
+  | 'defender_protected'
   | 'cooldown'
   | 'full'
   | 'not_in_grove'
@@ -73,7 +75,9 @@ export type ErrorCode =
   /** 429: one name change per 28 days; the message says when the next one is free. */
   | 'name_cooldown'
   /** 503: the server is too busy to check a battle right now (step 57); retried like any server error. */
-  | 'busy';
+  | 'busy'
+  /** 403: this player's age group does not allow it (free-text chat or a chosen name under 13; the message says what does work). */
+  | 'age_restricted';
 
 export interface ErrorBody {
   error: ErrorCode;
@@ -122,6 +126,10 @@ export const Routes = {
   /** GET (HTML): the web account-deletion page to link from store listings. Not part of the game's API. */
   deletionPage: '/account/delete',
   /** POST: ask before paying (age cap); returns the token the store purchase carries back. */
+  /** POST { ticket }: the player tapped Attack; from now on the raid counts even if never reported (re-audit). */
+  attackStart: '/v1/attacks/start',
+  /** POST { ticket }: leave a scouted base without attacking (only before it started). */
+  attackVoid: '/v1/attacks/void',
   purchaseIntent: '/v1/purchases/intent',
   /** POST: a purchase was cancelled (frees the age-cap hold) or is pending approval (holds longer). */
   purchaseIntentRelease: '/v1/purchases/intent/release',
@@ -185,6 +193,17 @@ export const Routes = {
   squadWarAttacks: '/v1/squad/war/attacks',
   /** POST { warId }: claim my chest once the war has ended. */
   squadWarClaim: '/v1/squad/war/claim',
+  /** PUT { band }: the age band this device knows (null: just ask); the answer is the band the server keeps (feature `age-bands`). */
+  meAge: '/v1/me/age',
+  /** POST: a one-time code for the web deletion page (feature `deletion-codes`). */
+  deletionCode: '/v1/me/deletion-code',
+  /** GET: moderation notices for me; POST /read { ids } marks them read (feature `notices`). */
+  notices: '/v1/notices',
+  noticesRead: '/v1/notices/read',
+  /** POST: sign out every other device of this account (feature `sessions`). */
+  sessionsRevokeOthers: '/v1/sessions/revoke-others',
+  /** POST, no token: Sign in with Apple server-to-server notifications (consent revoked, account deleted). */
+  appleSignInNotifications: '/v1/webhooks/apple-signin',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -521,6 +540,13 @@ export interface DeletionRequestBody {
   /** Ignored and never stored (worldwide audit GLOBAL-019: the deletion flow needs no email). Older pages may still send it. */
   contact?: string;
   note?: string;
+  /** The one-time deletion code from Settings → Online play → Account: with the Player ID it proves the request is the player's. */
+  code?: string;
+}
+/** POST /v1/me/deletion-code: shown once in Settings; only its hash is kept. */
+export interface DeletionCodeResponse {
+  code: string;
+  expiresAt: number;
 }
 export interface DeletionRequestResponse {
   /** Reference for the player; the request is handled by staff. */
@@ -1048,3 +1074,36 @@ export interface PushTokenRequest {
   tzOffsetMinutes: number;
 }
 
+// ---------------------------------------------------------------- age bands, notices, sessions (re-audit)
+
+/** The age bands (src/gameplay/sim/age.ts): only ever stricter, on the device and on the server. */
+export type AgeBandView = import('../../gameplay/sim/age').AgeBand;
+export interface AgeRequest {
+  band: AgeBandView | null;
+}
+export interface AgeResponse {
+  /** The band the server keeps (the stricter of what it had and what was sent); null when never stated. */
+  band: AgeBandView | null;
+}
+
+/**
+ * Chat for players under 13 (re-audit): these phrases only, never free text.
+ * The server accepts exactly these strings from an under-13 account.
+ */
+export const PRESET_CHAT: readonly string[] = ['Hello!', 'Good luck!', 'Well played!', 'Thanks for the troops!', 'Need troops, please!', 'Ready for battle!', 'Nice attack!', 'See you later!'];
+
+/** A moderation notice (EU DSA art. 16(5)/17): what was decided and how to appeal. */
+export interface NoticeView {
+  id: string;
+  at: number;
+  kind: 'report_outcome' | 'moderation_action' | 'account';
+  text: string;
+  read: boolean;
+}
+export interface NoticesResponse {
+  notices: NoticeView[];
+}
+export interface RevokeOthersResponse {
+  /** How many other devices were signed out. */
+  revoked: number;
+}
