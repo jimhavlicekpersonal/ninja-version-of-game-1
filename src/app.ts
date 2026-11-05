@@ -11,6 +11,7 @@ import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { mixSeed } from './gameplay/sim/rng';
 import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
 import { nextTrialTier, trialBase, trialInfo, trialReward, trialVariant } from './gameplay/sim/trials';
+import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
 import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
 import type { Hud } from './presentation/ui/hud';
@@ -147,6 +148,41 @@ export class App {
   }
 
   /**
+   * A goal event's bounty fortress (sim/goalEvents.ts): a generated base, labelled as such; settled with
+   * `bountyEnd` (ladder rewards, paid once each; no loot, no honor). Same pattern as a Shadow Trial.
+   */
+  bounty(eventKey: string, base: BaseLayout): void {
+    const c = this.d.controller;
+    if (!Object.values(battleArmy(c.state)).some((n) => n > 0)) {
+      this.d.hud.toast('Train some warriors first.', 'error');
+      return;
+    }
+    const b: BaseLayout = { ...base };
+    delete b.trophies;
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0xb0b7 + c.state.nextSeed), base: b, ...battleLoadout(c.state, c.data), infiltration: true };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'bounty', eventKey, title: `${base.practice ?? 'Bounty fortress'} · generated · ladder rewards, no loot or honor` });
+  }
+
+  /** Settle the score with a simulated raider (sim/rematch.ts): its own base, once; settled with `rematchEnd`. */
+  rematch(defenseId: string): void {
+    const c = this.d.controller;
+    const ok = rematchStatus(c.state, defenseId, c.now(), c.data);
+    if (!ok.ok) {
+      this.d.hud.toast(ok.message, 'error');
+      return;
+    }
+    if (!Object.values(battleArmy(c.state)).some((n) => n > 0)) {
+      this.d.hud.toast('Train some warriors first.', 'error');
+      return;
+    }
+    const base = rematchBase(ok.record, c.data);
+    if (!base) return;
+    delete base.trophies;
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x5e771e + c.state.nextSeed), base, ...battleLoadout(c.state, c.data), infiltration: true };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'rematch', defenseId, title: 'Settle the score · simulated raider · no honor moves' });
+  }
+
+  /**
    * A practice battle: any army (e.g. one with a warrior you have not trained
    * yet) against a generated base at your Keep. Nothing is spent or won, and it
    * is never saved as a raid; you can still watch its replay.
@@ -201,7 +237,15 @@ export class App {
     sound.music('village');
   }
 
-  private open(session: BattleSession, replayOf?: BattleRecord, grove?: RaidBattle, trialTier?: number, practice = false, duel?: { ticket: string; friendName: string }): void {
+  private open(
+    session: BattleSession,
+    replayOf?: BattleRecord,
+    grove?: RaidBattle,
+    trialTier?: number,
+    practice = false,
+    duel?: { ticket: string; friendName: string },
+    special?: { kind: 'bounty'; eventKey: string; title: string } | { kind: 'rematch'; defenseId: string; title: string },
+  ): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
     this.session = session;
@@ -215,6 +259,7 @@ export class App {
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
       grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? 'Gang War relay' : 'Gang War' } : {}) } : undefined,
       practice,
+      special: special ? { title: special.title } : undefined,
       trial:
         trialTier !== undefined
           ? (() => {
@@ -254,6 +299,28 @@ export class App {
           // Kept in the battle log, so "Watch replay" works after an Alliance War attack too.
           lastRecord = g.record;
           return { result: g.record.result, banked: {}, trophies: 0 };
+        }
+        if (special) {
+          // Bounty fortress or settle-the-score: settled by the sim (rewards paid once, no loot or honor).
+          const record = { at: startedAt, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick };
+          const r = special.kind === 'bounty' ? c.dispatch({ type: 'bountyEnd', eventKey: special.eventKey, record }) : c.dispatch({ type: 'rematchEnd', defenseId: special.defenseId, record });
+          if (!r.ok) {
+            this.d.hud.toast(r.message, 'error');
+            return null;
+          }
+          const e = r.events.find((x) => x.kind === 'bounty_end' || x.kind === 'rematch_end');
+          if (!e || (e.kind !== 'bounty_end' && e.kind !== 'rematch_end')) return null;
+          lastRecord = e.record;
+          const paid = Object.values(e.reward).some((v) => (v ?? 0) > 0);
+          const note =
+            e.kind === 'bounty_end'
+              ? e.steps.length
+                ? `New bounty step${e.steps.length === 1 ? '' : 's'} reached: the reward is paid once.`
+                : 'No new bounty step this time. Your best try counts.'
+              : e.won
+                ? 'Score settled.'
+                : 'The raider held. This rematch is used up.';
+          return { result: e.record.result, banked: paid ? e.reward : {}, overflow: e.overflow, trophies: 0, note };
         }
         if (trialTier !== undefined) {
           const t = c.finishTrial(trialTier, session.setup, session.deployments, session.endTick);
@@ -305,8 +372,20 @@ export class App {
           trackTimer = 0;
           lastTrack = Date.now();
           if (session.sim.ended && !c.state.pendingBattle) return;
-          const kind = grove ? 'war' : trialTier !== undefined ? 'trial' : 'raid';
-          c.trackBattle({ kind, tier: trialTier, target: grove?.target, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, ticket, at: startedAt, rules: SIM_RULES, ...(grove?.channel ? { channel: grove.channel } : {}) });
+          const kind = special ? special.kind : grove ? 'war' : trialTier !== undefined ? 'trial' : 'raid';
+          c.trackBattle({
+            kind,
+            tier: trialTier,
+            target: grove?.target,
+            opponentName: session.setup.base.name,
+            setup: session.setup,
+            deployments: session.deployments,
+            ticket,
+            at: startedAt,
+            rules: SIM_RULES,
+            ...(grove?.channel ? { channel: grove.channel } : {}),
+            ...(special?.kind === 'bounty' ? { eventKey: special.eventKey } : special?.kind === 'rematch' ? { defenseId: special.defenseId } : {}),
+          });
         };
         if (!lastTrack) track();
         else if (!trackTimer) trackTimer = window.setTimeout(track, Math.max(0, 1500 - (Date.now() - lastTrack)));

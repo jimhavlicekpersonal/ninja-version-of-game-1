@@ -6,6 +6,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildServer } from '../../../server/app';
 import { MemoryRepo } from '../../../server/repo';
+import { ARCHIVED_ENGINES } from '../../../server/rules/archive';
+import { liveEngine, RulesRegistry } from '../../../server/rules/registry';
 import { ServerError } from '../../../src/backend/net/ports';
 import { ClientHeaders, PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
 import { battleDamage, createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
@@ -165,7 +167,8 @@ for (const [label, makeRepo] of repoFactories) {
 describe('relay strikes need rules 3', () => {
   it('an older game is told to update before a relay strike (a solo strike still works)', async () => {
     let t = Date.UTC(2026, 3, 1);
-    const app = buildServer({ repo: new MemoryRepo(), data, now: () => t });
+    // As server/main.ts does: the live engine plus the archived rules, so a rules-3 game is served by the v3 snapshot.
+    const app = buildServer({ repo: new MemoryRepo(), data, now: () => t, shared: { rules: new RulesRegistry(liveEngine(data), { archived: ARCHIVED_ENGINES.map((e) => e()) }) } });
     const call = async (method: 'GET' | 'POST' | 'PUT', url: string, token?: string, payload?: unknown, rules = 3) => {
       const r = await app.inject({ method, url, payload: payload as object, headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), [ClientHeaders.protocol]: String(PROTOCOL_VERSION), [ClientHeaders.simRules]: String(rules) } });
       return { status: r.statusCode, body: r.body ? r.json() : null };
@@ -183,7 +186,10 @@ describe('relay strikes need rules 3', () => {
     t += (data.social.gangWar.botAfterMinutes + 1) * MIN;
     await call('GET', Routes.squadWar, ann.token);
     t += data.social.gangWar.prepHours * HOUR + MIN;
+    // Rules 2 was only ever played by the live engine (SIM_RULES_COMPATIBLE); since rules 4 it is retired, so a
+    // rules-2 game is told to update for any strike. Rules 3 (archived) still makes relay and solo strikes.
     expect((await call('POST', Routes.squadWarTicket, ann.token, { target: 0, relay: true }, 2)).status).toBe(426);
-    expect((await call('POST', Routes.squadWarTicket, ann.token, { target: 0 }, 2)).status).toBe(200);
+    expect((await call('POST', Routes.squadWarTicket, ann.token, { target: 0 }, 2)).status).toBe(426);
+    expect((await call('POST', Routes.squadWarTicket, ann.token, { target: 0, relay: true }, 3)).status).toBe(200);
   });
 });

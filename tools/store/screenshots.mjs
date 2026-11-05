@@ -94,8 +94,17 @@ async function loadVillage(page) {
   await page.waitForTimeout(3500);
 }
 
-/** Start a practice raid, send warriors in at the open points and capture the fight. */
+/**
+ * Start a practice raid, send warriors in at the open Infiltration Points and capture the fight.
+ * The page is reopened with ?debug (same sandbox village; it only adds the `window.tk` hook) so the
+ * points' screen positions can be read from the battle scene.
+ */
 async function battleShot(page, file) {
+  await page.goto(`${origin}?debug`);
+  await page.waitForSelector('#boot.done', { timeout: 60_000 }).catch(() => undefined);
+  await page.addStyleTag({ content: hideToasts });
+  await page.waitForTimeout(3000);
+  for (let i = 0; i < 3; i++) await page.keyboard.press('Escape');
   const attack = page.getByRole('button', { name: 'Attack', exact: true }).first();
   if (!(await attack.count())) return false;
   await attack.click();
@@ -103,17 +112,41 @@ async function battleShot(page, file) {
   const go = page.getByRole('button', { name: 'Attack!' }).first();
   if (!(await go.count())) return false;
   await go.click();
-  await page.waitForTimeout(1200);
-  const box = await page.locator('#game canvas').boundingBox();
+  await page.waitForTimeout(1500);
+  const points = await page.evaluate(() => {
+    const sc = window.tk?.game.scene.getScene('battle');
+    const entry = sc?.session?.sim.entry;
+    if (!entry) return [];
+    const cam = sc.cameras.main;
+    const cv = document.querySelector('#game canvas');
+    const k = cv.clientWidth / cv.width;
+    const r = cv.getBoundingClientRect();
+    return entry.points.map((p) => {
+      const wx = (p.x - p.y) * 32;
+      const wy = (p.x + p.y) * 16;
+      return { x: r.left + (wx - cam.worldView.x) * cam.zoom * k, y: r.top + (wy - cam.worldView.y) * cam.zoom * k };
+    }).filter((p) => p.x > 20 && p.x < innerWidth - 20 && p.y > 120 && p.y < innerHeight - 200);
+  });
   const cards = await page.$$eval('.troop-card:not(.ability)', (es) => es.map((e) => e.dataset.type).filter(Boolean));
-  // The HUD lists the open points on screen through its chevrons/rings; tap around the canvas
-  // centre band, where the start camera frames them, and let the game snap to the nearest point.
-  const spots = [[0.5, 0.36], [0.2, 0.5], [0.8, 0.5], [0.5, 0.64]];
-  for (const t of cards.slice(0, 3)) {
-    await page.locator(`.troop-card[data-type="${t}"]`).first().click().catch(() => undefined);
-    for (const [fx, fy] of spots) for (let i = 0; i < 4; i++) await page.touchscreen.tap(box.x + box.width * fx + i * 3, box.y + box.height * fy + i * 2).catch(() => undefined);
+  for (const p of points.slice(0, 3)) {
+    for (const t of cards) {
+      await page.locator(`.troop-card[data-type="${t}"]`).first().click().catch(() => undefined);
+      for (let i = 0; i < 8; i++) await page.touchscreen.tap(p.x + (i % 4) * 3, p.y + Math.floor(i / 4) * 3).catch(() => undefined);
+    }
   }
-  await page.waitForTimeout(6500);
+  await page.waitForTimeout(7000);
+  // Pinch-zoom on the fight, as a player would: centre on the warriors still standing.
+  await page.evaluate(() => {
+    const sc = window.tk?.game.scene.getScene('battle');
+    const alive = sc?.session?.sim.troops.filter((t) => !t.dead) ?? [];
+    if (!alive.length) return;
+    const x = alive.reduce((a, t) => a + t.x, 0) / alive.length;
+    const y = alive.reduce((a, t) => a + t.y, 0) / alive.length;
+    sc.cam.setZoom(0.62);
+    sc.cameras.main.centerOn((x - y) * 32, (x + y) * 16 - 20);
+    sc.rescaleOverlays?.();
+  });
+  await page.waitForTimeout(2500);
   await page.screenshot({ path: file });
   const end = page.getByRole('button', { name: 'End battle' }).first();
   if (await end.count()) {
@@ -131,6 +164,8 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 try {
   for (const d of devices) {
     const page = await browser.newPage({ viewport: { width: d.width, height: d.height }, deviceScaleFactor: d.scale, isMobile: !d.name.startsWith('ipad'), hasTouch: true });
+    // Software WebGL at 3x is slow: give screenshots time.
+    page.setDefaultTimeout(120_000);
     await loadVillage(page);
     for (let i = 0; i < 4; i++) await page.keyboard.press('Escape');
     for (const s of screens) {

@@ -174,8 +174,8 @@ export class DailyUi {
         h('p', { class: 'small' }, h('b', {}, 'Bounty fortress (generated). '), 'A computer-made fortress at your Keep level, the same one every try. Each step of the ladder pays once; no honor or loot changes hands.'),
         h('p', { class: 'muted small' }, `Your best: ${best.best}★ · ${best.bestDestruction}%`),
         ladder,
-        this.opts.onBounty ? h('div', { class: 'actions' }, attack) : null,
       );
+      if (this.opts.onBounty) body.append(h('div', { class: 'actions' }, attack));
     }
     body.append(h('h3', {}, 'Coming up'));
     for (const e of upcomingEvents(now, 4, gd)) body.append(row(e, false));

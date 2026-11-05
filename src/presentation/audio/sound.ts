@@ -80,6 +80,28 @@ class SoundEngine {
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
     if (this.musicMode && !this.musicTimer) this.startMusicLoop();
+    this.prewarm();
+  }
+
+  private warmed = false;
+
+  /**
+   * Render the common string buffers ahead, one every 40 ms after the first tap, so no sound or
+   * music note pays for its first render (a few ms each, more on a slow phone) in the middle of play.
+   */
+  private prewarm(): void {
+    if (this.warmed || !this.ctx) return;
+    this.warmed = true;
+    const koto = [52, 53, 57, 59, 64, 65, 69, 71, 72, 76, 77, 81, 83, 84, 88, 89, 93, 95];
+    const shamisen = [50, 51, 53, 52, 76, 83, 88, 95];
+    const jobs: [number, 'koto' | 'shamisen'][] = [...koto.map((n) => [n, 'koto'] as [number, 'koto']), ...shamisen.map((n) => [n, 'shamisen'] as [number, 'shamisen'])];
+    const step = () => {
+      const job = jobs.shift();
+      if (!job || !this.ctx) return;
+      this.stringBuffer(NOTE(job[0]), job[1]);
+      window.setTimeout(step, 40);
+    };
+    window.setTimeout(step, 200);
   }
 
   setSfx(on: boolean): void {

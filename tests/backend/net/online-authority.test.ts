@@ -244,8 +244,9 @@ describe('F18: replays are tied to the battle rules they were fought under', () 
   it('new records carry the current rules; old ones are not offered for replay', () => {
     expect(replayable({ rules: SIM_RULES })).toBe(true);
     expect(replayable({})).toBe(false);
-    // Rules 3 only added relay strikes, so rules 2 replays play out the same (SIM_RULES_COMPATIBLE); rules 1 does not.
-    expect(replayable({ rules: SIM_RULES - 1 })).toBe(true);
+    // Rules 4 (design re-audit: role budgets, Shadow stealth) changed combat, so no older replay plays out the same
+    // (SIM_RULES_COMPATIBLE is empty): rules 3 replays are shown as unavailable, never replayed wrongly.
+    expect(replayable({ rules: SIM_RULES - 1 })).toBe(false);
     expect(replayable({ rules: 1 })).toBe(false);
   });
 });

@@ -849,3 +849,10 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 .sheet { border-radius: 26px; box-shadow: var(--edge), 0 0 0 1.5px rgba(38, 48, 61, .22), 0 6px 0 rgba(20, 26, 34, .2), 0 18px 40px rgba(10, 14, 20, .35); }
 #battle-hud .scout-report { background: var(--paper); box-shadow: var(--edge), var(--hairline), var(--shadow-soft); }
 
+/* Store: Clan Stipend and offer notes; Pass value line; bounty ladder; held defenses. */
+.stipend-x { font: 800 16px var(--font); color: var(--plum); margin-left: 4px; }
+.stipend-card { background: #fff6c8; border-radius: 14px; padding: 8px 10px; margin-bottom: 10px; border-bottom: none; }
+.pass-value { margin-top: 6px; font-weight: 800; color: var(--plum); }
+.goal-ladder .log-row { padding: 6px 0; }
+.chip.held { gap: 4px; }
+.chip.held .chip { background: transparent; box-shadow: none; padding: 0 2px; }

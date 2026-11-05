@@ -26,6 +26,8 @@ export interface BattleHudDeps {
   grove?: { enemyName: string; title?: string };
   /** A practice battle (nothing spent or won, no Next). */
   practice?: boolean;
+  /** A bounty fortress or a settle-the-score rematch: its label; no loot, honor or Next. */
+  special?: { title: string };
   /** The player's first raid (tutorial not finished): one coach line at a time (re-audit design item 3). */
   coach?: boolean;
   /** Set for Shadow Trials (practice ladder: no loot from buildings, no honor, no Next). */
@@ -110,6 +112,8 @@ export class BattleHud {
             : 'Replay · loot won'
           : deps.grove
             ? `${deps.grove.title ?? 'Alliance War'} vs ${isolateName(deps.grove.enemyName)}`
+            : deps.special
+              ? deps.special.title
             : deps.trial
               ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
               : deps.practice
@@ -118,8 +122,8 @@ export class BattleHud {
                 ? `Practice target · ${this.s.setup.base.practice} · loot you can win`
                 : 'Loot you can win',
       ),
-      deps.grove || deps.practice ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
-      this.s.mode !== 'replay' && !deps.grove && !deps.trial && this.s.setup.base.trophies !== undefined
+      deps.grove || deps.practice || deps.special ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
+      this.s.mode !== 'replay' && !deps.grove && !deps.trial && !deps.special && this.s.setup.base.trophies !== undefined
         ? h(
             'div',
             { class: 'small b-trophies' },
@@ -361,7 +365,7 @@ export class BattleHud {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
         h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, 'Home'),
-        this.deps.grove || this.deps.trial || this.deps.practice
+        this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special
           ? h('span', {}, '')
           : h(
               'button',
@@ -543,8 +547,8 @@ export class BattleHud {
           ? h('p', { class: 'muted' }, 'Loot it would have won: ', lootChips(r.loot))
         : pending
           ? h('p', {}, 'Loot won: ', lootChips(r.loot), h('span', { class: 'muted small' }, ' (confirming with the server; it arrives when the server accepts the attack)'))
-          : h('p', {}, this.deps.trial ? 'Reward: ' : 'Loot: ', countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
-      this.deps.grove || this.deps.trial || this.deps.practice || pending ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+          : h('p', {}, this.deps.trial || this.deps.special ? 'Reward: ' : 'Loot: ', countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
+      this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || pending ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),

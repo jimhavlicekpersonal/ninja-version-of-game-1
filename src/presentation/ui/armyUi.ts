@@ -6,6 +6,7 @@
  * rebuilt only when what it shows has changed, never while a finger is down, and
  * the scroll position stays where the player left it.
  */
+import { suggestedArmy } from '../../gameplay/sim/suggest';
 import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
 import { MODEL, WARRIORS } from '../../gameplay/sim/progression';
@@ -142,7 +143,9 @@ export class ArmyUi {
         const sig = JSON.stringify([t, row.quote.ok, !row.quote.ok && row.quote.message, row.quote.quote, row.fill, row.ahead, v.state.resources.dew >= (row.quote.quote?.cost.dew ?? 0), row.topUp]);
         return { t, row, sig };
       });
-      const sig = JSON.stringify(['train', v.dojo, v.camp, rows.map((r) => r.sig), ready]);
+      // A one-tap army that fills the camps from warriors trainable now (sim/suggest.ts).
+      const suggestion = ready ? suggestedArmy(v.state, gd) : {};
+      const sig = JSON.stringify(['train', v.dojo, v.camp, rows.map((r) => r.sig), ready, suggestion, scopeCount >= 5]);
       if (sig === paneSig) return;
       paneSig = sig;
       const list: HTMLElement[] = rows.map(({ t, row, sig: cardSig }) => {
@@ -158,6 +161,7 @@ export class ArmyUi {
       pane.replaceChildren(
         ...[
           !ready ? this.setupCard(v) : null,
+          Object.values(suggestion).some((n) => n > 0) ? this.refillRow('Suggested army', suggestion, draw) : null,
           // Filters only once there is something to filter (re-audit design item 4: 5 tiers and 10 roles for 2 warriors).
           v.dojo === 'ready' && scopeCount >= 5 ? filters : null,
           speed > 1 ? h('p', { class: 'muted small' }, `Your Training Dojo trains ${speed}× faster than a level 1 Dojo.`) : null,

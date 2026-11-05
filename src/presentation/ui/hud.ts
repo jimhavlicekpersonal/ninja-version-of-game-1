@@ -13,6 +13,8 @@ import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/soci
 import { armyHousing, housingCapacity, troopUnlock } from '../../gameplay/sim/army';
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { replayable } from '../../gameplay/sim/battle/battle';
+import { rematchable } from '../../gameplay/sim/rematch';
+import { stipendStatus } from '../../gameplay/sim/stipend';
 import { shieldHoursFor } from '../../gameplay/sim/defense';
 import { leagueChest, leagueFor, nextLeague, seasonEndsAt } from '../../gameplay/sim/ranks';
 import { achievementViews } from '../../gameplay/sim/achievements';
@@ -88,6 +90,10 @@ export interface HudDeps {
   connection: Connection;
   /** The address a friend link opens (step 59); null: share codes only. */
   friendLinkBase?: () => string | null;
+  /** Settle the score with a simulated raider (app.ts: a battle settled with `rematchEnd`). */
+  onRematch?(defenseId: string): void;
+  /** Attack a goal event's bounty fortress (app.ts: a battle settled with `bountyEnd`). */
+  onBounty?(eventKey: string, base: import('../../gameplay/sim/battle/types').BaseLayout): void;
   /**
    * Web "Update Kagemura": fetch the new build through the service worker and reload (`backend/pwa/register`
    * `updateWebApp`, injected by the composition root because `pwa/` is not a backend contract file).
@@ -182,7 +188,10 @@ export class Hud {
         ...this.deps.groveSource.snapshot().members.filter((m) => !m.you && this.deps.groveSource.snapshot().kind === 'online').map((m) => m.name),
       ],
     });
-    this.daily = new DailyUi({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() });
+    this.daily = new DailyUi(
+      { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+      { stipendCard: (redraw) => this.econ.stipendCard(redraw), onBounty: this.deps.onBounty ? (key, base) => this.deps.onBounty!(key, base) : undefined },
+    );
     this.army = new ArmyUi({
       kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
       econ: this.econ,
@@ -434,7 +443,7 @@ export class Hud {
     this.armyPill.classList.toggle('busy', s.training.some((q) => q.endsAt > this.c.now()));
     this.armyPill.classList.toggle('full', ready >= campSpace);
     set('Store', activeOffers(s, this.c.now()).length);
-    set('Daily', chestReady(s, this.c.now(), gd) ? 1 : 0);
+    set('Daily', (chestReady(s, this.c.now(), gd) ? 1 : 0) + (stipendStatus(s, this.c.now(), gd).claimable ? 1 : 0));
     const tier = unlockedTier(s, gd);
     const tiersReady = gd.pass.tiers.filter((t) => t.tier <= tier && (!s.pass.claimedFree.includes(t.tier) || (s.pass.premium && !s.pass.claimedPremium.includes(t.tier)))).length;
     const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
@@ -1613,6 +1622,8 @@ export class Hud {
     const s = this.c.state;
     const body = h('div', {});
     const attacks = [...s.battleLog, ...s.defenseLog].sort((a, b) => b.at - a.at);
+    // Settle the score (sim/rematch.ts): a recent simulated raider's own base, once, labelled as generated.
+    const answerable = new Set(this.deps.onRematch ? rematchable(s, this.c.now(), this.c.data).map((d) => d.id) : []);
     if (!attacks.length) body.append(h('p', { class: 'muted' }, 'No battles yet. Tap Attack to raid a neighbouring village!'));
     for (const r of attacks) {
       const stars = h('span', { class: 'stars-mini' });
@@ -1628,12 +1639,17 @@ export class Hud {
       });
       // Attacks show what reached storage; old records stored that in result.loot.
       const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
+      // A held defense pays a small reward (`banked` on the defense record).
+      const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, 'Held! +', costChips(r.banked)) : null;
+      const settle = answerable.has(r.id)
+        ? h('button', { class: 'btn danger', type: 'button', title: `Attack ${r.opponentName}'s own base (a simulated raider): no honor moves`, onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, 'Settle the score')
+        : null;
       body.append(
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${isolateName(r.opponentName)}${r.setup.base.practice ? ' (practice)' : ''}` : `${isolateName(r.opponentName)}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, 'No loot'))),
-          replay,
+          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${isolateName(r.opponentName)}${r.setup.base.practice ? ' (practice)' : ''}` : `${isolateName(r.opponentName)}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, 'No loot'), held)),
+          h('div', { class: 'row' }, settle, replay),
         ),
       );
     }
