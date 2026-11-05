@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, GangWarTicketRequest, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -128,6 +128,27 @@ export class InProcessServerAdapter implements ServerPort {
   }
   squadDonate(requestId: string, req: DonateRequest) {
     return this.authed((me) => this.core.squadDonate(me, requestId, wire(req)));
+  }
+  gangWar() {
+    return this.authed((me) => this.core.gangWar(me));
+  }
+  gangWarQueue() {
+    return this.authed((me) => this.core.gangWarQueue(me));
+  }
+  gangWarCancel() {
+    return this.authed((me) => this.core.gangWarCancel(me));
+  }
+  gangWarBase() {
+    return this.authed((me) => this.core.gangWarBase(me));
+  }
+  gangWarTicket(req: GangWarTicketRequest) {
+    return this.authed((me) => this.core.gangWarTicket(me, wire(req)));
+  }
+  gangWarAttack(sub: BattleSubmission) {
+    return this.authed((me) => this.core.gangWarAttack(me, wire(sub)));
+  }
+  gangWarClaim(warId: string) {
+    return this.authed((me) => this.core.gangWarClaim(me, warId));
   }
   platformFriends(req: PlatformFriendsRequest) {
     return this.authed((me) => this.core.platformFriends(me, wire(req)));

@@ -12,6 +12,10 @@ import type {
   DuelRecord,
   DuelTally,
   FriendRequest,
+  GangQueueEntry,
+  GangRelay,
+  GangWar,
+  GangWarAttack,
   Squad,
   SquadInvite,
   SquadMember,
@@ -89,7 +93,7 @@ const isUniqueClash = (e: unknown) => (e as { code?: string })?.code === '23505'
 const toTicket = (r: Row): Ticket => {
   const t: Ticket = {
     id: String(r.id),
-    kind: r.kind === 'raid' ? 'raid' : r.kind === 'duel' ? 'duel' : 'pvp',
+    kind: r.kind === 'raid' ? 'raid' : r.kind === 'duel' ? 'duel' : r.kind === 'war' ? 'war' : 'pvp',
     attackerId: String(r.attacker_id),
     defenderId: strOrNull(r.defender_id),
     defenderName: String(r.defender_name ?? ''),
@@ -103,6 +107,9 @@ const toTicket = (r: Row): Ticket => {
   if (r.seed !== null && r.seed !== undefined) t.seed = num(r.seed);
   if (r.rules !== null && r.rules !== undefined) t.rules = num(r.rules);
   if (r.challenge_id !== null && r.challenge_id !== undefined) t.challengeId = String(r.challenge_id);
+  if (r.war_id !== null && r.war_id !== undefined) t.warId = String(r.war_id);
+  if (r.relay !== null && r.relay !== undefined) t.relay = Boolean(r.relay);
+  if (r.start_damage !== null && r.start_damage !== undefined) t.startDamage = r.start_damage as Record<string, number>;
   if (r.data_version !== null && r.data_version !== undefined) t.dataVersion = String(r.data_version);
   if (r.week !== null && r.week !== undefined) t.week = num(r.week);
   if (r.grove_id !== null && r.grove_id !== undefined) t.groveId = String(r.grove_id);
@@ -679,6 +686,81 @@ export class PgRepo implements Repo {
     await this.db.query('delete from squad_invites where squad_id = $1', [squadId]);
   }
 
+  // Gang Wars (roadmap steps 65-66): the war (both rosters with their bases) is one jsonb record.
+  async createWar(w: GangWar): Promise<void> {
+    await this.db.query('insert into squad_wars (id, created_at, ends_at, squad_a, squad_b, rated, record) values ($1, $2, $3, $4, $5, $6, $7)', [w.id, w.createdAt, w.endsAt, w.a.squadId, w.b.squadId, w.rated, JSON.stringify(w)]);
+  }
+  private toWar = (x: Row): GangWar => ({ ...(x.record as GangWar), rated: Boolean(x.rated) });
+  async getWar(id: string): Promise<GangWar | null> {
+    const r = await this.rows('select * from squad_wars where id = $1', [id]);
+    return r[0] ? this.toWar(r[0]) : null;
+  }
+  async updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b'>>): Promise<void> {
+    await this.db.query('update squad_wars set record = record || $2::jsonb where id = $1', [id, JSON.stringify(patch)]);
+  }
+  async markWarRated(id: string): Promise<boolean> {
+    const r = await this.db.query('update squad_wars set rated = true where id = $1 and not rated', [id]);
+    return (r.rowCount ?? 0) > 0;
+  }
+  async activeWarOf(squadId: string, now: number): Promise<GangWar | null> {
+    const r = await this.rows('select * from squad_wars where (squad_a = $1 or squad_b = $1) and ends_at > $2 order by created_at desc limit 1', [squadId, now]);
+    return r[0] ? this.toWar(r[0]) : null;
+  }
+  async warsOf(squadId: string, limit: number): Promise<GangWar[]> {
+    return (await this.rows('select * from squad_wars where squad_a = $1 or squad_b = $1 order by created_at desc limit $2', [squadId, limit])).map(this.toWar);
+  }
+  async addWarAttack(a: GangWarAttack): Promise<void> {
+    await this.db.query('insert into squad_war_attacks (id, war_id, side, attacker_id, target, relay, stars, destruction, at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [a.id, a.warId, a.side, a.attackerId, a.target, a.relay, a.stars, a.destruction, a.at]);
+  }
+  async warAttacks(warId: string): Promise<GangWarAttack[]> {
+    const r = await this.rows('select * from squad_war_attacks where war_id = $1 order by at', [warId]);
+    return r.map((x) => ({ id: String(x.id), warId: String(x.war_id), side: x.side === 'b' ? 'b' : 'a', attackerId: String(x.attacker_id), target: num(x.target), relay: Boolean(x.relay), stars: num(x.stars), destruction: num(x.destruction), at: num(x.at) }));
+  }
+  private toRelay = (x: Row): GangRelay => ({ warId: String(x.war_id), side: x.side === 'b' ? 'b' : 'a', target: num(x.target), damage: (x.damage as Record<string, number>) ?? {}, stars: num(x.stars), destruction: num(x.destruction), strikes: num(x.strikes), lastBy: strOrNull(x.last_by), holder: strOrNull(x.holder), holdUntil: num(x.hold_until) });
+  async getRelay(warId: string, side: 'a' | 'b', target: number): Promise<GangRelay | null> {
+    const r = await this.rows('select * from squad_war_relays where war_id = $1 and side = $2 and target = $3', [warId, side, target]);
+    return r[0] ? this.toRelay(r[0]) : null;
+  }
+  async holdRelay(warId: string, side: 'a' | 'b', target: number, playerId: string, until: number, now: number): Promise<boolean> {
+    // One statement: create the row, or take it if it is free (or already ours, or the hold ran out).
+    const r = await this.db.query(
+      `insert into squad_war_relays (war_id, side, target, holder, hold_until) values ($1, $2, $3, $4, $5)
+       on conflict (war_id, side, target) do update set holder = excluded.holder, hold_until = excluded.hold_until
+       where squad_war_relays.holder is null or squad_war_relays.holder = excluded.holder or squad_war_relays.hold_until <= $6`,
+      [warId, side, target, playerId, until, now],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+  async putRelay(x: GangRelay): Promise<void> {
+    await this.db.query(
+      `insert into squad_war_relays (war_id, side, target, damage, stars, destruction, strikes, last_by, holder, hold_until) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       on conflict (war_id, side, target) do update set damage = excluded.damage, stars = excluded.stars, destruction = excluded.destruction, strikes = excluded.strikes, last_by = excluded.last_by, holder = excluded.holder, hold_until = excluded.hold_until`,
+      [x.warId, x.side, x.target, JSON.stringify(x.damage), x.stars, x.destruction, x.strikes, x.lastBy, x.holder, x.holdUntil],
+    );
+  }
+  async enqueueGang(e: GangQueueEntry): Promise<boolean> {
+    const r = await this.db.query('insert into squad_war_queue (squad_id, size, queued_at, record) values ($1, $2, $3, $4) on conflict (squad_id) do nothing', [e.squadId, e.size, e.queuedAt, JSON.stringify(e)]);
+    return (r.rowCount ?? 0) > 0;
+  }
+  async dequeueGang(squadId: string): Promise<boolean> {
+    const r = await this.db.query('delete from squad_war_queue where squad_id = $1', [squadId]);
+    return (r.rowCount ?? 0) > 0;
+  }
+  async queuedGang(squadId: string): Promise<GangQueueEntry | null> {
+    const r = await this.rows('select record from squad_war_queue where squad_id = $1', [squadId]);
+    return r[0] ? (r[0].record as GangQueueEntry) : null;
+  }
+  async gangQueue(size: number): Promise<GangQueueEntry[]> {
+    return (await this.rows('select record from squad_war_queue where size = $1 order by queued_at limit 200', [size])).map((x) => x.record as GangQueueEntry);
+  }
+  async addGangClaim(warId: string, playerId: string, outcome: string, at: number): Promise<boolean> {
+    const r = await this.db.query('insert into squad_war_claims (war_id, player_id, outcome, at) values ($1, $2, $3, $4) on conflict do nothing', [warId, playerId, outcome, at]);
+    return (r.rowCount ?? 0) > 0;
+  }
+  async gangClaimed(warId: string, playerId: string): Promise<boolean> {
+    return (await this.rows('select 1 from squad_war_claims where war_id = $1 and player_id = $2', [warId, playerId])).length > 0;
+  }
+
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
     const r = await this.rows(
       `select * from players p
@@ -727,9 +809,9 @@ export class PgRepo implements Repo {
     // The base version and the ticket in one statement: retention never sees one without the other.
     await this.db.query(
       `${PUT_BASE}
-       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed, rules, data_version, challenge_id)
-       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16, $17)`,
-      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null, t.rules ?? null, t.dataVersion ?? null, t.challengeId ?? null],
+       insert into tickets (base_hash, base, created_at, id, kind, attacker_id, defender_id, defender_name, defender_trophies, expires_at, used, week, grove_id, target, seed, rules, data_version, challenge_id, war_id, relay, start_damage)
+       values ($1, null, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`,
+      [contentHash(t.base), JSON.stringify(t.base), t.createdAt, t.id, t.kind, t.attackerId, t.defenderId, t.defenderName, t.defenderTrophies, t.expiresAt, t.week ?? null, t.groveId ?? null, t.target ?? null, t.seed ?? null, t.rules ?? null, t.dataVersion ?? null, t.challengeId ?? null, t.warId ?? null, t.relay ?? null, t.startDamage ? JSON.stringify(t.startDamage) : null],
     );
   }
 
@@ -838,6 +920,17 @@ export class PgRepo implements Repo {
       await q('delete from duel_challenges where from_id = $1 or to_id = $1', [id]);
       await q('delete from squad_members where player_id = $1', [id]);
       await q('delete from squad_invites where to_id = $1 or from_id = $1', [id]);
+      // Gang War rosters keep the base (the war's score depends on it) without the player.
+      for (const side of ['a', 'b']) {
+        await q(
+          `update squad_wars set record = jsonb_set(record, $3::text[], (
+             select jsonb_agg(case when e->>'playerId' = $1 then e || jsonb_build_object('playerId', null, 'name', $2::text) else e end order by i)
+             from jsonb_array_elements(record->$4->'roster') with ordinality as x(e, i)))
+           where record->$4->'roster' @> jsonb_build_array(jsonb_build_object('playerId', $1::text))`,
+          [id, D.name, `{${side},roster}`, side],
+        );
+      }
+      await q('delete from squad_war_claims where player_id = $1', [id]);
       await q('delete from reports where reporter_id = $1', [id]);
       await q(
         `update reports set target_id = $2, target_name = $3, text = null,

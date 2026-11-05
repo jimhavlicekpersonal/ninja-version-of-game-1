@@ -31,6 +31,8 @@ export interface ResimOutcome {
   result: BattleResult;
   /** Buildings destroyed in the battle, with the loot each held (the defender's losses). */
   fallen: FallenBuilding[];
+  /** HP each building lost by the end (a relay's next `startDamage`, step 64). */
+  damage: Record<string, number>;
   /** CPU time of the simulation itself. */
   ms: number;
   /** Time spent waiting for a free worker. */
@@ -45,11 +47,16 @@ export interface Resimulator {
 }
 
 /** The battle in place, on the calling thread. */
-export function simulate(engine: RulesEngine, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { result: BattleResult; fallen: FallenBuilding[]; ms: number } {
+export function simulate(engine: RulesEngine, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { result: BattleResult; fallen: FallenBuilding[]; damage: Record<string, number>; ms: number } {
   const t0 = performance.now();
   const { sim, result } = engine.runBattle(setup, deployments, engine.data, endTick);
   const fallen = sim.buildings.filter((b) => b.destroyed).map((b) => ({ id: b.id, loot: { ...(b.loot as Record<string, number>) } }));
-  return { result, fallen, ms: performance.now() - t0 };
+  const damage: Record<string, number> = {};
+  for (const b of sim.buildings) {
+    const lost = b.destroyed ? b.maxHp : b.maxHp - b.hp;
+    if (lost > 0) damage[b.id] = lost;
+  }
+  return { result, fallen, damage, ms: performance.now() - t0 };
 }
 
 export class InlineResimulator implements Resimulator {
@@ -82,7 +89,7 @@ export interface ResimJob {
   endTick?: number;
 }
 
-export type ResimReply = { id: number; ok: true; result: BattleResult; fallen: FallenBuilding[]; ms: number; dataVersion: string; rules: number } | { id: number; ok: false; error: string };
+export type ResimReply = { id: number; ok: true; result: BattleResult; fallen: FallenBuilding[]; damage: Record<string, number>; ms: number; dataVersion: string; rules: number } | { id: number; ok: false; error: string };
 
 interface Pending {
   job: ResimJob;
@@ -176,7 +183,7 @@ export class WorkerResimulator implements Resimulator {
     else if (msg.dataVersion !== p.engine.dataVersion || msg.rules !== p.engine.rules) {
       // The worker has no such engine (a test double): run it here.
       p.resolve({ ...simulate(p.engine, p.job.setup, p.job.deployments, p.job.endTick), waitMs });
-    } else p.resolve({ result: msg.result, fallen: msg.fallen, ms: msg.ms, waitMs });
+    } else p.resolve({ result: msg.result, fallen: msg.fallen, damage: msg.damage, ms: msg.ms, waitMs });
     this.pump();
   }
 

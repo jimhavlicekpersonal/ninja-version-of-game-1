@@ -63,7 +63,7 @@ describe('save v9', () => {
     v.daily = daily;
     const out = migrate({ version: 8, savedAt: 0, village: v }, w.data);
     expect(out.version).toBe(SAVE_VERSION);
-    expect(out.village.net).toEqual({ playerId: null, defensesSince: 0, donations: [], raidWeeks: [] });
+    expect(out.village.net).toEqual({ playerId: null, defensesSince: 0, donations: [], raidWeeks: [], gangWars: [] });
     expect(out.village.daily).toEqual(daily);
   });
 });

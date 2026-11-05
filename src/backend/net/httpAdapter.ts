@@ -44,6 +44,11 @@ import {
   type DuelTicketRequest,
   type DuelTicketResponse,
   type SquadResponse,
+  type GangWarAttackResponse,
+  type GangWarClaimResponse,
+  type GangWarResponse,
+  type GangWarTicketRequest,
+  type GangWarTicketResponse,
   type FriendRequestBody,
   type FriendRequestResult,
   type FriendsResponse,
@@ -323,6 +328,28 @@ export class HttpServerAdapter implements ServerPort {
   }
   squadDonate(requestId: string, req: DonateRequest): Promise<DonateResponse> {
     return this.req('POST', Routes.squadDonate(requestId), req);
+  }
+
+  gangWar(): Promise<GangWarResponse> {
+    return this.req('GET', Routes.squadWar);
+  }
+  gangWarQueue(): Promise<GangWarResponse> {
+    return this.req('POST', Routes.squadWarQueue, {});
+  }
+  gangWarCancel(): Promise<GangWarResponse> {
+    return this.req('DELETE', Routes.squadWarQueue);
+  }
+  gangWarBase(): Promise<GangWarResponse> {
+    return this.req('POST', Routes.squadWarBase, {});
+  }
+  gangWarTicket(req: GangWarTicketRequest): Promise<GangWarTicketResponse> {
+    return this.req('POST', Routes.squadWarTicket, req);
+  }
+  gangWarAttack(sub: BattleSubmission): Promise<GangWarAttackResponse> {
+    return this.req('POST', Routes.squadWarAttacks, { rules: SIM_RULES, dataVersion: this.dataVersion(), ...sub });
+  }
+  gangWarClaim(warId: string): Promise<GangWarClaimResponse> {
+    return this.req('POST', Routes.squadWarClaim, { warId });
   }
 
   balance(): Promise<BalanceResponse> {

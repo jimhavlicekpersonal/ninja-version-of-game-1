@@ -107,3 +107,16 @@ export function orderByRating<T>(attack: Rating, powerAtt: number, candidates: {
     .sort((x, y) => x.d - y.d || x.i - y.i)
     .map((s) => s.c.item);
 }
+
+/**
+ * Rate a team match (Gang Wars, roadmap step 66): `scoreA` is 1 for a win by
+ * A, 0.5 for a draw, 0 for a loss. Same deviation and K rules as battles; no
+ * power term (matchmaking already pairs equal sizes and close Power).
+ */
+export function rateTeams(a: Rating, b: Rating, scoreA: number, now: number, def: RatingDef): { a: Rating; b: Rating; expected: number } {
+  const ra = decayed(a, now, def);
+  const rb = decayed(b, now, def);
+  const expected = 1 / (1 + 10 ** ((rb.rating - ra.rating) / 400));
+  const settle = (r: Rating, delta: number): Rating => ({ rating: r.rating + delta, rd: Math.max(def.minRd, r.rd * def.rdShrinkPerBattle), battles: r.battles + 1, at: now });
+  return { a: settle(ra, kFor(ra, def) * (scoreA - expected)), b: settle(rb, -kFor(rb, def) * (scoreA - expected)), expected };
+}

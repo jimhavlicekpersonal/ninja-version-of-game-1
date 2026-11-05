@@ -17,6 +17,11 @@ import type {
   DuelTicketRequest,
   DuelTicketResponse,
   SquadResponse,
+  GangWarAttackResponse,
+  GangWarClaimResponse,
+  GangWarResponse,
+  GangWarTicketRequest,
+  GangWarTicketResponse,
   FriendRequestBody,
   FriendRequestResult,
   FriendsResponse,
@@ -124,6 +129,14 @@ export interface IdentityPort {
   squadRequests(): Promise<RequestsResponse>;
   squadRequestTroops(capacity: number): Promise<RequestView>;
   squadDonate(requestId: string, req: DonateRequest): Promise<DonateResponse>;
+  /** Gang Wars (steps 65-66; feature `gang-wars`). */
+  gangWar(): Promise<GangWarResponse>;
+  gangWarQueue(): Promise<GangWarResponse>;
+  gangWarCancel(): Promise<GangWarResponse>;
+  gangWarBase(): Promise<GangWarResponse>;
+  gangWarTicket(req: GangWarTicketRequest): Promise<GangWarTicketResponse>;
+  gangWarAttack(sub: BattleSubmission): Promise<GangWarAttackResponse>;
+  gangWarClaim(warId: string): Promise<GangWarClaimResponse>;
   /** Linked sign-ins (roadmap step 24). */
   links(): Promise<LinksResponse>;
   link(provider: LinkProvider, credential: LinkCredential): Promise<LinksResponse>;

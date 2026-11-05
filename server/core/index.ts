@@ -8,6 +8,7 @@ import * as admin from './admin';
 import type { ServerContext } from './context';
 import * as duels from './duels';
 import * as friends from './friends';
+import * as gangWars from './gangWars';
 import * as squads from './squads';
 import * as groves from './groves';
 import * as names from './names';
@@ -61,6 +62,13 @@ export function createCore(ctx: ServerContext) {
     squadRequests: squads.requests.bind(null, ctx),
     squadRequestTroops: squads.requestTroops.bind(null, ctx),
     squadDonate: squads.donate.bind(null, ctx),
+    gangWar: gangWars.war.bind(null, ctx),
+    gangWarQueue: gangWars.queue.bind(null, ctx),
+    gangWarCancel: gangWars.cancelQueue.bind(null, ctx),
+    gangWarBase: gangWars.refreshBase.bind(null, ctx),
+    gangWarTicket: gangWars.warTicket.bind(null, ctx),
+    gangWarAttack: gangWars.warAttack.bind(null, ctx),
+    gangWarClaim: gangWars.claim.bind(null, ctx),
     /** Start-up: give players from before unique names their name key (step 59). */
     migrateNames: () => names.migrateNames(ctx),
     links: links.links.bind(null, ctx),

@@ -18,7 +18,7 @@ import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unloc
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
 import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
-import { bindPlayer, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
+import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState, PendingBattle } from './types';
@@ -100,6 +100,8 @@ export type Command =
   | { type: 'receiveDonations'; items: ServerDonation[] }
   | { type: 'spendDonation'; troop: string; count: number; xp: number }
   | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number }
+  /** A Gang War chest the server confirmed (step 65), once per war. */
+  | { type: 'claimGangChest'; warId: string; outcome: 'win' | 'draw' | 'loss' }
   /** `known`: server only, the result it has just simulated from this setup (see battleEnd). */
   | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
   /**
@@ -607,6 +609,10 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'spendDonation':
       if (!spendDonation(s, cmd.troop, cmd.count, cmd.xp)) return fail('NOT_AVAILABLE', 'Not enough of that troop.');
       return { ok: true, state: s, events: [{ kind: 'donation', troop: cmd.troop, count: cmd.count, xp: cmd.xp }] };
+    case 'claimGangChest': {
+      const chest = claimGangChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data);
+      return chest ? { ok: true, state: s, events: [] } : fail('ALREADY_CLAIMED', 'This Gang War chest was already collected.');
+    }
     case 'claimRaidChest': {
       const chest = claimRaidChest(s, cmd.week, cmd.outcome, cmd, hallLevel(s, data), data);
       if (!chest) return fail('ALREADY_CLAIMED', 'That chest was already collected.');

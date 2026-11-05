@@ -167,6 +167,18 @@ export const Routes = {
   /** GET / POST { capacity }: troop requests inside the Gang; gifts arrive in the usual inbox. */
   squadRequests: '/v1/squad/requests',
   squadDonate: (id: string) => `/v1/squad/requests/${encodeURIComponent(id)}/donate`,
+  /** Gang Wars (steps 65-66; feature `gang-wars`). GET: the current war, the search, recent wars and chests. */
+  squadWar: '/v1/squad/war',
+  /** POST: the leader starts looking for an opposing Gang; DELETE: stop looking. */
+  squadWarQueue: '/v1/squad/war/queue',
+  /** POST: during prep, copy my current village into the war again (moved defenses). */
+  squadWarBase: '/v1/squad/war/base',
+  /** POST { target, relay }: a war ticket (a relay strike starts from the damage so far). */
+  squadWarTicket: '/v1/squad/war/ticket',
+  /** POST BattleSubmission: report a war strike. */
+  squadWarAttacks: '/v1/squad/war/attacks',
+  /** POST { warId }: claim my chest once the war has ended. */
+  squadWarClaim: '/v1/squad/war/claim',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -416,6 +428,69 @@ export interface SquadResponse {
   invites: SquadInviteView[];
   /** When this player may join a Gang again after leaving one (0: now). */
   canJoinAt: number;
+}
+
+// ---------------------------------------------------------------- Gang Wars (roadmap steps 65-66)
+
+export interface GangWarBaseView {
+  index: number;
+  name: string;
+  keep: number;
+  /** The layout (enemy bases, to attack; our own, to see what they face). */
+  base: BaseLayout;
+  /** Its best result so far (a relay counts as one combined result). */
+  best: { stars: number; destruction: number };
+  /** The relay on it: damage so far, strikes, who struck last, and whether someone holds the next strike. */
+  relay: { stars: number; destruction: number; strikes: number; lastBy: string | null; busy: boolean } | null;
+}
+export interface GangWarView {
+  id: string;
+  phase: 'prep' | 'battle' | 'ended';
+  prepEndsAt: number;
+  endsAt: number;
+  size: number;
+  opponent: { name: string; bot: boolean };
+  ours: { stars: number; destruction: number };
+  theirs: { stars: number; destruction: number };
+  /** Our bases and what the enemy did to them. */
+  mine: GangWarBaseView[];
+  /** Their bases and what we did to them. */
+  enemy: GangWarBaseView[];
+  /** My attacks left (0 outside the battle day, or for a member who joined after it started). */
+  attacksLeft: number;
+  /** My index in our roster (null: not in this war). */
+  myIndex: number | null;
+  outcome: 'win' | 'draw' | 'loss' | null;
+  claimed: boolean;
+}
+export interface GangWarResponse {
+  war: GangWarView | null;
+  /** The leader is looking for an opponent; a generated Gang is offered from `botAt`. */
+  queued: { since: number; botAt: number } | null;
+  /** Ended wars this player took part in, newest first, with whether the chest was claimed. */
+  recent: { id: string; opponent: string; bot: boolean; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number; endsAt: number; claimed: boolean }[];
+}
+export interface GangWarTicketRequest {
+  target: number;
+  relay?: boolean;
+}
+export interface GangWarTicketResponse {
+  ticket: string;
+  seed: number;
+  base: BaseLayout;
+  /** A relay strike: the damage it starts from (BattleSetup.startDamage). */
+  startDamage?: Record<string, number>;
+  expiresAt: number;
+}
+export interface GangWarAttackResponse {
+  result: BattleResult;
+  ours: { stars: number; destruction: number };
+  theirs: { stars: number; destruction: number };
+}
+export interface GangWarClaimResponse {
+  warId: string;
+  outcome: 'win' | 'draw' | 'loss';
+  alreadyClaimed: boolean;
 }
 
 export interface PrivacyRequest {

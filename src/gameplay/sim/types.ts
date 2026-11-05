@@ -158,6 +158,8 @@ export interface NetState {
   donations: string[];
   /** Server Grove Raid weeks whose chest was collected. */
   raidWeeks: number[];
+  /** Gang Wars whose chest was collected (step 65; the latest few). */
+  gangWars: string[];
 }
 
 export interface ChatMessage {
@@ -726,6 +728,17 @@ export interface SocialDef {
     prepOfferHours: number;
     starOdds: { base3: number; base2: number; base1: number; perHallDiff: number };
     rewards: Record<'win' | 'draw' | 'loss', Cost & { xp: number }>;
+  };
+  /** Gang Wars (roadmap steps 65-66). */
+  gangWar: {
+    minSize: number;
+    maxSize: number;
+    prepHours: number;
+    battleHours: number;
+    attacksPerMember: number;
+    botAfterMinutes: number;
+    recentOpponents: number;
+    rewards: Record<'win' | 'draw' | 'loss', Cost>;
   };
 }
 

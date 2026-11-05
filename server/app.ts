@@ -367,6 +367,15 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.squadRequests, authed(async (me, req, reply) => reply.code(201).send(await core.squadRequestTroops(me, body<{ capacity: number }>(req).capacity))));
   app.post('/v1/squad/requests/:id/donate', authed(async (me, req) => core.squadDonate(me, param(req, 'id'), req.body as never)));
 
+  // Gang Wars (steps 65-66)
+  app.get(Routes.squadWar, authed(async (me) => core.gangWar(me)));
+  app.post(Routes.squadWarQueue, rate('match'), authed(async (me) => core.gangWarQueue(me)));
+  app.delete(Routes.squadWarQueue, authed(async (me) => core.gangWarCancel(me)));
+  app.post(Routes.squadWarBase, rate('moderation'), authed(async (me) => core.gangWarBase(me)));
+  app.post(Routes.squadWarTicket, rate('match'), authed(async (me, req) => core.gangWarTicket(me, req.body as never, client(req))));
+  app.post(Routes.squadWarAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.gangWarAttack(me, req.body as never)));
+  app.post(Routes.squadWarClaim, authed(async (me, req) => core.gangWarClaim(me, body<{ warId: string }>(req).warId)));
+
   // Grove Raid
   app.get(Routes.groveRaid, authed(async (me) => core.raid(me)));
   app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target, client(req))));

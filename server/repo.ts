@@ -126,6 +126,70 @@ export interface SquadInvite {
   at: number;
 }
 
+/** One base in a Gang War roster (a copy taken when the war starts, refreshed during prep). */
+export interface GangWarEntry {
+  index: number;
+  /** Null for a generated (bot) Gang, or a member who deleted their account. */
+  playerId: string | null;
+  name: string;
+  keep: number;
+  base: BaseLayout;
+}
+export interface GangWarSide {
+  squadId: string | null;
+  name: string;
+  bot: boolean;
+  /** Seed of a bot Gang's attacks. */
+  botSeed: number;
+  roster: GangWarEntry[];
+}
+/** A Gang War (roadmap step 65). */
+export interface GangWar {
+  id: string;
+  createdAt: number;
+  prepEndsAt: number;
+  endsAt: number;
+  size: number;
+  a: GangWarSide;
+  b: GangWarSide;
+  /** The Gang Ratings were updated after it ended (step 66; never for a bot war). */
+  rated: boolean;
+}
+export interface GangWarAttack {
+  id: string;
+  warId: string;
+  /** The attacking side. */
+  side: 'a' | 'b';
+  attackerId: string;
+  target: number;
+  relay: boolean;
+  stars: number;
+  destruction: number;
+  at: number;
+}
+/** A relay assault on one base: the damage so far, and who holds the next strike. */
+export interface GangRelay {
+  warId: string;
+  side: 'a' | 'b';
+  target: number;
+  damage: Record<string, number>;
+  stars: number;
+  destruction: number;
+  strikes: number;
+  lastBy: string | null;
+  holder: string | null;
+  holdUntil: number;
+}
+export interface GangQueueEntry {
+  squadId: string;
+  size: number;
+  rating: number;
+  power: number;
+  /** Alliance ids of the members (a Gang mostly from one Alliance is not paired with that Alliance's Gangs). */
+  alliances: (string | null)[];
+  queuedAt: number;
+}
+
 /** A friend request (roadmap step 59). */
 export interface FriendRequest {
   id: string;
@@ -147,7 +211,7 @@ export interface StaffAction {
 
 export interface Ticket {
   id: string;
-  kind: 'pvp' | 'raid' | 'duel';
+  kind: 'pvp' | 'raid' | 'duel' | 'war';
   attackerId: string;
   /** Null for a server-generated (bot) opponent. */
   defenderId: string | null;
@@ -172,6 +236,10 @@ export interface Ticket {
   dataVersion?: string;
   /** Duel tickets for a challenge (step 62). */
   challengeId?: string;
+  /** Gang War tickets (step 65): the war, whether it is a relay strike, and the damage it starts from. */
+  warId?: string;
+  relay?: boolean;
+  startDamage?: Record<string, number>;
   /** Grove Raid tickets only. */
   week?: number;
   groveId?: string;
@@ -661,6 +729,30 @@ export interface Repo {
   /** Every invite to the player (on joining a Gang) or from a Gang (when it closes). */
   deleteSquadInvitesTo(playerId: string): Promise<void>;
   deleteSquadInvitesFrom(squadId: string): Promise<void>;
+  // Gang Wars (roadmap steps 65-66)
+  createWar(w: GangWar): Promise<void>;
+  getWar(id: string): Promise<GangWar | null>;
+  updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b'>>): Promise<void>;
+  /** Set `rated` once; false if it already was. */
+  markWarRated(id: string): Promise<boolean>;
+  /** The Gang's war that has not ended at `now`, if any. */
+  activeWarOf(squadId: string, now: number): Promise<GangWar | null>;
+  /** The Gang's latest wars, newest first. */
+  warsOf(squadId: string, limit: number): Promise<GangWar[]>;
+  addWarAttack(a: GangWarAttack): Promise<void>;
+  warAttacks(warId: string): Promise<GangWarAttack[]>;
+  getRelay(warId: string, side: 'a' | 'b', target: number): Promise<GangRelay | null>;
+  /** Take the next relay strike on a base: false if someone else holds it until after `now`. */
+  holdRelay(warId: string, side: 'a' | 'b', target: number, playerId: string, until: number, now: number): Promise<boolean>;
+  /** Store a relay strike's result and free the base for the next striker. */
+  putRelay(r: GangRelay): Promise<void>;
+  enqueueGang(e: GangQueueEntry): Promise<boolean>;
+  dequeueGang(squadId: string): Promise<boolean>;
+  queuedGang(squadId: string): Promise<GangQueueEntry | null>;
+  gangQueue(size: number): Promise<GangQueueEntry[]>;
+  /** False if this player already claimed this war's chest. */
+  addGangClaim(warId: string, playerId: string, outcome: string, at: number): Promise<boolean>;
+  gangClaimed(warId: string, playerId: string): Promise<boolean>;
   // reports and blocks (roadmap step 15)
   /** False (and nothing stored) if the reporter already has an open report on that message or player. */
   addReport(r: Report): Promise<boolean>;
@@ -761,6 +853,11 @@ export class MemoryRepo implements Repo {
   squadRows = new Map<string, Squad>();
   squadMemberRows: SquadMember[] = [];
   squadInviteRows: SquadInvite[] = [];
+  warRows = new Map<string, GangWar>();
+  warAttackRows: GangWarAttack[] = [];
+  relayRows: GangRelay[] = [];
+  gangQueueRows: GangQueueEntry[] = [];
+  gangClaimRows: { warId: string; playerId: string; outcome: string; at: number }[] = [];
   villageRows = new Map<string, VillageRow>();
   tokenRows: { tokenHash: string; playerId: string; createdAt: number; label: string }[] = [];
   linkRows: IdentityLink[] = [];
@@ -1119,6 +1216,81 @@ export class MemoryRepo implements Repo {
   async deleteSquadInvitesFrom(squadId: string): Promise<void> {
     this.squadInviteRows = this.squadInviteRows.filter((i) => i.squadId !== squadId);
   }
+  async createWar(w: GangWar): Promise<void> {
+    this.warRows.set(w.id, clone(w));
+  }
+  async getWar(id: string): Promise<GangWar | null> {
+    const w = this.warRows.get(id);
+    return w ? clone(w) : null;
+  }
+  async updateWar(id: string, patch: Partial<Pick<GangWar, 'a' | 'b'>>): Promise<void> {
+    const w = this.warRows.get(id);
+    if (w) Object.assign(w, clone(patch));
+  }
+  async markWarRated(id: string): Promise<boolean> {
+    const w = this.warRows.get(id);
+    if (!w || w.rated) return false;
+    w.rated = true;
+    return true;
+  }
+  async activeWarOf(squadId: string, now: number): Promise<GangWar | null> {
+    for (const w of this.warRows.values()) if ((w.a.squadId === squadId || w.b.squadId === squadId) && w.endsAt > now) return clone(w);
+    return null;
+  }
+  async warsOf(squadId: string, limit: number): Promise<GangWar[]> {
+    return [...this.warRows.values()]
+      .filter((w) => w.a.squadId === squadId || w.b.squadId === squadId)
+      .sort((x, y) => y.createdAt - x.createdAt)
+      .slice(0, limit)
+      .map(clone);
+  }
+  async addWarAttack(a: GangWarAttack): Promise<void> {
+    this.warAttackRows.push(clone(a));
+  }
+  async warAttacks(warId: string): Promise<GangWarAttack[]> {
+    return this.warAttackRows.filter((a) => a.warId === warId).map(clone);
+  }
+  async getRelay(warId: string, side: 'a' | 'b', target: number): Promise<GangRelay | null> {
+    const r = this.relayRows.find((x) => x.warId === warId && x.side === side && x.target === target);
+    return r ? clone(r) : null;
+  }
+  async holdRelay(warId: string, side: 'a' | 'b', target: number, playerId: string, until: number, now: number): Promise<boolean> {
+    let r = this.relayRows.find((x) => x.warId === warId && x.side === side && x.target === target);
+    if (!r) this.relayRows.push((r = { warId, side, target, damage: {}, stars: 0, destruction: 0, strikes: 0, lastBy: null, holder: null, holdUntil: 0 }));
+    if (r.holder && r.holder !== playerId && r.holdUntil > now) return false;
+    r.holder = playerId;
+    r.holdUntil = until;
+    return true;
+  }
+  async putRelay(r: GangRelay): Promise<void> {
+    this.relayRows = this.relayRows.filter((x) => !(x.warId === r.warId && x.side === r.side && x.target === r.target));
+    this.relayRows.push(clone(r));
+  }
+  async enqueueGang(e: GangQueueEntry): Promise<boolean> {
+    if (this.gangQueueRows.some((x) => x.squadId === e.squadId)) return false;
+    this.gangQueueRows.push(clone(e));
+    return true;
+  }
+  async dequeueGang(squadId: string): Promise<boolean> {
+    const n = this.gangQueueRows.length;
+    this.gangQueueRows = this.gangQueueRows.filter((x) => x.squadId !== squadId);
+    return this.gangQueueRows.length < n;
+  }
+  async queuedGang(squadId: string): Promise<GangQueueEntry | null> {
+    const e = this.gangQueueRows.find((x) => x.squadId === squadId);
+    return e ? clone(e) : null;
+  }
+  async gangQueue(size: number): Promise<GangQueueEntry[]> {
+    return this.gangQueueRows.filter((x) => x.size === size).sort((a, b) => a.queuedAt - b.queuedAt).map(clone);
+  }
+  async addGangClaim(warId: string, playerId: string, outcome: string, at: number): Promise<boolean> {
+    if (this.gangClaimRows.some((c) => c.warId === warId && c.playerId === playerId)) return false;
+    this.gangClaimRows.push({ warId, playerId, outcome, at });
+    return true;
+  }
+  async gangClaimed(warId: string, playerId: string): Promise<boolean> {
+    return this.gangClaimRows.some((c) => c.warId === warId && c.playerId === playerId);
+  }
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
     const since = q.lockedSince;
     const locked = new Set(since === null ? [] : [...this.tickets.values()].filter((t) => !t.used && t.defenderId && t.createdAt > since).map((t) => t.defenderId));
@@ -1263,6 +1435,9 @@ export class MemoryRepo implements Repo {
     this.challengeRows = this.challengeRows.filter((c) => c.fromId !== id && c.toId !== id);
     this.squadMemberRows = this.squadMemberRows.filter((m) => m.playerId !== id);
     this.squadInviteRows = this.squadInviteRows.filter((i) => i.toId !== id && i.fromId !== id);
+    // Gang War rosters keep the base (the war's score depends on it) without the player.
+    for (const w of this.warRows.values()) for (const e of [...w.a.roster, ...w.b.roster]) if (e.playerId === id) Object.assign(e, { playerId: null, name: DELETED_PLAYER.name });
+    this.gangClaimRows = this.gangClaimRows.filter((c) => c.playerId !== id);
     // A server-held village, its ledger and command log, other devices' tokens and linked sign-ins are only theirs.
     this.villageRows.delete(id);
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
