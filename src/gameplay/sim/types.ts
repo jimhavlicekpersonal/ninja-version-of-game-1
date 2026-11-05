@@ -583,7 +583,8 @@ export interface RatingDef {
 export interface RanksDef {
   startingTrophies: number;
   attackWin: { base: number; perTrophyDiff: number; min: number; max: number };
-  attackLoss: { base: number; perTrophyDiff: number; min: number; max: number };
+  /** `closeLoss`: a 0-star attack with at least `destruction`% costs `factor` of the loss (design re-audit). */
+  attackLoss: { base: number; perTrophyDiff: number; min: number; max: number; closeLoss?: { destruction: number; factor: number } };
   matchTrophyRange: number;
   seasonResetFloor: number;
   leagues: LeagueDef[];

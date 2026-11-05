@@ -14,7 +14,9 @@
      shell is cached, and an error page (5xx, 404, ...) never replaces it. Pages
      from the network are not written over the precached shell, so the shell
      always matches the cached scripts it loads.
-   - Everything else (hashed JS/CSS, icons): this build's cache first. */
+   - Everything else (hashed JS/CSS, icons): this build's cache first.
+   - Install reads hashed files through the HTTP cache (the page just downloaded them), and
+     everything else past it (`cacheModeFor`). */
 const CACHE = 'tk-__BUILD_ID__';
 const PRECACHE = __PRECACHE__;
 const SHELL = './';
@@ -31,12 +33,21 @@ const immutable = (u) => new URL(abs(u)).pathname.includes('/assets/');
 /** Only complete, same-origin, final answers are cached. */
 const usable = (res) => Boolean(res) && res.status === 200 && (res.type === 'basic' || res.type === 'default') && !res.redirected;
 
+/**
+ * How a file is downloaded during install. Hashed build files (`/assets/`) may come from the
+ * browser's HTTP cache: the page that registered this worker has just downloaded them, and a
+ * hashed name always means the same bytes, so the first visit no longer downloads the whole game
+ * twice (client re-audit item 10). A retry goes to the network. Everything else (the page, the
+ * manifest, icons) skips the HTTP cache: a stale index.html would name scripts this build no
+ * longer has.
+ */
+const cacheModeFor = (url, attempt) => (immutable(url) && attempt === 0 ? 'default' : 'reload');
+
 async function fetchFresh(url) {
   let last = new Error(`Could not download ${url}`);
   for (let i = 0; i < FETCH_ATTEMPTS; i++) {
     try {
-      // Skip the HTTP cache: a stale index.html would name scripts this build no longer has.
-      const res = await fetch(new Request(abs(url), { cache: 'reload' }));
+      const res = await fetch(new Request(abs(url), { cache: cacheModeFor(url, i) }));
       if (usable(res)) return res;
       last = new Error(`${url} answered ${res.status}`);
       if (res.status < 500 && res.status !== 408 && res.status !== 429) break; // a 404 will not get better

@@ -22,9 +22,18 @@ export function winTrophies(attacker: number, defender: number, data: GameData):
 }
 
 /** Trophies the attacker loses for a 0-star attack (and the defender gains). */
-export function lossTrophies(attacker: number, defender: number, data: GameData): number {
+/**
+ * Honor an attacker loses for a 0-star attack. `destruction` (design re-audit): a close loss
+ * (`attackLoss.closeLoss.destruction`% or more) costs `closeLoss.factor` of it, so a player who
+ * keeps nearly winning is not ground down. Left out, the full loss (what the battle screen
+ * shows before the attack).
+ */
+export function lossTrophies(attacker: number, defender: number, data: GameData, destruction?: number): number {
   const l = data.ranks.attackLoss;
-  return clamp(Math.round(l.base - (defender - attacker) * l.perTrophyDiff), l.min, l.max);
+  const full = clamp(Math.round(l.base - (defender - attacker) * l.perTrophyDiff), l.min, l.max);
+  const close = l.closeLoss;
+  if (!close || destruction === undefined || destruction < close.destruction) return full;
+  return Math.max(l.min, Math.round(full * close.factor));
 }
 
 /** Monthly season id from a timestamp (UTC). */

@@ -1,6 +1,6 @@
 /** Dev-only preview of every painter in src/presentation/art/ninja.ts (ART compartment tool). */
 import buildings from '../../src/gameplay/data/buildings.json';
-import { buildingPainters, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, registerWarriorArt, type Tier } from '../../src/presentation/art/ninja';
+import { buildingPainters, levelInfo, paintBuildingLevel, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, registerWarriorArt } from '../../src/presentation/art/ninja';
 import { WARRIORS } from '../../src/gameplay/sim/progression';
 import { ICON_SIZE, warriorIconArt } from '../../src/presentation/art/warriorIcons';
 import { TILE_H, TILE_W } from '../../src/presentation/render/iso';
@@ -42,11 +42,12 @@ const defs = buildings as unknown as Record<string, { name: string; size: number
 for (const [type, def] of Object.entries(defs)) {
   const p = buildingPainters[type];
   if (!p) continue;
-  const row = section(`${def.name} (${type}, ${def.size}x${def.size}, ${def.levels.length} levels)`);
-  const tiers: Tier[] = def.levels.length > 1 ? [1, 2, 3] : [1];
+  const max = def.levels.length;
+  const row = section(`${def.name} (${type}, ${def.size}x${def.size}, ${max} levels, ${levelInfo(type, max, max).tiers} tiers)`);
   const w = def.size * TILE_W;
   const h = def.size * TILE_H + p.extra;
-  for (const t of tiers) figure(row, `tier ${t}`, w, h, h - (def.size * TILE_H) / 2, (ctx) => p.paint(ctx, def.size, t));
+  // Every level is drawn: code art is painted per level (building.<type>.lv<level>).
+  for (let lvl = 1; lvl <= max; lvl++) figure(row, `L${lvl} · t${levelInfo(type, lvl, max).tier}`, w, h, h - (def.size * TILE_H) / 2, (ctx) => paintBuildingLevel(ctx, type, def.size, lvl, max));
 }
 const troops = section('Warriors (troop.<id>)');
 for (const [type, art] of Object.entries(troopArt)) figure(troops, type, art.w, art.h, art.h - 6, art.paint);

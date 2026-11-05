@@ -39,6 +39,25 @@ const TkBilling = registerPlugin<TkBillingPlugin>('TkBilling');
 
 const receiptOf = (p: PlayPurchase): StoreReceipt => ({ store: 'google', storeProductId: p.productId, receipt: p.purchaseToken, storeTransactionId: p.orderId ?? p.purchaseToken });
 
+/** Prices give up after this long (client re-audit item 12): a store that never answers must not leave the shop on "…" forever. */
+const PRICES_TIMEOUT_MS = 10_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('The store did not answer in time.')), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      },
+    );
+  });
+}
+
 export class PlayBillingPaymentProvider implements PaymentProvider {
   readonly name = 'play';
   readonly store = 'google' as const;
@@ -67,7 +86,7 @@ export class PlayBillingPaymentProvider implements PaymentProvider {
     const out: Record<string, StorePrice> = {};
     const ids = [...new Set(storeProductIds.filter(Boolean))];
     if (!ids.length) return out;
-    const { products } = await TkBilling.getProducts({ ids });
+    const { products } = await withTimeout(TkBilling.getProducts({ ids }), PRICES_TIMEOUT_MS);
     for (const p of products) {
       if (!ids.includes(p.id) || !p.displayPrice) continue;
       out[p.id] = {

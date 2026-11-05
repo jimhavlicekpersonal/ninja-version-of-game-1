@@ -693,9 +693,46 @@ export class Connection {
     this.timers.push(setInterval(() => void this.uploadBase(), 120_000));
     // A server-held village: send waiting actions every 15 s.
     this.timers.push(setInterval(() => void this.village?.flush().catch((e) => this.handleError(e)), 15_000));
+    // Client re-audit item 13: follow the device's network and the app coming back, instead of
+    // saying "Online" for a minute after the network went away or "Connecting…" after it returned.
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      const onOffline = () => {
+        if (this.status === 'online' || this.status === 'connecting') this.setStatus('offline', 'No internet connection.');
+      };
+      const onOnline = () => this.syncSoon();
+      const onVisible = () => {
+        if (typeof document !== 'undefined' && document.visibilityState === 'visible') this.syncSoon();
+      };
+      window.addEventListener('offline', onOffline);
+      window.addEventListener('online', onOnline);
+      document.addEventListener('visibilitychange', onVisible);
+      this.unlisten = () => {
+        window.removeEventListener('offline', onOffline);
+        window.removeEventListener('online', onOnline);
+        document.removeEventListener('visibilitychange', onVisible);
+      };
+    }
+  }
+
+  private unlisten: (() => void) | null = null;
+  private lastNudge = 0;
+
+  /** Sync now (the network came back, the app came to the front), at most every 5 s, skipping any retry wait. */
+  private syncSoon(): void {
+    const now = Date.now();
+    if (now - this.lastNudge < 5000) return;
+    this.lastNudge = now;
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+    this.retryDelay = 15_000;
+    void this.sync();
   }
 
   stop(): void {
+    this.unlisten?.();
+    this.unlisten = null;
     for (const t of this.timers) clearInterval(t);
     this.timers = [];
     if (this.retryTimer) clearTimeout(this.retryTimer);

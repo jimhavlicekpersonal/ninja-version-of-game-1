@@ -165,13 +165,30 @@ describe('service worker template', () => {
     expect(TEMPLATE.split('__PRECACHE__')).toHaveLength(2);
   });
 
-  it('installs every file into its own versioned cache, bypassing the HTTP cache', async () => {
+  it('installs every file into its own versioned cache; only hashed files may come from the HTTP cache', async () => {
     const { sw, caches } = await installed('b1');
     expect(sw.skipped).toBe(true);
     const c = caches.map.get('tk-b1')!;
     expect(c.entries.size).toBe(FILES.length);
     expect(await c.text('./')).toBe('b1:(shell)');
-    expect(sw.log.every((l) => l.cache === 'reload')).toBe(true);
+    // Client re-audit item 10: the page just downloaded the hashed files, so the install reuses
+    // the HTTP cache for them instead of downloading the whole game a second time.
+    for (const l of sw.log) expect(l.cache).toBe(l.url.includes('/assets/') ? 'default' : 'reload');
+    expect(sw.log.filter((l) => l.cache === 'default').map((l) => l.url.slice(SCOPE.length)).sort()).toEqual(['assets/index-abc.css', 'assets/index-abc.js']);
+  });
+
+  it('a hashed file that failed from the HTTP cache is fetched again past it', async () => {
+    const caches = new FakeCacheStorage();
+    const sw = worker({
+      build: 'b1',
+      files: FILES,
+      caches,
+      net: serve('b1', (path, attempt) => (path === 'assets/index-abc.js' && attempt === 1 ? Promise.resolve(new Response('gone', { status: 503 })) : null)),
+    });
+    await sw.install();
+    const js = sw.log.filter((l) => l.url.endsWith('assets/index-abc.js')).map((l) => l.cache);
+    expect(js).toEqual(['default', 'reload']);
+    expect(await caches.map.get('tk-b1')!.text('./assets/index-abc.js')).toBe('b1:assets/index-abc.js');
   });
 });
 

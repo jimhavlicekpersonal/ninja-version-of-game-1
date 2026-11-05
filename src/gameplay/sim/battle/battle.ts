@@ -22,15 +22,20 @@ import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isH
  *
  * 3 (roadmap step 64): `BattleSetup.startDamage` (relay assaults). Nothing
  * else changed, so a battle without it plays out exactly as under 2.
+ *
+ * 4 (design re-audit, Nov 2026): combat data. Shadow, Sky, Mystic and Siege
+ * role budgets rose (shadow x1.5, sky x1.35, mystic HP x1.5 / damage x1.3,
+ * siege x1.2; `tools/progression/rolecut.mjs`), and every Shadow warrior is
+ * hidden until its first attack. Rules 3 is archived in server/rules/v3.
  */
-export const SIM_RULES = 3;
+export const SIM_RULES = 4;
 
 /**
  * Older rules this code plays out identically (their battles never use the
  * newer setup fields). Their replays stay watchable, and the server checks
  * their battles with this code. Empty it on the next change to combat itself.
  */
-export const SIM_RULES_COMPATIBLE: readonly number[] = [2];
+export const SIM_RULES_COMPATIBLE: readonly number[] = [];
 
 /** Whether a record can be replayed faithfully with the current rules. */
 export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {

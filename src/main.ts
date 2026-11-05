@@ -393,6 +393,7 @@ async function boot(): Promise<void> {
     connection,
     // Friend links (step 59): the web game's own address; in the apps, VITE_PUBLIC_URL (the web game) if set.
     friendLinkBase: () => (isNative() ? (env.VITE_PUBLIC_URL ?? null) || null : `${location.origin}${location.pathname}`),
+    updateWebApp: (beforeReload, note) => updateWebApp(beforeReload, note),
   });
 
   // Toasts raised before the first frame (interrupted raid, sandbox notice, load errors, purchases

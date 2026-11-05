@@ -50,20 +50,33 @@ export class EconomyUi {
    * (the under-18 cap); real-money buttons never show them as a price.
    */
   private storePrices: Record<string, StorePrice> | 'loading' | 'failed' | null = null;
+  /** Every product had a price in the last answer: only then are prices kept for the session. */
+  private pricesComplete = false;
+  /** The Store window that last asked (its redraw): one question per opening, never one per redraw. */
+  private pricesAskedBy: (() => void) | null = null;
 
+  /**
+   * Ask the store for prices when the Store opens (client re-audit item 12). An empty answer (a
+   * store that did not answer properly) counts as failed, and a partial one is shown but asked
+   * again on the next open; only a complete answer is kept. The providers give up after 10 s.
+   */
   private loadPrices(redraw: () => void): void {
     const pay = this.c.payments;
-    if (!pay.prices || !pay.available() || (this.storePrices && this.storePrices !== 'failed')) return;
+    if (!pay.prices || !pay.available() || this.storePrices === 'loading' || this.pricesComplete || this.pricesAskedBy === redraw) return;
+    this.pricesAskedBy = redraw;
     const d = this.c.data;
-    const ids = [...d.store.packs.map((p) => p.id), d.pass.productId, ...d.offers.rules.map((o) => o.productId)].map((id) => storeProductId(d, id));
-    this.storePrices = 'loading';
-    pay.prices([...new Set(ids)]).then(
+    const ids = [...new Set([...d.store.packs.map((p) => p.id), d.pass.productId, ...d.offers.rules.map((o) => o.productId)].map((id) => storeProductId(d, id)))];
+    // A partial answer stays on screen while the store is asked again.
+    if (this.storePrices === null || this.storePrices === 'failed') this.storePrices = 'loading';
+    pay.prices(ids).then(
       (prices) => {
-        this.storePrices = prices;
+        const found = ids.filter((id) => prices[id]).length;
+        this.pricesComplete = found === ids.length;
+        this.storePrices = found > 0 ? prices : 'failed';
         redraw();
       },
       () => {
-        this.storePrices = 'failed';
+        if (this.storePrices === 'loading') this.storePrices = 'failed';
         redraw();
       },
     );

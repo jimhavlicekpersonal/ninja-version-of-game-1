@@ -24,11 +24,13 @@ function strike(keep: number, seed: number, share = 1): { setup: BattleSetup; de
 }
 
 describe('relay assaults (SIM_RULES 3)', () => {
-  it('rules 3 keeps rules 2 battles exactly, so their replays stay watchable', () => {
-    expect(SIM_RULES).toBe(3);
-    expect(SIM_RULES_COMPATIBLE).toContain(2);
-    expect(replayable({ rules: 2 })).toBe(true);
-    expect(replayable({ rules: 3 })).toBe(true);
+  it('a battle without startDamage plays exactly as one with an empty startDamage; changed combat retires older replays', () => {
+    // Rules 3 kept rules 2 battles exactly; rules 4 (design re-audit) changed combat data, so
+    // neither older rules replays (rules 3 is archived for the server in server/rules/v3).
+    expect(SIM_RULES).toBe(4);
+    expect(SIM_RULES_COMPATIBLE).toEqual([]);
+    expect(replayable({ rules: 4 })).toBe(true);
+    expect(replayable({ rules: 3 })).toBe(false);
     expect(replayable({ rules: 1 })).toBe(false);
     const s = strike(6, 11);
     const plain = runBattle(s.setup, s.deployments, data).result;

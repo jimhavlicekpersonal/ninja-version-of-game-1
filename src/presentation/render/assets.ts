@@ -5,18 +5,18 @@ import {
   keepSkin,
   paintBubble,
   paintConstruction,
-  paintGeneric,
   paintJam,
   paintPuff,
   paintRubble,
   paintShadowDisc,
   paintSmokeLobe,
   paintStar,
+  paintBuildingLevel,
   projectileArt,
-  tierFor,
+  thirdOf,
   troopArt,
   registerWarriorArt,
-  type Tier,
+  type PainterDef,
 } from '../art/ninja';
 import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
 import { TILE_H, TILE_W, mapBounds, worldToTile } from './iso';
@@ -56,8 +56,10 @@ export const Keys = {
   ground: 'ground',
   /** Real art for one exact level (optional; wins over the tier art). */
   building: (type: string, level: number) => `building.${type}.${level}`,
-  /** Generated art for a visual tier (1..3): levels are split into thirds. */
+  /** Real art for a visual tier (1..3): levels are split into thirds. Code art no longer uses these keys. */
   buildingTier: (type: string, tier: number) => `building.${type}.t${tier}`,
+  /** Generated (code) art for one exact level, painted on first use: every level shows a change. */
+  buildingLevel: (type: string, level: number) => `building.${type}.lv${level}`,
   buildingBase: (type: string) => `building.${type}`,
   construction: (size: number) => `construction.${size}`,
   bubble: (resource: string) => `bubble.${resource}`,
@@ -76,14 +78,20 @@ export const Keys = {
   star: 'fx.star',
   starGrey: 'fx.star.grey',
   shadow: 'fx.shadow',
+  /** Real art for a Keep skin at a tier (1..3). */
   hallSkin: (skin: string, tier = 1) => `building.elder_toadstool.skin.${skin}.t${tier}`,
+  /** Generated art for a Keep skin at one exact level. */
+  hallSkinLevel: (skin: string, level: number) => `building.elder_toadstool.skin.${skin}.lv${level}`,
 };
 
-/** Max level per building type, filled in when textures are generated. */
-const maxLevels = new Map<string, number>();
+/** Size and level count per building type, filled in when textures are generated. */
+const buildingInfo = new Map<string, { size: number; maxLevel: number }>();
+/** Keep skins by id (painted per level on first use). */
+const hallSkinPainters = new Map<string, PainterDef>();
 
-function tierOf(type: string, level: number): Tier {
-  return tierFor(level, maxLevels.get(type) ?? 1);
+/** The third (1..3) of the level range: the tier key real art uses. */
+function thirdFor(type: string, level: number): 1 | 2 | 3 {
+  return thirdOf(level, buildingInfo.get(type)?.maxLevel ?? 1);
 }
 
 /** Logical (1x) size of a troop texture, so scenes can scale real art the same way. */
@@ -92,34 +100,33 @@ export function troopSize(type: string): { w: number; h: number } {
   return a ? { w: a.w, h: a.h } : { w: 40, h: 40 };
 }
 
-/** Pick the most specific texture that exists: per-level art, then per-type art. */
+/**
+ * Pick the most specific texture: real art for the exact level, then real art for its tier, then
+ * the code art for that exact level (painted on first use, in every quality profile: a village or
+ * base shows a few of the ~400 type × level looks, so painting them all would waste memory).
+ */
 export function buildingTexture(textures: Phaser.Textures.TextureManager, type: string, level: number, size: number): string {
   if (level < 1) return Keys.construction(size);
   const specific = Keys.building(type, level);
   if (textures.exists(specific)) return specific;
-  const tier = Keys.buildingTier(type, tierOf(type, level));
-  if (!textures.exists(tier)) paintPending(textures, tier);
-  return textures.exists(tier) ? tier : Keys.buildingBase(type);
+  const realTier = Keys.buildingTier(type, thirdFor(type, level));
+  if (textures.exists(realTier)) return realTier;
+  const key = Keys.buildingLevel(type, level);
+  paintLevel(textures, key, type, size, level);
+  return textures.exists(key) ? key : Keys.buildingBase(type);
 }
 
-/**
- * Low quality generates building tier art on first use (`QualitySettings.lazyTiers`): a village
- * shows few of the ~3 tiers × building types at once. Each entry paints its texture once.
- */
-const pending = new Map<string, (textures: Phaser.Textures.TextureManager) => void>();
-
-function paintPending(textures: Phaser.Textures.TextureManager, key: string): void {
-  const paint = pending.get(key);
-  if (!paint) return;
-  pending.delete(key);
-  paint(textures);
-}
-
-/** Paint now, or (lazy tiers) when `key` is first asked for. */
-function paintOrDefer(textures: Phaser.Textures.TextureManager, key: string, paint: (textures: Phaser.Textures.TextureManager) => void, lazy: boolean): void {
+/** Paint the code art for one building level once (`art/ninja.ts` `paintBuildingLevel`). */
+function paintLevel(textures: Phaser.Textures.TextureManager, key: string, type: string, size: number, level: number, def: PainterDef | undefined = buildingPainters[type]): void {
   if (textures.exists(key)) return;
-  if (lazy) pending.set(key, paint);
-  else paint(textures);
+  const info = buildingInfo.get(type);
+  const extra = def?.extra ?? size * 20;
+  const w = size * TILE_W;
+  const h = size * TILE_H + extra;
+  const c = canvasFor(textures, key, w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
+  if (!c) return;
+  paintBuildingLevel(c.ctx, type, size, level, info?.maxLevel ?? 1, def);
+  c.done();
 }
 
 /** Origin that puts the footprint centre of a building image on its world position. */
@@ -180,13 +187,11 @@ export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = qu
   }
 }
 
-/** Thumbnail key for the HUD: real art for the plain key wins, else the tier 1 drawing. */
+/** Thumbnail key for the HUD: real art for the plain key wins, else level 1 (real tier art, then code art). */
 export function buildingThumbKey(textures: Phaser.Textures.TextureManager, type: string): string {
   const base = Keys.buildingBase(type);
   if (textures.exists(base)) return base;
-  const tier = Keys.buildingTier(type, 1);
-  if (!textures.exists(tier)) paintPending(textures, tier);
-  return tier;
+  return buildingTexture(textures, type, 1, buildingInfo.get(type)?.size ?? 2);
 }
 
 function maxTextureSize(scene: Phaser.Scene): number {
@@ -220,7 +225,7 @@ type BuildingType = { type: string; size: number; maxLevel: number };
 type TextureData = { buildings: Record<string, { size: number; levels?: unknown[] }>; economy: { mapSize: number }; cosmetics?: { hallSkins: { id: string; cap: string; spots: string }[] } };
 
 /** Every placeholder texture as a list of jobs, in the order `generatePlaceholders` paints them (fx shadow last). */
-function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: number, buildingTypes: BuildingType[], mapSize: number, lazyTiers: boolean): Job[] {
+function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: number, buildingTypes: BuildingType[], mapSize: number, _lazyTiers: boolean): Job[] {
   const jobs: Job[] = [];
   const paint = (key: string, w: number, h: number, originY: number, scale: number | undefined, art: (ctx: Ctx) => void) =>
     jobs.push(() => {
@@ -242,26 +247,8 @@ function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: numb
       tex.refresh();
     }
   });
-  for (const { type, size, maxLevel } of buildingTypes) {
-    maxLevels.set(type, maxLevel);
-    const p = buildingPainters[type] ?? { extra: size * 20, paint: (ctx: Ctx, s: number) => paintGeneric(ctx, s) };
-    const w = size * TILE_W;
-    const h = size * TILE_H + p.extra;
-    const tiers: Tier[] = maxLevel > 1 ? [1, 2, 3] : [1];
-    for (const tier of tiers) {
-      const key = Keys.buildingTier(type, tier);
-      jobs.push(() =>
-        paintOrDefer(textures, key, (t) => {
-          const c = canvasFor(t, key, w, h, h - (size * TILE_H) / 2, BUILDING_SCALE);
-          if (c) {
-            p.paint(c.ctx, size, tier);
-            c.done();
-          }
-        }, lazyTiers),
-      );
-    }
-    // The plain key (`building.<type>`) is only for real art now: code art never draws tier 1 twice.
-  }
+  // Building art is painted per level on first use (`buildingTexture`), in every profile.
+  for (const { type, size, maxLevel } of buildingTypes) buildingInfo.set(type, { size, maxLevel });
   for (const size of [1, 2, 3, 4]) {
     const extra = 24 + size * 8;
     const w = size * TILE_W;
@@ -304,28 +291,12 @@ function buildingTypesOf(data: TextureData): BuildingType[] {
   return Object.entries(data.buildings).map(([type, d]) => ({ type, size: d.size, maxLevel: d.levels?.length ?? 1 }));
 }
 
-function hallSkinJobs(textures: Phaser.Textures.TextureManager, data: TextureData): Job[] {
-  const hallSize = data.buildings.elder_toadstool?.size ?? 4;
-  const jobs: Job[] = [];
+function hallSkinJobs(_textures: Phaser.Textures.TextureManager, data: TextureData): Job[] {
+  // Keep skins are painted per level on first use (`villageTexture`); this only registers them.
   for (const skin of data.cosmetics?.hallSkins ?? []) {
-    if (skin.id === 'classic') continue;
-    const p = keepSkin(skin.cap, skin.spots);
-    const w = hallSize * TILE_W;
-    const h = hallSize * TILE_H + p.extra;
-    for (const tier of [1, 2, 3] as Tier[]) {
-      const key = Keys.hallSkin(skin.id, tier);
-      jobs.push(() =>
-        paintOrDefer(textures, key, (t) => {
-          const c = canvasFor(t, key, w, h, h - (hallSize * TILE_H) / 2, BUILDING_SCALE);
-          if (c) {
-            p.paint(c.ctx, hallSize, tier);
-            c.done();
-          }
-        }, quality().lazyTiers),
-      );
-    }
+    if (skin.id !== 'classic' && !hallSkinPainters.has(skin.id)) hallSkinPainters.set(skin.id, keepSkin(skin.cap, skin.spots));
   }
-  return jobs;
+  return [];
 }
 
 /** Generate everything once per game (both scenes share the texture manager). */
@@ -371,9 +342,12 @@ export async function prepareTextures(
 
 /** Texture for a building, honouring the equipped Clan Keep skin. */
 export function villageTexture(textures: Phaser.Textures.TextureManager, type: string, level: number, size: number, hallSkin: string): string {
-  if (type === 'elder_toadstool' && level >= 1 && hallSkin !== 'classic') {
-    const key = Keys.hallSkin(hallSkin, tierOf(type, level));
-    if (!textures.exists(key)) paintPending(textures, key);
+  const skin = hallSkinPainters.get(hallSkin);
+  if (type === 'elder_toadstool' && level >= 1 && skin) {
+    const real = Keys.hallSkin(hallSkin, thirdFor(type, level));
+    if (textures.exists(real)) return real;
+    const key = Keys.hallSkinLevel(hallSkin, level);
+    paintLevel(textures, key, type, size, level, skin);
     if (textures.exists(key)) return key;
   }
   return buildingTexture(textures, type, level, size);

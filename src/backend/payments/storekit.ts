@@ -22,6 +22,25 @@ const TkStore = registerPlugin<TkStorePlugin>('TkStore');
 const receiptOf = (t: AppleTransaction): StoreReceipt => ({ store: 'apple', storeProductId: t.productId, receipt: t.jws, storeTransactionId: t.transactionId });
 
 /** Real purchases on iPhone through StoreKit 2 (the native TkStore plugin in ios/App/App). */
+/** Prices give up after this long (client re-audit item 12): a store that never answers must not leave the shop on "…" forever. */
+export const PRICES_TIMEOUT_MS = 10_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('The store did not answer in time.')), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      },
+    );
+  });
+}
+
 export class StoreKitPaymentProvider implements PaymentProvider {
   readonly name = 'storekit';
   readonly store = 'apple' as const;
@@ -52,7 +71,7 @@ export class StoreKitPaymentProvider implements PaymentProvider {
   /** The App Store's own prices for this storefront (displayPrice: currency, taxes and promotions included). */
   async prices(storeProductIds: string[]): Promise<Record<string, StorePrice>> {
     const out: Record<string, StorePrice> = {};
-    for (const p of (await TkStore.getProducts({ ids: storeProductIds })).products) {
+    for (const p of (await withTimeout(TkStore.getProducts({ ids: storeProductIds }), PRICES_TIMEOUT_MS)).products) {
       out[p.id] = { formatted: p.displayPrice, ...(p.currency ? { currency: p.currency } : {}), ...(Number.isFinite(p.price) ? { micros: Math.round(p.price * 1e6) } : {}) };
     }
     return out;

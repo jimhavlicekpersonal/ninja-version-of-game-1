@@ -42,7 +42,6 @@ import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
-import { updateWebApp } from '../../backend/pwa/register';
 
 export interface HudDeps {
   root: HTMLElement;
@@ -88,6 +87,11 @@ export interface HudDeps {
   connection: Connection;
   /** The address a friend link opens (step 59); null: share codes only. */
   friendLinkBase?: () => string | null;
+  /**
+   * Web "Update Kagemura": fetch the new build through the service worker and reload (`backend/pwa/register`
+   * `updateWebApp`, injected by the composition root because `pwa/` is not a backend contract file).
+   */
+  updateWebApp?(beforeReload: () => Promise<unknown>, note: (text: string) => void): Promise<'reloading' | 'current' | 'timeout' | 'unavailable'>;
 }
 
 /** localStorage: the kept village already offered at start-up. */
@@ -389,7 +393,8 @@ export class Hud {
     const status = h('p', { role: 'status' }, 'Saving your village…');
     let close = () => {};
     close = this.modal('Update Kagemura', status, []);
-    void updateWebApp(() => this.c.save(), (text) => (status.textContent = text)).then((r) => {
+    const update = this.deps.updateWebApp ?? (async (before: () => Promise<unknown>) => (await before().catch(() => undefined), location.reload(), 'reloading' as const));
+    void update(() => this.c.save(), (text) => (status.textContent = text)).then((r) => {
       if (r === 'reloading') return;
       status.textContent =
         r === 'current'
