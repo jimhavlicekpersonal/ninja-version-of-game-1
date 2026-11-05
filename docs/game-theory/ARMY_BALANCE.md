@@ -20,14 +20,14 @@ A composition takes the three newest unlocked troops of each family it uses:
 
 | Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
 |---|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 56 (6%) | 63 (11%) | 74 (28%) | 66 (11%) | 71 (22%) | 67 (17%) | 84 (44%) |
+| Mixed (raid bot mix) | 56 (6%) | 62 (6%) | 74 (28%) | 66 (11%) | 71 (22%) | 67 (17%) | 84 (44%) |
 | Melee rush | 73 (33%) | 63 (11%) | 59 (22%) | 33 (17%) | 63 (6%) | 41 (6%) | 39 (0%) |
 | Artillery-heavy | 65 (11%) | 79 (33%) | 62 (6%) | 58 (6%) | 71 (17%) | 55 (0%) | 71 (11%) |
-| Support-heavy | 48 (0%) | 47 (0%) | 36 (0%) | 16 (0%) | 47 (0%) | 33 (0%) | 34 (0%) |
-| Air | 50 (0%) | 41 (0%) | 38 (0%) | 33 (0%) | 47 (0%) | 25 (0%) | 45 (0%) |
-| Shadow strike | 60 (17%) | 55 (0%) | 51 (0%) | 45 (0%) | 42 (0%) | 38 (0%) | 44 (0%) |
+| Support-heavy | 52 (6%) | 55 (11%) | 34 (0%) | 15 (0%) | 49 (0%) | 32 (0%) | 35 (0%) |
+| Air | 56 (6%) | 47 (0%) | 47 (0%) | 36 (0%) | 49 (0%) | 27 (0%) | 47 (0%) |
+| Shadow strike | 83 (39%) | 75 (28%) | 67 (22%) | 57 (6%) | 53 (6%) | 45 (0%) | 66 (11%) |
 | Siege | 68 (22%) | 62 (22%) | 41 (0%) | 26 (6%) | 44 (0%) | 30 (0%) | 32 (0%) |
-| Melee + ranged, light support | 69 (28%) | 81 (39%) | 57 (6%) | 54 (6%) | 83 (44%) | 52 (0%) | 53 (0%) |
+| Melee + ranged, light support | 71 (28%) | 85 (61%) | 53 (0%) | 54 (6%) | 81 (50%) | 48 (0%) | 49 (0%) |
 | Breach wedge | 66 (22%) | 79 (39%) | 51 (0%) | 53 (0%) | 69 (17%) | 42 (0%) | 50 (0%) |
 
 ## What the five live counters' effects cost each army
@@ -39,11 +39,11 @@ Destruction lost to the counter abilities: the same bases, deployments and Infil
 | Mixed (raid bot mix) | 0.0 | 0.0 | -3.4 | -0.4 | 0.0 | 2.0 | 4.1 |
 | Melee rush | 0.0 | -0.1 | -2.6 | 9.2 | 0.0 | 0.3 | 0.4 |
 | Artillery-heavy | 0.0 | 0.0 | -0.6 | -1.3 | 0.0 | -0.6 | -3.5 |
-| Support-heavy | 0.0 | 0.0 | -1.4 | -2.7 | 0.2 | 0.7 | 0.4 |
-| Air | 0.0 | 0.0 | -1.7 | -1.6 | 0.6 | -1.2 | -2.5 |
-| Shadow strike | 0.0 | 0.0 | -2.8 | 0.8 | 0.0 | -0.3 | 0.7 |
+| Support-heavy | 0.0 | -0.1 | -0.4 | -4.5 | -0.8 | -0.1 | -0.9 |
+| Air | 0.0 | 0.0 | -3.9 | -12.3 | -1.4 | -1.8 | -4.6 |
+| Shadow strike | 0.0 | 0.0 | -1.8 | -0.3 | 0.0 | 0.2 | -2.2 |
 | Siege | 0.0 | 0.0 | -1.1 | -1.1 | 0.0 | 0.0 | -1.9 |
-| Melee + ranged, light support | 0.0 | -0.2 | -3.4 | -1.9 | 0.3 | -4.8 | -2.1 |
+| Melee + ranged, light support | 0.0 | 0.0 | -3.9 | -2.3 | 0.0 | -3.1 | -4.9 |
 | Breach wedge | 0.0 | 0.0 | -1.3 | -1.3 | 0.0 | -1.1 | -3.6 |
 
 ## Investment per army
@@ -127,24 +127,24 @@ Equal housing is not equal investment. Provisions and Dojo time to train each ar
 **Keep 12** (housing 315)
 
 - Mixed (raid bot mix): 117× Moonblade Master, 78× Chain-Sickle Reaper, 18× Mountain Shield, 15× Fuse Master
-- Melee rush: 35× Bear Warrior, 52× Mole King, 53× Fuse Master
-- Artillery-heavy: 24× Siege Bombardier, 74× Chain-Sickle Reaper, 75× Blowgun Hunter, 10× Bear Warrior, 16× Mole King, 16× Fuse Master
-- Support-heavy: 14× Spirit Caller, 14× Mist Weaver, 14× Drum Monk, 21× Bear Warrior, 31× Mole King, 32× Fuse Master
-- Air: 21× Thunder Kite, 21× Lantern Balloon, 21× Crane Glider, 7× Bear Warrior, 10× Mole King, 11× Fuse Master
-- Shadow strike: 36× Void Walker, 37× Night Blade, 37× Mirage Twin, 10× Bear Warrior, 16× Mole King, 16× Fuse Master
-- Siege: 17× Bomb Carrier, 17× Fire Monk, 17× Ram Crew, 18× Bear Warrior, 27× Mole King, 27× Fuse Master
-- Melee + ranged, light support: 20× Bear Warrior, 29× Mole King, 29× Fuse Master, 10× Siege Bombardier, 32× Chain-Sickle Reaper, 32× Blowgun Hunter, 5× Spirit Caller, 5× Mist Weaver, 5× Drum Monk
-- Breach wedge: 9× Bomb Carrier, 8× Fire Monk, 8× Ram Crew, 16× Bear Warrior, 24× Mole King, 24× Fuse Master, 10× Siege Bombardier, 32× Chain-Sickle Reaper, 34× Blowgun Hunter
+- Melee rush: 35× Bear Warrior, 52× Burrow Ambusher, 53× Fuse Master
+- Artillery-heavy: 24× Siege Bombardier, 74× Chain-Sickle Reaper, 75× Blowgun Hunter, 10× Bear Warrior, 16× Burrow Ambusher, 16× Fuse Master
+- Support-heavy: 14× Spirit Caller, 14× Mist Weaver, 14× Drum Monk, 21× Bear Warrior, 31× Burrow Ambusher, 32× Fuse Master
+- Air: 21× Thunder Kite, 21× Lantern Balloon, 21× Crane Glider, 7× Bear Warrior, 10× Burrow Ambusher, 11× Fuse Master
+- Shadow strike: 36× Void Walker, 37× Night Blade, 37× Mirage Twin, 10× Bear Warrior, 16× Burrow Ambusher, 16× Fuse Master
+- Siege: 17× Bomb Carrier, 17× Fire Monk, 17× Ram Crew, 18× Bear Warrior, 27× Burrow Ambusher, 27× Fuse Master
+- Melee + ranged, light support: 20× Bear Warrior, 29× Burrow Ambusher, 29× Fuse Master, 10× Siege Bombardier, 32× Chain-Sickle Reaper, 32× Blowgun Hunter, 5× Spirit Caller, 5× Mist Weaver, 5× Drum Monk
+- Breach wedge: 9× Bomb Carrier, 8× Fire Monk, 8× Ram Crew, 16× Bear Warrior, 24× Burrow Ambusher, 24× Fuse Master, 10× Siege Bombardier, 32× Chain-Sickle Reaper, 34× Blowgun Hunter
 
 **Keep 15** (housing 360)
 
 - Mixed (raid bot mix): 129× Storm Sovereign, 90× Thousand Needle, 21× Oni Breaker, 18× Ghost Engineer
-- Melee rush: 40× Tiger Lord, 60× Phantom Gate, 60× Ghost Engineer
-- Artillery-heavy: 84× Thousand Needle, 27× Siege Bombardier, 85× Chain-Sickle Reaper, 12× Tiger Lord, 18× Phantom Gate, 19× Ghost Engineer
-- Support-heavy: 16× Sage of Clouds, 16× Spirit Caller, 16× Mist Weaver, 24× Tiger Lord, 36× Phantom Gate, 36× Ghost Engineer
-- Air: 24× Dragon Kite Armada, 24× Thunder Kite, 24× Lantern Balloon, 8× Tiger Lord, 12× Phantom Gate, 12× Ghost Engineer
-- Shadow strike: 42× Eclipse Ninja, 41× Void Walker, 42× Night Blade, 12× Tiger Lord, 18× Phantom Gate, 19× Ghost Engineer
-- Siege: 20× Volcano Cannoneer, 20× Bomb Carrier, 20× Fire Monk, 20× Tiger Lord, 30× Phantom Gate, 30× Ghost Engineer
-- Melee + ranged, light support: 22× Tiger Lord, 33× Phantom Gate, 33× Ghost Engineer, 36× Thousand Needle, 12× Siege Bombardier, 36× Chain-Sickle Reaper, 6× Sage of Clouds, 6× Spirit Caller, 6× Mist Weaver
-- Breach wedge: 10× Volcano Cannoneer, 10× Bomb Carrier, 10× Fire Monk, 18× Tiger Lord, 27× Phantom Gate, 27× Ghost Engineer, 36× Thousand Needle, 12× Siege Bombardier, 36× Chain-Sickle Reaper
+- Melee rush: 40× Tiger Lord, 60× Wall Phantom, 60× Ghost Engineer
+- Artillery-heavy: 84× Thousand Needle, 27× Siege Bombardier, 85× Chain-Sickle Reaper, 12× Tiger Lord, 18× Wall Phantom, 19× Ghost Engineer
+- Support-heavy: 16× Sage of Clouds, 16× Spirit Caller, 16× Mist Weaver, 24× Tiger Lord, 36× Wall Phantom, 36× Ghost Engineer
+- Air: 24× Dragon Kite Crew, 24× Thunder Kite, 24× Lantern Balloon, 8× Tiger Lord, 12× Wall Phantom, 12× Ghost Engineer
+- Shadow strike: 42× Eclipse Ninja, 41× Void Walker, 42× Night Blade, 12× Tiger Lord, 18× Wall Phantom, 19× Ghost Engineer
+- Siege: 20× Volcano Cannoneer, 20× Bomb Carrier, 20× Fire Monk, 20× Tiger Lord, 30× Wall Phantom, 30× Ghost Engineer
+- Melee + ranged, light support: 22× Tiger Lord, 33× Wall Phantom, 33× Ghost Engineer, 36× Thousand Needle, 12× Siege Bombardier, 36× Chain-Sickle Reaper, 6× Sage of Clouds, 6× Spirit Caller, 6× Mist Weaver
+- Breach wedge: 10× Volcano Cannoneer, 10× Bomb Carrier, 10× Fire Monk, 18× Tiger Lord, 27× Wall Phantom, 27× Ghost Engineer, 36× Thousand Needle, 12× Siege Bombardier, 36× Chain-Sickle Reaper
 

@@ -97,8 +97,8 @@ export function researchKeep(level: number, data: GameData): number {
 /**
  * How strong a player's army is, in hall units: the Keep whose research caps its warriors'
  * levels match (`researchKeep`), averaged over the warriors it fields (ready or training, or
- * every warrior it can train if none), never above its own Keep. A Keep 15 player with maxed
- * research is 15; one with Keep 14's research is 14.
+ * every warrior it can train if none), between its own Keep and `researchFloorKeeps` (1.5) below
+ * it. A Keep 15 player with maxed research is 15; one with Keep 14's research is 14.
  *
  * Levels are read on the Keep's research scale: a newer tier's level 1 is as strong as an
  * older warrior at level 1 + `levelCapOffset`, so swapping in newly unlocked warriors at
@@ -114,6 +114,7 @@ export function attackerStrength(state: VillageState, data: GameData): number {
   const hall = hallLevel(state, data);
   const fielded = new Set([...Object.keys(state.army), ...state.training.map((q) => q.troop)]);
   const troops = fielded.size ? [...fielded] : Object.keys(data.troops).filter((t) => troopUnlock(state, t, data).unlocked);
+  const below = data.ranks.matchmaking.researchFloorKeeps ?? 1;
   let sum = 0;
   let n = 0;
   for (const t of troops) {
@@ -122,7 +123,9 @@ export function attackerStrength(state: VillageState, data: GameData): number {
     const offset = def.levelCapOffset ?? 0;
     const lvl = Math.min(troopLevelCapAt(hall, data, t), troopLevelOf(state, t)) + offset;
     // At its own Keep's cap it is maxed for this Keep (Keeps that share a cap would read the earliest).
-    sum += lvl >= troopLevelCapAt(hall, data) ? hall : Math.min(hall, researchKeep(lvl, data));
+    // Never more than `researchFloorKeeps` below the own Keep: camps and army size grow with the Keep
+    // too, and armies read lower than that met bases they three-starred (Keeps 5-7 in the campaigns).
+    sum += lvl >= troopLevelCapAt(hall, data) ? hall : Math.max(hall - below, Math.min(hall, researchKeep(lvl, data)));
     n++;
   }
   return n ? sum / n : hall - 1;

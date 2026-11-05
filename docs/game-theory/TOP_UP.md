@@ -65,3 +65,15 @@ Time stays the better buy at every Keep: the tests require a ratio between 1 and
 - **Every buy** goes through the Jade confirm step, which names what is bought and the price.
 
 The model player doesn't buy, so the pacing tests are unchanged.
+
+## Offers follow the same rule (design re-audit, November 2026)
+
+Offers used to grant their contents raw: at Keep 1 the Rebuild Kit's 20,000 Coins and Provisions were about 7x a Keep 1 storage (a stockpile for raiders, against rule 1), and at Keep 12+ the same numbers were trivial. Now `productGrantsFor(state, productId)` (`sim/monetization.ts`) decides what a purchase delivers, and `grantPurchase` delivers exactly that:
+
+1. **Jade is never scaled.** Packs give their Jade; an offer gives its Jade in full.
+2. **Coins and Provisions are written at the Keep 5 economy** and multiplied by `topUpScaleByHall[keep]`, so an offer's resources are worth the same number of Jade (as top-ups) at every Keep (tested within 10% from Keep 1 to 15).
+3. **No stockpile.** The part that does not fit in storage right now is delivered as the Jade a top-up of exactly that amount costs at this Keep (`converted`, `convertedJade`). Nothing is withheld, and that Jade only turns back into resources through top-ups (exact, immediate), so there is still no exchange.
+4. **The Store shows what you would get.** The UI shows `productGrantsFor(...).grants` (and the converted part) instead of the catalog `productInfo().grants`. A purchase record keeps what it delivered (`PurchaseRecord.grants`, save v16), so a refund takes back that, not the catalog contents.
+
+The Clan Stipend (`store.json` `stipend`) delivers nothing at once: 30 daily Jade payments, one claimable per UTC day by opening the game (`claimStipend`); missed days are not lost (it lasts until every payment is claimed), and it can be bought again only when none are left. The cheapest pack is now the $0.99 Pinch of Jade (`moonstones_0`, store id `jade_pinch`).
+

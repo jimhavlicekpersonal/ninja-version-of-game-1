@@ -583,8 +583,7 @@ export interface RatingDef {
 export interface RanksDef {
   startingTrophies: number;
   attackWin: { base: number; perTrophyDiff: number; min: number; max: number };
-  /** `closeLoss`: a 0-star attack with at least `destruction`% costs `factor` of the loss (design re-audit). */
-  attackLoss: { base: number; perTrophyDiff: number; min: number; max: number; closeLoss?: { destruction: number; factor: number } };
+  attackLoss: { base: number; perTrophyDiff: number; min: number; max: number };
   matchTrophyRange: number;
   seasonResetFloor: number;
   leagues: LeagueDef[];
@@ -605,6 +604,8 @@ export interface RanksDef {
     trophyJitter: number;
     /** Opponents are at least the attacker's earned strength (Keep and research) minus this many hall levels. */
     powerSlack: number;
+    /** Earned strength reads research behind the caps as earlier Keeps, but never more than this many below the own Keep (design re-audit). */
+    researchFloorKeeps?: number;
   };
   /** Hidden matchmaking ratings (roadmap Phase 3, sim/rating.ts). */
   rating: RatingDef;

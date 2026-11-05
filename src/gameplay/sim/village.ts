@@ -1440,7 +1440,7 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   // `overflow`, so the results screen can say so precisely.
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data);
   const opp = rec.setup.base.trophies ?? s.trophies;
-  const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data, result.destruction);
+  const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
   // Attacking ends your shield, and the next look at an opponent is free again.
   s.shieldUntil = Math.min(s.shieldUntil, now);

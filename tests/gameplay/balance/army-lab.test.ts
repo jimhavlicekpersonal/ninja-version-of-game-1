@@ -130,4 +130,38 @@ describe('outcome gates: no composition dominates (audit F22, F23, F37)', () => 
       expect(Math.max(...v) - Math.min(...v), `Keep ${keep}`).toBeLessThan(35);
     }
   });
+
+  it('a Shadow strike is competitive: within 20 points of the realistic mixes (design re-audit: it managed 38-55%)', () => {
+    for (const keep of keeps) {
+      const mixes = ['mixed', 'artillery', 'support_light', 'breach'].map((c) => cell(c, keep).destruction);
+      const avg = mixes.reduce((a, b) => a + b, 0) / mixes.length;
+      expect(cell('shadow', keep).destruction, `Keep ${keep}`).toBeGreaterThan(avg - 20);
+    }
+  });
+});
+
+describe('every army plan has a home ground (design re-audit: Shadow, Air, Support and Siege three-starred ~0% at Keeps 6-15)', () => {
+  // Early and mid Keeps, every layout: each family three-stars at least 15% somewhere, and its
+  // best layout is a clear home ground (it beats its own average there by 15+ points).
+  const rows = runLab({ keeps: [4, 6], layouts: ['random', 'kunai_ring', 'walled_keep', 'mortar_core', 'twin_gates', 'open_court'], seeds: 2, compositions: COMPOSITIONS.filter((c) => ['support', 'air', 'shadow', 'siege'].includes(c.id)) });
+
+  it('each family three-stars at least 15% of same-Keep bases at some Keep, and none above 60%', { timeout: 180_000 }, () => {
+    for (const comp of ['support', 'air', 'shadow', 'siege']) {
+      const best = Math.max(...[4, 6].map((k) => {
+        const r = rows.filter((x) => x.comp === comp && x.keep === k);
+        return r.reduce((a, x) => a + x.threeStar, 0) / r.length;
+      }));
+      expect(best, comp).toBeGreaterThanOrEqual(0.15);
+      expect(best, comp).toBeLessThanOrEqual(0.6);
+    }
+  });
+
+  it('each family has a layout where it is clearly at its best', () => {
+    for (const comp of ['support', 'air', 'shadow', 'siege']) {
+      const r = rows.filter((x) => x.comp === comp);
+      const avg = r.reduce((a, x) => a + x.destruction, 0) / r.length;
+      const top = Math.max(...r.map((x) => x.destruction));
+      expect(top - avg, comp).toBeGreaterThan(15);
+    }
+  });
 });

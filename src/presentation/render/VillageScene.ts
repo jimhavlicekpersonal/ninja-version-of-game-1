@@ -10,7 +10,7 @@ import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
 import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
-import { confetti, resourceBurst } from './fx';
+import { VillageLife, addScenery, confetti, resourceBurst } from './fx';
 import { setupTouchInput } from './touchInput';
 import { sound } from '../audio/sound';
 
@@ -91,6 +91,8 @@ export class VillageScene extends Phaser.Scene {
   private unsubs: (() => void)[] = [];
   private grid!: Phaser.GameObjects.Graphics;
   private ready = false;
+  /** Smoke, glints, streamers, sparring, villagers and birds (fx.ts, art re-audit item 3). */
+  private life: VillageLife | null = null;
   /** Camera glide after a swipe, in world units per ms. */
   private glide = { vx: 0, vy: 0 };
   private wheelTarget: { zoom: number; x: number; y: number } | null = null;
@@ -116,6 +118,8 @@ export class VillageScene extends Phaser.Scene {
     const mb = mapBounds(mapSize);
     this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setScale(groundScale(this.textures, mapSize)).setDepth(-10);
     addSurroundings(this, mapSize);
+    addScenery(this, mapSize);
+    this.life = new VillageLife(this, mapSize, OVERLAY_DEPTH);
     this.grid = this.add.graphics().setDepth(-5).setAlpha(0);
     this.drawGrid(mapSize);
 
@@ -123,14 +127,14 @@ export class VillageScene extends Phaser.Scene {
     const cam = this.cameras.main;
     cam.setBounds(mb.x - BOUNDS_MARGIN_X, mb.y - BOUNDS_MARGIN_Y, mb.width + BOUNDS_MARGIN_X * 2, mb.height + BOUNDS_MARGIN_Y * 2);
     const cssWidth = this.scale.width / this.renderScale;
-    // Start close enough that the Elder Toadstool fills about a third of a phone screen.
-    this.userZoom = Phaser.Math.Clamp(cssWidth / (12 * 64), Math.max(0.45, this.minZoom()), 1.1);
+    // Start close on the village (art re-audit item 10): the Keep and its neighbours fill a phone screen.
+    this.userZoom = Phaser.Math.Clamp(cssWidth / (9 * 64), Math.max(0.45, this.minZoom()), 1.3);
     this.applyZoom();
     this.scale.on(Phaser.Scale.Events.RESIZE, () => this.zoomAt(this.scale.width / 2, this.scale.height / 2, this.userZoom));
     const hall = this.controller.state.buildings.find((b) => buildingDef(gd, b.type).category === 'hall');
     if (hall) {
       const c = footprintCenter(hall.x, hall.y, buildingDef(gd, hall.type).size);
-      cam.centerOn(c.x, c.y - 40);
+      cam.centerOn(c.x, c.y - 60);
     }
 
     this.sync();
@@ -194,6 +198,7 @@ export class VillageScene extends Phaser.Scene {
       view.image.setAlpha(this.placement?.id === b.id ? 0.25 : 1);
       this.syncTimer(b, view);
     }
+    this.life?.sync(this.controller.state.buildings.map((b) => ({ id: b.id, type: b.type, level: b.level, x: b.x, y: b.y, size: buildingDef(gd, b.type).size })));
     for (const [id, view] of this.views) {
       if (seen.has(id)) continue;
       view.image.destroy();

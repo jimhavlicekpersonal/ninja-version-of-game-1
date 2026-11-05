@@ -210,6 +210,8 @@ export class App {
       root: this.d.battleRoot,
       session,
       myTrophies: c.state.trophies,
+      // The tutorial bubble hides in battle: the first raid gets a one-line coach instead (re-audit design item 3).
+      coach: !replayOf && !c.state.tutorial.done,
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
       grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? 'Gang War relay' : 'Gang War' } : {}) } : undefined,
       practice,

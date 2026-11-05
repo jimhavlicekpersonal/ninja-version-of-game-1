@@ -8,6 +8,7 @@ try {
   const m = await server.ssrLoadModule('/tools/balance/campaign.ts');
   const results = [
     m.runCampaign('Regular (4 sessions a day, raid bots\' army mix)', { raidsPerSession: 2 }, false, 220),
+    m.runCampaign('Casual (one visit a day, suggested army: the raid bots\' roles, Trials and tasks)', { raidsPerSession: 2, engaged: true }, true, 400),
     m.runCampaign('Casual (one visit a day, explorer: newest warrior of each family, Trials and tasks)', { raidsPerSession: 2, policy: 'explorer', engaged: true }, true, 400),
   ];
   mkdirSync('docs/game-theory', { recursive: true });

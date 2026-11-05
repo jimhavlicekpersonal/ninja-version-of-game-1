@@ -15,9 +15,11 @@ import { capacity } from '../../../src/gameplay/sim/resources';
 import { createRng } from '../../../src/gameplay/sim/rng';
 import { migrate, SAVE_VERSION, serialize } from '../../../src/gameplay/sim/save';
 import { stipendStatus } from '../../../src/gameplay/sim/stipend';
+import { suggestedArmy } from '../../../src/gameplay/sim/suggest';
+import { housingCapacity, troopUnlock } from '../../../src/gameplay/sim/army';
 import type { BattleRecord } from '../../../src/gameplay/sim/battle/types';
 import type { VillageState } from '../../../src/gameplay/sim/types';
-import { applyCommand, battleLoadout, canHireArtisan, hallLevel } from '../../../src/gameplay/sim/village';
+import { advance, applyCommand, battleLoadout, canHireArtisan, hallLevel } from '../../../src/gameplay/sim/village';
 import { data, must, newGame } from './helpers';
 
 const HOUR = 3_600_000;
@@ -352,3 +354,21 @@ describe('defense: rematches and held raids (item 10), gentler first raids (item
     expect(rematchReward(3, 5, data).acorns).toBeGreaterThan(rematchReward(1, 5, data).acorns!);
   });
 });
+
+describe('suggested army (item 1, casual players)', () => {
+  it('fills the camps with trainable warriors in the raid bots\' roles, and trains in one step', () => {
+    const { state, clock } = newGame({ dew: 50000 });
+    let s = must(state, { type: 'place', buildingType: 'burrow_barracks', x: 10, y: 10 }, clock.now());
+    s = must(s, { type: 'place', buildingType: 'army_camp', x: 10, y: 14 }, clock.now());
+    clock.advanceHours(2);
+    s = advance(s, clock.now(), data).state;
+    const army = suggestedArmy(s, data);
+    const used = Object.entries(army).reduce((a, [t, n]) => a + data.troops[t].housing * n, 0);
+    const cap = housingCapacity(s, data);
+    expect(used).toBeLessThanOrEqual(cap);
+    expect(used).toBeGreaterThan(cap * 0.8);
+    for (const t of Object.keys(army)) expect(troopUnlock(s, t, data).unlocked).toBe(true);
+    expect(applyCommand(s, { type: 'trainArmy', army }, clock.now(), data).ok).toBe(true);
+  });
+});
+

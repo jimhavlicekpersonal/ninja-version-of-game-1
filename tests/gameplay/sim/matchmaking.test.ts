@@ -173,9 +173,13 @@ describe('matchmaking follows earned power, not only honor (audit F22)', () => {
     const caps = data.hall.levels.map((l) => l.troopLevelCap!);
     expect(at(caps[11])).toBeCloseTo(12, 5);
     expect(at(caps[10])).toBeCloseTo(11, 5);
-    // Two levels behind Keep 12's caps used to read 11.9 (of the whole level scale) and met near-capped Keep 12 bases.
-    expect(at(caps[11] - 2)).toBeLessThan(11);
-    expect(at(caps[11] - 2)).toBeGreaterThan(9.9);
+    // Two levels behind Keep 12's caps (Keep 10.5's research) used to read 11.9 (of the whole level
+    // scale) and met near-capped Keep 12 bases.
+    expect(at(caps[11] - 2)).toBeCloseTo(10.5, 5);
+    // Between two Keeps' caps it reads in between (Keep 15: 18 -> 20).
+    const v15 = atHall(newGame().state, 15);
+    expect(attackerStrength({ ...v15, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: caps[14] - 1 }, active: [] } }, data)).toBeCloseTo(14.5, 5);
+    expect(at(1)).toBeCloseTo(12 - data.ranks.matchmaking.researchFloorKeeps!, 5);
   });
 
   it('a Keep 15 attacker with maxed research meets Keep 15 bases even while its honor lags a Keep behind', () => {
@@ -184,9 +188,9 @@ describe('matchmaking follows earned power, not only honor (audit F22)', () => {
     const lagging = { ...village, trophies: 14 * data.ranks.matchmaking.trophiesPerHall - 200 };
     const fresh = opponentFor(7, { ...lagging, army: { hedgehog_roller: 10 } }, data);
     const maxed = opponentFor(7, { ...lagging, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: troopLevelCapAt(15, data, 'hedgehog_roller') }, active: [] } }, data);
-    // Design re-audit: strength is the Keep the research matches (level 1 Shinobi: Keep 1), so
-    // honor decides; the match window still keeps a Keep 15 village on Keep 14-15 bases.
-    expect(attackerStrength({ ...lagging, army: { hedgehog_roller: 10 } }, data)).toBeCloseTo(1, 5);
+    // Design re-audit: strength is the Keep the research matches, at most `researchFloorKeeps`
+    // below the own Keep (level 1 Shinobi at Keep 15 reads 13.5).
+    expect(attackerStrength({ ...lagging, army: { hedgehog_roller: 10 } }, data)).toBeCloseTo(15 - data.ranks.matchmaking.researchFloorKeeps!, 5);
     expect(attackerStrength({ ...lagging, army: { hedgehog_roller: 10 }, research: { levels: { hedgehog_roller: troopLevelCapAt(15, data, 'hedgehog_roller') }, active: [] } }, data)).toBeCloseTo(15, 5);
     expect(fresh.hallLevel).toBeLessThanOrEqual(14);
     expect(fresh.hallLevel).toBeGreaterThanOrEqual(14);

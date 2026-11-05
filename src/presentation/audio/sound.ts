@@ -9,6 +9,9 @@
  * (pitched membrane plus a felt thump), a wooden clack for taps, a shakuhachi-like breath for
  * smoke, and a short victory sting. No square-wave chiptune.
  */
+/** Haptics live next to sound (`./haptics.ts`); re-exported here because this is the art compartment's contract file. */
+export { haptic, hapticsEnabled, setHapticsEnabled, HAPTICS_STORAGE_KEY, type HapticKind } from './haptics';
+
 export type Sfx =
   | 'tap' | 'open' | 'close' | 'build' | 'collect' | 'coin' | 'levelUp' | 'error' | 'magic'
   | 'deploy' | 'hit' | 'boom' | 'star' | 'victory' | 'defeat' | 'notify' | 'smoke' | 'jam' | 'recover'

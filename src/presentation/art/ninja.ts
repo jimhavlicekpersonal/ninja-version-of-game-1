@@ -13,6 +13,11 @@
 import { TILE_H, TILE_W } from '../render/iso';
 import { artRng, darken, lighten, mix, rgba, softShadow, type Ctx } from './toolkit';
 
+// DOM art for the HUD, re-exported from this contract file (compartments.json): the daily chest
+// and its honest reveal, and Sensei Hoshi's portrait.
+export { chestSvg, crestSvg, revealChest } from './chest';
+export { SENSEI_EXPRESSIONS, senseiPortrait, type SenseiExpression } from './portraits';
+
 /** Visual tier. Most buildings use 1-3 (thirds of their levels); the Keep uses 1-6 and defenses 1-5 (`tierFor`). */
 export type Tier = 1 | 2 | 3 | 4 | 5 | 6;
 /** Where a level sits: its tier, and its step inside that tier (every level shows a small change). */
@@ -101,6 +106,15 @@ function plate(ctx: Ctx, size: number, color: string, inset = 4): void {
   g.addColorStop(0.6, color);
   g.addColorStop(1, darken(color, 0.14));
   poly(ctx, pts, g, 1.2, darken(color, 0.38));
+  // Long tiers (24-level collectors have 8 levels per look): from the fourth step on, each level
+  // sets one more dressed kerb stone along the plate's front edges.
+  if (LV && LV.step >= 4) {
+    for (let i = 0; i < LV.step - 3; i++) {
+      const f = 0.22 + Math.floor(i / 2) * 0.2;
+      const p = i % 2 ? { x: hw * f, y: hh * (1 - f) } : { x: -hw + hw * (1 - f), y: hh * (1 - f) };
+      poly(ctx, [{ x: p.x - 5, y: p.y - 0.5 }, { x: p.x, y: p.y + 2 }, { x: p.x + 5, y: p.y - 0.5 }, { x: p.x + 5, y: p.y - 3.5 }, { x: p.x, y: p.y - 1 }, { x: p.x - 5, y: p.y - 3.5 }], '#b4b9c1', 0.9, darken(color, 0.45));
+    }
+  }
   const r = artRng(size * 31 + color.length);
   for (let i = 0; i < size * 16; i++) {
     const u = r() * 2 - 1;
@@ -1278,10 +1292,10 @@ const spikePit: PainterDef = {
 
 const caltropField: PainterDef = {
   extra: 8,
-  paint(ctx, size) {
+  paint(ctx, size, _tier, lv) {
     const { hw, hh } = half(size);
     const r = artRng(9);
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 6 + (lv?.level ?? 3); i++) {
       const x = (r() - 0.5) * hw * 1.2;
       const y = (r() - 0.5) * hh * 0.9;
       ctx.beginPath();

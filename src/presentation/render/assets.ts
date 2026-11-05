@@ -208,14 +208,34 @@ type Ctx = CanvasRenderingContext2D;
 function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, scale = TEX_SCALE): { ctx: Ctx; done: () => void } | null {
   const textures = target instanceof Phaser.Textures.TextureManager ? target : target.textures;
   if (textures.exists(key)) return null; // real art (or an earlier run) already provided it
-  const tex = textures.createCanvas(key, Math.ceil(w * scale), Math.ceil(h * scale));
-  if (!tex) return null;
-  const ctx = tex.getContext();
+  const paper = paintingCanvas(Math.ceil(w * scale), Math.ceil(h * scale));
+  if (!paper) return null;
+  const { canvas, ctx } = paper;
   ctx.scale(scale, scale);
   ctx.translate(w / 2, originY);
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  return { ctx, done: () => tex.refresh() };
+  return { ctx, done: () => addPainted(textures, key, canvas) };
+}
+
+/**
+ * Code art is painted on a canvas of its own and then added as an image texture (client re-audit
+ * item 14). A Phaser `CanvasTexture` reads its whole (blank) canvas into an `ImageData` when it is
+ * created and keeps it for pixel helpers the game never calls: a third full copy of every texture,
+ * next to the canvas and the GPU copy (the JS heap was the size of the texture total). The canvas
+ * stays: thumbnails (`getBase64`), hit tests (`getPixelAlpha`) and the re-upload after a lost
+ * WebGL context read it. Same 2D settings as Phaser's (`willReadFrequently`: a CPU canvas).
+ */
+function paintingCanvas(width: number, height: number): { canvas: HTMLCanvasElement; ctx: Ctx } | null {
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, width);
+  canvas.height = Math.max(1, height);
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  return ctx ? { canvas, ctx } : null;
+}
+
+function addPainted(textures: Phaser.Textures.TextureManager, key: string, canvas: HTMLCanvasElement): void {
+  if (!textures.exists(key)) textures.addImage(key, canvas as unknown as HTMLImageElement);
 }
 
 /** One slice of texture work; start-up runs these spread across frames (`prepareTextures`). */
@@ -239,12 +259,11 @@ function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: numb
     if (textures.exists(Keys.ground)) return;
     const { w, h } = groundSize(mapSize);
     const s = Math.max(1, Math.min(GROUND_SCALE, maxSize / w, maxSize / h));
-    const tex = textures.createCanvas(Keys.ground, Math.floor(w * s), Math.floor(h * s));
-    if (tex) {
-      const ctx = tex.getContext();
-      ctx.scale(s, s);
-      paintGround(ctx, mapSize);
-      tex.refresh();
+    const paper = paintingCanvas(Math.floor(w * s), Math.floor(h * s));
+    if (paper) {
+      paper.ctx.scale(s, s);
+      paintGround(paper.ctx, mapSize);
+      addPainted(textures, Keys.ground, paper.canvas);
     }
   });
   // Building art is painted per level on first use (`buildingTexture`), in every profile.
@@ -306,8 +325,8 @@ export function ensureTextures(scene: Phaser.Scene, data: TextureData): void {
 }
 
 /**
- * Start-up (client re-audit item 3): the same work as `ensureTextures`, plus the tier art of the
- * buildings the village shows first (deferred on the low profile), spread over many short tasks
+ * Start-up (client re-audit item 3): the same work as `ensureTextures`, plus the art of the
+ * buildings the village shows first (painted per level on first use), spread over many short tasks
  * so the page stays responsive and the splash can show progress. Each slice runs jobs for about
  * `sliceMs` (40 ms: shorter slices cost more in yields than they win on a slow phone), then yields
  * to the event loop. The island is one job (`paintGround`), the longest one left (high: ~4.3 s

@@ -1,8 +1,10 @@
 /** Dev-only preview of every painter in src/presentation/art/ninja.ts (ART compartment tool). */
 import buildings from '../../src/gameplay/data/buildings.json';
-import { buildingPainters, levelInfo, paintBuildingLevel, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, registerWarriorArt } from '../../src/presentation/art/ninja';
+import { KAMON, kamon, paintBird, paintRuins, paintStreamer, paintVillager, buildingPainters, levelInfo, paintBuildingLevel, paintConstruction, paintJam, paintPuff, paintRubble, paintSmokeLobe, projectileArt, troopArt, registerWarriorArt } from '../../src/presentation/art/ninja';
 import { WARRIORS } from '../../src/gameplay/sim/progression';
 import { ICON_SIZE, warriorIconArt } from '../../src/presentation/art/warriorIcons';
+import { chestSvg } from '../../src/presentation/art/chest';
+import { SENSEI_EXPRESSIONS, senseiPortrait } from '../../src/presentation/art/portraits';
 import { TILE_H, TILE_W } from '../../src/presentation/render/iso';
 
 type Ctx = CanvasRenderingContext2D;
@@ -64,3 +66,25 @@ figure(fx, 'fx.smoke', 64, 64, 32, paintSmokeLobe);
 figure(fx, 'fx.jam', 28, 28, 14, paintJam);
 for (const size of [1, 2, 3, 4]) figure(fx, `construction.${size}`, size * TILE_W, size * TILE_H + 24 + size * 8, size * TILE_H + 24 + size * 8 - (size * TILE_H) / 2, (ctx) => paintConstruction(ctx, size));
 for (const size of [2, 3]) figure(fx, `rubble.${size}`, size * TILE_W, size * TILE_H + 10, size * TILE_H + 10 - (size * TILE_H) / 2, (ctx) => paintRubble(ctx, size));
+for (const size of [2, 3, 4]) for (const fam of ['keep', 'tower', 'store', 'house'] as const) figure(fx, `rubble.${size}.${fam}`, size * TILE_W, size * TILE_H + 40, size * TILE_H + 40 - (size * TILE_H) / 2, (ctx) => paintRuins(ctx, size, fam));
+const amb = section('Village life (fx.bird, fx.villager.<n>, fx.streamer)');
+figure(amb, 'fx.bird', 20, 12, 6, paintBird);
+for (let v = 0; v < 4; v++) figure(amb, `fx.villager.${v}`, 28, 30, 26, (ctx) => paintVillager(ctx, v));
+figure(amb, 'fx.streamer', 40, 14, 7, (ctx) => { ctx.translate(-18, 0); paintStreamer(ctx); });
+const mon = section('Kamon (clan crests)');
+for (const k of KAMON) figure(mon, k, 24, 24, 12, (ctx) => kamon(ctx, k, 0, 0, 10, '#26303d'));
+function svgRow(title: string, items: [string, string][]): void {
+  const row = section(title);
+  for (const [label, svg] of items) {
+    const f = document.createElement('figure');
+    const box = document.createElement('div');
+    box.style.cssText = 'width:112px;height:112px';
+    box.innerHTML = svg;
+    const cap = document.createElement('figcaption');
+    cap.textContent = label;
+    f.append(box, cap);
+    row.append(f);
+  }
+}
+svgRow('Daily chest (art/chest.ts)', [['closed', chestSvg('closed')], ['open', chestSvg('open')]]);
+svgRow('Sensei Hoshi (art/portraits.ts)', SENSEI_EXPRESSIONS.map((e) => [e, senseiPortrait(e)]));

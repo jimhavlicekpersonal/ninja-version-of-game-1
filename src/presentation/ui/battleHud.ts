@@ -1,6 +1,6 @@
 import { isolateName } from '../../gameplay/sim/social/names';
 import type { BattleSession } from '../../gameplay/control/battleSession';
-import type { BattleHooks } from '../render/BattleScene';
+import type { BattleHooks, BattleView, ScreenInsets } from '../render/BattleScene';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
 import { isAbility } from '../../gameplay/sim/battle/battle';
 import { pointIntel, scoutReport } from '../../gameplay/sim/battle/scout';
@@ -13,6 +13,7 @@ import { clear, h, icon } from './dom';
 import { formatNumber } from './format';
 import { icons } from './icons';
 import { sound } from '../audio/sound';
+import { celebrate, countUp, reducedMotion, uiArt } from './feedback';
 
 export interface BattleHudDeps {
   root: HTMLElement;
@@ -25,6 +26,8 @@ export interface BattleHudDeps {
   grove?: { enemyName: string; title?: string };
   /** A practice battle (nothing spent or won, no Next). */
   practice?: boolean;
+  /** The player's first raid (tutorial not finished): one coach line at a time (re-audit design item 3). */
+  coach?: boolean;
   /** Set for Shadow Trials (practice ladder: no loot from buildings, no honor, no Next). */
   trial?: { tier: number; layout: string; modifiers: string[]; reward: Cost; firstClear: boolean; starsToClear: number };
   troopThumb(type: string): string | null;
@@ -49,6 +52,22 @@ function lootChips(loot: Cost): HTMLElement {
   return wrap;
 }
 
+/** Loot chips whose numbers count up from 0 to what was really banked (the final number is always the real one). */
+function countingChips(loot: Cost, delay: number): HTMLElement {
+  const wrap = lootChips(loot);
+  const kinds = RESOURCE_KINDS.filter((k) => loot[k]);
+  wrap.querySelectorAll<HTMLElement>('.chip').forEach((chip, i) => {
+    const k = kinds[i];
+    if (!k) return;
+    const num = h('span', { class: 'count-num' });
+    // The chip is "<icon>1,234": swap the text node for a counter.
+    for (const n of [...chip.childNodes]) if (n.nodeType === Node.TEXT_NODE) n.remove();
+    chip.append(num);
+    countUp(num, loot[k]!, formatNumber, 900, delay);
+  });
+  return wrap;
+}
+
 export class BattleHud {
   selected: string | null = null;
   private readonly s: BattleSession;
@@ -63,6 +82,14 @@ export class BattleHud {
   private interval = 0;
   private finished = false;
   private lastStars = -1;
+  /** The map, once the scene is up: point positions for the chevrons, path highlight, refit. */
+  private view: BattleView | null = null;
+  private chevronsEl = h('div', { class: 'b-chevrons' });
+  private chevronSig = '';
+  private coachEl = h('div', { class: 'b-coach', role: 'status', 'aria-live': 'polite' });
+  private coachSmokeAt = 0;
+  private scoutOpen = false;
+  private pathChip: string | null = null;
 
   constructor(private readonly deps: BattleHudDeps) {
     this.s = deps.session;
@@ -102,7 +129,9 @@ export class BattleHud {
         : null,
     );
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
-    root.append(left, right, this.toastEl, this.troopsEl, this.bottomEl, this.modalEl);
+    this.coachEl.hidden = true;
+    root.dataset.mode = this.s.mode;
+    root.append(left, right, this.chevronsEl, this.toastEl, this.coachEl, this.troopsEl, this.bottomEl, this.modalEl);
     // Pick the first available troop by default (Saboteurs first: jam, then attack).
     this.selected = this.firstTroop();
     this.renderBottom();
@@ -118,10 +147,107 @@ export class BattleHud {
     window.clearInterval(this.interval);
     clear(this.deps.root);
     this.deps.root.hidden = true;
+    delete this.deps.root.dataset.mode;
+  }
+
+  /**
+   * The screen the HUD leaves free for the map (CSS px insets). On a narrow phone the toasts get their own line under
+   * the top cards, so a hint never covers a point; sideways they sit in the gap between the cards.
+   */
+  private safeArea(): ScreenInsets {
+    const vh = window.innerHeight;
+    const box = (el: Element | null) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
+    const root = this.deps.root;
+    const tops = [box(root.querySelector('.b-left')), box(root.querySelector('.b-right'))].filter((r): r is DOMRect => Boolean(r));
+    const lows = [box(this.troopsEl), box(this.bottomEl), box(this.scoutEl)].filter((r): r is DOMRect => Boolean(r) && r!.height > 0);
+    let top = Math.max(0, ...tops.map((r) => r.bottom)) + 4;
+    if (!this.toastsBeside()) top += 44;
+    const bottom = vh - Math.min(vh, ...lows.map((r) => r.top)) + 4;
+    return { top, bottom, left: 4, right: 4 };
+  }
+
+  /** Room between the top cards for a toast line (landscape and wide screens). */
+  private toastsBeside(): boolean {
+    const l = this.deps.root.querySelector('.b-left')?.getBoundingClientRect();
+    const r = this.deps.root.querySelector('.b-right')?.getBoundingClientRect();
+    return Boolean(l && r && r.left - l.right >= 240);
+  }
+
+  /** Put the toast line where `safeArea` reserved it. */
+  private placeToasts(): void {
+    const root = this.deps.root;
+    const l = root.querySelector('.b-left')?.getBoundingClientRect();
+    const r = root.querySelector('.b-right')?.getBoundingClientRect();
+    if (!l || !r) return;
+    const beside = this.toastsBeside();
+    for (const st of [this.toastEl.style, this.coachEl.style]) {
+      if (beside) {
+        st.left = `${l.right + 8}px`;
+        st.width = `${r.left - l.right - 16}px`;
+        st.top = `${Math.min(l.top, r.top)}px`;
+      } else {
+        st.left = '8px';
+        st.width = 'calc(100% - 16px)';
+        st.top = `${Math.max(l.bottom, r.bottom) + 4}px`;
+      }
+    }
+  }
+
+  /** Edge chevrons for open points outside the free area (letter + space left); a tap pans to the point. */
+  private drawChevrons(): void {
+    const v = this.view;
+    if (!v || this.s.mode === 'replay' || this.s.sim.ended) {
+      if (this.chevronSig) this.chevronsEl.replaceChildren();
+      this.chevronSig = '';
+      return;
+    }
+    const a = this.safeArea();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const L = a.left + 26;
+    const R = vw - a.right - 26;
+    const T = a.top + 22;
+    const B = vh - a.bottom - 22;
+    const cx = (L + R) / 2;
+    const cy = (T + B) / 2;
+    const out = v.entries().filter((e) => e.left > 0 && !e.inside);
+    const items = out.map((e) => {
+      const dx = e.x - cx;
+      const dy = e.y - cy;
+      // Where the ray from the middle of the free area towards the point leaves it.
+      const k = Math.min(dx ? (dx > 0 ? R - cx : L - cx) / dx : Infinity, dy ? (dy > 0 ? B - cy : T - cy) / dy : Infinity, 1);
+      return { e, x: Math.round(cx + dx * k), y: Math.round(cy + dy * k), deg: Math.round((Math.atan2(dy, dx) * 180) / Math.PI) };
+    });
+    const sig = JSON.stringify(items.map((i) => [i.e.index, i.e.left, i.x, i.y, i.deg]));
+    if (sig === this.chevronSig) return;
+    this.chevronSig = sig;
+    this.chevronsEl.replaceChildren(
+      ...items.map(({ e, x, y, deg }) =>
+        h(
+          'button',
+          {
+            class: 'entry-chevron',
+            type: 'button',
+            style: `left:${x}px;top:${y}px`,
+            'aria-label': `Infiltration point ${e.label}, ${e.left} space left, is off screen: show it`,
+            onclick: () => this.view?.showPoint(e.index),
+          },
+          h('span', { class: 'chev-arrow', style: `transform:rotate(${deg}deg)`, 'aria-hidden': 'true' }, '➤'),
+          h('b', {}, e.label),
+          h('span', { class: 'chev-left' }, String(e.left)),
+        ),
+      ),
+    );
   }
 
   hooks(): BattleHooks {
     return {
+      safeArea: () => this.safeArea(),
+      attachView: (view) => {
+        this.view = view;
+        this.placeToasts();
+        this.drawChevrons();
+      },
       selectedTroop: () => this.selected,
       deployFailed: (reason) => {
         if (reason === 'zone') this.toast(this.s.sim.entry ? 'Send warriors in through a glowing infiltration point.' : 'Place troops outside the red area.');
@@ -140,44 +266,95 @@ export class BattleHud {
 
   private scoutEl: HTMLElement | null = null;
 
-  /** What scouting reveals: visible defenses, walls and a tactic for this layout. */
+  /**
+   * What scouting reveals, as a drawer (re-audit design item 2): one chip row by default ("6 points · 12 defenses ▸"
+   * and a chip per point, which highlights that path on the map); open it for the defenses, the rule and the tips.
+   */
   private renderScout(): void {
     this.scoutEl?.remove();
     this.scoutEl = null;
     if (this.s.mode !== 'scout') return;
     const r = scoutReport(this.s.setup.base, this.s.data);
+    const defenseCount = Object.values(r.defenses).reduce((a, b) => a + b, 0);
     const chips = Object.entries(r.defenses).map(([t, n]) => h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
     for (const [t, n] of Object.entries(r.counters)) if (!r.defenses[t]) chips.push(h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
     if (r.walls) chips.push(h('span', { class: 'chip' }, `${r.walls} walls`));
-    const opp = this.s.setup.base;
-    this.scoutEl = h(
+    const entry = this.s.sim.entry;
+    const summary = `${entry?.points.length ? `${entry.points.length} point${entry.points.length === 1 ? '' : 's'} · ` : ''}${defenseCount} defense${defenseCount === 1 ? '' : 's'}`;
+    const more = h(
       'div',
-      { class: 'panel scout-report' },
-      h('b', {}, opp.practice ? `Practice target · ${opp.practice}` : 'Scout report'),
+      { class: 'scout-more', id: 'scout-more' },
       h('div', { class: 'chips' }, ...chips),
-      ...this.entryIntel(),
-      ...r.tips.map((t) => h('p', { class: 'small' }, t)),
+      entry?.points.length ? h('p', { class: 'small' }, `Each point hides ${entry.cover} space of warriors, so split your army into squads. The number on a point is how many defenses cover its path to the Keep; tap one to see the path.`) : null,
+      ...this.armyTips(r.tips).map((t) => h('p', { class: 'small' }, t)),
     );
-    this.deps.root.append(this.scoutEl);
+    more.hidden = !this.scoutOpen;
+    const toggle = h(
+      'button',
+      { class: 'chip scout-toggle', type: 'button', 'aria-expanded': String(this.scoutOpen), 'aria-controls': 'scout-more' },
+      summary,
+      h('span', { class: 'scout-caret', 'aria-hidden': 'true' }, this.scoutOpen ? '▾' : '▸'),
+    );
+    toggle.addEventListener('click', () => {
+      this.scoutOpen = !this.scoutOpen;
+      this.renderScout();
+      this.view?.fit();
+    });
+    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), more);
+    this.deps.root.insertBefore(this.scoutEl, this.troopsEl);
   }
 
-  /** Infiltration Points in the scout report: the rule in one line, and what each point leads into. */
-  private entryIntel(): HTMLElement[] {
+  /**
+   * Scout tips that name warriors only when the player brings them: a tip built around a warrior they don't have is
+   * left out (the smoke advice stays, everyone has Smoke Bombs).
+   * TODO(GAME THEORY, docs/game-theory/REQUESTS.md): give `scoutReport` the army so the sim words the tips itself.
+   */
+  private armyTips(tips: string[]): string[] {
+    const army = this.s.setup.army;
+    const gd = this.s.data;
+    const names = Object.entries(gd.troops).map(([id, t]) => ({ id, name: t.name }));
+    return tips.flatMap((tip) => {
+      const named = names.filter((n) => new RegExp(`\\b${n.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\b`, 'i').test(tip));
+      if (!named.length || named.some((n) => (army[n.id] ?? 0) > 0)) return [tip];
+      // "Defenses cover each other: jam one with a Saboteur, and throw smoke…" without Saboteurs: keep the smoke half.
+      const smoke = tip.match(/^(.*?:)\s.*?(throw smoke .*)$/i);
+      return smoke ? [`${smoke[1]} ${smoke[2].charAt(0).toUpperCase()}${smoke[2].slice(1)}`] : [];
+    });
+  }
+
+  /** One chip per Infiltration Point: letter and how many defenses cover its path (tap: highlight the path). */
+  private pointChips(): HTMLElement[] {
     const entry = this.s.sim.entry;
     if (!entry || !entry.points.length) return [];
     const intel = pointIntel(entry.points, this.s.setup.base, this.s.data);
-    const chip = (p: (typeof intel)[number]) =>
-      h('span', { class: `chip point-chip${p.defenses === 0 ? ' quiet' : ''}` }, h('b', {}, p.label), ` ${p.defenses}${p.antiAir ? ' · AA' : ''}${p.splash ? ' · splash' : ''}`);
-    return [
-      h('p', { class: 'small' }, h('b', {}, `${entry.points.length} infiltration points. `), `Each hides ${entry.cover} space of warriors, so split your army into squads. Defenses covering each path to the Keep:`),
-      h('div', { class: 'chips' }, ...intel.map(chip)),
-    ];
+    return intel.map((p, i) => {
+      const on = this.pathChip === p.label;
+      const b = h(
+        'button',
+        {
+          class: `chip point-chip${p.defenses === 0 ? ' quiet' : ''}${on ? ' on' : ''}`,
+          type: 'button',
+          'aria-pressed': String(on),
+          'aria-label': `Point ${p.label}: ${p.defenses} defense${p.defenses === 1 ? '' : 's'} cover its path${p.antiAir ? ', anti-air' : ''}${p.splash ? ', splash' : ''}`,
+        },
+        h('b', {}, p.label),
+        ` ${p.defenses}${p.antiAir ? ' · AA' : ''}${p.splash ? ' · splash' : ''}`,
+      );
+      b.addEventListener('click', () => {
+        this.pathChip = on ? null : p.label;
+        this.view?.highlightPath(on ? null : i);
+        if (!on) this.view?.showPoint(i);
+        this.renderScout();
+      });
+      return b;
+    });
   }
 
   private renderBottom(): void {
     clear(this.bottomEl);
     this.renderScout();
     const mode = this.s.mode;
+    this.deps.root.dataset.mode = mode;
     if (mode === 'scout') {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
@@ -187,7 +364,7 @@ export class BattleHud {
           : h(
               'button',
               { class: 'btn gold', type: 'button', disabled: !this.deps.canPayFee(), onclick: () => this.deps.onNext() },
-              'Next ',
+              h('span', {}, 'Next'),
               h('span', { class: 'chip' }, icon(icons.acorns), formatNumber(this.deps.scoutFee)),
             ),
         h(
@@ -198,8 +375,14 @@ export class BattleHud {
             disabled: !hasArmy,
             onclick: () => {
               this.deps.onAttack();
+              this.pathChip = null;
               this.renderBottom();
               this.renderTroops();
+              // The scout drawer and its buttons are gone: frame every open point again for the first tap.
+              window.requestAnimationFrame(() => {
+                this.placeToasts();
+                this.view?.fit();
+              });
             },
           },
           hasArmy ? 'Attack!' : 'Train troops first',
@@ -244,6 +427,7 @@ export class BattleHud {
         if (this.left('smoke_bomb') <= 0) return;
         if (this.selected && !isAbility(this.s.data, this.selected)) this.lastTroop = this.selected;
         this.selected = 'smoke_bomb';
+        uiArt.haptic('selection');
         this.toast('Tap where your warriors are about to come under fire: warriors inside the smoke can only be shot from close up.');
         this.renderTroops();
       });
@@ -263,6 +447,7 @@ export class BattleHud {
         if (this.left(type) <= 0) return;
         this.selected = type;
         this.lastTroop = type;
+        uiArt.haptic('selection');
         this.renderTroops();
       });
       this.troopsEl.append(card);
@@ -271,6 +456,8 @@ export class BattleHud {
 
   private tick(): void {
     const sim = this.s.sim;
+    this.drawChevrons();
+    if (this.deps.coach) this.coach();
     const secs = this.s.mode === 'scout' ? sim.duration / this.s.data.battle.ticksPerSecond : this.s.secondsLeft();
     this.timerEl.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
     const pct = sim.countable ? Math.floor((sim.destroyedCount * 100) / sim.countable) : 0;
@@ -327,14 +514,24 @@ export class BattleHud {
   }
 
   private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false): void {
-    sound.play(r.stars > 0 ? 'victory' : 'defeat');
+    // Result feel (re-audit design item 11): stars slam in one by one with a sound and haptic each, a banner for a
+    // flawless raid, and the loot counts up. Reduced motion shows the end state at once.
+    celebrate(r.stars > 0 ? 'victory' : 'defeat');
+    const still = reducedMotion();
     const starsRow = h('div', { class: 'result-stars' });
-    for (let i = 0; i < 3; i++) starsRow.append(h('span', { class: `star big${i < r.stars ? ' on' : ''}`, style: `animation-delay:${0.2 + i * 0.25}s` }, '★'));
+    const STAR_GAP = 0.32;
+    for (let i = 0; i < 3; i++) {
+      const won = i < r.stars;
+      starsRow.append(h('span', { class: `star big${won ? ' on slam' : ''}`, style: `animation-delay:${0.25 + i * STAR_GAP}s` }, '★'));
+      if (won) window.setTimeout(() => celebrate('star'), still ? 0 : (250 + i * STAR_GAP * 1000 + 180));
+    }
+    if (r.destruction >= 100) window.setTimeout(() => celebrate('perfect'), still ? 0 : 250 + 3 * STAR_GAP * 1000);
     const used = Object.entries(r.used).map(([t, n]) => `${n} ${this.s.data.troops[t]?.name ?? t}`).join(', ');
     const title = r.stars === 3 ? 'Perfect raid!' : r.stars > 0 ? 'Victory!' : 'Defeat';
     const body = h(
       'div',
       { class: `results ${r.stars > 0 ? 'win' : 'loss'}` },
+      r.destruction >= 100 ? h('div', { class: 'result-banner', role: 'status' }, h('b', {}, '100%'), h('span', {}, 'Every building down')) : null,
       starsRow,
       h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
       note ? h('p', { class: 'note' }, note) : null,
@@ -344,7 +541,7 @@ export class BattleHud {
           ? h('p', { class: 'muted' }, 'Loot it would have won: ', lootChips(r.loot))
         : pending
           ? h('p', {}, 'Loot won: ', lootChips(r.loot), h('span', { class: 'muted small' }, ' (confirming with the server; it arrives when the server accepts the attack)'))
-          : h('p', {}, this.deps.trial ? 'Reward: ' : 'Loot: ', lootChips(banked)),
+          : h('p', {}, this.deps.trial ? 'Reward: ' : 'Loot: ', countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
       this.deps.grove || this.deps.trial || this.deps.practice || pending ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
@@ -360,11 +557,52 @@ export class BattleHud {
   }
 
   toast(text: string): void {
+    // One line of hints at a time, in the band `safeArea` keeps free of points.
+    this.placeToasts();
     const t = h('div', { class: 'toast' }, text);
-    this.toastEl.append(t);
-    while (this.toastEl.childElementCount > 2) this.toastEl.firstElementChild?.remove();
-    window.setTimeout(() => t.classList.add('out'), 1800);
-    window.setTimeout(() => t.remove(), 2200);
+    this.toastEl.replaceChildren(t);
+    const ms = Math.min(4200, 1800 + text.length * 25);
+    window.setTimeout(() => t.classList.add('out'), ms);
+    window.setTimeout(() => t.remove(), ms + 400);
+  }
+
+  /**
+   * First-raid coach (re-audit design item 3): the tutorial bubble hides in battle, so one instruction at a time
+   * shows here: tap a glowing point, send the rest through another, then smoke the squad as it reaches a tower.
+   */
+  private coach(): void {
+    const sim = this.s.sim;
+    let text = '';
+    let pulse = '';
+    const live = this.s.mode === 'live';
+    const deployed = this.s.deployments.some((d) => !isAbility(this.s.data, d.troop));
+    const smoked = (sim.abilitiesUsed.smoke_bomb ?? 0) > 0;
+    const left = Object.values(sim.remaining).reduce((a, b) => a + b, 0);
+    if (this.s.mode === 'scout') {
+      text = 'Your first raid. Tap Attack! when you are ready.';
+      pulse = '.big-attack';
+    } else if (live && !sim.ended) {
+      const entry = sim.entry;
+      const underFire = deployed && sim.troops.some((t) => t.hp > 0 && sim.buildings.some((b) => b.kind === 'defense' && b.combat && !b.destroyed && Math.hypot(b.x + b.size / 2 - t.x, b.y + b.size / 2 - t.y) <= b.combat.range + 1));
+      if (!deployed) {
+        text = entry ? 'Tap inside a glowing ring to send your warriors in. Arrows at the edge lead to more rings.' : 'Tap on the grass outside the red area to send your warriors in.';
+        pulse = '.entry-chevron';
+      } else if (!smoked && underFire && (sim.charges.smoke_bomb ?? 0) > 0) {
+        text = this.selected === 'smoke_bomb' ? 'Now tap on your warriors near the tower.' : 'They are under fire! Pick the Smoke Bomb, then tap on your warriors.';
+        pulse = this.selected === 'smoke_bomb' ? '' : '.troop-card.ability';
+      } else if (smoked && sim.tick - this.coachSmokeAt < 40) {
+        text = 'Inside the smoke, towers can only hit them from close up.';
+      } else if (!smoked && left > 0 && entry && entry.points.some((p) => p.used > 0 && p.used >= entry.cover)) {
+        text = 'That ring is full. Send the rest through another glowing ring.';
+        pulse = '.entry-chevron';
+      }
+      if (smoked && !this.coachSmokeAt) this.coachSmokeAt = sim.tick;
+    }
+    // A toast (the answer to a tap) wins the shared line for its few seconds.
+    this.coachEl.hidden = !text || this.toastEl.childElementCount > 0;
+    if (this.coachEl.textContent !== text) this.coachEl.textContent = text;
+    this.deps.root.querySelectorAll('.coach-pulse').forEach((el) => el.classList.remove('coach-pulse'));
+    if (pulse) this.deps.root.querySelectorAll(pulse).forEach((el) => el.classList.add('coach-pulse'));
   }
 
   private modal(title: string, body: HTMLElement, buttons: { label: string; primary?: boolean; danger?: boolean; onClick: () => void }[], closable = true): () => void {

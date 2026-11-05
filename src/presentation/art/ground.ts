@@ -245,6 +245,107 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
   }
   ctx.restore();
 
+  // Worn paths and stepping stones from the front corner toward the centre, and flat stones of
+  // varied grey: the plateau reads as lived on, not a lawn (art re-audit item 10).
+  ctx.save();
+  diamond();
+  ctx.clip();
+  const pathTo = (tx0: number, ty0: number, tx1: number, ty1: number) => {
+    const steps = 26;
+    for (let i = 0; i <= steps; i++) {
+      const f = i / steps;
+      const wob = Math.sin(f * 7 + tx0) * 0.9;
+      const tx = tx0 + (tx1 - tx0) * f + wob;
+      const ty = ty0 + (ty1 - ty0) * f - wob;
+      const x = (tx - ty) * (TILE_W / 2);
+      const y = (tx + ty) * (TILE_H / 2);
+      const pg = ctx.createRadialGradient(x, y, 2, x, y, 26);
+      pg.addColorStop(0, 'rgba(196,170,120,0.42)');
+      pg.addColorStop(1, 'rgba(196,170,120,0)');
+      ctx.fillStyle = pg;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 26, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+      if (i % 3 === 1) {
+        ctx.beginPath();
+        ctx.ellipse(x + (rand() - 0.5) * 8, y + (rand() - 0.5) * 4, 7 + rand() * 3, 3.6 + rand(), 0, 0, Math.PI * 2);
+        ctx.fillStyle = rand() < 0.5 ? '#b9b7b0' : '#a3a5a8';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(38,48,61,0.35)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  };
+  pathTo(mapSize - 1, mapSize - 1, mapSize * 0.55, mapSize * 0.55);
+  pathTo(mapSize * 0.5, mapSize * 0.98, mapSize * 0.48, mapSize * 0.6);
+  for (let i = 0; i < 46; i++) {
+    const tx = rand() * mapSize;
+    const ty = rand() * mapSize;
+    const x = (tx - ty) * (TILE_W / 2);
+    const y = (tx + ty) * (TILE_H / 2);
+    const r = 2.5 + rand() * 5;
+    const tone = ['#9aa0aa', '#b4b9c1', '#8a8f99', '#a8a29a'][Math.floor(rand() * 4)];
+    ctx.beginPath();
+    ctx.ellipse(x, y, r, r * 0.55, 0, 0, Math.PI * 2);
+    ctx.fillStyle = tone;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(38,48,61,0.4)';
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(x - r * 0.25, y - r * 0.2, r * 0.45, r * 0.2, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // A mountain stream: it runs along the back-left rim and falls over the front-left cliff.
+  const fallAt = 0.3;
+  const fx = left.x + (bottom.x - left.x) * fallAt;
+  const fy = left.y + (bottom.y - left.y) * fallAt;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(fx - 9, fy - 2);
+  ctx.lineTo(fx + 9, fy + 2);
+  ctx.lineTo(fx + 12, fy + CLIFF + 6);
+  ctx.lineTo(fx - 12, fy + CLIFF + 2);
+  ctx.closePath();
+  const wf = ctx.createLinearGradient(0, fy, 0, fy + CLIFF);
+  wf.addColorStop(0, '#9fd3ea');
+  wf.addColorStop(1, 'rgba(230,244,252,0.9)');
+  ctx.fillStyle = wf;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+  ctx.lineWidth = 1.2;
+  for (const dx of [-6, -1, 4, 8]) {
+    ctx.beginPath();
+    ctx.moveTo(fx + dx, fy + 2);
+    ctx.lineTo(fx + dx * 1.2, fy + CLIFF);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // The stream bed across the grass edge to the fall (a short reach, so it never sits under a building for long).
+  ctx.save();
+  ctx.beginPath();
+  const sx0 = left.x + (top.x - left.x) * 0.18;
+  const sy0 = left.y + (top.y - left.y) * 0.18;
+  ctx.moveTo(sx0, sy0);
+  ctx.bezierCurveTo(sx0 + 30, sy0 + 40, fx - 40, fy - 30, fx, fy);
+  ctx.strokeStyle = '#5f8f4a';
+  ctx.lineWidth = 15;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.strokeStyle = '#6fb6d6';
+  ctx.lineWidth = 10;
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 9]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
   // Rounded grass lip overhanging the cliff on the two front edges.
   for (const [a, b] of [[left, bottom], [bottom, right]] as const) {
     const len = Math.hypot(b.x - a.x, b.y - a.y);
@@ -309,6 +410,89 @@ export function paintGround(ctx: Ctx, mapSize: number): void {
       }
     }
   }
+  // Trees along the back rim: sakura, maple and pine, with warm lanterns at the front corner.
+  const tree = (x: number, y: number, kind: number) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 14, 5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(38,48,61,0.22)';
+    ctx.fill();
+    ctx.strokeStyle = '#4a3222';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(0, 2);
+    ctx.quadraticCurveTo(-2, -12, 1, -22);
+    ctx.stroke();
+    if (kind === 2) {
+      for (const [dy, w] of [[-18, 18], [-30, 14], [-40, 9]] as const) {
+        ctx.beginPath();
+        ctx.moveTo(-w, dy + 6);
+        ctx.lineTo(0, dy - 10);
+        ctx.lineTo(w, dy + 6);
+        ctx.closePath();
+        const pg = ctx.createLinearGradient(0, dy - 10, 0, dy + 6);
+        pg.addColorStop(0, '#4f8a4a');
+        pg.addColorStop(1, '#2c5a34');
+        ctx.fillStyle = pg;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(38,48,61,0.6)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    } else {
+      const [c0, c1] = kind === 0 ? ['#ffd7e4', '#e98aa8'] : ['#ffb46a', '#c8402f'];
+      for (const [dx, dy, r] of [[-9, -24, 11], [9, -26, 12], [0, -36, 12], [-2, -22, 9]] as const) {
+        const cg = ctx.createRadialGradient(dx - r * 0.3, dy - r * 0.4, 1, dx, dy, r);
+        cg.addColorStop(0, c0);
+        cg.addColorStop(1, c1);
+        ctx.fillStyle = cg;
+        ctx.beginPath();
+        ctx.arc(dx, dy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.strokeStyle = 'rgba(38,48,61,0.45)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, -30, 18, Math.PI * 0.9, Math.PI * 2.1);
+      ctx.stroke();
+    }
+    ctx.restore();
+  };
+  for (const [a, b] of [[left, top], [top, right]] as const) {
+    for (const f of [0.12, 0.33, 0.52, 0.71, 0.9]) {
+      const x = a.x + (b.x - a.x) * f;
+      const y = a.y + (b.y - a.y) * f - 10;
+      tree(x, y, Math.floor(rand() * 3));
+    }
+  }
+  // Warm stone lanterns where the path meets the front edge.
+  for (const dx of [-26, 26]) {
+    const x = bottom.x + dx;
+    const y = bottom.y - 14 - Math.abs(dx) * 0.5;
+    const lg = ctx.createRadialGradient(x, y - 10, 1, x, y - 10, 34);
+    lg.addColorStop(0, 'rgba(255,207,112,0.55)');
+    lg.addColorStop(1, 'rgba(255,207,112,0)');
+    ctx.fillStyle = lg;
+    ctx.beginPath();
+    ctx.ellipse(x, y - 4, 34, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#8a8f99';
+    ctx.fillRect(x - 1.6, y - 10, 3.2, 10);
+    ctx.fillStyle = '#ffd27a';
+    ctx.fillRect(x - 3, y - 15, 6, 5);
+    ctx.strokeStyle = '#26303d';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 3, y - 15, 6, 5);
+    ctx.beginPath();
+    ctx.moveTo(x - 6, y - 15);
+    ctx.lineTo(x, y - 20);
+    ctx.lineTo(x + 6, y - 15);
+    ctx.closePath();
+    ctx.fillStyle = '#9aa0aa';
+    ctx.fill();
+    ctx.stroke();
+  }
 }
 
 /**
@@ -343,4 +527,123 @@ export function paintWave(ctx: Ctx, size = 30): void {
     ctx.ellipse(x, y, rr * 1.15, rr * 0.55, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+/**
+ * A band of mountain ridges for the parallax behind the plateau (art re-audit item 10). Drawn in
+ * a w x h box (top-left origin); `layer` 0 is the far range (pale, snow caps, a low sun), 1 the
+ * middle range, 2 the near forested ridge. The foot of each band dissolves into fog.
+ */
+export function paintRidge(ctx: Ctx, w: number, h: number, layer: 0 | 1 | 2): void {
+  const rand = artRng(301 + layer * 17);
+  const col = ['#8494b4', '#5d6c8c', '#3a4762'][layer];
+  if (layer === 0) {
+    const sun = ctx.createRadialGradient(w * 0.68, h * 0.42, 2, w * 0.68, h * 0.42, h * 0.5);
+    sun.addColorStop(0, 'rgba(255,170,120,0.9)');
+    sun.addColorStop(0.25, 'rgba(232,110,80,0.55)');
+    sun.addColorStop(1, 'rgba(232,110,80,0)');
+    ctx.fillStyle = sun;
+    ctx.fillRect(0, 0, w, h);
+    ctx.beginPath();
+    ctx.arc(w * 0.68, h * 0.42, h * 0.11, 0, Math.PI * 2);
+    ctx.fillStyle = '#e8735a';
+    ctx.fill();
+  }
+  const peaks: { x: number; y: number }[] = [];
+  const n = [7, 9, 13][layer];
+  for (let i = 0; i <= n; i++) {
+    const x = (i / n) * w + (rand() - 0.5) * (w / n) * 0.5;
+    const top = [0.18, 0.34, 0.5][layer];
+    peaks.push({ x, y: h * (top + rand() * 0.28) });
+  }
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  ctx.lineTo(0, peaks[0].y);
+  for (let i = 1; i < peaks.length; i++) {
+    const a = peaks[i - 1];
+    const b = peaks[i];
+    const valley = { x: (a.x + b.x) / 2, y: Math.max(a.y, b.y) + h * (0.1 + rand() * 0.12) };
+    ctx.lineTo(valley.x, valley.y);
+    ctx.lineTo(b.x, b.y);
+  }
+  ctx.lineTo(w, h);
+  ctx.closePath();
+  const g = ctx.createLinearGradient(0, h * 0.15, 0, h);
+  g.addColorStop(0, lighten(col, 0.08));
+  g.addColorStop(0.7, col);
+  g.addColorStop(1, darken(col, 0.1));
+  ctx.fillStyle = g;
+  ctx.fill();
+  // Lit left flanks of each peak.
+  ctx.save();
+  ctx.clip();
+  for (const p of peaks) {
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x - h * 0.5, p.y + h * 0.8);
+    ctx.lineTo(p.x - h * 0.1, p.y + h * 0.8);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,230,210,0.1)';
+    ctx.fill();
+    if (layer === 0) {
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x - h * 0.08, p.y + h * 0.1);
+      ctx.lineTo(p.x - h * 0.02, p.y + h * 0.08);
+      ctx.lineTo(p.x + h * 0.03, p.y + h * 0.11);
+      ctx.lineTo(p.x + h * 0.09, p.y + h * 0.1);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(244,246,252,0.85)';
+      ctx.fill();
+    }
+  }
+  if (layer === 2) {
+    // Cedar spikes along the near ridge.
+    for (let i = 0; i < 70; i++) {
+      const x = rand() * w;
+      let y = h;
+      for (let k = 1; k < peaks.length; k++) {
+        if (x <= peaks[k].x) {
+          const a = peaks[k - 1];
+          const b = peaks[k];
+          y = a.y + ((x - a.x) / Math.max(1, b.x - a.x)) * (b.y - a.y) + h * 0.12;
+          break;
+        }
+      }
+      const th = 8 + rand() * 10;
+      ctx.beginPath();
+      ctx.moveTo(x - th * 0.35, y + th * 0.4);
+      ctx.lineTo(x, y - th);
+      ctx.lineTo(x + th * 0.35, y + th * 0.4);
+      ctx.closePath();
+      ctx.fillStyle = darken(col, 0.18);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+  // Fog at the foot.
+  const fog = ctx.createLinearGradient(0, h * 0.55, 0, h);
+  fog.addColorStop(0, 'rgba(206,214,236,0)');
+  fog.addColorStop(1, 'rgba(206,214,236,0.85)');
+  ctx.fillStyle = fog;
+  ctx.fillRect(0, h * 0.55, w, h * 0.45);
+}
+
+/** A long soft fog band (w x h box), brightest along its middle; the scene drifts it between ridges. */
+export function paintFogBand(ctx: Ctx, w: number, h: number): void {
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, 'rgba(226,232,246,0)');
+  g.addColorStop(0.5, 'rgba(236,240,250,0.75)');
+  g.addColorStop(1, 'rgba(226,232,246,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  const side = ctx.createLinearGradient(0, 0, w, 0);
+  side.addColorStop(0, 'rgba(0,0,0,1)');
+  side.addColorStop(0.15, 'rgba(0,0,0,0)');
+  side.addColorStop(0.85, 'rgba(0,0,0,0)');
+  side.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = side;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
 }

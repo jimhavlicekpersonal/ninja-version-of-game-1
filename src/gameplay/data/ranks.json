@@ -10,12 +10,7 @@
     "base": 20,
     "perTrophyDiff": 0.05,
     "min": 2,
-    "max": 40,
-    "closeLoss": {
-      "$comment": "Design re-audit: a 0-star attack that reached this destruction % costs this share of the usual honor loss (sim/ranks.ts lossTrophies).",
-      "destruction": 30,
-      "factor": 0.5
-    }
+    "max": 40
   },
   "matchTrophyRange": 80,
   "seasonResetFloor": 400,
@@ -136,7 +131,8 @@
     "hallsBelow": 1,
     "hallsAbove": 1,
     "trophyJitter": 30,
-    "powerSlack": 0.25
+    "powerSlack": 0.25,
+    "researchFloorKeeps": 1.5
   },
   "lootPenaltyByHallDiff": [
     1,

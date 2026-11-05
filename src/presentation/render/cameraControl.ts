@@ -11,6 +11,8 @@ export interface CameraControlOptions {
   /** Called while a finger/mouse is held still (for repeated deploys). */
   onHold?: (worldX: number, worldY: number) => void;
   onZoom?: (userZoom: number) => void;
+  /** Lowest zoom a pinch or wheel may reach (default 0.3). The battle fits a whole base on a phone, so it goes lower. */
+  minZoom?: number;
 }
 
 /** Pan (with glide), pinch, wheel zoom and tap detection for a scene's main camera. */
@@ -49,13 +51,19 @@ export class CameraControl {
     const b = this.scene.cameras.main.getBounds();
     const cssW = this.scene.scale.width / this.opts.renderScale;
     const cssH = this.scene.scale.height / this.opts.renderScale;
-    return Math.max(MIN_ZOOM, cssW / b.width, cssH / b.height);
+    return Math.max(this.opts.minZoom ?? MIN_ZOOM, cssW / b.width, cssH / b.height);
   }
 
   setZoom(z: number): void {
     this.userZoom = Phaser.Math.Clamp(z, this.minZoom(), MAX_ZOOM);
     this.scene.cameras.main.setZoom(this.userZoom * this.opts.renderScale);
     this.opts.onZoom?.(this.userZoom);
+  }
+
+  /** Stop any glide or wheel zoom in progress (before the scene moves the camera itself). */
+  stop(): void {
+    this.glide = { vx: 0, vy: 0 };
+    this.wheel = null;
   }
 
   screenToWorld(sx: number, sy: number): { x: number; y: number } {

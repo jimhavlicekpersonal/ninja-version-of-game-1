@@ -17,7 +17,7 @@ Ability numbers live in `src/gameplay/data/troops.json` (`kit`); shared limits l
 | Mystic | Follows the nearest ally it can reach and breaks a wall when every ally is walled in; nonstacking 2.5%-max-health/second healing, nonstacking 25% haste, intermittent moving mist, one 35%-health resurrection, one 25% heal plus shields |
 | Siege | Fourfold wall damage, flame splash/burning, one suicidal explosion, stationary 5-range artillery that fires on defenses (0.5× DPS tax), wide splash and burning ground. Wall-breakers break the wall between them and the nearest defense or Keep, not every wall |
 | Beast | Two budgeted hunting dogs, nonstacking defense fire delay from 3.5 range (0.6× DPS tax; a Repair Crane cuts it short), one wall-breaking charge, 75% extra damage below half health, two budgeted war tigers |
-| Shadow | Hidden until first attack, four-second decoy, double damage against smoked buildings, periodic six-tile shadow step, trap immunity and seeded 25% double-damage criticals |
+| Shadow | Every Shadow warrior is hidden until its first attack (a Paper Lantern Line lights it; design re-audit, SIM_RULES 4); plus a four-second decoy, double damage against smoked buildings, periodic six-tile shadow step, trap immunity and seeded 25% double-damage criticals |
 
 ## Limits
 
@@ -34,3 +34,5 @@ Ability numbers live in `src/gameplay/data/troops.json` (`kit`); shared limits l
 ## Validation
 
 `tests/gameplay/battle/warriors.test.ts` covers deployment and repeatable battles for all 50 plus mechanics and limits. `tests/gameplay/sim/playable-roster.test.ts` covers unlocks, training, research, persistence, progression reachability and server acceptance/rejection. Existing combat, pacing, save, protocol and architecture checks remain required.
+- Role budgets re-measured in the design re-audit (Nov 2026, SIM_RULES 4, `tools/progression/rolecut.mjs`): Shadow x1.5 (efficiency 0.8 -> 1.2: its stealth and tricks were worth less than a Blade's raw stats, and Shadow strikes managed 38-55% destruction and 0% three stars from Keep 6), Sky x1.15 (0.494 -> 0.568; a larger rise let pure-air armies flatten Keep 15 bases again), Mystic HP x1.25 and damage x1.1 (0.7 -> 0.82). Infiltrator and Siege rises were measured and dropped (they pushed melee and siege armies past 60% three stars at Keeps 4-6). Measured in `docs/game-theory/ARMY_BALANCE.md`.
+

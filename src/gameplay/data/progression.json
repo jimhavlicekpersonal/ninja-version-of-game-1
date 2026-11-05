@@ -202,7 +202,7 @@
     },
     "sky": {
       "name": "Sky",
-      "efficiency": 0.667,
+      "efficiency": 0.568,
       "hpPerDps": 2.7,
       "housing": 4,
       "range": 0.5,
@@ -214,8 +214,8 @@
     },
     "mystic": {
       "name": "Mystic",
-      "efficiency": 0.977,
-      "hpPerDps": 13.85,
+      "efficiency": 0.82,
+      "hpPerDps": 13.64,
       "housing": 3,
       "range": 3.0,
       "speed": 0.15,
@@ -226,7 +226,7 @@
     },
     "siege": {
       "name": "Siege",
-      "efficiency": 1.08,
+      "efficiency": 0.9,
       "hpPerDps": 3,
       "housing": 3,
       "range": 1.0,
