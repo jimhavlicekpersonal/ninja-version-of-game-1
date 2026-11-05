@@ -1,5 +1,9 @@
 # Kagemura: Ninja Clans (project instructions)
 
+## Required worldwide-release context
+
+Before working, read [`docs/store/WORLDWIDE_AUDIT.md`](docs/store/WORLDWIDE_AUDIT.md) and the audit instructions in [`AGENTS.md`](AGENTS.md). The 2026-11-05 audit is an unresolved release-priority backlog, not completed fixes. It covers profitability, low-cost phones, weak networks, worldwide access and Apple App Store / Google Play submission. Revalidate findings against current code and preserve evidence/test limitations. Earlier "fixed"/"done" summaries and the high-resolution art budget do not establish release readiness or low-end-device suitability. Resolve relevant findings within the user's authorized scope and record fixing commits and verification before closing them.
+
 An original ninja-clan base-building and raiding game. You lead a clan, build a hidden mountain village, train specialised warriors, scout rivals, raid with smoke and sabotage, and climb the endless Shadow Trials. It was rebuilt in place from **Toadstool Kingdoms**: every working system was kept, internal ids stayed stable, and saves migrate (v9 to v10).
 
 **Start here:** `AGENTS.md` (one AI session per compartment), `docs/rebuild/HANDOFF.md` (state of the build), `docs/rebuild/01-REBUILD-ANALYSIS.md` (pitfalls), `docs/rebuild/02-ARCHITECTURE.md` (structure and research). Online PvP plan (ranking, hosting, client data, app stores, Friends and Gangs of up to 4, step list): `docs/backend/PVP_ROADMAP.md`.

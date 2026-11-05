@@ -1,5 +1,7 @@
 # GAME THEORY compartment (Section 2): rules, numbers and commands
 
+**Required context:** read [`docs/store/WORLDWIDE_AUDIT.md`](../../docs/store/WORLDWIDE_AUDIT.md) and [`AGENTS.md`](../../AGENTS.md). Preserve its open economy-integrity, spending-protection, offline-play and casual-progression findings; model-player outcomes are not observed retention or revenue. Coordinate shared contracts with BACKEND/INTEGRATION, follow the user's authorized scope, and record fixing commits and verification before closing findings. This documentation update changes no game rules.
+
 You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `control/`), `docs/game-theory/` and `tools/progression/`. Read `docs/game-theory/PROGRESSION_MODEL.md` first.
 
 ## Architecture rules (unchanged from the original spec)

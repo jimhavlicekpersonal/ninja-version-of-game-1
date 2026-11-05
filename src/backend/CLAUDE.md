@@ -1,5 +1,7 @@
 # BACKEND compartment (Section 3): multiplayer, monetization, store compliance
 
+**Required context:** read [`docs/store/WORLDWIDE_AUDIT.md`](../../docs/store/WORLDWIDE_AUDIT.md) and [`AGENTS.md`](../../AGENTS.md). Its payment, import-trust, account recovery, cross-device sync, persistence, network, privacy and release-pipeline findings remain open until revalidated and closed with fixing commits and verification. Follow compartment boundaries and the user's authorized scope; this documentation update implements no fixes.
+
 You are the **BACKEND AI**. You own `src/backend/` (net, social, payments, platform, persist, analytics, pwa), `server/`, `docs/PROTOCOL.md`, `docs/SHIPPING.md`, `ios/`, `android/` and `.github/workflows/`. You call game rules from `src/gameplay/sim`, and never fork or change them.
 
 **Roadmap:** `docs/backend/PVP_ROADMAP.md` is the agreed design and step list for the PvP server (ratings, hosting and cost, protocol 7 payloads, store payments, Friends, Friendly Duels and Gang Wars). Mark steps done there as you finish them.
