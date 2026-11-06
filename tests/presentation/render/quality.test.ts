@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { autoProfile, getQualityChoice, quality, QUALITY_STORAGE_KEY, renderScaleFor, resolveQuality, setQualityChoice, SLOW_FILL_MS } from '../../../src/presentation/render/quality';
+import { autoProfile, CANVAS_PIXEL_BUDGET, FPS_DOWNGRADE, FPS_SAMPLES, getQualityChoice, quality, QUALITY_STORAGE_KEY, renderScaleFor, resolveQuality, setQualityChoice, SLOW_FILL_MS, slowBattles } from '../../../src/presentation/render/quality';
 
 const phone = { devicePixelRatio: 3, screenShort: 360, coarsePointer: true };
 
@@ -89,5 +89,38 @@ describe('rendering quality (audit R03)', () => {
 
   it('is high without a browser (tests, tools)', () => {
     expect(quality().profile).toBe('high');
+  });
+});
+
+describe('report section 5 step 3 (device F2)', () => {
+  const android = { coarsePointer: true, devicePixelRatio: 2.75, screenShort: 393, screenLong: 873, hardwareConcurrency: 8 };
+
+  it('a slow canvas test sends a device to low even when it reports plenty of memory', () => {
+    expect(autoProfile({ ...android, deviceMemory: 8, fillMs: SLOW_FILL_MS + 1 }).profile).toBe('low');
+    expect(autoProfile({ ...android, deviceMemory: 8, fillMs: 2 }).profile).toBe('high');
+  });
+
+  it('caps the canvas pixels of a mid-range Android on high, not of an 8 GB phone, an iPhone or a desktop', () => {
+    const mid = resolveQuality('', 'auto', { ...android, deviceMemory: 6, fillMs: 2 });
+    expect(mid.profile).toBe('high');
+    const css = android.screenShort * android.screenLong;
+    expect(css * mid.maxRenderScale ** 2).toBeLessThanOrEqual(CANVAS_PIXEL_BUDGET + 1);
+    expect(mid.maxRenderScale).toBeGreaterThanOrEqual(2);
+    expect(resolveQuality('', 'auto', { ...android, deviceMemory: 8, fillMs: 2 }).maxRenderScale).toBe(3);
+    expect(resolveQuality('', 'auto', { ...android, ios: true, fillMs: 2 }).maxRenderScale).toBe(3);
+    expect(resolveQuality('', 'auto', { devicePixelRatio: 2, screenShort: 1440, screenLong: 2560, deviceMemory: 4, fillMs: 2 }).maxRenderScale).toBe(3);
+  });
+
+  it('slow battles measured earlier mean low on an automatic choice, never over the player\'s own', () => {
+    expect(resolveQuality('', 'auto', { ...android, deviceMemory: 8, fillMs: 2, measuredSlow: true })).toMatchObject({ profile: 'low', reason: expect.stringMatching(/slow battles/) });
+    expect(resolveQuality('', 'high', { ...android, deviceMemory: 8, fillMs: 2, measuredSlow: true }).profile).toBe('high');
+    expect(resolveQuality('?quality=high', 'auto', { ...android, measuredSlow: true }).profile).toBe('high');
+  });
+
+  it('decides on the median of a battle\'s samples', () => {
+    expect(slowBattles(Array(FPS_SAMPLES - 1).fill(10))).toBeNull();
+    expect(slowBattles(Array(FPS_SAMPLES).fill(FPS_DOWNGRADE - 5))).toBe(true);
+    // A few slow frames (a big explosion) do not count against a phone that is otherwise smooth.
+    expect(slowBattles([...Array(FPS_SAMPLES - 5).fill(58), ...Array(5).fill(12)])).toBe(false);
   });
 });

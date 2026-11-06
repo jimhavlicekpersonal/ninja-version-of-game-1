@@ -79,7 +79,7 @@ class SoundEngine {
       }
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
-    if (this.musicMode && !this.musicTimer) this.startMusicLoop();
+    this.syncMusicLoop();
     this.prewarm();
   }
 
@@ -113,6 +113,7 @@ class SoundEngine {
   setMusic(on: boolean): void {
     this.settings.music = on;
     if (this.ctx) this.musicGain.gain.value = on ? 0.14 : 0;
+    this.syncMusicLoop();
     this.save();
   }
 
@@ -126,9 +127,15 @@ class SoundEngine {
 
   /** Pause everything while the app is in the background. */
   suspend(hidden: boolean): void {
+    this.musicPaused = hidden;
+    this.syncMusicLoop();
     if (!this.ctx) return;
     if (hidden) void this.ctx.suspend();
-    else void this.ctx.resume();
+    else {
+      void this.ctx.resume();
+      // The beat clock stood still while suspended: start the next bar from now.
+      if (this.musicTimer) this.nextBeat = Math.max(this.nextBeat, this.ctx.currentTime + 0.1);
+    }
   }
 
   private tone(freq: number, start: number, dur: number, type: OscillatorType, vol: number, out: AudioNode, glideTo?: number): void {
@@ -394,9 +401,31 @@ class SoundEngine {
   music(mode: 'village' | 'battle' | null): void {
     if (this.musicMode === mode) return;
     this.musicMode = mode;
+    this.stopMusicLoop();
+    this.syncMusicLoop();
+  }
+
+  /**
+   * Report section 5 step 3 (device F9): the scheduler runs only while music can be heard. Muting
+   * used to set the gain to 0 and keep building oscillators every eighth note for the whole session
+   * (CPU and battery for silence on a cheap phone), and a hidden page kept scheduling too.
+   */
+  private musicPaused = false;
+
+  private syncMusicLoop(): void {
+    const wanted = Boolean(this.ctx && this.musicMode && this.settings.music && !this.musicPaused);
+    if (wanted && !this.musicTimer) this.startMusicLoop();
+    else if (!wanted) this.stopMusicLoop();
+  }
+
+  private stopMusicLoop(): void {
     window.clearInterval(this.musicTimer);
     this.musicTimer = 0;
-    if (mode && this.ctx) this.startMusicLoop();
+  }
+
+  /** Whether the music scheduler is running (tests, perf checks). */
+  get musicRunning(): boolean {
+    return this.musicTimer !== 0;
   }
 
   private startMusicLoop(): void {

@@ -7,10 +7,11 @@ import { airborne, deployBlock, destruction, isAbility, stars as starsOf, type S
 import { coverLeft, pointAt } from '../../gameplay/sim/battle/infiltration';
 import { WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
-import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize, holdBuildingTextures, releaseBuildingTextures } from './assets';
 import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
-import { addScenery, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
+import { noteBattleFps } from './quality';
+import { addScenery, canvasRenderer, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
 import { haptic, sound } from '../audio/sound';
 
 export interface BattleHooks {
@@ -24,6 +25,8 @@ export interface BattleHooks {
   safeArea?(): ScreenInsets;
   /** The scene hands the HUD a view of the map: where each point is on screen, and how to show one. */
   attachView?(view: BattleView): void;
+  /** A one-line message for the player (the battle HUD's toast). */
+  notice?(text: string): void;
 }
 
 export interface ScreenInsets {
@@ -62,6 +65,8 @@ export interface BattleSceneInit {
 }
 
 interface BView {
+  /** Dimmed with alpha because the Canvas renderer ignores the jam tint. */
+  dimmed?: boolean;
   image: Phaser.GameObjects.Image;
   bar: Phaser.GameObjects.Graphics;
   destroyed: boolean;
@@ -161,7 +166,11 @@ export class BattleScene extends Phaser.Scene {
     queueArt(this);
   }
 
+  /** Drawing with Canvas (no WebGL): tints are ignored, so some cues use alpha instead. */
+  private canvasMode = false;
+
   create(): void {
+    this.canvasMode = canvasRenderer(this);
     const gd = this.session.data;
     ensureTextures(this, gd);
     const mapSize = gd.economy.mapSize;
@@ -183,6 +192,10 @@ export class BattleScene extends Phaser.Scene {
     this.cameras.main.centerOn(c.x, c.y);
 
     for (const b of this.session.sim.buildings) this.bviews.push(this.makeBuilding(b));
+    // Report section 5 step 3 (device F1): this base's art stays while the battle shows it; the last
+    // base's (scouting, Next, replays) can go once this scene shuts down.
+    holdBuildingTextures(this.textures, 'battle', this.bviews.map((v) => v.image.texture.key));
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => releaseBuildingTextures(this.textures, 'battle'));
     this.zone = this.add.graphics().setDepth(-4).setAlpha(0);
     this.drawZone();
     this.drawEntry();
@@ -578,6 +591,11 @@ export class BattleScene extends Phaser.Scene {
     g.clear();
     if (jammed) {
       v.image.setTint(0x8a93a3);
+      // Canvas renderer (no WebGL) ignores tint: dim with alpha instead (report section 5 step 3).
+      if (this.canvasMode && !v.dimmed) {
+        v.image.setAlpha(v.image.alpha * 0.6);
+        v.dimmed = true;
+      }
       const sab = this.session.data.battle.sabotage;
       const done = 1 - (b.disabledUntil - sim.tick) / sab.disableTicks;
       g.lineStyle(3 / z, 0x8ad0ff, 1);
@@ -586,6 +604,10 @@ export class BattleScene extends Phaser.Scene {
       g.strokePath();
     } else {
       v.image.clearTint();
+      if (v.dimmed) {
+        v.image.setAlpha(v.image.alpha / 0.6);
+        v.dimmed = false;
+      }
       g.lineStyle(2 / z, 0x8ad0ff, 0.5);
       g.strokeCircle(v.image.x, top - 16 / z, 8 / z);
     }
@@ -658,8 +680,17 @@ export class BattleScene extends Phaser.Scene {
     g.fillRoundedRect(x - w / 2 + 1 / z, y - h / 2 + 0.8 / z, Math.max(0, fw - 2 / z), h * 0.38, h * 0.19);
   }
 
-  update(_time: number, delta: number): void {
+  /** When the next frame-rate sample is due (report section 5 step 3, device F2). */
+  private nextFpsSample = 0;
+
+  update(time: number, delta: number): void {
     this.cam.update(delta);
+    // While the battle runs (never idle-throttled), sample the frame rate once a second.
+    if (this.session.running && time >= this.nextFpsSample) {
+      this.nextFpsSample = time + 1000;
+      const msg = noteBattleFps(this.game.loop.actualFps);
+      if (msg) this.hooks.notice?.(msg);
+    }
     // The path highlight is a scouting aid: gone once the battle starts.
     if (this.pathIndex !== null && this.session.mode !== 'scout') this.highlightPath(null);
     const s = this.session;

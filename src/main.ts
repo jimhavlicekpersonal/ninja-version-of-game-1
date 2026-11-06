@@ -7,7 +7,7 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
-import { Keys, buildingThumbKey, prepareTextures } from './presentation/render/assets';
+import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
@@ -44,7 +44,7 @@ declare const __BUILD_TIME__: string;
 const DEBUG_OFFSET_KEY = 'tk.debugTimeOffsetMs';
 
 /** The inline start-up guard from index.html (src/backend/pwa/boot.js). */
-const bootGuard = (window as unknown as { __tkBoot?: { done(): void; stop(): void } }).__tkBoot;
+const bootGuard = (window as unknown as { __tkBoot?: { done(): void; stop(): void; progress?(text?: string): void } }).__tkBoot;
 // Every module loaded: from here on boot() reports its own errors (the guard keeps its timer).
 (window as unknown as { __tkStarted?: boolean }).__tkStarted = true;
 
@@ -52,6 +52,8 @@ const bootGuard = (window as unknown as { __tkBoot?: { done(): void; stop(): voi
 function bootStatus(text: string): void {
   const el = document.querySelector<HTMLElement>('#boot .boot-status');
   if (el) el.textContent = text;
+  // Each step is progress: the boot guard's "taking a long time" clock starts again (report section 5 step 3).
+  bootGuard?.progress?.(text);
 }
 
 /**
@@ -428,7 +430,9 @@ async function boot(): Promise<void> {
     const ios = platformName() === 'ios';
     const p = document.createElement('p');
     p.textContent = ios
-      ? 'Safari may delete this village after a week without a visit. To keep it: add Kagemura to your Home Screen (Share → Add to Home Screen) and play from there, link a sign-in under Online play, or copy a save code.'
+      ? // Report section 5 step 3 (device F6): a Home Screen web app has its own storage, apart from Safari's, so it starts
+        // a new village. The save code is what carries this one over.
+        'Safari may delete this village after a week without a visit. To keep it: copy a save code first, then add Kagemura to your Home Screen (Share → Add to Home Screen), open it from there and load the code (Settings → Load from code). The Home Screen app keeps its own village, apart from Safari’s. You can also link a sign-in under Online play.'
       : 'This browser may delete this village if you stay away for a while. To keep it: install Kagemura (the browser menu → Install app or Add to Home screen), link a sign-in under Online play, or copy a save code.';
     const b = document.createElement('button');
     b.type = 'button';
@@ -502,7 +506,7 @@ async function boot(): Promise<void> {
   if (sandbox) hud.toast('Testing sandbox: a separate practice village with testing tools and a free test store. Your real village is untouched, and online play is off.', 'info');
   if (params.has('debug')) {
     // Testing hook, only with ?debug in the URL.
-    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection };
+    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes };
   }
 
   // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
@@ -670,7 +674,46 @@ async function boot(): Promise<void> {
       ]);
     });
   }
+  // Report section 5 step 3 (device F6): opened from the iOS Home Screen with a brand-new village, the
+  // player may have a village in Safari, which this app cannot see. Say so once.
+  if (!sandbox && !isNative() && platformName() === 'ios' && standaloneWebApp() && !controller.state.tutorial.done && !homeScreenHintShown()) {
+    markHomeScreenHintShown();
+    hud.modal(
+      'Played in Safari before?',
+      (() => {
+        const p = document.createElement('p');
+        p.textContent = 'The Home Screen app keeps its own village, apart from Safari’s. To bring yours here: open Kagemura in Safari, go to Settings → Copy save code, then come back and use Settings → Load from code.';
+        return p;
+      })(),
+      [{ label: 'OK', primary: true, onClick: () => hud.closeAllModals() }],
+    );
+  }
   if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
+}
+
+/** Running as an installed web app (iOS Home Screen, or an installed PWA). */
+function standaloneWebApp(): boolean {
+  try {
+    return (navigator as Navigator & { standalone?: boolean }).standalone === true || matchMedia('(display-mode: standalone)').matches;
+  } catch {
+    return false;
+  }
+}
+
+const HOME_SCREEN_HINT_KEY = 'tk.homeScreenHint';
+function homeScreenHintShown(): boolean {
+  try {
+    return localStorage.getItem(HOME_SCREEN_HINT_KEY) === '1';
+  } catch {
+    return true; // storage blocked: never nag on every start
+  }
+}
+function markHomeScreenHintShown(): void {
+  try {
+    localStorage.setItem(HOME_SCREEN_HINT_KEY, '1');
+  } catch {
+    /* storage blocked */
+  }
 }
 
 boot().catch((e) => {

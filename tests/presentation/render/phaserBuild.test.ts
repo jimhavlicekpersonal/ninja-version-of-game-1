@@ -45,7 +45,9 @@ describe('custom Phaser build', () => {
   it('every Phaser namespace the game names is in the build', () => {
     const used = new Set([...sources.matchAll(/\bPhaser\.([A-Z][A-Za-z]*)/g)].map((m) => m[1]));
     used.delete('Types'); // types only
-    used.delete('AUTO'); // a constant merged from phaser/src/const
+    used.delete('AUTO'); // constants merged from phaser/src/const
+    used.delete('CANVAS');
+    expect(readFileSync(join(ROOT, 'node_modules/phaser/src/const.js'), 'utf8')).toMatch(/\bCANVAS: 1\b/);
     for (const ns of used) expect(BUILD, `Phaser.${ns}`).toMatch(new RegExp(`\\b${ns}\\b`));
   });
 

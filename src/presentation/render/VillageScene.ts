@@ -9,7 +9,7 @@ import { collectorAmount, collectorCapacity, effectiveLevel } from '../../gamepl
 import type { Building } from '../../gameplay/sim/types';
 import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
-import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture, holdBuildingTextures } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
 import { VillageLife, addScenery, confetti, resourceBurst } from './fx';
 import { setupTouchInput } from './touchInput';
@@ -204,6 +204,8 @@ export class VillageScene extends Phaser.Scene {
       view.image.setAlpha(this.placement?.id === b.id ? 0.25 : 1);
       this.syncTimer(b, view);
     }
+    // Report section 5 step 3 (device F1): the art shown now stays; older looks beyond the budget go.
+    holdBuildingTextures(this.textures, 'village', [...[...this.views.values()].map((v) => v.key), ...(this.placement ? [this.placement.ghost.texture.key] : [])]);
     this.life?.sync(this.controller.state.buildings.map((b) => ({ id: b.id, type: b.type, level: b.level, x: b.x, y: b.y, size: buildingDef(gd, b.type).size })));
     for (const [id, view] of this.views) {
       if (seen.has(id)) continue;

@@ -256,6 +256,7 @@ export class BattleHud {
         this.drawChevrons();
       },
       selectedTroop: () => this.selected,
+      notice: (text) => this.toast(text),
       deployFailed: (reason) => {
         if (reason === 'zone') this.toast(this.s.sim.entry ? 'Send warriors in through a glowing infiltration point.' : 'Place troops outside the red area.');
         else if (reason === 'full') this.toast(`That path is full: each point hides ${this.s.sim.entry?.cover ?? 0} space of warriors. Use another point.`);

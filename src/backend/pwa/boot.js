@@ -6,8 +6,12 @@
       structuredClone (plain data: objects, arrays, Map, Set, Date, typed arrays) and .at().
    2. Feature check: without ES modules, modern syntax, Promise/Map/Set or a 2D canvas the game
       cannot run, so it shows "please update" instead of a splash that never ends.
-   3. Load guard: if the module fails to download or parse, or start-up is still not done after
-      SLOW_MS, the splash turns into "Couldn't load Kagemura" with Retry. The first Retry
+   3. Load guard: if the module fails to download or parse, the splash turns into "Couldn't load
+      Kagemura" with Retry. If start-up makes no progress for SLOW_MS (the game reports each step
+      with window.__tkBoot.progress(text)), a "taking a long time" card is added under the splash,
+      which keeps its progress line; it goes away again when progress resumes (report section 5
+      step 3: on a slow phone and a slow network the card used to replace the splash at 25 s while
+      painting was nearly done, and its Retry restarted the whole download). The first Retry
       re-downloads the page and its script past the HTTP cache; a later one (the same failure
       again) also removes the service worker and its caches when online, so a broken offline copy
       can't keep serving. The game calls window.__tkBoot.done() once its first frame is on screen.
@@ -135,7 +139,7 @@
   }
 
   // ------------------------------------------------------------------ load guard
-  var state = { done: false, shown: '', timer: 0, unsupported: [] };
+  var state = { done: false, shown: '', timer: 0, unsupported: [], slowCard: null, slowHost: null };
 
   function session(get, value) {
     try {
@@ -172,26 +176,35 @@
     return b;
   }
 
-  /** Replace the splash with a message card. kind: 'failed' | 'slow' | 'unsupported'. */
+  /**
+   * Replace the splash with a message card. kind: 'failed' | 'slow' | 'unsupported'. The slow card
+   * is added under the splash instead (its progress line keeps updating) and removed by progress().
+   */
   function show(kind, detail) {
-    if (state.done || state.shown === 'unsupported' || state.shown === kind) return;
+    if (state.done || state.shown === 'unsupported' || state.shown === 'failed' || state.shown === kind) return;
     if (!d.body) {
       d.addEventListener('DOMContentLoaded', function () {
         show(kind, detail);
       });
       return;
     }
-    var b = bootEl();
+    var keepSplash = kind === 'slow';
+    var b = keepSplash ? d.getElementById('boot') || bootEl() : bootEl();
     if (!b) return;
+    dropSlowCard();
     state.shown = kind;
-    while (b.firstChild) b.removeChild(b.firstChild);
+    if (!keepSplash) while (b.firstChild) b.removeChild(b.firstChild);
     var card = el('div', { class: 'boot-fail', role: 'alert', style: CARD });
+    if (keepSplash) {
+      state.slowCard = card;
+      state.slowHost = b;
+    }
     if (kind === 'unsupported') {
       card.appendChild(el('p', { style: 'margin:0 0 8px;font-size:17px' }, 'Kagemura needs a newer browser'));
       card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, 'This browser is missing: ' + detail + '. Update your phone (iOS 15 or later) or your browser (Chrome, Safari, Edge or Firefox from 2021 or later), then open Kagemura again.'));
     } else {
       card.appendChild(el('p', { style: 'margin:0 0 8px;font-size:17px' }, kind === 'slow' ? 'Kagemura is taking a long time to load' : "Couldn't load Kagemura"));
-      card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, kind === 'slow' ? 'The connection may be slow. It keeps loading in the background, or you can try again.' : 'Check your connection and try again. Your village is saved on this device.'));
+      card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, kind === 'slow' ? 'Nothing has moved for a while. It keeps loading in the background, or you can start again.' : 'Check your connection and try again. Your village is saved on this device.'));
       if (detail) card.appendChild(el('p', { style: 'margin:8px 0 0;font:400 12px monospace;color:#5f6b78;word-break:break-word' }, String(detail).slice(0, 200)));
       var retry = el('button', { type: 'button', style: BTN }, 'Retry');
       retry.addEventListener('click', function () {
@@ -208,13 +221,37 @@
     w.location.reload();
   }
 
+  function dropSlowCard() {
+    if (state.slowCard && state.slowHost) state.slowHost.removeChild(state.slowCard);
+    state.slowCard = null;
+    state.slowHost = null;
+  }
+
+  function armSlowTimer() {
+    w.clearTimeout(state.timer);
+    state.timer = w.setTimeout(function () {
+      show('slow');
+    }, SLOW_MS);
+  }
+
   var api = {
+    /**
+     * Called by the game at each start-up step (and as painting advances): the "taking a long
+     * time" clock starts again, and a slow card already shown goes away.
+     */
+    progress: function () {
+      if (state.done || state.shown === 'failed' || state.shown === 'unsupported') return;
+      dropSlowCard();
+      if (state.shown === 'slow') state.shown = '';
+      armSlowTimer();
+    },
     /** Called by the game once its first frame is on screen: the guard stands down. */
     done: function () {
       state.done = true;
       w.clearTimeout(state.timer);
       session(false, 0);
-      // A "slow" card shown before the game made it: hand the splash back so it can fade out.
+      dropSlowCard();
+      // A card shown before the game made it: hand the splash back so it can fade out.
       var b = state.shown && d.getElementById('boot');
       if (b) b.style.cssText = '';
     },
@@ -300,9 +337,7 @@
     return;
   }
 
-  state.timer = w.setTimeout(function () {
-    show('slow');
-  }, SLOW_MS);
+  armSlowTimer();
 
   // The game's module (or its stylesheet) failed to download: resource errors don't bubble, so
   // listen in the capture phase.

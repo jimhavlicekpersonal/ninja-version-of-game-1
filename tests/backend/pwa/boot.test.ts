@@ -214,6 +214,31 @@ describe('load guard', () => {
     expect(boot.style.cssText).toBe(''); // the splash is the game's again (it fades it out)
   });
 
+  it('progress restarts the clock; the slow card sits under the splash and goes when progress resumes', () => {
+    const { boot, win } = load();
+    const api = win.__tkBoot as unknown as { progress(t?: string): void; done(): void };
+    const status = new FakeEl('P', { className: 'boot-status' });
+    boot.appendChild(status);
+    // A slow phone on a slow network: a step every 20 s never trips the 25 s card.
+    for (let i = 0; i < 5; i++) {
+      vi.advanceTimersByTime(20_000);
+      api.progress(`Painting the village… ${i * 20}%`);
+    }
+    expect(boot.text()).not.toMatch(/taking a long time/);
+    // Nothing for 25 s: the card is added, and the splash (with its status line) stays.
+    vi.advanceTimersByTime(26_000);
+    expect(boot.text()).toMatch(/taking a long time/);
+    expect(boot.children).toContain(status);
+    // Progress resumes: the card goes, the clock starts over.
+    api.progress('Lighting the lanterns…');
+    expect(boot.text()).not.toMatch(/taking a long time/);
+    expect(boot.children).toContain(status);
+    vi.advanceTimersByTime(26_000);
+    expect(boot.text()).toMatch(/taking a long time/);
+    api.done();
+    expect(boot.text()).not.toMatch(/taking a long time/);
+  });
+
   it('done() stands the guard down', () => {
     const { boot, win, fire } = load();
     win.__tkBoot.done();

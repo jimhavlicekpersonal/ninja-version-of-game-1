@@ -22,6 +22,7 @@ import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
 import { TILE_H, TILE_W, mapBounds, worldToTile } from './iso';
 import { WARRIORS } from '../../gameplay/sim/progression';
 import { quality } from './quality';
+import { TextureBudget } from './textureBudget';
 
 registerWarriorArt(WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })));
 
@@ -84,6 +85,36 @@ export const Keys = {
   hallSkinLevel: (skin: string, level: number) => `building.elder_toadstool.skin.${skin}.lv${level}`,
 };
 
+/** The budget for per-level building art (report section 5 step 3, device F1), made on first use. */
+let paintedBudget: TextureBudget | null = null;
+function budget(textures: Phaser.Textures.TextureManager): TextureBudget {
+  if (!paintedBudget) {
+    paintedBudget = new TextureBudget(quality().paintedBudgetMB * 1024 * 1024, (key) => {
+      // Removes the GPU copy and drops the painting canvas with it (the texture was its only holder).
+      if (textures.exists(key)) textures.remove(key);
+    });
+  }
+  return paintedBudget;
+}
+
+/**
+ * The building art a scene shows now: never removed while held. Call after a scene has made (or
+ * re-made) its building images, with every key they use; anything else beyond the budget goes.
+ */
+export function holdBuildingTextures(textures: Phaser.Textures.TextureManager, owner: string, keys: Iterable<string>): void {
+  budget(textures).hold(owner, keys);
+}
+
+/** The scene shows nothing any more (shut down). */
+export function releaseBuildingTextures(textures: Phaser.Textures.TextureManager, owner: string): void {
+  budget(textures).release(owner);
+}
+
+/** Bytes of painted building art kept now (perf checks, `window.tk`). */
+export function paintedBuildingBytes(): number {
+  return paintedBudget?.bytes ?? 0;
+}
+
 /** Size and level count per building type, filled in when textures are generated. */
 const buildingInfo = new Map<string, { size: number; maxLevel: number }>();
 /** Keep skins by id (painted per level on first use). */
@@ -113,7 +144,9 @@ export function buildingTexture(textures: Phaser.Textures.TextureManager, type: 
   if (textures.exists(realTier)) return realTier;
   const key = Keys.buildingLevel(type, level);
   paintLevel(textures, key, type, size, level);
-  return textures.exists(key) ? key : Keys.buildingBase(type);
+  if (!textures.exists(key)) return Keys.buildingBase(type);
+  budget(textures).touch(key);
+  return key;
 }
 
 /** Paint the code art for one building level once (`art/ninja.ts` `paintBuildingLevel`). */
@@ -127,6 +160,8 @@ function paintLevel(textures: Phaser.Textures.TextureManager, key: string, type:
   if (!c) return;
   paintBuildingLevel(c.ctx, type, size, level, info?.maxLevel ?? 1, def);
   c.done();
+  // Counted against the budget; removed at the next hold/release if unused (never mid-frame).
+  budget(textures).added(key, c.bytes);
 }
 
 /** Origin that puts the footprint centre of a building image on its world position. */
@@ -205,7 +240,7 @@ function maxTextureSize(scene: Phaser.Scene): number {
 
 type Ctx = CanvasRenderingContext2D;
 
-function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, scale = TEX_SCALE): { ctx: Ctx; done: () => void } | null {
+function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, scale = TEX_SCALE): { ctx: Ctx; done: () => void; bytes: number } | null {
   const textures = target instanceof Phaser.Textures.TextureManager ? target : target.textures;
   if (textures.exists(key)) return null; // real art (or an earlier run) already provided it
   const paper = paintingCanvas(Math.ceil(w * scale), Math.ceil(h * scale));
@@ -215,7 +250,7 @@ function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: s
   ctx.translate(w / 2, originY);
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  return { ctx, done: () => addPainted(textures, key, canvas) };
+  return { ctx, done: () => addPainted(textures, key, canvas), bytes: canvas.width * canvas.height * 4 };
 }
 
 /**
@@ -367,7 +402,10 @@ export function villageTexture(textures: Phaser.Textures.TextureManager, type: s
     if (textures.exists(real)) return real;
     const key = Keys.hallSkinLevel(hallSkin, level);
     paintLevel(textures, key, type, size, level, skin);
-    if (textures.exists(key)) return key;
+    if (textures.exists(key)) {
+      budget(textures).touch(key);
+      return key;
+    }
   }
   return buildingTexture(textures, type, level, size);
 }

@@ -180,10 +180,34 @@ export function roleTint(troopType: string): number {
   return parseInt((role ? ROLE_RING[role] : '#e9e2cf').slice(1), 16);
 }
 
+/**
+ * The ring texture painted in one role colour (report section 5 step 3, device F13). Tinting a
+ * white ring only works in WebGL: Phaser's Canvas renderer, used when a phone has no WebGL, ignores
+ * tint, so every ring was white and roles could not be told apart in battle. One small texture per
+ * role colour (about ten) looks the same in both renderers.
+ */
+export function ringTexture(scene: Phaser.Scene, color: number): string {
+  const key = `${RING}.${color.toString(16).padStart(6, '0')}`;
+  if (scene.textures.exists(key)) return key;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  g.fillStyle(color, 0.22);
+  g.fillEllipse(32, 16, 60, 28);
+  g.lineStyle(4, color, 1);
+  g.strokeEllipse(32, 16, 56, 25);
+  g.generateTexture(key, 64, 32);
+  g.destroy();
+  return key;
+}
+
 /** A role-coloured ring on the ground under a warrior (one image per warrior: cheap). */
 export function troopRing(scene: Phaser.Scene, troopType: string, air: boolean): Phaser.GameObjects.Image {
   ensureBattleFx(scene);
-  return scene.add.image(0, 0, RING).setTint(roleTint(troopType)).setScale(air ? 0.48 : 0.62).setAlpha(air ? 0.5 : 0.95).setDepth(-3);
+  return scene.add.image(0, 0, ringTexture(scene, roleTint(troopType))).setScale(air ? 0.48 : 0.62).setAlpha(air ? 0.5 : 0.95).setDepth(-3);
+}
+
+/** Phaser drew with Canvas (no WebGL): tints are ignored there, so effects that rely on them need another cue. */
+export function canvasRenderer(scene: Phaser.Scene): boolean {
+  return scene.sys.game.renderer.type === Phaser.CANVAS;
 }
 
 /** Tracer colours by projectile kind. */
