@@ -86,7 +86,16 @@ export default defineConfig(({ command }) => ({
   preview: { port: 4173 },
   build: {
     target: 'es2020',
-    chunkSizeWarningLimit: 2000,
+    // Phaser changes only on a dependency update, so it sits in its own chunk that stays cached
+    // across game releases (state-of-the-game quality 17); the game code is the small, changing part.
+    chunkSizeWarningLimit: 1200,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [{ name: 'phaser', test: /node_modules[\\/]phaser[\\/]|render[\\/]phaserBuild\.js$/, priority: 10 }],
+        },
+      },
+    },
   },
   // Production ships a smaller Phaser (no physics, sound, tilemaps: phaserBuild.js); dev and tests use the full package.
   resolve: command === 'build' && !process.env.VITEST ? { alias: [{ find: /^phaser$/, replacement: fileURLToPath(new URL('./src/presentation/render/phaserBuild.js', import.meta.url)) }] } : {},

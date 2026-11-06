@@ -209,6 +209,12 @@ export interface BattleSim {
   abilitiesUsed: Record<string, number>;
   warriorEffects: WarriorEffect[];
   supportTroops: number[];
+  /**
+   * Report section 5 step 10 (quality 28): what each troop looks like to the defenses this tick, built once
+   * before the defense phase. Nothing in that phase moves, reveals, lights, grounds or kills a troop (damage
+   * lands later, in stepProjectiles), so the defenses read exactly what they used to compute per call.
+   */
+  defenseView?: { hidden: Uint8Array; air: Uint8Array; shrouded: Uint8Array } | null;
   /** Donated troops of each type not yet deployed (they deploy first, at their donated level). */
   lodgeLeft: Record<string, number>;
 }
@@ -680,8 +686,17 @@ function stepDefense(sim: BattleSim, bi: number): void {
   const cy = b.y + b.size / 2;
   const smoke = sim.data.battle.abilities.smoke_bomb;
   const smokedRange = Math.max(smoke.minTargetRange, c.range * smoke.rangeFactor);
+  const view = sim.defenseView;
   const ok = (t: SimTroop) => {
-    if (t.dead || isHidden(sim, t)) return false;
+    if (t.dead) return false;
+    if (view && t.id < view.hidden.length) {
+      if (view.hidden[t.id]) return false;
+      if (view.air[t.id] ? c.targets === 'ground' : c.targets === 'air') return false;
+      const d = dist(cx, cy, t.x, t.y);
+      const range = view.shrouded[t.id] ? smokedRange : c.range;
+      return d <= range && d >= (c.minRange ?? 0);
+    }
+    if (isHidden(sim, t)) return false;
     if (airborne(sim, t) ? c.targets === 'ground' : c.targets === 'air') return false;
     const d = dist(cx, cy, t.x, t.y);
     const veiled = t.litUntil <= sim.tick && auraStrength(sim, t, 'veil') > 0;
@@ -797,6 +812,24 @@ function groundFlyer(sim: BattleSim, bi: number, ti: number): void {
 }
 
 /** Advance one tick, applying `deployments` (all for this tick) first. */
+/** Per-troop facts the defenses read, once per tick (see `BattleSim.defenseView`). */
+function defenseView(sim: BattleSim): BattleSim['defenseView'] {
+  const n = sim.troops.length;
+  const hidden = new Uint8Array(n);
+  const air = new Uint8Array(n);
+  const shrouded = new Uint8Array(n);
+  const smoke = sim.data.battle.abilities.smoke_bomb;
+  for (let i = 0; i < n; i++) {
+    const t = sim.troops[i];
+    if (t.dead) continue;
+    hidden[i] = isHidden(sim, t) ? 1 : 0;
+    air[i] = airborne(sim, t) ? 1 : 0;
+    const veiled = t.litUntil <= sim.tick && auraStrength(sim, t, 'veil') > 0;
+    shrouded[i] = (smoke && inSmoke(sim, t.x, t.y)) || veiled ? 1 : 0;
+  }
+  return { hidden, air, shrouded };
+}
+
 export function step(sim: BattleSim, deployments: Deployment[] = []): void {
   if (sim.ended) return;
   sim.events = [];
@@ -805,7 +838,9 @@ export function step(sim: BattleSim, deployments: Deployment[] = []): void {
   stepWarriorEffects(sim, warriorActions);
   for (let i = 0; i < sim.troops.length; i++) stepTroop(sim, i);
   stepTraps(sim);
+  sim.defenseView = defenseView(sim);
   for (let i = 0; i < sim.buildings.length; i++) stepDefense(sim, i);
+  sim.defenseView = null;
   stepProjectiles(sim);
   sim.tick++;
   if (sim.smokes.length) {

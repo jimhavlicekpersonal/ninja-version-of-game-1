@@ -16,8 +16,12 @@ FROM node:24-slim
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
-# Only what the bundle imports at run time (fastify, pg); the game's own packages are not needed.
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+# Only what the bundle imports at run time (fastify, pg, unicode-segmenter). package.json is shared with the
+# game, so its client packages (Phaser ~148 MB, Capacitor) are removed after the locked install (report section 5
+# step 10, quality 32); tests/backend/release-config.test.ts keeps this list in step with package.json.
+RUN npm ci --omit=dev --ignore-scripts \
+  && rm -rf node_modules/phaser node_modules/@capacitor node_modules/eventemitter3 node_modules/tslib \
+  && npm cache clean --force
 COPY --from=build /app/dist-server ./dist-server
 ARG RELEASE=dev
 ENV RELEASE=kagemura-server@${RELEASE}

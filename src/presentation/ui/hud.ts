@@ -34,8 +34,7 @@ import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
-import { FriendsUi } from './friendsUi';
-import { GangWarUi } from './gangWarUi';
+import type { FriendsUi } from './friendsUi';
 import { GroveUi } from './groveUi';
 import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
@@ -147,7 +146,8 @@ export class Hud {
   private openModals = new Set<() => void>();
   readonly econ: EconomyUi;
   readonly grove: GroveUi;
-  readonly friends: FriendsUi;
+  private friendsPanel!: () => Promise<FriendsUi>;
+  private friendsLoading: Promise<FriendsUi> | null = null;
   readonly daily: DailyUi;
   private readonly army: ArmyUi;
   private armyPill = h('span', { class: 'army-pill' });
@@ -193,25 +193,30 @@ export class Hud {
       troopThumb: (t) => this.deps.troopThumb(t),
       onGroveAttack: (i) => this.deps.onGroveAttack(i),
     });
-    const gangWar = new GangWarUi({
-      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
-      connection: this.deps.connection,
-      onAttack: this.deps.onGangWarAttack ? (t, relay, name, bot) => this.deps.onGangWarAttack!(t, relay, name, bot) : undefined,
-    });
-    this.friends = new FriendsUi({
-      war: (body, redraw, leader, members) => gangWar.draw(body, redraw, leader, members),
-      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
-      connection: this.deps.connection,
-      shareBase: () => this.deps.friendLinkBase?.() ?? null,
-      platform: this.deps.signIn,
-      onDuel: (id, name, opts) => this.deps.onDuel?.(id, name, opts),
-      onReplay: (r) => this.deps.onReplay(r),
-      // Real raiders (never simulated ones) and Alliance mates.
-      suggestions: () => [
-        ...this.c.state.battleLog.filter((r) => r.kind === 'defense' && !r.simulated).map((r) => r.opponentName),
-        ...this.deps.groveSource.snapshot().members.filter((m) => !m.you && this.deps.groveSource.snapshot().kind === 'online').map((m) => m.name),
-      ],
-    });
+    // Report section 5 step 10 (quality 17, 31): Friends, Gangs, Gang Wars and the QR code load on first use,
+    // not with the first download (most players open them late or never).
+    this.friendsPanel = () =>
+      (this.friendsLoading ??= Promise.all([import('./friendsUi'), import('./gangWarUi')]).then(([{ FriendsUi }, { GangWarUi }]) => {
+      const gangWar = new GangWarUi({
+        kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+        connection: this.deps.connection,
+        onAttack: this.deps.onGangWarAttack ? (t, relay, name, bot) => this.deps.onGangWarAttack!(t, relay, name, bot) : undefined,
+      });
+      return new FriendsUi({
+        war: (body, redraw, leader, members) => gangWar.draw(body, redraw, leader, members),
+        kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+        connection: this.deps.connection,
+        shareBase: () => this.deps.friendLinkBase?.() ?? null,
+        platform: this.deps.signIn,
+        onDuel: (id, name, opts) => this.deps.onDuel?.(id, name, opts),
+        onReplay: (r) => this.deps.onReplay(r),
+        // Real raiders (never simulated ones) and Alliance mates.
+        suggestions: () => [
+          ...this.c.state.battleLog.filter((r) => r.kind === 'defense' && !r.simulated).map((r) => r.opponentName),
+          ...this.deps.groveSource.snapshot().members.filter((m) => !m.you && this.deps.groveSource.snapshot().kind === 'online').map((m) => m.name),
+        ],
+      });
+      }));
     this.daily = new DailyUi(
       { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
       { stipendCard: (redraw) => this.econ.stipendCard(redraw), onBounty: this.deps.onBounty ? (key, base) => this.deps.onBounty!(key, base) : undefined },
@@ -373,7 +378,7 @@ export class Hud {
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => this.grove.open()),
-      railBtn('Friends', icons.friends, () => this.friends.open()),
+      railBtn('Friends', icons.friends, () => void this.friendsPanel().then((f) => f.open())),
       railBtn('Trials', icons.leaf, () => this.openTrials()),
     );
     this.rail = rail;
@@ -639,7 +644,7 @@ export class Hud {
 
   /** Open Friends, looking up a name or code (a friend link). */
   openFriends(search?: string): void {
-    this.friends.open(search);
+    void this.friendsPanel().then((f) => f.open(search));
   }
 
   private updateNet(): void {

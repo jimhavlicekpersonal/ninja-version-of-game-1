@@ -104,3 +104,16 @@ describe('report section 5 step 7 (compliance C08): the StoreKit test configurat
     for (const pack of store.packs) expect(kit.products.find((p) => p.productID === store.storeProductIds[pack.id])?.displayPrice).toBe(pack.usd.toFixed(2));
   });
 });
+
+describe('report section 5 step 10 (quality 32): the server image carries only server packages', () => {
+  it('every runtime dependency is either imported by the server bundle or removed in the Dockerfile', () => {
+    const pkg = JSON.parse(read('package.json')) as { dependencies: Record<string, string> };
+    const docker = read('Dockerfile');
+    const server = ['fastify', 'pg', 'unicode-segmenter'];
+    for (const dep of Object.keys(pkg.dependencies)) {
+      if (server.includes(dep)) continue;
+      const removed = docker.includes(`node_modules/${dep}`) || docker.includes(`node_modules/${dep.split('/')[0]} `) || docker.includes(`node_modules/${dep.split('/')[0]}\n`) || docker.includes(`node_modules/${dep.split('/')[0]} \\`);
+      expect(removed, `${dep} would ship in the server image`).toBe(true);
+    }
+  });
+});

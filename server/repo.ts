@@ -672,9 +672,8 @@ export interface OpponentQuery {
   limit: number;
 }
 
-export interface Repo {
-  /** Throws when the store cannot answer (readiness checks). */
-  ping(): Promise<void>;
+/** Players, sessions, staff tools, account protections and deletion. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
+export interface PlayerStore {
   // players
   createPlayer(p: Player): Promise<void>;
   playerByTokenHash(hash: string): Promise<Player | null>;
@@ -697,100 +696,6 @@ export interface Repo {
   addStaffAction(a: StaffAction): Promise<void>;
   /** Newest first; one player's, or everyone's. */
   staffActions(playerId: string | null, limit: number): Promise<StaffAction[]>;
-  // purchases (roadmap Phase 4)
-  /** False (nothing stored) if that store transaction is already recorded. */
-  addPurchase(p: PurchaseRow): Promise<boolean>;
-  getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null>;
-  purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null>;
-  /** Newest first. */
-  purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]>;
-  /** False if it already had that status. */
-  setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
-  /** Cents of credited purchases since `since`, plus unused intents still holding at `now` (reserved by the age cap). */
-  spentCents(playerId: string, since: number, now: number): Promise<number>;
-  /**
-   * Serialise a player's purchase intents (GLOBAL-004): inside a transaction,
-   * only one request per player gets past this until it commits, on any
-   * instance (Postgres advisory lock; memory transactions already run one at a
-   * time). Outside a transaction it does nothing.
-   */
-  lockPurchases(playerId: string): Promise<void>;
-  /**
-   * Inside a transaction: hold this player until it ends (ledger audit A6: two raid reports, or a report
-   * and a forfeit, read and wrote one player's honor and village at the same time). Lock several players
-   * in ascending id order (`lockPlayers` in core/pvp.ts) so two transactions never wait on each other.
-   */
-  lockPlayer(playerId: string): Promise<void>;
-  /**
-   * Claim a periodic job (retention, voided purchases, Gang War reminders) for
-   * `leaseMs`: true when this holder may run it now (no lease, a lapsed one,
-   * or its own). One instance runs each job; another takes over when a lease
-   * lapses (report section 5 step 2, backend A21; migration 0026).
-   */
-  claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean>;
-  // shared play statistics (report section 5 step 5, migration 0027): no player id, no IP address
-  /** Keep cleaned events under a statistics id; resolves how many were kept. */
-  addStatsEvents(install: string, build: string, arm: string, events: import('../src/backend/net/stats').StatsEvent[], receivedAt: number): Promise<number>;
-  /** Forget everything one statistics id sent; resolves how many events went. */
-  deleteStats(install: string): Promise<number>;
-  /** Statistics ids whose first event fell on UTC days [fromDay, toDay]. */
-  statsInstalls(fromDay: number, toDay: number): Promise<StatsInstallSummary[]>;
-  /** Replace the daily table's rows for days [fromDay, toDay] with `rows`. */
-  putStatsDaily(fromDay: number, toDay: number, rows: StatsDailyRow[]): Promise<void>;
-  statsDaily(fromDay: number, toDay: number): Promise<StatsDailyRow[]>;
-  /** Drop events that arrived before `before`; resolves how many. */
-  pruneStats(before: number): Promise<number>;
-  addIntent(i: PurchaseIntent): Promise<void>;
-  getIntent(id: string): Promise<PurchaseIntent | null>;
-  useIntent(id: string): Promise<void>;
-  /** Set an unused intent's hold (the player's own only); false when nothing changed. */
-  holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean>;
-  /** The age group the server keeps for a player (GLOBAL-006), or null when never stated. */
-  getAgeGroup(playerId: string): Promise<{ under18: boolean; at: number } | null>;
-  setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void>;
-  addImportHold(h: ImportHold): Promise<void>;
-  /** Newest first. */
-  importHoldsOf(playerId: string): Promise<ImportHold[]>;
-  // push (roadmap step 40)
-  /** Adds or refreshes a device (a token that moved to another player now belongs to them). */
-  putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void>;
-  pushTokensOf(playerId: string): Promise<PushToken[]>;
-  removePushToken(token: string): Promise<void>;
-  /** Count one push sent on local day `day`. */
-  countPush(token: string, day: number): Promise<void>;
-  /** Players by id, in the order asked (missing ones left out). */
-  playersByIds(ids: string[]): Promise<Player[]>;
-  /** The Power Ranking (step 31): players with a base and at least `minBattles` rated attacks, by attack rating + beta x (Keep - 1). */
-  topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]>;
-  /** 1 + players on the Power Ranking above this power. */
-  powerRankOf(power: number, minBattles: number, beta: number): Promise<number>;
-  /** Every ranked player (with a base), to rebuild a leaderboard index. */
-  rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
-  // tickets and attacks. Each base is stored once per distinct content
-  // (base versions, keyed by contentHash); tickets and attacks keep the key.
-  createTicket(t: Ticket): Promise<void>;
-  getTicket(id: string): Promise<Ticket | null>;
-  /**
-   * Marks a ticket used, storing the answer given for it; returns false if it
-   * already was (prevents double submits; the stored answer is returned on a retry).
-   */
-  useTicket(id: string, response?: unknown): Promise<boolean>;
-  /** Mark an unused ticket started (first call wins); false when it is used or unknown. */
-  startTicket(id: string, at: number): Promise<boolean>;
-  /** Count one refused report on a ticket; returns the new count. */
-  bumpTicketFailures(id: string): Promise<number>;
-  /** This attacker's unused tickets of a kind (any expiry, newest first). */
-  openTickets(attackerId: string, kind: Ticket['kind']): Promise<Ticket[]>;
-  /** Unused tickets of a kind that expired before `before` (oldest first), to settle as forfeits. */
-  expiredOpenTickets(kind: Ticket['kind'], before: number, limit: number): Promise<Ticket[]>;
-  /** A store refund or void we heard about for a purchase we had not recorded (re-audit). */
-  addRefundNotice(store: string, key: string, at: number, why: string): Promise<void>;
-  refundNotice(store: string, key: string): Promise<{ at: number; why: string } | null>;
-  addAttack(a: AttackRecord): Promise<void>;
-  defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
-  recentTargets(attackerId: string, since: number): Promise<string[]>;
-  /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
-  prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
   // account deletion
   /**
    * Delete a player and everything that is only theirs: the player row (with
@@ -832,6 +737,96 @@ export interface Repo {
   /** Newest first. */
   noticesOf(playerId: string, limit: number): Promise<PlayerNotice[]>;
   markNoticesRead(playerId: string, ids: string[]): Promise<void>;
+}
+
+/** Store purchases, intents, spending protection and push devices. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
+export interface PurchaseStore {
+  // purchases (roadmap Phase 4)
+  /** False (nothing stored) if that store transaction is already recorded. */
+  addPurchase(p: PurchaseRow): Promise<boolean>;
+  getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null>;
+  purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null>;
+  /** Newest first. */
+  purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]>;
+  /** False if it already had that status. */
+  setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
+  /** Cents of credited purchases since `since`, plus unused intents still holding at `now` (reserved by the age cap). */
+  spentCents(playerId: string, since: number, now: number): Promise<number>;
+  // push (roadmap step 40)
+  /** Adds or refreshes a device (a token that moved to another player now belongs to them). */
+  putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void>;
+  pushTokensOf(playerId: string): Promise<PushToken[]>;
+  removePushToken(token: string): Promise<void>;
+  /** Count one push sent on local day `day`. */
+  countPush(token: string, day: number): Promise<void>;
+  /** Players by id, in the order asked (missing ones left out). */
+  playersByIds(ids: string[]): Promise<Player[]>;
+  /** The Power Ranking (step 31): players with a base and at least `minBattles` rated attacks, by attack rating + beta x (Keep - 1). */
+  topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]>;
+  /** 1 + players on the Power Ranking above this power. */
+  powerRankOf(power: number, minBattles: number, beta: number): Promise<number>;
+  /** Every ranked player (with a base), to rebuild a leaderboard index. */
+  rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
+}
+
+/** Shared play statistics (and other operations data). Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
+export interface OpsStore {
+  // shared play statistics (report section 5 step 5, migration 0027): no player id, no IP address
+  /** Keep cleaned events under a statistics id; resolves how many were kept. */
+  addStatsEvents(install: string, build: string, arm: string, events: import('../src/backend/net/stats').StatsEvent[], receivedAt: number): Promise<number>;
+  /** Forget everything one statistics id sent; resolves how many events went. */
+  deleteStats(install: string): Promise<number>;
+  /** Statistics ids whose first event fell on UTC days [fromDay, toDay]. */
+  statsInstalls(fromDay: number, toDay: number): Promise<StatsInstallSummary[]>;
+  /** Replace the daily table's rows for days [fromDay, toDay] with `rows`. */
+  putStatsDaily(fromDay: number, toDay: number, rows: StatsDailyRow[]): Promise<void>;
+  statsDaily(fromDay: number, toDay: number): Promise<StatsDailyRow[]>;
+  /** Drop events that arrived before `before`; resolves how many. */
+  pruneStats(before: number): Promise<number>;
+  addIntent(i: PurchaseIntent): Promise<void>;
+  getIntent(id: string): Promise<PurchaseIntent | null>;
+  useIntent(id: string): Promise<void>;
+  /** Set an unused intent's hold (the player's own only); false when nothing changed. */
+  holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean>;
+  /** The age group the server keeps for a player (GLOBAL-006), or null when never stated. */
+  getAgeGroup(playerId: string): Promise<{ under18: boolean; at: number } | null>;
+  setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void>;
+  addImportHold(h: ImportHold): Promise<void>;
+  /** Newest first. */
+  importHoldsOf(playerId: string): Promise<ImportHold[]>;
+}
+
+/** Tickets, attacks and stored bases. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
+export interface BattleStore {
+  // tickets and attacks. Each base is stored once per distinct content
+  // (base versions, keyed by contentHash); tickets and attacks keep the key.
+  createTicket(t: Ticket): Promise<void>;
+  getTicket(id: string): Promise<Ticket | null>;
+  /**
+   * Marks a ticket used, storing the answer given for it; returns false if it
+   * already was (prevents double submits; the stored answer is returned on a retry).
+   */
+  useTicket(id: string, response?: unknown): Promise<boolean>;
+  /** Mark an unused ticket started (first call wins); false when it is used or unknown. */
+  startTicket(id: string, at: number): Promise<boolean>;
+  /** Count one refused report on a ticket; returns the new count. */
+  bumpTicketFailures(id: string): Promise<number>;
+  /** This attacker's unused tickets of a kind (any expiry, newest first). */
+  openTickets(attackerId: string, kind: Ticket['kind']): Promise<Ticket[]>;
+  /** Unused tickets of a kind that expired before `before` (oldest first), to settle as forfeits. */
+  expiredOpenTickets(kind: Ticket['kind'], before: number, limit: number): Promise<Ticket[]>;
+  /** A store refund or void we heard about for a purchase we had not recorded (re-audit). */
+  addRefundNotice(store: string, key: string, at: number, why: string): Promise<void>;
+  refundNotice(store: string, key: string): Promise<{ at: number; why: string } | null>;
+  addAttack(a: AttackRecord): Promise<void>;
+  defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
+  recentTargets(attackerId: string, since: number): Promise<string[]>;
+  /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
+  prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
+}
+
+/** Alliances, chat, names and friends, duels, Gangs, Gang Wars, reports and blocks, donations and war raids. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
+export interface SocialStore {
   // groves
   createGrove(g: Grove): Promise<void>;
   getGrove(id: string): Promise<Grove | null>;
@@ -952,6 +947,31 @@ export interface Repo {
   removeBlock(playerId: string, blockedId: string): Promise<void>;
   /** Newest first. */
   blocksOf(playerId: string): Promise<Block[]>;
+  // troop requests and donations
+  addRequest(r: TroopRequest): Promise<void>;
+  getRequest(id: string): Promise<TroopRequest | null>;
+  openRequests(groveId: string, since: number): Promise<TroopRequest[]>;
+  lastRequestAt(playerId: string): Promise<number>;
+  closeRequestsOf(playerId: string): Promise<void>;
+  /** Adds to `filled` only if it stays within `size`; returns the updated request or null. */
+  fillRequest(id: string, housing: number): Promise<TroopRequest | null>;
+  addDonation(d: Donation): Promise<void>;
+  undelivered(playerId: string): Promise<Donation[]>;
+  markDelivered(playerId: string, ids: string[]): Promise<void>;
+  // grove raids
+  getPairing(week: number, groveId: string): Promise<RaidPairing | null>;
+  /** Saves both sides of a pairing; false if either Grove was already paired this week. */
+  createPairings(pairs: RaidPairing[]): Promise<boolean>;
+  unpairedGroves(week: number, activeSince: number, limit: number): Promise<GroveSummaryRow[]>;
+  addRaidAttack(a: RaidAttack): Promise<void>;
+  raidAttacks(week: number, groveId: string): Promise<RaidAttack[]>;
+  /** False if this player already claimed this week. */
+  addClaim(c: RaidClaim): Promise<boolean>;
+  getClaim(week: number, playerId: string): Promise<RaidClaim | null>;
+}
+
+/** Server-held villages, their ledger and command log. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
+export interface VillageStore {
   // server-owned villages (roadmap Phase 2)
   /** `forUpdate`: inside a transaction, hold the row until it ends (others wait). */
   getVillage(playerId: string, opts?: { forUpdate?: boolean }): Promise<VillageRow | null>;
@@ -974,33 +994,42 @@ export interface Repo {
   ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
   /** Oldest first, after `sinceSeq`. */
   commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]>;
+}
+
+/**
+ * Storage port of the server core: every aggregate store plus transactions and housekeeping. New methods go in
+ * the aggregate they belong to; core modules can depend on the narrower store they need.
+ */
+export interface Repo extends PlayerStore, PurchaseStore, OpsStore, BattleStore, SocialStore, VillageStore {
+  // transactions, locks, periodic jobs and idempotent answers (cross-cutting)
+  /**
+   * Serialise a player's purchase intents (GLOBAL-004): inside a transaction,
+   * only one request per player gets past this until it commits, on any
+   * instance (Postgres advisory lock; memory transactions already run one at a
+   * time). Outside a transaction it does nothing.
+   */
+  lockPurchases(playerId: string): Promise<void>;
+  /**
+   * Inside a transaction: hold this player until it ends (ledger audit A6: two raid reports, or a report
+   * and a forfeit, read and wrote one player's honor and village at the same time). Lock several players
+   * in ascending id order (`lockPlayers` in core/pvp.ts) so two transactions never wait on each other.
+   */
+  lockPlayer(playerId: string): Promise<void>;
+  /**
+   * Claim a periodic job (retention, voided purchases, Gang War reminders) for
+   * `leaseMs`: true when this holder may run it now (no lease, a lapsed one,
+   * or its own). One instance runs each job; another takes over when a lease
+   * lapses (report section 5 step 2, backend A21; migration 0026).
+   */
+  claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean>;
   /** The answer remembered for a write's Idempotency-Key (protocol 7), per caller. */
   getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null>;
   /** Remember it (the first answer wins). */
   putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void>;
   /** Run `fn` atomically: what it writes through `tx` lands together, or not at all if it throws. */
   transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T>;
-  // troop requests and donations
-  addRequest(r: TroopRequest): Promise<void>;
-  getRequest(id: string): Promise<TroopRequest | null>;
-  openRequests(groveId: string, since: number): Promise<TroopRequest[]>;
-  lastRequestAt(playerId: string): Promise<number>;
-  closeRequestsOf(playerId: string): Promise<void>;
-  /** Adds to `filled` only if it stays within `size`; returns the updated request or null. */
-  fillRequest(id: string, housing: number): Promise<TroopRequest | null>;
-  addDonation(d: Donation): Promise<void>;
-  undelivered(playerId: string): Promise<Donation[]>;
-  markDelivered(playerId: string, ids: string[]): Promise<void>;
-  // grove raids
-  getPairing(week: number, groveId: string): Promise<RaidPairing | null>;
-  /** Saves both sides of a pairing; false if either Grove was already paired this week. */
-  createPairings(pairs: RaidPairing[]): Promise<boolean>;
-  unpairedGroves(week: number, activeSince: number, limit: number): Promise<GroveSummaryRow[]>;
-  addRaidAttack(a: RaidAttack): Promise<void>;
-  raidAttacks(week: number, groveId: string): Promise<RaidAttack[]>;
-  /** False if this player already claimed this week. */
-  addClaim(c: RaidClaim): Promise<boolean>;
-  getClaim(week: number, playerId: string): Promise<RaidClaim | null>;
+  /** Throws when the store cannot answer (readiness checks). */
+  ping(): Promise<void>;
 }
 
 const clone = <T>(v: T): T => structuredClone(v);
