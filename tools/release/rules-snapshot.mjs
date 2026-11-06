@@ -54,6 +54,12 @@ export function engine(): RulesEngine {
     src = src.replace('// rules-snapshot: imports (keep this marker)', `import { engine as v${n} } from './v${n}/engine';\n// rules-snapshot: imports (keep this marker)`);
     src = src.replace('  // rules-snapshot: engines (keep this marker)', `  v${n},\n  // rules-snapshot: engines (keep this marker)`);
     writeFileSync(archive, src);
+    // Record the archive's digest: it must never change (tests/backend/server/rules-archive.test.ts).
+    const { archiveDigest } = await server.ssrLoadModule('/server/rules/manifest.ts');
+    const manifestPath = 'server/rules/manifest.json';
+    const manifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : {};
+    manifest[`v${n}`] = archiveDigest(dir);
+    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
     console.log(`archived SIM_RULES ${n} in ${dir} and listed it in ${archive}`);
   }
 

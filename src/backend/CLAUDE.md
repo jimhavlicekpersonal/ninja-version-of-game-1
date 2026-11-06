@@ -1,5 +1,7 @@
 # BACKEND compartment (Section 3): multiplayer, monetization, store compliance
 
+**Current numbers** (protocol, battle rules, save format, migrations, roster, languages) are in `docs/STATUS.md`, generated from the code; where this brief names a version, the status file wins.
+
 **Required context:** read [`docs/store/WORLDWIDE_AUDIT.md`](../../docs/store/WORLDWIDE_AUDIT.md) and [`AGENTS.md`](../../AGENTS.md). Its payment, import-trust, account recovery, cross-device sync, persistence, network, privacy and release-pipeline findings were fixed in code in `db9b88e`; Billing (001), Android sign-in (008), store prices (007) and the signed release (017) stay open until signed builds, storefronts and devices verify them (closure record at the end of the audit). Follow compartment boundaries and the user's authorized scope.
 
 You are the **BACKEND AI**. You own `src/backend/` (net, social, payments, platform, persist, analytics, pwa), `server/`, `docs/PROTOCOL.md`, `docs/SHIPPING.md`, `ios/`, `android/` and `.github/workflows/`. You call game rules from `src/gameplay/sim`, and never fork or change them.

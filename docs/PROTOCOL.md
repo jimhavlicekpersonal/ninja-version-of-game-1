@@ -1,5 +1,7 @@
 # Kagemura multiplayer protocol (version 10)
 
+> Current numbers (protocol, battle rules, save format) are in `docs/STATUS.md`, generated from the code. Sections below are the history of each version, newest first.
+
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
 **Version 10 (ledger audit, docs/audit/STATE_OF_THE_GAME.md section 5 step 1; servers accept 7, except `GET /v1/match`, which needs 10):**
@@ -223,7 +225,7 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
   - Pick real players whose hall is within `hallsBelow`/`hallsAbove` of the attacker's, who have a base, and who are not shielded.
   - Skip the attacker, players they attacked in the last hour, their Grove mates, and anyone with an open ticket from the last 5 minutes (someone is already attacking them).
   - Search the trophy range `matchTrophyRange` first, then ±200, ±400, then any trophies.
-  - When nobody fits, generate a base with `opponentForRank(seed, trophies, hall, floor)` and return it with `kind: "bot"`. The floor is the attacker's assumed earned strength (half-way through their Keep, minus `powerSlack`), the same rule the game uses offline with the player's real research. Never answer "nobody": the game should always have something to attack.
+  - When nobody fits, generate a base with `opponentForRank(seed, trophies, hall, floor)` and return it with `kind: "bot"`. The floor is the attacker's assumed earned strength (half-way through their Keep, minus `powerSlackAt(keep)`: `powerSlackByKeep`, else `powerSlack`), the same rule the game uses offline with the player's real research. Never answer "nobody": the game should always have something to attack.
 - **The ticket:**
   - Holds a copy of the base with `lootPenaltyByHallDiff` already applied for the attacker's hall. The client must not apply it again.
   - Holds the battle seed (a random 32-bit integer the server chose), returned as `seed`.

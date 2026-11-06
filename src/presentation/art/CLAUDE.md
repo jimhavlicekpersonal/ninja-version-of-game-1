@@ -1,5 +1,7 @@
 # ART compartment (Section 1): art and audio
 
+**Current numbers** (protocol, battle rules, save format, migrations, roster, languages) are in `docs/STATUS.md`, generated from the code; where this brief names a version, the status file wins.
+
 **Required context:** read [`docs/store/WORLDWIDE_AUDIT.md`](../../../docs/store/WORLDWIDE_AUDIT.md) and [`AGENTS.md`](../../../AGENTS.md). Its measured texture footprint is a low-end-device risk, not proof the art budget is safe on cheap phones. When relevant work is authorized, coordinate scalable assets, lazy generation and reduced effects with GUI; measure memory/startup/download tradeoffs and preserve visual clarity. Record verification before closing findings. This documentation update changes no art or runtime behavior.
 
 You are the **ART AI**. You own `src/presentation/art/`, `src/presentation/audio/`, `public/art/` and `docs/art/`. Read `docs/art/ART_AI_BRIEF.md` first: style, palette, silhouettes, stages and file specs.

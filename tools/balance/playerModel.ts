@@ -84,7 +84,8 @@ export class ModelPlayer {
   trialsTried = 0;
   private sessions = 0;
   tasksClaimed = 0;
-  defenseLog: { hall: number; stars: number; destruction: number; lost: number }[] = [];
+  /** Raids against the village: stars, destruction, Acorns + Dew stolen, the honor change and a held raid's reward. */
+  defenseLog: { hall: number; stars: number; destruction: number; lost: number; trophies: number; reward: number }[] = [];
   private readonly t0: number;
 
   constructor(private readonly data: GameData, private readonly opts: ModelOptions) {
@@ -113,7 +114,7 @@ export class ModelPlayer {
     this.clock.advance(ms);
     const r = computeOfflineProgress(this.state, this.clock.now(), this.data);
     this.state = r.state;
-    for (const d of r.summary.raids) this.defenseLog.push({ hall: hallLevel(this.state, this.data), stars: d.result.stars, destruction: d.result.destruction, lost: (d.result.loot.acorns ?? 0) + (d.result.loot.dew ?? 0) });
+    for (const d of r.summary.raids) this.defenseLog.push({ hall: hallLevel(this.state, this.data), stars: d.result.stars, destruction: d.result.destruction, lost: (d.result.loot.acorns ?? 0) + (d.result.loot.dew ?? 0), trophies: d.trophies ?? 0, reward: (d.banked?.acorns ?? 0) + (d.banked?.dew ?? 0) });
     this.state.defenseLog = [];
     this.noteHall();
   }

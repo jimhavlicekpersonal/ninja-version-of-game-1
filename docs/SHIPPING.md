@@ -7,7 +7,7 @@ Everything that can be built and tested without your personal accounts is in the
 - **Web app (all devices):** https://jimhavlicekpersonal.github.io/toadstool-kingdoms/ (see the README for installing it to your home screen). The public web build has **no store** (purchases show as unavailable) and runs on real time. The instant mock store and the time-skip tools exist only in the **testing sandbox**: open the game with `?sandbox` (or `?debug`). The sandbox keeps a separate village and never goes online, so test purchases and skipped time can't reach a real village or a server. Before a competitive online launch, decide whether the server should own the economy (inventory, research, timers); see `docs/PROTOCOL.md`, "Trust".
 - **Android app on your Pixel 7:** every push to `main` builds an installable debug APK (and, once the upload key is set up, a signed Play release: section 1b).
   1. On GitHub, open **Actions → Android app (debug APK and signed release AAB)** and click the latest green run.
-  2. Under **Artifacts**, download `toadstool-kingdoms-android-apk` and unzip it (you get `app-debug.apk`).
+  2. Under **Artifacts**, download `kagemura-android-apk` and unzip it (you get `app-debug.apk`).
   3. Send the APK to the phone (Google Drive, email, or a USB cable), open it, and allow "Install unknown apps" for that app when Android asks.
   4. In-app purchases are off in this debug APK (Play only sells to a Play-installed build). The release AAB has them on.
 

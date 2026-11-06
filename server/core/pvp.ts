@@ -11,7 +11,7 @@ import type { runBattle } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
 import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
-import { applyLootPenalty, hallWindow } from '../../src/gameplay/sim/matchmaking';
+import { applyLootPenalty, hallWindow, powerSlackAt } from '../../src/gameplay/sim/matchmaking';
 import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { advance } from '../../src/gameplay/sim/village';
@@ -352,7 +352,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     // Nobody fits: a generated base with the same matchmaking math the game uses offline.
     const seed = Math.floor(ctx.random() * 4294967296) >>> 0;
     // The server does not know the player's research, so it assumes half-way through their Keep (same rule as offline).
-    const base = engine.opponentForRank(seed, me.trophies, me.hallLevel, engine.data, me.hallLevel - 0.5 - engine.data.ranks.matchmaking.powerSlack);
+    const base = engine.opponentForRank(seed, me.trophies, me.hallLevel, engine.data, me.hallLevel - 0.5 - powerSlackAt(me.hallLevel, engine.data));
     const names = data.names;
     // Report section 5 step 8: a named computer rival clan's outpost (still `kind: 'bot'`, labelled by the game).
     const clan = rivalFor(seed, data);

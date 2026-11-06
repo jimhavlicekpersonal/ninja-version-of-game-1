@@ -639,6 +639,8 @@ export interface RanksDef {
     trophyJitter: number;
     /** Opponents are at least the attacker's earned strength (Keep and research) minus this many hall levels. */
     powerSlack: number;
+    /** `powerSlack` per own Keep (index 0 = Keep 1); a Keep past the table uses `powerSlack`. */
+    powerSlackByKeep?: number[];
     /** Earned strength reads research behind the caps as earlier Keeps, but never more than this many below the own Keep (design re-audit). */
     researchFloorKeeps?: number;
   };

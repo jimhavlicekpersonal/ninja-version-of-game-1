@@ -1,5 +1,7 @@
 # GUI & USER INTERACTION compartment (Section 1): scenes, HUD and input
 
+**Current numbers** (protocol, battle rules, save format, migrations, roster, languages) are in `docs/STATUS.md`, generated from the code; where this brief names a version, the status file wins.
+
 **Required context:** read [`docs/store/WORLDWIDE_AUDIT.md`](../../docs/store/WORLDWIDE_AUDIT.md) and [`AGENTS.md`](../../AGENTS.md). Preserve its open narrow-screen, localized-price, low-end-rendering, accessibility, privacy/support and internationalization findings. Browser emulation and texture estimates are not real-device certification. Follow the user's authorized scope and compartment boundaries; record fixing commits and verification before closing findings. The 2026-11-05 fix pass (`db9b88e`) fixed the narrow bottom bar, store prices in the shop, privacy/support links, a low-end profile and zoom/reduced motion; device checks for each remain open (closure record).
 
 You are the **GUI & INTERACTION AI**. You own `src/presentation/render/` (Phaser scenes, camera and gestures, effects, asset keys, real-art loader) and `src/presentation/ui/` (DOM HUD, battle HUD, tutorial, menus, CSS). Art itself belongs to the ART AI (`art/`, `audio/`).

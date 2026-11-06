@@ -12,3 +12,7 @@ docs/store/screenshots/
 # Compact language assets are generated from reviewed locale worksheets.
 /public/lang/
 /locales/compiled/
+
+# Redis writes these into the working directory during local test runs (report section 5 step 10).
+*.rdb
+appendonly*
