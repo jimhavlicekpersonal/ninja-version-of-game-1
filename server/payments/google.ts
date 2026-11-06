@@ -64,6 +64,8 @@ export interface GooglePurchase {
   /** What the game passed as `obfuscatedAccountId`: our purchase intent. */
   accountToken: string | null;
   consumed: boolean;
+  /** Acknowledged (Play refunds a purchase not acknowledged within three days). */
+  acknowledged: boolean;
   /** Billing country (ISO 3166-1 alpha-2) when Google sends it. */
   regionCode: string | null;
 }
@@ -133,14 +135,29 @@ export class GoogleVerifier {
       environment: test ? 'Test' : 'Production',
       accountToken: typeof p.obfuscatedExternalAccountId === 'string' && p.obfuscatedExternalAccountId ? p.obfuscatedExternalAccountId.toLowerCase() : null,
       consumed: Number(p.consumptionState ?? 0) === 1,
+      acknowledged: Number(p.acknowledgementState ?? 0) === 1,
       regionCode: typeof p.regionCode === 'string' ? p.regionCode : null,
     };
   }
 
-  /** Consume it once credited, so it can be bought again (and is not refunded after three days unacknowledged). */
+  /**
+   * Consume it once the server's own village holds it, so it can be bought again (consuming also
+   * acknowledges it). A consumed purchase is no longer listed on the device, so never consume one the
+   * device still has to deliver: acknowledge that instead.
+   */
   async consume(productId: string, token: string): Promise<void> {
     const r = await this.call(this.url(productId, token, ':consume'), 'POST');
     if (!r.ok && r.status !== 400) throw new Error(`Google Play did not consume the purchase (${r.status}).`);
+  }
+
+  /**
+   * Acknowledge a purchase the game delivers on the device (remnant audit 2026-11-06): Play keeps it
+   * from being refunded after three days, and still lists it on the device until the game consumes it
+   * after its save has landed, so a lost answer or a failed save is delivered again at the next start.
+   */
+  async acknowledge(productId: string, token: string): Promise<void> {
+    const r = await this.call(this.url(productId, token, ':acknowledge'), 'POST');
+    if (!r.ok && r.status !== 400) throw new Error(`Google Play did not acknowledge the purchase (${r.status}).`);
   }
 
   /** Refunded, charged back or cancelled purchases since `since` (the Voided Purchases API). */

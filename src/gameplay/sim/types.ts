@@ -276,6 +276,28 @@ export interface PurchaseRecord {
   at: number;
   /** What was delivered (save v16): offers scale with the Keep and storage, so a refund takes back this, not the catalog contents. */
   grants?: Cost;
+  /** Clan Stipend (save v20): the payments and Jade this purchase added to the stipend. */
+  stipend?: { payments: number; jade: number };
+  /**
+   * Season Scroll (save v20): what the premium claims made under this purchase gave (resources
+   * as granted, looks that were new), so a refund takes back the rewards and not only the track.
+   */
+  premium?: { granted: Cost; skins: string[] };
+  /** Refunded (save v20): exactly what the refund took, so a reversed refund gives back exactly that. */
+  refund?: PurchaseRefund;
+}
+
+export interface PurchaseRefund {
+  /** Resources taken (what was not there any more became a debt). */
+  took: Cost;
+  /** Stipend payments and owed Jade removed. */
+  stipend?: { payments: number; jade: number };
+  /** Looks taken back. */
+  skins: string[];
+  /** The premium Scroll was switched off (this season's). */
+  premium: boolean;
+  /** Premium tiers whose claims were cleared (so a new Scroll this season can claim them again). */
+  claimedPremium: number[];
 }
 
 export interface ActiveOffer {

@@ -1,4 +1,4 @@
-import { initLanguage } from './presentation/ui/i18n';
+import { initLanguage, t } from './presentation/ui/i18n';
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
@@ -270,6 +270,13 @@ async function boot(): Promise<void> {
         if (left > 0 && (connection.online || !connection.enabled)) recoverTimer = setTimeout(recoverPurchases, Math.min(15_000 * 2 ** recoverTry++, 15 * 60_000));
         else recoverTry = 0;
       })
+      // Refunds and reversed refunds the server knows of (remnant audit 2026-11-06).
+      .then(() => controller.settleRefunds(connection.serverVillage))
+      .then(({ revoked, reinstated }) => {
+        if (revoked) hud?.toast(t('purchase.refunded', { n: revoked }), 'info');
+        if (reinstated) hud?.toast(t('purchase.reinstated', { n: reinstated }), 'success');
+      })
+      .catch((e) => console.warn('Could not settle refunds', e))
       .finally(() => (recovering = false));
   };
   // Things the player must hear about once: a queue this device could not store (GLOBAL-010),

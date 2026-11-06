@@ -39,11 +39,13 @@ import java.util.List;
  *   uses queryPurchasesAsync, which lists every paid, unconsumed purchase.
  *
  * Every product is a one-time consumable. The server checks the purchase
- * token with the Play Developer API and consumes it once delivered; the game
- * calls `consume` only after delivery (GameController finish), and a game with
- * no server to ask relies on it. A purchase that is paid but not yet consumed is
- * listed by `unfinished`, so it is delivered on the next start or by
- * Store, Restore purchases.
+ * token with the Play Developer API. It consumes the purchase only when its own
+ * village holds it; for a village on the device it only acknowledges it (no
+ * refund after three days), and the game calls `consume` once its save holding
+ * the delivery has landed (GameController finish). A game with no server to ask
+ * relies on that too. A purchase that is paid but not yet consumed is listed by
+ * `unfinished`, so it is delivered on the next start or by Store, Restore
+ * purchases.
  */
 @CapacitorPlugin(name = "TkBilling")
 public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener {

@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -196,6 +196,14 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // v18 -> v19 (report section 5 step 8): the 28-day calendar, and the device's UTC offset for local task days
     // (none yet: task days keep UTC until the game sends the offset).
     v.calendar = v.calendar ?? { claimed: 0, lastDay: -1, cycles: 0 };
+  }
+  if (out.version < 20 && v && typeof v === 'object') {
+    // v19 -> v20 (remnant audit 2026-11-06): purchases may carry `stipend` (what a Clan Stipend added),
+    // `premium` (what a Season Scroll's premium claims gave) and `refund` (what a refund took); older
+    // ones have none and fall back to the catalog. A stipend with no payments left owes nothing: a refund
+    // used to leave its Jade here, and the next stipend paid it out on top of its own.
+    const st = v.stipend as { left?: number; jade?: number } | undefined;
+    if (st && typeof st === 'object' && !(Number(st.left) > 0) && Number(st.jade) > 0) st.jade = 0;
   }
   repairTrainingQueue(v);
   out.version = SAVE_VERSION;

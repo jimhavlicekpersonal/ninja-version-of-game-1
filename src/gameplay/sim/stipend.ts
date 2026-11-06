@@ -39,13 +39,18 @@ function nextPayment(st: StipendState): number {
   return st.left <= 1 ? Math.max(0, st.jade) : Math.floor(st.jade / st.left);
 }
 
-/** Add a bought stipend's payments. Mutates. */
-export function addStipend(state: VillageState, data: GameData): void {
+/** Add a bought stipend's payments. Mutates; returns what was added (kept on the purchase for a refund). */
+export function addStipend(state: VillageState, data: GameData): { payments: number; jade: number } | null {
   const def = data.store.stipend;
-  if (!def) return;
+  if (!def) return null;
   state.stipend = state.stipend ?? emptyStipend();
-  state.stipend.left += def.payments;
-  state.stipend.jade = (state.stipend.jade ?? 0) + def.payments * def.jadePerPayment;
+  // With no payments left nothing more is owed. A refund before save v20 left its Jade here, and the
+  // next stipend then paid it out on top of its own (remnant audit 2026-11-06).
+  if (state.stipend.left <= 0) state.stipend.jade = 0;
+  const added = { payments: def.payments, jade: def.payments * def.jadePerPayment };
+  state.stipend.left += added.payments;
+  state.stipend.jade = (state.stipend.jade ?? 0) + added.jade;
+  return added;
 }
 
 /** Claim today's payment. Mutates; returns the Jade added, or null when nothing can be claimed today. */

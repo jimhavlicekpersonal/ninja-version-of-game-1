@@ -47,18 +47,25 @@ function fakeGoogle() {
   const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
   const tokens = new Map<string, Record<string, unknown>>();
   const consumed: string[] = [];
+  const acknowledged: string[] = [];
   const voided: Record<string, unknown>[] = [];
   const fetch: Fetch = async (url, init) => {
     const ok = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body, text: async () => JSON.stringify(body) });
     if (url.startsWith('https://oauth2.googleapis.com/token')) return ok({ access_token: 'test-access', expires_in: 3600 });
     if (url.includes('/voidedpurchases')) return ok({ voidedPurchases: voided });
-    const m = /tokens\/([^:/?]+)(:consume)?$/.exec(url);
+    const m = /tokens\/([^:/?]+)(:consume|:acknowledge)?$/.exec(url);
     if (m) {
       const t = tokens.get(decodeURIComponent(m[1]));
       if (!t) return ok({ error: { code: 404 } }, 404);
-      if (m[2] && init?.method === 'POST') {
+      if (m[2] === ':consume' && init?.method === 'POST') {
         consumed.push(decodeURIComponent(m[1]));
         t.consumptionState = 1;
+        t.acknowledgementState = 1;
+        return ok({});
+      }
+      if (m[2] === ':acknowledge' && init?.method === 'POST') {
+        acknowledged.push(decodeURIComponent(m[1]));
+        t.acknowledgementState = 1;
         return ok({});
       }
       return ok(t);
@@ -66,7 +73,7 @@ function fakeGoogle() {
     return ok({}, 404);
   };
   const account = { client_email: 'play@test.iam.gserviceaccount.com', private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString() };
-  return { tokens, consumed, voided, fetch, account };
+  return { tokens, consumed, acknowledged, voided, fetch, account };
 }
 
 describe('App Store receipts (step 35)', () => {
@@ -283,6 +290,46 @@ for (const [label, makeRepo] of repoFactories) {
       expect(await w.core.pollVoided(w.now() - 86_400_000)).toBe(1);
       expect(await w.core.pollVoided(w.now() - 86_400_000)).toBe(0);
       expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones).toBe(start);
+    });
+
+    it('only acknowledges a Google purchase for a village on the device, so a lost answer is delivered again (remnant audit 2026-11-06)', async () => {
+      const { w, g } = await setup();
+      const ann = await w.player('Ann');
+      const intent = await ann.purchaseIntent({ store: 'google', productId: 'moonstones_3', under18: false });
+      g.tokens.set('token-dev-123456', { purchaseState: 0, consumptionState: 0, acknowledgementState: 0, orderId: 'GPA.3333', purchaseTimeMillis: String(w.now()), obfuscatedExternalAccountId: intent.accountToken, purchaseType: 0 });
+      const r = await ann.redeem({ store: 'google', storeProductId: 'jade_box', receipt: 'token-dev-123456' });
+      expect(r).toMatchObject({ heldOnServer: false, already: false });
+      // Acknowledged (no refund after three days), not consumed: the device still lists it until its save lands.
+      expect(g.acknowledged).toEqual(['token-dev-123456']);
+      expect(g.consumed).toEqual([]);
+      // The answer was lost; meanwhile the village moved to the server. Sent again, it is delivered there, once.
+      await ann.startVillage();
+      const before = deserialize((await ann.getVillage())!.file, data).resources.moonstones;
+      expect(await ann.redeem({ store: 'google', storeProductId: 'jade_box', receipt: 'token-dev-123456' })).toMatchObject({ heldOnServer: true, already: true });
+      expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones - before).toBe(600);
+      expect(g.consumed).toEqual(['token-dev-123456']);
+      expect(await ann.redeem({ store: 'google', storeProductId: 'jade_box', receipt: 'token-dev-123456' })).toMatchObject({ heldOnServer: true, already: true });
+      expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones - before).toBe(600);
+    });
+
+    it('refuses a receipt sent again after its refund, and gives a refunded Clan Stipend back when the refund is reversed', async () => {
+      const { w } = await setup();
+      const ann = await adult(w);
+      const stipend = data.store.stipend!;
+      const intent = await ann.purchaseIntent({ store: 'apple', productId: stipend.id, under18: false });
+      const receipt = appleTxn('clan_stipend', intent.accountToken);
+      const r = await ann.redeem({ store: 'apple', storeProductId: 'clan_stipend', receipt });
+      const village = async () => deserialize((await ann.getVillage())!.file, data);
+      expect((await village()).stipend).toMatchObject({ left: stipend.payments, jade: stipend.payments * stipend.jadePerPayment });
+      const id = r.transactionId.slice('apple:'.length);
+      const signed = (over: Record<string, unknown>) => appleTxn('clan_stipend', null, { transactionId: id, originalTransactionId: id, ...over });
+      await w.core.appleNotification({ signedPayload: jws({ notificationType: 'REFUND', notificationUUID: 's1', data: { bundleId: BUNDLE, environment: 'Sandbox', signedTransactionInfo: signed({ revocationDate: w.now() }) } }) });
+      expect((await village()).stipend).toMatchObject({ left: 0, jade: 0 });
+      // The game kept the receipt (a store that has not caught up): the server knows it was refunded.
+      await expect(ann.redeem({ store: 'apple', storeProductId: 'clan_stipend', receipt })).rejects.toMatchObject({ code: 'bad_request', message: expect.stringMatching(/refunded/) });
+      await w.core.appleNotification({ signedPayload: jws({ notificationType: 'REFUND_REVERSED', notificationUUID: 's2', data: { bundleId: BUNDLE, environment: 'Sandbox', signedTransactionInfo: signed({}) } }) });
+      expect((await village()).stipend).toMatchObject({ left: stipend.payments, jade: stipend.payments * stipend.jadePerPayment });
+      expect((await ann.purchaseHistory()).purchases[0].status).toBe('credited');
     });
 
     it('lists the stores it checks in /v1/hello, and refuses an unconfigured one before paying', async () => {

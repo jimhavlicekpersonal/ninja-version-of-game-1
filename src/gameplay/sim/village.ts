@@ -26,7 +26,7 @@ import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveR
 import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
-import type { Building, BuildingLimit, BuildingType, Cost, GameData, ResourceKind, VillageState, PendingBattle } from './types';
+import type { Building, BuildingLimit, BuildingType, Cost, GameData, PurchaseRecord, PurchaseRefund, ResourceKind, VillageState, PendingBattle } from './types';
 import { RESOURCE_KINDS } from './types';
 import { bandChangeAllowed, isAgeBand, type AgeBand } from './age';
 
@@ -79,8 +79,15 @@ export type Command =
    * paid); only an unknown product or a repeated transaction is refused.
    */
   | { type: 'grantPurchase'; productId: string; transactionId: string; verified?: boolean }
-  /** A purchase the store refunded: take back what it gave, as far as it is still there (server only). */
-  | { type: 'revokePurchase'; transactionId: string }
+  /** A purchase the store refunded: take back what it gave; what was spent becomes a debt (server, or the game from the server's purchase records). */
+  | { type: 'revokePurchase'; transactionId: string; economy?: boolean }
+  /**
+   * A refund the store reversed (the player paid after all): give back exactly what the refund took.
+   * Both refund commands take `economy: false` when the game applies them to a village the server keeps:
+   * the server already changed the resources, so only what its economy does not carry changes here
+   * (the stipend, the Season Scroll, looks).
+   */
+  | { type: 'reinstatePurchase'; transactionId: string; economy?: boolean }
   /** Staff add or take resources (support; the admin tool, server only). Never below zero. */
   | { type: 'staffAdjust'; resources: Partial<Record<ResourceKind, number>> }
   /**
@@ -526,7 +533,7 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
     }
   }
   const spent = moonBefore - s.resources.moonstones;
-  if (spent > 0 && cmd.type !== 'grantPurchase' && cmd.type !== 'revokePurchase' && cmd.type !== 'staffAdjust') {
+  if (spent > 0 && cmd.type !== 'grantPurchase' && cmd.type !== 'revokePurchase' && cmd.type !== 'reinstatePurchase' && cmd.type !== 'staffAdjust') {
     s.stats.moonstonesSpent += spent;
     events.push({ kind: 'moonstone_spend', what: cmd.type === 'place' ? cmd.buildingType : cmd.type, moonstones: spent });
   }
@@ -600,7 +607,9 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'grantPurchase':
       return grantPurchase(s, cmd.productId, cmd.transactionId, now, data, cmd.verified === true);
     case 'revokePurchase':
-      return revokePurchase(s, cmd.transactionId, now, data);
+      return revokePurchase(s, cmd.transactionId, now, data, cmd.economy !== false);
+    case 'reinstatePurchase':
+      return reinstatePurchase(s, cmd.transactionId, now, data, cmd.economy !== false);
     case 'staffAdjust':
       for (const [k, v] of Object.entries(cmd.resources) as [ResourceKind, number][]) {
         if (!(k in s.resources) || !Number.isFinite(v)) return fail('NOT_FOUND', 'Unknown resource.');
@@ -927,9 +936,14 @@ function grantPurchase(s: VillageState, productId: string, transactionId: string
   if (!product) return fail('PURCHASE_REFUSED', 'That item is not available.');
   // What this village gets now: offers scale with the Keep and never stockpile above storage (productGrantsFor).
   const grants = productGrantsFor(s, productId, data)?.grants ?? { ...product.grants };
-  s.purchases.push({ id: transactionId, productId, usd: product.usd, at: now, grants: { ...grants } });
-  if (product.kind === 'stipend') addStipend(s, data);
+  const record: PurchaseRecord = { id: transactionId, productId, usd: product.usd, at: now, grants: { ...grants } };
+  s.purchases.push(record);
+  if (product.kind === 'stipend') {
+    const added = addStipend(s, data);
+    if (added) record.stipend = added;
+  }
   if (product.kind === 'pass') {
+    record.premium = { granted: {}, skins: [] };
     s.pass.premium = true;
     s.pass.season = passSeason(now, data);
   }
@@ -948,22 +962,109 @@ function grantPurchase(s: VillageState, productId: string, transactionId: string
  * Scroll if it was this season's. What was already spent becomes a debt (a
  * negative balance, paid back from income before anything can be bought with
  * it). The purchase stays listed so the same transaction can never be
- * delivered again.
+ * delivered again, and keeps what the refund took (`refund`), so a reversed
+ * refund gives back exactly that and a second refund takes nothing.
+ *
+ * Remnant audit (2026-11-06): a Clan Stipend refund used to cancel only the
+ * payments still waiting (claimed Jade stayed, and the Jade still owed paid out
+ * with the next stipend), and a Season Scroll refund only switched the track
+ * off (claimed premium rewards and the Scroll-only look stayed).
  */
-function revokePurchase(s: VillageState, transactionId: string, now: number, data: GameData): CommandResult {
+function revokePurchase(s: VillageState, transactionId: string, now: number, data: GameData, economy = true): CommandResult {
+  const p = s.purchases.find((x) => x.id === transactionId);
+  if (!p) return fail('NOT_FOUND', 'No such purchase in this village.');
+  if (p.refund) return fail('ALREADY_CLAIMED', 'This purchase was already refunded.');
+  const product = productInfo(data, p.productId);
+  if (!product) return { ok: true, state: s, events: [] };
+  const took: Cost = {};
+  const take = (k: ResourceKind, v: number) => {
+    if (!(v > 0)) return;
+    if (economy) s.resources[k] -= v;
+    took[k] = (took[k] ?? 0) + v;
+  };
+  // Save v16: a purchase keeps what it really delivered (offers scale with the Keep); older ones had the catalog contents.
+  // Re-audit: refunded Jade that was already spent becomes a debt (a negative balance). Ledger audit A5:
+  // every resource does. An offer's coins and rice were spent on an upgrade within seconds, and taking
+  // back only what was left gave a free upgrade per refund (save v17).
+  for (const [k, v] of Object.entries(p.grants ?? product.grants) as [ResourceKind, number][]) take(k, v);
+  const refund: PurchaseRefund = { took, skins: [], premium: false, claimedPremium: [] };
+  if (product.kind === 'stipend') {
+    // What this purchase added (save v20), else what a stipend adds now. Payments still waiting go first, with
+    // the Jade they owe; Jade this purchase owed that was already claimed is taken back like other Jade.
+    const def = data.store.stipend;
+    const sold = p.stipend ?? { payments: def?.payments ?? 0, jade: (def?.payments ?? 0) * (def?.jadePerPayment ?? 0) };
+    const st = (s.stipend = s.stipend ?? emptyStipend());
+    const payments = Math.min(Math.max(0, st.left), sold.payments);
+    const owed = Math.min(Math.max(0, st.jade), sold.jade);
+    st.left -= payments;
+    st.jade -= owed;
+    if (st.left <= 0) {
+      st.left = 0;
+      st.jade = 0;
+    }
+    refund.stipend = { payments, jade: owed };
+    take('moonstones', sold.jade - owed);
+  }
+  if (product.kind === 'pass') {
+    // Claims made under this purchase (save v20): their resources become a debt, looks that came with them go.
+    for (const [k, v] of Object.entries(p.premium?.granted ?? {}) as [ResourceKind, number][]) take(k, v);
+    for (const skin of p.premium?.skins ?? []) {
+      if (!s.cosmetics.owned.includes(skin)) continue;
+      s.cosmetics.owned = s.cosmetics.owned.filter((x) => x !== skin);
+      refund.skins.push(skin);
+    }
+    if (refund.skins.includes(s.cosmetics.hallSkin)) s.cosmetics.hallSkin = data.cosmetics.hallSkins[0]?.id ?? 'classic';
+    if (passSeason(p.at, data) === passSeason(now, data) && s.pass.season === passSeason(now, data)) {
+      refund.premium = s.pass.premium;
+      s.pass.premium = false;
+      // Taken back, so a Scroll bought again this season can claim them again (older records: kept claimed).
+      if (p.premium) {
+        refund.claimedPremium = [...s.pass.claimedPremium];
+        s.pass.claimedPremium = [];
+      }
+    }
+  }
+  p.refund = refund;
+  return { ok: true, state: s, events: [] };
+}
+
+/**
+ * A refund the store reversed: give back what `revokePurchase` took (a debt is
+ * paid back first, simply by adding), the stipend payments, the looks and, in
+ * the same season, the premium track and its claims. A purchase refunded before
+ * save v20 has no record of what was taken: it gets its grants back, its
+ * stipend payments, and the premium track if it is still that season.
+ */
+function reinstatePurchase(s: VillageState, transactionId: string, now: number, data: GameData, economy = true): CommandResult {
   const p = s.purchases.find((x) => x.id === transactionId);
   if (!p) return fail('NOT_FOUND', 'No such purchase in this village.');
   const product = productInfo(data, p.productId);
   if (!product) return { ok: true, state: s, events: [] };
-  // Save v16: a purchase keeps what it really delivered (offers scale with the Keep); older ones had the catalog contents.
-  if (product.kind === 'stipend') s.stipend.left = Math.max(0, (s.stipend?.left ?? 0) - (data.store.stipend?.payments ?? 0));
-  for (const [k, v] of Object.entries(p.grants ?? product.grants) as [ResourceKind, number][]) {
-    // Re-audit: refunded Jade that was already spent becomes a debt (a negative balance). Ledger audit A5:
-    // every resource does. An offer's coins and rice were spent on an upgrade within seconds, and taking
-    // back only what was left gave a free upgrade per refund (save v17).
-    if (v > 0) s.resources[k] -= v;
+  const sameSeason = passSeason(p.at, data) === passSeason(now, data) && s.pass.season === passSeason(now, data);
+  const r = p.refund;
+  if (r) {
+    if (economy) for (const [k, v] of Object.entries(r.took) as [ResourceKind, number][]) if (v > 0) s.resources[k] += v;
+    if (r.stipend && (r.stipend.payments > 0 || r.stipend.jade > 0)) {
+      const st = (s.stipend = s.stipend ?? emptyStipend());
+      if (st.left <= 0) st.jade = 0;
+      st.left += r.stipend.payments;
+      st.jade += r.stipend.jade;
+    }
+    for (const skin of r.skins) if (!s.cosmetics.owned.includes(skin)) s.cosmetics.owned.push(skin);
+    if (r.premium && sameSeason) {
+      s.pass.premium = true;
+      for (const t of r.claimedPremium) if (!s.pass.claimedPremium.includes(t)) s.pass.claimedPremium.push(t);
+    }
+    delete p.refund;
+    return { ok: true, state: s, events: [] };
   }
-  if (product.kind === 'pass' && passSeason(p.at, data) === passSeason(now, data)) s.pass.premium = false;
+  // Refunded before save v20: what the old refund took.
+  if (economy) for (const [k, v] of Object.entries(p.grants ?? product.grants) as [ResourceKind, number][]) if (v > 0) s.resources[k] += v;
+  if (product.kind === 'stipend') {
+    const st = (s.stipend = s.stipend ?? emptyStipend());
+    st.left += data.store.stipend?.payments ?? 0;
+  }
+  if (product.kind === 'pass' && sameSeason) s.pass.premium = true;
   return { ok: true, state: s, events: [] };
 }
 
@@ -1095,7 +1196,18 @@ function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', dat
   const list = track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium;
   if (list.includes(tier)) return fail('ALREADY_CLAIMED', 'Already claimed.');
   list.push(tier);
-  const { granted, overflow } = grantReward(s, passTierReward(s, tier, track, data)!, data);
+  const reward = passTierReward(s, tier, track, data)!;
+  const newSkin = reward.skin && !s.cosmetics.owned.includes(reward.skin) ? reward.skin : null;
+  const { granted, overflow } = grantReward(s, reward, data);
+  if (track === 'premium') {
+    // Kept on this season's Scroll purchase (save v20), so a refund can take the rewards back.
+    const bought = [...s.purchases].reverse().find((p) => p.productId === data.pass.productId && !p.refund && passSeason(p.at, data) === s.pass.season);
+    if (bought) {
+      const kept = (bought.premium = bought.premium ?? { granted: {}, skins: [] });
+      for (const [k, v] of Object.entries(granted) as [ResourceKind, number][]) if (v > 0) kept.granted[k] = (kept.granted[k] ?? 0) + v;
+      if (newSkin) kept.skins.push(newSkin);
+    }
+  }
   return { ok: true, state: s, events: [{ kind: 'reward', source: `pass:${track}:${tier}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) }] };
 }
 

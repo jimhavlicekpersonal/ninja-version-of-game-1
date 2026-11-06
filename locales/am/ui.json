@@ -97,5 +97,7 @@
   "war.relay": { "en": " · relay: {n, plural, one {# strike so far} other {# strikes so far}} ({stars} {pct}%, last by {by})", "text": "" },
   "raid.endsAttacks": { "en": "{n, plural, one {Ends in {time} · You have # attack left.} other {Ends in {time} · You have # attacks left.}}", "text": "" },
   "unlocks.capped": { "en": "{n, plural, one {higher levels for # building} other {higher levels for # buildings}}", "text": "" },
-  "player.summary": { "en": "{n, plural, one {Clan Keep {keep} · # warrior · {honor} honor} other {Clan Keep {keep} · # warriors · {honor} honor}}", "text": "" }
+  "player.summary": { "en": "{n, plural, one {Clan Keep {keep} · # warrior · {honor} honor} other {Clan Keep {keep} · # warriors · {honor} honor}}", "text": "" },
+  "purchase.refunded": { "en": "{n, plural, one {The store refunded a purchase, so what it gave was taken back. Anything already spent shows as a negative balance that your income pays back.} other {The store refunded # purchases, so what they gave was taken back. Anything already spent shows as a negative balance that your income pays back.}}", "text": "" },
+  "purchase.reinstated": { "en": "{n, plural, one {A refund was reversed: your purchase is back.} other {# refunds were reversed: your purchases are back.}}", "text": "" }
 }

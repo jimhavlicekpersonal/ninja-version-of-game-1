@@ -139,8 +139,11 @@ interface Checked {
   storefront: string | null;
   currency: string | null;
   priceMicros: number | null;
-  /** Google: consume once credited. */
-  finish: (() => Promise<void>) | null;
+  /**
+   * Google: consume once the server's village holds it (`held`); otherwise only acknowledge it, so the
+   * device still sees it until its own save has landed and it consumes it (remnant audit 2026-11-06).
+   */
+  finish: ((held: boolean) => Promise<void>) | null;
 }
 
 async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: string, receipt: unknown): Promise<Checked> {
@@ -162,7 +165,7 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
       storefront: p.regionCode,
       currency: null,
       priceMicros: null,
-      finish: p.consumed ? null : () => google.consume(p.productId, p.purchaseToken),
+      finish: p.consumed ? null : (held) => (held ? google.consume(p.productId, p.purchaseToken) : p.acknowledged ? Promise.resolve() : google.acknowledge(p.productId, p.purchaseToken)),
     };
   } catch (e) {
     if (e instanceof PurchaseError) throw new ApiError(400, 'bad_request', e.message);
@@ -170,13 +173,13 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
   }
 }
 
-async function finish(ctx: ServerContext, c: Checked): Promise<void> {
+async function finish(ctx: ServerContext, c: Checked, held: boolean): Promise<void> {
   if (!c.finish) return;
   try {
-    await c.finish();
+    await c.finish(held);
   } catch (e) {
-    // The game sends the receipt again until it is finished; the next try consumes it.
-    ctx.log('warn', 'purchase not consumed', { store: c.store, transactionId: c.transactionId, error: (e as Error).message });
+    // The game sends the receipt again until it is finished; the next try consumes or acknowledges it.
+    ctx.log('warn', held ? 'purchase not consumed' : 'purchase not acknowledged', { store: c.store, transactionId: c.transactionId, error: (e as Error).message });
   }
 }
 
@@ -219,8 +222,26 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
   const known = await ctx.repo.getPurchase(store, c.transactionId);
   if (known) {
     const out = answer(known, true);
-    await finish(ctx, c);
-    return out;
+    if (known.status === 'refunded') {
+      ctx.metrics.count('tk_refused_total', { reason: 'refunded_before_delivery' });
+      throw new ApiError(400, 'bad_request', 'This purchase was refunded.');
+    }
+    // Credited for a village on the device that has since moved here: the device may never have
+    // delivered it (a lost answer, a failed save), so the server's village gets it now unless the move
+    // brought it along (remnant audit 2026-11-06).
+    let held = known.heldOnServer;
+    if (!held) {
+      held = await ctx.repo.transaction(async (tx) => {
+        await tx.lockPurchases(me.id);
+        if (!(await tx.getVillage(me.id))) return false;
+        const id = villageId(store, known.transactionId);
+        const r = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'grantPurchase', productId: known.productId, transactionId: id, verified: true }, reason: `purchase:${store}` }], id);
+        if (r && !r.ok) ctx.log('info', 'purchase already in the village', { store, transactionId: known.transactionId });
+        return true;
+      });
+    }
+    await finish(ctx, c, held);
+    return { ...out, heldOnServer: held };
   }
   const now = ctx.now();
   // Re-audit: Sandbox/test purchases cost nothing; on production only a small total is credited per player
@@ -271,7 +292,7 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     return answer(row, false);
   });
   if (!result.already) ctx.metrics.count('tk_purchases_total', { store, environment: c.environment });
-  await finish(ctx, c);
+  await finish(ctx, c, result.heldOnServer);
   return result;
 }
 
@@ -305,8 +326,10 @@ export async function revoke(ctx: ServerContext, store: PurchaseStore, find: { t
 }
 
 /**
- * A refund was reversed (re-audit): the record counts again and a server-held village gets back what
- * the refund took (the same grants, ledger `refund-reversed:<store>`). Idempotent with the status.
+ * A refund was reversed (re-audit): the record counts again and a server-held village gets back exactly
+ * what the refund took (`reinstatePurchase`: resources, stipend payments, looks, this season's premium
+ * track; ledger `refund-reversed:<store>`). A village that does not hold the purchase gets its catalog
+ * contents, as before. Idempotent with the status.
  */
 export async function reinstate(ctx: ServerContext, store: PurchaseStore, transactionId: string): Promise<boolean> {
   const row = await ctx.repo.getPurchase(store, transactionId);
@@ -314,13 +337,15 @@ export async function reinstate(ctx: ServerContext, store: PurchaseStore, transa
   return ctx.repo.transaction(async (tx) => {
     if (!(await tx.setPurchaseStatus(store, transactionId, 'credited', ctx.now()))) return false;
     const player = await tx.getPlayer(row.playerId);
-    // What the purchase really delivered (the village keeps it on the record), else the catalog contents.
-    const held = player ? await tx.getVillage(player.id) : null;
-    const recorded = held ? deserialize(held.file, ctx.data).purchases.find((p) => p.id === villageId(store, transactionId))?.grants : undefined;
-    const grants = recorded ?? productInfo(ctx.data, row.productId)?.grants ?? {};
-    const resources = Object.fromEntries(Object.entries(grants).filter(([, v]) => (v ?? 0) > 0)) as Record<string, number>;
-    if (player && Object.keys(resources).length) {
-      await applyServerResult(tx, ctx, player, [{ cmd: { type: 'staffAdjust', resources }, reason: `refund-reversed:${store}` }], villageId(store, transactionId));
+    if (!player) return true;
+    const reason = `refund-reversed:${store}`;
+    const id = villageId(store, transactionId);
+    const r = await applyServerResult(tx, ctx, player, [{ cmd: { type: 'reinstatePurchase', transactionId: id }, reason }], id);
+    if (r && !r.ok) {
+      // The village never had this purchase (delivered before it moved here): give the catalog contents.
+      const grants = productInfo(ctx.data, row.productId)?.grants ?? {};
+      const resources = Object.fromEntries(Object.entries(grants).filter(([, v]) => (v ?? 0) > 0)) as Record<string, number>;
+      if (Object.keys(resources).length) await applyServerResult(tx, ctx, player, [{ cmd: { type: 'staffAdjust', resources }, reason }], id);
     }
     return true;
   });

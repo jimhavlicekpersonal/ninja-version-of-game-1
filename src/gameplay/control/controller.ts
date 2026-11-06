@@ -419,6 +419,32 @@ export class GameController {
   }
 
   /**
+   * Bring the server's refund decisions into this village (remnant audit 2026-11-06): a purchase the
+   * server lists as refunded is taken back once (`revokePurchase`), and one whose refund was reversed
+   * is given back (`reinstatePurchase`). A village on the device had no other way to hear of a refund.
+   * For a village the server keeps (`serverHoldsEconomy`) the server already changed the resources,
+   * so only the stipend, the Season Scroll and looks change here. Call on start and on reconnection.
+   */
+  async settleRefunds(serverHoldsEconomy: boolean): Promise<{ revoked: number; reinstated: number }> {
+    const verifier = this.purchaseVerifier();
+    let revoked = 0;
+    let reinstated = 0;
+    if (!verifier) return { revoked, reinstated };
+    const economy = serverHoldsEconomy ? false : undefined;
+    for (const h of await verifier.history().catch(() => [])) {
+      const rec = this.state.purchases.find((p) => p.id === h.transactionId);
+      if (!rec) continue;
+      if (h.status === 'refunded' && !rec.refund) {
+        if (this.dispatch({ type: 'revokePurchase', transactionId: rec.id, economy }).ok) revoked++;
+      } else if (h.status === 'credited' && rec.refund) {
+        if (this.dispatch({ type: 'reinstatePurchase', transactionId: rec.id, economy }).ok) reinstated++;
+      }
+    }
+    if (revoked || reinstated) await this.save();
+    return { revoked, reinstated };
+  }
+
+  /**
    * Finish any timers that have ended, and settle what the clock rolled over
    * (a new task day, a finished league season). Call this a few times a second.
    */
