@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "kind": "physical_zip_measurement",
+  "archive": "/tmp/kagemura-spanish-text.zip",
+  "file_count": 11,
+  "raw_source_bytes": 268679,
+  "zip_bytes": 92317,
+  "sha256": "179c302a206863429903a6cc2de2e153859bc71699542fecc1d56de4b6747876",
+  "method": "Node deflateRawSync level 9; standard ZIP local and central headers; fixed timestamps; no extra fields/comments",
+  "runtime": "v24.22.1",
+  "compression": "1.3.2.1-motley-285e94b",
+  "not_native_package": true
+}

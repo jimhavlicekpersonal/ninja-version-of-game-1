@@ -10,6 +10,13 @@ An original ninja-clan base-building and raiding game. You lead a clan, build a 
 
 ## Compartments (each has its own CLAUDE.md)
 
+**Complete translation scope:** read [`docs/localization/README.md`](docs/localization/README.md)
+and query its `INVENTORY.json` for every player-visible surface, source locations, ownership,
+ordered implementation steps and completion gates. Its primary baseline is newer than this
+checkout and includes the partial text layer; it also records checkout-only strings. Existing
+worksheet counts are not whole-game translation coverage. No localization step is marked done
+merely by adding this inventory.
+
 | Section | Folder | Brief |
 |---|---|---|
 | 1. Art, GUI, animation | `src/presentation/art`, `audio` / `render`, `ui` | `src/presentation/art/CLAUDE.md`, `src/presentation/CLAUDE.md` |

@@ -81,8 +81,11 @@ ninja,clan,village,strategy,base builder,raid,defense,tower,shinobi,war,alliance
 | Under-18 spending limit | `store.json` `minorMonthlyCapUsd` | Age-appropriate social protections beyond that (audit R07), until the fix release with the age screen ships; even then do not claim age verification (the age band is self-declared) |
 | Lantern Festival Keep look | `cosmetics.json` (`name: "Lantern Festival"`) | "Lantern Elder look": the in-game Store text (`ui/economyUi.ts`, Season Scroll card and premium-track row) still says this and must be changed to "Lantern Festival" before screenshots are taken |
 | — | — | **Offline play** as a selling point: with a server, the village moves there on connection and raids, Alliances, friends and purchases need a connection (audit R01) |
-| — | — | **Languages**: the game is English only today (`locales/` worksheets are not read by the game yet). List English only and keep screenshots in English |
+| — | — | **Languages**: English and Spanish have complete runtime catalogs in the current implementation. Spanish copy is in `docs/store/es/`, with validation and limits in `docs/localization/SPANISH_IMPLEMENTATION.json`. Do not list the other 48 target languages; their worksheets are incomplete |
 
 ## Screenshots
 
 `npm run build && npm run store:screenshots` writes the village, Army, Store and Alliance screens at iPhone 6.9" and 6.5", iPad 13" and Android phone sizes. It starts a fresh sandbox village; for richer shots, load a played save first or take them on a device. Crop or retake the Store shot: it shows the sandbox note, which is not in the store build. App Store: 3 to 10 per size. Play: 2 to 8 phone screenshots plus a 1024×500 feature graphic (make it from the brand art, `npm run brand -- --svg`).
+
+
+Spanish release copy and product metadata: [es/LISTING.md](es/LISTING.md), [es/PRODUCTS.json](es/PRODUCTS.json). The localized public links use `/es/`; the server account form accepts `?lang=es`. Uploading store text/products and validating real storefront screens remain release steps.

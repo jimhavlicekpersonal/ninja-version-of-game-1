@@ -1,4 +1,8 @@
-import { t } from './i18n';
+import { messageText as ownedError } from './i18n';
+import { listText as i18nList } from './i18n';
+import { displayData as localizedData, labelText as i18nLabel } from './i18n';
+import { t as i18nText } from './i18n';
+import { language, t } from './i18n';
 import type { GameController } from '../../gameplay/control/controller';
 import { achievementViews } from '../../gameplay/sim/achievements';
 import { activeOffers, offerReturns, offerRule, offersAllowed } from '../../gameplay/sim/offers';
@@ -30,7 +34,7 @@ export interface UiKit {
   skinThumb?(skin: string): string | null;
 }
 
-const usd = (n: number) => `$${n.toFixed(2)}`;
+const usd = (n: number) => new Intl.NumberFormat(language().code, { style: 'currency', currency: 'USD' }).format(n);
 /** The device's language is Japanese (the purchase confirm then links the Japanese notices). */
 function japaneseDevice(): boolean {
   try {
@@ -61,9 +65,9 @@ export class EconomyUi {
     this.c = kit.c;
   }
 
-  private skinName = (id: string) => this.c.data.cosmetics.hallSkins.find((s) => s.id === id)?.name ?? id;
+  private skinName = (id: string) => localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.id === id)?.name ?? id;
   /** The pass-only Keep look, by its data name (it was hard-coded as "Lantern Elder"; the data calls it Lantern Festival). */
-  private passLookName = () => this.c.data.cosmetics.hallSkins.find((s) => s.passOnly)?.name ?? 'season';
+  private passLookName = () => localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.passOnly)?.name ?? 'season';
 
   /**
    * Prices as this device's store shows them (GLOBAL-007), keyed by store
@@ -86,7 +90,7 @@ export class EconomyUi {
     const pay = this.c.payments;
     if (!pay.prices || !pay.available() || this.storePrices === 'loading' || this.pricesComplete || this.pricesAskedBy === redraw) return;
     this.pricesAskedBy = redraw;
-    const d = this.c.data;
+    const d = localizedData(this.c.data);
     const ids = [...new Set([...d.store.packs.map((p) => p.id), d.pass.productId, ...d.offers.rules.map((o) => o.productId), ...(d.store.stipend ? [d.store.stipend.id] : [])].map((id) => storeProductId(d, id)))];
     // A partial answer stays on screen while the store is asked again.
     if (this.storePrices === null || this.storePrices === 'failed') this.storePrices = 'loading';
@@ -107,15 +111,15 @@ export class EconomyUi {
   /** What a real-money button says, and whether it can be bought here. */
   private price(productId: string): { label: string; buyable: boolean } {
     const pay = this.c.payments;
-    const p = productInfo(this.c.data, productId);
-    if (!p || !pay.available()) return { label: 'Not available', buyable: false };
+    const p = productInfo(localizedData(this.c.data), productId);
+    if (!p || !pay.available()) return { label: i18nText("ui.not_available_67a926f700"), buyable: false };
     // The sandbox test store charges nothing: its numbers are the catalog's, marked as tests.
-    if (!pay.prices) return pay.name === 'mock' ? { label: `${usd(p.usd)} (test)`, buyable: true } : { label: 'Not available', buyable: false };
+    if (!pay.prices) return pay.name === 'mock' ? { label: i18nText("ui.test_7394a4113a", { arg1: usd(p.usd) }), buyable: true } : { label: i18nText("ui.not_available_67a926f700"), buyable: false };
     const sp = this.storePrices;
     if (sp === null || sp === 'loading') return { label: '…', buyable: false };
-    if (sp === 'failed') return { label: 'Price unavailable', buyable: false };
-    const found = sp[storeProductId(this.c.data, productId)];
-    return found ? { label: found.formatted, buyable: true } : { label: 'Not sold here', buyable: false };
+    if (sp === 'failed') return { label: i18nText("ui.price_unavailable_6a9e657bba"), buyable: false };
+    const found = sp[storeProductId(localizedData(this.c.data), productId)];
+    return found ? { label: found.formatted, buyable: true } : { label: i18nText("ui.not_sold_here_a8410f6905"), buyable: false };
   }
 
   private buyButton(productId: string, cls: string, after?: () => void): HTMLElement {
@@ -132,7 +136,7 @@ export class EconomyUi {
    */
   private async ensureAge(): Promise<boolean> {
     if (this.c.state.profile.under18 !== null) return true;
-    const why = 'Before your first purchase, please enter your year of birth. It sets the right spending protections for your age.';
+    const why = i18nText("ui.before_your_first_purchase_please_ente_c039408f27");
     const band = this.kit.askAge ? await this.kit.askAge(why) : await askAgeBand(this.kit, why);
     if (!band) return false;
     return this.c.dispatch({ type: 'setProfile', under18: band !== 'adult', ageBand: band }).ok;
@@ -141,59 +145,59 @@ export class EconomyUi {
   /** Full purchase flow: age group, clear confirm step, provider, result. */
   async buy(productId: string): Promise<void> {
     if (!(await this.ensureAge())) return;
-    const p = productInfo(this.c.data, productId);
+    const p = productInfo(localizedData(this.c.data), productId);
     if (!p) return;
     const pr = this.price(productId);
     if (!pr.buyable) return;
     // Player-facing names, never internal resource ids (GLOBAL-007).
     // What buying it now really delivers (offers are sized for the Keep and storage-capped: productGrantsFor).
-    const real = productGrantsFor(this.c.state, productId, this.c.data);
-    const contents = Object.entries(real?.grants ?? p.grants).filter(([, v]) => v).map(([k, v]) => `${formatNumber(v as number)} ${RES_NAME[k as ResourceKind] ?? k}`).join(', ');
-    const st = this.c.data.store.stipend;
+    const real = productGrantsFor(this.c.state, productId, localizedData(this.c.data));
+    const contents = Object.entries(real?.grants ?? p.grants).filter(([, v]) => v).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(v as number), arg2: RES_NAME[k as ResourceKind] ?? k })).join(', ');
+    const st = localizedData(this.c.data).store.stipend;
     const what = p.kind === 'stipend' && st
-      ? `${p.name}: ${st.payments} daily payments of ${st.jadePerPayment} Jade, claimed one a day when you open the game. It does not renew and nothing is charged again.`
-      : p.kind === 'pass' ? `${p.name}: premium rewards and 20% faster builds until the season ends (${this.seasonEndsText()}).` : `${p.name}${contents ? `: ${contents}` : ''}.`;
-    const note = this.c.payments.prices ? ' The store shows the final price, including any taxes, before you pay.' : '';
+      ? i18nText("ui.daily_payments_of_jade_claimed_one_a_d_18cf83dd7e", { arg1: p.name, arg2: st.payments, arg3: st.jadePerPayment })
+      : p.kind === 'pass' ? i18nText("ui.premium_rewards_and_20_faster_builds_u_f67e337b8e", { arg1: p.name, arg2: this.seasonEndsText() }) : `${p.name}${contents ? i18nText("ui.message_463d2c3dd0", { arg1: contents }) : ''}.`;
+    const note = this.c.payments.prices ? i18nText("ui.the_store_shows_the_final_price_includ_238d3d7f09") : '';
     // EU/UK digital content (re-audit design item 13): delivery starts at once, so the player acknowledges the loss of
     // the 14-day right to cancel before paying. Japanese devices also get the legally required notices.
     const message = h(
       'div',
       { class: 'purchase-confirm' },
-      h('p', {}, `${what} Price: ${pr.label}.${note}`),
-      h('p', { class: 'muted small withdrawal' }, 'The item is delivered at once; by buying you agree that you lose the right to cancel, as the law allows for digital content.'),
+      h('p', {}, i18nText("ui.price_8c7a15f4eb", { arg1: what, arg2: pr.label, arg3: note })),
+      h('p', { class: 'muted small withdrawal' }, i18nText("ui.the_item_is_delivered_at_once_by_buyin_2f987c8cb3")),
       japaneseDevice()
         ? h('p', { class: 'small legal-ja', lang: 'ja' }, this.legalLink('特定商取引法に基づく表記', './tokushoho.html'), ' · ', this.legalLink('資金決済法に基づく表示', './shikin-kessai.html'))
         : null,
     );
-    const ok = await this.kit.confirm('Confirm purchase', message, `Buy for ${pr.label}`, false, 'Cancel');
+    const ok = await this.kit.confirm(i18nText("ui.confirm_purchase_9f1c387f5d"), message, i18nText("ui.buy_for_95b444e01e", { arg1: pr.label }), false, i18nText("ui.cancel_19766ed6cc"));
     if (!ok) return;
     if (this.c.state.profile.under18) {
-      const ok2 = await this.kit.confirm('Check with a grown-up', `You are about to spend ${pr.label} of real money. Make sure a parent or guardian says it's OK.`, 'Yes, buy it', false, 'Cancel');
+      const ok2 = await this.kit.confirm(i18nText("ui.check_with_a_grown_up_360b51a009"), i18nText("ui.you_are_about_to_spend_of_real_money_m_25c38551fa", { arg1: pr.label }), i18nText("ui.yes_buy_it_4829fa5850"), false, i18nText("ui.cancel_19766ed6cc"));
       if (!ok2) return;
     }
     const r = await this.c.purchase(productId);
-    if (r.ok && r.unsaved) this.kit.toast('Your purchase is here, but this device could not save it (storage full?). Free some space: it stays open in the store and is delivered again if needed.', 'error');
-    else if (r.ok) this.kit.toast('Thank you! Your purchase has been delivered.', 'success');
+    if (r.ok && r.unsaved) this.kit.toast(i18nText("ui.your_purchase_is_here_but_this_device__e9f1afc3af"), 'error');
+    else if (r.ok) this.kit.toast(i18nText("ui.thank_you_your_purchase_has_been_deliv_7e995803ae"), 'success');
     else this.kit.toast(r.message, r.code === 'PENDING' || r.code === 'pending' ? 'info' : 'error');
   }
 
   /** A shipped legal page: a new tab on the web, a frame inside the app (a system browser can't open a bundled page). */
   private legalLink(label: string, url: string): HTMLElement {
     if (Capacitor.isNativePlatform()) {
-      return h('button', { class: 'link-btn', type: 'button', onclick: () => this.kit.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, label);
+      return h('button', { class: 'link-btn', type: 'button', onclick: () => this.kit.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, i18nLabel(label));
     }
-    return h('a', { href: url, target: '_blank', rel: 'noopener' }, label);
+    return h('a', { href: url, target: '_blank', rel: 'noopener' }, i18nLabel(label));
   }
 
   /** Confirm a Moonstone spend, then run it. */
   async spendMoonstones(title: string, what: string, moonstones: number, run: () => boolean): Promise<void> {
     if (this.c.state.resources.moonstones < moonstones) {
-      const go = await this.kit.confirm('Not enough Jade', `${what} costs ${moonstones} Jade and you have ${this.c.state.resources.moonstones}.`, 'Visit the store', false, 'Not now');
+      const go = await this.kit.confirm(i18nText("ui.not_enough_jade_0209424a79"), i18nText("ui.costs_jade_and_you_have_a0f0c4813d", { arg1: what, arg2: moonstones, arg3: this.c.state.resources.moonstones }), i18nText("ui.visit_the_store_f4a400762a"), false, i18nText("ui.not_now_a0e63d7c71"));
       if (go) this.openStore('moonstones');
       return;
     }
-    const ok = await this.kit.confirm(title, `${what} for ${moonstones} Jade?`, `Spend ${moonstones}`, false, 'Cancel');
-    if (ok && !run()) this.kit.toast('That did not work. Try again.', 'error');
+    const ok = await this.kit.confirm(title, i18nText("ui.for_jade_e82ccb5ba3", { arg1: what, arg2: moonstones }), i18nText("ui.spend_f1b31dbc4d", { arg1: moonstones }), false, i18nText("ui.cancel_19766ed6cc"));
+    if (ok && !run()) this.kit.toast(i18nText("ui.that_did_not_work_try_again_d38eba7d01"), 'error');
   }
 
   // ------------------------------------------------------------ store
@@ -204,10 +208,10 @@ export class EconomyUi {
     let current = tab;
     const draw = () => {
       clear(body);
-      const tabs: [typeof current, string][] = [['moonstones', 'Jade'], ['offers', `Offers${activeOffers(this.c.state, this.c.now()).length ? ' •' : ''}`], ['pass', this.c.data.pass.name], ['looks', 'Looks']];
+      const tabs: [typeof current, string][] = [['moonstones', 'Jade'], ['offers', `${i18nLabel('Offers')}${activeOffers(this.c.state, this.c.now()).length ? ' •' : ''}`], ['pass', localizedData(this.c.data).pass.name], ['looks', 'Looks']];
       body.append(
         h('div', { class: 'shop-tabs' }, ...tabs.map(([id, label]) => {
-          const b = h('button', { type: 'button', class: id === current ? 'on' : '' }, label);
+          const b = h('button', { type: 'button', class: id === current ? 'on' : '' }, i18nLabel(label));
           b.addEventListener('click', () => {
             current = id;
             draw();
@@ -224,24 +228,24 @@ export class EconomyUi {
       else if (current === 'pass') body.append(this.passProduct(draw));
       else body.append(this.looksGrid(draw));
       this.loadPrices(draw);
-      if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, 'Sandbox test store: purchases complete instantly, no real money is charged, and nothing leaves this practice village.'));
-      else if (!this.c.payments.available()) body.append(h('p', { class: 'muted small store-note' }, 'Purchases are not available in this version of the game. Jade can also be earned by playing; the premium Season Scroll and its looks are only sold.'));
-      else if (this.storePrices === 'failed') body.append(h('p', { class: 'muted small store-note' }, 'The store could not be reached for prices. Check your connection and open the Store again.'));
+      if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.sandbox_test_store_purchases_complete__c4b42410c2")));
+      else if (!this.c.payments.available()) body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.purchases_are_not_available_in_this_ve_15307f1254")));
+      else if (this.storePrices === 'failed') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.the_store_could_not_be_reached_for_pri_867d731094")));
       if (this.c.payments.store && this.c.payments.available()) {
         // App Store rule: a way to get back what was bought (this season's Scroll, purchases paid but not delivered).
-        const restore = h('button', { class: 'btn ghost', type: 'button' }, 'Restore purchases') as HTMLButtonElement;
+        const restore = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.restore_purchases_c6399925b3")) as HTMLButtonElement;
         restore.addEventListener('click', () => {
           restore.disabled = true;
           void this.c.restorePurchases().then(
             (r) => {
               restore.disabled = false;
               const n = r.delivered + r.restored;
-              this.kit.toast(n ? t('store.restored', { n }) : 'Nothing to restore: everything you bought is already here.', n ? 'success' : 'info');
+              this.kit.toast(n ? t('store.restored', { n }) : i18nText("ui.nothing_to_restore_everything_you_boug_a26d2009a5"), n ? 'success' : 'info');
               draw();
             },
             (e: Error) => {
               restore.disabled = false;
-              this.kit.toast(e.message, 'error');
+              this.kit.toast(ownedError(e.message, true), 'error');
             },
           );
         });
@@ -249,12 +253,12 @@ export class EconomyUi {
       }
     };
     draw();
-    this.kit.modal('Store', body, [], 'wide');
+    this.kit.modal(i18nText("ui.store_ee7da936b5"), body, [], 'wide');
   }
 
   private packsGrid(): HTMLElement {
     const grid = h('div', { class: 'shop-grid' });
-    const packs = this.c.data.store.packs;
+    const packs = localizedData(this.c.data).store.packs;
     const base = packs[0].moonstones / packs[0].usd;
     packs.forEach((p, i) => {
       const bonus = Math.round(((p.moonstones / p.usd) / base - 1) * 100);
@@ -264,24 +268,24 @@ export class EconomyUi {
         h('div', { class: 'pack-gems' }, ...Array.from({ length: Math.min(6, i + 1) }, () => icon(icons.moonstones))),
         h('div', { class: 'shop-name' }, p.name),
         h('div', { class: 'pack-amount' }, icon(icons.moonstones), formatNumber(p.moonstones)),
-        bonus > 0 ? h('div', { class: 'chip good' }, `+${bonus}% value`) : null,
+        bonus > 0 ? h('div', { class: 'chip good' }, i18nText("ui.value_fbc88ed85a", { arg1: bonus })) : null,
         this.buyButton(p.id, 'primary'),
       );
       grid.append(card);
     });
     // Clan Stipend: a one-time purchase paid out daily, never a subscription.
-    const st = this.c.data.store.stipend;
-    const ss = stipendStatus(this.c.state, this.c.now(), this.c.data);
+    const st = localizedData(this.c.data).store.stipend;
+    const ss = stipendStatus(this.c.state, this.c.now(), localizedData(this.c.data));
     if (st && ss.offered) {
       grid.append(
         h(
           'div',
           { class: 'shop-card pack stipend' },
-          h('div', { class: 'pack-gems' }, icon(icons.moonstones), h('span', { class: 'stipend-x' }, `× ${st.payments}`)),
+          h('div', { class: 'pack-gems' }, icon(icons.moonstones), h('span', { class: 'stipend-x' }, i18nText("ui.message_35d1a6271d", { arg1: st.payments }))),
           h('div', { class: 'shop-name' }, st.name),
-          h('div', { class: 'small' }, `${st.payments} daily payments of ${st.jadePerPayment} Jade; does not renew.`),
+          h('div', { class: 'small' }, i18nText("ui.daily_payments_of_jade_does_not_renew_d5f1666952", { arg1: st.payments, arg2: st.jadePerPayment })),
           ss.left > 0 ? h('div', { class: 'chip good' }, t('stipend.left', { n: ss.left })) : null,
-          ss.canBuy ? this.buyButton(st.id, 'primary') : h('span', { class: 'claim-flat' }, 'Buy again when all are claimed'),
+          ss.canBuy ? this.buyButton(st.id, 'primary') : h('span', { class: 'claim-flat' }, i18nText("ui.buy_again_when_all_are_claimed_9a1fff1183")),
         ),
       );
     }
@@ -290,13 +294,13 @@ export class EconomyUi {
 
   /** "Clan Stipend: claim 20 Jade (12 left)" while a payment is waiting today (no reminders: it waits for the player). */
   stipendCard(after?: () => void): HTMLElement | null {
-    const ss = stipendStatus(this.c.state, this.c.now(), this.c.data);
+    const ss = stipendStatus(this.c.state, this.c.now(), localizedData(this.c.data));
     if (!ss.claimable) return null;
-    const btn = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), `Claim ${ss.jade}`);
+    const btn = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), i18nText("ui.claim_1ad9b1da01", { arg1: ss.jade }));
     btn.addEventListener('click', () => {
       const r = this.c.dispatch({ type: 'claimStipend' });
-      if (!r.ok) this.kit.toast(r.message, 'error');
-      else this.kit.toast(`+${ss.jade} Jade from your Clan Stipend.`, 'success');
+      if (!r.ok) this.kit.toast(ownedError(r.message, true), 'error');
+      else this.kit.toast(i18nText("ui.jade_from_your_clan_stipend_1b4d5ddddd", { arg1: ss.jade }), 'success');
       after?.();
     });
     return h('div', { class: 'log-row stipend-card' }, h('div', {}, h('b', {}, t('stipend.claim', { jade: ss.jade })), h('div', { class: 'muted small' }, t('stipend.leftDaily', { n: ss.left }))), btn);
@@ -308,9 +312,9 @@ export class EconomyUi {
     // Economy E02: say why the tab stays empty, instead of a "right now" that never changes.
     const p = this.c.state.profile;
     const why = offersAllowed(this.c.state) ? t('offers.none') : p.under18 === null ? t('offers.noAge') : t('offers.minor');
-    if (!list.length) wrap.append(h('p', { class: 'muted' }, why));
+    if (!list.length) wrap.append(h('p', { class: 'muted' }, i18nLabel(why)));
     for (const a of list) {
-      const rule = offerRule(this.c.data, a.id);
+      const rule = offerRule(localizedData(this.c.data), a.id);
       if (!rule) continue;
       wrap.append(
         h(
@@ -326,22 +330,22 @@ export class EconomyUi {
 
   /** What an offer delivers to this village now (sized for the Keep, capped by storage). */
   private offerContents(productId: string, fallback: Cost): Cost {
-    return productGrantsFor(this.c.state, productId, this.c.data)?.grants ?? fallback;
+    return productGrantsFor(this.c.state, productId, localizedData(this.c.data))?.grants ?? fallback;
   }
 
   /** "12,000 Coins don't fit: +40 Jade instead" (bought resources never sit above storage). */
   private convertedNote(productId: string): HTMLElement | null {
-    const g = productGrantsFor(this.c.state, productId, this.c.data);
+    const g = productGrantsFor(this.c.state, productId, localizedData(this.c.data));
     if (!g || g.convertedJade <= 0) return null;
-    const what = RESOURCE_KINDS.filter((k) => g.converted[k]).map((k) => `${formatNumber(g.converted[k]!)} ${RES_NAME[k]}`).join(' and ');
-    return h('div', { class: 'muted small' }, `${what} ${what.includes(' and ') ? "don't" : "doesn't"} fit in your storage: +${formatNumber(g.convertedJade)} Jade instead (included above).`);
+    const what = i18nList(RESOURCE_KINDS.filter((k) => g.converted[k]).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(g.converted[k]!), arg2: RES_NAME[k] })), 'conjunction');
+    return h('div', { class: 'muted small' }, i18nText("ui.fit_in_your_storage_jade_instead_inclu_aa039ca86b", { arg1: what, arg3: formatNumber(g.convertedJade) }));
   }
 
   /** "Season ends in 12 days" (re-audit: the pass card and its confirm say when the season ends). */
   private seasonEndsText(): string {
-    const left = passSeasonEndsAt(this.c.now(), this.c.data) - this.c.now();
+    const left = passSeasonEndsAt(this.c.now(), localizedData(this.c.data)) - this.c.now();
     const days = Math.floor(left / 86_400_000);
-    return days >= 1 ? t('pass.endsInDays', { n: days }) : `the season ends in ${formatDuration(left)}`;
+    return days >= 1 ? t('pass.endsInDays', { n: days }) : i18nText("ui.the_season_ends_in_404629af61", { arg1: formatDuration(left) });
   }
 
   /**
@@ -351,12 +355,12 @@ export class EconomyUi {
    */
   private offerTimeText(rule: OfferRule, expiresAt: number): string {
     const left = formatDuration(Math.max(0, expiresAt - this.c.now()));
-    return offerReturns(rule) ? `Here for ${left} · back again later` : `Here for ${left}`;
+    return offerReturns(rule) ? i18nText("ui.here_for_back_again_later_5e16f6967c", { arg1: left }) : i18nText("ui.here_for_3b4e450faf", { arg1: left });
   }
 
   private passProduct(redraw: () => void): HTMLElement {
-    const d = this.c.data;
-    if (this.c.state.pass.premium) return h('p', { class: 'chip good' }, 'You have the premium Season Scroll this season.');
+    const d = localizedData(this.c.data);
+    if (this.c.state.pass.premium) return h('p', { class: 'chip good' }, i18nText("ui.you_have_the_premium_season_scroll_thi_5556b0fea6"));
     const ends = this.seasonEndsText();
     const now = this.c.now();
     // An honest value line (passPremiumValue): only tiers still reachable this season count.
@@ -365,11 +369,11 @@ export class EconomyUi {
     const check = canPurchase(this.c.state, d.pass.productId, now, d);
     const closed = !sale.open && !check.ok && check.code === 'SEASON_ENDING';
     const value = h('div', { class: 'small pass-value' }, t('pass.value', { jade: v.total, tiers: v.tiers, total: v.tiersTotal, days: v.daysLeft }));
-    const buy = closed ? h('span', { class: 'claim-flat' }, 'Not on sale') : this.buyButton(d.pass.productId, 'gold', redraw);
+    const buy = closed ? h('span', { class: 'claim-flat' }, i18nText("ui.not_on_sale_51a77c4bdf")) : this.buyButton(d.pass.productId, 'gold', redraw);
     return h(
       'div',
       { class: 'pass-premium' },
-      h('div', {}, h('b', {}, `${d.pass.name}: premium track`), h('div', { class: 'muted small' }, `Until the season ends: 20% faster builds, the ${this.passLookName()} look and bigger rewards on every tier. Rewards you already earned unlock right away.`), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`), value, closed && !check.ok ? h('p', { class: 'note' }, check.message) : null),
+      h('div', {}, h('b', {}, i18nText("ui.premium_track_4a4a663105", { arg1: d.pass.name })), h('div', { class: 'muted small' }, i18nText("ui.until_the_season_ends_20_faster_builds_428fde58a5", { arg1: this.passLookName() })), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`), value, closed && !check.ok ? h('p', { class: 'note' }, check.message) : null),
       buy,
     );
   }
@@ -377,32 +381,32 @@ export class EconomyUi {
   private looksGrid(redraw: () => void): HTMLElement {
     const grid = h('div', { class: 'shop-grid' });
     const s = this.c.state;
-    for (const skin of this.c.data.cosmetics.hallSkins) {
+    for (const skin of localizedData(this.c.data).cosmetics.hallSkins) {
       const owned = s.cosmetics.owned.includes(skin.id);
       const equipped = s.cosmetics.hallSkin === skin.id;
       // Report section 5 step 3/4 (art F2): the real Keep in this look, not the old game's mushroom cap.
       // Until the art is ready, a roof-shaped swatch in the look's roof and trim colours.
       const thumb = this.kit.skinThumb?.(skin.id) ?? null;
       const swatch = thumb
-        ? h('img', { class: 'skin-thumb', src: thumb, alt: `Clan Keep in the ${skin.name} look` })
-        : h('div', { class: 'skin-swatch', role: 'img', 'aria-label': `${skin.name} roof colours`, style: `--roof:${skin.cap};--trim:${skin.spots}` });
+        ? h('img', { class: 'skin-thumb', src: thumb, alt: i18nText("ui.clan_keep_in_the_look_2f739d685d", { arg1: skin.name }) })
+        : h('div', { class: 'skin-swatch', role: 'img', 'aria-label': i18nText("ui.roof_colours_f7a5a7becd", { arg1: skin.name }), style: `--roof:${skin.cap};--trim:${skin.spots}` });
       let action: HTMLElement;
-      if (equipped) action = h('span', { class: 'chip good' }, 'In use');
+      if (equipped) action = h('span', { class: 'chip good' }, i18nText("ui.in_use_750af77aa4"));
       else if (owned) {
-        action = h('button', { class: 'btn sky', type: 'button' }, 'Use');
+        action = h('button', { class: 'btn sky', type: 'button' }, i18nText("ui.use_c36d819e7b"));
         action.addEventListener('click', () => {
           this.c.dispatch({ type: 'equipSkin', skin: skin.id });
           redraw();
         });
-      } else if (skin.passOnly) action = h('span', { class: 'chip' }, `${this.c.data.pass.name} reward`);
-      else if (skin.minKeep && hallLevel(s, this.c.data) < skin.minKeep) action = h('span', { class: 'chip' }, `Unlocks at Keep ${skin.minKeep}`);
+      } else if (skin.passOnly) action = h('span', { class: 'chip' }, i18nText("ui.reward_45b24062a2", { arg1: localizedData(this.c.data).pass.name }));
+      else if (skin.minKeep && hallLevel(s, localizedData(this.c.data)) < skin.minKeep) action = h('span', { class: 'chip' }, i18nText("ui.unlocks_at_keep_53e015b015", { arg1: skin.minKeep }));
       else {
         action = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), String(skin.moonstones));
         action.addEventListener('click', () => {
-          void this.spendMoonstones('Buy this look', `${skin.name} (purely visual)`, skin.moonstones, () => this.c.dispatch({ type: 'buySkin', skin: skin.id }).ok).then(redraw);
+          void this.spendMoonstones(i18nText("ui.buy_this_look_1b89833db0"), i18nText("ui.purely_visual_19c28485fc", { arg1: skin.name }), skin.moonstones, () => this.c.dispatch({ type: 'buySkin', skin: skin.id }).ok).then(redraw);
         });
       }
-      grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, 'Clan Keep look'), action));
+      grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, i18nText("ui.clan_keep_look_9be1099dbe")), action));
     }
     return grid;
   }
@@ -417,11 +421,11 @@ export class EconomyUi {
       h('p', {}, rule.description),
       h('div', { class: 'row' }, rewardChips(this.offerContents(rule.productId, rule.contents))),
       this.convertedNote(rule.productId),
-      a ? h('p', { class: 'muted small' }, `Available for ${formatDuration(a.expiresAt - this.c.now())}${offerReturns(rule) ? ', and it comes back from time to time' : ''}. You can also find it in the Store.`) : null,
+      a ? h('p', { class: 'muted small' }, i18nText("ui.available_for_you_can_also_find_it_in__a465fd9756", { arg1: formatDuration(a.expiresAt - this.c.now()), arg2: offerReturns(rule) ? i18nText("ui.and_it_comes_back_from_time_to_time_e8db8be5a2") : '' })) : null,
     );
     const close = this.kit.modal(rule.title, body, [
-      { label: 'No thanks', onClick: () => close() },
-      { label: 'See offer in the store', primary: true, onClick: () => { close(); this.openStore('offers'); } },
+      { label: i18nText("ui.no_thanks_49780701dc"), onClick: () => close() },
+      { label: i18nText("ui.see_offer_in_the_store_afae86c740"), primary: true, onClick: () => { close(); this.openStore('offers'); } },
     ]);
   }
 
@@ -432,40 +436,40 @@ export class EconomyUi {
     const draw = () => {
       clear(body);
       const s = this.c.state;
-      const d = this.c.data;
+      const d = localizedData(this.c.data);
       const tier = unlockedTier(s, d);
       const into = s.pass.points - tier * d.pass.pointsPerTier;
       body.append(
-        h('p', { class: 'muted' }, `Season ends in ${formatDuration(passSeasonEndsAt(this.c.now(), d) - this.c.now())}. Complete tasks to earn points and unlock tiers.`),
-        h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${tier >= d.pass.tiers.length ? 100 : (into / d.pass.pointsPerTier) * 100}%` })), h('span', {}, `Tier ${tier}/${d.pass.tiers.length} · ${s.pass.points} pts`)),
+        h('p', { class: 'muted' }, i18nText("ui.season_ends_in_complete_tasks_to_earn__300938261c", { arg1: formatDuration(passSeasonEndsAt(this.c.now(), d) - this.c.now()) })),
+        h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${tier >= d.pass.tiers.length ? 100 : (into / d.pass.pointsPerTier) * 100}%` })), h('span', {}, i18nText("ui.tier_pts_805378a19e", { arg1: tier, arg2: d.pass.tiers.length, arg3: s.pass.points }))),
       );
       if (!s.pass.premium) {
         body.append(
           h(
             'div',
             { class: 'pass-premium' },
-            h('div', {}, h('b', {}, 'Premium track'), h('div', { class: 'muted small' }, `20% faster builds this season, the ${this.passLookName()} look, and bigger rewards on every tier.`)),
-            h('button', { class: 'btn gold', type: 'button', onclick: () => this.openStore('pass') }, 'Get premium'),
+            h('div', {}, h('b', {}, i18nText("ui.premium_track_bd2c7a2ecb")), h('div', { class: 'muted small' }, i18nText("ui.20_faster_builds_this_season_the_look__36d2b98581", { arg1: this.passLookName() }))),
+            h('button', { class: 'btn gold', type: 'button', onclick: () => this.openStore('pass') }, i18nText("ui.get_premium_e02b572c1d")),
           ),
         );
       } else {
-        body.append(h('p', { class: 'chip good' }, 'Premium active: builds are 20% faster'));
+        body.append(h('p', { class: 'chip good' }, i18nText("ui.premium_active_builds_are_20_faster_5eb0f4e244")));
       }
-      body.append(h('h3', {}, 'Tasks'));
+      body.append(h('h3', {}, i18nText("ui.tasks_b3a60e61a5")));
       for (const t of currentTasks(s, hallLevel(s, d), d)) {
         // Only a claim that can be made looks like a button (re-audit design item 9); the rest is a flat, locked tag.
         const ready = !t.claimed && t.progress >= t.target;
         const btn = ready
           ? h('button', { class: 'btn primary', type: 'button' }, `+${t.points}`)
-          : h('span', { class: `claim-flat${t.claimed ? ' done' : ''}`, 'aria-label': t.claimed ? 'Claimed' : `Locked: ${t.points} points when done` }, t.claimed ? '✓ Done' : icon(LOCK), t.claimed ? '' : `+${t.points}`);
+          : h('span', { class: `claim-flat${t.claimed ? ' done' : ''}`, 'aria-label': t.claimed ? i18nText("ui.claimed_ddcd277929") : i18nText("ui.locked_points_when_done_724af3f655", { arg1: t.points }) }, t.claimed ? i18nText("ui.done_eed43c8f83") : icon(LOCK), t.claimed ? '' : `+${t.points}`);
         if (ready) btn.addEventListener('click', () => {
           const r = this.c.dispatch({ type: 'claimTask', id: t.id, kind: t.kind });
-          if (!r.ok) this.kit.toast(r.message, 'error');
+          if (!r.ok) this.kit.toast(ownedError(r.message, true), 'error');
           draw();
         });
-        body.append(h('div', { class: 'log-row' }, h('div', { style: 'flex:1' }, h('b', {}, `${t.kind === 'weekly' ? 'Weekly: ' : ''}${t.text}`), h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(t.progress / t.target) * 100}%` })), h('span', { class: 'small' }, `${formatNumber(t.progress)}/${formatNumber(t.target)}`))), btn));
+        body.append(h('div', { class: 'log-row' }, h('div', { style: 'flex:1' }, h('b', {}, `${t.kind === 'weekly' ? i18nLabel('Weekly: ') : ''}${t.text}`), h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(t.progress / t.target) * 100}%` })), h('span', { class: 'small' }, `${formatNumber(t.progress)}/${formatNumber(t.target)}`))), btn));
       }
-      body.append(h('h3', {}, 'Rewards'));
+      body.append(h('h3', {}, i18nText("ui.rewards_59afe47d9d")));
       const tiers = h('div', { class: 'tiers' });
       for (const tr of d.pass.tiers) {
         const cell = (track: 'free' | 'premium') => {
@@ -475,33 +479,33 @@ export class EconomyUi {
           const reward = passTierReward(s, tr.tier, track, d) ?? {};
           if (!can && !claimed) {
             // Not claimable: flat, with a lock and (on the next tier) how far along it is, never a greyed button.
-            const why = tr.tier > tier ? `Tier ${tr.tier}: ${Math.max(0, tr.tier * d.pass.pointsPerTier - s.pass.points)} more points` : 'Premium track';
+            const why = tr.tier > tier ? i18nText("ui.tier_more_points_c5379e2fd6", { arg1: tr.tier, arg2: Math.max(0, tr.tier * d.pass.pointsPerTier - s.pass.points) }) : i18nText("ui.premium_track_bd2c7a2ecb");
             const bar = tr.tier === tier + 1 ? h('span', { class: 'tier-bar' }, h('i', { style: `width:${Math.max(0, Math.min(100, (into / d.pass.pointsPerTier) * 100))}%` })) : null;
-            return h('div', { class: `tier-cell ${track} locked`, 'aria-label': `${why} (locked)` }, icon(LOCK, 'icon tier-lock'), rewardChips(reward, this.skinName), bar);
+            return h('div', { class: `tier-cell ${track} locked`, 'aria-label': i18nText("ui.locked_0bac7969d6", { arg1: why }) }, icon(LOCK, "icon tier-lock"), rewardChips(reward, this.skinName), bar);
           }
           const el = h('button', { class: `tier-cell ${track}${claimed ? ' claimed' : ''}${can ? ' ready' : ''}`, type: 'button', disabled: !can }, rewardChips(reward, this.skinName));
           el.addEventListener('click', async () => {
             // Each tier can be claimed once: warn before part of it is lost to full storage.
             const lost = rewardOverflow(this.c.state, reward, d);
             if (Object.keys(lost).length) {
-              const text = RESOURCE_KINDS.filter((k) => lost[k]).map((k) => `${formatNumber(lost[k]!)} ${RES_NAME[k]}`).join(', ');
-              const ok = await this.kit.confirm('Storage is too full', `${text} of this reward will not fit in your storage and will be lost. Claim it later, after spending some?`, 'Claim anyway', false, 'Claim later');
+              const text = RESOURCE_KINDS.filter((k) => lost[k]).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(lost[k]!), arg2: RES_NAME[k] })).join(', ');
+              const ok = await this.kit.confirm(i18nText("ui.storage_is_too_full_05dd5a7f1f"), i18nText("ui.of_this_reward_will_not_fit_in_your_st_341f12c9a9", { arg1: text }), i18nText("ui.claim_anyway_1f952b93e9"), false, i18nText("ui.claim_later_43693ed440"));
               if (!ok) return;
             }
             const r = this.c.dispatch({ type: 'claimTier', tier: tr.tier, track });
-            if (!r.ok) this.kit.toast(r.message, 'error');
-            else this.kit.toast('Reward claimed!', 'success');
+            if (!r.ok) this.kit.toast(ownedError(r.message, true), 'error');
+            else this.kit.toast(i18nText("ui.reward_claimed_0077aed282"), 'success');
             draw();
           });
           return el;
         };
         tiers.append(h('div', { class: `tier-row${tr.tier <= tier ? ' unlocked' : ''}` }, h('span', { class: 'tier-num' }, String(tr.tier)), cell('free'), cell('premium')));
       }
-      body.append(h('div', { class: 'tier-head' }, h('span', {}, ''), h('span', {}, 'Free'), h('span', {}, 'Premium')), tiers);
+      body.append(h('div', { class: 'tier-head' }, h('span', {}, ''), h('span', {}, i18nText("ui.free_f411a1fb62")), h('span', {}, i18nText("ui.premium_de88c121a8"))), tiers);
     };
     draw();
     const unsub = this.c.subscribe(() => draw());
-    this.kit.modal(this.c.data.pass.name, body, [], 'wide', unsub);
+    this.kit.modal(localizedData(this.c.data).pass.name, body, [], 'wide', unsub);
   }
 
   // ------------------------------------------------------------ achievements
@@ -511,14 +515,14 @@ export class EconomyUi {
     const draw = () => {
       clear(body);
       const s = this.c.state;
-      for (const v of achievementViews(s, hallLevel(s, this.c.data), this.c.data)) {
-        const tierText = v.next ? v.def.text.replace('{n}', formatNumber(v.next.target)) : 'All done!';
+      for (const v of achievementViews(s, hallLevel(s, localizedData(this.c.data)), localizedData(this.c.data))) {
+        const tierText = v.next ? v.def.text.replace('{n}', formatNumber(v.next.target)) : i18nText("ui.all_done_3117297085");
         const btn = v.next
           ? h('button', { class: 'btn gold', type: 'button', disabled: !v.claimable }, icon(icons.moonstones), String(v.next.reward))
           : h('span', { class: 'chip good' }, '★★★');
         btn.addEventListener('click', () => {
           const r = this.c.dispatch({ type: 'claimAchievement', id: v.def.id });
-          if (r.ok) this.kit.toast('Jade collected!', 'success');
+          if (r.ok) this.kit.toast(i18nText("ui.jade_collected_f70ae4ab50"), 'success');
           draw();
         });
         const pct = v.next ? Math.min(100, (v.value / v.next.target) * 100) : 100;
@@ -531,34 +535,34 @@ export class EconomyUi {
           ),
         );
       }
-      body.append(h('p', { class: 'muted small' }, 'Clear forest obstacles around your village for more free Jade.'));
+      body.append(h('p', { class: 'muted small' }, i18nText("ui.clear_forest_obstacles_around_your_vil_21266ecb90")));
     };
     draw();
-    this.kit.modal('Goals', body, [], 'wide');
+    this.kit.modal(i18nText("ui.goals_116cd3982a"), body, [], 'wide');
   }
 
   /** Spend summary and age group, for Settings. */
   spendSection(): HTMLElement {
     const s = this.c.state;
     const band = bandFromProfile(s.profile);
-    const age = band === 'under13' ? 'Under 13' : band === '13to17' ? '13 to 17' : band === 'adult' ? '18 or older' : s.profile.under18 ? 'Under 18' : 'Not set';
+    const age = band === 'under13' ? i18nText("ui.under_13_dd8ef95136") : band === '13to17' ? i18nText("ui.13_to_17_2201c02af4") : band === 'adult' ? i18nText("ui.18_or_older_8a1efb8ef9") : s.profile.under18 ? i18nText("ui.under_18_eaf7be3c12") : i18nText("ui.not_set_4895f73177");
     // GLOBAL-006 and the re-audit: the age group only ever gets stricter from here (the server keeps it too);
     // our support team can correct it after a check. The same neutral age screen as online play.
-    const change = h('button', { class: 'btn ghost', type: 'button' }, band || s.profile.under18 ? 'Correct my age' : 'Set age group');
+    const change = h('button', { class: 'btn ghost', type: 'button' }, band || s.profile.under18 ? i18nText("ui.correct_my_age_2cdb37f9f5") : i18nText("ui.set_age_group_1f3a409c91"));
     change.addEventListener('click', () => {
-      void askAgeBand(this.kit, 'Enter your year of birth. It sets the protections for your age group (spending limits, and for online play who can find you and how you chat).').then((b) => {
+      void askAgeBand(this.kit, i18nText("ui.enter_your_year_of_birth_it_sets_the_p_a943fd1ba9")).then((b) => {
         if (!b) return;
         const r = this.c.dispatch({ type: 'setProfile', under18: b !== 'adult', ageBand: b });
-        if (!r.ok) this.kit.toast('Your age group can only be made stricter here. To correct it, contact support from Settings → Privacy and help.', 'info');
+        if (!r.ok) this.kit.toast(i18nText("ui.your_age_group_can_only_be_made_strict_c02ec1d59b"), 'info');
       });
     });
     return h(
       'div',
       {},
-      h('h3', {}, 'Spending'),
-      h('p', {}, `This month: ${usd(spentThisMonth(s, this.c.now()))} · All time: ${usd(spentTotal(s))} · ${t('spend.summary', { n: s.purchases.length })}`),
-      h('p', { class: 'muted small' }, 'Amounts are the items\' US-dollar list prices; your store receipts show what you actually paid in your currency.'),
-      h('p', { class: 'muted small' }, `Age group: ${age}${s.profile.under18 ? ` (limit ${usd(this.c.data.store.minorMonthlyCapUsd)} a month in list prices). To change it, contact support from Settings.` : '.'}`),
+      h('h3', {}, i18nText("ui.spending_c2c7ae2ad9")),
+      h('p', {}, i18nText("ui.this_month_all_time_f59d88ca1e", { arg1: usd(spentThisMonth(s, this.c.now())), arg2: usd(spentTotal(s)), arg3: t('spend.summary', { n: s.purchases.length }) })),
+      h('p', { class: 'muted small' }, i18nText("ui.amounts_are_the_items_us_dollar_list_p_8a3498b500")),
+      h('p', { class: 'muted small' }, i18nText("ui.age_group_68f7621465", { arg1: age, arg2: s.profile.under18 ? i18nText("ui.limit_a_month_in_list_prices_to_change_4f6bc4b210", { arg1: usd(localizedData(this.c.data).store.minorMonthlyCapUsd) }) : '.' })),
       band === 'under13' ? null : h('div', { class: 'actions' }, change),
     );
   }

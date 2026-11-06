@@ -3,6 +3,9 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
+import { buildLanguageAssets, languageBootScript, measureLanguageBuild } from './tools/i18n/build.mjs';
+
+buildLanguageAssets();
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const buildTime = new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
@@ -21,11 +24,17 @@ function serviceWorker(): Plugin {
     apply: 'build',
     generateBundle(_options, bundle) {
       const built = Object.keys(bundle).filter((f) => !f.endsWith('.map'));
-      const publicFiles = listFiles('public').map((p) => relative('public', p).split('\\').join('/'));
+      const allPublic = listFiles('public').map((p) => relative('public', p).split('\\').join('/'));
+      const languageMeta = JSON.parse(readFileSync('locales/availability.json', 'utf8')) as Record<string, { ready: boolean; path?: string }>;
+      const codes = new Set(Object.keys(languageMeta));
+      // A browser caches its own text/pages; native packaging still includes all completed packs.
+      const publicFiles = allPublic.filter(p => !p.startsWith('lang/') && !codes.has(p.split('/')[0]));
+      const languageFiles = Object.fromEntries(Object.entries(languageMeta).filter(([, m]) => m.ready).map(([code, m]) => [code, [...(m.path ? [`./${m.path}`] : []), ...allPublic.filter(p => p.startsWith(code + '/')).map(p => `./${p}`)]]));
       const files = ['./', ...[...built, ...publicFiles].map((f) => `./${f}`)];
       const source = readFileSync('src/backend/pwa/sw.template.js', 'utf8')
         .replace('__BUILD_ID__', Date.now().toString(36))
-        .replace('__PRECACHE__', JSON.stringify(files));
+        .replace('__PRECACHE__', JSON.stringify(files))
+        .replace('/*__LANGUAGE_FILES__*/ {}', JSON.stringify(languageFiles));
       this.emitFile({ type: 'asset', fileName: 'sw.js', source });
     },
   };
@@ -39,7 +48,7 @@ function bootGuard(): Plugin {
   return {
     name: 'tk-boot-guard',
     transformIndexHtml() {
-      const source = readFileSync('src/backend/pwa/boot.js', 'utf8');
+      const source = languageBootScript() + '\n' + readFileSync('src/backend/pwa/boot.js', 'utf8');
       return [{ tag: 'script', children: source, injectTo: 'head-prepend' }];
     },
   };
@@ -90,7 +99,7 @@ export default defineConfig(({ command }) => ({
   },
   // Production ships a smaller Phaser (no physics, sound, tilemaps: phaserBuild.js); dev and tests use the full package.
   resolve: command === 'build' && !process.env.VITEST ? { alias: [{ find: /^phaser$/, replacement: fileURLToPath(new URL('./src/presentation/render/phaserBuild.js', import.meta.url)) }] } : {},
-  plugins: [bootGuard(), serviceWorker(), phaserFlags()],
+  plugins: [bootGuard(), serviceWorker(), phaserFlags(), { name: 'tk-language-sizes', apply: 'build', closeBundle() { measureLanguageBuild(); } }],
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',

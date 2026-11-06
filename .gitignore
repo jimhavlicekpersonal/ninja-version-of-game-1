@@ -8,3 +8,7 @@ dist-server/
 
 # Store screenshots are generated (npm run store:screenshots)
 docs/store/screenshots/
+
+# Compact language assets are generated from reviewed locale worksheets.
+/public/lang/
+/locales/compiled/

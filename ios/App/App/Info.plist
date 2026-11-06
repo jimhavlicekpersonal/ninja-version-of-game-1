@@ -6,6 +6,8 @@
 	<string>Kagemura shows which of your Game Center friends also play, so you can add them as friends in the game.</string>
   <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
+	<key>CFBundleLocalizations</key>
+	<array><string>en</string><string>es</string></array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>

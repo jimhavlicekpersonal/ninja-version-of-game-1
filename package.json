@@ -43,7 +43,13 @@
     "perf:profile": "node tools/perf/profile.mjs",
     "balance:bundle": "node tools/balance/bundle.mjs",
     "rules:fixture": "node tools/release/rules-snapshot.mjs fixture",
-    "rules:snapshot": "node tools/release/rules-snapshot.mjs snapshot"
+    "rules:snapshot": "node tools/release/rules-snapshot.mjs snapshot",
+    "i18n:build": "node tools/i18n/build.mjs",
+    "pretest": "node tools/i18n/build.mjs --quiet",
+    "pretypecheck": "node tools/i18n/build.mjs --quiet",
+    "pretypecheck:server": "node tools/i18n/build.mjs --quiet",
+    "prebuild": "node tools/i18n/build.mjs --quiet",
+    "i18n:smoke": "node tools/i18n/smoke.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

@@ -1,3 +1,7 @@
+import { displayData as localizedData, messageText as ownedText, generatedName } from './i18n';
+import { messageText as i18nMessage } from './i18n';
+import { labelText as i18nLabel } from './i18n';
+import { t as i18nText } from './i18n';
 import { pointLabel, t } from './i18n';
 import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
@@ -53,7 +57,7 @@ function lootChips(loot: Cost): HTMLElement {
     if (!loot[k]) continue;
     wrap.append(h('span', { class: 'chip' }, icon(icons[k as 'acorns' | 'dew'] ?? ''), formatNumber(loot[k]!)));
   }
-  if (!wrap.childElementCount) wrap.append(h('span', { class: 'chip' }, 'None'));
+  if (!wrap.childElementCount) wrap.append(h('span', { class: 'chip' }, i18nText("ui.none_dc937b5989")));
   return wrap;
 }
 
@@ -101,40 +105,40 @@ export class BattleHud {
     const root = deps.root;
     clear(root);
     root.hidden = false;
-    const baseName = this.s.setup.base.name;
+    const baseName = this.s.setup.base.rival || this.s.setup.base.trialTier ? generatedName(this.s.setup.base.name) : this.s.setup.base.name;
     const left = h(
       'div',
       { class: 'panel b-left' },
-      h('div', { class: 'b-name' }, h('bdi', {}, baseName), h('span', { class: 'level' }, `Lv ${this.s.setup.base.hallLevel}`)),
+      h('div', { class: 'b-name' }, h('bdi', {}, baseName), h('span', { class: 'level' }, i18nText("ui.lv_445f51ab9e", { arg1: this.s.setup.base.hallLevel }))),
       h(
         'div',
         { class: 'muted small' },
         this.s.mode === 'replay'
           ? deps.replayOf?.kind === 'defense'
-            ? `Replay: ${isolateName(deps.replayOf.opponentName)} attacks · loot taken`
-            : 'Replay · loot won'
+            ? i18nText("ui.replay_attacks_loot_taken_cfa170965c", { arg1: isolateName(deps.replayOf.opponentName) })
+            : i18nText("ui.replay_loot_won_db27073d59")
           : deps.grove
-            ? `${deps.grove.title ?? 'Alliance War'} vs ${isolateName(deps.grove.enemyName)}`
+            ? i18nText("ui.vs_2d68ca8191", { arg1: deps.grove.title ?? 'Alliance War', arg2: isolateName(deps.grove.enemyName) })
             : deps.special
-              ? deps.special.title
+              ? ownedText(deps.special.title)
             : deps.trial
-              ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
+              ? i18nText("ui.practice_e31f506678", { arg1: ownedText(deps.trial.layout), arg2: deps.trial.modifiers.length ? i18nText("ui.message_c4f174b2a5", { arg1: deps.trial.modifiers.map(i18nLabel).join(', ') }) : '', arg3: deps.trial.firstClear ? i18nText("ui.to_clear_2921e40d70", { arg1: deps.trial.starsToClear }) : i18nText("ui.already_cleared_6521e54750") })
               : deps.practice
-                ? 'Practice battle · nothing is spent or won'
+                ? i18nText("ui.practice_battle_nothing_is_spent_or_wo_c68624fd43")
                 : // Report section 5 step 4 (art F4): the card used to wrap to six lines on a 320 px phone.
                   // The label that says what this base is stays; the loot chips say what can be won.
-                  (this.s.setup.base.practice ?? 'Loot you can win'),
+                  ownedText(this.s.setup.base.practice ?? 'Loot you can win'),
       ),
       h(
         'div',
         { class: 'b-row' },
-        deps.grove || deps.practice || deps.special ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
+        deps.grove || deps.practice || deps.special ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? i18nText("ui.first_clear_reward_c327c47a58") : i18nText("ui.reward_already_claimed_7d7dd827b4"), deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
         this.s.mode !== 'replay' && !deps.grove && !deps.trial && !deps.special && this.s.setup.base.trophies !== undefined
           ? h(
               'div',
-              { class: 'small b-trophies', title: 'Honor: theirs, then what you win or lose' },
+              { class: 'small b-trophies', title: i18nText("ui.honor_theirs_then_what_you_win_or_lose_a762882eaa") },
               icon(icons.leaf),
-              ` ${this.s.setup.base.trophies} · +${winTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)} / −${lossTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)}`,
+              i18nText("ui.message_f9da5dafaf", { arg1: this.s.setup.base.trophies, arg2: winTrophies(deps.myTrophies, this.s.setup.base.trophies, localizedData(this.s.data)), arg3: lossTrophies(deps.myTrophies, this.s.setup.base.trophies, localizedData(this.s.data)) }),
             )
           : null,
       ),
@@ -148,7 +152,7 @@ export class BattleHud {
     this.renderBottom();
     this.renderTroops();
     if (this.s.mode !== 'replay' && !deps.grove && (this.s.setup.army.saboteur ?? 0) > 0) {
-      this.toast('Tactic: send Saboteurs first to jam defenses, then the main force; throw smoke over your warriors as they walk into tower range.');
+      this.toast(i18nText("ui.tactic_send_saboteurs_first_to_jam_def_2ac8edaadb"));
     }
     this.tick();
     this.interval = window.setInterval(() => this.tick(), 100);
@@ -264,14 +268,14 @@ export class BattleHud {
       selectedTroop: () => this.selected,
       notice: (text) => this.toast(text),
       deployFailed: (reason) => {
-        if (reason === 'zone') this.toast(this.s.sim.entry ? 'Send warriors in through a glowing infiltration point.' : 'Place troops outside the red area.');
-        else if (reason === 'full') this.toast(`That path is full: each point hides ${this.s.sim.entry?.cover ?? 0} space of warriors. Use another point.`);
-        else if (reason === 'empty') this.toast(this.selected === 'smoke_bomb' ? 'No Smoke Bombs left.' : 'No more of that troop. Pick another.');
-        else this.toast('Pick a troop below first.');
+        if (reason === 'zone') this.toast(this.s.sim.entry ? i18nText("ui.send_warriors_in_through_a_glowing_inf_2560f67d18") : i18nText("ui.place_troops_outside_the_red_area_cedc24afed"));
+        else if (reason === 'full') this.toast(i18nText("ui.that_path_is_full_each_point_hides_spa_40b30b6db4", { arg1: this.s.sim.entry?.cover ?? 0 }));
+        else if (reason === 'empty') this.toast(this.selected === 'smoke_bomb' ? i18nText("ui.no_smoke_bombs_left_57762694ae") : i18nText("ui.no_more_of_that_troop_pick_another_11ecd0ca12"));
+        else this.toast(i18nText("ui.pick_a_troop_below_first_7ee2b765c2"));
       },
       deployed: () => {
         // After a Smoke Bomb, go back to troops so a second tap never wastes a charge.
-        if (this.selected && isAbility(this.s.data, this.selected)) this.selected = this.lastTroop ?? this.firstTroop();
+        if (this.selected && isAbility(localizedData(this.s.data), this.selected)) this.selected = this.lastTroop ?? this.firstTroop();
         else if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0) this.selected = this.firstTroop();
         if (this.s.mode === 'live') this.renderTroops();
       },
@@ -288,30 +292,30 @@ export class BattleHud {
     this.scoutEl?.remove();
     this.scoutEl = null;
     if (this.s.mode !== 'scout') return;
-    const r = scoutReport(this.s.setup.base, this.s.data);
+    const r = scoutReport(this.s.setup.base, localizedData(this.s.data));
     const defenseCount = Object.values(r.defenses).reduce((a, b) => a + b, 0);
-    const chips = Object.entries(r.defenses).map(([t, n]) => h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
-    for (const [t, n] of Object.entries(r.counters)) if (!r.defenses[t]) chips.push(h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
-    if (r.walls) chips.push(h('span', { class: 'chip' }, `${r.walls} walls`));
+    const chips = Object.entries(r.defenses).map(([t, n]) => h('span', { class: 'chip' }, i18nText("ui.message_42a16430c0", { arg1: n, arg2: localizedData(this.s.data).buildings[t]?.name ?? t })));
+    for (const [t, n] of Object.entries(r.counters)) if (!r.defenses[t]) chips.push(h('span', { class: 'chip' }, i18nText("ui.message_42a16430c0", { arg1: n, arg2: localizedData(this.s.data).buildings[t]?.name ?? t })));
+    if (r.walls) chips.push(h('span', { class: 'chip' }, i18nText("ui.walls_b7e7ff287f", { arg1: r.walls })));
     const entry = this.s.sim.entry;
     const summary = entry?.points.length ? t('battle.scoutSummary', { points: entry.points.length, defenses: defenseCount }) : t('battle.defensesOnly', { defenses: defenseCount });
     const more = h(
       'div',
       { class: 'scout-more', id: 'scout-more' },
       h('div', { class: 'chips' }, ...chips),
-      entry?.points.length ? h('p', { class: 'small' }, `Each point hides ${entry.cover} space of warriors, so split your army into squads. The number on a point is how many defenses cover its path to the Keep; tap one to see the path.`) : null,
-      ...this.armyTips(r.tips).map((t) => h('p', { class: 'small' }, t)),
+      entry?.points.length ? h('p', { class: 'small' }, i18nText("ui.each_point_hides_space_of_warriors_so__fb923792c8", { arg1: entry.cover })) : null,
+      ...this.armyTips(r.tips).map((t) => h('p', { class: 'small' }, ownedText(t))),
       ...(() => {
         // Report section 5 step 8: who holds this outpost (a computer rival clan).
-        const clan = rivalById(this.s.setup.base.rival, this.s.data);
-        return clan ? [h('p', { class: 'small rival-bio' }, h('b', {}, `${clan.name}, led by ${clan.leader}. `), clan.bio)] : [];
+        const clan = rivalById(this.s.setup.base.rival, localizedData(this.s.data));
+        return clan ? [h('p', { class: 'small rival-bio' }, h('b', {}, i18nText("ui.led_by_5ac31159c9", { arg1: clan.name, arg2: clan.leader })), clan.bio)] : [];
       })(),
     );
     more.hidden = !this.scoutOpen;
     const toggle = h(
       'button',
       { class: 'chip scout-toggle', type: 'button', 'aria-expanded': String(this.scoutOpen), 'aria-controls': 'scout-more' },
-      summary,
+      i18nLabel(summary),
       h('span', { class: 'scout-caret', 'aria-hidden': 'true' }, this.scoutOpen ? '▾' : '▸'),
     );
     toggle.addEventListener('click', () => {
@@ -345,7 +349,7 @@ export class BattleHud {
   private pointChips(): HTMLElement[] {
     const entry = this.s.sim.entry;
     if (!entry || !entry.points.length) return [];
-    const intel = pointIntel(entry.points, this.s.setup.base, this.s.data);
+    const intel = pointIntel(entry.points, this.s.setup.base, localizedData(this.s.data));
     return intel.map((p, i) => {
       const on = this.pathChip === p.label;
       const b = h(
@@ -354,10 +358,10 @@ export class BattleHud {
           class: `chip point-chip${p.defenses === 0 ? ' quiet' : ''}${on ? ' on' : ''}`,
           type: 'button',
           'aria-pressed': String(on),
-          'aria-label': `${t('battle.pointAria', { label: pointLabel(p.label), defenses: p.defenses })}${p.antiAir ? `, ${t('battle.antiAir')}` : ''}${p.splash ? `, ${t('battle.splash')}` : ''}`,
+          'aria-label': `${t('battle.pointAria', { label: pointLabel(p.label), defenses: p.defenses })}${p.antiAir ? i18nText("ui.message_eb55276313", { arg1: t('battle.antiAir') }) : ''}${p.splash ? i18nText("ui.message_eb55276313", { arg1: t('battle.splash') }) : ''}`,
         },
         h('b', {}, pointLabel(p.label)),
-        ` ${p.defenses}${p.antiAir ? ' · AA' : ''}${p.splash ? ' · splash' : ''}`,
+        ` ${p.defenses}${p.antiAir ? i18nText("ui.aa_9b915ac88a") : ''}${p.splash ? i18nText("ui.splash_a2ac5c3472") : ''}`,
       );
       b.addEventListener('click', () => {
         this.pathChip = on ? null : p.label;
@@ -400,12 +404,12 @@ export class BattleHud {
     } else if (mode === 'live') {
       this.bottomEl.append(h('button', { class: 'btn danger', type: 'button', onclick: () => this.confirmEnd() }, t('battle.end')));
     } else {
-      const speed = h('button', { class: 'btn ghost', type: 'button' }, `Speed ${this.s.speed}×`);
+      const speed = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.speed_48c409f269", { arg1: this.s.speed }));
       speed.addEventListener('click', () => {
         this.s.speed = this.s.speed === 1 ? 2 : this.s.speed === 2 ? 4 : 1;
-        speed.textContent = `Speed ${this.s.speed}×`;
+        speed.textContent = i18nText("ui.speed_48c409f269", { arg1: this.s.speed });
       });
-      this.bottomEl.append(speed, h('button', { class: 'btn primary', type: 'button', onclick: () => this.deps.onHome() }, 'Exit replay'));
+      this.bottomEl.append(speed, h('button', { class: 'btn primary', type: 'button', onclick: () => this.deps.onHome() }, i18nText("ui.exit_replay_0a858020f8")));
     }
   }
 
@@ -418,7 +422,7 @@ export class BattleHud {
 
   /** Units left for a troop, or charges left for an ability. */
   private left(type: string): number {
-    return isAbility(this.s.data, type) ? this.s.sim.charges[type] ?? 0 : this.s.sim.remaining[type] ?? 0;
+    return isAbility(localizedData(this.s.data), type) ? this.s.sim.charges[type] ?? 0 : this.s.sim.remaining[type] ?? 0;
   }
 
   private renderTroops(): void {
@@ -428,27 +432,27 @@ export class BattleHud {
       const left = this.left('smoke_bomb');
       const card = h(
         'button',
-        { class: `troop-card ability${this.selected === 'smoke_bomb' ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.battle.abilities.smoke_bomb.name, 'data-type': 'smoke_bomb', title: this.s.data.battle.abilities.smoke_bomb.description },
+        { class: `troop-card ability${this.selected === 'smoke_bomb' ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': localizedData(this.s.data).battle.abilities.smoke_bomb.name, 'data-type': 'smoke_bomb', title: localizedData(this.s.data).battle.abilities.smoke_bomb.description },
         icon(icons.smoke),
         h('span', { class: 'troop-count' }, `×${left}`),
       );
       card.addEventListener('click', () => {
         if (this.left('smoke_bomb') <= 0) return;
-        if (this.selected && !isAbility(this.s.data, this.selected)) this.lastTroop = this.selected;
+        if (this.selected && !isAbility(localizedData(this.s.data), this.selected)) this.lastTroop = this.selected;
         this.selected = 'smoke_bomb';
         uiArt.haptic('selection');
-        this.toast('Tap where your warriors are about to come under fire: warriors inside the smoke can only be shot from close up.');
+        this.toast(i18nText("ui.tap_where_your_warriors_are_about_to_c_313578225b"));
         this.renderTroops();
       });
       this.troopsEl.append(card);
     }
     // Report section 5 step 8: the clan hero (SIM_RULES 5) leads the row.
-    const hero = this.s.setup.hero && this.s.data.battle.heroes?.[this.s.setup.hero.id] ? ([[this.s.setup.hero.id, 1]] as [string, number][]) : [];
+    const hero = this.s.setup.hero && localizedData(this.s.data).battle.heroes?.[this.s.setup.hero.id] ? ([[this.s.setup.hero.id, 1]] as [string, number][]) : [];
     for (const [type, total] of [...hero, ...Object.entries(this.s.setup.army).sort(([a], [b]) => (a === 'saboteur' ? -1 : b === 'saboteur' ? 1 : 0))]) {
       if (total <= 0) continue;
       const left = this.s.sim.remaining[type] ?? 0;
       const thumb = this.deps.troopThumb(type);
-      const def = this.s.data.troops[type] ?? this.s.data.battle.heroes?.[type];
+      const def = localizedData(this.s.data).troops[type] ?? localizedData(this.s.data).battle.heroes?.[type];
       const card = h(
         'button',
         { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}${hero.length && type === hero[0][0] ? ' hero' : ''}`, type: 'button', 'aria-label': def?.name ?? type, 'data-type': type, title: def?.description ?? type },
@@ -470,11 +474,11 @@ export class BattleHud {
     const sim = this.s.sim;
     this.drawChevrons();
     if (this.deps.coach) this.coach();
-    const secs = this.s.mode === 'scout' ? sim.duration / this.s.data.battle.ticksPerSecond : this.s.secondsLeft();
+    const secs = this.s.mode === 'scout' ? sim.duration / localizedData(this.s.data).battle.ticksPerSecond : this.s.secondsLeft();
     this.timerEl.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
     const pct = sim.countable ? Math.floor((sim.destroyedCount * 100) / sim.countable) : 0;
     this.pctEl.textContent = `${pct}%`;
-    const t = this.s.data.battle.starThresholds;
+    const t = localizedData(this.s.data).battle.starThresholds;
     const stars = (pct >= t.destruction ? 1 : 0) + (sim.hallDestroyed ? 1 : 0) + (pct >= t.full ? 1 : 0);
     if (stars !== this.lastStars) {
       clear(this.starsEl);
@@ -509,7 +513,7 @@ export class BattleHud {
         const out = this.deps.onFinished();
         if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending);
       } else {
-        this.toast('Replay finished.');
+        this.toast(i18nText("ui.replay_finished_c807fbe581"));
       }
     }
   }
@@ -523,11 +527,11 @@ export class BattleHud {
     if (btn.disabled) return;
     btn.disabled = true;
     const label = btn.textContent;
-    btn.textContent = 'Starting…';
+    btn.textContent = i18nText("ui.starting_bbe5fc3b9e");
     const ok = await this.deps.onAttack();
     if (!ok) {
       btn.disabled = false;
-      btn.textContent = label;
+      btn.textContent = i18nLabel(label);
       return;
     }
     this.pathChip = null;
@@ -541,10 +545,10 @@ export class BattleHud {
   }
   private confirmEnd(): void {
     const close = this.modal(
-      'End the battle?',
-      h('p', {}, 'Your remaining troops go back home. You keep any loot you already won.'),
+      i18nText("ui.end_the_battle_bcdafa61db"),
+      h('p', {}, i18nText("ui.your_remaining_troops_go_back_home_you_cb260370b3")),
       [
-        { label: 'Keep fighting', onClick: () => close() },
+        { label: i18nText("ui.keep_fighting_ca172d948b"), onClick: () => close() },
         { label: t('battle.end'), danger: true, onClick: () => { close(); this.s.surrender(); } },
       ],
     );
@@ -559,33 +563,33 @@ export class BattleHud {
     const STAR_GAP = 0.32;
     for (let i = 0; i < 3; i++) {
       const won = i < r.stars;
-      starsRow.append(h('span', { class: `star big${won ? ' on slam' : ''}`, style: `animation-delay:${0.25 + i * STAR_GAP}s` }, '★'));
+      starsRow.append(h('span', { class: `star big${won ? i18nText("ui.on_slam_f7aa652317") : ''}`, style: `animation-delay:${0.25 + i * STAR_GAP}s` }, '★'));
       if (won) window.setTimeout(() => celebrate('star'), still ? 0 : (250 + i * STAR_GAP * 1000 + 180));
     }
     if (r.destruction >= 100) window.setTimeout(() => celebrate('perfect'), still ? 0 : 250 + 3 * STAR_GAP * 1000);
-    const used = Object.entries(r.used).map(([t, n]) => `${n} ${this.s.data.troops[t]?.name ?? t}`).join(', ');
+    const used = Object.entries(r.used).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: localizedData(this.s.data).troops[t]?.name ?? t })).join(', ');
     const title = r.stars === 3 ? t('battle.perfect') : r.stars > 0 ? t('battle.victory') : t('battle.defeat');
     const body = h(
       'div',
       { class: `results ${r.stars > 0 ? 'win' : 'loss'}` },
-      r.destruction >= 100 ? h('div', { class: 'result-banner', role: 'status' }, h('b', {}, '100%'), h('span', {}, 'Every building down')) : null,
+      r.destruction >= 100 ? h('div', { class: 'result-banner', role: 'status' }, h('b', {}, '100%'), h('span', {}, i18nText("ui.every_building_down_10af907f34"))) : null,
       starsRow,
-      h('p', { class: 'result-pct' }, `${r.destruction}% destroyed`),
-      note ? h('p', { class: 'note' }, note) : null,
+      h('p', { class: 'result-pct' }, i18nText("ui.destroyed_788f690ec9", { arg1: r.destruction })),
+      note ? h('p', { class: 'note' }, i18nMessage(note)) : null,
       this.deps.grove
-        ? h('p', { class: 'muted' }, 'Your stars count toward the Alliance War.')
+        ? h('p', { class: 'muted' }, i18nText("ui.your_stars_count_toward_the_alliance_w_5c35bacca4"))
         : this.deps.practice
-          ? h('p', { class: 'muted' }, 'Loot it would have won: ', lootChips(r.loot))
+          ? h('p', { class: 'muted' }, i18nText("ui.loot_it_would_have_won_49fffbecef"), lootChips(r.loot))
         : pending
-          ? h('p', {}, 'Loot won: ', lootChips(r.loot), h('span', { class: 'muted small' }, ' (confirming with the server; it arrives when the server accepts the attack)'))
-          : h('p', {}, this.deps.trial || this.deps.special ? 'Reward: ' : 'Loot: ', countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
-      this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || pending ? '' : h('p', {}, 'Honor: ', h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
-      bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
-      eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
-      ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),
+          ? h('p', {}, i18nText("ui.loot_won_5491665d1d"), lootChips(r.loot), h('span', { class: 'muted small' }, i18nText("ui.confirming_with_the_server_it_arrives__667ceaec28")))
+          : h('p', {}, this.deps.trial || this.deps.special ? i18nLabel('Reward: ') : i18nLabel('Loot: '), countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
+      this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || pending ? '' : h('p', {}, i18nLabel('Honor: '), h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+      bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_your_league_bonus_b40d9ae1a0"), lootChips(bonus)) : null,
+      eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_the_event_bonus_8c87bb2bac"), lootChips(eventBonus)) : null,
+      ...closeCalls(this.s.sim, localizedData(this.s.data)).map((cc) => h('p', { class: 'close-call' }, i18nMessage(cc.text))),
       used ? h('p', { class: 'muted small' }, t('battle.used', { list: used })) : null,
       // The settlement says exactly what did not fit; nothing is inferred from totals.
-      overflow && Object.values(overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, 'Did not fit in your storage: ', lootChips(overflow)) : null,
+      overflow && Object.values(overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, i18nText("ui.did_not_fit_in_your_storage_e281ba747c"), lootChips(overflow)) : null,
     );
     this.modal(title, body, [
       { label: t('battle.watchReplay'), onClick: () => this.deps.onReplay() },
@@ -596,7 +600,7 @@ export class BattleHud {
   toast(text: string): void {
     // One line of hints at a time, in the band `safeArea` keeps free of points.
     this.placeToasts();
-    const t = h('div', { class: 'toast' }, text);
+    const t = h('div', { class: 'toast' }, ownedText(text));
     this.toastEl.replaceChildren(t);
     const ms = Math.min(4200, 1800 + text.length * 25);
     window.setTimeout(() => t.classList.add('out'), ms);
@@ -612,25 +616,25 @@ export class BattleHud {
     let text = '';
     let pulse = '';
     const live = this.s.mode === 'live';
-    const deployed = this.s.deployments.some((d) => !isAbility(this.s.data, d.troop));
+    const deployed = this.s.deployments.some((d) => !isAbility(localizedData(this.s.data), d.troop));
     const smoked = (sim.abilitiesUsed.smoke_bomb ?? 0) > 0;
     const left = Object.values(sim.remaining).reduce((a, b) => a + b, 0);
     if (this.s.mode === 'scout') {
-      text = 'Your first raid. Tap Attack! when you are ready.';
+      text = i18nText("ui.your_first_raid_tap_attack_when_you_ar_22236c4591");
       pulse = '.big-attack';
     } else if (live && !sim.ended) {
       const entry = sim.entry;
       const underFire = deployed && sim.troops.some((t) => t.hp > 0 && sim.buildings.some((b) => b.kind === 'defense' && b.combat && !b.destroyed && Math.hypot(b.x + b.size / 2 - t.x, b.y + b.size / 2 - t.y) <= b.combat.range + 1));
       if (!deployed) {
-        text = entry ? 'Tap inside a glowing ring to send your warriors in. Arrows at the edge lead to more rings.' : 'Tap on the grass outside the red area to send your warriors in.';
+        text = entry ? i18nText("ui.tap_inside_a_glowing_ring_to_send_your_2cae6ad2ba") : i18nText("ui.tap_on_the_grass_outside_the_red_area__ff574c5dca");
         pulse = '.entry-chevron';
       } else if (!smoked && underFire && (sim.charges.smoke_bomb ?? 0) > 0) {
-        text = this.selected === 'smoke_bomb' ? 'Now tap on your warriors near the tower.' : 'They are under fire! Pick the Smoke Bomb, then tap on your warriors.';
+        text = this.selected === 'smoke_bomb' ? i18nText("ui.now_tap_on_your_warriors_near_the_towe_be972feaad") : i18nText("ui.they_are_under_fire_pick_the_smoke_bom_f2e61b2b2d");
         pulse = this.selected === 'smoke_bomb' ? '' : '.troop-card.ability';
       } else if (smoked && sim.tick - this.coachSmokeAt < 40) {
-        text = 'Inside the smoke, towers can only hit them from close up.';
+        text = i18nText("ui.inside_the_smoke_towers_can_only_hit_t_d23ff8c4e8");
       } else if (!smoked && left > 0 && entry && entry.points.some((p) => p.used > 0 && p.used >= entry.cover)) {
-        text = 'That ring is full. Send the rest through another glowing ring.';
+        text = i18nText("ui.that_ring_is_full_send_the_rest_throug_2a84975e5b");
         pulse = '.entry-chevron';
       }
       if (smoked && !this.coachSmokeAt) this.coachSmokeAt = sim.tick;
@@ -651,7 +655,7 @@ export class BattleHud {
       h(
         'div',
         { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
-        h('div', { class: 'modal-head' }, h('h2', {}, title), closable ? h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: close }, icon(icons.close)) : null),
+        h('div', { class: 'modal-head' }, h('h2', {}, title), closable ? h('button', { class: 'icon-btn', type: 'button', 'aria-label': i18nText("ui.close_7d9eb7acb1"), onclick: close }, icon(icons.close)) : null),
         h('div', { class: 'modal-body' }, body),
         foot,
       ),

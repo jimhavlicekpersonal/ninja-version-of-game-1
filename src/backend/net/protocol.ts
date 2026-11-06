@@ -759,6 +759,8 @@ export interface MyGroveResponse {
 }
 
 export interface ChatView {
+  /** Index in PRESET_CHAT, only set for validated ready-made chat. */
+  presetId?: number;
   id: string;
   at: number;
   /** Null for system messages. */
@@ -1108,6 +1110,8 @@ export interface PurchaseHistoryResponse {
 // ---------------------------------------------------------------- push (roadmap step 40)
 
 export interface PushTokenRequest {
+  /** This device’s chosen locale. Older clients default to English. */
+  locale?: string;
   token: string;
   platform: 'ios' | 'android';
   /** Notification types this device switched on (notifications.json ids). */

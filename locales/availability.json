@@ -1,0 +1,1403 @@
+{
+  "en": {
+    "coverage": 1,
+    "ready": true,
+    "hash": "cb530e9b9155bd4b",
+    "keys": 2648,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 17
+      },
+      "data": {
+        "total": 669,
+        "translated": 669
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 1863
+      },
+      "pages": {
+        "total": 314,
+        "translated": 314
+      },
+      "ui": {
+        "total": 99,
+        "translated": 99
+      }
+    }
+  },
+  "es": {
+    "coverage": 1,
+    "ready": true,
+    "hash": "2b167174ce7bd967",
+    "keys": 2648,
+    "path": "lang/es-2b167174ce7bd967.json",
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 17
+      },
+      "data": {
+        "total": 669,
+        "translated": 669
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 1863
+      },
+      "pages": {
+        "total": 314,
+        "translated": 314
+      },
+      "ui": {
+        "total": 99,
+        "translated": 99
+      }
+    }
+  },
+  "pt": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "fr": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "de": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ar": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "zh-Hans": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "zh-Hant": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ja": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ko": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "id": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ru": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "hi": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "tr": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "vi": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "th": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "it": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "pl": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "uk": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "nl": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ms": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "bn": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ur": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "sw": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ha": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "yo": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "am": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "zu": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ig": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "mr": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "te": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ta": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "gu": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "kn": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ml": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "pa": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ro": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "cs": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "el": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "he": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "hu": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "sv": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "ca": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "hr": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "da": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "fi": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "nb": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "sk": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "sl": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  },
+  "or": {
+    "coverage": 0,
+    "ready": false,
+    "hash": "44136fa355b3678a",
+    "keys": 0,
+    "namespaces": {
+      "boot": {
+        "total": 17,
+        "translated": 0
+      },
+      "data": {
+        "total": 669,
+        "translated": 0
+      },
+      "messages": {
+        "total": 1863,
+        "translated": 0
+      },
+      "pages": {
+        "total": 314,
+        "translated": 0
+      },
+      "ui": {
+        "total": 99,
+        "translated": 0
+      }
+    }
+  }
+}

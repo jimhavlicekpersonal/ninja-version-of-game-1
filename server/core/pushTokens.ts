@@ -1,3 +1,4 @@
+import availability from '../../locales/availability.json';
 /** Devices that receive server push (roadmap step 40): register, update choices, stop. */
 import type { PushTokenRequest } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
@@ -11,7 +12,8 @@ export async function putPushToken(ctx: ServerContext, me: Player, body: Partial
   const types = Array.isArray(body.types) ? [...new Set(body.types.map(String).filter((t) => known.has(t)))] : [];
   const tz = Number(body.tzOffsetMinutes);
   if (!Number.isInteger(tz) || Math.abs(tz) > 14 * 60) throw new ApiError(400, 'bad_request', 'Bad time zone.');
-  await ctx.repo.putPushToken({ token, playerId: me.id, platform: body.platform, types, tzOffsetMinutes: tz, updatedAt: ctx.now() });
+  const locale = typeof body.locale === 'string' && (availability as Record<string, {ready: boolean}>)[body.locale]?.ready ? body.locale : 'en';
+  await ctx.repo.putPushToken({ locale, token, playerId: me.id, platform: body.platform, types, tzOffsetMinutes: tz, updatedAt: ctx.now() });
   return { ok: true, enabled: ctx.push.enabled };
 }
 

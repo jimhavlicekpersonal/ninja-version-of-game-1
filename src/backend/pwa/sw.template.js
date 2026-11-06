@@ -18,7 +18,9 @@
    - Install reads hashed files through the HTTP cache (the page just downloaded them), and
      everything else past it (`cacheModeFor`). */
 const CACHE = 'tk-__BUILD_ID__';
-const PRECACHE = __PRECACHE__;
+const LANGUAGE_FILES = /*__LANGUAGE_FILES__*/ {};
+const selectedLanguage = new URL(self.location.href).searchParams.get('lang') || 'en';
+const PRECACHE = __PRECACHE__.concat(LANGUAGE_FILES[selectedLanguage] || []);
 const SHELL = './';
 /** How long a page request may take before the cached shell is shown instead. */
 const NAV_TIMEOUT_MS = 3500;

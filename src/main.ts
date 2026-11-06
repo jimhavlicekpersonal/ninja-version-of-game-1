@@ -1,4 +1,5 @@
-import { initLanguage } from './presentation/ui/i18n';
+import { t as i18nText } from './presentation/ui/i18n';
+import { listText as i18nList, fmtNumber, initLanguage, labelText as i18nLabel } from './presentation/ui/i18n';
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
@@ -127,7 +128,7 @@ async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events
     // The testing sandbox has its own village: time skips and test purchases never touch the real one.
     return { store: new IdbSaveStore(db, sandbox ? SANDBOX_SAVE_KEY : undefined), events, db };
   } catch (e) {
-    console.warn('Falling back to in-memory storage', e);
+    console.warn(i18nText("ui.falling_back_to_in_memory_storage_f1f5b7fd50"), e);
     return { store: new MemorySaveStore(), events: new MemoryEventStore(), db: null };
   }
 }
@@ -190,7 +191,7 @@ async function boot(): Promise<void> {
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   // Report section 5 step 9: the player's language (stored choice, else the device's), before any game text shows.
   await initLanguage();
-  bootStatus('Opening your village…');
+  bootStatus(i18nText("ui.opening_your_village_985a7b5b5b"));
   const [{ store, events, db }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
   bootStore = store;
   const analytics = new Analytics(events, clock);
@@ -248,7 +249,7 @@ async function boot(): Promise<void> {
   // Purchases approved later (Ask to Buy, pending payments), and paid ones not yet delivered.
   const deliverLater = (receipt: Parameters<GameController['deliverReceipt']>[0]) =>
     void controller.deliverReceipt(receipt).then((r) => {
-      if (r.ok) hud?.toast('Your purchase has been delivered.', 'success');
+      if (r.ok) hud?.toast(i18nText("ui.your_purchase_has_been_delivered_ae90965955"), 'success');
     });
   if (storeKit) void storeKit.listen(deliverLater);
   if (play) void play.listen(deliverLater);
@@ -266,7 +267,7 @@ async function boot(): Promise<void> {
     void controller
       .deliverUnfinishedReport()
       .then(({ delivered, left }) => {
-        if (delivered) hud?.toast(`Your purchase${delivered === 1 ? ' has' : 's have'} been delivered.`, 'success');
+        if (delivered) hud?.toast(i18nText('common.purchasesRecovered', {n: delivered}), 'success');
         if (left > 0 && (connection.online || !connection.enabled)) recoverTimer = setTimeout(recoverPurchases, Math.min(15_000 * 2 ** recoverTry++, 15 * 60_000));
         else recoverTry = 0;
       })
@@ -278,13 +279,13 @@ async function boot(): Promise<void> {
   connection.subscribe(() => {
     if (connection.storageProblem && !toldStorage) {
       toldStorage = true;
-      hud?.toast('This device could not store your latest actions (storage full or blocked). They are being sent to the server now; free some space to keep playing offline safely.', 'error');
+      hud?.toast(i18nText("ui.this_device_could_not_store_your_lates_8c473f9787"), 'error');
     } else if (!connection.storageProblem) toldStorage = false;
     const held = connection.village?.importHeld;
     if (held) {
       connection.village!.importHeld = null;
-      const parts = [held.jade ? `${held.jade.toLocaleString()} Jade` : '', held.premium ? 'the premium Season Scroll' : ''].filter(Boolean).join(' and ');
-      if (parts) hud?.toast(`Your village is on the server now. ${parts} could not be matched to a purchase we checked, so it is held for review: contact support from Settings. Your old village is kept as a backup.`, 'info');
+      const parts = i18nList([held.jade ? i18nText("ui.jade_9ff8af5a0c", { arg1: fmtNumber(held.jade) }) : '', held.premium ? i18nText("ui.the_premium_season_scroll_6a112fd87e") : ''].filter(Boolean));
+      if (parts) hud?.toast(i18nText("ui.your_village_is_on_the_server_now_coul_42714aac00", { arg1: parts }), 'info');
     }
   });
   // The one-time question about play statistics: once online (the age is known by then), not in a battle.
@@ -300,16 +301,16 @@ async function boot(): Promise<void> {
     if (battle) return void setTimeout(askStats, 60_000);
     const answer = (on: boolean) => {
       void stats.set(on);
-      hud?.toast(on ? 'Thank you. You can turn this off in Settings.' : 'Nothing is shared. You can change this in Settings.', 'info');
+      hud?.toast(on ? i18nText("ui.thank_you_you_can_turn_this_off_in_set_b65491280f") : i18nText("ui.nothing_is_shared_you_can_change_this__a91160e994"), 'info');
     };
-    showBanner('tk-banner-stats', 'Help improve Kagemura? Share play statistics under a random id: never your name, Player ID or village.', [
-      { label: 'Share', onClick: (close) => { close(); answer(true); } },
-      { label: 'No thanks', onClick: (close) => { close(); answer(false); } },
+    showBanner('tk-banner-stats', i18nText("ui.help_improve_kagemura_share_play_stati_d5a5c00a9e"), [
+      { label: i18nText("ui.share_29887a5ff9"), onClick: (close) => { close(); answer(true); } },
+      { label: i18nText("ui.no_thanks_49780701dc"), onClick: (close) => { close(); answer(false); } },
       {
-        label: 'What is shared',
+        label: i18nText("ui.what_is_shared_742745a508"),
         onClick: (close) => {
           close();
-          void hud?.confirm('Share play statistics?', STATS_EXPLAINER, 'Share', false, 'No thanks').then(answer);
+          void hud?.confirm(i18nText("ui.share_play_statistics_551c0c9c62"), STATS_EXPLAINER, i18nText("ui.share_29887a5ff9"), false, i18nText("ui.no_thanks_49780701dc")).then(answer);
         },
       },
     ]);
@@ -336,7 +337,7 @@ async function boot(): Promise<void> {
   const syncPush = () =>
     connection
       .syncPush(prefs.get('reminders') ? [...notifyPrefs.enabledSet(controller.data.notifications.types)] : [], new Date().getTimezoneOffset(), pushDevice)
-      .catch((e) => console.warn('push registration failed', e));
+      .catch((e) => console.warn(i18nText("ui.push_registration_failed_9a9f4cdbb5"), e));
   analytics.log('session_start', { isNew, awayMs: offline?.awayMs ?? 0, platform: platformName(), standalone: matchMedia('(display-mode: standalone)').matches });
 
   await loadInterfaceFonts();
@@ -364,7 +365,7 @@ async function boot(): Promise<void> {
   });
   // The map is drawn on a canvas: name it for screen readers (client re-audit item 15).
   game.canvas?.setAttribute('role', 'img');
-  game.canvas?.setAttribute('aria-label', 'Village map. Drag to look around, pinch or scroll to zoom, tap a building to select it. Every action is also on the buttons around the map.');
+  game.canvas?.setAttribute('aria-label', i18nText("ui.village_map_drag_to_look_around_pinch__2599974c91"));
   const init: VillageSceneInit = { controller, bus, renderScale };
   // Start-up (client re-audit item 3): a small first scene loads any real art, then paints the
   // generated textures in short slices (the splash shows progress and the page keeps answering),
@@ -377,18 +378,18 @@ async function boot(): Promise<void> {
       super('prepare');
     }
     preload(): void {
-      bootStatus('Unpacking the scrolls…');
+      bootStatus(i18nText("ui.unpacking_the_scrolls_6dcf82d807"));
       queueArt(this);
     }
     create(): void {
-      bootStatus('Painting the village…');
+      bootStatus(i18nText("ui.painting_the_village_5cb74eddf7"));
       // No frames while painting: on a slow phone each frame between slices would cost as much as a slice.
       game.loop.sleep();
       const st = controller.state;
-      void prepareTextures(this, gd, st.buildings, st.cosmetics.hallSkin, (f) => bootStatus(`Painting the village… ${Math.round(f * 100)}%`))
-        .catch((e) => console.warn('Texture preparation failed; the scenes paint what is missing', e))
+      void prepareTextures(this, gd, st.buildings, st.cosmetics.hallSkin, (f) => bootStatus(i18nText("ui.painting_the_village_6de68dbf99", { arg1: Math.round(f * 100) })))
+        .catch((e) => console.warn(i18nText("ui.texture_preparation_failed_the_scenes__e13e4bce87"), e))
         .then(() => {
-          bootStatus('Lighting the lanterns…');
+          bootStatus(i18nText("ui.lighting_the_lanterns_bc821aedf0"));
           game.loop.wake();
           const village = this.scene.get('village');
           village.events.once(Phaser.Scenes.Events.CREATE, () => game.events.once(Phaser.Core.Events.POST_RENDER, () => resolveFirstFrame()));
@@ -452,7 +453,7 @@ async function boot(): Promise<void> {
       const ok = await reminders.enable();
       if (!ok) {
         prefs.set('reminders', false);
-        hud.toast('Notifications are blocked. You can allow them in your device settings.', 'error');
+        hud.toast(i18nText("ui.notifications_are_blocked_you_can_allo_1340696696"), 'error');
       }
       void syncPush();
     },
@@ -487,9 +488,9 @@ async function boot(): Promise<void> {
   let persistAdvice = false;
   const copySaveCode = () => {
     const code = encodeExportCode(serialize(controller.state, controller.now()));
-    const done = () => hud.toast('Save code copied. Keep it somewhere safe (a note or a message to yourself).', 'success');
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(code).then(done, () => hud.toast('Open Settings → Copy save code to copy it by hand.', 'info'));
-    else hud.toast('Open Settings → Copy save code to copy it by hand.', 'info');
+    const done = () => hud.toast(i18nText("ui.save_code_copied_keep_it_somewhere_saf_7ceeb86aed"), 'success');
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(code).then(done, () => hud.toast(i18nText("ui.open_settings_copy_save_code_to_copy_i_285b47e44e"), 'info'));
+    else hud.toast(i18nText("ui.open_settings_copy_save_code_to_copy_i_285b47e44e"), 'info');
   };
   const persistNote = (): HTMLElement => {
     const box = document.createElement('div');
@@ -499,20 +500,20 @@ async function boot(): Promise<void> {
     p.textContent = ios
       ? // Report section 5 step 3 (device F6): a Home Screen web app has its own storage, apart from Safari's, so it starts
         // a new village. The save code is what carries this one over.
-        'Safari may delete this village after a week without a visit. To keep it: copy a save code first, then add Kagemura to your Home Screen (Share → Add to Home Screen), open it from there and load the code (Settings → Load from code). The Home Screen app keeps its own village, apart from Safari’s. You can also link a sign-in under Online play.'
-      : 'This browser may delete this village if you stay away for a while. To keep it: install Kagemura (the browser menu → Install app or Add to Home screen), link a sign-in under Online play, or copy a save code.';
+        i18nText("ui.safari_may_delete_this_village_after_a_9133912cdf")
+      : i18nText("ui.this_browser_may_delete_this_village_i_1af0777d33");
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'btn';
-    b.textContent = 'Copy save code';
+    b.textContent = i18nText("ui.copy_save_code_3ac3ad4d9c");
     b.addEventListener('click', copySaveCode);
     box.append(p, b);
     return box;
   };
-  const openPersistAdvice = () => hud.modal('Keep your village safe', persistNote(), [{ label: 'OK', primary: true, onClick: () => hud.closeAllModals() }]);
+  const openPersistAdvice = () => hud.modal(i18nText("ui.keep_your_village_safe_c885b1fcbb"), persistNote(), [{ label: i18nText("ui.ok_565339bc4d"), primary: true, onClick: () => hud.closeAllModals() }]);
   const rawModal = hud.modal.bind(hud);
   hud.modal = (title, body, ...rest) => {
-    if (title === 'Settings' && persistAdvice) body.prepend(persistNote());
+    if (title === i18nLabel('Settings') && persistAdvice) body.prepend(persistNote());
     return rawModal(title, body, ...rest);
   };
 
@@ -528,7 +529,7 @@ async function boot(): Promise<void> {
       return;
     }
     const buttons = [...hudEl.querySelectorAll<HTMLButtonElement>('button')].filter((b) => b.offsetParent !== null);
-    const pick = (label: string) => buttons.find((b) => b.textContent?.trim() === label);
+    const pick = (label: string) => buttons.find((b) => b.textContent?.trim() === i18nLabel(label));
     (pick('End battle') ?? pick('Exit replay') ?? pick('Home'))?.click();
   };
 
@@ -566,11 +567,11 @@ async function boot(): Promise<void> {
       const sub = { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, reinforcements: pending.setup.reinforcements, deployments: pending.deployments };
       void connection.report(pending.channel === 'gangwar' ? 'gangwar' : pending.kind === 'war' ? 'raid' : 'attack', sub);
     }
-    const what = pending.channel === 'gangwar' ? 'Gang War attack' : pending.kind === 'war' ? 'Alliance War attack' : pending.kind === 'trial' ? 'Shadow Trial' : 'raid';
-    hud.toast(`Your ${what} on ${pending.opponentName} was interrupted and has been played out: ${record.result.stars}★, ${record.result.destruction}%. See the battle log.`, 'info');
+    const what = pending.channel === 'gangwar' ? i18nText("ui.gang_war_attack_59b0d70c6d") : pending.kind === 'war' ? i18nText("ui.alliance_war_attack_b99d44a1a6") : pending.kind === 'trial' ? i18nText("ui.shadow_trial_3aa629e356") : 'raid';
+    hud.toast(i18nText("ui.your_on_was_interrupted_and_has_been_p_2998375358", { arg1: what, arg2: pending.opponentName, arg3: record.result.stars, arg4: record.result.destruction }), 'info');
   }
 
-  if (sandbox) hud.toast('Testing sandbox: a separate practice village with testing tools and a free test store. Your real village is untouched, and online play is off.', 'info');
+  if (sandbox) hud.toast(i18nText("ui.testing_sandbox_a_separate_practice_vi_e3d2ae64e5"), 'info');
   if (params.has('debug')) {
     // Testing hook, only with ?debug in the URL.
     (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes };
@@ -578,25 +579,25 @@ async function boot(): Promise<void> {
 
   // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
   if (offline) hud.showWelcomeBack(offline, () => undefined);
-  if (loadError) hud.toast(`${loadError} A backup was kept and a new village started.`, 'error');
+  if (loadError) hud.toast(i18nText("ui.a_backup_was_kept_and_a_new_village_st_6cb7ba05bd", { arg1: loadError }), 'error');
   tutorial = new Tutorial(controller, analytics, document.body);
   tutorial.start();
   // A village kept after a failed load, further along than this one: offer it back.
-  void hud.offerRecovery().catch((e) => console.warn('Could not check for kept villages', e));
+  void hud.offerRecovery().catch((e) => console.warn(i18nText("ui.could_not_check_for_kept_villages_1d0aca4f81"), e));
 
   // Sound: unlock on the first touch (iOS needs a gesture), tap clicks, event cues, music.
   document.addEventListener('pointerdown', () => sound.unlock(), { capture: true });
   document.addEventListener('click', (e) => {
-    if ((e.target as Element | null)?.closest?.('button, [role="button"]')) sound.play('tap');
+    if ((e.target as Element | null)?.closest?.("button, [role=\"button\"]")) sound.play('tap');
   }, { capture: true });
   controller.onEvents((events) => {
     for (const e of events) {
       if (e.kind === 'raid_settled') {
         // The server's answer to an online attack.
         const r = e.record;
-        if (e.outcome === 'confirmed') hud.toast(`Raid on ${r.opponentName} confirmed by the server${Object.values(r.banked ?? {}).some((v) => (v ?? 0) > 0) ? ': loot banked' : ''}.`, 'success');
-        else hud.toast(`The server did not accept your raid on ${r.opponentName} (${r.rejected}). It counts as practice: no loot or honor.`, 'error');
-      } else if (e.kind === 'reward' && e.source.startsWith('season:')) hud.toast('The league season ended: your chest was added. See Honor for details.', 'success');
+        if (e.outcome === 'confirmed') hud.toast(i18nText("ui.raid_on_confirmed_by_the_server_62aee4a29d", { arg1: r.opponentName, arg2: Object.values(r.banked ?? {}).some((v) => (v ?? 0) > 0) ? i18nText("ui.loot_banked_c1d50f49bf") : '' }), 'success');
+        else hud.toast(i18nText("ui.the_server_did_not_accept_your_raid_on_844fc2eef5", { arg1: r.opponentName, arg2: r.rejected }), 'error');
+      } else if (e.kind === 'reward' && e.source.startsWith('season:')) hud.toast(i18nText("ui.the_league_season_ended_your_chest_was_ed31b9f094"), 'success');
       if (e.kind === 'purchase_granted') sound.play('coin');
       else if (e.kind === 'skip_used') sound.play('magic');
       else if (e.kind === 'reward') sound.play('star');
@@ -619,9 +620,9 @@ async function boot(): Promise<void> {
       breakShown = true;
       analytics.log('session_reminder', { minutes: Math.round(playedMs / 60_000) });
       hud.modal(
-        'Time for a break?',
-        Object.assign(document.createElement('p'), { textContent: "You've been playing for an hour. How about a stretch and a glass of water? Your Village Artisans will keep working while you're away." }),
-        [{ label: 'Keep playing', primary: true, onClick: () => hud.closeAllModals() }],
+        i18nText("ui.time_for_a_break_079e415422"),
+        Object.assign(document.createElement('p'), { textContent: i18nLabel("You've been playing for an hour. How about a stretch and a glass of water? Your Village Artisans will keep working while you're away.") }),
+        [{ label: i18nText("ui.keep_playing_b0b47d01a0"), primary: true, onClick: () => hud.closeAllModals() }],
       );
     }
   }, 5000);
@@ -677,7 +678,7 @@ async function boot(): Promise<void> {
     }
     if (Date.now() - lastSaveWarning < 60_000) return;
     lastSaveWarning = Date.now();
-    hud.toast(`Your village could not be saved (${e.message}). Free some device storage, and copy a save code in Settings to keep it safe.`, 'error');
+    hud.toast(i18nText("ui.your_village_could_not_be_saved_free_s_e56253c28f", { arg1: e.message }), 'error');
   });
 
   // Android Back (client re-audit item 6): close what is on top, leave a battle with a confirm, else ask before leaving.
@@ -687,12 +688,12 @@ async function boot(): Promise<void> {
         CapApp.addListener('backButton', () => {
           if (app?.inBattle) return battleBack();
           if (hud.closeTop()) return;
-          void hud.confirm('Leave Kagemura?', 'Your village is saved, and your Artisans keep working while you are away.', 'Leave', false, 'Stay').then((leave) => {
+          void hud.confirm(i18nText("ui.leave_kagemura_0b798fad93"), i18nText("ui.your_village_is_saved_and_your_artisan_85332ff544"), i18nText("ui.leave_fc6e4a408d"), false, i18nText("ui.stay_08fd1de4b0")).then((leave) => {
             if (leave) void controller.save().finally(() => void CapApp.exitApp());
           });
         }),
       )
-      .catch((e) => console.warn('Back button unavailable', e));
+      .catch((e) => console.warn(i18nText("ui.back_button_unavailable_922733130d"), e));
   }
 
   // Battery (client re-audit item 17): the village drops to ~20 FPS after a few seconds without
@@ -727,7 +728,7 @@ async function boot(): Promise<void> {
   shown = true;
   earlyToasts.forEach(([text, kind], i) => setTimeout(() => showToast(text, kind), i * 1200));
   if (!store.persistent) {
-    showBanner('tk-banner-save', "This browser can't save your village: progress is lost when this page closes. Use a normal (not private) window, or copy a save code in Settings.", [{ label: 'Hide', onClick: (close) => close() }]);
+    showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]);
   } else if (!sandbox && !isNative()) {
     void storageKept().then((kept) => {
       if (kept) return;
@@ -735,9 +736,9 @@ async function boot(): Promise<void> {
       // the village after a week away: say how to keep it, at most once a week.
       persistAdvice = true;
       if (!persistPromptDue()) return;
-      showBanner('tk-banner-persist', 'This browser may delete your village if you stay away for a week.', [
-        { label: 'Keep it safe', onClick: (close) => { close(); snoozePersistPrompt(); openPersistAdvice(); } },
-        { label: 'Not now', onClick: (close) => { close(); snoozePersistPrompt(); } },
+      showBanner('tk-banner-persist', i18nText("ui.this_browser_may_delete_your_village_i_ae643ded55"), [
+        { label: i18nText("ui.keep_it_safe_190db1d347"), onClick: (close) => { close(); snoozePersistPrompt(); openPersistAdvice(); } },
+        { label: i18nText("ui.not_now_a0e63d7c71"), onClick: (close) => { close(); snoozePersistPrompt(); } },
       ]);
     });
   }
@@ -746,13 +747,13 @@ async function boot(): Promise<void> {
   if (!sandbox && !isNative() && platformName() === 'ios' && standaloneWebApp() && !controller.state.tutorial.done && !homeScreenHintShown()) {
     markHomeScreenHintShown();
     hud.modal(
-      'Played in Safari before?',
+      i18nText("ui.played_in_safari_before_1b168b5abe"),
       (() => {
         const p = document.createElement('p');
-        p.textContent = 'The Home Screen app keeps its own village, apart from Safari’s. To bring yours here: open Kagemura in Safari, go to Settings → Copy save code, then come back and use Settings → Load from code.';
+        p.textContent = i18nText("ui.the_home_screen_app_keeps_its_own_vill_41ab3ab967");
         return p;
       })(),
-      [{ label: 'OK', primary: true, onClick: () => hud.closeAllModals() }],
+      [{ label: i18nText("ui.ok_565339bc4d"), primary: true, onClick: () => hud.closeAllModals() }],
     );
   }
   if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
@@ -806,21 +807,21 @@ boot().catch((e) => {
     b.type = 'button';
     b.className = 'btn primary';
     b.textContent = label;
-    b.style.margin = '8px 4px 0';
+    b.style.margin = "8px 4px 0";
     b.addEventListener('click', onClick);
     card.append(b);
     return b;
   };
   const newer = e instanceof NewerSaveError;
   if (newer) {
-    line('Your village was saved by a newer version of Kagemura, so this version cannot open it. It is safe and unchanged.');
-    line(isNative() ? `Update Kagemura from ${platform() === 'ios' ? 'the App Store' : 'Google Play'}, then open it again.` : 'Tap Update to get the newest version. You can also copy a save code to open the village on another device.', 'small');
+    line(i18nText("ui.your_village_was_saved_by_a_newer_vers_7833d39835"));
+    line(isNative() ? i18nText("ui.update_kagemura_from_then_open_it_agai_b145c71973", { arg1: platform() === 'ios' ? i18nText("ui.the_app_store_8768b638e4") : i18nText("ui.google_play_027b168468") }) : i18nText("ui.tap_update_to_get_the_newest_version_y_150542a397"), 'small');
   } else {
-    line('Something went wrong starting the game.');
+    line(i18nText("ui.something_went_wrong_starting_the_game_b41810f792"));
     line(String((e as Error)?.message ?? e), 'small');
   }
   const status = line('', 'small');
-  const retry = button(newer && !isNative() ? 'Update' : 'Retry', () => {
+  const retry = button(newer && !isNative() ? i18nText("ui.update_c1c1009d3f") : i18nText("ui.retry_942087cc2d"), () => {
     retry.disabled = true;
     if (newer && !isNative()) void updateWebApp(async () => undefined, (t) => (status.textContent = t)).then((r) => {
       if (r !== 'reloading') location.reload();
@@ -828,17 +829,17 @@ boot().catch((e) => {
     else location.reload();
   });
   if (newer) {
-    button('Copy save code', () => {
+    button(i18nText("ui.copy_save_code_3ac3ad4d9c"), () => {
       void (async () => {
         const raw = (await bootStore?.load().catch(() => null)) as SaveFile | null;
         if (!raw?.village) {
-          status.textContent = 'No save could be read on this device.';
+          status.textContent = i18nText("ui.no_save_could_be_read_on_this_device_ac5f04e7ad");
           return;
         }
         const code = encodeExportCode(raw);
         try {
           await navigator.clipboard.writeText(code);
-          status.textContent = 'Save code copied. Load it in Settings on a device with the newest version.';
+          status.textContent = i18nText("ui.save_code_copied_load_it_in_settings_o_ceeaf51351");
         } catch {
           // No clipboard: show it for copying by hand.
           const box = document.createElement('textarea');
@@ -847,7 +848,7 @@ boot().catch((e) => {
           box.style.cssText = 'width:100%;min-height:80px;margin-top:8px;font-size:16px';
           card.append(box);
           box.select();
-          status.textContent = 'Copy this save code by hand.';
+          status.textContent = i18nText("ui.copy_this_save_code_by_hand_d9cd7d7d1d");
         }
       })();
     });

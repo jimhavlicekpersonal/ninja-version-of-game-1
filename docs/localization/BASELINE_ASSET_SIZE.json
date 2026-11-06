@@ -1,0 +1,349 @@
+{
+  "ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
+  "scope": "dist/assets before Spanish integration; same workspace and toolchain",
+  "units": "bytes",
+  "files": [
+    {
+      "path": "dela-gothic-one-latin-400-AgyGD05y.woff2",
+      "raw": 13804,
+      "gzip": 13827,
+      "brotli": 13806
+    },
+    {
+      "path": "esm-Cs01XXEx.js",
+      "raw": 330,
+      "gzip": 241,
+      "brotli": 225
+    },
+    {
+      "path": "index-B7gZNGTY.css",
+      "raw": 51939,
+      "gzip": 12673,
+      "brotli": 11225
+    },
+    {
+      "path": "index-mGigSWhq.js",
+      "raw": 1531608,
+      "gzip": 436835,
+      "brotli": 353800
+    },
+    {
+      "path": "mplus1-latin-var-xGSo0m5C.woff2",
+      "raw": 34132,
+      "gzip": 34165,
+      "brotli": 34136
+    },
+    {
+      "path": "ui-3JaFNy9a.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-3sEEPhW2.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-52Wh5P4e.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-8ci1YvgA.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-APh9QDCL.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-B0sfB2vF.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-B0vuXsJ5.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-BLi0g0iD.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-BXDQoKgZ.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-BczkPL9b.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-Bdoui6Bo.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-Bkxfgx75.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-Bqbaxpid.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-C1w5aUTI.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-C4MTeSyZ.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-C7d5WnYo.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-CCFUQAsA.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-CLwVueBQ.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-Cbm3SiIf.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-CbrZvJ2i.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-Cd67u2Ex.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-CmSMaIaY.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-CudtezL7.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-CvzqVK7r.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-D2WVAe_k.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-D62zy53n.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-D6vSOcMn.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DJH4L-yu.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DNeyYNkl.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DS0KZ88N.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DY4j2VHM.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DgF3VRCB.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DkTofc-6.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-Do5xIpXS.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DpYXnhmN.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-DxYbdfFj.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-GxG1uwL1.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-MGOmuA8t.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-Q2pDg7-j.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-VpZi3IVz.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-crJOL31S.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-fHvxMkeN.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-kS8S4Cc2.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-l7MJDaJW.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-poRGFJU3.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-r__zVKbj.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-w4GQVimR.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-zkl7XxbS.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "ui-ztKnMJzY.js",
+      "raw": 8072,
+      "gzip": 2583,
+      "brotli": 2254
+    },
+    {
+      "path": "web-B1sV-MHq.js",
+      "raw": 844,
+      "gzip": 399,
+      "brotli": 304
+    },
+    {
+      "path": "web-BZ9qq2hY.js",
+      "raw": 894,
+      "gzip": 458,
+      "brotli": 375
+    },
+    {
+      "path": "web-DFEaxfo5.js",
+      "raw": 4438,
+      "gzip": 1287,
+      "brotli": 1089
+    }
+  ]
+}

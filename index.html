@@ -9,7 +9,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Kagemura" />
-    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="manifest" />
+    <script>(function(d,w){var l=w.__kgLocale,code=l?l.code:'en';d.querySelector('link[rel="manifest"]').href=code==='en'?'./manifest.webmanifest':'./'+code+'/manifest.webmanifest';if(l&&l.boot&&l.boot['boot.description'])d.querySelector('meta[name="description"]').content=l.boot['boot.description'];})(document,window);</script>
     <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>Kagemura: Ninja Clans</title>
@@ -34,7 +35,8 @@
         <img class="boot-mark" src="./icons/icon-192.png" alt="" width="112" height="112" />
         <div class="boot-title">Kagemura</div>
         <div class="boot-sub">Ninja Clans</div>
-        <div class="boot-status">Lighting the lanterns…</div>
+        <div class="boot-status"></div>
+        <script>document.querySelector('.boot-status').textContent = window.__kgTranslateBoot ? window.__kgTranslateBoot('Lighting the lanterns…') : 'Lighting the lanterns…';</script>
       </div>
     </div>
     <script type="module" src="/src/main.ts"></script>

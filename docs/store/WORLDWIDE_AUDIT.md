@@ -486,3 +486,19 @@ Verification on `6b7b1eb`: as above, plus `npm run i18n:check` (all languages pa
 | Compliance L03 numbers always en-US | fixed | `formatNumber`/`formatCompact` use the language's grouping and short forms with Western digits; durations are keyed. | `i18n.test.ts` (de, hi, ar, en). | Dates elsewhere still use the device locale directly. |
 | Compliance L04, art F15 Latin-only fonts, no RTL | fixed in code, by the owner's rule | Fonts are never downloaded (owner decision): non-Latin scripts use the phone's fonts with bolder titles (`data-script`); `dir="rtl"` mirrors the rail and battle cards; flex rows follow `dir`. | Browser screenshot (pseudo-Arabic). | No native typographic review; canvas text and some absolute positions are not mirrored. |
 | Art F16 Latin letters on Infiltration Points | fixed | `pointLabel`: letters stay ids; outside the Latin script the canvas label, chips and chevrons show 1–8. | `i18n.test.ts`. | "AA"/"splash" scout chip text is only keyed in the aria label so far. |
+
+### 2026-11-06 — complete Spanish implementation and measured language packaging
+
+Fixing reference: the current integration worktree based on `9d0eaa7`, not yet
+committed or deployed. Current surface-by-surface status, source hashes and release
+steps are recorded in [`../localization/SPANISH_IMPLEMENTATION.json`](../localization/SPANISH_IMPLEMENTATION.json);
+the original census remains a pinned historical snapshot. This entry supersedes
+the English-only implementation limitations of the text-layer entry above for
+Spanish. It does not close worldwide linguistic, moderation or device risks.
+
+| Finding | Current change and evidence | Remaining limitations |
+|---|---|---|
+| Compliance L01, R05 text coverage | Spanish completes 2,962 keys across boot, UI, data, messages and public/account pages; 2,648 compact runtime strings. All namespaces must reach 100% before activation. Display adapters preserve canonical simulation/save data and authored Unicode names/chat. Store listing and native resources are supplied. See the implementation inventory and `locales/es/REVIEW.json`. | English and Spanish only; 48 target languages remain untranslated. Native linguistic review, other-script typography/RTL, localized moderation/support and physical-device testing remain open. |
+| Compliance L02, L03 formatting | Owned message parameters, plural/select branches, costs, dates, numbers and lists use locale-aware presentation. Historical/server messages are translated at explicit owned boundaries; validated chat presets carry metadata so authored chat stays literal. Catalog/parameter and no-mutation tests pass. | Human grammar/context review and every live provider/server state on devices remain release checks. Unknown provider diagnostics use a localized game fallback. |
+| Poor-network language availability | Native installs include completed packs. Web caches only the selected pack/pages. The complete Spanish standalone client asset set is 268,679 raw bytes / 92,317 ZIP bytes; projected 50-language text is 13.43–26.87 MB raw / 4.62–9.23 MB ZIP. See `../localization/SPANISH_SIZE.json` for exclusions and estimate basis. | Signed IPA/AAB size is unmeasured; future font/art/audio packages require separate budgeting. Other languages' sizes are projections. |
+| Verification and release integration | Full suite: 1,132 passed, 13 skipped. Client/server builds and server typecheck pass. Built Chromium client: 12 panels, five viewport sizes, Build taps, offline reload, safe failed language switch and preserved building identity. Evidence: `../localization/evidence/validation.json` and `browser-es.json`. | No physical iOS/Android, store upload or external database migration. Apply migration 0029 with the updated server; validate PostgreSQL/Redis, store products/prices, OS sheets and notification delivery. Publisher/legal facts remain pending where originally pending. |

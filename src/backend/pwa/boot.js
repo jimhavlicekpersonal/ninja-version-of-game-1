@@ -152,10 +152,12 @@
     return 0;
   }
 
+  function tr(text) { return w.__kgTranslateBoot ? w.__kgTranslateBoot(text) : text; }
+
   function el(tag, attrs, text) {
     var e = d.createElement(tag);
     for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) e.setAttribute(k, attrs[k]);
-    if (text) e.textContent = text;
+    if (text) e.textContent = tr(text);
     return e;
   }
 
@@ -201,15 +203,15 @@
     }
     if (kind === 'unsupported') {
       card.appendChild(el('p', { style: 'margin:0 0 8px;font-size:17px' }, 'Kagemura needs a newer browser'));
-      card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, 'This browser is missing: ' + detail + '. Update your phone (iOS 15 or later) or your browser (Chrome, Safari, Edge or Firefox from 2021 or later), then open Kagemura again.'));
+      card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, tr('This browser is missing: {detail}. Update your phone (iOS 15 or later) or your browser (Chrome, Safari, Edge or Firefox from 2021 or later), then open Kagemura again.').replace('{detail}', detail)));
     } else {
       card.appendChild(el('p', { style: 'margin:0 0 8px;font-size:17px' }, kind === 'slow' ? 'Kagemura is taking a long time to load' : "Couldn't load Kagemura"));
       card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, kind === 'slow' ? 'Nothing has moved for a while. It keeps loading in the background, or you can start again.' : 'Check your connection and try again. Your village is saved on this device.'));
-      if (detail) card.appendChild(el('p', { style: 'margin:8px 0 0;font:400 12px monospace;color:#5f6b78;word-break:break-word' }, String(detail).slice(0, 200)));
+      if (detail) card.appendChild(el('p', { style: 'margin:8px 0 0;font:400 12px monospace;color:#5f6b78;word-break:break-word' }, tr('The action could not be completed. Please try again.')));
       var retry = el('button', { type: 'button', style: BTN }, 'Retry');
       retry.addEventListener('click', function () {
         retry.disabled = true;
-        retry.textContent = 'Retrying…';
+        retry.textContent = tr('Retrying…');
         api.retry();
       });
       card.appendChild(retry);

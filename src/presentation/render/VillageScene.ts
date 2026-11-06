@@ -1,3 +1,4 @@
+import { messageText as ownedText, labelText } from '../ui/i18n';
 import { provideBuildingLocator, type ScreenRect } from './anchors';
 import Phaser from 'phaser';
 import { BODY_FONT, DISPLAY_FONT } from './fonts';
@@ -149,7 +150,7 @@ export class VillageScene extends Phaser.Scene {
         this.sync();
         for (const f of finished) {
           if (f.level === 0) continue; // a cleared obstacle simply disappears
-          this.floatText(f.id, f.level === 1 ? 'Done!' : `Level ${f.level}!`, '#fff4b0');
+          this.floatText(f.id, f.level === 1 ? labelText('Done!') : ownedText(`Level ${f.level}!`), '#fff4b0');
           this.bounce(f.id, 'pop');
           const v = this.views.get(f.id);
           if (v) confetti(this, v.image.x, v.image.y - v.image.displayHeight * v.image.originY * 0.5, this.userZoom, OVERLAY_DEPTH + 2);
@@ -393,7 +394,7 @@ export class VillageScene extends Phaser.Scene {
     if (!view) return;
     const top = view.image.y - view.image.displayHeight * view.image.originY;
     const t = this.add
-      .text(view.image.x, top, text, {
+      .text(view.image.x, top, ownedText(text), {
         fontFamily: DISPLAY_FONT,
         fontSize: '19px',
         fontStyle: 'normal',

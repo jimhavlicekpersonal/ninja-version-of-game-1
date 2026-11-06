@@ -1,3 +1,7 @@
+import { messageText as ownedError } from './i18n';
+import { dateText as i18nDate, listText as i18nList } from './i18n';
+import { displayData as localizedData, labelText as i18nLabel } from './i18n';
+import { t as i18nText } from './i18n';
 /**
  * Daily chest (odds always shown before opening, free, one a day) and the
  * limited-time events panel (fixed schedule, real countdowns).
@@ -19,7 +23,7 @@ import { uiArt } from './feedback';
 import { sound } from '../audio/sound';
 
 const pct = (p: number) => `${p < 10 ? p.toFixed(1) : Math.round(p)}%`;
-const when = (t: number) => new Date(t).toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+const when = (t: number) => i18nDate(t, { weekday: 'short', hour: '2-digit', minute: '2-digit' });
 
 export interface DailyOpts {
   /** The Clan Stipend's claim card (EconomyUi.stipendCard), shown on top of the daily chest. */
@@ -40,7 +44,7 @@ export class DailyUi {
    */
   private calendarSection(redraw: () => void): HTMLElement {
     const c = this.kit.c;
-    const gd = c.data;
+    const gd = localizedData(c.data);
     const now = c.now();
     const view = calendarView(c.state, now, hallLevel(c.state, gd), gd);
     const wrap = h('div', { class: 'calendar' });
@@ -52,9 +56,9 @@ export class DailyUi {
       grid.append(
         h(
           'div',
-          { class: `calendar-day${d.claimed ? ' done' : ''}${isNext ? ' current' : ''}${d.reward.skin ? ' big' : ''}`, role: 'listitem', 'aria-label': `Day ${d.day}${d.claimed ? ', claimed' : ''}` },
+          { class: `calendar-day${d.claimed ? ' done' : ''}${isNext ? ' current' : ''}${d.reward.skin ? ' big' : ''}`, role: 'listitem', 'aria-label': i18nText("ui.day_d3662af346", { arg1: d.day, arg2: d.claimed ? i18nText("ui.claimed_e3340580c9") : '' }) },
           h('b', {}, String(d.day)),
-          d.reward.skin ? h('span', { class: 'small' }, label) : rewardChips(d.reward as Cost),
+          d.reward.skin ? h('span', { class: 'small' }, i18nLabel(label)) : rewardChips(d.reward as Cost),
         ),
       );
     }
@@ -63,7 +67,7 @@ export class DailyUi {
       const btn = h('button', { class: 'btn primary', type: 'button' }, icon(icons.check), t('calendar.claim', { n: view.next }));
       btn.addEventListener('click', () => {
         const r = c.dispatch({ type: 'claimCalendar' });
-        if (!r.ok) this.kit.toast(r.message, 'error');
+        if (!r.ok) this.kit.toast(ownedError(r.message, true), 'error');
         else this.kit.toast(view.days[view.next - 1].reward.skin ? t('calendar.gotLook') : t('calendar.claimed', { n: view.next }), 'success');
         redraw();
       });
@@ -84,7 +88,7 @@ export class DailyUi {
     const render = () => {
       clear(body);
       const s = c.state;
-      const gd = c.data;
+      const gd = localizedData(c.data);
       const now = c.now();
       const hall = hallLevel(s, gd);
       const ready = chestReady(s, now, gd);
@@ -102,9 +106,9 @@ export class DailyUi {
           h(
             'div',
             { class: `streak-step${n <= s.daily.step ? ' done' : ''}${n === step ? ' current' : ''}` },
-            h('b', {}, `Day ${n}${n === steps.length ? '+' : ''}`),
-            h('span', { class: 'small' }, st.bonus > 1 ? `+${Math.round((st.bonus - 1) * 100)}%` : 'Base'),
-            st.moonstones ? h('span', { class: 'small' }, icon(icons.moonstones), `+${st.moonstones}${gd.daily.streak.jadeEveryDays && gd.daily.streak.jadeEveryDays > 1 ? ' a week' : ''}`) : '',
+            h('b', {}, i18nText("ui.day_d3662af346", { arg1: n, arg2: n === steps.length ? '+' : '' })),
+            h('span', { class: 'small' }, st.bonus > 1 ? `+${Math.round((st.bonus - 1) * 100)}%` : i18nText("ui.base_7b47361aad")),
+            st.moonstones ? h('span', { class: 'small' }, icon(icons.moonstones), `+${st.moonstones}${gd.daily.streak.jadeEveryDays && gd.daily.streak.jadeEveryDays > 1 ? i18nText("ui.a_week_689b7cedf5") : ''}`) : '',
           ),
         );
       });
@@ -123,20 +127,20 @@ export class DailyUi {
         body.append(stage);
       }
       body.append(
-        h('h3', {}, 'Your streak'),
+        h('h3', {}, i18nText("ui.your_streak_696f2354e7")),
         ladder,
-        h('p', { class: 'muted small' }, `Open a chest each day to climb. Missing a day never resets your streak: a free skip covers one missed day a week (${skips} left this week), and after that you move back one step per missed day.`),
+        h('p', { class: 'muted small' }, i18nText("ui.open_a_chest_each_day_to_climb_missing_86aed20bd2", { arg1: skips })),
       );
 
       // Result of the chest just opened
       if (opened) {
         const label = gd.daily.chest.outcomes.find((o) => o.id === opened!.outcome)?.label ?? opened.outcome;
         const notes: string[] = [];
-        if (opened.skipped) notes.push(`A free skip covered ${opened.skipped === 1 ? 'the day' : `${opened.skipped} days`} you missed.`);
+        if (opened.skipped) notes.push(i18nText("ui.a_free_skip_covered_you_missed_d762c066c0", { arg1: opened.skipped === 1 ? i18nText("ui.the_day_9f7fd2ef42") : i18nText("ui.days_d7f711040e", { arg1: opened.skipped }) }));
         if (opened.steppedBack) notes.push(t('daily.missed', { n: opened.steppedBack }));
         // Only what was really added is shown as received; anything that did not fit is listed as such.
-        const lost = opened.overflow && Object.values(opened.overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, 'Did not fit in your storage: ', rewardChips(opened.overflow)) : null;
-        body.append(h('div', { class: 'chest-result' }, h('b', {}, `You got: ${label}`), rewardChips(opened.grants), lost, ...notes.map((n) => h('p', { class: 'muted small' }, n))));
+        const lost = opened.overflow && Object.values(opened.overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, i18nText("ui.did_not_fit_in_your_storage_e281ba747c"), rewardChips(opened.overflow)) : null;
+        body.append(h('div', { class: 'chest-result' }, h('b', {}, i18nText("ui.you_got_16558d9a7d", { arg1: label })), rewardChips(opened.grants), lost, ...notes.map((n) => h('p', { class: 'muted small' }, n))));
       }
 
       // Odds, always visible before opening
@@ -146,12 +150,12 @@ export class DailyUi {
           h(
             'div',
             { class: `log-row${opened?.outcome === o.id ? ' current' : ''}` },
-            h('div', {}, h('b', {}, o.label), h('div', { class: 'muted small' }, `Chance: ${pct(o.percent)}`)),
+            h('div', {}, h('b', {}, o.label), h('div', { class: 'muted small' }, i18nText("ui.chance_715bf06fb1", { arg1: pct(o.percent) }))),
             rewardChips(chestContents(o.id, hall, Math.max(1, step), gd, streakJadeDue(s.daily, dayIndex(now, gd), gd))),
           ),
         );
       }
-      body.append(h('h3', {}, "What's inside (exact odds)"), table, h('p', { class: 'muted small' }, `Contents are sized for your Clan Keep level ${hall} and streak day ${Math.max(1, step)}. The chest is free and can't be bought or reopened.`));
+      body.append(h('h3', {}, i18nText("ui.what_s_inside_exact_odds_410a56fa88")), table, h('p', { class: 'muted small' }, i18nText("ui.contents_are_sized_for_your_clan_keep__e282ce8f31", { arg1: hall, arg2: Math.max(1, step) })));
 
       const actions = h('div', { class: 'actions' });
       if (ready) {
@@ -160,12 +164,12 @@ export class DailyUi {
           // The chest is one a day: if storage is too full for it, say so before it is used up.
           const risk = dailyChestOverflowRisk(c.state, c.now(), gd);
           if (Object.keys(risk).length) {
-            const ok = await this.kit.confirm('Storage is nearly full', 'Some of what this chest can hold may not fit in your storage, and anything that does not fit is lost. Spend or collect some resources first, or open it anyway.', 'Open anyway', false, 'Not now');
+            const ok = await this.kit.confirm(i18nText("ui.storage_is_nearly_full_d2d896dc65"), i18nText("ui.some_of_what_this_chest_can_hold_may_n_247bf6be70"), i18nText("ui.open_anyway_91b985dfcf"), false, i18nText("ui.not_now_a0e63d7c71"));
             if (!ok) return;
           }
           const r = c.dispatch({ type: 'openDailyChest' });
           if (!r.ok) {
-            this.kit.toast(r.message, 'error');
+            this.kit.toast(ownedError(r.message, true), 'error');
             return;
           }
           const e = r.events.find((x) => x.kind === 'daily_chest');
@@ -181,23 +185,23 @@ export class DailyUi {
       body.append(this.calendarSection(render));
     };
     render();
-    this.kit.modal('Daily chest', body, [], 'normal');
+    this.kit.modal(i18nText("ui.daily_chest_f40fff0e7c"), body, [], 'normal');
   }
 
   openEvents(): void {
     const c = this.kit.c;
-    const gd = c.data;
+    const gd = localizedData(c.data);
     const now = c.now();
     const body = h('div', { class: 'events-panel' });
     const row = (e: EventWindow, live: boolean) =>
       h(
         'div',
         { class: `log-row${live ? ' current' : ''}` },
-        h('div', {}, h('b', {}, e.name), h('div', { class: 'small' }, e.description), h('div', { class: 'muted small' }, `${when(e.start)} – ${when(e.end)}`)),
-        h('span', { class: 'chip' }, icon(icons.clock), live ? `${formatDuration(e.end - now)} left` : `in ${formatDuration(e.start - now)}`),
+        h('div', {}, h('b', {}, e.name), h('div', { class: 'small' }, e.description), h('div', { class: 'muted small' }, i18nText("ui.message_3730dc16f8", { arg1: when(e.start), arg2: when(e.end) }))),
+        h('span', { class: 'chip' }, icon(icons.clock), live ? i18nText("ui.left_4bf724512e", { arg1: formatDuration(e.end - now) }) : i18nText("ui.in_05653906ff", { arg1: formatDuration(e.start - now) })),
       );
     const live = activeEvents(now, gd);
-    body.append(h('h3', {}, live.length ? 'Running now' : 'Nothing running right now'));
+    body.append(h('h3', {}, live.length ? i18nText("ui.running_now_cb9581b3d2") : i18nText("ui.nothing_running_right_now_a010eefe12")));
     for (const e of live) body.append(row(e, true));
     // A goal event (sim/goalEvents.ts): its ladder, what each step pays at this Keep, what is paid, the best try.
     const view = goalEventView(c.state, now, gd);
@@ -205,34 +209,34 @@ export class DailyUi {
       const best = view.progress.key === view.event.key ? view.progress : { best: 0, bestDestruction: 0 };
       const ladder = h('div', { class: 'goal-ladder' });
       for (const l of view.ladder) {
-        const need = [l.step.at > 0 ? `${l.step.at}★` : '', l.step.destruction !== undefined ? `${l.step.destruction}%` : ''].filter(Boolean).join(' or ');
-        ladder.append(h('div', { class: `log-row${l.paid ? ' current' : ''}` }, h('b', {}, need), rewardChips(l.reward), l.paid ? h('span', { class: 'chip good' }, '✓ Paid') : h('span', { class: 'claim-flat' }, 'Not yet')));
+        const need = i18nList([l.step.at > 0 ? `${l.step.at}★` : '', l.step.destruction !== undefined ? `${l.step.destruction}%` : ''].filter(Boolean), 'disjunction');
+        ladder.append(h('div', { class: `log-row${l.paid ? ' current' : ''}` }, h('b', {}, need), rewardChips(l.reward), l.paid ? h('span', { class: 'chip good' }, i18nText("ui.paid_cdc49c0e76")) : h('span', { class: 'claim-flat' }, i18nText("ui.not_yet_a9549d7d06"))));
       }
-      const attack = h('button', { class: 'btn danger', type: 'button' }, 'Attack the bounty fortress');
+      const attack = h('button', { class: 'btn danger', type: 'button' }, i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"));
       attack.addEventListener('click', () => {
         this.kit.closeAllModals();
         this.opts.onBounty?.(view.event.key, view.base);
       });
       body.append(
-        h('h3', {}, `${view.event.name}: the bounty`),
-        h('p', { class: 'small' }, h('b', {}, 'Bounty fortress (generated). '), 'A computer-made fortress at your Keep level, the same one every try. Each step of the ladder pays once; no honor or loot changes hands.'),
-        h('p', { class: 'muted small' }, `Your best: ${best.best}★ · ${best.bestDestruction}%`),
+        h('h3', {}, i18nText("ui.the_bounty_5926de348f", { arg1: view.event.name })),
+        h('p', { class: 'small' }, h('b', {}, i18nText("ui.bounty_fortress_generated_f5b15022f2")), i18nText("ui.a_computer_made_fortress_at_your_keep__c3734d68ef")),
+        h('p', { class: 'muted small' }, i18nText("ui.your_best_1a23394f2a", { arg1: best.best, arg2: best.bestDestruction })),
         ladder,
       );
       if (this.opts.onBounty) body.append(h('div', { class: 'actions' }, attack));
     }
-    body.append(h('h3', {}, 'Coming up'));
+    body.append(h('h3', {}, i18nText("ui.coming_up_b743c76082")));
     for (const e of upcomingEvents(now, 4, gd)) body.append(row(e, false));
-    body.append(h('p', { class: 'muted small' }, 'Events follow a fixed schedule that repeats every two weeks. Their times never move or get extended, so the countdown is always the real one.'));
-    this.kit.modal('Events', body, [], 'normal');
+    body.append(h('p', { class: 'muted small' }, i18nText("ui.events_follow_a_fixed_schedule_that_re_423f6e2134")));
+    this.kit.modal(i18nText("ui.events_8d14f6e72d"), body, [], 'normal');
   }
 
   /** Short text for the HUD chip. */
   static chipText(now: number, c: UiKit['c']): string {
-    const gd = c.data;
+    const gd = localizedData(c.data);
     const live = activeEvents(now, gd)[0];
-    if (live) return `${live.name} · ${formatDuration(live.end - now)} left`;
+    if (live) return i18nText("ui.left_12f73d4584", { arg1: live.name, arg2: formatDuration(live.end - now) });
     const next = upcomingEvents(now, 1, gd)[0];
-    return next ? `Next: ${next.name} in ${formatDuration(next.start - now)}` : 'Events';
+    return next ? i18nText("ui.next_in_ac5ddfc0d1", { arg1: next.name, arg2: formatDuration(next.start - now) }) : i18nText("ui.events_8d14f6e72d");
   }
 }

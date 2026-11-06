@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "language": "es",
+  "checkedAt": "2026-11-06T15:46:14.490Z",
+  "panels": [
+    "settings",
+    "army",
+    "build",
+    "store",
+    "daily",
+    "events",
+    "pass",
+    "goals",
+    "alliance",
+    "friends",
+    "trials",
+    "log"
+  ],
+  "widths": [
+    {
+      "width": 320,
+      "height": 568,
+      "buttons": 5,
+      "buildTapped": true
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "buttons": 5,
+      "buildTapped": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "buttons": 5,
+      "buildTapped": true
+    },
+    {
+      "width": 568,
+      "height": 320,
+      "buttons": 5,
+      "buildTapped": true
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "buttons": 5,
+      "buildTapped": true
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "/lang/es-2b167174ce7bd967.json",
+    "/lang/es-2b167174ce7bd967.json",
+    "/lang/es-2b167174ce7bd967.json",
+    "/lang/es-2b167174ce7bd967.json"
+  ],
+  "offline": true,
+  "switchPreservesIdentity": true,
+  "cachedLanguages": [
+    "/lang/es-2b167174ce7bd967.json"
+  ],
+  "failedSwitchPreservesPreference": true
+}

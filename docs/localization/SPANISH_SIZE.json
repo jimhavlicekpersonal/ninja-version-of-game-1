@@ -1,0 +1,241 @@
+{
+  "schema": 1,
+  "units": "bytes",
+  "measured": {
+    "en": {
+      "ready": true,
+      "strings": 2648,
+      "installedUtf8": 200461,
+      "gzip": 66019,
+      "brotli": 55180,
+      "zipDeflatePayload": 66001,
+      "namespaces": {
+        "boot": {
+          "total": 17,
+          "translated": 17
+        },
+        "data": {
+          "total": 669,
+          "translated": 669
+        },
+        "messages": {
+          "total": 1863,
+          "translated": 1863
+        },
+        "pages": {
+          "total": 314,
+          "translated": 314
+        },
+        "ui": {
+          "total": 99,
+          "translated": 99
+        }
+      }
+    },
+    "es": {
+      "ready": true,
+      "strings": 2648,
+      "installedUtf8": 220557,
+      "gzip": 72481,
+      "brotli": 61221,
+      "zipDeflatePayload": 72463,
+      "namespaces": {
+        "boot": {
+          "total": 17,
+          "translated": 17
+        },
+        "data": {
+          "total": 669,
+          "translated": 669
+        },
+        "messages": {
+          "total": 1863,
+          "translated": 1863
+        },
+        "pages": {
+          "total": 314,
+          "translated": 314
+        },
+        "ui": {
+          "total": 99,
+          "translated": 99
+        }
+      },
+      "packagedAssets": {
+        "files": [
+          {
+            "path": "public/lang/es-2b167174ce7bd967.json",
+            "installedUtf8": 220557,
+            "gzip": 72481,
+            "brotli": 61221,
+            "deflate": 72463
+          },
+          {
+            "path": "public/es/community.html",
+            "installedUtf8": 4604,
+            "gzip": 2060,
+            "brotli": 1723,
+            "deflate": 2042
+          },
+          {
+            "path": "public/es/manifest.webmanifest",
+            "installedUtf8": 914,
+            "gzip": 388,
+            "brotli": 343,
+            "deflate": 370
+          },
+          {
+            "path": "public/es/privacy.html",
+            "installedUtf8": 18988,
+            "gzip": 6801,
+            "brotli": 5850,
+            "deflate": 6783
+          },
+          {
+            "path": "public/es/shikin-kessai.html",
+            "installedUtf8": 3420,
+            "gzip": 1247,
+            "brotli": 983,
+            "deflate": 1229
+          },
+          {
+            "path": "public/es/support.html",
+            "installedUtf8": 5362,
+            "gzip": 2214,
+            "brotli": 1844,
+            "deflate": 2196
+          },
+          {
+            "path": "public/es/terms.html",
+            "installedUtf8": 10314,
+            "gzip": 3995,
+            "brotli": 3382,
+            "deflate": 3977
+          },
+          {
+            "path": "public/es/tokushoho.html",
+            "installedUtf8": 3960,
+            "gzip": 1352,
+            "brotli": 1052,
+            "deflate": 1334
+          },
+          {
+            "path": "ios/App/App/es.lproj/InfoPlist.strings",
+            "installedUtf8": 196,
+            "gzip": 171,
+            "brotli": 129,
+            "deflate": 153
+          },
+          {
+            "path": "android/app/src/main/res/values-es/strings.xml",
+            "installedUtf8": 167,
+            "gzip": 131,
+            "brotli": 84,
+            "deflate": 113
+          },
+          {
+            "path": "android/app/src/main/res/xml/locales_config.xml",
+            "installedUtf8": 197,
+            "gzip": 143,
+            "brotli": 99,
+            "deflate": 125
+          }
+        ],
+        "installedUtf8": 268679,
+        "gzipSum": 90983,
+        "brotliSum": 76710,
+        "zipArchive": 92317,
+        "extraFontBytes": 0,
+        "excludes": [
+          "Shared English fallback and localization code (measured in built JS separately)",
+          "Server-only deletion HTML and translated store listing/product copy",
+          "Filesystem allocation, browser caches, app-store binary signing and packaging overhead"
+        ]
+      },
+      "serverDeletionPageUtf8": 6769
+    }
+  },
+  "projections": {
+    "50_languages_at_1x_spanish": {
+      "estimate": true,
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
+      "installedUtf8": 13433950,
+      "gzip": 4549150,
+      "brotli": 3835500,
+      "zipArchive": 4615850
+    },
+    "50_languages_at_1.5x_spanish": {
+      "estimate": true,
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
+      "installedUtf8": 20150925,
+      "gzip": 6823725,
+      "brotli": 5753250,
+      "zipArchive": 6923775
+    },
+    "50_languages_at_2x_spanish": {
+      "estimate": true,
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
+      "installedUtf8": 26867900,
+      "gzip": 9098300,
+      "brotli": 7671000,
+      "zipArchive": 9231700
+    }
+  },
+  "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",
+  "builtJavaScript": {
+    "phase": "after_client_build",
+    "files": [
+      {
+        "path": "esm-CFdnNp8B.js",
+        "sha256": "8470d6a4daace41d82a5cd1f5d69770eceab40a156ede70422648eb268b35cce",
+        "raw": 325,
+        "gzip": 239,
+        "brotli": 220
+      },
+      {
+        "path": "index-D5Fk2K54.js",
+        "sha256": "75f695ac2b3509519e1e43c3108d92c1b24f4d265cf374195a7a06920f81bd17",
+        "raw": 1790204,
+        "gzip": 520550,
+        "brotli": 399168
+      },
+      {
+        "path": "web-Bdr326M_.js",
+        "sha256": "138b2f4bebcaf8006a40535c75f415769aecb0e9b933869e1d9bffae11692db1",
+        "raw": 894,
+        "gzip": 456,
+        "brotli": 372
+      },
+      {
+        "path": "web-D8kq3try.js",
+        "sha256": "3fcff83a900f5d853cde99bf76235257c72bf8a7866f3a7598dd40e845f0248d",
+        "raw": 4438,
+        "gzip": 1291,
+        "brotli": 1111
+      },
+      {
+        "path": "web-Dv4X7_yL.js",
+        "sha256": "b007605e8a9c951873f35d24c508ea9a205c1e2f7e2f1a2573543393895b30b6",
+        "raw": 844,
+        "gzip": 403,
+        "brotli": 304
+      }
+    ],
+    "raw": 1796705,
+    "gzip": 522939,
+    "brotli": 401175,
+    "indexHtmlUtf8": 26216,
+    "baseline": {
+      "ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
+      "raw": 1933642,
+      "gzip": 565787,
+      "brotli": 466239
+    },
+    "delta": {
+      "raw": -136937,
+      "gzip": -42848,
+      "brotli": -65064
+    },
+    "note": "All JavaScript, including shared English fallback/formatters and engine code. Baseline includes 49 empty UI worksheet chunks removed by compact packs. This is not the isolated cost of Spanish."
+  }
+}

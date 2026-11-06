@@ -32,7 +32,7 @@ export function targets() {
 // ------------------------------------------------------------------ extract
 
 /** Fields whose string value is player-facing text. */
-const TEXT_KEYS = new Set(['name', 'description', 'text', 'label', 'title', 'summary']);
+const TEXT_KEYS = new Set(['name', 'description', 'text', 'label', 'title', 'summary', 'bio', 'leader']);
 /** Whole string lists that are player-facing (generated names, bot chat). */
 const LISTS = [/^names\.(placeFirst|placeSecond|playerFirst|playerSecond)$/, /^social\.chatLines\.\w+$/, /^social\.groveNames\.\w+$/];
 /** Never translated: comments, art descriptions, moderation lists, codes. */
@@ -60,7 +60,7 @@ function walk(value, path, out) {
     for (const [k, v] of Object.entries(value)) {
       if (SKIP.has(k)) continue;
       if (typeof v === 'string') {
-        if (TEXT_KEYS.has(k) && /\p{L}/u.test(v)) out.push([[...path, k].join('.'), v]);
+        if ((TEXT_KEYS.has(k) || path.join('.') === 'economy.resourceNames') && /\p{L}/u.test(v)) out.push([[...path, k].join('.'), v]);
       } else walk(v, [...path, k], out);
     }
   }
@@ -152,7 +152,7 @@ export function syncWorksheet(src, ws) {
 
 const PLACEHOLDER = /\{[A-Za-z0-9_]+\}/g;
 // As a set: ICU plural branches repeat placeholders, and a language may add branches (few, many) the English lacks.
-const placeholders = (s) => [...new Set(s.match(PLACEHOLDER) ?? [])].sort().join(' ');
+const placeholders = (s) => [...new Set([...s.matchAll(/\{([A-Za-z0-9_]+)(?:\}|\s*,\s*(?:plural|select)\s*,)/g)].map(m => `{${m[1]}}`))].sort().join(' ');
 
 const SCRIPT = {
   Latn: /\p{Script=Latin}/u,
@@ -223,7 +223,14 @@ export function checkWorksheet(lang, ns, src, ws) {
     done++;
     translated.push(t);
     if (placeholders(t) !== placeholders(en)) errors.push(`${ns}: ${k} placeholders ${placeholders(t) || 'none'} must be ${placeholders(en) || 'none'}`);
-    if (t !== t.trim()) errors.push(`${ns}: ${k} has leading or trailing spaces`);
+    let depth = 0;
+    for (const ch of t) { if (ch === '{') depth++; else if (ch === '}' && --depth < 0) break; }
+    if (depth !== 0) errors.push(`${ns}: ${k} has unbalanced message braces`);
+    if (ns === 'pages') {
+      const rich = value => (value.match(/\{t\d+\}/g) ?? []).sort().join(' ');
+      if (rich(t) !== rich(en)) errors.push(`${ns}: ${k} must preserve every rich-text token exactly once`);
+    }
+    if ((/^\s/.test(t) && !/^\s/.test(en)) || (/\s$/.test(t) && !/\s$/.test(en))) errors.push(`${ns}: ${k} has leading or trailing spaces absent in English`);
     if (t.includes('\n') && !en.includes('\n')) errors.push(`${ns}: ${k} has a line break the English does not`);
     if (/[<>]/.test(t) && !/[<>]/.test(en)) errors.push(`${ns}: ${k} contains < or >`);
     if (t !== t.normalize('NFC')) errors.push(`${ns}: ${k} is not NFC-normalized`);

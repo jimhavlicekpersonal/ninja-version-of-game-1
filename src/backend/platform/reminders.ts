@@ -1,3 +1,4 @@
+import { sourceText } from '../../../locales/runtime';
 /**
  * Reminder notifications. The installed iOS/Android app schedules real local
  * notifications (see nativeReminders in platform/native.ts). On the web, a page
@@ -33,10 +34,10 @@ export class WebReminders implements ReminderService {
       if (delay <= 0 || delay > 24 * 3_600_000) continue;
       this.timers.push(
         window.setTimeout(() => {
-          const opts = { body: r.body, icon: './icons/icon-192.png', tag: r.id };
+          const opts = { body: sourceText(r.body), icon: './icons/icon-192.png', tag: r.id };
           navigator.serviceWorker?.ready
-            .then((reg) => reg.showNotification(r.title, opts))
-            .catch(() => new Notification(r.title, opts));
+            .then((reg) => reg.showNotification(sourceText(r.title), opts))
+            .catch(() => new Notification(sourceText(r.title), opts));
         }, delay),
       );
     }

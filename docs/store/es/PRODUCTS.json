@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "es",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Pizca de Jade",
+      "description": "45 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Bolsita de Jade",
+      "description": "100 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Bolsa de Jade",
+      "description": "280 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Caja de Jade",
+      "description": "600 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Cofre de Jade",
+      "description": "1300 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Bóveda de Jade",
+      "description": "3500 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Tesoro del Dragón de Jade",
+      "description": "7500 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Pergamino de Temporada prémium",
+      "description": "Senda prémium de esta temporada",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Paquete Inicial",
+      "description": "Jade y recursos para nuevos líderes",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Paquete del Artesano",
+      "description": "Jade para contratar otro Artesano y recursos",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Suministros de Guerra",
+      "description": "Provisiones y Jade para la Guerra de Alianzas",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kit de Reconstrucción",
+      "description": "Jade y recursos para reconstruir",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Estipendio del Clan",
+      "description": "30 pagos diarios de 12 de Jade",
+      "locale": "es_ES"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Celebración de la Fortaleza",
+      "description": "Recursos y Jade para celebrar tu nueva Fortaleza",
+      "locale": "es_ES"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { messageText as ownedText, labelText } from '../ui/i18n';
 import { pointLabel, t } from '../ui/i18n';
 import Phaser from 'phaser';
 import { BODY_FONT } from './fonts';
@@ -636,7 +637,7 @@ export class BattleScene extends Phaser.Scene {
     this.lastCallout.set(key, now);
     const zoom = this.cam.userZoom;
     const label = this.add
-      .text(x, y, text, { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
+      .text(x, y, ownedText(text), { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
       .setShadow(0, 2, 'rgba(15,20,30,0.45)', 3, true, true)
       .setOrigin(0.5, 1)
       .setScale(1 / zoom)
@@ -929,19 +930,19 @@ export class BattleScene extends Phaser.Scene {
         sound.play('smoke');
       } else if (e.k === 'ability') {
         const t = sim.troops[e.troop];
-        const name = ABILITY_NAME.get(t.type);
+        const name = labelText(ABILITY_NAME.get(t.type) ?? '');
         if (name) {
           const w = tileToWorld(t.x, t.y);
           this.callout(`t${e.troop}`, w.x, w.y - (t.air ? AIR_HEIGHT : 0) - 44, name, '#ffe08a');
         }
       } else if (e.k === 'counter') {
-        const label = COUNTER_LABEL[e.what];
+        const label = labelText(COUNTER_LABEL[e.what] ?? '');
         if (e.what === 'lit') this.bviews[e.building]?.image.setVisible(true).setAlpha(1);
         if (label) {
           const at = e.troop >= 0 ? sim.troops[e.troop] : null;
           const b = sim.buildings[e.target >= 0 ? e.target : e.building];
           const w = at ? tileToWorld(at.x, at.y) : footprintCenter(b.x, b.y, b.size);
-          this.callout(`c${e.building}:${e.troop}:${e.target}`, w.x, w.y - (at ? 44 : 60), `${buildingDef(this.session.data, sim.buildings[e.building].type).name}: ${label}`, '#9fd8ff');
+          this.callout(`c${e.building}:${e.troop}:${e.target}`, w.x, w.y - (at ? 44 : 60), `${labelText(buildingDef(this.session.data, sim.buildings[e.building].type).name)}: ${label}`, '#9fd8ff');
         }
       } else if (e.k === 'trap') {
         sound.play('boom');

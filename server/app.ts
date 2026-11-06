@@ -409,7 +409,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.delete('/v1/blocks/:id', authed(async (me, req) => core.unblock(me, param(req, 'id'))));
 
   // Account deletion without the game: the web page and its requests (no token).
-  app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage()));
+  app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage((_req.query as {lang?: string})?.lang === 'es' ? 'es' : 'en')));
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
 
   // Shared play statistics (report section 5 step 5): no token, and no request log line (it would hold the IP address).

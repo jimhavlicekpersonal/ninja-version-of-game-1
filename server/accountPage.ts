@@ -1,3 +1,4 @@
+import spanishPages from '../locales/compiled/pages-es.json';
 /**
  * The web account-deletion page (roadmap step 14), served by the API server at
  * GET /account/delete. Google Play asks for a web link where players can ask
@@ -17,7 +18,8 @@
 
 export const DELETION_PAGE_CSP = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'";
 
-export function deletionPage(): string {
+export function deletionPage(locale = 'en'): string {
+  if (locale === 'es') return spanishPages.account;
   return `<!doctype html>
 <html lang="en">
 <head>

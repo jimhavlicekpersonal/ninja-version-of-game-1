@@ -1,3 +1,4 @@
+import { t as i18nText } from './presentation/ui/i18n';
 import { rivalById, rivalFor, rivalOutpostName } from './gameplay/sim/rivals';
 import { isolateName } from './gameplay/sim/social/names';
 import type Phaser from 'phaser';
@@ -66,7 +67,7 @@ export class App {
     if (this.d.connection.serverVillage && !this.d.connection.online) {
       // Audit R01: say what still works offline (building, training, research, collecting,
       // Shadow Trials and practice battles are queued for the server or need nothing from it).
-      const msg = 'Raids on other players need a connection. Offline you can still build, train, research, collect, fight Shadow Trials and practice battles: they are sent to the server when you are back.';
+      const msg = i18nText("ui.raids_on_other_players_need_a_connecti_25c0da7a9e");
       if (this.battleHud) this.battleHud.toast(msg);
       else this.d.hud.toast(msg, 'error');
       return;
@@ -108,10 +109,10 @@ export class App {
           return;
         }
       } catch (e) {
-        console.warn('Online match failed, using a generated opponent', e);
+        console.warn(i18nText("ui.online_match_failed_using_a_generated__31f6c1a8d1"), e);
       }
       if (conn.serverVillage) {
-        this.d.hud.toast('Could not reach the server to find an opponent. Try again in a moment.', 'error');
+        this.d.hud.toast(i18nText("ui.could_not_reach_the_server_to_find_an__28c78674fa"), 'error');
         return;
       }
     }
@@ -154,7 +155,7 @@ export class App {
     const c = this.d.controller;
     const army = battleArmy(c.state);
     if (!Object.values(army).some((n) => n > 0)) {
-      this.d.hud.toast('Train some warriors first.', 'error');
+      this.d.hud.toast(i18nText("ui.train_some_warriors_first_38d2ad4cb0"), 'error');
       return;
     }
     const base = trialBase(tier, c.data, trialVariant(c.state.trials, tier));
@@ -169,13 +170,13 @@ export class App {
   bounty(eventKey: string, base: BaseLayout): void {
     const c = this.d.controller;
     if (!Object.values(battleArmy(c.state)).some((n) => n > 0)) {
-      this.d.hud.toast('Train some warriors first.', 'error');
+      this.d.hud.toast(i18nText("ui.train_some_warriors_first_38d2ad4cb0"), 'error');
       return;
     }
     const b: BaseLayout = { ...base };
     delete b.trophies;
     const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0xb0b7 + c.state.nextSeed), base: b, ...battleLoadout(c.state, c.data), infiltration: true };
-    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'bounty', eventKey, title: `${base.practice ?? 'Bounty fortress'} · generated · ladder rewards, no loot or honor` });
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'bounty', eventKey, title: i18nText("ui.generated_ladder_rewards_no_loot_or_ho_2a269c63a6", { arg1: base.practice ?? 'Bounty fortress' }) });
   }
 
   /** Settle the score with a simulated raider (sim/rematch.ts): its own base, once; settled with `rematchEnd`. */
@@ -187,14 +188,14 @@ export class App {
       return;
     }
     if (!Object.values(battleArmy(c.state)).some((n) => n > 0)) {
-      this.d.hud.toast('Train some warriors first.', 'error');
+      this.d.hud.toast(i18nText("ui.train_some_warriors_first_38d2ad4cb0"), 'error');
       return;
     }
     const base = rematchBase(ok.record, c.data);
     if (!base) return;
     delete base.trophies;
     const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x5e771e + c.state.nextSeed), base, ...battleLoadout(c.state, c.data), infiltration: true };
-    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'rematch', defenseId, title: 'Settle the score · simulated raider · no honor moves' });
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'rematch', defenseId, title: i18nText("ui.settle_the_score_simulated_raider_no_h_87da3498b9") });
   }
 
   /**
@@ -222,7 +223,7 @@ export class App {
     const c = this.d.controller;
     const loadout = battleLoadout(c.state, c.data);
     if (!Object.values(loadout.army).some((n) => n > 0)) {
-      this.d.hud.toast('Train some warriors first: duels use your army (none are spent).', 'error');
+      this.d.hud.toast(i18nText("ui.train_some_warriors_first_duels_use_yo_0415eb538a"), 'error');
       return;
     }
     try {
@@ -272,7 +273,7 @@ export class App {
       // The tutorial bubble hides in battle: the first raid gets a one-line coach instead (re-audit design item 3).
       coach: !replayOf && !c.state.tutorial.done,
       replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
-      grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? 'Gang War relay' : 'Gang War' } : {}) } : undefined,
+      grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? i18nText("ui.gang_war_relay_9376500e38") : i18nText("ui.gang_war_d4e65acc95") } : {}) } : undefined,
       practice,
       special: special ? { title: special.title } : undefined,
       trial:
@@ -311,8 +312,8 @@ export class App {
           if (duel) {
             const sub = { ticket: duel.ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, ...(session.setup.hero ? { hero: session.setup.hero } : {}), deployments: session.deployments, endTick: session.endTick, clientHash: result.hash, rules: SIM_RULES };
             void this.d.connection.reportDuel(sub).then(
-              (r) => this.d.hud.toast(`Duel recorded. Against ${isolateName(duel.friendName)}: ${r.rivalry.wins} win${r.rivalry.wins === 1 ? '' : 's'} in ${r.rivalry.duels} duel${r.rivalry.duels === 1 ? '' : 's'}.`, 'success'),
-              (e: Error) => this.d.hud.toast(`The duel could not be recorded: ${e.message}`, 'error'),
+              (r) => this.d.hud.toast(i18nText("ui.duel_recorded_against_win_in_duel_ad5ab60385", { arg1: isolateName(duel.friendName), arg2: r.rivalry.wins, arg3: r.rivalry.wins === 1 ? '' : 's', arg4: r.rivalry.duels, arg5: r.rivalry.duels === 1 ? '' : 's' }), 'success'),
+              (e: Error) => this.d.hud.toast(i18nText("ui.the_duel_could_not_be_recorded_2b8c3995b6", { arg1: e.message }), 'error'),
             );
             return { result, banked: {}, trophies: 0, note: `Friendly duel with ${isolateName(duel.friendName)}: no warriors were spent and nothing was won.` };
           }
@@ -340,11 +341,11 @@ export class App {
           const note =
             e.kind === 'bounty_end'
               ? e.steps.length
-                ? `New bounty step${e.steps.length === 1 ? '' : 's'} reached: the reward is paid once.`
-                : 'No new bounty step this time. Your best try counts.'
+                ? i18nText("ui.new_bounty_step_reached_the_reward_is__7c76ffd3be", { arg1: e.steps.length === 1 ? '' : 's' })
+                : i18nText("ui.no_new_bounty_step_this_time_your_best_fad89cfb94")
               : e.won
-                ? 'Score settled.'
-                : 'The raider held. This rematch is used up.';
+                ? i18nText("ui.score_settled_372ee4649e")
+                : i18nText("ui.the_raider_held_this_rematch_is_used_u_c9e33e0fd9");
           return { result: e.record.result, banked: paid ? e.reward : {}, overflow: e.overflow, trophies: 0, note };
         }
         if (trialTier !== undefined) {
@@ -352,10 +353,10 @@ export class App {
           if (!t) return null;
           lastRecord = t.record;
           const note = t.firstClear
-            ? `Shadow Trial ${trialTier} cleared! Trial ${trialTier + 1} is open.`
+            ? i18nText("ui.shadow_trial_cleared_trial_is_open_e3b0d0cafa", { arg1: trialTier, arg2: trialTier + 1 })
             : t.cleared
-              ? 'Cleared again. The reward for this tier was already claimed.'
-              : `Not cleared: you need ${c.data.trials.starsToClear} stars.`;
+              ? i18nText("ui.cleared_again_the_reward_for_this_tier_1b8920c6c4")
+              : i18nText("ui.not_cleared_you_need_stars_27ca57d98e", { arg1: c.data.trials.starsToClear });
           return { result: t.record.result, banked: t.reward, overflow: t.record.overflow, trophies: 0, note };
         }
         const ticket = this.ticket ?? undefined;

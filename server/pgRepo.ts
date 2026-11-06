@@ -149,6 +149,7 @@ const toGrove = (r: Row): Grove => ({ id: String(r.id), name: String(r.name), co
 const toSummary = (r: Row): GroveSummaryRow => ({ ...toGrove(r), members: num(r.members), averageTrophies: Math.round(num(r.average_trophies)), lastActiveAt: num(r.last_active_at) });
 const toMember = (r: Row): GroveMember => ({ groveId: String(r.grove_id), playerId: String(r.player_id), role: r.role as GroveMember['role'], joinedAt: num(r.joined_at), xp: num(r.xp) });
 const toChat = (r: Row): ChatRow => ({
+  ...(r.preset_id == null ? {} : { presetId: num(r.preset_id) }),
   seq: num(r.seq),
   id: String(r.id),
   groveId: String(r.grove_id),
@@ -580,12 +581,12 @@ export class PgRepo implements Repo {
 
   async putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void> {
     await this.db.query(
-      `insert into push_tokens (token, player_id, platform, types, tz_offset_minutes, updated_at) values ($1,$2,$3,$4,$5,$6)
+      `insert into push_tokens (token, player_id, platform, types, tz_offset_minutes, updated_at, locale) values ($1,$2,$3,$4,$5,$6,$7)
        on conflict (token) do update set player_id = excluded.player_id, platform = excluded.platform, types = excluded.types,
-         tz_offset_minutes = excluded.tz_offset_minutes, updated_at = excluded.updated_at,
+         tz_offset_minutes = excluded.tz_offset_minutes, updated_at = excluded.updated_at, locale = excluded.locale,
          day = case when push_tokens.player_id = excluded.player_id then push_tokens.day else 0 end,
          sent = case when push_tokens.player_id = excluded.player_id then push_tokens.sent else 0 end`,
-      [t.token, t.playerId, t.platform, t.types, t.tzOffsetMinutes, t.updatedAt],
+      [t.token, t.playerId, t.platform, t.types, t.tzOffsetMinutes, t.updatedAt, t.locale ?? 'en'],
     );
   }
 
@@ -596,6 +597,7 @@ export class PgRepo implements Repo {
       platform: String(r.platform) as PushToken['platform'],
       types: (r.types as string[] | null) ?? [],
       tzOffsetMinutes: num(r.tz_offset_minutes),
+      locale: String(r.locale ?? 'en'),
       updatedAt: num(r.updated_at),
       day: num(r.day),
       sent: num(r.sent),
@@ -1385,7 +1387,7 @@ export class PgRepo implements Repo {
   // ------------------------------------------------------------ chat
 
   async addChat(row: Omit<ChatRow, 'seq'>): Promise<ChatRow> {
-    const r = await this.rows('insert into grove_chat (id, grove_id, at, player_id, name, text, kind) values ($1,$2,$3,$4,$5,$6,$7) returning *', [
+    const r = await this.rows('insert into grove_chat (id, grove_id, at, player_id, name, text, kind, preset_id) values ($1,$2,$3,$4,$5,$6,$7,$8) returning *', [
       row.id,
       row.groveId,
       row.at,
@@ -1393,6 +1395,7 @@ export class PgRepo implements Repo {
       row.name,
       row.text,
       row.kind,
+      row.presetId ?? null,
     ]);
     return toChat(r[0]);
   }

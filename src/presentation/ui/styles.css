@@ -624,6 +624,8 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
 .army-actions .btn { min-height: 40px; padding: 4px 2px; font-size: 13px; white-space: nowrap; }
 .army-actions .btn.buy { grid-column: 1 / -1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.army-actions.research-actions { grid-template-columns: minmax(0, 1fr); }
+.army-actions.research-actions .btn { min-height: 44px; white-space: normal; }
 .army-setup { padding: 10px 12px; border-radius: 16px; background: #fff; box-shadow: 0 2px 0 rgba(38, 48, 61, .12); }
 .army-setup ul { list-style: none; padding: 0; margin: 8px 0; }
 .army-setup li { padding: 3px 0; color: var(--ink-soft); }
