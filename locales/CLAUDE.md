@@ -1,5 +1,7 @@
 # TRANSLATION AI: locales/
 
+**Current numbers** (protocol, battle rules, save format, migrations, roster, languages) are in `docs/STATUS.md`, generated from the code; where this brief names a version, the status file wins.
+
 You translate Kagemura into one language per session. You own only `locales/<your code>/`. Everything else is read-only for you, including `locales/en/`, `locales/languages.json` and the game code.
 
 ## The layout

@@ -6,7 +6,7 @@ An original ninja-clan base-building and raiding game. Lead a clan, build a hidd
 
 **The loop:** build village → train squad → scout opponent → deploy troops and tactics → resolve raid → collect rewards → return home and upgrade.
 
-Rebuilt in place from Toadstool Kingdoms (Phase 6: PWA, Capacitor iOS/Android, StoreKit, PvP server). Every working system was kept, and old saves migrate. See `docs/rebuild/HANDOFF.md` for what works and what is left.
+Rebuilt in place from Toadstool Kingdoms (Phase 6: PWA, Capacitor iOS/Android, StoreKit, PvP server). Every working system was kept, and old saves migrate. See `docs/history/HANDOFF-2026-11-02.md` for what works and what is left.
 
 ## Play on your devices
 
@@ -70,7 +70,7 @@ Each compartment has a `CLAUDE.md` brief, so a **separate AI session** can upgra
 
 ## Key documents
 
-- `docs/rebuild/HANDOFF.md`: what works, what is unfinished, and the owner steps
+- `docs/history/HANDOFF-2026-11-02.md`: what works, what is unfinished, and the owner steps
 - `docs/rebuild/01-REBUILD-ANALYSIS.md`: pitfalls and the mechanics that were rebuilt
 - `docs/rebuild/02-ARCHITECTURE.md`: structure, dependency rules and research sources
 - `docs/game-theory/PROGRESSION_MODEL.md` and `ROSTER.md`: one power budget for all 50 warriors, buildings, EXP and difficulty

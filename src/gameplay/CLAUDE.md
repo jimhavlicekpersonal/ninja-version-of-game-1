@@ -1,5 +1,7 @@
 # GAME THEORY compartment (Section 2): rules, numbers and commands
 
+**Current numbers** (protocol, battle rules, save format, migrations, roster, languages) are in `docs/STATUS.md`, generated from the code; where this brief names a version, the status file wins.
+
 **Required context:** read [`docs/store/WORLDWIDE_AUDIT.md`](../../docs/store/WORLDWIDE_AUDIT.md) and [`AGENTS.md`](../../AGENTS.md). Preserve its open economy-integrity, spending-protection, offline-play and casual-progression findings; model-player outcomes are not observed retention or revenue. Coordinate shared contracts with BACKEND/INTEGRATION, follow the user's authorized scope, and record fixing commits and verification before closing findings. The 2026-11-05 fix pass (`db9b88e`) changed `setProfile` (under 18 is one-way), added `staffResetAge` and save v14 (`flags.sandbox`); offline play (R01) and casual progression remain open.
 
 You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `control/`), `docs/game-theory/` and `tools/progression/`. Read `docs/game-theory/PROGRESSION_MODEL.md` first.

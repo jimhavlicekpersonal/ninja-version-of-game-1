@@ -1,5 +1,7 @@
 # Kagemura multiplayer protocol (version 10)
 
+> Current numbers (protocol, battle rules, save format) are in `docs/STATUS.md`, generated from the code. Sections below are the history of each version, newest first.
+
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
 
 **Version 10 (ledger audit, docs/audit/STATE_OF_THE_GAME.md section 5 step 1; servers accept 7, except `GET /v1/match`, which needs 10):**

@@ -63,7 +63,7 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
       - uses: actions/upload-artifact@v7
         with:
-          name: toadstool-kingdoms-android-apk
+          name: kagemura-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 

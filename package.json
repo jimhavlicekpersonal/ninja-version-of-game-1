@@ -1,8 +1,8 @@
 {
-  "name": "toadstool-kingdoms",
+  "name": "kagemura",
   "private": true,
   "version": "0.1.0",
-  "description": "Toadstool Kingdoms - an original cartoon-fantasy base-building and raiding game.",
+  "description": "Kagemura: Ninja Clans - an original ninja-clan base-building and raiding game.",
   "type": "module",
   "engines": {
     "node": ">=20.19.0"
@@ -14,6 +14,7 @@
     "preview": "vite preview",
     "preview:lan": "vite preview --host",
     "test": "vitest run",
+    "status": "node tools/status/write.mjs",
     "test:watch": "vitest",
     "test:contract": "vitest run tests/backend/contract",
     "typecheck": "tsc --noEmit",
