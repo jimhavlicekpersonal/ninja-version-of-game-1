@@ -426,7 +426,7 @@ Verification on `ec29e1e`: `npm test` without Postgres or Redis (122 files, 1,07
 
 ### 2026-11-06 — measuring (state-of-the-game report, section 5 step 5), commit `2317ef1`
 
-Verification on `2317ef1`: `npm test` without Postgres or Redis (123 files, 1,086 passed, 14 skipped; the Postgres variant of the rollup test is skipped here); `npm run build`; `npm run typecheck:server`; `npm run server:build`; the bundle tool made a main bundle and an arm, and refused an arm that changed a main-bundle number. In Chromium against a local server (memory storage): after the age screen (adult), the one-time question appears 20 s after going online, nothing is sent before the answer, and "Share" sends a batch to `POST /v1/stats` with no Authorization header under a random UUID. **Not done:** Postgres (migration 0027 not run on a real database), a real host's load-balancer logs, legal review of the consent text, App Store Connect / Play Console declarations entered.
+Verification on `2317ef1`: `npm test` without Postgres or Redis (123 files, 1,086 passed, 14 skipped; the Postgres variant of the rollup test is skipped here); `npm run build`; `npm run typecheck:server`; `npm run server:build`; the bundle tool made a main bundle and an arm, and refused an arm that changed a main-bundle number. In Chromium against a local server (memory storage): after the age screen (adult), the one-time question appears 20 s after going online, nothing is sent before the answer, and "Share" sends a batch to `POST /v1/stats` with no Authorization header under a random UUID. **Not done:** a real host's load-balancer logs (the Server release workflow has since run the suite, the stats rollup's Postgres variant and migration 0027 included, on Postgres 16), legal review of the consent text, App Store Connect / Play Console declarations entered.
 
 | Finding | Status | What changed | Evidence | Remaining limitations |
 |---|---|---|---|---|
@@ -448,7 +448,7 @@ Verification on `1bde1fc`: `npm test` without Postgres or Redis (124 files, 1,10
 
 ### 2026-11-06 — store age APIs and compliance code (state-of-the-game report, section 5 step 7), commit `1bde1fc`
 
-Verification as for step 6, plus: `TkAgePlugin.java` compiled with javac against the published `age-signals-0.0.4` AAR (Capacitor and Play services types stubbed; API names read with javap); `npm run store:storekit` regenerates `ios/App/Products.storekit` from `store.json`. **Not done:** a Play-installed build, any iPhone build, Postgres (migration 0028 not run on a real database), Apple's `RESCIND_CONSENT` payload (not readable here), legal review.
+Verification as for step 6, plus: `TkAgePlugin.java` compiled with javac against the published `age-signals-0.0.4` AAR (Capacitor and Play services types stubbed; API names read with javap); `npm run store:storekit` regenerates `ios/App/Products.storekit` from `store.json`. The Server release workflow then ran the whole suite against Postgres 16 and Redis 7 (migrations 0027 and 0028 applied by `migrate.test.ts`; the multi-instance test needed the rules acceptance added, fixed in the follow-up commit). **Not done:** a Play-installed build, any iPhone build, Apple's `RESCIND_CONSENT` payload (not readable here), legal review.
 
 | Finding | Status | What changed | Evidence | Remaining limitations |
 |---|---|---|---|---|

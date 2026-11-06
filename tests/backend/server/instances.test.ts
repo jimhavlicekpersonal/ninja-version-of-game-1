@@ -10,7 +10,7 @@ import { buildServer } from '../../../server/app';
 import { RedisClient } from '../../../server/redis';
 import { RedisLeaderboard, RedisLocks, RedisRateLimiter } from '../../../server/shared';
 import { DEFAULT_RATE_LIMITS } from '../../../server/rateLimit';
-import { ClientHeaders, Routes } from '../../../src/backend/net/protocol';
+import { ClientHeaders, Routes, COMMUNITY_RULES_VERSION } from '../../../src/backend/net/protocol';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { baseAt } from './harness';
 import { freshPgRepo } from './pg';
@@ -40,6 +40,8 @@ describe.skipIf(!process.env.TEST_DATABASE_URL || !redisUrl)('two instances, one
     const ann = (await call(a, 'POST', Routes.players, undefined, { name: 'Ann' })).body;
     expect((await call(b, 'GET', Routes.me, ann.token)).body.name).toBe('Ann');
     await call(b, 'PUT', Routes.base, ann.token, { base: baseAt(1) });
+    // Renames need the community rules accepted on the account (report section 5 step 7).
+    expect((await call(b, 'PUT', Routes.meRules, ann.token, { version: COMMUNITY_RULES_VERSION })).status).toBe(200);
     // A rename retried on the other instance with the same key gets the first answer.
     const key = { [ClientHeaders.idempotencyKey]: 'rename-1', [ClientHeaders.protocol]: '7' };
     const first = await call(a, 'PUT', Routes.me, ann.token, { name: 'Annie' }, key);
