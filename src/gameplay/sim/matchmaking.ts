@@ -132,13 +132,24 @@ export function attackerStrength(state: VillageState, data: GameData): number {
 }
 
 /**
+ * How far below its earned strength a Keep's opponents may be (`powerSlackByKeep`, else `powerSlack`).
+ * Report section 5 step 11 (economy E24): the Keep 3 army has just arrived (small camps, new
+ * warriors at level 1) and met near-capped Keep 2 bases, so the day-2 window was a cliff
+ * (0.88 stars against 2.67 at Keep 2). Early Keeps get more room; the late game keeps 0.25.
+ */
+export function powerSlackAt(hall: number, data: GameData): number {
+  const mm = data.ranks.matchmaking;
+  return mm.powerSlackByKeep?.[hall - 1] ?? mm.powerSlack;
+}
+
+/**
  * The generated opponent behind a scout seed, for this player. Trophies pick
  * the strength, but never below what the player's own army has earned (minus
  * a little slack): climbing research while honor lags no longer turns the late
  * game into farming bases a whole Keep below.
  */
 export function opponentFor(seed: number, state: VillageState, data: GameData): BaseLayout {
-  const floor = attackerStrength(state, data) - data.ranks.matchmaking.powerSlack;
+  const floor = attackerStrength(state, data) - powerSlackAt(hallLevel(state, data), data);
   return opponentForRank(seed, state.trophies, hallLevel(state, data), data, floor);
 }
 

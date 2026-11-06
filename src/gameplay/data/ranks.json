@@ -132,6 +132,7 @@
     "hallsAbove": 1,
     "trophyJitter": 30,
     "powerSlack": 0.25,
+    "powerSlackByKeep": [0.75, 0.75, 0.75, 0.75, 0.25, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25, 0.5],
     "researchFloorKeeps": 1.5
   },
   "lootPenaltyByHallDiff": [
