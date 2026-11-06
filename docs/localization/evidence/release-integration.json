@@ -53,6 +53,13 @@
       "command": "node tools/release/check-published-game.mjs against local production build",
       "result": "passed",
       "coverage": "Game module, exact Spanish pack hash, service worker, manifest and six localized public pages"
+    },
+    {
+      "command": "npx vitest run tests/backend/server/core.test.ts",
+      "result": "passed",
+      "test_files_passed": 1,
+      "tests_passed": 24,
+      "notes": "The updated fixture also runs against PostgreSQL in GitHub Actions."
     }
   ],
   "runtime_pack_hash": "2b167174ce7bd967",
@@ -228,5 +235,11 @@
     "Local tests skipped PostgreSQL/Redis prerequisites; the Pages/server workflows run backend integration checks on services",
     "Actual native devices, store-console publication and human native-language review remain outside this web deployment",
     "No live online backend is configured for the normal web build; server image workflow rebuilds the compatible backend artifact"
-  ]
+  ],
+  "first_publication_attempt": {
+    "commit": "3aacc4fdee00ba2068a43861479c2ecabc310b49",
+    "workflow": "https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/actions/runs/42292027391",
+    "issue": "PostgreSQL account-deletion test depended on random opponent selection (never matched Ann)",
+    "resolution": "Shield the third fixture player and assert the exact intended real opponent. Account-deletion assertions remain unchanged; no production matchmaking code changed."
+  }
 }
