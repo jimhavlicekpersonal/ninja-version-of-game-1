@@ -1,0 +1,885 @@
+KAGEMURA: NINJA CLANS -- FRESH-SLATE REVIEW
+Date: 2026-11-06.  Repository: jimhavlicekpersonal/ninja-version-of-game-1, branch
+claude/game-balance-progression-review-d879z6 (HEAD at the time of review = main's
+2026-11-06 state).  Analysis only: no code, data or test in the repository was changed.
+This file is the single deliverable.
+
+=====================================================================================
+0. SCOPE, METHOD, LIMITS
+=====================================================================================
+
+Question asked: are memory use, loading, the GUI, the game theory, the psychological
+hooks, general playability and profitability up to par; is the balance between
+ninjas, buildings, army compositions and play styles sound; does the free (no-Jade)
+curve feel "slightly tedious but not impossible"; is there a distinct advantage to a
+smart loadout and to timing/grouping on the battlefield; are there several ideal
+strategies for placing ninjas and building the base; will new ninja classes and
+buildings break the game; what is left to polish for a worldwide release.
+
+Method (fresh slate, prior conclusions in docs/ used only as pointers):
+  - Read the sim (src/gameplay/sim/**), the data (src/gameplay/data/*.json), the UI
+    and render code, the balance tools (tools/balance/*, tools/progression/*).
+  - Ran the full test suite: 131 files passed, 1 skipped; 1139 tests passed, 14
+    skipped (npm test, 64 s).
+  - Ran the production build and headless Chromium measurements for boot, network
+    profiles, texture totals and a CPU profile (tools/perf/lowend.mjs, profile.mjs).
+  - Ran two battle experiments of my own against the real sim (scratch test,
+    section 3) to measure (a) whether deployment timing and grouping change the
+    outcome and (b) whether a base can hold at all.
+  - Built Keep-by-Keep economy tables from the JSON data (section 3).
+  - Three parallel sub-reviews (performance/GUI, hooks/monetization, economy/
+    buildings) fed sections 2.6, 2.7 and 2.4; I verified their key claims against
+    the code before including them.
+
+Limits: everything below is emulation, data analysis and model-player simulation.
+No real player data, no physical cheap phone, no signed store build, no revenue was
+available. The campaign model player (tools/balance/playerModel.ts) uses the bots'
+simple attack plan, never buys a builder, never spends Jade and never places walls,
+so its numbers are a floor for a human, not a prediction.
+
+Short verdict, per area (details in section 2):
+  Memory/loading ........ Not yet up to par for 2 GB phones: one 35 MB island
+                          texture (16 MB on "low"), 513 KB first download, 10-26 s
+                          to first frame on 3G/2G, 49 useless locale chunks.
+  GUI ................... Solid structure, good bottom bar, honest labels; a dozen
+                          sub-44 px targets and 10-11 px fixed type; untested for
+                          long translations.
+  Game theory ........... A well-built, test-pinned power model, but the live
+                          balance has three structural problems: air, support and
+                          siege armies are dead strategies; defence (buildings and
+                          walls) is close to irrelevant below a maxed base; timing
+                          and grouping move the result by only a few points.
+  Progression (free) .... Too fast in Keep levels (Keep 15 in ~4 months for a
+                          4-session player), builder-bound and hollow from Keep 8,
+                          and casual players lose more to bot raids than they loot.
+                          "Slightly tedious but possible" is not yet where it sits.
+  Hooks ................. Complete, honest, no dark patterns found; one clock
+                          problem (UTC chest vs local calendar) and a tutorial
+                          that nudges the Jade skip.
+  Profitability ......... Ethical frame is right, but the Jade ladder is
+                          internally inconsistent (three cheap products dominate
+                          every pack) and the cosmetic catalogue is thin.
+  Playability ........... Playable end to end; the first real choice arrives
+                          only at Keep 3-4, the second-day Keep 3 dip remains.
+  Worldwide ............. Blocked: 0 of 758 strings translated in all 49
+                          non-English locales while the status file says
+                          "50 languages"; several compliance texts bypass t().
+  Future-proofing ....... Warriors: good (one formula, tests pin it). Buildings
+                          and per-Keep economy tables: hand-written, five
+                          parallel tables, no cost-efficiency budget for defences.
+
+=====================================================================================
+1. HOW THE GAME IS BUILT (facts the findings rest on)
+=====================================================================================
+
+Resources: Coins (acorns) pay for defences, walls, Keep and Farms; Provisions (dew)
+pay for every warrior, every research, every economy and military building. Jade
+(moonstones) is premium; Shadow Ink (nightsap) exists in data only.
+Warriors: 50 live = 10 roles x 5 tiers (progression.json roles, roster.json).
+Power per housing = 21 x role efficiency x 1.4^(tier-1) x 1.16^(level-1), with
+HP:DPS split by role (hpPerDps). Tier n unlocks at Keep 1/4/7/10/13 and its level cap
+is the Keep's cap minus 2 per tier (levelCapOffset), so at any Keep each tier at its
+cap is ~4 % stronger per housing than the tier below, and ~18 % dearer to train.
+Buildings: 25 live of 54 catalogued. Six shooting defences: Kunai Tower (ground,
+range 7), Firework Mortar (ground splash, min range 3), Shuriken Tower (both, fast),
+Sky Bow (air), Kite-Cutter Ballista (air, grounds flyers, Keep 8), Longbow Yagura
+(ground, range 13, counter-artillery, Keep 12). Two traps, three "soft" counters
+(Lantern Line, Repair Crane, Incense Brazier), walls capped at 125 from Keep 6 on.
+Per-Keep counts barely grow: Keep 6 = 4 Kunai/3 Shuriken/2 Mortar/2 Sky Bow;
+Keep 15 = 4/3/2/3 + 2 Ballista + 2 Yagura = 16 shooting defences for a 360-housing
+army. One Dojo, three camps, up to five builders (two free, three for 250/500/1000
+Jade; the player starts with 500 Jade).
+Battle: 180 s, 10 ticks/s, deterministic. Stars: 1 for >= 50 % destruction, 1 for
+the Keep, 1 for 100 %. Targeting is "nearest building of the preferred kind"; walls
+are a path cost (hedgePathCost 10), not a hard block. Attackers deploy only inside
+6 Infiltration Points (8 compass approaches minus 2 chosen by a hash of the layout),
+each hiding ~1/3 of the army, so every attack is at least three squads. Smoke Bomb
+(1 + housing/40 charges, max 3) and Sabotage are the only timed abilities.
+Bot raids on the player: a slot every hour with 12 % chance (~2.9/day), a 12-16 h
+shield after any raid >= 30 %, full army of the player's Keep at that Keep's
+research cap, bot deployment plan; losses are 20 % of storage capped by
+storageLootCapByHall plus 50 % of uncollected.
+
+=====================================================================================
+2. FINDINGS
+=====================================================================================
+Severity: CRITICAL = blocks a worldwide commercial release or breaks the core loop;
+HIGH = materially hurts retention, revenue or fairness; MEDIUM = clear defect or
+design gap; LOW = polish. "Overlaps backlog" marks items the 2026-11-05 audits already
+list (docs/audit/STATE_OF_THE_GAME.md, docs/store/WORLDWIDE_AUDIT.md); the evidence
+here is fresh.
+
+------------------------------------------------------------------
+2.1 Warrior balance
+------------------------------------------------------------------
+
+B1  HIGH  Air, support-heavy and siege armies are dead strategies in the lab.
+    Evidence: docs/game-theory/ARMY_BALANCE.md (generated from tools/balance/armyLab.ts,
+    equal-housing armies at the Keep's caps vs mid-level generated bases, bot plan):
+    Air never exceeds 56 % destruction and never three-stars at Keep 6+; support-heavy
+    15-55 %, 0 % three-star at Keep 7+; siege 26-44 % at Keep 7+; melee rush falls to
+    33-41 % at Keeps 8/12/15. Only "Mixed", "Melee+ranged light support" and
+    "Artillery-heavy" are competitive, and at Keep 15 "Mixed" (84 %, 44 % three-star)
+    dominates everything (next best 71 %).
+    Cause (data): the Sky role pays twice. Its efficiency is 0.568 (progression.json
+    roles.sky) so a flyer has half a Blade's power per housing, AND its training price
+    per housing is ~5x a Blade's (troops.json: owl_bomber 400 dew / 4 housing = 100
+    vs hedgehog_roller 20; at Keep 13 cap 5,119 vs 1,024 dew per housing). Three
+    defences hit air (Shuriken, Sky Bow, Ballista) and Sky Bow is the most cost-
+    efficient defence in the game (HP x DPS per Coin, section 3.4). Support (Mystic
+    0.82) and Siege (0.9) pay an efficiency tax on top of needing a front line that
+    the equal-housing compositions do not give them.
+    Why it matters: "multiple ideal strategies" is the stated goal; today the data
+    says one family of compositions (blades + throwers + a guardian line + a few
+    saboteurs, i.e. the raid bots' own mix) is the answer at every Keep. The
+    "Suggested army" button (sim/suggest.ts) hands that answer to the player, which
+    is honest but confirms the mono-strategy.
+
+B2  MEDIUM  Several newly unlocked tiers are weaker in raw stats than the tier below
+    at the same Keep, which players will read as a downgrade.
+    Evidence (section 3.1, computed at each Keep's research cap): thousand_needle
+    (thrower t5) 110.9 power/housing vs chain_sickle_reaper (t4) 137.6 at Keep 13;
+    siege_bombardier (siege t4) 139.5 vs bomb_carrier (t3) 189.6; hawk_tamer (beast
+    t2) 149.0 vs hound_handler (t1) 184.8. These carry deliberate DPS taxes for range
+    or utility (roster.json dpsScale), and the "no dominance" test only checks the
+    budget, not the result. The lab (B1) shows the taxed families are the weak ones.
+    Why it matters: a tier-5 warrior that loses to a tier-4 one in a plain fight
+    needs its ability to be visibly worth it, and nothing in the UI explains the
+    trade.
+
+B3  MEDIUM  Tiers are vertical sidegrades with a steep cost premium, so the
+    cheapest power per Provision is always "max the tier-1/2 core" and new tiers are
+    a luxury for a free player.
+    Evidence: at the pinnacle each tier is ~4 % stronger per housing than the one
+    below (PROGRESSION_MODEL.md, verified in section 3.1) while training costs 2x per
+    tier (progression.json training.tierCostMult) and research 3x per tier
+    (research.tierCostMult). A tier-5 blade at its Keep-15 cap costs 5,735 dew/housing
+    to train vs 2,924 for the tier-1 blade, for +18 % power.
+    Why it matters: it is a defensible "legends are 1.2x initiates" design and it
+    keeps old warriors alive, but it means research order is near-dominant and the
+    excitement of unlocking a new tier is mostly cosmetic.
+
+B4  MEDIUM  Mastery (warrior and building EXP bonuses up to +30 % / +15 %) is
+    documented as part of the model but is not implemented.
+    Evidence: PROGRESSION_MODEL.md "Mastery EXP" rows and progression.json mastery /
+    buildingMastery constants; zero references to mastery in sim/village.ts or
+    sim/battle/battle.ts; tests pin only the EXP formula.
+    Why it matters: the doc promises a long-tail hook that does not exist, and the
+    roster test "EXP needed grows without end" gives false confidence.
+
+B5  LOW  The hero (Shadow Captain) is a free auto-join from Keep 7 whose level
+    follows the Keep, with one aura. There is no hero choice, no hero levelling and
+    the other three heroes are planned only (battle.json heroes, roster.json heroes).
+    Why it matters: heroes are the genre's main "smart loadout" lever; one automatic
+    hero adds power (+2 to +6 destruction measured by the previous pass) but no
+    decision.
+
+------------------------------------------------------------------
+2.2 Building and defence balance
+------------------------------------------------------------------
+
+D1  HIGH  Defence is nearly worthless unless the base is maxed, and the free player's
+    base is never maxed. (Overlaps backlog E26, with a new explanation.)
+    Evidence: campaign.json / CAMPAIGN.md: 0 % of bot raids held at every Keep for all
+    four policies over ~270 raids each, including the "defender" policy that builds
+    every counter and prioritises defences; stolen per raid is identical with and
+    without that policy (Keep 12: 2,696,331 vs 2,696,362).
+    My experiment (section 3.2, same bot plan, cap-level mixed army of the Keep):
+    generated bases at levelBias 0.5 (buildings ~1 level below cap, the state a
+    real player is in most of the time) hold 0-33 % and are three-starred 0-67 %;
+    the same layouts at levelBias 1.0 (maxed) hold 17-100 % and are never
+    three-starred. So defences CAN hold; the problem is that attackers reach the
+    Keep's research cap (one lane, 30 min to 2.5 days per level) far sooner than
+    defenders reach building caps (7-day timers, 1,771 builder-days to max Keep 15,
+    section 3.3). The attacker/defender timeline is asymmetric by roughly 3-13x in
+    builder-days vs research-days at Keeps 8-15.
+    Why it matters: a third of a free player's Coins from Keep 7 on goes into
+    buildings that measurably do nothing for them, and the held-defence reward
+    (raids.json defenseWin 5 %) is dead in practice (0 and 600 Coins paid over whole
+    campaigns).
+
+D2  HIGH  Walls are close to irrelevant and sometimes harmful.
+    Evidence (section 3.2): removing every wall from a generated base changed mean
+    destruction by -16 to +13 points depending on layout and Keep, with no consistent
+    sign (Walled Keep at Keep 8 bias 0.5: 49 % with walls, 65 % without; the same
+    layout at Keep 5: 67 % with, 59 % without; Keep 15 bias 1: 49 % with, 41 %
+    without). Walls are a path cost of 10 (battle.json hedgePathCost), not a block,
+    the wall cap is frozen at 125 from Keep 6 to 15 (hall.json), and only "walls"/
+    "breach" roles ever target them (battle.ts chooseTarget).
+    Why it matters: the genre's primary base-design tool (funnels, compartments,
+    time-under-fire) barely exists, so "multiple ideal base layouts" cannot emerge
+    from walls. The five archetypes differ in shape but measure within +/-8 % of each
+    other (trials.json layoutPower 0.94-1.08).
+
+D3  HIGH  Defence roles do not form a counter matrix. Five of ten attacker roles
+    have no cost-relevant live counter.
+    Evidence: buildings.json combat.targets and fortifications.ts. Air is countered
+    three times over; stealth by the Lantern Line only (3 s reveal, +10 % damage);
+    sabotage by the Repair Crane (2-3 uses); support by the Brazier (30 % cut);
+    throwers by the Yagura from Keep 12 only (1.5 M Coins each); guardians, siege,
+    beasts, infiltrators and blades face only generic towers. The Mortar, the nominal
+    anti-swarm, is 5-10x less HP x DPS per Coin than a Kunai Tower at every Keep
+    (section 3.4), so the dominant Coin spend is "Kunai Towers, then Sky Bows".
+    The 29 planned buildings include exactly the missing counters (Whirling Blade
+    Keep 4, Listening Jars Keep 5, Living Bamboo Wall Keep 6, Sleep Dart Keep 10...)
+    with counters/counteredBy lists already authored in progression.json.
+    Why it matters: without a counter matrix there is no reason for a defender to
+    read the meta and no reason for an attacker to scout for anything but loot.
+
+D4  MEDIUM  Too few defence buildings per Keep for the army sizes.
+    Evidence: hall.json limits: 9 shooting defences at Keep 4 for 120 housing, 11 at
+    Keep 6 for 240, 16 at Keep 15 for 360; the count table is essentially flat from
+    Keep 6 on while army housing grows 1.5x and the roster goes from 14 to 50
+    warriors. Difficulty scaling comes from building levels alone.
+    Why it matters: a base with 16 towers and 60+ other buildings is mostly loot
+    filler; one squad per infiltration point walks the perimeter nearly unopposed,
+    which is what section 3.2's 80-94 % destruction on Kunai Ring and Open Court
+    shows.
+
+D5  MEDIUM  Infiltration Points are chosen by a hash of the layout, not by the
+    defender.
+    Evidence: sim/battle/infiltration.ts planInfiltration: `drop = layoutHash(base) %
+    8`, closing that approach and its opposite. Moving any building anywhere changes
+    which two sides are closed, with no feedback.
+    Why it matters: the one mechanic that could make base design strategic (which
+    approaches are open, which squads must come where) is effectively random from
+    the defender's point of view. The attacker sees the points at scouting; the
+    defender cannot design for them.
+
+D6  LOW  Generated opponents never upgrade a building during a raid and scouting
+    never shows traps; the defence side has no information game beyond layout.
+
+------------------------------------------------------------------
+2.3 Strategy depth: loadout, timing, grouping, base-building
+------------------------------------------------------------------
+
+S1  HIGH  Timing and grouping move the result by only a few points; composition and
+    which side you enter from decide the battle.
+    Evidence (section 3.2, EXP1: the bots' mixed army of the Keep vs 6 layouts x 4
+    seeds, five deployment plans):
+      Keep 6:  bot 56.6 %, all-at-once 53.4, staggered+smoke 61.5, two waves 51.2,
+               spread over all 6 points 65.0 (1-star 92 %, 3-star 0 %).
+      Keep 10: bot 75.8, all-at-once 73.8, staggered+smoke 75.8, two waves 62.6,
+               spread 70.2.
+      Keep 15: bot 83.5, all-at-once 85.1, staggered+smoke 86.7, two waves 68.8,
+               spread 76.5.
+    "Staggered" (guardians and saboteurs first, blades 2.5 s later, throwers 4.5 s
+    later, three smoke bombs on the nearest towers) beats "everything at once" by
+    1.6 to 8 points; a second wave at 30 s loses 5-15 points because the 180 s clock
+    runs out; spreading over six points is the best plan at Keep 6 and the worst
+    at Keep 10. The same army, same bases: the spread between the best and worst
+    sensible plan is 10-18 points, mostly explained by the time limit and the
+    entry side, not by squad composition per point.
+    Why it matters: the user's goal is "a distinct advantage to timing and grouping".
+    Today a competent plan gains roughly half a star over a careless one. Smoke is
+    worth a few points; Sabotage is one 6 s jam per Saboteur. There is no
+    rage/freeze/heal-type spell, no hero ability trigger, no "wait for the mortar to
+    retarget" moment, because targeting is nearest-building and defences have no
+    retarget delay or fire arc.
+
+S2  MEDIUM  The attacker's interaction surface is small: tap a glowing ring to drop
+    one warrior per tap (a held finger streams), tap for each smoke bomb, choose the
+    order from a strip. There is no per-squad grouping, no "deploy N" gesture, no
+    pause, no ability button for warriors (kits fire automatically), no replay speed
+    other than in replays.
+    Evidence: src/presentation/render/BattleScene.ts 460-489, battleHud.ts.
+    Why it matters: at 300-360 housing a full deployment is 100-200 taps or a long
+    hold; grouping is a matter of where you hold your finger, not a decision.
+
+S3  MEDIUM  "Smart loadout" has one dominant answer per Keep (B1) and the game tells
+    you what it is (Suggested army). Loadout decisions that remain: how many
+    saboteurs for the layout, whether to bring siege for a Walled Keep, scouting
+    with "Next" rerolls (2-4 % of loot per reroll, the dominant raiding micro-skill).
+
+S4  LOW  The base-building side has no "designed for a counter" feedback loop:
+    defence logs keep only 10 raids, there is no heat map of where attackers entered
+    or which building fell first, no "your base held X of the last Y" summary.
+
+------------------------------------------------------------------
+2.4 Progression curve and free-player economy
+------------------------------------------------------------------
+
+P1  HIGH  Keep levels come far too fast for a 15-Keep ladder; the Keep is never a
+    goal. (New framing of backlog E23/E25.)
+    Evidence: CAMPAIGN.md, regular model (4 sessions/day, 2 builders, no Jade,
+    bots' attack plan): Keep 5 day 4.2, Keep 8 day 23.4, Keep 10 day 32.6, Keep 12
+    day 51.2, Keep 15 day 117.6. Casual (1 visit/day): Keep 10 day 120, Keep 15 day
+    246. The next Keep's Coin cost in hours of that Keep's max production never
+    exceeds 55 h after Keep 6 and falls to 19 h by Keep 14 (section 3.3); nothing but
+    cost, a builder and the hall cap gates the Keep (village.ts upgradeQuote).
+    Genre reference (assumption, not measured): Clash of Clans TH10 ~6-12 months
+    free, max TH multi-year. Kagemura's Keep 10 at 1-4 months is 3-8x faster.
+    Why it matters: a hollow Keep 15 base (D1) is the natural result; matchmaking
+    corrects by research strength, but the ladder stops meaning anything.
+
+P2  HIGH  From Keep 8 on the base is builder-bound, not resource-bound: storages
+    fill, raiding becomes pointless, and the only lever left is Jade for time.
+    Evidence (section 3.3): builder-days of newly allowed upgrades per Keep: Keep 8
+    78, Keep 10 223, Keep 12 256, Keep 14 395, Keep 15 312; cumulative 1,771
+    builder-days (590 days with 3 builders, 354 with 5). Resource-days for the same
+    upgrades at max income: 7-10 per Keep. Cause: progression.json buildings
+    timeGrowth 2.2 with maxSeconds 604800: every collector L15+, storage L15+, camp
+    L14+, Kunai L14+, Sky Bow L10, Ballista L7+, Yagura L5+ is a flat 7 days, while
+    costGrowth 1.45 only matches collector rate growth (Coin Mint payback is a flat
+    ~155 h from L12 to L24).
+    Why it matters: this is "tedious AND nothing to do", the opposite of "slightly
+    tedious but possible". It also makes the Artisan's Bundle (Jade for a builder)
+    the only purchase that matters, which is a time-gate sale, not a value sale.
+
+P3  HIGH  Casual players lose more to bot raids than they loot; the raid tax is the
+    real early wall. (Overlaps E26.)
+    Evidence: CAMPAIGN.md totals: casual 582 M stolen vs 358 M looted (163 %);
+    casual explorer 314 %; regular 64-66 %. Casual Keep 5->6 takes 28 days (Keep
+    4->5 took 9): ~31 raids x ~98 k stolen vs ~140 k/day produced. Raids come 12 %
+    per hour slot (~2.9/day), only shields stop them (12-16 h after a 30 %+ raid),
+    and battleEnd drops the shield on every attack (village.ts).
+    Why it matters: the player who plays least is punished most, exactly where D30
+    retention is measured.
+
+P4  MEDIUM  Research is the late-game wall, and Provisions carry three loads.
+    Evidence (section 3.3): incremental research to bring every unlocked warrior to
+    its cap: Keep 11 45 M, Keep 13 223 M, Keep 14 581 M, Keep 15 1,526 M
+    Provisions; the full roster at Keep 15 costs 1.53 B vs 495 M for every Keep-15
+    building upgrade. Provisions also pay for training (3.98 M per 360-housing
+    refill at Keep 15) and for every economy/military building. Three lanes from
+    Keep 11; 81 lane-days at Keep 15 alone.
+    Why it matters: Coins pile up (P2) while Provisions are permanently short; a
+    smart free player stops upgrading economy buildings (they cost Provisions) to
+    research, which deepens P2.
+
+P5  MEDIUM  Collector upgrades stop production for the whole timer, and the quote
+    does not say so.
+    Evidence: village.ts upgrade sets collector.accrueFrom = endsAt; resources.ts
+    produces nothing until then. A Coin Mint L15 (7-day timer) costs 530 k plus
+    ~1.59 M of lost production; true payback ~620 h instead of the 155 h implied.
+    Six collectors each 7 days per level = offline a third of the time for a player
+    who upgrades them.
+
+P6  MEDIUM  Keep 3 is still the second-day dip and Keep 1-2 offer no choice.
+    Evidence: CAMPAIGN.md Keep 3 rows: regular 1.50 stars, 0 % three-star; casual
+    1.00 stars, 60 % won, honor negative. Keep 1 has one camp, one tower, two troop
+    types; the first real choice (second camp, Mortar, traps, Saboteur/Smoke) is
+    Keep 3-4, around day 1-3.
+
+P7  LOW  Loot cap (storageLootCapByHall = generated min from Keep 7) makes hoarding
+    safe (a maxed Keep 15 defender loses <= 2 % of storage per raid) and makes real
+    player bases strictly worse targets than generated ones for an attacker.
+
+P8  LOW  Economy sharp edges (none exploitable): cancel refunds (upgrade, research,
+    training) go through addCapped and are silently lost at full storage; the
+    "20 % raidable" rule (economy.json raidableStoredFraction) is shown nowhere;
+    paid scouting "Next" at 2-4 % of loot is the dominant raiding micro-strategy.
+
+------------------------------------------------------------------
+2.5 Future-proofing (new classes, new buildings)
+------------------------------------------------------------------
+
+X1  GOOD  Warriors are generated from one formula and pinned by tests.
+    progression.ts warriorStats, tools/progression/pacing.mjs and rolecut.mjs,
+    progression-model.test.ts (budget within 3 %, growth within 4 %, no dominance
+    inside a tier, newly unlocked tier not stronger than the tier below). Adding a
+    role = one roles entry + one roster row per tier + a kit; the tests then say
+    what broke. This is the right skeleton.
+
+X2  MEDIUM  The budget test checks inputs, not outcomes. A new warrior that passes
+    "same budget per housing" can still be useless (B1: Sky passes and loses) or
+    dominant (Shadow at 1.2 efficiency is the best power per Provision at every Keep,
+    section 3.1). army-lab.test.ts has upper gates (no army too strong) and the
+    campaign gates hold the model player's stars, but there is no lower gate per
+    family ("every family must reach X % destruction at every Keep in the lab").
+
+X3  HIGH  Buildings and per-Keep economy are hand-written tables with no budget.
+    buildings.json has 54 x up to 24 level rows written by a generator that is not
+    in the repo's sim path; hall.json is 15 hand-edited rows; storageLootCapByHall,
+    generatedLootByHall, rewardScaleByHall, scoutFeeByHall, topUpScaleByHall and
+    powerSlackByKeep are six parallel per-Keep arrays that must agree by hand.
+    There is no "strength per Coin relative to the Kunai Tower" budget for defences
+    (D3: the Mortar is 5-10x dominated and nothing flags it). Adding a defence type
+    does not force a rebalance; adding a Keep level or changing income touches six
+    tables and 54 level rows.
+
+X4  MEDIUM  Counter-matrix data exists only for planned buildings
+    (progression.json buildingCatalog counters/counteredBy, building-matchups.test
+    .ts) and not for the live ones, so the live game cannot be checked for "every
+    attacker role has a counter".
+
+X5  LOW  Infiltration cover and smoke charges derive from housing, so a new
+    high-housing class automatically changes squad sizes; the 180 s clock and
+    nearest-target rule are global constants that any slow or long-range class will
+    strain (siege_bombardier already does).
+
+------------------------------------------------------------------
+2.6 Memory, loading, GUI (measured in headless Chromium; see section 3.5)
+------------------------------------------------------------------
+
+M1  HIGH  The island ground is one huge texture: 4080 x 2241 px (36.6 MB RGBA) on
+    "high", 2720 x 1494 (16.3 MB) on "low", and its CPU canvas is kept for the
+    session for hit tests that are never run on it (assets.ts 264-303, quality.ts
+    210/223, iso.ts). It is 35 of 63 MB of texture pixels on high and 15.5 of 26.7 MB
+    on low, and texture upload (WebGLTextureWrapper._processTexture) is 3.3 of 6.4 s
+    of sampled boot CPU. On a 2 GB Android this is the single biggest memory item.
+
+M2  HIGH  First visit transfers 513 KB gzipped (index chunk 250 KB gz carrying all
+    gameplay JSON including 221 KB troops.json, all code-art painters, the sandbox
+    tools and most panels; Phaser subset 173 KB gz). Emulated time to ready: good
+    4G 2.7 s; weak 3G 10.2 s; slow 3G 22.3 s; 2G 25.9 s. The boot guard's "taking a
+    long time" card fires at 25 s. Only Friends and Gang War panels are lazy.
+
+M3  MEDIUM  50 locale chunks (8 KB each, 49 byte-identical because untranslated)
+    are built, precached (129 KB gz, ~50 requests at service-worker install) and
+    the device language's chunk is fetched on the critical path only to discover it
+    is below the 80 % coverage threshold and fall back to English (i18n.ts 76-98,
+    main.ts 181).
+
+M4  MEDIUM  Service-worker precache fetches 512 px icons, the maskable icon, the
+    Apple touch icon and the legal pages with cache mode "reload" (sw.template.js
+    413): ~470 KB after first frame, competing with the server hello on 2G.
+
+M5  MEDIUM  Boot path stalls on slow links: the art manifest fetch (cache
+    "no-cache", 2.5 s cap) for a manifest that is empty today; a 1.5 s font wait with
+    no preload, so canvas labels stay in the fallback font on 3G; the language
+    probe (M3).
+
+M6  MEDIUM  Backdrop blur (4 px) behind every modal while the village keeps
+    animating (60 wisp tweens, petals, fog, cloud shadows); disabled only on q-low.
+    A 4-6 GB phone with a weak GPU lands on "high". Build, Army, Store and Settings
+    are modals, so the most-used screens pay a full-screen blur per frame.
+
+M7  MEDIUM  Battle scene retessellates Graphics every frame: 4-5 rounded rects per
+    HP bar for every damaged building and troop, jam arcs, 14 smoke dashes + 48-
+    segment arc per cloud (BattleScene.ts 540-682, 742, 795). Measured 3-6 ms/frame
+    with 24 troops under CPU x4; a Keep-12 raid has 125 walls, ~60 buildings and
+    100+ troops.
+
+M8  MEDIUM  Tap targets and type: shop tabs ~28 px tall, queue remove buttons
+    22 x 22, army-strip buttons 38 px, 14 rules at 10-11 px fixed px (styles.css
+    334, 433, 604, 642, 879). Bottom bar (>= 48 px), rail, .btn 46 px, inputs 16 px
+    are fine. OS font scaling has no effect because everything is px.
+
+M9  MEDIUM (latent)  Long-translation overflow: nowrap on chips, army action
+    buttons and the battle Attack button; the 3-column scouting grid and the 320 px
+    bar rely on short English. Untested because no translation exists.
+
+M10 LOW  Thumbnails are full-resolution PNG data URLs (100-300 KB each) cached for
+    the session; battle HUD rebuilds loot chips every 100 ms; toasts last 3 s even
+    for 170-character errors; the offline shell waits 3.5 s on flaky links.
+
+M11 GOOD  No leaks found (modal listeners removed, battle interval cleared,
+    textures released on shutdown, village sleeps during battle); saves are capped
+    (10 battles, 10 defences, 6 seasons, 7 daily history); errors are surfaced with
+    Retry and a save code; tutorial is 9 guided steps; Android Back, focus trap and
+    reduced motion are handled; the Phaser subset build is a real win.
+
+------------------------------------------------------------------
+2.7 Psychological hooks, monetization, profitability, honesty
+------------------------------------------------------------------
+
+H1  GOOD  Every return hook is present and honest. Verified in code: daily chest
+    with odds shown first, seeded per day, overflow reported; streak with a free
+    weekly skip, never wiped, never sold; 28-day calendar at local midnight; adaptive
+    daily/weekly tasks; 30-day Season Scroll with a free track and a no-sale window
+    in the last 4 days; monthly leagues; a 14-day event loop with real countdowns;
+    endless Trials paid once per tier; weekly Alliance War; Gang Wars; settle-the-
+    score rematch; Clan Stipend; notifications opt-in, per type, quiet hours,
+    4/day. No fake urgency, no pay-to-remove-pain (Rebuild Kit retired), no offers
+    to minors or unknown ages, prices only in the Store with a confirm, generated
+    opponents labelled everywhere.
+
+H2  HIGH  The Jade ladder is dominated by three cheap products, which caps ARPPU
+    and makes the "+N % value" chip misleading in spirit.
+    Evidence: store.json packs pay 45.5 -> 75.0 Jade per dollar ($0.99 -> $99.99);
+    Clan Stipend 360 Jade for $2.99 = 120/$ and re-buyable; Starter Pack ~184
+    Jade-equivalent per dollar; Artisan's Bundle 130/$; Keep Celebration ~143/$ and
+    repeats every Keep. The pack cards compute "+N % value" against the $0.99 pack
+    only (economyUi.ts 258-267). A value-rational adult never buys the four big
+    packs.
+
+H3  MEDIUM  Two clocks: the daily chest and stipend roll at UTC midnight
+    (daily.ts 38-45, stipend.ts 33, refusal text says "(UTC)") while tasks and the
+    calendar roll at local midnight (calendar.ts, pass.ts). In Jakarta the chest
+    flips at 07:00, in Los Angeles mid-afternoon. Event end times print as UTC.
+
+H4  MEDIUM  The tutorial highlights the gold "Finish now" (Jade skip) button twice
+    (tutorial.ts finishKeep, finishTrain) before the age band is asked (hud.ts
+    459-472), so minors are guided into a Jade spend on day one. The spend is tiny
+    (2 Jade of a 500 start) but it trains the habit.
+
+H5  MEDIUM  Competitive advantage of money is time only and bounded (nothing
+    paywalled; minors capped at $50/month; Jade buys skips and top-ups), but the
+    cheapest competitive lever is "another army now": finishing a full Keep-8 army
+    costs ~67 Jade (~$1) and yields a raid worth ~1,100 Jade of top-ups (16x, where
+    TOP_UP.md claims <= 10x).
+
+H6  MEDIUM  Cosmetic depth is thin: six Keep looks, no warrior/hero skins, no
+    village scenery, no battle effects, no clan banners, no cosmetic pass tier. In
+    an ethically constrained economy (no random sales, no ads) cosmetics are the
+    main non-competitive revenue line and it is almost empty.
+
+H7  MEDIUM  Session structure: Keep 1 has no meaningful choice; the Keep 5->6
+    save-up stretch (500 k Coins, ~10 raids) is a static "save X" objective for days
+    with two builders; at Keep 10 the natural purchase is a builder (P2). The
+    next-objective chip (objective.ts) never suggests anything paid, which is good.
+
+H8  LOW  The minor cap is counted in catalog USD, not local store proceeds (already
+    GLOBAL-007); the "Suggested army" is also the bots' army, so the player and the
+    computer field the same thing.
+
+------------------------------------------------------------------
+2.8 Worldwide readiness
+------------------------------------------------------------------
+
+W1  CRITICAL  Zero translations. `node tools/i18n/i18n.mjs status` reports 0 of 758
+    strings for all 49 non-English locales; every locales/<lang>/ui.json entry has an
+    empty "text". docs/STATUS.md says "Languages | 50" and the listing treats 50
+    languages as a feature. The picker (hud.ts 394) hides languages below 80 %
+    coverage, so the game ships English-only in practice.
+
+W2  HIGH  Compliance-relevant text bypasses t(): purchase confirm and age copy
+    (economyUi.ts 135-195), the notification opt-in (hud.ts 430, 471), chest and
+    streak copy (dailyUi.ts 128, 154), the offline-bot disclosures (groveUi.ts 152,
+    hud.ts 682) and every sim fail() message surfaced as a toast (village.ts 725,
+    786, 910, 1297). Even after translation sessions, odds, generated-opponent
+    labels, age and price confirmations stay English.
+
+W3  HIGH (owner evidence, unchanged)  GLOBAL-001/007/008/015/017 and risks R01-R10
+    remain open on store, legal, device and market evidence that code cannot
+    provide: Play Billing 8 on a signed build, real storefront prices, Android
+    account recovery, live privacy/support pages, signed AAB with increasing
+    versionCode, physical cheap-phone tests. (docs/store/WORLDWIDE_AUDIT.md.)
+
+W4  MEDIUM  Locale-sensitive hooks: UTC chest (H3), Alliance War Saturday 00:00
+    UTC, task labels formatted with toLocaleString('en-US') inside the sim
+    (pass.ts 246), RTL untested for lack of RTL text, number formatting fixed to
+    Latin digits (a defensible choice, documented).
+
+W5  MEDIUM  Keep 7-15 building caps are a straight-line projection from the Keep
+    1-6 tables (progression.ts 189-199, liveKeepLevels 6) rather than authored
+    content, so the late game is thinner than the early game in everything but
+    numbers (no new buildings after Keep 12, 29 catalog buildings unbuilt).
+
+=====================================================================================
+3. MEASUREMENTS AND TABLES
+=====================================================================================
+
+3.1 Power per housing at each Keep's research cap (sqrt(HP x DPS) / housing from
+    troops.json, hall.json troopLevelCap and levelCapOffset; training dew/housing in
+    brackets). Selected rows:
+      Keep 7  (cap 7):  blade t1 51.0 [97]  t2 53.2 [114]  t3 55.3 [135]
+                        shadow t1 61.4 [97]  t2 63.8 [114]
+                        sky t1 28.7 [483]   t2 30.3 [571]
+                        thrower t1 31.5 [241] t2 33.4 [286] t3 34.7 [338]
+      Keep 13 (cap 16): blade t1 193.7 [1,024] ... t5 227.9 [2,008]
+                        shadow t1 233.6 ... t4 263.0
+                        sky t1 109.5 [5,119] ... t4 124.4 [8,484]
+                        thrower t4 137.6, t5 thousand_needle 110.9 (taxed)
+                        siege t3 189.6, t4 siege_bombardier 139.5 (taxed)
+                        beast t1 184.8, t2 hawk_tamer 149.0 (taxed)
+      Keep 15 (cap 20): blade t1 350.9 [2,924] ... t5 412.9 [5,735]
+                        guardian t1 349.2 [7,310] ... t5 412.8 [14,337]
+    Reading: inside a role, each tier is ~4 % stronger and ~18 % dearer; across
+    roles Shadow (x1.2) > Blade = Guardian = Infiltrator (x1.0) > Beast (0.95) >
+    Siege (0.9) > Mystic (0.82) > Saboteur (0.72) > Thrower (0.63) > Sky (0.57).
+
+3.2 Battle experiments (scratch vitest file run against the repo's sim; mixed army
+    = raids.json botArmyMix of the Keep at the Keep's caps; generated bases; bot
+    deployment plan unless stated; 6 layouts x 4 seeds for EXP1, 6 seeds per cell
+    for EXP2).
+    EXP1 deployment plans (mean destruction / 1-star / 3-star):
+      Keep 6:  bot 56.6/58/4   allAtOnce 53.4/50/4   staggered+smoke 61.5/63/13
+               twoWaves 51.2/58/0   spread6 65.0/92/0
+      Keep 10: bot 75.8/92/33  allAtOnce 73.8/88/33  staggered+smoke 75.8/88/38
+               twoWaves 62.6/92/4   spread6 70.2/100/0
+      Keep 15: bot 83.5/100/25 allAtOnce 85.1/100/38 staggered+smoke 86.7/100/46
+               twoWaves 68.8/96/8   spread6 76.5/100/21
+    EXP2 can a base hold (held = attacker got no star; bias 0.5 = buildings about a
+    level below cap, bias 1 = maxed; walls=n removes every wall):
+      Keep 5  bias 0.5: held 0-33 %, 3-star 0-33 %;  bias 1: held 0-50 %, 3-star 0 %
+      Keep 8  bias 0.5: held 0-67 %, 3-star 0-67 %;  bias 1: held 33-100 %, 3-star 0 %
+      Keep 12 bias 0.5: held 0-33 %, 3-star 0-50 %;  bias 1: held 17-67 %, 3-star 0 %
+      Keep 15 bias 0.5: held 0-33 %, 3-star 17-50 %; bias 1: held 0-83 %, 3-star 0 %
+      Walls on vs off, same layout and seeds: Walled Keep K5 67 vs 59, K8 49 vs 65,
+      K12 58 vs 57, K15 65 vs 66 (bias 0.5); Twin Gates K15 bias 1 44 vs 45;
+      Mortar Core K8 bias 0.5 61 vs 85; Open Court and Kunai Ring identical (no
+      walls in those layouts).
+      Open Court is the weakest layout at every Keep (75-94 % at bias 0.5).
+
+3.3 Keep-by-Keep economy (from buildings.json, hall.json, troops.json; income at
+    the Keep's max collectors; "18 h" = three sessions a day against the 8 h
+    collector cap; builder-days = sum of newly allowed upgrade timers, walls
+    excluded; "regD/casD" = days the campaign model spent at that Keep).
+    K | next Keep Coins / timer | income Coins/h | storage each | h of income to next Keep | builder-days new | research new (Prov) | regD | casD
+    1 |   1,000 /   4 min |      400 |   4.5 k |   3 |   0   |      0 |  0   |  0
+    2 |   4,000 /  10 min |    1,600 |    10 k |   3 |   0   |   20 k |  0   |  0.4
+    3 |  20,000 /  27 min |    3,900 |    95 k |   5 |   0.1 |   16 k |  0.7 |  2.3
+    4 | 100,000 /  1.2 h  |    8,800 |   456 k |  11 |   0.7 |   66 k |  3.5 |  9
+    5 | 500,000 /  3.3 h  |   17,500 |   908 k |  29 |   2.8 |  180 k |  6.2 | 28
+    6 |  1.23 M /  8.8 h  |   25,800 |  2.56 M |  48 |   6.7 |  371 k |  6.2 | 16.7
+    7 |  1.79 M / 23.7 h  |   32,700 |  3.97 M |  55 |  13.7 | 1.69 M |  6.8 | 20
+    8 |  2.59 M /   64 h  |   56,886 |  9.52 M |  46 |  78   | 2.13 M |  4.3 | 17
+    9 |  3.76 M /   96 h  |   77,394 |  14.8 M |  49 | 111   | 8.88 M |  4.9 | 27
+   10 |  5.45 M /  108 h  |  149,274 |  22.9 M |  36 | 223   | 11.6 M | 10   | 32
+   11 |  7.90 M /  120 h  |  210,246 |  54.9 M |  38 | 187   | 45.0 M |  8.6 | 15
+   12 | 11.45 M /  132 h  |  424,044 |  85.1 M |  27 | 256   | 51.8 M | 13.4 | 19
+   13 | 16.6 M  /  144 h  |  605,442 |   132 M |  27 | 185   |  223 M | 25.4 | 28
+   14 | 24.1 M  /  156 h  |1,241,730 |   317 M |  19 | 395   |  581 M | 27.6 | 32
+   15 |      --           |1,781,742 |   491 M |  -- | 312   |1,526 M |  --  | --
+    Cumulative to a maxed Keep 15: buildings 1.42 B Coins+Provisions, walls 52.5 M,
+    research 1.53 B Provisions, 1,771 builder-days (Keep timers alone 23.3 days).
+    Storage holds the next Keep at every level (ratio 0.22-0.55 early, <= 0.27 from
+    Keep 7): no forced raiding, no forced Jade anywhere.
+    Loot per raid (regular model): K5 31.8 k, K6 76 k, K8 354 k, K10 700 k,
+    K12 1.78 M, K15 6.0 M; refill <= 1.7 h at every Keep; army cost 17 k (K5) to
+    3.98 M (K15) Provisions. Six raids a day net of army cost = 0.14-0.3x of 18 h
+    production at K2-6, 0.5-1.05x at K7-11, 0.2-0.45x at K12-15.
+
+3.4 Defence HP x DPS per 1 M Coins of cumulative cost at the Keep's max level:
+      Keep 6:  Kunai 4.5   Shuriken 1.9  Mortar 0.3  Sky Bow 5.3
+      Keep 10: Kunai 6.6   Shuriken 3.0  Mortar 0.6  Sky Bow 22.9  Ballista 0.6
+      Keep 15: Kunai 16.5  Shuriken 7.1  Mortar 1.7  Sky Bow 50.4  Ballista 0.9
+               Yagura 4.0 (two Yaguras = 64 M = 17 % of all defence cost)
+    Defence is 27-37 % of all building cost from Keep 7 up (Keep 15: 366 M of
+    1.42 B).
+
+3.5 Performance (headless Chromium, software GL; directional only):
+      Build: dist 2.5 MB; index-*.js 833 KB / 250 KB gz; phaser-*.js 660 KB /
+      173 KB gz; css 52 / 12.5 KB; 50 locale chunks 402 KB / 129 KB gz; fonts
+      48 KB; icons 344 KB. Precache 78 entries, 2.43 MB raw (~993 KB gz-equiv).
+      First visit transfer 513 KB. Ready: good 4G 2.7 s; weak 3G 10.2 s; slow 3G
+      22.3 s; 2G 25.9 s.
+      Start-up 360x640 DPR 3 CPU x4: high = 163 textures / 63.4 MB pixels (island
+      34.9), heap 23 MB, ready 5.05 s; low = 163 / 26.7 MB (island 15.5), heap
+      17-21 MB, ready 2.6 s. After a practice battle 183 textures / 69.5 MB (high).
+      Frame work: village 0.9-2 ms, battle 2.9-5.6 ms (24 troops).
+      CPU profile to first frame 6.36 s: texture upload 3.30 s, painting 0.18 s,
+      index chunk evaluation 0.21 s.
+
+3.6 Monetization numbers (store.json, economy.json, buildings.json):
+      Packs: $0.99/45, $1.99/100, $4.99/280, $9.99/600, $19.99/1,300, $49.99/3,500,
+      $99.99/7,500 Jade (45.5 -> 75.0 per $). Season Scroll $4.99 (340 Jade + Keep-
+      scaled resources + 20 % build speed + a look). Stipend $2.99 = 360 Jade over
+      30 claims. Starter $1.99 = 300 Jade + 5 k/5 k. Artisan's Bundle $4.99 = 650
+      Jade. War Supplies $2.99. Keep Celebration $4.99 = 300 Jade + 40 k/40 k.
+      Skips: 1 h = 15 Jade (~$0.23), 1 d = 180, 1 w = 720; Keep 9->10 (96 h) = 450
+      Jade (~$6.90); topping up its 3.76 M Coins = ~3,600 Jade (~$52).
+      Free Jade for a fully active adult at Keep 5: ~450-550 per month.
+      Builders 3-5: 250/500/1,000 Jade (~$27 for the permanent 5-builder village).
+
+=====================================================================================
+4. SUGGESTIONS
+=====================================================================================
+All numbers are starting points to run through npm test, npm run balance:armies and
+npm run balance:campaign; every one lives in data files. Combat changes bump
+SIM_RULES and need npm run rules:snapshot first.
+
+------------------------------------------------------------------
+4.1 A smooth free curve: "slightly tedious but possible"
+------------------------------------------------------------------
+Target for a free player with three 10-minute sessions a day and the third builder
+from starting Jade: Keep 5 ~7 days, Keep 8 ~45 days, Keep 10 ~90 days, Keep 12
+~160 days, Keep 15 ~300-360 days, with a base that is roughly 80 % of its caps when
+the next Keep opens.
+
+  1. Make the Keep the goal again (P1). Multiply elder_toadstool cost by ~1.6 at
+     Keep 8, 2.0 at Keeps 9-10, 2.5 at 11-12, 3.0 at 13-15 (Keep 10 5.45 M -> ~11 M,
+     Keep 15 24 M -> ~72 M; storage still holds it at <= 0.8 of cap). Early game:
+     double Keep 4-6 (20 k -> 40 k, 100 k -> 200 k, 500 k -> 800 k) so Keeps 3-5 are
+     1-3 days each instead of hours, and the second-day dip (P6) lands on a base
+     with a Mortar and traps.
+  2. Add a soft gate in hall.json (levels[].requires, e.g. Dojo and two defence
+     types at the current Keep's maxLevel) and surface it in the objective chip, so
+     a hollow rush is a choice the game names, not the default.
+  3. Turn the late game from builder-bound to resource-bound (P2, P5):
+     buildings.maxSeconds 604800 -> 259200 (3 days) and timeGrowth 2.2 -> 2.0, so
+     Keep 15's 312 builder-days become ~150; in exchange costGrowth 1.45 -> 1.55
+     from level 12 so cost outgrows income (collector payback ~250-300 h at L24
+     instead of a flat 155 h). Let collectors keep producing at the old rate during
+     an upgrade (bank at completion) or print the lost production in the quote.
+  4. A fourth builder without Jade: hall.json count stays 5, but allow a Coin price
+     for the 4th hut at Keep 8 (economy.json builderHutCosts gains a {acorns} entry).
+     Keep the 5th for Jade. This is the single largest free-player tedium lever.
+  5. Stop the casual raid tax (P3): shieldTiers 12/14/16 h -> 16/20/24 h; a minimum
+     gap between bot raids (raids.json minHoursBetweenRaids ~8); storageLootCapByHall
+     at Keeps 5-8 cut to ~60 % of the generated minimum (60 k -> 20 k, 130 k -> 50 k,
+     160 k -> 100 k, 220 k -> 130 k); raise collectorHoursCap 8 -> 12 so a one-
+     session player banks half a day.
+  6. Research (P4): research.tierCostMult 3.0 -> 2.2 (tier-5 total 72 M -> ~27 M;
+     Keep-15 roster 1.53 B -> ~0.7 B); a 4th lane at Keep 13; price tier 3+ research
+     in Coins (or alternate Coins/Provisions by tier) so both currencies carry two
+     loads instead of one and three.
+  7. Give defence a return once D1-D3 are fixed: raids.defenseWin.shareOfRaidLoot
+     0.05 -> 0.25 and pay it on <= 1 star lost, not only 0; show "held X of your
+     last Y raids" on the Keep sheet.
+  8. Keep 1-2: add one choice (a second warrior at Keep 1, the first trap at Keep 2)
+     so the first meaningful decision arrives in the first session.
+
+------------------------------------------------------------------
+4.2 A distinct advantage to a smart loadout, timing and grouping
+------------------------------------------------------------------
+The sim is deterministic and server-replayed, so every lever below is a data or
+rule change that keeps replays exact.
+
+  1. Make timing matter by giving defences behaviour that rewards waiting:
+     a retarget delay (defences take 0.5-1 s to swing to a new target), fire arcs
+     or a reload on the Mortar that a squad can rush between shots, and a Sky Bow
+     that can only track one flyer for N ticks. Each creates a "go now" moment.
+  2. Give the attacker 2-3 timed decisions per battle beyond Smoke: a Rally horn
+     (the hero's aura on demand, not on first hit), a Caltrop-clearing charge, and a
+     Decoy lantern that pulls targeting for 4 s. Charges from housing like Smoke;
+     all deterministic.
+  3. Grouping as a gesture: a "squad" picker (drag a slider for 5/10/20 of a type)
+     and a per-point stagger (tap-and-hold shows a count). Keep one-per-tap for
+     precision. This alone turns 150 taps into 10 decisions at Keep 15.
+  4. Reward squads that match their point: each Infiltration Point already shows
+     how many defences cover its path; add a per-point "entry bonus" the defender
+     chooses (see 4.3), so the attacker's loadout per point is a real read.
+  5. Fix the time budget: two-wave plans lose 5-15 points purely to the 180 s clock.
+     Either 210 s at Keep 10+ (scales with housing) or a clock that only runs while
+     warriors are deployed, so a planned second wave is viable.
+  6. Rebalance the dead families (B1): raise Sky efficiency to ~0.68 and cut its
+     training price per housing to ~2.5x a Blade's (today ~5x); give Mystics a
+     stronger first-tier heal so a support line protects a Guardian line; give
+     Siege wall damage a reason to exist by making walls matter (4.3). Add a lower
+     gate per family to army-lab.test.ts ("every family >= 45 % destruction at every
+     Keep, >= 10 % three-star at its own Keep") so the data cannot regress to one
+     answer again.
+  7. Keep the "Suggested army" but make it per layout (the scout report already
+     knows the archetype): "for a Walled Keep: siege + guardians; for a Kunai Ring:
+     saboteurs + throwers". Then the suggestion teaches reading, not copying.
+
+------------------------------------------------------------------
+4.3 Multiple ideal strategies for the base
+------------------------------------------------------------------
+  1. Make walls a real block (D2): raise hedgePathCost 10 -> 60 so only wall-
+     breakers go through them, grow the wall count with the Keep (125 at Keep 6 ->
+     200 at Keep 10 -> 275 at Keep 15), and add the planned Reinforced Gate (Keep 5)
+     and Living Bamboo Wall (Keep 6) so a "compartment" base and a "funnel" base are
+     both buildable.
+  2. Let the defender choose which two approaches are closed (D5): replace the
+     layout hash with a saved choice (a wall ring segment or a decorative gate
+     building that marks "closed"), shown at scouting. Then Twin Gates vs Kunai Ring
+     vs Open Court are the defender's decisions and the attacker's loadout per point
+     answers them.
+  3. Build the counter matrix (D3) from the catalogue already authored: Whirling
+     Blade Tower (Keep 4, anti-swarm), Listening Jars (Keep 5, anti-tunnel/stealth),
+     Living Bamboo Wall (Keep 6, anti-ram), Sand Bucket Post (Keep 7, anti-splash),
+     Steam Vent (Keep 9, anti-stealth, clears smoke), Sleep Dart Tower (Keep 10,
+     anti-big), plus a cheaper Yagura-like anti-thrower at Keep 8. Six buildings
+     close every role. Give each live defence a counters: [...] list and a
+     cost-efficiency budget (HP x DPS per Coin relative to the Kunai Tower, within a
+     band per role) tested like progression-model.test.ts, and fix the Mortar to the
+     band (today 5-10x under).
+  4. Grow the defence count with the army (D4): roughly one shooting defence per
+     20 housing (12 at Keep 4 -> 18 at Keep 15 in the count table), and raise the
+     damage of the generic towers less steeply so counters, not numbers, do the
+     work.
+  5. Defence feedback (S4): keep 30 defence records, show the entry point and the
+     first three buildings lost per raid, and a monthly "held %" on the Keep sheet.
+  6. Three archetypes should each beat a different army: Walled Keep beats blades
+     and beasts (siege needed), Kunai Ring beats guardians (saboteurs needed), Mortar
+     Core beats swarms (shadow or air needed), Open Court beats slow armies (speed
+     needed). Add this as a lab gate: each archetype must be at least 15 points
+     better against its "wrong" army than against its "right" one.
+
+------------------------------------------------------------------
+4.4 Future-proofing new classes and buildings
+------------------------------------------------------------------
+  1. Keep the warrior formula and tests; add an outcome gate per family (4.2.6) and
+     a "new class" checklist: efficiency, hpPerDps, housing, a kit, a counter
+     building, a lab run, a campaign run.
+  2. Generate buildings.json level rows from progression.json buildings (cost1,
+     time1, power1 per type) the way pacing.mjs does for troops, and derive hall.json
+     limits from buildingCatalog liveMaxLevel/pinnacleMaxLevel (buildingMaxLevelAt
+     already exists). A new building then needs one catalogue row.
+  3. Derive the six per-Keep tables (storageLootCapByHall, generatedLootByHall,
+     rewardScaleByHall, scoutFeeByHall, topUpScaleByHall, powerSlackByKeep) from one
+     "economy per Keep" number (max collector income per hour at that Keep) with a
+     test that they agree. A new Keep level then is one row.
+  4. Give every defence a role budget and counters list (4.3.3) with a test, and
+     a lab table of defence-vs-family damage so a new building cannot silently
+     dominate or be dominated.
+  5. Scale global battle constants from data, not constants: battle duration,
+     cover per point and smoke charges should read from the Keep (durationByKeep,
+     cover share), so a slow or long-range class does not break the clock.
+  6. Implement or remove mastery (B4) before building anything on it.
+
+------------------------------------------------------------------
+4.5 Polish list for a worldwide release (prioritised)
+------------------------------------------------------------------
+Blocking (before any non-English store submission)
+  1. Translation waves (W1): the tooling exists (tools/i18n); nothing is done. Move
+     all compliance copy through t() first (W2): purchase confirm, age band,
+     notification ask, chest odds, generated-opponent labels, bot-alliance notice,
+     sim failure messages. Correct docs/STATUS.md and the listing so "50 languages"
+     is not claimed until true.
+  2. Owner/store evidence (W3): Play Billing 8 in a signed AAB, real storefront
+     prices in the shop, Android account recovery, live privacy/support/deletion
+     pages linked in-app, increasing versionCode, physical tests on a 2 GB Android
+     Go phone and an iPhone SE.
+  3. One clock (H3): roll the chest and stipend at local midnight (keep the UTC day
+     index as the seed), print event and Alliance War times in local time.
+
+High (first weeks of a soft launch)
+  4. Memory: paint the island at 1x on high and 0.75x on low or split it into
+     quadrants; release its CPU canvas after upload (M1). Expected -35 MB on high.
+  5. Download: exclude untranslated locale chunks at build time and stop probing
+     them on boot (M3); drop 512 px icons, the Apple icon and legal pages from the
+     precache or fetch them with cache "default" (M4); lazy-load Store, Settings,
+     Codex, Daily and Economy panels and strip the sandbox tools from production
+     (M2); preload the two woff2 fonts and skip the font/manifest waits on 2G (M5).
+  6. Battery: no backdrop blur on any coarse-pointer device and sleep the Phaser
+     loop under full-screen modals (M6); replace per-frame Graphics bars with scaled
+     sprites updated on change (M7).
+  7. Jade ladder (H2): raise the big packs to >= 100-120 Jade/$ or cut the stipend
+     to ~240 and the Starter to ~200; compare the "+N % value" chip against the best
+     permanently available product.
+  8. Tutorial (H4): keep the Finish button but point the ring at the timer text;
+     ask the age band at tutorial end before the first gold-button prompt.
+  9. Balance pass from 4.1-4.3, in this order: raid tax and shields (P3), Keep
+     costs and builder (P1, P2), walls and approaches (D2, D5), dead families (B1),
+     counter buildings (D3), timed abilities (S1).
+
+Medium (before paid acquisition)
+ 10. Tap targets >= 44 px for shop tabs, queue removes and the army strip; 10-11 px
+     labels to 12-13 px; rem units for body copy (M8). A Playwright check at 320x568
+     with 1.4x pseudo-translated text for the army strip, scouting grid and the
+     Attack button (M9).
+ 11. Cosmetics (H6): warrior and hero skins, battle effects, village scenery, clan
+     banners at fixed Jade prices; a cosmetic-only pass tier; season-end cosmetic
+     bundle with fixed contents. Nothing random, prices only in the Store.
+ 12. A Keep 5->6 milestone ladder (fixed small rewards at 100 k / 250 k / 500 k
+     saved) so the first wall shows progress (H7).
+ 13. Authored Keep 7-15 content (W5): the six counter buildings of 4.3.3, a second
+     hero with a choice, named rival clans with faces (needs an artist).
+ 14. Defence feedback and held-rate reward (4.1.7, 4.3.5).
+ 15. Thumbnails downscaled before caching; loot chips rebuilt on change; error
+     toasts 5-6 s or tap to dismiss; offline shell served after 2 s when cached
+     (M10).
+
+Low / ongoing
+ 16. Implement or remove mastery (B4); document that tiers are sidegrades in the
+     Codex (B3) and show each taxed warrior's trade ("range 5, half damage") on its
+     card (B2).
+ 17. Publish the raid rules the player never sees (20 % raidable, the loot cap,
+     shield hours) on the Treasury and Keep sheets (P8).
+ 18. Keep the model-player campaigns, but add a walled, planned defender policy to
+     tools/balance/playerModel.ts so "held %" measures defence design, not the
+     absence of walls.
+
+=====================================================================================
+5. WHAT THIS REVIEW COULD NOT VERIFY
+=====================================================================================
+  - Real players: every retention, conversion and "tedium" statement is a model or
+    a genre assumption. The consented statistics pipeline (step 5 of the backlog)
+    is built but has no data.
+  - Real devices: all memory, frame and network numbers are Chromium emulation
+    with software GL. The island texture size and texture totals are computed
+    from code and confirmed in emulation; the crash threshold on a 2 GB phone is
+    not.
+  - Human skill: my deployment plans are scripted. A skilled human may extract
+    more from timing than EXP1 shows; the point stands that the sim gives few
+    timing levers to extract.
+  - Store and legal evidence remains open as recorded in docs/store/
+    WORLDWIDE_AUDIT.md; nothing here closes a GLOBAL-* finding.
+  - Scratch artefacts (not part of the repository): the experiment test and the
+    economy/perf scripts under the session scratchpad; the build output in dist/
+    was produced by npm run build and is ignored by git.
