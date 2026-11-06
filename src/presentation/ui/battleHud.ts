@@ -264,10 +264,10 @@ export class BattleHud {
       selectedTroop: () => this.selected,
       notice: (text) => this.toast(text),
       deployFailed: (reason) => {
-        if (reason === 'zone') this.toast(this.s.sim.entry ? 'Send warriors in through a glowing infiltration point.' : 'Place troops outside the red area.');
+        if (reason === 'zone') this.toast(this.s.sim.entry ? 'Send warriors in through a glowing infiltration point.' : 'Place warriors outside the red area.');
         else if (reason === 'full') this.toast(`That path is full: each point hides ${this.s.sim.entry?.cover ?? 0} space of warriors. Use another point.`);
-        else if (reason === 'empty') this.toast(this.selected === 'smoke_bomb' ? 'No Smoke Bombs left.' : 'No more of that troop. Pick another.');
-        else this.toast('Pick a troop below first.');
+        else if (reason === 'empty') this.toast(this.selected === 'smoke_bomb' ? 'No Smoke Bombs left.' : 'No more of that warrior. Pick another.');
+        else this.toast('Pick a warrior below first.');
       },
       deployed: () => {
         // After a Smoke Bomb, go back to troops so a second tap never wastes a charge.
@@ -542,7 +542,7 @@ export class BattleHud {
   private confirmEnd(): void {
     const close = this.modal(
       'End the battle?',
-      h('p', {}, 'Your remaining troops go back home. You keep any loot you already won.'),
+      h('p', {}, 'Your remaining warriors go back home. You keep any loot you already won.'),
       [
         { label: 'Keep fighting', onClick: () => close() },
         { label: t('battle.end'), danger: true, onClick: () => { close(); this.s.surrender(); } },

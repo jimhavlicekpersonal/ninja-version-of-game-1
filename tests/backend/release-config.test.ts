@@ -71,6 +71,12 @@ describe('iOS app shell', () => {
       expect(read(ts), jsName).toContain(`('${jsName}')`);
     }
   });
+
+  it('TestFlight builds take their version from package.json (the project says 1.0 for ever)', () => {
+    const archive = steps('.github/workflows/ios-testflight.yml', 'testflight').find((x) => x.run?.includes('xcodebuild -project'));
+    expect(archive?.run).toContain(`node -p "require('./package.json').version"`);
+    expect(archive?.run).toMatch(/MARKETING_VERSION="\$MARKETING_VERSION"/);
+  });
 });
 
 describe('workflows', () => {

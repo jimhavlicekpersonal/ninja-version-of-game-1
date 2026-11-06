@@ -697,7 +697,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return { ok: true, state: s, events: troops.length ? [{ kind: 'reinforcements', troops }] : [] };
     }
     case 'spendDonation':
-      if (!spendDonation(s, cmd.troop, cmd.count, cmd.xp)) return fail('NOT_AVAILABLE', 'Not enough of that troop.');
+      if (!spendDonation(s, cmd.troop, cmd.count, cmd.xp)) return fail('NOT_AVAILABLE', 'Not enough of that warrior.');
       return { ok: true, state: s, events: [{ kind: 'donation', troop: cmd.troop, count: cmd.count, xp: cmd.xp }] };
     case 'claimGangChest': {
       const chest = claimGangChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data, cmd.generated === true);
@@ -1514,16 +1514,16 @@ function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
 function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): string | null {
   const have = battleArmy(s);
   for (const [t, n] of Object.entries(setup.army)) {
-    if (!data.troops[t] || !Number.isInteger(n) || n < 0) return 'Unknown troops in battle.';
-    if (n > (have[t] ?? 0)) return 'More troops than your army holds.';
+    if (!data.troops[t] || !Number.isInteger(n) || n < 0) return 'Unknown warriors in battle.';
+    if (n > (have[t] ?? 0)) return 'More warriors than your army holds.';
   }
   for (const [t, lvl] of Object.entries(setup.levels ?? {})) {
-    if (!data.troops[t] || !Number.isInteger(lvl) || lvl < 1 || lvl > troopLevelOf(s, t)) return 'Troop levels do not match your research.';
+    if (!data.troops[t] || !Number.isInteger(lvl) || lvl < 1 || lvl > troopLevelOf(s, t)) return 'Warrior levels do not match your research.';
   }
   const lodge = lodgeTroops(s);
   for (const [t, r] of Object.entries(setup.reinforcements ?? {})) {
-    if (!data.troops[t] || !r || !Number.isInteger(r.count) || r.count < 0 || r.count > (lodge[t]?.count ?? 0)) return 'More donated troops than your Lodge holds.';
-    if (r.count > 0 && r.level !== lodge[t].level) return 'Donated troop levels do not match your Lodge.';
+    if (!data.troops[t] || !r || !Number.isInteger(r.count) || r.count < 0 || r.count > (lodge[t]?.count ?? 0)) return 'More donated warriors than your Lodge holds.';
+    if (r.count > 0 && r.level !== lodge[t].level) return 'Donated warrior levels do not match your Lodge.';
   }
   return null;
 }
@@ -1919,7 +1919,12 @@ function collect(s: VillageState, id: string, now: number, data: GameData): Comm
   const amount = collectorAmount(b, now, data);
   if (Math.floor(amount) < data.economy.minCollectAmount) return fail('NOTHING_TO_COLLECT', 'Nothing to collect yet.');
   const room = Math.max(0, capacity(s, data)[resource] - s.resources[resource]);
-  if (room <= 0) return fail('STORAGE_FULL', `Your ${resource} storage is full. Build or upgrade storage.`);
+  if (room <= 0) {
+    // Display names only (remnant audit 2026-11-06: this said "Your acorns storage is full", the internal id).
+    const what = data.economy.resourceNames?.[resource] ?? resource;
+    const store = Object.values(data.buildings).find((d) => d.category === 'storage' && (d.levels[0]?.storage?.[resource] ?? 0) > 0)?.name;
+    return fail('STORAGE_FULL', store ? `No room for more ${what}. Upgrade your ${store} or build another.` : `No room for more ${what}. Build or upgrade storage.`);
+  }
   const take = Math.min(Math.floor(amount), room);
   // Limited-time event: collecting gives extra, as far as storage allows.
   const extra = Math.min(room - take, Math.floor(take * eventEffect(now, data).collectBonus));

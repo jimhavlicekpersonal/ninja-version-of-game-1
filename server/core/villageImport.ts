@@ -136,7 +136,7 @@ export function importProblem(s: VillageState, now: number, data: GameData): str
   const base = normalizeBase(villageToBase(s, now, data), data);
   if ('error' in base) return `Buildings: ${base.error}.`;
   const cap = capacity(s, data);
-  for (const k of ['acorns', 'dew', 'nightsap'] as const) if ((s.resources[k] ?? 0) > (cap[k] ?? 0)) return `More ${k} than the storages hold.`;
+  for (const k of ['acorns', 'dew', 'nightsap'] as const) if ((s.resources[k] ?? 0) > (cap[k] ?? 0)) return `More ${data.economy.resourceNames?.[k] ?? k} than the storages hold.`;
   if ((s.resources.moonstones ?? 0) > IMPORT_MAX_JADE) return 'More Jade than a village can have earned.';
   let housing = 0;
   const queued = s.training.map((t) => t.troop);

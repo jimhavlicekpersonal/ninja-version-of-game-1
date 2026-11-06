@@ -147,3 +147,15 @@ describe('the server accepts Credential Manager Google tokens by audience', () =
     await expect(v.verify('google', { idToken: token({ aud: 'someone-else.apps.googleusercontent.com' }) })).rejects.toThrow(/another app/);
   });
 });
+
+describe('store errors players read (remnant audit 2026-11-06)', () => {
+  it('shows the plugin\'s own sentence, never the store\'s developer text after it', async () => {
+    const { storeErrorMessage } = await import('../../src/backend/payments/provider');
+    const quiet = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(storeErrorMessage('failed', { code: 'already_owned', message: 'An earlier purchase of this item is still being delivered. Use Store, Restore purchases, or restart the game.' })).toMatch(/still being delivered/);
+    expect(storeErrorMessage('failed', { code: 'failed', message: 'Purchase failed: Error code 6, BillingResponseCode.ERROR, debug: Server error, please try again.' })).toBe('The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.');
+    expect(storeErrorMessage('unavailable', { code: 'unavailable', message: 'Purchases are not available here: Billing service unavailable on device.' })).toBe('Purchases are not available right now. Try again later.');
+    expect(storeErrorMessage('failed', {})).toMatch(/did not go through/);
+    quiet.mockRestore();
+  });
+});

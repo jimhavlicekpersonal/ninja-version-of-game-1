@@ -31,7 +31,7 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
     out.push({ id: `up-${b.id}`, type: 'builds', at: b.upgrade.endsAt, title, body: 'Your Village Artisan is free for a new job.' });
   }
   for (const r of state.research?.active ?? []) {
-    if (r.endsAt > now) out.push({ id: `research-${r.troop}`, type: 'builds', at: r.endsAt, title: `${data.troops[r.troop]?.name ?? 'Troop'} level ${r.toLevel} researched!`, body: 'A research lane in the Training Dojo is free again.' });
+    if (r.endsAt > now) out.push({ id: `research-${r.troop}`, type: 'builds', at: r.endsAt, title: `${data.troops[r.troop]?.name ?? 'Warrior'} level ${r.toLevel} researched!`, body: 'A research lane in the Training Dojo is free again.' });
   }
   // When the camps are full: warriors training ahead for the next army don't change that.
   const armyDone = armyReadyAt(state, data);

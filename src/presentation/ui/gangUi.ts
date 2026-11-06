@@ -160,8 +160,8 @@ export class GangUi {
   }
 
   private requestsBox(body: HTMLElement): void {
-    body.append(h('h3', {}, 'Troops'));
-    body.append(h('button', { class: 'btn ghost', type: 'button', disabled: this.busy, onclick: () => void this.run(() => this.conn.squadAsk(), 'Request sent to your Gang.') }, 'Ask the Gang for troops'));
+    body.append(h('h3', {}, 'Warriors'));
+    body.append(h('button', { class: 'btn ghost', type: 'button', disabled: this.busy, onclick: () => void this.run(() => this.conn.squadAsk(), 'Request sent to your Gang.') }, 'Ask the Gang for warriors'));
     const army = this.d.kit.c.state.army;
     for (const r of this.requests) {
       if (r.mine) {

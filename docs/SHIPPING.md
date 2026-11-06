@@ -1,10 +1,10 @@
-# Shipping Toadstool Kingdoms
+# Shipping Kagemura: Ninja Clans
 
 Everything that can be built and tested without your personal accounts is in the repository. This page covers the steps only the owner can do.
 
 ## 1. Play on your devices right now (no accounts needed)
 
-- **Web app (all devices):** https://jimhavlicekpersonal.github.io/toadstool-kingdoms/ (see the README for installing it to your home screen). The public web build has **no store** (purchases show as unavailable) and runs on real time. The instant mock store and the time-skip tools exist only in the **testing sandbox**: open the game with `?sandbox` (or `?debug`). The sandbox keeps a separate village and never goes online, so test purchases and skipped time can't reach a real village or a server. Before a competitive online launch, decide whether the server should own the economy (inventory, research, timers); see `docs/PROTOCOL.md`, "Trust".
+- **Web app (all devices):** https://jimhavlicekpersonal.github.io/ninja-version-of-game-1/ (see the README for installing it to your home screen). The public web build has **no store** (purchases show as unavailable) and runs on real time. The instant mock store and the time-skip tools exist only in the **testing sandbox**: open the game with `?sandbox` (or `?debug`). The sandbox keeps a separate village and never goes online, so test purchases and skipped time can't reach a real village or a server. Before a competitive online launch, decide whether the server should own the economy (inventory, research, timers); see `docs/PROTOCOL.md`, "Trust".
 - **Android app on your Pixel 7:** every push to `main` builds an installable debug APK (and, once the upload key is set up, a signed Play release: section 1b).
   1. On GitHub, open **Actions → Android app (debug APK and signed release AAB)** and click the latest green run.
   2. Under **Artifacts**, download `kagemura-android-apk` and unzip it (you get `app-debug.apk`).
@@ -60,7 +60,7 @@ Apple only builds iPhone apps on a Mac. The **iOS TestFlight (manual)** workflow
 
 1. In GitHub, go to **Actions → iOS TestFlight (manual) → Run workflow**. It takes about 15 minutes.
 2. In App Store Connect → **TestFlight**, add yourself as an internal tester once the build finishes processing.
-3. On the iPhone, install **TestFlight** from the App Store, accept the invite and install Toadstool Kingdoms.
+3. On the iPhone, install **TestFlight** from the App Store, accept the invite and install Kagemura.
 4. **Sandbox purchase:** in the game, open the Store and buy a pack. TestFlight purchases use Apple's sandbox, so you are **not charged**. Apple's purchase sheet appears after the game's own confirm step.
 
 **Testing purchases on a Mac (optional):** `ios/App/Products.storekit` lists every product (generated from `store.json` by `npm run store:storekit`; a test keeps them equal, report section 5 step 7). In Xcode, choose **Product → Scheme → Edit Scheme → Run → Options → StoreKit Configuration** and select it (drag it into the project first) to test purchases in the simulator without App Store Connect.
@@ -69,13 +69,13 @@ Apple only builds iPhone apps on a Mac. The **iOS TestFlight (manual)** workflow
 
 The server in `server/` (Node + Fastify + Postgres) does five things:
 
-- matches you with real players, using the same rules as offline play (Elder Toadstool level, leaf rank, loot penalty and loot caps);
+- matches you with real players, using the same rules as offline play (Clan Keep level, honor, loot penalty and loot caps);
 - re-runs every battle, so results cannot be faked;
 - delivers real raids against your village;
-- runs real Groves (chat, troop requests and donations);
-- pairs Groves for the weekly Grove Raid.
+- runs real Alliances (chat, warrior requests and donations; `grove` in the code);
+- pairs Alliances for the weekly Alliance War (`groveRaid` in the code).
 
-Without a server, the game uses generated opponents, bot raiders and a bot Grove, as before, and the village stays on the device. With one, the game moves its village to the server (protocol 7), and linked sign-ins bring it to another device.
+Without a server, the game uses generated opponents, bot raiders and a bot Alliance, as before, and the village stays on the device. With one, the game moves its village to the server (protocol 7), and linked sign-ins bring it to another device.
 
 1. Create a Postgres database. Render, Railway, Neon and Supabase all have free or cheap plans; copy its connection string.
 2. Deploy the server, for example on Render as a **Web Service** from this repository:

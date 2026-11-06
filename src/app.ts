@@ -316,7 +316,7 @@ export class App {
             );
             return { result, banked: {}, trophies: 0, note: `Friendly duel with ${isolateName(duel.friendName)}: no warriors were spent and nothing was won.` };
           }
-          return { result, banked: {}, trophies: 0, note: 'Practice battle: no troops were spent and nothing was won.' };
+          return { result, banked: {}, trophies: 0, note: 'Practice battle: no warriors were spent and nothing was won.' };
         }
         if (grove) {
           const g = grove.finish(session.deployments, session.endTick);

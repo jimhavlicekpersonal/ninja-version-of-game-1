@@ -56,7 +56,7 @@ ninja,clan,village,strategy,base builder,raid,defense,tower,shinobi,war,alliance
 - **Community rules (Apple 1.2, Play UGC):** `<web address of the game>/community.html`.
 - **Terms of service / EULA:** `<web address of the game>/terms.html` (a draft until `termsEffective` is set in `legal-config.js`; until then use Apple's standard EULA and leave Play's terms field empty).
 - **Japan:** `<web address of the game>/tokushoho.html` and `/shikin-kessai.html` (drafts; `docs/legal/JAPAN.md`). Link both from the Japanese listing description or support page before selling Jade in Japan.
-- **Account deletion URL (Play):** `https://<server>/account/delete` (the server's web form; it asks for a Player ID or name and an optional note, no email).
+- **Account deletion URL (Play):** `https://<server>/account/delete` (the server's web form; it asks for the Player ID, the deletion code from Settings → Online play → Account, and an optional note; no email).
 - **Marketing URL (optional):** the game's web address.
 
 `<web address of the game>` is where `.github/workflows/deploy.yml` publishes the web build (GitHub Pages: `https://<owner>.github.io/<repository>/`, or a custom domain). The pages are plain HTML in the build, so they work with the game offline and need no server.
@@ -79,9 +79,9 @@ ninja,clan,village,strategy,base builder,raid,defense,tower,shinobi,war,alliance
 | Fifty warriors, Keep 1 to 15, Shadow Trials | `troops.json`/`roster.json`, `hall.json`, `trials.json` | — |
 | Alliance War weekly, Friends, Duels, Gangs of up to 4 | Server features (`/v1/hello`); offline the Alliance is a labelled bot Alliance | Online features in a build without a server |
 | Under-18 spending limit | `store.json` `minorMonthlyCapUsd` | Age-appropriate social protections beyond that (audit R07), until the fix release with the age screen ships; even then do not claim age verification (the age band is self-declared) |
-| Lantern Festival Keep look | `cosmetics.json` (`name: "Lantern Festival"`) | "Lantern Elder look": the in-game Store text (`ui/economyUi.ts`, Season Scroll card and premium-track row) still says this and must be changed to "Lantern Festival" before screenshots are taken |
+| Lantern Festival Keep look | `cosmetics.json` (`name: "Lantern Festival"`) | Done: the Store reads the name from the data (`ui/economyUi.ts` `passLookName`), so it says "Lantern Festival" |
 | — | — | **Offline play** as a selling point: with a server, the village moves there on connection and raids, Alliances, friends and purchases need a connection (audit R01) |
-| — | — | **Languages**: the game is English only today (`locales/` worksheets are not read by the game yet). List English only and keep screenshots in English |
+| — | — | **Languages**: the game is English only today. It reads the `locales/` worksheets and offers a language once 80% of its interface text is translated, and no worksheet has any translation yet. List English only and keep screenshots in English |
 
 ## Screenshots
 

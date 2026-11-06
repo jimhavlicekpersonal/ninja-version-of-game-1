@@ -222,7 +222,7 @@ export class LocalGroveSource implements GroveSource {
     return this.run({ type: 'chat', text });
   }
   async ask(): Promise<ActionResult> {
-    return this.run({ type: 'requestTroops' }, 'Request sent! Friends will send troops soon.');
+    return this.run({ type: 'requestTroops' }, 'Request sent! Friends will send warriors soon.');
   }
   async donate(requestId: string, troop: string): Promise<ActionResult> {
     return this.run({ type: 'donate', requestId, troop, count: 1 });
@@ -567,12 +567,12 @@ export class RemoteGroveSource implements GroveSource {
     const free = reinforcementCapacity(s, this.c.data) - reinforcementHousing(s, this.c.data);
     const snap = this.snapshot();
     if (!snap.ask.ok) return Promise.resolve({ ok: false, message: snap.ask.message });
-    return this.act(() => this.port.requestTroops(free), 'Request sent! Friends will send troops when they can.');
+    return this.act(() => this.port.requestTroops(free), 'Request sent! Friends will send warriors when they can.');
   }
 
   donate(requestId: string, troop: string): Promise<ActionResult> {
     const s = this.c.state;
-    if ((s.army[troop] ?? 0) < 1) return Promise.resolve({ ok: false, message: 'Not enough of that troop.' });
+    if ((s.army[troop] ?? 0) < 1) return Promise.resolve({ ok: false, message: 'Not enough of that warrior.' });
     const level = troopLevels(s, this.c.data)[troop] ?? 1;
     return this.act(async () => {
       const r = await this.port.donate(requestId, { troop, count: 1, level });

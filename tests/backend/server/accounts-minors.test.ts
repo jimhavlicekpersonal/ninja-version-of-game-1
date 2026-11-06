@@ -14,7 +14,7 @@ import { AppleSignInTokens, type AppleTokenClient } from '../../../server/identi
 import { combineVerifiers, GameCenterVerifier, gameCenterKeyUrl, IdentityError, JwtVerifier } from '../../../server/identity/verify';
 import { InProcessServerAdapter } from '../../../server/inProcess';
 import { ServerError } from '../../../src/backend/net/ports';
-import { PRESET_CHAT } from '../../../src/backend/net/protocol';
+import { PRESET_CHAT, PRESET_CHAT_RETIRED } from '../../../src/backend/net/protocol';
 import { world } from './harness';
 import { repoFactories } from './pg';
 
@@ -189,6 +189,9 @@ for (const [label, makeRepo] of repoFactories) {
       await kid.joinGrove(g.id);
       expect(await code(kid.postChat('my address is 1 Main St'))).toBe('age_restricted');
       expect((await kid.postChat(PRESET_CHAT[1])).text).toBe(PRESET_CHAT[1]);
+      // A phrase an older game still offers ("troops" before the remnant audit) is accepted too.
+      expect((await kid.postChat(PRESET_CHAT_RETIRED[0])).text).toBe(PRESET_CHAT_RETIRED[0]);
+      expect(PRESET_CHAT.some((p) => /troop/i.test(p))).toBe(false);
       expect((await adult.postChat('free text is fine for adults')).text).toContain('free text');
       // Staff reset (after a support check) clears the band.
       await w.core.admin.resetAge('staff', kid.id, { note: 'parent confirmed the date of birth' });

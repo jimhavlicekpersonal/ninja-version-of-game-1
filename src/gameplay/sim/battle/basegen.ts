@@ -85,7 +85,7 @@ export const LAYOUTS: LayoutArchetype[] = [
   {
     id: 'twin_gates',
     name: 'Twin Gates',
-    tip: 'Two gates funnel troops onto hidden traps: choose a gate, or go over the wall.',
+    tip: 'Two gates funnel warriors onto hidden traps: choose a gate, or go over the wall.',
     rings: { splash: [3, 6], defense: [3, 7], storage: [2, 6], trap: [7, 9], other: [11, 14] },
     wallRings: 1,
     wallGaps: 2,

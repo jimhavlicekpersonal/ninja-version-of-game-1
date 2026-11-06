@@ -102,7 +102,7 @@ export class GangWarUi {
     if (w.phase === 'prep') {
       body.append(
         h('p', {}, h('b', {}, vs), ` · battle day in ${formatDuration(Math.max(0, w.prepEndsAt - this.now()))}`),
-        h('p', { class: 'muted small' }, 'Prepare: move your defenses, then copy your village into the war again. Ask your Gang for troops for your Lodge. Rosters are locked until the war ends.'),
+        h('p', { class: 'muted small' }, 'Prepare: move your defenses, then copy your village into the war again. Ask your Gang for warriors for your Lodge. Rosters are locked until the war ends.'),
       );
       if (w.myIndex !== null) body.append(h('button', { class: 'btn ghost', type: 'button', disabled: this.busy, onclick: () => void this.run(() => this.d.connection.gangWarBase(), redraw, 'Your war base now matches your village.') }, 'Copy my village into the war'));
     } else if (w.phase === 'battle') {

@@ -144,7 +144,7 @@
       "tier": 4,
       "ability": {
         "id": "armor_shred",
-        "name": "Armour Shred",
+        "name": "Armor Shred",
         "text": "Hits make the target take 20% more damage from everyone."
       },
       "look": {

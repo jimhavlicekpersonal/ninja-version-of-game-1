@@ -870,7 +870,7 @@
   },
   "owl_bomber": {
     "name": "Kite Raider",
-    "description": "Glides over walls on a war kite and drops firebombs on defenses. Sky Bow Towers and Shuriken Towers can hit it.",
+    "description": "Glides over walls on a war kite and drops firebombs on defenses. Sky Bow Towers, Shuriken Towers and the Kite-Cutter Ballista can hit it.",
     "housing": 4,
     "attackIntervalTicks": 15,
     "range": 0.5,
@@ -9200,7 +9200,7 @@
   },
   "siege_bombardier": {
     "name": "Siege Bombardier",
-    "description": "Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; still inside a Cannon's reach, and a Longbow Yagura hunts it.",
+    "description": "Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; still inside a Kunai Tower's reach, and a Longbow Yagura hunts it.",
     "housing": 3,
     "attackIntervalTicks": 25,
     "range": 5,

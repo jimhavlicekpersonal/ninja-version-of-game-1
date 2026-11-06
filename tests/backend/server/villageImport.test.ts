@@ -31,7 +31,7 @@ describe('import sanity limits', () => {
     expect(importProblem(played(), now, data)).toBeNull();
     const rich = played();
     rich.resources.acorns = capacity(rich, data).acorns + 1;
-    expect(importProblem(rich, now, data)).toMatch(/More acorns than the storages hold/);
+    expect(importProblem(rich, now, data)).toMatch(/More Coins than the storages hold/);
     const jade = played();
     jade.resources.moonstones = IMPORT_MAX_JADE + 1;
     expect(importProblem(jade, now, data)).toMatch(/Jade/);
@@ -44,7 +44,7 @@ describe('import sanity limits', () => {
     const crowd = played();
     const camp = crowd.buildings.find((b) => b.type === 'army_camp')!;
     crowd.buildings.push({ ...camp, id: 'b999', x: camp.x + 6 });
-    expect(importProblem(crowd, now, data)).toMatch(/Buildings: too many army_camp/);
+    expect(importProblem(crowd, now, data)).toMatch(/Buildings: too many of Squad Courtyard/);
     const slow = played();
     slow.buildings.find((b) => b.type === 'army_camp')!.upgrade = { startedAt: T, endsAt: T + 400 * 24 * HOUR, toLevel: 1 } as never;
     expect(importProblem(slow, now, data)).toMatch(/impossibly late/);

@@ -85,7 +85,7 @@ export function validateBase(base: BaseLayout, data: GameData): string | null {
     if (!def || def.category === 'obstacle' || def.category === 'decor') return `unknown building ${b.type}`;
     if (typeof b.id !== 'string' || !b.id || ids.has(b.id)) return 'duplicate building id';
     ids.add(b.id);
-    if (!Number.isInteger(b.level) || b.level < 1 || b.level > def.levels.length) return `bad level on ${b.type}`;
+    if (!Number.isInteger(b.level) || b.level < 1 || b.level > def.levels.length) return `bad level on ${def.name}`;
     if (def.category === 'hall') {
       if (hall !== null) return 'base needs exactly one Clan Keep';
       hall = b.level;
@@ -112,8 +112,9 @@ export function validateBase(base: BaseLayout, data: GameData): string | null {
       continue;
     }
     const lim = limits[b.type];
-    if (!lim || counts[b.type] > lim.count) return `too many ${b.type} for Keep ${hall}`;
-    if (b.level > lim.maxLevel) return `${b.type} level too high for Keep ${hall}`;
+    // Display names: these reach the player when a village cannot move to the server (remnant audit 2026-11-06).
+    if (!lim || counts[b.type] > lim.count) return `too many of ${def.name} for Keep ${hall}`;
+    if (b.level > lim.maxLevel) return `${def.name} level too high for Keep ${hall}`;
   }
   return null;
 }

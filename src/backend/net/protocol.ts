@@ -1145,7 +1145,10 @@ export interface AgeResponse {
  * Chat for players under 13 (re-audit): these phrases only, never free text.
  * The server accepts exactly these strings from an under-13 account.
  */
-export const PRESET_CHAT: readonly string[] = ['Hello!', 'Good luck!', 'Well played!', 'Thanks for the troops!', 'Need troops, please!', 'Ready for battle!', 'Nice attack!', 'See you later!'];
+export const PRESET_CHAT: readonly string[] = ['Hello!', 'Good luck!', 'Well played!', 'Thanks for the warriors!', 'Need warriors, please!', 'Ready for battle!', 'Nice attack!', 'See you later!'];
+
+/** Phrases older games offer (they said "troops" until the remnant audit, 2026-11-06): still accepted, never offered. */
+export const PRESET_CHAT_RETIRED: readonly string[] = ['Thanks for the troops!', 'Need troops, please!'];
 
 /** A moderation notice (EU DSA art. 16(5)/17): what was decided and how to appeal. */
 export interface NoticeView {

@@ -6,7 +6,7 @@
  * checked and delivered it; without a server the game consumes it itself.
  */
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
-import type { PaymentProvider, PaymentResult, ProductRequest, StorePrice, StoreReceipt } from './provider';
+import { storeErrorMessage, type PaymentProvider, type PaymentResult, type ProductRequest, type StorePrice, type StoreReceipt } from './provider';
 
 interface PlayPurchase {
   purchaseToken: string;
@@ -73,7 +73,7 @@ export class PlayBillingPaymentProvider implements PaymentProvider {
     } catch (e) {
       const err = e as { code?: string; message?: string };
       const reason = err.code === 'cancelled' ? 'cancelled' : err.code === 'unavailable' ? 'unavailable' : err.code === 'pending' ? 'pending' : 'failed';
-      return { ok: false, reason, message: err.message ?? 'The purchase did not go through.' };
+      return { ok: false, reason, message: storeErrorMessage(reason, err) };
     }
   }
 

@@ -140,7 +140,7 @@ describe('F03: uploaded bases must be legal for their Keep', () => {
     const b = keep1();
     expect(validateBase(b, data)).toBeNull();
     const impossible: BaseLayout = { name: 'x', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 30, y: 30 }, ...Array.from({ length: 8 }, (_, i) => ({ id: `lb${i}`, type: 'longbow_yagura', level: 10, x: (i % 4) * 4, y: Math.floor(i / 4) * 4 }))] };
-    expect(validateBase(impossible, data)).toMatch(/longbow_yagura/);
+    expect(validateBase(impossible, data)).toMatch(/Longbow Yagura/);
     expect(validateBase({ ...b, power: 1_000_000 } as BaseLayout, data)).toMatch(/not allowed/);
     expect('error' in normalizeBase({ ...b, power: 1_000_000 }, data)).toBe(true);
     const dup = keep1();

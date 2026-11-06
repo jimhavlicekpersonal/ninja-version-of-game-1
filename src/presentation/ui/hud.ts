@@ -36,6 +36,7 @@ import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
 import type { FriendsUi } from './friendsUi';
 import { GroveUi } from './groveUi';
+import { ledgerReason } from './ledgerReason';
 import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
 import { Connection } from '../../backend/net/connection';
@@ -803,40 +804,7 @@ export class Hud {
   }
 
   static ledgerReason(code: string): string {
-    const words: Record<string, string> = {
-      start: 'Starting resources',
-      'command:collect': 'Collected',
-      'command:place': 'Built',
-      'command:upgrade': 'Upgrade',
-      'command:cancel': 'Cancelled (refund)',
-      'command:clear': 'Cleared',
-      'command:train': 'Training',
-      'command:trainArmy': 'Training',
-      'command:dismiss': 'Sent warriors home',
-      'command:cancelTraining': 'Training cancelled',
-      'command:research': 'Research',
-      'command:cancelResearch': 'Research cancelled',
-      'command:skip': 'Finished with Jade',
-      'command:skipTraining': 'Finished with Jade',
-      'command:skipResearch': 'Finished with Jade',
-      'command:topUp': 'Bought with Jade',
-      'command:openDailyChest': 'Daily chest',
-      'command:scout': 'Next opponent',
-      'command:trialEnd': 'Shadow Trial',
-      'command:buySkin': 'Look bought',
-      'command:claimTask': 'Task reward',
-      'command:claimTier': 'Pass reward',
-      'command:claimAchievement': 'Achievement',
-      'purchase:unverified': 'Purchase',
-      'attack:loot': 'Raid loot',
-      'attack:loot:uploaded-base': 'Raid loot',
-      'attack:loot:generated-base': 'Raid loot',
-      'defense:loss': 'Raided',
-      'war:chest': 'Alliance War chest',
-      'donation:sent': 'Warriors sent',
-      'donation:received': 'Warriors received',
-    };
-    return words[code] ?? code;
+    return ledgerReason(code);
   }
 
   /** Settings → Online play → Village on the server (beta, roadmap Phase 2). */
@@ -992,7 +960,7 @@ export class Hud {
       h('div', { class: 'chat-input-row' }, idBox, copy),
       signIns,
       blockedWrap,
-      h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and troop requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
+      h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and warrior requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
       h('div', { class: 'actions' }, del),
       h('p', { class: 'muted small' }, 'Deleting from another device or the web: get a one-time deletion code here, then enter it with your Player ID on ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm), '. It works once, for 30 days.'),
       conn.server?.features.includes('deletion-codes') ? h('div', { class: 'actions' }, getCode) : null,
@@ -1106,7 +1074,7 @@ export class Hud {
     const conn = this.deps.connection;
     const ok = await this.confirm(
       'Delete your online account?',
-      'Your player name, shared base, Alliance membership, chat messages and troop requests are deleted from the server now. Online attacks still waiting for the server become practice results. Online play turns off on this device; your village stays. This cannot be undone.',
+      'Your player name, shared base, Alliance membership, chat messages and warrior requests are deleted from the server now. Online attacks still waiting for the server become practice results. Online play turns off on this device; your village stays. This cannot be undone.',
       'Delete account',
       true,
     );
@@ -1196,7 +1164,7 @@ export class Hud {
     if (parts.length > 3) shown.push(`${parts.length - 3} more`);
     if (capped) shown.push(t('unlocks.capped', { n: capped }));
     const troops = troopCapUnlock(hallLevel(this.c.state, gd), gd);
-    if (troops) shown.push(`troop level ${troops.to}`);
+    if (troops) shown.push(`warrior level ${troops.to}`);
     return shown.join(', ');
   }
 
@@ -1286,7 +1254,7 @@ export class Hud {
     else {
       body.append(h('p', { class: 'muted' }, `Upgrading your Clan Keep to level ${level + 1} unlocks:`));
       const troops = troopCapUnlock(level, gd);
-      body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u))), troops ? h('li', {}, `Troop research: up to level ${troops.to} (now ${troops.from})`) : ''));
+      body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u))), troops ? h('li', {}, `Warrior research: up to level ${troops.to} (now ${troops.from})`) : ''));
       const next = levelDef(gd, hallType(gd), level + 1);
       if (next) body.append(h('p', { class: 'row' }, 'Cost: ', costChips(next.cost, missingFor(this.c.state.resources, next.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(next.buildSeconds * 1000))));
     }
@@ -2192,7 +2160,7 @@ export class Hud {
     const body = h('div', {});
     body.append(
       h('p', {}, 'An endless ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and there is no top.'),
-      h('p', { class: 'muted small' }, `Practice mode: these are generated fortresses, not other players. Clear a tier with ${gd.trials.starsToClear} or more stars to open the next one. Each tier pays its reward once. Troops you use are spent, as in any raid.`),
+      h('p', { class: 'muted small' }, `Practice mode: these are generated fortresses, not other players. Clear a tier with ${gd.trials.starsToClear} or more stars to open the next one. Each tier pays its reward once. Warriors you use are spent, as in any raid.`),
       h(
         'div',
         { class: 'log-row current' },

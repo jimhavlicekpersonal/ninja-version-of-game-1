@@ -27,12 +27,6 @@ export function balance(ctx: ServerContext): BalanceResponse {
   return { bundle: ctx.balance, ...(ctx.balanceCohorts?.length ? { cohorts: ctx.balanceCohorts } : {}) };
 }
 
-/** Legacy lenient cleaning for callers that do not claim a unique player name. */
-export function cleanName(raw: unknown, ctx: ServerContext): string {
-  const c = checkName(raw);
-  return c.error ? 'Ruler' : censorText(c.name, ctx.data);
-}
-
 /** A name the player chose: refused with a reason when it can't be used (src/gameplay/sim/social/names.ts). */
 export function chosenName(raw: unknown, ctx: ServerContext): string {
   const c = checkName(raw);

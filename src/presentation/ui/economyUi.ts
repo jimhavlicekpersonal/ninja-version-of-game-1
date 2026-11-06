@@ -64,6 +64,8 @@ export class EconomyUi {
   private skinName = (id: string) => this.c.data.cosmetics.hallSkins.find((s) => s.id === id)?.name ?? id;
   /** The pass-only Keep look, by its data name (it was hard-coded as "Lantern Elder"; the data calls it Lantern Festival). */
   private passLookName = () => this.c.data.cosmetics.hallSkins.find((s) => s.passOnly)?.name ?? 'season';
+  /** The Scroll's build speed bonus as the data has it (a balance bundle can change it; the text used to say 20 regardless). */
+  private passSpeedPct = () => Math.round(this.c.data.pass.premiumBuildSpeedBonus * 100);
 
   /**
    * Prices as this device's store shows them (GLOBAL-007), keyed by store
@@ -145,6 +147,13 @@ export class EconomyUi {
     if (!p) return;
     const pr = this.price(productId);
     if (!pr.buyable) return;
+    // Remnant audit (2026-11-06): say no before the confirm steps, not after them (a player under 18 was
+    // asked to check $99.99 with a grown-up, then told it was over the monthly limit).
+    const allowed = canPurchase(this.c.state, productId, this.c.now(), this.c.data);
+    if (!allowed.ok) {
+      this.kit.toast(allowed.message, 'error');
+      return;
+    }
     // Player-facing names, never internal resource ids (GLOBAL-007).
     // What buying it now really delivers (offers are sized for the Keep and storage-capped: productGrantsFor).
     const real = productGrantsFor(this.c.state, productId, this.c.data);
@@ -152,7 +161,7 @@ export class EconomyUi {
     const st = this.c.data.store.stipend;
     const what = p.kind === 'stipend' && st
       ? `${p.name}: ${st.payments} daily payments of ${st.jadePerPayment} Jade, claimed one a day when you open the game. It does not renew and nothing is charged again.`
-      : p.kind === 'pass' ? `${p.name}: premium rewards and 20% faster builds until the season ends (${this.seasonEndsText()}).` : `${p.name}${contents ? `: ${contents}` : ''}.`;
+      : p.kind === 'pass' ? `${p.name}: premium rewards and ${this.passSpeedPct()}% faster builds until the season ends (${this.seasonEndsText()}).` : `${p.name}${contents ? `: ${contents}` : ''}.`;
     const note = this.c.payments.prices ? ' The store shows the final price, including any taxes, before you pay.' : '';
     // EU/UK digital content (re-audit design item 13): delivery starts at once, so the player acknowledges the loss of
     // the 14-day right to cancel before paying. Japanese devices also get the legally required notices.
@@ -160,7 +169,14 @@ export class EconomyUi {
       'div',
       { class: 'purchase-confirm' },
       h('p', {}, `${what} Price: ${pr.label}.${note}`),
-      h('p', { class: 'muted small withdrawal' }, 'The item is delivered at once; by buying you agree that you lose the right to cancel, as the law allows for digital content.'),
+      h(
+        'p',
+        { class: 'muted small withdrawal' },
+        // The stipend is not delivered at once: its payments start at once (remnant audit 2026-11-06).
+        p.kind === 'stipend'
+          ? 'Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.'
+          : 'The item is delivered at once; by buying you agree that you lose the right to cancel, as the law allows for digital content.',
+      ),
       japaneseDevice()
         ? h('p', { class: 'small legal-ja', lang: 'ja' }, this.legalLink('特定商取引法に基づく表記', './tokushoho.html'), ' · ', this.legalLink('資金決済法に基づく表示', './shikin-kessai.html'))
         : null,
@@ -255,9 +271,20 @@ export class EconomyUi {
   private packsGrid(): HTMLElement {
     const grid = h('div', { class: 'shop-grid' });
     const packs = this.c.data.store.packs;
-    const base = packs[0].moonstones / packs[0].usd;
+    // Remnant audit (2026-11-06): the bonus is worked out from what this storefront charges (store prices
+    // in one currency), not the catalog's US dollars, whose ratios other storefronts do not keep. The
+    // sandbox test store uses the catalog; with no complete store prices there is no bonus to show.
+    const priceOf = (id: string): { amount: number; currency: string } | null => {
+      if (this.c.payments.name === 'mock') return { amount: productInfo(this.c.data, id)?.usd ?? 0, currency: 'USD' };
+      const sp = this.storePrices;
+      if (!sp || typeof sp !== 'object') return null;
+      const found = sp[storeProductId(this.c.data, id)];
+      return found && Number.isFinite(found.micros) && (found.micros ?? 0) > 0 ? { amount: found.micros!, currency: found.currency ?? '' } : null;
+    };
+    const basePrice = priceOf(packs[0].id);
     packs.forEach((p, i) => {
-      const bonus = Math.round(((p.moonstones / p.usd) / base - 1) * 100);
+      const price = priceOf(p.id);
+      const bonus = basePrice && price && price.currency === basePrice.currency ? Math.round(((p.moonstones / price.amount) / (packs[0].moonstones / basePrice.amount) - 1) * 100) : 0;
       const card = h(
         'div',
         { class: 'shop-card pack' },
@@ -369,7 +396,7 @@ export class EconomyUi {
     return h(
       'div',
       { class: 'pass-premium' },
-      h('div', {}, h('b', {}, `${d.pass.name}: premium track`), h('div', { class: 'muted small' }, `Until the season ends: 20% faster builds, the ${this.passLookName()} look and bigger rewards on every tier. Rewards you already earned unlock right away.`), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`), value, closed && !check.ok ? h('p', { class: 'note' }, check.message) : null),
+      h('div', {}, h('b', {}, `${d.pass.name}: premium track`), h('div', { class: 'muted small' }, `Until the season ends: ${this.passSpeedPct()}% faster builds, the ${this.passLookName()} look and bigger rewards on every tier. Rewards you already earned unlock right away.`), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`), value, closed && !check.ok ? h('p', { class: 'note' }, check.message) : null),
       buy,
     );
   }
@@ -395,6 +422,8 @@ export class EconomyUi {
           redraw();
         });
       } else if (skin.passOnly) action = h('span', { class: 'chip' }, `${this.c.data.pass.name} reward`);
+      // Remnant audit (2026-11-06): a calendar look showed a 0 Jade buy button that always failed.
+      else if (skin.calendarOnly) action = h('span', { class: 'chip' }, '28-day calendar reward');
       else if (skin.minKeep && hallLevel(s, this.c.data) < skin.minKeep) action = h('span', { class: 'chip' }, `Unlocks at Keep ${skin.minKeep}`);
       else {
         action = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), String(skin.moonstones));
@@ -444,12 +473,12 @@ export class EconomyUi {
           h(
             'div',
             { class: 'pass-premium' },
-            h('div', {}, h('b', {}, 'Premium track'), h('div', { class: 'muted small' }, `20% faster builds this season, the ${this.passLookName()} look, and bigger rewards on every tier.`)),
+            h('div', {}, h('b', {}, 'Premium track'), h('div', { class: 'muted small' }, `${this.passSpeedPct()}% faster builds this season, the ${this.passLookName()} look, and bigger rewards on every tier.`)),
             h('button', { class: 'btn gold', type: 'button', onclick: () => this.openStore('pass') }, 'Get premium'),
           ),
         );
       } else {
-        body.append(h('p', { class: 'chip good' }, 'Premium active: builds are 20% faster'));
+        body.append(h('p', { class: 'chip good' }, `Premium active: builds are ${this.passSpeedPct()}% faster`));
       }
       body.append(h('h3', {}, 'Tasks'));
       for (const t of currentTasks(s, hallLevel(s, d), d)) {
@@ -531,7 +560,7 @@ export class EconomyUi {
           ),
         );
       }
-      body.append(h('p', { class: 'muted small' }, 'Clear forest obstacles around your village for more free Jade.'));
+      body.append(h('p', { class: 'muted small' }, 'Clear the bamboo, fallen cedars and boulders around your village for more free Jade.'));
     };
     draw();
     this.kit.modal('Goals', body, [], 'wide');

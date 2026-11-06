@@ -188,7 +188,7 @@ export async function requestTroopsIn(ctx: ServerContext, me: Player, scopeId: s
   await ctx.repo.closeRequestsOf(me.id);
   const r: TroopRequest = { id: ctx.uuid(), groveId: grove.id, playerId: me.id, name: me.name, at: t, size, filled: 0, open: true };
   await ctx.repo.addRequest(r);
-  await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: t, playerId: me.id, name: me.name, text: `Could anyone spare ${size} housing of troops?`, kind: 'request' });
+  await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: t, playerId: me.id, name: me.name, text: `Could anyone spare ${size} housing of warriors?`, kind: 'request' });
   return requestView(r, me);
 }
 
@@ -206,7 +206,7 @@ export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, 
   const def = ctx.data.troops[req?.troop];
   const count = Math.floor(Number(req?.count) || 0);
   const level = Math.floor(Number(req?.level) || 1);
-  if (!def || count <= 0) throw new ApiError(400, 'bad_request', 'Pick a troop to donate.');
+  if (!def || count <= 0) throw new ApiError(400, 'bad_request', 'Pick a warrior to donate.');
   if (me.hallLevel < (def.unlockKeep ?? 1) || level < 1 || level > Math.min(troopLevelCapAt(me.hallLevel, ctx.data, req!.troop), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop level');
   const housing = def.housing * count;
   const xp = housing * ctx.data.social.xpPerHousing;
@@ -223,13 +223,13 @@ export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, 
       await tx.updateMember(grove.id, me.id, { xp: (mine?.xp ?? 0) + xp });
     }
     await tx.addDonation({ id: donationId, requestId: r.id, groveId: grove.id, fromId: me.id, fromName: me.name, toId: r.playerId, troop: req.troop, count, level, at: ctx.now(), delivered: false });
-    await tx.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: `Sent ${count} ${def.name}${count > 1 ? 's' : ''} to ${r.name}.`, kind: 'donation' });
+    await tx.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: `Sent ${count} × ${def.name} to ${r.name}.`, kind: 'donation' });
     // A receiver whose village the server keeps gets them in its Lodge now (same donation id, so the game's own copy is not added twice).
     const to = await tx.getPlayer(r.playerId);
     if (to) await applyServerResult(tx, ctx, to, [{ cmd: { type: 'receiveDonations', items: [{ id: donationId, troop: req.troop, count, fromName: me.name, level }] }, reason: 'donation:received' }], donationId);
     return filled;
   });
-  ctx.push.notify(r.playerId, { type: 'donations', title: 'Warriors arrived', body: `${me.name} sent you ${count} ${def.name}${count > 1 ? 's' : ''}.` });
+  ctx.push.notify(r.playerId, { type: 'donations', title: 'Warriors arrived', body: `${me.name} sent you ${count} × ${def.name}.` });
   return { request: requestView(updated, me), xp: xpToAlliance ? xp : 0 };
 }
 

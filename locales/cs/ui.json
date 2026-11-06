@@ -50,7 +50,7 @@
   "battle.home": { "en": "Home", "text": "" },
   "battle.next": { "en": "Next", "text": "" },
   "battle.attack": { "en": "Attack!", "text": "" },
-  "battle.trainFirst": { "en": "Train troops first", "text": "" },
+  "battle.trainFirst": { "en": "Train warriors first", "text": "" },
   "battle.end": { "en": "End battle", "text": "" },
   "battle.watchReplay": { "en": "Watch replay", "text": "" },
   "battle.returnHome": { "en": "Return home", "text": "" },

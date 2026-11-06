@@ -14,7 +14,7 @@
  * Self-declared: protections, not age verification.
  */
 import { bandChangeAllowed, isAgeBand, type AgeBand } from '../../src/gameplay/sim/age';
-import { PRESET_CHAT, type AgeRequest, type AgeResponse } from '../../src/backend/net/protocol';
+import { PRESET_CHAT, PRESET_CHAT_RETIRED, type AgeRequest, type AgeResponse } from '../../src/backend/net/protocol';
 import type { Player, Repo } from '../repo';
 import { ApiError, type ServerContext } from './context';
 
@@ -50,6 +50,6 @@ export async function stateAge(ctx: ServerContext, me: Player, body: AgeRequest 
 /** Under 13: only the fixed phrases; refused with a clear code otherwise. */
 export async function checkChatAllowed(ctx: ServerContext, me: Player, text: unknown): Promise<void> {
   if ((await ageBandOf(ctx.repo, me.id)) !== 'under13') return;
-  if (typeof text === 'string' && PRESET_CHAT.includes(text.trim())) return;
+  if (typeof text === 'string' && (PRESET_CHAT.includes(text.trim()) || PRESET_CHAT_RETIRED.includes(text.trim()))) return;
   throw new ApiError(403, 'age_restricted', 'Players under 13 chat with the ready-made phrases only.');
 }

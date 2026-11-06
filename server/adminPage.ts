@@ -6,6 +6,9 @@
  * is ignored; it only labels actions done with the shared legacy token. No player data is in the page
  * itself; everything comes from the API with the token.
  */
+import { defaultData } from '../src/gameplay/sim/data';
+import { productInfo, storeProductId } from '../src/gameplay/sim/monetization';
+import type { GameData } from '../src/gameplay/sim/types';
 export const ADMIN_PAGE_CSP = "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; form-action 'none'; frame-ancestors 'none'; base-uri 'none'";
 
 export function adminPage(): string {
@@ -41,8 +44,19 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #eee;pad
 }
 
 /** The page's script (served from /admin/app.js so the CSP needs no inline script). */
-export function adminScript(): string {
+/**
+ * Display names for the staff page (remnant audit 2026-11-06): support tickets say "Jade" or "Pouch of
+ * Jade", the ledger and purchases say `moonstones` and `moonstones_1`. Both are shown.
+ */
+function staffNames(data: GameData): string {
+  const products = Object.fromEntries(Object.keys(data.store.storeProductIds ?? {}).map((id) => [id, `${productInfo(data, id)?.name ?? id} (store id ${storeProductId(data, id)})`]));
+  return JSON.stringify({ res: data.economy.resourceNames, products });
+}
+
+export function adminScript(data: GameData = defaultData): string {
   return `'use strict';
+const NAMES = ${staffNames(data)};
+const resName = (k) => (NAMES.res[k] ? NAMES.res[k] + ' (' + k + ')' : k);
 const $ = (id) => document.getElementById(id);
 const el = (tag, attrs, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs || {})) { if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v); } for (const c of kids) e.append(c instanceof Node ? c : document.createTextNode(String(c ?? ''))); return e; };
 const when = (t) => (t ? new Date(t).toISOString().replace('T', ' ').slice(0, 16) + ' UTC' : '');
@@ -78,7 +92,7 @@ function render(d) {
   // Actions
   const hours = el('input', { type: 'number', min: '0', value: '24', style: 'width:6em' });
   const reason = el('input', { placeholder: 'Reason (the player sees it)' });
-  const resKind = el('select', {}, ...['moonstones', 'acorns', 'dew', 'nightsap'].map((k) => el('option', { value: k }, k)));
+  const resKind = el('select', {}, ...['moonstones', 'acorns', 'dew', 'nightsap'].map((k) => el('option', { value: k }, resName(k))));
   const amount = el('input', { type: 'number', value: '0', style: 'width:8em' });
   const note = el('input', { placeholder: 'Why (ledger and staff log)' });
   const ageNote = el('input', { placeholder: 'What support checked' });
@@ -90,8 +104,8 @@ function render(d) {
     el('div', { class: 'row' }, 'Reset ratings', which, el('button', { onclick: act('/reset-rating', () => ({ which: which.value })) }, 'Reset')),
     el('div', { class: 'row' }, 'Age group: ' + (d.ageGroup ? (d.ageGroup.under18 ? 'under 18' : '18 or older') + ' since ' + when(d.ageGroup.at) : 'not stated'), ageNote, el('button', { onclick: act('/reset-age', () => ({ note: ageNote.value })) }, 'Clear (after a support check)'))));
   if (d.village) box.append(el('section', {}, el('h3', {}, 'Village on the server'), el('pre', {}, JSON.stringify({ revision: d.village.revision, at: when(d.village.at), resources: d.village.resources, army: d.village.army, buildings: d.village.buildings }, null, 1))));
-  box.append(el('section', {}, el('h3', {}, 'Ledger'), table(d.ledger, [['When', (l) => when(l.at)], ['Resource', (l) => l.resource], ['Change', (l) => l.delta], ['Balance', (l) => l.balance], ['Why', (l) => l.reason]])));
-  box.append(el('section', {}, el('h3', {}, 'Purchases'), table(d.purchases, [['When', (x) => when(x.at)], ['Store', (x) => x.store], ['Product', (x) => x.productId], ['USD', (x) => (x.cents / 100).toFixed(2)], ['Env', (x) => x.environment], ['Status', (x) => x.status]])));
+  box.append(el('section', {}, el('h3', {}, 'Ledger'), table(d.ledger, [['When', (l) => when(l.at)], ['Resource', (l) => resName(l.resource)], ['Change', (l) => l.delta], ['Balance', (l) => l.balance], ['Why', (l) => l.reason]])));
+  box.append(el('section', {}, el('h3', {}, 'Purchases'), table(d.purchases, [['When', (x) => when(x.at)], ['Store', (x) => x.store], ['Product', (x) => NAMES.products[x.productId] || x.productId], ['USD', (x) => (x.cents / 100).toFixed(2)], ['Env', (x) => x.environment], ['Status', (x) => x.status]])));
   box.append(el('section', {}, el('h3', {}, 'Defenses (7 days)'), table(d.defenses, [['When', (x) => when(x.at)], ['Attacker', (x) => x.attacker], ['Stars', (x) => x.stars], ['%', (x) => x.destruction], ['Honor', (x) => x.honor]])));
   box.append(el('section', {}, el('h3', {}, 'Staff log'), table(d.staffActions, [['When', (x) => when(x.at)], ['Who', (x) => x.actor], ['What', (x) => x.action], ['Detail', (x) => JSON.stringify(x.detail)]])));
   $('detail').replaceChildren(box);

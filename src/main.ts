@@ -118,6 +118,19 @@ function platformName(): string {
   return 'other';
 }
 
+
+/** Why the server refused a raid report, in words (remnant audit 2026-11-06: the toast showed the code). */
+function rejectedWhy(code: string | undefined): string {
+  const words: Record<string, string> = {
+    expired: ': the report arrived too late',
+    defender_protected: ': that village was already shielded',
+    account_deleted: ': your online account was deleted',
+    conflict: ': the opponent changed at the same moment',
+    version_mismatch: ': this version of the game is too old',
+    banned: ': your account is suspended',
+  };
+  return (code && words[code]) || '';
+}
 async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events: EventStore; db: IDBDatabase | null }> {
   try {
     // Gives up after 5 s (some iOS versions never answer): the game then runs on memory with a banner.
@@ -602,7 +615,7 @@ async function boot(): Promise<void> {
         // The server's answer to an online attack.
         const r = e.record;
         if (e.outcome === 'confirmed') hud.toast(`Raid on ${r.opponentName} confirmed by the server${Object.values(r.banked ?? {}).some((v) => (v ?? 0) > 0) ? ': loot banked' : ''}.`, 'success');
-        else hud.toast(`The server did not accept your raid on ${r.opponentName} (${r.rejected}). It counts as practice: no loot or honor.`, 'error');
+        else hud.toast(`The server did not accept your raid on ${r.opponentName}${rejectedWhy(r.rejected)}. It counts as practice: no loot or honor.`, 'error');
       } else if (e.kind === 'reward' && e.source.startsWith('season:')) hud.toast('The league season ended: your chest was added. See Honor for details.', 'success');
       if (e.kind === 'purchase_granted') sound.play('coin');
       else if (e.kind === 'skip_used') sound.play('magic');

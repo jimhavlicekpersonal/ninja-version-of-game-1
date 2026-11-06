@@ -93,3 +93,24 @@ export class MockPaymentProvider implements PaymentProvider {
     return { ok: true, transactionId };
   }
 }
+
+/**
+ * What a failed store purchase tells the player (remnant audit 2026-11-06). The native plugins write
+ * their own sentences, but some append the store's developer text after a colon ("Purchase failed:
+ * <Play debug message>", an iOS `localizedDescription`): those go to the log and the player reads
+ * plain words instead.
+ */
+export function storeErrorMessage(reason: 'cancelled' | 'unavailable' | 'pending' | 'failed', err: { code?: string; message?: string }): string {
+  const m = err.message?.trim();
+  if (m && !m.includes(': ')) return m;
+  if (m) console.warn('Store purchase error', err.code, m);
+  return storeErrorText(reason);
+}
+
+/** Plain words for a failed store purchase. */
+export function storeErrorText(reason: 'cancelled' | 'unavailable' | 'pending' | 'failed'): string {
+  if (reason === 'cancelled') return 'Purchase cancelled. Nothing was charged.';
+  if (reason === 'unavailable') return 'Purchases are not available right now. Try again later.';
+  if (reason === 'pending') return 'The purchase is waiting for approval. It will be delivered once it is approved.';
+  return 'The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.';
+}
