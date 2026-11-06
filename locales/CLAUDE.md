@@ -46,6 +46,6 @@ Fill `text` only. Never change a key or `en`. An entry may have `old`: an earlie
 
 - When game data text changes (`src/gameplay/data/*.json`), run `npm run i18n:extract && npm run i18n:sync`. `tests/locales/locales.test.ts` fails until you do. Changed English sends affected entries back to every translator's to-do list, with the old translation kept as a hint.
 - Interface text (`src/presentation`, `src/app.ts`, `index.html`) is not here yet. The text-layer step in `docs/prompts/DOWNLOAD_AND_LANGUAGE.md` moves it into `locales/en/ui.json`. `npm run i18n:sync` then adds it to every worksheet, with no tool changes.
-- The game does not read `locales/` yet. The build will pack each worksheet's `text` values into a runtime file per language, falling back to English for any empty entry.
+- The game reads `ui.json` (interface text, report section 5 step 9) through `src/presentation/ui/i18n.ts`: each language's worksheet is its own chunk, and an empty `text` falls back to English. A language is offered once 80% of its `ui.json` is translated. `ui.json` messages use ICU-lite: keep every `{placeholder}`, and for `{n, plural, one {…} other {…}}` write the branches your language needs (`zero`, `one`, `two`, `few`, `many`, `other`, per CLDR); `#` is the number. `data.json` (game data names) is not read yet.
 
 The import-boundary test scans `locales/` and `tools/i18n/` as well as game sources, including `.mjs` files. This checks code imports; it is not a filesystem sandbox enforcing a translator’s edit permissions.
