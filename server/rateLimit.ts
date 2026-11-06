@@ -48,6 +48,8 @@ export interface RateLimits {
   purchase: RateRule;
   /** Village imports per IP address (ledger audit A2: throwaway accounts each bringing a forged village). */
   villageImport: RateRule;
+  /** Shared play-statistics batches per IP address (no token: report section 5 step 5). */
+  stats: RateRule;
 }
 
 const MIN = 60_000;
@@ -74,6 +76,8 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   purchase: { limit: 120, windowMs: HOUR },
   // A player moves a village once in its life; a whole carrier NAT pool still fits.
   villageImport: { limit: 60, windowMs: HOUR },
+  // A sharing game sends a batch every few minutes while played; a carrier NAT pool holds thousands of them.
+  stats: { limit: 3000, windowMs: HOUR },
 };
 
 /**

@@ -19,6 +19,8 @@ export interface ServerContext {
   resim: import('../resim/resim').Resimulator;
   /** The signed balance bundle in force (step 76; `data` already has its numbers), or null. */
   balance: import('../../src/backend/net/balanceBundle').BalanceBundle | null;
+  /** Experiment arms (report section 5 step 5): offer-timing variants of `balance`, picked by each game itself. */
+  balanceCohorts?: import('../../src/backend/net/balanceBundle').BalanceBundle[];
   now(): number;
   /** Unique ids. */
   uuid(): string;

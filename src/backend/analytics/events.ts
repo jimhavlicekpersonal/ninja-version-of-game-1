@@ -112,9 +112,21 @@ export class Analytics {
   ) {
     this.session = session ?? makeSessionId();
   }
+  private readonly listeners: ((e: AnalyticsEvent) => void)[] = [];
   log(name: AnalyticsEventName, props: Record<string, unknown> = {}): void {
     const e: AnalyticsEvent = { name, at: this.clock.now(), session: this.session, props };
     this.store.add(e).catch((err) => console.warn('analytics write failed', err));
+    for (const l of this.listeners) {
+      try {
+        l(e);
+      } catch (err) {
+        console.warn('analytics listener failed', err);
+      }
+    }
+  }
+  /** Hear every event as it is logged (statistics sharing, report section 5 step 5: `share.ts`). */
+  onLog(listener: (e: AnalyticsEvent) => void): void {
+    this.listeners.push(listener);
   }
   recent(limit = 100): Promise<AnalyticsEvent[]> {
     return this.store.recent(limit);

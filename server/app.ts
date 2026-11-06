@@ -219,7 +219,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     }
     const rules = (req.routeOptions?.config as RateConfig | undefined)?.rate;
     for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
-      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' ? ip : who, t);
+      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' || rule === 'stats' ? ip : who, t);
       if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookup' || rule === 'lookupDay' ? 'Too many player searches. Try again later.' : 'Slow down a little.', rule);
     }
   });
@@ -411,6 +411,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage()));
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
 
+  // Shared play statistics (report section 5 step 5): no token, and no request log line (it would hold the IP address).
+  app.post(Routes.stats, { ...rate('stats'), bodyLimit: BODY_LIMITS.base, logLevel: 'warn' }, async (req) => core.postStats(req.body));
+  app.delete(Routes.stats, { ...rate('stats'), logLevel: 'warn' }, async (req) => core.deleteStats(query(req).install));
+
   // PvP
   app.put(Routes.base, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.uploadBase(me, req.body as never, client(req))));
   app.get(Routes.match, rate('match'), authed(async (me, req) => core.match(me, client(req))));
@@ -507,6 +511,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/reset-age', staff(async (req) => core.admin.resetAge(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
+    app.get('/admin/v1/stats', staff(async (req) => core.statsReport(query(req).days)));
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
     app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));
   }

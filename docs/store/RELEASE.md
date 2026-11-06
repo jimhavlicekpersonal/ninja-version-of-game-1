@@ -20,7 +20,19 @@
 
 ## Watch during the rollout
 
+The stores' own crash tools come first (report section 5 step 5, growth 2): they see every install, need no in-game consent (the platform asks for it) and catch native crashes, out-of-memory kills and freezes, which Sentry in the WebView cannot. Sentry only sees players who switched crash reports on.
+
+| Where | What to read | Halt the rollout when |
+|---|---|---|
+| **Play Console → Quality → Android vitals** (Crashes and ANRs, filter by the new version code) | user-perceived crash rate, user-perceived ANR rate, the top clusters by device model and Android version; **Low memory killer** and excessive wakeups for cheap phones | crash rate above **1.09%** or ANR rate above **0.47%** (Play's bad-behaviour thresholds, overall and per phone model: above them Play lowers the game's visibility) or a new top cluster |
+| **Xcode → Window → Organizer → Crashes / Hangs / Terminations** (and App Store Connect → TestFlight / App Analytics → Crashes) | crashes by build and device, hang rate, memory terminations (jetsam: the cheap-phone signal on iPhone) | a new top crash, or terminations clearly above the previous build |
+| **Play Console → Pre-launch report** (each release track upload) | crashes and accessibility on Google's test devices | any crash before rollout |
+| Sentry (opt-in players) | error messages and stacks from the game's own code | a new error with many users |
+
+Also:
+
 - Crash-free sessions (Sentry, the stores' vitals), `HighErrorRate`, `SlowResponses`, `EventLoopBlocked`, `DesyncsRising`, `RefundSpike`.
+- Shared play statistics (`GET /admin/v1/stats`, staff token; only adults who chose to share): D1 and the tutorial rate of the release days against the week before. A drop beside a rollout is a release problem until shown otherwise.
 - Desyncs by client build (`tk_desyncs_total`, `tk_client_requests_total`): a rise right after the release means the build and server disagree on rules.
 - Store reviews and support mail for purchase problems.
 

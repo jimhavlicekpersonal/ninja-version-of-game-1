@@ -31,6 +31,7 @@ import m0023 from './0023_purchase_storefront.sql?raw';
 import m0024 from './0024_accounts_minors.sql?raw';
 import m0025 from './0025_ticket_scout.sql?raw';
 import m0026 from './0026_job_leases.sql?raw';
+import m0027 from './0027_play_statistics.sql?raw';
 
 export const migrations = loadMigrations({
   '0001_initial.sql': m0001,
@@ -59,4 +60,5 @@ export const migrations = loadMigrations({
   '0024_accounts_minors.sql': m0024,
   '0025_ticket_scout.sql': m0025,
   '0026_job_leases.sql': m0026,
+  '0027_play_statistics.sql': m0027,
 });

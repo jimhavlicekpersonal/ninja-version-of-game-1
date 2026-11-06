@@ -36,6 +36,8 @@ export interface SharedStores {
   limiter?: import('./rateLimit').RateLimiter;
   /** The signed balance bundle served at /v1/balance (step 76); `data` must already carry its numbers. */
   balance?: import('../src/backend/net/balanceBundle').BalanceBundle | null;
+  /** Experiment arms served next to it (report section 5 step 5; `checkCohort`). */
+  balanceCohorts?: import('../src/backend/net/balanceBundle').BalanceBundle[];
   /** SUPPORT_CONTACT and the Sign in with Apple key (re-audit: appeals, token revocation). */
   account?: import('./identity/appleTokens').AccountSettings;
 }
@@ -47,6 +49,7 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     rules: shared.rules ?? new RulesRegistry(liveEngine(data)),
     resim: shared.resim ?? new InlineResimulator(),
     balance: shared.balance ?? null,
+    balanceCohorts: shared.balanceCohorts ?? [],
     board: shared.board ?? new RepoLeaderboard(repo),
     locks: shared.locks ?? new TicketLocks(),
     metrics: shared.metrics ?? noMetrics,

@@ -13,13 +13,14 @@ import { RESOLVED_REPORT_RETENTION_DAYS } from './moderation';
 import { FRIEND_REQUEST_DAYS } from './friends';
 import { forfeitExpired, LATE_REPORT_MS } from './pvp';
 import { pruneTokens } from './links';
+import { STATS_RETENTION_DAYS } from './stats';
 
 export const REPLAY_RETENTION_DAYS = 30;
 export const REPLAY_RETENTION_MS = REPLAY_RETENTION_DAYS * 24 * HOUR;
 /** How long an expired, unused ticket (and an unreferenced base version) is kept. */
 export const STALE_MS = 24 * HOUR;
 
-export async function prune(ctx: ServerContext): Promise<PruneResult & { friendRequests: number; duels: number; forfeits: number }> {
+export async function prune(ctx: ServerContext): Promise<PruneResult & { friendRequests: number; duels: number; forfeits: number; stats: number }> {
   const t = ctx.now();
   // Raids never reported settle as losses before their tickets can be pruned (re-audit).
   let forfeits = 0;
@@ -43,5 +44,7 @@ export async function prune(ctx: ServerContext): Promise<PruneResult & { friendR
   });
   // Extra device tokens unused for 400 days are signed out (re-audit; links.ts TOKEN_UNUSED_DAYS).
   await pruneTokens(ctx);
-  return { ...result, friendRequests, duels, forfeits };
+  // Shared play statistics (report section 5 step 5) are kept 400 days.
+  const stats = await ctx.repo.pruneStats(t - STATS_RETENTION_DAYS * 24 * HOUR);
+  return { ...result, friendRequests, duels, forfeits, stats };
 }

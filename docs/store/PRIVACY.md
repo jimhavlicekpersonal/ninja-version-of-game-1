@@ -28,7 +28,8 @@ These answers come from what the code does (re-walked 2026-11-05 against `server
 | Server error reports: error, route, method and path without query string | Sentry, when the server's `SENTRY_DSN` is set (`server/observability.ts`) | fixing server faults | no, but see note | Sentry plan retention |
 | Support email: address and message | the support mailbox, only when a player writes | answering the player | yes | owner sets `retentionSupportMail` |
 | Web deletion requests: Player ID or name, optional note, whether a valid code came with it (`verified`), reference, outcome | `deletion_requests` | carrying out the request (staff carry out only verified ones without an override note) | yes | **not pruned** (owner sets `retentionDeletionRequests`; backend follow-up) |
-| Gameplay analytics events | the device only (IndexedDB); never sent | Settings → on-device analytics | — | device |
+| Gameplay analytics events | the device (IndexedDB) | Settings → on-device analytics | — | device |
+| Shared play statistics (report section 5 step 5, build ≥ fix release): only the events and fields of `STATS_EVENTS` (`src/backend/net/stats.ts`: session start, tutorial steps, raid stars/destruction, upgrade/research starts, offers shown, Jade speed-ups, purchases with product and catalog USD), a random statistics id, game build, experiment arm | `stats_events` (migration 0027; no player id, no IP column; the route writes no request log line) and the daily totals `stats_daily` | finding where players get stuck, retention, A/B tests of offer timing | **no** (random id, never sent with the player token; the server cannot join it to an account) | 400 days (`retention.ts`); deleted at once when the player turns sharing off. Opt-in, adults only (`analytics/share.ts`) |
 
 Notes from the re-walk:
 - `deletion_requests.contact` is no longer stored: `server/core/account.ts` always writes `''` (an email sent by an old page is dropped, `core.test.ts`). The column remains in the schema.
@@ -56,8 +57,8 @@ Each is a field in `public/legal-config.js`; the policy shows "not published yet
   - User Content → **Gameplay Content** (village, battles, replays, layouts) and **Other User Content** (Alliance and Gang chat, Gang and Alliance names, report notes). Cautious alternative: also tick **Emails or Text Messages** for chat between players [recheck Apple's current definition before submitting].
   - Other Data → **Other Data Types**: the age band.
   - Identifiers → **Device ID**: declare it if you treat the push token as one (cautious choice). Purpose: App Functionality.
-- **Data not linked to you:** Diagnostics → **Crash Data** (only when the player switches it on). Holds only while Sentry stores no IP addresses.
-- **Not collected by the app:** Contact Info (email, name, phone), Location (IP is never used for location), Contacts, Browsing History, Usage Data (analytics stay on the device). Support mail and the web deletion form are outside the app; declare User Content → Customer Support if you add an in-app contact form.
+- **Data not linked to you:** Diagnostics → **Crash Data** (only when the player switches it on). Holds only while Sentry stores no IP addresses. Usage Data → **Product Interaction** (shared play statistics: opt-in, adults only, a random statistics id; purpose Analytics). Purchases → **Purchase History** is already declared as linked; the statistics' purchase events (product, catalog price) need no second entry, but tick "not linked" too if App Store Connect asks per purpose. Holds only while the host's load balancer logs for `/v1/stats` are not joined with the game's other logs (owner: host log settings).
+- **Not collected by the app:** Contact Info (email, name, phone), Location (IP is never used for location), Contacts, Browsing History, Usage Data → Advertising Data and Other Usage Data. Support mail and the web deletion form are outside the app; declare User Content → Customer Support if you add an in-app contact form.
 
 ## Google Play Data safety
 
@@ -74,6 +75,7 @@ Walked against the Play data types (support.google.com/googleplay/android-develo
 | Financial info → **Purchase history** | store transaction ids, products, prices, refunds | collected | yes (only buyers) | App functionality, fraud prevention |
 | App info and performance → **Crash logs** | crash reports (and **Diagnostics** if you count stack/build/platform there) | collected only after opt-in | **yes** (off by default) | Analytics (crash fixing) |
 | Device or other IDs | FCM push token | collected | yes (push is opt-in) | App functionality |
+| App activity → **App interactions** | shared play statistics under a random statistics id (report section 5 step 5) | collected, not shared | **yes** (off until an adult says yes; never under 18) | Analytics |
 
 - **Not declared:** IP addresses (Play has no IP type; declare Location only if IP is used to derive location, and it is not); email (support mail is outside the app); Name from the sign-in providers (never received or stored).
 - **Shared:** no. Hosting, Sentry, Apple and Google act as service providers, which Play does not count as sharing.

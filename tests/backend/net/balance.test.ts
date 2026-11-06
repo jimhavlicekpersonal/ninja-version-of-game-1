@@ -8,7 +8,8 @@ import { buildServer } from '../../../server/app';
 import { MemoryRepo } from '../../../server/repo';
 import { liveEngine, RulesRegistry } from '../../../server/rules/registry';
 import { BalanceLoader } from '../../../src/backend/net/balance';
-import { bundleMessage, patchedData, verifyBundle, type BalanceBundle, type BalanceChange } from '../../../src/backend/net/balanceBundle';
+import { armOf, bundleMessage, checkCohort, patchedData, pickCohort, verifyBundle, type BalanceBundle, type BalanceChange, type BalanceCohort } from '../../../src/backend/net/balanceBundle';
+import { cohortBucket } from '../../../src/backend/net/stats';
 import type { KeyValue } from '../../../src/backend/net/connection';
 import { dataVersionOf } from '../../../src/backend/net/dataVersion';
 import { Routes } from '../../../src/backend/net/protocol';
@@ -20,7 +21,7 @@ const keys = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const PUBLIC = keys.publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
 const other = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 
-function make(changes: BalanceChange[], opts: { id?: string; key?: typeof keys.privateKey; base?: object; rules?: number } = {}): BalanceBundle {
+function make(changes: BalanceChange[], opts: { id?: string; key?: typeof keys.privateKey; base?: object; rules?: number; cohort?: BalanceCohort } = {}): BalanceBundle {
   const base = opts.base ?? defaultData;
   const patched = structuredClone(base) as Record<string, unknown>;
   for (const c of changes) {
@@ -28,7 +29,7 @@ function make(changes: BalanceChange[], opts: { id?: string; key?: typeof keys.p
     for (const k of c.path.slice(0, -1)) node = node[k] as Record<string | number, unknown>;
     node[c.path[c.path.length - 1]] = c.value;
   }
-  const draft = { format: 1 as const, id: opts.id ?? 'test', rules: opts.rules ?? SIM_RULES, base: dataVersionOf(base), changes, dataVersion: dataVersionOf(patched) };
+  const draft = { format: 1 as const, id: opts.id ?? 'test', rules: opts.rules ?? SIM_RULES, base: dataVersionOf(base), changes, dataVersion: dataVersionOf(patched), ...(opts.cohort ? { cohort: opts.cohort } : {}) };
   return { ...draft, signature: sign('sha256', Buffer.from(bundleMessage(draft)), { key: opts.key ?? keys.privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64') };
 }
 
@@ -120,5 +121,64 @@ describe('balance bundles: the server', () => {
     const plain = buildServer({ repo: new MemoryRepo(), data: defaultData });
     expect((await plain.inject({ method: 'GET', url: Routes.balance })).json()).toEqual({ bundle: null });
     expect((await plain.inject({ method: 'GET', url: Routes.hello })).json().features).not.toContain('balance-bundles');
+  });
+});
+
+describe('balance bundles: experiment arms (report section 5 step 5)', () => {
+  const shortOffer = { path: ['offers', 'rules', 0, 'durationHours'], value: 48 };
+  const cohort = (from: number, to: number, arm = 'short'): BalanceCohort => ({ experiment: 'offer-timing-1', arm, from, to });
+  // A statistics id in the lower half of the experiment's buckets, and one in the upper half.
+  const ids = Array.from({ length: 200 }, (_, i) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`);
+  const inArm = ids.find((id) => cohortBucket('offer-timing-1', id) < 50)!;
+  const outArm = ids.find((id) => cohortBucket('offer-timing-1', id) >= 50)!;
+
+  it('lets an arm change only offer timing, on top of the main bundle\'s exact changes', () => {
+    const main = make([start], { id: 'main' });
+    expect(checkCohort(make([start, shortOffer], { id: 'arm', cohort: cohort(0, 50) }), main)).toBeNull();
+    expect(checkCohort(make([shortOffer], { id: 'arm', cohort: cohort(0, 50) }), null)).toBeNull();
+    // Anything the server replays (costs, timers, loot, honor) must be the same for everyone.
+    expect(checkCohort(make([start, shortOffer], { cohort: cohort(0, 50) }), null)).toMatch(/only offer timing/);
+    expect(checkCohort(make([shortOffer], { cohort: cohort(0, 50) }), main)).toMatch(/leaves out/);
+    expect(checkCohort(make([start]), null)).toMatch(/not an experiment arm/);
+    // Prices and contents are not timing.
+    expect(checkCohort(make([{ path: ['offers', 'rules', 0, 'usd'], value: 0.99 }], { cohort: cohort(0, 50) }), null)).toMatch(/only offer timing/);
+    expect('error' in patchedData(defaultData, make([shortOffer], { cohort: cohort(60, 40) }), SIM_RULES)).toBe(true);
+    expect(armOf(make([shortOffer], { cohort: cohort(0, 50) }))).toBe('offer-timing-1:short');
+  });
+
+  it('a game in the arm keeps the arm for its next start; one outside, or without an id, keeps the main bundle', async () => {
+    const main = make([start], { id: 'main' });
+    const arm = make([start, shortOffer], { id: 'arm', cohort: cohort(0, 50) });
+    expect(pickCohort([arm], inArm)?.id).toBe('arm');
+    expect(pickCohort([arm], outArm)).toBeNull();
+    expect(pickCohort([arm], null)).toBeNull();
+    for (const [id, want] of [[inArm, 'arm'], [outArm, 'main'], [null, 'main']] as const) {
+      const kv = memoryKv();
+      const loader = new BalanceLoader(kv, structuredClone(defaultData), SIM_RULES, PUBLIC, () => id);
+      expect(await loader.offer(main, [arm])).toBe('next-start');
+      const data = structuredClone(defaultData) as GameData;
+      const next = new BalanceLoader(kv, data, SIM_RULES, PUBLIC, () => id);
+      expect((await next.applyCached())?.id).toBe(want);
+      expect(data.offers.rules[0].durationHours).toBe(want === 'arm' ? 48 : defaultData.offers.rules[0].durationHours);
+      expect(data.ranks.startingTrophies).toBe(start.value);
+    }
+    // An arm that changes more than timing is refused by the game too: it plays the main bundle.
+    const greedy = make([start, shortOffer, { path: ['battle', 'scoutFeeByHall', 1], value: 1 }], { id: 'greedy', cohort: cohort(0, 100) });
+    const kv = memoryKv();
+    await new BalanceLoader(kv, structuredClone(defaultData), SIM_RULES, PUBLIC, () => inArm).offer(main, [greedy]);
+    expect((await new BalanceLoader(kv, structuredClone(defaultData), SIM_RULES, PUBLIC, () => inArm).applyCached())?.id).toBe('main');
+    // A kept arm is dropped at start once the device has no statistics id (sharing switched off).
+    const kept = memoryKv();
+    await new BalanceLoader(kept, structuredClone(defaultData), SIM_RULES, PUBLIC, () => inArm).offer(main, [arm]);
+    expect(await new BalanceLoader(kept, structuredClone(defaultData), SIM_RULES, PUBLIC, () => null).applyCached()).toBeNull();
+  });
+
+  it('the server serves the arms beside the main bundle', async () => {
+    const main = make([start], { id: 'main' });
+    const arm = make([start, shortOffer], { id: 'arm', cohort: cohort(0, 50) });
+    const p = patchedData(defaultData, main, SIM_RULES);
+    if ('error' in p) throw new Error(p.error);
+    const app = buildServer({ repo: new MemoryRepo(), data: p.data, shared: { balance: main, balanceCohorts: [arm], rules: new RulesRegistry(liveEngine(p.data)) } });
+    expect((await app.inject({ method: 'GET', url: Routes.balance })).json()).toEqual({ bundle: main, cohorts: [arm] });
   });
 });

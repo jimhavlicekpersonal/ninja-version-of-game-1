@@ -124,7 +124,7 @@ export interface ConnectionOptions {
   /** The balance data version this game runs with (step 76 bundles change it); sent as X-Data-Version. */
   dataVersion?: () => string;
   /** Balance bundles (step 76): what the server offers is checked and kept for the next start. */
-  balance?: { offer(b: import('./balanceBundle').BalanceBundle | null): Promise<string> };
+  balance?: { offer(b: import('./balanceBundle').BalanceBundle | null, arms?: import('./balanceBundle').BalanceBundle[]): Promise<string> };
   /** Where "Update Kagemura" sends the player (the App Store / Play listing); the web build reloads instead. */
   updateUrl?: string;
   log?: (msg: string, err?: unknown) => void;
@@ -774,8 +774,8 @@ export class Connection {
         }
         // Step 76: the operators' number changes, kept for the next start (never applied mid-session).
         if (this.o.balance) {
-          const offered = this.server.features.includes('balance-bundles') && port.balance ? (await port.balance()).bundle : null;
-          const what = await this.o.balance.offer(offered);
+          const offered = this.server.features.includes('balance-bundles') && port.balance ? await port.balance() : null;
+          const what = await this.o.balance.offer(offered?.bundle ?? null, offered?.cohorts ?? []);
           if (what === 'refused') this.log('Online play: the server offered a balance bundle this game refused');
         }
         // Re-audit: the age band is known before this device registers or goes online.

@@ -150,6 +150,11 @@ export const Routes = {
   pushTokens: '/v1/push/tokens',
   /** GET, no token: the signed balance bundle for this game's rules, if any (step 76; feature `balance-bundles`). */
   balance: '/v1/balance',
+  /**
+   * POST, no token (StatsBatch): events an adult player chose to share, under a random statistics id;
+   * DELETE (?install=): forget everything that id sent (report section 5 step 5; feature `stats`).
+   */
+  stats: '/v1/stats',
   /** GET: friends, requests, my friend code and privacy (step 59; feature `friends`). */
   friends: '/v1/friends',
   /** DELETE: stop being friends. */
@@ -242,6 +247,13 @@ export interface HelloResponse {
 /** GET /v1/balance (roadmap step 76): the operators' signed number changes, or null. */
 export interface BalanceResponse {
   bundle: import('./balanceBundle').BalanceBundle | null;
+  /** Experiment arms (report section 5 step 5): each player takes the arm their statistics id falls in, else `bundle`. */
+  cohorts?: import('./balanceBundle').BalanceBundle[];
+}
+
+/** POST /v1/stats answer: how many events were kept (the others were not shareable). */
+export interface StatsResponse {
+  accepted: number;
 }
 
 export interface RegisterRequest {

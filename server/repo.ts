@@ -327,6 +327,35 @@ export interface ChatRow {
 }
 
 /** A report of a chat message or a player (roadmap step 15). */
+/** One statistics id's history, as the daily rollup needs it (report section 5 step 5). */
+export interface StatsInstallSummary {
+  install: string;
+  /** The experiment arm of its first event ('' for none). */
+  arm: string;
+  /** UTC day of its first event. */
+  firstDay: number;
+  firstAt: number;
+  /** Every UTC day it sent an event from. */
+  days: number[];
+  tutorialDone: boolean;
+  firstRaidAt: number | null;
+  firstPurchaseAt: number | null;
+}
+
+/** One install day and arm in the daily table. */
+export interface StatsDailyRow {
+  day: number;
+  arm: string;
+  installs: number;
+  d1: number;
+  d7: number;
+  d30: number;
+  tutorialDone: number;
+  raided7: number;
+  payers7: number;
+  computedAt: number;
+}
+
 export interface Report {
   id: string;
   at: number;
@@ -694,6 +723,18 @@ export interface Repo {
    * lapses (report section 5 step 2, backend A21; migration 0026).
    */
   claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean>;
+  // shared play statistics (report section 5 step 5, migration 0027): no player id, no IP address
+  /** Keep cleaned events under a statistics id; resolves how many were kept. */
+  addStatsEvents(install: string, build: string, arm: string, events: import('../src/backend/net/stats').StatsEvent[], receivedAt: number): Promise<number>;
+  /** Forget everything one statistics id sent; resolves how many events went. */
+  deleteStats(install: string): Promise<number>;
+  /** Statistics ids whose first event fell on UTC days [fromDay, toDay]. */
+  statsInstalls(fromDay: number, toDay: number): Promise<StatsInstallSummary[]>;
+  /** Replace the daily table's rows for days [fromDay, toDay] with `rows`. */
+  putStatsDaily(fromDay: number, toDay: number, rows: StatsDailyRow[]): Promise<void>;
+  statsDaily(fromDay: number, toDay: number): Promise<StatsDailyRow[]>;
+  /** Drop events that arrived before `before`; resolves how many. */
+  pruneStats(before: number): Promise<number>;
   addIntent(i: PurchaseIntent): Promise<void>;
   getIntent(id: string): Promise<PurchaseIntent | null>;
   useIntent(id: string): Promise<void>;
@@ -1199,6 +1240,50 @@ export class MemoryRepo implements Repo {
   }
   async lockPlayer(): Promise<void> {
     /* memory transactions already run one at a time */
+  }
+  statsRows: { install: string; day: number; name: string; at: number; props: Record<string, unknown>; build: string; arm: string; receivedAt: number }[] = [];
+  statsDailyRows: StatsDailyRow[] = [];
+  async addStatsEvents(install: string, build: string, arm: string, events: import('../src/backend/net/stats').StatsEvent[], receivedAt: number): Promise<number> {
+    for (const e of events) this.statsRows.push({ install, day: Math.floor(e.at / 86_400_000), name: e.name, at: e.at, props: clone(e.props), build, arm, receivedAt });
+    return events.length;
+  }
+  async deleteStats(install: string): Promise<number> {
+    const before = this.statsRows.length;
+    this.statsRows = this.statsRows.filter((r) => r.install !== install);
+    return before - this.statsRows.length;
+  }
+  async statsInstalls(fromDay: number, toDay: number): Promise<StatsInstallSummary[]> {
+    const by = new Map<string, typeof this.statsRows>();
+    for (const r of this.statsRows) by.set(r.install, [...(by.get(r.install) ?? []), r]);
+    const out: StatsInstallSummary[] = [];
+    for (const [install, rows] of by) {
+      rows.sort((a, b) => a.at - b.at);
+      const firstDay = Math.min(...rows.map((r) => r.day));
+      if (firstDay < fromDay || firstDay > toDay) continue;
+      const firstOf = (name: string) => rows.find((r) => r.name === name)?.at ?? null;
+      out.push({
+        install,
+        arm: rows[0].arm,
+        firstDay,
+        firstAt: rows[0].at,
+        days: [...new Set(rows.map((r) => r.day))].sort((a, b) => a - b),
+        tutorialDone: rows.some((r) => r.name === 'tutorial_step' && r.props.done === true),
+        firstRaidAt: firstOf('raid_end'),
+        firstPurchaseAt: firstOf('purchase'),
+      });
+    }
+    return out;
+  }
+  async putStatsDaily(fromDay: number, toDay: number, rows: StatsDailyRow[]): Promise<void> {
+    this.statsDailyRows = [...this.statsDailyRows.filter((r) => r.day < fromDay || r.day > toDay), ...clone(rows)];
+  }
+  async statsDaily(fromDay: number, toDay: number): Promise<StatsDailyRow[]> {
+    return clone(this.statsDailyRows.filter((r) => r.day >= fromDay && r.day <= toDay).sort((a, b) => a.day - b.day || a.arm.localeCompare(b.arm)));
+  }
+  async pruneStats(before: number): Promise<number> {
+    const n = this.statsRows.length;
+    this.statsRows = this.statsRows.filter((r) => r.receivedAt >= before);
+    return n - this.statsRows.length;
   }
   private jobLeases = new Map<string, { holder: string; until: number }>();
   async claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean> {

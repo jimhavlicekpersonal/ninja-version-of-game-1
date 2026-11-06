@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
 import { CrashReporter } from './backend/analytics/crashReports';
+import { httpStatsTransport, StatsSharing } from './backend/analytics/share';
+import { armOf } from './backend/net/balanceBundle';
 import { platformSignIn } from './backend/platform/auth';
 import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
@@ -35,7 +37,7 @@ import { chestSvg, revealChest } from './presentation/art/chest';
 import { OffsetClock, SystemClock } from './gameplay/sim/clock';
 import { defaultData } from './gameplay/sim/data';
 import { Bus, type UiEvents } from './presentation/ui/bus';
-import { Hud } from './presentation/ui/hud';
+import { Hud, STATS_EXPLAINER } from './presentation/ui/hud';
 import { encodeExportCode, NewerSaveError, serialize, type SaveFile } from './gameplay/sim/save';
 
 declare const __APP_VERSION__: string;
@@ -206,7 +208,8 @@ async function boot(): Promise<void> {
   const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl);
   // Balance bundles (roadmap step 76): the operators' signed number changes from the last session, applied
   // before the village loads (never mid-session, never in the sandbox, never without the public key).
-  const balance = sandbox ? null : new BalanceLoader(browserKeyValue, defaultData, SIM_RULES, (import.meta.env.VITE_BALANCE_PUBLIC_KEY as string | undefined) ?? '');
+  // Experiment arms (report section 5 step 5) are picked by the statistics id: only players who share are in one.
+  const balance = sandbox ? null : new BalanceLoader(browserKeyValue, defaultData, SIM_RULES, (import.meta.env.VITE_BALANCE_PUBLIC_KEY as string | undefined) ?? '', () => StatsSharing.installIdIn(browserKeyValue));
   await balance?.applyCached();
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl, sandbox });
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
@@ -214,6 +217,22 @@ async function boot(): Promise<void> {
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
   const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}) });
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
+  // Shared play statistics (report section 5 step 5): adults only, off until they say yes, never in the sandbox.
+  const stats = sandbox || !connection.enabled
+    ? null
+    : new StatsSharing({
+        kv: browserKeyValue,
+        transport: httpStatsTransport(connection.url),
+        build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`,
+        ageBand: () => connection.ageBand,
+        arm: () => armOf(balance?.applied ?? null),
+        serverReady: () => Boolean(connection.server?.features.includes('stats')),
+        backlog: (n) => analytics.recent(n),
+      });
+  if (stats) {
+    analytics.onLog((e) => stats.hear(e));
+    stats.start();
+  }
   // Store receipts go to the server when it checks them (roadmap Phase 4).
   controller.purchaseVerifier = () => (payments.store ? connection.purchaseVerifier(payments.store) : null);
   // Purchases approved later (Ask to Buy, pending payments), and paid ones not yet delivered.
@@ -257,6 +276,38 @@ async function boot(): Promise<void> {
       const parts = [held.jade ? `${held.jade.toLocaleString()} Jade` : '', held.premium ? 'the premium Season Scroll' : ''].filter(Boolean).join(' and ');
       if (parts) hud?.toast(`Your village is on the server now. ${parts} could not be matched to a purchase we checked, so it is held for review: contact support from Settings. Your old village is kept as a backup.`, 'info');
     }
+  });
+  // The one-time question about play statistics: once online (the age is known by then), not in a battle.
+  let statsAsked = false;
+  const askStats = () => {
+    if (!stats?.shouldAsk || !connection.online) return;
+    let battle = false;
+    try {
+      battle = Boolean(app?.inBattle);
+    } catch {
+      battle = true; // the scenes are not set up yet: ask a little later
+    }
+    if (battle) return void setTimeout(askStats, 60_000);
+    const answer = (on: boolean) => {
+      void stats.set(on);
+      hud?.toast(on ? 'Thank you. You can turn this off in Settings.' : 'Nothing is shared. You can change this in Settings.', 'info');
+    };
+    showBanner('tk-banner-stats', 'Help improve Kagemura? Share play statistics under a random id: never your name, Player ID or village.', [
+      { label: 'Share', onClick: (close) => { close(); answer(true); } },
+      { label: 'No thanks', onClick: (close) => { close(); answer(false); } },
+      {
+        label: 'What is shared',
+        onClick: (close) => {
+          close();
+          void hud?.confirm('Share play statistics?', STATS_EXPLAINER, 'Share', false, 'No thanks').then(answer);
+        },
+      },
+    ]);
+  };
+  connection.subscribe(() => {
+    if (statsAsked || !stats?.shouldAsk || !connection.online) return;
+    statsAsked = true;
+    setTimeout(askStats, 20_000);
   });
   connection.subscribe(() => {
     const on = connection.online;
@@ -402,6 +453,7 @@ async function boot(): Promise<void> {
     sandbox,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
     crashReports: crashReporter.configured,
+    ...(stats ? { stats } : {}),
     signIn: platformSignIn({ googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined, appleServicesId: import.meta.env.VITE_APPLE_SERVICES_ID as string | undefined }),
     groveSource,
     connection,

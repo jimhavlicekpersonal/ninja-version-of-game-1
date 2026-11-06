@@ -46,6 +46,10 @@ import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
 import { uiArt } from './feedback';
 
+/** What sharing play statistics means, in Settings and in the one-time question (main.ts). */
+export const STATS_EXPLAINER =
+  'Sends what you do in the game (sessions, tutorial steps, raids, upgrades, offers seen and purchases, with their numbers) under a random statistics id, never your name, Player ID, village, chat or IP address, so we can see where players get stuck. Turning it on also sends what this device recorded so far; turning it off deletes what was sent.';
+
 export interface HudDeps {
   root: HTMLElement;
   controller: GameController;
@@ -78,6 +82,11 @@ export interface HudDeps {
   prefs: { get(k: 'sessionReminder' | 'reminders' | 'crashReports'): boolean; set(k: 'sessionReminder' | 'reminders' | 'crashReports', v: boolean): void };
   /** This build sends crash reports (it has a Sentry DSN): show the switch. */
   crashReports?: boolean;
+  /**
+   * Sharing play statistics (report section 5 step 5; backend `analytics/share.ts`): Settings shows the switch
+   * while `available` (an adult, a server that takes them). Off until the player says yes.
+   */
+  stats?: { readonly available: boolean; readonly on: boolean; set(on: boolean): Promise<void> };
   /** Sign-ins this device can give (account linking, roadmap step 24). */
   signIn?: import('../../backend/platform/auth').SignInSource;
   notifyPrefs: { get(id: string, fallback: boolean): boolean; set(id: string, v: boolean): void };
@@ -1777,6 +1786,17 @@ export class Hud {
       body.append(
         h('label', { class: 'toggle' }, crashToggle, ' Send crash reports (off until you turn it on)'),
         h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error message, where in the code it happened, the game version and the platform, to help fix it. It does not add your name, Player ID, village or chat, but an error message can sometimes include text the game was working on.'),
+      );
+    }
+
+    // Play statistics (report section 5 step 5): opt-in, adults only, a random id instead of the account.
+    const stats = this.deps.stats;
+    if (stats && (stats.available || stats.on)) {
+      const statsToggle = h('input', { type: 'checkbox', checked: stats.on }) as HTMLInputElement;
+      statsToggle.addEventListener('change', () => void stats.set(statsToggle.checked));
+      body.append(
+        h('label', { class: 'toggle' }, statsToggle, ' Share play statistics (off until you turn it on)'),
+        h('p', { class: 'muted small' }, STATS_EXPLAINER),
       );
     }
 

@@ -21,6 +21,7 @@ import * as purchases from './purchases';
 import * as pushTokens from './pushTokens';
 import * as pvp from './pvp';
 import * as retention from './retention';
+import * as stats from './stats';
 import * as village from './village';
 import * as villageImport from './villageImport';
 
@@ -32,6 +33,10 @@ export function createCore(ctx: ServerContext) {
     ctx,
     hello: () => identity.hello(ctx),
     balance: () => identity.balance(ctx),
+    postStats: (body: unknown) => stats.postStats(ctx, body),
+    deleteStats: (install: unknown) => stats.deleteStats(ctx, install),
+    rollupStats: () => stats.rollupStats(ctx),
+    statsReport: (days: unknown) => stats.statsReport(ctx, days),
     register: (name: unknown) => identity.register(ctx, name),
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
     me: (p: Parameters<typeof identity.playerView>[0]) => identity.playerView(p, ctx.now()),

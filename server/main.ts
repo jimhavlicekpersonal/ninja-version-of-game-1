@@ -55,7 +55,9 @@
  * - Balance bundles (step 76, docs/SHIPPING.md 3j): BALANCE_BUNDLE_FILE (a
  *   signed bundle made by tools/balance/bundle.mjs) and BALANCE_PUBLIC_KEY (the
  *   key games check it with). The server refuses to start with a bundle that
- *   does not check out.
+ *   does not check out. The file may hold a list instead: everyone's bundle
+ *   plus experiment arms (`cohort`, report section 5 step 5), which may change
+ *   only offer timing (`checkCohort`); each game picks its arm itself.
  * - Shutdown (server/shutdown.ts): on SIGTERM or SIGINT, /readyz answers 503
  *   for SHUTDOWN_DRAIN_MS (5000; match the load balancer's check interval),
  *   then requests in flight finish and the workers, Redis and the database
@@ -87,7 +89,7 @@ import { PromMetrics, ServerSentry } from './observability';
 import { ARCHIVED_ENGINES } from './rules/archive';
 import { liveEngine, parseRetired, RulesRegistry } from './rules/registry';
 import { readFileSync } from 'node:fs';
-import { patchedData, verifyBundle, type BalanceBundle } from '../src/backend/net/balanceBundle';
+import { checkCohort, patchedData, verifyBundle, type BalanceBundle } from '../src/backend/net/balanceBundle';
 import { SIM_RULES } from '../src/gameplay/sim/battle/battle';
 import type { GameData } from '../src/gameplay/sim/types';
 import { verifierFromEnv } from './identity/verify';
@@ -196,14 +198,30 @@ async function main(): Promise<void> {
   // Balance bundle (step 76): its numbers become the live data; a bad bundle stops the start.
   let data: GameData = defaultData;
   let balance: BalanceBundle | null = null;
+  let balanceCohorts: BalanceBundle[] = [];
   if (process.env.BALANCE_BUNDLE_FILE) {
-    const b = JSON.parse(readFileSync(process.env.BALANCE_BUNDLE_FILE, 'utf8')) as BalanceBundle;
-    if (!(await verifyBundle(b, process.env.BALANCE_PUBLIC_KEY ?? ''))) throw new Error('BALANCE_BUNDLE_FILE is not signed by BALANCE_PUBLIC_KEY.');
-    const p = patchedData(defaultData, b, SIM_RULES);
-    if ('error' in p) throw new Error(`BALANCE_BUNDLE_FILE refused: ${p.error}.`);
-    data = p.data;
-    balance = b;
-    console.log(`Balance bundle ${b.id}: ${b.changes.length} changes (data ${b.dataVersion}).`);
+    // One bundle, or a list: at most one without a cohort (everyone's) plus experiment arms (report section 5 step 5).
+    const raw = JSON.parse(readFileSync(process.env.BALANCE_BUNDLE_FILE, 'utf8')) as BalanceBundle | BalanceBundle[];
+    const all = Array.isArray(raw) ? raw : [raw];
+    for (const b of all) {
+      if (!(await verifyBundle(b, process.env.BALANCE_PUBLIC_KEY ?? ''))) throw new Error(`BALANCE_BUNDLE_FILE: ${b?.id ?? 'a bundle'} is not signed by BALANCE_PUBLIC_KEY.`);
+      const p = patchedData(defaultData, b, SIM_RULES);
+      if ('error' in p) throw new Error(`BALANCE_BUNDLE_FILE refused ${b.id}: ${p.error}.`);
+    }
+    const mains = all.filter((b) => !b.cohort);
+    if (mains.length > 1) throw new Error('BALANCE_BUNDLE_FILE: more than one bundle without a cohort.');
+    balance = mains[0] ?? null;
+    balanceCohorts = all.filter((b) => b.cohort);
+    for (const b of balanceCohorts) {
+      const why = checkCohort(b, balance);
+      if (why) throw new Error(`BALANCE_BUNDLE_FILE refused arm ${b.id}: ${why}.`);
+    }
+    // The server plays everyone's numbers: arms change only what the device alone reads (offer timing).
+    if (balance) {
+      data = (patchedData(defaultData, balance, SIM_RULES) as { data: GameData }).data;
+      console.log(`Balance bundle ${balance.id}: ${balance.changes.length} changes (data ${balance.dataVersion}).`);
+    }
+    for (const b of balanceCohorts) console.log(`Experiment arm ${b.id}: ${b.cohort!.experiment}:${b.cohort!.arm}, buckets ${b.cohort!.from}-${b.cohort!.to - 1}.`);
   }
   // Battle rules (step 73): today's, plus archived versions still in use by older games.
   const rules = new RulesRegistry(liveEngine(data), { archived: ARCHIVED_ENGINES.map((e) => e()), retired: parseRetired(process.env.RETIRED_RULES), minClientBuild: process.env.MIN_CLIENT_BUILD });
@@ -220,7 +238,7 @@ async function main(): Promise<void> {
     metrics.gauge('tk_resim_queue', () => [{ labels: {}, value: pool.queued }]);
     resim = pool;
   }
-  shared = { ...shared, payments, push, rules, balance, resim };
+  shared = { ...shared, payments, push, rules, balance, balanceCohorts, resim };
   console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Re-simulation workers: ${workers || 'none (main thread)'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
@@ -270,12 +288,16 @@ async function main(): Promise<void> {
   timers.push(setInterval(reminders, 5 * 60_000));
   // Google's Voided Purchases API (refunds that a notification missed): the last 3 days, hourly.
   const voided = job('voided-purchases', 3_600_000, () => app.core.pollVoided(Date.now() - 3 * 86_400_000).then((n) => n && app.log.info({ revoked: n }, 'voided purchases')));
+  // Shared play statistics (report section 5 step 5): the D1/D7/D30 and funnel table for the last 40 install days.
+  const statsRollup = job('stats-rollup', 3_600_000, () => app.core.rollupStats().then((r) => app.log.info({ stats: r }, 'stats rollup')));
   const firstHourly = setTimeout(() => {
     prune();
     voided();
+    statsRollup();
     const hourly = setInterval(() => {
       prune();
       voided();
+      statsRollup();
     }, 3_600_000);
     hourly.unref();
     timers.push(hourly);
