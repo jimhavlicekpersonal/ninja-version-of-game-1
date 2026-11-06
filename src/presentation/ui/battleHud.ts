@@ -1,3 +1,4 @@
+import { pointLabel, t } from './i18n';
 import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
 import type { BattleSession } from '../../gameplay/control/battleSession';
@@ -241,11 +242,11 @@ export class BattleHud {
             class: 'entry-chevron',
             type: 'button',
             style: `left:${x}px;top:${y}px`,
-            'aria-label': `Infiltration point ${e.label}, ${e.left} space left, is off screen: show it`,
+            'aria-label': t('battle.offscreen', { label: pointLabel(e.label), left: e.left }),
             onclick: () => this.view?.showPoint(e.index),
           },
           h('span', { class: 'chev-arrow', style: `transform:rotate(${deg}deg)`, 'aria-hidden': 'true' }, '➤'),
-          h('b', {}, e.label),
+          h('b', {}, pointLabel(e.label)),
           h('span', { class: 'chev-left' }, String(e.left)),
         ),
       ),
@@ -293,7 +294,7 @@ export class BattleHud {
     for (const [t, n] of Object.entries(r.counters)) if (!r.defenses[t]) chips.push(h('span', { class: 'chip' }, `${n}× ${this.s.data.buildings[t]?.name ?? t}`));
     if (r.walls) chips.push(h('span', { class: 'chip' }, `${r.walls} walls`));
     const entry = this.s.sim.entry;
-    const summary = `${entry?.points.length ? `${entry.points.length} point${entry.points.length === 1 ? '' : 's'} · ` : ''}${defenseCount} defense${defenseCount === 1 ? '' : 's'}`;
+    const summary = entry?.points.length ? t('battle.scoutSummary', { points: entry.points.length, defenses: defenseCount }) : t('battle.defensesOnly', { defenses: defenseCount });
     const more = h(
       'div',
       { class: 'scout-more', id: 'scout-more' },
@@ -353,9 +354,9 @@ export class BattleHud {
           class: `chip point-chip${p.defenses === 0 ? ' quiet' : ''}${on ? ' on' : ''}`,
           type: 'button',
           'aria-pressed': String(on),
-          'aria-label': `Point ${p.label}: ${p.defenses} defense${p.defenses === 1 ? '' : 's'} cover its path${p.antiAir ? ', anti-air' : ''}${p.splash ? ', splash' : ''}`,
+          'aria-label': `${t('battle.pointAria', { label: pointLabel(p.label), defenses: p.defenses })}${p.antiAir ? `, ${t('battle.antiAir')}` : ''}${p.splash ? `, ${t('battle.splash')}` : ''}`,
         },
-        h('b', {}, p.label),
+        h('b', {}, pointLabel(p.label)),
         ` ${p.defenses}${p.antiAir ? ' · AA' : ''}${p.splash ? ' · splash' : ''}`,
       );
       b.addEventListener('click', () => {
@@ -376,13 +377,13 @@ export class BattleHud {
     if (mode === 'scout') {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, 'Home'),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, t('battle.home')),
         this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special
           ? h('span', {}, '')
           : h(
               'button',
               { class: 'btn gold', type: 'button', disabled: !this.deps.canPayFee(), onclick: () => this.deps.onNext() },
-              h('span', {}, 'Next'),
+              h('span', {}, t('battle.next')),
               h('span', { class: 'chip' }, icon(icons.acorns), formatNumber(this.deps.scoutFee)),
             ),
         h(
@@ -393,11 +394,11 @@ export class BattleHud {
             disabled: !hasArmy,
             onclick: (ev: Event) => void this.attackTapped(ev.currentTarget as HTMLButtonElement),
           },
-          hasArmy ? 'Attack!' : 'Train troops first',
+          hasArmy ? t('battle.attack') : t('battle.trainFirst'),
         ),
       );
     } else if (mode === 'live') {
-      this.bottomEl.append(h('button', { class: 'btn danger', type: 'button', onclick: () => this.confirmEnd() }, 'End battle'));
+      this.bottomEl.append(h('button', { class: 'btn danger', type: 'button', onclick: () => this.confirmEnd() }, t('battle.end')));
     } else {
       const speed = h('button', { class: 'btn ghost', type: 'button' }, `Speed ${this.s.speed}×`);
       speed.addEventListener('click', () => {
@@ -544,7 +545,7 @@ export class BattleHud {
       h('p', {}, 'Your remaining troops go back home. You keep any loot you already won.'),
       [
         { label: 'Keep fighting', onClick: () => close() },
-        { label: 'End battle', danger: true, onClick: () => { close(); this.s.surrender(); } },
+        { label: t('battle.end'), danger: true, onClick: () => { close(); this.s.surrender(); } },
       ],
     );
   }
@@ -563,7 +564,7 @@ export class BattleHud {
     }
     if (r.destruction >= 100) window.setTimeout(() => celebrate('perfect'), still ? 0 : 250 + 3 * STAR_GAP * 1000);
     const used = Object.entries(r.used).map(([t, n]) => `${n} ${this.s.data.troops[t]?.name ?? t}`).join(', ');
-    const title = r.stars === 3 ? 'Perfect raid!' : r.stars > 0 ? 'Victory!' : 'Defeat';
+    const title = r.stars === 3 ? t('battle.perfect') : r.stars > 0 ? t('battle.victory') : t('battle.defeat');
     const body = h(
       'div',
       { class: `results ${r.stars > 0 ? 'win' : 'loss'}` },
@@ -582,13 +583,13 @@ export class BattleHud {
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, 'Includes your league bonus: ', lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, 'Includes the event bonus: ', lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, this.s.data).map((cc) => h('p', { class: 'close-call' }, cc.text)),
-      used ? h('p', { class: 'muted small' }, `Warriors used: ${used}`) : null,
+      used ? h('p', { class: 'muted small' }, t('battle.used', { list: used })) : null,
       // The settlement says exactly what did not fit; nothing is inferred from totals.
       overflow && Object.values(overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, 'Did not fit in your storage: ', lootChips(overflow)) : null,
     );
     this.modal(title, body, [
-      { label: 'Watch replay', onClick: () => this.deps.onReplay() },
-      { label: 'Return home', primary: true, onClick: () => this.deps.onHome() },
+      { label: t('battle.watchReplay'), onClick: () => this.deps.onReplay() },
+      { label: t('battle.returnHome'), primary: true, onClick: () => this.deps.onHome() },
     ], false);
   }
 

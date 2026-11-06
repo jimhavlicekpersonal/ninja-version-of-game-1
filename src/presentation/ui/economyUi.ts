@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import type { GameController } from '../../gameplay/control/controller';
 import { achievementViews } from '../../gameplay/sim/achievements';
 import { activeOffers, offerReturns, offerRule, offersAllowed } from '../../gameplay/sim/offers';
@@ -235,7 +236,7 @@ export class EconomyUi {
             (r) => {
               restore.disabled = false;
               const n = r.delivered + r.restored;
-              this.kit.toast(n ? `Restored ${n} purchase${n === 1 ? '' : 's'}.` : 'Nothing to restore: everything you bought is already here.', n ? 'success' : 'info');
+              this.kit.toast(n ? t('store.restored', { n }) : 'Nothing to restore: everything you bought is already here.', n ? 'success' : 'info');
               draw();
             },
             (e: Error) => {
@@ -279,7 +280,7 @@ export class EconomyUi {
           h('div', { class: 'pack-gems' }, icon(icons.moonstones), h('span', { class: 'stipend-x' }, `× ${st.payments}`)),
           h('div', { class: 'shop-name' }, st.name),
           h('div', { class: 'small' }, `${st.payments} daily payments of ${st.jadePerPayment} Jade; does not renew.`),
-          ss.left > 0 ? h('div', { class: 'chip good' }, `${ss.left} payment${ss.left === 1 ? '' : 's'} left`) : null,
+          ss.left > 0 ? h('div', { class: 'chip good' }, t('stipend.left', { n: ss.left })) : null,
           ss.canBuy ? this.buyButton(st.id, 'primary') : h('span', { class: 'claim-flat' }, 'Buy again when all are claimed'),
         ),
       );
@@ -298,7 +299,7 @@ export class EconomyUi {
       else this.kit.toast(`+${ss.jade} Jade from your Clan Stipend.`, 'success');
       after?.();
     });
-    return h('div', { class: 'log-row stipend-card' }, h('div', {}, h('b', {}, `Clan Stipend: claim ${ss.jade} Jade`), h('div', { class: 'muted small' }, `${ss.left} payment${ss.left === 1 ? '' : 's'} left, one a day. A missed day is never lost.`)), btn);
+    return h('div', { class: 'log-row stipend-card' }, h('div', {}, h('b', {}, t('stipend.claim', { jade: ss.jade })), h('div', { class: 'muted small' }, t('stipend.leftDaily', { n: ss.left }))), btn);
   }
 
   private offersList(): HTMLElement {
@@ -306,11 +307,7 @@ export class EconomyUi {
     const list = activeOffers(this.c.state, this.c.now());
     // Economy E02: say why the tab stays empty, instead of a "right now" that never changes.
     const p = this.c.state.profile;
-    const why = offersAllowed(this.c.state)
-      ? 'No special offers right now.'
-      : p.under18 === null
-        ? 'Special offers appear only once you have told us your age (Settings → Account → Spending → Set age group).'
-        : 'Special offers do not pop up for players under 18. Everything in the Jade tab stays available within your spending limit.';
+    const why = offersAllowed(this.c.state) ? t('offers.none') : p.under18 === null ? t('offers.noAge') : t('offers.minor');
     if (!list.length) wrap.append(h('p', { class: 'muted' }, why));
     for (const a of list) {
       const rule = offerRule(this.c.data, a.id);
@@ -344,7 +341,7 @@ export class EconomyUi {
   private seasonEndsText(): string {
     const left = passSeasonEndsAt(this.c.now(), this.c.data) - this.c.now();
     const days = Math.floor(left / 86_400_000);
-    return days >= 1 ? `the season ends in ${days} day${days === 1 ? '' : 's'}` : `the season ends in ${formatDuration(left)}`;
+    return days >= 1 ? t('pass.endsInDays', { n: days }) : `the season ends in ${formatDuration(left)}`;
   }
 
   /**
@@ -367,7 +364,7 @@ export class EconomyUi {
     const sale = passSaleOpen(now, d, this.c.state);
     const check = canPurchase(this.c.state, d.pass.productId, now, d);
     const closed = !sale.open && !check.ok && check.code === 'SEASON_ENDING';
-    const value = h('div', { class: 'small pass-value' }, `≈ ${formatNumber(v.total)} Jade value · ${v.tiers}/${v.tiersTotal} tiers reachable · ${v.daysLeft} day${v.daysLeft === 1 ? '' : 's'} left`);
+    const value = h('div', { class: 'small pass-value' }, t('pass.value', { jade: v.total, tiers: v.tiers, total: v.tiersTotal, days: v.daysLeft }));
     const buy = closed ? h('span', { class: 'claim-flat' }, 'Not on sale') : this.buyButton(d.pass.productId, 'gold', redraw);
     return h(
       'div',
@@ -559,7 +556,7 @@ export class EconomyUi {
       'div',
       {},
       h('h3', {}, 'Spending'),
-      h('p', {}, `This month: ${usd(spentThisMonth(s, this.c.now()))} · All time: ${usd(spentTotal(s))} · ${s.purchases.length} purchase${s.purchases.length === 1 ? '' : 's'}`),
+      h('p', {}, `This month: ${usd(spentThisMonth(s, this.c.now()))} · All time: ${usd(spentTotal(s))} · ${t('spend.summary', { n: s.purchases.length })}`),
       h('p', { class: 'muted small' }, 'Amounts are the items\' US-dollar list prices; your store receipts show what you actually paid in your currency.'),
       h('p', { class: 'muted small' }, `Age group: ${age}${s.profile.under18 ? ` (limit ${usd(this.c.data.store.minorMonthlyCapUsd)} a month in list prices). To change it, contact support from Settings.` : '.'}`),
       band === 'under13' ? null : h('div', { class: 'actions' }, change),

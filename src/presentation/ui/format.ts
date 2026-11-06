@@ -1,16 +1,27 @@
-/** Number and time formatting for the HUD. */
+/** Number and time formatting for the HUD, in the player's language (report section 5 step 9, compliance L03). */
+import { fmtNumber, language, t } from './i18n';
 
 export function formatNumber(n: number): string {
-  return Math.floor(n).toLocaleString('en-US');
+  return fmtNumber(n);
 }
 
-/** Short amounts for tight spaces: 950, 1.2K, 34K, 1.5M. */
+let compact: Intl.NumberFormat | null = null;
+let compactFor = '';
+/** Short amounts for tight spaces: 950, 1.2K, 34K, 1.5M (the language's own short forms). */
 export function formatCompact(n: number): string {
   const v = Math.floor(n);
-  if (v < 1000) return String(v);
-  if (v < 10_000) return `${(v / 1000).toFixed(1).replace(/\.0$/, '')}K`;
-  if (v < 1_000_000) return `${Math.floor(v / 1000)}K`;
-  return `${(v / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (v < 1000) return fmtNumber(v);
+  const code = language().code;
+  if (!compact || compactFor !== code) {
+    try {
+      compact = new Intl.NumberFormat(code, { notation: 'compact', maximumFractionDigits: 1, numberingSystem: 'latn' } as Intl.NumberFormatOptions);
+    } catch {
+      compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+    }
+    compactFor = code;
+  }
+  // 10K-999K show no decimals (34K, not 34.2K), as before.
+  return v >= 10_000 && v < 1_000_000 ? compact.format(Math.floor(v / 1000) * 1000) : compact.format(v);
 }
 
 /** 45s, 4m 10s, 3h 40m, 1d 16h. Shows the two biggest units. */
@@ -22,8 +33,8 @@ export function formatDuration(ms: number): string {
   s -= h * 3600;
   const m = Math.floor(s / 60);
   s -= m * 60;
-  if (d > 0) return h ? `${d}d ${h}h` : `${d}d`;
-  if (h > 0) return m ? `${h}h ${m}m` : `${h}h`;
-  if (m > 0) return s ? `${m}m ${s}s` : `${m}m`;
-  return `${s}s`;
+  if (d > 0) return h ? t('time.dh', { d, h }) : t('time.d', { d });
+  if (h > 0) return m ? t('time.hm', { h, m }) : t('time.h', { h });
+  if (m > 0) return s ? t('time.ms', { m, s }) : t('time.m', { m });
+  return t('time.s', { s });
 }

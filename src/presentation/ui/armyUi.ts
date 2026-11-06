@@ -6,6 +6,7 @@
  * rebuilt only when what it shows has changed, never while a finger is down, and
  * the scroll position stays where the player left it.
  */
+import { t } from './i18n';
 import { suggestedArmy } from '../../gameplay/sim/suggest';
 import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
@@ -381,7 +382,7 @@ export class ArmyUi {
     }
     if (!ready.childElementCount) ready.append(h('span', { class: 'muted' }, 'No warriors ready yet.'));
     const units = Object.values(s.army).reduce((a, b) => a + b, 0);
-    wrap.append(h('h3', {}, units ? `Ready to attack · ${units} warrior${units > 1 ? 's' : ''}` : 'Ready to attack'), ready);
+    wrap.append(h('h3', {}, units ? t('army.readyN', { n: units }) : t('army.ready')), ready);
     const lodge = Object.entries(lodgeTroops(s));
     if (lodge.length) {
       wrap.append(
@@ -396,7 +397,7 @@ export class ArmyUi {
     // Queue order: whoever finished first is listed first, right under the note about them.
     const next = v.stacks.filter((st) => st.status !== 'training');
     if (next.length) {
-      const who = `${v.waiting} finished warrior${v.waiting > 1 ? 's' : ''}`;
+      const who = t('army.finishedN', { n: v.waiting });
       const why = v.freeHousing > 0 ? `${who} can't fit yet: ${v.freeHousing} space free, and the smallest needs ${v.waitingNeeds}.` : `${who} can't fit yet: the Squad Courtyards are full.`;
       wrap.append(
         h('h3', {}, 'Next army'),
@@ -472,7 +473,7 @@ export class ArmyUi {
         const queued = r.events.reduce((sum, e) => sum + (e.kind === 'train_start' ? e.count ?? 1 : 0), 0);
         const short = r.events.find((e) => e.kind === 'train_short');
         if (short && short.kind === 'train_short') this.d.kit.toast(`Queued ${queued}. ${short.missing} more could not be queued. ${short.why}`, 'info');
-        else this.d.kit.toast(`Queued ${queued} warrior${queued > 1 ? 's' : ''}.`, 'success');
+        else this.d.kit.toast(t('army.queued', { n: queued }), 'success');
       }
       redraw();
     });
@@ -536,7 +537,7 @@ export class ArmyUi {
       acts.append(cancel);
       wrap.append(row, acts);
     }
-    if (s.research.active.length < lanes) wrap.append(h('p', { class: 'muted small' }, `${lanes - s.research.active.length} research lane${lanes - s.research.active.length > 1 ? 's' : ''} free.`));
+    if (s.research.active.length < lanes) wrap.append(h('p', { class: 'muted small' }, t('research.lanesFree', { n: lanes - s.research.active.length })));
     const list = h('div', { class: 'army-list' });
     for (const t of troops) {
       const def = gd.troops[t];

@@ -1,3 +1,4 @@
+import { pointLabel, t } from '../ui/i18n';
 import Phaser from 'phaser';
 import { BODY_FONT } from './fonts';
 import { queueArt } from './artManifest';
@@ -438,7 +439,7 @@ export class BattleScene extends Phaser.Scene {
       g.lineStyle(1.2, 0xfff6d8, open ? 0.8 : 0.3);
       g.strokeEllipse(c.x, c.y, rx * 2 - 5, ry * 2 - 2.5);
       this.entryLabels[i]
-        .setText(`${p.label} · ${open ? left : 'full'}`)
+        .setText(`${pointLabel(p.label)} · ${open ? left : t('battle.pointFull')}`)
         .setPosition(c.x, c.y - ry - 4)
         .setScale(1 / this.cam.userZoom)
         .setAlpha(open ? 1 : 0.6);

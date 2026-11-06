@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController } from '../../gameplay/control/controller';
 import type { VillageState } from '../../gameplay/sim/types';
@@ -17,7 +18,7 @@ interface Step {
   /** A building on the map to point at when no target is on screen. */
   mapTarget?: string | ((s: VillageState) => string | null);
   done?: (s: VillageState, c: GameController) => boolean;
-  button?: string;
+  button?: string | (() => string);
   mood?: SenseiMood;
 }
 
@@ -35,18 +36,18 @@ const ARMY_BUILDINGS = ['burrow_barracks', 'army_camp', TOWER];
 // Keep nine steps in this order: saved progress stores the step index (re-audit design item 3 changed what some
 // steps ask, never their number or position).
 const STEPS: Step[] = [
-  { id: 'welcome', text: "Welcome, young leader. I am Sensei Hoshi. Our clan has found a hidden valley in the mountains. Let's build a village no rival can find.", button: 'I am ready', mood: 'smile' },
+  { id: 'welcome', text: () => t('tutorial.welcome'), button: () => t('tutorial.welcome.button'), mood: 'smile' },
   {
     id: 'mint',
     // Build, then collect: the first thing a Mint gives back.
-    text: (s) => (has(s, MINT) ? 'Your Coin Mint is striking Coins. When a coin floats over it, tap it, then Collect.' : 'A clan runs on Coins. Tap Build and place a Coin Mint.'),
+    text: (s) => (has(s, MINT) ? t('tutorial.mint.collect') : t('tutorial.mint.build')),
     targets: (s) => (has(s, MINT) ? [`.sheet[data-type="${MINT}"] .btn.collect`] : ['.round-btn.ok', `.shop-card[data-type="${MINT}"]`, '.shop-tabs button[data-tab="resources"]', '.round-btn.build']),
     mapTarget: (s) => (has(s, MINT) ? MINT : null),
     done: (s) => has(s, MINT) && s.stats.collectedAcorns > 0,
   },
   {
     id: 'keep',
-    text: 'Now strengthen the Clan Keep: tap the castle, then Upgrade.',
+    text: () => t('tutorial.keep'),
     // Only the Keep's own sheet: the ring never lands on another building's Upgrade.
     targets: [`.sheet[data-type="${HALL}"] .btn.upgrade:not(:disabled)`],
     mapTarget: HALL,
@@ -57,7 +58,7 @@ const STEPS: Step[] = [
     // Waiting first, Jade second.
     text: (s, c) => {
       const left = waitText(hall(s).upgrade?.endsAt, c.now());
-      return left ? `Upgrades take time. The Keep is ready in ${left}: come back then, or tap Finish now to use a little Jade.` : 'The Keep is ready. Well done!';
+      return left ? t('tutorial.finishKeep.wait', { time: left }) : t('tutorial.finishKeep.done');
     },
     targets: [`.sheet[data-type="${HALL}"] .btn.gold`, '.modal .btn.primary'],
     mapTarget: HALL,
@@ -68,31 +69,31 @@ const STEPS: Step[] = [
     id: 'army',
     text: (s) => {
       const missing = ARMY_BUILDINGS.filter((t) => !has(s, t));
-      if (missing.length === 1 && missing[0] === TOWER) return 'Rival clans will raid us. Build a Kunai Tower next to the Keep (Build, then the Defense tab): it shoots any raider in range.';
-      return 'Build a Training Dojo, a Squad Courtyard and a Kunai Tower next to the Keep (Build: the Army tab, then the Defense tab).';
+      if (missing.length === 1 && missing[0] === TOWER) return t('tutorial.army.tower');
+      return t('tutorial.army.all');
     },
     targets: (s) =>
       ['.round-btn.ok', ...ARMY_BUILDINGS.filter((t) => !has(s, t)).map((t) => `.shop-card[data-type="${t}"]`), `.shop-tabs button[data-tab="${has(s, 'burrow_barracks') && has(s, 'army_camp') ? 'defense' : 'army'}"]`, '.round-btn.build'],
     done: (s) => ARMY_BUILDINGS.every((t) => has(s, t)),
   },
-  { id: 'train', text: 'Open the Army panel and train some Shinobi: fast blades that strike the nearest building.', targets: ['.troop-row .btn.primary', '.round-btn[aria-label="Army"]'], done: (s) => s.training.length > 0 || armySize(s) > 0 },
+  { id: 'train', text: () => t('tutorial.train'), targets: ['.troop-row .btn.primary', '.round-btn[data-id="army"]'], done: (s) => s.training.length > 0 || armySize(s) > 0 },
   {
     id: 'finishTrain',
     text: (s, c) => {
       const left = waitText(lastTrainingEnd(s), c.now());
-      return left ? `Training takes time too: your warriors are ready in ${left}. Wait, or tap Finish training to use a little Jade.` : 'Your warriors are ready.';
+      return left ? t('tutorial.finishTrain.wait', { time: left }) : t('tutorial.finishTrain.done');
     },
-    targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[aria-label="Army"]'],
+    targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[data-id="army"]'],
     done: (s, c) => armySize(s) > 0 && (s.training.length === 0 || !trainingSkipQuote(s, c.now(), c.data)),
   },
   {
     id: 'raid',
-    text: 'Your first raid. Tap Attack, look over the target, then Attack! On the battlefield I will show you one thing at a time: send your Shinobi in through a glowing point, then smoke them as they reach a tower: warriors inside the smoke can only be shot from close up.',
+    text: () => t('tutorial.raid'),
     targets: ['.big-attack', '.round-btn.attack'],
     done: (s) => s.battleLog.some((r) => r.kind === 'attack'),
     mood: 'stern',
   },
-  { id: 'end', text: 'Well fought. Upgrade the Training Dojo to unlock Saboteurs: they jam a defense for a few seconds. Jam first, then strike, and smoke your warriors where the fire is heaviest. Collect, upgrade, raid, and join an Alliance.', button: 'Finish', mood: 'smile' },
+  { id: 'end', text: () => t('tutorial.end'), button: () => t('tutorial.end.button'), mood: 'smile' },
 ];
 
 /** Guided first steps. Points at buttons and moves on when the player has done each thing. */
@@ -143,10 +144,10 @@ export class Tutorial {
   }
 
   private render(): void {
-    const t = this.c.state.tutorial;
+    const tut = this.c.state.tutorial;
     const i = this.index;
     const step = STEPS[i];
-    if (!step || t.done) {
+    if (!step || tut.done) {
       this.bubble.hidden = true;
       this.ring.hidden = true;
       return;
@@ -154,11 +155,11 @@ export class Tutorial {
     this.lastStep = i;
     clear(this.bubble);
     this.bubble.hidden = false;
-    const skip = h('button', { class: 'tut-skip', type: 'button' }, 'Skip tutorial');
+    const skip = h('button', { class: 'tut-skip', type: 'button' }, t('tutorial.skip'));
     skip.addEventListener('click', () => this.go(STEPS.length));
     const actions = h('div', { class: 'tut-actions' }, i < STEPS.length - 1 ? skip : '');
     if (step.button) {
-      const b = h('button', { class: 'btn primary', type: 'button' }, step.button);
+      const b = h('button', { class: 'btn primary', type: 'button' }, typeof step.button === 'function' ? step.button() : step.button);
       b.addEventListener('click', () => this.go(i + 1));
       actions.append(b);
     }
@@ -167,7 +168,7 @@ export class Tutorial {
     const face = h('div', { class: 'tut-face' });
     if (uiArt.senseiPortrait) face.innerHTML = uiArt.senseiPortrait(step.mood ?? 'calm');
     else face.append(icon(icons.toadstool));
-    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, `Step ${i + 1} of ${STEPS.length}`), this.text, actions));
+    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, actions));
   }
 
   private stepText(step: Step): string {

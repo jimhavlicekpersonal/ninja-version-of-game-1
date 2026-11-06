@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { isolateName } from '../../gameplay/sim/social/names';
 /**
  * Gang Wars in the Gang tab (roadmap step 67): find a war (leader), the
@@ -105,7 +106,7 @@ export class GangWarUi {
       );
       if (w.myIndex !== null) body.append(h('button', { class: 'btn ghost', type: 'button', disabled: this.busy, onclick: () => void this.run(() => this.d.connection.gangWarBase(), redraw, 'Your war base now matches your village.') }, 'Copy my village into the war'));
     } else if (w.phase === 'battle') {
-      body.append(h('p', {}, h('b', {}, vs), ` · ${score} · ends in ${formatDuration(Math.max(0, w.endsAt - this.now()))}`), h('p', { class: 'muted small' }, w.myIndex === null ? 'You joined after this war started: cheer your Gang on.' : `${w.attacksLeft} attack${w.attacksLeft === 1 ? '' : 's'} left.`));
+      body.append(h('p', {}, h('b', {}, vs), ` · ${score} · ends in ${formatDuration(Math.max(0, w.endsAt - this.now()))}`), h('p', { class: 'muted small' }, w.myIndex === null ? 'You joined after this war started: cheer your Gang on.' : t('war.attacksLeft', { n: w.attacksLeft })));
     } else {
       const o = w.outcome === 'win' ? 'Victory!' : w.outcome === 'loss' ? 'Defeat' : 'A draw';
       body.append(h('p', {}, h('b', {}, `${o} ${vs}`), ` · ${score}`));
@@ -125,7 +126,7 @@ export class GangWarUi {
 
   private enemyRow(w: GangWarView, b: GangWarBaseView, redraw: () => void): HTMLElement {
     const r = b.relay;
-    const relayText = r && r.strikes ? ` · relay: ${r.strikes} strike${r.strikes === 1 ? '' : 's'} so far (${stars(r.stars)} ${Math.round(r.destruction)}%, last by ${r.lastBy})` : '';
+    const relayText = r && r.strikes ? t('war.relay', { n: r.strikes, stars: stars(r.stars), pct: Math.round(r.destruction), by: r.lastBy ?? '' }) : '';
     const busy = r?.busy ? ' · a Gang mate is striking it now' : '';
     const can = w.phase === 'battle' && w.attacksLeft > 0 && !!this.d.onAttack;
     const go = (relay: boolean) => {

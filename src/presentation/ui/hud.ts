@@ -1,3 +1,4 @@
+import { language, languageCoverage, languagePreference, languages, READY_COVERAGE, setLanguagePreference, t } from './i18n';
 import { Capacitor } from '@capacitor/core';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
@@ -319,15 +320,15 @@ export class Hud {
       h(
         'div',
         { class: 'group' },
-        h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Settings', onclick: () => this.openSettings() }, icon(icons.gear)),
-        h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Battle log', onclick: () => this.openLog() }, icon(icons.scroll)),
-        h('button', { class: 'round-btn', type: 'button', 'aria-label': 'Army', onclick: () => this.openTraining() }, icon(icons.troops), this.armyPill),
+        h('button', { class: 'round-btn', type: 'button', 'data-id': 'settings', 'aria-label': t('hud.settings'), onclick: () => this.openSettings() }, icon(icons.gear)),
+        h('button', { class: 'round-btn', type: 'button', 'data-id': 'log', 'aria-label': t('hud.battleLog'), onclick: () => this.openLog() }, icon(icons.scroll)),
+        h('button', { class: 'round-btn', type: 'button', 'data-id': 'army', 'aria-label': t('hud.army'), onclick: () => this.openTraining() }, icon(icons.troops), this.armyPill),
       ),
       h(
         'div',
         { class: 'group' },
-        h('button', { class: 'round-btn big attack', type: 'button', 'aria-label': 'Attack', onclick: () => this.deps.onAttack() }, icon(icons.swords), h('span', {}, 'Attack')),
-        h('button', { class: 'round-btn big build', type: 'button', 'aria-label': 'Build', onclick: () => this.openShop() }, icon(icons.hammer), h('span', {}, 'Build')),
+        h('button', { class: 'round-btn big attack', type: 'button', 'data-id': 'attack', 'aria-label': t('hud.attack'), onclick: () => this.deps.onAttack() }, icon(icons.swords), h('span', {}, t('hud.attack'))),
+        h('button', { class: 'round-btn big build', type: 'button', 'data-id': 'build', 'aria-label': t('hud.build'), onclick: () => this.openShop() }, icon(icons.hammer), h('span', {}, t('hud.build'))),
       ),
     );
 
@@ -356,7 +357,7 @@ export class Hud {
       const badge = h('span', { class: 'badge' });
       badge.hidden = true;
       this.railBadges[label] = badge;
-      const b = h('button', { class: 'round-btn', type: 'button', 'aria-label': label, title: label, onclick: onClick }, icon(ic), badge, extra ?? null);
+      const b = h('button', { class: 'round-btn', type: 'button', 'data-id': label.toLowerCase(), 'aria-label': t(`rail.${label}`), title: t(`rail.${label}`), onclick: onClick }, icon(ic), badge, extra ?? null);
       this.railBtns[label] = b;
       return b;
     };
@@ -382,6 +383,32 @@ export class Hud {
   // ------------------------------------------------------------ refresh
 
   private tutorialWasDone = false;
+
+  /**
+   * Report section 5 step 9: the language, a device preference (never in the save). "Automatic" follows the
+   * device. Only languages whose interface is mostly translated are offered; the rest arrive with the
+   * translation sessions (locales/CLAUDE.md). A change reloads after saving, so nothing is lost.
+   */
+  private languageRow(): HTMLElement {
+    const wrap = h('div', { class: 'language-row' });
+    const select = h('select', { 'aria-label': t('settings.language') }) as HTMLSelectElement;
+    const pref = languagePreference();
+    select.append(h('option', { value: 'auto' }, t('settings.languageAuto', { name: language().native })));
+    void (async () => {
+      for (const l of languages()) {
+        if ((await languageCoverage(l.code)) < READY_COVERAGE) continue;
+        const o = h('option', { value: l.code, lang: l.code }, l.native) as HTMLOptionElement;
+        if (pref === l.code) o.selected = true;
+        select.append(o);
+      }
+    })();
+    select.addEventListener('change', () => {
+      setLanguagePreference(select.value === 'auto' ? null : select.value);
+      void this.c.persist().catch(() => false).finally(() => location.reload());
+    });
+    wrap.append(h('h3', {}, t('settings.language')), select, h('p', { class: 'muted small' }, t('settings.languageNote')));
+    return wrap;
+  }
 
   /** The one contextual notifications question (never during the tutorial, never twice on a device). */
   private async askNotificationsOnce(): Promise<void> {
@@ -630,7 +657,7 @@ export class Hud {
     if (conn.newDefenses > 0) {
       const n = conn.newDefenses;
       conn.newDefenses = 0;
-      this.toast(`${n} player${n > 1 ? 's' : ''} raided your village. See the battle log.`, 'info');
+      this.toast(t('toast.raided', { n }), 'info');
     }
   }
 
@@ -815,7 +842,7 @@ export class Hud {
     if (sync.active) {
       box.append(
         h('p', { class: 'muted small' }, 'Your village is kept on the server: every change to its resources, buildings, army and research is checked there, so it cannot be lost with this device. What you do is sent as you play; while offline it waits and goes when you reconnect.'),
-        h('p', { class: 'small' }, sync.pending ? `${sync.pending} action${sync.pending === 1 ? '' : 's'} waiting to send.` : 'Everything is sent.'),
+        h('p', { class: 'small' }, sync.pending ? t('sync.pending', { n: sync.pending }) : 'Everything is sent.'),
       );
       const list = h('div', { class: 'events' }, 'Loading…');
       const ledger = h('details', {}, h('summary', {}, 'Recent changes'), list);
@@ -1020,7 +1047,7 @@ export class Hud {
     if (!ok) return;
     try {
       const n = await this.deps.connection.revokeOtherSessions();
-      this.toast(n ? `Signed out ${n} other device${n === 1 ? '' : 's'}.` : 'No other device was signed in.', 'success');
+      this.toast(n ? t('sessions.signedOut', { n }) : 'No other device was signed in.', 'success');
     } catch (e) {
       this.toast((e as Error).message, 'error');
     }
@@ -1162,7 +1189,7 @@ export class Hud {
     const capped = new Set(items.filter((u) => u.kind === 'levelCap').map((u) => u.type)).size;
     const shown = parts.slice(0, 3);
     if (parts.length > 3) shown.push(`${parts.length - 3} more`);
-    if (capped) shown.push(`higher levels for ${capped} building${capped > 1 ? 's' : ''}`);
+    if (capped) shown.push(t('unlocks.capped', { n: capped }));
     const troops = troopCapUnlock(hallLevel(this.c.state, gd), gd);
     if (troops) shown.push(`troop level ${troops.to}`);
     return shown.join(', ');
@@ -1207,16 +1234,16 @@ export class Hud {
     let text = '';
     let action: (() => void) | null = null;
     if (o.kind === 'chest') {
-      [ic, text, action] = [icons.chest, 'Your daily rewards are ready', () => this.daily.openDaily()];
+      [ic, text, action] = [icons.chest, t('objective.chest'), () => this.daily.openDaily()];
     } else if (o.kind === 'raid') {
-      [ic, text, action] = [icons.swords, 'Your army is ready: raid a rival', () => this.deps.onAttack()];
+      [ic, text, action] = [icons.swords, t('objective.raid'), () => this.deps.onAttack()];
     } else if (o.kind === 'upgrade') {
-      [ic, text, action] = [icons.hammer, o.keep ? `Upgrade your Clan Keep to Lv ${o.toLevel}` : `Upgrade ${name(o.type)} to Lv ${o.toLevel}`, () => this.bus.emit('select', o.buildingId)];
+      [ic, text, action] = [icons.hammer, o.keep ? t('objective.keep', { level: o.toLevel }) : t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
     } else if (o.kind === 'save') {
       const need = (Object.entries(o.missing) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => `${formatCompact(v)} ${RES_LABEL[k]}`).join(' + ');
-      [ic, text, action] = [icons.acorns, `${need} more for ${name(o.type)} Lv ${o.toLevel}: collect or raid`, () => this.bus.emit('select', o.buildingId)];
+      [ic, text, action] = [icons.acorns, t('objective.save', { need, building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
     } else if (o.kind === 'builders') {
-      [ic, text] = [icons.clock, `Next Artisan free in ${formatDuration(o.freeAt - now)}`];
+      [ic, text] = [icons.clock, t('objective.builders', { time: formatDuration(o.freeAt - now) })];
     }
     const sig = `${o.kind}|${text}`;
     this.objectiveChip.hidden = o.kind === 'none';
@@ -1227,7 +1254,7 @@ export class Hud {
     this.objectiveChip.append(icon(ic), h('span', {}, text));
     if (action) this.objectiveChip.append(h('span', { 'aria-hidden': 'true' }, '▸'));
     this.objectiveChip.disabled = !action;
-    this.objectiveChip.setAttribute('aria-label', `Next: ${text}`);
+    this.objectiveChip.setAttribute('aria-label', t('objective.aria', { text }));
   }
 
   private renderUnlockChip(): void {
@@ -1241,7 +1268,7 @@ export class Hud {
     const n = items.length + troops;
     this.unlocksEl.title = `Clan Keep Lv ${level + 1} unlocks: ${this.unlockSummary(items)}`;
     this.unlocksEl.setAttribute('aria-label', this.unlocksEl.title);
-    this.unlocksEl.append(icon(icons.toadstool), h('span', { class: 'unlock-text' }, h('b', {}, `Keep Lv ${level + 1}`), ` · ${n} unlock${n === 1 ? '' : 's'} `, h('span', { 'aria-hidden': 'true' }, '▸')));
+    this.unlocksEl.append(icon(icons.toadstool), h('span', { class: 'unlock-text' }, h('b', {}, `Keep Lv ${level + 1}`), ` · ${t('unlocks.chip', { n })} `, h('span', { 'aria-hidden': 'true' }, '▸')));
   }
 
   private openUnlocks(): void {
@@ -1598,7 +1625,7 @@ export class Hud {
   }
 
   private backupTitle(b: VillageBackup): string {
-    return `Clan Keep ${b.keep} · ${b.warriors} warrior${b.warriors === 1 ? '' : 's'} · ${b.honor} honor`;
+    return t('player.summary', { n: b.warriors, keep: b.keep, honor: b.honor });
   }
 
   private async restoreVillage(key: string): Promise<void> {
@@ -1894,6 +1921,7 @@ export class Hud {
     );
 
     // Graphics
+    body.append(this.languageRow());
     body.append(h('h3', {}, 'Graphics'), this.qualityRow());
 
     // Privacy and help (crash reports are a privacy choice, so they sit here)

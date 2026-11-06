@@ -1,3 +1,4 @@
+import { initLanguage } from './presentation/ui/i18n';
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
@@ -187,6 +188,8 @@ async function boot(): Promise<void> {
   crashReporter.install();
   const debugTime = sandbox ? createDebugTime() : { offsetMs: () => 0, skip: () => undefined };
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
+  // Report section 5 step 9: the player's language (stored choice, else the device's), before any game text shows.
+  await initLanguage();
   bootStatus('Opening your village…');
   const [{ store, events, db }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
   bootStore = store;

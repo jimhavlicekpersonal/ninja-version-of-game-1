@@ -2,6 +2,7 @@
  * Daily chest (odds always shown before opening, free, one a day) and the
  * limited-time events panel (fixed schedule, real countdowns).
  */
+import { t } from './i18n';
 import { chestContents, chestOdds, chestReady, nextChestAt, streakAfterClaim, streakJadeDue } from '../../gameplay/sim/daily';
 import { activeEvents, upcomingEvents, type EventWindow } from '../../gameplay/sim/events';
 import { goalEventView } from '../../gameplay/sim/goalEvents';
@@ -47,7 +48,7 @@ export class DailyUi {
     const grid = h('div', { class: 'calendar-grid', role: 'list' });
     for (const d of view.days) {
       const isNext = d.day === view.next;
-      const label = d.reward.skin ? 'Keep look' : '';
+      const label = d.reward.skin ? t('calendar.look') : '';
       grid.append(
         h(
           'div',
@@ -59,18 +60,18 @@ export class DailyUi {
     }
     const actions = h('div', { class: 'actions' });
     if (view.ready) {
-      const btn = h('button', { class: 'btn primary', type: 'button' }, icon(icons.check), ` Claim day ${view.next}`);
+      const btn = h('button', { class: 'btn primary', type: 'button' }, icon(icons.check), t('calendar.claim', { n: view.next }));
       btn.addEventListener('click', () => {
         const r = c.dispatch({ type: 'claimCalendar' });
         if (!r.ok) this.kit.toast(r.message, 'error');
-        else this.kit.toast(view.days[view.next - 1].reward.skin ? 'A new Keep look is yours: Store → Looks.' : `Day ${view.next} claimed.`, 'success');
+        else this.kit.toast(view.days[view.next - 1].reward.skin ? t('calendar.gotLook') : t('calendar.claimed', { n: view.next }), 'success');
         redraw();
       });
       actions.append(btn);
     } else {
-      actions.append(h('p', { class: 'muted' }, `Next calendar day in ${formatDuration(view.nextAt - now)}.`));
+      actions.append(h('p', { class: 'muted' }, t('calendar.next', { time: formatDuration(view.nextAt - now) })));
     }
-    wrap.append(h('h3', {}, '28-day calendar'), h('p', { class: 'muted small' }, 'One reward a day, the same for everyone, never random and never sold. Miss a day and nothing is lost: the next claim is the next day on the list. Day 28 gives a Keep look.'), grid, actions);
+    wrap.append(h('h3', {}, t('calendar.title')), h('p', { class: 'muted small' }, t('calendar.about')), grid, actions);
     return wrap;
   }
 
@@ -132,7 +133,7 @@ export class DailyUi {
         const label = gd.daily.chest.outcomes.find((o) => o.id === opened!.outcome)?.label ?? opened.outcome;
         const notes: string[] = [];
         if (opened.skipped) notes.push(`A free skip covered ${opened.skipped === 1 ? 'the day' : `${opened.skipped} days`} you missed.`);
-        if (opened.steppedBack) notes.push(`You missed ${opened.steppedBack} day${opened.steppedBack > 1 ? 's' : ''} without a skip, so your streak moved back ${opened.steppedBack} step${opened.steppedBack > 1 ? 's' : ''}.`);
+        if (opened.steppedBack) notes.push(t('daily.missed', { n: opened.steppedBack }));
         // Only what was really added is shown as received; anything that did not fit is listed as such.
         const lost = opened.overflow && Object.values(opened.overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, 'Did not fit in your storage: ', rewardChips(opened.overflow)) : null;
         body.append(h('div', { class: 'chest-result' }, h('b', {}, `You got: ${label}`), rewardChips(opened.grants), lost, ...notes.map((n) => h('p', { class: 'muted small' }, n))));
@@ -154,7 +155,7 @@ export class DailyUi {
 
       const actions = h('div', { class: 'actions' });
       if (ready) {
-        const btn = h('button', { class: 'btn primary', type: 'button' }, icon(icons.chest), " Open today's chest (free)");
+        const btn = h('button', { class: 'btn primary', type: 'button' }, icon(icons.chest), t('daily.open'));
         btn.addEventListener('click', async () => {
           // The chest is one a day: if storage is too full for it, say so before it is used up.
           const risk = dailyChestOverflowRisk(c.state, c.now(), gd);
@@ -174,7 +175,7 @@ export class DailyUi {
         });
         actions.append(btn);
       } else {
-        actions.append(h('p', { class: 'muted' }, `Next chest in ${formatDuration(nextChestAt(now, gd) - now)}.`));
+        actions.append(h('p', { class: 'muted' }, t('daily.next', { time: formatDuration(nextChestAt(now, gd) - now) })));
       }
       body.append(actions);
       body.append(this.calendarSection(render));

@@ -3,6 +3,7 @@
  * same screen shows the offline bot Grove or a real Grove on a server.
  * The Grove Lodge (donated troops) and raid history are village state.
  */
+import { t } from './i18n';
 import { REPORT_REASONS, type ReportReason } from '../../backend/net/protocol';
 import type { GroveSnapshot, GroveSource, ReportTarget } from '../../backend/social/groveSource';
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
@@ -367,7 +368,7 @@ export class GroveUi {
     const left = p.attacksLeft;
     body.append(
       h('div', { class: 'raid-score' }, h('div', {}, h('b', {}, 'Us'), h('span', { class: 'big' }, `★ ${p.ours}`)), h('div', { class: 'muted' }, 'vs'), h('div', {}, h('b', {}, h('bdi', {}, p.enemyName)), snap.kind === 'local' ? h('div', { class: 'muted small' }, 'computer clan') : null, h('span', { class: 'big' }, `★ ${p.theirs}`))),
-      h('p', { class: 'muted small' }, p.eligible ? `Ends in ${formatDuration(p.end - now)} · You have ${left} attack${left === 1 ? '' : 's'} left.` : `Ends in ${formatDuration(p.end - now)} · You joined during this raid, so you can attack from next week.`),
+      h('p', { class: 'muted small' }, p.eligible ? t('raid.endsAttacks', { n: left, time: formatDuration(p.end - now) }) : `Ends in ${formatDuration(p.end - now)} · You joined during this raid, so you can attack from next week.`),
       h('h3', {}, 'Enemy bases'),
     );
     for (const b of p.bases) {

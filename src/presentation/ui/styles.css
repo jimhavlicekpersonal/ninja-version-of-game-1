@@ -884,3 +884,16 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 
 /* Report section 5 step 8: the clan hero's card. */
 .troop-card.hero { box-shadow: 0 0 0 2px #c8402f, 0 2px 6px rgba(0, 0, 0, .35); }
+
+/*
+ * Report section 5 step 9 (art F15, compliance L04). Fonts are never downloaded (owner decision): the two
+ * display fonts are Latin subsets, so every other script uses the phone's own fonts, at a bolder weight for
+ * titles and big labels so they keep their presence.
+ */
+html[data-script]:not([data-script="Latn"]) { --font-display: var(--font-fallback); }
+html[data-script]:not([data-script="Latn"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
+/* Right-to-left (Arabic, Hebrew, Urdu): text and flex rows follow `dir`; the fixed edges are mirrored here. */
+html[dir="rtl"] .side-rail { right: auto; left: calc(8px + var(--safe-l)); }
+html[dir="rtl"] .b-left { left: auto; right: calc(8px + var(--safe-r)); }
+html[dir="rtl"] .b-right { right: auto; left: calc(8px + var(--safe-l)); }
+html[dir="rtl"] .objective-chip, html[dir="rtl"] .log-row { text-align: right; }

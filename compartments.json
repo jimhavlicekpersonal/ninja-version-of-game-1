@@ -35,7 +35,8 @@
         "art",
         "gameplay",
         "control",
-        "backend"
+        "backend",
+        "locales"
       ],
       "contracts": [
         "src/presentation/render/iso.ts"

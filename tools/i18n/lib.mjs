@@ -151,7 +151,8 @@ export function syncWorksheet(src, ws) {
 // ------------------------------------------------------------------ checks
 
 const PLACEHOLDER = /\{[A-Za-z0-9_]+\}/g;
-const placeholders = (s) => (s.match(PLACEHOLDER) ?? []).sort().join(' ');
+// As a set: ICU plural branches repeat placeholders, and a language may add branches (few, many) the English lacks.
+const placeholders = (s) => [...new Set(s.match(PLACEHOLDER) ?? [])].sort().join(' ');
 
 const SCRIPT = {
   Latn: /\p{Script=Latin}/u,

@@ -148,7 +148,8 @@ describe('F20: the taught smoke tactic protects warriors', () => {
 
   it('the tutorial and hints teach smoke over your warriors', async () => {
     const fs = await import('node:fs');
-    const tut = fs.readFileSync('src/presentation/ui/tutorial.ts', 'utf8');
+    // The tutorial's English lives in locales/en/ui.json since the text layer (report section 5 step 9).
+    const tut = fs.readFileSync('src/presentation/ui/tutorial.ts', 'utf8') + fs.readFileSync('locales/en/ui.json', 'utf8');
     expect(tut).not.toMatch(/tap the Kunai Tower: inside the smoke it can only see close up/);
     expect(tut).toMatch(/warriors inside the smoke can only be shot from close up/);
     expect(data.battle.abilities.smoke_bomb.description).toMatch(/over your warriors/);
