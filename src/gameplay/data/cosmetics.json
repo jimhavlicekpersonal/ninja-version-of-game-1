@@ -29,6 +29,30 @@
       "spots": "#ffffff"
     },
     {
+      "id": "jade_pagoda",
+      "name": "Jade Pagoda",
+      "moonstones": 450,
+      "minKeep": 5,
+      "cap": "#2f7d62",
+      "spots": "#e8d9a8"
+    },
+    {
+      "id": "crimson_shogun",
+      "name": "Crimson Shogun",
+      "moonstones": 650,
+      "minKeep": 8,
+      "cap": "#9b1f2b",
+      "spots": "#f0c45a"
+    },
+    {
+      "id": "midnight_shadow",
+      "name": "Midnight Shadow",
+      "moonstones": 900,
+      "minKeep": 11,
+      "cap": "#1f2433",
+      "spots": "#9fb4ff"
+    },
+    {
       "id": "lantern_elder",
       "name": "Lantern Festival",
       "moonstones": 0,

@@ -83,8 +83,24 @@ export function chestOutcome(seed: number, day: number, data: GameData): string 
   return list[list.length - 1].id;
 }
 
-/** Contents of an outcome at a hall level and streak step (resources scale; Moonstones don't, except the streak's own bonus). */
-export function chestContents(outcomeId: string, hall: number, step: number, data: GameData): Cost {
+/**
+ * Is the streak step's own Jade due in the chest opened on `day`? Report section 5 step 6 (economy E05):
+ * the top step used to pay its Jade every day for as long as the streak held (~150 a month on its own);
+ * it is now paid at most once every `jadeEveryDays`.
+ */
+export function streakJadeDue(d: DailyState, day: number, data: GameData): boolean {
+  const every = data.daily.streak.jadeEveryDays ?? 1;
+  return !d.history.some((h) => (h.streakJade ?? 0) > 0 && day - h.day < every);
+}
+
+/** The streak step's own Jade (0 when the step has none). */
+export function streakJade(step: number, data: GameData): number {
+  const steps = data.daily.streak.steps;
+  return steps[Math.max(1, Math.min(steps.length, step)) - 1].moonstones ?? 0;
+}
+
+/** Contents of an outcome at a hall level and streak step (resources scale; Moonstones don't, except the streak's own bonus, when `withStreakJade`). */
+export function chestContents(outcomeId: string, hall: number, step: number, data: GameData, withStreakJade = true): Cost {
   const o = data.daily.chest.outcomes.find((x) => x.id === outcomeId);
   if (!o) return {};
   const steps = data.daily.streak.steps;
@@ -92,6 +108,6 @@ export function chestContents(outcomeId: string, hall: number, step: number, dat
   const scaled = scaleReward(o.reward, hall, data);
   const out: Cost = {};
   for (const [k, v] of Object.entries(scaled) as [ResourceKind, number][]) out[k] = k === 'moonstones' ? v : Math.round(v * s.bonus);
-  if (s.moonstones) out.moonstones = (out.moonstones ?? 0) + s.moonstones;
+  if (s.moonstones && withStreakJade) out.moonstones = (out.moonstones ?? 0) + s.moonstones;
   return out;
 }

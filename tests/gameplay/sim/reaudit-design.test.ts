@@ -249,7 +249,7 @@ describe('Clan Stipend and the $0.99 pack (item 9)', () => {
     const s2 = { ...s, profile: { ...s.profile, under18: false } };
     const refused = canPurchase(s2, st.id, clock.now(), data);
     expect(refused.ok).toBe(false);
-    const used = { ...s2, stipend: { left: 0, lastDay: s2.stipend.lastDay } };
+    const used = { ...s2, stipend: { left: 0, lastDay: s2.stipend.lastDay, jade: 0 } };
     expect(canPurchase(used, st.id, clock.now(), data).ok).toBe(true);
   });
 
@@ -273,7 +273,7 @@ describe('Clan Stipend and the $0.99 pack (item 9)', () => {
     const out = migrate(old, data);
     expect(out.version).toBe(SAVE_VERSION);
     expect(SAVE_VERSION).toBeGreaterThanOrEqual(16);
-    expect(out.village.stipend).toEqual({ left: 0, lastDay: -1 });
+    expect(out.village.stipend).toEqual({ left: 0, lastDay: -1, jade: 0 });
     expect(out.village.goalEvent).toBeNull();
     expect(out.village.stats.defensesFaced).toBe(0);
     expect(out.village.stats.raidDestruction).toBe(0);

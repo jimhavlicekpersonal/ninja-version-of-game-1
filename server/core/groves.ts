@@ -4,6 +4,7 @@ import { isolateName } from '../../src/gameplay/sim/social/names';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummary, GroveView, GrovesResponse, InboxResponse, MemberView, RequestView, RequestsResponse } from '../../src/backend/net/protocol';
 import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
+import { requireRules } from './rules';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { chosenName } from './identity';
 import { blockedIds, checkNotMuted } from './moderation';
@@ -66,6 +67,7 @@ export async function listGroves(ctx: ServerContext, me: Player, query: string):
 }
 
 export async function createGrove(ctx: ServerContext, me: Player, name: unknown): Promise<GroveView> {
+  requireRules(ctx, me);
   if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
   const clean = chosenName(name, ctx);
   const colors = ctx.data.social.colors;
@@ -143,6 +145,7 @@ export async function postChatIn(ctx: ServerContext, me: Player, scopeId: string
   if (!raw) throw new ApiError(400, 'bad_request', 'Type a message first.');
   if (raw.length > CHAT_MAX_CHARS) throw new ApiError(400, 'bad_request', `Keep messages under ${CHAT_MAX_CHARS} characters.`);
   checkNotMuted(ctx, me);
+  requireRules(ctx, me);
   // Under 13 (re-audit): the fixed phrases only, never free text.
   await checkChatAllowed(ctx, me, raw);
   if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');

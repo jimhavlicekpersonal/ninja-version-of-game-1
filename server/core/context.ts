@@ -20,6 +20,8 @@ export interface ServerContext {
   /** The signed balance bundle in force (step 76; `data` already has its numbers), or null. */
   balance: import('../../src/backend/net/balanceBundle').BalanceBundle | null;
   /** Experiment arms (report section 5 step 5): offer-timing variants of `balance`, picked by each game itself. */
+  /** Chat and chosen names need the current community rules accepted (report section 5 step 7); false only in tools. */
+  requireRules?: boolean;
   balanceCohorts?: import('../../src/backend/net/balanceBundle').BalanceBundle[];
   now(): number;
   /** Unique ids. */

@@ -13,6 +13,8 @@ Everything that can be built and tested without your personal accounts is in the
 
 ## 1b. Android: the Google Play release (signed AAB, owner)
 
+**Store age signals (report section 5 step 7, compliance C01/C02; owner).** Google Play: request Play Age Signals API access for the app in Play Console (App content / Policy → Age signals) before release; until it is granted `requestAgeSignalsAccess` answers nothing and the game falls back to its own age screen, except where Play answers `VERIFICATION_REQUIRED`, when the game tells the player to verify in the Play Store. Test on a Play-installed build in a user-choice region and in a US state with an app-store age law. iPhone: build with the Xcode 26.5 SDK, then add `AgeRangeService.requiredRegulatoryFeatures` and the significant-update acknowledgement to `ios/App/App/TkAgePlugin.swift` (not written yet: the API could not be compiled or read where this was prepared), decide with legal what counts as a significant update, and turn on App Store Server Notifications V2 (the server already handles `RESCIND_CONSENT` for accounts it can trace through a purchase).
+
 The `aab` job of the Android workflow builds the Play release (audit GLOBAL-017): the game with `VITE_PLAY_BILLING=1` (Play Billing Library 9.1.0, `android/variables.gradle`), a `versionCode` that grows with every run, signed with your **upload key**. Without the key it builds nothing and the run shows a warning saying which secrets are missing; the debug APK is unaffected.
 
 1. **Make an upload key once** (keep the file and passwords safe; with Play App Signing a lost upload key can be reset, the app signing key never leaves Google):
@@ -75,7 +77,7 @@ Apple only builds iPhone apps on a Mac. The **iOS TestFlight (manual)** workflow
 3. On the iPhone, install **TestFlight** from the App Store, accept the invite and install Toadstool Kingdoms.
 4. **Sandbox purchase:** in the game, open the Store and buy a pack. TestFlight purchases use Apple's sandbox, so you are **not charged**. Apple's purchase sheet appears after the game's own confirm step.
 
-**Testing purchases on a Mac (optional):** `ios/App/Products.storekit` lists every product. In Xcode, choose **Product → Scheme → Edit Scheme → Run → Options → StoreKit Configuration** and select it (drag it into the project first) to test purchases in the simulator without App Store Connect.
+**Testing purchases on a Mac (optional):** `ios/App/Products.storekit` lists every product (generated from `store.json` by `npm run store:storekit`; a test keeps them equal, report section 5 step 7). In Xcode, choose **Product → Scheme → Edit Scheme → Run → Options → StoreKit Configuration** and select it (drag it into the project first) to test purchases in the simulator without App Store Connect.
 
 ## 3. Online play (real players instead of bots)
 
@@ -175,7 +177,8 @@ Create these in App Store Connect (In-App Purchases) and the Play Console (In-ap
 | `offer_builder` | `offer_builder` | Consumable | 4.99 | Builder offer |
 | `offer_war_prep` | `offer_war_prep` | Consumable | 2.99 | War prep offer |
 | `offer_rebuild` | `offer_rebuild` | Consumable | 2.99 | Rebuild offer |
-| `clan_stipend` | `clan_stipend` | Consumable (describe it as "30 daily Jade payments", never "monthly": nothing renews) | 2.99 | Clan Stipend: 30 payments of 20 Jade, one claimable per UTC day, none lost; buyable again once all are claimed |
+| `offer_keep` | `offer_keep` | Consumable | 4.99 | Keep Celebration offer: 300 Jade plus supplies sized for the buyer's Keep, offered when a Keep level is reached (report section 5 step 6) |
+| `clan_stipend` | `clan_stipend` | Consumable (describe it as "30 daily Jade payments", never "monthly": nothing renews) | 2.99 | Clan Stipend: 30 payments of 12 Jade (was 20 until report section 5 step 6; stipends bought before keep 20), one claimable per UTC day, none lost; buyable again once all are claimed |
 
 These two were missing from this table before 2026-11-06 (state-of-the-game report, section 5 step 4, economy E08): a store set up from it would have shown "Not sold here" on the two cheapest products. `tests/backend/release-config.test.ts` now checks that every product in `store.json` `storeProductIds` is listed here.
 

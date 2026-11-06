@@ -92,6 +92,8 @@ const toPlayer = (r: Row): Player => ({
   staff: r.staff === true,
   duelBase: (r.duel_base as Player['duelBase']) ?? null,
   squadLeftAt: num(r.squad_left_at),
+  rulesVersion: num(r.rules_version),
+  rulesAcceptedAt: num(r.rules_accepted_at),
 });
 
 /** Postgres said a unique key (name or friend code) is already used. */
@@ -637,6 +639,8 @@ export class PgRepo implements Repo {
       staff: 'staff',
       duelBase: 'duel_base',
       squadLeftAt: 'squad_left_at',
+      rulesVersion: 'rules_version',
+      rulesAcceptedAt: 'rules_accepted_at',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];
@@ -1087,10 +1091,18 @@ export class PgRepo implements Repo {
       );
       // Blocks either way and their own reports go; reports about them close, without the evidence text.
       await q('delete from blocks where player_id = $1 or blocked_id = $1', [id]);
-      // Friends and requests go; name holds go (the name is free again).
+      // Friends and requests go. Name holds stay, held by nobody (report section 5 step 7, backend A12): a
+      // deleted player's names are not free at once for someone to pose as them (account.ts holds the current one).
       await q('delete from friendships where a = $1 or b = $1', [id]);
       await q('delete from friend_requests where from_id = $1 or to_id = $1', [id]);
-      await q('delete from name_holds where player_id = $1', [id]);
+      await q('update name_holds set player_id = $2 where player_id = $1', [id, D.id]);
+      // Stored idempotent answers (a village import's answer holds the whole village) go with the account.
+      await q(
+        `delete from idempotency_keys where scope in (
+           select left(token_hash, 32) from players where id = $1
+           union select left(token_hash, 32) from player_tokens where player_id = $1)`,
+        [id],
+      );
       // Duels, tallies and challenges either way; Gang membership and invites (the core hands leadership over first).
       await q('delete from duels where attacker_id = $1 or defender_id = $1', [id]);
       await q('delete from duel_tallies where attacker_id = $1 or defender_id = $1', [id]);

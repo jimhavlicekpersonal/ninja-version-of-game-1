@@ -70,7 +70,7 @@ describe('A5: refunds take back everything; what was spent is a debt', () => {
     const old = { ...serialize(s, T), version: 16 };
     const out = migrate(structuredClone(old), data);
     expect(out.version).toBe(SAVE_VERSION);
-    expect(SAVE_VERSION).toBe(17);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(17);
     expect(out.village).toEqual(old.village);
   });
 });

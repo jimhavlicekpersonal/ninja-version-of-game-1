@@ -124,6 +124,8 @@ export interface ConnectionOptions {
   /** The balance data version this game runs with (step 76 bundles change it); sent as X-Data-Version. */
   dataVersion?: () => string;
   /** Balance bundles (step 76): what the server offers is checked and kept for the next start. */
+  /** The community rules version accepted on this device (0: none); sent to the server (report section 5 step 7). */
+  rulesAccepted?: () => number;
   balance?: { offer(b: import('./balanceBundle').BalanceBundle | null, arms?: import('./balanceBundle').BalanceBundle[]): Promise<string> };
   /** Where "Update Kagemura" sends the player (the App Store / Play listing); the web build reloads instead. */
   updateUrl?: string;
@@ -590,6 +592,29 @@ export class Connection {
     }
   }
 
+  /**
+   * Report section 5 step 7 (compliance C14): the server keeps which community rules this account accepted
+   * (chat and names need them). The HUD calls this when the player agrees; every sync catches up a device that
+   * agreed before this build or while offline (`o.rulesAccepted`, the version accepted on this device).
+   */
+  async acceptRules(): Promise<void> {
+    const port = this.port;
+    if (port && this.online) await this.syncRules(port);
+  }
+
+  private async syncRules(port: ServerPort): Promise<void> {
+    const accepted = this.o.rulesAccepted?.() ?? 0;
+    if (!accepted || !this.server?.features.includes('rules-acceptance') || !port.acceptRules) return;
+    const key = `tk.rules.sent.${this.player?.id ?? ''}`;
+    if (Number(this.kv.get(key)) >= accepted) return;
+    try {
+      const r = await port.acceptRules({ version: accepted });
+      this.kv.set(key, String(r.version));
+    } catch (e) {
+      this.log('Online play: could not send the community rules acceptance', e);
+    }
+  }
+
   /** The server lists moderation notices (feature `notices`). */
   get canNotices(): boolean {
     return this.online && Boolean(this.server?.features.includes('notices') && this.port?.notices);
@@ -785,6 +810,7 @@ export class Connection {
         }
         await this.ensurePlayer(port);
         await this.syncAge(port);
+        await this.syncRules(port);
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
         // The real Grove replaces the bot Grove while playing online.
         if (g.state.grove.joined) g.dispatch({ type: 'leaveLocalGrove' });

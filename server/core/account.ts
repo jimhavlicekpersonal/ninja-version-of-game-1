@@ -4,9 +4,9 @@
  * form (GET /account/delete) that staff verify and carry out through the admin
  * API, for players who can no longer open the game.
  */
-import { FRIEND_CODE_ALPHABET } from '../../src/backend/net/names';
+import { FRIEND_CODE_ALPHABET, NAME_HOLD_DAYS } from '../../src/backend/net/names';
 import type { DeletionCodeResponse, DeletionRequestBody, DeletionRequestResponse } from '../../src/backend/net/protocol';
-import type { DeletionRequest, Player } from '../repo';
+import { DELETED_PLAYER, type DeletionRequest, type Player } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { leaveGrove } from './groves';
 import { revokeAppleTokens } from './links';
@@ -23,6 +23,9 @@ export async function deleteAccount(ctx: ServerContext, me: Player): Promise<voi
   if (await ctx.repo.squadOf(me.id)) await leaveSquad(ctx, me, { quiet: true });
   const appleTokens = await ctx.repo.linkTokensOf(me.id).catch(() => []);
   await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
+  // Report section 5 step 7 (backend A12): the name stays taken for NAME_HOLD_DAYS, so nobody takes it at once
+  // to pose as the deleted player (an ex-Alliance leader, a known rival).
+  if (me.nameKey) await ctx.repo.holdName(me.nameKey, DELETED_PLAYER.id, ctx.now() + NAME_HOLD_DAYS * 24 * HOUR);
   await ctx.board.remove(me.id);
   await revokeAppleTokens(ctx, appleTokens, 'delete').catch((e) => ctx.log('warn', 'Sign in with Apple: revocation after deletion failed', { error: String(e) }));
 }

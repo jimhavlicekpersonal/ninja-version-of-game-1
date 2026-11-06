@@ -73,6 +73,7 @@
     ],
     "skipsPerWeek": 1,
     "stepsLostPerMissedDay": 1,
-    "historyDays": 7
+    "historyDays": 7,
+    "jadeEveryDays": 7
   }
 }

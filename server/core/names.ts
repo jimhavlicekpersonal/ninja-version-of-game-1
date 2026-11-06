@@ -15,7 +15,7 @@
  *   digits added, and everyone migrated gets one free change.
  */
 import { NAME_CHANGE_DAYS, NAME_HOLD_DAYS, NAME_MAX, isReservedName, nameKey, nameShapeProblem, tidyName } from '../../src/backend/net/names';
-import { censorText } from '../../src/gameplay/sim/social/grove';
+import { censorText, hasContact } from '../../src/gameplay/sim/social/grove';
 import { nameWidth, sanitizeName } from '../../src/gameplay/sim/social/names';
 import { NameTakenError, type Player } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
@@ -28,6 +28,8 @@ export function nameProblem(ctx: ServerContext, name: string): string | null {
   const shape = nameShapeProblem(name);
   if (shape) return shape;
   if (censorText(name, ctx.data) !== name) return 'That name is not allowed.';
+  // Report section 5 step 7 (compliance C25): "add me on tg 1234567" fit in 24 units and passed.
+  if (hasContact(name)) return 'Names cannot hold links, phone numbers, addresses or messaging-app handles.';
   if (isReservedName(name)) return 'That name is reserved.';
   return null;
 }

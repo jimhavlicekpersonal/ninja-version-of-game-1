@@ -249,6 +249,22 @@ for (const [label, makeRepo] of repoFactories) {
       await expect(w.core.appleNotification({ signedPayload: 'x.y.z' })).rejects.toMatchObject({ status: 400 });
     });
 
+    it('a parent withdrawing consent (RESCIND_CONSENT) stops online play for that account (report section 5 step 7, C02)', async () => {
+      const { w } = await setup();
+      const ann = await adult(w);
+      const intent = await ann.purchaseIntent({ store: 'apple', productId: 'moonstones_1', under18: false });
+      const r = await ann.redeem({ store: 'apple', storeProductId: 'jade_pouch', receipt: appleTxn('jade_pouch', intent.accountToken) });
+      const id = r.transactionId.slice('apple:'.length);
+      const inner = appleTxn('jade_pouch', intent.accountToken, { transactionId: id, originalTransactionId: id });
+      await w.core.appleNotification({ signedPayload: jws({ notificationType: 'RESCIND_CONSENT', notificationUUID: 'c1', data: { bundleId: BUNDLE, environment: 'Sandbox', signedTransactionInfo: inner } }) });
+      await expect(ann.getVillage()).rejects.toMatchObject({ code: 'banned' });
+      // Kept as under 18, logged for staff.
+      expect((await w.repo.getAgeGroup(ann.id))?.under18).toBe(true);
+      expect((await w.repo.staffActions(ann.id, 5))[0]).toMatchObject({ actor: 'app-store', action: 'consent_rescinded' });
+      // Without a transaction the server cannot tell who it was: nothing changes for anyone.
+      await w.core.appleNotification({ signedPayload: jws({ notificationType: 'RESCIND_CONSENT', notificationUUID: 'c2', data: { bundleId: BUNDLE, environment: 'Sandbox' } }) });
+    });
+
     it('checks and consumes Google Play purchases, and revokes voided ones (step 36)', async () => {
       const { w, g } = await setup();
       const ann = await adult(w);

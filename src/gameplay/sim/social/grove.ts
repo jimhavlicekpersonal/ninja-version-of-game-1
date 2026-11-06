@@ -81,6 +81,24 @@ export function filterText(text: string, data: GameData): string {
 }
 
 /**
+ * Messaging apps players use to move someone off the game, also when written around a filter ("d1sc0rd",
+ * "tele gram", "wh@tsapp"): report section 5 step 7 (compliance C25). Each letter accepts its usual
+ * look-alikes and may be split by spaces, dots, dashes or underscores; a handle written after it goes too.
+ */
+const OFF_GAME_APPS = ['discord', 'telegram', 'whatsapp', 'snapchat', 'instagram', 'insta', 'wechat', 'kik'];
+const LOOKALIKE: Record<string, string> = { a: 'a@4', c: 'c(', e: 'e3', g: 'g9', i: 'i1!|l', l: 'l1|i', o: 'o0', s: 's5$', t: 't7+' };
+const SEP = '[\\s._*-]*';
+const HANDLE_RE = new RegExp(
+  `(?<![\\p{L}\\p{N}])(?:${OFF_GAME_APPS.map((w) => [...w].map((ch) => `[${(LOOKALIKE[ch] ?? ch).replace(/[\]\\^-]/g, '\\$&')}]`).join(SEP)).join('|')})(?![\\p{L}\\p{N}])(?:${SEP}[:@]?${SEP}[\\p{L}\\p{N}_#.]{2,})?`,
+  'giu',
+);
+
+/** Does this text carry a way to reach someone off the game (a link, an address, a phone number, a messaging app)? */
+export function hasContact(text: string): boolean {
+  return stripContacts(text) !== text || /\p{N}{6,}/u.test(text.replace(/[\s.()-]/g, ''));
+}
+
+/**
  * Links, email addresses and phone numbers are removed from chat (re-audit: UK Online Safety Act
  * gap; the usual first step of scams and grooming is moving a player off the game).
  */
@@ -89,7 +107,8 @@ export function stripContacts(text: string): string {
     .replace(/\b(?:https?:\/\/|www\.)\S+/giu, '[link removed]')
     .replace(/[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/gu, '[contact removed]')
     .replace(/\b[\p{L}\p{N}-]{2,}\s?(?:\.|\s?dot\s?)\s?(?:com|net|org|io|gg|me|app|xyz|ru|cn|ly|link|site|online|top|info|biz|co)\b(?:\/\S*)?/giu, '[link removed]')
-    .replace(/(?:\+?\d[\s().-]?){7,}/gu, '[contact removed]');
+    .replace(/(?:\+?\d[\s().-]?){7,}/gu, '[contact removed]')
+    .replace(HANDLE_RE, '[contact removed]');
 }
 
 /** Censor without chat's length limit: names already have a grapheme width cap. */

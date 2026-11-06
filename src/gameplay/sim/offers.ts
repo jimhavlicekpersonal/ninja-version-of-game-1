@@ -16,6 +16,13 @@ export function offersAllowed(state: VillageState): boolean {
   return state.profile.under18 === false && (state.profile.ageBand ?? 'adult') === 'adult';
 }
 
+/** Could this offer still be shown to this village some day (it exists, is live, and a once-per-account one is unused)? */
+export function offerCanStillShow(state: VillageState, data: GameData, id: string): boolean {
+  const r = offerRule(data, id);
+  if (!r || r.retired) return false;
+  return !(r.oncePerAccount && (state.offers.lastShown[id] !== undefined || state.offers.bought.includes(id)));
+}
+
 /** Can this offer come back after it ends (a cooldown), or is it once per account? */
 export function offerReturns(rule: OfferRule): boolean {
   return !rule.oncePerAccount;
@@ -38,9 +45,13 @@ export function triggerOffer(state: VillageState, trigger: OfferTrigger, now: nu
     const last = state.offers.lastShown[rule.id];
     if (rule.oncePerAccount && (last !== undefined || state.offers.bought.includes(rule.id))) continue;
     if (last !== undefined && now - last < rule.cooldownHours * HOUR) continue;
+    // Report section 5 step 6 (economy E01): the Starter Pack outranks the Artisan's Bundle. The Bundle fires on
+    // nearly every timed upgrade, so it used to take the session's one offer before the first long wait came.
+    if (rule.afterOffer && state.offers.lastShown[rule.afterOffer] === undefined && !state.offers.bought.includes(rule.afterOffer) && offerCanStillShow(state, data, rule.afterOffer)) continue;
     const hours = Math.max(data.offers.durationHoursMin, Math.min(data.offers.durationHoursMax, rule.durationHours));
     state.offers.active.push({ id: rule.id, shownAt: now, expiresAt: now + hours * HOUR });
     state.offers.lastShown[rule.id] = now;
+    if (trigger === 'first_long_wait') state.flags.longWaitSeen = true;
     return rule;
   }
   return null;

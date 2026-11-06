@@ -24,6 +24,7 @@ import { PurchaseError } from '../payments/apple';
 import type { Player, PurchaseRow, Repo } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult } from './village';
+import { notify } from './moderation';
 
 /** How long an unused intent holds its share of an under-18 player's monthly cap. */
 export const INTENT_HOLD_MS = 30 * MIN;
@@ -337,6 +338,7 @@ export async function appleNotification(ctx: ServerContext, body: { signedPayloa
   }
   ctx.log('info', 'app store notification', { type: n.notificationType, subtype: n.subtype, id: n.notificationUUID, environment: n.environment });
   const t = n.transaction;
+  if (n.notificationType === 'RESCIND_CONSENT') return rescindConsent(ctx, t);
   if (!t) return;
   if (n.notificationType === 'REFUND' || n.notificationType === 'REVOKE') {
     await revoke(ctx, 'apple', { transactionId: t.transactionId }, t.revocationDate ?? ctx.now(), n.notificationType.toLowerCase());
@@ -347,6 +349,35 @@ export async function appleNotification(ctx: ServerContext, body: { signedPayloa
     // (`customerConsented`), which the game does not collect, so nothing is sent (re-audit: documented choice).
     ctx.metrics.count('tk_consumption_requests_total', {});
   }
+}
+
+/** Far future: a suspension that only staff (after a support check) or a new consent lifts. */
+const UNTIL_LIFTED = 8_640_000_000_000_000;
+
+/**
+ * Report section 5 step 7 (compliance C02): a parent or guardian withdrew consent for this app
+ * (App Store Server Notifications `RESCIND_CONSENT`). Apple then stops the app launching on that device;
+ * the server stops the account playing online anywhere else: online play suspended until staff lift it
+ * after a support check, the age group kept as under 18 (no purchases above the cap, no offers), a notice,
+ * and a staff log line. The player is found through the transaction Apple sends (a purchase we credited, or
+ * the purchase intent its appAccountToken names). Without one, staff get a log line and a metric to follow
+ * up by hand: Apple's payload for this type was not available to check here.
+ */
+async function rescindConsent(ctx: ServerContext, t: { transactionId: string; appAccountToken: string | null } | null): Promise<void> {
+  const byPurchase = t ? await ctx.repo.getPurchase('apple', t.transactionId) : null;
+  const byIntent = !byPurchase && t?.appAccountToken ? await ctx.repo.getIntent(t.appAccountToken) : null;
+  const playerId = byPurchase?.playerId ?? byIntent?.playerId ?? null;
+  const player = playerId ? await ctx.repo.getPlayer(playerId) : null;
+  ctx.metrics.count('tk_consent_rescinded_total', { identified: player ? 'yes' : 'no' });
+  if (!player) {
+    ctx.log('warn', 'app store consent rescinded for an account this server cannot identify', { transactionId: t?.transactionId ?? null });
+    return;
+  }
+  const now = ctx.now();
+  await ctx.repo.updatePlayer(player.id, { bannedUntil: UNTIL_LIFTED, banReason: 'A parent or guardian withdrew consent for this game (App Store).' });
+  await ctx.repo.setAgeGroup(player.id, true, now);
+  await ctx.repo.addStaffAction({ id: ctx.uuid(), at: now, actor: 'app-store', action: 'consent_rescinded', playerId: player.id, detail: { transactionId: t?.transactionId ?? null } });
+  await notify(ctx, player.id, 'account', 'A parent or guardian withdrew consent for this game in the App Store, so online play is off for this account. To ask about it, contact support from Settings → Privacy and help.');
 }
 
 /** Google Play Real-time Developer Notifications (Pub/Sub push). */

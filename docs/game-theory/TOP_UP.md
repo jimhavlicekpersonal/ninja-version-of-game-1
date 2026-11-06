@@ -45,7 +45,7 @@ The scale is `(average loot at Keep / average loot at Keep 5) ^ 0.5`, lowered wh
 
 The other way to turn Jade into resources is to finish army training with Jade and raid again. At the flat time price, a two-hour army cost ~37 Jade to finish at every Keep. At Keep 15 its raid then looted what a top-up sells for ~2,428 Jade: a 65× discount, which made the top-up price meaningless to big spenders.
 
-Finishing training now costs the time price × `trainingSkipScaleByHall[keep]`: the top-up scale, never below 1, written by the same tool. Building and research skips keep the plain time price, because they don't feed a loot loop.
+Finishing training now costs the time price × `trainingSkipScaleByHall[keep]`: the top-up scale, never below 1, written by the same tool. Building and research skips keep the plain time price, because they don't feed a loot loop. Report section 5 step 6 (economy E05) made that price ~40% cheaper (`skipCurve`: 1 h 15, 1 day 180, 1 week 720 Jade), so buying time is the rational Jade sink; finishing training reads its own `trainingSkipCurve` (the old 25/300/1,200), so skip-and-raid did not get cheaper.
 
 | Keep | Finish a 2 h army | One raid's loot by top-up | Top-up ÷ skip-and-raid |
 |---|---|---|---|

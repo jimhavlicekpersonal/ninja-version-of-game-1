@@ -55,6 +55,28 @@
     ],
     [
       3600,
+      15
+    ],
+    [
+      86400,
+      180
+    ],
+    [
+      604800,
+      720
+    ]
+  ],
+  "trainingSkipCurve": [
+    [
+      0,
+      0
+    ],
+    [
+      60,
+      1
+    ],
+    [
+      3600,
       25
     ],
     [
@@ -140,14 +162,15 @@
     "offer_builder": "offer_builder",
     "offer_war_prep": "offer_war_prep",
     "offer_rebuild": "offer_rebuild",
-    "clan_stipend": "clan_stipend"
+    "clan_stipend": "clan_stipend",
+    "offer_keep": "offer_keep"
   },
   "stipend": {
-    "$comment": "Clan Stipend: a consumable (not auto-renewing). Buying it adds `payments` daily Jade payments; one can be claimed per UTC day while the game is open. Missed days are not lost: the stipend lasts until every payment is claimed. It can be bought again once no payments are left.",
+    "$comment": "Clan Stipend: a consumable (not auto-renewing). Buying it adds `payments` daily Jade payments; one can be claimed per UTC day while the game is open. Missed days are not lost: the stipend lasts until every payment is claimed. It can be bought again once no payments are left. Report section 5 step 6 (economy E03): 12 Jade a payment (360 for $2.99, 120 Jade/$), so it is the entry product and not the ceiling: the $9.99 Box (600) used to equal a $2.99 stipend. A stipend bought before keeps the Jade it was sold with (save v18 `stipend.jade`).",
     "id": "clan_stipend",
     "name": "Clan Stipend",
     "usd": 2.99,
     "payments": 30,
-    "jadePerPayment": 20
+    "jadePerPayment": 12
   }
 }

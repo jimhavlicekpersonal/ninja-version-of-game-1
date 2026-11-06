@@ -1,4 +1,5 @@
 /** The Grove screen's port: the same actions against the bot Grove and a real Grove on the server. */
+import { COMMUNITY_RULES_VERSION } from '../../../src/backend/net/protocol';
 import { describe, expect, it } from 'vitest';
 import { InProcessServerAdapter } from '../../../server/inProcess';
 import { Analytics, MemoryEventStore } from '../../../src/backend/analytics/events';
@@ -41,7 +42,7 @@ describe('RemoteGroveSource', () => {
     const w = world();
     const c = await game(w, false);
     const port = new InProcessServerAdapter(w.core);
-    const conn = new Connection({ game: c, builtInUrl: 'test.server', kv: kv(), makePort: () => port, log: () => undefined });
+    const conn = new Connection({ game: c, builtInUrl: 'test.server', kv: kv(), makePort: () => port, log: () => undefined, rulesAccepted: () => COMMUNITY_RULES_VERSION });
     const src = new RemoteGroveSource(c, conn);
     expect(src.snapshot().loading).toBe(true);
 
@@ -114,7 +115,7 @@ describe('Report and block in the Alliance screen (roadmap step 15)', () => {
     const w = world();
     const c = await game(w, false);
     const port = new InProcessServerAdapter(w.core);
-    const conn = new Connection({ game: c, builtInUrl: 'test.server', kv: kv(), makePort: () => port, log: () => undefined });
+    const conn = new Connection({ game: c, builtInUrl: 'test.server', kv: kv(), makePort: () => port, log: () => undefined, rulesAccepted: () => COMMUNITY_RULES_VERSION });
     const src = new RemoteGroveSource(c, conn);
     const ben = await w.player('Ben', baseAt(3));
     const g = await ben.createGrove('Mossy Hollow');

@@ -17,6 +17,7 @@ import { isolateName } from '../../src/gameplay/sim/social/names';
 import { filterText } from '../../src/gameplay/sim/social/grove';
 import type { ChatResponse, ChatView, DonateRequest, DonateResponse, RequestsResponse, RequestView, SquadInviteView, SquadMemberView, SquadResponse, SquadView } from '../../src/backend/net/protocol';
 import type { Player, Squad, SquadMember } from '../repo';
+import { requireRules } from './rules';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { chatIn, donateIn, postChatIn, requestsIn, requestTroopsIn } from './groves';
 import { isReservedName } from '../../src/backend/net/names';
@@ -91,6 +92,7 @@ export async function mySquad(ctx: ServerContext, me: Player): Promise<SquadResp
 
 /** POST /v1/squad { name }: found a Gang and lead it. */
 export async function createSquad(ctx: ServerContext, me: Player, name: unknown): Promise<SquadResponse> {
+  requireRules(ctx, me);
   const clean = cleanSquadName(name, ctx);
   if (await ctx.repo.squadOf(me.id)) throw new ApiError(409, 'conflict', 'You are already in a Gang. Leave it first.');
   const wait = canJoinAt(ctx, me);

@@ -367,6 +367,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.sessions, rate('register'), async (req) => core.signIn(req.body as never));
   // Re-audit: account protections (age bands, notices, deletion codes, signing out other devices, Apple notifications).
   app.put(Routes.meAge, rate('moderation'), authed(async (me, req) => core.stateAge(me, req.body as never)));
+  app.put(Routes.meRules, authed(async (me, req) => core.acceptRules(me, req.body as never)));
   app.post(Routes.deletionCode, rate('moderation'), authed(async (me) => core.deletionCode(me)));
   app.get(Routes.notices, authed(async (me) => core.notices(me)));
   app.post(Routes.noticesRead, authed(async (me, req) => core.markNoticesRead(me, body<{ ids: string[] }>(req).ids)));

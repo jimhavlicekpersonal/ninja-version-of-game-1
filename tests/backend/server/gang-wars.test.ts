@@ -3,6 +3,7 @@
  * generated-Gang fallback, prep, solo and relay strikes, the relay hand-off,
  * scoring, chests, and the Gang Rating.
  */
+import { COMMUNITY_RULES_VERSION } from '../../../src/backend/net/protocol';
 import { describe, expect, it } from 'vitest';
 import { buildServer } from '../../../server/app';
 import { MemoryRepo } from '../../../server/repo';
@@ -168,13 +169,15 @@ describe('relay strikes need rules 3', () => {
   it('an older game is told to update before a relay strike (a solo strike still works)', async () => {
     let t = Date.UTC(2026, 3, 1);
     // As server/main.ts does: the live engine plus the archived rules, so a rules-3 game is served by the v3 snapshot.
-    const app = buildServer({ repo: new MemoryRepo(), data, now: () => t, shared: { rules: new RulesRegistry(liveEngine(data), { archived: ARCHIVED_ENGINES.map((e) => e()) }) } });
+    const repo = new MemoryRepo();
+    const app = buildServer({ repo, data, now: () => t, shared: { rules: new RulesRegistry(liveEngine(data), { archived: ARCHIVED_ENGINES.map((e) => e()) }) } });
     const call = async (method: 'GET' | 'POST' | 'PUT', url: string, token?: string, payload?: unknown, rules = 3) => {
       const r = await app.inject({ method, url, payload: payload as object, headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), [ClientHeaders.protocol]: String(PROTOCOL_VERSION), [ClientHeaders.simRules]: String(rules) } });
       return { status: r.statusCode, body: r.body ? r.json() : null };
     };
     const ann = (await call('POST', Routes.players, undefined, { name: 'Ann Swift' })).body;
     const bo = (await call('POST', Routes.players, undefined, { name: 'Bo Quietstep' })).body;
+    for (const p of [ann, bo]) await repo.updatePlayer(p.playerId, { rulesVersion: COMMUNITY_RULES_VERSION });
     for (const p of [ann, bo]) await call('PUT', Routes.base, p.token, { base: baseAt(3, 4) });
     await call('POST', Routes.squad, ann.token, { name: 'Old Phones' });
     await call('POST', Routes.friendRequests, ann.token, { playerId: bo.playerId });

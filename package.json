@@ -30,6 +30,7 @@
     "art": "vite --open /tools/art-gallery/",
     "brand": "node tools/brand/brand.mjs",
     "store:screenshots": "node tools/store/screenshots.mjs",
+    "store:storekit": "node tools/store/storekit.mjs",
     "docs:progression": "node tools/progression/generate.mjs",
     "balance:armies": "node tools/balance/generate.mjs",
     "balance:campaign": "node tools/balance/campaign.mjs",

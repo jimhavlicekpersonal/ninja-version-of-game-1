@@ -159,6 +159,17 @@ async function findableBy(ctx: ServerContext, me: Player, p: Player, s: Social):
   return theirs.some((f) => s.friends.has(f.id));
 }
 
+/** A tie through play that lets a friend request by id through: they asked first, or the same Alliance or Gang. */
+async function relatedByPlay(ctx: ServerContext, me: Player, p: Player, s: Social): Promise<boolean> {
+  if (s.incoming.some((r) => r.fromId === p.id)) return true;
+  if (p.bannedUntil && p.bannedUntil > ctx.now()) return false;
+  if (await blockedEitherWay(ctx, me, p, s)) return false;
+  if ((await ageBandOf(ctx.repo, p.id)) === 'under13') return false;
+  if (me.groveId && me.groveId === p.groveId) return true;
+  const [mine, theirs] = await Promise.all([ctx.repo.squadOf(me.id), ctx.repo.squadOf(p.id)]);
+  return Boolean(mine && theirs && mine.squadId === theirs.squadId);
+}
+
 /** GET /v1/players/lookup?name= : exactly one player, or "No player with that name" (also when they hide). */
 export async function lookup(ctx: ServerContext, me: Player, rawName: unknown): Promise<PlayerCard> {
   const name = tidyName(rawName);
@@ -206,8 +217,12 @@ export async function request(ctx: ServerContext, me: Player, body: FriendReques
     const found = nameShapeProblem(name) ? null : await ctx.repo.playerByNameKey(nameKey(name));
     p = found && (await findableBy(ctx, me, found, s)) ? found : null;
   } else if (body?.playerId) {
-    // From a card the player already saw (a lookup, an Alliance list, a replay).
-    p = await ctx.repo.getPlayer(String(body.playerId));
+    // From a card the player already saw (a lookup, an Alliance list, a replay). Report section 5 step 7
+    // (backend A14): player ids show in chat, replays, duels and Gang views, so the id alone used to reach
+    // anyone, including an under-13 or a "nobody" player. Now the same rules as a name lookup apply, or a
+    // real tie: they asked first, or they share the Alliance or Gang (never with a suspended or under-13 player).
+    const found = await ctx.repo.getPlayer(String(body.playerId));
+    p = found && ((await findableBy(ctx, me, found, s)) || (await relatedByPlay(ctx, me, found, s))) ? found : null;
   }
   if (!p) throw new ApiError(404, 'not_found', body?.code ? 'No player with that friend code.' : NOT_FOUND);
   if (p.id === me.id) throw new ApiError(400, 'bad_request', 'That is you.');

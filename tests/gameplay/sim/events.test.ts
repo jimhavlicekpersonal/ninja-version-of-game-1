@@ -59,6 +59,7 @@ describe('offer deadlines', () => {
     const { state, clock } = newGame();
     const s = structuredClone(state);
     s.profile = { under18: false, ageBand: 'adult' };
+    s.offers.lastShown.starter_pack = clock.now(); // the Bundle waits for the Starter Pack (report section 5 step 6)
     const t0 = clock.now() + 30 * HOUR;
     const rule = triggerOffer(s, 'all_builders_busy', t0, data)!;
     expect(rule).not.toBeNull();
@@ -84,6 +85,7 @@ describe('offer deadlines', () => {
     }
     const adult = structuredClone(state);
     adult.profile = { under18: false, ageBand: 'adult' };
+    adult.offers.lastShown.starter_pack = clock.now();
     expect(triggerOffer(adult, 'all_builders_busy', clock.now() + HOUR, data)).toBeNull(); // too new
     expect(triggerOffer(adult, 'heavy_defense_loss', t0, data)).toBeNull(); // retired
     expect(triggerOffer(adult, 'all_builders_busy', t0, data)).not.toBeNull();

@@ -437,6 +437,8 @@ export class GameController {
     this.state = state;
     this.emit(finished);
     void this.save();
+    // Report section 5 step 6: a Keep level reached may bring the Keep Celebration offer (rules in offers.json).
+    if (finished.some((f) => data.buildings[f.type]?.category === 'hall')) this.triggerOffer('keep_reached');
     // A league season that ended while the game was open: show its chest like any other reward.
     const seasonEvents: SimEvent[] = state.seasonLog
       .filter((sr) => sr.season > logged)

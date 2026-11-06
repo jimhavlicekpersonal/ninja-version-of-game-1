@@ -27,16 +27,16 @@ async function controller() {
 }
 
 describe('Moonstone prices', () => {
-  it('skip cost follows the curve through 1 min=1, 1 h=25, 1 day=300, 1 week=1200', () => {
+  it('skip cost follows the curve through 1 min=1, 1 h=15, 1 day=180, 1 week=720 (report section 5 step 6: was 25/300/1200)', () => {
     expect(skipCost(60, data)).toBe(1);
-    expect(skipCost(3600, data)).toBe(25);
-    expect(skipCost(86400, data)).toBe(300);
-    expect(skipCost(604800, data)).toBe(1200);
+    expect(skipCost(3600, data)).toBe(15);
+    expect(skipCost(86400, data)).toBe(180);
+    expect(skipCost(604800, data)).toBe(720);
     expect(skipCost(10, data)).toBe(1);
     expect(skipCost(0, data)).toBe(0);
     const twoHours = skipCost(7200, data);
-    expect(twoHours).toBeGreaterThan(25);
-    expect(twoHours).toBeLessThan(45);
+    expect(twoHours).toBeGreaterThan(15);
+    expect(twoHours).toBeLessThan(27);
   });
 
   it('top-up cost follows the curve through 100=1, 1k=10, 10k=60, 100k=500, 1M=3000', () => {

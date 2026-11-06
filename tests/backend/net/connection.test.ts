@@ -3,6 +3,7 @@
  * core through the in-process adapter. Every server result must land in the
  * village exactly once, however often the game syncs.
  */
+import { COMMUNITY_RULES_VERSION } from '../../../src/backend/net/protocol';
 import { describe, expect, it } from 'vitest';
 import { InProcessServerAdapter } from '../../../server/inProcess';
 import { Connection, type GameLink, type KeyValue } from '../../../src/backend/net/connection';
@@ -50,7 +51,7 @@ function addLodge(s: VillageState, data: GameData): void {
 
 function connect(w: ReturnType<typeof world>, game: GameLink, kv = memoryKv(), port?: ServerPort) {
   const p = port ?? new InProcessServerAdapter(w.core);
-  const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => p, log: () => undefined });
+  const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => p, log: () => undefined, rulesAccepted: () => COMMUNITY_RULES_VERSION });
   return { conn, port: p, kv };
 }
 

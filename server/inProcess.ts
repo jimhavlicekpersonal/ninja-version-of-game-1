@@ -5,7 +5,7 @@
  * tests, and handy for a local sandbox of a future server.
  */
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
-import type { AgeRequest, BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, GangWarTicketRequest, IntentReleaseRequest, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
+import type { AgeRequest, RulesRequest, BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, GangWarTicketRequest, IntentReleaseRequest, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
 
 const wire = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -57,6 +57,9 @@ export class InProcessServerAdapter implements ServerPort {
   // Re-audit: account protections.
   stateAge(req: AgeRequest) {
     return this.authed((me) => this.core.stateAge(me, wire(req)));
+  }
+  acceptRules(req: RulesRequest) {
+    return this.authed((me) => this.core.acceptRules(me, wire(req)));
   }
   deletionCode() {
     return this.authed((me) => this.core.deletionCode(me));

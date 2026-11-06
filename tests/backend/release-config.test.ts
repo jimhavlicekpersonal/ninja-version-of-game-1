@@ -94,3 +94,13 @@ describe('report section 5 step 4 (economy E08): the store setup table lists eve
     for (const [gameId, storeId] of Object.entries(store.storeProductIds)) expect(doc, storeId).toContain(`| \`${storeId}\` | \`${gameId}\` |`);
   });
 });
+
+describe('report section 5 step 7 (compliance C08): the StoreKit test configuration matches the catalog', () => {
+  it('ios/App/Products.storekit sells exactly the store product ids, as consumables, at the catalog price (npm run store:storekit)', () => {
+    const store = JSON.parse(read('src/gameplay/data/store.json')) as { storeProductIds: Record<string, string>; packs: { id: string; usd: number }[] };
+    const kit = JSON.parse(read('ios/App/Products.storekit')) as { products: { productID: string; type: string; displayPrice: string }[] };
+    expect(kit.products.map((p) => p.productID).sort()).toEqual(Object.values(store.storeProductIds).sort());
+    for (const p of kit.products) expect(p.type, p.productID).toBe('Consumable');
+    for (const pack of store.packs) expect(kit.products.find((p) => p.productID === store.storeProductIds[pack.id])?.displayPrice).toBe(pack.usd.toFixed(2));
+  });
+});

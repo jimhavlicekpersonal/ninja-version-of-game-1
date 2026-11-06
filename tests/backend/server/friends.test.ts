@@ -191,7 +191,9 @@ for (const [label, makeRepo] of repoFactories) {
       expect((await refusal(ann.lookupPlayer('Cy Ironpine'))).status).toBe(404);
       await bo.sendFriendRequest({ playerId: ann.id });
       await ann.sendFriendRequest({ playerId: bo.id });
-      await bo.sendFriendRequest({ playerId: cy.id });
+      // Report section 5 step 7 (A14): an id alone no longer reaches a hidden player; a friend code still does.
+      expect((await refusal(bo.sendFriendRequest({ playerId: cy.id }))).status).toBe(404);
+      await bo.sendFriendRequest({ code: (await cy.friends()).code });
       await cy.sendFriendRequest({ playerId: bo.id });
       expect((await ann.lookupPlayer('Cy Ironpine')).name).toBe('Cy Ironpine');
     });
@@ -221,12 +223,16 @@ for (const [label, makeRepo] of repoFactories) {
       expect((await ann.friends()).friends[0]).toMatchObject({ name: 'Bo the Swift', formerly: 'Bo Quietstep' });
     });
 
-    it('deleting an account ends its friendships and frees its name', async () => {
+    it('deleting an account ends its friendships and frees its name after the hold (report section 5 step 7, A12)', async () => {
       const { w, ann, bo } = await scene();
       await ann.sendFriendRequest({ playerId: bo.id });
       await bo.sendFriendRequest({ playerId: ann.id });
       await bo.deleteAccount();
       expect((await ann.friends()).friends).toEqual([]);
+      // Nobody can take the name at once to pose as the deleted player.
+      const early = await w.player('Bo Quietstep');
+      expect((await early.me()).name).not.toBe('Bo Quietstep');
+      w.advance(36 * DAY);
       const again = await w.player('Bo Quietstep');
       expect((await again.me()).name).toBe('Bo Quietstep');
     });

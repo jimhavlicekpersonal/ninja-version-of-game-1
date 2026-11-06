@@ -33,7 +33,8 @@
       "durationHours": 48,
       "oncePerAccount": false,
       "cooldownHours": 168,
-      "minAccountHours": 24
+      "minAccountHours": 24,
+      "afterOffer": "starter_pack"
     },
     {
       "id": "war_prep_pack",
@@ -50,6 +51,24 @@
       "oncePerAccount": false,
       "cooldownHours": 144,
       "minAccountHours": 24
+    },
+    {
+      "id": "keep_pack",
+      "trigger": "keep_reached",
+      "title": "Keep Celebration",
+      "description": "Your Keep grew. Supplies sized for your new Keep level, and Jade.",
+      "productId": "offer_keep",
+      "usd": 4.99,
+      "contents": {
+        "moonstones": 300,
+        "acorns": 40000,
+        "dew": 40000
+      },
+      "durationHours": 48,
+      "oncePerAccount": false,
+      "cooldownHours": 72,
+      "minAccountHours": 24,
+      "afterOffer": "starter_pack"
     },
     {
       "id": "rebuild_pack",

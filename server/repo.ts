@@ -57,11 +57,14 @@ export interface Player {
   duelBase?: BaseLayout | null;
   /** When they last left a Gang (step 63: 24 hours before joining another). */
   squadLeftAt?: number;
+  /** The community rules version this account accepted, and when (migration 0028; 0: never). */
+  rulesVersion?: number;
+  rulesAcceptedAt?: number;
   /** Runtime only, never stored: the token hash this request came with (set by `authenticate`). */
   session?: string;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'muteReason' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'muteReason' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt' | 'rulesVersion' | 'rulesAcceptedAt'>>;
 
 /** Two players asked to change to the same name at once: the second one gets this (the store's unique key said no). */
 export class NameTakenError extends Error {
@@ -1745,10 +1748,11 @@ export class MemoryRepo implements Repo {
     }
     // Blocks either way go; their own reports go; reports about them are closed and lose the evidence text.
     this.blockRows = this.blockRows.filter((b) => b.playerId !== id && b.blockedId !== id);
-    // Friends and requests go; name holds go (the name is free again).
+    // Friends and requests go. Name holds stay, held by nobody (report section 5 step 7, backend A12): a
+    // deleted player's names are not free at once for someone to pose as them (account.ts holds the current one).
     this.friendshipRows = this.friendshipRows.filter((f) => f.a !== id && f.b !== id);
     this.friendRequestRows = this.friendRequestRows.filter((r) => r.fromId !== id && r.toId !== id);
-    for (const [k, h] of this.nameHolds) if (h.playerId === id) this.nameHolds.delete(k);
+    for (const h of this.nameHolds.values()) if (h.playerId === id) h.playerId = D.id;
     // Duels, tallies and challenges either way; Gang membership and invites (the core hands leadership over first).
     this.duelRows = this.duelRows.filter((d) => d.attackerId !== id && d.defenderId !== id);
     this.duelTallyRows = this.duelTallyRows.filter((t) => t.attackerId !== id && t.defenderId !== id);
@@ -1758,6 +1762,10 @@ export class MemoryRepo implements Repo {
     // Gang War rosters keep the base (the war's score depends on it) without the player.
     for (const w of this.warRows.values()) for (const e of [...w.a.roster, ...w.b.roster]) if (e.playerId === id) Object.assign(e, { playerId: null, name: DELETED_PLAYER.name });
     this.gangClaimRows = this.gangClaimRows.filter((c) => c.playerId !== id);
+    // Report section 5 step 7 (backend A12): stored idempotent answers (a village import's answer holds the
+    // whole village) go with the account, not a day later. Their scope is the token's hash (first 32 hex).
+    const scopes = new Set([this.players.get(id)?.tokenHash, ...this.tokenRows.filter((t) => t.playerId === id).map((t) => t.tokenHash)].filter((h): h is string => Boolean(h)).map((h) => h.slice(0, 32)));
+    for (const k of [...this.idempotencyRows.keys()]) if (scopes.has(k.split('\u0000')[0])) this.idempotencyRows.delete(k);
     // A server-held village, its ledger and command log, other devices' tokens and linked sign-ins are only theirs.
     this.villageRows.delete(id);
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);

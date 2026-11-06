@@ -84,7 +84,9 @@ export type ErrorCode =
   /** 503: the server is too busy to check a battle right now (step 57); retried like any server error. */
   | 'busy'
   /** 403: this player's age group does not allow it (free-text chat or a chosen name under 13; the message says what does work). */
-  | 'age_restricted';
+  | 'age_restricted'
+  /** 403: accept the community rules first (`PUT /v1/me/rules`; report section 5 step 7, compliance C14). */
+  | 'rules_required';
 
 export interface ErrorBody {
   error: ErrorCode;
@@ -207,6 +209,8 @@ export const Routes = {
   squadWarClaim: '/v1/squad/war/claim',
   /** PUT { band }: the age band this device knows (null: just ask); the answer is the band the server keeps (feature `age-bands`). */
   meAge: '/v1/me/age',
+  /** PUT { version }: this account accepted the community rules (feature `rules-acceptance`; chat and names need it). */
+  meRules: '/v1/me/rules',
   /** POST: a one-time code for the web deletion page (feature `deletion-codes`). */
   deletionCode: '/v1/me/deletion-code',
   /** GET: moderation notices for me; POST /read { ids } marks them read (feature `notices`). */
@@ -1112,6 +1116,19 @@ export interface PushTokenRequest {
 
 /** The age bands (src/gameplay/sim/age.ts): only ever stricter, on the device and on the server. */
 export type AgeBandView = import('../../gameplay/sim/age').AgeBand;
+/**
+ * The community rules' version (public/community.html; the in-game short version is `ui/communityRules.ts`).
+ * Bump it when the rules change: every account accepts again before chatting or naming (report section 5 step 7).
+ */
+export const COMMUNITY_RULES_VERSION = 2;
+export interface RulesRequest {
+  version: number;
+}
+export interface RulesResponse {
+  /** The version this account has accepted (0: never). */
+  version: number;
+}
+
 export interface AgeRequest {
   band: AgeBandView | null;
 }

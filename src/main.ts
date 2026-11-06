@@ -38,6 +38,7 @@ import { OffsetClock, SystemClock } from './gameplay/sim/clock';
 import { defaultData } from './gameplay/sim/data';
 import { Bus, type UiEvents } from './presentation/ui/bus';
 import { Hud, STATS_EXPLAINER } from './presentation/ui/hud';
+import { acceptedRulesVersion, onCommunityRulesAccepted } from './presentation/ui/communityRules';
 import { encodeExportCode, NewerSaveError, serialize, type SaveFile } from './gameplay/sim/save';
 
 declare const __APP_VERSION__: string;
@@ -215,7 +216,8 @@ async function boot(): Promise<void> {
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}) });
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}) });
+  onCommunityRulesAccepted(() => void connection.acceptRules());
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
   // Shared play statistics (report section 5 step 5): adults only, off until they say yes, never in the sandbox.
   const stats = sandbox || !connection.enabled

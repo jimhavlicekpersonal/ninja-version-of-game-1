@@ -3,117 +3,132 @@
   "nonRenewingSubscriptions": [],
   "products": [
     {
-      "displayPrice": "1.99",
+      "displayPrice": "0.99",
       "familyShareable": false,
       "internalID": "60000001",
       "localizations": [
         {
-          "description": "100 Moonstones",
-          "displayName": "Pouch of Moonstones",
+          "description": "45 Jade",
+          "displayName": "Pinch of Jade",
           "locale": "en_US"
         }
       ],
-      "productID": "moonstones_1",
-      "referenceName": "Pouch of Moonstones",
+      "productID": "jade_pinch",
+      "referenceName": "Pinch of Jade",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "1.99",
+      "familyShareable": false,
+      "internalID": "60000002",
+      "localizations": [
+        {
+          "description": "100 Jade",
+          "displayName": "Pouch of Jade",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "jade_pouch",
+      "referenceName": "Pouch of Jade",
       "type": "Consumable"
     },
     {
       "displayPrice": "4.99",
       "familyShareable": false,
-      "internalID": "60000002",
+      "internalID": "60000003",
       "localizations": [
         {
-          "description": "280 Moonstones",
-          "displayName": "Bag of Moonstones",
+          "description": "280 Jade",
+          "displayName": "Bag of Jade",
           "locale": "en_US"
         }
       ],
-      "productID": "moonstones_2",
-      "referenceName": "Bag of Moonstones",
+      "productID": "jade_bag",
+      "referenceName": "Bag of Jade",
       "type": "Consumable"
     },
     {
       "displayPrice": "9.99",
       "familyShareable": false,
-      "internalID": "60000003",
+      "internalID": "60000004",
       "localizations": [
         {
-          "description": "600 Moonstones",
-          "displayName": "Sack of Moonstones",
+          "description": "600 Jade",
+          "displayName": "Box of Jade",
           "locale": "en_US"
         }
       ],
-      "productID": "moonstones_3",
-      "referenceName": "Sack of Moonstones",
+      "productID": "jade_box",
+      "referenceName": "Box of Jade",
       "type": "Consumable"
     },
     {
       "displayPrice": "19.99",
       "familyShareable": false,
-      "internalID": "60000004",
+      "internalID": "60000005",
       "localizations": [
         {
-          "description": "1300 Moonstones",
-          "displayName": "Box of Moonstones",
+          "description": "1300 Jade",
+          "displayName": "Chest of Jade",
           "locale": "en_US"
         }
       ],
-      "productID": "moonstones_4",
-      "referenceName": "Box of Moonstones",
+      "productID": "jade_chest",
+      "referenceName": "Chest of Jade",
       "type": "Consumable"
     },
     {
       "displayPrice": "49.99",
       "familyShareable": false,
-      "internalID": "60000005",
+      "internalID": "60000006",
       "localizations": [
         {
-          "description": "3500 Moonstones",
-          "displayName": "Chest of Moonstones",
+          "description": "3500 Jade",
+          "displayName": "Vault of Jade",
           "locale": "en_US"
         }
       ],
-      "productID": "moonstones_5",
-      "referenceName": "Chest of Moonstones",
+      "productID": "jade_vault",
+      "referenceName": "Vault of Jade",
       "type": "Consumable"
     },
     {
       "displayPrice": "99.99",
       "familyShareable": false,
-      "internalID": "60000006",
+      "internalID": "60000007",
       "localizations": [
         {
-          "description": "7500 Moonstones",
-          "displayName": "Vault of Moonstones",
+          "description": "7500 Jade",
+          "displayName": "Dragon Hoard of Jade",
           "locale": "en_US"
         }
       ],
-      "productID": "moonstones_6",
-      "referenceName": "Vault of Moonstones",
+      "productID": "jade_hoard",
+      "referenceName": "Dragon Hoard of Jade",
       "type": "Consumable"
     },
     {
       "displayPrice": "4.99",
       "familyShareable": false,
-      "internalID": "60000007",
+      "internalID": "60000008",
       "localizations": [
         {
-          "description": "Premium track for the current 30-day season",
-          "displayName": "Lantern Pass Premium",
+          "description": "The premium track of this season",
+          "displayName": "Season Scroll premium",
           "locale": "en_US"
         }
       ],
-      "productID": "lantern_pass",
-      "referenceName": "Lantern Pass Premium",
+      "productID": "season_scroll",
+      "referenceName": "Season Scroll premium",
       "type": "Consumable"
     },
     {
       "displayPrice": "1.99",
       "familyShareable": false,
-      "internalID": "60000008",
+      "internalID": "60000009",
       "localizations": [
         {
-          "description": "A one-time boost for new rulers: Moonstones and resources to speed things up.",
+          "description": "A one-time boost for new rulers: Jade and resources to ",
           "displayName": "Starter Pack",
           "locale": "en_US"
         }
@@ -125,37 +140,37 @@
     {
       "displayPrice": "4.99",
       "familyShareable": false,
-      "internalID": "60000009",
+      "internalID": "60000010",
       "localizations": [
         {
-          "description": "Moonstones to hire another Beaver Builder, plus a little extra.",
-          "displayName": "Builder's Bundle",
+          "description": "Jade to hire another Village Artisan, plus a little ext",
+          "displayName": "Artisan's Bundle",
           "locale": "en_US"
         }
       ],
       "productID": "offer_builder",
-      "referenceName": "Builder's Bundle",
-      "type": "Consumable"
-    },
-    {
-      "displayPrice": "2.99",
-      "familyShareable": false,
-      "internalID": "60000010",
-      "localizations": [
-        {
-          "description": "Get ready for the Grove Raid: Dew for troops and Moonstones.",
-          "displayName": "Grove Raid Supplies",
-          "locale": "en_US"
-        }
-      ],
-      "productID": "offer_war_prep",
-      "referenceName": "Grove Raid Supplies",
+      "referenceName": "Artisan's Bundle",
       "type": "Consumable"
     },
     {
       "displayPrice": "2.99",
       "familyShareable": false,
       "internalID": "60000011",
+      "localizations": [
+        {
+          "description": "Get ready for the Alliance War: Provisions for your war",
+          "displayName": "War Supplies",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "offer_war_prep",
+      "referenceName": "War Supplies",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "60000012",
       "localizations": [
         {
           "description": "Raiders hit hard. Restock your storage.",
@@ -165,6 +180,36 @@
       ],
       "productID": "offer_rebuild",
       "referenceName": "Rebuild Kit",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "60000013",
+      "localizations": [
+        {
+          "description": "30 daily payments of 12 Jade",
+          "displayName": "Clan Stipend",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "clan_stipend",
+      "referenceName": "Clan Stipend",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "60000014",
+      "localizations": [
+        {
+          "description": "Your Keep grew. Supplies sized for your new Keep level,",
+          "displayName": "Keep Celebration",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "offer_keep",
+      "referenceName": "Keep Celebration",
       "type": "Consumable"
     }
   ],

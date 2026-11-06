@@ -12,6 +12,7 @@
  * Grove behind (names start with "Contract"), so point it at a staging server
  * rather than production when you can.
  */
+import { COMMUNITY_RULES_VERSION } from '../../../src/backend/net/protocol';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { AddressInfo } from 'node:net';
 import { buildServer } from '../../../server/app';
@@ -46,6 +47,7 @@ const client = () => new HttpServerAdapter(url, { tokens: memoryTokenStore(), re
 async function player(name: string, hall = 1) {
   const c = client();
   const reg = await c.register(`Contract ${name} ${tag}`);
+  await c.acceptRules({ version: COMMUNITY_RULES_VERSION });
   await c.uploadBase({ base: generateOpponent(hall * 101 + name.length, hall, data) });
   return Object.assign(c, { id: reg.playerId });
 }
@@ -87,6 +89,7 @@ describe('protocol contract', () => {
     expect(e.code).toBe('unauthorized');
     expect(e.message).toBeTruthy();
     const r = await c.register(`Contract Pip ${tag}`);
+    await c.acceptRules({ version: COMMUNITY_RULES_VERSION });
     expect(r.playerId).toBeTruthy();
     expect(r.token.length).toBeGreaterThanOrEqual(16);
     const me = await c.me();
@@ -102,6 +105,8 @@ describe('protocol contract', () => {
     const y = client();
     const rx = await x.register(`${a} ${tag}`);
     const ry = await y.register(`${b} ${tag}`);
+    await x.acceptRules({ version: COMMUNITY_RULES_VERSION });
+    await y.acceptRules({ version: COMMUNITY_RULES_VERSION });
     for (const c of [x, y]) await c.uploadBase({ base: generateOpponent(303 + a.length, 3, data) });
     await x.sendFriendRequest({ playerId: ry.playerId });
     await y.sendFriendRequest({ playerId: rx.playerId });

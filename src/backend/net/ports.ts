@@ -6,7 +6,7 @@
  *   - InProcessServerAdapter (server/inProcess.ts): calls our server core
  *     directly, for tests and local sandboxes.
  */
-import type { AgeRequest, AgeResponse, AttackResponse, AttackStartResponse, BalanceResponse, BattleSubmission, BlocksResponse, ChallengeView, ChallengesResponse, ChatResponse, ChatView, CommandBatch, CommandBatchResponse, DefensesResponse, DeletionCodeResponse, DonateRequest, DonateResponse, DuelLayoutRequest, DuelReportResponse, DuelTicketRequest, DuelTicketResponse, DuelsResponse, ErrorCode, FriendRequestBody, FriendRequestResult, FriendsResponse, GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GroveView, GrovesResponse, HelloResponse, InboxResponse, IntentReleaseRequest, IntentReleaseResponse, LeaderboardResponse, LedgerResponse, LinkCredential, LinkProvider, LinksResponse, MatchResponse, NoticesResponse, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PlayerView, PowerLeaderboardResponse, PrivacyRequest, PurchaseHistoryResponse, PurchaseIntentRequest, PurchaseIntentResponse, PushTokenRequest, RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, RedeemRequest, RedeemResponse, RegisterResponse, ReportRequest, ReportResponse, RequestView, RequestsResponse, RevokeOthersResponse, SquadResponse, UploadBaseRequest, VillageResponse } from './protocol';
+import type { AgeRequest, AgeResponse, RulesRequest, RulesResponse, AttackResponse, AttackStartResponse, BalanceResponse, BattleSubmission, BlocksResponse, ChallengeView, ChallengesResponse, ChatResponse, ChatView, CommandBatch, CommandBatchResponse, DefensesResponse, DeletionCodeResponse, DonateRequest, DonateResponse, DuelLayoutRequest, DuelReportResponse, DuelTicketRequest, DuelTicketResponse, DuelsResponse, ErrorCode, FriendRequestBody, FriendRequestResult, FriendsResponse, GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GroveView, GrovesResponse, HelloResponse, InboxResponse, IntentReleaseRequest, IntentReleaseResponse, LeaderboardResponse, LedgerResponse, LinkCredential, LinkProvider, LinksResponse, MatchResponse, NoticesResponse, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PlayerView, PowerLeaderboardResponse, PrivacyRequest, PurchaseHistoryResponse, PurchaseIntentRequest, PurchaseIntentResponse, PushTokenRequest, RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, RedeemRequest, RedeemResponse, RegisterResponse, ReportRequest, ReportResponse, RequestView, RequestsResponse, RevokeOthersResponse, SquadResponse, UploadBaseRequest, VillageResponse } from './protocol';
 
 /** A failed server call, with the protocol error code. */
 export class ServerError extends Error {
@@ -164,6 +164,8 @@ export interface ModerationPort {
  */
 export interface AccountPort {
   stateAge?(req: AgeRequest): Promise<AgeResponse>;
+  /** Report section 5 step 7 (feature `rules-acceptance`): this account accepted the community rules. */
+  acceptRules?(req: RulesRequest): Promise<RulesResponse>;
   deletionCode?(): Promise<DeletionCodeResponse>;
   notices?(): Promise<NoticesResponse>;
   markNoticesRead?(ids: string[]): Promise<void>;

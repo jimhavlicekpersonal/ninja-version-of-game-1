@@ -22,6 +22,7 @@ import * as pushTokens from './pushTokens';
 import * as pvp from './pvp';
 import * as retention from './retention';
 import * as stats from './stats';
+import * as rules from './rules';
 import * as village from './village';
 import * as villageImport from './villageImport';
 
@@ -85,6 +86,7 @@ export function createCore(ctx: ServerContext) {
     signIn: links.signIn.bind(null, ctx),
     /** Re-audit: account protections (age bands, deletion codes, notices, sessions, Sign in with Apple notifications). */
     stateAge: age.stateAge.bind(null, ctx),
+    acceptRules: rules.acceptRules.bind(null, ctx),
     deletionCode: account.deletionCode.bind(null, ctx),
     notices: moderation.notices.bind(null, ctx),
     markNoticesRead: moderation.markNoticesRead.bind(null, ctx),

@@ -10,6 +10,8 @@ import { ServerError, type ServerPort } from './ports';
 import {
   type AgeRequest,
   type AgeResponse,
+  type RulesRequest,
+  type RulesResponse,
   type DeletionCodeResponse,
   type NoticesResponse,
   type RevokeOthersResponse,
@@ -447,6 +449,9 @@ export class HttpServerAdapter implements ServerPort {
 
   stateAge(req: AgeRequest): Promise<AgeResponse> {
     return this.req('PUT', Routes.meAge, req);
+  }
+  acceptRules(req: RulesRequest): Promise<RulesResponse> {
+    return this.req('PUT', Routes.meRules, req);
   }
   deletionCode(): Promise<DeletionCodeResponse> {
     return this.req('POST', Routes.deletionCode, {});

@@ -40,7 +40,11 @@ const TkAuth = registerPlugin<TkAuthPlugin>('TkAuth');
 
 /** The store's age signal (re-audit): iOS 26+ Declared Age Range, Android Play Age Signals (TkAgePlugin.swift / .java). */
 interface TkAgePlugin {
-  ageRange(): Promise<{ status: 'range'; lower: number; upper?: number; source?: string } | { status: 'unavailable'; reason?: string }>;
+  ageRange(): Promise<
+    | { status: 'range'; lower: number; upper?: number; source?: string; significantChange?: 'approved' | 'pending' | 'declined'; installId?: string }
+    | { status: 'verification_required'; source?: string }
+    | { status: 'unavailable'; reason?: string }
+  >;
 }
 const TkAge = registerPlugin<TkAgePlugin>('TkAge');
 
@@ -52,12 +56,29 @@ const TkAge = registerPlugin<TkAgePlugin>('TkAge');
  * screen. Never throws. Unverified on devices (no Xcode/Android SDK where it was written).
  */
 export async function storeAgeBand(): Promise<AgeBand | null> {
-  if (!Capacitor.isNativePlatform()) return null;
+  const s = await storeAgeSignal();
+  return s.kind === 'band' ? s.band : null;
+}
+
+/**
+ * What the store says about the age (report section 5 step 7, compliance C01): a band; `verify` when the
+ * store requires this user to verify their age first (Play: a US state with an app-store age law), which
+ * the game must not replace with its own question; or `none` (no signal: ask with the game's screen).
+ */
+export type StoreAgeSignal = { kind: 'band'; band: AgeBand } | { kind: 'verify'; store: 'play' | 'apple' } | { kind: 'none' };
+
+export async function storeAgeSignal(): Promise<StoreAgeSignal> {
+  if (!Capacitor.isNativePlatform()) return { kind: 'none' };
   try {
     const r = await TkAge.ageRange();
-    return r.status === 'range' ? bandFromAgeRange(r.lower, r.upper ?? null) : null;
+    if (r.status === 'range') {
+      const band = bandFromAgeRange(r.lower, r.upper ?? null);
+      return band ? { kind: 'band', band } : { kind: 'none' };
+    }
+    if (r.status === 'verification_required') return { kind: 'verify', store: r.source === 'apple' ? 'apple' : 'play' };
+    return { kind: 'none' };
   } catch {
-    return null;
+    return { kind: 'none' };
   }
 }
 

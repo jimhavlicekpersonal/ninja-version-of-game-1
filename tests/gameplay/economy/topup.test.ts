@@ -42,7 +42,7 @@ describe('Keep-scaled price', () => {
   });
 
   it('late Keeps are no trap: buying a raid costs at most 100x skipping two hours of training', () => {
-    for (let k = 6; k <= halls; k++) expect(raidPrice(k) / skipCost(7200, data)).toBeLessThan(100);
+    for (let k = 6; k <= halls; k++) expect(raidPrice(k) / trainingSkipCost(7200, k, data)).toBeLessThan(100);
   });
 
   it('rushing the next Keep still costs more at every Keep (#20)', () => {
@@ -168,8 +168,11 @@ describe('finishing training is priced like a top-up (skip-and-raid farming)', (
   const finishArmy = (k: number) => trainingSkipCost(7200, k, data);
 
   it('never costs less than the plain time price, and the same up to Keep 5', () => {
+    // Report section 5 step 6: building skips got cheaper; finishing an army keeps the old curve.
+    const armyTime = (s: number) => trainingSkipCost(s, 1, data);
     for (let k = 1; k <= halls; k++) expect(finishArmy(k)).toBeGreaterThanOrEqual(skipCost(7200, data));
-    for (let k = 1; k <= 5; k++) expect(finishArmy(k)).toBe(skipCost(7200, data));
+    for (let k = 1; k <= 5; k++) expect(finishArmy(k)).toBe(armyTime(7200));
+    expect(armyTime(3600)).toBe(25);
   });
 
   it('skip-and-raid is at most 10x cheaper than a top-up for the same loot at every Keep (was ~65x at Keep 15)', () => {

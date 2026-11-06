@@ -1,4 +1,5 @@
 /** Shared setup for server tests: the core on a MemoryRepo with a test clock, players as in-process clients. */
+import { COMMUNITY_RULES_VERSION } from '../../../src/backend/net/protocol';
 import { createCore } from '../../../server/core';
 import { InProcessServerAdapter } from '../../../server/inProcess';
 import { nodeContext, type SharedStores } from '../../../server/nodeContext';
@@ -43,6 +44,8 @@ export function world(opts: { data?: GameData; repo?: Repo; start?: number; shar
   const player = async (name: string, base?: BaseLayout) => {
     const c = new InProcessServerAdapter(core);
     const reg = await c.register(name);
+    // Test players have accepted the community rules (report section 5 step 7: chat and names need them).
+    await c.acceptRules({ version: COMMUNITY_RULES_VERSION });
     if (base) await c.uploadBase({ base });
     return Object.assign(c, { id: reg.playerId });
   };

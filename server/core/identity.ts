@@ -1,7 +1,8 @@
-import { censorText } from '../../src/gameplay/sim/social/grove';
+import { censorText, hasContact } from '../../src/gameplay/sim/social/grove';
 import { NAME_ERROR_TEXT, checkName } from '../../src/gameplay/sim/social/names';
 import { PROTOCOL_VERSION, type BalanceResponse, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
+import { requireRules } from './rules';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { purchaseFeatures } from './purchases';
 import { appealText } from './moderation';
@@ -18,7 +19,7 @@ export const MIN_PROTOCOL = 7;
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', 'age-bands', 'deletion-codes', 'notices', 'sessions', 'attack-commit', 'seed-at-start', 'stats', ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}) };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', 'age-bands', 'deletion-codes', 'notices', 'sessions', 'attack-commit', 'seed-at-start', 'stats', 'rules-acceptance', ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}) };
 }
 
 /** GET /v1/balance (step 76): the signed number changes in force, for games with the same battle rules. */
@@ -36,6 +37,7 @@ export function cleanName(raw: unknown, ctx: ServerContext): string {
 export function chosenName(raw: unknown, ctx: ServerContext): string {
   const c = checkName(raw);
   if (c.error) throw new ApiError(400, 'bad_request', NAME_ERROR_TEXT[c.error]);
+  if (hasContact(c.name)) throw new ApiError(400, 'bad_request', 'Names cannot hold links, phone numbers, addresses or messaging-app handles.');
   return censorText(c.name, ctx.data);
 }
 
@@ -102,5 +104,6 @@ export function playerView(p: Player, now = Date.now()): PlayerView {
 
 /** PUT /v1/me: change name (unique, one change per 28 days; refusals offer free names). */
 export async function rename(ctx: ServerContext, me: Player, name: unknown): Promise<PlayerView> {
+  requireRules(ctx, me);
   return playerView(await changeName(ctx, me, name), ctx.now());
 }

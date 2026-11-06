@@ -145,6 +145,11 @@ export interface StipendState {
   left: number;
   /** Day index (pass days) of the last claim; -1 = never. */
   lastDay: number;
+  /**
+   * Jade still owed by the payments left (save v18). A stipend keeps the Jade it was sold with when
+   * the price list changes (report section 5 step 6 lowered it from 20 to 12 a payment).
+   */
+  jade: number;
 }
 
 /** Progress in one goal event occurrence (`key` = schedule id + repeat number). */
@@ -172,7 +177,8 @@ export interface DailyState {
   skipsLeft: number;
   skipWeek: number;
   /** Recent chests, newest last. */
-  history: { day: number; outcome: string; step: number; grants: Cost; overflow?: Cost }[];
+  /** `streakJade`: the streak step's own Jade in that chest (save v18). */
+  history: { day: number; outcome: string; step: number; grants: Cost; overflow?: Cost; streakJade?: number }[];
 }
 
 export interface NetState {
@@ -655,6 +661,8 @@ export interface StoreDef {
   currency: string;
   packs: PackDef[];
   skipCurve: [number, number][];
+  /** Finishing army training (before the Keep scale); defaults to `skipCurve`. */
+  trainingSkipCurve?: [number, number][];
   topUpCurve: [number, number][];
   /** Amounts are divided by this (per Keep, 1-15) before `topUpCurve` prices them (tools/balance/topup.mjs). */
   topUpScaleByHall: number[];
@@ -672,7 +680,7 @@ export interface StoreDef {
   stipend?: { id: string; name: string; usd: number; payments: number; jadePerPayment: number };
 }
 
-export type OfferTrigger = 'first_long_wait' | 'all_builders_busy' | 'grove_raid_soon' | 'heavy_defense_loss';
+export type OfferTrigger = 'first_long_wait' | 'all_builders_busy' | 'grove_raid_soon' | 'heavy_defense_loss' | 'keep_reached';
 
 export interface OfferRule {
   id: string;
@@ -689,6 +697,8 @@ export interface OfferRule {
   minAccountHours?: number;
   /** Never shown again (its product still delivers a purchase made before). */
   retired?: boolean;
+  /** Not shown before this offer has been shown or bought, while that one can still appear (the Starter Pack first). */
+  afterOffer?: string;
 }
 
 export interface OffersDef {
@@ -739,6 +749,8 @@ export interface SkinDef {
   name: string;
   moonstones: number;
   passOnly?: boolean;
+  /** Can be bought from this Keep level (report section 5 step 6: a look to aim for at each stage). */
+  minKeep?: number;
   cap: string;
   spots: string;
 }
@@ -803,7 +815,8 @@ export interface SocialDef {
 
 export interface DailyDef {
   chest: { outcomes: { id: string; label: string; weight: number; reward: Cost }[] };
-  streak: { steps: { bonus: number; moonstones?: number }[]; skipsPerWeek: number; stepsLostPerMissedDay: number; historyDays: number };
+  /** `jadeEveryDays`: a step's own Jade is paid at most once in this many days (report section 5 step 6, economy E05). */
+  streak: { steps: { bonus: number; moonstones?: number }[]; skipsPerWeek: number; stepsLostPerMissedDay: number; historyDays: number; jadeEveryDays?: number };
 }
 
 export interface EventEffect {

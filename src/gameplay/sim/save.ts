@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 17;
+export const SAVE_VERSION = 18;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -184,6 +184,14 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
   // v16 -> v17 (ledger audit A5): no field changes. A refund now takes back every resource it gave,
   // so any balance may be negative (a debt paid from income). The version moves so that an older
   // build stops at a newer save (NewerSaveError) instead of calling such a village damaged.
+  if (out.version < 18 && v && typeof v === 'object') {
+    // v17 -> v18 (report section 5 step 6): a stipend keeps the Jade it was sold with (`stipend.jade`):
+    // every stipend bought before paid 20 Jade a payment. Daily chests note the streak's own Jade
+    // (`history[].streakJade`), now paid once a week; older entries have none, so the next top-step
+    // chest pays it.
+    const st = v.stipend as { left?: number; jade?: number } | undefined;
+    if (st && typeof st === 'object' && st.jade === undefined) st.jade = Math.max(0, Number(st.left) || 0) * 20;
+  }
   repairTrainingQueue(v);
   out.version = SAVE_VERSION;
   return out;

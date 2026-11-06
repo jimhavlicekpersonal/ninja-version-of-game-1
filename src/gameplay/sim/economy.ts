@@ -29,7 +29,9 @@ export function trainingSkipCost(seconds: number, hallLevel: number, data: GameD
   if (seconds <= 0) return 0;
   const t = data.store.trainingSkipScaleByHall;
   const scale = Math.max(1, t[Math.max(1, Math.min(t.length, hallLevel)) - 1] ?? 1);
-  return Math.max(1, Math.ceil(interpolate(data.store.skipCurve, seconds) * scale));
+  // Report section 5 step 6 (economy E05): building and research skips got ~40% cheaper; finishing an army
+  // keeps its own curve (the old prices), because skip-and-raid is a route from Jade to loot (`TOP_UP.md`).
+  return Math.max(1, Math.ceil(interpolate(data.store.trainingSkipCurve ?? data.store.skipCurve, seconds) * scale));
 }
 
 /**

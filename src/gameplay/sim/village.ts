@@ -7,7 +7,7 @@ import { buildingDef, hallType, levelDef, maxDefinedLevel, troopLevel } from './
 import { mixSeed } from './rng';
 import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies, type SeasonReward } from './ranks';
 import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
-import { chestContents, chestOutcome, emptyDaily, streakAfterClaim } from './daily';
+import { chestContents, chestOutcome, emptyDaily, streakAfterClaim, streakJade, streakJadeDue } from './daily';
 import { eventEffect } from './events';
 import { achievementViews } from './achievements';
 import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
@@ -16,7 +16,7 @@ import { addStipend, claimStipend, emptyStipend } from './stipend';
 import { activeGoalEvent, bountyBase, ladderReward, recordBountyResult } from './goalEvents';
 import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
-import { triggerOffer } from './offers';
+import { offerCanStillShow, triggerOffer } from './offers';
 import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unlockedTier } from './pass';
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
@@ -498,10 +498,11 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
       s.stats.upgradesStarted++;
       // Instant upgrades (hedges) finish right away; timed ones count in advance().
       if (e.seconds <= 0) s.stats.upgradesDone++;
-      if (e.seconds > 3600 && !s.flags.longWaitSeen) {
-        s.flags.longWaitSeen = true;
-        events.push({ kind: 'trigger', trigger: 'first_long_wait' });
-      }
+      // Report section 5 step 6 (economy E01): the flag used to be set before the offer was checked, so a
+      // Starter Pack refused that time (age unknown, account under a day old, session slot taken) was gone
+      // for good. It is set only when the offer shows (`triggerOffer`), so every long wait re-arms it.
+      // A village that lost it that way before this fix (flag set, offer never shown) gets it back too.
+      if (e.seconds > 3600 && (!s.flags.longWaitSeen || data.offers.rules.some((r) => r.trigger === 'first_long_wait' && offerCanStillShow(s, data, r.id)))) events.push({ kind: 'trigger', trigger: 'first_long_wait' });
       // The Artisan's Bundle is Jade for another Artisan's Hut: only offer it while one can still be hired.
       if (e.seconds > 0 && builderStatus(s, data, now).free === 0 && canHireArtisan(s, data)) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
     } else if (e.kind === 'raid_end' && e.record.kind === 'attack' && e.record.settlement !== 'pending') {
@@ -946,6 +947,7 @@ function buySkin(s: VillageState, id: string, data: GameData): CommandResult {
   if (!skin) return fail('NOT_FOUND', 'Unknown look.');
   if (s.cosmetics.owned.includes(id)) return fail('ALREADY_CLAIMED', 'You already own this look.');
   if (skin.passOnly) return fail('LOCKED', 'This look comes from the Season Scroll.');
+  if (skin.minKeep && hallLevel(s, data) < skin.minKeep) return fail('LOCKED', `This look unlocks at Keep ${skin.minKeep}.`);
   if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Jade.`);
   s.resources.moonstones -= skin.moonstones;
   s.cosmetics.owned.push(id);
@@ -1031,7 +1033,7 @@ export function dailyChestOverflowRisk(state: VillageState, now: number, data: G
   let worst: Cost = {};
   let worstTotal = 0;
   for (const o of data.daily.chest.outcomes) {
-    const lost = rewardOverflow(state, chestContents(o.id, hall, step, data), data);
+    const lost = rewardOverflow(state, chestContents(o.id, hall, step, data, streakJadeDue(state.daily, day, data)), data);
     const total = Object.values(lost).reduce((a, b) => a + (b ?? 0), 0);
     if (total > worstTotal) {
       worst = lost;
@@ -1271,9 +1273,11 @@ function openDailyChest(s: VillageState, now: number, data: GameData): CommandRe
   const st = streakAfterClaim(s.daily, day, data);
   const outcome = chestOutcome(s.seed, day, data);
   // A chest only reports what it really gave: anything that did not fit is listed separately.
-  const { granted: grants, overflow } = grantReward(s, chestContents(outcome, hallLevel(s, data), st.step, data), data);
+  const jadeDue = streakJadeDue(s.daily, day, data);
+  const { granted: grants, overflow } = grantReward(s, chestContents(outcome, hallLevel(s, data), st.step, data, jadeDue), data);
   const lost = hasAny(overflow) ? { overflow } : {};
-  const history = [...s.daily.history, { day, outcome, step: st.step, grants, ...lost }].slice(-data.daily.streak.historyDays);
+  const sj = jadeDue ? streakJade(st.step, data) : 0;
+  const history = [...s.daily.history, { day, outcome, step: st.step, grants, ...lost, ...(sj ? { streakJade: sj } : {}) }].slice(-data.daily.streak.historyDays);
   s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history };
   return {
     ok: true,

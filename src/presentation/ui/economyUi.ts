@@ -1,8 +1,9 @@
 import type { GameController } from '../../gameplay/control/controller';
 import { achievementViews } from '../../gameplay/sim/achievements';
-import { activeOffers, offerReturns, offerRule } from '../../gameplay/sim/offers';
+import { activeOffers, offerReturns, offerRule, offersAllowed } from '../../gameplay/sim/offers';
 import { bandFromProfile } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
+import type { AgeBand } from '../../gameplay/sim/age';
 import { canPurchase, productGrantsFor, productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import type { StorePrice } from '../../backend/payments/provider';
@@ -22,6 +23,8 @@ export interface UiKit {
   confirm(title: string, message: string | HTMLElement, confirmLabel: string, danger?: boolean, cancelLabel?: string): Promise<boolean>;
   toast(text: string, kind?: 'info' | 'error' | 'success'): void;
   closeAllModals(): void;
+  /** The age band from the store's signal, else the neutral screen (the HUD's `askAge`). */
+  askAge?(why: string): Promise<AgeBand | null>;
   /** The Clan Keep wearing a look, as a data URL (only the Store's Looks use it). */
   skinThumb?(skin: string): string | null;
 }
@@ -128,7 +131,8 @@ export class EconomyUi {
    */
   private async ensureAge(): Promise<boolean> {
     if (this.c.state.profile.under18 !== null) return true;
-    const band = await askAgeBand(this.kit, 'Before your first purchase, please enter your year of birth. It sets the right spending protections for your age.');
+    const why = 'Before your first purchase, please enter your year of birth. It sets the right spending protections for your age.';
+    const band = this.kit.askAge ? await this.kit.askAge(why) : await askAgeBand(this.kit, why);
     if (!band) return false;
     return this.c.dispatch({ type: 'setProfile', under18: band !== 'adult', ageBand: band }).ok;
   }
@@ -300,7 +304,14 @@ export class EconomyUi {
   private offersList(): HTMLElement {
     const wrap = h('div', {});
     const list = activeOffers(this.c.state, this.c.now());
-    if (!list.length) wrap.append(h('p', { class: 'muted' }, 'No special offers right now.'));
+    // Economy E02: say why the tab stays empty, instead of a "right now" that never changes.
+    const p = this.c.state.profile;
+    const why = offersAllowed(this.c.state)
+      ? 'No special offers right now.'
+      : p.under18 === null
+        ? 'Special offers appear only once you have told us your age (Settings → Account → Spending → Set age group).'
+        : 'Special offers do not pop up for players under 18. Everything in the Jade tab stays available within your spending limit.';
+    if (!list.length) wrap.append(h('p', { class: 'muted' }, why));
     for (const a of list) {
       const rule = offerRule(this.c.data, a.id);
       if (!rule) continue;
@@ -387,6 +398,7 @@ export class EconomyUi {
           redraw();
         });
       } else if (skin.passOnly) action = h('span', { class: 'chip' }, `${this.c.data.pass.name} reward`);
+      else if (skin.minKeep && hallLevel(s, this.c.data) < skin.minKeep) action = h('span', { class: 'chip' }, `Unlocks at Keep ${skin.minKeep}`);
       else {
         action = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), String(skin.moonstones));
         action.addEventListener('click', () => {

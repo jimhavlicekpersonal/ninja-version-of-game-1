@@ -2,7 +2,7 @@
  * Daily chest (odds always shown before opening, free, one a day) and the
  * limited-time events panel (fixed schedule, real countdowns).
  */
-import { chestContents, chestOdds, chestReady, nextChestAt, streakAfterClaim } from '../../gameplay/sim/daily';
+import { chestContents, chestOdds, chestReady, nextChestAt, streakAfterClaim, streakJadeDue } from '../../gameplay/sim/daily';
 import { activeEvents, upcomingEvents, type EventWindow } from '../../gameplay/sim/events';
 import { goalEventView } from '../../gameplay/sim/goalEvents';
 import type { BaseLayout } from '../../gameplay/sim/battle/types';
@@ -61,7 +61,7 @@ export class DailyUi {
             { class: `streak-step${n <= s.daily.step ? ' done' : ''}${n === step ? ' current' : ''}` },
             h('b', {}, `Day ${n}${n === steps.length ? '+' : ''}`),
             h('span', { class: 'small' }, st.bonus > 1 ? `+${Math.round((st.bonus - 1) * 100)}%` : 'Base'),
-            st.moonstones ? h('span', { class: 'small' }, icon(icons.moonstones), `+${st.moonstones}`) : '',
+            st.moonstones ? h('span', { class: 'small' }, icon(icons.moonstones), `+${st.moonstones}${gd.daily.streak.jadeEveryDays && gd.daily.streak.jadeEveryDays > 1 ? ' a week' : ''}`) : '',
           ),
         );
       });
@@ -104,7 +104,7 @@ export class DailyUi {
             'div',
             { class: `log-row${opened?.outcome === o.id ? ' current' : ''}` },
             h('div', {}, h('b', {}, o.label), h('div', { class: 'muted small' }, `Chance: ${pct(o.percent)}`)),
-            rewardChips(chestContents(o.id, hall, Math.max(1, step), gd)),
+            rewardChips(chestContents(o.id, hall, Math.max(1, step), gd, streakJadeDue(s.daily, dayIndex(now, gd), gd))),
           ),
         );
       }

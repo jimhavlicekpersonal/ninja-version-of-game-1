@@ -1,4 +1,5 @@
 /** The HTTP adapter (server/app.ts): routes, status codes, error bodies, auth and CORS. Game rules are in core.test.ts. */
+import { COMMUNITY_RULES_VERSION } from '../../../src/backend/net/protocol';
 import { describe, expect, it } from 'vitest';
 import { buildServer, validateBase, type ServerOptions } from '../../../server/app';
 import { capBaseLoot } from '../../../server/core/pvp';
@@ -20,7 +21,12 @@ function setup(opts: Partial<ServerOptions> = {}) {
     const r = await app.inject({ method, url, payload: payload as object, remoteAddress: extra.ip, headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...extra.headers } });
     return { status: r.statusCode, body: r.body ? JSON.parse(r.body) : null, headers: r.headers };
   };
-  const register = async (name: string) => (await call('POST', Routes.players, undefined, { name })).body as { playerId: string; token: string };
+  const register = async (name: string) => {
+    const reg = (await call('POST', Routes.players, undefined, { name })).body as { playerId: string; token: string };
+    // Report section 5 step 7: chat and names need the community rules accepted on the account.
+    if (reg?.playerId) await repo.updatePlayer(reg.playerId, { rulesVersion: COMMUNITY_RULES_VERSION });
+    return reg;
+  };
   return { app, repo, call, register, advance, now: () => t };
 }
 

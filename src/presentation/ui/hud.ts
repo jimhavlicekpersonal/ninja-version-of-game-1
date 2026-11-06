@@ -22,8 +22,10 @@ import { activeOffers } from '../../gameplay/sim/offers';
 import { currentTasks, unlockedTier } from '../../gameplay/sim/pass';
 import { ArmyUi } from './armyUi';
 import { costChips, RES_LABEL } from './chips';
-import { PROVIDER_NAMES, storeAgeBand } from '../../backend/platform/auth';
+import { PROVIDER_NAMES, storeAgeSignal } from '../../backend/platform/auth';
+import type { AgeBand } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
+import { bandFromProfile } from '../../gameplay/sim/age';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -174,6 +176,7 @@ export class Hud {
       toast: (...a) => this.toast(...a),
       closeAllModals: () => this.closeAllModals(),
       skinThumb: (skin) => this.deps.skinThumbnail?.(skin) ?? null,
+      askAge: (why) => this.askAge(why),
     });
     this.grove = new GroveUi({
       kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
@@ -216,12 +219,16 @@ export class Hud {
     this.c.subscribe(() => this.refresh());
     // Re-audit (minors online): before this device first goes online, the store's age signal or,
     // without one, the neutral age screen sets the age band. "Not now" keeps online play off.
-    this.deps.connection.ageGate = async () =>
-      (await storeAgeBand()) ??
-      askAgeBand(
-        { c: this.c, modal: (...a) => this.modal(...a) },
-        'Online play connects you with other players. Please enter your year of birth so we can choose the right settings for your age.',
-      );
+    this.deps.connection.ageGate = () => this.askAge('Online play connects you with other players. Please enter your year of birth so we can choose the right settings for your age.');
+    // Report section 5 step 6 (economy E02): the age used to be asked only at a first purchase or before
+    // going online, so an offline player never got the protections or offers for their age. Ask once,
+    // with the same neutral screen, when the tutorial ends (or at the next start for a village past it).
+    this.tutorialWasDone = this.c.state.tutorial.done;
+    if (this.tutorialWasDone) window.setTimeout(() => this.askAgeAfterTutorial(), 8000);
+    this.c.subscribe(() => {
+      if (this.c.state.tutorial.done && !this.tutorialWasDone) window.setTimeout(() => this.askAgeAfterTutorial(), 1500);
+      this.tutorialWasDone = this.c.state.tutorial.done;
+    });
     this.deps.connection.subscribe(() => this.updateNet());
     this.deps.connection.subscribe(() => this.showNewNotices());
     this.updateNet();
@@ -359,6 +366,43 @@ export class Hud {
   }
 
   // ------------------------------------------------------------ refresh
+
+  private tutorialWasDone = false;
+
+  /**
+   * The age band: the store's signal first, then the game's neutral screen. Report section 5 step 7 (compliance
+   * C01): where the store requires the player to verify their age (Play in US states with an app-store age
+   * law), the game says so and does not ask its own question instead.
+   */
+  async askAge(why: string): Promise<AgeBand | null> {
+    const signal = await storeAgeSignal();
+    if (signal.kind === 'band') return signal.band;
+    if (signal.kind === 'verify') {
+      this.modal(
+        'Verify your age',
+        h('p', {}, signal.store === 'play' ? 'Where you live, Google Play confirms ages for apps. Open the Play Store app, verify your age there, then come back: online play and purchases unlock once Google Play shares your age group.' : 'Where you live, the App Store confirms ages for apps. Confirm your age in your Apple Account settings, then come back.'),
+      );
+      return null;
+    }
+    return askAgeBand({ c: this.c, modal: (...a) => this.modal(...a) }, why);
+  }
+
+  /** The one-time age question after the tutorial (economy E02). "Not now" is not asked again on this device. */
+  private async askAgeAfterTutorial(): Promise<void> {
+    const KEY = 'tk.ageAskedAfterTutorial';
+    const s = this.c.state;
+    if (!s.tutorial.done || bandFromProfile(s.profile) || s.profile.under18 !== null) return;
+    try {
+      if (localStorage.getItem(KEY)) return;
+      // Never on top of another dialog (a result screen, the daily chest): try again shortly.
+      if (document.querySelector('.modal-root .modal')) return void window.setTimeout(() => this.askAgeAfterTutorial(), 15000);
+      localStorage.setItem(KEY, '1');
+    } catch {
+      return; // no storage: never nag on every start
+    }
+    const band = await this.askAge('You finished the training. Please enter your year of birth: it sets the right protections for your age (spending limits, offers, and for online play who can find you and how you chat).');
+    if (band && !bandFromProfile(this.c.state.profile)) this.c.dispatch({ type: 'setProfile', under18: band !== 'adult', ageBand: band });
+  }
 
   private refresh(): void {
     const s = this.c.state;

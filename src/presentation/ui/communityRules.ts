@@ -6,8 +6,26 @@
  * (bump COMMUNITY_RULES_VERSION). Nothing here moderates: reports, blocks,
  * the word filter and staff tools do that.
  */
-export const COMMUNITY_RULES_VERSION = 2;
+import { COMMUNITY_RULES_VERSION } from '../../backend/net/protocol';
+
+export { COMMUNITY_RULES_VERSION };
 const KEY = 'tk.community.accepted';
+let accepted: (() => void) | null = null;
+
+/** Report section 5 step 7 (compliance C14): called when the player agrees, so the server records it (main.ts). */
+export function onCommunityRulesAccepted(fn: () => void): void {
+  accepted = fn;
+}
+
+/** The rules version accepted on this device (0: none), for the server's record. */
+export function acceptedRulesVersion(): number {
+  try {
+    const v = Number(localStorage.getItem(KEY));
+    return Number.isFinite(v) && v >= COMMUNITY_RULES_VERSION ? COMMUNITY_RULES_VERSION : 0;
+  } catch {
+    return 0;
+  }
+}
 
 export function communityRulesAccepted(): boolean {
   try {
@@ -35,6 +53,9 @@ export async function ensureCommunityRules(kit: { confirm(title: string, message
     false,
     'Not now',
   );
-  if (ok) remember();
+  if (ok) {
+    remember();
+    accepted?.();
+  }
   return ok;
 }
