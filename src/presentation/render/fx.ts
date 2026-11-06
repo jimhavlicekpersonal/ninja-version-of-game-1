@@ -4,7 +4,7 @@ import { quality } from './quality';
 import { DISPLAY_FONT } from './fonts';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, worldToTile } from './iso';
 import { paintBird, paintRuins, paintStreamer, paintVillager, type RuinFamily } from '../art/ninja';
-import { paintFogBand, paintRidge } from '../art/ground';
+import { paintFogBand, paintRidge, paintSun } from '../art/ground';
 import { ROLE_RING, roleOfTroop } from '../art/warriorIcons';
 
 const CONFETTI = 'fx.confetti';
@@ -373,7 +373,14 @@ export function addScenery(scene: Phaser.Scene, mapSize: number): void {
     // Seen position = x + scroll * (1 - scrollFactor): offset so the band sits right when the camera is centred.
     const wx = cx - sx0 * (1 - sf);
     const wy = mb.y + dy - sy0 * (1 - sf);
-    scene.add.image(wx, wy, key).setOrigin(0.5, 0).setScrollFactor(sf).setScale(scale / res).setDepth(-28 + layer);
+    // Report section 5 step 4 (art F3): three copies edge to edge (the band tiles), so a wide screen
+    // never sees where it ends; its foot fades out in the painter.
+    for (const k of [-1, 0, 1]) scene.add.image(wx + k * W * scale, wy, key).setOrigin(0.5, 0).setScrollFactor(sf).setScale(scale / res).setDepth(-28 + layer);
+    if (layer === 0) {
+      // The low sun, once, where it used to sit in the far band (0.68 across, 0.42 down).
+      const sun = artTexture(scene, 'scenery.sun', H, H, 0, (ctx) => { ctx.translate(-H / 2, 0); paintSun(ctx, H); }, res);
+      scene.add.image(wx + (0.68 - 0.5) * W * scale, wy + 0.42 * H * scale, sun).setOrigin(0.5, 0.5).setScrollFactor(sf).setScale(scale / res).setDepth(-28.5);
+    }
     if (layer < 2) {
       const fsf = Math.min(1, sf + 0.1);
       const fx0 = cx - sx0 * (1 - fsf);

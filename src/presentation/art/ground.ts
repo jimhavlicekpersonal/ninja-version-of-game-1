@@ -529,33 +529,49 @@ export function paintWave(ctx: Ctx, size = 30): void {
   }
 }
 
+/** The low sun behind the far range, in an s x s box (top-left origin): its own image, so tiling the ridges never repeats it. */
+export function paintSun(ctx: Ctx, s: number): void {
+  const c = s / 2;
+  const sun = ctx.createRadialGradient(c, c, 2, c, c, s * 0.5);
+  sun.addColorStop(0, 'rgba(255,170,120,0.9)');
+  sun.addColorStop(0.25, 'rgba(232,110,80,0.55)');
+  sun.addColorStop(1, 'rgba(232,110,80,0)');
+  ctx.fillStyle = sun;
+  ctx.fillRect(0, 0, s, s);
+  ctx.beginPath();
+  ctx.arc(c, c, s * 0.11, 0, Math.PI * 2);
+  ctx.fillStyle = '#e8735a';
+  ctx.fill();
+}
+
 /**
  * A band of mountain ridges for the parallax behind the plateau (art re-audit item 10). Drawn in
- * a w x h box (top-left origin); `layer` 0 is the far range (pale, snow caps, a low sun), 1 the
- * middle range, 2 the near forested ridge. The foot of each band dissolves into fog.
+ * a w x h box (top-left origin); `layer` 0 is the far range (pale, snow caps), 1 the middle range,
+ * 2 the near forested ridge. Report section 5 step 4 (art F3): the band tiles sideways (both ends
+ * meet at the same height, so copies placed edge to edge join without a seam) and its foot fades
+ * out completely, so no straight edge shows on wide screens. `sun` paints the old built-in sun
+ * (the gallery); the game places `paintSun` once instead.
  */
-export function paintRidge(ctx: Ctx, w: number, h: number, layer: 0 | 1 | 2): void {
+export function paintRidge(ctx: Ctx, w: number, h: number, layer: 0 | 1 | 2, sun = false): void {
   const rand = artRng(301 + layer * 17);
   const col = ['#8494b4', '#5d6c8c', '#3a4762'][layer];
-  if (layer === 0) {
-    const sun = ctx.createRadialGradient(w * 0.68, h * 0.42, 2, w * 0.68, h * 0.42, h * 0.5);
-    sun.addColorStop(0, 'rgba(255,170,120,0.9)');
-    sun.addColorStop(0.25, 'rgba(232,110,80,0.55)');
-    sun.addColorStop(1, 'rgba(232,110,80,0)');
-    ctx.fillStyle = sun;
-    ctx.fillRect(0, 0, w, h);
-    ctx.beginPath();
-    ctx.arc(w * 0.68, h * 0.42, h * 0.11, 0, Math.PI * 2);
-    ctx.fillStyle = '#e8735a';
-    ctx.fill();
+  if (layer === 0 && sun) {
+    ctx.save();
+    ctx.translate(w * 0.68 - h * 0.5, h * 0.42 - h * 0.5);
+    paintSun(ctx, h);
+    ctx.restore();
   }
   const peaks: { x: number; y: number }[] = [];
   const n = [7, 9, 13][layer];
+  const top = [0.18, 0.34, 0.5][layer];
   for (let i = 0; i <= n; i++) {
     const x = (i / n) * w + (rand() - 0.5) * (w / n) * 0.5;
-    const top = [0.18, 0.34, 0.5][layer];
     peaks.push({ x, y: h * (top + rand() * 0.28) });
   }
+  // Both ends at one height and exactly on the edges: copies side by side join seamlessly.
+  const edgeY = h * (top + 0.14);
+  peaks[0] = { x: 0, y: edgeY };
+  peaks[n] = { x: w, y: edgeY };
   ctx.beginPath();
   ctx.moveTo(0, h);
   ctx.lineTo(0, peaks[0].y);
@@ -611,6 +627,7 @@ export function paintRidge(ctx: Ctx, w: number, h: number, layer: 0 | 1 | 2): vo
         }
       }
       const th = 8 + rand() * 10;
+      if (x < th || x > w - th) continue; // never cut at the tile's edge
       ctx.beginPath();
       ctx.moveTo(x - th * 0.35, y + th * 0.4);
       ctx.lineTo(x, y - th);
@@ -622,11 +639,20 @@ export function paintRidge(ctx: Ctx, w: number, h: number, layer: 0 | 1 | 2): vo
   }
   ctx.restore();
   // Fog at the foot.
-  const fog = ctx.createLinearGradient(0, h * 0.55, 0, h);
+  const fog = ctx.createLinearGradient(0, h * 0.55, 0, h * 0.8);
   fog.addColorStop(0, 'rgba(206,214,236,0)');
   fog.addColorStop(1, 'rgba(206,214,236,0.85)');
   ctx.fillStyle = fog;
   ctx.fillRect(0, h * 0.55, w, h * 0.45);
+  // Then everything fades out, so the band has no bottom edge.
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+  const fade = ctx.createLinearGradient(0, h * 0.72, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, h * 0.72, w, h * 0.28);
+  ctx.restore();
 }
 
 /** A long soft fog band (w x h box), brightest along its middle; the scene drifts it between ridges. */

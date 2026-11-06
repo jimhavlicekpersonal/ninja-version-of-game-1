@@ -7,7 +7,7 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
-import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures } from './presentation/render/assets';
+import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, villageTexture } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
@@ -368,6 +368,11 @@ async function boot(): Promise<void> {
     analytics,
     store,
     thumbnail: (type) => thumbOf(buildingThumbKey(game.textures, type)),
+    // The Keep at the player's own level in each look (Store → Looks), painted on first use.
+    skinThumbnail: (skin) => {
+      const keep = controller.state.buildings.find((b) => controller.data.buildings[b.type]?.category === 'hall');
+      return thumbOf(villageTexture(game.textures, 'elder_toadstool', Math.max(1, keep?.level ?? 1), controller.data.buildings.elder_toadstool.size, skin));
+    },
     getFps: () => game.loop.actualFps,
     troopThumb: (type) => thumbOf(Keys.troop(type)),
     warriorIcon: (id) => thumbOf(Keys.warriorIcon(id)),

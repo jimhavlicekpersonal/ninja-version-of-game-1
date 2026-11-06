@@ -86,3 +86,11 @@ describe('workflows', () => {
     }
   });
 });
+
+describe('report section 5 step 4 (economy E08): the store setup table lists every product the game sells', () => {
+  it('docs/SHIPPING.md 3b has a row for each store product id in store.json', () => {
+    const store = JSON.parse(read('src/gameplay/data/store.json')) as { storeProductIds: Record<string, string> };
+    const doc = read('docs/SHIPPING.md');
+    for (const [gameId, storeId] of Object.entries(store.storeProductIds)) expect(doc, storeId).toContain(`| \`${storeId}\` | \`${gameId}\` |`);
+  });
+});

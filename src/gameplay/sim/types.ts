@@ -516,6 +516,8 @@ export interface StartingBuilding {
 }
 
 export interface EconomyDef {
+  /** What players call each resource (messages from the sim; the HUD has its own labels). */
+  resourceNames: Record<ResourceKind, string>;
   mapSize: number;
   startingResources: Resources;
   startingLayout: StartingBuilding[];

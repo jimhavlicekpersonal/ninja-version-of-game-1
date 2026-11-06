@@ -163,6 +163,7 @@ Create these in App Store Connect (In-App Purchases) and the Play Console (In-ap
 
 | Store id | Game id | Type | USD | What it gives |
 |---|---|---|---|---|
+| `jade_pinch` | `moonstones_0` | Consumable | 0.99 | 45 Jade (Pinch of Jade) |
 | `jade_pouch` | `moonstones_1` | Consumable | 1.99 | 100 Jade (Pouch of Jade) |
 | `jade_bag` | `moonstones_2` | Consumable | 4.99 | 280 Jade (Bag of Jade) |
 | `jade_box` | `moonstones_3` | Consumable | 9.99 | 600 Jade (Box of Jade) |
@@ -174,6 +175,9 @@ Create these in App Store Connect (In-App Purchases) and the Play Console (In-ap
 | `offer_builder` | `offer_builder` | Consumable | 4.99 | Builder offer |
 | `offer_war_prep` | `offer_war_prep` | Consumable | 2.99 | War prep offer |
 | `offer_rebuild` | `offer_rebuild` | Consumable | 2.99 | Rebuild offer |
+| `clan_stipend` | `clan_stipend` | Consumable (describe it as "30 daily Jade payments", never "monthly": nothing renews) | 2.99 | Clan Stipend: 30 payments of 20 Jade, one claimable per UTC day, none lost; buyable again once all are claimed |
+
+These two were missing from this table before 2026-11-06 (state-of-the-game report, section 5 step 4, economy E08): a store set up from it would have shown "Not sold here" on the two cheapest products. `tests/backend/release-config.test.ts` now checks that every product in `store.json` `storeProductIds` is listed here.
 
 **Season Scroll product type (decided):** a consumable in App Store Connect and Play Console, so the same product can be bought again each season (a non-consumable can be bought only once per Apple ID / Google account, ever; a non-renewing subscription would make Apple require restore across all the user's devices and a duration Apple does not enforce). The game, not the store, knows the season: `grantPurchase` gives the premium track until the season ends (`pass.json`), and a second purchase in the same season is refused before the store sheet opens. **Restore** is the server's purchase history for the same online account: Store → Restore purchases (`controller.restorePurchases`) asks `GET /v1/purchases` and gives back this season's Scroll if a credited, unrefunded Scroll purchase exists. On a new device that only works on the same account, so recommend linking Sign in with Apple / Google (Settings → Online play → Account → Sign-ins) in the Store's Scroll card and in support. App Review accepts restore through your own account system for consumables; say so in the review notes (`docs/store/REVIEW_NOTES.md`). Option (not needed, owner may add): set `SKIncludeConsumableInAppPurchaseHistory` = YES in `ios/App/App/Info.plist` (iOS 18+) so StoreKit 2's `Transaction.all` / current-entitlement history also lists finished consumables; the native plugin could then restore a Scroll from Apple's own history for a player who never linked a sign-in, after the server checks the JWS as usual.
 

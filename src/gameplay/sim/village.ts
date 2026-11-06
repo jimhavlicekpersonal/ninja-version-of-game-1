@@ -386,10 +386,19 @@ export function builderStatus(state: VillageState, data: GameData, now: number):
   return { total, busy, free: Math.max(0, total - busy) };
 }
 
-function costText(cost: Cost): string {
-  return RESOURCE_KINDS.filter((k) => cost[k])
-    .map((k) => `${cost[k]} ${k}`)
-    .join(', ');
+/** 5448274 → "5,448,274" (no locale: the sim is the same everywhere; the text layer will localise it). */
+function thousands(n: number): string {
+  const digits = String(Math.round(Math.abs(n)));
+  return (n < 0 ? '-' : '') + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+/**
+ * "5,448,274 Coins and 1,200 Provisions" (report section 5 step 4, art F1: messages used to read
+ * "needs 5448274 acorns", the internal id of the old game, unformatted, on the Keep sheet).
+ */
+function costText(cost: Cost, data: GameData): string {
+  const parts = RESOURCE_KINDS.filter((k) => cost[k]).map((k) => `${thousands(cost[k]!)} ${data.economy.resourceNames?.[k] ?? k}`);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts.join('');
 }
 
 /**
@@ -424,12 +433,12 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
     const need = hallLevelRequiredFor(data, type, (l) => l.count > have);
     return need
       ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} to build another ${def.name}.`), quote }
-      : { ...fail('LIMIT_REACHED', `You have the most ${def.name}s allowed.`), quote };
+      : { ...fail('LIMIT_REACHED', `Your Keep allows no more of these (${def.name}: ${have} of ${lim.count}).`), quote };
   }
   if (!canAfford(s.resources, cost)) {
     return cost.moonstones && s.resources.moonstones < cost.moonstones
       ? { ...fail('NOT_ENOUGH_MOONSTONES', `Needs ${cost.moonstones} Jade.`), quote }
-      : { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost)}).`), quote };
+      : { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`), quote };
   }
   if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
     return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
@@ -457,7 +466,7 @@ export function upgradeQuote(state: VillageState, id: string, data: GameData, no
       ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} first.`), quote }
       : { ...fail('MAX_LEVEL', `${def.name} is at its highest level.`), quote };
   }
-  if (!canAfford(s.resources, next.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(next.cost)}).`), quote };
+  if (!canAfford(s.resources, next.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(next.cost, data)}).`), quote };
   if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
     return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
   }
@@ -1078,7 +1087,7 @@ function clearObstacle(s: VillageState, id: string, now: number, data: GameData)
   const def = buildingDef(data, b.type);
   if (def.category !== 'obstacle' || !def.clear) return fail('NOT_AVAILABLE', 'That cannot be cleared.');
   if (b.upgrade) return fail('BUSY', 'Already being cleared.');
-  if (!canAfford(s.resources, def.clear.cost)) return fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.clear.cost)}).`);
+  if (!canAfford(s.resources, def.clear.cost)) return fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.clear.cost, data)}).`);
   if (builderStatus(s, data, now).free < 1) return fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.');
   subtractCost(s.resources, def.clear.cost);
   b.upgrade = { toLevel: 0, startedAt: now, endsAt: now + def.clear.seconds * MS_PER_SECOND, cost: def.clear.cost };
@@ -1109,7 +1118,7 @@ export function trainQuoteOn(s: VillageState, troop: string, now: number, data: 
   if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > trainingQueueLimit(s, data)) {
     return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards and the next-army queue are full.' : 'Build a Squad Courtyard to house warriors.'), quote };
   }
-  if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost)}).`), quote };
+  if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`), quote };
   return { ok: true, quote };
 }
 
@@ -1286,7 +1295,7 @@ export function researchStartQuoteOn(s: VillageState, troop: string, now: number
   const q = researchQuote(s, troop, hallLevel(s, data), data);
   const quote: Quote | undefined = q.toLevel !== undefined ? { toLevel: q.toLevel, cost: q.cost ?? {}, seconds: Math.round((q.seconds ?? 0) * buildTimeFactor(s, now, data)) } : undefined;
   if (!q.ok) return { ...fail(q.code, q.message), quote };
-  if (!canAfford(s.resources, q.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(q.cost)}).`), quote };
+  if (!canAfford(s.resources, q.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(q.cost, data)}).`), quote };
   return { ok: true, quote: quote! };
 }
 

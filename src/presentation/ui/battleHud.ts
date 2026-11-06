@@ -119,19 +119,23 @@ export class BattleHud {
               ? `Practice · ${deps.trial.layout}${deps.trial.modifiers.length ? ` · ${deps.trial.modifiers.join(', ')}` : ''} · ${deps.trial.firstClear ? `${deps.trial.starsToClear}★ to clear` : 'already cleared'}`
               : deps.practice
                 ? 'Practice battle · nothing is spent or won'
-                : this.s.setup.base.practice
-                ? `Practice target · ${this.s.setup.base.practice} · loot you can win`
-                : 'Loot you can win',
+                : // Report section 5 step 4 (art F4): the card used to wrap to six lines on a 320 px phone.
+                  // The label that says what this base is stays; the loot chips say what can be won.
+                  (this.s.setup.base.practice ?? 'Loot you can win'),
       ),
-      deps.grove || deps.practice || deps.special ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
-      this.s.mode !== 'replay' && !deps.grove && !deps.trial && !deps.special && this.s.setup.base.trophies !== undefined
-        ? h(
-            'div',
-            { class: 'small b-trophies' },
-            icon(icons.leaf),
-            ` ${this.s.setup.base.trophies} · Win +${winTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)} · Lose −${lossTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)}`,
-          )
-        : null,
+      h(
+        'div',
+        { class: 'b-row' },
+        deps.grove || deps.practice || deps.special ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? 'First-clear reward: ' : 'Reward already claimed', deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
+        this.s.mode !== 'replay' && !deps.grove && !deps.trial && !deps.special && this.s.setup.base.trophies !== undefined
+          ? h(
+              'div',
+              { class: 'small b-trophies', title: 'Honor: theirs, then what you win or lose' },
+              icon(icons.leaf),
+              ` ${this.s.setup.base.trophies} · +${winTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)} / −${lossTrophies(deps.myTrophies, this.s.setup.base.trophies, this.s.data)}`,
+            )
+          : null,
+      ),
     );
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
     this.coachEl.hidden = true;

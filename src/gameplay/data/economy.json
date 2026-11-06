@@ -1,4 +1,5 @@
 {
+  "resourceNames": { "acorns": "Coins", "dew": "Provisions", "nightsap": "Shadow Ink", "moonstones": "Jade" },
   "mapSize": 40,
   "startingResources": {
     "acorns": 2500,

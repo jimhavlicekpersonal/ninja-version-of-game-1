@@ -74,3 +74,17 @@ describe('A5: refunds take back everything; what was spent is a debt', () => {
     expect(out.village).toEqual(old.village);
   });
 });
+
+describe('report section 5 step 4 (art F1, F18): messages players read', () => {
+  it('names resources and formats numbers, never the internal ids', () => {
+    const s = createNewVillage(T, data);
+    const keep = s.buildings.find((b) => data.buildings[b.type].category === 'hall')!;
+    s.resources.acorns = 0;
+    s.resources.dew = 0;
+    const r = applyCommand(s, { type: 'upgrade', id: keep.id }, T, data);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.message).toMatch(/needs [\d,]+ (Coins|Provisions)/);
+    expect(r.message).not.toMatch(/acorns|dew|nightsap|moonstones/);
+  });
+});

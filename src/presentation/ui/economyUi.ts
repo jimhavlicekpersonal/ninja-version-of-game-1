@@ -22,6 +22,8 @@ export interface UiKit {
   confirm(title: string, message: string | HTMLElement, confirmLabel: string, danger?: boolean, cancelLabel?: string): Promise<boolean>;
   toast(text: string, kind?: 'info' | 'error' | 'success'): void;
   closeAllModals(): void;
+  /** The Clan Keep wearing a look, as a data URL (only the Store's Looks use it). */
+  skinThumb?(skin: string): string | null;
 }
 
 const usd = (n: number) => `$${n.toFixed(2)}`;
@@ -370,8 +372,12 @@ export class EconomyUi {
     for (const skin of this.c.data.cosmetics.hallSkins) {
       const owned = s.cosmetics.owned.includes(skin.id);
       const equipped = s.cosmetics.hallSkin === skin.id;
-      const swatch = h('div', { class: 'skin-swatch', style: `background: radial-gradient(circle at 35% 30%, #fff8, transparent 40%), ${skin.cap}` });
-      for (let i = 0; i < 4; i++) swatch.append(h('i', { style: `background:${skin.spots}` }));
+      // Report section 5 step 3/4 (art F2): the real Keep in this look, not the old game's mushroom cap.
+      // Until the art is ready, a roof-shaped swatch in the look's roof and trim colours.
+      const thumb = this.kit.skinThumb?.(skin.id) ?? null;
+      const swatch = thumb
+        ? h('img', { class: 'skin-thumb', src: thumb, alt: `Clan Keep in the ${skin.name} look` })
+        : h('div', { class: 'skin-swatch', role: 'img', 'aria-label': `${skin.name} roof colours`, style: `--roof:${skin.cap};--trim:${skin.spots}` });
       let action: HTMLElement;
       if (equipped) action = h('span', { class: 'chip good' }, 'In use');
       else if (owned) {

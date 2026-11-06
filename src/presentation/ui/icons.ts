@@ -26,12 +26,16 @@ export const icons = {
       '<path d="M7.2 8.4c.7-1.3 1.9-2.2 3.2-2.6" stroke="#fffbe8" stroke-width="1.5" stroke-linecap="round" fill="none"/>',
     GOLD,
   ),
+  // Report section 5 step 4 (art F9): an indigo bowl heaped with rice. The old tan bale was the gold coin's
+  // size, shape and colour family, so the two main resource pills looked the same at a glance.
   dew: svg(
-    `<ellipse cx="12" cy="13.5" rx="8.5" ry="6.8" fill="url(#kg-rice)" stroke="#6b5326" stroke-width="1.4"/>` +
-      '<path d="M4.4 11.2c5 1 10.2 1 15.2 0M4.1 15.8c5.2 1 10.6 1 15.8 0" stroke="#9c7a3a" stroke-width="1.5" fill="none"/>' +
-      '<path d="M12 6.7V4M9.5 5.2L12 3.2l2.5 2" fill="none" stroke="#6b5326" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path d="M6.8 9.4c1-.8 2.3-1.3 3.7-1.4" stroke="#fffbe8" stroke-width="1.4" stroke-linecap="round" fill="none"/>',
-    rad('kg-rice', [[0, '#fff4d2'], [0.55, '#e6cf95'], [1, '#b8954e']]),
+    '<ellipse cx="12" cy="20.2" rx="6.4" ry="1.4" fill="#1d2a4a" opacity=".3"/>' +
+      `<path d="M7 8.6c1-3 3-4.6 5-4.6s4 1.6 5 4.6z" fill="url(#kg-rice)" stroke="#8a8f9e" stroke-width="1"/>` +
+      '<path d="M9.2 6.6l.6.3M12 5.4v.7M14.6 6.6l-.6.3M10.6 8l.4.2M13.4 8l-.4.2" stroke="#b9bccb" stroke-width=".9" stroke-linecap="round"/>' +
+      `<path d="M3.4 9.4h17.2c-.4 5.2-3.9 9-8.6 9s-8.2-3.8-8.6-9z" fill="url(#kg-bowl)" stroke="#1d2a4a" stroke-width="1.4" stroke-linejoin="round"/>` +
+      '<path d="M3.4 9.4h17.2" stroke="#e7ecfb" stroke-width="1.2"/>' +
+      '<path d="M7 12.2c.5 1.6 1.6 2.9 3 3.5" stroke="#9fb3ec" stroke-width="1.3" stroke-linecap="round" fill="none"/>',
+    rad('kg-rice', [[0, '#ffffff'], [0.7, '#f1f0ea'], [1, '#d9d7cd']]) + lin('kg-bowl', [[0, '#5b78c8'], [0.6, '#33509c'], [1, '#22376f']], 0.5, 1),
   ),
   moonstones: svg(
     `<path d="M12 2.8l7.5 6.2-7.5 12.2L4.5 9z" fill="url(#kg-jade)" stroke="#16503a" stroke-width="1.4" stroke-linejoin="round"/>` +

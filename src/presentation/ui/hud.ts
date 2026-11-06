@@ -54,6 +54,8 @@ export interface HudDeps {
   store: SaveStore;
   /** Data URL of a building's art, for the Build menu. */
   thumbnail(type: string): string | null;
+  /** Data URL of the Clan Keep at the player's level wearing a look (Store → Looks). */
+  skinThumbnail?(skin: string): string | null;
   getFps(): number;
   debugTime: { offsetMs(): number; skip(ms: number): void };
   /** The testing sandbox (separate save, offline): only there are testing tools shown. */
@@ -162,6 +164,7 @@ export class Hud {
       confirm: (...a) => this.confirm(...a),
       toast: (...a) => this.toast(...a),
       closeAllModals: () => this.closeAllModals(),
+      skinThumb: (skin) => this.deps.skinThumbnail?.(skin) ?? null,
     });
     this.grove = new GroveUi({
       kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
