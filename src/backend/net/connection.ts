@@ -461,7 +461,7 @@ export class Connection {
         if (!r.ok) return null;
         const e = r.events.find((x) => x.kind === 'grove_attack');
         if (!e || e.kind !== 'grove_attack') return null;
-        void this.report('gangwar', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, deployments, endTick, clientHash: e.record.result.hash, rules: SIM_RULES });
+        void this.report('gangwar', { ticket: t.ticket, seed: setup.seed, army: setup.army, levels: setup.levels, reinforcements: setup.reinforcements, ...(setup.hero ? { hero: setup.hero } : {}), deployments, endTick, clientHash: e.record.result.hash, rules: SIM_RULES });
         return { stars: e.stars, destruction: e.destruction, record: e.record };
       },
     };
@@ -926,7 +926,7 @@ export class Connection {
     const known = new Set(g.state.defenseLog.map((x) => x.id));
     let added = 0;
     for (const d of defenses) {
-      const record: BattleRecord = { id: d.id, at: d.at, kind: 'defense', opponentName: d.attackerName, setup: { seed: d.seed, base: d.base, army: d.army, levels: d.levels, ...(d.infiltration ? { infiltration: true } : {}) }, deployments: d.deployments, endTick: d.endTick, result: d.result, trophies: d.trophies };
+      const record: BattleRecord = { id: d.id, at: d.at, kind: 'defense', opponentName: d.attackerName, setup: { seed: d.seed, base: d.base, army: d.army, levels: d.levels, ...(d.infiltration ? { infiltration: true } : {}), ...(d.reinforcements ? { reinforcements: d.reinforcements } : {}), ...(d.hero ? { hero: d.hero } : {}) }, deployments: d.deployments, endTick: d.endTick, result: d.result, trophies: d.trophies };
       g.dispatch({ type: 'applyDefense', record, lost: d.result.loot, trophies: me.trophies, shieldUntil: me.shieldUntil });
       if (!known.has(d.id)) added++;
     }
@@ -1121,7 +1121,7 @@ export class Connection {
     let added = false;
     for (const r of this.o.game.state.battleLog) {
       if (r.settlement !== 'pending' || !r.ticket || queued.has(r.ticket)) continue;
-      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, deployments: r.deployments, endTick: r.endTick, clientHash: r.result.hash, ...(r.rules !== undefined ? { rules: r.rules } : {}) } });
+      items.push({ id: r.ticket, kind: 'attack', at: r.at, sub: { ticket: r.ticket, seed: r.setup.seed, army: r.setup.army, levels: r.setup.levels, reinforcements: r.setup.reinforcements, ...(r.setup.hero ? { hero: r.setup.hero } : {}), deployments: r.deployments, endTick: r.endTick, clientHash: r.result.hash, ...(r.rules !== undefined ? { rules: r.rules } : {}) } });
       added = true;
     }
     if (added) this.saveOutbox(items);

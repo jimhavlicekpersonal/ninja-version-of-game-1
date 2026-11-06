@@ -1,3 +1,4 @@
+import { rivalById, rivalFor, rivalOutpostName } from './gameplay/sim/rivals';
 import { isolateName } from './gameplay/sim/social/names';
 import type Phaser from 'phaser';
 import { BattleSession } from './gameplay/control/battleSession';
@@ -97,7 +98,11 @@ export class App {
           this.onlineMatch = kept ?? { seed: r.seed, battleSeed: typeof m.seed === 'number' ? m.seed >>> 0 : mixSeed(r.seed, 0xba771e), ticket: m.ticket, base: m.base, expiresAt: m.expiresAt, bot: 'opponent' in m ? m.opponent.kind === 'bot' : false };
           this.ticket = this.onlineMatch.ticket;
           const base = structuredClone(this.onlineMatch.base);
-          if (this.onlineMatch.bot) base.practice = 'Generated rival (no player fitted your rank)';
+          if (this.onlineMatch.bot) {
+            // Report section 5 step 8: a computer rival clan's outpost (no player fitted your rank).
+            const clan = rivalById(base.rival, c.data);
+            base.practice = clan ? `${clan.name} outpost (computer rival)` : 'Generated rival (no player fitted your rank)';
+          }
           const setup: BattleSetup = { seed: this.onlineMatch.battleSeed, base, ...loadout, infiltration: true };
           this.open(new BattleSession(setup, c.data, 'scout'));
           return;
@@ -112,8 +117,14 @@ export class App {
     }
     // Opponent strength and loot follow the player's trophies (see sim/matchmaking).
     const base = opponentFor(r.seed, c.state, c.data);
-    // Offline, every rival is generated: say so instead of passing it off as a player.
-    base.practice = 'Generated rival (offline)';
+    // Offline, every rival is generated: say so instead of passing it off as a player. Report section 5 step 8:
+    // generated bases are the outposts of named computer rival clans.
+    const clan = rivalFor(r.seed, c.data);
+    if (clan) {
+      base.rival = clan.id;
+      base.name = rivalOutpostName(clan, r.seed, c.data);
+    }
+    base.practice = clan ? `${clan.name} outpost (computer rival, offline)` : 'Generated rival (offline)';
     const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, ...loadout, infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'));
   }
@@ -298,7 +309,7 @@ export class App {
           const result = session.result();
           lastRecord = { id: 'practice', kind: 'attack', at: c.now(), opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick, result, rules: SIM_RULES };
           if (duel) {
-            const sub = { ticket: duel.ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: result.hash, rules: SIM_RULES };
+            const sub = { ticket: duel.ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, ...(session.setup.hero ? { hero: session.setup.hero } : {}), deployments: session.deployments, endTick: session.endTick, clientHash: result.hash, rules: SIM_RULES };
             void this.d.connection.reportDuel(sub).then(
               (r) => this.d.hud.toast(`Duel recorded. Against ${isolateName(duel.friendName)}: ${r.rivalry.wins} win${r.rivalry.wins === 1 ? '' : 's'} in ${r.rivalry.duels} duel${r.rivalry.duels === 1 ? '' : 's'}.`, 'success'),
               (e: Error) => this.d.hud.toast(`The duel could not be recorded: ${e.message}`, 'error'),
@@ -356,7 +367,7 @@ export class App {
           // keeps the report until it gets through.
           this.ticket = null;
           this.onlineMatch = null;
-          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, deployments: session.deployments, endTick: session.endTick, clientHash: out.record.result.hash, rules: SIM_RULES });
+          void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, ...(session.setup.hero ? { hero: session.setup.hero } : {}), deployments: session.deployments, endTick: session.endTick, clientHash: out.record.result.hash, rules: SIM_RULES });
         }
         lastRecord = out.record;
         if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true };

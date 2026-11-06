@@ -881,3 +881,6 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 .calendar-day.done { opacity: .5; }
 .calendar-day.current { outline: 2px solid var(--gold, #d9a520); }
 .calendar-day.big { background: rgba(217, 165, 32, .18); }
+
+/* Report section 5 step 8: the clan hero's card. */
+.troop-card.hero { box-shadow: 0 0 0 2px #c8402f, 0 2px 6px rgba(0, 0, 0, .35); }

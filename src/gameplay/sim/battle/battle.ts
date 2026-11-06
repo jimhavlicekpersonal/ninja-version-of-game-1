@@ -27,15 +27,20 @@ import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isH
  * role budgets rose (shadow x1.5, sky x1.35, mystic HP x1.5 / damage x1.3,
  * siege x1.2; `tools/progression/rolecut.mjs`), and every Shadow warrior is
  * hidden until its first attack. Rules 3 is archived in server/rules/v3.
+ *
+ * 5 (report section 5 step 8): heroes. `BattleSetup.hero` deploys one hero
+ * (`battle.json` `heroes`), whose Rally aura raises nearby warriors' damage
+ * after its first hit. A battle without a hero plays out exactly as under 4
+ * (archived in server/rules/v4), so 4 stays compatible.
  */
-export const SIM_RULES = 4;
+export const SIM_RULES = 5;
 
 /**
  * Older rules this code plays out identically (their battles never use the
  * newer setup fields). Their replays stay watchable, and the server checks
  * their battles with this code. Empty it on the next change to combat itself.
  */
-export const SIM_RULES_COMPATIBLE: readonly number[] = [];
+export const SIM_RULES_COMPATIBLE: readonly number[] = [4];
 
 /** Whether a record can be replayed faithfully with the current rules. */
 export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {
@@ -128,6 +133,8 @@ export interface SimTroop {
   /** Bitter Incense Burner (recomputed every tick): healing cut and heal/haste/resist aura cut on this troop. */
   healCut: number;
   auraCut: number;
+  /** Rally (heroes, SIM_RULES 5): the tick the source's rally ends; 0 = not rallying. */
+  rallyUntil?: number;
 }
 
 export interface SimProjectile {
@@ -323,7 +330,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     buildings,
     troops: [],
     projectiles: [],
-    remaining: { ...setup.army },
+    remaining: { ...setup.army, ...(setup.hero && data.battle.heroes?.[setup.hero.id] ? { [setup.hero.id]: 1 } : {}) },
     used: {},
     loot: {},
     destroyedCount: buildings.filter((b) => b.destroyed && b.kind !== 'hedge' && b.kind !== 'trap').length,
@@ -357,7 +364,7 @@ export function canDeploy(sim: BattleSim, troop: string, x: number, y: number): 
   if (!sim.entry) return true;
   // Infiltration Points: only inside a point, and only while that path still has cover.
   const p = pointAt(sim.entry, tx, ty);
-  return p >= 0 && coverLeft(sim.entry, p) >= (sim.data.troops[troop]?.housing ?? 0);
+  return p >= 0 && coverLeft(sim.entry, p) >= (troopDef(sim.data, troop).housing ?? 0);
 }
 
 /** Why a troop can't be placed at a tile: 'zone' (not a deploy spot) or 'full' (that point's cover is used up). Null if it can. */
@@ -395,8 +402,8 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
   if (!canDeploy(sim, d.troop, d.x, d.y)) return false;
   if (isAbility(sim.data, d.troop)) return useAbility(sim, d);
   const def = troopDef(sim.data, d.troop);
-  // Donated troops come out first and keep the level they were donated at.
-  let level = sim.setup.levels?.[d.troop] ?? 1;
+  // Donated troops come out first and keep the level they were donated at; the hero fights at its own level.
+  let level = d.troop === sim.setup.hero?.id ? sim.setup.hero.level : sim.setup.levels?.[d.troop] ?? 1;
   if ((sim.lodgeLeft[d.troop] ?? 0) > 0) {
     sim.lodgeLeft[d.troop]--;
     level = sim.setup.reinforcements![d.troop].level;
@@ -683,7 +690,7 @@ function stepDefense(sim: BattleSim, bi: number): void {
   };
   const taunt = sim.supportTroops.find((index) => {
     const t = sim.troops[index];
-    return sim.data.troops[t.type].kit?.aura === 'taunt' && ok(t) && dist(cx, cy, t.x, t.y) <= (sim.data.troops[t.type].kit?.radius ?? 0);
+    return troopDef(sim.data, t.type).kit?.aura === 'taunt' && ok(t) && dist(cx, cy, t.x, t.y) <= (troopDef(sim.data, t.type).kit?.radius ?? 0);
   }) ?? -1;
   if (taunt >= 0) b.targetTroop = taunt;
   // Longbow Yagura: re-picks each shot, preferring warriors that attack from long range.
@@ -695,7 +702,7 @@ function stepDefense(sim: BattleSim, bi: number): void {
     sim.troops.forEach((t, i) => {
       if (!ok(t)) return;
       const d = dist(cx, cy, t.x, t.y);
-      const long = longReach > 0 && sim.data.troops[t.type].range >= longReach;
+      const long = longReach > 0 && troopDef(sim.data, t.type).range >= longReach;
       if ((long && !bestLong) || (long === bestLong && d < bestD)) {
         bestD = d;
         bestLong = long;
@@ -731,7 +738,7 @@ function stepTraps(sim: BattleSim): void {
     const cx = b.x + b.size / 2;
     const cy = b.y + b.size / 2;
     // A flyer grounded by a Kite-Cutter Ballista is on the ground: traps can catch it too.
-    const vulnerable = (t: SimTroop) => !t.dead && !airborne(sim, t) && !sim.data.troops[t.type].kit?.trapImmune;
+    const vulnerable = (t: SimTroop) => !t.dead && !airborne(sim, t) && !troopDef(sim.data, t.type).kit?.trapImmune;
     const triggered = sim.troops.some((t) => vulnerable(t) && dist(cx, cy, t.x, t.y) <= c.range);
     if (!triggered) return;
     b.hidden = false;

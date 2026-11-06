@@ -1,3 +1,4 @@
+import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
 import type { BattleSession } from '../../gameplay/control/battleSession';
 import type { BattleHooks, BattleView, ScreenInsets } from '../render/BattleScene';
@@ -299,6 +300,11 @@ export class BattleHud {
       h('div', { class: 'chips' }, ...chips),
       entry?.points.length ? h('p', { class: 'small' }, `Each point hides ${entry.cover} space of warriors, so split your army into squads. The number on a point is how many defenses cover its path to the Keep; tap one to see the path.`) : null,
       ...this.armyTips(r.tips).map((t) => h('p', { class: 'small' }, t)),
+      ...(() => {
+        // Report section 5 step 8: who holds this outpost (a computer rival clan).
+        const clan = rivalById(this.s.setup.base.rival, this.s.data);
+        return clan ? [h('p', { class: 'small rival-bio' }, h('b', {}, `${clan.name}, led by ${clan.leader}. `), clan.bio)] : [];
+      })(),
     );
     more.hidden = !this.scoutOpen;
     const toggle = h(
@@ -435,13 +441,16 @@ export class BattleHud {
       });
       this.troopsEl.append(card);
     }
-    for (const [type, total] of Object.entries(this.s.setup.army).sort(([a], [b]) => (a === 'saboteur' ? -1 : b === 'saboteur' ? 1 : 0))) {
+    // Report section 5 step 8: the clan hero (SIM_RULES 5) leads the row.
+    const hero = this.s.setup.hero && this.s.data.battle.heroes?.[this.s.setup.hero.id] ? ([[this.s.setup.hero.id, 1]] as [string, number][]) : [];
+    for (const [type, total] of [...hero, ...Object.entries(this.s.setup.army).sort(([a], [b]) => (a === 'saboteur' ? -1 : b === 'saboteur' ? 1 : 0))]) {
       if (total <= 0) continue;
       const left = this.s.sim.remaining[type] ?? 0;
       const thumb = this.deps.troopThumb(type);
+      const def = this.s.data.troops[type] ?? this.s.data.battle.heroes?.[type];
       const card = h(
         'button',
-        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}`, type: 'button', 'aria-label': this.s.data.troops[type]?.name ?? type, 'data-type': type, title: this.s.data.troops[type]?.description ?? type },
+        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}${hero.length && type === hero[0][0] ? ' hero' : ''}`, type: 'button', 'aria-label': def?.name ?? type, 'data-type': type, title: def?.description ?? type },
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('span', { class: 'troop-count' }, `×${left}`),
       );

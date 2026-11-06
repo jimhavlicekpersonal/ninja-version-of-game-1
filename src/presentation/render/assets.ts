@@ -20,11 +20,11 @@ import {
 } from '../art/ninja';
 import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
 import { TILE_H, TILE_W, mapBounds, worldToTile } from './iso';
-import { WARRIORS } from '../../gameplay/sim/progression';
+import { HEROES, WARRIORS } from '../../gameplay/sim/progression';
 import { quality } from './quality';
 import { TextureBudget } from './textureBudget';
 
-registerWarriorArt(WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })));
+registerWarriorArt([...WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })), ...HEROES.map((h) => ({ id: h.id, role: h.heroOf, tier: 5, look: h.look as unknown as Record<string, string>, hero: true }))]);
 
 export { GROUND_PAD };
 

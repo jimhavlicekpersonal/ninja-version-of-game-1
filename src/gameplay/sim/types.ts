@@ -398,7 +398,8 @@ export interface WarriorKit {
   stunTicks?: number;
   wallMultiplier?: number;
   openWalls?: boolean;
-  aura?: 'heal' | 'haste' | 'veil' | 'resist' | 'splash' | 'taunt';
+  /** 'rally' (heroes, report section 5 step 8): allies near the source deal `strength` more damage for `durationTicks` after its first hit. */
+  aura?: 'heal' | 'haste' | 'veil' | 'resist' | 'splash' | 'taunt' | 'rally';
   strength?: number;
   cooldownTicks?: number;
   revive?: number;
@@ -448,6 +449,8 @@ export interface SabotageDef {
 }
 
 export interface BattleDef {
+  /** Heroes (report section 5 step 8, SIM_RULES 5): troop-shaped, never trained, one per battle from `unlockKeep`. */
+  heroes?: Record<string, TroopDef & { unlockKeep: number }>;
   warriorRules: {
     supportIntervalTicks: number;
     /** A support troop tries this many of the nearest allies for one it can reach without breaking a wall. */
@@ -496,6 +499,15 @@ export interface NamesDef {
   placeSecond: string[];
   playerFirst: string[];
   playerSecond: string[];
+  /** Named rival clans that front generated opponents (report section 5 step 8, growth 5 and 12). */
+  rivalClans?: RivalClan[];
+}
+
+export interface RivalClan {
+  id: string;
+  name: string;
+  leader: string;
+  bio: string;
 }
 
 export interface BuildingDef {
@@ -540,6 +552,8 @@ export interface EconomyDef {
   mapSize: number;
   startingResources: Resources;
   startingLayout: StartingBuilding[];
+  /** Report section 5 step 8 (art F13): decor around the Keep in a new village (movable; skipped where it does not fit). */
+  startingDecor?: { type: BuildingType; x: number; y: number }[];
   collectorHoursCap: number;
   raidableStoredFraction: number;
   raidableUncollectedFraction: number;

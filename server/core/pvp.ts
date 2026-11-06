@@ -4,6 +4,8 @@
  * attacker, near their trophies; the loot penalty for hitting lower halls;
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
+import { heroAtKeep } from '../../src/gameplay/sim/heroes';
+import { rivalFor, rivalOutpostName } from '../../src/gameplay/sim/rivals';
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
 import type { runBattle } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
@@ -223,7 +225,7 @@ export function validLevels(levels: unknown, hallLevel: number, data: GameData):
  * This is a legality check, not an inventory ledger: the server does not yet
  * track what each player trained or researched (docs/PROTOCOL.md, "Trust model").
  */
-export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number>; reinforcements: Record<string, { count: number; level: number }> } {
+export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number>; reinforcements: Record<string, { count: number; level: number }>; hero?: { id: string; level: number } } {
   const army = sub.army ?? {};
   if (typeof army !== 'object') throw new ApiError(400, 'bad_request', 'bad army');
   const reinforcements: Record<string, { count: number; level: number }> = {};
@@ -251,7 +253,16 @@ export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { 
   if (ownHousing > maxHousingAtHall(me.hallLevel, data) || lodgeHousing > maxReinforcementAt(me.hallLevel, data)) throw new ApiError(400, 'bad_request', 'army too big');
   const levels = validLevels(sub.levels, me.hallLevel, data);
   if (!levels) throw new ApiError(400, 'bad_request', 'bad troop levels');
-  return { army, levels, reinforcements };
+  // Report section 5 step 8 (SIM_RULES 5): the hero must be the one the attacker's Keep brings, at that level.
+  let hero: { id: string; level: number } | undefined;
+  if (sub.hero !== undefined && sub.hero !== null) {
+    // One Keep of slack: the base the server holds can trail a Keep upgrade that just finished on the device.
+    const most = heroAtKeep(me.hallLevel + 1, data);
+    const level = Number(sub.hero?.level);
+    if (!most || typeof sub.hero !== 'object' || sub.hero.id !== most.id || !Number.isInteger(level) || level < 1 || level > most.level) throw new ApiError(400, 'bad_request', 'bad hero');
+    hero = { id: most.id, level };
+  }
+  return { army, levels, reinforcements, ...(hero ? { hero } : {}) };
 }
 
 export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest, client?: ClientInfo): Promise<void> {
@@ -343,7 +354,12 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     // The server does not know the player's research, so it assumes half-way through their Keep (same rule as offline).
     const base = engine.opponentForRank(seed, me.trophies, me.hallLevel, engine.data, me.hallLevel - 0.5 - engine.data.ranks.matchmaking.powerSlack);
     const names = data.names;
-    base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
+    // Report section 5 step 8: a named computer rival clan's outpost (still `kind: 'bot'`, labelled by the game).
+    const clan = rivalFor(seed, data);
+    if (clan) {
+      base.rival = clan.id;
+      base.name = rivalOutpostName(clan, seed, data);
+    } else base.name = `${names.placeFirst[seed % names.placeFirst.length]} ${names.placeSecond[(seed >>> 8) % names.placeSecond.length]}`;
     ticket = { id: ctx.uuid(), kind: 'pvp', attackerId: me.id, defenderId: null, defenderName: base.name, base, defenderTrophies: base.trophies ?? me.trophies, createdAt: t, expiresAt: t + TICKET_TTL_MS, used: false, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion, ...(scoutSeed !== undefined ? { scoutSeed } : {}) };
   }
   await repo.createTicket(ticket);
@@ -582,7 +598,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   if (answered) return answered as AttackResponse;
   const engine = engineForTicket(ctx, ticket, sub);
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
+  const { army, levels, reinforcements, hero } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   // Re-audit: someone else's raid shielded this defender after the ticket was issued. Paying again
   // would bypass the shield (held tickets paid the same loot three times): the battle counts as practice.
@@ -595,7 +611,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   if (ticket.defenderId && (await repo.defensesFor(ticket.defenderId, ticket.createdAt, 1)).length > 0) throw await protectedNow();
   // Re-audit: a server-held village that lacks these warriors is refused before the costly re-simulation.
   await requireArmyOnServer(ctx, me, army);
-  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
+  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(hero ? { hero } : {}) };
   const { result, fallen } = await resimulate(ctx, 'pvp', setup, deployments, sub, engine).catch(async (e) => {
     await burnAfterFailures(ctx, ticket, e);
     throw e;
@@ -645,7 +661,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       // The defender's village on the server loses what was taken, from the buildings that fell (no second simulation).
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: attacker.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result, trophies: -defLoss };
       await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: result.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
-      await tx.addAttack({ id: attackId, at: t, attackerId: attacker.id, attackerName: attacker.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: ticket.rules ?? engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
+      await tx.addAttack({ id: attackId, at: t, attackerId: attacker.id, attackerName: attacker.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), ...(hero ? { hero } : {}), base: ticket.base, deployments, endTick: sub.endTick, result, infiltration: true, rules: ticket.rules ?? engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
     }
     return { response, attacker, defender, defTrophies: defPatch.trophies };
   });
@@ -668,7 +684,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
 export async function defenses(ctx: ServerContext, me: Player, since: number): Promise<DefensesResponse> {
   const list = await ctx.repo.defensesFor(me.id, Number(since) || 0, 20);
   return {
-    defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, ...(a.reinforcements ? { reinforcements: a.reinforcements } : {}), base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, ...(a.infiltration ? { infiltration: true } : {}), ...(a.rules !== undefined ? { rules: a.rules } : {}), trophies: a.defenderTrophies })),
+    defenses: list.map((a) => ({ id: a.id, at: a.at, attackerName: a.attackerName, seed: a.seed, army: a.army, levels: a.levels ?? {}, ...(a.reinforcements ? { reinforcements: a.reinforcements } : {}), ...(a.hero ? { hero: a.hero } : {}), base: a.base, deployments: a.deployments, endTick: a.endTick, result: a.result, ...(a.infiltration ? { infiltration: true } : {}), ...(a.rules !== undefined ? { rules: a.rules } : {}), trophies: a.defenderTrophies })),
   };
 }
 

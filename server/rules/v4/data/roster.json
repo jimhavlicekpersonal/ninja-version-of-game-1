@@ -1,0 +1,949 @@
+{
+  "$comment": "Design catalog of every warrior (10 roles x 5 tiers) and hero. Stats are derived from progression.json by src/gameplay/sim/progression.ts. 'liveTroop' marks warriors already playable (their troops.json id).",
+  "warriors": [
+    {
+      "id": "shinobi",
+      "name": "Shinobi",
+      "role": "blade",
+      "tier": 1,
+      "ability": {
+        "id": "swift_strike",
+        "name": "Swift Strike",
+        "text": "Cheap and fast; the first warrior every clan trains."
+      },
+      "look": {
+        "gi": "#2f3a4f",
+        "accent": "#c8402f",
+        "weapon": "katana"
+      },
+      "liveTroop": "hedgehog_roller"
+    },
+    {
+      "id": "twin_fang_dancer",
+      "name": "Twin-Fang Dancer",
+      "role": "blade",
+      "tier": 2,
+      "ability": {
+        "id": "twin_strike",
+        "name": "Twin Strike",
+        "text": "Every hit lands twice, on its target and the next building beside it."
+      },
+      "look": {
+        "gi": "#3a2f4f",
+        "accent": "#e9b44c",
+        "weapon": "twin short swords"
+      },
+      "liveTroop": "twin_fang_dancer"
+    },
+    {
+      "id": "wind_step_assassin",
+      "name": "Wind-Step Assassin",
+      "role": "blade",
+      "tier": 3,
+      "ability": {
+        "id": "wind_step",
+        "name": "Wind Step",
+        "text": "Dashes to a new target; the first hit after each dash deals double damage."
+      },
+      "look": {
+        "gi": "#2a3a3a",
+        "accent": "#8ad0ff",
+        "weapon": "straight blade with wind ribbons"
+      },
+      "liveTroop": "wind_step_assassin"
+    },
+    {
+      "id": "moonblade_master",
+      "name": "Moonblade Master",
+      "role": "blade",
+      "tier": 4,
+      "ability": {
+        "id": "moon_cut",
+        "name": "Moon Cut",
+        "text": "Every fourth strike is a crescent slash for 2.5x damage."
+      },
+      "look": {
+        "gi": "#1f2433",
+        "accent": "#d9dee6",
+        "weapon": "long curved blade with crescent guard"
+      },
+      "liveTroop": "moonblade_master"
+    },
+    {
+      "id": "storm_sovereign",
+      "name": "Storm Sovereign",
+      "role": "blade",
+      "tier": 5,
+      "ability": {
+        "id": "storm_chain",
+        "name": "Storm Chain",
+        "text": "Slashes arc between up to three nearby buildings."
+      },
+      "look": {
+        "gi": "#141a22",
+        "accent": "#7fd3ff",
+        "weapon": "lightning-etched katana"
+      },
+      "liveTroop": "storm_sovereign"
+    },
+    {
+      "id": "kunai_adept",
+      "name": "Kunai Adept",
+      "role": "thrower",
+      "tier": 1,
+      "ability": {
+        "id": "kunai_volley",
+        "name": "Kunai Volley",
+        "text": "Fragile ranged damage from behind the front line."
+      },
+      "look": {
+        "gi": "#5d6672",
+        "accent": "#e9b44c",
+        "weapon": "kunai bundle"
+      },
+      "liveTroop": "frog_lobber"
+    },
+    {
+      "id": "shuriken_storm",
+      "name": "Shuriken Storm",
+      "role": "thrower",
+      "tier": 2,
+      "ability": {
+        "id": "fan_throw",
+        "name": "Fan Throw",
+        "text": "Throws three shuriken at once; small splash."
+      },
+      "look": {
+        "gi": "#4a5560",
+        "accent": "#c8402f",
+        "weapon": "shuriken fan"
+      },
+      "liveTroop": "shuriken_storm"
+    },
+    {
+      "id": "blowgun_hunter",
+      "name": "Blowgun Hunter",
+      "role": "thrower",
+      "tier": 3,
+      "ability": {
+        "id": "venom_dart",
+        "name": "Venom Dart",
+        "text": "Darts keep damaging a building for 5 seconds."
+      },
+      "look": {
+        "gi": "#3f5a3a",
+        "accent": "#9be05a",
+        "weapon": "bamboo blowgun"
+      },
+      "liveTroop": "blowgun_hunter"
+    },
+    {
+      "id": "chain_sickle_reaper",
+      "name": "Chain-Sickle Reaper",
+      "role": "thrower",
+      "tier": 4,
+      "ability": {
+        "id": "armor_shred",
+        "name": "Armour Shred",
+        "text": "Hits make the target take 20% more damage from everyone."
+      },
+      "look": {
+        "gi": "#3a2a2a",
+        "accent": "#c9ced6",
+        "weapon": "sickle on a chain"
+      },
+      "liveTroop": "chain_sickle_reaper"
+    },
+    {
+      "id": "thousand_needle",
+      "name": "Thousand Needle",
+      "role": "thrower",
+      "tier": 5,
+      "ability": {
+        "id": "needle_rain",
+        "name": "Needle Rain",
+        "text": "Very long range and rapid fire; must stay behind cover."
+      },
+      "look": {
+        "gi": "#2b2f3a",
+        "accent": "#f4ead6",
+        "weapon": "needle quiver and launcher"
+      },
+      "dpsScale": 0.6,
+      "liveTroop": "thousand_needle"
+    },
+    {
+      "id": "armored_guardian",
+      "name": "Armored Guardian",
+      "role": "guardian",
+      "tier": 1,
+      "ability": {
+        "id": "stand_firm",
+        "name": "Stand Firm",
+        "text": "Walks straight into defenses and soaks their fire."
+      },
+      "look": {
+        "gi": "#3a2f2a",
+        "accent": "#7a2e26",
+        "weapon": "iron-studded club",
+        "armor": "red lacquer"
+      },
+      "liveTroop": "beetle_brute"
+    },
+    {
+      "id": "iron_monk",
+      "name": "Iron Monk",
+      "role": "guardian",
+      "tier": 2,
+      "ability": {
+        "id": "iron_skin",
+        "name": "Iron Skin",
+        "text": "Warriors beside him take 15% less damage."
+      },
+      "look": {
+        "gi": "#5a4a3a",
+        "accent": "#e9b44c",
+        "weapon": "iron staff",
+        "armor": "bronze bracers"
+      },
+      "liveTroop": "iron_monk"
+    },
+    {
+      "id": "bell_warden",
+      "name": "Bell Warden",
+      "role": "guardian",
+      "tier": 3,
+      "ability": {
+        "id": "temple_bell",
+        "name": "Alarm Bell",
+        "text": "Rings a bell that makes defenses in range target him first."
+      },
+      "look": {
+        "gi": "#4a3a2a",
+        "accent": "#d9632a",
+        "weapon": "great bell and hammer",
+        "armor": "bronze"
+      },
+      "liveTroop": "bell_warden"
+    },
+    {
+      "id": "mountain_shield",
+      "name": "Mountain Shield",
+      "role": "guardian",
+      "tier": 4,
+      "ability": {
+        "id": "great_wall",
+        "name": "Great Wall",
+        "text": "Carries a tower shield that absorbs splash for allies behind him."
+      },
+      "look": {
+        "gi": "#3d4a5c",
+        "accent": "#9aa0aa",
+        "weapon": "tower shield",
+        "armor": "stone-grey plates"
+      },
+      "liveTroop": "mountain_shield"
+    },
+    {
+      "id": "oni_breaker",
+      "name": "Oni Breaker",
+      "role": "guardian",
+      "tier": 5,
+      "ability": {
+        "id": "oni_smash",
+        "name": "Oni Smash",
+        "text": "Huge health; smashes walls for five times damage."
+      },
+      "look": {
+        "gi": "#2a1a1a",
+        "accent": "#c8402f",
+        "weapon": "giant spiked club",
+        "armor": "black lacquer with horned helm"
+      },
+      "liveTroop": "oni_breaker"
+    },
+    {
+      "id": "saboteur",
+      "name": "Saboteur",
+      "role": "saboteur",
+      "tier": 1,
+      "ability": {
+        "id": "sabotage",
+        "name": "Sabotage",
+        "text": "Jams the nearest working defense for 6 seconds (once per Saboteur)."
+      },
+      "look": {
+        "gi": "#2f4a3a",
+        "accent": "#e9b44c",
+        "weapon": "grappling hook and wrench"
+      },
+      "liveTroop": "saboteur"
+    },
+    {
+      "id": "trap_breaker",
+      "name": "Trap Breaker",
+      "role": "saboteur",
+      "tier": 2,
+      "ability": {
+        "id": "disarm",
+        "name": "Disarm",
+        "text": "Finds and disarms hidden traps along the squad's path."
+      },
+      "look": {
+        "gi": "#4a4a2f",
+        "accent": "#d9dee6",
+        "weapon": "probe pole"
+      },
+      "liveTroop": "trap_breaker"
+    },
+    {
+      "id": "gearbreaker",
+      "name": "Gearbreaker",
+      "role": "saboteur",
+      "tier": 3,
+      "ability": {
+        "id": "long_jam",
+        "name": "Long Jam",
+        "text": "Two jams per warrior, each lasting 9 seconds."
+      },
+      "look": {
+        "gi": "#2f3f4a",
+        "accent": "#e9b44c",
+        "weapon": "heavy wrench and wedges"
+      },
+      "liveTroop": "gearbreaker"
+    },
+    {
+      "id": "fuse_master",
+      "name": "Fuse Master",
+      "role": "saboteur",
+      "tier": 4,
+      "ability": {
+        "id": "delayed_charge",
+        "name": "Delayed Charge",
+        "text": "Plants a charge on a defense that explodes after 5 seconds."
+      },
+      "look": {
+        "gi": "#3a2f2f",
+        "accent": "#ff9a3c",
+        "weapon": "satchel charges"
+      },
+      "liveTroop": "fuse_master"
+    },
+    {
+      "id": "ghost_engineer",
+      "name": "Ghost Engineer",
+      "role": "saboteur",
+      "tier": 5,
+      "ability": {
+        "id": "blackout",
+        "name": "Blackout",
+        "text": "Once per battle, jams up to three defenses within 3 tiles for 4 seconds. Shares jam immunity with other specialists."
+      },
+      "look": {
+        "gi": "#1f2a2a",
+        "accent": "#8ad0ff",
+        "weapon": "lantern of silence"
+      },
+      "liveTroop": "ghost_engineer"
+    },
+    {
+      "id": "tunnel_runner",
+      "name": "Tunnel Runner",
+      "role": "infiltrator",
+      "tier": 1,
+      "ability": {
+        "id": "tunnel",
+        "name": "Tunnel",
+        "text": "Digs under walls to reach any building."
+      },
+      "look": {
+        "gi": "#6b4a2e",
+        "accent": "#8a8f99",
+        "weapon": "short spade",
+        "hat": "straw hat"
+      },
+      "liveTroop": "mole_digger"
+    },
+    {
+      "id": "wall_climber",
+      "name": "Wall Climber",
+      "role": "infiltrator",
+      "tier": 2,
+      "ability": {
+        "id": "climb",
+        "name": "Climb",
+        "text": "Climbs over walls and goes for storehouses first."
+      },
+      "look": {
+        "gi": "#4a3a2a",
+        "accent": "#b8a888",
+        "weapon": "climbing claws"
+      },
+      "liveTroop": "wall_climber"
+    },
+    {
+      "id": "grapple_raider",
+      "name": "Grapple Raider",
+      "role": "infiltrator",
+      "tier": 3,
+      "ability": {
+        "id": "grapple_line",
+        "name": "Grapple Line",
+        "text": "Swings over walls straight to the nearest defense."
+      },
+      "look": {
+        "gi": "#3a3a4a",
+        "accent": "#c8402f",
+        "weapon": "grappling line"
+      },
+      "liveTroop": "grapple_raider"
+    },
+    {
+      "id": "mole_king",
+      "name": "Burrow Ambusher",
+      "role": "infiltrator",
+      "tier": 4,
+      "ability": {
+        "id": "surface_stun",
+        "name": "Surface Stun",
+        "text": "Bursts out of the ground beside a defense, stunning it for 2 seconds."
+      },
+      "look": {
+        "gi": "#5a3a1e",
+        "accent": "#e9b44c",
+        "weapon": "iron digging claws",
+        "hat": "miner helm"
+      },
+      "liveTroop": "mole_king"
+    },
+    {
+      "id": "phantom_gate",
+      "name": "Wall Phantom",
+      "role": "infiltrator",
+      "tier": 5,
+      "ability": {
+        "id": "open_path",
+        "name": "Open Path",
+        "text": "Walls near it crumble, opening a path for everyone."
+      },
+      "look": {
+        "gi": "#2a2a3a",
+        "accent": "#b48cff",
+        "weapon": "key-shaped staff"
+      },
+      "liveTroop": "phantom_gate"
+    },
+    {
+      "id": "kite_raider",
+      "name": "Kite Raider",
+      "role": "sky",
+      "tier": 1,
+      "ability": {
+        "id": "firebomb",
+        "name": "Firebomb",
+        "text": "Glides over walls on a war kite and bombs defenses."
+      },
+      "look": {
+        "gi": "#3a3f6a",
+        "accent": "#c8402f",
+        "weapon": "firebombs",
+        "mount": "red war kite"
+      },
+      "liveTroop": "owl_bomber"
+    },
+    {
+      "id": "crane_glider",
+      "name": "Crane Glider",
+      "role": "sky",
+      "tier": 2,
+      "ability": {
+        "id": "swift_glide",
+        "name": "Swift Glide",
+        "text": "Very fast flyer that raids storehouses."
+      },
+      "look": {
+        "gi": "#f4ead6",
+        "accent": "#2f3a4f",
+        "weapon": "hooked pole",
+        "mount": "white crane-wing glider"
+      },
+      "liveTroop": "crane_glider"
+    },
+    {
+      "id": "lantern_balloon",
+      "name": "Lantern Balloon",
+      "role": "sky",
+      "tier": 3,
+      "ability": {
+        "id": "ember_drop",
+        "name": "Ember Drop",
+        "text": "Slow balloon that drops burning embers in a wide area."
+      },
+      "look": {
+        "gi": "#3a2f2a",
+        "accent": "#ff9a3c",
+        "weapon": "ember pots",
+        "mount": "giant paper lantern balloon"
+      },
+      "liveTroop": "lantern_balloon"
+    },
+    {
+      "id": "thunder_kite",
+      "name": "Thunder Kite",
+      "role": "sky",
+      "tier": 4,
+      "ability": {
+        "id": "chain_lightning",
+        "name": "Chain Lightning",
+        "text": "Lightning hits a defense and up to three nearby defenses for 35% damage each."
+      },
+      "look": {
+        "gi": "#1f2433",
+        "accent": "#7fd3ff",
+        "weapon": "lightning rod",
+        "mount": "storm-blue kite"
+      },
+      "liveTroop": "thunder_kite"
+    },
+    {
+      "id": "dragon_kite_armada",
+      "name": "Dragon Kite Crew",
+      "role": "sky",
+      "tier": 5,
+      "ability": {
+        "id": "armada",
+        "name": "Bomber Crew",
+        "text": "A heavy dragon kite carrying a crew of bombers."
+      },
+      "look": {
+        "gi": "#2a1a1a",
+        "accent": "#e9b44c",
+        "weapon": "bomb racks",
+        "mount": "long dragon kite"
+      },
+      "liveTroop": "dragon_kite_armada"
+    },
+    {
+      "id": "herbalist",
+      "name": "Herbalist",
+      "role": "mystic",
+      "tier": 1,
+      "ability": {
+        "id": "mend",
+        "name": "Mend",
+        "text": "Heals nearby warriors over time."
+      },
+      "look": {
+        "gi": "#4f7a46",
+        "accent": "#f4ead6",
+        "weapon": "herb satchel"
+      },
+      "liveTroop": "herbalist"
+    },
+    {
+      "id": "drum_monk",
+      "name": "Drum Monk",
+      "role": "mystic",
+      "tier": 2,
+      "ability": {
+        "id": "war_drum",
+        "name": "War Drum",
+        "text": "Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack."
+      },
+      "look": {
+        "gi": "#7a3f2a",
+        "accent": "#e9b44c",
+        "weapon": "taiko drum"
+      },
+      "liveTroop": "drum_monk"
+    },
+    {
+      "id": "mist_weaver",
+      "name": "Mist Weaver",
+      "role": "mystic",
+      "tier": 3,
+      "ability": {
+        "id": "veil",
+        "name": "Veil",
+        "text": "Wraps nearby warriors in thin mist (a small moving smoke cloud)."
+      },
+      "look": {
+        "gi": "#9aa0aa",
+        "accent": "#d9dee6",
+        "weapon": "mist fan"
+      },
+      "liveTroop": "mist_weaver"
+    },
+    {
+      "id": "spirit_caller",
+      "name": "Spirit Caller",
+      "role": "mystic",
+      "tier": 4,
+      "ability": {
+        "id": "second_wind",
+        "name": "Second Wind",
+        "text": "Brings one fallen warrior back to its feet."
+      },
+      "look": {
+        "gi": "#2f2a4a",
+        "accent": "#b48cff",
+        "weapon": "spirit bell"
+      },
+      "liveTroop": "spirit_caller"
+    },
+    {
+      "id": "sage_of_clouds",
+      "name": "Sage of Clouds",
+      "role": "mystic",
+      "tier": 5,
+      "ability": {
+        "id": "cloud_shelter",
+        "name": "Cloud Shelter",
+        "text": "Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds."
+      },
+      "look": {
+        "gi": "#f4ead6",
+        "accent": "#7fd3ff",
+        "weapon": "cloud staff"
+      },
+      "liveTroop": "sage_of_clouds"
+    },
+    {
+      "id": "ram_crew",
+      "name": "Ram Crew",
+      "role": "siege",
+      "tier": 1,
+      "ability": {
+        "id": "battering_ram",
+        "name": "Battering Ram",
+        "text": "Four times damage against walls and gates."
+      },
+      "look": {
+        "gi": "#5e3a22",
+        "accent": "#9aa0aa",
+        "weapon": "log ram"
+      },
+      "liveTroop": "ram_crew"
+    },
+    {
+      "id": "fire_monk",
+      "name": "Fire Monk",
+      "role": "siege",
+      "tier": 2,
+      "ability": {
+        "id": "flame_breath",
+        "name": "Flame Breath",
+        "text": "Short-range fire that burns a small area of buildings."
+      },
+      "look": {
+        "gi": "#7a2e26",
+        "accent": "#ff9a3c",
+        "weapon": "fire gourd"
+      },
+      "liveTroop": "fire_monk"
+    },
+    {
+      "id": "bomb_carrier",
+      "name": "Bomb Carrier",
+      "role": "siege",
+      "tier": 3,
+      "ability": {
+        "id": "big_bang",
+        "name": "Big Bang",
+        "text": "Runs to the nearest wall or defense and explodes."
+      },
+      "look": {
+        "gi": "#2b2b2b",
+        "accent": "#ff6b3c",
+        "weapon": "giant bomb on back"
+      },
+      "liveTroop": "bomb_carrier"
+    },
+    {
+      "id": "siege_bombardier",
+      "name": "Siege Bombardier",
+      "role": "siege",
+      "tier": 4,
+      "ability": {
+        "id": "long_shot",
+        "name": "Long Shot",
+        "text": "Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing."
+      },
+      "look": {
+        "gi": "#3a3f48",
+        "accent": "#e9b44c",
+        "weapon": "bronze hand-mortar"
+      },
+      "dpsScale": 0.5,
+      "liveTroop": "siege_bombardier"
+    },
+    {
+      "id": "volcano_cannoneer",
+      "name": "Volcano Cannoneer",
+      "role": "siege",
+      "tier": 5,
+      "ability": {
+        "id": "eruption",
+        "name": "Eruption",
+        "text": "Huge splash that leaves burning ground."
+      },
+      "look": {
+        "gi": "#2a1a1a",
+        "accent": "#ff4a2a",
+        "weapon": "volcanic cannon"
+      },
+      "liveTroop": "volcano_cannoneer"
+    },
+    {
+      "id": "hound_handler",
+      "name": "Hound Handler",
+      "role": "beast",
+      "tier": 1,
+      "ability": {
+        "id": "unleash",
+        "name": "Unleash",
+        "text": "Fights alongside two hunting dogs. The handler and dogs share one health and damage budget."
+      },
+      "look": {
+        "gi": "#5a4a3a",
+        "accent": "#c8402f",
+        "weapon": "leash and short sword",
+        "mount": "two shiba-like hounds"
+      },
+      "liveTroop": "hound_handler"
+    },
+    {
+      "id": "hawk_tamer",
+      "name": "Hawk Tamer",
+      "role": "beast",
+      "tier": 2,
+      "ability": {
+        "id": "hawk_harass",
+        "name": "Hawk Harass",
+        "text": "Her hawk harries a defense from range, slowing its fire."
+      },
+      "look": {
+        "gi": "#4a3a2a",
+        "accent": "#e9b44c",
+        "weapon": "falconry glove",
+        "mount": "hawk"
+      },
+      "dpsScale": 0.6,
+      "liveTroop": "hawk_tamer"
+    },
+    {
+      "id": "boar_rider",
+      "name": "Boar Rider",
+      "role": "beast",
+      "tier": 3,
+      "ability": {
+        "id": "charge",
+        "name": "Charge",
+        "text": "Charges through the first wall in its way."
+      },
+      "look": {
+        "gi": "#5e3a22",
+        "accent": "#9aa0aa",
+        "weapon": "spear",
+        "mount": "armoured boar"
+      },
+      "liveTroop": "boar_rider"
+    },
+    {
+      "id": "bear_warrior",
+      "name": "Bear Warrior",
+      "role": "beast",
+      "tier": 4,
+      "ability": {
+        "id": "rage",
+        "name": "Rage",
+        "text": "Hits much harder below half health."
+      },
+      "look": {
+        "gi": "#3a2a1e",
+        "accent": "#c8402f",
+        "weapon": "bear-claw gauntlets",
+        "armor": "fur mantle"
+      },
+      "liveTroop": "bear_warrior"
+    },
+    {
+      "id": "tiger_lord",
+      "name": "Tiger Lord",
+      "role": "beast",
+      "tier": 5,
+      "ability": {
+        "id": "pride",
+        "name": "Pride",
+        "text": "Arrives with two war tigers. Rider and tigers share one health and damage budget."
+      },
+      "look": {
+        "gi": "#2a2a2a",
+        "accent": "#e9b44c",
+        "weapon": "glaive",
+        "mount": "white war tiger"
+      },
+      "liveTroop": "tiger_lord"
+    },
+    {
+      "id": "shadow_stalker",
+      "name": "Shadow Stalker",
+      "role": "shadow",
+      "tier": 1,
+      "ability": {
+        "id": "unseen",
+        "name": "Unseen",
+        "text": "Cannot be targeted until it attacks for the first time."
+      },
+      "look": {
+        "gi": "#141a22",
+        "accent": "#5f6b78",
+        "weapon": "tanto"
+      },
+      "liveTroop": "shadow_stalker"
+    },
+    {
+      "id": "mirage_twin",
+      "name": "Mirage Twin",
+      "role": "shadow",
+      "tier": 2,
+      "ability": {
+        "id": "decoy",
+        "name": "Decoy",
+        "text": "Leaves a decoy that draws fire for 4 seconds."
+      },
+      "look": {
+        "gi": "#2a2a3a",
+        "accent": "#b48cff",
+        "weapon": "mirror blade"
+      },
+      "liveTroop": "mirage_twin"
+    },
+    {
+      "id": "night_blade",
+      "name": "Night Blade",
+      "role": "shadow",
+      "tier": 3,
+      "ability": {
+        "id": "smoke_hunter",
+        "name": "Smoke Hunter",
+        "text": "Deals double damage to buildings inside smoke."
+      },
+      "look": {
+        "gi": "#1f2433",
+        "accent": "#c9ced6",
+        "weapon": "black katana"
+      },
+      "liveTroop": "night_blade"
+    },
+    {
+      "id": "void_walker",
+      "name": "Void Walker",
+      "role": "shadow",
+      "tier": 4,
+      "ability": {
+        "id": "shadow_step",
+        "name": "Shadow Step",
+        "text": "Steps through shadows straight onto its target."
+      },
+      "look": {
+        "gi": "#0f1218",
+        "accent": "#7a4aff",
+        "weapon": "twin kama"
+      },
+      "liveTroop": "void_walker"
+    },
+    {
+      "id": "eclipse_ninja",
+      "name": "Eclipse Ninja",
+      "role": "shadow",
+      "tier": 5,
+      "ability": {
+        "id": "eclipse",
+        "name": "Eclipse",
+        "text": "Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit."
+      },
+      "look": {
+        "gi": "#0a0c10",
+        "accent": "#e9b44c",
+        "weapon": "eclipse ring blade"
+      },
+      "liveTroop": "eclipse_ninja"
+    }
+  ],
+  "heroes": [
+    {
+      "id": "shadow_captain",
+      "name": "Shadow Captain",
+      "role": "hero",
+      "heroOf": "blade",
+      "unlockKeep": 7,
+      "ability": {
+        "id": "rally",
+        "name": "Rally",
+        "text": "Nearby warriors fight 30% harder for 8 seconds. Recharges each battle."
+      },
+      "look": {
+        "gi": "#141a22",
+        "accent": "#c8402f",
+        "weapon": "katana and war fan",
+        "armor": "black lacquer with red cord"
+      }
+    },
+    {
+      "id": "iron_matriarch",
+      "name": "Iron Matriarch",
+      "role": "hero",
+      "heroOf": "guardian",
+      "unlockKeep": 9,
+      "ability": {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "text": "Raises a wall of shields that blocks defense fire in a cone for 6 seconds."
+      },
+      "look": {
+        "gi": "#3d4a5c",
+        "accent": "#e9b44c",
+        "weapon": "naginata and great shield",
+        "armor": "silver plates"
+      }
+    },
+    {
+      "id": "sky_admiral",
+      "name": "Sky Admiral",
+      "role": "hero",
+      "heroOf": "sky",
+      "unlockKeep": 11,
+      "ability": {
+        "id": "squall",
+        "name": "Squall",
+        "text": "Pushes all flyers forward and shields them from anti-air for 5 seconds."
+      },
+      "look": {
+        "gi": "#3a3f6a",
+        "accent": "#7fd3ff",
+        "weapon": "signal fans",
+        "mount": "flagship kite"
+      }
+    },
+    {
+      "id": "grand_sensei",
+      "name": "Grand Sensei",
+      "role": "hero",
+      "heroOf": "mystic",
+      "unlockKeep": 13,
+      "ability": {
+        "id": "inner_calm",
+        "name": "Inner Calm",
+        "text": "Every warrior on the field heals 40% and ignores the next jam, trap or splash."
+      },
+      "look": {
+        "gi": "#f4ead6",
+        "accent": "#c8402f",
+        "weapon": "long staff",
+        "hat": "wide straw hat"
+      }
+    }
+  ]
+}

@@ -226,13 +226,13 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   }
   const engine = engineForTicket(ctx, ticket, sub);
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
+  const { army, levels, reinforcements, hero } = checkArmy(sub, me, engine.data);
   const pairing = (await ctx.repo.getPairing(week, ticket.groveId!))!;
   const sideAttacks = await ctx.repo.raidAttacks(week, ticket.groveId!);
   const used = sideAttacks.filter((a) => a.attackerId === me.id).length;
   if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
+  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(hero ? { hero } : {}) };
   await requireArmyOnServer(ctx, me, army);
   const { result } = await resimulate(ctx, 'raid', setup, deployments, sub, engine).catch(async (e) => {
     await burnAfterFailures(ctx, ticket, e);

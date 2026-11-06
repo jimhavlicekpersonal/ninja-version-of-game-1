@@ -108,9 +108,9 @@ export async function reportDuel(ctx: ServerContext, me: Player, sub: BattleSubm
   if (answered) return answered as DuelReportResponse;
   const engine = engineForTicket(ctx, ticket, sub);
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
+  const { army, levels, reinforcements, hero } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}) };
+  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(hero ? { hero } : {}) };
   const { result } = await resimulate(ctx, 'duel', setup, deployments, sub, engine);
   const defenderId = ticket.defenderId!;
   const t = ctx.now();

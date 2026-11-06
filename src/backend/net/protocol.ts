@@ -634,6 +634,8 @@ export interface BattleSubmission {
   levels?: Record<string, number>;
   /** Donated troops in `army` and the level each was donated at (protocol 6+). */
   reinforcements?: Record<string, { count: number; level: number }>;
+  /** The clan hero and level (SIM_RULES 5, report section 5 step 8); the server checks it against the attacker's Keep. */
+  hero?: { id: string; level: number };
   deployments: Deployment[];
   endTick?: number;
   /**
@@ -675,6 +677,8 @@ export interface DefenseView {
   reinforcements?: Record<string, { count: number; level: number }>;
   /** Battle rules version the server simulated it with; a replay is shown only when it matches (protocol 6+). */
   rules?: number;
+  /** The attacker's hero (SIM_RULES 5). */
+  hero?: { id: string; level: number };
   /** Trophy change for the defender. */
   trophies: number;
 }

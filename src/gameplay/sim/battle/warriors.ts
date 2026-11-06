@@ -2,6 +2,7 @@
 import type { BattleSim, SimBuilding, SimTroop } from './battle';
 import type { WarriorKit } from '../types';
 import { next } from '../rng';
+import { troopDef } from '../data';
 import { BLOCKED, distToRect, findPath, HEDGE } from './pathfind';
 
 export interface WarriorEffect {
@@ -23,7 +24,7 @@ interface Actions {
 
 const distance = (ax: number, ay: number, bx: number, by: number) => Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
 const shape = (b: SimBuilding) => ({ x: b.x, y: b.y, w: b.size, h: b.size });
-const kitOf = (sim: BattleSim, t: SimTroop): WarriorKit => t.summoned ? {} : sim.data.troops[t.type].kit ?? {};
+const kitOf = (sim: BattleSim, t: SimTroop): WarriorKit => t.summoned ? {} : troopDef(sim.data, t.type).kit ?? {};
 const at = (t: SimTroop, b: SimBuilding, radius: number) => !b.destroyed && distToRect(t.x, t.y, shape(b)) <= radius;
 
 /** Identical auras never stack; each ally receives the strongest active source. */
@@ -39,6 +40,7 @@ export function auraStrength(sim: BattleSim, target: SimTroop, aura: WarriorKit[
       if (!behind) continue;
     }
     if (aura === 'veil' && sim.tick % (kit.cooldownTicks ?? 1) >= (kit.durationTicks ?? 0)) continue;
+    if (aura === 'rally' && !((source.rallyUntil ?? 0) > sim.tick)) continue;
     if (distance(source.x, source.y, target.x, target.y) <= (kit.radius ?? sim.data.battle.warriorRules.defaultAuraRadius)) {
       value = Math.max(value, kit.strength ?? 1);
     }
@@ -156,7 +158,7 @@ export function stepWarriorEffects(sim: BattleSim, actions: Actions): void {
 
 /** Support, path opening and movement abilities happen before normal targeting/attacking. */
 export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Actions): boolean {
-  const def = sim.data.troops[t.type];
+  const def = troopDef(sim.data, t.type);
   if (!def.kit || t.summoned) return false;
   const kit = kitOf(sim, t);
   const rules = sim.data.battle.warriorRules;
@@ -220,7 +222,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
   }
   if (def.prefers !== 'support' || t.summoned) return false;
   // Follow living frontliners rather than walking into a building to "heal" it.
-  const allies = sim.troops.filter((ally) => !ally.dead && !ally.summoned && ally.id !== t.id && sim.data.troops[ally.type].prefers !== 'support');
+  const allies = sim.troops.filter((ally) => !ally.dead && !ally.summoned && ally.id !== t.id && troopDef(sim.data, ally.type).prefers !== 'support');
   const injured = allies.filter((ally) => ally.hp < ally.maxHp);
   const candidates = kit.aura === 'heal' && injured.length ? injured : allies;
   candidates.sort((a, b) => distance(t.x, t.y, a.x, a.y) - distance(t.x, t.y, b.x, b.y) || a.id - b.id);
@@ -289,6 +291,9 @@ export function attackDamage(sim: BattleSim, t: SimTroop, target: SimBuilding): 
   t.revealed = true;
   const flash = (what: string) => sim.events.push({ k: 'ability', troop: t.id, what });
   if (t.firstHit && kit.firstHitMultiplier) { damage *= kit.firstHitMultiplier; flash('firstHit'); }
+  // Heroes (SIM_RULES 5): the first strike starts the Rally; every warrior near a rallying hero hits harder.
+  if (t.firstHit && kit.aura === 'rally') { t.rallyUntil = sim.tick + (kit.durationTicks ?? 0); flash('rally'); }
+  if (sim.setup.hero) damage *= 1 + auraStrength(sim, t, 'rally');
   t.firstHit = false;
   if (kit.every && t.hits % kit.every === 0) { damage *= kit.hitMultiplier ?? 1; flash('every'); }
   if (kit.rageMultiplier && t.hp < t.maxHp / 2) damage *= kit.rageMultiplier;
@@ -296,9 +301,9 @@ export function attackDamage(sim: BattleSim, t: SimTroop, target: SimBuilding): 
   if (kit.smokeMultiplier && sim.smokes.some((c) => sim.tick < c.endsTick && distToRect(c.x, c.y, shape(target)) <= c.radius)) damage *= kit.smokeMultiplier;
   if (target.kind === 'hedge') {
     // Boar Rider gets one charge; Ram Crew and Oni Breaker keep their wall bonus.
-    if (sim.data.troops[t.type].ability !== 'charge' || t.charges > 0) {
-      damage = sim.data.troops[t.type].ability === 'charge' ? Math.max(damage, target.hp) : damage * (kit.wallMultiplier ?? 1);
-      if (sim.data.troops[t.type].ability === 'charge' && t.charges > 0) t.charges--;
+    if (troopDef(sim.data, t.type).ability !== 'charge' || t.charges > 0) {
+      damage = troopDef(sim.data, t.type).ability === 'charge' ? Math.max(damage, target.hp) : damage * (kit.wallMultiplier ?? 1);
+      if (troopDef(sim.data, t.type).ability === 'charge' && t.charges > 0) t.charges--;
     }
   }
   if (kit.suicide) damage *= kit.hitMultiplier ?? 1;
@@ -308,7 +313,7 @@ export function attackDamage(sim: BattleSim, t: SimTroop, target: SimBuilding): 
 export function resolveWarriorHit(sim: BattleSim, t: SimTroop, bi: number, damage: number, actions: Actions): void {
   const target = sim.buildings[bi];
   const kit = kitOf(sim, t);
-  const def = sim.data.troops[t.type];
+  const def = troopDef(sim.data, t.type);
   const cx = target.x + target.size / 2;
   const cy = target.y + target.size / 2;
   if ((def.ability === 'sabotage' || kit.jamTicks) && t.charges > 0 && jam(sim, t, bi, kit.jamTicks ?? sim.data.battle.sabotage.disableTicks)) {

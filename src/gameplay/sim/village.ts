@@ -1,3 +1,4 @@
+import { heroFor } from './heroes';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
 import { armyHousing, armyReadyAt, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES } from './battle/battle';
@@ -274,6 +275,12 @@ export function createNewVillage(now: number, data: GameData): VillageState {
       upgrade: null,
       collector: def.produces ? { stored: 0, accrueFrom: now } : null,
     });
+  }
+  // Report section 5 step 8 (art F13): a new village opened on a bare plateau with two buildings. A few
+  // lanterns, planters and a rock garden frame the Keep (decor: movable, never in battle).
+  for (const d of data.economy.startingDecor ?? []) {
+    if (!data.buildings[d.type] || !canPlace(state, data, d.type, d.x, d.y).ok) continue;
+    state.buildings.push({ id: `b${state.nextId++}`, type: d.type, level: 1, x: d.x, y: d.y, upgrade: null, collector: null });
   }
   scatterObstacles(state, data);
   return state;
@@ -1693,10 +1700,12 @@ export function lodgeTroops(state: VillageState): Record<string, { count: number
 }
 
 /** Everything a new battle setup needs about the attacker: troops, researched levels and donated troops. */
-export function battleLoadout(state: VillageState, data: GameData): Pick<BattleSetup, 'army' | 'levels' | 'reinforcements'> {
+export function battleLoadout(state: VillageState, data: GameData): Pick<BattleSetup, 'army' | 'levels' | 'reinforcements' | 'hero'> {
   const levels: Record<string, number> = {};
   for (const t of Object.keys(data.troops)) levels[t] = troopLevelOf(state, t);
-  return { army: battleArmy(state), levels, reinforcements: lodgeTroops(state) };
+  // Report section 5 step 8: the clan hero joins every attack from his Keep (SIM_RULES 5).
+  const hero = heroFor(state, data);
+  return { army: battleArmy(state), levels, reinforcements: lodgeTroops(state), ...(hero ? { hero } : {}) };
 }
 
 /** A Grove Raid attack: no loot or trophies, best stars per enemy base count. */

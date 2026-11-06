@@ -322,9 +322,9 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
   if (!side) throw new ApiError(404, 'not_found', 'You are not in this war.');
   const engine = engineForTicket(ctx, ticket, sub);
   const seed = battleSeed(ticket, sub);
-  const { army, levels, reinforcements } = checkArmy(sub, me, engine.data);
+  const { army, levels, reinforcements, hero } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
-  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(ticket.relay && ticket.startDamage ? { startDamage: ticket.startDamage } : {}) };
+  const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(hero ? { hero } : {}), ...(ticket.relay && ticket.startDamage ? { startDamage: ticket.startDamage } : {}) };
   await requireArmyOnServer(ctx, me, army);
   const out = await resimulate(ctx, 'war', setup, deployments, sub, engine).catch(async (e) => {
     await burnAfterFailures(ctx, ticket, e);

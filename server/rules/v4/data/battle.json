@@ -1,0 +1,139 @@
+{
+  "ticksPerSecond": 10,
+  "durationSeconds": 180,
+  "starThresholds": {
+    "destruction": 50,
+    "full": 100
+  },
+  "deployMarginTiles": 1,
+  "hedgePathCost": 10,
+  "maxReplays": 10,
+  "scoutFeeByHall": [
+    80,
+    150,
+    250,
+    600,
+    1500,
+    3500,
+    5985,
+    8273,
+    14813,
+    24056,
+    40660,
+    54623,
+    114846,
+    203553,
+    360007
+  ],
+  "generatedLootByHall": [
+    {
+      "min": 2000,
+      "max": 3200
+    },
+    {
+      "min": 3500,
+      "max": 6000
+    },
+    {
+      "min": 6000,
+      "max": 11000
+    },
+    {
+      "min": 14000,
+      "max": 28000
+    },
+    {
+      "min": 35000,
+      "max": 70000
+    },
+    {
+      "min": 80000,
+      "max": 150000
+    },
+    {
+      "min": 159588,
+      "max": 239382
+    },
+    {
+      "min": 220608,
+      "max": 330912
+    },
+    {
+      "min": 395014,
+      "max": 592520
+    },
+    {
+      "min": 641498,
+      "max": 962248
+    },
+    {
+      "min": 1084277,
+      "max": 1626415
+    },
+    {
+      "min": 1456603,
+      "max": 2184905
+    },
+    {
+      "min": 3062556,
+      "max": 4593834
+    },
+    {
+      "min": 5428078,
+      "max": 8142116
+    },
+    {
+      "min": 9600185,
+      "max": 14400277
+    }
+  ],
+  "lootShares": {
+    "storage": 0.6,
+    "collector": 0.25,
+    "hall": 0.15
+  },
+  "catapultSpread": 0.6,
+  "deploySpread": 0.3,
+  "closeCall": {
+    "starMargin": 5,
+    "hallHpFraction": 0.15,
+    "buildingsLeft": 2,
+    "perfectMinDestruction": 80
+  },
+  "abilities": {
+    "smoke_bomb": {
+      "name": "Smoke Bomb",
+      "description": "Throw it over your warriors as they walk into a defense's range. For 8 seconds, warriors inside the cloud can only be shot from close up (Night Blades also hit buildings inside it twice as hard).",
+      "radius": 3,
+      "durationTicks": 80,
+      "rangeFactor": 0.4,
+      "minTargetRange": 2,
+      "baseCharges": 1,
+      "housingPerCharge": 40,
+      "maxCharges": 3
+    }
+  },
+  "sabotage": {
+    "rangeTiles": 0.8,
+    "disableTicks": 60,
+    "immunityTicks": 100
+  },
+  "infiltration": {
+    "points": 6,
+    "insetTiles": 1.5,
+    "radius": 2.5,
+    "minPoints": 3,
+    "minCover": 15
+  },
+  "warriorRules": {
+    "supportIntervalTicks": 10,
+    "supportAllyTries": 3,
+    "defaultAuraRadius": 3,
+    "abilityCooldownTicks": 60,
+    "shieldCooldownTicks": 100,
+    "shieldMaximumDamage": 0.5,
+    "teleportDistance": 6,
+    "summonOffset": 0.5,
+    "decoyHpMultiplier": 2
+  }
+}

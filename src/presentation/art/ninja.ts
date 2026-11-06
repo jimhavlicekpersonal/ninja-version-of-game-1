@@ -2411,13 +2411,14 @@ function vramp(ctx: Ctx, y0: number, y1: number, c: string, light = 0.25, dark =
 }
 
 /** Register code-drawn catalog warriors. Rendering supplies metadata across the art contract. */
-export function registerWarriorArt(warriors: { id: string; role: string; tier: number; look: Record<string, string> }[]): void {
+export function registerWarriorArt(warriors: { id: string; role: string; tier: number; look: Record<string, string>; hero?: boolean }[]): void {
   for (const w of warriors) {
     const role = w.role;
     if (role === 'beast' && !troopArt[`${w.id}.companion`]) troopArt[`${w.id}.companion`] = companionArt(w);
     // warriorIcons.ts registers a role-silhouette sprite for every roster warrior; this template is the fallback.
     if (troopArt[w.id]) continue;
-    const large = role === 'guardian';
+    // Heroes (report section 5 step 8) stand taller, in lacquer armour with a helm, until a painted hero replaces them.
+    const large = role === 'guardian' || Boolean(w.hero);
     const flying = role === 'sky';
     troopArt[w.id] = {
       w: flying ? 76 : large || role === 'beast' ? 66 : 54,

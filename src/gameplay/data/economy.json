@@ -1,5 +1,10 @@
 {
-  "resourceNames": { "acorns": "Coins", "dew": "Provisions", "nightsap": "Shadow Ink", "moonstones": "Jade" },
+  "resourceNames": {
+    "acorns": "Coins",
+    "dew": "Provisions",
+    "nightsap": "Shadow Ink",
+    "moonstones": "Jade"
+  },
   "mapSize": 40,
   "startingResources": {
     "acorns": 2500,
@@ -25,6 +30,43 @@
       "x": 24,
       "y": 19,
       "level": 1
+    }
+  ],
+  "startingDecor": [
+    {
+      "type": "lantern_post",
+      "x": 17,
+      "y": 23
+    },
+    {
+      "type": "lantern_post",
+      "x": 22,
+      "y": 23
+    },
+    {
+      "type": "flower_bed",
+      "x": 16,
+      "y": 17
+    },
+    {
+      "type": "flower_bed",
+      "x": 23,
+      "y": 17
+    },
+    {
+      "type": "flower_bed",
+      "x": 13,
+      "y": 22
+    },
+    {
+      "type": "flower_bed",
+      "x": 26,
+      "y": 22
+    },
+    {
+      "type": "mushroom_ring",
+      "x": 20,
+      "y": 25
     }
   ],
   "collectorHoursCap": 8,

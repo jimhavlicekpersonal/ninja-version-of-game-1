@@ -135,5 +135,85 @@
     "teleportDistance": 6,
     "summonOffset": 0.5,
     "decoyHpMultiplier": 2
+  },
+  "heroes": {
+    "shadow_captain": {
+      "$comment": "Report section 5 step 8 (growth 5): the first playable hero (roster.json heroes[0]). Joins every attack from Keep 7 for free (not trained, no housing, one per battle); its level follows the Keep (Keep 7 = 1 ... Keep 15 = 9); stats are the Wind-Step Assassin at the Keep's research cap, HP x10 and damage x3. Rally: on its first hit, warriors within 4 tiles deal 30% more damage for 8 seconds, once per battle.",
+      "name": "Shadow Captain",
+      "description": "Clan hero. On his first strike he rallies nearby warriors: 30% more damage for 8 seconds, once per battle.",
+      "housing": 0,
+      "attackIntervalTicks": 10,
+      "range": 0.8,
+      "speed": 0.15,
+      "air": false,
+      "prefers": "any",
+      "ignoresHedges": false,
+      "trainSeconds": 0,
+      "barracksLevel": 1,
+      "unlockKeep": 7,
+      "ability": "rally",
+      "kit": {
+        "aura": "rally",
+        "radius": 4,
+        "strength": 0.3,
+        "durationTicks": 80
+      },
+      "levels": [
+        {
+          "level": 1,
+          "hp": 1320,
+          "damage": 69.594,
+          "cost": {}
+        },
+        {
+          "level": 2,
+          "hp": 1530,
+          "damage": 80.73,
+          "cost": {}
+        },
+        {
+          "level": 3,
+          "hp": 2060,
+          "damage": 108.63,
+          "cost": {}
+        },
+        {
+          "level": 4,
+          "hp": 2390,
+          "damage": 126.012,
+          "cost": {}
+        },
+        {
+          "level": 5,
+          "hp": 3220,
+          "damage": 169.56,
+          "cost": {}
+        },
+        {
+          "level": 6,
+          "hp": 3740,
+          "damage": 196.689,
+          "cost": {}
+        },
+        {
+          "level": 7,
+          "hp": 5030,
+          "damage": 264.666,
+          "cost": {}
+        },
+        {
+          "level": 8,
+          "hp": 6770,
+          "damage": 356.133,
+          "cost": {}
+        },
+        {
+          "level": 9,
+          "hp": 9110,
+          "damage": 479.214,
+          "cost": {}
+        }
+      ]
+    }
   }
 }

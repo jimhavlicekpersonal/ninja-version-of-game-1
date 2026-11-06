@@ -19,6 +19,8 @@ export interface BaseLayout {
   trophies?: number;
   /** Set on generated practice targets (not a real player): the layout's archetype name. */
   practice?: string;
+  /** The rival clan (computer) a generated base belongs to (`names.json` `rivalClans`; report section 5 step 8). */
+  rival?: string;
   /** Shadow Trial tier this base was generated for (endless difficulty ladder). */
   trialTier?: number;
   /** Multiplier on defense HP and damage (Shadow Trials). Absent = 1. */
@@ -52,6 +54,11 @@ export interface BattleSetup {
    * holds no loot, blocks nothing). `battleDamage` reads it back from a battle.
    */
   startDamage?: Record<string, number>;
+  /**
+   * The attacker's hero (SIM_RULES 5, report section 5 step 8): `data.battle.heroes[id]` at `level`,
+   * deployable once like a warrior (no housing). Absent: no hero.
+   */
+  hero?: { id: string; level: number };
 }
 
 /** Buildings being upgraded take no part in a battle: they don't fire, and their counter effect is off. */

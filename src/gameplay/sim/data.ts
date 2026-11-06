@@ -62,7 +62,8 @@ export function hallType(data: GameData): BuildingType {
 }
 
 export function troopDef(data: GameData, type: string) {
-  const def = data.troops[type];
+  // Heroes (report section 5 step 8) live in battle.json, outside the trainable roster.
+  const def = data.troops[type] ?? data.battle.heroes?.[type];
   if (!def) throw new Error(`Unknown troop type: ${type}`);
   return def;
 }

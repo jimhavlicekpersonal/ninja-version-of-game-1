@@ -287,6 +287,8 @@ export interface AttackRecord {
   infiltration?: boolean;
   /** Donated troops and their levels (protocol 6+). */
   reinforcements?: Record<string, { count: number; level: number }>;
+  /** The attacker's hero (SIM_RULES 5). */
+  hero?: { id: string; level: number };
   /** Battle rules version (SIM_RULES) the attack was simulated with (protocol 6+). */
   rules?: number;
   attackerTrophies: number;
