@@ -48,6 +48,28 @@ describe('Android build configuration', () => {
     expect(main).toContain('registerPlugin(TkBillingPlugin.class)');
     expect(main).toContain('registerPlugin(TkAuthPlugin.class)');
     expect(read('android/app/src/main/java/com/toadstoolkingdoms/app/TkAuthPlugin.java')).toContain('@CapacitorPlugin(name = "TkAuth")');
+    expect(main).toContain('registerPlugin(TkAgePlugin.class)');
+  });
+});
+
+describe('iOS app shell', () => {
+  // Capacitor 8 registers only the npm plugins in capacitor.config.json on its own. The game's own
+  // plugins exist only if the scene's root view controller registers them; a plain
+  // CAPBridgeViewController here left every iPhone without purchases, sign-ins and the age signal.
+  it('the scene uses TkViewController, which registers every plugin the game calls', () => {
+    const scene = read('ios/App/App/SceneDelegate.swift');
+    expect(scene).toMatch(/rootViewController = TkViewController\(\)/);
+    expect(scene).not.toMatch(/rootViewController = CAPBridgeViewController\(\)/);
+    const vc = read('ios/App/App/TkViewController.swift');
+    for (const [cls, jsName, ts] of [
+      ['TkStorePlugin', 'TkStore', 'src/backend/payments/storekit.ts'],
+      ['TkAuthPlugin', 'TkAuth', 'src/backend/platform/auth.ts'],
+      ['TkAgePlugin', 'TkAge', 'src/backend/platform/auth.ts'],
+    ] as const) {
+      expect(vc, cls).toContain(`registerPluginInstance(${cls}())`);
+      expect(read(`ios/App/App/${cls}.swift`), cls).toContain(`public let jsName = "${jsName}"`);
+      expect(read(ts), jsName).toContain(`('${jsName}')`);
+    }
   });
 });
 
@@ -92,6 +114,15 @@ describe('report section 5 step 4 (economy E08): the store setup table lists eve
     const store = JSON.parse(read('src/gameplay/data/store.json')) as { storeProductIds: Record<string, string> };
     const doc = read('docs/SHIPPING.md');
     for (const [gameId, storeId] of Object.entries(store.storeProductIds)) expect(doc, storeId).toContain(`| \`${storeId}\` | \`${gameId}\` |`);
+  });
+
+  it('no other table in docs/SHIPPING.md starts a row with a game id the stores do not use', () => {
+    // Section 2 once told the owner to create `moonstones_1` … `lantern_pass` in App Store Connect: the
+    // game asks for the store ids, and App Store Connect never lets a product id be used twice.
+    const store = JSON.parse(read('src/gameplay/data/store.json')) as { storeProductIds: Record<string, string> };
+    const gameOnly = Object.entries(store.storeProductIds).filter(([g, s]) => g !== s).map(([g]) => g);
+    const doc = read('docs/SHIPPING.md');
+    for (const id of gameOnly) expect(doc, id).not.toMatch(new RegExp(`^\\s*\\| \`${id}\` \\|`, 'm'));
   });
 });
 

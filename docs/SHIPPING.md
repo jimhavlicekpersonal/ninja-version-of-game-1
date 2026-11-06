@@ -46,21 +46,7 @@ Apple only builds iPhone apps on a Mac. The **iOS TestFlight (manual)** workflow
 1. Join the **Apple Developer Program** ($99/year) at https://developer.apple.com/programs/.
 2. In **Certificates, Identifiers & Profiles → Identifiers**, register an App ID. Use `com.toadstoolkingdoms.app`, or your own ID. If you use your own, also change `appId` in `capacitor.config.ts` and add a repository variable `IOS_BUNDLE_ID` with the same value.
 3. In **App Store Connect → Apps**, create a new iOS app with that bundle ID.
-4. In the app's **Monetization → In-App Purchases**, add these **Consumable** products. Use these exact product IDs:
-
-   | Product ID | Price |
-   | --- | --- |
-   | `moonstones_1` | $1.99 |
-   | `moonstones_2` | $4.99 |
-   | `moonstones_3` | $9.99 |
-   | `moonstones_4` | $19.99 |
-   | `moonstones_5` | $49.99 |
-   | `moonstones_6` | $99.99 |
-   | `lantern_pass` | $4.99 |
-   | `offer_starter` | $1.99 |
-   | `offer_builder` | $4.99 |
-   | `offer_war_prep` | $2.99 |
-   | `offer_rebuild` | $2.99 |
+4. In the app's **Monetization → In-App Purchases**, add every product in the table in **section 3b** as a **Consumable**, using its **store id** (the first column: `jade_pinch`, `jade_pouch`, …, `season_scroll`, `clan_stipend`), never the game id (`moonstones_1`, `lantern_pass`, …). The game asks the App Store for the store ids (`store.json` `storeProductIds`), and App Store Connect never lets a product id be used again, even after deletion, so a product made with the wrong id is lost for good. `offer_rebuild` is retired (no longer offered); creating it is optional.
 
 5. In **App Store Connect → Users and Access → Integrations → App Store Connect API**, create a key with the **App Manager** role. Download the `.p8` file (you can only download it once) and note the **Key ID** and the **Issuer ID**.
 6. Find your **Team ID** under **Membership** at developer.apple.com.

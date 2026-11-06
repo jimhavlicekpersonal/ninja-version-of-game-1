@@ -8,7 +8,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = CAPBridgeViewController()
+        // TkViewController, not a plain CAPBridgeViewController: Capacitor 8 registers only npm
+        // plugins on its own, so the game's TkStore (purchases), TkAuth and TkAge plugins exist only
+        // because TkViewController.capacitorDidLoad registers them.
+        window?.rootViewController = TkViewController()
         window?.makeKeyAndVisible()
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
