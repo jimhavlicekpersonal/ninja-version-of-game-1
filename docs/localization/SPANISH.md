@@ -108,10 +108,13 @@ language intact. English remains the fallback for unsupported device languages.
 
 ## Validation and remaining release work
 
-The full suite passed **1,132 tests** across 129 passing files; 13 tests were
+After integration with upstream `12d5996`, the full suite passed **1,149 tests**
+across 133 passing files; 13 tests were
 skipped without their external prerequisites. Client build, server typecheck,
 server build, catalog checks and focused localization checks passed. Details are
-in [evidence/validation.json](evidence/validation.json).
+in [evidence/release-integration.json](evidence/release-integration.json).
+[evidence/validation.json](evidence/validation.json) preserves the original
+translation-only validation record.
 
 The built client passed Chromium checks of 12 panels and their tabs, first-frame
 language, generated opponent names, five mobile viewport sizes, Build taps,

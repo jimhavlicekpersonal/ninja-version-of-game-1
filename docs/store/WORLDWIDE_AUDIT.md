@@ -489,8 +489,9 @@ Verification on `6b7b1eb`: as above, plus `npm run i18n:check` (all languages pa
 
 ### 2026-11-06 — complete Spanish implementation and measured language packaging
 
-Fixing reference: the current integration worktree based on `9d0eaa7`, not yet
-committed or deployed. Current surface-by-surface status, source hashes and release
+Fixing reference: Spanish implementation commit `1daab27`, based on `9d0eaa7`;
+integration also preserves upstream `12d5996`. Publication evidence belongs to
+the subsequent GitHub Pages workflow run. Current surface-by-surface status, source hashes and release
 steps are recorded in [`../localization/SPANISH_IMPLEMENTATION.json`](../localization/SPANISH_IMPLEMENTATION.json);
 the original census remains a pinned historical snapshot. This entry supersedes
 the English-only implementation limitations of the text-layer entry above for

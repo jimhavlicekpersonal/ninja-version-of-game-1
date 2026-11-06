@@ -56,11 +56,14 @@ export function languageBootScript() {
   const matcher = readFileSync(join(ROOT, 'locales/matcher.mjs'), 'utf8').replace(/^export /gm, '');
   return `(function(w,d){${matcher}\nvar available=${JSON.stringify(bootAvailable)},tables=${JSON.stringify(tables)},en=tables.en,aliases=${JSON.stringify(aliases)},codes=[],pref=null,i;for(var c in available)if(available[c].ready)codes.push(c);try{pref=w.localStorage.getItem('tk.lang');}catch(e){}var code=pref&&available[pref]&&available[pref].ready?pref:matchLanguage(w.navigator.languages||[w.navigator.language],codes,aliases);var lang=${JSON.stringify(Object.fromEntries(all.filter(l => available[l.code]?.ready).map(l => [l.code, { dir: l.dir, script: l.script }])))}[code];d.documentElement.lang=code;d.documentElement.dir=lang.dir;d.documentElement.setAttribute('data-script',lang.script);var boot=tables[code]||tables.en||{};w.__kgLocale={code:code,boot:boot};w.__kgTranslateBoot=function(s){for(var k in en)if(en[k]===s&&boot[k])return boot[k];return s;};function paint(){var el=d.querySelector('.boot-status');if(el)el.textContent=boot['boot.loading']||en['boot.loading'];}if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',paint);else paint();if(code!=='en'&&w.fetch&&w.Promise){var ac=w.AbortController?new w.AbortController():null,timer=ac?w.setTimeout(function(){ac.abort();},30000):null;w.__kgLocale.pack=w.fetch(available[code].path,{signal:ac?ac.signal:undefined}).then(function(r){if(!r.ok)throw new Error('language unavailable');return r.json();}).then(function(v){if(timer)w.clearTimeout(timer);return v;},function(){if(timer)w.clearTimeout(timer);return null;});}})(window,document);`;
 }
-export function buildLanguageAssets() {
+export function buildLanguageAssets({ serverOnly = false } = {}) {
   const publicDir = join(ROOT, 'public/lang');
   const compiledDir = join(ROOT, 'locales/compiled');
-  mkdirSync(publicDir, { recursive: true }); mkdirSync(compiledDir, { recursive: true });
-  for (const f of readdirSync(publicDir)) if (f.endsWith('.json')) rmSync(join(publicDir, f));
+  mkdirSync(compiledDir, { recursive: true });
+  if (!serverOnly) {
+    mkdirSync(publicDir, { recursive: true });
+    for (const f of readdirSync(publicDir)) if (f.endsWith('.json')) rmSync(join(publicDir, f));
+  }
   const available = {};
   const report = { schema: 1, units: 'bytes', measured: {}, projections: {}, decision: 'Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.' };
   const nsList = namespaces();
@@ -89,15 +92,19 @@ export function buildLanguageAssets() {
     available[lang.code] = { coverage: total ? done / total : 0, ready, hash, keys: Object.keys(pack).length, ...(lang.code !== 'en' && done ? { path } : {}), namespaces: perNamespace };
     if (done) {
       writeFileSync(join(compiledDir, `${lang.code}.json`), JSON.stringify(pack));
-      if (lang.code !== 'en') writeFileSync(join(publicDir, filename), bytes);
+      if (lang.code !== 'en' && !serverOnly) writeFileSync(join(publicDir, filename), bytes);
       report.measured[lang.code] = { ready, strings: Object.keys(pack).length, installedUtf8: bytes.length, gzip: gzipSync(bytes, { level: 9 }).length, brotli: brotliCompressSync(bytes).length, zipDeflatePayload: deflateRawSync(bytes, { level: 9 }).length, namespaces: perNamespace };
       if (ready && lang.code !== 'en') {
-        buildPages(lang.code);
+        buildPages(lang.code, serverOnly ? { names: ['account'], writePublic: false } : undefined);
+        if (serverOnly) continue;
         const manifest = JSON.parse(readFileSync(join(ROOT, 'public/manifest.webmanifest'), 'utf8'));
         writeFileSync(join(ROOT, `public/${lang.code}/manifest.webmanifest`), JSON.stringify({ ...manifest, lang: lang.code, description: pack['boot.pwaDescription'], id: '../', start_url: '../', scope: '../', icons: manifest.icons.map(i => ({ ...i, src: '../' + i.src })) }, null, 2) + '\n');
       }
     }
   }
+  // The server image needs runtime catalogs and its account form, without
+  // depending on client public assets, native projects or measurement docs.
+  if (serverOnly) return { available, report };
   writeFileSync(join(ROOT, 'locales/availability.json'), JSON.stringify(available, null, 2) + '\n');
   writeFileSync(join(publicDir, 'manifest.json'), JSON.stringify(available));
   // English is already embedded as a fallback; there is no redundant en fetch.

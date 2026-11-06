@@ -11,9 +11,9 @@ function htmlFor(name) {
 }
 const decode = s => s.replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&#39;', "'").replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&nbsp;', '\u00a0');
 const encode = s => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-export function pageUnits() {
+export function pageUnits(names = files) {
   const out = {};
-  for (const name of files) {
+  for (const name of names) {
     const {path, html} = htmlFor(name); let i = 0;
     // Whole paragraphs/rows keep grammar and links together. Empty legal spans are publisher facts.
     for (const m of html.matchAll(/<(title|h[1-6]|p|li|th|td|nav|footer|label|button)\b[^>]*>([\s\S]*?)<\/\1>|<div\b[^>]*class="draft"[^>]*>([\s\S]*?)<\/div>/g)) {
@@ -41,9 +41,9 @@ export function extractPages() {
   const path=join(ROOT,'locales/es/pages.json');let previous={};try{previous=JSON.parse(readFileSync(path,'utf8'));}catch{}
   writeFileSync(path,formatWorksheet(syncWorksheet(Object.fromEntries(Object.entries(units).map(([k,v])=>[k,v.en])),previous).worksheet));
 }
-export function buildPages(code) {
-  const units=pageUnits(), ws=JSON.parse(readFileSync(join(ROOT,`locales/${code}/pages.json`),'utf8')); const result={};
-  for (const name of files) {
+export function buildPages(code, { names = files, writePublic = true } = {}) {
+  const units=pageUnits(names), ws=JSON.parse(readFileSync(join(ROOT,`locales/${code}/pages.json`),'utf8')); const result={};
+  for (const name of names) {
     let {html}=htmlFor(name); const edits=[];
     for(const [key,u]of Object.entries(units).filter(([,u])=>u.name===name)) {
       const entry=ws[key]; if(!entry?.text || entry.en!==u.en) throw Error(`Untranslated or stale page: ${code}/${key}`);
@@ -62,7 +62,9 @@ export function buildPages(code) {
     if(name==='account' && code==='es') html=html.replace('err.message;',"'No se pudo enviar la solicitud. Comprueba tus datos y tu conexión e inténtalo de nuevo.';");
     result[name]=html;
   }
-  const dir=join(ROOT,'public',code);mkdirSync(dir,{recursive:true});for(const [name,html]of Object.entries(result))if(name!=='account')writeFileSync(join(dir,`${name}.html`),html);
+  if (writePublic) {
+    const dir=join(ROOT,'public',code);mkdirSync(dir,{recursive:true});for(const [name,html]of Object.entries(result))if(name!=='account')writeFileSync(join(dir,`${name}.html`),html);
+  }
   mkdirSync(join(ROOT,'locales/compiled'),{recursive:true});writeFileSync(join(ROOT,`locales/compiled/pages-${code}.json`),JSON.stringify(result));
   return result;
 }

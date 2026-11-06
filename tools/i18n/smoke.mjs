@@ -54,7 +54,7 @@ try {
     for(let i=0;i<3;i++) await page.keyboard.press('Escape');
     const button = page.locator('button[data-id="' + id + '"]');
     // Friends is hidden offline; exercise its existing disconnected state explicitly.
-    if(id==='friends') await page.evaluate(() => window.tk.app.d.hud.friends.open());
+    if(id==='friends') await page.evaluate(() => window.tk.app.d.hud.openFriends());
     else { assert.ok(await button.isVisible(), id); await button.click(); }
     if(id==='alliance') {
       const join = page.getByRole('button',{name:'Unirse a una Alianza de Entrenamiento', exact:true});

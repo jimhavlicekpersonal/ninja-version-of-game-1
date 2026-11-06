@@ -5,7 +5,7 @@
   "language": "es",
   "dialect": "International Spanish, tú; CLDR es formatting",
   "base_ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
-  "worktree": "Uncommitted implementation; no push, deployment, store upload or migration applied to an external database",
+  "worktree": "Implementation committed; integrated upstream main before the publication requested by the user. Release validation: evidence/release-integration.json; deployment results: GitHub Actions.",
   "historical_discovery_inventory": "INVENTORY.json (pinned snapshots, not current file hashes)",
   "authoritative_sources": {
     "boot": {
@@ -1083,9 +1083,9 @@
   "validation": {
     "catalog": "npm run i18n:check -- es: passes, intentional warnings reviewed",
     "fullSuite": {
-      "passed": 1132,
+      "passed": 1149,
       "skipped": 13,
-      "filesPassed": 129,
+      "filesPassed": 133,
       "filesSkipped": 1
     },
     "focused": "See evidence/validation.json",
@@ -1093,7 +1093,8 @@
     "serverTypecheck": "npm run typecheck:server passes",
     "serverBuild": "npm run server:build passes",
     "browser": "evidence/browser-es.json; 12 panels, five viewport sizes, selected cache, uncached offline reload, language switch preserves building identity",
-    "browserProvider": "Chromium /usr/bin/chromium with software WebGL; mobile emulation is not a physical device test"
+    "browserProvider": "Chromium /usr/bin/chromium with software WebGL; mobile emulation is not a physical device test",
+    "releaseIntegration": "evidence/release-integration.json"
   },
   "storage": "SPANISH_SIZE.json",
   "storage_summary": "SPANISH.md",
@@ -1103,5 +1104,7 @@
     "Verify install/first launch, per-app language, glyph coverage, sign-in, real prices/purchases/refunds, notification background delivery and OS permission text on physical iOS/Android devices",
     "Complete publisher facts/legal review and native-language linguistic/accessibility review; staff/support and Spanish moderation operations need owner validation",
     "Keep the other 48 target languages unready until separately translated and checked"
-  ]
+  ],
+  "implementation_commit": "1daab27",
+  "integrated_upstream": "12d5996c3d0b17f9336107ed1a9acb907a0b6385"
 }

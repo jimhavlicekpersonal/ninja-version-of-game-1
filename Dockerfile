@@ -10,6 +10,8 @@ RUN npm ci --ignore-scripts
 COPY tsconfig.json vite.server.config.ts ./
 COPY server ./server
 COPY src ./src
+COPY locales ./locales
+COPY tools/i18n ./tools/i18n
 RUN npm run server:build
 
 FROM node:24-slim

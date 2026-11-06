@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "document_type": "spanish_release_integration_validation",
+  "checkedAt": "2026-11-06T20:52:04.076Z",
+  "implementation_commit": "1daab27",
+  "integrated_upstream": "12d5996c3d0b17f9336107ed1a9acb907a0b6385",
+  "publication_target": "main",
+  "game_url": "https://jimhavlicekpersonal.github.io/ninja-version-of-game-1/",
+  "publication": "Prepared for push; live deployment and verification run in .github/workflows/deploy.yml",
+  "checks": [
+    {
+      "command": "npm test",
+      "result": "passed",
+      "test_files_passed": 133,
+      "test_files_skipped": 1,
+      "tests_passed": 1149,
+      "tests_skipped": 13,
+      "duration_seconds": 218.24
+    },
+    {
+      "command": "npx vitest run tests/backend/release-config.test.ts tests/architecture/status.test.ts tests/architecture/code-split.test.ts tests/locales/spanish.test.ts",
+      "result": "passed",
+      "test_files_passed": 4,
+      "tests_passed": 20
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed"
+    },
+    {
+      "command": "npx tsc -p server/tsconfig.json --noEmit",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run server:build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run server:build in isolated Docker COPY inputs, without public/ios/android/docs or precompiled catalogs",
+      "result": "passed",
+      "limits": "Local dependency directory reused; actual Docker image build is performed by the server workflow"
+    },
+    {
+      "command": "npm run i18n:smoke",
+      "result": "passed",
+      "details": "browser-es.json"
+    },
+    {
+      "command": "node tools/release/check-published-game.mjs against local production build",
+      "result": "passed",
+      "coverage": "Game module, exact Spanish pack hash, service worker, manifest and six localized public pages"
+    }
+  ],
+  "runtime_pack_hash": "2b167174ce7bd967",
+  "measured_spanish_assets": {
+    "files": [
+      {
+        "path": "public/lang/es-2b167174ce7bd967.json",
+        "installedUtf8": 220557,
+        "gzip": 72481,
+        "brotli": 61221,
+        "deflate": 72463
+      },
+      {
+        "path": "public/es/community.html",
+        "installedUtf8": 4604,
+        "gzip": 2060,
+        "brotli": 1723,
+        "deflate": 2042
+      },
+      {
+        "path": "public/es/manifest.webmanifest",
+        "installedUtf8": 914,
+        "gzip": 388,
+        "brotli": 343,
+        "deflate": 370
+      },
+      {
+        "path": "public/es/privacy.html",
+        "installedUtf8": 18988,
+        "gzip": 6801,
+        "brotli": 5850,
+        "deflate": 6783
+      },
+      {
+        "path": "public/es/shikin-kessai.html",
+        "installedUtf8": 3420,
+        "gzip": 1247,
+        "brotli": 983,
+        "deflate": 1229
+      },
+      {
+        "path": "public/es/support.html",
+        "installedUtf8": 5362,
+        "gzip": 2214,
+        "brotli": 1844,
+        "deflate": 2196
+      },
+      {
+        "path": "public/es/terms.html",
+        "installedUtf8": 10314,
+        "gzip": 3995,
+        "brotli": 3382,
+        "deflate": 3977
+      },
+      {
+        "path": "public/es/tokushoho.html",
+        "installedUtf8": 3960,
+        "gzip": 1352,
+        "brotli": 1052,
+        "deflate": 1334
+      },
+      {
+        "path": "ios/App/App/es.lproj/InfoPlist.strings",
+        "installedUtf8": 196,
+        "gzip": 171,
+        "brotli": 129,
+        "deflate": 153
+      },
+      {
+        "path": "android/app/src/main/res/values-es/strings.xml",
+        "installedUtf8": 167,
+        "gzip": 131,
+        "brotli": 84,
+        "deflate": 113
+      },
+      {
+        "path": "android/app/src/main/res/xml/locales_config.xml",
+        "installedUtf8": 197,
+        "gzip": 143,
+        "brotli": 99,
+        "deflate": 125
+      }
+    ],
+    "installedUtf8": 268679,
+    "gzipSum": 90983,
+    "brotliSum": 76710,
+    "zipArchive": 92317,
+    "extraFontBytes": 0,
+    "excludes": [
+      "Shared English fallback and localization code (measured in built JS separately)",
+      "Server-only deletion HTML and translated store listing/product copy",
+      "Filesystem allocation, browser caches, app-store binary signing and packaging overhead"
+    ]
+  },
+  "builtJavaScript": {
+    "phase": "after_client_build",
+    "files": [
+      {
+        "path": "esm-sXakRRFv.js",
+        "sha256": "71e479e52c6ab7610baf4255d8a65f453adc725c9a4a87b8cd3bbb1d13771019",
+        "raw": 355,
+        "gzip": 260,
+        "brotli": 259
+      },
+      {
+        "path": "friendsUi-mnuLIhJ0.js",
+        "sha256": "5112464c554c41ad07658a50eff3fdcf3a6a2b1f8e76888359d107f8b6a4a485",
+        "raw": 28411,
+        "gzip": 9301,
+        "brotli": 8354
+      },
+      {
+        "path": "gangWarUi-YduCQaN_.js",
+        "sha256": "127a0765a914616524d5eb9909188ac22440a69e171cce34ccd2953e87e6aefc",
+        "raw": 5728,
+        "gzip": 2312,
+        "brotli": 2092
+      },
+      {
+        "path": "index-DWzS-d_i.js",
+        "sha256": "e6826e0352358d629bf4ff9334d45c621b942f82834dbcbb9739142ae396894a",
+        "raw": 1095816,
+        "gzip": 337202,
+        "brotli": 253707
+      },
+      {
+        "path": "phaser-BNIGqvgW.js",
+        "sha256": "f3316c5b28f607e16da26ecb0a0fc308e082628d19d670f9016021918549b2ad",
+        "raw": 660580,
+        "gzip": 173485,
+        "brotli": 140447
+      },
+      {
+        "path": "web-BQ7yDKga.js",
+        "sha256": "da881ebf49bbffdb43cd590ea8dd46bdfd40c81d4dfda9143a6f6fd9f8fdb275",
+        "raw": 894,
+        "gzip": 461,
+        "brotli": 378
+      },
+      {
+        "path": "web-D6ggF4-d.js",
+        "sha256": "3af76acb6449a8509232091714dc7b7b6f381e268ed25ce4a1d0f1dbafabc36f",
+        "raw": 844,
+        "gzip": 399,
+        "brotli": 309
+      },
+      {
+        "path": "web-DDX9cLdA.js",
+        "sha256": "68dfff28b5d6345e868b6cfa9e8946b2f47bb11b427e4885b7936baa07354854",
+        "raw": 4438,
+        "gzip": 1288,
+        "brotli": 1089
+      }
+    ],
+    "raw": 1797066,
+    "gzip": 524708,
+    "brotli": 406635,
+    "indexHtmlUtf8": 26294,
+    "baseline": {
+      "ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
+      "raw": 1933642,
+      "gzip": 565787,
+      "brotli": 466239
+    },
+    "delta": {
+      "raw": -136576,
+      "gzip": -41079,
+      "brotli": -59604
+    },
+    "note": "All JavaScript, including shared English fallback/formatters and engine code. Baseline includes 49 empty UI worksheet chunks removed by compact packs. This is not the isolated cost of Spanish."
+  },
+  "remaining_limits": [
+    "Local tests skipped PostgreSQL/Redis prerequisites; the Pages/server workflows run backend integration checks on services",
+    "Actual native devices, store-console publication and human native-language review remain outside this web deployment",
+    "No live online backend is configured for the normal web build; server image workflow rebuilds the compatible backend artifact"
+  ]
+}
