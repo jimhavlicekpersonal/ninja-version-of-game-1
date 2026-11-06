@@ -26,6 +26,9 @@ import { PROVIDER_NAMES, storeAgeSignal } from '../../backend/platform/auth';
 import type { AgeBand } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
 import { bandFromProfile } from '../../gameplay/sim/age';
+import { nextObjective } from '../../gameplay/sim/objective';
+import { calendarView } from '../../gameplay/sim/calendar';
+import { advance } from '../../gameplay/sim/village';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -154,6 +157,11 @@ export class Hud {
   private railToggle!: HTMLButtonElement;
   private railCollapsed = false;
   private unlockChip!: HTMLElement;
+  /** Report section 5 step 8 (growth 7): the one next thing to do, under the top bar. */
+  private objectiveChip!: HTMLButtonElement;
+  private objectiveAction: (() => void) | null = null;
+  private objectiveAt = 0;
+  private objectiveSig = '';
   /** True while a finger/mouse is pressed on the panel: never rebuild it mid-tap. */
   private sheetPressed = false;
   private sheetSig = '';
@@ -234,6 +242,11 @@ export class Hud {
     this.updateNet();
     this.deps.groveSource.subscribe(() => this.refresh());
     this.c.onOffer((rule) => this.econ.showOffer(rule));
+    // Report section 5 step 8 (growth 8): notifications stay off until the player says yes, but the
+    // question is asked once at the moment it helps: right after the first long timer they start.
+    this.c.onEvents((events) => {
+      if (events.some((e) => e.kind === 'upgrade_start' && e.seconds > 3600)) window.setTimeout(() => void this.askNotificationsOnce(), 1200);
+    });
     this.bus.on('select', (id) => {
       this.selectedId = id;
       this.renderSheet();
@@ -337,7 +350,8 @@ export class Hud {
     this.sheet.addEventListener('pointerleave', release);
     this.modalRoot = h('div', { class: 'modal-root' });
 
-    const head = h('div', { class: 'hud-head' }, top, h('div', { class: 'head-row' }, this.unlockChip), this.toasts);
+    this.objectiveChip = h('button', { class: 'objective-chip', type: 'button', hidden: true, onclick: () => this.objectiveAction?.() }) as HTMLButtonElement;
+    const head = h('div', { class: 'hud-head' }, top, h('div', { class: 'head-row' }, this.objectiveChip, this.unlockChip), this.toasts);
     const railBtn = (label: string, ic: string, onClick: () => void, extra?: HTMLElement) => {
       const badge = h('span', { class: 'badge' });
       badge.hidden = true;
@@ -368,6 +382,28 @@ export class Hud {
   // ------------------------------------------------------------ refresh
 
   private tutorialWasDone = false;
+
+  /** The one contextual notifications question (never during the tutorial, never twice on a device). */
+  private async askNotificationsOnce(): Promise<void> {
+    const KEY = 'tk.notifyAsked';
+    if (!this.c.state.tutorial.done || this.deps.prefs.get('reminders')) return;
+    try {
+      if (localStorage.getItem(KEY) || document.querySelector('.modal-root .modal')) return;
+      localStorage.setItem(KEY, '1');
+    } catch {
+      return;
+    }
+    const yes = await this.confirm(
+      'A nudge when it finishes?',
+      'Kagemura can tell you when the timers you start are done and your free daily chest is ready. Only those: never offers, nothing at night (quiet hours), at most a few a day. You can change each type in Settings.',
+      'Yes, remind me',
+      false,
+      'No thanks',
+    );
+    if (!yes) return;
+    this.deps.prefs.set('reminders', true);
+    await this.deps.onRemindersEnabled();
+  }
 
   /**
    * The age band: the store's signal first, then the game's neutral screen. Report section 5 step 7 (compliance
@@ -423,6 +459,7 @@ export class Hud {
     this.updateRail();
     this.updateBadges();
     this.renderUnlockChip();
+    this.renderObjective();
     this.renderSheet();
   }
 
@@ -499,7 +536,7 @@ export class Hud {
     this.armyPill.classList.toggle('busy', s.training.some((q) => q.endsAt > this.c.now()));
     this.armyPill.classList.toggle('full', ready >= campSpace);
     set('Store', activeOffers(s, this.c.now()).length);
-    set('Daily', (chestReady(s, this.c.now(), gd) ? 1 : 0) + (stipendStatus(s, this.c.now(), gd).claimable ? 1 : 0));
+    set('Daily', (chestReady(s, this.c.now(), gd) ? 1 : 0) + (stipendStatus(s, this.c.now(), gd).claimable ? 1 : 0) + (calendarView(s, this.c.now(), hl, gd)?.ready ? 1 : 0));
     const tier = unlockedTier(s, gd);
     const tiersReady = gd.pass.tiers.filter((t) => t.tier <= tier && (!s.pass.claimedFree.includes(t.tier) || (s.pass.premium && !s.pass.claimedPremium.includes(t.tier)))).length;
     const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
@@ -1154,6 +1191,45 @@ export class Hud {
    * One short line (re-audit design item 4: the old two-line banner was truncated mid-word): "Keep Lv 3 · 7 unlocks".
    * Hidden during the tutorial, at the top level and once dismissed for this Keep level.
    */
+  private renderObjective(force = false): void {
+    const now = this.c.now();
+    if (!force && now - this.objectiveAt < 1000) return;
+    this.objectiveAt = now;
+    const s = this.c.state;
+    if (!s.tutorial.done) {
+      this.objectiveChip.hidden = true;
+      return;
+    }
+    const data = this.c.data;
+    const o = nextObjective(advance(s, now, data).state, now, data);
+    const name = (type: string) => data.buildings[type]?.name ?? type;
+    let ic = icons.star;
+    let text = '';
+    let action: (() => void) | null = null;
+    if (o.kind === 'chest') {
+      [ic, text, action] = [icons.chest, 'Your daily rewards are ready', () => this.daily.openDaily()];
+    } else if (o.kind === 'raid') {
+      [ic, text, action] = [icons.swords, 'Your army is ready: raid a rival', () => this.deps.onAttack()];
+    } else if (o.kind === 'upgrade') {
+      [ic, text, action] = [icons.hammer, o.keep ? `Upgrade your Clan Keep to Lv ${o.toLevel}` : `Upgrade ${name(o.type)} to Lv ${o.toLevel}`, () => this.bus.emit('select', o.buildingId)];
+    } else if (o.kind === 'save') {
+      const need = (Object.entries(o.missing) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => `${formatCompact(v)} ${RES_LABEL[k]}`).join(' + ');
+      [ic, text, action] = [icons.acorns, `${need} more for ${name(o.type)} Lv ${o.toLevel}: collect or raid`, () => this.bus.emit('select', o.buildingId)];
+    } else if (o.kind === 'builders') {
+      [ic, text] = [icons.clock, `Next Artisan free in ${formatDuration(o.freeAt - now)}`];
+    }
+    const sig = `${o.kind}|${text}`;
+    this.objectiveChip.hidden = o.kind === 'none';
+    this.objectiveAction = action;
+    if (sig === this.objectiveSig) return;
+    this.objectiveSig = sig;
+    clear(this.objectiveChip);
+    this.objectiveChip.append(icon(ic), h('span', {}, text));
+    if (action) this.objectiveChip.append(h('span', { 'aria-hidden': 'true' }, '▸'));
+    this.objectiveChip.disabled = !action;
+    this.objectiveChip.setAttribute('aria-label', `Next: ${text}`);
+  }
+
   private renderUnlockChip(): void {
     const s = this.c.state;
     const level = hallLevel(s, this.c.data);

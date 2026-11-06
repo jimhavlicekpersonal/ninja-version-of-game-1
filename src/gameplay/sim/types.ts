@@ -136,8 +136,21 @@ export interface VillageState {
   armyPresets: ArmyPreset[];
   /** Clan Stipend (sim/stipend.ts, save v16): daily Jade payments left to claim, and the day the last one was claimed. */
   stipend: StipendState;
+  /** The 28-day calendar (sim/calendar.ts, save v19). */
+  calendar: CalendarState;
+  /** The device's offset from UTC; task days roll at the player's midnight (sim/calendar.ts, save v19). */
+  localTime?: { offsetMinutes: number; setAt: number };
   /** Goal events (sim/goalEvents.ts, save v16): progress in the current goal event occurrence. */
   goalEvent: GoalEventState | null;
+}
+
+export interface CalendarState {
+  /** Days of the current cycle claimed (0..27). */
+  claimed: number;
+  /** Local day index of the last claim; -1 = never. */
+  lastDay: number;
+  /** Full cycles finished. */
+  cycles: number;
 }
 
 export interface StipendState {
@@ -749,6 +762,8 @@ export interface SkinDef {
   name: string;
   moonstones: number;
   passOnly?: boolean;
+  /** Only from the 28-day calendar (never sold). */
+  calendarOnly?: boolean;
   /** Can be bought from this Keep level (report section 5 step 6: a look to aim for at each stage). */
   minKeep?: number;
   cap: string;
@@ -817,6 +832,8 @@ export interface DailyDef {
   chest: { outcomes: { id: string; label: string; weight: number; reward: Cost }[] };
   /** `jadeEveryDays`: a step's own Jade is paid at most once in this many days (report section 5 step 6, economy E05). */
   streak: { steps: { bonus: number; moonstones?: number }[]; skipsPerWeek: number; stepsLostPerMissedDay: number; historyDays: number; jadeEveryDays?: number };
+  /** The 28-day calendar (report section 5 step 8): fixed rewards; a `skin` day gives `repeatJade` once owned. */
+  calendar?: { days: { reward?: Cost; skin?: string }[]; repeatJade: number };
 }
 
 export interface EventEffect {

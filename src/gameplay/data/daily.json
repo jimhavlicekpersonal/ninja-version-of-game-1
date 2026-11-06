@@ -75,5 +75,157 @@
     "stepsLostPerMissedDay": 1,
     "historyDays": 7,
     "jadeEveryDays": 7
+  },
+  "calendar": {
+    "$comment": "Report section 5 step 8 (growth 19): one claim per local day, fixed (never random), never sold; a missed day loses nothing. Resources are Keep-scaled (scaleReward); day 28 gives the Moonlit Shrine look once, then repeatJade.",
+    "days": [
+      {
+        "reward": {
+          "acorns": 8000
+        }
+      },
+      {
+        "reward": {
+          "dew": 8000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 4000,
+          "dew": 4000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 8000
+        }
+      },
+      {
+        "reward": {
+          "dew": 8000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 4000,
+          "dew": 4000
+        }
+      },
+      {
+        "reward": {
+          "moonstones": 10
+        }
+      },
+      {
+        "reward": {
+          "dew": 10000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 5000,
+          "dew": 5000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 10000
+        }
+      },
+      {
+        "reward": {
+          "dew": 10000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 5000,
+          "dew": 5000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 10000
+        }
+      },
+      {
+        "reward": {
+          "moonstones": 15
+        }
+      },
+      {
+        "reward": {
+          "acorns": 6000,
+          "dew": 6000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 12000
+        }
+      },
+      {
+        "reward": {
+          "dew": 12000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 6000,
+          "dew": 6000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 12000
+        }
+      },
+      {
+        "reward": {
+          "dew": 12000
+        }
+      },
+      {
+        "reward": {
+          "moonstones": 20
+        }
+      },
+      {
+        "reward": {
+          "acorns": 14000
+        }
+      },
+      {
+        "reward": {
+          "dew": 14000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 7000,
+          "dew": 7000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 14000
+        }
+      },
+      {
+        "reward": {
+          "dew": 14000
+        }
+      },
+      {
+        "reward": {
+          "acorns": 7000,
+          "dew": 7000
+        }
+      },
+      {
+        "skin": "moonlit_shrine"
+      }
+    ],
+    "repeatJade": 40
   }
 }

@@ -53,6 +53,14 @@
       "spots": "#9fb4ff"
     },
     {
+      "id": "moonlit_shrine",
+      "name": "Moonlit Shrine",
+      "moonstones": 0,
+      "calendarOnly": true,
+      "cap": "#2b2f52",
+      "spots": "#e9e3c4"
+    },
+    {
       "id": "lantern_elder",
       "name": "Lantern Festival",
       "moonstones": 0,

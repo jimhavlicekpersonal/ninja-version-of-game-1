@@ -1,3 +1,4 @@
+import { localDayIndex } from '../sim/calendar';
 import type { Analytics } from '../../backend/analytics/events';
 import { SaveConflictError, type SaveStore } from '../../backend/persist/saveStore';
 import type { Clock } from '../sim/clock';
@@ -10,7 +11,7 @@ import { canPurchase, productForStoreId, productInfo, storeProductId } from '../
 import { raidPhase } from '../sim/social/groveRaid';
 import { MockPaymentProvider, type PaymentProvider, type PurchaseVerifier, type StoreReceipt } from '../../backend/payments/provider';
 import { advance, applyCommand, createNewVillage, hallLevel, type Command, type CommandResult, type FinishedUpgrade, type SimEvent } from '../sim/village';
-import { dayIndex, passSeason } from '../sim/pass';
+import { passSeason } from '../sim/pass';
 import { seasonOf } from '../sim/ranks';
 import { trainingReady } from '../sim/army';
 import { withEconomy, type Economy } from '../sim/serverEconomy';
@@ -428,7 +429,7 @@ export class GameController {
     const trainingDone = trainingReady(s, now, data);
     const researchDone = s.research.active.some((a) => a.endsAt <= now);
     const groveDue = s.grove.joined && now - s.grove.processedAt >= 30_000;
-    const periodDue = dayIndex(now, data) > s.tasks.day || passSeason(now, data) > s.pass.season;
+    const periodDue = localDayIndex(s, now, data) > s.tasks.day || passSeason(now, data) > s.pass.season;
     const seasonDue = seasonOf(now) > s.season;
     this.checkPrepOffer(now);
     if (!trainingDone && !researchDone && !groveDue && !periodDue && !seasonDue && !s.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];

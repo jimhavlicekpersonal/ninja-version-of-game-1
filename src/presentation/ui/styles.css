@@ -813,6 +813,11 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 }
 
 /* The Keep-unlock preview: one line and a dismiss button (it used to be a truncated two-line banner). */
+/* Report section 5 step 8 (growth 7): the next objective, one line under the top bar. */
+.objective-chip { display: inline-flex; align-items: center; gap: 6px; pointer-events: auto; max-width: 100%; min-height: 36px; padding: 5px 12px 5px 6px; border: 0; border-radius: 999px; background: rgba(20, 26, 34, .82); color: #fff; font: inherit; font-size: 13px; font-weight: 700; text-align: left; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
+.objective-chip .icon { width: 22px; height: 22px; flex: none; }
+.objective-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.objective-chip:disabled { opacity: .85; }
 .unlock-chip { display: flex; align-items: center; gap: 4px; pointer-events: auto; max-width: 100%; }
 .unlock-chip .unlocks { padding: 5px 12px 5px 6px; border-radius: 999px; min-height: 36px; }
 .unlock-chip .unlocks .icon { width: 22px; height: 22px; }
@@ -868,3 +873,11 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 .goal-ladder .log-row { padding: 6px 0; }
 .chip.held { gap: 4px; }
 .chip.held .chip { background: transparent; box-shadow: none; padding: 0 2px; }
+
+/* Report section 5 step 8 (growth 19): the 28-day calendar in the Daily panel. */
+.calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.calendar-day { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border-radius: 8px; background: rgba(0, 0, 0, .05); font-size: 11px; min-width: 0; overflow: hidden; }
+.calendar-day .chip { font-size: 10px; padding: 1px 4px; }
+.calendar-day.done { opacity: .5; }
+.calendar-day.current { outline: 2px solid var(--gold, #d9a520); }
+.calendar-day.big { background: rgba(217, 165, 32, .18); }

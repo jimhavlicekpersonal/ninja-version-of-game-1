@@ -1,6 +1,7 @@
 /** Lantern Pass seasons, daily tasks and weekly challenges. */
 import { scaleReward, topUpOne } from './economy';
 import { createRng, mixSeed, next } from './rng';
+import { localDayIndex } from './calendar';
 import type { Cost, GameData, ResourceKind, Stats, TaskTemplate, VillageState } from './types';
 
 const DAY = 86_400_000;
@@ -262,7 +263,8 @@ export function currentTasks(state: VillageState, hall: number, data: GameData):
  * forward, so `advance` can call it at each finished timer's own time. Mutates.
  */
 export function rollPeriods(state: VillageState, now: number, data: GameData): void {
-  const day = dayIndex(now, data);
+  // Report section 5 step 8 (growth 9): task days and weeks roll at the player's own midnight.
+  const day = localDayIndex(state, now, data);
   const week = Math.floor(day / 7);
   if (day > state.tasks.day || !state.tasks.dayIds?.length) {
     if (day > state.tasks.day) {

@@ -12,7 +12,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -191,6 +191,11 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // chest pays it.
     const st = v.stipend as { left?: number; jade?: number } | undefined;
     if (st && typeof st === 'object' && st.jade === undefined) st.jade = Math.max(0, Number(st.left) || 0) * 20;
+  }
+  if (out.version < 19 && v && typeof v === 'object') {
+    // v18 -> v19 (report section 5 step 8): the 28-day calendar, and the device's UTC offset for local task days
+    // (none yet: task days keep UTC until the game sends the offset).
+    v.calendar = v.calendar ?? { claimed: 0, lastDay: -1, cycles: 0 };
   }
   repairTrainingQueue(v);
   out.version = SAVE_VERSION;

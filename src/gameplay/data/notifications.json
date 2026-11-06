@@ -28,7 +28,7 @@
     {
       "id": "dailyChest",
       "label": "Daily chest is ready",
-      "default": false
+      "default": true
     },
     {
       "id": "events",

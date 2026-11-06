@@ -218,6 +218,11 @@ async function boot(): Promise<void> {
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
   const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}) });
   onCommunityRulesAccepted(() => void connection.acceptRules());
+  // Report section 5 step 8 (growth 9): task days roll at the player's own midnight (the sim allows a change once a week).
+  {
+    const minutes = -new Date().getTimezoneOffset();
+    if (controller.state.localTime?.offsetMinutes !== minutes) controller.dispatch({ type: 'setLocalTime', minutes });
+  }
   const groveSource: GroveSource = connection.enabled ? new RemoteGroveSource(controller, connection) : new LocalGroveSource(controller);
   // Shared play statistics (report section 5 step 5): adults only, off until they say yes, never in the sandbox.
   const stats = sandbox || !connection.enabled

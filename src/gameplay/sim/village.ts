@@ -17,6 +17,7 @@ import { activeGoalEvent, bountyBase, ladderReward, recordBountyResult } from '.
 import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
+import { claimCalendarDay, emptyCalendar, setLocalTime } from './calendar';
 import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unlockedTier } from './pass';
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
@@ -126,6 +127,10 @@ export type Command =
   | { type: 'leaveLocalGrove' }
   /** Claim today's Clan Stipend payment (sim/stipend.ts). */
   | { type: 'claimStipend' }
+  /** Report section 5 step 8: the device's offset from UTC (task days roll at local midnight). */
+  | { type: 'setLocalTime'; minutes: number }
+  /** Report section 5 step 8: today's 28-day calendar reward. */
+  | { type: 'claimCalendar' }
   /** An attack on the running goal event's bounty fortress (`eventKey`, sim/goalEvents.ts); the base is rebuilt, never taken from the client. */
   | { type: 'bountyEnd'; eventKey: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   /** Settle the score with a bot raider (`defenseId`, sim/rematch.ts); the raider's base is rebuilt from the defense record. */
@@ -255,6 +260,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     seasonLog: [],
     armyPresets: [],
     stipend: emptyStipend(),
+    calendar: emptyCalendar(),
     goalEvent: null,
   };
   for (const sb of data.economy.startingLayout) {
@@ -712,6 +718,18 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       if (jade === null) return fail('NOT_AVAILABLE', s.stipend?.left > 0 ? "Today's stipend is already claimed. Come back tomorrow." : 'No Clan Stipend payments left.');
       return { ok: true, state: s, events: [{ kind: 'stipend_claimed', moonstones: jade, left: s.stipend.left }] };
     }
+    case 'setLocalTime': {
+      const why = setLocalTime(s, cmd.minutes, now);
+      if (why) return fail('NOT_AVAILABLE', why);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'claimCalendar': {
+      const r = claimCalendarDay(s, now, hallLevel(s, data), data);
+      if ('error' in r) return fail('ALREADY_CLAIMED', r.error);
+      const { granted, overflow } = grantReward(s, r.reward, data);
+      const lost = hasAny(overflow) ? { overflow } : {};
+      return { ok: true, state: s, events: [{ kind: 'reward', source: `calendar:${r.day}`, grants: granted, ...lost }] };
+    }
     case 'bountyEnd':
       s.pendingBattle = null;
       return bountyEnd(s, cmd.eventKey, cmd.record, now, data);
@@ -947,6 +965,7 @@ function buySkin(s: VillageState, id: string, data: GameData): CommandResult {
   if (!skin) return fail('NOT_FOUND', 'Unknown look.');
   if (s.cosmetics.owned.includes(id)) return fail('ALREADY_CLAIMED', 'You already own this look.');
   if (skin.passOnly) return fail('LOCKED', 'This look comes from the Season Scroll.');
+  if (skin.calendarOnly) return fail('LOCKED', 'This look comes from the 28-day calendar.');
   if (skin.minKeep && hallLevel(s, data) < skin.minKeep) return fail('LOCKED', `This look unlocks at Keep ${skin.minKeep}.`);
   if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Jade.`);
   s.resources.moonstones -= skin.moonstones;

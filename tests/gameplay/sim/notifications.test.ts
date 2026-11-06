@@ -41,7 +41,8 @@ describe('notification plan', () => {
   it('is off until the player turns it on, and only some types default on', () => {
     expect(defaultNotificationTypes(data)).toContain('builds');
     expect(defaultNotificationTypes(data)).not.toContain('events');
-    expect(defaultNotificationTypes(data)).not.toContain('dailyChest');
+    // Report section 5 step 8 (growth 8): the player's own free chest is on once they turn notifications on.
+    expect(defaultNotificationTypes(data)).toContain('dailyChest');
   });
 
   it('every reminder has a type the settings know about', () => {

@@ -7,6 +7,7 @@ import { activeEvents, upcomingEvents, type EventWindow } from '../../gameplay/s
 import { goalEventView } from '../../gameplay/sim/goalEvents';
 import type { BaseLayout } from '../../gameplay/sim/battle/types';
 import { dayIndex } from '../../gameplay/sim/pass';
+import { calendarView } from '../../gameplay/sim/calendar';
 import { dailyChestOverflowRisk, hallLevel } from '../../gameplay/sim/village';
 import type { Cost } from '../../gameplay/sim/types';
 import { clear, h, icon } from './dom';
@@ -31,6 +32,47 @@ export class DailyUi {
     private readonly kit: UiKit,
     private readonly opts: DailyOpts = {},
   ) {}
+
+  /**
+   * Report section 5 step 8 (growth 19): the 28-day calendar. Fixed rewards, one a day on the player's own
+   * calendar, never random and never sold; a missed day loses nothing.
+   */
+  private calendarSection(redraw: () => void): HTMLElement {
+    const c = this.kit.c;
+    const gd = c.data;
+    const now = c.now();
+    const view = calendarView(c.state, now, hallLevel(c.state, gd), gd);
+    const wrap = h('div', { class: 'calendar' });
+    if (!view) return wrap;
+    const grid = h('div', { class: 'calendar-grid', role: 'list' });
+    for (const d of view.days) {
+      const isNext = d.day === view.next;
+      const label = d.reward.skin ? 'Keep look' : '';
+      grid.append(
+        h(
+          'div',
+          { class: `calendar-day${d.claimed ? ' done' : ''}${isNext ? ' current' : ''}${d.reward.skin ? ' big' : ''}`, role: 'listitem', 'aria-label': `Day ${d.day}${d.claimed ? ', claimed' : ''}` },
+          h('b', {}, String(d.day)),
+          d.reward.skin ? h('span', { class: 'small' }, label) : rewardChips(d.reward as Cost),
+        ),
+      );
+    }
+    const actions = h('div', { class: 'actions' });
+    if (view.ready) {
+      const btn = h('button', { class: 'btn primary', type: 'button' }, icon(icons.check), ` Claim day ${view.next}`);
+      btn.addEventListener('click', () => {
+        const r = c.dispatch({ type: 'claimCalendar' });
+        if (!r.ok) this.kit.toast(r.message, 'error');
+        else this.kit.toast(view.days[view.next - 1].reward.skin ? 'A new Keep look is yours: Store → Looks.' : `Day ${view.next} claimed.`, 'success');
+        redraw();
+      });
+      actions.append(btn);
+    } else {
+      actions.append(h('p', { class: 'muted' }, `Next calendar day in ${formatDuration(view.nextAt - now)}.`));
+    }
+    wrap.append(h('h3', {}, '28-day calendar'), h('p', { class: 'muted small' }, 'One reward a day, the same for everyone, never random and never sold. Miss a day and nothing is lost: the next claim is the next day on the list. Day 28 gives a Keep look.'), grid, actions);
+    return wrap;
+  }
 
   openDaily(): void {
     const c = this.kit.c;
@@ -135,6 +177,7 @@ export class DailyUi {
         actions.append(h('p', { class: 'muted' }, `Next chest in ${formatDuration(nextChestAt(now, gd) - now)}.`));
       }
       body.append(actions);
+      body.append(this.calendarSection(render));
     };
     render();
     this.kit.modal('Daily chest', body, [], 'normal');

@@ -119,6 +119,9 @@ export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['ty
   'claimAchievement',
   // Save v16 (design re-audit): Clan Stipend claims, Bounty Hunt attacks and settle-the-score rematches.
   'claimStipend',
+  // Report section 5 step 8 (save v19): local task days and the 28-day calendar.
+  'setLocalTime',
+  'claimCalendar',
   'bountyEnd',
   'rematchEnd',
 ]);
