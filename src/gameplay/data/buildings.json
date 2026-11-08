@@ -12,8 +12,8 @@
         "buildSeconds": 0,
         "hp": 2250,
         "storage": {
-          "acorns": 5000,
-          "dew": 5000
+          "acorns": 6000,
+          "dew": 6000
         }
       },
       {
@@ -24,8 +24,8 @@
         "buildSeconds": 240,
         "hp": 2400,
         "storage": {
-          "acorns": 5500,
-          "dew": 5500
+          "acorns": 6500,
+          "dew": 6500
         }
       },
       {
@@ -36,8 +36,8 @@
         "buildSeconds": 600,
         "hp": 2800,
         "storage": {
-          "acorns": 6000,
-          "dew": 6000
+          "acorns": 7000,
+          "dew": 7000
         }
       },
       {
@@ -48,8 +48,8 @@
         "buildSeconds": 1620,
         "hp": 3150,
         "storage": {
-          "acorns": 6500,
-          "dew": 6500
+          "acorns": 7500,
+          "dew": 7500
         }
       },
       {

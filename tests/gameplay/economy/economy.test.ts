@@ -215,6 +215,8 @@ describe('purchases end to end with the mock provider (all logged in analytics)'
     const hall = c.state.buildings.find((b) => b.type === 'elder_toadstool')!;
     c.dispatch({ type: 'upgrade', id: hall.id });
     expect(c.dispatch({ type: 'skip', id: hall.id }).ok).toBe(true);
+    // Spend some Coins first so the next Keep level is short of them (the opening stock alone pays for it).
+    expect(c.dispatch({ type: 'place', buildingType: 'acorn_cannon', x: 30, y: 30 }).ok).toBe(true);
     expect(c.dispatch({ type: 'topUp', then: { type: 'upgrade', id: hall.id } }).ok).toBe(true);
     expect(c.dispatch({ type: 'place', buildingType: 'beaver_lodge', x: 2, y: 2 }).ok).toBe(true);
     const list = await names();

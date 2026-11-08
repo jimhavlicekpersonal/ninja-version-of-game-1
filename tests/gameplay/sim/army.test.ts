@@ -92,7 +92,7 @@ describe('scouting and battle results', () => {
   it('battleEnd re-simulates, spends used troops and adds loot (capped by storage)', () => {
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0 = { ...state, army: { hedgehog_roller: 20 } };
-    const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { acorns: 5000, dew: 100 } }] };
+    const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { acorns: 9000, dew: 100 } }] };
     const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
     const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments } }, clock.now());
     expect(s1.army.hedgehog_roller).toBe(8);

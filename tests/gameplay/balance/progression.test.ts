@@ -8,14 +8,17 @@ import { activeHour, ModelPlayer, normalDays } from '../../../tools/balance/play
 const opts = { raidsPerSession: 2 };
 
 describe('progression pacing (model player)', () => {
-  it('a new player reaches Elder Toadstool 3 in about an hour of active play', () => {
+  // The opening stock (5,000 Coins and Provisions since 2026-11-08, at the owner's request, so a new
+  // player can start building at once) pays for Keep 2 and most of Keep 3: the Keep's own build timers
+  // (4 + 10 minutes) now set the pace. It used to take 40-80 minutes of collecting.
+  it('a new player reaches Elder Toadstool 3 within the first half hour of active play', () => {
     const p = new ModelPlayer(data, opts);
     activeHour(p, 90, 2);
     const h3 = p.hallReachedAt[3];
     console.log(`hall 2 at ${(p.hallReachedAt[2] * 60).toFixed(0)} min, hall 3 at ${h3 !== undefined ? (h3 * 60).toFixed(0) : 'n/a'} min, raids ${p.raids}`);
     expect(h3).toBeDefined();
-    expect(h3 * 60).toBeGreaterThanOrEqual(40);
-    expect(h3 * 60).toBeLessThanOrEqual(80);
+    expect(h3 * 60).toBeGreaterThanOrEqual(12);
+    expect(h3 * 60).toBeLessThanOrEqual(30);
   });
 
   it('Elder Toadstool 6 takes about two weeks of normal play', { timeout: 120_000 }, () => {
