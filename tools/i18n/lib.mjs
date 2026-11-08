@@ -183,7 +183,9 @@ export function scriptShare(texts, script) {
   let total = 0;
   let hit = 0;
   for (const t of texts) {
-    for (const ch of t.replace(PLACEHOLDER, '')) {
+    // ICU syntax (`{n, plural, one {…} other {…}}`) is Latin in every language: count only the words a player reads.
+    const words = t.replace(/\{\s*[A-Za-z0-9_]+\s*,\s*(?:plural|select)\s*,/g, '').replace(/(?:=\d+|\b[A-Za-z_]+)\s*\{/g, '{').replace(PLACEHOLDER, '');
+    for (const ch of words) {
       if (!/\p{L}/u.test(ch)) continue;
       total++;
       if (re.test(ch)) hit++;
