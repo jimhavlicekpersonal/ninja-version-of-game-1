@@ -1,5 +1,7 @@
 # Design proposal: stances, rivals that scout you back, and one economic scale
 
+> Superseded by [`DESIGN_LIVING_FORTRESS_2026-11-08.md`](DESIGN_LIVING_FORTRESS_2026-11-08.md), which blends the stances with two further mechanisms (memory and the Watch) and keeps the prototype numbers below as evidence.
+
 Owner: GAME THEORY compartment. Status: proposal, not implemented. Written 2026-11-08 against the measurements in [`docs/audit/BALANCE_AUDIT_2026-11-08.md`](../audit/BALANCE_AUDIT_2026-11-08.md); the two prototypes quoted below ran in the real simulation with data-only changes (`docs/audit/balance-2026-11-08/scripts/design/`).
 
 ## 0. Why the game has one answer today

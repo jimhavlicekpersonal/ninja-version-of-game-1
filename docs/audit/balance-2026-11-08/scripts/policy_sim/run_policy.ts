@@ -7,17 +7,18 @@ import { writeFileSync } from 'node:fs';
 import { defaultData } from '../../src/gameplay/sim/data';
 import { activeHour, casualDays, ModelPlayer, normalDays, type ModelOptions, type Policy } from './playerModel';
 
-export default function main(policyArg = 'raider', cadence = 'regular', maxDaysArg = '120', stopKeepArg = '12', rpsArg = '') {
+export default function main(policyArg = 'raider', cadence = 'regular', maxDaysArg = '120', stopKeepArg = '12', rpsArg = '', watchArg = '') {
   const policy = policyArg as Policy;
   const maxDays = Number(maxDaysArg);
   const stopKeep = Number(stopKeepArg);
   const raidsPerSession = rpsArg ? Number(rpsArg) : policy === 'raid_max' ? 6 : 2;
-  const opts: ModelOptions = { raidsPerSession, policy };
+  const opts: ModelOptions = { raidsPerSession, policy, watch: watchArg === 'watch' };
   const data = defaultData;
   const p = new ModelPlayer(data, opts);
   const t0 = Date.now();
-  const out = `scratch/policy_sim/${policy}_${cadence}.out`;
-  const json = `scratch/policy_sim/${policy}_${cadence}.json`;
+  const tag = watchArg === 'watch' ? '_watch' : '';
+  const out = `scratch/policy_sim/${policy}_${cadence}${tag}.out`;
+  const json = `scratch/policy_sim/${policy}_${cadence}${tag}.json`;
   activeHour(p, 60, 2);
   let days = 0;
   let stopped = '';
@@ -29,6 +30,7 @@ export default function main(policyArg = 'raider', cadence = 'regular', maxDaysA
     L.push(`Keep reached (day): ${Object.entries(reached).map(([k, v]) => `${k}: ${v}`).join(' · ')}`);
     const mean = <T>(xs: T[], f: (x: T) => number) => (xs.length ? xs.reduce((a, x) => a + f(x), 0) / xs.length : 0);
     const sum = <T>(xs: T[], f: (x: T) => number) => xs.reduce((a, x) => a + f(x), 0);
+    L.push(`Watch index mean ${p.watchIndex.length ? (p.watchIndex.reduce((a, b) => a + b, 0) / p.watchIndex.length).toFixed(2) : '-'}`);
     L.push(`Totals: raids ${p.raidLog.length}, looted ${Math.round(sum(p.raidLog, (r) => Math.max(0, r.loot)))}, raided ${p.defenseLog.length}x, stolen ${Math.round(sum(p.defenseLog, (d) => d.lost))}, held ${p.defenseLog.filter((d) => d.stars === 0).length}, defence rewards ${Math.round(sum(p.defenseLog, (d) => d.reward))}, Next presses ${p.nextPresses}`);
     L.push(`Sessions ${p.sessionsTotal}: full storage (either) ${(100 * p.fullStorageSessions / Math.max(1, p.sessionsTotal)).toFixed(0)}%, Coins full ${(100 * p.fullAcornSessions / Math.max(1, p.sessionsTotal)).toFixed(0)}%, Provisions full ${(100 * p.fullDewSessions / Math.max(1, p.sessionsTotal)).toFixed(0)}%`);
     L.push(`Research started ${p.researchStarted}, skipped (sandbag) ${p.researchSkipped}; walls placed ${p.wallsPlaced}, wall upgrades ${p.wallUpgrades}, Coins on walls ${p.wallCoins}; final honor ${p.state.trophies}; final strength ${p.dayLog.length ? p.dayLog[p.dayLog.length - 1].strength.toFixed(2) : '-'}`);

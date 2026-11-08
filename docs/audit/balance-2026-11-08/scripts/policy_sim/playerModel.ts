@@ -26,7 +26,9 @@ import { newestInFamily, type Family } from '../../tools/balance/armyLab';
 import { currentTasks, unlockedTier } from '../../src/gameplay/sim/pass';
 import { nextTrialTier, trialBase, trialVariant } from '../../src/gameplay/sim/trials';
 import { createBattle } from '../../src/gameplay/sim/battle/battle';
-import { totalLoot } from '../../src/gameplay/sim/battle/basegen';
+import { generateOpponent, LAYOUTS, totalLoot } from '../../src/gameplay/sim/battle/basegen';
+import { villageToBase } from '../../src/gameplay/sim/defense';
+import { defenseStrength } from '../../src/gameplay/sim/trials';
 import { FakeClock } from '../../src/gameplay/sim/clock';
 import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
 import { botDeployments } from '../../src/gameplay/sim/defense';
@@ -51,6 +53,8 @@ export interface ModelOptions {
   engaged?: boolean;
   /** PS: sandbagger: never let attackerStrength exceed Keep - this. */
   sandbagMargin?: number;
+  /** Design prototype: banked loot x (0.5 + 0.5 x min(1, defence index)), index = village tower strength / generated base at the Keep (bias 0.5). */
+  watch?: boolean;
 }
 
 const COUNTER_BUILDINGS = ['paper_lantern_line', 'clockwork_repairer', 'bitter_incense_burner', 'kite_cutter_ballista', 'longbow_yagura'];
@@ -90,6 +94,7 @@ export interface DayLog {
 }
 
 export class ModelPlayer {
+  watchIndex: number[] = [];
   clock = new FakeClock(Date.UTC(2026, 0, 5, 8, 0, 0));
   state: VillageState;
   hallReachedAt: Record<number, number> = {};
@@ -418,9 +423,21 @@ export class ModelPlayer {
       const probe = createBattle(setup, d);
       const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(seed), d, levels, probe.entry);
       const before = this.state.resources.acorns + this.state.resources.dew;
+      const beforeEach = { acorns: this.state.resources.acorns, dew: this.state.resources.dew };
       const res = applyCommand(this.state, { type: 'battleEnd', record: { at: this.clock.now(), opponentName: base.name, setup, deployments } }, this.clock.now(), d);
       if (!res.ok) throw new Error(`battleEnd failed: ${res.message}`);
       this.state = res.state;
+      if (this.opts.watch) {
+        const own = defenseStrength(villageToBase(this.state, this.clock.now(), d), d);
+        const norm = [0, 1].map((k) => defenseStrength(generateOpponent(123457 + k, hl, d, { levelBias: 0.5, layout: LAYOUTS[k] }), d)).reduce((a, b) => a + b, 0) / 2;
+        const index = norm > 0 ? Math.min(1, own / norm) : 1;
+        const m = 0.5 + 0.5 * index;
+        for (const k of ['acorns', 'dew'] as const) {
+          const gain = this.state.resources[k] - beforeEach[k];
+          if (gain > 0) this.state.resources[k] -= Math.floor(gain * (1 - m));
+        }
+        this.watchIndex.push(index);
+      }
       const rec = this.state.battleLog[this.state.battleLog.length - 1];
       this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, opponentBias: ms.bias, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies, strength, nexts, day: this.elapsedDays() });
       this.state.battleLog = [];
