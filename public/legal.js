@@ -8,7 +8,7 @@
 (function () {
   var cfg = window.KAGEMURA_LEGAL || {};
   // Pages built for a translated language (tools/i18n/pages.mjs) set <html lang>.
-  var UNSET = { en: 'not published yet', es: 'aún no publicado', hi: 'अभी प्रकाशित नहीं हुआ' };
+  var UNSET = { en: 'not published yet', es: 'aún no publicado', hi: 'अभी प्रकाशित नहीं हुआ', pt: 'ainda não publicado' };
   function fill() {
     var els = document.querySelectorAll('[data-legal]');
     for (var i = 0; i < els.length; i++) {

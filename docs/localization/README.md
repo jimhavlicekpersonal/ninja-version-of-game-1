@@ -21,7 +21,7 @@ public pages, notifications and native resources. Read
 [SPANISH_IMPLEMENTATION.json](SPANISH_IMPLEMENTATION.json) for current surface
 status and evidence, [SPANISH.md](SPANISH.md) for the packaging decision, and
 [SPANISH_SIZE.json](SPANISH_SIZE.json) for measured bytes and explicit projections.
-English, Spanish and Hindi are selectable ([HINDI.md](HINDI.md) records the Hindi release and what it changed for non-Latin scripts); the other 47 target languages remain unready.
+English, Spanish, Hindi and Brazilian Portuguese are selectable ([HINDI.md](HINDI.md) records the Hindi release and what it changed for non-Latin scripts, [PORTUGUESE.md](PORTUGUESE.md) the Portuguese one); the other 46 target languages remain unready.
 Native device, storefront, publisher and legal gates are recorded separately.
 
 Use this document for scope, ownership, sequencing and acceptance criteria.

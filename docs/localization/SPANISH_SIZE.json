@@ -135,16 +135,16 @@
           },
           {
             "path": "android/app/src/main/res/xml/locales_config.xml",
-            "installedUtf8": 230,
-            "gzip": 147,
-            "brotli": 104,
-            "deflate": 129
+            "installedUtf8": 266,
+            "gzip": 156,
+            "brotli": 112,
+            "deflate": 138
           }
         ],
-        "installedUtf8": 270914,
-        "gzipSum": 91589,
-        "brotliSum": 77198,
-        "zipArchive": 92923,
+        "installedUtf8": 270950,
+        "gzipSum": 91598,
+        "brotliSum": 77206,
+        "zipArchive": 92932,
         "extraFontBytes": 0,
         "excludes": [
           "Shared English fallback and localization code (measured in built JS separately)",
@@ -153,6 +153,36 @@
         ]
       },
       "serverDeletionPageUtf8": 6778
+    },
+    "pt": {
+      "ready": true,
+      "strings": 2673,
+      "installedUtf8": 220417,
+      "gzip": 72544,
+      "brotli": 61622,
+      "zipDeflatePayload": 72526,
+      "namespaces": {
+        "boot": {
+          "total": 17,
+          "translated": 17
+        },
+        "data": {
+          "total": 669,
+          "translated": 669
+        },
+        "messages": {
+          "total": 1862,
+          "translated": 1862
+        },
+        "pages": {
+          "total": 314,
+          "translated": 314
+        },
+        "ui": {
+          "total": 125,
+          "translated": 125
+        }
+      }
     },
     "hi": {
       "ready": true,
@@ -189,26 +219,26 @@
     "50_languages_at_1x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 13545700,
-      "gzip": 4579450,
-      "brotli": 3859900,
-      "zipArchive": 4646150
+      "installedUtf8": 13547500,
+      "gzip": 4579900,
+      "brotli": 3860300,
+      "zipArchive": 4646600
     },
     "50_languages_at_1.5x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 20318550,
-      "gzip": 6869175,
-      "brotli": 5789850,
-      "zipArchive": 6969225
+      "installedUtf8": 20321250,
+      "gzip": 6869850,
+      "brotli": 5790450,
+      "zipArchive": 6969900
     },
     "50_languages_at_2x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 27091400,
-      "gzip": 9158900,
-      "brotli": 7719800,
-      "zipArchive": 9292300
+      "installedUtf8": 27095000,
+      "gzip": 9159800,
+      "brotli": 7720600,
+      "zipArchive": 9293200
     }
   },
   "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",
@@ -216,32 +246,32 @@
     "phase": "existing_dist_before_build",
     "files": [
       {
-        "path": "esm-B23tAgKS.js",
-        "sha256": "85764f9a09d829de643f82fa58cdb98f427f34eec4848f47b715bbd35fd724c3",
+        "path": "esm-DLeNomtW.js",
+        "sha256": "034c40ce20c242c050646eedbf5f3585426b70c8ca296698e4d00bb39cd237de",
         "raw": 355,
-        "gzip": 259,
+        "gzip": 260,
         "brotli": 259
       },
       {
-        "path": "friendsUi-CuEEt8Yw.js",
-        "sha256": "d137e2141ec767dbefd548b8693f2a245f68dd9cd69bef6e542ea72e9785da82",
+        "path": "friendsUi-CUznQFRM.js",
+        "sha256": "315337155691354e226012a487d16db0aa69b67a6dad41bb042c883f9d765628",
         "raw": 28411,
-        "gzip": 9300,
-        "brotli": 8342
+        "gzip": 9301,
+        "brotli": 8386
       },
       {
-        "path": "gangWarUi-C9AaFrq_.js",
-        "sha256": "f5b107b9415676ded1e05ab18cfa5485e73d748954e3535e7393005d9feb7743",
+        "path": "gangWarUi-DdwdBeCL.js",
+        "sha256": "64e44e31f8d4453d14facd91efd8f71deff0b93c6a617a900dacb271032d0d6a",
         "raw": 5728,
-        "gzip": 2310,
-        "brotli": 2091
+        "gzip": 2311,
+        "brotli": 2092
       },
       {
-        "path": "index-BuLnx1yd.js",
-        "sha256": "f0ca5caf094c516835a2008cb359dd74569e81afc14602fc2b2753c8bbf04c5f",
-        "raw": 1105168,
-        "gzip": 340083,
-        "brotli": 255989
+        "path": "index-CiC-1CcU.js",
+        "sha256": "7ec2c1146acf207c45682820d68dc91a1637f5bcf9824b6f4f3efb0b85ca5f35",
+        "raw": 1106142,
+        "gzip": 340530,
+        "brotli": 256145
       },
       {
         "path": "phaser-BNIGqvgW.js",
@@ -251,31 +281,31 @@
         "brotli": 140447
       },
       {
-        "path": "web-6laMnQGH.js",
-        "sha256": "70c40d78b3f70cfd8634bc46ce3022de8f092619800a3af31b408b71c85ec0c5",
-        "raw": 894,
-        "gzip": 458,
-        "brotli": 377
+        "path": "web-B7_bzcJC.js",
+        "sha256": "5cbd909f1247ff664e37e09580750afbdbfa6f4bf3184f96a452b990600835c5",
+        "raw": 844,
+        "gzip": 399,
+        "brotli": 305
       },
       {
-        "path": "web-BlUpEqYn.js",
-        "sha256": "8edb83b3d870eb0cfca55084ab66fd9834a68ee64b775cdb76122ad7c63ca7b4",
+        "path": "web-BzLtR0xH.js",
+        "sha256": "05994face5fb6fe7b7da63b2f503a11fa46fd68c20f8946c75afd6379656f12e",
+        "raw": 894,
+        "gzip": 459,
+        "brotli": 376
+      },
+      {
+        "path": "web-JRkAcfM7.js",
+        "sha256": "a8100c70d56af31a417c4550495e7cd33545ff24a8f969494686bd345feb6b19",
         "raw": 4438,
         "gzip": 1287,
-        "brotli": 1088
-      },
-      {
-        "path": "web-CLPjWb8C.js",
-        "sha256": "76f7765f2d6b2be157c27e70f684f4350ca6f6987d75f6f4bd59f79108810d52",
-        "raw": 844,
-        "gzip": 398,
-        "brotli": 303
+        "brotli": 1090
       }
     ],
-    "raw": 1806418,
-    "gzip": 527580,
-    "brotli": 408896,
-    "indexHtmlUtf8": 31289,
+    "raw": 1807392,
+    "gzip": 528032,
+    "brotli": 409100,
+    "indexHtmlUtf8": 34096,
     "baseline": {
       "ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
       "raw": 1933642,
@@ -283,9 +313,9 @@
       "brotli": 466239
     },
     "delta": {
-      "raw": -127224,
-      "gzip": -38207,
-      "brotli": -57343
+      "raw": -126250,
+      "gzip": -37755,
+      "brotli": -57139
     },
     "note": "All JavaScript, including shared English fallback/formatters and engine code. Baseline includes 49 empty UI worksheet chunks removed by compact packs. This is not the isolated cost of Spanish."
   }

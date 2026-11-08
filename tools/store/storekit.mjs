@@ -16,6 +16,9 @@ const spanish = key => esData[key]?.text || '';
 const hiData = read('locales/hi/data.json');
 const shortHindi = {starter_pack: 'नए सरदारों के लिए जेड और संसाधन', builder_pack: 'एक और कारीगर रखने के लिए जेड, और संसाधन', war_prep_pack: 'गठबंधन युद्ध के लिए रसद और जेड', rebuild_pack: 'फिर से बनाने के लिए जेड और संसाधन', keep_pack: 'आपके नए किले के जश्न के लिए संसाधन और जेड'};
 const hindi = key => hiData[key]?.text || '';
+const ptData = read('locales/pt/data.json');
+const shortPortuguese = {starter_pack: 'Jade e recursos para novos líderes', builder_pack: 'Jade para contratar mais um Artesão, e recursos', war_prep_pack: 'Provisões e Jade para a Guerra de Alianças', rebuild_pack: 'Jade e recursos para reconstruir', keep_pack: 'Recursos e Jade para celebrar sua nova Fortaleza'};
+const portuguese = key => ptData[key]?.text || '';
 // Never cut Hindi to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), so overlong text fails here instead.
 const clip = (text, max) => { if (text.length > max) throw new Error(`Hindi store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
@@ -49,6 +52,11 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         description: clip(pack ? `${pack.moonstones} जेड` : offer ? (shortHindi[offer.id] || hindi(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.jadePerPayment} जेड के ${stipend.payments} रोज़ाना भुगतान` : 'इस सीज़न का प्रीमियम पथ', 55),
         locale: 'hi',
       },
+      // Brazilian Portuguese, also offered to Portugal (locales/languages.json).
+      ...['pt_BR', 'pt_PT'].map(locale => ({
+        displayName: (pack ? portuguese(`store.packs.${gameId}.name`) : offer ? portuguese(`offers.rules.${offer.id}.title`) : stipend ? portuguese('store.stipend.name') : isPass ? 'Pergaminho Premium' : name).slice(0, 30),
+        description: (pack ? `${pack.moonstones} de Jade` : offer ? (shortPortuguese[offer.id] || portuguese(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagamentos diários de ${stipend.jadePerPayment} de Jade` : 'Trilha premium desta temporada').slice(0, 55), locale,
+      })),
     ],
     productID: storeId,
     referenceName: name,
