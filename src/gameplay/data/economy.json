@@ -7,8 +7,8 @@
   },
   "mapSize": 40,
   "startingResources": {
-    "acorns": 2500,
-    "dew": 2500,
+    "acorns": 5000,
+    "dew": 5000,
     "nightsap": 0,
     "moonstones": 500
   },
