@@ -1,3 +1,4 @@
+import { t as i18nText } from './i18n';
 /**
  * The community rules, acknowledged once before a player first talks to or
  * befriends real players (worldwide audit R06). The full rules are the
@@ -47,11 +48,11 @@ function remember(): void {
 export async function ensureCommunityRules(kit: { confirm(title: string, message: string, confirmLabel: string, danger?: boolean, cancelLabel?: string): Promise<boolean> }): Promise<boolean> {
   if (communityRulesAccepted()) return true;
   const ok = await kit.confirm(
-    'Community rules',
-    'Kagemura is played by people of many ages, so we ask everyone\'s age before online play and protect younger players (players under 13 chat with ready-made messages only and cannot be found by name). Be respectful: no harassment, hate, threats, sexual content, or sharing anyone\'s personal details (including your own). No cheating or selling accounts. Use ⋯ to report or block anyone breaking the rules; staff can remove messages, mute chat and suspend accounts. The full rules are in Settings → Privacy and help.',
-    'I agree',
+    i18nText("ui.community_rules_1b43c15f41"),
+    i18nText("ui.kagemura_is_played_by_people_of_many_a_e6cf8f9f30"),
+    i18nText("ui.i_agree_99955b75e0"),
     false,
-    'Not now',
+    i18nText("ui.not_now_a0e63d7c71"),
   );
   if (ok) {
     remember();

@@ -32,6 +32,7 @@ export interface GroveMemberRow {
 }
 
 export interface GroveChatRow {
+  presetId?: number;
   id: string;
   /** Empty for system messages. */
   who: string;
@@ -443,7 +444,7 @@ export class RemoteGroveSource implements GroveSource {
     const meId = g?.you.id ?? this.conn.player?.id ?? '';
     const free = reinforcementCapacity(s, gd) - reinforcementHousing(s, gd);
     let ask: GroveSnapshot['ask'] = { ok: true, message: '' };
-    if (reinforcementCapacity(s, gd) <= 0) ask = { ok: false, message: 'Build an Alliance Lodge to receive troops.' };
+    if (reinforcementCapacity(s, gd) <= 0) ask = { ok: false, message: 'Build an Alliance Lodge to receive warriors.' };
     else if (free <= 0) ask = { ok: false, message: 'Your Alliance Lodge is full.' };
     else if (this.reqs.some((r) => r.mine)) ask = { ok: false, message: 'Your request is still open.' };
     else if (this.nextRequestAt > now) ask = { ok: false, message: 'You can ask again soon.', readyAt: this.nextRequestAt };
@@ -479,7 +480,7 @@ export class RemoteGroveSource implements GroveSource {
       // Blocked players and removed messages disappear at once (the server also leaves them out from now on).
       chat: this.chatRows
         .filter((m) => !this.removed.has(m.id) && !(m.from && blocked.has(m.from.id)))
-        .map((m) => ({ id: m.id, who: m.from ? (m.from.id === meId ? 'You' : m.from.name) : '', fromId: m.from?.id ?? '', mine: m.from?.id === meId, text: m.text, at: m.at, kind: m.kind })),
+        .map((m) => ({ id: m.id, who: m.from ? (m.from.id === meId ? 'You' : m.from.name) : '', presetId: m.presetId, fromId: m.from?.id ?? '', mine: m.from?.id === meId, text: m.text, at: m.at, kind: m.kind })),
       requests: this.reqs.filter((r) => !r.mine && !blocked.has(r.playerId)).map((r) => ({ id: r.id, name: r.name, size: r.size, filled: r.filled })),
       ask,
       raid,
@@ -503,7 +504,7 @@ export class RemoteGroveSource implements GroveSource {
   }
 
   block(playerId: string): Promise<ActionResult> {
-    return this.act(() => this.port.block(playerId), "Blocked. You won't see their messages or troop requests.");
+    return this.act(() => this.port.block(playerId), "Blocked. You won't see their messages or warrior requests.");
   }
 
   unblock(playerId: string): Promise<ActionResult> {

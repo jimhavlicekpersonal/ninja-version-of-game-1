@@ -759,6 +759,8 @@ export interface MyGroveResponse {
 }
 
 export interface ChatView {
+  /** Index in PRESET_CHAT, only set for validated ready-made chat. */
+  presetId?: number;
   id: string;
   at: number;
   /** Null for system messages. */
@@ -1108,6 +1110,8 @@ export interface PurchaseHistoryResponse {
 // ---------------------------------------------------------------- push (roadmap step 40)
 
 export interface PushTokenRequest {
+  /** This device’s chosen locale. Older clients default to English. */
+  locale?: string;
   token: string;
   platform: 'ios' | 'android';
   /** Notification types this device switched on (notifications.json ids). */
@@ -1147,8 +1151,18 @@ export interface AgeResponse {
  */
 export const PRESET_CHAT: readonly string[] = ['Hello!', 'Good luck!', 'Well played!', 'Thanks for the warriors!', 'Need warriors, please!', 'Ready for battle!', 'Nice attack!', 'See you later!'];
 
-/** Phrases older games offer (they said "troops" until the remnant audit, 2026-11-06): still accepted, never offered. */
-export const PRESET_CHAT_RETIRED: readonly string[] = ['Thanks for the troops!', 'Need troops, please!'];
+/**
+ * Phrases older games offer (they said "troops" until the remnant audit, 2026-11-06): still accepted,
+ * never offered, and stored as the preset they became, so every reader sees it in their language.
+ */
+export const PRESET_CHAT_RETIRED: Readonly<Record<string, number>> = { 'Thanks for the troops!': 3, 'Need troops, please!': 4 };
+
+/** The preset a phrase is (current or retired wording), or -1 for free text. */
+export function presetChatId(text: string): number {
+  const t = text.trim();
+  const i = PRESET_CHAT.indexOf(t);
+  return i >= 0 ? i : PRESET_CHAT_RETIRED[t] ?? -1;
+}
 
 /** A moderation notice (EU DSA art. 16(5)/17): what was decided and how to appeal. */
 export interface NoticeView {

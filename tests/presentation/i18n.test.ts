@@ -5,6 +5,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import en from '../../locales/en/ui.json';
+import { ENGLISH } from '../../locales/runtime';
 import languagesFile from '../../locales/languages.json';
 import { fmtNumber, formatMessage, initLanguage, pickLanguage, pointLabel, t, useLanguage } from '../../src/presentation/ui/i18n';
 import { formatCompact, formatDuration } from '../../src/presentation/ui/format';
@@ -91,11 +92,11 @@ describe('messages', () => {
 describe('keys and worksheets', () => {
   const sources = [...walk(join(ROOT, 'src/presentation')), join(ROOT, 'src/main.ts'), join(ROOT, 'src/app.ts')].filter((f) => f.endsWith('.ts'));
   const used = new Set<string>();
-  for (const f of sources) for (const m of readFileSync(f, 'utf8').matchAll(/\bt\(\s*'([a-zA-Z0-9_.]+)'/g)) used.add(m[1]);
+  for (const f of sources) for (const m of readFileSync(f, 'utf8').matchAll(/\b(?:t|i18nText)\(\s*['"]([a-zA-Z0-9_.]+)['"]/g)) used.add(m[1]);
   for (const f of sources) for (const m of readFileSync(f, 'utf8').matchAll(/\bt\(`rail\.\$\{label\}`\)/g)) void m;
 
-  it('every key the code uses exists in English (locales/en/ui.json)', () => {
-    const missing = [...used].filter((k) => !(k in (en as Record<string, string>)));
+  it('every key the code uses exists in the English runtime catalog', () => {
+    const missing = [...used].filter((k) => !(k in ENGLISH));
     expect(missing).toEqual([]);
   });
 

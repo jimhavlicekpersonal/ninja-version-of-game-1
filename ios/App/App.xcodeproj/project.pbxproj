@@ -20,6 +20,7 @@
 		A7C1E0F1B2D3E4F5A6B7C811 /* TkAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C812 /* TkAuthPlugin.swift */; };
 		A7C1E0F1B2D3E4F5A6B7C821 /* TkAgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C822 /* TkAgePlugin.swift */; };
 		A7C1E0F1B2D3E4F5A6B7C803 /* TkViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C804 /* TkViewController.swift */; };
+		B9C32A701A00100000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B9C32A701A00100000000002 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,8 @@
 		A7C1E0F1B2D3E4F5A6B7C822 /* TkAgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TkAgePlugin.swift; sourceTree = "<group>"; };
 		A7C1E0F1B2D3E4F5A6B7C832 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		A7C1E0F1B2D3E4F5A6B7C804 /* TkViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TkViewController.swift; sourceTree = "<group>"; };
+		B9C32A701A00100000000003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B9C32A701A00100000000004 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +88,7 @@
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				504EC3131FED79650016851F /* Info.plist */,
+				B9C32A701A00100000000002 /* InfoPlist.strings */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
 			);
@@ -136,6 +140,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				es,
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
@@ -157,6 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
+				B9C32A701A00100000000001 /* InfoPlist.strings in Resources */,
 				50B271D11FEDC1A000F3C39B /* public in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
@@ -200,6 +206,7 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
+		B9C32A701A00100000000002 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (B9C32A701A00100000000003 /* en */, B9C32A701A00100000000004 /* es */); name = InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */

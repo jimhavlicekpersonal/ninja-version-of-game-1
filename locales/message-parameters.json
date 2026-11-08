@@ -1,0 +1,343 @@
+{
+  "ui.message_14677cb26f": {
+    "arg2": "label"
+  },
+  "ui.queued_14e0e4f109": {
+    "arg2": "label"
+  },
+  "ui.practice_battle_with_a_squad_of_nothin_bcdcdb0816": {
+    "arg1": "label"
+  },
+  "ui.the_missing_and_queue_5af8353596": {
+    "arg3": "label"
+  },
+  "ui.the_missing_and_start_level_7ee43d338d": {
+    "arg2": "label"
+  },
+  "ui.message_42a16430c0": {
+    "arg2": "label"
+  },
+  "ui.reward_45b24062a2": {
+    "arg1": "label"
+  },
+  "ui.age_group_68f7621465": {
+    "arg2": "label"
+  },
+  "ui.limit_a_month_in_list_prices_to_change_4f6bc4b210": {
+    "arg1": "label"
+  },
+  "ui.can_t_load_your_friends_right_now_3979edbedd": {
+    "arg1": "detail"
+  },
+  "ui.can_t_load_your_gang_right_now_7df6fda21c": {
+    "arg1": "detail"
+  },
+  "ui.give_c470198396": {
+    "arg1": "label"
+  },
+  "ui.can_t_load_the_gang_war_f7bc4e6a93": {
+    "arg1": "detail"
+  },
+  "ui.can_t_reach_the_alliance_right_now_d021034fab": {
+    "arg1": "detail"
+  },
+  "ui.message_5b4e0f8bf8": {
+    "arg3": "label"
+  },
+  "ui.could_not_delete_the_account_77c3c167d5": {
+    "arg1": "detail"
+  },
+  "ui.finish_now_a84a870c3f": {
+    "arg1": "label"
+  },
+  "ui.the_season_ended_your_chest_b601d5ff95": {
+    "arg1": "label"
+  },
+  "ui.your_village_could_not_be_saved_free_s_e56253c28f": {
+    "arg1": "detail"
+  },
+  "ui.the_duel_could_not_be_recorded_2b8c3995b6": {
+    "arg1": "detail"
+  },
+  "ui.not_cleared_you_need_stars_27ca57d98e": {
+    "arg1": "label"
+  },
+  "sim.could_not_read_your_save_0a3fd31a4c": {
+    "arg1": "detail"
+  },
+  "sim.message_14677cb26f": {
+    "arg1": "label",
+    "arg2": "label"
+  },
+  "sim.bounty_s_fortress_fd33bf61a6": {
+    "arg1": "label",
+    "arg2": "label"
+  },
+  "sim.cleared_41ed514b2a": {
+    "arg1": "label"
+  },
+  "sim.is_built_63452e0dd6": {
+    "arg1": "label"
+  },
+  "sim.reached_level_825c1852e9": {
+    "arg1": "label"
+  },
+  "sim.level_researched_6b121376d0": {
+    "arg1": "label"
+  },
+  "sim.is_fully_researched_89659e1d9d": {
+    "arg1": "label"
+  },
+  "sim.is_already_being_researched_29e6b712a1": {
+    "arg1": "label"
+  },
+  "sim.upgrade_your_clan_keep_to_level_to_bui_d6d004cebe": {
+    "arg2": "label"
+  },
+  "sim.your_keep_allows_no_more_of_these_of_ace47bb1da": {
+    "arg1": "label"
+  },
+  "sim.is_already_being_worked_on_fef37f5e37": {
+    "arg1": "label"
+  },
+  "sim.cannot_be_upgraded_3d32e46746": {
+    "arg1": "label"
+  },
+  "sim.is_at_its_highest_level_0a1a3e162b": {
+    "arg1": "label"
+  },
+  "sim.you_can_keep_saved_armies_delete_one_f_7df5cb35eb": {
+    "arg1": "label"
+  },
+  "service.could_not_reach_the_server_a0bd836826": {
+    "arg1": "detail"
+  },
+  "server.your_village_on_the_server_says_8ed4991644": {
+    "arg1": "detail"
+  },
+  "server.attack_attacks_each_relay_strikes_star_60fc3391e6": {
+    "arg2": "label"
+  },
+  "server.sent_to_09c9252a06": {
+    "arg2": "label",
+    "arg1": "number"
+  },
+  "server.sent_you_9cd5b8be71": {
+    "arg3": "label",
+    "arg2": "number"
+  },
+  "server.your_village_on_the_server_has_fewer_t_5daca30110": {
+    "arg1": "label"
+  },
+  "server.statistics_refused_31b09d77dd": {
+    "arg1": "detail"
+  },
+  "server.buildings_2bbb7ef6fa": {
+    "arg1": "detail"
+  },
+  "server.warriors_this_keep_cannot_train_2e68084673": {
+    "arg1": "label"
+  },
+  "server.that_village_could_not_be_read_e7d64cc29c": {
+    "arg1": "detail"
+  },
+  "ui.warrior_codex_all_classes_03eb859e9c": {
+    "arg1": "number"
+  },
+  "ui.all_5f0213b783": {
+    "arg1": "number"
+  },
+  "ui.research_2372f176dd": {
+    "arg1": "number"
+  },
+  "ui.they_go_home_for_good_you_get_back_of__78006a5afa": {
+    "arg1": "number"
+  },
+  "ui.you_ll_get_back_of_what_you_paid_59199c43a7": {
+    "arg1": "number"
+  },
+  "ui.contents_are_sized_for_your_clan_keep__e282ce8f31": {
+    "arg2": "number"
+  },
+  "ui.tier_pts_805378a19e": {
+    "arg2": "number"
+  },
+  "ui.tier_more_points_c5379e2fd6": {
+    "arg2": "number"
+  },
+  "ui.requests_fc6d2bd2a0": {
+    "arg1": "number"
+  },
+  "ui.friends_7e143b835a": {
+    "arg1": "number"
+  },
+  "ui.message_784772efcd": {
+    "arg2": "number"
+  },
+  "ui.ago_92237af6f6": {
+    "arg2": "number"
+  },
+  "ui.members_gang_rating_35d8073dcb": {
+    "arg1": "number"
+  },
+  "ui.message_81627edc88": {
+    "arg2": "number",
+    "arg4": "number"
+  },
+  "ui.clan_keep_they_got_8e27e141aa": {
+    "arg3": "number"
+  },
+  "ui.ago_e411ba9ec3": {
+    "arg5": "number"
+  },
+  "ui.clan_keep_best_fc792f1385": {
+    "arg3": "number"
+  },
+  "ui.your_alliance_level_xp_4f21dec979": {
+    "arg1": "number"
+  },
+  "ui.fps_1912a77d6b": {
+    "arg1": "number"
+  },
+  "ui.damage_sec_0418e5cdfb": {
+    "arg1": "number"
+  },
+  "ui.of_classes_unlocked_a_class_unlocks_wh_856ddcc6ae": {
+    "arg2": "number"
+  },
+  "ui.painting_the_village_6de68dbf99": {
+    "arg1": "number"
+  },
+  "ui.duel_recorded_against_win_in_duel_ad5ab60385": {
+    "arg2": "number",
+    "arg4": "number"
+  },
+  "sim.the_clan_keep_had_only_of_its_health_l_b1de1bcaa6": {
+    "arg1": "number"
+  },
+  "sim.this_season_ends_in_day_too_soon_to_ea_00ed1e3e6a": {
+    "arg1": "number"
+  },
+  "server.star_a_friendly_duel_nothing_was_lost__d41290afef": {
+    "arg1": "number",
+    "arg3": "number"
+  },
+  "server.struck_finish_the_base_off_from_where__3c54abd32b": {
+    "arg3": "number",
+    "arg4": "number"
+  },
+  "server.hit_your_war_base_4a4cf621ed": {
+    "arg2": "number",
+    "arg3": "number"
+  },
+  "server.more_days_ae16f6d2fb": {
+    "arg1": "number"
+  },
+  "server.more_hour_30c79f3a88": {
+    "arg1": "number"
+  },
+  "server.star_destroyed_see_the_replay_in_your__d4f8bcb4dd": {
+    "arg1": "number",
+    "arg3": "number"
+  },
+  "server.a_village_at_keep_can_move_to_the_serv_94cbdbab85": {
+    "arg1": "number",
+    "arg2": "number",
+    "arg3": "number"
+  },
+  "native.products": {
+    "detail": "detail"
+  },
+  "native.verification": {
+    "detail": "detail"
+  },
+  "native.failedDetail": {
+    "detail": "detail"
+  },
+  "native.gameCenterFriends": {
+    "detail": "detail"
+  },
+  "native.gameCenterSignIn": {
+    "detail": "detail"
+  },
+  "native.billing": {
+    "detail": "detail"
+  },
+  "native.unavailableDetail": {
+    "detail": "detail"
+  },
+  "native.restore": {
+    "detail": "detail"
+  },
+  "native.finish": {
+    "detail": "detail"
+  },
+  "native.googleFailed": {
+    "detail": "detail"
+  },
+  "ui.outpost_computer_rival_d083ec9214": {
+    "arg1": "label"
+  },
+  "ui.outpost_computer_rival_offline_371e2f5807": {
+    "arg1": "label"
+  },
+  "sim.ends_utc_5598bc85ac": {
+    "arg2": "utcBare",
+    "arg1": "label"
+  },
+  "sim.not_enough_resources_needs_69f536b412": {
+    "arg1": "cost"
+  },
+  "server.your_account_is_suspended_from_online__e4a5544df0": {
+    "arg1": "utc",
+    "arg3": "detail"
+  },
+  "server.this_account_is_suspended_from_online__6672672598": {
+    "arg1": "utc",
+    "arg3": "detail"
+  },
+  "server.a_moderator_paused_your_chat_for_until_991525853a": {
+    "arg1": "detail",
+    "arg2": "utc",
+    "arg4": "detail",
+    "arg3": "fragment"
+  },
+  "server.a_moderator_paused_your_chat_until_d7cb9ac5ca": {
+    "arg1": "utc",
+    "arg2": "fragment"
+  },
+  "server.you_can_change_your_name_again_on_aac21079e4": {
+    "arg1": "utc"
+  },
+  "server.you_can_found_or_join_a_gang_again_e546685570": {
+    "arg1": "utc"
+  },
+  "server.you_can_join_a_gang_again_1e63cde05f": {
+    "arg1": "utc"
+  },
+  "server.bad_amount_for_df6154bd69": {
+    "arg1": "label"
+  },
+  "server.more_than_the_storages_hold_33c283c9c7": {
+    "arg1": "label"
+  },
+  "server.the_player_s_chat_was_paused_a20b1a821e": {
+    "arg1": "fragment"
+  },
+  "sim.your_storage_is_full_build_or_upgrade__45e70fa935": {
+    "arg1": "label",
+    "arg2": "label"
+  },
+  "ui.premium_rewards_and_20_faster_builds_u_f67e337b8e": {
+    "pct": "number"
+  },
+  "ui.until_the_season_ends_20_faster_builds_428fde58a5": {
+    "pct": "number"
+  },
+  "ui.20_faster_builds_this_season_the_look__36d2b98581": {
+    "pct": "number"
+  },
+  "ui.premium_active_builds_are_20_faster_5eb0f4e244": {
+    "pct": "number"
+  }
+}

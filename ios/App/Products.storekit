@@ -11,6 +11,16 @@
           "description": "45 Jade",
           "displayName": "Pinch of Jade",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Pizca de Jade",
+          "description": "45 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Pizca de Jade",
+          "description": "45 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "jade_pinch",
@@ -26,6 +36,16 @@
           "description": "100 Jade",
           "displayName": "Pouch of Jade",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Bolsita de Jade",
+          "description": "100 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Bolsita de Jade",
+          "description": "100 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "jade_pouch",
@@ -41,6 +61,16 @@
           "description": "280 Jade",
           "displayName": "Bag of Jade",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Bolsa de Jade",
+          "description": "280 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Bolsa de Jade",
+          "description": "280 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "jade_bag",
@@ -56,6 +86,16 @@
           "description": "600 Jade",
           "displayName": "Box of Jade",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Caja de Jade",
+          "description": "600 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Caja de Jade",
+          "description": "600 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "jade_box",
@@ -71,6 +111,16 @@
           "description": "1300 Jade",
           "displayName": "Chest of Jade",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Cofre de Jade",
+          "description": "1300 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Cofre de Jade",
+          "description": "1300 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "jade_chest",
@@ -86,6 +136,16 @@
           "description": "3500 Jade",
           "displayName": "Vault of Jade",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Bóveda de Jade",
+          "description": "3500 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Bóveda de Jade",
+          "description": "3500 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "jade_vault",
@@ -101,6 +161,16 @@
           "description": "7500 Jade",
           "displayName": "Dragon Hoard of Jade",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Tesoro del Dragón de Jade",
+          "description": "7500 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Tesoro del Dragón de Jade",
+          "description": "7500 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "jade_hoard",
@@ -116,6 +186,16 @@
           "description": "The premium track of this season",
           "displayName": "Season Scroll premium",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Pergamino de Temporada prémium",
+          "description": "Senda prémium de esta temporada",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Pergamino de Temporada prémium",
+          "description": "Senda prémium de esta temporada",
+          "locale": "es_MX"
         }
       ],
       "productID": "season_scroll",
@@ -131,6 +211,16 @@
           "description": "A one-time boost for new rulers: Jade and resources to ",
           "displayName": "Starter Pack",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Paquete Inicial",
+          "description": "Jade y recursos para nuevos líderes",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Paquete Inicial",
+          "description": "Jade y recursos para nuevos líderes",
+          "locale": "es_MX"
         }
       ],
       "productID": "offer_starter",
@@ -146,6 +236,16 @@
           "description": "Jade to hire another Village Artisan, plus a little ext",
           "displayName": "Artisan's Bundle",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Paquete del Artesano",
+          "description": "Jade para contratar otro Artesano y recursos",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Paquete del Artesano",
+          "description": "Jade para contratar otro Artesano y recursos",
+          "locale": "es_MX"
         }
       ],
       "productID": "offer_builder",
@@ -161,6 +261,16 @@
           "description": "Get ready for the Alliance War: Provisions for your war",
           "displayName": "War Supplies",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Suministros de Guerra",
+          "description": "Provisiones y Jade para la Guerra de Alianzas",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Suministros de Guerra",
+          "description": "Provisiones y Jade para la Guerra de Alianzas",
+          "locale": "es_MX"
         }
       ],
       "productID": "offer_war_prep",
@@ -176,6 +286,16 @@
           "description": "Raiders hit hard. Restock your storage.",
           "displayName": "Rebuild Kit",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Kit de Reconstrucción",
+          "description": "Jade y recursos para reconstruir",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Kit de Reconstrucción",
+          "description": "Jade y recursos para reconstruir",
+          "locale": "es_MX"
         }
       ],
       "productID": "offer_rebuild",
@@ -191,6 +311,16 @@
           "description": "30 daily payments of 12 Jade",
           "displayName": "Clan Stipend",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Estipendio del Clan",
+          "description": "30 pagos diarios de 12 de Jade",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Estipendio del Clan",
+          "description": "30 pagos diarios de 12 de Jade",
+          "locale": "es_MX"
         }
       ],
       "productID": "clan_stipend",
@@ -206,6 +336,16 @@
           "description": "Your Keep grew. Supplies sized for your new Keep level,",
           "displayName": "Keep Celebration",
           "locale": "en_US"
+        },
+        {
+          "displayName": "Celebración de la Fortaleza",
+          "description": "Recursos y Jade para celebrar tu nueva Fortaleza",
+          "locale": "es_ES"
+        },
+        {
+          "displayName": "Celebración de la Fortaleza",
+          "description": "Recursos y Jade para celebrar tu nueva Fortaleza",
+          "locale": "es_MX"
         }
       ],
       "productID": "offer_keep",

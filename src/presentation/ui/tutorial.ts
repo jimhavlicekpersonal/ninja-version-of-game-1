@@ -1,3 +1,4 @@
+import { displayData as localizedData } from './i18n';
 import { t } from './i18n';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController } from '../../gameplay/control/controller';
@@ -84,7 +85,7 @@ const STEPS: Step[] = [
       return left ? t('tutorial.finishTrain.wait', { time: left }) : t('tutorial.finishTrain.done');
     },
     targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[data-id="army"]'],
-    done: (s, c) => armySize(s) > 0 && (s.training.length === 0 || !trainingSkipQuote(s, c.now(), c.data)),
+    done: (s, c) => armySize(s) > 0 && (s.training.length === 0 || !trainingSkipQuote(s, c.now(), localizedData(c.data))),
   },
   {
     id: 'raid',

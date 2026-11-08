@@ -1923,7 +1923,7 @@ function collect(s: VillageState, id: string, now: number, data: GameData): Comm
     // Display names only (remnant audit 2026-11-06: this said "Your acorns storage is full", the internal id).
     const what = data.economy.resourceNames?.[resource] ?? resource;
     const store = Object.values(data.buildings).find((d) => d.category === 'storage' && (d.levels[0]?.storage?.[resource] ?? 0) > 0)?.name;
-    return fail('STORAGE_FULL', store ? `No room for more ${what}. Upgrade your ${store} or build another.` : `No room for more ${what}. Build or upgrade storage.`);
+    return fail('STORAGE_FULL', `No room for more ${what}. Upgrade your ${store ?? 'storage'} or build another.`);
   }
   const take = Math.min(Math.floor(amount), room);
   // Limited-time event: collecting gives extra, as far as storage allows.

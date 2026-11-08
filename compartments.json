@@ -83,7 +83,8 @@
       "mayImport": [
         "backend",
         "gameplay",
-        "control"
+        "control",
+        "locales"
       ],
       "contracts": [
         "src/backend/analytics/events.ts",
@@ -122,7 +123,13 @@
         "locales/languages.json",
         "locales/en",
         "locales/GLOSSARY.md",
-        "tools/i18n"
+        "tools/i18n",
+        "locales/runtime.ts",
+        "locales/message-parameters.json",
+        "locales/availability.json",
+        "locales/messages.sources.json",
+        "locales/compiled",
+        "locales/matcher.mjs"
       ]
     }
   }

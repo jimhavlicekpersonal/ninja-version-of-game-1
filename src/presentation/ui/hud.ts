@@ -1,4 +1,7 @@
-import { language, languageCoverage, languagePreference, languages, READY_COVERAGE, setLanguagePreference, t } from './i18n';
+import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
+import { displayData as localizedData, labelText as i18nLabel } from './i18n';
+import { t as i18nText } from './i18n';
+import { automaticLanguage, language, languageCoverage, languagePreference, languages, READY_COVERAGE, setLanguagePreference, useLanguage, t } from './i18n';
 import { Capacitor } from '@capacitor/core';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
@@ -37,13 +40,13 @@ import { sound } from '../audio/sound';
 import type { FriendsUi } from './friendsUi';
 import { GroveUi } from './groveUi';
 import { ledgerReason } from './ledgerReason';
-import { WARRIORS, MODEL } from '../../gameplay/sim/progression';
+import { WARRIORS as CANONICAL_WARRIORS, MODEL as CANONICAL_MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, skipQuote, topUpQuote, upgradeQuote, type QuoteResult } from '../../gameplay/sim/village';
 import { troopLevelOf } from '../../gameplay/sim/research';
-import { role as roleDef, warriorUnlockKeep } from '../../gameplay/sim/progression';
+import { role as canonicalRoleDef, warriorUnlockKeep } from '../../gameplay/sim/progression';
 import { canTryAlternate, nextTrialTier, trialInfo, trialReward, trialVariant } from '../../gameplay/sim/trials';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
@@ -51,6 +54,10 @@ import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
 import { uiArt } from './feedback';
+
+const MODEL = localizedData(CANONICAL_MODEL, 'progression');
+const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
+const roleDef = (id: Parameters<typeof canonicalRoleDef>[0]) => localizedData(canonicalRoleDef(id), `progression.roles.${id}`);
 
 /** What sharing play statistics means, in Settings and in the one-time question (main.ts). */
 export const STATS_EXPLAINER =
@@ -234,7 +241,7 @@ export class Hud {
     this.c.subscribe(() => this.refresh());
     // Re-audit (minors online): before this device first goes online, the store's age signal or,
     // without one, the neutral age screen sets the age band. "Not now" keeps online play off.
-    this.deps.connection.ageGate = () => this.askAge('Online play connects you with other players. Please enter your year of birth so we can choose the right settings for your age.');
+    this.deps.connection.ageGate = () => this.askAge(i18nText("ui.online_play_connects_you_with_other_pl_b3fdd9a482"));
     // Report section 5 step 6 (economy E02): the age used to be asked only at a first purchase or before
     // going online, so an offline player never got the protections or offers for their age. Ask once,
     // with the same neutral screen, when the tutorial ends (or at the next start for a village past it).
@@ -270,7 +277,7 @@ export class Hud {
     this.bus.on('placement:buy', (p) => void this.buyAndPlace(p.buildingType, p.x, p.y));
     window.setInterval(() => this.everySecond(), 1000);
     window.setInterval(() => {
-      if (this.showFps) this.fpsEl.textContent = `${Math.round(this.deps.getFps())} fps`;
+      if (this.showFps) this.fpsEl.textContent = i18nText("ui.fps_1912a77d6b", { arg1: Math.round(this.deps.getFps()) });
     }, 500);
     this.refresh();
   }
@@ -287,20 +294,20 @@ export class Hud {
       this.resEls.set(k, { amt, bar: fill, cap });
     }
     const moonAmt = h('span', { class: 'res-amt' });
-    const moonBtn = h('div', { class: 'res res-moonstones', title: 'Jade: tap for the store', role: 'button' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt), h('span', { class: 'res-plus' }, '+'));
+    const moonBtn = h('div', { class: 'res res-moonstones', title: i18nText("ui.jade_tap_for_the_store_92edb2dd88"), role: 'button' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt), h('span', { class: 'res-plus' }, '+'));
     moonBtn.addEventListener('click', () => this.econ.openStore());
     top.append(moonBtn);
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
     this.buildersEl = h('span', { class: 'res-amt' });
-    top.append(h('div', { class: 'res res-builders', title: 'Free Village Artisans' }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
+    top.append(h('div', { class: 'res res-builders', title: i18nText("ui.free_village_artisans_747cc3abe1") }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
     this.trophiesEl = h('span', { class: 'res-amt' });
-    const trophyBtn = h('div', { class: 'res res-trophies', title: 'Honor', role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
+    const trophyBtn = h('div', { class: 'res res-trophies', title: i18nText("ui.honor_22ea092e76"), role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
     trophyBtn.addEventListener('click', () => this.openLeague());
     top.append(trophyBtn);
     this.shieldEl = h('span', { class: 'res-amt' });
-    this.shieldBox = h('div', { class: 'res res-shield', title: 'Shield: no raids until it runs out' }, icon(icons.shield, 'res-icon'), h('div', { class: 'res-body' }, this.shieldEl));
+    this.shieldBox = h('div', { class: 'res res-shield', title: i18nText("ui.shield_no_raids_until_it_runs_out_66720696b4") }, icon(icons.shield, 'res-icon'), h('div', { class: 'res-body' }, this.shieldEl));
     top.append(this.shieldBox);
-    this.netPill = h('button', { class: 'net-pill', type: 'button', title: 'Online play', onclick: () => this.openSettings(true) });
+    this.netPill = h('button', { class: 'net-pill', type: 'button', title: i18nText("ui.online_play_17a5942b34"), onclick: () => this.openSettings(true) });
     this.netPill.hidden = !this.deps.connection.enabled;
     top.append(this.netPill);
 
@@ -314,7 +321,7 @@ export class Hud {
     }
     // The Keep-unlock preview is a one-line chip the player can dismiss (until the next Keep level); the full list is
     // on the Keep's sheet.
-    const unlockX = h('button', { class: 'unlock-x', type: 'button', 'aria-label': 'Hide the Keep unlock preview', onclick: () => this.dismissUnlockChip() }, icon(icons.close));
+    const unlockX = h('button', { class: 'unlock-x', type: 'button', 'aria-label': i18nText("ui.hide_the_keep_unlock_preview_0ba3672b67"), onclick: () => this.dismissUnlockChip() }, icon(icons.close));
     this.unlockChip = h('div', { class: 'unlock-chip' }, this.unlocksEl, unlockX);
     this.toasts = h('div', { class: 'toasts', 'aria-live': 'polite' });
     this.fpsEl = h('div', { class: 'fps' });
@@ -338,12 +345,12 @@ export class Hud {
       ),
     );
 
-    this.placeOk = h('button', { class: 'round-btn ok', type: 'button', 'aria-label': 'Place here', onclick: () => this.bus.emit('placement:confirm') }, icon(icons.check));
+    this.placeOk = h('button', { class: 'round-btn ok', type: 'button', 'aria-label': i18nText("ui.place_here_6c8bd5460b"), onclick: () => this.bus.emit('placement:confirm') }, icon(icons.check));
     this.placeBar = h(
       'div',
       { class: 'place-bar' },
-      h('button', { class: 'round-btn cancel', type: 'button', 'aria-label': 'Cancel', onclick: () => this.bus.emit('placement:cancel') }, icon(icons.close)),
-      h('div', { class: 'place-hint' }, 'Drag the building, or tap where it should go'),
+      h('button', { class: 'round-btn cancel', type: 'button', 'aria-label': i18nText("ui.cancel_19766ed6cc"), onclick: () => this.bus.emit('placement:cancel') }, icon(icons.close)),
+      h('div', { class: 'place-hint' }, i18nText("ui.drag_the_building_or_tap_where_it_shou_d9096f4125")),
       this.placeOk,
     );
     this.placeBar.hidden = true;
@@ -359,7 +366,7 @@ export class Hud {
 
     this.objectiveChip = h('button', { class: 'objective-chip', type: 'button', hidden: true, onclick: () => this.objectiveAction?.() }) as HTMLButtonElement;
     const head = h('div', { class: 'hud-head' }, top, h('div', { class: 'head-row' }, this.objectiveChip, this.unlockChip), this.toasts);
-    const railBtn = (label: string, ic: string, onClick: () => void, extra?: HTMLElement) => {
+    const railBtn = (label: 'Daily' | 'Store' | 'Events' | 'Pass' | 'Goals' | 'Alliance' | 'Friends' | 'Trials', ic: string, onClick: () => void, extra?: HTMLElement) => {
       const badge = h('span', { class: 'badge' });
       badge.hidden = true;
       this.railBadges[label] = badge;
@@ -409,8 +416,12 @@ export class Hud {
       }
     })();
     select.addEventListener('change', () => {
-      setLanguagePreference(select.value === 'auto' ? null : select.value);
-      void this.c.persist().catch(() => false).finally(() => location.reload());
+      const pref = select.value === 'auto' ? null : select.value;
+      select.disabled = true;
+      void useLanguage(pref ?? automaticLanguage()).then(() => {
+        setLanguagePreference(pref);
+        return this.c.persist().catch(() => false).finally(() => location.reload());
+      }, () => { select.disabled = false; select.value = languagePreference() ?? 'auto'; this.toast(t('boot.languageError'), 'error'); });
     });
     wrap.append(h('h3', {}, t('settings.language')), select, h('p', { class: 'muted small' }, t('settings.languageNote')));
     return wrap;
@@ -427,11 +438,11 @@ export class Hud {
       return;
     }
     const yes = await this.confirm(
-      'A nudge when it finishes?',
-      'Kagemura can tell you when the timers you start are done and your free daily chest is ready. Only those: never offers, nothing at night (quiet hours), at most a few a day. You can change each type in Settings.',
-      'Yes, remind me',
+      i18nText("ui.a_nudge_when_it_finishes_e209c0825a"),
+      i18nText("ui.kagemura_can_tell_you_when_the_timers__b8761751d2"),
+      i18nText("ui.yes_remind_me_5c3b401d5b"),
       false,
-      'No thanks',
+      i18nText("ui.no_thanks_49780701dc"),
     );
     if (!yes) return;
     this.deps.prefs.set('reminders', true);
@@ -448,8 +459,8 @@ export class Hud {
     if (signal.kind === 'band') return signal.band;
     if (signal.kind === 'verify') {
       this.modal(
-        'Verify your age',
-        h('p', {}, signal.store === 'play' ? 'Where you live, Google Play confirms ages for apps. Open the Play Store app, verify your age there, then come back: online play and purchases unlock once Google Play shares your age group.' : 'Where you live, the App Store confirms ages for apps. Confirm your age in your Apple Account settings, then come back.'),
+        i18nText("ui.verify_your_age_5c126194cb"),
+        h('p', {}, signal.store === 'play' ? i18nText("ui.where_you_live_google_play_confirms_ag_e48561a563") : i18nText("ui.where_you_live_the_app_store_confirms__a1a091a595")),
       );
       return null;
     }
@@ -469,13 +480,13 @@ export class Hud {
     } catch {
       return; // no storage: never nag on every start
     }
-    const band = await this.askAge('You finished the training. Please enter your year of birth: it sets the right protections for your age (spending limits, offers, and for online play who can find you and how you chat).');
+    const band = await this.askAge(i18nText("ui.you_finished_the_training_please_enter_77063a1caf"));
     if (band && !bandFromProfile(this.c.state.profile)) this.c.dispatch({ type: 'setProfile', under18: band !== 'adult', ageBand: band });
   }
 
   private refresh(): void {
     const s = this.c.state;
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const cap = capacity(s, gd);
     for (const [k, el] of this.resEls) {
       el.amt.textContent = formatNumber(s.resources[k]);
@@ -504,7 +515,7 @@ export class Hud {
   private updateRail(): void {
     if (!this.railToggle) return;
     const s = this.c.state;
-    const keep = hallLevel(s, this.c.data);
+    const keep = hallLevel(s, localizedData(this.c.data));
     const settled = s.tutorial.done || keep >= 2;
     const raided = s.battleLog.some((r) => r.kind === 'attack') || s.trials.best > 0;
     const show: Record<string, boolean> = {
@@ -523,7 +534,7 @@ export class Hud {
     this.railToggle.hidden = shown <= 2;
     this.railToggle.classList.toggle('collapsed', this.railCollapsed);
     this.railToggle.setAttribute('aria-expanded', String(!this.railCollapsed));
-    this.railToggle.setAttribute('aria-label', this.railCollapsed ? 'Show the side buttons' : 'Hide the side buttons');
+    this.railToggle.setAttribute('aria-label', this.railCollapsed ? i18nText("ui.show_the_side_buttons_b065f035ed") : i18nText("ui.hide_the_side_buttons_9d1fa3c586"));
     if (this.railToggle.hidden && this.railCollapsed) {
       this.railCollapsed = false;
       this.updateRail();
@@ -548,13 +559,13 @@ export class Hud {
     const short = text.includes('·') ? text.split('·').pop()!.replace(' left', '').trim() : text.replace(/^Next: .* in /, '');
     this.eventChip.textContent = short;
     this.eventChip.classList.toggle('live', live);
-    this.railBtns.Events?.setAttribute('aria-label', `Events: ${text}`);
+    this.railBtns.Events?.setAttribute('aria-label', i18nText("ui.events_f1a48ff1d1", { arg1: text }));
     this.railBtns.Events?.setAttribute('title', text);
   }
 
   private updateBadges(): void {
     const s = this.c.state;
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const hl = hallLevel(s, gd);
     const set = (k: string, n: number) => {
       const b = this.railBadges[k];
@@ -609,21 +620,21 @@ export class Hud {
     }
     if (Capacitor.isNativePlatform()) {
       // A store build without a listing link: say what to do instead of doing nothing.
-      const store = Capacitor.getPlatform() === 'ios' ? 'the App Store' : 'Google Play';
-      this.modal('Update Kagemura', h('p', {}, `Open ${store}, find Kagemura and tap Update. Your village is saved on this device and on the server.`), [{ label: 'OK', primary: true, onClick: () => this.closeAllModals() }]);
+      const store = Capacitor.getPlatform() === 'ios' ? i18nText("ui.the_app_store_8768b638e4") : i18nText("ui.google_play_027b168468");
+      this.modal(i18nText("ui.update_kagemura_1a67e6e9e1"), h('p', {}, i18nText("ui.open_find_kagemura_and_tap_update_your_7be21c9d34", { arg1: store })), [{ label: i18nText("ui.ok_565339bc4d"), primary: true, onClick: () => this.closeAllModals() }]);
       return;
     }
-    const status = h('p', { role: 'status' }, 'Saving your village…');
+    const status = h('p', { role: 'status' }, i18nText("ui.saving_your_village_bf9eb8b894"));
     let close = () => {};
-    close = this.modal('Update Kagemura', status, []);
+    close = this.modal(i18nText("ui.update_kagemura_1a67e6e9e1"), status, []);
     const update = this.deps.updateWebApp ?? (async (before: () => Promise<unknown>) => (await before().catch(() => undefined), location.reload(), 'reloading' as const));
     void update(() => this.c.save(), (text) => (status.textContent = text)).then((r) => {
       if (r === 'reloading') return;
       status.textContent =
         r === 'current'
-          ? 'No newer version is available here yet: it may still be on its way. Try again in a little while; your village keeps working on this device.'
-          : 'The new version could not be downloaded right now. Check your connection and try again.';
-      const foot = h('div', { class: 'modal-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => close() }, 'OK'));
+          ? i18nText("ui.no_newer_version_is_available_here_yet_d4be21c409")
+          : i18nText("ui.the_new_version_could_not_be_downloade_beb938b462");
+      const foot = h('div', { class: 'modal-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => close() }, i18nText("ui.ok_565339bc4d")));
       status.after(foot);
     });
   }
@@ -633,13 +644,13 @@ export class Hud {
     const body = h(
       'div',
       {},
-      h('p', {}, conn.lastError || 'A new version of Kagemura is out, and online play needs it.'),
-      h('p', { class: 'muted' }, 'Online battles, raids and your Alliance pause until you update. Your village is safe: everything else keeps working on this device.'),
+      h('p', {}, i18nMessage(conn.lastError || 'A new version of Kagemura is out, and online play needs it.')),
+      h('p', { class: 'muted' }, i18nText("ui.online_battles_raids_and_your_alliance_195d4f6719")),
     );
     let close = () => {};
-    close = this.modal('Update Kagemura', body, [
-      { label: 'Later', onClick: () => close() },
-      { label: conn.updateUrl ? 'Update' : 'Reload', primary: true, onClick: () => this.openUpdate() },
+    close = this.modal(i18nText("ui.update_kagemura_1a67e6e9e1"), body, [
+      { label: i18nText("ui.later_73b6e48a1b"), onClick: () => close() },
+      { label: conn.updateUrl ? i18nText("ui.update_c1c1009d3f") : i18nText("ui.reload_bdc090ec61"), primary: true, onClick: () => this.openUpdate() },
     ]);
   }
 
@@ -657,7 +668,7 @@ export class Hud {
     }
     this.netPill.hidden = !conn.enabled;
     this.netPill.className = `net-pill ${conn.status}`;
-    this.netPill.textContent = Hud.NET_LABEL[conn.status] ?? conn.status;
+    this.netPill.textContent = i18nLabel(Hud.NET_LABEL[conn.status] ?? conn.status);
     const queued = conn.enabled ? conn.outbox().length : 0;
     if (queued) this.netPill.textContent += ` · ${queued} to send`;
     if (conn.newDefenses > 0) {
@@ -673,36 +684,36 @@ export class Hud {
     const wrap = h('div', { class: 'online-settings' });
     const draw = () => {
       clear(wrap);
-      const status = h('p', {}, h('span', { class: `net-pill inline ${conn.status}` }, Hud.NET_LABEL[conn.status] ?? conn.status), ' ', conn.enabled ? h('span', { class: 'muted small' }, conn.url) : '');
-      wrap.append(h('h3', {}, 'Online play'), status);
+      const status = h('p', {}, h('span', { class: `net-pill inline ${conn.status}` }, i18nLabel(Hud.NET_LABEL[conn.status] ?? conn.status)), ' ', conn.enabled ? h('span', { class: 'muted small' }, conn.url) : '');
+      wrap.append(h('h3', {}, i18nText("ui.online_play_17a5942b34")), status);
       // A test server says so (roadmap step 42): progress there is not the real game's.
       const env = conn.server?.environment;
-      if (env && env !== 'production') wrap.append(h('p', { class: 'muted small' }, `This is a ${env} server for testing: villages and purchases here are separate from the real game.`));
+      if (env && env !== 'production') wrap.append(h('p', { class: 'muted small' }, i18nText("ui.this_is_a_server_for_testing_villages__7c82ee8a8b", { arg1: env })));
       if (conn.server?.notice) wrap.append(h('p', { class: 'store-note' }, conn.server.notice));
       if (!conn.enabled) {
-        wrap.append(h('p', { class: 'muted' }, 'You are playing on your own: opponents, raiders and your Alliance are friendly bots (always labelled as computer players). To raid real players and join real Alliances, enter a Kagemura: Ninja Clans server address under Advanced, below.'));
+        wrap.append(h('p', { class: 'muted' }, i18nText("ui.you_are_playing_on_your_own_opponents__186479dcf6")));
         // Re-audit: "Play offline" keeps the online account; it can still be deleted from here.
         for (const url of conn.storedAccounts()) wrap.append(this.storedAccountBlock(url, draw));
       } else {
-        wrap.append(h('p', { class: 'muted' }, 'Real players raid your village instead of bots, the opponents you scout are real villages (or wild ones when nobody fits), and your Alliance is a real Alliance. Your village itself still lives on this device.'));
+        wrap.append(h('p', { class: 'muted' }, i18nText("ui.real_players_raid_your_village_instead_fbdd011f6d")));
         if (conn.lastError && conn.status !== 'online') wrap.append(h('p', { class: 'note' }, conn.lastError));
-        if (conn.status === 'incompatible') wrap.append(h('p', {}, h('button', { class: 'btn primary', type: 'button', onclick: () => this.openUpdate() }, conn.updateUrl ? 'Update Kagemura' : 'Reload to update')));
+        if (conn.status === 'incompatible') wrap.append(h('p', {}, h('button', { class: 'btn primary', type: 'button', onclick: () => this.openUpdate() }, conn.updateUrl ? i18nText("ui.update_kagemura_1a67e6e9e1") : i18nText("ui.reload_to_update_e53356925a"))));
         if (conn.player) {
           const name = h('input', { class: 'text', type: 'text', dir: 'auto', autocomplete: 'nickname', spellcheck: 'false', value: conn.player.name }) as HTMLInputElement;
           name.addEventListener('keydown', (e) => e.stopPropagation());
-          const save = h('button', { class: 'btn ghost', type: 'button' }, 'Rename');
+          const save = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.rename_3064d79a29"));
           save.addEventListener('click', () => {
             // Any script works (names.ts); the server applies the same rules.
             const checked = checkName(name.value);
             if (checked.error) return this.toast(NAME_ERROR_TEXT[checked.error], 'error');
             name.value = checked.name;
             void conn.rename(checked.name).then(
-              () => this.toast('Name saved.', 'success'),
-              (e: Error) => this.toast(e.message, 'error'),
+              () => this.toast(i18nText("ui.name_saved_555c2551ec"), 'success'),
+              (e: Error) => this.toast(i18nMessage(e.message, true), 'error'),
             );
           });
-          wrap.append(h('label', { class: 'muted small' }, 'Your name in online play'), h('div', { class: 'chat-input-row' }, name, save));
-          const board = h('div', { class: 'events' }, 'Loading…');
+          wrap.append(h('label', { class: 'muted small' }, i18nText("ui.your_name_in_online_play_b1f7873e6c")), h('div', { class: 'chat-input-row' }, name, save));
+          const board = h('div', { class: 'events' }, i18nText("ui.loading_ba3bbbe10d"));
           // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
           let which: 'honor' | 'power' = 'honor';
           const hasPower = Boolean(conn.server?.features.includes('power-ranking'));
@@ -710,11 +721,11 @@ export class Hud {
           const load = () => {
             const port = conn.port;
             if (!port) return;
-            board.textContent = 'Loading…';
+            board.textContent = i18nText("ui.loading_ba3bbbe10d");
             clear(tabs);
             if (hasPower) {
               for (const [id, label] of [['honor', 'Honor'], ['power', 'Power']] as const) {
-                const b = h('button', { type: 'button', class: id === which ? 'on' : '' }, label);
+                const b = h('button', { type: 'button', class: id === which ? 'on' : '' }, i18nLabel(label));
                 b.addEventListener('click', () => {
                   which = id;
                   load();
@@ -723,28 +734,28 @@ export class Hud {
               }
             }
             const row = (rank: number, name: string, sub: string, value: string, chip: Node | null) =>
-              h('div', { class: `log-row${name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, `${rank}. ${isolateName(name)}`), h('div', { class: 'muted small' }, sub)), h('span', { class: 'chip' }, chip, value));
+              h('div', { class: `log-row${name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, i18nText("ui.message_59480bd082", { arg1: rank, arg2: isolateName(name) })), h('div', { class: 'muted small' }, i18nLabel(sub))), h('span', { class: 'chip' }, chip, value));
             const fail = (e: Error) => {
-              board.textContent = e.message;
+              board.textContent = i18nMessage(e.message, true);
             };
             if (which === 'power') {
               void port.powerLeaderboard(30).then((lb) => {
                 clear(board);
-                board.append(h('p', { class: 'muted small' }, 'Power is your skill as an attacker plus the strength of your Keep, from your rated raids.'));
-                for (const p of lb.players) board.append(row(p.rank, p.name, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${isolateName(p.grove)}` : ''}`, String(p.power), null));
-                board.append(h('p', { class: 'muted small' }, lb.me ? `You are number ${lb.me.rank}, with ${lb.me.power} power.` : 'Raid real players a few times to get on the Power Ranking.'));
-                if (!lb.players.length) board.append('Nobody is on it yet.');
+                board.append(h('p', { class: 'muted small' }, i18nText("ui.power_is_your_skill_as_an_attacker_plu_e58aae723f")));
+                for (const p of lb.players) board.append(row(p.rank, p.name, i18nText("ui.clan_keep_67aaca3532", { arg1: p.hallLevel, arg2: p.grove ? i18nText("ui.message_c4f174b2a5", { arg1: isolateName(p.grove) }) : '' }), String(p.power), null));
+                board.append(h('p', { class: 'muted small' }, lb.me ? i18nText("ui.you_are_number_with_power_3a4362c773", { arg1: lb.me.rank, arg2: lb.me.power }) : i18nText("ui.raid_real_players_a_few_times_to_get_o_398b18284f")));
+                if (!lb.players.length) board.append(i18nText("ui.nobody_is_on_it_yet_c17b839b29"));
               }, fail);
               return;
             }
             void port.leaderboard(30).then((lb) => {
               clear(board);
-              for (const p of lb.players) board.append(row(p.rank, p.name, `Clan Keep ${p.hallLevel}${p.grove ? ` · ${isolateName(p.grove)}` : ''}`, String(p.trophies), icon(icons.leaf)));
-              if (lb.me) board.append(h('p', { class: 'muted small' }, `You are number ${lb.me.rank}.`));
-              if (!lb.players.length) board.append('Nobody is ranked yet.');
+              for (const p of lb.players) board.append(row(p.rank, p.name, i18nText("ui.clan_keep_67aaca3532", { arg1: p.hallLevel, arg2: p.grove ? i18nText("ui.message_c4f174b2a5", { arg1: isolateName(p.grove) }) : '' }), String(p.trophies), icon(icons.leaf)));
+              if (lb.me) board.append(h('p', { class: 'muted small' }, i18nText("ui.you_are_number_9f4194bd6a", { arg1: lb.me.rank })));
+              if (!lb.players.length) board.append(i18nText("ui.nobody_is_ranked_yet_be93671617"));
             }, fail);
           };
-          const details = h('details', {}, h('summary', {}, 'Leaderboard'), tabs, board);
+          const details = h('details', {}, h('summary', {}, i18nText("ui.leaderboard_31b4712158")), tabs, board);
           details.addEventListener('toggle', () => {
             if (details.open) load();
           });
@@ -752,14 +763,14 @@ export class Hud {
           if (conn.canKeepVillage || conn.serverVillage) wrap.append(this.villageBlock());
           wrap.append(this.accountBlock());
         }
-        const retry = h('button', { class: 'btn ghost', type: 'button' }, 'Connect now');
+        const retry = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.connect_now_f5e732583f"));
         retry.addEventListener('click', () => {
           conn.askAgeAgain();
           void conn.sync().then(draw);
         });
         if (conn.status !== 'online') wrap.append(h('div', { class: 'actions' }, retry));
       }
-      if (conn.enabled) wrap.append(h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('off') }, 'Play offline')));
+      if (conn.enabled) wrap.append(h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('off') }, i18nText("ui.play_offline_d0ebc166e0"))));
     };
     draw();
     const unsub = conn.subscribe(draw);
@@ -778,7 +789,7 @@ export class Hud {
   /** Switch servers ('' = the built-in setting, 'off' = play offline): the game restarts. */
   private chooseServer(value: string): void {
     Connection.choose(value);
-    this.toast('Restarting to switch servers…', 'info');
+    this.toast(i18nText("ui.restarting_to_switch_servers_b01f958c4c"), 'info');
     void this.c.save().then(() => window.setTimeout(() => location.reload(), 600));
   }
 
@@ -791,44 +802,44 @@ export class Hud {
     return h(
       'div',
       {},
-      h('h4', {}, 'Server address'),
-      h('div', { class: 'chat-input-row' }, addr, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer(addr.value || '') }, 'Use')),
+      h('h4', {}, i18nText("ui.server_address_8be89710b2")),
+      h('div', { class: 'chat-input-row' }, addr, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer(addr.value || '') }, i18nText("ui.use_c36d819e7b"))),
       h(
         'div',
         { class: 'actions' },
-        conn.enabled ? h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('off') }, 'Play offline') : null,
-        chosen ? h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('') }, 'Use the built-in setting') : null,
+        conn.enabled ? h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('off') }, i18nText("ui.play_offline_d0ebc166e0")) : null,
+        chosen ? h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer('') }, i18nText("ui.use_the_built_in_setting_fa2e4b675f")) : null,
       ),
-      h('p', { class: 'muted small' }, 'Switching servers restarts the game. Your village stays on this device either way.'),
+      h('p', { class: 'muted small' }, i18nText("ui.switching_servers_restarts_the_game_yo_f444e661d9")),
     );
   }
 
   static ledgerReason(code: string): string {
-    return ledgerReason(code);
+    return i18nLabel(ledgerReason(code));
   }
 
   /** Settings → Online play → Village on the server (beta, roadmap Phase 2). */
   private villageBlock(): HTMLElement {
     const conn = this.deps.connection;
     const sync = conn.village!;
-    const box = h('div', { class: 'village-server' }, h('h3', {}, 'Village on the server (beta)'));
+    const box = h('div', { class: 'village-server' }, h('h3', {}, i18nText("ui.village_on_the_server_beta_b06787518d")));
     if (sync.active) {
       box.append(
-        h('p', { class: 'muted small' }, 'Your village is kept on the server: every change to its resources, buildings, army and research is checked there, so it cannot be lost with this device. What you do is sent as you play; while offline it waits and goes when you reconnect.'),
-        h('p', { class: 'small' }, sync.pending ? t('sync.pending', { n: sync.pending }) : 'Everything is sent.'),
+        h('p', { class: 'muted small' }, i18nText("ui.your_village_is_kept_on_the_server_eve_b6cdd1303f")),
+        h('p', { class: 'small' }, sync.pending ? t('sync.pending', { n: sync.pending }) : i18nText("ui.everything_is_sent_5d346762da")),
       );
-      const list = h('div', { class: 'events' }, 'Loading…');
-      const ledger = h('details', {}, h('summary', {}, 'Recent changes'), list);
+      const list = h('div', { class: 'events' }, i18nText("ui.loading_ba3bbbe10d"));
+      const ledger = h('details', {}, h('summary', {}, i18nText("ui.recent_changes_f66a12ef4f")), list);
       ledger.addEventListener('toggle', () => {
         if (!ledger.open || !conn.port) return;
         void conn.port.ledger(30).then(
           ({ entries }) => {
             clear(list);
-            if (!entries.length) list.append('Nothing yet.');
-            for (const e of entries) list.append(h('div', { class: 'event' }, h('b', {}, `${e.delta > 0 ? '+' : ''}${formatNumber(e.delta)} ${RES_LABEL[e.resource as keyof typeof RES_LABEL] ?? e.resource}`), ` ${Hud.ledgerReason(e.reason)} · ${new Date(e.at).toLocaleString()}`));
+            if (!entries.length) list.append(i18nText("ui.nothing_yet_e056734eff"));
+            for (const e of entries) list.append(h('div', { class: 'event' }, h('b', {}, i18nText("ui.message_5b4e0f8bf8", { arg1: e.delta > 0 ? '+' : '', arg2: formatNumber(e.delta), arg3: RES_LABEL[e.resource as keyof typeof RES_LABEL] ?? e.resource })), i18nText("ui.message_cc812bb47e", { arg1: Hud.ledgerReason(e.reason), arg2: i18nDate(e.at) })));
           },
           (e: Error) => {
-            list.textContent = e.message;
+            list.textContent = i18nMessage(e.message, true);
           },
         );
       });
@@ -837,31 +848,31 @@ export class Hud {
     }
     const go = (how: 'new' | 'move') => async () => {
       const ok = await this.confirm(
-        how === 'move' ? 'Move this village to the server?' : 'Start a new village on the server?',
+        how === 'move' ? i18nText("ui.move_this_village_to_the_server_105025832f") : i18nText("ui.start_a_new_village_on_the_server_28dc01ebc3"),
         how === 'move'
-          ? 'Your village moves to the server as it is, if it is a village its Keep could really have. From then on every change is checked there, and you can play it on other devices by linking a sign-in.'
-          : 'This starts a new village that is kept on the server. The village on this device stays as a backup you can restore in Settings.',
-        how === 'move' ? 'Move it' : 'Start a new one',
+          ? i18nText("ui.your_village_moves_to_the_server_as_it_2d77c66171")
+          : i18nText("ui.this_starts_a_new_village_that_is_kept_b4547637b3"),
+        how === 'move' ? i18nText("ui.move_it_71ae3bd488") : i18nText("ui.start_a_new_one_ff556273e1"),
         false,
-        'Not now',
+        i18nText("ui.not_now_a0e63d7c71"),
       );
       if (!ok) return;
       try {
         await sync.enable(how);
-        this.toast(how === 'move' ? 'Your village is now kept on the server.' : 'Your new village is kept on the server.', 'success');
+        this.toast(how === 'move' ? i18nText("ui.your_village_is_now_kept_on_the_server_6d77528b70") : i18nText("ui.your_new_village_is_kept_on_the_server_1e22ec44a1"), 'success');
         this.closeAllModals();
       } catch (e) {
-        this.toast((e as Error).message, 'error');
+        this.toast(i18nMessage((e as Error).message, true), 'error');
       }
     };
     const canMove = Boolean(conn.server?.features.includes('village-import'));
-    const move = h('button', { class: 'btn primary', type: 'button' }, 'Move this village to the server');
+    const move = h('button', { class: 'btn primary', type: 'button' }, i18nText("ui.move_this_village_to_the_server_900cbef735"));
     move.addEventListener('click', () => void go('move')());
-    const start = h('button', { class: 'btn ghost', type: 'button' }, canMove ? 'Start a new one there' : 'Start a village on the server');
+    const start = h('button', { class: 'btn ghost', type: 'button' }, canMove ? i18nText("ui.start_a_new_one_there_77ff065ea4") : i18nText("ui.start_a_village_on_the_server_b47dac674d"));
     start.addEventListener('click', () => void go('new')());
     const refused = conn.villageMoveRefused;
-    box.append(h('p', { class: 'muted small' }, 'Keep your village on the server, so it cannot be lost with this device and every change is checked there.'));
-    if (refused) box.append(h('p', { class: 'note' }, `The server could not take this village: ${refused}`));
+    box.append(h('p', { class: 'muted small' }, i18nText("ui.keep_your_village_on_the_server_so_it__29cfb9c929")));
+    if (refused) box.append(h('p', { class: 'note' }, i18nText("ui.the_server_could_not_take_this_village_a7da1f3a5b", { arg1: refused })));
     box.append(h('div', { class: 'actions' }, canMove && !refused ? move : null, start));
     return box;
   }
@@ -873,43 +884,43 @@ export class Hud {
   private accountBlock(): HTMLElement {
     const conn = this.deps.connection;
     const id = conn.player?.id ?? '';
-    const idBox = h('input', { class: 'text mono', type: 'text', readonly: true, value: id, 'aria-label': 'Player ID' }) as HTMLInputElement;
+    const idBox = h('input', { class: 'text mono', type: 'text', readonly: true, value: id, 'aria-label': i18nText("ui.player_id_c3e96fa625") }) as HTMLInputElement;
     idBox.addEventListener('focus', () => idBox.select());
-    const copy = h('button', { class: 'btn ghost', type: 'button' }, 'Copy');
+    const copy = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.copy_e21f935f11"));
     copy.addEventListener('click', () => {
       idBox.select();
-      const done = () => this.toast('Player ID copied.', 'success');
-      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(id).then(done, () => this.toast('Select the ID and copy it.', 'info'));
-      else this.toast('Select the ID and copy it.', 'info');
+      const done = () => this.toast(i18nText("ui.player_id_copied_a61174f878"), 'success');
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(id).then(done, () => this.toast(i18nText("ui.select_the_id_and_copy_it_67e7724e57"), 'info'));
+      else this.toast(i18nText("ui.select_the_id_and_copy_it_67e7724e57"), 'info');
     });
-    const del = h('button', { class: 'btn danger', type: 'button' }, 'Delete online account');
+    const del = h('button', { class: 'btn danger', type: 'button' }, i18nText("ui.delete_online_account_6dcd1e6d49"));
     del.addEventListener('click', () => void this.deleteOnlineAccount());
-    const webForm = `${conn.url}/account/delete`;
+    const webForm = `${conn.url}/account/delete?lang=${language().code}`;
     // Re-audit: a one-time code proves a web deletion request is yours; other devices can be signed out.
     const codeBox = h('div', {});
-    const getCode = h('button', { class: 'btn ghost', type: 'button' }, 'Get a deletion code');
-    getCode.addEventListener('click', () => void conn.deletionCode().then((c) => this.showDeletionCode(codeBox, c, webForm), (e: Error) => this.toast(e.message, 'error')));
-    const others = h('button', { class: 'btn ghost', type: 'button' }, 'Sign out other devices');
+    const getCode = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.get_a_deletion_code_a28c696059"));
+    getCode.addEventListener('click', () => void conn.deletionCode().then((c) => this.showDeletionCode(codeBox, c, webForm), (e: Error) => this.toast(i18nMessage(e.message, true), 'error')));
+    const others = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.sign_out_other_devices_2e75111bfa"));
     others.addEventListener('click', () => void this.signOutOthers());
     const noticesBox = h('div', {});
     // Blocked players (blocked from Alliance chat or the member list), with Unblock.
     const blockedList = h('div', { class: 'events' });
-    const blockedWrap = conn.server?.features.includes('blocks') ? h('div', {}, h('label', { class: 'muted small' }, 'Blocked players'), blockedList) : null;
+    const blockedWrap = conn.server?.features.includes('blocks') ? h('div', {}, h('label', { class: 'muted small' }, i18nText("ui.blocked_players_fe9b29c1d3")), blockedList) : null;
     const loadBlocked = () => {
       const port = conn.port;
       if (!port || !blockedWrap) return;
       void port.blocks().then(
         ({ blocked }) => {
           clear(blockedList);
-          if (!blocked.length) blockedList.append(h('p', { class: 'muted small' }, 'Nobody. To block a player, tap ⋯ next to their name in Alliance chat or the member list.'));
+          if (!blocked.length) blockedList.append(h('p', { class: 'muted small' }, i18nText("ui.nobody_to_block_a_player_tap_next_to_t_37d6c6c87e")));
           for (const b of blocked) {
-            const un = h('button', { class: 'btn ghost', type: 'button' }, 'Unblock');
-            un.addEventListener('click', () => void port.unblock(b.id).then(loadBlocked, (e: Error) => this.toast(e.message, 'error')));
+            const un = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.unblock_712da63171"));
+            un.addEventListener('click', () => void port.unblock(b.id).then(loadBlocked, (e: Error) => this.toast(i18nMessage(e.message, true), 'error')));
             blockedList.append(h('div', { class: 'log-row' }, h('b', {}, b.name), un));
           }
         },
         (e: Error) => {
-          blockedList.textContent = e.message;
+          blockedList.textContent = i18nMessage(e.message, true);
         },
       );
     };
@@ -924,30 +935,30 @@ export class Hud {
           clear(signIns);
           const here = source.available().filter((p) => providers.includes(p));
           if (!here.length) return;
-          signIns.append(h('label', { class: 'muted small' }, 'Sign-ins (play this account on other devices)'));
+          signIns.append(h('label', { class: 'muted small' }, i18nText("ui.sign_ins_play_this_account_on_other_de_23318c3689")));
           for (const p of here) {
             const linked = links.some((l) => l.provider === p);
             const name = PROVIDER_NAMES[p];
-            const act = h('button', { class: 'btn ghost', type: 'button' }, linked ? 'Unlink' : `Link ${name}`);
+            const act = h('button', { class: 'btn ghost', type: 'button' }, linked ? i18nText("ui.unlink_b90108da0b") : i18nText("ui.link_520c06d5d8", { arg1: name }));
             act.addEventListener('click', () => {
               const run = linked ? port.unlink(p) : source.obtain(p).then((cred) => conn.link(p, cred));
               void run.then(
                 () => {
-                  this.toast(linked ? `${name} unlinked.` : `${name} linked. Sign in with it on another device to play this account there.`, 'success');
+                  this.toast(linked ? i18nText("ui.unlinked_f820616007", { arg1: name }) : i18nText("ui.linked_sign_in_with_it_on_another_devi_b6d645bfe5", { arg1: name }), 'success');
                   loadLinks();
                 },
-                (e: Error) => this.toast(e.message, 'error'),
+                (e: Error) => this.toast(i18nMessage(e.message, true), 'error'),
               );
             });
-            signIns.append(h('div', { class: 'log-row' }, h('b', {}, `${name}${linked ? ' · linked' : ''}`), act));
+            signIns.append(h('div', { class: 'log-row' }, h('b', {}, `${name}${linked ? i18nText("ui.linked_105bbb09b1") : ''}`), act));
           }
           const switchRow = h('div', { class: 'actions' });
           for (const p of here) {
-            const b = h('button', { class: 'btn ghost', type: 'button' }, `Sign in with ${PROVIDER_NAMES[p]}`);
+            const b = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.sign_in_with_b39a564eb7", { arg1: PROVIDER_NAMES[p] }));
             b.addEventListener('click', () => void this.switchAccount(p));
             switchRow.append(b);
           }
-          signIns.append(h('p', { class: 'muted small' }, 'Already linked an account on another device? Sign in with it here to play that account.'), switchRow);
+          signIns.append(h('p', { class: 'muted small' }, i18nText("ui.already_linked_an_account_on_another_d_c06434826d")), switchRow);
         },
         () => clear(signIns),
       );
@@ -955,18 +966,18 @@ export class Hud {
     const details = h(
       'details',
       { class: 'account-settings' },
-      h('summary', {}, 'Account'),
-      h('label', { class: 'muted small' }, 'Player ID (for support, and for deletion requests)'),
+      h('summary', {}, i18nText("ui.account_7e1b0d5641")),
+      h('label', { class: 'muted small' }, i18nText("ui.player_id_for_support_and_for_deletion_209a9b611c")),
       h('div', { class: 'chat-input-row' }, idBox, copy),
       signIns,
       blockedWrap,
-      h('p', { class: 'muted small' }, 'Deleting your online account removes your player name, the base you share for raids, raids on you, your Alliance membership, chat messages and warrior requests from the server. Raids you made stay in other players\' replays as "Deleted player". Your village on this device stays.'),
+      h('p', { class: 'muted small' }, i18nText("ui.deleting_your_online_account_removes_y_9f80508479")),
       h('div', { class: 'actions' }, del),
-      h('p', { class: 'muted small' }, 'Deleting from another device or the web: get a one-time deletion code here, then enter it with your Player ID on ', h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm), '. It works once, for 30 days.'),
+      h('p', { class: 'muted small' }, i18nText("ui.deleting_from_another_device_or_the_we_2bf7af1665"), h('a', { href: webForm, target: '_blank', rel: 'noopener' }, webForm), i18nText("ui.it_works_once_for_30_days_e3dbd93a8a")),
       conn.server?.features.includes('deletion-codes') ? h('div', { class: 'actions' }, getCode) : null,
       codeBox,
-      conn.server?.features.includes('sessions') ? h('div', {}, h('p', { class: 'muted small' }, 'Lost a phone, or signed in somewhere you no longer use? Sign every other device out of this account; only this one stays signed in.'), h('div', { class: 'actions' }, others)) : null,
-      conn.server?.features.includes('notices') ? h('div', {}, h('label', { class: 'muted small' }, 'Messages from our moderators'), noticesBox) : null,
+      conn.server?.features.includes('sessions') ? h('div', {}, h('p', { class: 'muted small' }, i18nText("ui.lost_a_phone_or_signed_in_somewhere_yo_2e6f84a9c3")), h('div', { class: 'actions' }, others)) : null,
+      conn.server?.features.includes('notices') ? h('div', {}, h('label', { class: 'muted small' }, i18nText("ui.messages_from_our_moderators_71bfb2b01a")), noticesBox) : null,
     );
     details.addEventListener('toggle', () => {
       if (!details.open) return;
@@ -982,47 +993,47 @@ export class Hud {
     const source = this.deps.signIn;
     if (!source) return;
     const ok = await this.confirm(
-      `Sign in with ${PROVIDER_NAMES[provider]}?`,
-      'This device will play the account linked to that sign-in. If its village is kept on the server, it replaces the village here, which stays as a backup in Settings. Your current online account is not deleted.',
-      'Sign in',
+      i18nText("ui.sign_in_with_58d489b70f", { arg1: PROVIDER_NAMES[provider] }),
+      i18nText("ui.this_device_will_play_the_account_link_94bfd0ad7e"),
+      i18nText("ui.sign_in_bfd402b2f6"),
       false,
-      'Not now',
+      i18nText("ui.not_now_a0e63d7c71"),
     );
     if (!ok) return;
     try {
       await this.deps.connection.signIn(provider, await source.obtain(provider));
-      this.toast(`Signed in as ${this.deps.connection.player?.name ?? 'your account'}.`, 'success');
+      this.toast(i18nText("ui.signed_in_as_baa47e175d", { arg1: this.deps.connection.player?.name ?? 'your account' }), 'success');
       this.closeAllModals();
     } catch (e) {
-      this.toast((e as Error).message, 'error');
+      this.toast(i18nMessage((e as Error).message, true), 'error');
     }
   }
 
   /** Show a deletion code once, with Copy (re-audit: web deletion needs it). */
   private showDeletionCode(box: HTMLElement, c: { code: string; expiresAt: number }, webForm: string): void {
     clear(box);
-    const field = h('input', { class: 'text mono', type: 'text', readonly: true, value: c.code, 'aria-label': 'Deletion code' }) as HTMLInputElement;
+    const field = h('input', { class: 'text mono', type: 'text', readonly: true, value: c.code, 'aria-label': i18nText("ui.deletion_code_83fff164f3") }) as HTMLInputElement;
     field.addEventListener('focus', () => field.select());
-    const copy = h('button', { class: 'btn ghost', type: 'button' }, 'Copy');
+    const copy = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.copy_e21f935f11"));
     copy.addEventListener('click', () => {
       field.select();
-      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(c.code).then(() => this.toast('Deletion code copied.', 'success'), () => this.toast('Select the code and copy it.', 'info'));
-      else this.toast('Select the code and copy it.', 'info');
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(c.code).then(() => this.toast(i18nText("ui.deletion_code_copied_071e162788"), 'success'), () => this.toast(i18nText("ui.select_the_code_and_copy_it_3d218c0533"), 'info'));
+      else this.toast(i18nText("ui.select_the_code_and_copy_it_3d218c0533"), 'info');
     });
     box.append(
       h('div', { class: 'chat-input-row' }, field, copy),
-      h('p', { class: 'muted small' }, `Enter it with your Player ID on ${webForm} before ${new Date(c.expiresAt).toLocaleDateString()}. Keep it private: anyone with it and your Player ID can ask for this account to be deleted. Getting a new code cancels this one.`),
+      h('p', { class: 'muted small' }, i18nText("ui.enter_it_with_your_player_id_on_before_9a8fb4c1c5", { arg1: webForm, arg2: i18nDate(c.expiresAt, {dateStyle: 'medium'}) })),
     );
   }
 
   private async signOutOthers(): Promise<void> {
-    const ok = await this.confirm('Sign out other devices?', 'Every other phone, tablet or browser signed in to this account is signed out. They can sign in again with a linked sign-in. This device stays signed in.', 'Sign out others', false, 'Cancel');
+    const ok = await this.confirm(i18nText("ui.sign_out_other_devices_0afb167de1"), i18nText("ui.every_other_phone_tablet_or_browser_si_cd0b426f2b"), i18nText("ui.sign_out_others_dd53370b3c"), false, i18nText("ui.cancel_19766ed6cc"));
     if (!ok) return;
     try {
       const n = await this.deps.connection.revokeOtherSessions();
-      this.toast(n ? t('sessions.signedOut', { n }) : 'No other device was signed in.', 'success');
+      this.toast(n ? t('sessions.signedOut', { n }) : i18nText("ui.no_other_device_was_signed_in_435c3627cc"), 'success');
     } catch (e) {
-      this.toast((e as Error).message, 'error');
+      this.toast(i18nMessage((e as Error).message, true), 'error');
     }
   }
 
@@ -1030,10 +1041,10 @@ export class Hud {
   private drawNotices(box: HTMLElement, list: import('../../backend/net/protocol').NoticeView[]): void {
     clear(box);
     if (!list.length) {
-      box.append(h('p', { class: 'muted small' }, 'None.'));
+      box.append(h('p', { class: 'muted small' }, i18nLabel('None.')));
       return;
     }
-    for (const n of list) box.append(h('div', { class: `log-row notice${n.read ? '' : ' unread'}` }, h('div', {}, h('div', { class: 'muted small' }, new Date(n.at).toLocaleString()), h('div', { dir: 'auto' }, n.text))));
+    for (const n of list) box.append(h('div', { class: `log-row notice${n.read ? '' : ' unread'}` }, h('div', {}, h('div', { class: 'muted small' }, i18nDate(n.at)), h('div', { dir: 'auto' }, i18nMessage(n.text)))));
     const unread = list.filter((n) => !n.read).map((n) => n.id);
     if (unread.length) void this.deps.connection.markNoticesRead(unread).catch(() => undefined);
   }
@@ -1044,7 +1055,7 @@ export class Hud {
     for (const n of this.deps.connection.notices) {
       if (n.read || this.toldNotices.has(n.id)) continue;
       this.toldNotices.add(n.id);
-      this.toast(`${n.kind === 'report_outcome' ? 'About your report' : 'From our moderators'}: ${n.text}`, 'info');
+      this.toast(i18nText("ui.message_d2599d42d8", { arg1: n.kind === 'report_outcome' ? i18nText("ui.about_your_report_40eecac507") : i18nText("ui.from_our_moderators_6bf6a30047"), arg2: i18nMessage(n.text) }), 'info');
     }
   }
 
@@ -1052,40 +1063,40 @@ export class Hud {
   private storedAccountBlock(url: string, redraw: () => void): HTMLElement {
     const conn = this.deps.connection;
     const box = h('div', {});
-    const del = h('button', { class: 'btn danger', type: 'button' }, 'Delete online account');
+    const del = h('button', { class: 'btn danger', type: 'button' }, i18nText("ui.delete_online_account_6dcd1e6d49"));
     del.addEventListener('click', () => {
-      void this.confirm('Delete your online account?', `Your player name, shared base, Alliance and Gang membership, friends, chat messages and any village kept on ${url} are deleted from that server now. Online play stays off; your village on this device stays. This cannot be undone.`, 'Delete account', true).then(async (ok) => {
+      void this.confirm(i18nText("ui.delete_your_online_account_e06b9e3bf8"), i18nText("ui.your_player_name_shared_base_alliance__b52c6061e4", { arg1: url }), i18nText("ui.delete_account_a2e20a3357"), true).then(async (ok) => {
         if (!ok) return;
         try {
           await conn.deleteStoredAccount(url);
-          this.toast('Your online account was deleted.', 'success');
+          this.toast(i18nText("ui.your_online_account_was_deleted_a49f28bd02"), 'success');
           redraw();
         } catch (e) {
-          this.toast(`Could not delete the account: ${(e as Error).message}`, 'error');
+          this.toast(i18nText("ui.could_not_delete_the_account_77c3c167d5", { arg1: (e as Error).message }), 'error');
         }
       });
     });
-    const code = h('button', { class: 'btn ghost', type: 'button' }, 'Get a deletion code');
-    code.addEventListener('click', () => void conn.storedDeletionCode(url).then((c) => this.showDeletionCode(box, c, `${url}/account/delete`), (e: Error) => this.toast(e.message, 'error')));
-    return h('div', { class: 'account-settings' }, h('p', {}, 'This device still holds your online account on ', h('span', { class: 'mono' }, url), '. Online play is off, but the account exists on the server.'), h('div', { class: 'actions' }, del, code), box);
+    const code = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.get_a_deletion_code_a28c696059"));
+    code.addEventListener('click', () => void conn.storedDeletionCode(url).then((c) => this.showDeletionCode(box, c, `${url}/account/delete?lang=${language().code}`), (e: Error) => this.toast(i18nMessage(e.message, true), 'error')));
+    return h('div', { class: 'account-settings' }, h('p', {}, i18nText("ui.this_device_still_holds_your_online_ac_8b04a785ce"), h('span', { class: 'mono' }, url), i18nText("ui.online_play_is_off_but_the_account_exi_583d9be7a8")), h('div', { class: 'actions' }, del, code), box);
   }
 
   private async deleteOnlineAccount(): Promise<void> {
     const conn = this.deps.connection;
     const ok = await this.confirm(
-      'Delete your online account?',
-      'Your player name, shared base, Alliance membership, chat messages and warrior requests are deleted from the server now. Online attacks still waiting for the server become practice results. Online play turns off on this device; your village stays. This cannot be undone.',
-      'Delete account',
+      i18nText("ui.delete_your_online_account_e06b9e3bf8"),
+      i18nText("ui.your_player_name_shared_base_alliance__2ac437b2e4"),
+      i18nText("ui.delete_account_a2e20a3357"),
       true,
     );
     if (!ok) return;
     try {
       await conn.deleteAccount();
     } catch (e) {
-      this.toast(`Could not delete the account: ${(e as Error).message}`, 'error');
+      this.toast(i18nText("ui.could_not_delete_the_account_77c3c167d5", { arg1: (e as Error).message }), 'error');
       return;
     }
-    this.toast('Your online account was deleted. Restarting offline…', 'success');
+    this.toast(i18nText("ui.your_online_account_was_deleted_restar_8d14231904"), 'success');
     void this.c.save().then(() => window.setTimeout(() => location.reload(), 1200));
   }
 
@@ -1100,7 +1111,7 @@ export class Hud {
     this.updateEventPill();
     this.updateBadges();
     const s = this.c.state;
-    const bs = builderStatus(s, this.c.data, this.c.now());
+    const bs = builderStatus(s, localizedData(this.c.data), this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
     if (!this.selectedId || this.sheet.hidden) return;
     if (this.sheetSignature() !== this.sheetSig) this.renderSheet();
@@ -1113,7 +1124,7 @@ export class Hud {
     if (!b) return 'none';
     const now = this.c.now();
     const busy = Boolean(b.upgrade && now < b.upgrade.endsAt);
-    const q = busy ? null : upgradeQuote(this.c.state, b.id, this.c.data, now);
+    const q = busy ? null : upgradeQuote(this.c.state, b.id, localizedData(this.c.data), now);
     const missing = q && !q.ok && q.quote ? Object.keys(missingFor(this.c.state.resources, q.quote.cost)).join() : '';
     return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing]);
   }
@@ -1122,14 +1133,14 @@ export class Hud {
   private updateSheetLive(): void {
     const b = this.c.state.buildings.find((v) => v.id === this.selectedId);
     if (!b) return;
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const now = this.c.now();
     const up = this.sheet.querySelector<HTMLElement>('[data-live="upgrade"]');
     if (up && b.upgrade) {
       const u = b.upgrade;
       const pct = Math.min(100, ((now - u.startedAt) / Math.max(1, u.endsAt - u.startedAt)) * 100);
       (up.querySelector('i') as HTMLElement).style.width = `${pct}%`;
-      up.querySelector('span')!.textContent = `${u.toLevel === 1 ? 'Building' : `Upgrading to Lv ${u.toLevel}`} · ${formatDuration(u.endsAt - now)} left`;
+      up.querySelector('span')!.textContent = i18nText("ui.left_12f73d4584", { arg1: u.toLevel === 1 ? i18nText("ui.building_87c5912f2c") : i18nText("ui.upgrading_to_lv_98b4ee1616", { arg1: u.toLevel }), arg2: formatDuration(u.endsAt - now) });
     }
     const col = this.sheet.querySelector<HTMLElement>('[data-live="collector"]');
     if (col) {
@@ -1137,34 +1148,34 @@ export class Hud {
       const amount = Math.floor(collectorAmount(b, now, gd));
       const cap = collectorCapacity(b, level, gd);
       (col.querySelector('i') as HTMLElement).style.width = `${Math.min(100, (amount / Math.max(1, cap)) * 100)}%`;
-      col.querySelector('span')!.textContent = `Ready: ${formatNumber(amount)} / ${formatNumber(cap)}`;
+      col.querySelector('span')!.textContent = i18nText("ui.ready_7e52cd80b5", { arg1: formatNumber(amount), arg2: formatNumber(cap) });
     }
   }
 
   // ------------------------------------------------------------ unlock preview
 
   private unlockText(u: UnlockItem): string {
-    const name = buildingDef(this.c.data, u.type).name;
-    if (u.kind === 'new') return `New: ${name}${u.to > 1 ? ` ×${u.to}` : ''}`;
-    if (u.kind === 'more') return `${name}: build up to ${u.to} (now ${u.from})`;
-    return `${name}: up to level ${u.to} (now ${u.from})`;
+    const name = buildingDef(localizedData(this.c.data), u.type).name;
+    if (u.kind === 'new') return i18nText("ui.new_e0f84879f6", { arg1: name, arg2: u.to > 1 ? ` ×${u.to}` : '' });
+    if (u.kind === 'more') return i18nText("ui.build_up_to_now_e9422097ce", { arg1: name, arg2: u.to, arg3: u.from });
+    return i18nText("ui.up_to_level_now_60f87e0a6f", { arg1: name, arg2: u.to, arg3: u.from });
   }
 
   /** One short line, e.g. "+1 Acorn Orchard, +1 Dewdrop Well, higher levels for 4 buildings". */
   private unlockSummary(items: UnlockItem[]): string {
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const parts: string[] = [];
     for (const u of items) {
       const name = buildingDef(gd, u.type).name;
-      if (u.kind === 'new') parts.push(`new ${name}`);
-      else if (u.kind === 'more') parts.push(`+${u.to - u.from} ${name}`);
+      if (u.kind === 'new') parts.push(i18nText("ui.new_7b1eddb0fc", { arg1: name }));
+      else if (u.kind === 'more') parts.push(i18nText("ui.message_308af0994c", { arg1: u.to - u.from, arg2: name }));
     }
     const capped = new Set(items.filter((u) => u.kind === 'levelCap').map((u) => u.type)).size;
     const shown = parts.slice(0, 3);
-    if (parts.length > 3) shown.push(`${parts.length - 3} more`);
+    if (parts.length > 3) shown.push(i18nText("ui.more_fac9b7b214", { arg1: parts.length - 3 }));
     if (capped) shown.push(t('unlocks.capped', { n: capped }));
     const troops = troopCapUnlock(hallLevel(this.c.state, gd), gd);
-    if (troops) shown.push(`warrior level ${troops.to}`);
+    if (troops) shown.push(i18nText("ui.troop_level_0526270e0b", { arg1: troops.to }));
     return shown.join(', ');
   }
 
@@ -1179,12 +1190,12 @@ export class Hud {
 
   private dismissUnlockChip(): void {
     try {
-      localStorage.setItem('tk.unlockChipHidden', String(hallLevel(this.c.state, this.c.data)));
+      localStorage.setItem('tk.unlockChipHidden', String(hallLevel(this.c.state, localizedData(this.c.data))));
     } catch {
       /* storage blocked: hidden for this session */
     }
     this.unlockChip.hidden = true;
-    this.toast('The full list of Keep unlocks is on the Clan Keep: tap it, then "What the next level unlocks".', 'info');
+    this.toast(i18nText("ui.the_full_list_of_keep_unlocks_is_on_th_c00d4ce475"), 'info');
   }
 
   /**
@@ -1200,7 +1211,7 @@ export class Hud {
       this.objectiveChip.hidden = true;
       return;
     }
-    const data = this.c.data;
+    const data = localizedData(this.c.data);
     const o = nextObjective(advance(s, now, data).state, now, data);
     const name = (type: string) => data.buildings[type]?.name ?? type;
     let ic = icons.star;
@@ -1213,7 +1224,7 @@ export class Hud {
     } else if (o.kind === 'upgrade') {
       [ic, text, action] = [icons.hammer, o.keep ? t('objective.keep', { level: o.toLevel }) : t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
     } else if (o.kind === 'save') {
-      const need = (Object.entries(o.missing) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => `${formatCompact(v)} ${RES_LABEL[k]}`).join(' + ');
+      const need = (Object.entries(o.missing) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatCompact(v), arg2: RES_LABEL[k] })).join(' + ');
       [ic, text, action] = [icons.acorns, t('objective.save', { need, building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
     } else if (o.kind === 'builders') {
       [ic, text] = [icons.clock, t('objective.builders', { time: formatDuration(o.freeAt - now) })];
@@ -1232,35 +1243,35 @@ export class Hud {
 
   private renderUnlockChip(): void {
     const s = this.c.state;
-    const level = hallLevel(s, this.c.data);
-    const items = hallUnlocks(level, this.c.data);
+    const level = hallLevel(s, localizedData(this.c.data));
+    const items = hallUnlocks(level, localizedData(this.c.data));
     clear(this.unlocksEl);
     this.unlockChip.hidden = !s.tutorial.done || !items.length || this.unlockDismissed() >= level;
     if (this.unlockChip.hidden) return;
-    const troops = troopCapUnlock(level, this.c.data) ? 1 : 0;
+    const troops = troopCapUnlock(level, localizedData(this.c.data)) ? 1 : 0;
     const n = items.length + troops;
-    this.unlocksEl.title = `Clan Keep Lv ${level + 1} unlocks: ${this.unlockSummary(items)}`;
+    this.unlocksEl.title = i18nText("ui.clan_keep_lv_unlocks_d1e66d048e", { arg1: level + 1, arg2: this.unlockSummary(items) });
     this.unlocksEl.setAttribute('aria-label', this.unlocksEl.title);
-    this.unlocksEl.append(icon(icons.toadstool), h('span', { class: 'unlock-text' }, h('b', {}, `Keep Lv ${level + 1}`), ` · ${t('unlocks.chip', { n })} `, h('span', { 'aria-hidden': 'true' }, '▸')));
+    this.unlocksEl.append(icon(icons.toadstool), h('span', { class: 'unlock-text' }, h('b', {}, i18nText("ui.keep_lv_78a2d3d210", { arg1: level + 1 })), i18nText("ui.message_c2bc2bb606", { arg1: t('unlocks.chip', { n }) }), h('span', { 'aria-hidden': 'true' }, '▸')));
   }
 
   private openUnlocks(): void {
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const level = hallLevel(this.c.state, gd);
     const items = hallUnlocks(level, gd);
     const hall = this.c.state.buildings.find((b) => b.type === hallType(gd));
     const body = h('div', { class: 'unlock-list' });
-    if (!items.length) body.append(h('p', {}, 'Your Clan Keep is at the highest level available right now.'));
+    if (!items.length) body.append(h('p', {}, i18nText("ui.your_clan_keep_is_at_the_highest_level_18f107aa0d")));
     else {
-      body.append(h('p', { class: 'muted' }, `Upgrading your Clan Keep to level ${level + 1} unlocks:`));
+      body.append(h('p', { class: 'muted' }, i18nText("ui.upgrading_your_clan_keep_to_level_unlo_635a5be9cb", { arg1: level + 1 })));
       const troops = troopCapUnlock(level, gd);
-      body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u))), troops ? h('li', {}, `Warrior research: up to level ${troops.to} (now ${troops.from})`) : ''));
+      body.append(h('ul', {}, ...items.map((u) => h('li', {}, this.unlockText(u))), troops ? h('li', {}, i18nText("ui.troop_research_up_to_level_now_fe9cb9e940", { arg1: troops.to, arg2: troops.from })) : ''));
       const next = levelDef(gd, hallType(gd), level + 1);
-      if (next) body.append(h('p', { class: 'row' }, 'Cost: ', costChips(next.cost, missingFor(this.c.state.resources, next.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(next.buildSeconds * 1000))));
+      if (next) body.append(h('p', { class: 'row' }, i18nLabel('Cost: '), costChips(next.cost, missingFor(this.c.state.resources, next.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(next.buildSeconds * 1000))));
     }
-    const close = this.modal('Clan Keep', body, [
+    const close = this.modal(i18nText("ui.clan_keep_91ed01e772"), body, [
       hall && {
-        label: 'Go to Clan Keep',
+        label: i18nText("ui.go_to_clan_keep_4d567aa33e"),
         primary: true,
         onClick: () => {
           close();
@@ -1288,7 +1299,7 @@ export class Hud {
     this.sheet.dataset.id = b.id;
     // The tutorial points only at the right building's buttons (re-audit design item 3).
     this.sheet.dataset.type = b.type;
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const now = this.c.now();
     const def = buildingDef(gd, b.type);
     const level = effectiveLevel(b, now);
@@ -1299,8 +1310,8 @@ export class Hud {
       return;
     }
 
-    const title = h('div', { class: 'sheet-title' }, h('h2', {}, def.name), h('span', { class: 'level' }, level >= 1 ? `Level ${level}` : 'Being built'));
-    const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: () => this.bus.emit('select', null) }, icon(icons.close));
+    const title = h('div', { class: 'sheet-title' }, h('h2', {}, def.name), h('span', { class: 'level' }, level >= 1 ? i18nText("ui.level_846c9348a9", { arg1: level }) : i18nText("ui.being_built_cae1e757ba")));
+    const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': i18nText("ui.close_7d9eb7acb1"), onclick: () => this.bus.emit('select', null) }, icon(icons.close));
     this.sheet.append(h('div', { class: 'sheet-head' }, title, closeBtn));
     this.sheet.append(h('p', { class: 'muted desc' }, def.description));
 
@@ -1309,27 +1320,27 @@ export class Hud {
     const ld = levelDef(gd, b.type, Math.max(1, level));
     if (def.category === 'collector' && def.produces && ld?.ratePerHour) {
       stats.append(h('span', { class: 'chip' }, icon(icons[def.produces as 'acorns' | 'dew']), `${formatNumber(ld.ratePerHour)}/hour`));
-      stats.append(h('span', { class: 'chip' }, `Holds ${formatNumber(collectorCapacity(b, Math.max(1, level), gd))}`));
+      stats.append(h('span', { class: 'chip' }, i18nText("ui.holds_55b8fb769a", { arg1: formatNumber(collectorCapacity(b, Math.max(1, level), gd)) })));
     }
     if (ld?.storage) {
       for (const k of RESOURCE_KINDS) {
         const v = ld.storage[k];
-        if (v) stats.append(h('span', { class: 'chip' }, icon(icons[k as 'acorns' | 'dew']), `Stores ${formatNumber(v)}`));
+        if (v) stats.append(h('span', { class: 'chip' }, icon(icons[k as 'acorns' | 'dew']), i18nText("ui.stores_62a5714eb2", { arg1: formatNumber(v) })));
       }
     }
-    if (def.category === 'builder') stats.append(h('span', { class: 'chip' }, icon(icons.beaver), 'Home of 1 Village Artisan'));
-    if (ld?.housing) stats.append(h('span', { class: 'chip' }, icon(icons.troops), `Houses ${ld.housing}`));
+    if (def.category === 'builder') stats.append(h('span', { class: 'chip' }, icon(icons.beaver), i18nText("ui.home_of_1_village_artisan_d098b4322c")));
+    if (ld?.housing) stats.append(h('span', { class: 'chip' }, icon(icons.troops), i18nText("ui.houses_55ab67abd5", { arg1: ld.housing })));
     if (def.combat && ld?.damage) {
       const dps = (ld.damage * gd.battle.ticksPerSecond) / def.combat.fireIntervalTicks;
-      stats.append(h('span', { class: 'chip' }, `${Math.round(dps)} damage/sec`));
-      stats.append(h('span', { class: 'chip' }, `Range ${def.combat.range}`));
-      stats.append(h('span', { class: 'chip' }, def.combat.targets === 'both' ? 'Ground & air' : def.combat.targets === 'air' ? 'Air only' : 'Ground only'));
+      stats.append(h('span', { class: 'chip' }, i18nText("ui.damage_sec_0418e5cdfb", { arg1: Math.round(dps) })));
+      stats.append(h('span', { class: 'chip' }, i18nText("ui.range_830739db0a", { arg1: def.combat.range })));
+      stats.append(h('span', { class: 'chip' }, def.combat.targets === 'both' ? i18nText("ui.ground_air_cbc4ca18ea") : def.combat.targets === 'air' ? i18nText("ui.air_only_7e595b9df5") : i18nText("ui.ground_only_9349857086")));
     }
-    if (def.category === 'hedge' && ld) stats.append(h('span', { class: 'chip' }, `${formatNumber(ld.hp)} HP`));
+    if (def.category === 'hedge' && ld) stats.append(h('span', { class: 'chip' }, i18nText("ui.hp_0c9cb32a1b", { arg1: formatNumber(ld.hp) })));
     if (stats.childElementCount) this.sheet.append(stats);
     // The Keep's sheet carries the unlock preview (the village screen only has a dismissible one-line chip).
     if (def.category === 'hall' && hallUnlocks(level, gd).length) {
-      this.sheet.append(h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => this.openUnlocks() }, icon(icons.toadstool), `What Keep Lv ${level + 1} unlocks`));
+      this.sheet.append(h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => this.openUnlocks() }, icon(icons.toadstool), i18nText("ui.what_keep_lv_unlocks_ced96de6b4", { arg1: level + 1 })));
     }
 
     // Upgrade in progress
@@ -1341,7 +1352,7 @@ export class Hud {
           'div',
           { class: 'progress-row', 'data-live': 'upgrade' },
           h('div', { class: 'progress' }, h('i', { style: `width:${pct}%` })),
-          h('span', {}, `${u.toLevel === 1 ? 'Building' : `Upgrading to Lv ${u.toLevel}`} · ${formatDuration(u.endsAt - now)} left`),
+          h('span', {}, i18nText("ui.left_12f73d4584", { arg1: u.toLevel === 1 ? i18nText("ui.building_87c5912f2c") : i18nText("ui.upgrading_to_lv_98b4ee1616", { arg1: u.toLevel }), arg2: formatDuration(u.endsAt - now) })),
         ),
       );
     }
@@ -1355,7 +1366,7 @@ export class Hud {
           'div',
           { class: 'progress-row', 'data-live': 'collector' },
           h('div', { class: `progress ${def.produces}` }, h('i', { style: `width:${Math.min(100, (amount / Math.max(1, cap)) * 100)}%` })),
-          h('span', {}, `Ready: ${formatNumber(amount)} / ${formatNumber(cap)}`),
+          h('span', {}, i18nText("ui.ready_7e52cd80b5", { arg1: formatNumber(amount), arg2: formatNumber(cap) })),
         ),
       );
     }
@@ -1364,7 +1375,7 @@ export class Hud {
     const actions = h('div', { class: 'actions' });
     if (def.produces && level >= 1) {
       actions.append(
-        h('button', { class: 'btn collect', type: 'button', onclick: () => this.collect(b) }, icon(icons[def.produces as 'acorns' | 'dew']), 'Collect'),
+        h('button', { class: 'btn collect', type: 'button', onclick: () => this.collect(b) }, icon(icons[def.produces as 'acorns' | 'dew']), i18nText("ui.collect_08a0c33f91")),
       );
     }
     if (b.upgrade && now < b.upgrade.endsAt) {
@@ -1373,13 +1384,13 @@ export class Hud {
         actions.append(
           h(
             'button',
-            { class: 'btn gold', type: 'button', onclick: () => void this.econ.spendMoonstones('Finish now', `Finish ${def.name} now`, skipQuote(this.c.state, b.id, this.c.now(), gd)?.moonstones ?? sq.moonstones, () => this.c.dispatch({ type: 'skip', id: b.id }).ok) },
-            'Finish now ',
+            { class: 'btn gold', type: 'button', onclick: () => void this.econ.spendMoonstones(i18nText("ui.finish_now_1d29b1c493"), i18nText("ui.finish_now_a84a870c3f", { arg1: def.name }), skipQuote(this.c.state, b.id, this.c.now(), gd)?.moonstones ?? sq.moonstones, () => this.c.dispatch({ type: 'skip', id: b.id }).ok) },
+            i18nText("ui.finish_now_3e2c46dd09"),
             h('span', { class: 'chip' }, icon(icons.moonstones), String(sq.moonstones)),
           ),
         );
       }
-      actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.cancelUpgrade(b) }, icon(icons.close), 'Cancel'));
+      actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.cancelUpgrade(b) }, icon(icons.close), i18nText("ui.cancel_19766ed6cc")));
     } else if (def.category !== 'decor') {
       const uq = upgradeQuote(this.c.state, b.id, gd, now);
       actions.append(this.upgradeButton(b, uq));
@@ -1387,7 +1398,7 @@ export class Hud {
         const action = { type: 'upgrade', id: b.id } as const;
         const tq = topUpQuote(this.c.state, action, now, gd);
         if (tq) {
-          const missing = Object.entries(tq.missing).map(([k, v]) => `${formatNumber(v as number)} ${RES_LABEL[k as ResourceKind]}`).join(' and ');
+          const missing = i18nList(Object.entries(tq.missing).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(v as number), arg2: RES_LABEL[k as ResourceKind] })), 'conjunction');
           actions.append(
             h(
               'button',
@@ -1395,9 +1406,9 @@ export class Hud {
                 class: 'btn gold',
                 type: 'button',
                 onclick: () =>
-                  void this.econ.spendMoonstones('Buy missing resources', `Buy the missing ${missing} and start the upgrade`, topUpQuote(this.c.state, action, this.c.now(), gd)?.moonstones ?? tq.moonstones, () => this.c.dispatch({ type: 'topUp', then: action }).ok),
+                  void this.econ.spendMoonstones(i18nText("ui.buy_missing_resources_7c77856aa0"), i18nText("ui.buy_the_missing_and_start_the_upgrade_68b76516be", { arg1: missing }), topUpQuote(this.c.state, action, this.c.now(), gd)?.moonstones ?? tq.moonstones, () => this.c.dispatch({ type: 'topUp', then: action }).ok),
               },
-              'Buy missing ',
+              i18nText("ui.buy_missing_60a848c106"),
               h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)),
             ),
           );
@@ -1405,37 +1416,37 @@ export class Hud {
       }
     }
     if (def.category === 'military' && level >= 1) {
-      actions.append(h('button', { class: 'btn sky', type: 'button', onclick: () => this.openTraining() }, icon(icons.troops), 'Train troops'));
+      actions.append(h('button', { class: 'btn sky', type: 'button', onclick: () => this.openTraining() }, icon(icons.troops), i18nText("ui.train_troops_eedc07a428")));
     }
-    actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.bus.emit('placement:start', { kind: 'move', id: b.id }) }, icon(icons.move), 'Move'));
+    actions.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => this.bus.emit('placement:start', { kind: 'move', id: b.id }) }, icon(icons.move), i18nText("ui.move_6ecc3df6bf")));
     this.sheet.append(actions);
   }
 
   private renderObstacleSheet(b: Building, name: string, description: string, clr: { cost: Cost; seconds: number; moonstones: number }): void {
     const now = this.c.now();
-    const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: () => this.bus.emit('select', null) }, icon(icons.close));
+    const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': i18nText("ui.close_7d9eb7acb1"), onclick: () => this.bus.emit('select', null) }, icon(icons.close));
     this.sheet.append(h('div', { class: 'sheet-head' }, h('div', { class: 'sheet-title' }, h('h2', {}, name)), closeBtn), h('p', { class: 'muted desc' }, description));
     if (b.upgrade && now < b.upgrade.endsAt) {
       const u = b.upgrade;
       const pct = Math.min(100, ((now - u.startedAt) / Math.max(1, u.endsAt - u.startedAt)) * 100);
-      this.sheet.append(h('div', { class: 'progress-row', 'data-live': 'upgrade' }, h('div', { class: 'progress' }, h('i', { style: `width:${pct}%` })), h('span', {}, `Clearing · ${formatDuration(u.endsAt - now)} left`)));
+      this.sheet.append(h('div', { class: 'progress-row', 'data-live': 'upgrade' }, h('div', { class: 'progress' }, h('i', { style: `width:${pct}%` })), h('span', {}, i18nText("ui.clearing_left_dba12b0f3f", { arg1: formatDuration(u.endsAt - now) }))));
       return;
     }
     const btn = h(
       'button',
       { class: 'btn primary upgrade', type: 'button' },
-      h('span', { class: 'btn-label' }, 'Clear it'),
+      h('span', { class: 'btn-label' }, i18nText("ui.clear_it_a6cb14a6a7")),
       h('span', { class: 'btn-sub' }, costChips(clr.cost, missingFor(this.c.state.resources, clr.cost)), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(clr.seconds * 1000)), h('span', { class: 'chip good' }, '+', icon(icons.moonstones), String(clr.moonstones))),
     );
     btn.addEventListener('click', () => {
       const r = this.c.dispatch({ type: 'clear', id: b.id });
-      if (!r.ok) this.toast(r.message, 'error');
+      if (!r.ok) this.toast(i18nMessage(r.message, true), 'error');
     });
     this.sheet.append(h('div', { class: 'actions' }, btn));
   }
 
   private upgradeButton(b: Building, q: QuoteResult): HTMLElement {
-    if (!q.ok && !q.quote) return h('div', { class: 'note' }, q.message);
+    if (!q.ok && !q.quote) return h('div', { class: 'note' }, i18nMessage(q.message));
     const quote = q.ok ? q.quote : q.quote!;
     const missing = missingFor(this.c.state.resources, quote.cost);
     const btn = h(
@@ -1446,28 +1457,28 @@ export class Hud {
         disabled: !q.ok,
         onclick: () => {
           const r = this.c.dispatch({ type: 'upgrade', id: b.id });
-          if (!r.ok) this.toast(r.message, 'error');
+          if (!r.ok) this.toast(i18nMessage(r.message, true), 'error');
         },
       },
-      h('span', { class: 'btn-label' }, icon(icons.up), `Upgrade to Lv ${quote.toLevel}`),
+      h('span', { class: 'btn-label' }, icon(icons.up), i18nText("ui.upgrade_to_lv_f98c8c59a3", { arg1: quote.toLevel })),
       h('span', { class: 'btn-sub' }, costChips(quote.cost, missing), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(quote.seconds * 1000))),
     );
     if (q.ok) return btn;
-    return h('div', { class: 'upgrade-wrap' }, btn, h('div', { class: 'note' }, q.message));
+    return h('div', { class: 'upgrade-wrap' }, btn, h('div', { class: 'note' }, i18nMessage(q.message)));
   }
 
   private collect(b: Building): void {
     const r = this.c.dispatch({ type: 'collect', id: b.id });
     if (!r.ok) this.toast(r.message, r.code === 'NOTHING_TO_COLLECT' ? 'info' : 'error');
-    else for (const e of r.events) if (e.kind === 'collect') this.toast(`+${formatNumber(e.amount)} ${RES_LABEL[e.resource]}`, 'success');
+    else for (const e of r.events) if (e.kind === 'collect') this.toast(i18nText("ui.message_308af0994c", { arg1: formatNumber(e.amount), arg2: RES_LABEL[e.resource] }), 'success');
   }
 
   private async cancelUpgrade(b: Building): Promise<void> {
-    const pct = Math.round(this.c.data.economy.cancelRefundFraction * 100);
-    const ok = await this.confirm('Cancel?', `You'll get back ${pct}% of what you paid.`, 'Cancel upgrade', true);
+    const pct = Math.round(localizedData(this.c.data).economy.cancelRefundFraction * 100);
+    const ok = await this.confirm(i18nText("ui.cancel_8bda56c90a"), i18nText("ui.you_ll_get_back_of_what_you_paid_59199c43a7", { arg1: pct }), i18nText("ui.cancel_upgrade_fd0250ef15"), true);
     if (!ok) return;
     const r = this.c.dispatch({ type: 'cancel', id: b.id });
-    if (!r.ok) this.toast(r.message, 'error');
+    if (!r.ok) this.toast(i18nMessage(r.message, true), 'error');
   }
 
   // ------------------------------------------------------------ shop
@@ -1482,12 +1493,12 @@ export class Hud {
       ['defense', 'Defense', ['defense', 'support', 'hedge', 'trap']],
       ['decor', 'Decor', ['decor']],
     ];
-    const visible = tabs.filter(([, , cats]) => Object.values(this.c.data.buildings).some((d) => d.inShop && cats.includes(d.category)));
+    const visible = tabs.filter(([, , cats]) => Object.values(localizedData(this.c.data).buildings).some((d) => d.inShop && cats.includes(d.category)));
     const draw = () => {
       clear(body);
       body.append(
         h('div', { class: 'shop-tabs' }, ...visible.map(([id, label]) => {
-          const b = h('button', { type: 'button', class: id === this.shopTab ? 'on' : '', 'data-tab': id }, label);
+          const b = h('button', { type: 'button', class: id === this.shopTab ? 'on' : '', 'data-tab': id }, i18nLabel(label));
           b.addEventListener('click', () => {
             this.shopTab = id;
             draw();
@@ -1499,16 +1510,16 @@ export class Hud {
       body.append(this.shopGrid(cats, () => close()));
     };
     draw();
-    const close = this.modal('Build', body, [], 'wide');
+    const close = this.modal(i18nText("ui.build_bdd254b65b"), body, [], 'wide');
   }
 
   /** Confirm the Jade, then buy what the building is missing and place it in one step. */
   private async buyAndPlace(type: string, x: number, y: number): Promise<void> {
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const action = { type: 'place', buildingType: type, x, y } as const;
     const placed = (r: ReturnType<typeof this.c.dispatch>) => {
       if (!r.ok) {
-        this.toast(r.message, 'error');
+        this.toast(i18nMessage(r.message, true), 'error');
         return false;
       }
       this.bus.emit('placement:cancel');
@@ -1521,19 +1532,19 @@ export class Hud {
       const pq = placeQuote(this.c.state, gd, type, this.c.now());
       const jade = pq.quote?.cost.moonstones ?? 0;
       if (jade > 0) {
-        await this.econ.spendMoonstones(`Build ${gd.buildings[type].name}`, `Build ${gd.buildings[type].name} here`, jade, () => placed(this.c.dispatch(action)));
+        await this.econ.spendMoonstones(i18nText("ui.build_b4fd48fcd3", { arg1: gd.buildings[type].name }), i18nText("ui.build_here_f9878cee7f", { arg1: gd.buildings[type].name }), jade, () => placed(this.c.dispatch(action)));
         return;
       }
       // Collected enough meanwhile: no Jade needed.
       placed(this.c.dispatch(action));
       return;
     }
-    const missing = Object.entries(tq.missing).map(([k, v]) => `${formatNumber(v as number)} ${RES_LABEL[k as ResourceKind]}`).join(' and ');
-    await this.econ.spendMoonstones('Buy missing resources', `Buy the missing ${missing} and build ${gd.buildings[type].name} here`, tq.moonstones, () => placed(this.c.dispatch({ type: 'topUp', then: action })));
+    const missing = i18nList(Object.entries(tq.missing).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(v as number), arg2: RES_LABEL[k as ResourceKind] })), 'conjunction');
+    await this.econ.spendMoonstones(i18nText("ui.buy_missing_resources_7c77856aa0"), i18nText("ui.buy_the_missing_and_build_here_c0521572b9", { arg1: missing, arg2: gd.buildings[type].name }), tq.moonstones, () => placed(this.c.dispatch({ type: 'topUp', then: action })));
   }
 
   private shopGrid(categories: string[], close: () => void): HTMLElement {
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const now = this.c.now();
     const grid = h('div', { class: 'shop-grid' });
     for (const [type, def] of Object.entries(gd.buildings)) {
@@ -1556,7 +1567,7 @@ export class Hud {
           'aria-disabled': !q.ok && !tq,
           onclick: () => {
             if (!q.ok && !tq) {
-              this.toast(q.message, 'error');
+              this.toast(i18nMessage(q.message, true), 'error');
               return;
             }
             close();
@@ -1566,7 +1577,7 @@ export class Hud {
         },
         thumb ? h('img', { src: thumb, alt: '' }) : h('div', { class: 'thumb-ph' }),
         h('div', { class: 'shop-name' }, def.name),
-        h('div', { class: 'shop-count' }, `Built ${have}/${lim.count}`),
+        h('div', { class: 'shop-count' }, i18nText("ui.built_999a0a5aa8", { arg1: have, arg2: lim.count })),
         h(
           'div',
           { class: 'shop-cost' },
@@ -1574,9 +1585,9 @@ export class Hud {
           first.buildSeconds ? h('span', { class: 'chip' }, icon(icons.clock), formatDuration(first.buildSeconds * 1000)) : null,
         ),
         tq
-          ? h('div', { class: 'shop-buy' }, 'Buy missing ', h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)))
+          ? h('div', { class: 'shop-buy' }, i18nText("ui.buy_missing_60a848c106"), h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)))
           : !q.ok
-            ? h('div', { class: 'shop-why' }, q.message)
+            ? h('div', { class: 'shop-why' }, i18nMessage(q.message))
             : null,
       );
       grid.append(card);
@@ -1604,17 +1615,17 @@ export class Hud {
   private async restoreVillage(key: string): Promise<void> {
     const ok = await this.c.restoreBackup(key);
     if (!ok) {
-      this.toast('That village could not be restored.', 'error');
+      this.toast(i18nText("ui.that_village_could_not_be_restored_da34653697"), 'error');
       return;
     }
     this.closeAllModals();
     this.bus.emit('select', null);
-    this.toast('Your earlier village is back. The one you were playing is kept in Settings.', 'success');
+    this.toast(i18nText("ui.your_earlier_village_is_back_the_one_y_c247a3cdd4"), 'success');
   }
 
   /** At start-up: offer back a kept village that is further along than this one, once. */
   async offerRecovery(): Promise<void> {
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const s = this.c.state;
     const keep = hallLevel(s, gd);
     const buildings = s.buildings.filter((b) => gd.buildings[b.type]?.category !== 'obstacle').length;
@@ -1628,7 +1639,7 @@ export class Hud {
       /* storage blocked: the offer may appear again */
     }
     if (seen === better.key) return;
-    const yes = await this.confirm('Your earlier village is safe', `A save problem started you on a new village, but your earlier one was kept: ${this.backupTitle(better)}, last saved ${new Date(better.savedAt).toLocaleString()}. Restore it now? The village you have now will be kept in Settings.`, 'Restore it', false, 'Not now');
+    const yes = await this.confirm(i18nText("ui.your_earlier_village_is_safe_f15d817e36"), i18nText("ui.a_save_problem_started_you_on_a_new_vi_230b159409", { arg1: this.backupTitle(better), arg2: i18nDate(better.savedAt) }), i18nText("ui.restore_it_2ff3b676c1"), false, i18nText("ui.not_now_a0e63d7c71"));
     if (yes) await this.restoreVillage(better.key);
   }
 
@@ -1638,16 +1649,16 @@ export class Hud {
     document.body.append(
       h(
         'div',
-        { class: 'takeover', role: 'alertdialog', 'aria-modal': 'true', 'aria-label': 'Open somewhere else' },
+        { class: 'takeover', role: 'alertdialog', 'aria-modal': 'true', 'aria-label': i18nText("ui.open_somewhere_else_953fe53c0a") },
         h(
           'div',
           { class: 'modal' },
-          h('div', { class: 'modal-head' }, h('h2', {}, 'Open somewhere else')),
+          h('div', { class: 'modal-head' }, h('h2', {}, i18nText("ui.open_somewhere_else_953fe53c0a"))),
           h(
             'div',
             { class: 'modal-body' },
-            h('p', {}, 'Your village was opened in another tab or window, and only one can save it. Your progress is safe there.'),
-            h('div', { class: 'actions' }, h('button', { class: 'btn primary', type: 'button', onclick: () => location.reload() }, 'Play here instead')),
+            h('p', {}, i18nText("ui.your_village_was_opened_in_another_tab_ed07714afd")),
+            h('div', { class: 'actions' }, h('button', { class: 'btn primary', type: 'button', onclick: () => location.reload() }, i18nText("ui.play_here_instead_ecaf1c7e2e"))),
           ),
         ),
       ),
@@ -1660,7 +1671,7 @@ export class Hud {
    * are met (the same check the Train button uses).
    */
   openCodex(): void {
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     let tierFilter = 0;
     let roleFilter = '';
     let statusFilter: '' | 'unlocked' | 'locked' = '';
@@ -1670,25 +1681,25 @@ export class Hud {
       clear(body);
       const rows = WARRIORS.map((w) => {
         const u = w.liveTroop && gd.troops[w.liveTroop] ? troopUnlock(s, w.liveTroop, gd) : null;
-        let status = 'Coming soon';
-        if (u?.unlocked) status = 'Unlocked';
+        let status = i18nText("ui.coming_soon_4f7d640176");
+        if (u?.unlocked) status = i18nText("ui.unlocked_531c7b28ab");
         else if (u) {
           const need: string[] = [];
-          if (u.needsKeep) need.push(`Clan Keep ${u.keep}`);
-          if (u.needsDojo) need.push(`Training Dojo ${u.dojo}`);
-          status = `Needs ${need.join(' + ')}`;
+          if (u.needsKeep) need.push(i18nText("ui.clan_keep_2cf84349d4", { arg1: u.keep }));
+          if (u.needsDojo) need.push(i18nText("ui.training_dojo_54441bc8cc", { arg1: u.dojo }));
+          status = i18nText("ui.needs_5162618d8e", { arg1: need.join(' + ') });
         }
         return { w, u, status, keep: u ? u.earliestKeep : warriorUnlockKeep(w, gd) };
       });
       const unlockedCount = rows.filter((r) => r.u?.unlocked).length;
       const nextUp = rows.filter((r) => r.u && !r.u.unlocked).sort((a, b) => a.keep - b.keep || a.w.tier - b.w.tier)[0];
-      body.append(h('p', { class: 'muted small' }, `${unlockedCount} of ${WARRIORS.length} classes unlocked. A class unlocks when your Clan Keep and Training Dojo both reach its level; the ring colour shows the tier.`));
-      if (nextUp) body.append(h('p', { class: 'small' }, h('b', {}, 'Next: '), `${nextUp.w.name} (${nextUp.status.replace('Needs ', 'needs ')}).`));
-      const tierSelect = h('select', { 'aria-label': 'Filter classes by tier' }, h('option', { value: '0' }, 'All tiers'), ...MODEL.tiers.map((tier) => h('option', { value: String(tier.tier) }, tier.name)));
+      body.append(h('p', { class: 'muted small' }, i18nText("ui.of_classes_unlocked_a_class_unlocks_wh_856ddcc6ae", { arg1: unlockedCount, arg2: WARRIORS.length })));
+      if (nextUp) body.append(h('p', { class: 'small' }, h('b', {}, i18nLabel('Next: ')), i18nText("ui.message_6aa36c72d4", { arg1: nextUp.w.name, arg2: nextUp.status.replace('Needs ', 'needs ') })));
+      const tierSelect = h('select', { 'aria-label': i18nText("ui.filter_classes_by_tier_93298ce75c") }, h('option', { value: '0' }, i18nText("ui.all_tiers_ab6bb77da4")), ...MODEL.tiers.map((tier) => h('option', { value: String(tier.tier) }, tier.name)));
       tierSelect.value = String(tierFilter);
-      const roleSelect = h('select', { 'aria-label': 'Filter classes by role' }, h('option', { value: '' }, 'All roles'), ...Object.entries(MODEL.roles).map(([id, r]) => h('option', { value: id }, r.name)));
+      const roleSelect = h('select', { 'aria-label': i18nText("ui.filter_classes_by_role_ecf50793ab") }, h('option', { value: '' }, i18nText("ui.all_roles_78f133afd3")), ...Object.entries(MODEL.roles).map(([id, r]) => h('option', { value: id }, r.name)));
       roleSelect.value = roleFilter;
-      const statusSelect = h('select', { 'aria-label': 'Filter classes by status' }, h('option', { value: '' }, 'All'), h('option', { value: 'unlocked' }, 'Unlocked'), h('option', { value: 'locked' }, 'Locked'));
+      const statusSelect = h('select', { 'aria-label': i18nText("ui.filter_classes_by_status_482f0d5b0b") }, h('option', { value: '' }, i18nText("ui.all_a52ace420f")), h('option', { value: 'unlocked' }, i18nText("ui.unlocked_531c7b28ab")), h('option', { value: 'locked' }, i18nText("ui.locked_a424e33d90")));
       statusSelect.value = statusFilter;
       tierSelect.addEventListener('change', () => { tierFilter = Number(tierSelect.value); render(); });
       roleSelect.addEventListener('change', () => { roleFilter = roleSelect.value; render(); });
@@ -1712,42 +1723,42 @@ export class Hud {
               'div',
               {},
               h('b', {}, w.name),
-              h('div', { class: 'muted small' }, `${roleDef(w.role).name} · tier ${w.tier}${u?.unlocked ? ` · Lv ${lvl}` : ''}`),
-              h('div', { class: `small codex-status${u?.unlocked ? ' ok' : ''}` }, status),
+              h('div', { class: 'muted small' }, i18nText("ui.tier_3727d897fe", { arg1: roleDef(w.role).name, arg2: w.tier, arg3: u?.unlocked ? i18nText("ui.lv_6dd209682a", { arg1: lvl }) : '' })),
+              h('div', { class: `small codex-status${u?.unlocked ? ' ok' : ''}` }, i18nLabel(status)),
               h('div', { class: 'small' }, h('b', {}, `${w.ability.name}: `), w.ability.text),
-              def ? h('div', { class: 'muted small' }, `${def.air ? 'Flies' : 'Ground'} · range ${def.range} · ${def.housing} space`) : null,
+              def ? h('div', { class: 'muted small' }, i18nText("ui.range_space_cab15814a7", { arg1: def.air ? i18nText("ui.flies_3bbdc6c9fb") : i18nText("ui.ground_151bf49394"), arg2: def.range, arg3: def.housing })) : null,
             ),
           ),
         );
       }
-      if (!shown.length) list.append(h('p', { class: 'muted' }, 'No classes match these filters.'));
+      if (!shown.length) list.append(h('p', { class: 'muted' }, i18nText("ui.no_classes_match_these_filters_b1ef0c3097")));
       body.append(list);
     };
     render();
     const unsub = this.c.subscribe(() => render());
-    this.modal('Warrior Codex', body, [], 'wide', () => unsub());
+    this.modal(i18nText("ui.warrior_codex_931b3f69ae"), body, [], 'wide', () => unsub());
   }
 
   openLeague(): void {
     const s = this.c.state;
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const cur = leagueFor(s.trophies, gd);
     const nxt = nextLeague(s.trophies, gd);
     const body = h(
       'div',
       {},
-      h('p', {}, h('b', {}, cur.name), ` · ${s.trophies} honor`),
-      nxt ? h('p', { class: 'muted' }, `${nxt.min - s.trophies} more honor to reach ${nxt.name}.`) : h('p', { class: 'muted' }, 'You are in the top league!'),
-      h('p', { class: 'muted' }, `Season ends in ${formatDuration(seasonEndsAt(this.c.now()) - this.c.now())}. At the end of each month you get your league's chest, and honor above ${gd.ranks.seasonResetFloor} are halved.`),
-      h('h3', {}, 'League chests (fixed contents)'),
-      h('p', { class: 'muted small' }, `Sized for your Clan Keep level ${hallLevel(s, gd)}. Won attacks also earn the league bonus (all of it at 3 stars, a third per star).`),
+      h('p', {}, h('b', {}, cur.name), i18nText("ui.honor_0c29c8fc2d", { arg1: s.trophies })),
+      nxt ? h('p', { class: 'muted' }, i18nText("ui.more_honor_to_reach_3b60f7cad1", { arg1: nxt.min - s.trophies, arg2: nxt.name })) : h('p', { class: 'muted' }, i18nText("ui.you_are_in_the_top_league_8b390ac669")),
+      h('p', { class: 'muted' }, i18nText("ui.season_ends_in_at_the_end_of_each_mont_c60052cb71", { arg1: formatDuration(seasonEndsAt(this.c.now()) - this.c.now()), arg2: gd.ranks.seasonResetFloor })),
+      h('h3', {}, i18nText("ui.league_chests_fixed_contents_82950a94cd")),
+      h('p', { class: 'muted small' }, i18nText("ui.sized_for_your_clan_keep_level_won_att_efc90477c4", { arg1: hallLevel(s, gd) })),
     );
     for (const l of gd.ranks.leagues) {
-      const bonus = Object.keys(l.winBonus ?? {}).length ? h('div', { class: 'muted small' }, 'Win bonus ', costChips(l.winBonus)) : null;
-      body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, `${l.min}+ honor`), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
+      const bonus = Object.keys(l.winBonus ?? {}).length ? h('div', { class: 'muted small' }, i18nText("ui.win_bonus_76ff020d10"), costChips(l.winBonus)) : null;
+      body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, i18nText("ui.honor_47034117c2", { arg1: l.min })), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
     }
-    body.append(h('p', { class: 'muted small' }, 'Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor bring tougher opponents with more loot.'));
-    this.modal('Honor', body, [], 'normal');
+    body.append(h('p', { class: 'muted small' }, i18nText("ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5")));
+    this.modal(i18nText("ui.honor_22ea092e76"), body, [], 'normal');
   }
 
   openLog(): void {
@@ -1755,16 +1766,16 @@ export class Hud {
     const body = h('div', {});
     const attacks = [...s.battleLog, ...s.defenseLog].sort((a, b) => b.at - a.at);
     // Settle the score (sim/rematch.ts): a recent simulated raider's own base, once, labelled as generated.
-    const answerable = new Set(this.deps.onRematch ? rematchable(s, this.c.now(), this.c.data).map((d) => d.id) : []);
-    if (!attacks.length) body.append(h('p', { class: 'muted' }, 'No battles yet. Tap Attack to raid a neighbouring village!'));
+    const answerable = new Set(this.deps.onRematch ? rematchable(s, this.c.now(), localizedData(this.c.data)).map((d) => d.id) : []);
+    if (!attacks.length) body.append(h('p', { class: 'muted' }, i18nText("ui.no_battles_yet_tap_attack_to_raid_a_ne_5372be52a7")));
     for (const r of attacks) {
       const stars = h('span', { class: 'stars-mini' });
       for (let i = 0; i < 3; i++) stars.append(h('span', { class: i < r.result.stars ? '' : 'off' }, '★'));
       // A replay recorded under older battle rules would show a different fight, so it is not offered.
       const canReplay = replayable(r);
       const replay = canReplay
-        ? h('button', { class: 'btn sky', type: 'button' }, 'Replay')
-        : h('span', { class: 'muted small', title: 'Recorded under older battle rules: the result stands, but the replay would no longer match it.' }, 'Replay unavailable (older rules)');
+        ? h('button', { class: 'btn sky', type: 'button' }, i18nText("ui.replay_c8dae6371b"))
+        : h('span', { class: 'muted small', title: i18nText("ui.recorded_under_older_battle_rules_the__739b854d33") }, i18nText("ui.replay_unavailable_older_rules_708e543064"));
       if (canReplay) replay.addEventListener('click', () => {
         this.closeAllModals();
         this.deps.onReplay(r);
@@ -1772,61 +1783,61 @@ export class Hud {
       // Attacks show what reached storage; old records stored that in result.loot.
       const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
       // A held defense pays a small reward (`banked` on the defense record).
-      const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, 'Held! +', costChips(r.banked)) : null;
+      const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, i18nText("ui.held_f2e1e705b1"), costChips(r.banked)) : null;
       const settle = answerable.has(r.id)
-        ? h('button', { class: 'btn danger', type: 'button', title: `Attack ${r.opponentName}'s own base (a simulated raider): no honor moves`, onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, 'Settle the score')
+        ? h('button', { class: 'btn danger', type: 'button', title: i18nText("ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4", { arg1: r.opponentName }), onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, i18nText("ui.settle_the_score_819ad8b9c9"))
         : null;
       body.append(
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? `You raided ${isolateName(r.opponentName)}${r.setup.base.practice ? ' (practice)' : ''}` : `${isolateName(r.opponentName)}${r.simulated ? ' (simulated raider)' : ''} raided you`), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, `${r.result.destruction}% · ${formatDuration(this.c.now() - r.at)} ago`), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, 'No loot'), held)),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? i18nText("ui.you_raided_b4bf27bb8b", { arg1: isolateName(r.opponentName), arg2: r.setup.base.practice ? i18nLabel(' (practice)') : '' }) : i18nText("ui.raided_you_29f66d0636", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '' })), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, i18nText("ui.ago_ecf7d53ab9", { arg1: r.result.destruction, arg2: formatDuration(this.c.now() - r.at) })), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, i18nText("ui.no_loot_bdac804bb2")), held)),
           h('div', { class: 'row' }, settle, replay),
         ),
       );
     }
-    this.modal('Battle log', body, [], 'wide');
+    this.modal(i18nText("ui.battle_log_f618f95afb"), body, [], 'wide');
   }
 
   // ------------------------------------------------------------ welcome back
 
   showWelcomeBack(s: OfflineSummary, onClose?: () => void): void {
-    const gd = this.c.data;
-    const body = h('div', { class: 'welcome' }, h('p', {}, `You were away for ${formatDuration(s.awayMs)}.`));
+    const gd = localizedData(this.c.data);
+    const body = h('div', { class: 'welcome' }, h('p', {}, i18nText("ui.you_were_away_for_5fad2a7ac4", { arg1: formatDuration(s.awayMs) })));
     const list = h('ul', {});
     for (const f of s.finished) {
       const name = buildingDef(gd, f.type).name;
-      list.append(h('li', {}, f.level === 1 ? `${name} finished building.` : `${name} reached level ${f.level}.`));
+      list.append(h('li', {}, f.level === 1 ? i18nText("ui.finished_building_c35f17b9de", { arg1: name }) : i18nText("ui.reached_level_643665f2d6", { arg1: name, arg2: f.level })));
     }
-    const trained = Object.entries(s.trained).map(([t, n]) => `${n} ${gd.troops[t]?.name ?? t}`).join(', ');
-    if (trained) list.append(h('li', {}, `Finished training: ${trained}.`));
+    const trained = Object.entries(s.trained).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: gd.troops[t]?.name ?? t })).join(', ');
+    if (trained) list.append(h('li', {}, i18nText("ui.finished_training_f0d9a0ead3", { arg1: trained })));
     const gains = RESOURCE_KINDS.filter((k) => (s.collectorGains[k] ?? 0) > 0);
     if (gains.length) {
       list.append(
-        h('li', {}, 'Your collectors gathered ', gains.map((k) => `${formatNumber(s.collectorGains[k]!)} ${RES_LABEL[k]}`).join(' and '), '. Tap the bubbles to collect.'),
+        h('li', {}, i18nText("ui.your_collectors_gathered_55d534315d"), i18nList(gains.map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(s.collectorGains[k]!), arg2: RES_LABEL[k] })), 'conjunction'), i18nText("ui.tap_the_bubbles_to_collect_b67c21d0a9")),
       );
     }
     for (const r of s.raids) {
-      const lost = RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => `${formatNumber(r.result.loot[k]!)} ${RES_LABEL[k]}`).join(' and ');
-      list.append(h('li', {}, `${isolateName(r.opponentName)}${r.simulated ? ' (simulated raider)' : ''} raided you: ${'★'.repeat(r.result.stars)}${'☆'.repeat(3 - r.result.stars)} ${r.result.destruction}%`, lost ? `, took ${lost}` : ', took nothing', r.trophies ? ` (${r.trophies > 0 ? '+' : ''}${r.trophies} honor).` : '.'));
+      const lost = i18nList(RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(r.result.loot[k]!), arg2: RES_LABEL[k] })), 'conjunction');
+      list.append(h('li', {}, i18nText("ui.raided_you_d9e46d7bd1", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '', arg3: '★'.repeat(r.result.stars), arg4: '☆'.repeat(3 - r.result.stars), arg5: r.result.destruction }), lost ? i18nText("ui.took_cc3b25b89b", { arg1: lost }) : i18nText("ui.took_nothing_14469bdaf6"), r.trophies ? i18nText("ui.honor_b338aaea42", { arg1: r.trophies > 0 ? '+' : '', arg2: r.trophies }) : '.'));
     }
-    if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, this.c.data) > 0)) {
-      list.append(h('li', {}, `You have a shield for ${formatDuration(this.c.state.shieldUntil - this.c.now())}.`));
+    if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, localizedData(this.c.data)) > 0)) {
+      list.append(h('li', {}, i18nText("ui.you_have_a_shield_for_3b6f18b25b", { arg1: formatDuration(this.c.state.shieldUntil - this.c.now()) })));
     }
     for (const sr of s.seasons) {
-      list.append(h('li', {}, `The season ended! Your ${this.c.data.ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league} chest: `, costChips(sr.chest), sr.overflow ? h('span', { class: 'muted small' }, ' (did not fit in storage: ', costChips(sr.overflow), ')') : null));
+      list.append(h('li', {}, i18nText("ui.the_season_ended_your_chest_b601d5ff95", { arg1: localizedData(this.c.data).ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league }), costChips(sr.chest), sr.overflow ? h('span', { class: 'muted small' }, i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sr.overflow), ')') : null));
     }
-    if (!list.childElementCount) list.append(h('li', {}, 'All quiet in the village.'));
+    if (!list.childElementCount) list.append(h('li', {}, i18nText("ui.all_quiet_in_the_village_330fd36258")));
     body.append(list);
     if (s.raids.length) {
-      const btn = h('button', { class: 'btn sky', type: 'button' }, 'See defense replays');
+      const btn = h('button', { class: 'btn sky', type: 'button' }, i18nText("ui.see_defense_replays_db4b59b872"));
       btn.addEventListener('click', () => {
         this.closeAllModals();
         this.openLog();
       });
       body.append(h('div', { class: 'actions' }, btn));
     }
-    const close = this.modal('Welcome back!', body, [{ label: 'Great!', primary: true, onClick: () => close() }], 'normal', onClose);
+    const close = this.modal(i18nText("ui.welcome_back_346181d6c9"), body, [{ label: i18nText("ui.great_3765ea1603"), primary: true, onClick: () => close() }], 'normal', onClose);
   }
 
   // ------------------------------------------------------------ settings
@@ -1853,18 +1864,18 @@ export class Hud {
       if (hapticToggle.checked) uiArt.haptic('selection');
     });
     body.append(
-      h('h3', {}, 'Sound'),
-      h('label', { class: 'toggle' }, sfxToggle, ' Sound effects'),
-      h('label', { class: 'toggle' }, musicToggle, ' Music'),
+      h('h3', {}, i18nText("ui.sound_46124e0236")),
+      h('label', { class: 'toggle' }, sfxToggle, i18nText("ui.sound_effects_8ccb83f059")),
+      h('label', { class: 'toggle' }, musicToggle, i18nText("ui.music_93359f51a4")),
     );
-    if (hapticToggle) body.append(h('label', { class: 'toggle' }, hapticToggle, ' Vibration (on phones that support it)'));
+    if (hapticToggle) body.append(h('label', { class: 'toggle' }, hapticToggle, i18nText("ui.vibration_on_phones_that_support_it_3461bfb1b5")));
 
     // Notifications
     const prefs = this.deps.prefs;
     const breakToggle = h('input', { type: 'checkbox', checked: prefs.get('sessionReminder') }) as HTMLInputElement;
     breakToggle.addEventListener('change', () => prefs.set('sessionReminder', breakToggle.checked));
     const remindToggle = h('input', { type: 'checkbox', checked: prefs.get('reminders') }) as HTMLInputElement;
-    const nd = this.c.data.notifications;
+    const nd = localizedData(this.c.data).notifications;
     const typeBox = h('div', { class: 'notify-types' });
     const typeToggles: HTMLInputElement[] = [];
     for (const t of nd.types) {
@@ -1877,7 +1888,7 @@ export class Hud {
       typeBox.append(h('label', { class: 'toggle sub' }, tg, ` ${t.label}`));
     }
     const pad = (n: number) => `${String(n).padStart(2, '0')}:00`;
-    typeBox.append(h('p', { class: 'muted small' }, `At most ${nd.maxPerDay} a day, and none between ${pad(nd.quietHours.start)} and ${pad(nd.quietHours.end)} (they wait until morning).`));
+    typeBox.append(h('p', { class: 'muted small' }, i18nText("ui.at_most_a_day_and_none_between_and_the_8042e6ba31", { arg1: nd.maxPerDay, arg2: pad(nd.quietHours.start), arg3: pad(nd.quietHours.end) })));
     remindToggle.addEventListener('change', () => {
       prefs.set('reminders', remindToggle.checked);
       for (const tg of typeToggles) tg.disabled = !remindToggle.checked;
@@ -1885,17 +1896,17 @@ export class Hud {
       else this.deps.onNotificationsChanged?.();
     });
     body.append(
-      h('h3', {}, 'Notifications and healthy play'),
-      h('label', { class: 'toggle' }, remindToggle, ' Send me notifications (off until you turn it on)'),
+      h('h3', {}, i18nText("ui.notifications_and_healthy_play_a7de3df350")),
+      h('label', { class: 'toggle' }, remindToggle, i18nText("ui.send_me_notifications_off_until_you_tu_aeadb5e927")),
       typeBox,
-      h('label', { class: 'toggle' }, breakToggle, ' Suggest a break after an hour of play'),
-      h('p', { class: 'muted small' }, this.deps.reminderNote),
-      h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, 'Replay the tutorial')),
+      h('label', { class: 'toggle' }, breakToggle, i18nText("ui.suggest_a_break_after_an_hour_of_play_7a4f7f2842")),
+      h('p', { class: 'muted small' }, i18nMessage(this.deps.reminderNote)),
+      h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, i18nText("ui.replay_the_tutorial_fd4b665fc3"))),
     );
 
     // Graphics
     body.append(this.languageRow());
-    body.append(h('h3', {}, 'Graphics'), this.qualityRow());
+    body.append(h('h3', {}, i18nText("ui.graphics_a874fca87c")), this.qualityRow());
 
     // Privacy and help (crash reports are a privacy choice, so they sit here)
     body.append(this.privacySection());
@@ -1905,8 +1916,8 @@ export class Hud {
       const crashToggle = h('input', { type: 'checkbox', checked: prefs.get('crashReports') }) as HTMLInputElement;
       crashToggle.addEventListener('change', () => prefs.set('crashReports', crashToggle.checked));
       body.append(
-        h('label', { class: 'toggle' }, crashToggle, ' Send crash reports (off until you turn it on)'),
-        h('p', { class: 'muted small' }, 'When the game hits an error, it sends the error message, where in the code it happened, the game version and the platform, to help fix it. It does not add your name, Player ID, village or chat, but an error message can sometimes include text the game was working on.'),
+        h('label', { class: 'toggle' }, crashToggle, i18nText("ui.send_crash_reports_off_until_you_turn__1d05349b9a")),
+        h('p', { class: 'muted small' }, i18nText("ui.when_the_game_hits_an_error_it_sends_t_3635ae942b")),
       );
     }
 
@@ -1916,31 +1927,31 @@ export class Hud {
       const statsToggle = h('input', { type: 'checkbox', checked: stats.on }) as HTMLInputElement;
       statsToggle.addEventListener('change', () => void stats.set(statsToggle.checked));
       body.append(
-        h('label', { class: 'toggle' }, statsToggle, ' Share play statistics (off until you turn it on)'),
-        h('p', { class: 'muted small' }, STATS_EXPLAINER),
+        h('label', { class: 'toggle' }, statsToggle, i18nText("ui.share_play_statistics_off_until_you_tu_5b3ea7662c")),
+        h('p', { class: 'muted small' }, i18nLabel(STATS_EXPLAINER)),
       );
     }
 
     // Account: online play, age group and spending
-    body.append(h('h3', { class: 'settings-group' }, 'Account'));
+    body.append(h('h3', { class: 'settings-group' }, i18nText("ui.account_7e1b0d5641")));
     if (!online) body.append(net);
     body.append(this.econ.spendSection());
 
     // Advanced
     const adv = h('div', { class: 'settings-advanced' });
-    body.append(h('h3', { class: 'settings-group' }, 'Advanced'), adv);
+    body.append(h('h3', { class: 'settings-group' }, i18nText("ui.advanced_9f088dbebd")), adv);
 
     // Save transfer
-    const codeBox = h('textarea', { class: 'code', rows: 4, spellcheck: 'false', autocapitalize: 'off', placeholder: 'Paste a save code here to load a village from another device' }) as HTMLTextAreaElement;
+    const codeBox = h('textarea', { class: 'code', rows: 4, spellcheck: 'false', autocapitalize: 'off', placeholder: i18nText("ui.paste_a_save_code_here_to_load_a_villa_214add2875") }) as HTMLTextAreaElement;
     adv.append(
-      h('h4', {}, 'Move your village (save code)'),
-      h('p', { class: 'muted' }, this.deps.store.persistent ? 'Your village saves automatically on this device. To move it to another device, copy a save code here and load it there.' : 'This browser mode cannot save. Your village will be lost when you close the page.'),
+      h('h4', {}, i18nText("ui.move_your_village_save_code_1bdb9c0a9e")),
+      h('p', { class: 'muted' }, this.deps.store.persistent ? i18nText("ui.your_village_saves_automatically_on_th_ac56785b87") : i18nText("ui.this_browser_mode_cannot_save_your_vil_6256737850")),
       codeBox,
       h(
         'div',
         { class: 'actions' },
-        h('button', { class: 'btn', type: 'button', onclick: () => this.exportSave(codeBox) }, 'Copy save code'),
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.importSave(codeBox.value) }, 'Load from code'),
+        h('button', { class: 'btn', type: 'button', onclick: () => this.exportSave(codeBox) }, i18nText("ui.copy_save_code_3ac3ad4d9c")),
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.importSave(codeBox.value) }, i18nText("ui.load_from_code_c70a0d2a2e")),
       ),
     );
 
@@ -1950,37 +1961,37 @@ export class Hud {
     void this.c.backups().then((list) => {
       if (!list.length) return;
       earlier.append(
-        h('h4', {}, 'Earlier villages'),
-        h('p', { class: 'muted small' }, 'Kept when a save could not be read. Restoring one swaps it with your current village, which is kept here instead.'),
-        ...list.map((b) => h('div', { class: 'log-row' }, h('div', {}, h('b', {}, this.backupTitle(b)), h('div', { class: 'muted small' }, new Date(b.savedAt).toLocaleString())), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.restoreVillage(b.key) }, 'Restore'))),
+        h('h4', {}, i18nText("ui.earlier_villages_7e0bb77734")),
+        h('p', { class: 'muted small' }, i18nText("ui.kept_when_a_save_could_not_be_read_res_6e9e245885")),
+        ...list.map((b) => h('div', { class: 'log-row' }, h('div', {}, h('b', {}, this.backupTitle(b)), h('div', { class: 'muted small' }, i18nDate(b.savedAt))), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.restoreVillage(b.key) }, i18nText("ui.restore_a76e13b983")))),
       );
     });
 
     adv.append(this.serverAddressBlock());
 
     // Testing tools: only in the sandbox, which has its own village and never goes online.
-    const offsetText = () => (this.deps.debugTime.offsetMs() ? `Sandbox clock is ${formatDuration(this.deps.debugTime.offsetMs())} ahead of real time.` : 'Sandbox clock matches real time.');
+    const offsetText = () => (this.deps.debugTime.offsetMs() ? i18nText("ui.sandbox_clock_is_ahead_of_real_time_c3954a0322", { arg1: formatDuration(this.deps.debugTime.offsetMs()) }) : i18nText("ui.sandbox_clock_matches_real_time_10a57b19e8"));
     const offsetEl = h('p', { class: 'muted' }, offsetText());
-    const events = h('div', { class: 'events' }, 'Loading…');
+    const events = h('div', { class: 'events' }, i18nText("ui.loading_ba3bbbe10d"));
     if (this.deps.sandbox) {
       adv.append(
-        h('h4', {}, 'Testing tools (sandbox)'),
-        h('p', { class: 'muted' }, 'This is the testing sandbox: a separate practice village with online play off. Skipping time moves the sandbox clock ahead for good; your real village is never affected.'),
+        h('h4', {}, i18nText("ui.testing_tools_sandbox_a72e2ec1a9")),
+        h('p', { class: 'muted' }, i18nText("ui.this_is_the_testing_sandbox_a_separate_9299f41fbf")),
         offsetEl,
         h(
           'div',
           { class: 'actions' },
-          h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.deps.debugTime.skip(3_600_000); offsetEl.textContent = offsetText(); this.c.tick(); this.refresh(); } }, '+1 hour'),
-          h('button', { class: 'btn ghost', type: 'button', onclick: () => this.simulateAway(8) }, 'Simulate 8 hours away'),
-          h('button', { class: 'btn ghost', type: 'button', onclick: () => this.dropShield() }, 'Remove shield'),
+          h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.deps.debugTime.skip(3_600_000); offsetEl.textContent = offsetText(); this.c.tick(); this.refresh(); } }, i18nText("ui.1_hour_dcc1d1ff10")),
+          h('button', { class: 'btn ghost', type: 'button', onclick: () => this.simulateAway(8) }, i18nText("ui.simulate_8_hours_away_c4b7e8050b")),
+          h('button', { class: 'btn ghost', type: 'button', onclick: () => this.dropShield() }, i18nText("ui.remove_shield_9d4fbf6deb")),
         ),
-        h('p', { class: 'muted small' }, 'New villages start with a 24-hour shield. Remove it, then simulate time away, to see raiders attack your village.'),
+        h('p', { class: 'muted small' }, i18nText("ui.new_villages_start_with_a_24_hour_shie_dd66dd89b6")),
       );
     } else {
       adv.append(
-        h('h4', {}, 'Testing tools'),
-        h('p', { class: 'muted small' }, 'Time skips and test purchases live in a separate testing sandbox, so they can never change your real village or online play.'),
-        h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { location.search = '?sandbox'; } }, 'Open the testing sandbox')),
+        h('h4', {}, i18nText("ui.testing_tools_15681283cf")),
+        h('p', { class: 'muted small' }, i18nText("ui.time_skips_and_test_purchases_live_in__32232028f9")),
+        h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { location.search = '?sandbox'; } }, i18nText("ui.open_the_testing_sandbox_d2d1de97c8"))),
       );
     }
 
@@ -1994,23 +2005,23 @@ export class Hud {
         /* ignore */
       }
     });
-    adv.append(h('label', { class: 'toggle' }, fpsToggle, ' Show frame rate (fps)'));
-    adv.append(h('details', {}, h('summary', {}, 'Analytics events (this device)'), events));
+    adv.append(h('label', { class: 'toggle' }, fpsToggle, i18nText("ui.show_frame_rate_fps_04c07d4b90")));
+    adv.append(h('details', {}, h('summary', {}, i18nText("ui.analytics_events_this_device_4fe12a5b11")), events));
     void this.deps.analytics.recent(60).then((list) => {
       clear(events);
-      if (!list.length) events.append('No events yet.');
+      if (!list.length) events.append(i18nText("ui.no_events_yet_80c652c4ee"));
       for (const e of list) {
-        events.append(h('div', { class: 'event' }, h('b', {}, e.name), ` ${new Date(e.at).toLocaleTimeString()} `, h('code', {}, JSON.stringify(e.props))));
+        events.append(h('div', { class: 'event' }, h('b', {}, e.name), ` ${i18nDate(e.at, {timeStyle: 'short'})} `, h('code', {}, JSON.stringify(e.props))));
       }
     });
 
     // Reset
     adv.append(
-      h('h4', {}, 'Start over'),
-      h('div', { class: 'actions' }, h('button', { class: 'btn danger', type: 'button', onclick: () => this.resetVillage() }, 'Start a new village')),
+      h('h4', {}, i18nText("ui.start_over_5eed7e9fc8")),
+      h('div', { class: 'actions' }, h('button', { class: 'btn danger', type: 'button', onclick: () => this.resetVillage() }, i18nText("ui.start_a_new_village_a8dfe0c14d"))),
     );
-    body.append(h('p', { class: 'muted small' }, `Kagemura: Ninja Clans ${this.deps.build.version} · built ${this.deps.build.builtAt}`));
-    this.modal('Settings', body, [], 'wide');
+    body.append(h('p', { class: 'muted small' }, i18nText("ui.kagemura_ninja_clans_built_647b18e769", { arg1: this.deps.build.version, arg2: this.deps.build.builtAt })));
+    this.modal(i18nText("ui.settings_74a883a037"), body, [], 'wide');
   }
 
   /**
@@ -2025,56 +2036,56 @@ export class Hud {
     const now = quality();
     const select = h(
       'select',
-      { class: 'text', 'aria-label': 'Graphics quality' },
+      { class: 'text', 'aria-label': i18nText("ui.graphics_quality_da5eb63952") },
       ...(
         [
-          ['auto', `Automatic (now: ${now.profile === 'low' ? 'lighter' : 'sharp'})`],
+          ['auto', i18nText('ui.automatic_now_9549772afc', {arg1: i18nLabel(now.profile === 'low' ? 'Lighter' : 'Sharp')})],
           ['low', 'Lighter: for older or low-memory phones, saves battery'],
           ['high', 'Sharp: full detail'],
         ] as [QualityChoice, string][]
-      ).map(([v, label]) => h('option', { value: v, ...(getQualityChoice() === v ? { selected: true } : {}) }, label)),
+      ).map(([v, label]) => h('option', { value: v, ...(getQualityChoice() === v ? { selected: true } : {}) }, i18nLabel(label))),
     ) as HTMLSelectElement;
-    const note = h('p', { class: 'muted small' }, `Graphics: ${now.profile === 'low' ? 'lighter' : 'sharp'} (${now.reason}).`);
+    const note = h('p', { class: 'muted small' }, i18nText('common.graphics', {profile: i18nLabel(now.profile === 'low' ? 'Lighter' : 'Sharp')}));
     select.addEventListener('change', () => {
       if (setQualityChoice(select.value as QualityChoice)) {
-        note.textContent = 'Restart the game to apply the new graphics setting.';
-        const restart = h('button', { class: 'btn ghost', type: 'button', onclick: () => location.reload() }, 'Restart now');
+        note.textContent = i18nText("ui.restart_the_game_to_apply_the_new_grap_406b117ecf");
+        const restart = h('button', { class: 'btn ghost', type: 'button', onclick: () => location.reload() }, i18nText("ui.restart_now_09af1002ab"));
         note.append(' ', restart);
       }
     });
-    return h('div', {}, h('label', { class: 'toggle' }, 'Graphics ', select), note);
+    return h('div', {}, h('label', { class: 'toggle' }, i18nText("ui.graphics_8a3477b096"), select), note);
   }
 
   private privacySection(): HTMLElement {
     const env = import.meta.env as Record<string, string | undefined>;
     const native = Capacitor.isNativePlatform();
     const link = (label: string, configured: string | undefined, shipped: string) => {
-      const url = configured?.trim() || shipped;
+      const url = configured?.trim() || (language().code === 'es' ? shipped.replace('./', './es/') : shipped);
       if (native && !/^https?:/i.test(url)) {
-        return h('button', { class: 'btn ghost', type: 'button', onclick: () => this.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, label);
+        return h('button', { class: 'btn ghost', type: 'button', onclick: () => this.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, i18nLabel(label));
       }
-      return h('a', { class: 'btn ghost', href: url, target: '_blank', rel: 'noopener' }, label);
+      return h('a', { class: 'btn ghost', href: url, target: '_blank', rel: 'noopener' }, i18nLabel(label));
     };
     const email = env.VITE_SUPPORT_EMAIL?.trim();
     const serverUrl = this.deps.connection.url;
     const section = h(
       'div',
       { class: 'privacy-links' },
-      h('h3', {}, 'Privacy and help'),
+      h('h3', {}, i18nText("ui.privacy_and_help_f79c2d44d4")),
       h(
         'div',
         { class: 'actions' },
-        link('Privacy policy', env.VITE_PRIVACY_URL, './privacy.html'),
-        link('Support', env.VITE_SUPPORT_URL, './support.html'),
-        link('Community rules', env.VITE_COMMUNITY_URL, './community.html'),
-        link('Terms of service', env.VITE_TERMS_URL, './terms.html'),
-        ...(email ? [h('a', { class: 'btn ghost', href: `mailto:${email}?subject=${encodeURIComponent('Kagemura support')}` }, `Email ${email}`)] : []),
+        link(i18nText("ui.privacy_policy_ba445cff38"), env.VITE_PRIVACY_URL, './privacy.html'),
+        link(i18nText("ui.support_be91940b79"), env.VITE_SUPPORT_URL, './support.html'),
+        link(i18nText("ui.community_rules_1b43c15f41"), env.VITE_COMMUNITY_URL, './community.html'),
+        link(i18nText("ui.terms_of_service_e69e061448"), env.VITE_TERMS_URL, './terms.html'),
+        ...(email ? [h('a', { class: 'btn ghost', href: `mailto:${email}?subject=${encodeURIComponent(i18nText("ui.kagemura_support_af3c907500"))}` }, i18nText("ui.email_df85f7ae02", { arg1: email }))] : []),
       ),
       serverUrl
-        ? h('p', { class: 'muted small' }, 'Delete your online account: Settings → Online play → Account, or on the web: ', h('a', { href: `${serverUrl}/account/delete`, target: '_blank', rel: 'noopener' }, 'account deletion page'), '.')
+        ? h('p', { class: 'muted small' }, i18nText("ui.delete_your_online_account_settings_on_954d6fa1b3"), h('a', { href: `${serverUrl}/account/delete?lang=${language().code}`, target: '_blank', rel: 'noopener' }, i18nText("ui.account_deletion_page_be14847793")), '.')
         : this.deps.connection.storedAccounts().length
-          ? h('p', { class: 'muted small' }, 'Online play is off on this device, but your online account still exists on the server: delete it under Settings → Online play. Your village on this device: "Start a new village" below erases it; uninstalling the app or clearing this site\'s data removes it completely.')
-          : h('p', { class: 'muted small' }, 'There is no online account on this device: your village is kept only here. "Start a new village" below erases it; uninstalling the app or clearing this site\'s data removes it completely.'),
+          ? h('p', { class: 'muted small' }, i18nText("ui.online_play_is_off_on_this_device_but__93e0d7c565"))
+          : h('p', { class: 'muted small' }, i18nText("ui.there_is_no_online_account_on_this_dev_9a43b7dd10")),
     );
     return section;
   }
@@ -2085,38 +2096,38 @@ export class Hud {
     box.value = code;
     box.select();
     this.deps.analytics.log('save_export', { length: code.length });
-    const done = () => this.toast('Save code copied. Paste it on your other device.', 'success');
+    const done = () => this.toast(i18nText("ui.save_code_copied_paste_it_on_your_othe_ead6bb7099"), 'success');
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(code).then(done, () => this.toast('Select the code and copy it.', 'info'));
+      navigator.clipboard.writeText(code).then(done, () => this.toast(i18nText("ui.select_the_code_and_copy_it_3d218c0533"), 'info'));
     } else {
       try {
         document.execCommand('copy');
         done();
       } catch {
-        this.toast('Select the code and copy it.', 'info');
+        this.toast(i18nText("ui.select_the_code_and_copy_it_3d218c0533"), 'info');
       }
     }
   }
 
   private async importSave(code: string): Promise<void> {
     if (!code.trim()) {
-      this.toast('Paste a save code first.', 'info');
+      this.toast(i18nText("ui.paste_a_save_code_first_6aab75d022"), 'info');
       return;
     }
     let village;
     try {
-      village = deserialize(decodeExportCode(code), this.c.data);
+      village = deserialize(decodeExportCode(code), localizedData(this.c.data));
     } catch (e) {
-      this.toast((e as Error).message, 'error');
+      this.toast(i18nMessage((e as Error).message, true), 'error');
       return;
     }
-    const ok = await this.confirm('Load this village?', 'It will replace the village on this device. Copy a save code first if you want to keep this one.', 'Replace village', true);
+    const ok = await this.confirm(i18nText("ui.load_this_village_efcca56459"), i18nText("ui.it_will_replace_the_village_on_this_de_52ab8857c9"), i18nText("ui.replace_village_89575e2f95"), true);
     if (!ok) return;
     await this.c.replace(village);
     this.deps.analytics.log('save_import', {});
     this.closeAllModals();
     this.bus.emit('select', null);
-    this.toast('Village loaded!', 'success');
+    this.toast(i18nText("ui.village_loaded_251aab2ab8"), 'success');
   }
 
   private async simulateAway(hours: number): Promise<void> {
@@ -2127,23 +2138,23 @@ export class Hud {
 
   private async dropShield(): Promise<void> {
     await this.c.replace({ ...this.c.state, shieldUntil: this.c.now() });
-    this.toast('Shield removed. Raiders can now find your village while you are away.', 'info');
+    this.toast(i18nText("ui.shield_removed_raiders_can_now_find_yo_95e6f0db8e"), 'info');
   }
 
   private async resetVillage(): Promise<void> {
-    const ok = await this.confirm('Start a new village?', 'Your current village on this device will be deleted. This cannot be undone.', 'Delete and start over', true);
+    const ok = await this.confirm(i18nText("ui.start_a_new_village_11b2d89b3e"), i18nText("ui.your_current_village_on_this_device_wi_65983b7caa"), i18nText("ui.delete_and_start_over_cf0f7ab70c"), true);
     if (!ok) return;
     await this.c.reset();
     this.closeAllModals();
     this.bus.emit('select', null);
-    this.toast('A fresh village awaits.', 'success');
+    this.toast(i18nText("ui.a_fresh_village_awaits_08f7b7c683"), 'success');
   }
 
   // ------------------------------------------------------------ toasts and modals
 
   toast(text: string, kind: 'info' | 'error' | 'success' = 'info'): void {
     if (kind === 'error') sound.play('error');
-    const t = h('div', { class: `toast ${kind}` }, text);
+    const t = h('div', { class: `toast ${kind}` }, i18nMessage(text));
     this.toasts.append(t);
     while (this.toasts.childElementCount > 3) this.toasts.firstElementChild?.remove();
     window.setTimeout(() => t.classList.add('out'), 2600);
@@ -2152,35 +2163,35 @@ export class Hud {
 
   /** Shadow Trials: the endless practice ladder. Clearly a practice mode, not other players. */
   openTrials(): void {
-    const gd = this.c.data;
+    const gd = localizedData(this.c.data);
     const best = this.c.state.trials.best;
     const next = nextTrialTier(best);
     const info = trialInfo(next, gd, trialVariant(this.c.state.trials, next));
     const alternate = canTryAlternate(this.c.state.trials, gd);
     const body = h('div', {});
     body.append(
-      h('p', {}, 'An endless ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and there is no top.'),
-      h('p', { class: 'muted small' }, `Practice mode: these are generated fortresses, not other players. Clear a tier with ${gd.trials.starsToClear} or more stars to open the next one. Each tier pays its reward once. Warriors you use are spent, as in any raid.`),
+      h('p', {}, i18nText("ui.an_endless_ladder_of_practice_fortress_5c41313067")),
+      h('p', { class: 'muted small' }, i18nText("ui.practice_mode_these_are_generated_fort_420a3ab093", { arg1: gd.trials.starsToClear })),
       h(
         'div',
         { class: 'log-row current' },
         h(
           'div',
           {},
-          h('b', {}, `Tier ${next} · ${info.layout.name}`),
-          h('div', { class: 'muted small' }, `Clan Keep ${info.hall}${info.power > 1 ? ` · defenses ×${info.power < 100 ? info.power.toFixed(2) : formatCompact(Math.round(info.power))}` : ''}${info.modifiers.length ? ` · ${info.modifiers.map((m) => m.name).join(', ')}` : ''}`),
-          h('div', { class: 'small' }, info.layout.tip),
-          ...info.modifiers.map((m) => h('div', { class: 'small' }, `${m.name}: ${m.description}`)),
+          h('b', {}, i18nText("ui.tier_e94add5d59", { arg1: next, arg2: info.layout.name })),
+          h('div', { class: 'muted small' }, i18nText("ui.clan_keep_d38018fadb", { arg1: info.hall, arg2: info.power > 1 ? i18nText("ui.defenses_e685095619", { arg1: info.power < 100 ? info.power.toFixed(2) : formatCompact(Math.round(info.power)) }) : '', arg3: info.modifiers.length ? i18nText("ui.message_c4f174b2a5", { arg1: info.modifiers.map((m) => m.name).join(', ') }) : '' })),
+          h('div', { class: 'small' }, i18nMessage(info.layout.tip)),
+          ...info.modifiers.map((m) => h('div', { class: 'small' }, i18nText("ui.message_d2599d42d8", { arg1: m.name, arg2: m.description }))),
         ),
         h('div', { class: 'cost' }, ...Object.entries(trialReward(next, gd)).map(([k, v]) => h('span', { class: 'chip good' }, icon(icons[k as 'acorns' | 'dew' | 'moonstones']), formatNumber(v ?? 0)))),
       ),
-      h('p', { class: 'muted small' }, best > 0 ? `Best: tier ${best}. You can replay any cleared tier for practice (no reward).` : 'You have not cleared a tier yet.'),
+      h('p', { class: 'muted small' }, best > 0 ? i18nText("ui.best_tier_you_can_replay_any_cleared_t_000ba0e5d5", { arg1: best }) : i18nText("ui.you_have_not_cleared_a_tier_yet_cb231a4e2d")),
     );
-    if (alternate) body.append(h('p', { class: 'note' }, `Stuck on tier ${next}? You can switch it to a different fortress of the same strength and reward (${gd.trials.maxAlternates - (this.c.state.trials.alternate ?? 0)} switches left for this tier, one after each failed attempt).`));
-    const close = this.modal('Shadow Trials', body, [
-      best > 0 && { label: `Replay tier ${best}`, onClick: () => { close(); this.deps.onTrial(best); } },
-      alternate && { label: 'Try a different fortress', onClick: () => { const r = this.c.dispatch({ type: 'trialAlternate' }); close(); if (r.ok) this.openTrials(); else this.toast(r.message, 'error'); } },
-      { label: `Scout tier ${next}`, primary: true, onClick: () => { close(); this.deps.onTrial(next); } },
+    if (alternate) body.append(h('p', { class: 'note' }, i18nText("ui.stuck_on_tier_you_can_switch_it_to_a_d_36ad80b724", { arg1: next, arg2: gd.trials.maxAlternates - (this.c.state.trials.alternate ?? 0) })));
+    const close = this.modal(i18nText("ui.shadow_trials_340bccf3a7"), body, [
+      best > 0 && { label: i18nText("ui.replay_tier_ba6a185124", { arg1: best }), onClick: () => { close(); this.deps.onTrial(best); } },
+      alternate && { label: i18nText("ui.try_a_different_fortress_d0b3ff0e49"), onClick: () => { const r = this.c.dispatch({ type: 'trialAlternate' }); close(); if (r.ok) this.openTrials(); else this.toast(i18nMessage(r.message, true), 'error'); } },
+      { label: i18nText("ui.scout_tier_8fde370df8", { arg1: next }), primary: true, onClick: () => { close(); this.deps.onTrial(next); } },
     ]);
   }
 
@@ -2247,7 +2258,7 @@ export class Hud {
     const panel = h(
       'div',
       { class: `modal ${size}`, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId, tabindex: '-1' },
-      h('div', { class: 'modal-head' }, h('h2', { id: titleId }, title), h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onclick: close }, icon(icons.close))),
+      h('div', { class: 'modal-head' }, h('h2', { id: titleId }, title), h('button', { class: 'icon-btn', type: 'button', 'aria-label': i18nText("ui.close_7d9eb7acb1"), onclick: close }, icon(icons.close))),
       h('div', { class: 'modal-body' }, body),
       footer.childElementCount ? footer : null,
     );
@@ -2285,7 +2296,7 @@ export class Hud {
     for (const close of [...this.openModals]) close();
   }
 
-  confirm(title: string, message: string | HTMLElement, confirmLabel: string, danger = false, cancelLabel = 'Keep it'): Promise<boolean> {
+  confirm(title: string, message: string | HTMLElement, confirmLabel: string, danger = false, cancelLabel = i18nText("ui.keep_it_fdce5da2ce")): Promise<boolean> {
     return new Promise((resolve) => {
       let answer = false;
       const close = this.modal(

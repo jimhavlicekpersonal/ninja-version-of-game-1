@@ -1,0 +1,19 @@
+{
+  "boot.loading": { "en": "Lighting the lanterns…", "text": "Encendiendo los faroles…" },
+  "boot.failureTitle": { "en": "Couldn't load Kagemura", "text": "No se pudo cargar Kagemura" },
+  "boot.retry": { "en": "Retry", "text": "Reintentar" },
+  "boot.slowTitle": { "en": "Still opening your village…", "text": "Seguimos abriendo tu aldea…" },
+  "boot.slowBody": { "en": "This is taking longer than usual. Keep this screen open while your village loads.", "text": "Está tardando más de lo habitual. Mantén esta pantalla abierta mientras se carga tu aldea." },
+  "boot.unsupportedTitle": { "en": "A newer browser is needed", "text": "Necesitas un navegador más reciente" },
+  "boot.unsupportedBody": { "en": "Update your browser or Android System WebView, then try again. Your saved village stays on this device.", "text": "Actualiza tu navegador o Android System WebView y vuelve a intentarlo. Tu aldea guardada seguirá en este dispositivo." },
+  "boot.languageError": { "en": "Your language could not be loaded. Check your connection and try again.", "text": "No se pudo cargar tu idioma. Revisa tu conexión y vuelve a intentarlo." },
+  "common.unknownError": { "en": "The action could not be completed. Please try again.", "text": "No se pudo completar la acción. Inténtalo de nuevo." },
+  "boot.realUnsupported": { "en": "Kagemura needs a newer browser", "text": "Kagemura necesita un navegador más reciente" },
+  "boot.missing": { "en": "This browser is missing: {detail}. Update your phone (iOS 15 or later) or your browser (Chrome, Safari, Edge or Firefox from 2021 or later), then open Kagemura again.", "text": "A este navegador le falta: {detail}. Actualiza tu teléfono (iOS 15 o posterior) o tu navegador (Chrome, Safari, Edge o Firefox de 2021 o posterior) y vuelve a abrir Kagemura." },
+  "boot.realSlow": { "en": "Kagemura is taking a long time to load", "text": "Kagemura está tardando en cargar" },
+  "boot.realSlowBody": { "en": "Nothing has moved for a while. It keeps loading in the background, or you can start again.", "text": "Hace un rato que no hay avances. Sigue cargando en segundo plano; también puedes volver a empezar." },
+  "boot.failureBody": { "en": "Check your connection and try again. Your village is saved on this device.", "text": "Comprueba tu conexión e inténtalo de nuevo. Tu aldea está guardada en este dispositivo." },
+  "boot.retrying": { "en": "Retrying…", "text": "Reintentando…" },
+  "boot.description": { "en": "Kagemura: Ninja Clans. Build a hidden mountain village, train warriors, and raid rival strongholds.", "text": "Kagemura: Ninja Clans. Construye una aldea oculta en las montañas, entrena guerreros y saquea fortalezas rivales." },
+  "boot.pwaDescription": { "en": "Lead a ninja clan: build a hidden mountain village, train warriors, and raid rival strongholds with smoke and sabotage.", "text": "Lidera un clan ninja: construye una aldea oculta en las montañas, entrena guerreros y saquea fortalezas rivales con humo y sabotaje." }
+}

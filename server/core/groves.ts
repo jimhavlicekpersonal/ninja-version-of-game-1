@@ -1,3 +1,4 @@
+import { presetChatId } from '../../src/backend/net/protocol';
 /** Real Groves: membership, filtered chat, troop requests and donations. */
 import { filterText } from '../../src/gameplay/sim/social/grove';
 import { isolateName } from '../../src/gameplay/sim/social/names';
@@ -8,7 +9,7 @@ import { requireRules } from './rules';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { chosenName } from './identity';
 import { blockedIds, checkNotMuted } from './moderation';
-import { checkChatAllowed } from './age';
+import { checkChatAllowed, ageBandOf } from './age';
 import { maxReinforcementAt } from './pvp';
 import { applyServerResult } from './village';
 
@@ -35,7 +36,7 @@ async function requireGrove(ctx: ServerContext, me: Player): Promise<{ grove: Gr
 export { requireGrove };
 
 function chatView(c: ChatRow): ChatView {
-  return { id: c.id, at: c.at, from: c.playerId ? { id: c.playerId, name: c.name ?? 'Friend' } : null, text: c.text, kind: c.kind };
+  return { id: c.id, at: c.at, from: c.playerId ? { id: c.playerId, name: c.name ?? 'Friend' } : null, text: c.text, kind: c.kind, ...(c.presetId === undefined ? {} : {presetId: c.presetId}) };
 }
 
 async function system(ctx: ServerContext, groveId: string, text: string): Promise<void> {
@@ -150,7 +151,7 @@ export async function postChatIn(ctx: ServerContext, me: Player, scopeId: string
   await checkChatAllowed(ctx, me, raw);
   if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');
   // Chat is always filtered (also for players who are not under 18).
-  const row = await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: filterText(raw, ctx.data), kind: 'chat' });
+  const row = await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: filterText(raw, ctx.data), kind: 'chat', ...((await ageBandOf(ctx.repo, me.id)) === 'under13' ? {presetId: presetChatId(String(raw))} : {}) });
   return chatView(row);
 }
 
@@ -214,7 +215,7 @@ export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, 
   // One transaction: the request's room, the gift, and (roadmap step 23) server-held armies on both sides.
   const updated = await ctx.repo.transaction(async (tx) => {
     const filled = await tx.fillRequest(r.id, housing);
-    if (!filled) throw new ApiError(409, 'full', 'That request does not have room for those troops.');
+    if (!filled) throw new ApiError(409, 'full', 'That request does not have room for those warriors.');
     // A donor whose village the server keeps gives warriors from that real army.
     const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'spendDonation', troop: req.troop, count, xp: xpToAlliance ? xp : 0 }, reason: 'donation:sent' }], donationId);
     if (spent && !spent.ok) throw new ApiError(400, 'bad_request', 'Your army on the server does not have those warriors.');

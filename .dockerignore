@@ -5,7 +5,9 @@ android
 ios
 docs
 public
-tools
+tools/*
+!tools/i18n/
+locales/compiled
 tests
 .git
 .github

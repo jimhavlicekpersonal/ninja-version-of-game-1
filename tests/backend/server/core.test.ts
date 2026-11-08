@@ -406,12 +406,13 @@ for (const [label, makeRepo] of repoFactories) {
         await ben.donate(annAsk.id, { troop: 'hedgehog_roller', count: 1, level: 1 });
         // Ann raids Dot; Dot raids Ann.
         w.pastShields();
+        // Ben is not part of either raid. Keep this deletion fixture independent
+        // of PostgreSQL's random opponent order and the rating tie breaker.
+        await w.repo.updatePlayer(ben.id, { shieldUntil: w.now() + HOUR });
         const raid = async (from: typeof ann, target: string) => {
-          for (let i = 0; i < 6; i++) {
-            const m = (await from.match())!;
-            if (m.opponent.name === target) return from.submitAttack({ ticket: m.ticket, seed: await startSeed(from, m.ticket), ...noTroops });
-          }
-          throw new Error(`never matched ${target}`);
+          const m = (await from.match())!;
+          expect(m.opponent).toMatchObject({ kind: 'player', name: target });
+          return from.submitAttack({ ticket: m.ticket, seed: await startSeed(from, m.ticket), ...noTroops });
         };
         await raid(ann, 'Dot');
         await w.repo.updatePlayer(ann.id, { shieldUntil: 0 });

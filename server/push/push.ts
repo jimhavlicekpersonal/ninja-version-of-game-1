@@ -1,3 +1,4 @@
+import { notificationText } from '../localization';
 /**
  * Server-sent push (roadmap step 40): "your village was raided", "warriors
  * arrived", "the Alliance War has started". Each device registers its token
@@ -76,7 +77,7 @@ export class ServerPush implements Pusher {
       else if (inQuietHours(now, t.tzOffsetMinutes, this.o.data)) r = 'quiet';
       else if ((t.day === day ? t.sent : 0) >= this.o.data.notifications.maxPerDay) r = 'limit';
       else {
-        r = await this.o.transport.send(t.platform, t.token, m);
+        r = await this.o.transport.send(t.platform, t.token, { ...m, title: notificationText(m.title, t.locale), body: notificationText(m.body, t.locale) });
         if (r === 'sent') await this.o.repo.countPush(t.token, day);
         if (r === 'invalid') await this.o.repo.removePushToken(t.token);
       }

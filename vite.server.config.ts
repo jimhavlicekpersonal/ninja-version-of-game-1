@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
+import { buildLanguageAssets } from './tools/i18n/build.mjs';
+
+buildLanguageAssets({ serverOnly: true });
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 

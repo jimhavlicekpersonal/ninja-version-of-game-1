@@ -22,7 +22,10 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=')[1] ?? d;
-const out = arg('out', join(ROOT, 'docs/store/screenshots'));
+const language = arg('language', 'en');
+const out = arg('out', join(ROOT, 'docs/store/screenshots', language));
+const strings = JSON.parse(readFileSync(join(ROOT, 'locales', language, 'ui.json'), 'utf8'));
+const label = key => language === 'en' ? strings[key] : strings[key]?.text || strings[key]?.en;
 const dist = arg('dist', join(ROOT, 'dist'));
 if (!existsSync(join(dist, 'index.html'))) {
   console.error('Build the game first: npm run build');
@@ -105,11 +108,11 @@ async function battleShot(page, file) {
   await page.addStyleTag({ content: hideToasts });
   await page.waitForTimeout(3000);
   for (let i = 0; i < 3; i++) await page.keyboard.press('Escape');
-  const attack = page.getByRole('button', { name: 'Attack', exact: true }).first();
+  const attack = page.getByRole('button', { name: label('hud.attack'), exact: true }).first();
   if (!(await attack.count())) return false;
   await attack.click();
   await page.waitForTimeout(2500);
-  const go = page.getByRole('button', { name: 'Attack!' }).first();
+  const go = page.getByRole('button', { name: label('battle.attack') }).first();
   if (!(await go.count())) return false;
   await go.click();
   await page.waitForTimeout(1500);
@@ -148,11 +151,11 @@ async function battleShot(page, file) {
   });
   await page.waitForTimeout(2500);
   await page.screenshot({ path: file });
-  const end = page.getByRole('button', { name: 'End battle' }).first();
+  const end = page.getByRole('button', { name: label('battle.end') }).first();
   if (await end.count()) {
     await end.click().catch(() => undefined);
     await page.waitForTimeout(400);
-    const confirm = page.getByRole('button', { name: /End|Yes|Confirm/ }).last();
+    const confirm = page.locator('.modal-backdrop:last-child .btn.danger').last();
     if (await confirm.count()) await confirm.click().catch(() => undefined);
   }
   await page.waitForTimeout(1500);
@@ -160,17 +163,18 @@ async function battleShot(page, file) {
   return true;
 }
 mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const browser = await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 try {
   for (const d of devices) {
-    const page = await browser.newPage({ viewport: { width: d.width, height: d.height }, deviceScaleFactor: d.scale, isMobile: !d.name.startsWith('ipad'), hasTouch: true });
+    const page = await browser.newPage({ locale: language, viewport: { width: d.width, height: d.height }, deviceScaleFactor: d.scale, isMobile: !d.name.startsWith('ipad'), hasTouch: true });
     // Software WebGL at 3x is slow: give screenshots time.
     page.setDefaultTimeout(120_000);
+    await page.addInitScript(code => localStorage.setItem('tk.lang', code), language);
     await loadVillage(page);
     for (let i = 0; i < 4; i++) await page.keyboard.press('Escape');
     for (const s of screens) {
       if (s.open) {
-        const btn = page.getByRole('button', { name: s.open }).first();
+        const btn = page.locator('[data-id="' + s.open.toLowerCase() + '"]').first();
         if (await btn.count()) await btn.click().catch(() => undefined);
         await page.waitForTimeout(800);
       }

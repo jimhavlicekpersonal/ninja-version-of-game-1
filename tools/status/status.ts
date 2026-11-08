@@ -32,6 +32,10 @@ export function statusMarkdown(): string {
   const languages = (JSON.parse(readFileSync(join(ROOT, 'locales/languages.json'), 'utf8')) as { languages: unknown[] }).languages;
   const uiKeys = Object.keys(JSON.parse(readFileSync(join(ROOT, 'locales/en/ui.json'), 'utf8'))).length;
   const dataKeys = Object.keys(JSON.parse(readFileSync(join(ROOT, 'locales/en/data.json'), 'utf8'))).length;
+  const messageKeys = Object.keys(JSON.parse(readFileSync(join(ROOT, 'locales/en/messages.json'), 'utf8'))).length;
+  const bootKeys = Object.keys(JSON.parse(readFileSync(join(ROOT, 'locales/en/boot.json'), 'utf8'))).length;
+  const pageKeys = Object.keys(JSON.parse(readFileSync(join(ROOT, 'locales/en/pages.json'), 'utf8'))).length;
+  const available = JSON.parse(readFileSync(join(ROOT, 'locales/availability.json'), 'utf8')) as Record<string, { ready: boolean }>;
   const products = Object.keys(defaultData.store.storeProductIds ?? {}).length;
   const heroes = Object.keys(defaultData.battle.heroes ?? {});
   const rows: [string, string][] = [
@@ -46,8 +50,11 @@ export function statusMarkdown(): string {
     ['Keep levels', String(defaultData.hall.levels.length)],
     ['Store products', String(products)],
     ['Languages', `${languages.length} (\`locales/languages.json\`)`],
-    ['Interface strings keyed', `${uiKeys} (\`locales/en/ui.json\`)`],
+    ['Ready languages', Object.entries(available).filter(([, v]) => v.ready).map(([code]) => code).join(', ')],
+    ['Interface, boot and system strings keyed', `${uiKeys + messageKeys + bootKeys} (\`locales/en/{ui,boot,messages}.json\`)`],
     ['Game data strings', `${dataKeys} (\`locales/en/data.json\`)`],
+    ['Public/account page strings', `${pageKeys} (\`locales/en/pages.json\`)`],
+    ['Total translation catalog entries', String(uiKeys + messageKeys + bootKeys + dataKeys + pageKeys)],
     ['Test files', String(countFiles('tests', (n) => /\.test\.ts$/.test(n)))],
   ];
   return [

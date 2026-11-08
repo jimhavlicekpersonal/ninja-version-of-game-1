@@ -1,3 +1,4 @@
+import { sourceText } from '../../../locales/runtime';
 /** Native-only services for the iOS/Android app (Capacitor). */
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
@@ -30,7 +31,7 @@ export class NativeReminders implements ReminderService {
     const notifications = list
       .filter((r) => r.at > now + 5000)
       .slice(0, 20)
-      .map((r) => ({ id: numericId(r.id), title: r.title, body: r.body, schedule: { at: new Date(r.at), allowWhileIdle: true }, isExactNotification: false }));
+      .map((r) => ({ id: numericId(r.id), title: sourceText(r.title), body: sourceText(r.body), schedule: { at: new Date(r.at), allowWhileIdle: true }, isExactNotification: false }));
     if (notifications.length) await LocalNotifications.schedule({ notifications });
   }
 

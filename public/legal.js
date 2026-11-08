@@ -17,11 +17,12 @@
       if (!v) {
         var s = document.createElement('span');
         s.className = 'unset';
-        s.textContent = el.getAttribute('data-unset') || 'not published yet';
+        s.textContent = el.getAttribute('data-unset') || (document.documentElement.lang === 'es' ? 'aún no publicado' : 'not published yet');
         el.appendChild(s);
       } else if (/^[^\s@]+@[^\s@]+$/.test(v) || /^https?:\/\//i.test(v) || /^\.\/[\w.-]+$/.test(v)) {
         var a = document.createElement('a');
         a.href = /^[^\s@]+@[^\s@]+$/.test(v) ? 'mailto:' + v : v;
+        if (key === 'deletionUrl' && document.documentElement.lang === 'es') a.href += (a.href.indexOf('?') < 0 ? '?' : '&') + 'lang=es';
         a.textContent = el.getAttribute('data-label') || v;
         el.appendChild(a);
       } else {

@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "document_type": "spanish_translation_validation",
+  "date": "2026-11-06",
+  "base_ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
+  "state": "uncommitted integration worktree",
+  "environment": {
+    "node": "v24.22.1",
+    "browser": "Chromium /usr/bin/chromium, software WebGL, mobile emulation",
+    "external_database": false,
+    "redis": false,
+    "native_devices": false,
+    "store_console": false
+  },
+  "checks": [
+    {
+      "command": "npm test",
+      "result": "passed",
+      "files_passed": 129,
+      "files_skipped": 1,
+      "tests_passed": 1132,
+      "tests_skipped": 13,
+      "duration_seconds": 263.76,
+      "notes": [
+        "Full suite before final small display refinements; final build, focused tests and browser smoke follow those refinements",
+        "Skipped tests retain their normal external-service/release prerequisites"
+      ]
+    },
+    {
+      "command": "npx vitest run tests/locales/spanish.test.ts tests/presentation/i18n.test.ts tests/backend/server/localization.test.ts tests/backend/server/push.test.ts tests/backend/server/social-push.test.ts tests/backend/pwa/boot.test.ts tests/backend/pwa/serviceWorker.test.ts tests/architecture/boundaries.test.ts",
+      "result": "passed",
+      "files_passed": 8,
+      "tests_passed": 54,
+      "tests_skipped": 1,
+      "duration_seconds": 3.86
+    },
+    {
+      "command": "npm run i18n:check -- es",
+      "result": "passed",
+      "translated": 2962,
+      "total": 2962,
+      "errors": 0,
+      "warnings": 117,
+      "warning_review": "../../../locales/es/REVIEW.json"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "includes": "tsc --noEmit; compact locale generation; production Vite build",
+      "main_chunk": {
+        "path": "index-D5Fk2K54.js",
+        "sha256": "75f695ac2b3509519e1e43c3108d92c1b24f4d265cf374195a7a06920f81bd17",
+        "raw": 1790204,
+        "gzip": 520550,
+        "brotli": 399168
+      }
+    },
+    {
+      "command": "npm run typecheck:server",
+      "result": "passed"
+    },
+    {
+      "command": "npm run server:build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run i18n:smoke",
+      "result": "passed",
+      "details": "browser-es.json",
+      "panels": 12,
+      "mobile_viewports": 5,
+      "build_tapped_at_each_viewport": true,
+      "page_errors": 0,
+      "offline_without_localStorage_pack_cache": true,
+      "selected_language_cache_only": [
+        "/lang/es-2b167174ce7bd967.json"
+      ],
+      "switch_preserves_canonical_building_identity": true,
+      "failed_language_fetch_preserves_preference": true
+    },
+    {
+      "command": "Physical ZIP generation plus independent Python zipfile CRC/content verification",
+      "result": "passed",
+      "details": "zip-es.json",
+      "zip_bytes": 92317
+    }
+  ],
+  "evidence_scope": [
+    "Catalog key/source/ICU/parameter and rich-page token consistency",
+    "Authored Unicode names/chat preserved, marked presets and per-device push localized",
+    "No canonical data or seeded game-state mutation from localization",
+    "Native/store configuration exercised by repository suite, not an installed binary"
+  ],
+  "not_performed": [
+    "PostgreSQL/Redis adapter verification without TEST_DATABASE_URL/TEST_REDIS_URL",
+    "Application of migration 0029 to any external database",
+    "Physical iOS/Android install, native language and OS/provider-owned sheet validation",
+    "Store-console uploads or signed IPA/AAB size measurement",
+    "Human native Spanish linguistic, legal or accessibility review",
+    "Translation or typography/RTL qualification of the other 48 target languages"
+  ],
+  "storage_report": "../SPANISH_SIZE.json",
+  "implementation_inventory": "../SPANISH_IMPLEMENTATION.json"
+}

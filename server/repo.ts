@@ -318,6 +318,7 @@ export interface GroveMember {
 }
 
 export interface ChatRow {
+  presetId?: number;
   /** Increasing per server, used as the chat cursor. */
   seq: number;
   id: string;
@@ -594,6 +595,7 @@ export interface ImportHold {
 
 /** A device that receives server push (roadmap step 40). */
 export interface PushToken {
+  locale?: string;
   token: string;
   playerId: string;
   platform: 'ios' | 'android';

@@ -1,3 +1,4 @@
+import { deviceLocale } from '../../../locales/runtime';
 /**
  * Online play: picks the server, keeps this device's player registered,
  * and brings server results into the village (real raids, donated troops,
@@ -264,9 +265,9 @@ export class Connection {
     }
     const d = await device();
     if (!d) return;
-    const sig = JSON.stringify([d.platform, [...types].sort(), tzOffsetMinutes]);
+    const sig = JSON.stringify([d.platform, [...types].sort(), tzOffsetMinutes, deviceLocale()]);
     if (prev?.token === d.token && prev.sig === sig) return;
-    await this.port.putPushToken({ token: d.token, platform: d.platform, types, tzOffsetMinutes });
+    await this.port.putPushToken({ token: d.token, platform: d.platform, types, tzOffsetMinutes, locale: deviceLocale() });
     this.kv.set(key, JSON.stringify({ token: d.token, sig, types }));
   }
 

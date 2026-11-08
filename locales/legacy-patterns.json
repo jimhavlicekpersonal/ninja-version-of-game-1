@@ -1,0 +1,1867 @@
+[
+  {
+    "key": "ui.message_14677cb26f",
+    "source": "{arg1} {arg2}"
+  },
+  {
+    "key": "ui.warrior_codex_all_classes_03eb859e9c",
+    "source": "Warrior Codex: all {arg1} classes"
+  },
+  {
+    "key": "ui.all_5f0213b783",
+    "source": "All ({arg1})"
+  },
+  {
+    "key": "ui.research_2372f176dd",
+    "source": "Research ({arg1})"
+  },
+  {
+    "key": "ui.unlocked_a4d304f69f",
+    "source": "Unlocked ({arg1})"
+  },
+  {
+    "key": "ui.your_training_dojo_trains_faster_than__0f817a20eb",
+    "source": "Your Training Dojo trains {arg1}× faster than a level 1 Dojo."
+  },
+  {
+    "key": "ui.space_cd35e035c6",
+    "source": "Space {arg1} / {arg2}"
+  },
+  {
+    "key": "ui.training_5a98af7086",
+    "source": "{arg1} training"
+  },
+  {
+    "key": "ui.next_army_1eead92ed4",
+    "source": "{arg1} next army"
+  },
+  {
+    "key": "ui.waiting_4d88af2107",
+    "source": "{arg1} waiting"
+  },
+  {
+    "key": "ui.next_army_6229cadd79",
+    "source": "{arg1} · next army"
+  },
+  {
+    "key": "ui.warriors_56148a7f40",
+    "source": "Warriors: {arg1}"
+  },
+  {
+    "key": "ui.message_c4f174b2a5",
+    "source": " · {arg1}"
+  },
+  {
+    "key": "ui.queued_14e0e4f109",
+    "source": "Queued {arg1} {arg2}."
+  },
+  {
+    "key": "ui.practice_battle_with_a_squad_of_nothin_bcdcdb0816",
+    "source": "Practice battle with a squad of {arg1}: nothing is spent or won"
+  },
+  {
+    "key": "ui.the_missing_and_queue_5af8353596",
+    "source": "the missing {arg1} and queue {arg2} {arg3}"
+  },
+  {
+    "key": "ui.buy_a95681848f",
+    "source": "Buy {arg1}"
+  },
+  {
+    "key": "ui.buy_64fe2149d3",
+    "source": "Buy & {arg1} {arg2} "
+  },
+  {
+    "key": "ui.lv_445f51ab9e",
+    "source": "Lv {arg1}"
+  },
+  {
+    "key": "ui.dismiss_8e63f52b79",
+    "source": "Dismiss {arg1}"
+  },
+  {
+    "key": "ui.message_fb705db4f9",
+    "source": "{arg1} ×{arg2}"
+  },
+  {
+    "key": "ui.message_cf83918ca6",
+    "source": "{arg1} ×{arg2} "
+  },
+  {
+    "key": "ui.can_t_fit_yet_space_free_and_the_small_d08ae53ec8",
+    "source": "{arg1} can't fit yet: {arg2} space free, and the smallest needs {arg3}."
+  },
+  {
+    "key": "ui.can_t_fit_yet_the_squad_courtyards_are_6f165cc3f9",
+    "source": "{arg1} can't fit yet: the Squad Courtyards are full."
+  },
+  {
+    "key": "ui.they_walk_in_by_themselves_after_a_rai_44b4659384",
+    "source": "{arg1} They walk in by themselves after a raid, or when you dismiss warriors."
+  },
+  {
+    "key": "ui.delete_saved_army_8b557a5dd8",
+    "source": "Delete saved army {arg1}"
+  },
+  {
+    "key": "ui.you_can_keep_saved_armies_delete_one_t_8e05eb37ec",
+    "source": "You can keep {arg1} saved armies. Delete one to save this army."
+  },
+  {
+    "key": "ui.cancel_one_68bad9c098",
+    "source": "Cancel one {arg1}"
+  },
+  {
+    "key": "ui.cancel_all_a27367487b",
+    "source": "Cancel all {arg1} {arg2}"
+  },
+  {
+    "key": "ui.cancel_f255be5c54",
+    "source": "Cancel {arg1} {arg2}?"
+  },
+  {
+    "key": "ui.ready_needs_space_66ff28a442",
+    "source": "Ready · needs {arg1} space"
+  },
+  {
+    "key": "ui.queued_more_could_not_be_queued_61c350a031",
+    "source": "Queued {arg1}. {arg2} more could not be queued. {arg3}"
+  },
+  {
+    "key": "ui.courtyard_space_free_cc8f5dedb2",
+    "source": "{arg1}: {arg2} Courtyard space free{arg3}"
+  },
+  {
+    "key": "ui.back_b6a11177c0",
+    "source": ", {arg1} back"
+  },
+  {
+    "key": "ui.they_go_home_for_good_you_get_back_of__78006a5afa",
+    "source": "They go home for good. You get back {arg1}% of their training cost, as far as your storage allows."
+  },
+  {
+    "key": "ui.dismiss_1afe5c883f",
+    "source": "Dismiss {arg1}?"
+  },
+  {
+    "key": "ui.dismiss_all_ed025e80a6",
+    "source": "Dismiss all {arg1}"
+  },
+  {
+    "key": "ui.the_training_dojo_researches_a_higher__86a9e8dcd1",
+    "source": "The Training Dojo researches {arg1} (a higher Clan Keep opens more research lanes). A new level makes every warrior of that kind stronger, and costs a little more to train. Your Clan Keep level sets the highest level."
+  },
+  {
+    "key": "ui.warriors_at_a_time_29a1f7a91f",
+    "source": "{arg1} warriors at a time"
+  },
+  {
+    "key": "ui.level_ab12f81e7d",
+    "source": "{arg1} → level {arg2}"
+  },
+  {
+    "key": "ui.finish_level_now_6451145ae3",
+    "source": "Finish {arg1} level {arg2} now"
+  },
+  {
+    "key": "ui.you_ll_get_back_of_what_you_paid_59199c43a7",
+    "source": "You'll get back {arg1}% of what you paid."
+  },
+  {
+    "key": "ui.the_missing_and_start_level_7ee43d338d",
+    "source": "the missing {arg1} and start {arg2} level {arg3}"
+  },
+  {
+    "key": "ui.lv_99eff11c93",
+    "source": "Lv {arg1} → {arg2}"
+  },
+  {
+    "key": "ui.hp_damage_f5da8dfe3f",
+    "source": "HP {arg1} → {arg2} · Damage {arg3} → {arg4}"
+  },
+  {
+    "key": "ui.replay_attacks_loot_taken_cfa170965c",
+    "source": "Replay: {arg1} attacks · loot taken"
+  },
+  {
+    "key": "ui.vs_2d68ca8191",
+    "source": "{arg1} vs {arg2}"
+  },
+  {
+    "key": "ui.practice_e31f506678",
+    "source": "Practice · {arg1}{arg2} · {arg3}"
+  },
+  {
+    "key": "ui.to_clear_2921e40d70",
+    "source": "{arg1}★ to clear"
+  },
+  {
+    "key": "ui.message_f9da5dafaf",
+    "source": " {arg1} · +{arg2} / −{arg3}"
+  },
+  {
+    "key": "ui.that_path_is_full_each_point_hides_spa_40b30b6db4",
+    "source": "That path is full: each point hides {arg1} space of warriors. Use another point."
+  },
+  {
+    "key": "ui.message_42a16430c0",
+    "source": "{arg1}× {arg2}"
+  },
+  {
+    "key": "ui.walls_b7e7ff287f",
+    "source": "{arg1} walls"
+  },
+  {
+    "key": "ui.each_point_hides_space_of_warriors_so__fb923792c8",
+    "source": "Each point hides {arg1} space of warriors, so split your army into squads. The number on a point is how many defenses cover its path to the Keep; tap one to see the path."
+  },
+  {
+    "key": "ui.led_by_5ac31159c9",
+    "source": "{arg1}, led by {arg2}. "
+  },
+  {
+    "key": "ui.message_eb55276313",
+    "source": ", {arg1}"
+  },
+  {
+    "key": "ui.speed_48c409f269",
+    "source": "Speed {arg1}×"
+  },
+  {
+    "key": "ui.destroyed_788f690ec9",
+    "source": "{arg1}% destroyed"
+  },
+  {
+    "key": "ui.day_d3662af346",
+    "source": "Day {arg1}{arg2}"
+  },
+  {
+    "key": "ui.open_a_chest_each_day_to_climb_missing_86aed20bd2",
+    "source": "Open a chest each day to climb. Missing a day never resets your streak: a free skip covers one missed day a week ({arg1} left this week), and after that you move back one step per missed day."
+  },
+  {
+    "key": "ui.a_free_skip_covered_you_missed_d762c066c0",
+    "source": "A free skip covered {arg1} you missed."
+  },
+  {
+    "key": "ui.days_d7f711040e",
+    "source": "{arg1} days"
+  },
+  {
+    "key": "ui.you_got_16558d9a7d",
+    "source": "You got: {arg1}"
+  },
+  {
+    "key": "ui.chance_715bf06fb1",
+    "source": "Chance: {arg1}"
+  },
+  {
+    "key": "ui.contents_are_sized_for_your_clan_keep__e282ce8f31",
+    "source": "Contents are sized for your Clan Keep level {arg1} and streak day {arg2}. The chest is free and can't be bought or reopened."
+  },
+  {
+    "key": "ui.message_3730dc16f8",
+    "source": "{arg1} – {arg2}"
+  },
+  {
+    "key": "ui.left_4bf724512e",
+    "source": "{arg1} left"
+  },
+  {
+    "key": "ui.in_05653906ff",
+    "source": "in {arg1}"
+  },
+  {
+    "key": "ui.the_bounty_5926de348f",
+    "source": "{arg1}: the bounty"
+  },
+  {
+    "key": "ui.your_best_1a23394f2a",
+    "source": "Your best: {arg1}★ · {arg2}%"
+  },
+  {
+    "key": "ui.left_12f73d4584",
+    "source": "{arg1} · {arg2} left"
+  },
+  {
+    "key": "ui.next_in_ac5ddfc0d1",
+    "source": "Next: {arg1} in {arg2}"
+  },
+  {
+    "key": "ui.test_7394a4113a",
+    "source": "{arg1} (test)"
+  },
+  {
+    "key": "ui.daily_payments_of_jade_claimed_one_a_d_18cf83dd7e",
+    "source": "{arg1}: {arg2} daily payments of {arg3} Jade, claimed one a day when you open the game. It does not renew and nothing is charged again."
+  },
+  {
+    "key": "ui.premium_rewards_and_20_faster_builds_u_f67e337b8e",
+    "source": "{arg1}: premium rewards and 20% faster builds until the season ends ({arg2})."
+  },
+  {
+    "key": "ui.message_463d2c3dd0",
+    "source": ": {arg1}"
+  },
+  {
+    "key": "ui.price_8c7a15f4eb",
+    "source": "{arg1} Price: {arg2}.{arg3}"
+  },
+  {
+    "key": "ui.buy_for_95b444e01e",
+    "source": "Buy for {arg1}"
+  },
+  {
+    "key": "ui.you_are_about_to_spend_of_real_money_m_25c38551fa",
+    "source": "You are about to spend {arg1} of real money. Make sure a parent or guardian says it's OK."
+  },
+  {
+    "key": "ui.costs_jade_and_you_have_a0f0c4813d",
+    "source": "{arg1} costs {arg2} Jade and you have {arg3}."
+  },
+  {
+    "key": "ui.for_jade_e82ccb5ba3",
+    "source": "{arg1} for {arg2} Jade?"
+  },
+  {
+    "key": "ui.spend_f1b31dbc4d",
+    "source": "Spend {arg1}"
+  },
+  {
+    "key": "ui.value_fbc88ed85a",
+    "source": "+{arg1}% value"
+  },
+  {
+    "key": "ui.message_35d1a6271d",
+    "source": "× {arg1}"
+  },
+  {
+    "key": "ui.daily_payments_of_jade_does_not_renew_d5f1666952",
+    "source": "{arg1} daily payments of {arg2} Jade; does not renew."
+  },
+  {
+    "key": "ui.claim_1ad9b1da01",
+    "source": "Claim {arg1}"
+  },
+  {
+    "key": "ui.jade_from_your_clan_stipend_1b4d5ddddd",
+    "source": "+{arg1} Jade from your Clan Stipend."
+  },
+  {
+    "key": "ui.fit_in_your_storage_jade_instead_inclu_aa039ca86b",
+    "source": "{arg1} {arg2} fit in your storage: +{arg3} Jade instead (included above)."
+  },
+  {
+    "key": "ui.the_season_ends_in_404629af61",
+    "source": "the season ends in {arg1}"
+  },
+  {
+    "key": "ui.here_for_back_again_later_5e16f6967c",
+    "source": "Here for {arg1} · back again later"
+  },
+  {
+    "key": "ui.here_for_3b4e450faf",
+    "source": "Here for {arg1}"
+  },
+  {
+    "key": "ui.premium_track_4a4a663105",
+    "source": "{arg1}: premium track"
+  },
+  {
+    "key": "ui.until_the_season_ends_20_faster_builds_428fde58a5",
+    "source": "Until the season ends: 20% faster builds, the {arg1} look and bigger rewards on every tier. Rewards you already earned unlock right away."
+  },
+  {
+    "key": "ui.clan_keep_in_the_look_2f739d685d",
+    "source": "Clan Keep in the {arg1} look"
+  },
+  {
+    "key": "ui.roof_colours_f7a5a7becd",
+    "source": "{arg1} roof colours"
+  },
+  {
+    "key": "ui.reward_45b24062a2",
+    "source": "{arg1} reward"
+  },
+  {
+    "key": "ui.unlocks_at_keep_53e015b015",
+    "source": "Unlocks at Keep {arg1}"
+  },
+  {
+    "key": "ui.purely_visual_19c28485fc",
+    "source": "{arg1} (purely visual)"
+  },
+  {
+    "key": "ui.available_for_you_can_also_find_it_in__a465fd9756",
+    "source": "Available for {arg1}{arg2}. You can also find it in the Store."
+  },
+  {
+    "key": "ui.season_ends_in_complete_tasks_to_earn__300938261c",
+    "source": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers."
+  },
+  {
+    "key": "ui.tier_pts_805378a19e",
+    "source": "Tier {arg1}/{arg2} · {arg3} pts"
+  },
+  {
+    "key": "ui.20_faster_builds_this_season_the_look__36d2b98581",
+    "source": "20% faster builds this season, the {arg1} look, and bigger rewards on every tier."
+  },
+  {
+    "key": "ui.locked_points_when_done_724af3f655",
+    "source": "Locked: {arg1} points when done"
+  },
+  {
+    "key": "ui.tier_more_points_c5379e2fd6",
+    "source": "Tier {arg1}: {arg2} more points"
+  },
+  {
+    "key": "ui.locked_0bac7969d6",
+    "source": "{arg1} (locked)"
+  },
+  {
+    "key": "ui.of_this_reward_will_not_fit_in_your_st_341f12c9a9",
+    "source": "{arg1} of this reward will not fit in your storage and will be lost. Claim it later, after spending some?"
+  },
+  {
+    "key": "ui.this_month_all_time_f59d88ca1e",
+    "source": "This month: {arg1} · All time: {arg2} · {arg3}"
+  },
+  {
+    "key": "ui.age_group_68f7621465",
+    "source": "Age group: {arg1}{arg2}"
+  },
+  {
+    "key": "ui.limit_a_month_in_list_prices_to_change_4f6bc4b210",
+    "source": " (limit {arg1} a month in list prices). To change it, contact support from Settings."
+  },
+  {
+    "key": "ui.can_t_load_your_friends_right_now_3979edbedd",
+    "source": "Can't load your friends right now: {arg1}"
+  },
+  {
+    "key": "ui.requests_fc6d2bd2a0",
+    "source": "Requests ({arg1})"
+  },
+  {
+    "key": "ui.asked_ago_25aaa30a12",
+    "source": "Asked {arg1} ago"
+  },
+  {
+    "key": "ui.you_and_are_friends_52da6d1ce1",
+    "source": "You and {arg1} are friends."
+  },
+  {
+    "key": "ui.friends_7e143b835a",
+    "source": "Friends ({arg1}/{arg2})"
+  },
+  {
+    "key": "ui.expires_in_b1ad314585",
+    "source": "Expires in {arg1}"
+  },
+  {
+    "key": "ui.names_can_use_any_script_up_to_display_1cc9984a44",
+    "source": "Names can use any script, up to {arg1} display units; capitals, spaces, _ and - don't matter. Only exact names are found."
+  },
+  {
+    "key": "ui.copied_fea92fb5ab",
+    "source": "{arg1} copied."
+  },
+  {
+    "key": "ui.add_me_in_kagemura_4b94ebc055",
+    "source": "Add me in Kagemura: {arg1}"
+  },
+  {
+    "key": "ui.clan_keep_2cf84349d4",
+    "source": "Clan Keep {arg1}"
+  },
+  {
+    "key": "ui.league_b3ab5af9ac",
+    "source": "{arg1} league"
+  },
+  {
+    "key": "ui.formerly_46029d3386",
+    "source": " (formerly {arg1})"
+  },
+  {
+    "key": "ui.seen_ago_bb8847742f",
+    "source": "Seen {arg1} ago"
+  },
+  {
+    "key": "ui.duels_you_won_they_won_1f51a0b281",
+    "source": " · duels: you won {arg1}/{arg2}, they won {arg3}/{arg4}"
+  },
+  {
+    "key": "ui.message_784772efcd",
+    "source": "{arg1}★ {arg2}%"
+  },
+  {
+    "key": "ui.won_cf6247318b",
+    "source": "{arg1} won"
+  },
+  {
+    "key": "ui.ends_in_21a1790280",
+    "source": "Ends in {arg1}"
+  },
+  {
+    "key": "ui.vs_f471e2dc90",
+    "source": "vs {arg1}"
+  },
+  {
+    "key": "ui.you_them_a83f03066c",
+    "source": "You {arg1} · them {arg2} · {arg3}"
+  },
+  {
+    "key": "ui.you_dueled_5d407abedb",
+    "source": "You dueled {arg1}"
+  },
+  {
+    "key": "ui.dueled_you_72ccf75d9c",
+    "source": "{arg1} dueled you"
+  },
+  {
+    "key": "ui.ago_92237af6f6",
+    "source": "{arg1}★ {arg2}% · {arg3} ago{arg4}"
+  },
+  {
+    "key": "ui.friend_request_sent_to_e5f21b576f",
+    "source": "Friend request sent to {arg1}."
+  },
+  {
+    "key": "ui.more_for_635cb7ebd9",
+    "source": "More for {arg1}"
+  },
+  {
+    "key": "ui.challenge_sent_to_attack_each_other_wi_40ca8ee168",
+    "source": "Challenge sent to {arg1}: attack each other within 24 hours."
+  },
+  {
+    "key": "ui.remove_3927e8c442",
+    "source": "Remove {arg1}?"
+  },
+  {
+    "key": "ui.is_no_longer_your_friend_60382341dc",
+    "source": "{arg1} is no longer your friend."
+  },
+  {
+    "key": "ui.block_1c07e5a131",
+    "source": "Block {arg1}?"
+  },
+  {
+    "key": "ui.is_blocked_042f7fc41b",
+    "source": "{arg1} is blocked."
+  },
+  {
+    "key": "ui.tell_the_moderators_what_did_0abde97331",
+    "source": "Tell the moderators what {arg1} did."
+  },
+  {
+    "key": "ui.also_block_87576e2627",
+    "source": " Also block {arg1}"
+  },
+  {
+    "key": "ui.report_e70c48c496",
+    "source": "Report {arg1}"
+  },
+  {
+    "key": "ui.friends_from_2a8f6f5f72",
+    "source": "Friends from {arg1}"
+  },
+  {
+    "key": "ui.see_which_of_your_friends_play_kagemur_adafe3ba39",
+    "source": "See which of your {arg1} friends play Kagemura. {arg2} asks you first; the list is checked once and not kept."
+  },
+  {
+    "key": "ui.find_my_friends_974b86f5f1",
+    "source": "Find my {arg1} friends"
+  },
+  {
+    "key": "ui.none_of_your_friends_play_kagemura_yet_266d500cbf",
+    "source": "None of your {arg1} friends play Kagemura yet (or they hide from search)."
+  },
+  {
+    "key": "ui.link_first_settings_online_play_sign_i_fbd954503e",
+    "source": "Link {arg1} first: Settings → Online play → Sign-ins."
+  },
+  {
+    "key": "ui.can_t_load_your_gang_right_now_7df6fda21c",
+    "source": "Can't load your Gang right now: {arg1}"
+  },
+  {
+    "key": "ui.4_members_from_286c8c5db4",
+    "source": "{arg1}/4 members · from {arg2}"
+  },
+  {
+    "key": "ui.you_joined_aa6cc92a8c",
+    "source": "You joined {arg1}."
+  },
+  {
+    "key": "ui.you_left_a_gang_lately_you_can_found_o_fbfb6c47c5",
+    "source": "You left a Gang lately: you can found or join one in {arg1}."
+  },
+  {
+    "key": "ui.members_gang_rating_35d8073dcb",
+    "source": "{arg1}/{arg2} members · Gang Rating {arg3}{arg4}"
+  },
+  {
+    "key": "ui.seen_ago_de6612691c",
+    "source": " · seen {arg1} ago"
+  },
+  {
+    "key": "ui.make_the_leader_070955488c",
+    "source": "Make {arg1} the leader?"
+  },
+  {
+    "key": "ui.leads_the_gang_now_be1c0f505a",
+    "source": "{arg1} leads the Gang now."
+  },
+  {
+    "key": "ui.clan_keep_honor_799290a291",
+    "source": "{arg1} · Clan Keep {arg2} · {arg3} honor{arg4}"
+  },
+  {
+    "key": "ui.invited_28548e5783",
+    "source": "{arg1} (invited)"
+  },
+  {
+    "key": "ui.space_filled_20d9ffb14e",
+    "source": "{arg1}/{arg2} space filled"
+  },
+  {
+    "key": "ui.give_c470198396",
+    "source": "Give {arg1}"
+  },
+  {
+    "key": "ui.report_or_block_b1e0527c7b",
+    "source": "Report or block {arg1}"
+  },
+  {
+    "key": "ui.can_t_load_the_gang_war_f7bc4e6a93",
+    "source": "Can't load the Gang War: {arg1}"
+  },
+  {
+    "key": "ui.looking_for_a_gang_of_c57557b098",
+    "source": "Looking for a Gang of {arg1}…"
+  },
+  {
+    "key": "ui.if_nobody_fits_within_you_ll_face_a_ge_3893e5d9fe",
+    "source": "If nobody fits within {arg1}, you'll face a generated Gang (clearly labelled)."
+  },
+  {
+    "key": "ui.message_81627edc88",
+    "source": "{arg1}★ {arg2}% — {arg3}★ {arg4}%"
+  },
+  {
+    "key": "ui.battle_day_in_e7f5c5d1e2",
+    "source": " · battle day in {arg1}"
+  },
+  {
+    "key": "ui.ends_in_43b4b377c2",
+    "source": " · {arg1} · ends in {arg2}"
+  },
+  {
+    "key": "ui.message_59480bd082",
+    "source": "{arg1}. {arg2}"
+  },
+  {
+    "key": "ui.clan_keep_they_got_8e27e141aa",
+    "source": "Clan Keep {arg1} · they got {arg2} {arg3}%"
+  },
+  {
+    "key": "ui.ago_e411ba9ec3",
+    "source": "{arg1} {arg2} → {arg3}: {arg4} {arg5}%{arg6} · {arg7} ago"
+  },
+  {
+    "key": "ui.clan_keep_best_fc792f1385",
+    "source": "Clan Keep {arg1} · best {arg2} {arg3}%{arg4}{arg5}"
+  },
+  {
+    "key": "ui.vs_to_5f33c739b1",
+    "source": "{arg1} vs {arg2} · {arg3}★ to {arg4}★ · {arg5}"
+  },
+  {
+    "key": "ui.can_t_reach_the_alliance_right_now_d021034fab",
+    "source": "Can't reach the Alliance right now: {arg1}"
+  },
+  {
+    "key": "ui.your_alliance_level_xp_4f21dec979",
+    "source": "{arg1}{arg2} {arg3} · your Alliance level {arg4} ({arg5} XP){arg6}"
+  },
+  {
+    "key": "ui.members_about_honor_0eaa46edd3",
+    "source": "{arg1}/{arg2} members · about {arg3} honor"
+  },
+  {
+    "key": "ui.ago_a5925a6467",
+    "source": "{arg1} ago"
+  },
+  {
+    "key": "ui.donated_warriors_21810510fc",
+    "source": "{arg1}/{arg2} donated warriors"
+  },
+  {
+    "key": "ui.ask_again_in_d02863aa33",
+    "source": "Ask again in {arg1}"
+  },
+  {
+    "key": "ui.donate_b7e819f72b",
+    "source": "Donate {arg1}"
+  },
+  {
+    "key": "ui.clan_keep_03dd7825e4",
+    "source": "{arg1}{arg2} · Clan Keep {arg3}"
+  },
+  {
+    "key": "ui.the_next_alliance_war_starts_in_and_la_db68a4f545",
+    "source": "The next Alliance War starts in {arg1} and lasts {arg2} days. Every member gets {arg3} attacks; the best stars on each enemy base add up, and the Alliance with more stars wins."
+  },
+  {
+    "key": "ui.sized_for_your_clan_keep_level_69566e8c77",
+    "source": "Sized for your Clan Keep level {arg1}."
+  },
+  {
+    "key": "ui.stars_reward_d99d00075f",
+    "source": "{arg1} · {arg2} – {arg3} stars. Reward: "
+  },
+  {
+    "key": "ui.message_00055f19bd",
+    "source": "★ {arg1}"
+  },
+  {
+    "key": "ui.ends_in_you_joined_during_this_raid_so_6fb775721b",
+    "source": "Ends in {arg1} · You joined during this raid, so you can attack from next week."
+  },
+  {
+    "key": "ui.fps_1912a77d6b",
+    "source": "{arg1} fps"
+  },
+  {
+    "key": "ui.events_f1a48ff1d1",
+    "source": "Events: {arg1}"
+  },
+  {
+    "key": "ui.open_find_kagemura_and_tap_update_your_7be21c9d34",
+    "source": "Open {arg1}, find Kagemura and tap Update. Your village is saved on this device and on the server."
+  },
+  {
+    "key": "ui.this_is_a_server_for_testing_villages__7c82ee8a8b",
+    "source": "This is a {arg1} server for testing: villages and purchases here are separate from the real game."
+  },
+  {
+    "key": "ui.clan_keep_67aaca3532",
+    "source": "Clan Keep {arg1}{arg2}"
+  },
+  {
+    "key": "ui.you_are_number_with_power_3a4362c773",
+    "source": "You are number {arg1}, with {arg2} power."
+  },
+  {
+    "key": "ui.you_are_number_9f4194bd6a",
+    "source": "You are number {arg1}."
+  },
+  {
+    "key": "ui.message_5b4e0f8bf8",
+    "source": "{arg1}{arg2} {arg3}"
+  },
+  {
+    "key": "ui.message_cc812bb47e",
+    "source": " {arg1} · {arg2}"
+  },
+  {
+    "key": "ui.the_server_could_not_take_this_village_a7da1f3a5b",
+    "source": "The server could not take this village: {arg1}"
+  },
+  {
+    "key": "ui.link_520c06d5d8",
+    "source": "Link {arg1}"
+  },
+  {
+    "key": "ui.unlinked_f820616007",
+    "source": "{arg1} unlinked."
+  },
+  {
+    "key": "ui.linked_sign_in_with_it_on_another_devi_b6d645bfe5",
+    "source": "{arg1} linked. Sign in with it on another device to play this account there."
+  },
+  {
+    "key": "ui.sign_in_with_b39a564eb7",
+    "source": "Sign in with {arg1}"
+  },
+  {
+    "key": "ui.sign_in_with_58d489b70f",
+    "source": "Sign in with {arg1}?"
+  },
+  {
+    "key": "ui.signed_in_as_baa47e175d",
+    "source": "Signed in as {arg1}."
+  },
+  {
+    "key": "ui.enter_it_with_your_player_id_on_before_9a8fb4c1c5",
+    "source": "Enter it with your Player ID on {arg1} before {arg2}. Keep it private: anyone with it and your Player ID can ask for this account to be deleted. Getting a new code cancels this one."
+  },
+  {
+    "key": "ui.message_d2599d42d8",
+    "source": "{arg1}: {arg2}"
+  },
+  {
+    "key": "ui.your_player_name_shared_base_alliance__b52c6061e4",
+    "source": "Your player name, shared base, Alliance and Gang membership, friends, chat messages and any village kept on {arg1} are deleted from that server now. Online play stays off; your village on this device stays. This cannot be undone."
+  },
+  {
+    "key": "ui.could_not_delete_the_account_77c3c167d5",
+    "source": "Could not delete the account: {arg1}"
+  },
+  {
+    "key": "ui.upgrading_to_lv_98b4ee1616",
+    "source": "Upgrading to Lv {arg1}"
+  },
+  {
+    "key": "ui.ready_7e52cd80b5",
+    "source": "Ready: {arg1} / {arg2}"
+  },
+  {
+    "key": "ui.new_e0f84879f6",
+    "source": "New: {arg1}{arg2}"
+  },
+  {
+    "key": "ui.build_up_to_now_e9422097ce",
+    "source": "{arg1}: build up to {arg2} (now {arg3})"
+  },
+  {
+    "key": "ui.up_to_level_now_60f87e0a6f",
+    "source": "{arg1}: up to level {arg2} (now {arg3})"
+  },
+  {
+    "key": "ui.new_7b1eddb0fc",
+    "source": "new {arg1}"
+  },
+  {
+    "key": "ui.message_308af0994c",
+    "source": "+{arg1} {arg2}"
+  },
+  {
+    "key": "ui.more_fac9b7b214",
+    "source": "{arg1} more"
+  },
+  {
+    "key": "ui.troop_level_0526270e0b",
+    "source": "troop level {arg1}"
+  },
+  {
+    "key": "ui.clan_keep_lv_unlocks_d1e66d048e",
+    "source": "Clan Keep Lv {arg1} unlocks: {arg2}"
+  },
+  {
+    "key": "ui.keep_lv_78a2d3d210",
+    "source": "Keep Lv {arg1}"
+  },
+  {
+    "key": "ui.message_c2bc2bb606",
+    "source": " · {arg1} "
+  },
+  {
+    "key": "ui.upgrading_your_clan_keep_to_level_unlo_635a5be9cb",
+    "source": "Upgrading your Clan Keep to level {arg1} unlocks:"
+  },
+  {
+    "key": "ui.troop_research_up_to_level_now_fe9cb9e940",
+    "source": "Troop research: up to level {arg1} (now {arg2})"
+  },
+  {
+    "key": "ui.level_846c9348a9",
+    "source": "Level {arg1}"
+  },
+  {
+    "key": "ui.holds_55b8fb769a",
+    "source": "Holds {arg1}"
+  },
+  {
+    "key": "ui.stores_62a5714eb2",
+    "source": "Stores {arg1}"
+  },
+  {
+    "key": "ui.houses_55ab67abd5",
+    "source": "Houses {arg1}"
+  },
+  {
+    "key": "ui.damage_sec_0418e5cdfb",
+    "source": "{arg1} damage/sec"
+  },
+  {
+    "key": "ui.range_830739db0a",
+    "source": "Range {arg1}"
+  },
+  {
+    "key": "ui.hp_0c9cb32a1b",
+    "source": "{arg1} HP"
+  },
+  {
+    "key": "ui.what_keep_lv_unlocks_ced96de6b4",
+    "source": "What Keep Lv {arg1} unlocks"
+  },
+  {
+    "key": "ui.finish_now_a84a870c3f",
+    "source": "Finish {arg1} now"
+  },
+  {
+    "key": "ui.buy_the_missing_and_start_the_upgrade_68b76516be",
+    "source": "Buy the missing {arg1} and start the upgrade"
+  },
+  {
+    "key": "ui.clearing_left_dba12b0f3f",
+    "source": "Clearing · {arg1} left"
+  },
+  {
+    "key": "ui.upgrade_to_lv_f98c8c59a3",
+    "source": "Upgrade to Lv {arg1}"
+  },
+  {
+    "key": "ui.build_b4fd48fcd3",
+    "source": "Build {arg1}"
+  },
+  {
+    "key": "ui.build_here_f9878cee7f",
+    "source": "Build {arg1} here"
+  },
+  {
+    "key": "ui.buy_the_missing_and_build_here_c0521572b9",
+    "source": "Buy the missing {arg1} and build {arg2} here"
+  },
+  {
+    "key": "ui.built_999a0a5aa8",
+    "source": "Built {arg1}/{arg2}"
+  },
+  {
+    "key": "ui.a_save_problem_started_you_on_a_new_vi_230b159409",
+    "source": "A save problem started you on a new village, but your earlier one was kept: {arg1}, last saved {arg2}. Restore it now? The village you have now will be kept in Settings."
+  },
+  {
+    "key": "ui.training_dojo_54441bc8cc",
+    "source": "Training Dojo {arg1}"
+  },
+  {
+    "key": "ui.needs_5162618d8e",
+    "source": "Needs {arg1}"
+  },
+  {
+    "key": "ui.of_classes_unlocked_a_class_unlocks_wh_856ddcc6ae",
+    "source": "{arg1} of {arg2} classes unlocked. A class unlocks when your Clan Keep and Training Dojo both reach its level; the ring colour shows the tier."
+  },
+  {
+    "key": "ui.message_6aa36c72d4",
+    "source": "{arg1} ({arg2})."
+  },
+  {
+    "key": "ui.tier_3727d897fe",
+    "source": "{arg1} · tier {arg2}{arg3}"
+  },
+  {
+    "key": "ui.lv_6dd209682a",
+    "source": " · Lv {arg1}"
+  },
+  {
+    "key": "ui.range_space_cab15814a7",
+    "source": "{arg1} · range {arg2} · {arg3} space"
+  },
+  {
+    "key": "ui.honor_0c29c8fc2d",
+    "source": " · {arg1} honor"
+  },
+  {
+    "key": "ui.more_honor_to_reach_3b60f7cad1",
+    "source": "{arg1} more honor to reach {arg2}."
+  },
+  {
+    "key": "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71",
+    "source": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} are halved."
+  },
+  {
+    "key": "ui.sized_for_your_clan_keep_level_won_att_efc90477c4",
+    "source": "Sized for your Clan Keep level {arg1}. Won attacks also earn the league bonus (all of it at 3 stars, a third per star)."
+  },
+  {
+    "key": "ui.honor_47034117c2",
+    "source": "{arg1}+ honor"
+  },
+  {
+    "key": "ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4",
+    "source": "Attack {arg1}'s own base (a simulated raider): no honor moves"
+  },
+  {
+    "key": "ui.you_raided_b4bf27bb8b",
+    "source": "You raided {arg1}{arg2}"
+  },
+  {
+    "key": "ui.raided_you_29f66d0636",
+    "source": "{arg1}{arg2} raided you"
+  },
+  {
+    "key": "ui.ago_ecf7d53ab9",
+    "source": "{arg1}% · {arg2} ago"
+  },
+  {
+    "key": "ui.you_were_away_for_5fad2a7ac4",
+    "source": "You were away for {arg1}."
+  },
+  {
+    "key": "ui.finished_building_c35f17b9de",
+    "source": "{arg1} finished building."
+  },
+  {
+    "key": "ui.reached_level_643665f2d6",
+    "source": "{arg1} reached level {arg2}."
+  },
+  {
+    "key": "ui.finished_training_f0d9a0ead3",
+    "source": "Finished training: {arg1}."
+  },
+  {
+    "key": "ui.raided_you_d9e46d7bd1",
+    "source": "{arg1}{arg2} raided you: {arg3}{arg4} {arg5}%"
+  },
+  {
+    "key": "ui.took_cc3b25b89b",
+    "source": ", took {arg1}"
+  },
+  {
+    "key": "ui.honor_b338aaea42",
+    "source": " ({arg1}{arg2} honor)."
+  },
+  {
+    "key": "ui.you_have_a_shield_for_3b6f18b25b",
+    "source": "You have a shield for {arg1}."
+  },
+  {
+    "key": "ui.the_season_ended_your_chest_b601d5ff95",
+    "source": "The season ended! Your {arg1} chest: "
+  },
+  {
+    "key": "ui.at_most_a_day_and_none_between_and_the_8042e6ba31",
+    "source": "At most {arg1} a day, and none between {arg2} and {arg3} (they wait until morning)."
+  },
+  {
+    "key": "ui.sandbox_clock_is_ahead_of_real_time_c3954a0322",
+    "source": "Sandbox clock is {arg1} ahead of real time."
+  },
+  {
+    "key": "ui.kagemura_ninja_clans_built_647b18e769",
+    "source": "Kagemura: Ninja Clans {arg1} · built {arg2}"
+  },
+  {
+    "key": "ui.automatic_now_9549772afc",
+    "source": "Automatic (now: {arg1})"
+  },
+  {
+    "key": "ui.graphics_3ba7d9e54b",
+    "source": "Graphics: {arg1} ({arg2})."
+  },
+  {
+    "key": "ui.email_df85f7ae02",
+    "source": "Email {arg1}"
+  },
+  {
+    "key": "ui.practice_mode_these_are_generated_fort_420a3ab093",
+    "source": "Practice mode: these are generated fortresses, not other players. Clear a tier with {arg1} or more stars to open the next one. Each tier pays its reward once. Troops you use are spent, as in any raid."
+  },
+  {
+    "key": "ui.tier_e94add5d59",
+    "source": "Tier {arg1} · {arg2}"
+  },
+  {
+    "key": "ui.clan_keep_d38018fadb",
+    "source": "Clan Keep {arg1}{arg2}{arg3}"
+  },
+  {
+    "key": "ui.defenses_e685095619",
+    "source": " · defenses ×{arg1}"
+  },
+  {
+    "key": "ui.best_tier_you_can_replay_any_cleared_t_000ba0e5d5",
+    "source": "Best: tier {arg1}. You can replay any cleared tier for practice (no reward)."
+  },
+  {
+    "key": "ui.stuck_on_tier_you_can_switch_it_to_a_d_36ad80b724",
+    "source": "Stuck on tier {arg1}? You can switch it to a different fortress of the same strength and reward ({arg2} switches left for this tier, one after each failed attempt)."
+  },
+  {
+    "key": "ui.replay_tier_ba6a185124",
+    "source": "Replay tier {arg1}"
+  },
+  {
+    "key": "ui.scout_tier_8fde370df8",
+    "source": "Scout tier {arg1}"
+  },
+  {
+    "key": "ui.your_purchase_been_delivered_6f88dee143",
+    "source": "Your purchase{arg1} been delivered."
+  },
+  {
+    "key": "ui.jade_9ff8af5a0c",
+    "source": "{arg1} Jade"
+  },
+  {
+    "key": "ui.your_village_is_on_the_server_now_coul_42714aac00",
+    "source": "Your village is on the server now. {arg1} could not be matched to a purchase we checked, so it is held for review: contact support from Settings. Your old village is kept as a backup."
+  },
+  {
+    "key": "ui.painting_the_village_6de68dbf99",
+    "source": "Painting the village… {arg1}%"
+  },
+  {
+    "key": "ui.your_on_was_interrupted_and_has_been_p_2998375358",
+    "source": "Your {arg1} on {arg2} was interrupted and has been played out: {arg3}★, {arg4}%. See the battle log."
+  },
+  {
+    "key": "ui.a_backup_was_kept_and_a_new_village_st_6cb7ba05bd",
+    "source": "{arg1} A backup was kept and a new village started."
+  },
+  {
+    "key": "ui.raid_on_confirmed_by_the_server_62aee4a29d",
+    "source": "Raid on {arg1} confirmed by the server{arg2}."
+  },
+  {
+    "key": "ui.the_server_did_not_accept_your_raid_on_844fc2eef5",
+    "source": "The server did not accept your raid on {arg1}. It counts as practice: no loot or honor.{arg2}"
+  },
+  {
+    "key": "ui.your_village_could_not_be_saved_free_s_e56253c28f",
+    "source": "Your village could not be saved ({arg1}). Free some device storage, and copy a save code in Settings to keep it safe."
+  },
+  {
+    "key": "ui.update_kagemura_from_then_open_it_agai_b145c71973",
+    "source": "Update Kagemura from {arg1}, then open it again."
+  },
+  {
+    "key": "ui.outpost_computer_rival_d083ec9214",
+    "source": "{arg1} outpost (computer rival)"
+  },
+  {
+    "key": "ui.outpost_computer_rival_offline_371e2f5807",
+    "source": "{arg1} outpost (computer rival, offline)"
+  },
+  {
+    "key": "ui.generated_ladder_rewards_no_loot_or_ho_2a269c63a6",
+    "source": "{arg1} · generated · ladder rewards, no loot or honor"
+  },
+  {
+    "key": "ui.friendly_duel_with_nothing_spent_or_wo_cc7044d6e7",
+    "source": "Friendly duel with {arg1} (nothing spent or won)"
+  },
+  {
+    "key": "ui.duel_recorded_against_win_in_duel_ad5ab60385",
+    "source": "Duel recorded. Against {arg1}: {arg2} win{arg3} in {arg4} duel{arg5}.",
+    "suffixes": {
+      "arg3": {
+        "count": "arg2",
+        "greaterThanOne": false
+      },
+      "arg5": {
+        "count": "arg4",
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "ui.the_duel_could_not_be_recorded_2b8c3995b6",
+    "source": "The duel could not be recorded: {arg1}"
+  },
+  {
+    "key": "ui.new_bounty_step_reached_the_reward_is__7c76ffd3be",
+    "source": "New bounty step{arg1} reached: the reward is paid once.",
+    "suffixes": {
+      "arg1": {
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "ui.shadow_trial_cleared_trial_is_open_e3b0d0cafa",
+    "source": "Shadow Trial {arg1} cleared! Trial {arg2} is open."
+  },
+  {
+    "key": "ui.not_cleared_you_need_stars_27ca57d98e",
+    "source": "Not cleared: you need {arg1} stars."
+  },
+  {
+    "key": "sim.could_not_read_your_save_0a3fd31a4c",
+    "source": "Could not read your save: {arg1}"
+  },
+  {
+    "key": "sim.message_14677cb26f",
+    "source": "{arg1} {arg2}"
+  },
+  {
+    "key": "sim.just_short_of_the_star_df1739fea0",
+    "source": "Just {arg1}% short of the {arg2}% star."
+  },
+  {
+    "key": "sim.the_clan_keep_had_only_of_its_health_l_b1de1bcaa6",
+    "source": "The Clan Keep had only {arg1}% of its health left."
+  },
+  {
+    "key": "sim.only_buildings_stood_between_you_and_3_533807376a",
+    "source": "Only {arg1} buildings stood between you and 3 stars."
+  },
+  {
+    "key": "sim.unknown_building_type_41ddd459db",
+    "source": "Unknown building type: {arg1}"
+  },
+  {
+    "key": "sim.unknown_troop_type_65c4d6aaae",
+    "source": "Unknown troop type: {arg1}"
+  },
+  {
+    "key": "sim.bounty_s_fortress_fd33bf61a6",
+    "source": "Bounty: {arg1} {arg2}'s fortress"
+  },
+  {
+    "key": "sim.bounty_fortress_7dcd8c9f29",
+    "source": "Bounty fortress ({arg1})"
+  },
+  {
+    "key": "sim.this_season_ends_in_day_too_soon_to_ea_00ed1e3e6a",
+    "source": "This season ends in {arg1} day{arg2}, too soon to earn its rewards. The next Season Scroll goes on sale when it begins.",
+    "suffixes": {
+      "arg2": {
+        "count": "arg1",
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "sim.monthly_spending_limit_of_reached_for__5ea76bb591",
+    "source": "Monthly spending limit of ${arg1} reached for players under 18."
+  },
+  {
+    "key": "sim.s_base_simulated_raider_acb0464ff0",
+    "source": "{arg1}'s base (simulated raider)"
+  },
+  {
+    "key": "sim.cleared_41ed514b2a",
+    "source": "{arg1} cleared"
+  },
+  {
+    "key": "sim.is_built_63452e0dd6",
+    "source": "{arg1} is built!"
+  },
+  {
+    "key": "sim.reached_level_825c1852e9",
+    "source": "{arg1} reached level {arg2}!"
+  },
+  {
+    "key": "sim.level_researched_6b121376d0",
+    "source": "{arg1} level {arg2} researched!"
+  },
+  {
+    "key": "sim.has_started_31f351872f",
+    "source": "{arg1} has started"
+  },
+  {
+    "key": "sim.ends_utc_5598bc85ac",
+    "source": "{arg1} Ends {arg2} UTC."
+  },
+  {
+    "key": "sim.is_fully_researched_89659e1d9d",
+    "source": "{arg1} is fully researched."
+  },
+  {
+    "key": "sim.needs_a_level_clan_keep_81716ecf6c",
+    "source": "Needs a level {arg1} Clan Keep."
+  },
+  {
+    "key": "sim.needs_a_level_training_dojo_e7254df766",
+    "source": "Needs a level {arg1} Training Dojo."
+  },
+  {
+    "key": "sim.upgrade_your_clan_keep_to_level_to_res_0be83b22af",
+    "source": "Upgrade your Clan Keep to level {arg1} to research level {arg2}."
+  },
+  {
+    "key": "sim.is_already_being_researched_29e6b712a1",
+    "source": "{arg1} is already being researched."
+  },
+  {
+    "key": "sim.all_research_lanes_are_busy_0ed1b756f4",
+    "source": "All {arg1} research lanes are busy ({arg2})."
+  },
+  {
+    "key": "sim.the_dojo_is_already_researching_7def1cf982",
+    "source": "The Dojo is already researching {arg1}."
+  },
+  {
+    "key": "sim.message_a30af56805",
+    "source": "{arg1} · {arg2} {arg3}"
+  },
+  {
+    "key": "sim.bad_2b936880e4",
+    "source": "bad {arg1}"
+  },
+  {
+    "key": "sim.unknown_building_eb41d6d2ba",
+    "source": "unknown building {arg1}"
+  },
+  {
+    "key": "sim.duplicate_id_3ff5373cdb",
+    "source": "duplicate id {arg1}"
+  },
+  {
+    "key": "sim.bad_level_on_7e7d90f96a",
+    "source": "bad level on {arg1}"
+  },
+  {
+    "key": "sim.is_off_the_map_cdc2defd1a",
+    "source": "{arg1} is off the map"
+  },
+  {
+    "key": "sim.bad_upgrade_on_9f2e724e5a",
+    "source": "bad upgrade on {arg1}"
+  },
+  {
+    "key": "sim.bad_timer_on_9f8681ed0d",
+    "source": "bad timer on {arg1}"
+  },
+  {
+    "key": "sim.unfinished_with_no_timer_f854b70ddd",
+    "source": "{arg1} unfinished with no timer"
+  },
+  {
+    "key": "sim.collector_mismatch_on_475437d167",
+    "source": "collector mismatch on {arg1}"
+  },
+  {
+    "key": "sim.bad_army_entry_1a3f0c023b",
+    "source": "bad army entry {arg1}"
+  },
+  {
+    "key": "sim.bad_research_level_2c6e6ace3c",
+    "source": "bad research level {arg1}"
+  },
+  {
+    "key": "sim.overlaps_e260081717",
+    "source": "{arg1} overlaps {arg2}"
+  },
+  {
+    "key": "sim.save_data_is_damaged_459f347b4c",
+    "source": "Save data is damaged: {arg1}"
+  },
+  {
+    "key": "sim.could_use_warriors_for_lodge_space_ple_6404243571",
+    "source": "Could use warriors for {arg1} Lodge space, please!"
+  },
+  {
+    "key": "sim.you_joined_829a54399a",
+    "source": "You joined {arg1}!"
+  },
+  {
+    "key": "sim.shadow_trial_938d87026a",
+    "source": "Shadow Trial {arg1}"
+  },
+  {
+    "key": "sim.and_64a2196b3f",
+    "source": "{arg1} and {arg2}"
+  },
+  {
+    "key": "sim.upgrade_your_clan_keep_to_level_to_bui_d6d004cebe",
+    "source": "Upgrade your Clan Keep to level {arg1} to build another {arg2}."
+  },
+  {
+    "key": "sim.your_keep_allows_no_more_of_these_of_ace47bb1da",
+    "source": "Your Keep allows no more of these ({arg1}: {arg2} of {arg3})."
+  },
+  {
+    "key": "sim.needs_jade_5874233e75",
+    "source": "Needs {arg1} Jade."
+  },
+  {
+    "key": "sim.not_enough_resources_needs_69f536b412",
+    "source": "Not enough resources (needs {arg1})."
+  },
+  {
+    "key": "sim.is_already_being_worked_on_fef37f5e37",
+    "source": "{arg1} is already being worked on."
+  },
+  {
+    "key": "sim.cannot_be_upgraded_3d32e46746",
+    "source": "{arg1} cannot be upgraded."
+  },
+  {
+    "key": "sim.is_at_its_highest_level_0a1a3e162b",
+    "source": "{arg1} is at its highest level."
+  },
+  {
+    "key": "sim.upgrade_your_clan_keep_to_level_first_956323f155",
+    "source": "Upgrade your Clan Keep to level {arg1} first."
+  },
+  {
+    "key": "sim.you_can_keep_saved_armies_delete_one_f_7df5cb35eb",
+    "source": "You can keep {arg1} saved armies. Delete one first."
+  },
+  {
+    "key": "sim.this_look_unlocks_at_keep_74f645b096",
+    "source": "This look unlocks at Keep {arg1}."
+  },
+  {
+    "key": "sim.army_39f6873273",
+    "source": "Army {arg1}"
+  },
+  {
+    "key": "sim.next_costs_coins_f379e3f0a4",
+    "source": "Next costs {arg1} coins."
+  },
+  {
+    "key": "sim.clear_shadow_trial_first_b28e3d0796",
+    "source": "Clear Shadow Trial {arg1} first."
+  },
+  {
+    "key": "sim.your_storage_is_full_build_or_upgrade__45e70fa935",
+    "source": "No room for more {arg1}. Upgrade your {arg2} or build another."
+  },
+  {
+    "key": "service.message_3f861f6106",
+    "source": "{arg1}\n{arg2}\n{arg3}\n"
+  },
+  {
+    "key": "service.statistics_server_answered_d04ada046b",
+    "source": "statistics: server answered {arg1}"
+  },
+  {
+    "key": "service.leaves_out_the_main_bundle_s_change_at_0cdf0d8c76",
+    "source": "leaves out the main bundle's change at {arg1}"
+  },
+  {
+    "key": "service.an_experiment_may_change_only_offer_ti_44f9964914",
+    "source": "an experiment may change only offer timing, not {arg1}"
+  },
+  {
+    "key": "service.message_14677cb26f",
+    "source": "{arg1} {arg2}"
+  },
+  {
+    "key": "service.online_play_the_server_refused_a_repor_d1d0472b7c",
+    "source": "Online play: the server refused a {arg1} report ({arg2})"
+  },
+  {
+    "key": "service.could_not_reach_the_server_a0bd836826",
+    "source": "Could not reach the server ({arg1})."
+  },
+  {
+    "key": "service.a_name_can_have_at_most_display_units_5c4d4ede5d",
+    "source": "A name can have at most {arg1} display units."
+  },
+  {
+    "key": "service.this_version_of_kagemura_is_too_old_fo_6154cd508f",
+    "source": "This version of Kagemura ({arg1}) is too old for online play. Update to {arg2} or newer. Your village is safe and still works offline."
+  },
+  {
+    "key": "service.mockpaymentprovider_sold_as_7987bdd8e4",
+    "source": "[MockPaymentProvider] sold {arg1} (${arg2}) as {arg3}"
+  },
+  {
+    "key": "service.you_5aac92b5fc",
+    "source": "{arg1} (you)"
+  },
+  {
+    "key": "service.thanks_a_moderator_will_look_at_it_045d86aa0f",
+    "source": "Thanks. A moderator will look at it.{arg1}"
+  },
+  {
+    "key": "service.you_won_t_see_s_messages_any_more_b91a5f0aa3",
+    "source": " You won't see {arg1}'s messages any more."
+  },
+  {
+    "key": "server.staff_override_46e5889a31",
+    "source": "Staff override: {arg1}"
+  },
+  {
+    "key": "server.bad_amount_for_df6154bd69",
+    "source": "Bad amount for {arg1}."
+  },
+  {
+    "key": "server.your_account_is_suspended_from_online__e4a5544df0",
+    "source": "Your account is suspended from online play until {arg1}. Reason: {arg2}. {arg3}"
+  },
+  {
+    "key": "server.has_no_village_online_yet_82b713a27d",
+    "source": "{arg1} has no village online yet."
+  },
+  {
+    "key": "server.dueled_your_village_f8c5bb9962",
+    "source": "{arg1} dueled your village"
+  },
+  {
+    "key": "server.star_a_friendly_duel_nothing_was_lost__d41290afef",
+    "source": "{arg1} star{arg2}, {arg3}%. A friendly duel: nothing was lost. Watch it in Friends.",
+    "suffixes": {
+      "arg2": {
+        "count": "arg1",
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "server.you_and_already_have_a_challenge_going_70f3e92ae0",
+    "source": "You and {arg1} already have a challenge going."
+  },
+  {
+    "key": "server.challenged_you_to_a_duel_bdffd25571",
+    "source": "{arg1} challenged you to a duel"
+  },
+  {
+    "key": "server.you_have_friends_the_most_you_can_have_f99b240684",
+    "source": "You have {arg1} friends, the most you can have. Remove someone first."
+  },
+  {
+    "key": "server.has_as_many_friends_as_they_can_have_69ef5bf03a",
+    "source": "{arg1} has as many friends as they can have."
+  },
+  {
+    "key": "server.wants_to_be_friends_564bfb8be5",
+    "source": "{arg1} wants to be friends"
+  },
+  {
+    "key": "server.accepted_your_friend_request_6a13194f33",
+    "source": "{arg1} accepted your friend request"
+  },
+  {
+    "key": "server.link_to_your_account_first_settings_on_58c77b6116",
+    "source": "Link {arg1} to your account first (Settings → Online play → Sign-ins)."
+  },
+  {
+    "key": "server.message_14677cb26f",
+    "source": "{arg1} {arg2}"
+  },
+  {
+    "key": "server.faces_minutes_to_prepare_250a4a8477",
+    "source": "{arg1} faces {arg2}. {arg3} minutes to prepare."
+  },
+  {
+    "key": "server.a_gang_war_needs_members_628069dbc9",
+    "source": "A Gang War needs {arg1}-{arg2} members."
+  },
+  {
+    "key": "server.your_village_on_the_server_says_8ed4991644",
+    "source": "Your village on the server says: {arg1}"
+  },
+  {
+    "key": "server.struck_finish_the_base_off_from_where__3c54abd32b",
+    "source": "{arg1} struck {arg2}: {arg3}★ {arg4}%. Finish the base off from where they left it."
+  },
+  {
+    "key": "server.hit_your_war_base_4a4cf621ed",
+    "source": "{arg1} hit your war base: {arg2}★ {arg3}%."
+  },
+  {
+    "key": "server.attack_attacks_each_relay_strikes_star_60fc3391e6",
+    "source": "Attack {arg1}: {arg2} attacks each. Relay strikes start from half your Gang's damage."
+  },
+  {
+    "key": "server.you_still_have_attack_b26363a12b",
+    "source": "You still have {arg1} attack{arg2}.",
+    "suffixes": {
+      "arg2": {
+        "count": "arg1",
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "server.generated_fe9a543765",
+    "source": "{arg1} (generated)"
+  },
+  {
+    "key": "server.your_alliance_faces_use_both_attacks_t_3f3d9600a1",
+    "source": "Your Alliance faces {arg1}. Use both attacks to win the reward chest."
+  },
+  {
+    "key": "server.founded_5b4a3ec320",
+    "source": "{arg1} founded {arg2}!"
+  },
+  {
+    "key": "server.joined_the_alliance_say_hello_df96da1851",
+    "source": "{arg1} joined the Alliance. Say hello!"
+  },
+  {
+    "key": "server.left_the_alliance_643fb03c73",
+    "source": "{arg1} left the Alliance."
+  },
+  {
+    "key": "server.is_the_new_leader_4a32b4f794",
+    "source": "{arg1} is the new leader."
+  },
+  {
+    "key": "server.keep_messages_under_characters_b4020cbccf",
+    "source": "Keep messages under {arg1} characters."
+  },
+  {
+    "key": "server.could_anyone_spare_housing_of_troops_5ab65d4841",
+    "source": "Could anyone spare {arg1} housing of troops?"
+  },
+  {
+    "key": "server.sent_to_09c9252a06",
+    "source": "Sent {arg1} {arg2}{arg3} to {arg4}.",
+    "suffixes": {
+      "arg3": {
+        "count": "arg1",
+        "previous": "arg2",
+        "greaterThanOne": true
+      }
+    }
+  },
+  {
+    "key": "server.sent_you_9cd5b8be71",
+    "source": "{arg1} sent you {arg2} {arg3}{arg4}.",
+    "suffixes": {
+      "arg4": {
+        "count": "arg2",
+        "previous": "arg3",
+        "greaterThanOne": true
+      }
+    }
+  },
+  {
+    "key": "server.this_account_is_suspended_from_online__6672672598",
+    "source": "This account is suspended from online play until {arg1}{arg2}. Your village on this device is not affected. {arg3}"
+  },
+  {
+    "key": "server.message_463d2c3dd0",
+    "source": ": {arg1}"
+  },
+  {
+    "key": "server.more_days_ae16f6d2fb",
+    "source": "{arg1} more days"
+  },
+  {
+    "key": "server.more_hour_30c79f3a88",
+    "source": "{arg1} more hour{arg2}",
+    "suffixes": {
+      "arg2": {
+        "count": "arg1",
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "server.a_moderator_paused_your_chat_for_until_991525853a",
+    "source": "A moderator paused your chat for {arg1} (until {arg2}){arg3}. {arg4}"
+  },
+  {
+    "key": "server.reason_1bb32b9e30",
+    "source": ". Reason: {arg1}"
+  },
+  {
+    "key": "server.if_you_think_this_was_a_mistake_write__ce41cf4a53",
+    "source": "If you think this was a mistake, write to {arg1} with your Player ID (Settings → Online play → Account) and we will look again."
+  },
+  {
+    "key": "server.reason_e6f266b64f",
+    "source": "Reason: {arg1}{arg2}."
+  },
+  {
+    "key": "server.a_moderator_removed_your_chat_message_a6d72c70ba",
+    "source": "A moderator removed your chat message{arg1}. {arg2}"
+  },
+  {
+    "key": "server.the_player_s_chat_was_paused_a20b1a821e",
+    "source": "the player's chat was paused{arg1}."
+  },
+  {
+    "key": "server.a_moderator_paused_your_chat_until_d7cb9ac5ca",
+    "source": "A moderator paused your chat until {arg1}{arg2}. {arg3}"
+  },
+  {
+    "key": "server.and_removed_your_message_3f8db6f953",
+    "source": " and removed your message{arg1}"
+  },
+  {
+    "key": "server.a_chat_message_by_1db88cfba8",
+    "source": "a chat message by {arg1}"
+  },
+  {
+    "key": "server.thanks_we_reviewed_your_report_about_8c1fbb17d7",
+    "source": "Thanks, we reviewed your report about {arg1}: {arg2}"
+  },
+  {
+    "key": "server.you_can_change_your_name_again_on_aac21079e4",
+    "source": "You can change your name again on {arg1}."
+  },
+  {
+    "key": "server.monthly_spending_limit_of_reached_for__3fa6fa24af",
+    "source": "Monthly spending limit of ${arg1} reached for players under 18. Nothing was charged."
+  },
+  {
+    "key": "server.field_not_allowed_3f5d7a5fb1",
+    "source": "field not allowed: {arg1}"
+  },
+  {
+    "key": "server.unknown_building_eb41d6d2ba",
+    "source": "unknown building {arg1}"
+  },
+  {
+    "key": "server.bad_level_on_7e7d90f96a",
+    "source": "bad level on {arg1}"
+  },
+  {
+    "key": "server.too_many_for_keep_686971be16",
+    "source": "too many of {arg1} for Keep {arg2}"
+  },
+  {
+    "key": "server.level_too_high_for_keep_0eaaa3f5f5",
+    "source": "{arg1} level too high for Keep {arg2}"
+  },
+  {
+    "key": "server.your_village_on_the_server_has_fewer_t_5daca30110",
+    "source": "Your village on the server has fewer {arg1} than this battle used."
+  },
+  {
+    "key": "server.raided_your_village_9dc7a746a9",
+    "source": "{arg1} raided your village"
+  },
+  {
+    "key": "server.star_destroyed_see_the_replay_in_your__d4f8bcb4dd",
+    "source": "{arg1} star{arg2}, {arg3}% destroyed. See the replay in your defense log.",
+    "suffixes": {
+      "arg2": {
+        "count": "arg1",
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "server.you_can_found_or_join_a_gang_again_e546685570",
+    "source": "You can found or join a Gang again {arg1}."
+  },
+  {
+    "key": "server.founded_invite_up_to_friends_afc3a9b84f",
+    "source": "{arg1} founded {arg2}. Invite up to {arg3} friends."
+  },
+  {
+    "key": "server.is_already_in_a_gang_bfbe532af7",
+    "source": "{arg1} is already in a Gang."
+  },
+  {
+    "key": "server.a_gang_has_at_most_members_fe38da026e",
+    "source": "A Gang has at most {arg1} members."
+  },
+  {
+    "key": "server.invited_you_to_d7e3f56884",
+    "source": "{arg1} invited you to {arg2}"
+  },
+  {
+    "key": "server.you_can_join_a_gang_again_1e63cde05f",
+    "source": "You can join a Gang again {arg1}."
+  },
+  {
+    "key": "server.joined_the_gang_1745004894",
+    "source": "{arg1} joined the Gang."
+  },
+  {
+    "key": "server.left_the_gang_d589fa28d9",
+    "source": "{arg1} left the Gang."
+  },
+  {
+    "key": "server.leads_the_gang_now_be1c0f505a",
+    "source": "{arg1} leads the Gang now."
+  },
+  {
+    "key": "server.statistics_refused_31b09d77dd",
+    "source": "Statistics refused: {arg1}."
+  },
+  {
+    "key": "server.at_most_commands_at_a_time_1e34002da3",
+    "source": "At most {arg1} commands at a time."
+  },
+  {
+    "key": "server.buildings_2bbb7ef6fa",
+    "source": "Buildings: {arg1}."
+  },
+  {
+    "key": "server.more_than_the_storages_hold_33c283c9c7",
+    "source": "More {arg1} than the storages hold."
+  },
+  {
+    "key": "server.warriors_this_keep_cannot_train_2e68084673",
+    "source": "Warriors this Keep cannot train ({arg1})."
+  },
+  {
+    "key": "server.that_village_could_not_be_read_e7d64cc29c",
+    "source": "That village could not be read: {arg1}"
+  },
+  {
+    "key": "server.this_village_cannot_move_to_the_server_04253ce6ab",
+    "source": "This village cannot move to the server: {arg1}"
+  },
+  {
+    "key": "server.a_village_at_keep_can_move_to_the_serv_94cbdbab85",
+    "source": "A village at Keep {arg1} can move to the server once this online account is {arg2} days old (in {arg3} day{arg4}). It stays on this device meanwhile: keep playing, and the game tries again each day.",
+    "suffixes": {
+      "arg4": {
+        "count": "arg3",
+        "greaterThanOne": false
+      }
+    }
+  },
+  {
+    "key": "common.graphics",
+    "source": "Graphics: {profile}."
+  },
+  {
+    "key": "common.friendlyDuelNote",
+    "source": "Friendly duel with {name}: no warriors were spent and nothing was won."
+  },
+  {
+    "key": "native.products",
+    "source": "Could not load products: {detail}"
+  },
+  {
+    "key": "native.verification",
+    "source": "The purchase could not be verified: {detail}"
+  },
+  {
+    "key": "native.failedDetail",
+    "source": "Purchase failed: {detail}"
+  },
+  {
+    "key": "native.gameCenterFriends",
+    "source": "Game Center did not share your friends: {detail}"
+  },
+  {
+    "key": "native.gameCenterSignIn",
+    "source": "Game Center sign-in did not finish: {detail}"
+  },
+  {
+    "key": "native.billing",
+    "source": "Google Play Billing is not available: {detail}"
+  },
+  {
+    "key": "native.unavailableDetail",
+    "source": "Purchases are not available here: {detail}"
+  },
+  {
+    "key": "native.restore",
+    "source": "Could not ask Google Play for purchases: {detail}"
+  },
+  {
+    "key": "native.finish",
+    "source": "Could not finish the purchase in Google Play: {detail}"
+  },
+  {
+    "key": "native.googleFailed",
+    "source": "Google sign-in did not work{detail}"
+  },
+  {
+    "key": "extra.1630eedd10",
+    "source": "Level {level}!"
+  },
+  {
+    "key": "server.could_anyone_spare_housing_of_troops_5ab65d4841",
+    "source": "Could anyone spare {arg1} housing of warriors?"
+  },
+  {
+    "key": "server.sent_to_09c9252a06",
+    "source": "Sent {arg1} × {arg2} to {arg4}."
+  },
+  {
+    "key": "server.sent_you_9cd5b8be71",
+    "source": "{arg1} sent you {arg2} × {arg3}."
+  }
+]

@@ -10,6 +10,9 @@ const store = read('src/gameplay/data/store.json');
 const offers = read('src/gameplay/data/offers.json');
 const pass = read('src/gameplay/data/pass.json');
 const path = new URL('ios/App/Products.storekit', root);
+const esData = read('locales/es/data.json');
+const shortSpanish = {starter_pack: 'Jade y recursos para nuevos líderes', builder_pack: 'Jade para contratar otro Artesano y recursos', war_prep_pack: 'Provisiones y Jade para la Guerra de Alianzas', rebuild_pack: 'Jade y recursos para reconstruir', keep_pack: 'Recursos y Jade para celebrar tu nueva Fortaleza'};
+const spanish = key => esData[key]?.text || '';
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
 const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i) => {
@@ -30,7 +33,13 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
     displayPrice: usd.toFixed(2),
     familyShareable: false,
     internalID: String(60000001 + i),
-    localizations: [{ description: text.slice(0, 55), displayName: name.slice(0, 30), locale: 'en_US' }],
+    localizations: [
+      { description: text.slice(0, 55), displayName: name.slice(0, 30), locale: 'en_US' },
+      ...['es_ES', 'es_MX'].map(locale => ({
+        displayName: (pack ? spanish(`store.packs.${gameId}.name`) : offer ? spanish(`offers.rules.${offer.id}.title`) : stipend ? spanish('store.stipend.name') : isPass ? `${spanish('pass.name')} prémium` : name).slice(0, 30),
+        description: (pack ? `${pack.moonstones} de Jade` : offer ? (shortSpanish[offer.id] || spanish(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagos diarios de ${stipend.jadePerPayment} de Jade` : 'Senda prémium de esta temporada').slice(0, 55), locale,
+      })),
+    ],
     productID: storeId,
     referenceName: name,
     type: 'Consumable',

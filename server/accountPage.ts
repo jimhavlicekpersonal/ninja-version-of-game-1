@@ -1,3 +1,4 @@
+import spanishPages from '../locales/compiled/pages-es.json';
 /**
  * The web account-deletion page (roadmap step 14), served by the API server at
  * GET /account/delete. Google Play asks for a web link where players can ask
@@ -17,7 +18,8 @@
 
 export const DELETION_PAGE_CSP = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'";
 
-export function deletionPage(): string {
+export function deletionPage(locale = 'en'): string {
+  if (locale === 'es') return spanishPages.account;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -69,11 +71,11 @@ export function deletionPage(): string {
   <ul>
     <li>Your player name and online account, the base you shared for raids, and your village if it is kept on our server.</li>
     <li>Your friends and friend requests, your Gang membership and your linked sign-ins.</li>
-    <li>Raids on your village, your Alliance membership, your chat messages, troop requests and troops sent to you.</li>
+    <li>Raids on your village, your Alliance membership, your chat messages, warrior requests and warriors sent to you.</li>
   </ul>
   <h2>What other players keep</h2>
   <ul>
-    <li>Replays of raids you made stay with the players you raided, shown as "Deleted player". Troops you sent and Alliance War results stay the same way, without your name.</li>
+    <li>Replays of raids you made stay with the players you raided, shown as "Deleted player". Warriors you sent and Alliance War results stay the same way, without your name.</li>
     <li>Copies of your base in other players' recent battles are removed within 30 days.</li>
   </ul>
   <p class="muted">A village saved on your device stays there: to remove it, uninstall the app, or clear the game site's data in your browser. Purchase records are kept without your Player ID, as tax and refund rules require.</p>

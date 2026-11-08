@@ -189,8 +189,9 @@ for (const [label, makeRepo] of repoFactories) {
       await kid.joinGrove(g.id);
       expect(await code(kid.postChat('my address is 1 Main St'))).toBe('age_restricted');
       expect((await kid.postChat(PRESET_CHAT[1])).text).toBe(PRESET_CHAT[1]);
-      // A phrase an older game still offers ("troops" before the remnant audit) is accepted too.
-      expect((await kid.postChat(PRESET_CHAT_RETIRED[0])).text).toBe(PRESET_CHAT_RETIRED[0]);
+      // A phrase an older game still offers ("troops" before the remnant audit) is accepted and stored as the preset it became.
+      const retired = Object.keys(PRESET_CHAT_RETIRED)[0];
+      expect(await kid.postChat(retired)).toMatchObject({ text: retired, presetId: PRESET_CHAT_RETIRED[retired] });
       expect(PRESET_CHAT.some((p) => /troop/i.test(p))).toBe(false);
       expect((await adult.postChat('free text is fine for adults')).text).toContain('free text');
       // Staff reset (after a support check) clears the band.

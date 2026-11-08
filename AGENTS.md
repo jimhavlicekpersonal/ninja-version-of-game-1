@@ -1,5 +1,17 @@
 # Running one AI session per compartment
 
+## Required context: complete translation scope
+
+For localization, player-visible text, language selection or Unicode-name display work, read
+[`docs/localization/README.md`](docs/localization/README.md). It is the AI-readable surface inventory,
+ordered implementation plan and completion criteria; `docs/localization/INVENTORY.json` supplies
+source units and locations. The 659 data + 99 UI keys on its newer-main baseline are only an extracted
+subset, not the entire game. The census is a pinned historical baseline. Spanish implementation, actual shipping bytes,
+and validation are recorded in `docs/localization/SPANISH_IMPLEMENTATION.json`,
+`SPANISH.md` and `SPANISH_SIZE.json`. Only English and Spanish are ready. Preserve
+canonical game/save data and authored names/chat; do not infer worldwide release readiness
+from translation coverage or unit tests.
+
 ## Required context: worldwide release audit
 
 Read [`docs/store/WORLDWIDE_AUDIT.md`](docs/store/WORLDWIDE_AUDIT.md) at the start of every session, including sessions that load only a compartment brief. The owner's goal is worldwide reach, commercial viability, and reliable download, installation and play on inexpensive phones and poor internet connections through the Apple App Store and Google Play.

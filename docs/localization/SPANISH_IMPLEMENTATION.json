@@ -1,0 +1,1110 @@
+{
+  "schema_version": 1,
+  "document_type": "spanish_translation_implementation_inventory",
+  "status": "implemented_in_repo_native_store_release_gates_remain",
+  "language": "es",
+  "dialect": "International Spanish, tú; CLDR es formatting",
+  "base_ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
+  "worktree": "Implementation committed; integrated upstream main before the publication requested by the user. Release validation: evidence/release-integration.json; deployment results: GitHub Actions.",
+  "historical_discovery_inventory": "INVENTORY.json (pinned snapshots, not current file hashes)",
+  "authoritative_sources": {
+    "boot": {
+      "path": "locales/es/boot.json",
+      "sha256": "689ca81719c5e38af323436017f015a8a88dd24478dc3254a40c3b4f8c445867",
+      "total": 17,
+      "translated": 17
+    },
+    "ui": {
+      "path": "locales/es/ui.json",
+      "sha256": "fa13275e63819f7820c2bc501f2290825042bd9d6bd5e5ae103112f9eebb6e9a",
+      "total": 99,
+      "translated": 99
+    },
+    "data": {
+      "path": "locales/es/data.json",
+      "sha256": "7d2f146502090c66a55e98025cf859e5900fe7aa491596d3b0521f57c4ecad62",
+      "total": 669,
+      "translated": 669
+    },
+    "messages": {
+      "path": "locales/es/messages.json",
+      "sha256": "eadf8c48eba29df69f5fe89aa7f5265fa28e22c5cf476254d67ccbf078ec5573",
+      "total": 1863,
+      "translated": 1863
+    },
+    "pages": {
+      "path": "locales/es/pages.json",
+      "sha256": "928ed7309b7bf9bd155cfe5c47b07bd430c992137759ca2760d5639f5ff7bec3",
+      "total": 314,
+      "translated": 314
+    }
+  },
+  "coverage": {
+    "catalogEntries": 2962,
+    "runtimeStrings": 2648,
+    "readyLocales": [
+      "en",
+      "es"
+    ],
+    "untranslatedTargetLanguages": 48,
+    "activationGate": "100% of all English namespaces; no stale, empty or invalid entries",
+    "authoringFilesAreNotShippingPacks": true
+  },
+  "architecture": {
+    "devicePreference": "tk.lang; language is not a gameplay/save field",
+    "gameplay": "Canonical GameData, simulation inputs, resource IDs, state and replay seeds remain unchanged",
+    "ui": "Keyed messages and read-only presentation views",
+    "ownedLegacy": "Canonical English history and server output rendered via explicit legacy pattern registry at owned boundaries",
+    "ugc": "Player names and authored chat are kept literal; only validated presetId/system/bot messages localize",
+    "notifications": "Local reminders translate at delivery; remote push uses each registered token locale",
+    "migration": "server/migrations/0029_localization.sql (optional preset ID; per-device push locale default en)",
+    "native": "All completed compact text packs/pages included in installation; fonts use existing system fallback policy",
+    "web": "Selected language only fetched/cached; boot subset inline; switching preloads before saving preference",
+    "failure": "Localized first-party fallback for unknown provider diagnostics; no arbitrary user text matching"
+  },
+  "scope_exceptions": [
+    "Official brand Kagemura: Ninja Clans and platform brands remain unchanged",
+    "Proper Japanese personal names, Spanish cognates, symbols and units may match English (locales/es/REVIEW.json)",
+    "Actual player names, chat, custom titles, staff-authored explanations, URLs, contact details, IDs, receipt/store-price text remain authored/provider facts",
+    "No recorded dialogue requires dubbing; existing music/effects and brand artwork remain unchanged",
+    "Non-player authenticated staff console and art gallery remain outside the player translation scope"
+  ],
+  "surfaces": [
+    {
+      "id": "S01",
+      "title": "Initial page title, loading slogan/status, no-script and unsupported-browser text, slow-load/retry, failed startup, save rescue before the UI loads",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "index.html",
+        "src/backend/pwa/boot.js",
+        "src/main.ts",
+        "locales/en/boot.json"
+      ],
+      "browserChecks": [
+        "first frame"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S02",
+      "title": "App/PWA name and description, home-screen installation copy and metadata, share previews if introduced",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "public/es/manifest.webmanifest",
+        "index.html",
+        "ios/App/App/Info.plist",
+        "android/app/src/main/res/xml/locales_config.xml"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S03",
+      "title": "Resource names, amounts, capacities, empty/free labels, cost chips, abbreviations, level/housing/range/damage/HP/time units",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/chips.ts",
+        "src/presentation/ui/format.ts",
+        "locales/runtime.ts"
+      ],
+      "browserChecks": [
+        "settings",
+        "army",
+        "build"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S04",
+      "title": "Main navigation, rail, toolbars, tabs, Settings, dialogs, confirmations, buttons, empty/loading/error/busy states, keyboard/camera instructions",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "src/presentation/ui/i18n.ts"
+      ],
+      "browserChecks": [
+        "settings",
+        "army",
+        "build",
+        "store",
+        "daily",
+        "events",
+        "pass",
+        "goals",
+        "alliance",
+        "friends",
+        "trials",
+        "log"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S05",
+      "title": "Building catalog, categories, locked requirements, construction, upgrades, finish/cancel, move/store/sell/clear, builders, walls/decor and obstacle details",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "build"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S06",
+      "title": "Warrior names/descriptions/skills, hero and Codex, role/tier labels, filters, unlock/Keep/Dojo requirements, stats/counters",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/armyUi.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "army"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S07",
+      "title": "Training/research queues, Fill/top-up/skip/cancel, research lanes, dismiss, presets, default preset names and battle-ready validation",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/armyUi.ts"
+      ],
+      "browserChecks": [
+        "army"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S08",
+      "title": "Tutorial/mentor dialog, skip/next/step labels and targets, age form/month names, explanations and validation, community-rules acknowledgement",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/tutorial.ts",
+        "src/presentation/ui/ageScreen.ts",
+        "src/presentation/ui/communityRules.ts"
+      ],
+      "browserChecks": [
+        "tutorial (initial browser pass)"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S09",
+      "title": "Contextual objective chip and notifications question; stats/crash-report consent and explanations; play-break reminders",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "src/main.ts"
+      ],
+      "browserChecks": [
+        "settings"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S10",
+      "title": "Scout/opponent card, Next fee, generated/practice/real-player disclosure, army setup and why Attack is blocked",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/app.ts",
+        "src/presentation/ui/battleHud.ts"
+      ],
+      "browserChecks": [
+        "scout"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S11",
+      "title": "Battle instructions, troop cards, hero ability, smoke/sabotage, point labels/full/locked state, timers, surrender/replay controls, tooltip/aria text",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/battleHud.ts",
+        "src/presentation/render/BattleScene.ts"
+      ],
+      "browserChecks": [
+        "scout"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S12",
+      "title": "Victory/defeat, stars/destruction, loot/overflow/league/event bonuses, pending/practice/settlement, close calls, replay-unavailable, battle/defense log and rematch",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "src/presentation/ui/battleHud.ts",
+        "src/app.ts"
+      ],
+      "browserChecks": [
+        "log"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S13",
+      "title": "Canvas building labels, floating resource amounts, timers, point markers, and any future text painted into assets",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/render/BattleScene.ts",
+        "src/presentation/render/VillageScene.ts"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S14",
+      "title": "Shadow Trials tiers, layout/modifier names, rewards, first-clear/repeat/locked state and strategy details",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "src/app.ts"
+      ],
+      "browserChecks": [
+        "trials"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S15",
+      "title": "Daily chest, odds table, streak/repair, 28-day calendar, dates/day labels, goal/achievement titles and progress",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/dailyUi.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "daily",
+        "goals"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S16",
+      "title": "Season Scroll, free/premium tracks, tasks, reward grants, season ending/expired states",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/economyUi.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "pass"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S17",
+      "title": "Events/schedules, Bounty Hunt/ladder, event reward rules, limited-time availability",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/dailyUi.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "events"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S18",
+      "title": "Shop/products/offers, grant contents, premium/Keep looks, stipend, top-ups, discount/value text, age/spending limits and confirmation",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/economyUi.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "store"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S19",
+      "title": "Price unavailable/not sold, cancellation/pending/approval, failed/retried/unsaved delivery, restoration/refund/debt, storefront notices",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "locales/runtime.ts",
+        "locales/legacy-patterns.json",
+        "src/presentation/ui/economyUi.ts"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    },
+    {
+      "id": "S20",
+      "title": "Device-save failure/conflict/quota, earlier-village restoration, invalid/newer save, copying/loading/exporting codes, restart/update/offline notices",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "src/main.ts",
+        "locales/runtime.ts"
+      ],
+      "browserChecks": [
+        "settings"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S21",
+      "title": "Network status/timeout/retry, server-held migration/import holds and reasons, queued/refused commands, version mismatch and update instructions",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "locales/runtime.ts"
+      ],
+      "browserChecks": [
+        "settings",
+        "friends"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S22",
+      "title": "Sign-in/link/unlink/recovery, Game Center friend permissions, sign out other devices, account deletion/code and privacy settings",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "locales/es/messages.json"
+      ],
+      "browserChecks": [
+        "settings"
+      ],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    },
+    {
+      "id": "S23",
+      "title": "Player-name shape/reserved/taken/too-short/mixed-script/cooldown/hold explanations, suggestions, deleted-player label, staff badge and formerly",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "locales/es/messages.json",
+        "src/presentation/ui/friendsUi.ts"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S24",
+      "title": "Friends search, codes/QR/share invitation text, requests/suggestions/last-online, discovery/privacy, report/block/unblock/remove and platform friends",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/friendsUi.ts"
+      ],
+      "browserChecks": [
+        "friends (disconnected state)"
+      ],
+      "limits": [
+        "Online backend paths have source/unit coverage; no claim of every live-server UI state on physical devices"
+      ]
+    },
+    {
+      "id": "S25",
+      "title": "Friendly Duels/challenges, ready/expired/answered states, scores/results/rivalries and no-reward disclosures",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/friendsUi.ts",
+        "src/app.ts"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Online backend paths have source/unit coverage; no claim of every live-server UI state on physical devices"
+      ]
+    },
+    {
+      "id": "S26",
+      "title": "Alliance find/create/join/leave, member roles/leader changes, troop requests/donations, free-text composer/help, bot labels and bot messages",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/groveUi.ts",
+        "src/backend/social/groveSource.ts"
+      ],
+      "browserChecks": [
+        "alliance"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S27",
+      "title": "Alliance War preparation/battle/results, enemy lists, eligibility, attacks left, chests and disclosures",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/groveUi.ts"
+      ],
+      "browserChecks": [
+        "alliance"
+      ],
+      "limits": [
+        "Online backend paths have source/unit coverage; no claim of every live-server UI state on physical devices"
+      ]
+    },
+    {
+      "id": "S28",
+      "title": "Gang creation/invites/leader/leave/cooldown, members, chat and troop gifts",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/gangUi.ts"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Online backend paths have source/unit coverage; no claim of every live-server UI state on physical devices"
+      ]
+    },
+    {
+      "id": "S29",
+      "title": "Gang War queue/prep/day, solo/relay, targets/locks/carry-over, generated rivals, remaining attacks, outcomes/chests",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/gangWarUi.ts"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Online backend paths have source/unit coverage; no claim of every live-server UI state on physical devices"
+      ]
+    },
+    {
+      "id": "S30",
+      "title": "Honor/Power rankings, league labels, ranks, season resets, promoted/demoted/reward and computer-player labels",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "goals"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S31",
+      "title": "Generated place/person/Alliance name parts, rival clan/leader names and bios; preserved actual player-chosen names",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/i18n.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "alliance",
+        "scout"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S32",
+      "title": "Fixed under-13 chat phrases, sent/incoming canned messages, contact-removal markers",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/ageScreen.ts",
+        "src/presentation/ui/i18n.ts",
+        "server/core/groves.ts",
+        "server/pgRepo.ts",
+        "server/migrations/0029_localization.sql"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S33",
+      "title": "Reporting reason labels/forms, block results, notices/inbox, mute/suspension/deletion/report-outcome/appeal text and dates",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/groveUi.ts",
+        "src/presentation/ui/friendsUi.ts",
+        "src/presentation/ui/hud.ts",
+        "locales/runtime.ts"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Online backend paths have source/unit coverage; no claim of every live-server UI state on physical devices"
+      ]
+    },
+    {
+      "id": "S34",
+      "title": "Local notification title/body for construction, clearing, research, army, collectors, shield, daily chest, events and Alliance War",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/backend/platform/native.ts",
+        "src/backend/platform/reminders.ts",
+        "locales/runtime.ts"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    },
+    {
+      "id": "S35",
+      "title": "Server push for raids, donations, Alliance War, friends/duels, Gang invitations and all Gang War states",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "server/core/pushTokens.ts",
+        "server/push/push.ts",
+        "server/localization.ts",
+        "src/backend/net/connection.ts",
+        "server/migrations/0029_localization.sql"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    },
+    {
+      "id": "S36",
+      "title": "Notification switch labels/quiet hours, OS channel name/description if created, permission pre-explanations and denied state",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui/hud.ts",
+        "locales/es/data.json"
+      ],
+      "browserChecks": [
+        "settings"
+      ],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    },
+    {
+      "id": "S37",
+      "title": "Privacy/support/community/terms navigation, all page prose, fallback/unpublished notices, mail/link labels and configured facts",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "public/es/privacy.html",
+        "public/es/support.html",
+        "public/es/community.html",
+        "public/es/terms.html",
+        "public/legal.js"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Publisher facts and legal adoption retain their original pending/draft state"
+      ]
+    },
+    {
+      "id": "S38",
+      "title": "Japanese commerce/prepaid notices, references from shop/support and storefront-specific disclosure",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "public/es/tokushoho.html",
+        "public/es/shikin-kessai.html"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Publisher facts and legal adoption retain their original pending/draft state"
+      ]
+    },
+    {
+      "id": "S39",
+      "title": "Standalone web deletion page, fields/help/validation, success/reference, network errors and accessibility",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "server/accountPage.ts",
+        "server/app.ts",
+        "tools/i18n/pages.mjs"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Publisher facts and legal adoption retain their original pending/draft state"
+      ]
+    },
+    {
+      "id": "S40",
+      "title": "First-party native auth/billing/age messages and fallback errors, launch-storyboard text, app display labels",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "ios/App/App/es.lproj/InfoPlist.strings",
+        "ios/App/App/Info.plist",
+        "ios/App/App.xcodeproj/project.pbxproj",
+        "android/app/src/main/res/values-es/strings.xml",
+        "locales/es/messages.json"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    },
+    {
+      "id": "S41",
+      "title": "Store-controlled purchase/auth/permissions/age/Game Center sheets, product display names/descriptions and localized prices",
+      "status": "product_copy_prepared_platform_validation_pending",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "ios/App/Products.storekit",
+        "docs/store/es/PRODUCTS.json"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    },
+    {
+      "id": "S42",
+      "title": "App Store/Play title, subtitle, short/long/promotional description, keywords, release notes, support/policy links and product copy",
+      "status": "prepared_publication_pending",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "docs/store/es/LISTING.md",
+        "docs/store/es/PRODUCTS.json"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S43",
+      "title": "Screenshot UI/captions, feature graphic/preview, icon/splash/logo/tagline, future landing/share metadata, image alt/title and audible wording",
+      "status": "prepared_publication_pending",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "tools/store/screenshots.mjs",
+        "tools/i18n/smoke.mjs"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S44",
+      "title": "Accessible names, descriptions, tooltips, placeholders, dialog names, live regions, canvas fallback description, directional glyphs",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/presentation/ui",
+        "public/es",
+        "tools/i18n/smoke.mjs"
+      ],
+      "browserChecks": [
+        "all panels"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S45",
+      "title": "Saved battle notes, chat/system history, inbox, ledger reasons, exports and older-version replay descriptions",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "locales/legacy-patterns.json",
+        "locales/message-parameters.json",
+        "locales/runtime.ts"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S46",
+      "title": "Player-accessible sandbox/debug notices and time-skip/test-store explanations, including public query-string entry points",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "src/main.ts",
+        "src/presentation/ui/hud.ts",
+        "src/presentation/ui/economyUi.ts"
+      ],
+      "browserChecks": [
+        "settings",
+        "store"
+      ],
+      "limits": []
+    },
+    {
+      "id": "S47",
+      "title": "Developer-only gallery controls and authenticated staff/admin console",
+      "status": "excluded_non_player",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "docs/localization/README.md"
+      ],
+      "browserChecks": [],
+      "limits": []
+    },
+    {
+      "id": "S48",
+      "title": "Browser form validation, framework-generated HTTP/schema errors, clipboard/share/install/permission sheets and third-party failure text",
+      "status": "implemented",
+      "catalogs": [
+        "boot",
+        "ui",
+        "data",
+        "messages",
+        "pages"
+      ],
+      "evidence": [
+        "locales/runtime.ts",
+        "src/presentation/ui/i18n.ts",
+        "public/es",
+        "server/accountPage.ts"
+      ],
+      "browserChecks": [],
+      "limits": [
+        "Physical iOS/Android and provider-owned sheets/delivery not validated in this environment"
+      ]
+    }
+  ],
+  "implementation_steps": {
+    "L01": "Baseline reconciled onto 9d0eaa7; historical census retained",
+    "L02": "Shared catalogs, ICU formatting, parameter kinds and owned-message contract implemented",
+    "L03": "Extraction expands 659 to 669 data keys; sync/build/readiness include all namespaces",
+    "L04": "UI/a11y/formatting and typed navigation identifiers implemented and browser checked",
+    "L05": "Game-data presentation views localize stable IDs without canonical mutation",
+    "L06": "Canonical sim/history kept intact; owned display adapters and legacy patterns localize output",
+    "L07": "Server/social/name/moderation text catalogued; authored content preserved and preset metadata added",
+    "L08": "Device-locale push and local reminders implemented; physical delivery remains a release check",
+    "L09": "First frame, switching, selected web cache and offline start verified in Chromium",
+    "L10": "Six public pages plus account form and PWA manifest translated; publisher facts remain pending where originally pending",
+    "L11": "Native Spanish resources and 14-product StoreKit fixtures prepared; physical/store-console checks pending",
+    "L12": "Spanish listing/release notes/product copy and screenshot tooling prepared; no publication performed",
+    "L13": "Spanish 100%; remaining 48 target languages not translated",
+    "L14": "Automated/browser evidence recorded; no claim of all 50 languages, human native review, screen readers or physical store/device release qualification"
+  },
+  "validation": {
+    "catalog": "npm run i18n:check -- es: passes, intentional warnings reviewed",
+    "fullSuite": {
+      "passed": 1149,
+      "skipped": 13,
+      "filesPassed": 133,
+      "filesSkipped": 1
+    },
+    "focused": "See evidence/validation.json",
+    "clientBuild": "npm run build passes",
+    "serverTypecheck": "npm run typecheck:server passes",
+    "serverBuild": "npm run server:build passes",
+    "browser": "evidence/browser-es.json; 12 panels, five viewport sizes, selected cache, uncached offline reload, language switch preserves building identity",
+    "browserProvider": "Chromium /usr/bin/chromium with software WebGL; mobile emulation is not a physical device test",
+    "releaseIntegration": "evidence/release-integration.json"
+  },
+  "storage": "SPANISH_SIZE.json",
+  "storage_summary": "SPANISH.md",
+  "remaining_release_steps": [
+    "Apply migration 0029 when deploying the updated server; verify PostgreSQL/Redis paths against release infrastructure",
+    "Upload/review Spanish store listing and product metadata in actual consoles; use current Spanish screenshots",
+    "Verify install/first launch, per-app language, glyph coverage, sign-in, real prices/purchases/refunds, notification background delivery and OS permission text on physical iOS/Android devices",
+    "Complete publisher facts/legal review and native-language linguistic/accessibility review; staff/support and Spanish moderation operations need owner validation",
+    "Keep the other 48 target languages unready until separately translated and checked"
+  ],
+  "implementation_commit": "1daab27",
+  "integrated_upstream": "12d5996c3d0b17f9336107ed1a9acb907a0b6385"
+}
