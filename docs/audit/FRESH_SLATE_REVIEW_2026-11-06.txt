@@ -28,8 +28,12 @@ Method (fresh slate, prior conclusions in docs/ used only as pointers):
     outcome and (b) whether a base can hold at all.
   - Built Keep-by-Keep economy tables from the JSON data (section 3).
   - Three parallel sub-reviews (performance/GUI, hooks/monetization, economy/
-    buildings) fed sections 2.6, 2.7 and 2.4; I verified their key claims against
-    the code before including them.
+    buildings) fed sections 2.6, 2.7 and 2.4. I verified the combat, building and
+    economy data myself. I did not independently re-check the sub-reviews'
+    performance and monetization claims (Chromium timings, locale-chunk and
+    precache sizes, the Jade-per-dollar ladder, the UTC chest versus local
+    calendar, the tutorial Jade nudge, the zero translations): treat those as
+    sub-review findings, probably right, not confirmed by the author.
 
 Limits: everything below is emulation, data analysis and model-player simulation.
 No real player data, no physical cheap phone, no signed store build, no revenue was
