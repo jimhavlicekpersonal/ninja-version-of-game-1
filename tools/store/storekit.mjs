@@ -13,6 +13,11 @@ const path = new URL('ios/App/Products.storekit', root);
 const esData = read('locales/es/data.json');
 const shortSpanish = {starter_pack: 'Jade y recursos para nuevos líderes', builder_pack: 'Jade para contratar otro Artesano y recursos', war_prep_pack: 'Provisiones y Jade para la Guerra de Alianzas', rebuild_pack: 'Jade y recursos para reconstruir', keep_pack: 'Recursos y Jade para celebrar tu nueva Fortaleza'};
 const spanish = key => esData[key]?.text || '';
+const hiData = read('locales/hi/data.json');
+const shortHindi = {starter_pack: 'नए सरदारों के लिए जेड और संसाधन', builder_pack: 'एक और कारीगर रखने के लिए जेड, और संसाधन', war_prep_pack: 'गठबंधन युद्ध के लिए रसद और जेड', rebuild_pack: 'फिर से बनाने के लिए जेड और संसाधन', keep_pack: 'आपके नए किले के जश्न के लिए संसाधन और जेड'};
+const hindi = key => hiData[key]?.text || '';
+// Never cut Hindi to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), so overlong text fails here instead.
+const clip = (text, max) => { if (text.length > max) throw new Error(`Hindi store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
 const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i) => {
@@ -39,6 +44,11 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: (pack ? spanish(`store.packs.${gameId}.name`) : offer ? spanish(`offers.rules.${offer.id}.title`) : stipend ? spanish('store.stipend.name') : isPass ? `${spanish('pass.name')} prémium` : name).slice(0, 30),
         description: (pack ? `${pack.moonstones} de Jade` : offer ? (shortSpanish[offer.id] || spanish(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagos diarios de ${stipend.jadePerPayment} de Jade` : 'Senda prémium de esta temporada').slice(0, 55), locale,
       })),
+      {
+        displayName: clip(pack ? hindi(`store.packs.${gameId}.name`) : offer ? hindi(`offers.rules.${offer.id}.title`) : stipend ? hindi('store.stipend.name') : isPass ? `प्रीमियम ${hindi('pass.name')}` : name, 30),
+        description: clip(pack ? `${pack.moonstones} जेड` : offer ? (shortHindi[offer.id] || hindi(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.jadePerPayment} जेड के ${stipend.payments} रोज़ाना भुगतान` : 'इस सीज़न का प्रीमियम पथ', 55),
+        locale: 'hi',
+      },
     ],
     productID: storeId,
     referenceName: name,

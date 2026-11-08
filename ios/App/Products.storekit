@@ -21,6 +21,11 @@
           "displayName": "Pizca de Jade",
           "description": "45 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "चुटकी भर जेड",
+          "description": "45 जेड",
+          "locale": "hi"
         }
       ],
       "productID": "jade_pinch",
@@ -46,6 +51,11 @@
           "displayName": "Bolsita de Jade",
           "description": "100 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "जेड की थैली",
+          "description": "100 जेड",
+          "locale": "hi"
         }
       ],
       "productID": "jade_pouch",
@@ -71,6 +81,11 @@
           "displayName": "Bolsa de Jade",
           "description": "280 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "जेड का थैला",
+          "description": "280 जेड",
+          "locale": "hi"
         }
       ],
       "productID": "jade_bag",
@@ -96,6 +111,11 @@
           "displayName": "Caja de Jade",
           "description": "600 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "जेड का डिब्बा",
+          "description": "600 जेड",
+          "locale": "hi"
         }
       ],
       "productID": "jade_box",
@@ -121,6 +141,11 @@
           "displayName": "Cofre de Jade",
           "description": "1300 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "जेड का संदूक",
+          "description": "1300 जेड",
+          "locale": "hi"
         }
       ],
       "productID": "jade_chest",
@@ -146,6 +171,11 @@
           "displayName": "Bóveda de Jade",
           "description": "3500 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "जेड की तिजोरी",
+          "description": "3500 जेड",
+          "locale": "hi"
         }
       ],
       "productID": "jade_vault",
@@ -171,6 +201,11 @@
           "displayName": "Tesoro del Dragón de Jade",
           "description": "7500 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "ड्रैगन का जेड ख़ज़ाना",
+          "description": "7500 जेड",
+          "locale": "hi"
         }
       ],
       "productID": "jade_hoard",
@@ -196,6 +231,11 @@
           "displayName": "Pergamino de Temporada prémium",
           "description": "Senda prémium de esta temporada",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "प्रीमियम सीज़न स्क्रॉल",
+          "description": "इस सीज़न का प्रीमियम पथ",
+          "locale": "hi"
         }
       ],
       "productID": "season_scroll",
@@ -208,7 +248,7 @@
       "internalID": "60000009",
       "localizations": [
         {
-          "description": "A one-time boost for new rulers: Jade and resources to ",
+          "description": "A one-time boost for new clan leaders: Jade and resourc",
           "displayName": "Starter Pack",
           "locale": "en_US"
         },
@@ -221,6 +261,11 @@
           "displayName": "Paquete Inicial",
           "description": "Jade y recursos para nuevos líderes",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "शुरुआती पैक",
+          "description": "नए सरदारों के लिए जेड और संसाधन",
+          "locale": "hi"
         }
       ],
       "productID": "offer_starter",
@@ -246,6 +291,11 @@
           "displayName": "Paquete del Artesano",
           "description": "Jade para contratar otro Artesano y recursos",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "कारीगर का बंडल",
+          "description": "एक और कारीगर रखने के लिए जेड, और संसाधन",
+          "locale": "hi"
         }
       ],
       "productID": "offer_builder",
@@ -271,6 +321,11 @@
           "displayName": "Suministros de Guerra",
           "description": "Provisiones y Jade para la Guerra de Alianzas",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "युद्ध की रसद",
+          "description": "गठबंधन युद्ध के लिए रसद और जेड",
+          "locale": "hi"
         }
       ],
       "productID": "offer_war_prep",
@@ -296,6 +351,11 @@
           "displayName": "Kit de Reconstrucción",
           "description": "Jade y recursos para reconstruir",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "पुनर्निर्माण किट",
+          "description": "फिर से बनाने के लिए जेड और संसाधन",
+          "locale": "hi"
         }
       ],
       "productID": "offer_rebuild",
@@ -321,6 +381,11 @@
           "displayName": "Estipendio del Clan",
           "description": "30 pagos diarios de 12 de Jade",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "कबीले का वज़ीफ़ा",
+          "description": "12 जेड के 30 रोज़ाना भुगतान",
+          "locale": "hi"
         }
       ],
       "productID": "clan_stipend",
@@ -346,6 +411,11 @@
           "displayName": "Celebración de la Fortaleza",
           "description": "Recursos y Jade para celebrar tu nueva Fortaleza",
           "locale": "es_MX"
+        },
+        {
+          "displayName": "किले का जश्न",
+          "description": "आपके नए किले के जश्न के लिए संसाधन और जेड",
+          "locale": "hi"
         }
       ],
       "productID": "offer_keep",

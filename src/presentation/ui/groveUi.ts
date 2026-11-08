@@ -293,7 +293,7 @@ export class GroveUi {
         h(
           'div',
           { class: `log-row${r.you ? ' current' : ''}` },
-          h('div', {}, h('b', {}, i18nText("ui.message_59480bd082", { arg1: i + 1, arg2: isolateName(r.name) })), h('div', { class: 'muted small' }, i18nText("ui.clan_keep_03dd7825e4", { arg1: snap.kind === 'local' && !r.you ? i18nText("ui.computer_player_f44cdb976a") : '', arg2: labelText(r.role), arg3: r.hall }))),
+          h('div', {}, h('b', {}, i18nText("ui.message_59480bd082", { arg1: i + 1, arg2: isolateName(r.you ? labelText('You') : r.name) })), h('div', { class: 'muted small' }, i18nText("ui.clan_keep_03dd7825e4", { arg1: snap.kind === 'local' && !r.you ? i18nText("ui.computer_player_f44cdb976a") : '', arg2: labelText(r.role), arg3: r.hall }))),
           h('div', { class: 'row' }, r.blocked ? h('span', { class: 'chip blocked' }, i18nText("ui.blocked_18f2a0947f")) : null, h('span', { class: `dot ${r.online ? 'on' : ''}` }), h('span', { class: 'chip' }, icon(icons.leaf), String(r.trophies)), more),
         ),
       );
@@ -373,7 +373,7 @@ export class GroveUi {
     }
     const left = p.attacksLeft;
     body.append(
-      h('div', { class: 'raid-score' }, h('div', {}, h('b', {}, i18nText("ui.us_d07eb35432")), h('span', { class: 'big' }, i18nText("ui.message_00055f19bd", { arg1: p.ours }))), h('div', { class: 'muted' }, i18nText("ui.vs_f130559f0e")), h('div', {}, h('b', {}, h('bdi', {}, p.enemyName)), snap.kind === 'local' ? h('div', { class: 'muted small' }, i18nText("ui.computer_clan_8f8bccdc83")) : null, h('span', { class: 'big' }, i18nText("ui.message_00055f19bd", { arg1: p.theirs })))),
+      h('div', { class: 'raid-score' }, h('div', {}, h('b', {}, i18nText("ui.us_d07eb35432")), h('span', { class: 'big' }, i18nText("ui.message_00055f19bd", { arg1: p.ours }))), h('div', { class: 'muted' }, i18nText("ui.vs_f130559f0e")), h('div', {}, h('b', {}, h('bdi', {}, snap.kind === 'local' ? generatedName(p.enemyName, 'grove') : p.enemyName)), snap.kind === 'local' ? h('div', { class: 'muted small' }, i18nText("ui.computer_clan_8f8bccdc83")) : null, h('span', { class: 'big' }, i18nText("ui.message_00055f19bd", { arg1: p.theirs })))),
       h('p', { class: 'muted small' }, p.eligible ? t('raid.endsAttacks', { n: left, time: formatDuration(p.end - now) }) : i18nText("ui.ends_in_you_joined_during_this_raid_so_6fb775721b", { arg1: formatDuration(p.end - now) })),
       h('h3', {}, i18nText("ui.enemy_bases_f719775a69")),
     );
