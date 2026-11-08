@@ -8,6 +8,7 @@ const files = ['privacy', 'support', 'community', 'terms', 'tokushoho', 'shikin-
 const ACCOUNT_FAILURE = {
   es: 'No se pudo enviar la solicitud. Comprueba tus datos y tu conexión e inténtalo de nuevo.',
   hi: 'अनुरोध नहीं भेजा जा सका। अपनी जानकारी और इंटरनेट कनेक्शन जाँचें और फिर से कोशिश करें।',
+  pt: 'Não foi possível enviar o pedido. Confira seus dados e sua conexão e tente de novo.',
 };
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;

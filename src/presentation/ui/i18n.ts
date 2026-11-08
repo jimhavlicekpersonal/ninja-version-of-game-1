@@ -7,7 +7,7 @@ import { ENGLISH, catalogFor, deviceLocale, format, installCatalog, labelText as
 import type { Catalog, MessageRef } from '../../../locales/runtime';
 import { PRESET_CHAT } from '../../backend/net/protocol';
 export type { MessageRef } from '../../../locales/runtime';
-type Lang = { code: string; name: string; native: string; script: string; dir: 'ltr' | 'rtl'; alsoFor?: string[] };
+type Lang = { code: string; name: string; native: string; script: string; dir: 'ltr' | 'rtl'; alsoFor?: string[]; generatedNames?: 'noun-first' };
 type Availability = { coverage: number; ready: boolean; hash?: string; path?: string; keys?: number };
 const LANGS = (languagesFile as { languages: Lang[] }).languages;
 const AVAILABLE = availabilityFile as Record<string, Availability>;
@@ -105,7 +105,7 @@ export function generatedName(value: string, kind: 'place' | 'grove' = 'place'):
   if (kind === 'place' && value.includes(' · ')) { const [head, ...tail] = value.split(' · '); return `${labelText(head)} · ${generatedName(tail.join(' · '))}`; }
   const first = Object.entries(ENGLISH).filter(([k]) => k.startsWith(kind === 'place' ? 'data.names.placeFirst.' : 'data.social.groveNames.first.'));
   const second = Object.entries(ENGLISH).filter(([k]) => k.startsWith(kind === 'place' ? 'data.names.placeSecond.' : 'data.social.groveNames.second.'));
-  for (const [a, x] of first) for (const [b, y] of second) if (value === `${x} ${y}`) return deviceLocale() === 'es' ? `${t(b)} ${t(a)}` : `${t(a)} ${t(b)}`;
+  for (const [a, x] of first) for (const [b, y] of second) if (value === `${x} ${y}`) return LANGS.find(l => l.code === deviceLocale())?.generatedNames === 'noun-first' ? `${t(b)} ${t(a)}` : `${t(a)} ${t(b)}`;
   return messageText(value);
 }
 /** Only canonical game data may be passed here, never player-owned objects.
