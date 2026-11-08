@@ -1,0 +1,72 @@
+== 6. parallel per-Keep tables as ratios to Keep 5 (first block) and to the Keep max income per hour, one currency (second block)
+K | income/h | rewardScale | genLoot avg | scoutFee | storageLootCap | topUpScale | trainingSkipScale | powerSlack | KeepCost
+1 | 0.02 | 0.05 | 0.05 | 0.05 | 0.03 | 0.22 | 1.00 | 0.75 | 0.00
+2 | 0.09 | 0.10 | 0.09 | 0.10 | 0.07 | 0.30 | 1.00 | 0.75 | 0.01
+3 | 0.22 | 0.23 | 0.16 | 0.17 | 0.17 | 0.40 | 1.00 | 0.75 | 0.04
+4 | 0.50 | 0.50 | 0.40 | 0.40 | 0.42 | 0.63 | 1.00 | 0.75 | 0.20
+5 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.25 | 1.00
+6 | 1.47 | 1.67 | 2.19 | 2.33 | 2.17 | 1.48 | 1.48 | 0.25 | 2.46
+7 | 1.87 | 3.32 | 3.80 | 3.99 | 2.66 | 1.95 | 1.95 | 0.25 | 3.57
+8 | 3.25 | 4.60 | 5.25 | 5.52 | 3.68 | 2.29 | 2.29 | 0.5 | 5.18
+9 | 4.42 | 8.23 | 9.41 | 9.88 | 6.58 | 3.07 | 3.07 | 0.25 | 7.51
+10 | 8.53 | 13.36 | 15.27 | 16.04 | 10.69 | 3.91 | 3.91 | 0.25 | 10.90
+11 | 12.01 | 22.59 | 25.82 | 27.11 | 18.07 | 5.08 | 5.08 | 0.25 | 15.80
+12 | 24.23 | 30.35 | 34.68 | 36.42 | 24.28 | 5.89 | 5.89 | 0.5 | 22.91
+13 | 34.60 | 63.80 | 72.92 | 76.56 | 51.04 | 8.54 | 8.54 | 0.25 | 33.22
+14 | 70.96 | 113.08 | 129.24 | 135.70 | 90.47 | 11.37 | 11.37 | 0.25 | 48.17
+15 | 101.81 | 200.00 | 228.58 | 240.00 | 160.00 | 15.12 | 15.12 | 0.25 | 0.00
+
+K | genLoot avg / income-h | rewardScale x 20k chest / income-h | scoutFee / genLoot avg | scoutFee as minutes of income | storageLootCap / genLoot min | storageLootCap / full storage (20% rule binds below) | topUp Jade per hour of income | trainingSkip Jade per 2 h army
+1 | 6.5 h | 1.50 h | 3.1% | 12.0 min | 0.75 | 0.333 (20% binds: 20.0% of storage at risk) | 15 | 50
+2 | 3.0 h | 0.75 h | 3.2% | 5.6 min | 1.14 | 0.400 (20% binds: 20.0% of storage at risk) | 34 | 50
+3 | 2.2 h | 0.72 h | 2.9% | 3.8 min | 1.67 | 0.105 (cap binds: 10.5% of storage at risk) | 59 | 50
+4 | 2.4 h | 0.68 h | 2.9% | 4.1 min | 1.79 | 0.055 (cap binds: 5.5% of storage at risk) | 80 | 50
+5 | 3.0 h | 0.69 h | 2.9% | 5.1 min | 1.71 | 0.066 (cap binds: 6.6% of storage at risk) | 97 | 50
+6 | 4.5 h | 0.78 h | 3.0% | 8.1 min | 1.63 | 0.051 (cap binds: 5.1% of storage at risk) | 97 | 74
+7 | 6.1 h | 1.22 h | 3.0% | 11.0 min | 1.00 | 0.040 (cap binds: 4.0% of storage at risk) | 94 | 98
+8 | 4.8 h | 0.97 h | 3.0% | 8.7 min | 1.00 | 0.023 (cap binds: 2.3% of storage at risk) | 133 | 115
+9 | 6.4 h | 1.28 h | 3.0% | 11.5 min | 1.00 | 0.027 (cap binds: 2.7% of storage at risk) | 135 | 154
+10 | 5.4 h | 1.07 h | 3.0% | 9.7 min | 1.00 | 0.028 (cap binds: 2.8% of storage at risk) | 198 | 196
+11 | 6.4 h | 1.29 h | 3.0% | 11.6 min | 1.00 | 0.020 (cap binds: 2.0% of storage at risk) | 214 | 255
+12 | 4.3 h | 0.86 h | 3.0% | 7.7 min | 1.00 | 0.017 (cap binds: 1.7% of storage at risk) | 364 | 295
+13 | 6.3 h | 1.26 h | 3.0% | 11.4 min | 1.00 | 0.023 (cap binds: 2.3% of storage at risk) | 358 | 427
+14 | 5.5 h | 1.09 h | 3.0% | 9.8 min | 1.00 | 0.017 (cap binds: 1.7% of storage at risk) | 526 | 569
+15 | 6.7 h | 1.35 h | 3.0% | 12.1 min | 1.00 | 0.020 (cap binds: 2.0% of storage at risk) | 550 | 756
+
+== 3. loot at risk per raid: real village (defense.ts villageToBase) vs a generated base of the same Keep (basegen.ts), per currency
+K | full storage | 20% of it | storageLootCap | storage at risk (min) | collectors full 8 h | 50% of it | real max at risk (storage+collectors) | generated avg loot | real/generated | real at 25% storage | real/generated @25% | at Keep 15 attacker penalty: diff>=4 -> x0.05
+1 | 4.5k | 900 | 1.5k | 900 | 3.2k | 1.6k | 2.5k | 2.6k | 0.96 | 1.8k | 0.70 | 20.0% of storage per 100% raid
+2 | 10.0k | 2.0k | 4.0k | 2.0k | 12.8k | 6.4k | 8.4k | 4.8k | 1.77 | 6.9k | 1.45 | 20.0% of storage per 100% raid
+3 | 95.0k | 19.0k | 10.0k | 10.0k | 31.2k | 15.6k | 25.6k | 8.5k | 3.01 | 20.4k | 2.39 | 10.5% of storage per 100% raid
+4 | 456.0k | 91.2k | 25.0k | 25.0k | 70.4k | 35.2k | 60.2k | 21.0k | 2.87 | 58.0k | 2.76 | 5.5% of storage per 100% raid
+5 | 908.0k | 181.6k | 60.0k | 60.0k | 140.0k | 70.0k | 130.0k | 52.5k | 2.48 | 115.4k | 2.20 | 6.6% of storage per 100% raid
+6 | 2.56M | 512.0k | 130.0k | 130.0k | 206.4k | 103.2k | 233.2k | 115.0k | 2.03 | 231.2k | 2.01 | 5.1% of storage per 100% raid
+7 | 3.97M | 793.6k | 159.6k | 159.6k | 261.6k | 130.8k | 290.4k | 199.5k | 1.46 | 290.4k | 1.46 | 4.0% of storage per 100% raid
+8 | 9.52M | 1.90M | 220.6k | 220.6k | 455.1k | 227.5k | 448.2k | 275.8k | 1.63 | 448.2k | 1.63 | 2.3% of storage per 100% raid
+9 | 14.76M | 2.95M | 395.0k | 395.0k | 619.2k | 309.6k | 704.6k | 493.8k | 1.43 | 704.6k | 1.43 | 2.7% of storage per 100% raid
+10 | 22.87M | 4.57M | 641.5k | 641.5k | 1.19M | 597.1k | 1.24M | 801.9k | 1.54 | 1.24M | 1.54 | 2.8% of storage per 100% raid
+11 | 54.90M | 10.98M | 1.08M | 1.08M | 1.68M | 841.0k | 1.93M | 1.36M | 1.42 | 1.93M | 1.42 | 2.0% of storage per 100% raid
+12 | 85.09M | 17.02M | 1.46M | 1.46M | 3.39M | 1.70M | 3.15M | 1.82M | 1.73 | 3.15M | 1.73 | 1.7% of storage per 100% raid
+13 | 131.90M | 26.38M | 3.06M | 3.06M | 4.84M | 2.42M | 5.48M | 3.83M | 1.43 | 5.48M | 1.43 | 2.3% of storage per 100% raid
+14 | 316.70M | 63.34M | 5.43M | 5.43M | 9.93M | 4.97M | 10.39M | 6.79M | 1.53 | 10.39M | 1.53 | 1.7% of storage per 100% raid
+15 | 490.88M | 98.18M | 9.60M | 9.60M | 14.25M | 7.13M | 16.73M | 12.00M | 1.39 | 16.73M | 1.39 | 2.0% of storage per 100% raid
+
+hoarding at Keeps 7-15: loss per 100%-destruction raid as % of a full storage = storageLootCap / storage (collectors aside): K7 4.0%, K8 2.3%, K9 2.7%, K10 2.8%, K11 2.0%, K12 1.7%, K13 2.3%, K14 1.7%, K15 2.0%
+with 2 raids/day for 30 days (60 raids), a hoard of a full Keep storage loses: K7 241% (= 9.58M = 293 h of income); K10 168% (= 38.49M = 258 h of income); K12 103% (= 87.40M = 206 h of income); K15 117% (= 576.01M = 323 h of income)
+the Keep itself holds storage (elder_toadstool.levels[].storage), so villageToBase spreads storage loot over silos AND the Keep: Keep share of total storage: K1 67%, K3 5%, K5 1%, K8 0%, K12 0%, K15 0%
+
+== lootPenaltyByHallDiff [1,0.8,0.5,0.25,0.05]: an attacker one Keep above gets 80%, two above 50%, three 25%, four+ 5%. Bot raiders are matched by the DEFENDER trophies (matchStrength mirror, hallsAbove 1), so a raider is at most one Keep above: x0.8 at worst.
+
+== league chests and win bonuses vs Keep loot (ranks.json): chest per month and win bonus per 3-star win
+Bamboo League (min 0): chest 40.0k + 10 Jade; win bonus 0 = 0.0% of the matching Keep 1 average raid loot
+Cedar League (min 400): chest 120.0k + 25 Jade; win bonus 2.0k = 21.1% of the matching Keep 2 average raid loot
+Iron League (min 1000): chest 300.0k + 50 Jade; win bonus 10.0k = 23.8% of the matching Keep 4 average raid loot
+Obsidian League (min 2000): chest 600.0k + 100 Jade; win bonus 40.0k = 10.0% of the matching Keep 7 average raid loot
+Ember League (min 2800): chest 900.0k + 125 Jade; win bonus 60.0k = 6.1% of the matching Keep 9 average raid loot
+Storm League (min 3600): chest 1.20M + 150 Jade; win bonus 90.0k = 3.3% of the matching Keep 11 average raid loot
+Shadow League (min 4400): chest 1.60M + 175 Jade; win bonus 120.0k = 0.9% of the matching Keep 14 average raid loot
+Kage League (min 5200): chest 2.00M + 200 Jade; win bonus 160.0k = 0.7% of the matching Keep 15 average raid loot
+(trophiesPerHall 350: honor 2800 ~ Keep 9, 5200 ~ Keep 15; regular model honor: Keep 10 2778, Keep 14 4337, Keep 15 3786)
+
+== daily chest EV per day at each Keep vs income (rewardScale x outcomes, streak step 1), and the Jade
+base EV 30.0k resources + 0.95 Jade per day (+5 Jade every 7th day of streak); per Keep in hours of max income (both currencies): K1 1.13 h, K3 0.54 h, K5 0.51 h, K8 0.73 h, K10 0.81 h, K12 0.64 h, K15 1.01 h

@@ -1,0 +1,10 @@
+# Keep 8 climb from support_light:  47.3  st 0.70  1*  40%  3*   0%  25×grapple_raider 25×gearbreaker 9×bell_warden 10×hawk_tamer 28×blowgun_hunter 28×shuriken_storm 5×drum_monk 4×mist_weaver 4×herbalist
+round 0 Δ0.1 accept mist_weaver→bell_warden 0.04:  49.1  st 0.90  1*  55%  3*   5%  11×bell_warden 25×grapple_raider 25×gearbreaker 30×blowgun_hunter 10×hawk_tamer 28×shuriken_storm 5×drum_monk 4×herbalist
+round 1 Δ0.1 accept gearbreaker→blowgun_hunter 0.10:  55.5  st 1.15  1*  60%  3*  10%  58×blowgun_hunter 11×bell_warden 25×grapple_raider 10×hawk_tamer 28×shuriken_storm 11×gearbreaker 5×drum_monk 4×herbalist
+round 2 Δ0.1 accept drum_monk→iron_monk 0.06:  56.5  st 1.20  1*  60%  3*  10%  58×blowgun_hunter 11×bell_warden 25×grapple_raider 10×hawk_tamer 28×shuriken_storm 11×gearbreaker 3×iron_monk 4×herbalist
+round 3 Δ0.1 accept grapple_raider→twin_fang_dancer 0.10:  57.7  st 1.20  1*  55%  3*  15%  59×blowgun_hunter 11×bell_warden 10×hawk_tamer 28×shuriken_storm 27×twin_fang_dancer 11×grapple_raider 11×gearbreaker 3×iron_monk 4×herbalist
+round 4 Δ0.1 no improvement (best 56.9)
+round 5 Δ0.1 accept shuriken_storm→grapple_raider 0.10:  58.0  st 1.35  1*  65%  3*  15%  59×blowgun_hunter 11×bell_warden 25×grapple_raider 10×hawk_tamer 27×twin_fang_dancer 11×gearbreaker 3×iron_monk 4×herbalist
+round 6 Δ0.1 no improvement (best 57.1)
+round 7 Δ0.1 no improvement (best 57.3)
+END support_light:  58.0  st 1.35  1*  65%  3*  15%  59×blowgun_hunter 11×bell_warden 25×grapple_raider 10×hawk_tamer 27×twin_fang_dancer 11×gearbreaker 3×iron_monk 4×herbalist  (evals 90, 368 s)

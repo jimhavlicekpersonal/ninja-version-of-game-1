@@ -1,0 +1,95 @@
+== Table A: supply side per Keep (one currency; Coins and Provisions are symmetric in production and storage)
+K | inc/h max | inc/h prev-max | day 1s(8h) | day 2s(16h) | day 4s(22h) | storage | KeepCost(next) | hours of max income to next Keep | storage/KeepCost
+1 | 400 | 400 | 3.2k | 6.4k | 8.8k | 4.5k | 1.0k | 3 | 4.50
+2 | 1.6k | 400 | 12.8k | 25.6k | 35.2k | 10.0k | 4.0k | 3 | 2.50
+3 | 3.9k | 1.6k | 31.2k | 62.4k | 85.8k | 95.0k | 20.0k | 5 | 4.75
+4 | 8.8k | 3.9k | 70.4k | 140.8k | 193.6k | 456.0k | 100.0k | 11 | 4.56
+5 | 17.5k | 8.8k | 140.0k | 280.0k | 385.0k | 908.0k | 500.0k | 29 | 1.82
+6 | 25.8k | 17.5k | 206.4k | 412.8k | 567.6k | 2.56M | 1.23M | 48 | 2.08
+7 | 32.7k | 25.8k | 261.6k | 523.2k | 719.4k | 3.97M | 1.79M | 55 | 2.22
+8 | 56.9k | 32.7k | 455.1k | 910.2k | 1.25M | 9.52M | 2.59M | 46 | 3.67
+9 | 77.4k | 56.9k | 619.2k | 1.24M | 1.70M | 14.76M | 3.76M | 49 | 3.93
+10 | 149.3k | 77.4k | 1.19M | 2.39M | 3.28M | 22.87M | 5.45M | 36 | 4.20
+11 | 210.2k | 149.3k | 1.68M | 3.36M | 4.63M | 54.90M | 7.90M | 38 | 6.95
+12 | 424.0k | 210.2k | 3.39M | 6.78M | 9.33M | 85.09M | 11.45M | 27 | 7.43
+13 | 605.4k | 424.0k | 4.84M | 9.69M | 13.32M | 131.90M | 16.61M | 27 | 7.94
+14 | 1.24M | 605.4k | 9.93M | 19.87M | 27.32M | 316.70M | 24.08M | 19 | 13.15
+15 | 1.78M | 1.24M | 14.25M | 28.51M | 39.20M | 490.88M | 0 | - | -
+
+== Table B: demand newly allowed at each Keep (buildings.json x hall.json; walls separate; Keep cost = next Keep)
+K | Coins upgrades | Prov upgrades | walls (Coins) | next Keep (Coins) | research all (Prov) | research bot-mix (Prov) | lane-days all | army refill (Prov) | housing | refill min @max Dojo
+1 | 2.0k | 1.8k | 1.0k | 1.0k | 0 | 0 | 0.0 | 580 | 20 | 7
+2 | 22.1k | 13.4k | 9.0k | 4.0k | 28.0k | 12.0k | 0.1 | 1.7k | 40 | 14
+3 | 144.7k | 86.3k | 53.0k | 20.0k | 12.0k | 0 | 0.1 | 4.2k | 80 | 30
+4 | 729.7k | 472.6k | 181.0k | 100.0k | 62.0k | 31.0k | 0.3 | 8.4k | 120 | 38
+5 | 2.01M | 1.06M | 561.0k | 500.0k | 180.1k | 48.0k | 0.7 | 17.6k | 180 | 51
+6 | 6.05M | 2.97M | 1.45M | 1.23M | 371.0k | 74.5k | 1.2 | 31.1k | 240 | 68
+7 | 11.71M | 3.28M | 1.81M | 1.79M | 1.69M | 367.2k | 2.6 | 66.5k | 255 | 98
+8 | 10.53M | 9.23M | 2.63M | 2.59M | 2.13M | 346.0k | 2.7 | 91.9k | 270 | 81
+9 | 13.20M | 8.78M | 0 | 3.76M | 8.88M | 1.37M | 11.4 | 164.6k | 285 | 86
+10 | 28.13M | 19.55M | 3.81M | 5.45M | 11.61M | 3.75M | 11.4 | 267.3k | 300 | 100
+11 | 44.51M | 26.96M | 5.53M | 7.90M | 45.03M | 6.36M | 27.8 | 451.8k | 300 | 84
+12 | 80.03M | 54.19M | 8.01M | 11.45M | 51.85M | 5.99M | 20.7 | 606.9k | 315 | 74
+13 | 86.38M | 57.80M | 0 | 16.61M | 223.26M | 48.29M | 51.8 | 1.28M | 330 | 105
+14 | 263.89M | 191.06M | 11.62M | 24.08M | 580.89M | 71.03M | 66.7 | 2.26M | 345 | 97
+15 | 324.58M | 170.16M | 16.85M | 0 | 1.53B | 170.66M | 81.4 | 4.00M | 360 | 90
+
+== Table B2: Coins-vs-Provisions split of the newly allowed building spend by type (Keep 8 and 12 examples)
+K5: acorn_orchard=0C/754.5kP, dewdrop_well=754.5kC/0P, acorn_silo=0C/200.0kP, dew_cistern=200.0kC/0P, burrow_barracks=0C/40.0kP, army_camp=0C/70.3kP, acorn_cannon=300.0kC/0P, wasp_nest=220.0kC/0P, pinecone_catapult=280.0kC/0P, firefly_tower=90.0kC/0P, thorn_snare=7.9kC/0P, sap_puddle=4.8kC/0P, grove_lodge=120.0kC/0P, paper_lantern_line=30.0kC/0P
+K8: acorn_orchard=0C/3.71MP, dewdrop_well=3.71MC/0P, acorn_silo=0C/3.86MP, dew_cistern=3.86MC/0P, burrow_barracks=0C/84.1kP, army_camp=0C/1.58MP, firefly_tower=1.08MC/0P, sap_puddle=43.5kC/0P, paper_lantern_line=126.2kC/0P, clockwork_repairer=365.8kC/0P, bitter_incense_burner=365.8kC/0P, kite_cutter_ballista=980.0kC/0P
+K12: acorn_orchard=0C/34.47MP, dewdrop_well=34.47MC/0P, acorn_silo=0C/14.66MP, dew_cistern=14.66MC/0P, burrow_barracks=0C/256.4kP, army_camp=0C/4.81MP, acorn_cannon=5.13MC/0P, wasp_nest=4.81MC/0P, firefly_tower=4.94MC/0P, sap_puddle=91.5kC/0P, grove_lodge=1.33MC/0P, paper_lantern_line=265.2kC/0P, clockwork_repairer=1.62MC/0P, bitter_incense_burner=1.62MC/0P, kite_cutter_ballista=5.13MC/0P, longbow_yagura=5.99MC/0P
+K15: acorn_orchard=0C/90.18MP, dewdrop_well=90.18MC/0P, acorn_silo=0C/64.79MP, dew_cistern=64.79MC/0P, burrow_barracks=0C/539.1kP, army_camp=0C/14.66MP, acorn_cannon=15.63MC/0P, wasp_nest=10.11MC/0P, pinecone_catapult=5.30MC/0P, firefly_tower=15.06MC/0P, thorn_snare=512.8kC/0P, grove_lodge=2.79MC/0P, clockwork_repairer=3.40MC/0P, bitter_incense_burner=3.40MC/0P, kite_cutter_ballista=38.30MC/0P, longbow_yagura=75.11MC/0P
+
+== Table C: two-currency load, REGULAR (4 sessions, campaign loot and losses; loot and losses split 50/50 between currencies)
+K | days@K | prod/day | loot/day | stolen/day | net Coins/day | net Prov/day (after refills) | Coins demand | Prov demand (bot-mix research) | Prov demand (all research) | days Coins | days Prov(mix) | days Prov(all) | binds | factor
+1 | no campaign row
+2 | 0.1 | 35.2k | 184.2k | 0 | 127.3k | 60.1k | 26.1k | 25.4k | 41.4k | 0.2 | 0.4 | 0.7 | Prov | 2.06
+3 | 0.7 | 85.8k | 43.1k | 0 | 107.4k | 71.4k | 164.7k | 86.3k | 98.3k | 1.5 | 1.2 | 1.4 | Coins | 1.27
+4 | 3.5 | 193.6k | 34.9k | 26.5k | 197.8k | 166.8k | 829.7k | 503.6k | 534.5k | 4.2 | 3.0 | 3.2 | Coins | 1.39
+5 | 6.2 | 385.0k | 128.3k | 100.6k | 398.8k | 327.8k | 2.51M | 1.11M | 1.24M | 6.3 | 3.4 | 3.8 | Coins | 1.85
+6 | 6.2 | 567.6k | 306.5k | 309.8k | 566.0k | 440.6k | 7.29M | 3.05M | 3.34M | 12.9 | 6.9 | 7.6 | Coins | 1.86
+7 | 6.8 | 719.4k | 792.5k | 461.0k | 885.1k | 640.7k | 13.49M | 3.64M | 4.97M | 15.2 | 5.7 | 7.8 | Coins | 2.68
+8 | 4.3 | 1.25M | 1.48M | 584.7k | 1.70M | 1.31M | 13.12M | 9.58M | 11.36M | 7.7 | 7.3 | 8.6 | Coins | 1.06
+9 | 4.9 | 1.70M | 2.53M | 1.79M | 2.07M | 1.44M | 16.96M | 10.15M | 17.67M | 8.2 | 7.1 | 12.3 | Coins | 1.16
+10 | 10.0 | 3.28M | 2.38M | 1.58M | 3.69M | 2.78M | 33.57M | 23.30M | 31.17M | 9.1 | 8.4 | 11.2 | Coins | 1.09
+11 | 8.6 | 4.63M | 5.94M | 3.99M | 5.60M | 3.82M | 52.41M | 33.32M | 71.99M | 9.4 | 8.7 | 18.9 | Coins | 1.07
+12 | 13.4 | 9.33M | 7.18M | 4.43M | 10.71M | 8.26M | 91.48M | 60.18M | 106.04M | 8.5 | 7.3 | 12.8 | Coins | 1.17
+13 | 25.4 | 13.32M | 9.75M | 6.35M | 15.02M | 9.95M | 102.99M | 106.09M | 281.06M | 6.9 | 10.7 | 28.3 | Prov | 1.56
+14 | 27.6 | 27.32M | 22.62M | 14.30M | 31.48M | 22.38M | 287.97M | 262.09M | 771.95M | 9.1 | 11.7 | 34.5 | Prov | 1.28
+15 | 15.4 | 39.20M | 23.85M | 15.30M | 43.47M | 27.63M | 324.58M | 340.82M | 1.70B | 7.5 | 12.3 | 61.4 | Prov | 1.65
+
+== Table D: two-currency load, CASUAL (1 session, campaign casual loot and losses)
+K | days@K | prod/day(8h) | loot/day | stolen/day | net Coins/day | net Prov/day | Coins demand | Prov demand(mix) | days Coins | days Prov(mix) | days Prov(all) | binds | factor
+1 | no campaign row
+2 | 0.4 | 12.8k | 43.9k | 0 | 34.7k | 17.9k | 26.1k | 25.4k | 0.8 | 1.4 | 2.3 | Prov | 1.88
+3 | 2.3 | 31.2k | 2.5k | 13.1k | 25.9k | 16.8k | 164.7k | 86.3k | 6.4 | 5.1 | 5.9 | Coins | 1.24
+4 | 9.0 | 70.4k | 6.6k | 17.5k | 65.0k | 58.5k | 829.7k | 503.6k | 12.8 | 8.6 | 9.1 | Coins | 1.48
+5 | 28.0 | 140.0k | 21.3k | 108.2k | 96.5k | 83.3k | 2.51M | 1.11M | 26.0 | 13.4 | 14.9 | Coins | 1.94
+6 | 16.7 | 206.4k | 95.6k | 220.6k | 143.9k | 121.6k | 7.29M | 3.05M | 50.6 | 25.1 | 27.5 | Coins | 2.02
+7 | 20.0 | 261.6k | 140.8k | 296.4k | 183.8k | 137.3k | 13.49M | 3.64M | 73.4 | 26.5 | 36.2 | Coins | 2.77
+8 | 17.0 | 455.1k | 272.7k | 326.7k | 428.1k | 357.8k | 13.12M | 9.58M | 30.7 | 26.8 | 31.8 | Coins | 1.15
+9 | 27.0 | 619.2k | 334.7k | 732.9k | 420.0k | 298.1k | 16.96M | 10.15M | 40.4 | 34.1 | 59.3 | Coins | 1.19
+10 | 32.0 | 1.19M | 600.1k | 1.24M | 872.6k | 697.2k | 33.57M | 23.30M | 38.5 | 33.4 | 44.7 | Coins | 1.15
+11 | 15.0 | 1.68M | 1.31M | 1.86M | 1.41M | 1.08M | 52.41M | 33.32M | 37.3 | 31.0 | 67.0 | Coins | 1.20
+12 | 19.0 | 3.39M | 1.77M | 2.50M | 3.03M | 2.58M | 91.48M | 60.18M | 30.2 | 23.3 | 41.1 | Coins | 1.30
+13 | 28.0 | 4.84M | 1.27M | 3.09M | 3.93M | 2.98M | 102.99M | 106.09M | 26.2 | 35.6 | 94.4 | Prov | 1.36
+14 | 32.0 | 9.93M | 3.99M | 5.73M | 9.07M | 7.37M | 287.97M | 262.09M | 31.8 | 35.6 | 104.8 | Prov | 1.12
+15 | 19.6 | 14.25M | 5.27M | 8.13M | 12.82M | 9.76M | 324.58M | 340.82M | 25.3 | 34.9 | 173.8 | Prov | 1.38
+
+== Table E: raid vs farm per Keep (generated-loot average and campaign loot; refill at the best Dojo + 3 min)
+K | gen loot avg (both) | campaign loot/raid (reg) | refill+3 min | loot/raid-hour | prod/h (both currencies) | ratio raid:farm per hour | army Prov cost | net Prov per raid (loot/2 - army) | raids to pay a day of 4-session farming | 10-min raid vs 22h farm
+1 | 5.2k | 3.1k | 10 min | 18.4k | 800 | 23.02 | 580 | 980 | 5.64 | 18% of a day
+2 | 9.5k | 4.6k | 17 min | 16.1k | 3.2k | 5.03 | 1.7k | 623 | 15.29 | 7% of a day
+3 | 17.0k | 5.0k | 33 min | 9.2k | 7.8k | 1.19 | 4.2k | -1684 | 34.10 | 3% of a day
+4 | 42.0k | 9.4k | 41 min | 13.7k | 17.6k | 0.78 | 8.4k | -3661 | 41.20 | 2% of a day
+5 | 105.0k | 31.8k | 54 min | 35.6k | 35.0k | 1.02 | 17.6k | -1706 | 24.21 | 4% of a day
+6 | 230.0k | 76.0k | 71 min | 64.6k | 51.6k | 1.25 | 31.1k | 6.9k | 14.93 | 7% of a day
+7 | 399.0k | 215.6k | 101 min | 128.7k | 65.4k | 1.97 | 66.5k | 41.3k | 6.67 | 15% of a day
+8 | 551.5k | 353.7k | 84 min | 251.2k | 113.8k | 2.21 | 91.9k | 85.0k | 7.08 | 14% of a day
+9 | 987.5k | 652.3k | 89 min | 439.7k | 154.8k | 2.84 | 164.6k | 161.6k | 5.22 | 19% of a day
+10 | 1.60M | 700.5k | 103 min | 409.2k | 298.5k | 1.37 | 267.3k | 82.9k | 9.38 | 11% of a day
+11 | 2.71M | 1.50M | 87 min | 1.04M | 420.5k | 2.47 | 451.8k | 299.8k | 6.15 | 16% of a day
+12 | 3.64M | 1.78M | 77 min | 1.39M | 848.1k | 1.64 | 606.9k | 284.6k | 10.46 | 10% of a day
+13 | 7.66M | 2.45M | 108 min | 1.37M | 1.21M | 1.13 | 1.28M | -50188 | 10.87 | 9% of a day
+14 | 13.57M | 5.62M | 100 min | 3.37M | 2.48M | 1.36 | 2.26M | 550.1k | 9.72 | 10% of a day
+15 | 24.00M | 6.02M | 93 min | 3.90M | 3.56M | 1.09 | 4.00M | -989594 | 13.02 | 8% of a day

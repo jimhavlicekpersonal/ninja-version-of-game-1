@@ -1,0 +1,47 @@
+== (1) entry side lever, bot mix at caps + hero, bias 0.5, 5 layouts x 3 seeds
+K | layout | mean per side 0..3 | best-worst spread (mean over bases) | least-covered side wins (hit rate) | rank corr(coverage, destruction) mean
+6 | kunai_ring   | 64 / 54 / 60 / 66 | 23.3 | 1/3 | 0.52
+6 | walled_keep  | 55 / 52 / 54 / 44 | 24.3 | 1/3 | 0.22
+6 | mortar_core  | 71 / 51 / 59 / 69 | 31.0 | 2/3 | -0.31
+6 | twin_gates   | 52 / 65 / 57 / 50 | 18.7 | 1/3 | 0.01
+6 | open_court   | 57 / 66 / 73 / 90 | 36.0 | 2/3 | -0.03
+K6 all: spread 26.7, least-covered-side-wins 7/15, mean rank corr 0.08 (negative = less coverage, more destruction)
+10 | kunai_ring   | 89 / 84 / 90 / 73 | 30.3 | 2/3 | -0.56
+10 | walled_keep  | 74 / 79 / 71 / 80 | 36.7 | 2/3 | -0.36
+10 | mortar_core  | 75 / 76 / 74 / 88 | 25.3 | 0/3 | 0.09
+10 | twin_gates   | 71 / 51 / 83 / 76 | 38.0 | 0/3 | 0.70
+10 | open_court   | 95 / 72 / 84 / 77 | 36.3 | 2/3 | -0.22
+K10 all: spread 33.3, least-covered-side-wins 6/15, mean rank corr -0.07 (negative = less coverage, more destruction)
+15 | kunai_ring   | 98 / 70 / 77 / 98 | 31.7 | 3/3 | -0.30
+15 | walled_keep  | 52 / 74 / 48 / 78 | 34.7 | 1/3 | -0.04
+15 | mortar_core  | 69 / 81 / 69 / 70 | 37.7 | 0/3 | 0.62
+15 | twin_gates   | 81 / 77 / 74 / 76 | 36.0 | 1/3 | 0.02
+15 | open_court   | 83 / 85 / 89 / 87 | 21.0 | 2/3 | -0.13
+K15 all: spread 32.2, least-covered-side-wins 7/15, mean rank corr 0.04 (negative = less coverage, more destruction)
+intel sample keys: label,defenses,antiAir,splash
+
+== (2) closed pair flip by moving ONE Bonsai Planter (flower_bed): mean destruction over 4 sides x 2 seeds
+K8 kunai_ring: hash%8 of the original = 7
+  closed pair 0 (planter at 22,23): mean destruction 61.3
+  closed pair 1 (planter at 16,18): mean destruction 56.1
+  closed pair 2 (planter at 23,17): mean destruction 58.1
+  closed pair 3 (planter at 23,23): mean destruction 63.3
+  spread best-worst closed pair: 7.1 points
+K8 walled_keep: hash%8 of the original = 1
+  closed pair 0 (planter at 20,23): mean destruction 42.9
+  closed pair 1 (planter at 23,16): mean destruction 46.8
+  closed pair 2 (planter at 23,15): mean destruction 46.5
+  closed pair 3 (planter at 21,23): mean destruction 44.1
+  spread best-worst closed pair: 3.9 points
+K12 walled_keep: hash%8 of the original = 6
+  closed pair 0 (planter at 15,13): mean destruction 55.3
+  closed pair 1 (planter at 16,13): mean destruction 68.5
+  closed pair 2 (planter at 25,23): mean destruction 55.8
+  closed pair 3 (planter at 26,23): mean destruction 53.4
+  spread best-worst closed pair: 15.1 points
+K12 twin_gates: hash%8 of the original = 0
+  closed pair 0 (planter at 23,18): mean destruction 62.9
+  closed pair 1 (planter at 23,19): mean destruction 65.3
+  closed pair 2 (planter at 13,20): mean destruction 58.0
+  closed pair 3 (planter at 23,22): mean destruction 76.8
+  spread best-worst closed pair: 18.8 points

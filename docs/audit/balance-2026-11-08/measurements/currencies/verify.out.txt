@@ -1,0 +1,21 @@
+== (1) loot on offer: real village (full storage / 25% / 5%, collectors after 8 h or 0 h) vs generated base, Coins+Provisions
+K | gen avg (6 seeds, bias 0.5) | real full+8h | real 25%+8h | real 5%+8h | real full+0h | real full+8h / gen
+3 | 17.3k | 51.2k | 40.7k | 33.1k | 20.0k | 2.95
+5 | 100.2k | 260.0k | 230.8k | 158.2k | 120.0k | 2.59
+7 | 389.1k | 580.8k | 580.8k | 341.0k | 319.2k | 1.49
+8 | 550.6k | 896.3k | 896.3k | 645.5k | 441.2k | 1.63
+10 | 1.60M | 2.48M | 2.48M | 1.65M | 1.28M | 1.55
+12 | 3.67M | 6.31M | 6.31M | 5.09M | 2.91M | 1.72
+15 | 23.69M | 33.45M | 33.45M | 24.07M | 19.20M | 1.41
+
+== (2) shield: the player's own attack ends it (battleEnd), a Shadow Trial does not (trialEnd)
+battleEnd: shield before 10 h left, after 0 h left
+trialEnd: shield before 10 h left, after 10 h left
+
+== (3) one bot raid against a crafted village with every defense at cap, storage full, collectors 8 h (raidVillage)
+K | raids | mean destruction | mean stars | held | mean stolen | as % of max at risk
+5 | 4 | 58% | 1.25 | 2/4 | - | 50%
+8 | 4 | 81% | 2.00 | 0/4 | - | 92%
+10 | 4 | 71% | 2.00 | 0/4 | - | 69%
+12 | 4 | 67% | 1.75 | 0/4 | - | 71%
+15 | 4 | 96% | 2.50 | 0/4 | - | 99%

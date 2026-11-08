@@ -1,0 +1,34 @@
+# policy turtle cadence casual raidsPerSession 2 FINAL days 90 (29 s) stopped: 90 days
+Keep reached (day): 1: 0 · 2: 0 · 3: 0.4 · 4: 5.7 · 5: 28.7 · 6: 55.7
+Totals: raids 94, looted 5347218, raided 143x, stolen 8274042, held 35, defence rewards 156100, Next presses 85
+Sessions 210: full storage (either) 18%, Coins full 4%, Provisions full 18%
+Research started 20, skipped (sandbag) 0; walls placed 125, wall upgrades 578, Coins on walls 1786250; final honor 1070; final strength 6.00
+
+| Keep | days at Keep | Raids | Avg stars | Won | 3-star | Destr | Loot/raid | Opp Keep | Opp bias | Strength | Honor | Raided | Held | Stolen/raid | Honor lost/raid |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0 | 0 | - | - | - | - | - | - | - | - | - | 0 | - | - | - |
+| 2 | 0.4 | 5 | 3.00 | 100% | 100% | 100% | 3710 | 1.00 | 0.25 | 1.00 | 79 | 0 | - | - | - |
+| 3 | 5.3 | 5 | 0.40 | 20% | 0% | 39% | 400 | 2.60 | 0.35 | 2.70 | 178 | 10 | 40% | 5687 | -1.5 |
+| 4 | 23 | 23 | 1.22 | 61% | 17% | 60% | 18510 | 3.57 | 0.42 | 3.72 | 514 | 37 | 22% | 16899 | 4.7 |
+| 5 | 27 | 27 | 1.33 | 78% | 0% | 56% | 50031 | 4.89 | 0.66 | 4.80 | 985 | 44 | 20% | 49824 | 8.4 |
+| 6 | 34.3 | 34 | 0.88 | 53% | 0% | 50% | 104415 | 5.94 | 0.72 | 5.91 | 1185 | 52 | 27% | 103840 | 1.4 |
+
+day | keep | honor | strength | coins/cap | prov/cap | housing | walls@lvl | defences
+5 | 3 | 192 | 3.00 | 6233/29000 | 14680/17000 | 60 | 60@1.9 | acorn:2@2.0 wasp:1@2.0 pinecone:1@1.0 thorn:2@1.0 sap:1@1.0
+10 | 4 | 424 | 3.50 | 6414/96000 | 2201/96000 | 80 | 60@1.9 | acorn:3@2.0 wasp:2@2.0 pinecone:1@1.0 firefly:1@1.0 thorn:3@1.0 sap:1@1.0
+15 | 4 | 497 | 4.00 | 38361/151000 | 111400/206000 | 90 | 80@2.1 | acorn:3@3.0 wasp:2@3.0 pinecone:1@2.0 firefly:1@1.0 thorn:3@2.7 sap:1@2.0
+20 | 4 | 586 | 3.40 | 29234/151000 | 55671/206000 | 120 | 80@2.1 | acorn:3@4.0 wasp:2@3.5 pinecone:1@2.0 firefly:1@1.0 thorn:3@3.0 sap:1@2.0
+25 | 4 | 641 | 4.00 | 10846/151000 | 90317/206000 | 120 | 80@2.1 | acorn:3@5.0 wasp:2@4.0 pinecone:1@2.0 firefly:1@1.0 thorn:3@3.0 sap:1@2.0
+30 | 5 | 583 | 3.80 | 53526/153000 | 181456/208000 | 120 | 80@3.3 | acorn:3@5.0 wasp:2@4.0 pinecone:2@1.5 firefly:1@1.0 thorn:4@2.5 sap:2@1.5 paper:1@1.0
+35 | 5 | 815 | 4.70 | 83213/683000 | 59422/458000 | 150 | 80@3.3 | acorn:3@5.0 wasp:2@4.0 pinecone:2@2.0 firefly:1@2.0 thorn:4@3.0 sap:2@2.0 paper:1@1.0
+40 | 5 | 975 | 5.00 | 37076/683000 | 351340/458000 | 180 | 80@3.3 | acorn:3@5.3 wasp:2@5.0 pinecone:2@3.0 firefly:1@2.0 thorn:4@3.0 sap:2@2.0 paper:1@1.0
+45 | 5 | 1048 | 5.00 | 251816/683000 | 440823/458000 | 180 | 100@3.2 | acorn:3@6.0 wasp:2@5.0 pinecone:2@3.0 firefly:1@2.0 thorn:4@3.0 sap:2@2.0 paper:1@1.0
+50 | 5 | 1170 | 5.00 | 194444/683000 | 426455/458000 | 180 | 100@4.5 | acorn:3@6.0 wasp:2@5.0 pinecone:2@3.0 firefly:1@2.0 thorn:4@3.0 sap:2@2.0 paper:1@1.0
+55 | 5 | 789 | 5.00 | 487135/683000 | 458000/458000 | 180 | 100@5.0 | acorn:3@6.0 wasp:2@5.0 pinecone:2@3.0 firefly:1@2.0 thorn:4@3.0 sap:2@2.0 paper:1@1.0
+60 | 6 | 969 | 5.80 | 380109/710000 | 449157/485000 | 180 | 100@5.0 | acorn:4@4.8 wasp:3@3.7 pinecone:2@3.0 firefly:2@1.5 thorn:4@3.0 sap:2@2.0 paper:1@1.0 clockwork:1@1.0 bitter:1@1.0
+65 | 6 | 1149 | 6.00 | 252827/1360000 | 503812/685000 | 180 | 125@5.0 | acorn:4@5.0 wasp:3@4.0 pinecone:2@3.0 firefly:2@2.0 thorn:4@3.0 sap:2@2.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+70 | 6 | 1194 | 6.00 | 178761/1360000 | 685000/685000 | 180 | 125@5.0 | acorn:4@5.5 wasp:3@4.7 pinecone:2@3.5 firefly:2@3.0 thorn:4@4.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+75 | 6 | 1187 | 6.00 | 49286/1360000 | 135481/685000 | 230 | 125@5.0 | acorn:4@6.0 wasp:3@5.7 pinecone:2@4.0 firefly:2@3.0 thorn:4@4.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+80 | 6 | 1337 | 6.00 | 103846/1360000 | 634211/685000 | 240 | 125@5.0 | acorn:4@7.0 wasp:3@6.0 pinecone:2@4.0 firefly:2@3.0 thorn:4@4.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+85 | 6 | 1508 | 6.00 | 578098/1360000 | 655819/685000 | 240 | 125@5.2 | acorn:4@7.0 wasp:3@6.0 pinecone:2@4.0 firefly:2@3.0 thorn:4@4.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+90 | 6 | 1070 | 6.00 | 624315/1360000 | 685000/685000 | 240 | 125@5.6 | acorn:4@7.0 wasp:3@6.0 pinecone:2@4.0 firefly:2@3.0 thorn:4@4.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0

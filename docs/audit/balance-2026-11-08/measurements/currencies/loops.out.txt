@@ -1,0 +1,62 @@
+== (c) topUp train then cancelTraining: Jade -> Provisions in storage, no action required
+K | troop | n queued | Prov bought | Jade paid | Jade per 1k Prov | intended top-up price per 1k (same curve) | refund == bought? | storage cap | max Prov per command
+1 | frog_lobber | 40 | 2.0k | 55 | 27.50 | 30 (1k) 27.50 (this amount) | yes, 100% | 4.5k | 2.0k
+2 | frog_lobber | 80 | 4.0k | 77 | 19.25 | 23 (1k) 19.25 (this amount) | yes, 100% | 10.0k | 4.0k
+3 | owl_bomber | 40 | 16.0k | 206 | 12.88 | 19 (1k) 12.88 (this amount) | yes, 100% | 95.0k | 16.0k
+5 | crane_glider | 90 | 72.0k | 364 | 5.06 | 10 (1k) 5.06 (this amount) | yes, 100% | 908.0k | 72.0k
+8 | lantern_balloon | 135 | 216.0k | 472 | 2.19 | 5 (1k) 2.19 (this amount) | yes, 100% | 9.520M | 216.0k
+10 | lantern_balloon | 150 | 240.0k | 312 | 1.30 | 3 (1k) 1.30 (this amount) | yes, 100% | 22.872M | 240.0k
+12 | thunder_kite | 157 | 502.4k | 429 | 0.85 | 2 (1k) 0.85 (this amount) | yes, 100% | 85.095M | 502.4k
+15 | dragon_kite_armada | 180 | 1.152M | 384 | 0.33 | 1 (1k) 0.33 (this amount) | yes, 100% | 490.883M | 1.152M
+fill storage at K5: 1 commands, 72.0k of 908.0k Prov for 364 Jade (5.06 Jade/1k); one top-up of the same total would cost 364 Jade; hours of Keep-max production bought: 4.1 h; 24 h skip costs 180 Jade
+fill storage at K10: 1 commands, 240.0k of 22.872M Prov for 312 Jade (1.30 Jade/1k); one top-up of the same total would cost 312 Jade; hours of Keep-max production bought: 1.6 h; 24 h skip costs 180 Jade
+fill storage at K15: 1 commands, 1.152M of 490.883M Prov for 384 Jade (0.33 Jade/1k); one top-up of the same total would cost 384 Jade; hours of Keep-max production bought: 0.6 h; 24 h skip costs 180 Jade
+
+== (a) topUp upgrade then cancel: Jade -> Coins at 2x the top-up price (cancelRefundFraction 0.5)
+K | building | upgrade cost Coins | player Coins before | Jade paid | refund | Jade per 1k Coins achieved | top-up price per 1k | allowed from 0?
+1 | well L1->2 | 300 | 0 | 12 | 150 | 80.00 | 40.00 | yes
+3 | well L5->6 | 7.0k | 0 | 97 | 3.5k | 27.71 | 13.86 | yes
+5 | well L9->10 | 84.0k | 0 | 422 | 42.0k | 10.05 | 5.02 | yes
+8 | well L13->14 | 365.8k | 0 | 666 | 182.9k | 3.64 | 1.82 | yes
+12 | well L19->20 | 3.400M | 0 | 1826 | 1.700M | 1.07 | 0.54 | yes
+15 | well L23->24 | 15.030M | 0 | 2984 | 7.515M | 0.40 | 0.20 | yes
+
+== (b) topUp research then cancelResearch: refund fraction
+K2: research cost 4.0k Prov for 77 Jade; cancel refunds 2.0k (50%) -> 38.50 Jade/1k vs train loop 19.25
+K5: research cost 4.0k Prov for 27 Jade; cancel refunds 2.0k (50%) -> 13.50 Jade/1k vs train loop 6.75
+K10: research cost 4.0k Prov for 11 Jade; cancel refunds 2.0k (50%) -> 5.50 Jade/1k vs train loop 2.75
+
+== (d) Swift Feet Training (-25%): train, then dismiss or cancel
+discount active: 0.25; beetle_brute full price 250, paid 188; cancelTraining refunds 188 (100% of paid); dismiss would refund 125 = 66% of paid (0.5 x undiscounted level cost, village.ts dismissPreview)
+appreciation: a Shinobi trained at level 1 (20 Prov) dismissed after research to level 20 (2924) refunds 1462 = 73x what was paid; 360 housing of them = 526.3k Prov, 0.30 h of Keep 15 production
+
+== (e) Harvest Festival +30% on collect with the 8 h collector cap
+Keep 5 Coin Mint L10 (3500/h): after 20 h it holds 28000 (= 8 h, cap 8 h); collecting in the Festival gives 36400 (+8400 = 30%)
+per 48 h Festival (both currencies, hours of Keep-max production gained): 1 session/day collects 2x8 h -> +4.8 h; 2 sessions -> +9.6 h; 4 sessions (22 h/day) -> +13.2 h; continuous -> +14.4 h. Over a 14-day period that is 4.3% of a 4-session player's production and 4.3% of a 1-session player's.
+holding collectors full until the Festival starts: at most 8 h x 0.3 = 2.4 h of production per collector per event (collectors cap at 8 h).
+
+== (f) Night of Raids +20% (bankRaidLoot: floor(loot x 0.2) on top, storage-capped, won attacks only)
+schedule: raiders_moon 48 h, raiders_moon_2 48 h, raiders_moon 48 h, raiders_moon_2 48 h per 14-day period -> 28.6% of all time; average loot uplift for a player who raids uniformly: 5.7%; a player who saves army/raids for the 96 h (4 raids/day x 4 days = 16 raids) gets +20% on those: at Keep 10 (campaign 700k/raid) = +2.241M per period = 7.5 h of Keep 10 production.
+
+== (g) full storage: refunds and rewards silently lost (addCapped)
+cancel at full storage: upgrade cost 84.0k Coins, refund due 42.0k, received 0 (lost 42.0k); the command still succeeds (village.ts cancel -> addCapped).
+daily chest at full storage: outcome dew_flask, granted {}, overflow {"dew":12000} (chest consumed for the day)
+dismiss at full storage: refund due 125, received 0
+
+== (h) Season Scroll and 28-day calendar: fixed rewards scaled by the Keep AT CLAIM TIME (rewardScaleByHall)
+pass tiers: 30; free track Jade 150, premium Jade 340
+K | scale | free track Coins+Prov | premium Coins+Prov | hours of Keep-max production (free) | (premium) | calendar 28 days Coins+Prov | hours
+3 | 0.14 | 25.2k | 81.7k | 3.2 h | 10.5 h | 37.0k | 4.7 h
+5 | 0.6 | 108.0k | 350.1k | 3.1 h | 10.0 h | 158.4k | 4.5 h
+6 | 1 | 180.0k | 583.5k | 3.5 h | 11.3 h | 264.0k | 5.1 h
+8 | 2.7576 | 496.4k | 1.609M | 4.4 h | 14.1 h | 728.0k | 6.4 h
+10 | 8.01873 | 1.443M | 4.679M | 4.8 h | 15.7 h | 2.117M | 7.1 h
+12 | 18.20754 | 3.277M | 10.624M | 3.9 h | 12.5 h | 4.807M | 5.7 h
+15 | 120.00231 | 21.600M | 70.021M | 6.1 h | 19.6 h | 31.681M | 8.9 h
+claimTier(2, free) = {"acorns":1000} base: at Keep 5 -> 600 Coins, at Keep 8 -> 2758 Coins (4.60x); regular model is Keep 5 on day 4 and Keep 8 on day 23 of the same 30-day season.
+
+== (i) obstacle clearing: Jade for resources and builder time
+20 new villages: 26.0 obstacles each ({"obstacle_rock":135,"obstacle_bush":260,"obstacle_stump":125}), 91.5 Jade for 7350 Coins + 2500 Prov and 12.0 builder-minutes; one-time (no respawn in sim/obstacles.ts). Price: 80 Coins + 27 Prov per Jade; the Keep 1 top-up sells 1 Jade for 33 resources, so clearing is 0.3x better than the top-up's rate in the other direction (a one-time 90 Jade, 18% of the starting 500).
+
+== (j) is a top-up offered at 0 resources, and what caps it
+Keep 5 -> 6 (500k Coins, storage 908.0k) from 0 Coins: quote 1612 Jade for 500.0k; rule: shortfallQuote returns null only when the FULL cost exceeds storage (village.ts shortfallQuote), so 100% of a cost can be bought.

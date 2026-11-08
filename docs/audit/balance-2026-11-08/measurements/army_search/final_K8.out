@@ -1,0 +1,36 @@
+# Keep 8 final. Distinct compositions evaluated (seed 1): 211; within 3 pts of best (70.2): 6 (3%)
+
+## Final table (entry seed 1 | entry seed 2 | mean of both), 20 bases each
+top1               s1  70.2 | s2  69.3 | avg  69.7  st 1.67 1*  73% 3*  32%  102×wind_step_assassin 13×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk 6×wall_climber
+top6               s1  67.5 | s2  69.5 | avg  68.5  st 1.63 1*  73% 3*  25%  114×wind_step_assassin 16×bell_warden 40×blowgun_hunter 13×gearbreaker 2×iron_monk
+top4               s1  68.3 | s2  68.4 | avg  68.3  st 1.58 1*  75% 3*  18%  102×wind_step_assassin 13×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk 3×lantern_balloon
+top7               s1  66.8 | s2  68.0 | avg  67.4  st 1.55 1*  70% 3*  23%  102×wind_step_assassin 13×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk 4×fire_monk
+top5               s1  68.0 | s2  66.2 | avg  67.1  st 1.55 1*  68% 3*  25%  99×wind_step_assassin 16×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk
+top2               s1  68.7 | s2  65.0 | avg  66.8  st 1.58 1*  73% 3*  20%  102×wind_step_assassin 16×bell_warden 40×blowgun_hunter 13×gearbreaker 6×wall_climber 2×iron_monk
+top8               s1  66.6 | s2  66.9 | avg  66.8  st 1.55 1*  68% 3*  25%  102×wind_step_assassin 13×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk 3×crane_glider
+top9               s1  66.5 | s2  66.3 | avg  66.4  st 1.50 1*  68% 3*  25%  103×wind_step_assassin 13×bell_warden 39×blowgun_hunter 19×gearbreaker 5×iron_monk
+top3               s1  68.4 | s2  64.0 | avg  66.2  st 1.55 1*  70% 3*  20%  116×wind_step_assassin 13×bell_warden 26×blowgun_hunter 13×gearbreaker 5×iron_monk 6×wall_climber
+best@twin_gates    s1  64.4 | s2  64.5 | avg  64.5  st 1.50 1*  75% 3*  20%  106×wind_step_assassin 13×bell_warden 26×blowgun_hunter 13×gearbreaker 5×iron_monk 6×wall_climber 2×beetle_brute
+top10              s1  66.3 | s2  60.1 | avg  63.3  st 1.50 1*  70% 3*  22%  110×wind_step_assassin 13×bell_warden 39×blowgun_hunter 12×gearbreaker 6×wall_climber 2×iron_monk 2×beetle_brute
+best@open_court    s1  60.3 | s2  63.8 | avg  62.0  st 1.35 1*  65% 3*  18%  16×bell_warden 74×wind_step_assassin 10×iron_monk 40×blowgun_hunter 13×gearbreaker
+suggested          s1  58.6 | s2  61.1 | avg  59.9  st 1.27 1*  73% 3*  10%  97×wind_step_assassin 16×bell_warden 67×blowgun_hunter 13×gearbreaker
+lab:shadow         s1  48.4 | s2  52.9 | avg  50.6  st 0.82 1*  43% 3*   8%  47×mirage_twin 47×shadow_stalker 14×grapple_raider 14×gearbreaker 5×bell_warden
+lab:artillery      s1  48.3 | s2  51.3 | avg  49.8  st 0.90 1*  55% 3*   3%  64×blowgun_hunter 64×shuriken_storm 21×hawk_tamer 14×gearbreaker 13×grapple_raider 5×bell_warden
+lab:breach         s1  48.0 | s2  49.5 | avg  48.8  st 0.78 1*  43% 3*   0%  20×grapple_raider 8×bell_warden 20×gearbreaker 11×fire_monk 11×ram_crew 29×blowgun_hunter 28×shuriken_storm 9×hawk_tamer
+lab:support_light  s1  47.3 | s2  47.9 | avg  47.6  st 0.72 1*  43% 3*   0%  25×grapple_raider 25×gearbreaker 9×bell_warden 10×hawk_tamer 28×blowgun_hunter 28×shuriken_storm 5×drum_monk 4×mist_weaver 4×herbalist
+lab:air            s1  35.4 | s2  36.8 | avg  36.1  st 0.33 1*  25% 3*   0%  18×lantern_balloon 18×crane_glider 18×owl_bomber 10×gearbreaker 9×grapple_raider 3×bell_warden
+lab:melee          s1  28.1 | s2  29.6 | avg  28.8  st 0.25 1*  13% 3*   3%  45×grapple_raider 18×bell_warden 45×gearbreaker
+lab:siege          s1  21.4 | s2  23.9 | avg  22.7  st 0.35 1*  35% 3*   0%  22×fire_monk 22×ram_crew 23×grapple_raider 23×gearbreaker 9×bell_warden
+lab:support        s1  13.3 | s2  15.1 | avg  14.2  st 0.00 1*   0% 3*   0%  28×grapple_raider 28×gearbreaker 10×bell_warden 12×mist_weaver 12×drum_monk 12×herbalist
+
+BEST top1: 69.7 = 102×wind_step_assassin 13×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk 6×wall_climber (types 6)
+/home/user/ninja-version-of-game-1/scratch/army_search/harness.ts:558
+	console.log(`margin over suggested ${(top.avg - sugg.avg).toFixed(1)}, over bot_mix ${(top.avg - bot.avg).toFixed(1)}`);
+	                                                                                                     ^
+
+TypeError: Cannot read properties of undefined (reading 'avg')
+    at runFinal (/home/user/ninja-version-of-game-1/scratch/army_search/harness.ts:558:103)
+    at main (/home/user/ninja-version-of-game-1/scratch/army_search/harness.ts:692:29)
+    at file:///home/user/ninja-version-of-game-1/scratch/run.mjs:14:39
+
+Node.js v22.23.4
