@@ -39,6 +39,8 @@ Fill `text` only. Never change a key or `en`. An entry may have `old`: an earlie
 - Keep placeholders such as `{n}` exactly. The check fails otherwise.
 - No HTML, no line breaks, and no leading or trailing spaces unless the English has them.
 - Use your language's own script (the check fails if most letters are in another script). Write Unicode NFC. Never add invisible direction marks, zero-width spaces, control characters or invisible fillers. ZWJ/ZWNJ are allowed when the language’s spelling requires them.
+- NFC is not always the precomposed letter. In Devanagari (Hindi, Marathi) the nukta letters क़ ख़ ग़ ज़ ड़ ढ़ फ़ य़ (U+0958–U+095F) are composition exclusions: NFC stores them as the base letter plus ़ (U+093C), and the check rejects the single-code-point form. The same applies to the Bengali and Gurmukhi nukta letters. Normalize your text (`text.normalize('NFC')`) rather than trusting a keyboard.
+- Plurals, selects and gender: read "Placeholders and numbers" in `GLOSSARY.md`. Plural categories follow your language (Hindi `one` covers 0 and 1), and nothing may agree in gender with a placeholder or with the player, whose gender the game does not know.
 - Right-to-left languages (Arabic, Urdu, Hebrew): write normally. The game sets the direction.
 - Lists in `names.*` and `social.groveNames.*` must keep the same number of items. The game picks them by position.
 - Do not translate `profanity` lists or anything not in your worksheet. Moderation lists are a separate task.

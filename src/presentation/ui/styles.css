@@ -894,6 +894,9 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
  */
 html[data-script]:not([data-script="Latn"]) { --font-display: var(--font-fallback); }
 html[data-script]:not([data-script="Latn"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
+/* Devanagari (Hindi, Marathi) hangs its letters from a joined headline; letter-spacing cuts it into pieces, and vowel signs above and below need more line height than Latin. */
+html[data-script="Deva"] body, html[data-script="Deva"] body * { letter-spacing: normal !important; }
+html[data-script="Deva"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
 /* Right-to-left (Arabic, Hebrew, Urdu): text and flex rows follow `dir`; the fixed edges are mirrored here. */
 html[dir="rtl"] .side-rail { right: auto; left: calc(8px + var(--safe-l)); }
 html[dir="rtl"] .b-left { left: auto; right: calc(8px + var(--safe-r)); }

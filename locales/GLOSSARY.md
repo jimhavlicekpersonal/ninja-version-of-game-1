@@ -23,7 +23,7 @@ Translate a term the same way every time it appears. When you choose a translati
 |---|---|---|
 | Keep (Clan Keep) | The main building. Its level gates everything ("Keep 7"). | Translate as a castle keep or stronghold tower. "Keep 7" means level 7. |
 | Coins | First resource, from Coin Mints. | Plain "coins". |
-| Provisions | Second resource (grown in Rice Paddies). Pays for warriors. | "Provisions" or "supplies"; a word for rice is fine if natural. Use one word everywhere. |
+| Provisions | Second resource (grown on Terraced Farms). Pays for warriors. | "Provisions" or "supplies"; a word for rice is fine if natural. Use one word everywhere. |
 | Shadow Ink | Third resource, for top-tier warriors. | Translate both words. |
 | Jade | The premium gem currency bought in the Store. | The gemstone jade. |
 | Honor | Ranking points won or lost in raids. | A word for honour or prestige; not "trophies". |
@@ -47,4 +47,6 @@ Translate a term the same way every time it appears. When you choose a translati
 
 - `{n}`, `{name}` and other words in braces are filled in by the game. Copy them exactly. Move them anywhere the grammar needs.
 - The game formats numbers, times and dates for the player's language. Do not write digits or units yourself.
-- Plural forms are not supported yet. Until they are, phrase a sentence with `{n}` so it is correct for any number. For example, a label style like "Coins: collect {n}" in languages whose noun changes with the count.
+- Plural forms are supported. A message such as `{n, plural, one {# warrior} other {# warriors}}` is an ICU plural: keep the variable name (`n`), keep an `other` branch, and write the branches your language needs (`zero`, `one`, `two`, `few`, `many`, `other`, as `Intl.PluralRules` names them for your language code). `#` is replaced by the formatted number; an exact branch such as `=0 {none}` wins over the category. `{x, select, a {…} other {…}}` chooses by value: keep every value the English has. A plain `{n}` outside a plural is still just the number, so phrase those sentences so they are correct for any count.
+- Your language's categories may not match English. Hindi, Bangla, Gujarati, Kannada, Punjabi, Amharic, Zulu, French and Portuguese put **0 in `one`** together with 1; Russian and Polish need `few` and `many`; Arabic has all six. Check with `new Intl.PluralRules('<code>').select(n)` when unsure.
+- Where a word that agrees with a placeholder changes with its gender (Hindi, Urdu, Arabic, Hebrew, the Romance and Slavic languages), the game cannot tell you the gender of `{name}`, `{building}` or `{troop}`, nor of the player. Rephrase so nothing has to agree with them, as Turkish and Finnish rephrase to avoid suffixes on placeholders.

@@ -2060,7 +2060,7 @@ export class Hud {
     const env = import.meta.env as Record<string, string | undefined>;
     const native = Capacitor.isNativePlatform();
     const link = (label: string, configured: string | undefined, shipped: string) => {
-      const url = configured?.trim() || (language().code === 'es' ? shipped.replace('./', './es/') : shipped);
+      const url = configured?.trim() || (language().code !== 'en' ? shipped.replace('./', `./${language().code}/`) : shipped);
       if (native && !/^https?:/i.test(url)) {
         return h('button', { class: 'btn ghost', type: 'button', onclick: () => this.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, i18nLabel(label));
       }
