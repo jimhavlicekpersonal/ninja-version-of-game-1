@@ -2178,7 +2178,7 @@ export class Hud {
         h(
           'div',
           {},
-          h('b', {}, i18nText("ui.tier_e94add5d59", { arg1: next, arg2: info.layout.name })),
+          h('b', {}, i18nText("ui.tier_e94add5d59", { arg1: next, arg2: i18nMessage(info.layout.name) })),
           h('div', { class: 'muted small' }, i18nText("ui.clan_keep_d38018fadb", { arg1: info.hall, arg2: info.power > 1 ? i18nText("ui.defenses_e685095619", { arg1: info.power < 100 ? info.power.toFixed(2) : formatCompact(Math.round(info.power)) }) : '', arg3: info.modifiers.length ? i18nText("ui.message_c4f174b2a5", { arg1: info.modifiers.map((m) => m.name).join(', ') }) : '' })),
           h('div', { class: 'small' }, i18nMessage(info.layout.tip)),
           ...info.modifiers.map((m) => h('div', { class: 'small' }, i18nText("ui.message_d2599d42d8", { arg1: m.name, arg2: m.description }))),

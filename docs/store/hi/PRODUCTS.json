@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "hi",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "चुटकी भर जेड",
+      "description": "45 जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "जेड की थैली",
+      "description": "100 जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "जेड का थैला",
+      "description": "280 जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "जेड का डिब्बा",
+      "description": "600 जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "जेड का संदूक",
+      "description": "1300 जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "जेड की तिजोरी",
+      "description": "3500 जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ड्रैगन का जेड ख़ज़ाना",
+      "description": "7500 जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "प्रीमियम सीज़न स्क्रॉल",
+      "description": "इस सीज़न का प्रीमियम पथ",
+      "locale": "hi"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "शुरुआती पैक",
+      "description": "नए सरदारों के लिए जेड और संसाधन",
+      "locale": "hi"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "कारीगर का बंडल",
+      "description": "एक और कारीगर रखने के लिए जेड, और संसाधन",
+      "locale": "hi"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "युद्ध की रसद",
+      "description": "गठबंधन युद्ध के लिए रसद और जेड",
+      "locale": "hi"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "पुनर्निर्माण किट",
+      "description": "फिर से बनाने के लिए जेड और संसाधन",
+      "locale": "hi"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "कबीले का वज़ीफ़ा",
+      "description": "12 जेड के 30 रोज़ाना भुगतान",
+      "locale": "hi"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "किले का जश्न",
+      "description": "आपके नए किले के जश्न के लिए संसाधन और जेड",
+      "locale": "hi"
+    }
+  ]
+}
