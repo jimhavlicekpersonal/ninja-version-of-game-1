@@ -8,7 +8,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { encodeCommand, parseRedisUrl, RedisClient, RedisError, RespParser } from '../../../server/redis';
 import { MemoryRepo, type Player } from '../../../server/repo';
 import { boardScore, RedisLeaderboard, RedisLocks, RedisRateLimiter, RepoLeaderboard } from '../../../server/shared';
-import { baseAt, world, startSeed } from './harness';
+import { baseAt, noTroops, world, startSeed } from './harness';
 
 const url = process.env.TEST_REDIS_URL;
 const clients: RedisClient[] = [];
@@ -125,7 +125,8 @@ describe.skipIf(!url)('Redis client and shared stores', () => {
     expect([ma!.opponent.kind, mb!.opponent.kind].sort()).toEqual(['bot', 'player']);
     // Reporting the attack frees Dot for the next attacker.
     const winner = ma!.opponent.kind === 'player' ? { c: a, m: ma! } : { c: b, m: mb! };
-    await winner.c.submitAttack({ ticket: winner.m.ticket, seed: await startSeed(winner.c, winner.m.ticket), army: {}, deployments: [], endTick: 1 });
+    // One warrior fights (balance audit 2026-11-08: a battle with none is practice and is refused).
+    await winner.c.submitAttack({ ticket: winner.m.ticket, seed: await startSeed(winner.c, winner.m.ticket), ...noTroops(winner.m) });
     const loser = winner.c === a ? b : a;
     w.advance(3_600_001);
     expect((await loser.match())!.opponent.name).toBe('Dot');
