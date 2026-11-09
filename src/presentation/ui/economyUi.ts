@@ -394,7 +394,7 @@ export class EconomyUi {
     return h(
       'div',
       { class: 'pass-premium' },
-      h('div', {}, h('b', {}, i18nText("ui.premium_track_4a4a663105", { arg1: d.pass.name })), h('div', { class: 'muted small' }, i18nText("ui.until_the_season_ends_20_faster_builds_428fde58a5", { arg1: this.passLookName(), pct: this.passSpeedPct() })), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toUpperCase()}${ends.slice(1)}`), value, closed && !check.ok ? h('p', { class: 'note' }, check.message) : null),
+      h('div', {}, h('b', {}, i18nText("ui.premium_track_4a4a663105", { arg1: d.pass.name })), h('div', { class: 'muted small' }, i18nText("ui.until_the_season_ends_20_faster_builds_428fde58a5", { arg1: this.passLookName(), pct: this.passSpeedPct() })), h('div', { class: 'chip' }, icon(icons.clock), `${ends.charAt(0).toLocaleUpperCase(language().code)}${ends.slice(1)}`), value, closed && !check.ok ? h('p', { class: 'note' }, check.message) : null),
       buy,
     );
   }
