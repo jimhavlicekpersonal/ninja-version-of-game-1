@@ -479,6 +479,11 @@ export class EconomyUi {
         body.append(h('p', { class: 'chip good' }, i18nText("ui.premium_active_builds_are_20_faster_5eb0f4e244", { pct: this.passSpeedPct() })));
       }
       body.append(h('h3', {}, i18nText("ui.tasks_b3a60e61a5")));
+      // The sim writes the target with English digit grouping; show it in the player's own (29.000, not 29,000).
+      const taskText = (t: { id: string; kind: string; target: number; text: string }) => {
+        const tpl = (t.kind === 'weekly' ? d.pass.weeklyChallenges : d.pass.dailyTasks).find((x) => x.id === t.id);
+        return tpl ? tpl.text.replace('{n}', formatNumber(t.target)) : t.text;
+      };
       for (const t of currentTasks(s, hallLevel(s, d), d)) {
         // Only a claim that can be made looks like a button (re-audit design item 9); the rest is a flat, locked tag.
         const ready = !t.claimed && t.progress >= t.target;
@@ -490,7 +495,7 @@ export class EconomyUi {
           if (!r.ok) this.kit.toast(ownedError(r.message, true), 'error');
           draw();
         });
-        body.append(h('div', { class: 'log-row' }, h('div', { style: 'flex:1' }, h('b', {}, `${t.kind === 'weekly' ? i18nLabel('Weekly: ') : ''}${t.text}`), h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(t.progress / t.target) * 100}%` })), h('span', { class: 'small' }, `${formatNumber(t.progress)}/${formatNumber(t.target)}`))), btn));
+        body.append(h('div', { class: 'log-row' }, h('div', { style: 'flex:1' }, h('b', {}, `${t.kind === 'weekly' ? i18nLabel('Weekly: ') : ''}${taskText(t)}`), h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${(t.progress / t.target) * 100}%` })), h('span', { class: 'small' }, `${formatNumber(t.progress)}/${formatNumber(t.target)}`))), btn));
       }
       body.append(h('h3', {}, i18nText("ui.rewards_59afe47d9d")));
       const tiers = h('div', { class: 'tiers' });

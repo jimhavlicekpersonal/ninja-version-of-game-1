@@ -36,6 +36,11 @@
           "displayName": "Pitada de Jade",
           "description": "45 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Prise Jade",
+          "description": "45 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "jade_pinch",
@@ -76,6 +81,11 @@
           "displayName": "Bolsinha de Jade",
           "description": "100 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Jadebeutel",
+          "description": "100 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "jade_pouch",
@@ -116,6 +126,11 @@
           "displayName": "Bolsa de Jade",
           "description": "280 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Jadesack",
+          "description": "280 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "jade_bag",
@@ -156,6 +171,11 @@
           "displayName": "Caixa de Jade",
           "description": "600 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Jadekiste",
+          "description": "600 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "jade_box",
@@ -196,6 +216,11 @@
           "displayName": "Baú de Jade",
           "description": "1300 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Jadetruhe",
+          "description": "1300 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "jade_chest",
@@ -236,6 +261,11 @@
           "displayName": "Cofre de Jade",
           "description": "3500 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Jadetresor",
+          "description": "3500 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "jade_vault",
@@ -276,6 +306,11 @@
           "displayName": "Tesouro do Dragão de Jade",
           "description": "7500 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Jade-Drachenhort",
+          "description": "7500 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "jade_hoard",
@@ -316,6 +351,11 @@
           "displayName": "Pergaminho Premium",
           "description": "Trilha premium desta temporada",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Premium-Saisonrolle",
+          "description": "Premium-Pfad dieser Saison",
+          "locale": "de_DE"
         }
       ],
       "productID": "season_scroll",
@@ -356,6 +396,11 @@
           "displayName": "Pacote Inicial",
           "description": "Jade e recursos para novos líderes",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Starterpaket",
+          "description": "Jade und Ressourcen für neue Clanoberhäupter",
+          "locale": "de_DE"
         }
       ],
       "productID": "offer_starter",
@@ -396,6 +441,11 @@
           "displayName": "Pacote do Artesão",
           "description": "Jade para contratar mais um Artesão, e recursos",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Handwerkerbündel",
+          "description": "Jade für einen weiteren Handwerker, plus Ressourcen",
+          "locale": "de_DE"
         }
       ],
       "productID": "offer_builder",
@@ -436,6 +486,11 @@
           "displayName": "Suprimentos de Guerra",
           "description": "Provisões e Jade para a Guerra de Alianças",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Kriegsvorräte",
+          "description": "Proviant und Jade für den Allianzkrieg",
+          "locale": "de_DE"
         }
       ],
       "productID": "offer_war_prep",
@@ -476,6 +531,11 @@
           "displayName": "Kit de Reconstrução",
           "description": "Jade e recursos para reconstruir",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Wiederaufbau-Set",
+          "description": "Jade und Ressourcen für den Wiederaufbau",
+          "locale": "de_DE"
         }
       ],
       "productID": "offer_rebuild",
@@ -516,6 +576,11 @@
           "displayName": "Estipêndio do Clã",
           "description": "30 pagamentos diários de 12 de Jade",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Clan-Sold",
+          "description": "30 tägliche Zahlungen à 12 Jade",
+          "locale": "de_DE"
         }
       ],
       "productID": "clan_stipend",
@@ -556,6 +621,11 @@
           "displayName": "Celebração da Fortaleza",
           "description": "Recursos e Jade para celebrar sua nova Fortaleza",
           "locale": "pt_PT"
+        },
+        {
+          "displayName": "Burgfest",
+          "description": "Ressourcen und Jade für deine neue Burgstufe",
+          "locale": "de_DE"
         }
       ],
       "productID": "offer_keep",
