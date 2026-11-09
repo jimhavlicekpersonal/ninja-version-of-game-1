@@ -28,6 +28,9 @@ const french = key => frData[key]?.text || '';
 const itData = read('locales/it/data.json');
 const shortItalian = {starter_pack: 'Giada e risorse per i nuovi clan', builder_pack: "Giada per un altro Artigiano, più risorse", war_prep_pack: "Provviste e Giada per la Guerra d'Alleanza", rebuild_pack: 'Giada e risorse per ricostruire', keep_pack: 'Risorse e Giada per festeggiare la nuova Rocca'};
 const italian = key => itData[key]?.text || '';
+const idData = read('locales/id/data.json');
+const shortIndonesian = {starter_pack: 'Giok dan sumber daya untuk klan baru', builder_pack: 'Giok untuk satu Perajin lagi, plus sumber daya', war_prep_pack: 'Perbekalan dan Giok untuk Perang Aliansi', rebuild_pack: 'Giok dan sumber daya untuk membangun ulang', keep_pack: 'Sumber daya dan Giok untuk merayakan Benteng barumu'};
+const indonesian = key => idData[key]?.text || '';
 // Never cut Hindi or German to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling) or a German compound, so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
@@ -82,6 +85,12 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? italian(`store.packs.${gameId}.name`) : offer ? italian(`offers.rules.${offer.id}.title`) : stipend ? italian('store.stipend.name') : isPass ? 'Pergamena premium' : name, 30, 'Italian'),
         description: clip(pack ? `${pack.moonstones} Giada` : offer ? (shortItalian[offer.id] || italian(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagamenti giornalieri da ${stipend.jadePerPayment} Giada` : 'Percorso premium di questa stagione', 55, 'Italian'),
         locale: 'it_IT',
+      },
+      // Indonesian (Indonesia).
+      {
+        displayName: clip(pack ? indonesian(`store.packs.${gameId}.name`) : offer ? indonesian(`offers.rules.${offer.id}.title`) : stipend ? indonesian('store.stipend.name') : isPass ? 'Gulungan premium' : name, 30, 'Indonesian'),
+        description: clip(pack ? `${pack.moonstones} Giok` : offer ? (shortIndonesian[offer.id] || indonesian(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pembayaran harian ${stipend.jadePerPayment} Giok` : 'Jalur premium musim ini', 55, 'Indonesian'),
+        locale: 'id',
       },
     ],
     productID: storeId,

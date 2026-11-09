@@ -12,6 +12,7 @@ const ACCOUNT_FAILURE = {
   de: 'Die Anfrage konnte nicht gesendet werden. Prüfe deine Angaben und deine Verbindung und versuche es erneut.',
   fr: 'La demande n’a pas pu être envoyée. Vérifie tes informations et ta connexion, puis réessaie.',
   it: 'Non è stato possibile inviare la richiesta. Controlla i dati e la connessione e riprova.',
+  id: 'Permintaan tidak dapat dikirim. Periksa data dan koneksimu, lalu coba lagi.',
 };
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;
