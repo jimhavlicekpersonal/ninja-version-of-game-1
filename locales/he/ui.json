@@ -107,6 +107,7 @@
   "store.error.failed": { "en": "The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.", "text": "" },
   "raid.rejected.expired": { "en": "The report arrived too late.", "text": "" },
   "raid.rejected.defender_protected": { "en": "That village was already shielded.", "text": "" },
+  "raid.rejected.no_warriors": { "en": "No warriors fought, so it counts as practice.", "text": "" },
   "raid.rejected.account_deleted": { "en": "Your online account was deleted.", "text": "" },
   "raid.rejected.conflict": { "en": "The opponent changed at the same moment.", "text": "" },
   "raid.rejected.version_mismatch": { "en": "This version of the game is too old.", "text": "" },

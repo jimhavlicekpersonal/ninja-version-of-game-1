@@ -58,6 +58,8 @@ export type ErrorCode =
   | 'expired'
   /** 409: another raid shielded this defender after the ticket was issued; the battle counts as practice (re-audit). */
   | 'defender_protected'
+  /** 409: no warrior was deployed (only the free clan hero); the battle counts as practice (balance audit 2026-11-08). */
+  | 'no_warriors'
   | 'cooldown'
   | 'full'
   | 'not_in_grove'

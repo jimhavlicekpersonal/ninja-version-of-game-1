@@ -107,6 +107,7 @@
   "store.error.failed": { "en": "The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.", "text": "Der Kauf ist nicht durchgegangen. Falls dir etwas berechnet wurde, wird es geliefert, sobald der Store es bestätigt." },
   "raid.rejected.expired": { "en": "The report arrived too late.", "text": "Der Bericht kam zu spät an." },
   "raid.rejected.defender_protected": { "en": "That village was already shielded.", "text": "Dieses Dorf war bereits geschützt." },
+  "raid.rejected.no_warriors": { "en": "No warriors fought, so it counts as practice.", "text": "Es hat kein Krieger gekämpft, daher zählt es als Übung." },
   "raid.rejected.account_deleted": { "en": "Your online account was deleted.", "text": "Dein Online-Konto wurde gelöscht." },
   "raid.rejected.conflict": { "en": "The opponent changed at the same moment.", "text": "Der Gegner hat sich im selben Moment geändert." },
   "raid.rejected.version_mismatch": { "en": "This version of the game is too old.", "text": "Diese Version des Spiels ist zu alt." },

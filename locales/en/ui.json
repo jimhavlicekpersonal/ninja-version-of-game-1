@@ -107,6 +107,7 @@
   "store.error.failed": "The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.",
   "raid.rejected.expired": "The report arrived too late.",
   "raid.rejected.defender_protected": "That village was already shielded.",
+  "raid.rejected.no_warriors": "No warriors fought, so it counts as practice.",
   "raid.rejected.account_deleted": "Your online account was deleted.",
   "raid.rejected.conflict": "The opponent changed at the same moment.",
   "raid.rejected.version_mismatch": "This version of the game is too old.",

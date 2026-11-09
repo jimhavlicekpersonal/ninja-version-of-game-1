@@ -1580,6 +1580,15 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   if (bad) return fail('INVALID_BATTLE', bad);
   const result = known ? structuredClone(known) : runBattle(rec.setup, rec.deployments, data, rec.endTick).result;
   spendTroops(s, result.used, rec.setup);
+  if (!foughtWithWarriors(result, rec.setup)) {
+    // Balance audit 2026-11-08 (DZ-3): the clan hero joins for free, so a battle where no warrior was
+    // deployed is practice: no loot, no honor, the shield stays (it used to bank 17k-327k per battle).
+    s.scout = null;
+    const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: {}, rules: SIM_RULES, settlement: 'rejected', rejected: 'no_warriors' };
+    s.battleLog.push(record);
+    trimLog(s.battleLog, data.battle.maxReplays);
+    return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+  }
   if (rec.ticket) {
     // Online attack: the server re-runs it and decides. Troops are spent now
     // (they fought), but loot and honor wait for the server's answer, so a
@@ -1610,6 +1619,11 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+}
+
+/** Whether any warrior (not just the free hero) was deployed: a battle without one is practice. */
+export function foughtWithWarriors(result: Pick<BattleResult, 'used'>, setup: Pick<BattleSetup, 'hero'>): boolean {
+  return Object.entries(result.used).some(([t, n]) => n > 0 && t !== setup.hero?.id);
 }
 
 /** Bank a won attack's loot plus the league and event bonuses. Returns banked, overflow and the bonuses. Mutates. */

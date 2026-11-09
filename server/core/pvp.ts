@@ -14,7 +14,7 @@ import { shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
 import { applyLootPenalty, hallWindow, powerSlackAt } from '../../src/gameplay/sim/matchmaking';
 import { lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { deserialize } from '../../src/gameplay/sim/save';
-import { advance } from '../../src/gameplay/sim/village';
+import { advance, foughtWithWarriors } from '../../src/gameplay/sim/village';
 import { layoutChangedShare, newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { sanitizeName } from '../../src/gameplay/sim/social/names';
@@ -617,6 +617,13 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
     await burnAfterFailures(ctx, ticket, e);
     throw e;
   });
+  // Balance audit 2026-11-08 (DZ-3): the free clan hero alone wins nothing; with no warrior deployed the
+  // battle is practice (the game records it so too, `foughtWithWarriors`).
+  if (!foughtWithWarriors(result, setup)) {
+    await repo.useTicket(ticket.id, undefined);
+    if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
+    throw new ApiError(409, 'no_warriors', 'No warriors fought, so this battle counts as practice.');
+  }
   const t = ctx.now();
   const attackId = ctx.uuid();
   const rdef = data.ranks.rating;

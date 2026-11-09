@@ -12,10 +12,12 @@ import type { RulesEngine } from './registry';
 
 import { engine as v3 } from './v3/engine';
 import { engine as v4 } from './v4/engine';
+import { engine as v5 } from './v5/engine';
 // rules-snapshot: imports (keep this marker)
 
 export const ARCHIVED_ENGINES: (() => RulesEngine)[] = [
   v3,
   v4,
+  v5,
   // rules-snapshot: engines (keep this marker)
 ];

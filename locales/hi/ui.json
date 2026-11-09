@@ -107,6 +107,7 @@
   "store.error.failed": { "en": "The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.", "text": "ख़रीद पूरी नहीं हुई। अगर पैसे कटे हैं, तो स्टोर की पुष्टि होते ही चीज़ें मिल जाएँगी।" },
   "raid.rejected.expired": { "en": "The report arrived too late.", "text": "रिपोर्ट बहुत देर से पहुँची।" },
   "raid.rejected.defender_protected": { "en": "That village was already shielded.", "text": "उस गाँव पर पहले से ढाल थी।" },
+  "raid.rejected.no_warriors": { "en": "No warriors fought, so it counts as practice.", "text": "कोई योद्धा नहीं लड़ा, इसलिए यह अभ्यास गिना जाएगा।" },
   "raid.rejected.account_deleted": { "en": "Your online account was deleted.", "text": "आपका ऑनलाइन खाता हटा दिया गया था।" },
   "raid.rejected.conflict": { "en": "The opponent changed at the same moment.", "text": "उसी समय प्रतिद्वंद्वी बदल गया।" },
   "raid.rejected.version_mismatch": { "en": "This version of the game is too old.", "text": "गेम का यह संस्करण बहुत पुराना है।" },
