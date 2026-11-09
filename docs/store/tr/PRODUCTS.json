@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "tr",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Bir Tutam Yeşim",
+      "description": "45 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Bir Kese Yeşim",
+      "description": "100 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Bir Torba Yeşim",
+      "description": "280 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Bir Kutu Yeşim",
+      "description": "600 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Bir Sandık Yeşim",
+      "description": "1300 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Bir Kasa Yeşim",
+      "description": "3500 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Bir Ejder Hazinesi Yeşim",
+      "description": "7500 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Premium Parşömen",
+      "description": "Bu sezonun premium yolu",
+      "locale": "tr"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Başlangıç Paketi",
+      "description": "Yeni klan liderleri için Yeşim ve kaynaklar",
+      "locale": "tr"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Usta Paketi",
+      "description": "Bir Köy Ustası daha için Yeşim, artı kaynaklar",
+      "locale": "tr"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Savaş Malzemeleri",
+      "description": "İttifak Savaşı için Erzak ve Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Yeniden İnşa Seti",
+      "description": "Yeniden inşa için Yeşim ve kaynaklar",
+      "locale": "tr"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klan Maaşı",
+      "description": "30 gün boyunca her gün 12 Yeşim",
+      "locale": "tr"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Kale Kutlaması",
+      "description": "Yeni Kale seviyen için kaynaklar ve Yeşim",
+      "locale": "tr"
+    }
+  ]
+}

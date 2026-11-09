@@ -56,6 +56,11 @@
           "displayName": "Pizzico di Giada",
           "description": "45 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bir Tutam Yeşim",
+          "description": "45 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_pinch",
@@ -116,6 +121,11 @@
           "displayName": "Borsellino di Giada",
           "description": "100 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bir Kese Yeşim",
+          "description": "100 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_pouch",
@@ -176,6 +186,11 @@
           "displayName": "Sacca di Giada",
           "description": "280 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bir Torba Yeşim",
+          "description": "280 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_bag",
@@ -236,6 +251,11 @@
           "displayName": "Scatola di Giada",
           "description": "600 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bir Kutu Yeşim",
+          "description": "600 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_box",
@@ -296,6 +316,11 @@
           "displayName": "Forziere di Giada",
           "description": "1300 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bir Sandık Yeşim",
+          "description": "1300 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_chest",
@@ -356,6 +381,11 @@
           "displayName": "Caveau di Giada",
           "description": "3500 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bir Kasa Yeşim",
+          "description": "3500 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_vault",
@@ -416,6 +446,11 @@
           "displayName": "Tesoro del Drago di Giada",
           "description": "7500 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bir Ejder Hazinesi Yeşim",
+          "description": "7500 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_hoard",
@@ -476,6 +511,11 @@
           "displayName": "Pergamena premium",
           "description": "Percorso premium di questa stagione",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Premium Parşömen",
+          "description": "Bu sezonun premium yolu",
+          "locale": "tr"
         }
       ],
       "productID": "season_scroll",
@@ -536,6 +576,11 @@
           "displayName": "Pacchetto iniziale",
           "description": "Giada e risorse per i nuovi clan",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Başlangıç Paketi",
+          "description": "Yeni klan liderleri için Yeşim ve kaynaklar",
+          "locale": "tr"
         }
       ],
       "productID": "offer_starter",
@@ -596,6 +641,11 @@
           "displayName": "Pacchetto dell'Artigiano",
           "description": "Giada per un altro Artigiano, più risorse",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Usta Paketi",
+          "description": "Bir Köy Ustası daha için Yeşim, artı kaynaklar",
+          "locale": "tr"
         }
       ],
       "productID": "offer_builder",
@@ -656,6 +706,11 @@
           "displayName": "Rifornimenti di guerra",
           "description": "Provviste e Giada per la Guerra d'Alleanza",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Savaş Malzemeleri",
+          "description": "İttifak Savaşı için Erzak ve Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "offer_war_prep",
@@ -716,6 +771,11 @@
           "displayName": "Kit di ricostruzione",
           "description": "Giada e risorse per ricostruire",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Yeniden İnşa Seti",
+          "description": "Yeniden inşa için Yeşim ve kaynaklar",
+          "locale": "tr"
         }
       ],
       "productID": "offer_rebuild",
@@ -776,6 +836,11 @@
           "displayName": "Stipendio del Clan",
           "description": "30 pagamenti giornalieri da 12 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Klan Maaşı",
+          "description": "30 gün boyunca her gün 12 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "clan_stipend",
@@ -836,6 +901,11 @@
           "displayName": "Festa della Rocca",
           "description": "Risorse e Giada per festeggiare la nuova Rocca",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Kale Kutlaması",
+          "description": "Yeni Kale seviyen için kaynaklar ve Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "offer_keep",

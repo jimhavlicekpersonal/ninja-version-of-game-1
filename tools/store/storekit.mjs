@@ -28,6 +28,9 @@ const french = key => frData[key]?.text || '';
 const itData = read('locales/it/data.json');
 const shortItalian = {starter_pack: 'Giada e risorse per i nuovi clan', builder_pack: "Giada per un altro Artigiano, più risorse", war_prep_pack: "Provviste e Giada per la Guerra d'Alleanza", rebuild_pack: 'Giada e risorse per ricostruire', keep_pack: 'Risorse e Giada per festeggiare la nuova Rocca'};
 const italian = key => itData[key]?.text || '';
+const trData = read('locales/tr/data.json');
+const shortTurkish = {starter_pack: 'Yeni klan liderleri için Yeşim ve kaynaklar', builder_pack: 'Bir Köy Ustası daha için Yeşim, artı kaynaklar', war_prep_pack: 'İttifak Savaşı için Erzak ve Yeşim', rebuild_pack: 'Yeniden inşa için Yeşim ve kaynaklar', keep_pack: 'Yeni Kale seviyen için kaynaklar ve Yeşim'};
+const turkish = key => trData[key]?.text || '';
 // Never cut Hindi or German to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling) or a German compound, so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
@@ -82,6 +85,11 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? italian(`store.packs.${gameId}.name`) : offer ? italian(`offers.rules.${offer.id}.title`) : stipend ? italian('store.stipend.name') : isPass ? 'Pergamena premium' : name, 30, 'Italian'),
         description: clip(pack ? `${pack.moonstones} Giada` : offer ? (shortItalian[offer.id] || italian(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagamenti giornalieri da ${stipend.jadePerPayment} Giada` : 'Percorso premium di questa stagione', 55, 'Italian'),
         locale: 'it_IT',
+      },
+      {
+        displayName: clip(pack ? turkish(`store.packs.${gameId}.name`) : offer ? turkish(`offers.rules.${offer.id}.title`) : stipend ? turkish('store.stipend.name') : isPass ? 'Premium Parşömen' : name, 30, 'Turkish'),
+        description: clip(pack ? `${pack.moonstones} Yeşim` : offer ? (shortTurkish[offer.id] || turkish(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} gün boyunca her gün ${stipend.jadePerPayment} Yeşim` : 'Bu sezonun premium yolu', 55, 'Turkish'),
+        locale: 'tr',
       },
     ],
     productID: storeId,
