@@ -109,10 +109,12 @@ describe('keys and worksheets', () => {
     for (const code of ready) {
       const pack = JSON.parse(readFileSync(join(ROOT, 'locales/compiled', `${code}.json`), 'utf8')) as Record<string, string>;
       const raid = translate('ui.raid_263dae9af8', {}, code, pack);
-      expect(raid, code).not.toBe('raid');
+      expect(raid, code).toBe(pack['ui.raid_263dae9af8']);
+      // French writes "raid" too; every other ready language has its own word.
+      if (code !== 'fr') expect(raid, code).not.toBe('raid');
       const notice = translate('ui.your_on_was_interrupted_and_has_been_p_2998375358', { arg1: raid, arg2: 'Kaito', arg3: 2, arg4: 75 }, code, pack);
       expect(notice, code).toContain(raid);
-      expect(notice, code).not.toMatch(/\braid\b/i);
+      if (code !== 'fr') expect(notice, code).not.toMatch(/\braid\b/i);
     }
     expect(translate('ui.raid_263dae9af8', {}, 'en')).toBe('raid');
   });

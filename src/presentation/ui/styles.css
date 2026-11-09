@@ -821,7 +821,9 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 .objective-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .objective-chip:disabled { opacity: .85; }
 .unlock-chip { display: flex; align-items: center; gap: 4px; pointer-events: auto; max-width: 100%; }
-.unlock-chip .unlocks { padding: 5px 12px 5px 6px; border-radius: 999px; min-height: 36px; }
+/* min-width 0: a long translated label truncates instead of pushing the dismiss button under the side rail. */
+.unlock-chip .unlocks { padding: 5px 12px 5px 6px; border-radius: 999px; min-height: 36px; min-width: 0; }
+.unlock-chip > :last-child { flex: none; }
 .unlock-chip .unlocks .icon { width: 22px; height: 22px; }
 .unlock-chip .unlock-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .unlock-x { width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(247, 240, 225, .9); display: grid; place-items: center; cursor: pointer; position: relative; box-shadow: var(--hairline), 0 2px 0 rgba(38, 48, 61, .2); }

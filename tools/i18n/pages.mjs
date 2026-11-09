@@ -10,6 +10,8 @@ const ACCOUNT_FAILURE = {
   hi: 'अनुरोध नहीं भेजा जा सका। अपनी जानकारी और इंटरनेट कनेक्शन जाँचें और फिर से कोशिश करें।',
   pt: 'Não foi possível enviar o pedido. Confira seus dados e sua conexão e tente de novo.',
   de: 'Die Anfrage konnte nicht gesendet werden. Prüfe deine Angaben und deine Verbindung und versuche es erneut.',
+  fr: 'La demande n’a pas pu être envoyée. Vérifie tes informations et ta connexion, puis réessaie.',
+  it: 'Non è stato possibile inviare la richiesta. Controlla i dati e la connessione e riprova.',
 };
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;

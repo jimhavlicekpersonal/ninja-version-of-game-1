@@ -22,6 +22,12 @@ const portuguese = key => ptData[key]?.text || '';
 const deData = read('locales/de/data.json');
 const shortGerman = {starter_pack: 'Jade und Ressourcen für neue Clanoberhäupter', builder_pack: 'Jade für einen weiteren Handwerker, plus Ressourcen', war_prep_pack: 'Proviant und Jade für den Allianzkrieg', rebuild_pack: 'Jade und Ressourcen für den Wiederaufbau', keep_pack: 'Ressourcen und Jade für deine neue Burgstufe'};
 const german = key => deData[key]?.text || '';
+const frData = read('locales/fr/data.json');
+const shortFrench = {starter_pack: 'Du Jade et des ressources pour les nouveaux clans', builder_pack: 'Du Jade pour un Artisan de plus, et des ressources', war_prep_pack: "Provisions et Jade pour la Guerre d'Alliance", rebuild_pack: 'Du Jade et des ressources pour reconstruire', keep_pack: 'Ressources et Jade pour fêter ton nouveau Donjon'};
+const french = key => frData[key]?.text || '';
+const itData = read('locales/it/data.json');
+const shortItalian = {starter_pack: 'Giada e risorse per i nuovi clan', builder_pack: "Giada per un altro Artigiano, più risorse", war_prep_pack: "Provviste e Giada per la Guerra d'Alleanza", rebuild_pack: 'Giada e risorse per ricostruire', keep_pack: 'Risorse e Giada per festeggiare la nuova Rocca'};
+const italian = key => itData[key]?.text || '';
 // Never cut Hindi or German to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling) or a German compound, so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
@@ -65,6 +71,17 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? german(`store.packs.${gameId}.name`) : offer ? german(`offers.rules.${offer.id}.title`) : stipend ? german('store.stipend.name') : isPass ? `Premium-${german('pass.name')}` : name, 30, 'German'),
         description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortGerman[offer.id] || german(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} tägliche Zahlungen à ${stipend.jadePerPayment} Jade` : 'Premium-Pfad dieser Saison', 55, 'German'),
         locale: 'de_DE',
+      },
+      // French: France and Canada (the App Store's two French localizations), also Belgium, Switzerland and Africa.
+      ...['fr_FR', 'fr_CA'].map(locale => ({
+        displayName: clip(pack ? french(`store.packs.${gameId}.name`) : offer ? french(`offers.rules.${offer.id}.title`) : stipend ? french('store.stipend.name') : isPass ? 'Parchemin premium' : name, 30, 'French'),
+        description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortFrench[offer.id] || french(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} versements quotidiens de ${stipend.jadePerPayment} Jade` : 'Voie premium de cette saison', 55, 'French'),
+        locale,
+      })),
+      {
+        displayName: clip(pack ? italian(`store.packs.${gameId}.name`) : offer ? italian(`offers.rules.${offer.id}.title`) : stipend ? italian('store.stipend.name') : isPass ? 'Pergamena premium' : name, 30, 'Italian'),
+        description: clip(pack ? `${pack.moonstones} Giada` : offer ? (shortItalian[offer.id] || italian(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagamenti giornalieri da ${stipend.jadePerPayment} Giada` : 'Percorso premium di questa stagione', 55, 'Italian'),
+        locale: 'it_IT',
       },
     ],
     productID: storeId,
