@@ -7,6 +7,8 @@
  */
 (function () {
   var cfg = window.KAGEMURA_LEGAL || {};
+  // Pages built for a translated language (tools/i18n/pages.mjs) set <html lang>.
+  var UNSET = { en: 'not published yet', es: 'aún no publicado', hi: 'अभी प्रकाशित नहीं हुआ', pt: 'ainda não publicado', de: 'noch nicht veröffentlicht' };
   function fill() {
     var els = document.querySelectorAll('[data-legal]');
     for (var i = 0; i < els.length; i++) {
@@ -17,12 +19,13 @@
       if (!v) {
         var s = document.createElement('span');
         s.className = 'unset';
-        s.textContent = el.getAttribute('data-unset') || (document.documentElement.lang === 'es' ? 'aún no publicado' : 'not published yet');
+        s.textContent = el.getAttribute('data-unset') || UNSET[document.documentElement.lang] || UNSET.en;
         el.appendChild(s);
       } else if (/^[^\s@]+@[^\s@]+$/.test(v) || /^https?:\/\//i.test(v) || /^\.\/[\w.-]+$/.test(v)) {
         var a = document.createElement('a');
         a.href = /^[^\s@]+@[^\s@]+$/.test(v) ? 'mailto:' + v : v;
-        if (key === 'deletionUrl' && document.documentElement.lang === 'es') a.href += (a.href.indexOf('?') < 0 ? '?' : '&') + 'lang=es';
+        var lang = document.documentElement.lang;
+        if (key === 'deletionUrl' && lang && lang !== 'en' && UNSET[lang]) a.href += (a.href.indexOf('?') < 0 ? '?' : '&') + 'lang=' + encodeURIComponent(lang);
         a.textContent = el.getAttribute('data-label') || v;
         el.appendChild(a);
       } else {

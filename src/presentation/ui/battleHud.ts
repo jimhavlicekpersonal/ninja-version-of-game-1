@@ -563,7 +563,7 @@ export class BattleHud {
     const STAR_GAP = 0.32;
     for (let i = 0; i < 3; i++) {
       const won = i < r.stars;
-      starsRow.append(h('span', { class: `star big${won ? i18nText("ui.on_slam_f7aa652317") : ''}`, style: `animation-delay:${0.25 + i * STAR_GAP}s` }, '★'));
+      starsRow.append(h('span', { class: `star big${won ? ' on slam' : ''}`, style: `animation-delay:${0.25 + i * STAR_GAP}s` }, '★'));
       if (won) window.setTimeout(() => celebrate('star'), still ? 0 : (250 + i * STAR_GAP * 1000 + 180));
     }
     if (r.destruction >= 100) window.setTimeout(() => celebrate('perfect'), still ? 0 : 250 + 3 * STAR_GAP * 1000);

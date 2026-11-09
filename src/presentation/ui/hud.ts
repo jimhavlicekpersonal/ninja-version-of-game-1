@@ -1,6 +1,6 @@
 import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
-import { t as i18nText } from './i18n';
+import { t as i18nText, fmtDecimal } from './i18n';
 import { automaticLanguage, language, languageCoverage, languagePreference, languages, READY_COVERAGE, setLanguagePreference, useLanguage, t } from './i18n';
 import { Capacitor } from '@capacitor/core';
 import type { Analytics } from '../../backend/analytics/events';
@@ -2060,7 +2060,7 @@ export class Hud {
     const env = import.meta.env as Record<string, string | undefined>;
     const native = Capacitor.isNativePlatform();
     const link = (label: string, configured: string | undefined, shipped: string) => {
-      const url = configured?.trim() || (language().code === 'es' ? shipped.replace('./', './es/') : shipped);
+      const url = configured?.trim() || (language().code !== 'en' ? shipped.replace('./', `./${language().code}/`) : shipped);
       if (native && !/^https?:/i.test(url)) {
         return h('button', { class: 'btn ghost', type: 'button', onclick: () => this.modal(label, h('iframe', { class: 'legal-frame', src: url, title: label }), [], 'wide') }, i18nLabel(label));
       }
@@ -2178,8 +2178,8 @@ export class Hud {
         h(
           'div',
           {},
-          h('b', {}, i18nText("ui.tier_e94add5d59", { arg1: next, arg2: info.layout.name })),
-          h('div', { class: 'muted small' }, i18nText("ui.clan_keep_d38018fadb", { arg1: info.hall, arg2: info.power > 1 ? i18nText("ui.defenses_e685095619", { arg1: info.power < 100 ? info.power.toFixed(2) : formatCompact(Math.round(info.power)) }) : '', arg3: info.modifiers.length ? i18nText("ui.message_c4f174b2a5", { arg1: info.modifiers.map((m) => m.name).join(', ') }) : '' })),
+          h('b', {}, i18nText("ui.tier_e94add5d59", { arg1: next, arg2: i18nMessage(info.layout.name) })),
+          h('div', { class: 'muted small' }, i18nText("ui.clan_keep_d38018fadb", { arg1: info.hall, arg2: info.power > 1 ? i18nText("ui.defenses_e685095619", { arg1: info.power < 100 ? fmtDecimal(info.power, 2) : formatCompact(Math.round(info.power)) }) : '', arg3: info.modifiers.length ? i18nText("ui.message_c4f174b2a5", { arg1: info.modifiers.map((m) => m.name).join(', ') }) : '' })),
           h('div', { class: 'small' }, i18nMessage(info.layout.tip)),
           ...info.modifiers.map((m) => h('div', { class: 'small' }, i18nText("ui.message_d2599d42d8", { arg1: m.name, arg2: m.description }))),
         ),

@@ -1288,6 +1288,7 @@
   "ui.qr_code_2c24d35a11": { "en": "QR code", "text": "" },
   "ui.queued_14e0e4f109": { "en": "Queued {arg1} {arg2}.", "text": "" },
   "ui.queued_more_could_not_be_queued_61c350a031": { "en": "Queued {arg1}. {arg2} more could not be queued. {arg3}", "text": "" },
+  "ui.raid_263dae9af8": { "en": "raid", "text": "" },
   "ui.raid_on_confirmed_by_the_server_62aee4a29d": { "en": "Raid on {arg1} confirmed by the server{arg2}.", "text": "" },
   "ui.raid_real_players_a_few_times_to_get_o_398b18284f": { "en": "Raid real players a few times to get on the Power Ranking.", "text": "" },
   "ui.raided_you_29f66d0636": { "en": "{arg1}{arg2} raided you", "text": "" },

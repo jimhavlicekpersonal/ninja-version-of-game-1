@@ -583,7 +583,7 @@ async function boot(): Promise<void> {
       const sub = { ticket: pending.ticket, seed: pending.setup.seed, army: pending.setup.army, levels: pending.setup.levels, reinforcements: pending.setup.reinforcements, deployments: pending.deployments };
       void connection.report(pending.channel === 'gangwar' ? 'gangwar' : pending.kind === 'war' ? 'raid' : 'attack', sub);
     }
-    const what = pending.channel === 'gangwar' ? i18nText("ui.gang_war_attack_59b0d70c6d") : pending.kind === 'war' ? i18nText("ui.alliance_war_attack_b99d44a1a6") : pending.kind === 'trial' ? i18nText("ui.shadow_trial_3aa629e356") : 'raid';
+    const what = pending.channel === 'gangwar' ? i18nText("ui.gang_war_attack_59b0d70c6d") : pending.kind === 'war' ? i18nText("ui.alliance_war_attack_b99d44a1a6") : pending.kind === 'trial' ? i18nText("ui.shadow_trial_3aa629e356") : i18nText("ui.raid_263dae9af8");
     hud.toast(i18nText("ui.your_on_was_interrupted_and_has_been_p_2998375358", { arg1: what, arg2: pending.opponentName, arg3: record.result.stars, arg4: record.result.destruction }), 'info');
   }
 

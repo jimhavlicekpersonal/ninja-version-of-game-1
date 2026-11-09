@@ -4,6 +4,13 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { ROOT, formatSource, formatWorksheet, syncWorksheet } from './lib.mjs';
 const files = ['privacy', 'support', 'community', 'terms', 'tokushoho', 'shikin-kessai', 'account'];
+/** The account form's fallback for a failed request (it would otherwise show the browser's English error). Add one per completed language. */
+const ACCOUNT_FAILURE = {
+  es: 'No se pudo enviar la solicitud. Comprueba tus datos y tu conexión e inténtalo de nuevo.',
+  hi: 'अनुरोध नहीं भेजा जा सका। अपनी जानकारी और इंटरनेट कनेक्शन जाँचें और फिर से कोशिश करें।',
+  pt: 'Não foi possível enviar o pedido. Confira seus dados e sua conexão e tente de novo.',
+  de: 'Die Anfrage konnte nicht gesendet werden. Prüfe deine Angaben und deine Verbindung und versuche es erneut.',
+};
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;
   const s = readFileSync(join(ROOT, path), 'utf8');
@@ -59,7 +66,7 @@ export function buildPages(code, { names = files, writePublic = true } = {}) {
     for(const [key,u]of Object.entries(units).filter(([,u])=>u.name===name&&u.kind==='attribute')) html=html.replaceAll(`="${encode(u.en)}"`,`="${encode(ws[key].text)}"`);
     html=html.replace(/<html lang="[^"]+">/,`<html lang="${code}">`).replaceAll('href="./legal.css"','href="../legal.css"').replaceAll('src="./legal','src="../legal');
     // The account form must not expose English provider/network diagnostics.
-    if(name==='account' && code==='es') html=html.replace('err.message;',"'No se pudo enviar la solicitud. Comprueba tus datos y tu conexión e inténtalo de nuevo.';");
+    if(name==='account' && ACCOUNT_FAILURE[code]) html=html.replace('err.message;',JSON.stringify(ACCOUNT_FAILURE[code])+';');
     result[name]=html;
   }
   if (writePublic) {

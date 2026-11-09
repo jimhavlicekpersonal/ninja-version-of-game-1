@@ -13,6 +13,17 @@ const path = new URL('ios/App/Products.storekit', root);
 const esData = read('locales/es/data.json');
 const shortSpanish = {starter_pack: 'Jade y recursos para nuevos líderes', builder_pack: 'Jade para contratar otro Artesano y recursos', war_prep_pack: 'Provisiones y Jade para la Guerra de Alianzas', rebuild_pack: 'Jade y recursos para reconstruir', keep_pack: 'Recursos y Jade para celebrar tu nueva Fortaleza'};
 const spanish = key => esData[key]?.text || '';
+const hiData = read('locales/hi/data.json');
+const shortHindi = {starter_pack: 'नए सरदारों के लिए जेड और संसाधन', builder_pack: 'एक और कारीगर रखने के लिए जेड, और संसाधन', war_prep_pack: 'गठबंधन युद्ध के लिए रसद और जेड', rebuild_pack: 'फिर से बनाने के लिए जेड और संसाधन', keep_pack: 'आपके नए किले के जश्न के लिए संसाधन और जेड'};
+const hindi = key => hiData[key]?.text || '';
+const ptData = read('locales/pt/data.json');
+const shortPortuguese = {starter_pack: 'Jade e recursos para novos líderes', builder_pack: 'Jade para contratar mais um Artesão, e recursos', war_prep_pack: 'Provisões e Jade para a Guerra de Alianças', rebuild_pack: 'Jade e recursos para reconstruir', keep_pack: 'Recursos e Jade para celebrar sua nova Fortaleza'};
+const portuguese = key => ptData[key]?.text || '';
+const deData = read('locales/de/data.json');
+const shortGerman = {starter_pack: 'Jade und Ressourcen für neue Clanoberhäupter', builder_pack: 'Jade für einen weiteren Handwerker, plus Ressourcen', war_prep_pack: 'Proviant und Jade für den Allianzkrieg', rebuild_pack: 'Jade und Ressourcen für den Wiederaufbau', keep_pack: 'Ressourcen und Jade für deine neue Burgstufe'};
+const german = key => deData[key]?.text || '';
+// Never cut Hindi or German to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling) or a German compound, so overlong text fails here instead.
+const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
 const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i) => {
@@ -39,6 +50,22 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: (pack ? spanish(`store.packs.${gameId}.name`) : offer ? spanish(`offers.rules.${offer.id}.title`) : stipend ? spanish('store.stipend.name') : isPass ? `${spanish('pass.name')} prémium` : name).slice(0, 30),
         description: (pack ? `${pack.moonstones} de Jade` : offer ? (shortSpanish[offer.id] || spanish(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagos diarios de ${stipend.jadePerPayment} de Jade` : 'Senda prémium de esta temporada').slice(0, 55), locale,
       })),
+      {
+        displayName: clip(pack ? hindi(`store.packs.${gameId}.name`) : offer ? hindi(`offers.rules.${offer.id}.title`) : stipend ? hindi('store.stipend.name') : isPass ? `प्रीमियम ${hindi('pass.name')}` : name, 30),
+        description: clip(pack ? `${pack.moonstones} जेड` : offer ? (shortHindi[offer.id] || hindi(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.jadePerPayment} जेड के ${stipend.payments} रोज़ाना भुगतान` : 'इस सीज़न का प्रीमियम पथ', 55),
+        locale: 'hi',
+      },
+      // Brazilian Portuguese, also offered to Portugal (locales/languages.json).
+      ...['pt_BR', 'pt_PT'].map(locale => ({
+        displayName: (pack ? portuguese(`store.packs.${gameId}.name`) : offer ? portuguese(`offers.rules.${offer.id}.title`) : stipend ? portuguese('store.stipend.name') : isPass ? 'Pergaminho Premium' : name).slice(0, 30),
+        description: (pack ? `${pack.moonstones} de Jade` : offer ? (shortPortuguese[offer.id] || portuguese(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagamentos diários de ${stipend.jadePerPayment} de Jade` : 'Trilha premium desta temporada').slice(0, 55), locale,
+      })),
+      // German (Germany), the App Store's one German localization, also shown in Austria and Switzerland.
+      {
+        displayName: clip(pack ? german(`store.packs.${gameId}.name`) : offer ? german(`offers.rules.${offer.id}.title`) : stipend ? german('store.stipend.name') : isPass ? `Premium-${german('pass.name')}` : name, 30, 'German'),
+        description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortGerman[offer.id] || german(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} tägliche Zahlungen à ${stipend.jadePerPayment} Jade` : 'Premium-Pfad dieser Saison', 55, 'German'),
+        locale: 'de_DE',
+      },
     ],
     productID: storeId,
     referenceName: name,

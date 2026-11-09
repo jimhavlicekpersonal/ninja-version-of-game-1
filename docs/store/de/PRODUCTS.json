@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "de",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Prise Jade",
+      "description": "45 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Jadebeutel",
+      "description": "100 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Jadesack",
+      "description": "280 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Jadekiste",
+      "description": "600 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Jadetruhe",
+      "description": "1300 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Jadetresor",
+      "description": "3500 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Jade-Drachenhort",
+      "description": "7500 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Premium-Saisonrolle",
+      "description": "Premium-Pfad dieser Saison",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Starterpaket",
+      "description": "Jade und Ressourcen für neue Clanoberhäupter",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Handwerkerbündel",
+      "description": "Jade für einen weiteren Handwerker, plus Ressourcen",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Kriegsvorräte",
+      "description": "Proviant und Jade für den Allianzkrieg",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Wiederaufbau-Set",
+      "description": "Jade und Ressourcen für den Wiederaufbau",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Clan-Sold",
+      "description": "30 tägliche Zahlungen à 12 Jade",
+      "locale": "de_DE"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Burgfest",
+      "description": "Ressourcen und Jade für deine neue Burgstufe",
+      "locale": "de_DE"
+    }
+  ]
+}
