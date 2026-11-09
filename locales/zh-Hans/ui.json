@@ -123,5 +123,6 @@
   "ledger.refunded": { "en": "Refunded purchase taken back", "text": "已收回退款的购买" },
   "ledger.staff": { "en": "Support adjustment", "text": "客服调整" },
   "ledger.action": { "en": "Village action", "text": "村庄操作" },
-  "ledger.other": { "en": "Other", "text": "其他" }
+  "ledger.other": { "en": "Other", "text": "其他" },
+  "text.period": { "en": ".", "text": "。" }
 }

@@ -123,5 +123,6 @@
   "ledger.refunded": { "en": "Refunded purchase taken back", "text": "" },
   "ledger.staff": { "en": "Support adjustment", "text": "" },
   "ledger.action": { "en": "Village action", "text": "" },
-  "ledger.other": { "en": "Other", "text": "" }
+  "ledger.other": { "en": "Other", "text": "" },
+  "text.period": { "en": ".", "text": "" }
 }

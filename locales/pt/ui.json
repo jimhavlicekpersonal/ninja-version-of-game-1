@@ -123,5 +123,6 @@
   "ledger.refunded": { "en": "Refunded purchase taken back", "text": "Compra reembolsada retirada" },
   "ledger.staff": { "en": "Support adjustment", "text": "Ajuste do suporte" },
   "ledger.action": { "en": "Village action", "text": "Ação na vila" },
-  "ledger.other": { "en": "Other", "text": "Outro" }
+  "ledger.other": { "en": "Other", "text": "Outro" },
+  "text.period": { "en": ".", "text": "." }
 }

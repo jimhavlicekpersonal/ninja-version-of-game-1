@@ -123,5 +123,6 @@
   "ledger.refunded": { "en": "Refunded purchase taken back", "text": "रिफ़ंड हुई ख़रीद वापस ली गई" },
   "ledger.staff": { "en": "Support adjustment", "text": "सहायता टीम का समायोजन" },
   "ledger.action": { "en": "Village action", "text": "गाँव का काम" },
-  "ledger.other": { "en": "Other", "text": "अन्य" }
+  "ledger.other": { "en": "Other", "text": "अन्य" },
+  "text.period": { "en": ".", "text": "।" }
 }

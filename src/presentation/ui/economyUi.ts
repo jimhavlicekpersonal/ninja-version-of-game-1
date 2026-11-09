@@ -161,11 +161,11 @@ export class EconomyUi {
     // Player-facing names, never internal resource ids (GLOBAL-007).
     // What buying it now really delivers (offers are sized for the Keep and storage-capped: productGrantsFor).
     const real = productGrantsFor(this.c.state, productId, localizedData(this.c.data));
-    const contents = Object.entries(real?.grants ?? p.grants).filter(([, v]) => v).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(v as number), arg2: RES_NAME[k as ResourceKind] ?? k })).join(', ');
+    const contents = i18nList(Object.entries(real?.grants ?? p.grants).filter(([, v]) => v).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(v as number), arg2: RES_NAME[k as ResourceKind] ?? k })));
     const st = localizedData(this.c.data).store.stipend;
     const what = p.kind === 'stipend' && st
       ? i18nText("ui.daily_payments_of_jade_claimed_one_a_d_18cf83dd7e", { arg1: p.name, arg2: st.payments, arg3: st.jadePerPayment })
-      : p.kind === 'pass' ? i18nText("ui.premium_rewards_and_20_faster_builds_u_f67e337b8e", { arg1: p.name, arg2: this.seasonEndsText(), pct: this.passSpeedPct() }) : `${p.name}${contents ? i18nText("ui.message_463d2c3dd0", { arg1: contents }) : ''}.`;
+      : p.kind === 'pass' ? i18nText("ui.premium_rewards_and_20_faster_builds_u_f67e337b8e", { arg1: p.name, arg2: this.seasonEndsText(), pct: this.passSpeedPct() }) : `${p.name}${contents ? i18nText("ui.message_463d2c3dd0", { arg1: contents }) : ''}${t('text.period')}`;
     const note = this.c.payments.prices ? i18nText("ui.the_store_shows_the_final_price_includ_238d3d7f09") : '';
     // EU/UK digital content (re-audit design item 13): delivery starts at once, so the player acknowledges the loss of
     // the 14-day right to cancel before paying. Japanese devices also get the legally required notices.
@@ -516,7 +516,7 @@ export class EconomyUi {
             // Each tier can be claimed once: warn before part of it is lost to full storage.
             const lost = rewardOverflow(this.c.state, reward, d);
             if (Object.keys(lost).length) {
-              const text = RESOURCE_KINDS.filter((k) => lost[k]).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(lost[k]!), arg2: RES_NAME[k] })).join(', ');
+              const text = i18nList(RESOURCE_KINDS.filter((k) => lost[k]).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(lost[k]!), arg2: RES_NAME[k] })));
               const ok = await this.kit.confirm(i18nText("ui.storage_is_too_full_05dd5a7f1f"), i18nText("ui.of_this_reward_will_not_fit_in_your_st_341f12c9a9", { arg1: text }), i18nText("ui.claim_anyway_1f952b93e9"), false, i18nText("ui.claim_later_43693ed440"));
               if (!ok) return;
             }
@@ -590,7 +590,7 @@ export class EconomyUi {
       h('h3', {}, i18nText("ui.spending_c2c7ae2ad9")),
       h('p', {}, i18nText("ui.this_month_all_time_f59d88ca1e", { arg1: usd(spentThisMonth(s, this.c.now())), arg2: usd(spentTotal(s)), arg3: t('spend.summary', { n: s.purchases.length }) })),
       h('p', { class: 'muted small' }, i18nText("ui.amounts_are_the_items_us_dollar_list_p_8a3498b500")),
-      h('p', { class: 'muted small' }, i18nText("ui.age_group_68f7621465", { arg1: age, arg2: s.profile.under18 ? i18nText("ui.limit_a_month_in_list_prices_to_change_4f6bc4b210", { arg1: usd(localizedData(this.c.data).store.minorMonthlyCapUsd) }) : '.' })),
+      h('p', { class: 'muted small' }, i18nText("ui.age_group_68f7621465", { arg1: age, arg2: s.profile.under18 ? i18nText("ui.limit_a_month_in_list_prices_to_change_4f6bc4b210", { arg1: usd(localizedData(this.c.data).store.minorMonthlyCapUsd) }) : t('text.period') })),
       band === 'under13' ? null : h('div', { class: 'actions' }, change),
     );
   }

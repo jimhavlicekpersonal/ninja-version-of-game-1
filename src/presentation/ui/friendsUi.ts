@@ -39,7 +39,8 @@ export interface FriendsUiDeps {
   war?(body: HTMLElement, redraw: () => void, leader: boolean, members: number): void;
 }
 
-const LEAGUE = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
+/** The league's display name from the game data ("Bamboo League"), never a capitalized id. */
+const LEAGUE = (id: string) => { const key = `data.ranks.leagues.${id}.name`; const name = i18nText(key); return name === key ? id : name; };
 
 const FINDABLE_LABEL: Record<Findable, string> = {
   everyone: 'Everyone',
@@ -269,7 +270,7 @@ export class FriendsUi {
   }
 
   private who(p: PlayerCard, extra?: string): HTMLElement {
-    const bits = [`Clan Keep ${p.keep}`, `${LEAGUE(p.league)} league`, p.alliance ? isolateName(p.alliance) : null, extra ?? null].filter(Boolean).join(' · ');
+    const bits = [i18nText("ui.clan_keep_2cf84349d4", { arg1: p.keep }), LEAGUE(p.league), p.alliance ? isolateName(p.alliance) : null, extra ?? null].filter(Boolean).join(' · ');
     return h(
       'div',
       {},

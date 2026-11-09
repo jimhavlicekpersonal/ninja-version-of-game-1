@@ -1176,7 +1176,7 @@ export class Hud {
     if (capped) shown.push(t('unlocks.capped', { n: capped }));
     const troops = troopCapUnlock(hallLevel(this.c.state, gd), gd);
     if (troops) shown.push(i18nText("ui.troop_level_0526270e0b", { arg1: troops.to }));
-    return shown.join(', ');
+    return i18nList(shown);
   }
 
   /** The Keep level whose unlock chip the player dismissed (the chip comes back for the next level). */
@@ -1809,7 +1809,7 @@ export class Hud {
       const name = buildingDef(gd, f.type).name;
       list.append(h('li', {}, f.level === 1 ? i18nText("ui.finished_building_c35f17b9de", { arg1: name }) : i18nText("ui.reached_level_643665f2d6", { arg1: name, arg2: f.level })));
     }
-    const trained = Object.entries(s.trained).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: gd.troops[t]?.name ?? t })).join(', ');
+    const trained = i18nList(Object.entries(s.trained).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: gd.troops[t]?.name ?? t })));
     if (trained) list.append(h('li', {}, i18nText("ui.finished_training_f0d9a0ead3", { arg1: trained })));
     const gains = RESOURCE_KINDS.filter((k) => (s.collectorGains[k] ?? 0) > 0);
     if (gains.length) {
@@ -1819,7 +1819,7 @@ export class Hud {
     }
     for (const r of s.raids) {
       const lost = i18nList(RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(r.result.loot[k]!), arg2: RES_LABEL[k] })), 'conjunction');
-      list.append(h('li', {}, i18nText("ui.raided_you_d9e46d7bd1", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '', arg3: '★'.repeat(r.result.stars), arg4: '☆'.repeat(3 - r.result.stars), arg5: r.result.destruction }), lost ? i18nText("ui.took_cc3b25b89b", { arg1: lost }) : i18nText("ui.took_nothing_14469bdaf6"), r.trophies ? i18nText("ui.honor_b338aaea42", { arg1: r.trophies > 0 ? '+' : '', arg2: r.trophies }) : '.'));
+      list.append(h('li', {}, i18nText("ui.raided_you_d9e46d7bd1", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '', arg3: '★'.repeat(r.result.stars), arg4: '☆'.repeat(3 - r.result.stars), arg5: r.result.destruction }), lost ? i18nText("ui.took_cc3b25b89b", { arg1: lost }) : i18nText("ui.took_nothing_14469bdaf6"), r.trophies ? i18nText("ui.honor_b338aaea42", { arg1: r.trophies > 0 ? '+' : '', arg2: r.trophies }) : t('text.period')));
     }
     if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, localizedData(this.c.data)) > 0)) {
       list.append(h('li', {}, i18nText("ui.you_have_a_shield_for_3b6f18b25b", { arg1: formatDuration(this.c.state.shieldUntil - this.c.now()) })));
@@ -2082,7 +2082,7 @@ export class Hud {
         ...(email ? [h('a', { class: 'btn ghost', href: `mailto:${email}?subject=${encodeURIComponent(i18nText("ui.kagemura_support_af3c907500"))}` }, i18nText("ui.email_df85f7ae02", { arg1: email }))] : []),
       ),
       serverUrl
-        ? h('p', { class: 'muted small' }, i18nText("ui.delete_your_online_account_settings_on_954d6fa1b3"), h('a', { href: `${serverUrl}/account/delete?lang=${language().code}`, target: '_blank', rel: 'noopener' }, i18nText("ui.account_deletion_page_be14847793")), '.')
+        ? h('p', { class: 'muted small' }, i18nText("ui.delete_your_online_account_settings_on_954d6fa1b3"), h('a', { href: `${serverUrl}/account/delete?lang=${language().code}`, target: '_blank', rel: 'noopener' }, i18nText("ui.account_deletion_page_be14847793")), t('text.period'))
         : this.deps.connection.storedAccounts().length
           ? h('p', { class: 'muted small' }, i18nText("ui.online_play_is_off_on_this_device_but__93e0d7c565"))
           : h('p', { class: 'muted small' }, i18nText("ui.there_is_no_online_account_on_this_dev_9a43b7dd10")),

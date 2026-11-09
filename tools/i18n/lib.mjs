@@ -187,6 +187,7 @@ export function wrongHanForms(text, script) {
   return re ? [...new Set([...text].filter(ch => re.test(ch)))] : [];
 }
 
+const DENSE = new Set(['Hans', 'Hant', 'Jpan', 'Kore']);
 /** Share of letters (outside placeholders) written in the expected script. */
 export function scriptShare(texts, script) {
   const re = SCRIPT[script];
@@ -194,7 +195,10 @@ export function scriptShare(texts, script) {
   let hit = 0;
   for (const t of texts) {
     // ICU syntax (`{n, plural, one {…} other {…}}`) is Latin in every language: count only the words a player reads.
-    const words = t.replace(/\{\s*[A-Za-z0-9_]+\s*,\s*(?:plural|select)\s*,/g, '').replace(/(?:=\d+|\b[A-Za-z_]+)\s*\{/g, '{').replace(PLACEHOLDER, '');
+    let words = t.replace(/\{\s*[A-Za-z0-9_]+\s*,\s*(?:plural|select)\s*,/g, '').replace(/(?:=\d+|\b[A-Za-z_]+)\s*\{/g, '{').replace(PLACEHOLDER, '');
+    // A Han, kana or Hangul character is about a word, so in those scripts a Latin brand or code word
+    // (Kagemura, App Store, IndexedDB) counts as one letter, not as one per letter.
+    if (DENSE.has(script)) words = words.replace(/\p{Script=Latin}+/gu, 'L');
     for (const ch of words) {
       if (!/\p{L}/u.test(ch)) continue;
       total++;

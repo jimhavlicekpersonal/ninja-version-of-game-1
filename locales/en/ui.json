@@ -123,5 +123,6 @@
   "ledger.refunded": "Refunded purchase taken back",
   "ledger.staff": "Support adjustment",
   "ledger.action": "Village action",
-  "ledger.other": "Other"
+  "ledger.other": "Other",
+  "text.period": "."
 }

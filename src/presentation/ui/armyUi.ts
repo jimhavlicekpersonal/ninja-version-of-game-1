@@ -61,7 +61,7 @@ export class ArmyUi {
   }
 
   private armyText(army: Record<string, number>): string {
-    return Object.entries(army).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: this.gd.troops[t]?.name ?? t })).join(', ');
+    return i18nList(Object.entries(army).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: this.gd.troops[t]?.name ?? t })));
   }
 
   private thumb(troop: string): HTMLElement | null {

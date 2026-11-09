@@ -1,5 +1,5 @@
 import { displayData as localizedData, messageText as ownedText, generatedName } from './i18n';
-import { messageText as i18nMessage } from './i18n';
+import { messageText as i18nMessage, listText as i18nList } from './i18n';
 import { labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
 import { pointLabel, t } from './i18n';
@@ -122,7 +122,7 @@ export class BattleHud {
             : deps.special
               ? ownedText(deps.special.title)
             : deps.trial
-              ? i18nText("ui.practice_e31f506678", { arg1: ownedText(deps.trial.layout), arg2: deps.trial.modifiers.length ? i18nText("ui.message_c4f174b2a5", { arg1: deps.trial.modifiers.map(i18nLabel).join(', ') }) : '', arg3: deps.trial.firstClear ? i18nText("ui.to_clear_2921e40d70", { arg1: deps.trial.starsToClear }) : i18nText("ui.already_cleared_6521e54750") })
+              ? i18nText("ui.practice_e31f506678", { arg1: ownedText(deps.trial.layout), arg2: deps.trial.modifiers.length ? i18nText("ui.message_c4f174b2a5", { arg1: i18nList(deps.trial.modifiers.map(i18nLabel)) }) : '', arg3: deps.trial.firstClear ? i18nText("ui.to_clear_2921e40d70", { arg1: deps.trial.starsToClear }) : i18nText("ui.already_cleared_6521e54750") })
               : deps.practice
                 ? i18nText("ui.practice_battle_nothing_is_spent_or_wo_c68624fd43")
                 : // Report section 5 step 4 (art F4): the card used to wrap to six lines on a 320 px phone.
@@ -567,7 +567,7 @@ export class BattleHud {
       if (won) window.setTimeout(() => celebrate('star'), still ? 0 : (250 + i * STAR_GAP * 1000 + 180));
     }
     if (r.destruction >= 100) window.setTimeout(() => celebrate('perfect'), still ? 0 : 250 + 3 * STAR_GAP * 1000);
-    const used = Object.entries(r.used).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: localizedData(this.s.data).troops[t]?.name ?? t })).join(', ');
+    const used = i18nList(Object.entries(r.used).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: localizedData(this.s.data).troops[t]?.name ?? t })));
     const title = r.stars === 3 ? t('battle.perfect') : r.stars > 0 ? t('battle.victory') : t('battle.defeat');
     const body = h(
       'div',
