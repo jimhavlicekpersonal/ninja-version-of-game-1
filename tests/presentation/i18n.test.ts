@@ -5,7 +5,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import en from '../../locales/en/ui.json';
-import { ENGLISH } from '../../locales/runtime';
+import { ENGLISH, translate } from '../../locales/runtime';
 import languagesFile from '../../locales/languages.json';
 import { fmtNumber, formatMessage, initLanguage, pickLanguage, pointLabel, t, useLanguage } from '../../src/presentation/ui/i18n';
 import { formatCompact, formatDuration } from '../../src/presentation/ui/format';
@@ -98,6 +98,23 @@ describe('keys and worksheets', () => {
   it('every key the code uses exists in the English runtime catalog', () => {
     const missing = [...used].filter((k) => !(k in ENGLISH));
     expect(missing).toEqual([]);
+  });
+
+  it('the interrupted-battle notice names an ordinary raid in each ready language, never the English word', () => {
+    // main.ts once passed the literal 'raid' as {arg1}, so every translated notice said "raid".
+    expect(readFileSync(join(ROOT, 'src/main.ts'), 'utf8')).not.toMatch(/:\s*'raid';/);
+    const availability = JSON.parse(readFileSync(join(ROOT, 'locales/availability.json'), 'utf8')) as Record<string, { ready: boolean }>;
+    const ready = Object.keys(availability).filter((code) => availability[code].ready && code !== 'en');
+    expect(ready.length).toBeGreaterThan(0);
+    for (const code of ready) {
+      const pack = JSON.parse(readFileSync(join(ROOT, 'locales/compiled', `${code}.json`), 'utf8')) as Record<string, string>;
+      const raid = translate('ui.raid_263dae9af8', {}, code, pack);
+      expect(raid, code).not.toBe('raid');
+      const notice = translate('ui.your_on_was_interrupted_and_has_been_p_2998375358', { arg1: raid, arg2: 'Kaito', arg3: 2, arg4: 75 }, code, pack);
+      expect(notice, code).toContain(raid);
+      expect(notice, code).not.toMatch(/\braid\b/i);
+    }
+    expect(translate('ui.raid_263dae9af8', {}, 'en')).toBe('raid');
   });
 
   it('every language has a ui worksheet with every English key (npm run i18n:sync)', () => {

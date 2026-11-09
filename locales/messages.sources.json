@@ -12879,6 +12879,17 @@
       }
     ]
   },
+  "ui.raid_263dae9af8": {
+    "source": "raid",
+    "group": "ui",
+    "parameters": [],
+    "sources": [
+      {
+        "file": "src/main.ts",
+        "line": 586
+      }
+    ]
+  },
   "ui.raid_on_confirmed_by_the_server_62aee4a29d": {
     "source": "Raid on {arg1} confirmed by the server{arg2}.",
     "group": "ui",
