@@ -20,7 +20,7 @@ resources, StoreKit fixtures for `de_DE`, and listing and product copy in
 `docs/store/de/`. Terms are in `locales/de/TERMS.md`; reviewed warnings in
 `locales/de/REVIEW.json`.
 
-The translation is AI-written and validated by the repository checks below. **No native
+Implemented in commit `468b139` (2026-11-09). The translation is AI-written and validated by the repository checks below. **No native
 German speaker has reviewed it**, nor the legal pages.
 
 ## What German needed
