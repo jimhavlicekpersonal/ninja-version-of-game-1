@@ -1,0 +1,64 @@
+
+== day 15
+player | Keep | honor | coins/cap | prov/cap | raids made | stars/raid | taken | raided | held | lost | net | no-target days
+raider-regular-0   | 6 | 0 | 77% | 21% | 7 | 2.29 | 497k | 7 | 0% | 573k | -75k | 8
+raider-regular-1   | 6 | 0 | 76% | 6% | 7 | 3.00 | 625k | 7 | 0% | 576k | 49k | 8
+raider-regular-2   | 6 | 0 | 76% | 4% | 7 | 3.00 | 621k | 7 | 0% | 584k | 37k | 8
+rusher-regular-3   | 6 | 0 | 76% | 4% | 7 | 3.00 | 628k | 7 | 0% | 588k | 40k | 8
+rusher-regular-4   | 6 | 12 | 63% | 15% | 7 | 3.00 | 632k | 9 | 0% | 939k | -307k | 8
+turtle-regular-5   | 5 | 225 | 25% | 100% | 7 | 3.00 | 475k | 8 | 0% | 203k | 272k | 8
+turtle-regular-6   | 5 | 233 | 25% | 99% | 7 | 2.14 | 354k | 9 | 11% | 220k | 134k | 8
+defender-regular-7 | 6 | 3 | 40% | 3% | 7 | 2.14 | 392k | 10 | 0% | 752k | -360k | 8
+defender-regular-8 | 6 | 7 | 39% | 3% | 7 | 3.00 | 473k | 8 | 0% | 546k | -73k | 8
+raider-casual-9    | 5 | 62 | 100% | 13% | 6 | 2.50 | 284k | 4 | 0% | 42k | 243k | 9
+raider-casual-10   | 5 | 70 | 53% | 25% | 6 | 2.17 | 173k | 5 | 0% | 61k | 112k | 9
+turtle-casual-11   | 4 | 276 | 100% | 24% | 6 | 2.67 | 104k | 0 | - | 0k | 104k | 9
+
+== day 30
+player | Keep | honor | coins/cap | prov/cap | raids made | stars/raid | taken | raided | held | lost | net | no-target days
+raider-regular-0   | 8 | 11 | 48% | 11% | 16 | 2.69 | 2640k | 16 | 0% | 2757k | -117k | 14
+raider-regular-1   | 8 | 8 | 41% | 14% | 16 | 3.00 | 2883k | 16 | 0% | 2726k | 157k | 14
+raider-regular-2   | 8 | 1 | 43% | 14% | 16 | 3.00 | 2890k | 16 | 0% | 2733k | 156k | 14
+rusher-regular-3   | 8 | 1 | 42% | 13% | 16 | 3.00 | 2784k | 18 | 0% | 3623k | -839k | 14
+rusher-regular-4   | 8 | 17 | 36% | 12% | 16 | 3.00 | 2711k | 20 | 0% | 3597k | -886k | 14
+turtle-regular-5   | 6 | 300 | 15% | 89% | 18 | 2.89 | 2113k | 19 | 0% | 2028k | 85k | 12
+turtle-regular-6   | 6 | 295 | 3% | 71% | 18 | 2.11 | 1967k | 26 | 27% | 2138k | -171k | 12
+defender-regular-7 | 8 | 41 | 19% | 19% | 19 | 2.32 | 2204k | 26 | 0% | 4164k | -1960k | 11
+defender-regular-8 | 8 | 124 | 33% | 18% | 19 | 3.00 | 3115k | 15 | 0% | 1947k | 1168k | 11
+raider-casual-9    | 5 | 17 | 27% | 22% | 16 | 2.13 | 1293k | 13 | 0% | 741k | 552k | 14
+raider-casual-10   | 5 | 153 | 34% | 18% | 17 | 2.41 | 1039k | 15 | 0% | 709k | 330k | 13
+turtle-casual-11   | 5 | 394 | 29% | 23% | 17 | 2.82 | 812k | 4 | 0% | 63k | 749k | 13
+
+== day 45
+player | Keep | honor | coins/cap | prov/cap | raids made | stars/raid | taken | raided | held | lost | net | no-target days
+raider-regular-0   | 10 | 24 | 99% | 53% | 21 | 2.76 | 7181k | 21 | 0% | 6878k | 302k | 23
+raider-regular-1   | 10 | 0 | 84% | 71% | 21 | 3.00 | 7517k | 24 | 0% | 9633k | -2116k | 23
+raider-regular-2   | 10 | 0 | 84% | 71% | 21 | 3.00 | 7288k | 23 | 0% | 9259k | -1971k | 23
+rusher-regular-3   | 10 | 1 | 100% | 80% | 21 | 3.00 | 7084k | 24 | 0% | 8377k | -1293k | 23
+rusher-regular-4   | 10 | 4 | 100% | 78% | 21 | 3.00 | 7173k | 27 | 0% | 9356k | -2184k | 23
+turtle-regular-5   | 7 | 537 | 9% | 94% | 26 | 2.69 | 3439k | 27 | 0% | 3681k | -241k | 18
+turtle-regular-6   | 7 | 606 | 4% | 81% | 26 | 2.08 | 3631k | 42 | 38% | 4854k | -1223k | 19
+defender-regular-7 | 9 | 117 | 100% | 100% | 25 | 2.48 | 6727k | 28 | 0% | 5860k | 867k | 20
+defender-regular-8 | 10 | 173 | 97% | 60% | 24 | 3.00 | 7674k | 16 | 0% | 2736k | 4939k | 20
+raider-casual-9    | 6 | 94 | 50% | 45% | 25 | 1.60 | 2650k | 20 | 0% | 2219k | 431k | 20
+raider-casual-10   | 6 | 216 | 58% | 43% | 26 | 2.38 | 2842k | 25 | 0% | 2726k | 117k | 19
+turtle-casual-11   | 5 | 640 | 59% | 73% | 26 | 2.77 | 2539k | 6 | 0% | 165k | 2374k | 19
+
+== loot flow between policy groups (rows take from columns), thousands
+from \ to          raider/regular   rusher/regular   turtle/regular defender/regular    raider/casual    turtle/casual
+raider/regular              15889             3907              204             1979                7                0
+rusher/regular               7156             7101                0                0                0                0
+turtle/regular                251             1649             4042              685              374               69
+defender/regular             2468             5608             1027             5299                0                0
+raider/casual                   0                0             2238              883             2271              100
+turtle/casual                   0                0              150                0             2389                0
+
+== by policy group: mean Keep, honor, taken, lost, net, held% (PvP only; bot raids excluded from lost)
+raider/regular   Keep 10.0 honor 8 taken 7329k lost 8590k net -1261k raided 22.7x held 0%
+rusher/regular   Keep 10.0 honor 3 taken 7128k lost 8867k net -1738k raided 25.5x held 0%
+turtle/regular   Keep 7.0 honor 572 taken 3535k lost 4267k net -732k raided 34.5x held 23%
+defender/regular Keep 9.5 honor 145 taken 7201k lost 4298k net 2903k raided 22.0x held 0%
+raider/casual    Keep 6.0 honor 155 taken 2746k lost 2472k net 274k raided 22.5x held 0%
+turtle/casual    Keep 5.0 honor 640 taken 2539k lost 165k net 2374k raided 6.0x held 0%
+
+Gini of stored wealth on day 45: 0.31; Keeps: 10,10,10,10,10,7,7,9,10,6,6,5
