@@ -1111,7 +1111,7 @@
   "ui.looking_for_a_gang_of_c57557b098": { "en": "Looking for a Gang of {arg1}…", "text": "Recherche d'une Bande de {arg1}…" },
   "ui.looking_for_an_enemy_alliance_80082c4e08": { "en": "Looking for an enemy Alliance…", "text": "Recherche d'une Alliance ennemie…" },
   "ui.looks_c64fb0872e": { "en": "Looks", "text": "Apparences" },
-  "ui.loot_banked_c1d50f49bf": { "en": ": loot banked", "text": " : butin mis à l'abri" },
+  "ui.loot_banked_c1d50f49bf": { "en": ": loot banked", "text": ": butin mis à l'abri" },
   "ui.loot_it_would_have_won_49fffbecef": { "en": "Loot it would have won: ", "text": "Butin qu'il aurait gagné : " },
   "ui.loot_won_5491665d1d": { "en": "Loot won: ", "text": "Butin gagné : " },
   "ui.loss_23d7ef7cf8": { "en": "Loss ", "text": "Défaite " },
