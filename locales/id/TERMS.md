@@ -19,10 +19,13 @@ Bahasa Indonesia baku yang ramah, menyapa pemain dengan *kamu* (juga di teks huk
 | Raid / attack / raider | penyerbuan, menyerbu / serangan, menyerang / penyerbu |
 | Warrior / Defense / Shield | prajurit / pertahanan / perisai |
 | Honor / Power / League | Kehormatan / Kekuatan / Liga |
-| Leagues: Bamboo, Cedar, Iron, Obsidian, Jade, Storm, Shadow, Kage | Liga Bambu, Aras, Besi, Obsidian, Giok, Badai, Bayangan, Kage |
+| Leagues: Bamboo, Cedar, Iron, Obsidian, Ember, Storm, Shadow, Kage | Liga Bambu, Aras, Besi, Obsidian, Bara, Badai, Bayangan, Kage |
 | Kage League vs Shadow League | Liga Kage (tetap "Kage") vs Liga Bayangan |
 | Daily chest / streak / skip | peti harian / rentetan / lompatan |
 | Star(s) | bintang |
+| fortress (Shadow Trials, bounty) / bounty | kubu (never Benteng, which is the Keep) / hadiah buruan |
+| relay (Gang War) | estafet |
+| time units d/h/m/s | h (hari) / j (jam) / m (menit) / d (detik) |
 | Clan Stipend / Looks | Tunjangan Klan / Tampilan |
 | Research / Upgrade / Lv / Tile | Riset / Tingkatkan, peningkatan / Lv. / petak |
 | Kite | layang-layang |

@@ -4,8 +4,8 @@ Teks yang disiapkan untuk App Store dan Google Play (id-ID), dalam bahasa Indone
 
 - Nama: **Kagemura: Ninja Clans**
 - Subjudul App Store: **Desa ninja rahasiamu**
-- Deskripsi singkat Google Play: **Bangun desa ninja, latih prajurit, dan serbu benteng para rival.**
-- Teks promosi: **Pimpin klanmu menembus Ujian Bayangan: tangga benteng yang tak berujung. Asap, sabotase, dan rencana yang cerdik mengalahkan kekuatan kasar.**
+- Deskripsi singkat Google Play: **Bangun desa ninja, latih prajurit, dan serbu kubu para rival.**
+- Teks promosi: **Pimpin klanmu menembus Ujian Bayangan: tangga kubu yang tak berujung. Asap, sabotase, dan rencana yang cerdik mengalahkan kekuatan kasar.**
 - Kata kunci: `ninja,klan,desa,strategi,serbuan,pertahanan,menara,shinobi,perang,aliansi,benteng`
 
 ## Deskripsi
@@ -38,7 +38,7 @@ Pimpin sebuah klan ninja. Bangun desa tersembunyi di pegunungan, latih lima pulu
 
 **Ujian Bayangan**
 
-- Tangga benteng yang tak berujung. Setiap tingkat memberi hadiahnya sekali dan makin sulit.
+- Tangga kubu yang tak berujung. Setiap tingkat memberi hadiahnya sekali dan makin sulit.
 
 **Permainan yang adil**
 
