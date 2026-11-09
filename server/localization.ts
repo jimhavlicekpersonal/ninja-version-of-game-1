@@ -5,8 +5,9 @@ import portuguese from '../locales/compiled/pt.json';
 import german from '../locales/compiled/de.json';
 import french from '../locales/compiled/fr.json';
 import italian from '../locales/compiled/it.json';
+import indonesian from '../locales/compiled/id.json';
 import { ENGLISH, sourceText, type Catalog } from '../locales/runtime';
-const catalogs: Record<string, Catalog> = { en: ENGLISH, es: spanish, hi: hindi, pt: portuguese, de: german, fr: french, it: italian };
+const catalogs: Record<string, Catalog> = { en: ENGLISH, es: spanish, hi: hindi, pt: portuguese, de: german, fr: french, it: italian, id: indonesian };
 export function notificationText(text: string, locale = 'en'): string {
   const code = Object.hasOwn(catalogs, locale) ? locale : 'en';
   return sourceText(text, code, catalogs[code]);

@@ -284,30 +284,31 @@
     }
   },
   "id": {
-    "coverage": 0,
-    "ready": false,
-    "hash": "44136fa355b3678a",
-    "keys": 0,
+    "coverage": 1,
+    "ready": true,
+    "hash": "0a305c0120d285bd",
+    "keys": 2705,
+    "path": "lang/id-0a305c0120d285bd.json",
     "namespaces": {
       "boot": {
         "total": 17,
-        "translated": 0
+        "translated": 17
       },
       "data": {
         "total": 669,
-        "translated": 0
+        "translated": 669
       },
       "messages": {
         "total": 1869,
-        "translated": 0
+        "translated": 1869
       },
       "pages": {
         "total": 314,
-        "translated": 0
+        "translated": 314
       },
       "ui": {
         "total": 150,
-        "translated": 0
+        "translated": 150
       }
     }
   },

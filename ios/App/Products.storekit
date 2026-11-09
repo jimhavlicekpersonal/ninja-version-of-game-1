@@ -56,6 +56,11 @@
           "displayName": "Pizzico di Giada",
           "description": "45 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Sejumput Giok",
+          "description": "45 Giok",
+          "locale": "id"
         }
       ],
       "productID": "jade_pinch",
@@ -116,6 +121,11 @@
           "displayName": "Borsellino di Giada",
           "description": "100 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Sekantong Giok",
+          "description": "100 Giok",
+          "locale": "id"
         }
       ],
       "productID": "jade_pouch",
@@ -176,6 +186,11 @@
           "displayName": "Sacca di Giada",
           "description": "280 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Sekarung Giok",
+          "description": "280 Giok",
+          "locale": "id"
         }
       ],
       "productID": "jade_bag",
@@ -236,6 +251,11 @@
           "displayName": "Scatola di Giada",
           "description": "600 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Sekotak Giok",
+          "description": "600 Giok",
+          "locale": "id"
         }
       ],
       "productID": "jade_box",
@@ -296,6 +316,11 @@
           "displayName": "Forziere di Giada",
           "description": "1300 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Sepeti Giok",
+          "description": "1300 Giok",
+          "locale": "id"
         }
       ],
       "productID": "jade_chest",
@@ -356,6 +381,11 @@
           "displayName": "Caveau di Giada",
           "description": "3500 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Brankas Giok",
+          "description": "3500 Giok",
+          "locale": "id"
         }
       ],
       "productID": "jade_vault",
@@ -416,6 +446,11 @@
           "displayName": "Tesoro del Drago di Giada",
           "description": "7500 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Harta Naga Giok",
+          "description": "7500 Giok",
+          "locale": "id"
         }
       ],
       "productID": "jade_hoard",
@@ -476,6 +511,11 @@
           "displayName": "Pergamena premium",
           "description": "Percorso premium di questa stagione",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Gulungan premium",
+          "description": "Jalur premium musim ini",
+          "locale": "id"
         }
       ],
       "productID": "season_scroll",
@@ -536,6 +576,11 @@
           "displayName": "Pacchetto iniziale",
           "description": "Giada e risorse per i nuovi clan",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Paket Pemula",
+          "description": "Giok dan sumber daya untuk klan baru",
+          "locale": "id"
         }
       ],
       "productID": "offer_starter",
@@ -596,6 +641,11 @@
           "displayName": "Pacchetto dell'Artigiano",
           "description": "Giada per un altro Artigiano, più risorse",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Bundel Perajin",
+          "description": "Giok untuk satu Perajin lagi, plus sumber daya",
+          "locale": "id"
         }
       ],
       "productID": "offer_builder",
@@ -656,6 +706,11 @@
           "displayName": "Rifornimenti di guerra",
           "description": "Provviste e Giada per la Guerra d'Alleanza",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Perbekalan Perang",
+          "description": "Perbekalan dan Giok untuk Perang Aliansi",
+          "locale": "id"
         }
       ],
       "productID": "offer_war_prep",
@@ -716,6 +771,11 @@
           "displayName": "Kit di ricostruzione",
           "description": "Giada e risorse per ricostruire",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Paket Pembangunan Ulang",
+          "description": "Giok dan sumber daya untuk membangun ulang",
+          "locale": "id"
         }
       ],
       "productID": "offer_rebuild",
@@ -776,6 +836,11 @@
           "displayName": "Stipendio del Clan",
           "description": "30 pagamenti giornalieri da 12 Giada",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Tunjangan Klan",
+          "description": "30 pembayaran harian 12 Giok",
+          "locale": "id"
         }
       ],
       "productID": "clan_stipend",
@@ -836,6 +901,11 @@
           "displayName": "Festa della Rocca",
           "description": "Risorse e Giada per festeggiare la nuova Rocca",
           "locale": "it_IT"
+        },
+        {
+          "displayName": "Perayaan Benteng",
+          "description": "Sumber daya dan Giok untuk merayakan Benteng barumu",
+          "locale": "id"
         }
       ],
       "productID": "offer_keep",

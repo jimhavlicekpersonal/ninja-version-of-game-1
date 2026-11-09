@@ -17,7 +17,7 @@ describe('the complete Spanish release catalog', () => {
     expect(availability.es.ready).toBe(true);
     expect(Object.keys(spanish).sort()).toEqual(Object.keys(ENGLISH).sort());
     expect(Object.values(spanish).every(v => typeof v === 'string' && v.length > 0)).toBe(true);
-    expect(Object.entries(availability).filter(([,v])=>v.ready).map(([k])=>k).sort()).toEqual(['de','en','es','fr','hi','it','pt']);
+    expect(Object.entries(availability).filter(([,v])=>v.ready).map(([k])=>k).sort()).toEqual(['de','en','es','fr','hi','id','it','pt']);
   });
   it('uses the first completed device preference, including Spanish regional tags', async () => {
     installCatalog('es', spanish);
