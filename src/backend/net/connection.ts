@@ -1035,12 +1035,13 @@ export class Connection {
    * or undefined from a server that sent it with the match. Rejects when the raid could not start (no
    * connection, the scout expired): the battle must not begin, it would be played with the wrong seed.
    */
-  async startAttack(ticket: string): Promise<number | undefined> {
+  async startAttack(ticket: string, stake?: number): Promise<number | undefined> {
     const port = this.port;
     if (!port?.startAttack || !this.server?.features.includes('attack-commit')) return undefined;
     if (!this.online) throw new Error('No connection: the raid could not start. Try again when you are back online.');
     try {
-      const r = await port.startAttack(ticket);
+      // Declared stakes (protocol 11): sent only to a server that settles them.
+      const r = await port.startAttack(ticket, stake !== undefined && this.server.features.includes('stakes') ? stake : undefined);
       return typeof r.seed === 'number' ? r.seed >>> 0 : undefined;
     } catch (e) {
       this.log('Online play: could not start the raid', e);
@@ -1092,7 +1093,7 @@ export class Connection {
         if (item.kind === 'attack') {
           // The server's answer settles the attack: its loot and honor are banked only now.
           const r = await port.submitAttack(item.sub);
-          g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies });
+          g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies, ...(r.stake !== undefined ? { stake: r.stake } : {}) });
           g.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
         } else if (item.kind === 'gangwar') {
           await port.gangWarAttack(item.sub);

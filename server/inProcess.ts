@@ -199,8 +199,8 @@ export class InProcessServerAdapter implements ServerPort {
   match() {
     return this.authed((me) => this.core.match(me));
   }
-  startAttack(ticket: string) {
-    return this.authed((me) => this.core.startAttack(me, { ticket }));
+  startAttack(ticket: string, stake?: number) {
+    return this.authed((me) => this.core.startAttack(me, { ticket, ...(stake !== undefined ? { stake } : {}) }));
   }
   voidAttack(ticket: string) {
     return this.authed((me) => this.core.voidAttack(me, { ticket }));

@@ -4,6 +4,7 @@ import type { GameData, VillageState } from './types';
 import { RESOURCE_KINDS } from './types';
 import { mixSeed } from './rng';
 import { scatterObstacles } from './obstacles';
+import { normalizeTemper, validTemper } from './battle/temper';
 import { emptyGrove } from './social/grove';
 import { seasonOf } from './ranks';
 import { emptyStats } from './types';
@@ -12,7 +13,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 20;
+export const SAVE_VERSION = 21;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -205,7 +206,12 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     const st = v.stipend as { left?: number; jade?: number } | undefined;
     if (st && typeof st === 'object' && !(Number(st.left) > 0) && Number(st.jade) > 0) st.jade = 0;
   }
+  if (out.version < 21 && v && typeof v === 'object') {
+    // v20 -> v21 (balance audit 2026-11-08): buildings may carry `temper` (Tempering) and attack records
+    // `stake` (declared stakes). Older saves have neither: untempered, unstaked. Nothing to convert.
+  }
   repairTrainingQueue(v);
+  if (data) repairTempers(v, data);
   out.version = SAVE_VERSION;
   return out;
 }
@@ -221,6 +227,20 @@ function repairTrainingQueue(v: Record<string, unknown> | undefined): void {
   if (!v || !Array.isArray(v.training)) return;
   for (const q of v.training as { startedAt: number; endsAt: number }[]) {
     if (q && q.endsAt < q.startedAt) q.startedAt = q.endsAt;
+  }
+}
+
+/**
+ * Tempering (v21): a temper the rules do not allow (an edited save, or a type that stopped being temperable)
+ * is dropped, never a reason to refuse the village. Runs on every load.
+ */
+function repairTempers(v: Record<string, unknown> | undefined, data: GameData): void {
+  if (!v || !Array.isArray(v.buildings)) return;
+  for (const b of v.buildings as { type: string; temper?: unknown }[]) {
+    if (!b || b.temper === undefined) continue;
+    const t = validTemper(b.type, b.temper, data) ? normalizeTemper(b.temper) : null;
+    if (t) b.temper = t;
+    else delete b.temper;
   }
 }
 

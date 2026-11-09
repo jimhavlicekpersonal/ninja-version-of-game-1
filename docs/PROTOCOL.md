@@ -1,8 +1,15 @@
-# Kagemura multiplayer protocol (version 10)
+# Kagemura multiplayer protocol (version 11)
 
 > Current numbers (protocol, battle rules, save format) are in `docs/STATUS.md`, generated from the code. Sections below are the history of each version, newest first.
 
 > Internal names (`grove`, `acorns`, `toadstool-kingdoms` in `/v1/hello`) are stable IDs from the original project and are kept on purpose. Player-facing names are in `docs/rebuild/ID_MAP.md`.
+
+**Version 11 (balance audit 2026-11-08, `docs/audit/BALANCE_AUDIT_2026-11-08.md`; all additions, servers still accept 10, and 7 except `GET /v1/match`):**
+- **Tempering (feature `tempering`, battle rules 6):** a base's buildings may carry `temper` (`{ reach?, blast?, watch? }`, whole points, at most `battle.temper.steps` in total, only the axes `battle.temper.types` lists for the type). An uploaded base is refused with `400` for a temper its type cannot take, for two buildings of one type with different tempers (the game tempers by type), or for any temper below `temper.unlockKeep`; zero axes are dropped when stored. Rules 6 plays an untempered base exactly as rules 5, so servers list `supportedRules: [6, 5, 4]`; an older game is matched only with bases legal under its own rules, so it never meets a tempered base. Generated outposts (a fallback when nobody fits) carry their rival clan's temper, or with `offers.counterShare` one against the family of the attacker's recent raids (known for a village the server keeps).
+- **Declared stakes (feature `stakes`):** `POST /v1/attacks/start` `{ ticket, stake? }`: `stake` is a star count from `raids.stakes.byStars` (2 or 3), kept with the ticket's first start only (anything else is ignored), and echoed as `AttackStartResponse.stake`. It is fixed before the battle seed is sent. The raid is settled with it: reaching it carries the loot × `byStars[stake]`; missing it carries nothing, and a real defender loses nothing (its `DefenseView.result.loot` is empty). `AttackResponse.stake` says what the raid was settled with; the game passes it to `settleOnlineAttack`.
+- **What a raid carries** (no protocol change; `src/gameplay/sim/carry.ts`): the attacker banks `result.loot` × `diversityShare` (Gini-Simpson diversity of the warriors that fought, by role) × the stake's multiplier. The defender loses `result.loot` (the battle's own loot) as before.
+- **Staked honor:** a lost defence costs the defender `defenseHonorLossShare` (0) of the attacker's gain, still capped by `defenderDailyHonorLossCap`; a held raid pays the defender as before. `winTrophies` falls by `attackWin.perTrophyBelow` (0.25) a point against a base with less honor, down to 0.
+- **Exposure targeting and exhausted stores:** among the candidates of a trophy range, villages raided within `matchmaking.exposureHours` (12) come after every one that was not (longest ago first). A real defender's loot on the ticket is × `raids.exhaustion.factor` (0.5) for each raid it lost (1+ star) in the last `windowHours` (24). Raiding a higher Keep applies `lootPenaltyUpByHallDiff` (0.9 one Keep up).
 
 **Version 10 (ledger audit, docs/audit/STATE_OF_THE_GAME.md section 5 step 1; servers accept 7, except `GET /v1/match`, which needs 10):**
 - **The battle seed comes when the raid starts:** `GET /v1/match` no longer sends `seed`. `POST /v1/attacks/start` `{ ticket }` → `{ started: true, seed }` (feature `seed-at-start`; the same seed on a retry; `409` for a used ticket, `410` for an unstarted one past its hour). The game asks on Attack and does not begin the battle without the answer. `GET /v1/match` from a game older than 10 gets `426 version_mismatch`.
@@ -208,7 +215,8 @@ Every battle report must also be checked:
 |---|---|---|
 | `PUT /v1/base` | `{ base: BaseLayout }` | `204` |
 | `GET /v1/match` | | `MatchResponse` `{ ticket, seed, base, opponent: { name, trophies, hallLevel, kind }, expiresAt }` |
-| `POST /v1/attacks` | `BattleSubmission` | `AttackResponse` `{ attackId, result, trophies, playerTrophies }` |
+| `POST /v1/attacks/start` | `{ ticket, stake? }` | `{ started, seed, stake? }` |
+| `POST /v1/attacks` | `BattleSubmission` | `AttackResponse` `{ attackId, result, trophies, playerTrophies, stake? }` |
 | `GET /v1/defenses?since=` | | `{ defenses: DefenseView[] }` (raids on this player after `since`, oldest first, at most 20; kept for 30 days) |
 | `GET /v1/leaderboard?limit=` | | `{ players: [{ rank, name, trophies, hallLevel, grove }], me }` |
 
@@ -224,14 +232,14 @@ Rules: these come from the matchmaking design in `src/gameplay/sim/matchmaking.t
 - **Matching:**
   - Pick real players whose hall is within `hallsBelow`/`hallsAbove` of the attacker's, who have a base, and who are not shielded.
   - Skip the attacker, players they attacked in the last hour, their Grove mates, and anyone with an open ticket from the last 5 minutes (someone is already attacking them).
-  - Search the trophy range `matchTrophyRange` first, then ±200, ±400, then any trophies.
+  - Search the trophy range `matchTrophyRange` first, then ±200, ±400, then any trophies. Within a range, players not raided in the last `exposureHours` come first (protocol 11).
   - When nobody fits, generate a base with `opponentForRank(seed, trophies, hall, floor)` and return it with `kind: "bot"`. The floor is the attacker's assumed earned strength (half-way through their Keep, minus `powerSlackAt(keep)`: `powerSlackByKeep`, else `powerSlack`), the same rule the game uses offline with the player's real research. Never answer "nobody": the game should always have something to attack.
 - **The ticket:**
-  - Holds a copy of the base with `lootPenaltyByHallDiff` already applied for the attacker's hall. The client must not apply it again.
+  - Holds a copy of the base with `lootPenaltyByHallDiff` (or `lootPenaltyUpByHallDiff` for a higher Keep) and the defender's exhausted stores already applied. The client must not apply them again.
   - Holds the battle seed (a random 32-bit integer the server chose), returned as `seed`.
   - Lasts 1 hour (`expiresAt`). <!-- tickets: see pvp section -->
 - **Attack results:**
-  - Trophies use `winTrophies`/`lossTrophies` from `src/gameplay/sim/ranks.ts`, based on both players' trophies. The defender loses the amount the attacker gains, but at most `defenderDailyHonorLossCap` (150) honor a UTC day across all their defenses (`DefenseView.trophies` is what was really lost); a lost attack moves the defender up by the attacker's loss.
+  - Trophies use `winTrophies`/`lossTrophies` from `src/gameplay/sim/ranks.ts`, based on both players' trophies. The defender loses `defenseHonorLoss` of the attacker's gain (`defenseHonorLossShare`, 0 since protocol 11), at most `defenderDailyHonorLossCap` (150) honor a UTC day across all their defenses (`DefenseView.trophies` is what was really lost); a lost attack moves the defender up by the attacker's loss.
   - Attacking ends the attacker's own shield.
   - A real defender gets the shield from `shieldTiers` for the destruction reached, plus a defense record that includes the replay. Bot opponents get neither.
 - **Retention:** defense records (with their replays) and tickets are kept for 30 days; an unused ticket goes a day after it expires <!-- tickets: see pvp section -->. A report for a ticket that is gone gets `404 not_found`. Our server stores each distinct base once (`base_versions`, by content hash) and tickets and records refer to it, so keeping 30 days of replays costs a few KB per battle instead of a full base copy each.

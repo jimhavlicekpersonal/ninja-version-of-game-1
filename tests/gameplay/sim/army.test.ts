@@ -97,7 +97,9 @@ describe('scouting and battle results', () => {
     const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments } }, clock.now());
     expect(s1.army.hedgehog_roller).toBe(8);
     expect(s1.resources.acorns).toBe(capacity(s0, data).acorns); // capped by storage
-    expect(s1.resources.dew).toBe(100);
+    // A one-role army carries `diversity.minShare` of the loot (balance audit 2026-11-08, sim/carry.ts).
+    expect(s1.resources.dew).toBe(Math.floor(100 * data.raids.diversity!.minShare));
+    expect(s1.battleLog[0].carry).toBe(data.raids.diversity!.minShare);
     expect(s1.battleLog).toHaveLength(1);
     expect(s1.battleLog[0].result.stars).toBe(3);
     expect(find(s1, 'elder_toadstool')).toHaveLength(1);

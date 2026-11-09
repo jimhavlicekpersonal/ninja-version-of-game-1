@@ -16,7 +16,9 @@ import { maxHousingAtHall, troopUnlock } from './army';
 import { troopDef } from './data';
 import { troopLevelCapAt, troopLevelOf } from './research';
 import { createRng, mixSeed, next, type Rng } from './rng';
-import type { GameData, ResourceKind, VillageState } from './types';
+import type { GameData, ResourceKind, Temper, VillageState } from './types';
+import { dominantFamily, temperBase } from './battle/temper';
+import { rivalFor } from './rivals';
 import { hallLevel } from './village';
 
 export interface MatchStrength {
@@ -59,7 +61,12 @@ export function matchStrength(rng: Rng, trophies: number, ownHall: number, data:
 /** Loot multiplier for an attacker at `attackerHall` hitting a base at `targetHall`. */
 export function lootPenalty(attackerHall: number, targetHall: number, data: GameData): number {
   const diff = attackerHall - targetHall;
-  if (diff <= 0) return 1;
+  if (diff < 0) {
+    // Balance audit 2026-11-08 (upward loot penalty): staying a Keep behind to raid the Keep above no longer pays more.
+    const up = data.ranks.lootPenaltyUpByHallDiff;
+    return up?.length ? up[Math.min(-diff, up.length - 1)] : 1;
+  }
+  if (diff === 0) return 1;
   const table = data.ranks.lootPenaltyByHallDiff;
   return table[Math.min(diff, table.length - 1)];
 }
@@ -161,18 +168,55 @@ export function powerSlackAt(hall: number, data: GameData): number {
  */
 export function opponentFor(seed: number, state: VillageState, data: GameData): BaseLayout {
   const floor = attackerStrength(state, data) - powerSlackAt(hallLevel(state, data), data);
-  return opponentForRank(seed, state.trophies, hallLevel(state, data), data, floor);
+  return opponentForRank(seed, state.trophies, hallLevel(state, data), data, floor, recentRaidArmies(state, data));
 }
 
 /**
  * The same generated opponent from just a rank and hall level. The server uses
  * this when no real player fits, so online and offline matchmaking agree.
+ *
+ * Tempering (SIM_RULES 6): from `temper.unlockKeep`, each rival clan's outposts differ (`temper.rivals`:
+ * home temper, loot and how close to the caps), so Next is a choice; and with `offers.counterShare` an
+ * outpost is tempered against the family that made up most of `recent` (the player's last raid armies).
  */
-export function opponentForRank(seed: number, trophies: number, ownHall: number, data: GameData, floor = 0): BaseLayout {
+export function opponentForRank(seed: number, trophies: number, ownHall: number, data: GameData, floor = 0, recent: Record<string, number>[] = []): BaseLayout {
   const st = matchStrength(createRng(mixSeed(seed, 0x5c0a7)), trophies, ownHall, data, false, floor);
-  const base = generateOpponent(seed, st.hall, data, { levelBias: st.bias });
+  const def = data.battle.temper;
+  const clan = rivalFor(seed, data);
+  const rival = def && clan && st.hall >= def.unlockKeep ? def.rivals[clan.id] : undefined;
+  const bias = rival ? Math.max(0, Math.min(1, st.bias + rival.biasShift)) : st.bias;
+  const base = generateOpponent(seed, st.hall, data, { levelBias: bias });
+  if (rival && rival.lootScale !== 1) {
+    for (const b of base.buildings) {
+      if (!b.loot) continue;
+      for (const k of Object.keys(b.loot) as ResourceKind[]) b.loot[k] = Math.floor((b.loot[k] ?? 0) * rival.lootScale);
+    }
+  }
+  temperBase(base, rivalTempers(seed, st.hall, clan?.id, recent, data), data);
   base.trophies = st.trophies;
   return applyLootPenalty(base, ownHall, data);
+}
+
+/** The armies of the player's recent raids (oldest first): what rival outposts answer (Tempering). */
+export function recentRaidArmies(state: VillageState, data: GameData): Record<string, number>[] {
+  const n = data.battle.temper?.offers.recentRaids ?? 0;
+  if (!n) return [];
+  return (state.battleLog ?? [])
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && r.settlement !== 'rejected')
+    .slice(-n)
+    .map((r) => r.setup.army);
+}
+
+/**
+ * The temper a rival clan's outpost carries (null below `temper.unlockKeep`): with `offers.counterShare`
+ * (seeded), the counter to the family that dominated the player's recent raids; otherwise the clan's home temper.
+ */
+export function rivalTempers(seed: number, hall: number, clanId: string | undefined, recent: Record<string, number>[], data: GameData): Record<string, Temper> | null {
+  const def = data.battle.temper;
+  if (!def || hall < def.unlockKeep) return null;
+  const family = dominantFamily(recent, data);
+  if (family && next(createRng(mixSeed(seed, 0x7e3be5))) < def.offers.counterShare) return def.offers.counters[family] ?? null;
+  return clanId ? def.rivals[clanId]?.tempers ?? null : null;
 }
 
 /** The Elder Toadstool levels a player at `ownHall` may be matched against. */

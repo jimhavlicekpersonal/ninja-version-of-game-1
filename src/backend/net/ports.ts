@@ -89,7 +89,7 @@ export interface PvpPort {
   match(): Promise<MatchResponse | null>;
   submitAttack(sub: BattleSubmission): Promise<AttackResponse>;
   /** The player tapped Attack: the raid now counts and its seed is sent (feature `attack-commit`, re-audit; seed: protocol 10). */
-  startAttack?(ticket: string): Promise<AttackStartResponse>;
+  startAttack?(ticket: string, stake?: number): Promise<AttackStartResponse>;
   /** Leave a scouted base without attacking (only before it started). */
   voidAttack?(ticket: string): Promise<{ voided: boolean }>;
   defenses(since: number): Promise<DefensesResponse>;

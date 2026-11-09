@@ -487,8 +487,8 @@ export class GameController {
    * server `ticket` the attack is recorded as pending: loot and honor arrive
    * when the server confirms it (settleOnlineAttack, from the Connection).
    */
-  finishBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string, ticket?: string, at = this.now()): { record: BattleRecord; banked: Cost } | null {
-    const r = this.dispatch({ type: 'battleEnd', record: { at, opponentName, setup, deployments, endTick, ...(ticket ? { ticket } : {}) } });
+  finishBattle(setup: BattleSetup, deployments: Deployment[], endTick: number | undefined, opponentName: string, ticket?: string, at = this.now(), stake?: number): { record: BattleRecord; banked: Cost } | null {
+    const r = this.dispatch({ type: 'battleEnd', record: { at, opponentName, setup, deployments, endTick, ...(ticket ? { ticket } : {}), ...(stake !== undefined ? { stake } : {}) } });
     if (!r.ok) return null;
     const e = r.events.find((x) => x.kind === 'raid_end');
     if (!e || e.kind !== 'raid_end') return null;
@@ -536,7 +536,7 @@ export class GameController {
         : this.finishGroveBattle(p.target, p.setup, p.deployments, undefined, p.opponentName, p.at);
       if (w) return { pending: p, record: w.record };
     } else {
-      const out = this.finishBattle(p.setup, p.deployments, undefined, p.opponentName, p.ticket, p.at);
+      const out = this.finishBattle(p.setup, p.deployments, undefined, p.opponentName, p.ticket, p.at, p.stake);
       if (out) return { pending: p, record: out.record };
     }
     // Could not be banked (for example the war ended): the deployed troops are

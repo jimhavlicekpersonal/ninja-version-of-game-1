@@ -294,7 +294,7 @@ export class App {
         // reported, and only now sends the battle seed (ledger audit A1). No seed, no battle.
         if (!grove && !duel && trialTier === undefined && !practice && this.ticket) {
           try {
-            const seed = await this.d.connection.startAttack(this.ticket);
+            const seed = await this.d.connection.startAttack(this.ticket, session.stake);
             if (seed !== undefined) session.reseed(seed);
           } catch (e) {
             this.battleHud?.toast((e as Error).message);
@@ -361,7 +361,7 @@ export class App {
         }
         const ticket = this.ticket ?? undefined;
         // Online: recorded as pending; loot and honor arrive with the server's confirmation.
-        const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name, ticket);
+        const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name, ticket, undefined, session.stake);
         if (!out) return null;
         if (ticket) {
           // The server re-runs the battle from seed + deployments; the outbox
@@ -409,6 +409,7 @@ export class App {
             ticket,
             at: startedAt,
             rules: SIM_RULES,
+            ...(session.stake !== undefined ? { stake: session.stake } : {}),
             ...(grove?.channel ? { channel: grove.channel } : {}),
             ...(special?.kind === 'bounty' ? { eventKey: special.eventKey } : special?.kind === 'rematch' ? { defenseId: special.defenseId } : {}),
           });

@@ -4,7 +4,8 @@
     "base": 24,
     "perTrophyDiff": 0.05,
     "min": 1,
-    "max": 50
+    "max": 50,
+    "perTrophyBelow": 0.25
   },
   "attackLoss": {
     "base": 20,
@@ -132,8 +133,9 @@
     "hallsAbove": 1,
     "trophyJitter": 30,
     "powerSlack": 0.25,
-    "powerSlackByKeep": [0.75, 0.75, 0.75, 0.75, 0.25, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25, 0.5],
-    "researchFloorKeeps": 1.5
+    "powerSlackByKeep": [0.75, 0.75, 1, 0.75, 0.25, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25, 0.5],
+    "researchFloorKeeps": 1.5,
+    "exposureHours": 12
   },
   "lootPenaltyByHallDiff": [
     1,
@@ -142,6 +144,8 @@
     0.25,
     0.05
   ],
+  "lootPenaltyUpByHallDiff": [1, 0.9, 0.8],
+  "defenseHonorLossShare": 0,
   "rating": {
     "$comment": "Hidden ratings for matchmaking (roadmap Phase 3, src/gameplay/sim/rating.ts). Attack Rating (AR) is an attacker's skill, Base Rating (BR) how hard a base is to raid. Honor stays the visible ladder.",
     "initial": 1500,

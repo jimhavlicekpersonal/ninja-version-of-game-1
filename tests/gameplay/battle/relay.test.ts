@@ -27,9 +27,11 @@ describe('relay assaults (SIM_RULES 3)', () => {
   it('a battle without startDamage plays exactly as one with an empty startDamage; changed combat retires older replays', () => {
     // Rules 3 kept rules 2 battles exactly; rules 4 (design re-audit) changed combat data, so
     // neither older rules replays (rules 3 is archived for the server in server/rules/v3).
-    // Rules 5 (heroes, report section 5 step 8) plays a battle without a hero exactly as rules 4.
-    expect(SIM_RULES).toBe(5);
-    expect(SIM_RULES_COMPATIBLE).toEqual([4]);
+    // Rules 5 (heroes, report section 5 step 8) plays a battle without a hero exactly as rules 4, and rules 6
+    // (Tempering, balance audit 2026-11-08) a battle against an untempered base exactly as rules 5.
+    expect(SIM_RULES).toBe(6);
+    expect(SIM_RULES_COMPATIBLE).toEqual([5, 4]);
+    expect(replayable({ rules: 6 })).toBe(true);
     expect(replayable({ rules: 5 })).toBe(true);
     expect(replayable({ rules: 4 })).toBe(true);
     expect(replayable({ rules: 3 })).toBe(false);

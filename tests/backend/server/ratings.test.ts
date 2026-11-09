@@ -43,7 +43,9 @@ for (const [label, makeRepo] of repoFactories) {
     });
 
     it('caps the honor a defender loses in one UTC day', async () => {
-      const w = world({ repo: await makeRepo(), data: withRating({ defenderDailyHonorLossCap: 10 }), start: Date.UTC(2026, 3, 6, 1) });
+      // Staked honor (balance audit 2026-11-08) makes a lost defence free by default; the cap still holds where a share is lost.
+      const capped = withRating({ defenderDailyHonorLossCap: 10 });
+      const w = world({ repo: await makeRepo(), data: { ...capped, ranks: { ...capped.ranks, defenseHonorLossShare: 1 } }, start: Date.UTC(2026, 3, 6, 1) });
       // No defenses, so the raids win and the defender loses honor.
       const open = baseAt(1, 77);
       open.buildings = open.buildings.filter((b) => defaultData.buildings[b.type].category !== 'defense');

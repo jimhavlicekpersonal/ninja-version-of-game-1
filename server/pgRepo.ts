@@ -126,6 +126,7 @@ const toTicket = (r: Row): Ticket => {
   if (r.target !== null && r.target !== undefined) t.target = num(r.target);
   if (r.response !== null && r.response !== undefined) t.response = r.response;
   if (r.started_at !== null && r.started_at !== undefined) t.startedAt = num(r.started_at);
+  if (r.stake !== null && r.stake !== undefined) t.stake = num(r.stake);
   if (r.failures) t.failures = num(r.failures);
   return t;
 };
@@ -977,8 +978,8 @@ export class PgRepo implements Repo {
     return (r.rowCount ?? 0) > 0;
   }
 
-  async startTicket(id: string, at: number): Promise<boolean> {
-    const r = await this.db.query('update tickets set started_at = coalesce(started_at, $2) where id = $1 and used = false', [id, at]);
+  async startTicket(id: string, at: number, stake?: number): Promise<boolean> {
+    const r = await this.db.query('update tickets set stake = case when started_at is null then $3 else stake end, started_at = coalesce(started_at, $2) where id = $1 and used = false', [id, at, stake ?? null]);
     return (r.rowCount ?? 0) > 0;
   }
 
