@@ -8,13 +8,12 @@ import { describe, expect, it } from 'vitest';
 import { ApiError } from '../../../server/core';
 import { InProcessServerAdapter } from '../../../server/inProcess';
 import { ServerError } from '../../../src/backend/net/ports';
-import { createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
-import type { BaseLayout } from '../../../src/gameplay/sim/battle/types';
+import { runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { shieldHoursFor, storageLootCap } from '../../../src/gameplay/sim/defense';
 import { hallWindow, lootPenalty } from '../../../src/gameplay/sim/matchmaking';
 import type { GameData } from '../../../src/gameplay/sim/types';
-import { HOUR, baseAt, rush, startSeed, sumLoot, world } from './harness';
+import { HOUR, baseAt, noTroops, rush, startSeed, sumLoot, world } from './harness';
 import { repoFactories } from './pg';
 
 async function code(p: Promise<unknown>): Promise<string> {
@@ -26,16 +25,6 @@ async function code(p: Promise<unknown>): Promise<string> {
   }
   return 'ok';
 }
-
-/**
- * A raid that destroys nothing: one Shinobi enters at the first Infiltration Point and the battle ends at
- * once (balance audit 2026-11-08: a battle with no warrior deployed is practice, so these need one).
- */
-const noTroops = (m: { base: BaseLayout }) => {
-  const army = { hedgehog_roller: 1 };
-  const p = createBattle({ seed: 0, base: m.base, army, infiltration: true }, defaultData).entry!.points[0];
-  return { army, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: Math.floor(p.x), y: Math.floor(p.y) }], endTick: 1 };
-};
 
 for (const [label, makeRepo] of repoFactories) {
   const W = async (o: { data?: GameData } = {}) => world({ ...o, repo: await makeRepo() });

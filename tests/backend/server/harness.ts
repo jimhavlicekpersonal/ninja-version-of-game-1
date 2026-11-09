@@ -5,6 +5,7 @@ import { InProcessServerAdapter } from '../../../server/inProcess';
 import { nodeContext, type SharedStores } from '../../../server/nodeContext';
 import { MemoryRepo, type Repo } from '../../../server/repo';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
+import { createBattle } from '../../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../../src/gameplay/sim/battle/types';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { raidWindow } from '../../../src/gameplay/sim/social/groveRaid';
@@ -81,4 +82,14 @@ export const sumLoot = (b: BaseLayout, k: 'acorns' | 'dew' = 'acorns') => b.buil
 /** A small hedgehog rush along one edge. */
 export function rush(n = 20) {
   return { army: { hedgehog_roller: n }, deployments: Array.from({ length: n }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 1, y: 1 + (i % 30) })) };
+}
+
+/**
+ * A raid that destroys nothing: one Shinobi enters at the first Infiltration Point and the battle ends at
+ * once (balance audit 2026-11-08: a battle with no warrior deployed is practice, so a settled raid needs one).
+ */
+export function noTroops(m: { base: BaseLayout }) {
+  const army = { hedgehog_roller: 1 };
+  const p = createBattle({ seed: 0, base: m.base, army, infiltration: true }, defaultData).entry!.points[0];
+  return { army, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: Math.floor(p.x), y: Math.floor(p.y) }], endTick: 1 };
 }
