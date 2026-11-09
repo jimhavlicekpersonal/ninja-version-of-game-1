@@ -41,6 +41,10 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - `sim/rating.ts` + `ranks.json` `rating` (roadmap Phase 3, shared with the server): hidden Attack/Base Ratings, `expectedScore` with the power term, `rateBattle`, `orderByRating`/`pickByRating` (matchmaking), `powerRating`, `layoutChangedShare`. The server uses these exact functions; `tests/gameplay/balance/rating-convergence.test.ts` simulates weeks of model players through them. Changing the `rating` numbers changes live matchmaking: rerun it.
 - `sim/serverEconomy.ts` (shared with the server, roadmap Phase 2): `Economy` (resources, buildings, next id, army, training, research, Lodge) is what a server-held village checks; `economyHash` (FNV-1a 64 of `canonicalJson`) must be identical in browser and Node; `withEconomy` swaps it in; `PLAYER_COMMANDS` lists the commands a player may send (everything else is a server result or device-only); `BATTLE_COMMANDS` re-run a battle on the server. Changing the economy's fields, `PLAYER_COMMANDS`, or a command's effect changes what the server replays: tell BACKEND, and keep `applyCommand` pure. `battleEnd` / `remoteGroveBattleEnd` take an optional `known` result and `applyDefense` an optional `fallen` list: server-only shortcuts so a battle is simulated once per request; the game never sets them.
 
+## Proposals (not implemented)
+
+- **Tempering** (continuous Reach / Blast / Watch tuning of defences, measured as the way to remove the single best army): `docs/game-theory/IMPLEMENTATION_NOTE_TEMPERING.md` is the step-by-step build note; design and measurements in `DESIGN_TEMPERING_2026-11-08.md`, audit in `docs/audit/BALANCE_AUDIT_2026-11-08.md`. None of it exists in code or data. Implement only on an explicit owner request.
+
 ## Invariants with tests (keep them green)
 
 - The 20-item balance pass (see root `CLAUDE.md`) and `tests/gameplay/balance/*`. Rerun the model player after changing costs, times, loot or combat numbers.
