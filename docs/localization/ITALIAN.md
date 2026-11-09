@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.it)
 
 # Italian translation
 
-Italian (`it`) was released together with French on 2026-11-09; the instruction fixes both needed, and the two layout bugs found in the browser check, are recorded in [FRENCH.md](FRENCH.md). It is written in standard Italian with *tu*, also in the legal pages, and served to `it-IT`, `it-CH` and `it-SM` devices. It covers every namespace (2,988 entries), the six public pages and PWA manifest under `public/it/`, the account-deletion form (`/account/delete?lang=it`), server push text, iOS (`it.lproj`) and Android (`values-it`) resources, StoreKit fixtures for `it_IT`, and listing and product copy in `docs/store/it/`. Terms: `locales/it/TERMS.md`; reviewed warnings: `locales/it/REVIEW.json`.
+Italian (`it`) was released together with French on 2026-11-09 in commit `0ea2e52`; the instruction fixes both needed, and the two layout bugs found in the browser check, are recorded in [FRENCH.md](FRENCH.md). It is written in standard Italian with *tu*, also in the legal pages, and served to `it-IT`, `it-CH` and `it-SM` devices. It covers every namespace (2,988 entries), the six public pages and PWA manifest under `public/it/`, the account-deletion form (`/account/delete?lang=it`), server push text, iOS (`it.lproj`) and Android (`values-it`) resources, StoreKit fixtures for `it_IT`, and listing and product copy in `docs/store/it/`. Terms: `locales/it/TERMS.md`; reviewed warnings: `locales/it/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Italian speaker has reviewed it**, nor the legal pages.
 

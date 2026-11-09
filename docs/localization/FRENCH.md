@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.fr)
 
 # French translation
 
-French (`fr`) was released together with Italian ([ITALIAN.md](ITALIAN.md)) on 2026-11-09. It is written in international French with *tu*, also in the legal pages, and served to every French device (`fr-FR`, `fr-CA`, `fr-BE`, `fr-CH`, African locales). It covers the same surfaces as the earlier languages: every namespace (`boot` 17, `ui` 125, `data` 669, `messages` 1,863, `pages` 314 = 2,988 entries), the six public pages and PWA manifest under `public/fr/`, the account-deletion form (`/account/delete?lang=fr`), server push text, iOS (`fr.lproj`) and Android (`values-fr`) resources, StoreKit fixtures for `fr_FR` and `fr_CA`, and listing and product copy in `docs/store/fr/`. Terms: `locales/fr/TERMS.md`; reviewed warnings: `locales/fr/REVIEW.json`.
+French (`fr`) was released together with Italian ([ITALIAN.md](ITALIAN.md)) on 2026-11-09 in commit `0ea2e52`. It is written in international French with *tu*, also in the legal pages, and served to every French device (`fr-FR`, `fr-CA`, `fr-BE`, `fr-CH`, African locales). It covers the same surfaces as the earlier languages: every namespace (`boot` 17, `ui` 125, `data` 669, `messages` 1,863, `pages` 314 = 2,988 entries), the six public pages and PWA manifest under `public/fr/`, the account-deletion form (`/account/delete?lang=fr`), server push text, iOS (`fr.lproj`) and Android (`values-fr`) resources, StoreKit fixtures for `fr_FR` and `fr_CA`, and listing and product copy in `docs/store/fr/`. Terms: `locales/fr/TERMS.md`; reviewed warnings: `locales/fr/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native French speaker has reviewed it**, nor the legal pages.
 
