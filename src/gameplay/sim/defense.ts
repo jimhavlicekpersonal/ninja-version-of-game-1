@@ -9,7 +9,7 @@ import type { InfiltrationPlan } from './battle/infiltration';
 import { MS_PER_HOUR } from './clock';
 import { buildingDef, levelDef, troopDef, troopLevel } from './data';
 import { attackerFor, lootPenalty } from './matchmaking';
-import { lossTrophies, winTrophies } from './ranks';
+import { defenseHonorLoss, lossTrophies, winTrophies } from './ranks';
 import { capacity, collectorAmount } from './resources';
 import { createRng, int, mixSeed, next, pick, type Rng } from './rng';
 import type { Cost, GameData, ResourceKind, VillageState } from './types';
@@ -71,9 +71,32 @@ export function villageToBase(state: VillageState, t: number, data: GameData, na
         if (amt > 0) loot[k] = (loot[k] ?? 0) + amt;
       }
     }
-    return { id: b.id, type: b.type, level: b.level, x: b.x, y: b.y, loot, upgrading: Boolean(b.upgrade && t < b.upgrade.endsAt) };
+    return { id: b.id, type: b.type, level: b.level, x: b.x, y: b.y, loot, upgrading: Boolean(b.upgrade && t < b.upgrade.endsAt), ...(b.temper ? { temper: { ...b.temper } } : {}) };
   });
   return { name, hallLevel: hl, buildings, trophies: state.trophies };
+}
+
+/**
+ * Exhausted stores (balance audit 2026-11-08): the share of a village's loot the next raider can take, `factor` for
+ * each raid it lost (1+ star) in the `windowHours` before `t` (1 with none, or without the rule).
+ */
+export function exhaustionFactor(defenses: readonly { at: number; result: { stars: number } }[], t: number, data: GameData): number {
+  const ex = data.raids.exhaustion;
+  if (!ex) return 1;
+  const since = t - ex.windowHours * MS_PER_HOUR;
+  let f = 1;
+  for (const d of defenses) if (d.at > since && d.at <= t && d.result.stars >= 1) f *= ex.factor;
+  return f;
+}
+
+/** Scale every building's loot in a base (exhausted stores, loot penalties). Mutates. */
+export function scaleBaseLoot(base: BaseLayout, factor: number): BaseLayout {
+  if (factor >= 1) return base;
+  for (const b of base.buildings) {
+    if (!b.loot) continue;
+    for (const k of Object.keys(b.loot) as ResourceKind[]) b.loot[k] = Math.floor((b.loot[k] ?? 0) * factor);
+  }
+  return base;
 }
 
 export function botName(rng: Rng, data: GameData): string {
@@ -153,7 +176,8 @@ export interface RaidOutcome {
  */
 export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData): RaidOutcome {
   const attacker = attackerFor(rng, s, data);
-  const base = villageToBase(s, t, data, 'Your village', lootPenalty(attacker.hall, hallLevel(s, data), data));
+  // Exhausted stores: raids lost in the last day leave less for this one.
+  const base = villageToBase(s, t, data, 'Your village', lootPenalty(attacker.hall, hallLevel(s, data), data) * exhaustionFactor(s.defenseLog, t, data));
   const attackerTrophies = attacker.trophies;
   const army = attacker.army;
   const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army, levels: attacker.levels, infiltration: true };
@@ -184,7 +208,8 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
     }
   });
   let delta: number;
-  if (result.stars >= 1) delta = -winTrophies(attackerTrophies, s.trophies, data);
+  // Staked honor: a lost defence costs `defenseHonorLossShare` of what the raider gained (none by default).
+  if (result.stars >= 1) delta = -defenseHonorLoss(winTrophies(attackerTrophies, s.trophies, data), data);
   else delta = lossTrophies(attackerTrophies, s.trophies, data);
   s.trophies = Math.max(0, s.trophies + delta);
   const shield = shieldHoursFor(result.destruction, data);

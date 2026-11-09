@@ -125,7 +125,7 @@ function platformName(): string {
  * 2026-11-06: the toast showed the code, e.g. "account_deleted"); empty for a code with no words yet.
  */
 function rejectedWhy(code: string | undefined): string {
-  const known = ['expired', 'defender_protected', 'account_deleted', 'conflict', 'version_mismatch', 'banned'];
+  const known = ['expired', 'defender_protected', 'no_warriors', 'account_deleted', 'conflict', 'version_mismatch', 'banned'];
   return code && known.includes(code) ? ` ${t(`raid.rejected.${code}`)}` : '';
 }
 async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events: EventStore; db: IDBDatabase | null }> {

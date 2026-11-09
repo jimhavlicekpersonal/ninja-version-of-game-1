@@ -16,7 +16,9 @@ import { maxHousingAtHall, troopUnlock } from './army';
 import { troopDef } from './data';
 import { troopLevelCapAt, troopLevelOf } from './research';
 import { createRng, mixSeed, next, type Rng } from './rng';
-import type { GameData, ResourceKind, VillageState } from './types';
+import type { GameData, ResourceKind, Temper, VillageState } from './types';
+import { dominantFamily, temperBase } from './battle/temper';
+import { rivalFor } from './rivals';
 import { hallLevel } from './village';
 
 export interface MatchStrength {
@@ -59,7 +61,12 @@ export function matchStrength(rng: Rng, trophies: number, ownHall: number, data:
 /** Loot multiplier for an attacker at `attackerHall` hitting a base at `targetHall`. */
 export function lootPenalty(attackerHall: number, targetHall: number, data: GameData): number {
   const diff = attackerHall - targetHall;
-  if (diff <= 0) return 1;
+  if (diff < 0) {
+    // Balance audit 2026-11-08 (upward loot penalty): staying a Keep behind to raid the Keep above no longer pays more.
+    const up = data.ranks.lootPenaltyUpByHallDiff;
+    return up?.length ? up[Math.min(-diff, up.length - 1)] : 1;
+  }
+  if (diff === 0) return 1;
   const table = data.ranks.lootPenaltyByHallDiff;
   return table[Math.min(diff, table.length - 1)];
 }
@@ -96,9 +103,10 @@ export function researchKeep(level: number, data: GameData): number {
 
 /**
  * How strong a player's army is, in hall units: the Keep whose research caps its warriors'
- * levels match (`researchKeep`), averaged over the warriors it fields (ready or training, or
- * every warrior it can train if none), between its own Keep and `researchFloorKeeps` (1.5) below
- * it. A Keep 15 player with maxed research is 15; one with Keep 14's research is 14.
+ * levels match (`researchKeep`), averaged over the warriors it fields **weighted by their housing**
+ * (the ready army; the training queue only when no army is ready; every warrior it can train if
+ * neither), between its own Keep and `researchFloorKeeps` (1.5) below it. A Keep 15 player with
+ * maxed research is 15; one with Keep 14's research is 14.
  *
  * Levels are read on the Keep's research scale: a newer tier's level 1 is as strong as an
  * older warrior at level 1 + `levelCapOffset`, so swapping in newly unlocked warriors at
@@ -109,26 +117,36 @@ export function researchKeep(level: number, data: GameData): number {
  * (Keep 12: 12 of 14 levels) and was matched with bases near their caps: casual players
  * averaged 0.0–0.1 stars at Keeps 11–15. Now research behind the caps reads as the earlier
  * Keep it matches, so an army meets bases of the research it has (honor can still raise them).
+ *
+ * Balance audit 2026-11-08 (LD-1): it used to be the plain average over every warrior *type* in
+ * the army and the training queue, so one queued level-1 copy of each old warrior pulled the floor
+ * a full Keep down (three-star rates 5 % -> 95 % at Keep 12). Weighting by housing in the army that
+ * fights makes a single unit count for what it is.
  */
 export function attackerStrength(state: VillageState, data: GameData): number {
   const hall = hallLevel(state, data);
-  const fielded = new Set([...Object.keys(state.army), ...state.training.map((q) => q.troop)]);
-  const troops = fielded.size ? [...fielded] : Object.keys(data.troops).filter((t) => troopUnlock(state, t, data).unlocked);
+  const weights: Record<string, number> = {};
+  const add = (t: string, n: number) => {
+    const def = data.troops[t];
+    if (def && n > 0) weights[t] = (weights[t] ?? 0) + def.housing * n;
+  };
+  for (const [t, n] of Object.entries(state.army)) add(t, n);
+  if (!Object.keys(weights).length) for (const q of state.training) add(q.troop, 1);
+  if (!Object.keys(weights).length) for (const t of Object.keys(data.troops)) if (troopUnlock(state, t, data).unlocked) add(t, 1);
   const below = data.ranks.matchmaking.researchFloorKeeps ?? 1;
   let sum = 0;
-  let n = 0;
-  for (const t of troops) {
+  let weight = 0;
+  for (const [t, w] of Object.entries(weights)) {
     const def = data.troops[t];
-    if (!def) continue;
     const offset = def.levelCapOffset ?? 0;
     const lvl = Math.min(troopLevelCapAt(hall, data, t), troopLevelOf(state, t)) + offset;
     // At its own Keep's cap it is maxed for this Keep (Keeps that share a cap would read the earliest).
     // Never more than `researchFloorKeeps` below the own Keep: camps and army size grow with the Keep
     // too, and armies read lower than that met bases they three-starred (Keeps 5-7 in the campaigns).
-    sum += lvl >= troopLevelCapAt(hall, data) ? hall : Math.max(hall - below, Math.min(hall, researchKeep(lvl, data)));
-    n++;
+    sum += w * (lvl >= troopLevelCapAt(hall, data) ? hall : Math.max(hall - below, Math.min(hall, researchKeep(lvl, data))));
+    weight += w;
   }
-  return n ? sum / n : hall - 1;
+  return weight ? sum / weight : hall - 1;
 }
 
 /**
@@ -150,18 +168,55 @@ export function powerSlackAt(hall: number, data: GameData): number {
  */
 export function opponentFor(seed: number, state: VillageState, data: GameData): BaseLayout {
   const floor = attackerStrength(state, data) - powerSlackAt(hallLevel(state, data), data);
-  return opponentForRank(seed, state.trophies, hallLevel(state, data), data, floor);
+  return opponentForRank(seed, state.trophies, hallLevel(state, data), data, floor, recentRaidArmies(state, data));
 }
 
 /**
  * The same generated opponent from just a rank and hall level. The server uses
  * this when no real player fits, so online and offline matchmaking agree.
+ *
+ * Tempering (SIM_RULES 6): from `temper.unlockKeep`, each rival clan's outposts differ (`temper.rivals`:
+ * home temper, loot and how close to the caps), so Next is a choice; and with `offers.counterShare` an
+ * outpost is tempered against the family that made up most of `recent` (the player's last raid armies).
  */
-export function opponentForRank(seed: number, trophies: number, ownHall: number, data: GameData, floor = 0): BaseLayout {
+export function opponentForRank(seed: number, trophies: number, ownHall: number, data: GameData, floor = 0, recent: Record<string, number>[] = []): BaseLayout {
   const st = matchStrength(createRng(mixSeed(seed, 0x5c0a7)), trophies, ownHall, data, false, floor);
-  const base = generateOpponent(seed, st.hall, data, { levelBias: st.bias });
+  const def = data.battle.temper;
+  const clan = rivalFor(seed, data);
+  const rival = def && clan && st.hall >= def.unlockKeep ? def.rivals[clan.id] : undefined;
+  const bias = rival ? Math.max(0, Math.min(1, st.bias + rival.biasShift)) : st.bias;
+  const base = generateOpponent(seed, st.hall, data, { levelBias: bias });
+  if (rival && rival.lootScale !== 1) {
+    for (const b of base.buildings) {
+      if (!b.loot) continue;
+      for (const k of Object.keys(b.loot) as ResourceKind[]) b.loot[k] = Math.floor((b.loot[k] ?? 0) * rival.lootScale);
+    }
+  }
+  temperBase(base, rivalTempers(seed, st.hall, clan?.id, recent, data), data);
   base.trophies = st.trophies;
   return applyLootPenalty(base, ownHall, data);
+}
+
+/** The armies of the player's recent raids (oldest first): what rival outposts answer (Tempering). */
+export function recentRaidArmies(state: VillageState, data: GameData): Record<string, number>[] {
+  const n = data.battle.temper?.offers.recentRaids ?? 0;
+  if (!n) return [];
+  return (state.battleLog ?? [])
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && r.settlement !== 'rejected')
+    .slice(-n)
+    .map((r) => r.setup.army);
+}
+
+/**
+ * The temper a rival clan's outpost carries (null below `temper.unlockKeep`): with `offers.counterShare`
+ * (seeded), the counter to the family that dominated the player's recent raids; otherwise the clan's home temper.
+ */
+export function rivalTempers(seed: number, hall: number, clanId: string | undefined, recent: Record<string, number>[], data: GameData): Record<string, Temper> | null {
+  const def = data.battle.temper;
+  if (!def || hall < def.unlockKeep) return null;
+  const family = dominantFamily(recent, data);
+  if (family && next(createRng(mixSeed(seed, 0x7e3be5))) < def.offers.counterShare) return def.offers.counters[family] ?? null;
+  return clanId ? def.rivals[clanId]?.tempers ?? null : null;
 }
 
 /** The Elder Toadstool levels a player at `ownHall` may be matched against. */

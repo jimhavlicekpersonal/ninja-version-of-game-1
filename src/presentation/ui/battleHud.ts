@@ -2,7 +2,8 @@ import { displayData as localizedData, messageText as ownedText, generatedName }
 import { messageText as i18nMessage } from './i18n';
 import { labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
-import { pointLabel, t } from './i18n';
+import { fmtDecimal, fmtPercent, pointLabel, t } from './i18n';
+import { armyDiversity, diversityShare, stakeOptions } from '../../gameplay/sim/carry';
 import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
 import type { BattleSession } from '../../gameplay/control/battleSession';
@@ -47,7 +48,9 @@ export interface BattleHudDeps {
   onAttack(): boolean | Promise<boolean>;
   /** Called once when a live battle ends; returns the loot actually banked. */
   /** `banked` is what reached storage (bonuses included); `overflow` is what was won but did not fit. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number } | null;
+  /** A raid that may declare a stake (sim/carry.ts): offline, or on a server with the `stakes` feature. */
+  stakes?: boolean;
   onReplay(): void;
 }
 
@@ -304,7 +307,12 @@ export class BattleHud {
       { class: 'scout-more', id: 'scout-more' },
       h('div', { class: 'chips' }, ...chips),
       entry?.points.length ? h('p', { class: 'small' }, i18nText("ui.each_point_hides_space_of_warriors_so__fb923792c8", { arg1: entry.cover })) : null,
+      // Tempering (balance audit 2026-11-08): the shape of the base is always shown at scouting.
+      r.profile.reach + r.profile.blast + r.profile.watch > 0
+        ? h('p', { class: 'small temper-profile' }, t('scout.profile', { reach: fmtPercent(r.profile.reach * 100), blast: fmtPercent(r.profile.blast * 100), watch: fmtPercent(r.profile.watch * 100) }))
+        : null,
       ...this.armyTips(r.tips).map((t) => h('p', { class: 'small' }, ownedText(t))),
+      this.deps.stakes && stakeOptions(this.s.data).length ? h('p', { class: 'small muted' }, t('stake.help')) : null,
       ...(() => {
         // Report section 5 step 8: who holds this outpost (a computer rival clan).
         const clan = rivalById(this.s.setup.base.rival, localizedData(this.s.data));
@@ -323,8 +331,28 @@ export class BattleHud {
       this.renderScout();
       this.view?.fit();
     });
-    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), more);
+    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), ...this.stakeRow(), more);
     this.deps.root.insertBefore(this.scoutEl, this.troopsEl);
+  }
+
+  /** Declared stakes (opt-in): no stake, or a star count from `raids.stakes.byStars`, fixed when Attack is tapped. */
+  private stakeRow(): HTMLElement[] {
+    if (!this.deps.stakes || this.s.mode !== 'scout') return [];
+    const gd = this.s.data;
+    const opts = stakeOptions(gd);
+    if (!opts.length) return [];
+    const mult = (m: number) => fmtDecimal(m, Math.round(m * 10) === m * 10 ? 1 : 2);
+    const chip = (stake: number | undefined, label: string) => {
+      const on = this.s.stake === stake;
+      const b = h('button', { type: 'button', class: `chip${on ? ' on' : ''}`, 'aria-pressed': String(on), 'data-id': `stake-${stake ?? 0}` }, label);
+      b.addEventListener('click', () => {
+        this.s.setStake(stake);
+        this.renderScout();
+      });
+      return b;
+    };
+    // Always in view (one chip row); what a stake means is in the drawer.
+    return [h('div', { class: 'chips stake-row', role: 'group', 'aria-label': t('stake.label') }, h('span', { class: 'muted small' }, t('stake.label')), chip(undefined, t('stake.none')), ...opts.map((n) => chip(n, t('stake.option', { stars: n, mult: mult(gd.raids.stakes!.byStars[String(n)]) }))))];
   }
 
   /**
@@ -511,7 +539,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending, out.stake);
       } else {
         this.toast(i18nText("ui.replay_finished_c807fbe581"));
       }
@@ -554,7 +582,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false, stake?: number): void {
     // Result feel (re-audit design item 11): stars slam in one by one with a sound and haptic each, a banner for a
     // flawless raid, and the loot counts up. Reduced motion shows the end state at once.
     celebrate(r.stars > 0 ? 'victory' : 'defeat');
@@ -584,6 +612,7 @@ export class BattleHud {
           ? h('p', {}, i18nText("ui.loot_won_5491665d1d"), lootChips(r.loot), h('span', { class: 'muted small' }, i18nText("ui.confirming_with_the_server_it_arrives__667ceaec28")))
           : h('p', {}, this.deps.trial || this.deps.special ? i18nLabel('Reward: ') : i18nLabel('Loot: '), countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
       this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || pending ? '' : h('p', {}, i18nLabel('Honor: '), h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
+      ...this.carryNotes(r, stake, pending),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_your_league_bonus_b40d9ae1a0"), lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_the_event_bonus_8c87bb2bac"), lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, localizedData(this.s.data)).map((cc) => h('p', { class: 'close-call' }, i18nMessage(cc.text))),
@@ -595,6 +624,21 @@ export class BattleHud {
       { label: t('battle.watchReplay'), onClick: () => this.deps.onReplay() },
       { label: t('battle.returnHome'), primary: true, onClick: () => this.deps.onHome() },
     ], false);
+  }
+
+  /** What the raid carried home (sim/carry.ts): the stake's outcome and, for a one-role squad, the share it carried. */
+  private carryNotes(r: BattleResult, stake: number | undefined, pending: boolean): HTMLElement[] {
+    if (this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || this.deps.replayOf) return [];
+    const gd = this.s.data;
+    const out: HTMLElement[] = [];
+    const m = stake !== undefined ? gd.raids.stakes?.byStars[String(stake)] : undefined;
+    // Online the server settles the stake; the note waits for its answer.
+    if (!pending && m !== undefined) {
+      out.push(h('p', { class: `note ${r.stars >= stake! ? 'good' : 'short'}` }, r.stars >= stake! ? t('stake.met', { stars: stake, mult: fmtDecimal(m, Math.round(m * 10) === m * 10 ? 1 : 2) }) : t('stake.missed', { stars: stake })));
+    }
+    const share = diversityShare(armyDiversity(r.used, this.s.setup, gd), gd);
+    if (share < 1 && (pending || m === undefined || r.stars >= stake!)) out.push(h('p', { class: 'muted small' }, t('carry.diversity', { pct: fmtPercent(share * 100) })));
+    return out;
   }
 
   toast(text: string): void {

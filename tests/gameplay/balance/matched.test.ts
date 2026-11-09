@@ -17,7 +17,9 @@ import { botArmy } from '../../../src/gameplay/sim/matchmaking';
 const KEEPS = [5, 8, 12, 15];
 
 describe('matched raids average about one to two stars at every Keep (raid bots\' mix, bot plan)', () => {
-  const rows = KEEPS.flatMap((k) => [0, 2].map((lag) => matchedRaids(k, lag, 'bots', 6, data)));
+  // 12 seeds (6 until Tempering): rival clans' outposts now differ in temper and closeness to the caps, and six
+  // seeds swung a Keep-15 row between 0.67 and 1.29 stars with the same data (24 seeds: 1.21-1.54 at every Keep).
+  const rows = KEEPS.flatMap((k) => [0, 2].map((lag) => matchedRaids(k, lag, 'bots', 12, data)));
 
   it('researched to the caps: 1-2 stars on average at every Keep band, never a three-star farm', { timeout: 180_000 }, () => {
     for (const r of rows.filter((x) => x.lag === 0)) {

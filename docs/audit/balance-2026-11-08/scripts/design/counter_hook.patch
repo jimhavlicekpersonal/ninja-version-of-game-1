@@ -1,0 +1,48 @@
+--- src/gameplay/sim/battle/battle.ts	2026-11-08 04:06:51.816932799 +0000
++++ scratch/gp/sim/battle/battle.ts	2026-11-08 22:44:24.475589349 +0000
+@@ -769,6 +769,29 @@
+   });
+ }
+ 
++
++/** SCRATCH PROTOTYPE: per-building-type damage bonus against warrior classes (battle.counterBonus). */
++function counterMult(sim: BattleSim, bi: number | undefined, t: SimTroop): number {
++  const cfg = (sim.data.battle as any).counterBonus as Record<string, { vs: Record<string, number>; only?: number }> | undefined;
++  if (!cfg || bi === undefined) return 1;
++  const b = sim.buildings[bi];
++  const c = cfg[b.type];
++  if (!c) return 1;
++  if (c.only !== undefined) {
++    let k = 0;
++    for (let i = 0; i < bi; i++) if (sim.buildings[i].type === b.type) k++;
++    if (k >= c.only) return 1;
++  }
++  const def = troopDef(sim.data, t.type);
++  let m = 1;
++  const cls: string[] = [];
++  if (def.air) cls.push('air');
++  if (!def.air && def.range >= 3.5) cls.push('ranged');
++  if (def.housing >= 5) cls.push('tank');
++  if (def.kit?.stealth) cls.push('stealth');
++  for (const k of cls) m = Math.max(m, 1 + (c.vs[k] ?? 0));
++  return m;
++}
+ function stepProjectiles(sim: BattleSim): void {
+   const keep: SimProjectile[] = [];
+   for (const p of sim.projectiles) {
+@@ -784,13 +807,13 @@
+     } else if (p.splash > 0) {
+       sim.troops.forEach((t, ti) => {
+         if (t.dead || (airborne(sim, t) ? !p.hitsAir : !p.hitsGround)) return;
+-        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, p.damage, true, { x: p.fromX, y: p.fromY });
++        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, p.damage * counterMult(sim, p.sourceBuilding, t), true, { x: p.fromX, y: p.fromY });
+       });
+       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: p.splash });
+     } else if (p.targetTroop >= 0) {
+       const t = sim.troops[p.targetTroop];
+       if (!t.dead) {
+-        damageTroop(sim, p.targetTroop, p.damage);
++        damageTroop(sim, p.targetTroop, p.damage * counterMult(sim, p.sourceBuilding, t));
+         if (p.sourceBuilding !== undefined) groundFlyer(sim, p.sourceBuilding, p.targetTroop);
+         sim.events.push({ k: 'hit', x: t.x, y: t.y, kind: p.kind, splash: 0 });
+       }

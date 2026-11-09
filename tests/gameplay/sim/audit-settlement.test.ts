@@ -201,7 +201,8 @@ describe('F14: the results screen gets explicit banked and overflow amounts', ()
       expect(rec.overflow?.acorns).toBeGreaterThanOrEqual(100);
     } else {
       expect(rec.overflow).toBeUndefined();
-      expect(rec.banked!.acorns).toBe(100 + (rec.leagueBonus?.acorns ?? 0) + (rec.eventBonus?.acorns ?? 0));
+      // What the army carries (diversity, sim/carry.ts) plus the bonuses.
+      expect(rec.banked!.acorns).toBe(Math.floor(100 * (rec.carry ?? 1)) + (rec.leagueBonus?.acorns ?? 0) + (rec.eventBonus?.acorns ?? 0));
     }
   });
 });

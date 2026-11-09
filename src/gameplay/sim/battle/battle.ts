@@ -10,6 +10,7 @@ import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from '
 import { activeInBattle, type BattleRecord, type BattleResult, type BattleSetup, type Deployment, type EndReason } from './types';
 import { stepFortifications } from './fortifications';
 import { coverLeft, planInfiltration, pointAt, type InfiltrationPlan } from './infiltration';
+import { applyBaseWide, applyTemper, baseProfile } from './temper';
 import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isHidden, resolveWarriorHit, stepWarriorEffects, type WarriorEffect } from './warriors';
 
 /**
@@ -32,15 +33,19 @@ import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isH
  * (`battle.json` `heroes`), whose Rally aura raises nearby warriors' damage
  * after its first hit. A battle without a hero plays out exactly as under 4
  * (archived in server/rules/v4), so 4 stays compatible.
+ *
+ * 6 (balance audit 2026-11-08): Tempering (`BaseBuilding.temper`, sim/battle/temper.ts). A base whose
+ * buildings carry no temper plays exactly as under 5 (and a hero-less one as under 4), so both stay
+ * compatible; rules 5 is archived in server/rules/v5 all the same.
  */
-export const SIM_RULES = 5;
+export const SIM_RULES = 6;
 
 /**
  * Older rules this code plays out identically (their battles never use the
  * newer setup fields). Their replays stay watchable, and the server checks
  * their battles with this code. Empty it on the next change to combat itself.
  */
-export const SIM_RULES_COMPATIBLE: readonly number[] = [4];
+export const SIM_RULES_COMPATIBLE: readonly number[] = [5, 4];
 
 /** Whether a record can be replayed faithfully with the current rules. */
 export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {
@@ -301,6 +306,10 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       effect, uses: effect?.uses ?? 0, repairedUntil: -1, repairedSlowUntil: -1,
     };
   });
+  // Tempering (SIM_RULES 6): each tempered building's own shape, then the base-wide effects of the base's profile.
+  // A base whose buildings carry no temper plays exactly as under rules 5.
+  setup.base.buildings.forEach((bb, i) => applyTemper(buildings[i], bb.temper, data));
+  applyBaseWide(buildings, baseProfile(setup.base, data), data);
   // Relay assaults (step 64): damage an earlier strike already did.
   const lostHp = setup.startDamage ?? {};
   for (const b of buildings) {

@@ -110,7 +110,8 @@ describe('storage loot cap (#17)', () => {
 
   it('a raider from a higher hall gets less', () => {
     expect(lootPenalty(3, 3, data)).toBe(1);
-    expect(lootPenalty(2, 3, data)).toBe(1);
+    // Raiding a Keep above pays a little less (balance audit 2026-11-08: lagging a Keep behind no longer pays).
+    expect(lootPenalty(2, 3, data)).toBe(data.ranks.lootPenaltyUpByHallDiff![1]);
     expect(lootPenalty(4, 3, data)).toBeLessThan(1);
     expect(lootPenalty(6, 3, data)).toBeLessThan(lootPenalty(4, 3, data));
     const { state, t0 } = raidable();

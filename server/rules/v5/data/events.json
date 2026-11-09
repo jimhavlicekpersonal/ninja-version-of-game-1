@@ -1,0 +1,64 @@
+{
+  "epoch": 1767225600000,
+  "periodDays": 14,
+  "schedule": [
+    {
+      "id": "harvest_moon",
+      "name": "Harvest Festival",
+      "description": "Collecting from Coin Mints and Terraced Farms gives 30% extra.",
+      "startHour": 0,
+      "durationHours": 48,
+      "effect": {
+        "collectBonus": 0.3
+      }
+    },
+    {
+      "id": "raiders_moon",
+      "name": "Night of Raids",
+      "description": "Won attacks bring 20% extra loot.",
+      "startHour": 84,
+      "durationHours": 48,
+      "effect": {
+        "raidLootBonus": 0.2
+      }
+    },
+    {
+      "id": "swift_paws",
+      "name": "Swift Feet Training",
+      "description": "Training warriors costs 25% less Provisions.",
+      "startHour": 168,
+      "durationHours": 48,
+      "effect": {
+        "trainingDiscount": 0.25
+      }
+    },
+    {
+      "id": "bounty_hunt",
+      "name": "Bounty Hunt",
+      "description": "A rival warlord's fortress has a bounty on it. Attack it as often as you like while the hunt lasts: each mark on the reward ladder pays once.",
+      "startHour": 216,
+      "durationHours": 72,
+      "effect": {},
+      "goal": {
+        "kind": "bounty",
+        "power": 1,
+        "ladder": [
+          { "at": 0, "destruction": 30, "reward": { "acorns": 15000, "dew": 15000 } },
+          { "at": 1, "reward": { "acorns": 30000, "dew": 30000 } },
+          { "at": 2, "reward": { "acorns": 45000, "dew": 45000, "moonstones": 10 } },
+          { "at": 3, "reward": { "acorns": 60000, "dew": 60000, "moonstones": 25 } }
+        ]
+      }
+    },
+    {
+      "id": "raiders_moon_2",
+      "name": "Night of Raids",
+      "description": "Won attacks bring 20% extra loot.",
+      "startHour": 252,
+      "durationHours": 48,
+      "effect": {
+        "raidLootBonus": 0.2
+      }
+    }
+  ]
+}

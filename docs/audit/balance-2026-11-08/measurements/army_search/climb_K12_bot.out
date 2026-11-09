@@ -1,0 +1,10 @@
+# Keep 12 climb from bot:  53.3  st 0.95  1*  55%  3*   0%  117×moonblade_master 18×mountain_shield 78×chain_sickle_reaper 15×fuse_master
+round 0 Δ0.1 accept fuse_master→blowgun_hunter 0.10:  61.1  st 1.45  1*  80%  3*   0%  117×moonblade_master 18×mountain_shield 78×chain_sickle_reaper 30×blowgun_hunter
+round 1 Δ0.1 accept moonblade_master→iron_monk 0.10:  68.6  st 1.60  1*  80%  3*  15%  18×mountain_shield 87×moonblade_master 78×chain_sickle_reaper 30×blowgun_hunter 6×iron_monk
+round 2 Δ0.1 no improvement (best 68.4)
+round 3 Δ0.1 accept moonblade_master→gearbreaker 0.10:  71.7  st 1.70  1*  85%  3*  25%  18×mountain_shield 81×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 15×gearbreaker
+round 4 Δ0.1 no improvement (best 70.1)
+round 5 Δ0.1 no improvement (best 70.5)
+round 6 Δ0.05 accept gearbreaker→spirit_caller 0.05:  76.7  st 1.95  1*  90%  3*  30%  18×mountain_shield 82×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×spirit_caller 7×gearbreaker
+round 7 Δ0.05 accept chain_sickle_reaper→herbalist 0.05:  78.5  st 2.05  1*  95%  3*  30%  18×mountain_shield 67×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×spirit_caller 5×herbalist 7×gearbreaker
+END bot:  78.5  st 2.05  1*  95%  3*  30%  18×mountain_shield 67×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×spirit_caller 5×herbalist 7×gearbreaker  (evals 90, 557 s)

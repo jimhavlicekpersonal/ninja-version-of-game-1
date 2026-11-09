@@ -35,6 +35,55 @@ export interface Building {
   y: number;
   upgrade: UpgradeTimer | null;
   collector: CollectorState | null;
+  /**
+   * Tempering (save v21, battle.json `temper`): this building's profile, shared by every building of its type.
+   * Absent when untempered: never store `{}` or zeros (the server's economy hash must not change for
+   * villages that never tempered).
+   */
+  temper?: Temper;
+}
+
+/** Tempering axes (battle.json `temper`): Reach (range), Blast (splash), Watch (anti-air, anti-aura, traps). */
+export type TemperAxis = 'reach' | 'blast' | 'watch';
+/** Points per axis in steps of 1/`temper.steps`; their sum is at most `steps`; absent axes are 0. */
+export type Temper = Partial<Record<TemperAxis, number>>;
+
+export interface TemperAxisDef {
+  /** Tiles of range added at full weight. */
+  range?: number;
+  /** Damage given up at full weight (additive across axes). */
+  damageCost?: number;
+  /** From this share of Reach the tower prefers attackers fighting from `prefersBeyond` tiles. */
+  preferFarAt?: number;
+  prefersBeyond?: number;
+  /** Splash radius at full weight. */
+  splashRadius?: number;
+  /** Fire interval lengthened by this share at full weight. */
+  fireSlow?: number;
+}
+
+/** A base-wide effect of the base's temper profile on another building type. */
+export interface TemperBaseWideDef {
+  /** Damage raised by this share at a full profile. */
+  damage?: number;
+  /** Fire interval shortened by this share at a full profile. */
+  fireFaster?: number;
+  /** Counter effect radius widened by this many tiles. */
+  radius?: number;
+  /** Counter effect cuts (`healCutPct`, `auraCutPct`) raised by this much. */
+  cutAdd?: number;
+}
+
+export type TemperFamily = 'ranged' | 'air' | 'ground';
+
+export interface TemperDef {
+  unlockKeep: number;
+  steps: number;
+  retemperCostShare: number;
+  types: Record<BuildingType, Partial<Record<TemperAxis, TemperAxisDef>>>;
+  baseWide: Partial<Record<TemperAxis, Record<BuildingType, TemperBaseWideDef>>>;
+  offers: { recentRaids: number; counterShare: number; counters: Record<TemperFamily, Record<BuildingType, Temper>> };
+  rivals: Record<string, { tempers: Record<BuildingType, Temper>; lootScale: number; biasShift: number }>;
 }
 
 export interface TrainingItem {
@@ -501,6 +550,8 @@ export interface BattleDef {
   /** Tactical abilities, keyed by the id used in deployments (`Deployment.troop`). */
   abilities: { smoke_bomb: SmokeBombDef };
   sabotage: SabotageDef;
+  /** Tempering (sim/battle/temper.ts): continuous re-shaping of the defences, chosen by the owner. */
+  temper?: TemperDef;
   /** Infiltration Points (sim/battle/infiltration.ts): where warriors may enter, and how many each path hides. */
   infiltration: {
     /** Points per base (out of 8 compass approaches). */
@@ -571,6 +622,11 @@ export interface StartingBuilding {
 export interface EconomyDef {
   /** What players call each resource (messages from the sim; the HUD has its own labels). */
   resourceNames: Record<ResourceKind, string>;
+  /**
+   * Either-currency defences (balance audit 2026-11-08): buildings of these categories may be paid in Provisions
+   * instead of Coins, one for one (`place`/`upgrade` with `pay: 'dew'`), so a defender's idle Provisions build walls.
+   */
+  provisionsPayable?: string[];
   mapSize: number;
   startingResources: Resources;
   startingLayout: StartingBuilding[];
@@ -639,7 +695,11 @@ export interface RatingDef {
 
 export interface RanksDef {
   startingTrophies: number;
-  attackWin: { base: number; perTrophyDiff: number; min: number; max: number };
+  /**
+   * `perTrophyBelow` (balance audit 2026-11-08, staked honor): against a base with less honor than the attacker, the
+   * gain falls by this much per point of difference, down to nothing (`min` holds only at or above the attacker's honor).
+   */
+  attackWin: { base: number; perTrophyDiff: number; min: number; max: number; perTrophyBelow?: number };
   attackLoss: { base: number; perTrophyDiff: number; min: number; max: number };
   matchTrophyRange: number;
   seasonResetFloor: number;
@@ -665,11 +725,23 @@ export interface RanksDef {
     powerSlackByKeep?: number[];
     /** Earned strength reads research behind the caps as earlier Keeps, but never more than this many below the own Keep (design re-audit). */
     researchFloorKeeps?: number;
+    /**
+     * Exposure targeting (balance audit 2026-11-08): online, a village raided within these hours is offered after
+     * every village that was not, longest-ago first, so the richest village is not farmed by everyone in turn.
+     */
+    exposureHours?: number;
   };
   /** Hidden matchmaking ratings (roadmap Phase 3, sim/rating.ts). */
   rating: RatingDef;
   /** Loot multiplier when the target's Elder Toadstool is lower than the attacker's (index = difference). */
   lootPenaltyByHallDiff: number[];
+  /** The same when the target's Keep is higher (index = difference; balance audit 2026-11-08: lagging a Keep behind no longer pays). */
+  lootPenaltyUpByHallDiff?: number[];
+  /**
+   * Share of a lost defence's honor the defender loses (balance audit 2026-11-08, staked honor; 1 before). At 0 being
+   * raided costs no honor, and honor counts how well a player raids and holds, not how often they were farmed.
+   */
+  defenseHonorLossShare?: number;
 }
 
 export interface RaidsDef {
@@ -699,6 +771,23 @@ export interface RaidsDef {
   defenseWin?: { shareOfRaidLoot: number };
   /** Settle-the-score rematches against a bot raider's base (sim/rematch.ts). */
   rematch?: { windowHours: number; shareOfRaidLoot: number };
+  /**
+   * Exhausted stores (balance audit 2026-11-08): each raid the village lost (1+ star) in the last `windowHours`
+   * multiplies what the next raider can take by `factor`.
+   */
+  exhaustion?: { windowHours: number; factor: number };
+  /**
+   * Diversity carries more (balance audit 2026-11-08): a won raid's loot is carried at
+   * `minShare + (1 - minShare) x min(1, D / fullAt)`, D the Gini-Simpson diversity of the warriors fought by role
+   * (housing shares; 0 for one role, 0.9 for ten equal ones).
+   */
+  diversity?: { minShare: number; fullAt: number };
+  /**
+   * Declared stakes (balance audit 2026-11-08, opt-in): before a raid the attacker may declare a star count from
+   * `byStars`; reaching it carries the loot times its multiplier, missing it carries nothing and a real defender keeps
+   * the loot. Without a declaration the loot is carried as before.
+   */
+  stakes?: { byStars: Record<string, number> };
 }
 
 export interface PackDef {
@@ -983,5 +1072,7 @@ export interface PendingBattle {
   ticket?: string;
   /** A Gang War strike (kind 'war'): its report goes to the Gang War, not the Alliance War (step 67). */
   channel?: 'gangwar';
+  /** A raid's declared stake (save v21, sim/carry.ts). */
+  stake?: number;
   at: number;
 }

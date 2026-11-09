@@ -33,8 +33,13 @@ import type { Command } from '../../gameplay/sim/village';
  * reported REPORT_GRACE_MS after Attack is settled as a loss when its
  * attacker next asks for a match, so the game sends its waiting reports
  * first. Servers refuse `match` from games older than 10 with 426.
+ *
+ * v11 (balance audit 2026-11-08, feature `stakes`): `POST /v1/attacks/start` may carry the star count the
+ * attacker declares (`AttackStartRequest.stake`); the ticket keeps it, and `AttackResponse.stake` says what
+ * the raid was settled with (a missed stake carries nothing and the defender keeps the loot). Bases may carry
+ * `temper` on their buildings (feature `tempering`, SIM_RULES 6). All additions: servers still accept 10.
  */
-export const PROTOCOL_VERSION = 10;
+export const PROTOCOL_VERSION = 11;
 
 /** Headers the game sends with every request (protocol 7). */
 export const ClientHeaders = {
@@ -58,6 +63,8 @@ export type ErrorCode =
   | 'expired'
   /** 409: another raid shielded this defender after the ticket was issued; the battle counts as practice (re-audit). */
   | 'defender_protected'
+  /** 409: no warrior was deployed (only the free clan hero); the battle counts as practice (balance audit 2026-11-08). */
+  | 'no_warriors'
   | 'cooldown'
   | 'full'
   | 'not_in_grove'
@@ -609,9 +616,21 @@ export interface MatchResponse {
   expiresAt: number;
 }
 
+/** POST /v1/attacks/start (feature `attack-commit`). */
+export interface AttackStartRequest {
+  ticket: string;
+  /**
+   * Protocol 11 (feature `stakes`): the star count declared before the battle (sim/carry.ts `stakeOptions`).
+   * Kept with the first start only; anything else is ignored.
+   */
+  stake?: number;
+}
+
 /** POST /v1/attacks/start (feature `attack-commit`): the raid now counts. */
 export interface AttackStartResponse {
   started: boolean;
+  /** Protocol 11: the stake the ticket holds (absent: none). */
+  stake?: number;
   /**
    * The battle seed the server issued with the ticket (protocol 10, ledger
    * audit A1). The game plays the battle with it and sends it back in
@@ -658,6 +677,8 @@ export interface AttackResponse {
   trophies: number;
   /** The attacker's trophies after the attack. */
   playerTrophies: number;
+  /** Protocol 11: the stake the raid was settled with (absent: none). */
+  stake?: number;
 }
 
 export interface DefenseView {

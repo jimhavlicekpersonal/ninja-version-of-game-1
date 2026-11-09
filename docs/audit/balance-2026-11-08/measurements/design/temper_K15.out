@@ -1,0 +1,46 @@
+== Keep 15: mean destruction %, 10 bases (5 layouts x 2, bias 0.5) x 2 entry seeds, bot plan, hero; profiles are power-neutral re-shapes of Kunai + Shuriken Towers
+army                     today         reach        volley         blast         sight  reach_volley   blast_sight   all_quarter
+best_found                89.6          64.5          98.0          49.3          84.5          75.3          58.8          77.4
+suggested                 80.5          68.8          91.5          40.2          82.7          69.3          47.4          63.9
+throwers_oni              81.1          54.4          84.5          44.3          71.8          63.5          49.3          55.4
+blade_rush                57.0          47.0          62.2          23.1          63.5          49.9          26.7          43.1
+blade_swarm               53.0          45.2          51.5          22.1          49.5          45.8          25.9          32.5
+eclipse                   97.2          94.4          97.7          28.9          95.0          98.5          35.4          54.5
+air                       91.3          91.5         100.0          99.8          35.0          92.5          76.2          82.7
+tanks_heal                43.0          32.4          59.0          13.3          42.9          40.6          25.6          57.8
+beasts                    54.6          50.3          60.4          21.3          55.1          54.9          24.1          32.5
+siege_blades              43.4          40.3          45.1          21.4          41.3          41.3          23.5          31.1
+
+profile | best army | 2nd | 3rd | best - 2nd | armies within 5 of best | mean of panel
+today | eclipse 97.2 | air 91.3 | best_found 89.6 | 5.9 | 1: eclipse | 69.1
+reach | eclipse 94.4 | air 91.5 | suggested 68.8 | 2.9 | 2: eclipse, air | 58.9
+volley | air 100.0 | best_found 98.0 | eclipse 97.7 | 2.0 | 3: air, best_found, eclipse | 75.0
+blast | air 99.8 | best_found 49.3 | throwers_oni 44.3 | 50.6 | 1: air | 36.4
+sight | eclipse 95.0 | best_found 84.5 | suggested 82.7 | 10.6 | 1: eclipse | 62.1
+reach_volley | eclipse 98.5 | air 92.5 | best_found 75.3 | 6.0 | 1: eclipse | 63.2
+blast_sight | air 76.2 | best_found 58.8 | throwers_oni 49.3 | 17.4 | 1: air | 39.3
+all_quarter | air 82.7 | best_found 77.4 | suggested 63.9 | 5.3 | 1: air | 53.1
+
+army | best profile against it (lowest destruction) | worst profile (highest) | swing
+best_found | blast 49.3 | volley 98.0 | 48.7
+suggested | blast 40.2 | volley 91.5 | 51.3
+throwers_oni | blast 44.3 | volley 84.5 | 40.2
+blade_rush | blast 23.1 | sight 63.5 | 40.4
+blade_swarm | blast 22.1 | today 53.0 | 30.9
+eclipse | blast 28.9 | reach_volley 98.5 | 69.7
+air | sight 35.0 | volley 100.0 | 65.0
+tanks_heal | blast 13.3 | volley 59.0 | 45.7
+beasts | blast 21.3 | volley 60.4 | 39.0
+siege_blades | blast 21.4 | volley 45.1 | 23.8
+
+continuity (pure A, pure B, 50/50 blend):
+  best_found: reach 64.5, volley 98.0, blend 75.3 | best_found: blast 49.3, sight 84.5, blend 58.8
+  suggested: reach 68.8, volley 91.5, blend 69.3 | suggested: blast 40.2, sight 82.7, blend 47.4
+  throwers_oni: reach 54.4, volley 84.5, blend 63.5 | throwers_oni: blast 44.3, sight 71.8, blend 49.3
+  blade_rush: reach 47.0, volley 62.2, blend 49.9 | blade_rush: blast 23.1, sight 63.5, blend 26.7
+  blade_swarm: reach 45.2, volley 51.5, blend 45.8 | blade_swarm: blast 22.1, sight 49.5, blend 25.9
+  eclipse: reach 94.4, volley 97.7, blend 98.5 | eclipse: blast 28.9, sight 95.0, blend 35.4
+  air: reach 91.5, volley 100.0, blend 92.5 | air: blast 99.8, sight 35.0, blend 76.2
+  tanks_heal: reach 32.4, volley 59.0, blend 40.6 | tanks_heal: blast 13.3, sight 42.9, blend 25.6
+  beasts: reach 50.3, volley 60.4, blend 54.9 | beasts: blast 21.3, sight 55.1, blend 24.1
+  siege_blades: reach 40.3, volley 45.1, blend 41.3 | siege_blades: blast 21.4, sight 41.3, blend 23.5

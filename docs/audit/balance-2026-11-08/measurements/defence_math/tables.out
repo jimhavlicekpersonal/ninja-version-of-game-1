@@ -1,0 +1,291 @@
+== Table 1: live shooting defences at each Keep cap (hall.json limits x buildings.json levels)
+cost = cumulative Coins to reach the cap level (one building); DPS = damage x 10 / fireIntervalTicks (single target; Mortar splash r=1.5 not counted)
+HPxDPS/1M = (HP x DPS) / (cost / 1e6) as in FSR 3.4; pow/1M = sqrt(HP x DPS) / (cost/1e6) (Lanchester, additive over buildings); DPS/1M = DPS/(cost/1e6)
+ K    type  n cap       cost      HP     DPS  rng  HPxDPS/1M   pow/1M   DPS/1M    HP/1M      n*cost    n*DPS
+ 1   Kunai  1   2       1250    1265      65    7      65.78   229399    52000  1012000        1250       65
+ 2   Kunai  2   3       5250    1438      81    7      22.25    65108    15476   273905       10500      163
+ 2  Shurik  1   2       5000    1150      57    6      13.16    51295    11440   230000        5000       57
+ 3   Kunai  2   4      21250    1725     102    7       8.31    19776     4818    81176       42500      205
+ 3  Shurik  1   3      20000    1322      70    6       4.64    15232     3510    66100       20000       70
+ 3  Mortar  1   1       8000    1380      23   10       4.04    22462     2925   172500        8000       23
+ 4   Kunai  3   5      71250    2070     132    7       3.82     7326     1847    29053      213750      395
+ 4  Shurik  2   4      65000    1495      94    6       2.15     5755     1440    23000      130000      187
+ 4  Mortar  1   2      40000    1552      29   10       1.13     5315      728    38800       40000       29
+ 4  SkyBow  1   1      22000    2760     234    8      29.36    36529    10636   125455       22000      234
+ 5   Kunai  3   6     171250    2608     174    7       2.65     3931     1015    15229      513750      521
+ 5  Shurik  2   5     175000    1800     126    6       1.30     2725      722    10286      350000      253
+ 5  Mortar  2   3     160000    1863      40   10       0.47     1715      253    11644      320000       81
+ 5  SkyBow  1   2     112000    3478     351    8      10.90     9865     3134    31054      112000      351
+ 6   Kunai  4   7     371250    4862     342    7       4.48     3473      921    13096     1485000     1368
+ 6  Shurik  3   6     425000    3372     242    6       1.92     2126      570     7934     1275000      727
+ 6  Mortar  2   4     460000    2182      54   10       0.26      745      117     4743      920000      108
+ 6  SkyBow  2   3     382000    4232     478    8       5.30     3725     1252    11079      764000      957
+ 7   Kunai  4   9    1081750    9386     660    7       5.73     2302      611     8677     4327000     2642
+ 7  Shurik  3   8    1313125    6515     468    6       2.32     1329      356     4961     3939375     1403
+ 7  Mortar  2   6    1930000    6610     183   10       0.63      569       95     3425     3860000      365
+ 7  SkyBow  2   3     382000    4232     478    8       5.30     3725     1252    11079      764000      957
+ 8   Kunai  4   9    1081750    9386     660    7       5.73     2302      611     8677     4327000     2642
+ 8  Shurik  3   8    1313125    6515     468    6       2.32     1329      356     4961     3939375     1403
+ 8  Mortar  2   6    1930000    6610     183   10       0.63      569       95     3425     3860000      365
+ 8  SkyBow  2   4     922000   10480    1287    8      14.63     3984     1396    11367     1844000     2575
+ 8  Ballis  1   2     980000    9431      67    7       0.64      809       68     9623      980000       67
+ 9   Kunai  4  10    1691475   12103     852    7       6.09     1898      504     7155     6765900     3407
+ 9  Shurik  3   8    1313125    6515     468    6       2.32     1329      356     4961     3939375     1403
+ 9  Mortar  2   6    1930000    6610     183   10       0.63      569       95     3425     3860000      365
+ 9  SkyBow  2   5    1705000   15536    1909    8      17.40     3194     1120     9112     3410000     3818
+ 9  Ballis  1   3    1821000   12052      85    7       0.56      556       47     6618     1821000       85
+10   Kunai  4  11    2575576   15590    1097    7       6.64     1606      426     6053    10302304     4388
+10  Shurik  3   9    2075281    9327     670    6       3.01     1204      323     4494     6225843     2009
+10  Mortar  2   6    1930000    6610     183   10       0.63      569       95     3425     3860000      365
+10  SkyBow  2   6    2840350   23015    2828    8      22.91     2840      996     8103     5680700     5656
+10  Ballis  1   4    3040400   15397     109    7       0.55      426       36     5064     3040400      109
+11   Kunai  4  11    2575576   15590    1097    7       6.64     1606      426     6053    10302304     4388
+11  Shurik  3  10    3180408   11996     861    6       3.25     1011      271     3772     9541224     2584
+11  Mortar  2   7    3191500    9440     261   10       0.77      492       82     2958     6383000      522
+11  SkyBow  3   6    2840350   23015    2828    8      22.91     2840      996     8103     8521050     8483
+11  Ballis  2   5    4808600   19630     139    7       0.57      343       29     4082     9617200      277
+12   Kunai  4  12    3857523   22208    1563    7       9.00     1527      405     5757    15430092     6250
+12  Shurik  3  11    4782842   15412    1107    6       3.57      863      231     3222    14348526     3320
+12  Mortar  2   7    3191500    9440     261   10       0.77      492       82     2958     6383000      522
+12  SkyBow  3   7    4486608   32784    4028    8      29.43     2561      898     7307    13459824    12085
+12  Ballis  2   6    7372500   24995     177    7       0.60      285       24     3390    14745000      353
+12  Yagura  1   3    5985000   14267    1065   13       2.54      651      178     2384     5985000     1065
+13   Kunai  4  13    5716346   30193    2125    7      11.22     1401      372     5282    22865384     8498
+13  Shurik  3  11    4782842   15412    1107    6       3.57      863      231     3222    14348526     3320
+13  Mortar  2   8    5020675   14216     393   10       1.11      471       78     2831    10041350      785
+13  SkyBow  3   8    6873708   44574    5477    8      35.52     2273      797     6485    20621124    16431
+13  Ballis  2   7   11090100   33701     238    7       0.72      255       21     3039    22180200      476
+13  Yagura  1   5   13564700   22120    1650   13       2.69      445      122     1631    13564700     1650
+14   Kunai  4  14    8411639   40278    2834    7      13.57     1270      337     4788    33646556    11337
+14  Shurik  3  12    7106371   24094    1730    6       5.87      909      243     3390    21319113     5191
+14  Mortar  2   8    5020675   14216     393   10       1.11      471       78     2831    10041350      785
+14  SkyBow  3   9   10335008   59462    7306    8      42.04     2017      707     5753    31005024    21919
+14  Ballis  2   8   16480700   44565     315    7       0.85      227       19     2704    32961400      630
+14  Yagura  2   7   26374300   33639    2510   13       3.20      348       95     1275    52748600     5019
+15   Kunai  4  15   12319814   53734    3781    7      16.49     1157      307     4362    49279256    15123
+15  Shurik  3  13   10475487   32143    2308    6       7.08      822      220     3068    31426461     6925
+15  Mortar  2   9    7672979   21802     602   10       1.71      472       79     2841    15345958     1205
+15  SkyBow  3  10   15353908   79323    9747    8      50.35     1811      635     5166    46061724    29240
+15  Ballis  2  10   35630800   67776     479    7       0.91      160       13     1902    71261600      958
+15  Yagura  2  10   63929300   58836    4390   13       4.04      251       69      920   127858600     8779
+
+== Table 2: whole defence at caps per Keep vs the expected attacking army (sim/progression.ts expectedArmyPower = housing x best power per housing)
+ K towers    def cost  sum DPS   sum HP  sum pow  armyPow def/army housing DPS/housing walls cost  traps+ctr defence share of all Coin building cost
+ 1      1        1250       65     1265      287      420     0.68      20         3.3       1000          0    75%
+ 2      3       15500      220     4026      940      974     0.96      40         5.5      10000          0    73%
+ 3      4       70500      298     6152     1325     1949     0.68      80         3.7      63000       4600    58%
+ 4      7      405750      845    13512     3330     3528     0.94     120         7.0     244000      28500    58%
+ 5      8     1295750     1206    18628     4627     6139     0.75     180         6.7     805000      71200    57%
+ 6     11     4444000     3159    42392    11400     9495     1.20     240        13.2    2256250     812700    63%
+ 7     11    12890375     5367    78773    20239    14123     1.43     255        21.0    4068750    1506800    69%
+ 8     12    14950375     7052   100700    25532    17347     1.47     270        26.1    6696875    2408100    58%
+ 9     12    19796275     9079   124301    32182    24638     1.31     285        31.9    6696875    3637300    53%
+10     12    29109247    12526   164988    43665    31301     1.40     300        41.8   10507625    5421776    48%
+11     14    44364778    16255   225533    56826    42118     1.35     300        54.2   16033250    7896264    46%
+12     15    70351442    23594   316557    81666    51300     1.59     315        74.9   24045375   11487322    43%
+13     15   103621284    31161   418684   107733    75240     1.43     330        94.4   24045375   11840962    41%
+14     16   181722043    44882   596620   155232   105846     1.47     345       130.1   35663000   17047978    37%
+15     16   341233599    62230   846162   217054   148618     1.46     360       172.9   52508625   24360958    42%
+
+== Table 3: traps at caps (one-shot; damage is applied once to every ground troop inside splashRadius)
+ K    type  n cap     cost     dmg radius dmg/1k Coins    n*cost
+ 3   Spike  2   2     1900     250    1.6        131.6      3800
+ 3 Caltrop  1   1      800      22    2.2         27.5       800
+ 4   Spike  3   3     7900     320    1.6         40.5     23700
+ 4 Caltrop  1   2     4800      36    2.2          7.5      4800
+ 5   Spike  4   3     7900     320    1.6         40.5     31600
+ 5 Caltrop  2   2     4800      36    2.2          7.5      9600
+ 6   Spike  4   4    27900     400    1.6         14.3    111600
+ 6 Caltrop  2   3    19800      54    2.2          2.7     39600
+ 7   Spike  4   5    56900     832    1.6         14.6    227600
+ 7 Caltrop  2   3    19800      54    2.2          2.7     39600
+ 8   Spike  4   5    56900     832    1.6         14.6    227600
+ 8 Caltrop  2   4    41550     129    2.2          3.1     83100
+ 9   Spike  4   6    98950    1277    1.6         12.9    395800
+ 9 Caltrop  2   4    41550     129    2.2          3.1     83100
+10   Spike  4   6    98950    1277    1.6         12.9    395800
+10 Caltrop  2   5    73088     198    2.2          2.7    146176
+11   Spike  4   7   159922    1959    1.6         12.3    639688
+11 Caltrop  2   5    73088     198    2.2          2.7    146176
+12   Spike  4   7   159922    1959    1.6         12.3    639688
+12 Caltrop  2   6   118817     304    2.2          2.6    237634
+13   Spike  4   8   248332    3005    1.6         12.1    993328
+13 Caltrop  2   6   118817     304    2.2          2.6    237634
+14   Spike  4   8   248332    3005    1.6         12.1    993328
+14 Caltrop  2   7   185125     467    2.2          2.5    370250
+15   Spike  4   9   376527    4611    1.6         12.2   1506108
+15 Caltrop  2   7   185125     467    2.2          2.5    370250
+
+== Table 4: walls at caps (instant build, no builder)
+ K   n cap     HP cum cost  HP/Coin  all walls wall share of defence cost
+ 1  20   1    180       50    3.600       1000    80%
+ 2  40   2    380      250    1.520      10000    65%
+ 3  60   3    600     1050    0.571      63000    89%
+ 4  80   4    900     3050    0.295     244000    60%
+ 5 100   5   1350     8050    0.168     805000    62%
+ 6 125   6   1950    18050    0.108    2256250    51%
+ 7 125   7   4057    32550    0.125    4068750    32%
+ 8 125   8   5413    53575    0.101    6696875    45%
+ 9 125   8   5413    53575    0.101    6696875    34%
+10 125   9   8305    84061    0.099   10507625    36%
+11 125  10  11080   128266    0.086   16033250    36%
+12 125  11  14779   192363    0.077   24045375    34%
+13 125  11  14779   192363    0.077   24045375    23%
+14 125  12  22672   285304    0.079   35663000    20%
+15 125  13  30244   420069    0.072   52508625    15%
+
+== Table 5: counters at caps (effect parameters)
+ K     type  n cap     cost     HP effect
+ 5  Lantern  1   1    30000      1 {"kind":"reveal_line","radius":2,"seconds":3,"vulnerablePct":0.1}
+ 6  Lantern  1   2    73500      1 {"kind":"reveal_line","radius":2,"seconds":3.2,"vulnerablePct":0.11}
+ 6    Crane  1   2   294000   1725 {"kind":"shorten_disables","radius":3,"pct":0.322,"uses":2}
+ 6  Brazier  1   2   294000   1610 {"kind":"anti_heal","radius":3,"healCutPct":0.322,"auraCutPct":0.322}
+ 7  Lantern  2   2    73500      1 {"kind":"reveal_line","radius":2,"seconds":3.2,"vulnerablePct":0.11}
+ 7    Crane  1   3   546300   3560 {"kind":"shorten_disables","radius":3,"pct":0.344,"uses":2}
+ 7  Brazier  1   3   546300   3322 {"kind":"anti_heal","radius":3,"healCutPct":0.344,"auraCutPct":0.344}
+ 8  Lantern  2   3   136600      1 {"kind":"reveal_line","radius":2,"seconds":3.4,"vulnerablePct":0.12}
+ 8    Crane  1   4   912100   4706 {"kind":"shorten_disables","radius":3,"pct":0.367,"uses":2}
+ 8  Brazier  1   4   912100   4393 {"kind":"anti_heal","radius":3,"healCutPct":0.367,"auraCutPct":0.367}
+ 8   Ballis  1   2   980000   9431 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+ 9  Lantern  2   3   136600      1 {"kind":"reveal_line","radius":2,"seconds":3.4,"vulnerablePct":0.12}
+ 9    Crane  1   5  1442600   6226 {"kind":"shorten_disables","radius":3,"pct":0.389,"uses":2}
+ 9  Brazier  1   5  1442600   5810 {"kind":"anti_heal","radius":3,"healCutPct":0.389,"auraCutPct":0.389}
+ 9   Ballis  1   3  1821000  12052 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+10  Lantern  2   4   228100      1 {"kind":"reveal_line","radius":2,"seconds":3.6,"vulnerablePct":0.13}
+10    Crane  1   6  2211800   8232 {"kind":"shorten_disables","radius":3,"pct":0.411,"uses":3}
+10  Brazier  1   6  2211800   7682 {"kind":"anti_heal","radius":3,"healCutPct":0.411,"auraCutPct":0.411}
+10   Ballis  1   4  3040400  15397 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+11  Lantern  2   4   228100      1 {"kind":"reveal_line","radius":2,"seconds":3.6,"vulnerablePct":0.13}
+11    Crane  1   7  3327100  10888 {"kind":"shorten_disables","radius":3,"pct":0.433,"uses":3}
+11  Brazier  1   7  3327100  10160 {"kind":"anti_heal","radius":3,"healCutPct":0.433,"auraCutPct":0.433}
+11   Ballis  2   5  4808600  19630 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+12  Lantern  2   5   360700      1 {"kind":"reveal_line","radius":2,"seconds":3.8,"vulnerablePct":0.14}
+12    Crane  1   8  4944300  14398 {"kind":"shorten_disables","radius":3,"pct":0.456,"uses":3}
+12  Brazier  1   8  4944300  13438 {"kind":"anti_heal","radius":3,"healCutPct":0.456,"auraCutPct":0.456}
+12   Ballis  2   6  7372500  24995 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+12   Yagura  1   3  5985000  14267 {"kind":"counter_artillery","prefersBeyond":3.5}
+13  Lantern  2   5   360700      1 {"kind":"reveal_line","radius":2,"seconds":3.8,"vulnerablePct":0.14}
+13    Crane  1   8  4944300  14398 {"kind":"shorten_disables","radius":3,"pct":0.456,"uses":3}
+13  Brazier  1   8  4944300  13438 {"kind":"anti_heal","radius":3,"healCutPct":0.456,"auraCutPct":0.456}
+13   Ballis  2   7 11090100  33701 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+13   Yagura  1   5 13564700  22120 {"kind":"counter_artillery","prefersBeyond":3.5}
+14  Lantern  2   6   553000      1 {"kind":"reveal_line","radius":2,"seconds":4,"vulnerablePct":0.15}
+14    Crane  1   9  7289200  21899 {"kind":"shorten_disables","radius":3,"pct":0.478,"uses":3}
+14  Brazier  1   9  7289200  20440 {"kind":"anti_heal","radius":3,"healCutPct":0.478,"auraCutPct":0.478}
+14   Ballis  2   8 16480700  44565 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+14   Yagura  2   7 26374300  33639 {"kind":"counter_artillery","prefersBeyond":3.5}
+15  Lantern  2   6   553000      1 {"kind":"reveal_line","radius":2,"seconds":4,"vulnerablePct":0.15}
+15    Crane  1  10 10689300  28960 {"kind":"shorten_disables","radius":3,"pct":0.5,"uses":3}
+15  Brazier  1  10 10689300  27029 {"kind":"anti_heal","radius":3,"healCutPct":0.5,"auraCutPct":0.5}
+15   Ballis  2  10 35630800  67776 {"kind":"ground_flyers","seconds":3,"immuneSeconds":3}
+15   Yagura  2  10 63929300  58836 {"kind":"counter_artillery","prefersBeyond":3.5}
+
+== Table 6: per-level marginal efficiency (the last level each Keep unlocks): dPower per 1M Coins of that one level
+   type  L      cost     HP     DPS     pow   dPow  dPow/1M  dDPS/1M  days
+  Kunai  1       250   1035      52     232    232   927966   208000   0.0
+  Kunai  2      1000   1265      65     287     55    54758    13000   0.0
+  Kunai  3      4000   1438      81     342     55    13766     4063   0.0
+  Kunai  4     16000   1725     102     420     78     4901     1320   0.0
+  Kunai  5     50000   2070     132     522    102     2035      585   0.0
+  Kunai  6    100000   2608     174     673    151     1512      421   0.0
+  Kunai  7    200000   4862     342    1289    616     3081      841   0.0
+  Kunai  8    290000   7036     495    1866    577     1990      528   0.1
+  Kunai  9    420500   9386     660    2490    623     1482      393   0.2
+  Kunai 10    609725  12103     852    3211    721     1182      314   0.3
+  Kunai 11    884101  15590    1097    4135    925     1046      277   0.7
+  Kunai 12   1281947  22208    1563    5891   1755     1369      363   1.6
+  Kunai 13   1858823  30193    2125    8009   2118     1140      302   3.5
+  Kunai 14   2695293  40278    2834   10684   2675      993      263   7.0
+  Kunai 15   3908175  53734    3781   14253   3569      913      242   7.0
+ Shurik  1      1000   1035      47     220    220   220086    46800   0.0
+ Shurik  2      4000   1150      57     256     36     9097     2600   0.0
+ Shurik  3     15000   1322      70     305     48     3211      867   0.0
+ Shurik  4     45000   1495      94     374     69     1543      520   0.0
+ Shurik  5    110000   1800     126     477    103      935      298   0.0
+ Shurik  6    250000   3372     242     904    427     1707      463   0.0
+ Shurik  7    362500   4883     351    1308    405     1117      299   0.1
+ Shurik  8    525625   6515     468    1746    437      832      223   0.2
+ Shurik  9    762156   9327     670    2499    754      989      265   0.3
+ Shurik 10   1105127  11996     861    3215    715      647      174   0.7
+ Shurik 11   1602434  15412    1107    4130    915      571      153   1.6
+ Shurik 12   2323529  24094    1730    6457   2327     1002      268   3.5
+ Shurik 13   3369116  32143    2308    8614   2157      640      172   7.0
+ Mortar  1      8000   1380      23     180    180    22462     2925   0.0
+ Mortar  2     32000   1552      29     213     33     1028      179   0.0
+ Mortar  3    120000   1863      40     274     62      516       94   0.0
+ Mortar  4    300000   2182      54     343     68      227       45   0.0
+ Mortar  5    600000   4456     123     741    398      663      116   0.1
+ Mortar  6    870000   6610     183    1099    358      411       68   0.2
+ Mortar  7   1261500   9440     261    1569    470      373       62   0.3
+ Mortar  8   1829175  14216     393    2363    794      434       72   0.7
+ Mortar  9   2652304  21802     602    3624   1261      476       79   1.6
+ SkyBow  1     22000   2760     234     804    804    36529    10636   0.0
+ SkyBow  2     90000   3478     351    1105    301     3347     1300   0.0
+ SkyBow  3    270000   4232     478    1423    318     1178      472   0.0
+ SkyBow  4    540000  10480    1287    3673   2250     4167     1498   0.1
+ SkyBow  5    783000  15536    1909    5446   1773     2264      794   0.2
+ SkyBow  6   1135350  23015    2828    8067   2621     2309      809   0.3
+ SkyBow  7   1646258  32784    4028   11492   3425     2080      729   0.7
+ SkyBow  8   2387100  44574    5477   15625   4133     1731      607   1.6
+ SkyBow  9   3461300  59462    7306   20844   5219     1508      529   3.6
+ SkyBow 10   5018900  79323    9747   27805   6962     1387      486   7.0
+ Ballis  1    400000   8198      58     689    689     1723      145   0.1
+ Ballis  2    580000   9431      67     793    103      178       15   0.2
+ Ballis  3    841000  12052      85    1013    220      262       22   0.4
+ Ballis  4   1219400  15397     109    1294    281      230       19   0.9
+ Ballis  5   1768200  19630     139    1650    356      201       17   2.0
+ Ballis  6   2563900  24995     177    2101    451      176       15   4.3
+ Ballis  7   3717600  33701     238    2833    731      197       17   7.0
+ Ballis  8   5390600  44565     315    3746    913      169       14   7.0
+ Ballis  9   7816400  58934     416    4954   1208      155       13   7.0
+ Ballis 10  11333700  67776     479    5697    743       66        6   7.0
+ Yagura  1   1500000  10790     805    2947   2947     1965      537   0.3
+ Yagura  2   1950000  12407     926    3389    442      227       62   0.7
+ Yagura  3   2535000  14267    1065    3897    508      200       55   1.6
+ Yagura  4   3295500  19231    1435    5253   1356      411      112   3.5
+ Yagura  5   4284200  22120    1650    6042    789      184       50   7.0
+ Yagura  6   5569400  29249    2182    7990   1948      350       96   7.0
+ Yagura  7   7240200  33639    2510    9188   1199      166       45   7.0
+ Yagura  8   9412300  44486    3319   12151   2963      315       86   7.0
+ Yagura  9  12236000  51163    3817   13975   1823      149       41   7.0
+ Yagura 10  15906700  58836    4390   16071   2096      132       36   7.0
+
+== Table 7: hall.json limit oddities (flat caps, jumps, levels never a cap, count table)
+acorn_orchard          levels=24 capK15=24 counts=[1,2,3,4,5,6,6,6,6,6,6,6,6,6,6] caps=[2,4,6,8,10,11,12,14,15,17,18,20,21,23,24]
+   flat: - | jumps: K1->K2:+2 K2->K3:+2 K3->K4:+2 K4->K5:+2 K7->K8:+2 K9->K10:+2 K11->K12:+2 K13->K14:+2 | levels never a cap: 1,3,5,7,9,13,16,19,22
+dewdrop_well           levels=24 capK15=24 counts=[1,2,3,4,5,6,6,6,6,6,6,6,6,6,6] caps=[2,4,6,8,10,11,12,14,15,17,18,20,21,23,24]
+   flat: - | jumps: K1->K2:+2 K2->K3:+2 K3->K4:+2 K4->K5:+2 K7->K8:+2 K9->K10:+2 K11->K12:+2 K13->K14:+2 | levels never a cap: 1,3,5,7,9,13,16,19,22
+acorn_silo             levels=22 capK15=22 counts=[1,1,2,2,2,3,3,3,3,3,3,3,3,3,3] caps=[1,3,6,8,9,10,11,13,14,15,17,18,19,21,22]
+   flat: - | jumps: K1->K2:+2 K2->K3:+3 K3->K4:+2 K7->K8:+2 K10->K11:+2 K13->K14:+2 | levels never a cap: 2,4,5,7,12,16,20
+dew_cistern            levels=22 capK15=22 counts=[1,1,2,2,2,3,3,3,3,3,3,3,3,3,3] caps=[1,3,6,8,9,10,11,13,14,15,17,18,19,21,22]
+   flat: - | jumps: K1->K2:+2 K2->K3:+3 K3->K4:+2 K7->K8:+2 K10->K11:+2 K13->K14:+2 | levels never a cap: 2,4,5,7,12,16,20
+burrow_barracks        levels=13 capK15=13 counts=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] caps=[2,3,4,5,6,6,7,8,8,9,10,11,11,12,13]
+   flat: K5=K6(6) K8=K9(8) K12=K13(11) | jumps: - | levels never a cap: 1
+army_camp              levels=15 capK15=15 counts=[1,1,2,2,3,3,3,3,3,3,3,3,3,3,3] caps=[1,3,3,5,5,7,8,9,10,11,11,12,13,14,15]
+   flat: K2=K3(3) K4=K5(5) K10=K11(11) | jumps: K1->K2:+2 K3->K4:+2 K5->K6:+2 | levels never a cap: 2,4,6
+acorn_cannon           levels=15 capK15=15 counts=[1,2,2,3,3,4,4,4,4,4,4,4,4,4,4] caps=[2,3,4,5,6,7,9,9,10,11,11,12,13,14,15]
+   flat: K7=K8(9) K10=K11(11) | jumps: K6->K7:+2 | levels never a cap: 1,8
+wasp_nest              levels=13 capK15=13 counts=[0,1,1,2,2,3,3,3,3,3,3,3,3,3,3] caps=[0,2,3,4,5,6,8,8,8,9,10,11,11,12,13]
+   flat: K7=K8(8) K8=K9(8) K12=K13(11) | jumps: K6->K7:+2 | levels never a cap: 1,7
+pinecone_catapult      levels=9 capK15=9 counts=[0,0,1,1,2,2,2,2,2,2,2,2,2,2,2] caps=[0,0,1,2,3,4,6,6,6,6,7,7,8,8,9]
+   flat: K7=K8(6) K8=K9(6) K9=K10(6) K11=K12(7) K13=K14(8) | jumps: K6->K7:+2 | levels never a cap: 5
+firefly_tower          levels=10 capK15=10 counts=[0,0,0,1,1,2,2,2,2,2,3,3,3,3,3] caps=[0,0,0,1,2,3,3,4,5,6,6,7,8,9,10]
+   flat: K6=K7(3) K10=K11(6) | jumps: - | levels never a cap: -
+bramble_hedge          levels=13 capK15=13 counts=[20,40,60,80,100,125,125,125,125,125,125,125,125,125,125] caps=[1,2,3,4,5,6,7,8,8,9,10,11,11,12,13]
+   flat: K8=K9(8) K12=K13(11) | jumps: - | levels never a cap: -
+thorn_snare            levels=9 capK15=9 counts=[0,0,2,3,4,4,4,4,4,4,4,4,4,4,4] caps=[0,0,2,3,3,4,5,5,6,6,7,7,8,8,9]
+   flat: K4=K5(3) K7=K8(5) K9=K10(6) K11=K12(7) K13=K14(8) | jumps: - | levels never a cap: 1
+sap_puddle             levels=7 capK15=7 counts=[0,0,1,1,2,2,2,2,2,2,2,2,2,2,2] caps=[0,0,1,2,2,3,3,4,4,5,5,6,6,7,7]
+   flat: K4=K5(2) K6=K7(3) K8=K9(4) K10=K11(5) K12=K13(6) K14=K15(7) | jumps: - | levels never a cap: -
+grove_lodge            levels=11 capK15=11 counts=[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1] caps=[0,1,2,3,4,5,6,6,7,8,8,9,10,10,11]
+   flat: K7=K8(6) K10=K11(8) K13=K14(10) | jumps: - | levels never a cap: -
+paper_lantern_line     levels=6 capK15=6 counts=[0,0,0,0,1,1,2,2,2,2,2,2,2,2,2] caps=[0,0,0,0,1,2,2,3,3,4,4,5,5,6,6]
+   flat: K6=K7(2) K8=K9(3) K10=K11(4) K12=K13(5) K14=K15(6) | jumps: - | levels never a cap: -
+clockwork_repairer     levels=10 capK15=10 counts=[0,0,0,0,0,1,1,1,1,1,1,1,1,1,1] caps=[0,0,0,0,0,2,3,4,5,6,7,8,8,9,10]
+   flat: K12=K13(8) | jumps: - | levels never a cap: 1
+bitter_incense_burner  levels=10 capK15=10 counts=[0,0,0,0,0,1,1,1,1,1,1,1,1,1,1] caps=[0,0,0,0,0,2,3,4,5,6,7,8,8,9,10]
+   flat: K12=K13(8) | jumps: - | levels never a cap: 1
+kite_cutter_ballista   levels=10 capK15=10 counts=[0,0,0,0,0,0,0,1,1,1,2,2,2,2,2] caps=[0,0,0,0,0,0,0,2,3,4,5,6,7,8,10]
+   flat: - | jumps: K14->K15:+2 | levels never a cap: 1,9
+longbow_yagura         levels=10 capK15=10 counts=[0,0,0,0,0,0,0,0,0,0,0,1,1,2,2] caps=[0,0,0,0,0,0,0,0,0,0,0,3,5,7,10]
+   flat: - | jumps: K12->K13:+2 K13->K14:+2 K14->K15:+3 | levels never a cap: 1,2,4,6,8,9

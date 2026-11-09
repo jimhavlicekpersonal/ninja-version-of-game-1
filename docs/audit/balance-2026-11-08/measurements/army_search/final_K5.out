@@ -1,0 +1,80 @@
+# Keep 5 final. Distinct compositions evaluated (seed 1): 355; within 3 pts of best (99.8): 12 (3%)
+
+## Final table (entry seed 1 | entry seed 2 | mean of both), 20 bases each
+top1               s1  99.8 | s2  96.7 | avg  98.2  st 2.90 1* 100% 3*  93%  15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist
+top2               s1  99.8 | s2  95.5 | avg  97.6  st 2.85 1* 100% 3*  88%  13×iron_monk 37×frog_lobber 36×shuriken_storm 9×saboteur 4×drum_monk 4×herbalist
+top9               s1  97.7 | s2  95.6 | avg  96.7  st 2.83 1* 100% 3*  88%  13×iron_monk 41×frog_lobber 18×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist
+top3               s1  99.7 | s2  93.2 | avg  96.4  st 2.85 1* 100% 3*  88%  13×iron_monk 36×shuriken_storm 23×frog_lobber 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist
+top7               s1  97.9 | s2  94.4 | avg  96.2  st 2.78 1* 100% 3*  83%  13×iron_monk 36×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist 3×crane_glider 11×frog_lobber
+top6               s1  98.0 | s2  92.1 | avg  95.0  st 2.70 1*  98% 3*  77%  13×iron_monk 37×shuriken_storm 9×saboteur 9×trap_breaker 7×wall_climber 4×drum_monk 4×herbalist 4×frog_lobber
+top5               s1  98.4 | s2  91.1 | avg  94.8  st 2.83 1* 100% 3*  85%  13×iron_monk 55×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist 4×frog_lobber
+top8               s1  97.7 | s2  91.8 | avg  94.7  st 2.70 1* 100% 3*  75%  13×iron_monk 47×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist 3×crane_glider
+top10              s1  97.5 | s2  91.3 | avg  94.4  st 2.67 1*  98% 3*  78%  13×iron_monk 36×shuriken_storm 15×saboteur 7×wall_climber 4×drum_monk 4×herbalist 11×frog_lobber
+top4               s1  98.5 | s2  88.1 | avg  93.3  st 2.65 1*  98% 3*  78%  13×iron_monk 54×shuriken_storm 23×frog_lobber 7×wall_climber 4×drum_monk 4×herbalist
+lab:support_light  s1  72.6 | s2  80.0 | avg  76.3  st 2.10 1*  95% 3*  33%  17×wall_climber 17×mole_digger 6×iron_monk 30×frog_lobber 28×shuriken_storm 4×drum_monk 4×herbalist
+lab:shadow         s1  74.3 | s2  74.8 | avg  74.5  st 1.88 1*  85% 3*  32%  63×shadow_stalker 10×mole_digger 9×wall_climber 3×iron_monk
+lab:artillery      s1  72.7 | s2  67.1 | avg  69.9  st 1.88 1*  90% 3*  22%  64×frog_lobber 63×shuriken_storm 10×mole_digger 9×wall_climber 3×iron_monk
+lab:breach         s1  60.3 | s2  73.8 | avg  67.0  st 1.77 1*  90% 3*  18%  15×ram_crew 14×mole_digger 28×shuriken_storm 28×frog_lobber 13×wall_climber 5×iron_monk
+suggested          s1  63.8 | s2  67.7 | avg  65.8  st 1.48 1*  83% 3*  10%  67×twin_fang_dancer 54×shuriken_storm 5×iron_monk 9×wall_climber 4×crane_glider
+lab:siege          s1  60.3 | s2  66.2 | avg  63.3  st 1.52 1*  65% 3*  30%  30×ram_crew 15×wall_climber 6×iron_monk 15×mole_digger
+lab:melee          s1  59.2 | s2  64.6 | avg  61.9  st 1.32 1*  68% 3*  18%  30×wall_climber 12×iron_monk 30×mole_digger
+bot_mix            s1  56.4 | s2  61.5 | avg  58.9  st 1.25 1*  70% 3*  10%  67×hedgehog_roller 54×frog_lobber 5×beetle_brute 9×mole_digger 4×owl_bomber
+lab:air            s1  52.4 | s2  62.9 | avg  57.6  st 1.10 1*  57% 3*  15%  18×crane_glider 18×owl_bomber 7×mole_digger 6×wall_climber 2×iron_monk
+lab:support        s1  44.9 | s2  50.3 | avg  47.6  st 0.68 1*  40% 3*   3%  12×drum_monk 12×herbalist 18×wall_climber 18×mole_digger 7×iron_monk
+
+BEST top1: 98.2 = 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist (types 6)
+margin over suggested 32.5, over bot_mix 39.3
+margin over lab:support_light: 21.9
+margin over lab:shadow: 23.7
+margin over lab:artillery: 28.3
+margin over lab:breach: 31.2
+margin over lab:siege: 35.0
+margin over lab:melee: 36.3
+margin over lab:air: 40.6
+margin over lab:support: 50.6
+
+## Best composition by layout and bias (avg of the two entry seeds); per-layout best from the log, re-fought with seed 2
+kunai_ring   global best  99.5 | layout best 100.0 (top2: 13×iron_monk 37×frog_lobber 36×shuriken_storm 9×saboteur 4×drum_monk 4×herbalist)
+walled_keep  global best  95.3 | layout best  95.3 (top1: 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist)
+mortar_core  global best 100.0 | layout best 100.0 (top1: 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist)
+twin_gates   global best  96.4 | layout best  96.4 (top1: 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist)
+open_court   global best 100.0 | layout best 100.0 (top1: 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist)
+bias 0.5     global best 100.0 | bias best 100.0 (top1: 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist)
+bias 1     global best  96.5 | bias best  96.5 (top1: 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist)
+
+## Suggested / bot mix / best by layout (avg both seeds)
+kunai_ring   best  99.5  suggested  58.9  bot  51.1
+walled_keep  best  95.3  suggested  52.3  bot  43.1
+mortar_core  best 100.0  suggested  74.1  bot  58.9
+twin_gates   best  96.4  suggested  66.8  bot  59.9
+open_court   best 100.0  suggested  76.8  bot  81.6
+bias 0.5     best 100.0  suggested  73.0  bot  63.7
+bias 1     best  96.5  suggested  58.5  bot  54.1
+
+## Roles in near-optima (seed 1, within 3 pts of best, by housing share)
+blade        in   0/12 near-optima, mean share 0.0%
+thrower      in  12/12 near-optima, mean share 32.5%
+guardian     in  12/12 near-optima, mean share 37.7%
+saboteur     in  10/12 near-optima, mean share 10.6%
+infiltrator  in   9/12 near-optima, mean share 5.8%
+sky          in   2/12 near-optima, mean share 1.1%
+mystic       in  11/12 near-optima, mean share 12.2%
+siege        in   0/12 near-optima, mean share 0.0%
+beast        in   0/12 near-optima, mean share 0.0%
+shadow       in   0/12 near-optima, mean share 0.0%
+troops in near-optima: iron_monk:12 shuriken_storm:12 drum_monk:11 herbalist:11 frog_lobber:10 saboteur:10 wall_climber:9 trap_breaker:2 crane_glider:2
+
+## Near-optima list (seed 1)
+ 99.8 [climb:best] 15×iron_monk 40×shuriken_storm 23×frog_lobber 9×saboteur 4×drum_monk 4×herbalist
+ 99.8 [climb:best] 13×iron_monk 37×frog_lobber 36×shuriken_storm 9×saboteur 4×drum_monk 4×herbalist
+ 99.7 [climb:best] 13×iron_monk 36×shuriken_storm 23×frog_lobber 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist
+ 98.5 [climb:best] 13×iron_monk 54×shuriken_storm 23×frog_lobber 7×wall_climber 4×drum_monk 4×herbalist
+ 98.4 [climb:best] 13×iron_monk 55×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist 4×frog_lobber
+ 98.0 [climb:best] 13×iron_monk 37×shuriken_storm 9×saboteur 9×trap_breaker 7×wall_climber 4×drum_monk 4×herbalist 4×frog_lobber
+ 97.9 [climb:support_light] 13×iron_monk 36×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist 3×crane_glider 11×frog_lobber
+ 97.7 [climb:support_light] 13×iron_monk 47×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist 3×crane_glider
+ 97.7 [climb:best] 13×iron_monk 41×frog_lobber 18×shuriken_storm 9×saboteur 7×wall_climber 4×drum_monk 4×herbalist
+ 97.5 [climb:best] 13×iron_monk 36×shuriken_storm 15×saboteur 7×wall_climber 4×drum_monk 4×herbalist 11×frog_lobber
+ 97.3 [climb:best] 13×iron_monk 23×frog_lobber 18×shuriken_storm 9×saboteur 9×trap_breaker 7×wall_climber 4×drum_monk 4×herbalist
+ 97.0 [baseline] 90×shuriken_storm 18×iron_monk
+evals this run 21

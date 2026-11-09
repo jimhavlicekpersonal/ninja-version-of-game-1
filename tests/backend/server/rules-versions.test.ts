@@ -14,7 +14,7 @@ import { liveEngine, parseRetired, RulesRegistry, type RulesEngine } from '../..
 import { canonicalJson, combatFingerprintOf, compareBuilds, dataVersionOf } from '../../../src/backend/net/dataVersion';
 import { ClientHeaders, PROTOCOL_VERSION, Routes } from '../../../src/backend/net/protocol';
 import { updateNeeded } from '../../../src/backend/net/versionCheck';
-import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
+import { SIM_RULES, SIM_RULES_COMPATIBLE } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import type { GameData } from '../../../src/gameplay/sim/types';
 import { baseAt, rush } from './harness';
@@ -60,7 +60,9 @@ describe('the rules registry (step 73)', () => {
   it('serves tools with the live engine, old games with theirs, and refuses rules it no longer has', () => {
     const old = olderEngine();
     const reg = new RulesRegistry(liveEngine(data), { archived: [old] });
-    expect(reg.supportedRules()).toEqual([SIM_RULES, SIM_RULES - 1]);
+    // Today's rules, the older rules today's code plays identically, and the archived engine's.
+    const all = [...new Set([SIM_RULES, ...SIM_RULES_COMPATIBLE, SIM_RULES - 1])].sort((a, b) => b - a);
+    expect(reg.supportedRules()).toEqual(all);
     expect(reg.forClient(undefined)).toBe(reg.live);
     expect(reg.forClient({ rules: SIM_RULES })).toBe(reg.live);
     expect(reg.forClient({ rules: SIM_RULES - 1 })).toBe(old);
@@ -73,7 +75,7 @@ describe('the rules registry (step 73)', () => {
 
   it('retires versions the operators list, never the live one', () => {
     const reg = new RulesRegistry(liveEngine(data), { archived: [olderEngine()], retired: parseRetired(`${SIM_RULES - 1}, ${SIM_RULES}`) });
-    expect(reg.supportedRules()).toEqual([SIM_RULES]);
+    expect(reg.supportedRules()).toEqual([SIM_RULES, ...SIM_RULES_COMPATIBLE.filter((r) => r !== SIM_RULES - 1)]);
     expect(reg.forClient({ rules: SIM_RULES - 1 })).toBeNull();
   });
 
@@ -108,7 +110,7 @@ describe('old games on a new server (steps 73, 75)', () => {
   it('hello lists the rule versions and the oldest build it serves', async () => {
     const s = setup(new RulesRegistry(liveEngine(data), { archived: [olderEngine()], minClientBuild: '1.2.0' }));
     const r = await s.call('GET', Routes.hello);
-    expect(r.body).toMatchObject({ supportedRules: [SIM_RULES, SIM_RULES - 1], minClientBuild: '1.2.0', dataVersion: dataVersionOf(data) });
+    expect(r.body).toMatchObject({ supportedRules: [...new Set([SIM_RULES, ...SIM_RULES_COMPATIBLE, SIM_RULES - 1])].sort((a, b) => b - a), minClientBuild: '1.2.0', dataVersion: dataVersionOf(data) });
     expect(r.body.features).toContain('rules-versions');
   });
 

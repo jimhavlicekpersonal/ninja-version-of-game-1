@@ -15,10 +15,23 @@ export function nextLeague(trophies: number, data: GameData): LeagueDef | null {
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
-/** Trophies the attacker gains for a win (and the defender loses). */
+/**
+ * Trophies the attacker gains for a win. Staked honor (balance audit 2026-11-08): against a base with less honor
+ * the gain falls by `perTrophyBelow` a point, down to nothing, so honor is earned against bases at or above your own.
+ */
 export function winTrophies(attacker: number, defender: number, data: GameData): number {
   const w = data.ranks.attackWin;
-  return clamp(Math.round(w.base + (defender - attacker) * w.perTrophyDiff), w.min, w.max);
+  const diff = defender - attacker;
+  if (diff < 0 && w.perTrophyBelow !== undefined) return clamp(Math.round(w.base + diff * w.perTrophyBelow), 0, w.max);
+  return clamp(Math.round(w.base + diff * w.perTrophyDiff), w.min, w.max);
+}
+
+/**
+ * Honor a defender loses when a raid wins `gained` honor against it: `defenseHonorLossShare` of it (staked honor,
+ * balance audit 2026-11-08: 0, being raided costs no honor; held raids still pay the defender `lossTrophies`).
+ */
+export function defenseHonorLoss(gained: number, data: GameData): number {
+  return Math.round(gained * (data.ranks.defenseHonorLossShare ?? 1));
 }
 
 /** Trophies the attacker loses for a 0-star attack (and the defender gains). */

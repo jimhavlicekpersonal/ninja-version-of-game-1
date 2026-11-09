@@ -20,6 +20,8 @@ export class BattleSession {
   private replayDeps: Map<number, Deployment[]> | null = null;
   private replayEndTick: number | undefined;
   endTick: number | undefined;
+  /** A raid's declared stake (sim/carry.ts): set while scouting, fixed once the battle starts. */
+  private stakeValue: number | undefined;
 
   constructor(
     readonly setup: BattleSetup,
@@ -43,6 +45,15 @@ export class BattleSession {
     if (this.mode !== 'scout' || this.sim.tick !== 0) return;
     this.setup.seed = seed >>> 0;
     this.sim.rng = createRng(this.setup.seed);
+  }
+
+  get stake(): number | undefined {
+    return this.stakeValue;
+  }
+
+  /** Declare (or clear) a stake. Only while scouting: once the battle starts it is fixed. */
+  setStake(stake: number | undefined): void {
+    if (this.mode === 'scout' && this.sim.tick === 0) this.stakeValue = stake;
   }
 
   /** Begin the live battle (the timer starts). */

@@ -1,0 +1,56 @@
+
+== Keep 6, bias 0.5: baseline destruction 60.8 held 27% 3-star 7%; attackers killed 177 of 182
+id                                                   silenced n/base        cost   dest  +dest   se  held  3st killed  pts/1M  kunai_  walled  mortar  twin_g  open_c
+ K                                      Kunai Towers silenced    4.0      685000   81.3  +20.5  2.5    7%  43%    166   29.93    29.3    17.5    14.0    30.2    11.5
+ S                                   Shuriken Towers silenced    3.0      525000   73.8  +13.0  2.3    7%  20%    177   24.70    16.2    14.5    10.8    13.8     9.5
+ M                                           Mortars silenced    2.0      320000   99.5  +38.7  2.9    0%  97%    117  120.83    35.8    47.3    44.3    47.2    18.7
+ A                                          Sky Bows silenced    2.0      224000   69.3   +8.5  1.9   13%  23%    173   37.95     7.8    -0.2    13.2    13.5     8.2
+ B                                         Ballistas silenced none at this Keep
+ Y                                           Yaguras silenced none at this Keep
+ T                                             Traps silenced    6.0       41200   65.9   +5.1  1.9   23%  13%    176  123.79     8.8     1.7     1.3     1.7    12.0
+ C                                     Soft counters silenced    3.0      270000   60.8   +0.0  0.0   27%   7%    177    0.00     0.0     0.0     0.0     0.0     0.0
+ W                                           Walls to level 1   85.4      683556   54.6   +1.7  1.7   28%   0%    181    2.44       -    -1.2     1.8     4.3       -
+ Z Every defence silenced (towers, traps, counters) and walls L1   71.3     2475333  100.0  +39.2  3.0    0% 100%      0   15.82    35.8    47.3    46.8    47.2    18.7
+(258 battles, 14 s)
+
+== Keep 9, bias 0.5: baseline destruction 82.1 held 3% 3-star 47%; attackers killed 172 of 203
+id                                                   silenced n/base        cost   dest  +dest   se  held  3st killed  pts/1M  kunai_  walled  mortar  twin_g  open_c
+ K                                      Kunai Towers silenced    4.0     4327000   98.9  +16.7  3.4    0%  97%    105    3.87     2.3    36.8    19.7    16.5     8.3
+ S                                   Shuriken Towers silenced    3.0     2362500   91.9   +9.7  2.8    3%  73%    151    4.12     2.3    20.7     6.0    11.3     8.3
+ M                                           Mortars silenced    2.0     2120000   99.6  +17.5  3.5    0%  97%     91    8.25     2.3    40.7    19.7    16.5     8.3
+ A                                          Sky Bows silenced    2.0     1844000   83.1   +1.0  1.7    3%  50%    174    0.54     0.0     7.2     0.0     0.0    -2.2
+ B                                         Ballistas silenced    1.0      980000   80.6   -1.6  1.2    3%  43%    172   -1.60     0.0    -1.3     0.0    -6.5     0.0
+ Y                                           Yaguras silenced none at this Keep
+ T                                             Traps silenced    6.0      267200   88.2   +6.1  2.1    0%  60%    139   22.83     0.0    10.5     8.2     6.5     5.3
+ C                                     Soft counters silenced    4.0     1971200   83.0   +0.8  0.9    3%  50%    165    0.42     0.0    -0.8     5.0     0.0     0.0
+ W                                           Walls to level 1   79.4     2581944   75.7   +1.9  2.7    6%  28%    174    0.73       -     2.2    -2.2     5.7       -
+ Z Every defence silenced (towers, traps, counters) and walls L1   69.7    15421067  100.0  +17.9  3.5    0% 100%      0    1.16     2.3    42.5    19.7    16.5     8.3
+(546 battles, 60 s)
+
+== Keep 12, bias 0.5: baseline destruction 68.7 held 20% 3-star 17%; attackers killed 221 of 228
+id                                                   silenced n/base        cost   dest  +dest   se  held  3st killed  pts/1M  kunai_  walled  mortar  twin_g  open_c
+ K                                      Kunai Towers silenced    4.0    10302304   88.5  +19.9  3.8    7%  60%    193    1.93    11.3     8.8    22.8    37.7    18.7
+ S                                   Shuriken Towers silenced    3.0     9541224   83.4  +14.7  2.7    3%  47%    209    1.54     8.0    26.2    15.8    14.2     9.3
+ M                                           Mortars silenced    2.0     3860000   96.5  +27.9  3.5    0%  80%    164    7.22    18.8    40.8    22.0    38.5    19.2
+ A                                          Sky Bows silenced    3.0     8521050   68.7   +0.0  0.0   20%  17%    221    0.00     0.0     0.0     0.0     0.0     0.0
+ B                                         Ballistas silenced    2.0     9617200   68.7   +0.0  0.0   20%  17%    221    0.00     0.0     0.0     0.0     0.0     0.0
+ Y                                           Yaguras silenced    1.0     3450000   74.4   +5.7  2.2   17%  20%    218    1.66     2.5     6.5     7.2     7.2     5.3
+ T                                             Traps silenced    6.0      541976   75.6   +7.0  2.4   10%  37%    210   12.85     1.7     3.5     8.2    10.8    10.7
+ C                                     Soft counters silenced    4.0     7110400   68.7   +0.0  0.0   20%  17%    221    0.00     0.0     0.0     0.0     0.0     0.0
+ W                                           Walls to level 1   85.0    10898360   64.8   +4.0  4.1   11%  11%    224    0.37       -     5.3     0.2     6.5       -
+ Z Every defence silenced (towers, traps, counters) and walls L1   76.0    59483170  100.0  +31.3  3.8    0% 100%      0    0.53    18.8    40.8    24.3    52.3    20.3
+(864 battles, 129 s)
+
+== Keep 15, bias 0.5: baseline destruction 79.8 held 0% 3-star 33%; attackers killed 223 of 258
+id                                                   silenced n/base        cost   dest  +dest   se  held  3st killed  pts/1M  kunai_  walled  mortar  twin_g  open_c
+ K                                      Kunai Towers silenced    4.0    33646556   96.4  +16.6  3.1    0%  80%    167    0.49     9.3    26.8    18.8    20.3     7.7
+ S                                   Shuriken Towers silenced    3.0    21319113   86.5   +6.7  2.6    0%  60%    204    0.32    10.3     6.2    12.5    -2.2     6.8
+ M                                           Mortars silenced    2.0    10041350  100.0  +20.2  3.1    0% 100%    138    2.01    10.3    31.2    22.0    23.7    13.8
+ A                                          Sky Bows silenced    3.0    31005024   76.7   -3.1  2.7    0%  23%    229   -0.10     0.3    -7.0   -11.7    -3.2     6.2
+ B                                         Ballistas silenced    2.0    48594200   83.3   +3.5  1.3    0%  43%    215    0.07     6.8     4.3     0.0     2.3     3.8
+ Y                                           Yaguras silenced    2.0    96045200   90.8  +11.0  2.6    0%  57%    193    0.11     8.2    15.8     8.8    14.8     7.3
+ T                                             Traps silenced    6.0     1230962   85.0   +5.2  1.9    0%  47%    200    4.25     5.5     4.0     8.3     2.7     5.7
+ C                                     Soft counters silenced    4.0    15299800   79.6   -0.2  0.4    0%  30%    226   -0.01     0.0     0.0    -1.3     0.3     0.0
+ W                                           Walls to level 1   80.7    23010489   79.2   +4.8  4.1    0%  22%    238    0.21       -     9.3     4.3     0.7       -
+ Z Every defence silenced (towers, traps, counters) and walls L1   74.4   270988499  100.0  +20.2  3.1    0% 100%      0    0.07    10.3    31.2    22.0    23.7    13.8
+(1182 battles, 171 s)

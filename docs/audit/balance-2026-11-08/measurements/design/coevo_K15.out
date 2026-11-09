@@ -1,0 +1,53 @@
+climb vs today: 95.9  60×thousand_needle 36×chain_sickle_reaper 18×gearbreaker 18×eclipse_ninja 13×oni_breaker 12×drum_monk 10×void_walker 7×iron_monk 7×mountain_shield
+climb vs reach: 77.9  60×thousand_needle 36×chain_sickle_reaper 20×storm_sovereign 18×gearbreaker 18×void_walker 18×eclipse_ninja 13×oni_breaker 12×drum_monk 7×iron_monk
+climb vs blast: 92.2  168×thousand_needle 36×chain_sickle_reaper 20×storm_sovereign 13×oni_breaker 11×herbalist 7×mountain_shield
+climb vs watch: 96.1  96×thousand_needle 56×storm_sovereign 36×chain_sickle_reaper 18×gearbreaker 18×eclipse_ninja 13×oni_breaker 7×iron_monk
+
+== Keep 15 matrix (mean destruction %, 10 bases x 2 entry seeds)
+army                                 today         reach         blast         watch   reach_blast   blast_watch   reach_watch  split_kunaiB  split_kunaiR
+best_found                            89.3          67.9          74.8          85.8          76.5          92.3          74.9          66.6          81.0
+suggested                             82.2          66.0          61.0          79.2          69.8          82.5          71.5          55.1          75.1
+blade_rush                            61.8          55.2          35.0          60.8          48.9          49.5          54.8          34.6          56.3
+eclipse                               98.3          95.7          41.2          95.0          51.4          59.3          95.0          39.6          93.1
+air                                   89.3          87.9          97.5          51.0          93.5          93.7          82.0          89.7          74.2
+tanks_heal                            42.5          40.9          38.6          41.1          65.8          64.1          41.0          35.7          38.7
+beasts                                52.1          50.3          26.9          43.7          33.5          40.9          43.7          26.6          45.7
+climb_vs_today                        96.8          82.3          90.3          96.4          96.3          97.5          84.3          83.0          91.3
+climb_vs_reach                        92.0          81.5          79.7          93.1          94.5          96.2          82.5          71.5          87.8
+climb_vs_blast                        84.8          64.0          88.6          82.8          75.5          96.5          74.2          80.6          77.8
+climb_vs_watch                        96.8          74.8          75.8          93.6          87.3          98.0          79.2          65.3          87.5
+best_found_spread                     90.3          67.7          92.7          90.5          95.8          99.5          69.9          80.0          75.3
+climb_vs_today_spread                 81.5          72.4          97.9          90.3          98.6         100.0          72.4          89.6          78.8
+climb_vs_reach_spread                 84.1          77.4          96.7          89.5          97.0         100.0          77.4          88.7          83.8
+climb_vs_blast_spread                 79.6          54.9          97.9          86.4          83.0          98.5          58.5          76.0          62.9
+climb_vs_watch_spread                 91.3          76.2          99.1          95.0         100.0         100.0          79.5          87.6          87.0
+
+== universal-army check: for each army, worst profile (min) and the gap to that profile's own best army
+climb_vs_today               worst 82.3 vs reach          largest gap to a profile's best army 13.3
+climb_vs_reach_spread        worst 77.4 vs reach          largest gap to a profile's best army 18.3
+climb_vs_watch_spread        worst 76.2 vs reach          largest gap to a profile's best army 19.5
+climb_vs_today_spread        worst 72.4 vs reach          largest gap to a profile's best army 23.3
+climb_vs_reach               worst 71.5 vs split_kunaiBlast_shurReach largest gap to a profile's best army 19.4
+best_found_spread            worst 67.7 vs reach          largest gap to a profile's best army 28.0
+verdict: no universal army: the safest army is 13.3 points below the best answer somewhere
+defender side: best profile against the safest army reach; profile minimizing the attacker's best response: split_kunaiBlast_shurReach 89.7, split_kunaiReach_shurWatch 93.1, reach_watch 95.0
+
+== best-response dynamics (defender answers the current army, attacker answers the new profile), 16 steps from (today, suggested)
+  step 0: attacker suggested                  -> defender split_kunaiBlast_shurReach (55.1) -> attacker air                        (89.7)
+  step 1: attacker air                        -> defender watch                      (51.0) -> attacker climb_vs_today             (96.4)
+  step 2: attacker climb_vs_today             -> defender reach                      (82.3) -> attacker eclipse                    (95.7)
+  step 3: attacker eclipse                    -> defender split_kunaiBlast_shurReach (39.6) -> attacker air                        (89.7)
+  step 4: attacker air                        -> defender watch                      (51.0) -> attacker climb_vs_today             (96.4)
+  step 5: attacker climb_vs_today             -> defender reach                      (82.3) -> attacker eclipse                    (95.7)
+  step 6: attacker eclipse                    -> defender split_kunaiBlast_shurReach (39.6) -> attacker air                        (89.7)
+  step 7: attacker air                        -> defender watch                      (51.0) -> attacker climb_vs_today             (96.4)
+  step 8: attacker climb_vs_today             -> defender reach                      (82.3) -> attacker eclipse                    (95.7)
+  step 9: attacker eclipse                    -> defender split_kunaiBlast_shurReach (39.6) -> attacker air                        (89.7)
+  step 10: attacker air                        -> defender watch                      (51.0) -> attacker climb_vs_today             (96.4)
+  step 11: attacker climb_vs_today             -> defender reach                      (82.3) -> attacker eclipse                    (95.7)
+  step 12: attacker eclipse                    -> defender split_kunaiBlast_shurReach (39.6) -> attacker air                        (89.7)
+  step 13: attacker air                        -> defender watch                      (51.0) -> attacker climb_vs_today             (96.4)
+  step 14: attacker climb_vs_today             -> defender reach                      (82.3) -> attacker eclipse                    (95.7)
+  step 15: attacker eclipse                    -> defender split_kunaiBlast_shurReach (39.6) -> attacker air                        (89.7)
+distinct (profile, army) states visited: 3 of 16 -> cycles among 3 states
+mixed equilibrium: attacker {climb_vs_today 73%, air 25%}; defender {reach_watch 72%, split_kunaiBlast_shurReach 21%, reach 7%}

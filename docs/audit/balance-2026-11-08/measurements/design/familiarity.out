@@ -1,0 +1,13 @@
+familiarity: towers effectively +60% x (housing share over the last 10 raids, cap 0.5); 30 raids, bias 0.5
+K12 fixed: the best thrower line       learn=off: destruction 90.4, stars 2.53, 3-star 57%
+K12 fixed: the stealth army            learn=off: destruction 53.8, stars 1.00, 3-star 10%
+K12 rotation of three armies           learn=off: destruction 62.1, stars 1.33, 3-star 23%
+K12 fixed: the best thrower line       learn=on : destruction 79.8, stars 2.27, 3-star 33%
+K12 fixed: the stealth army            learn=on : destruction 51.7, stars 0.90, 3-star 7%
+K12 rotation of three armies           learn=on : destruction 60.4, stars 1.30, 3-star 20%
+K15 fixed: the best thrower line       learn=off: destruction 88.1, stars 2.50, 3-star 57%
+K15 fixed: the stealth army            learn=off: destruction 93.3, stars 2.70, 3-star 77%
+K15 rotation of three armies           learn=off: destruction 90.2, stars 2.63, 3-star 70%
+K15 fixed: the best thrower line       learn=on : destruction 88.1, stars 2.43, 3-star 50%
+K15 fixed: the stealth army            learn=on : destruction 57.1, stars 1.10, 3-star 10%
+K15 rotation of three armies           learn=on : destruction 83.1, stars 2.27, 3-star 53%

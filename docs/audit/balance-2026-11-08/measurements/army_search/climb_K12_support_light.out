@@ -1,0 +1,10 @@
+# Keep 12 climb from support_light:  46.1  st 0.70  1*  40%  3*   0%  20×bear_warrior 29×mole_king 29×fuse_master 32×chain_sickle_reaper 32×blowgun_hunter 10×siege_bombardier 5×spirit_caller 5×mist_weaver 5×drum_monk
+round 0 Δ0.1 accept bear_warrior→siege_bombardier 0.10:  50.8  st 0.90  1*  55%  3*   0%  20×siege_bombardier 29×mole_king 29×fuse_master 35×chain_sickle_reaper 32×blowgun_hunter 9×bear_warrior 5×spirit_caller 5×mist_weaver 5×drum_monk
+round 1 Δ0.1 accept fuse_master→chain_sickle_reaper 0.10:  52.5  st 0.95  1*  60%  3*   5%  67×chain_sickle_reaper 20×siege_bombardier 29×mole_king 32×blowgun_hunter 9×bear_warrior 13×fuse_master 5×spirit_caller 5×mist_weaver 5×drum_monk
+round 2 Δ0.1 accept spirit_caller→bell_warden 0.05:  55.4  st 0.95  1*  55%  3*   5%  67×chain_sickle_reaper 20×siege_bombardier 29×mole_king 32×blowgun_hunter 9×bear_warrior 13×fuse_master 5×mist_weaver 5×drum_monk 3×bell_warden
+round 3 Δ0.1 accept fuse_master→gearbreaker 0.08:  61.0  st 1.45  1*  80%  3*  10%  67×chain_sickle_reaper 20×siege_bombardier 29×mole_king 32×blowgun_hunter 9×bear_warrior 13×gearbreaker 5×mist_weaver 5×drum_monk 3×bell_warden
+round 4 Δ0.1 accept drum_monk→iron_monk 0.05:  62.1  st 1.30  1*  70%  3*  15%  67×chain_sickle_reaper 20×siege_bombardier 29×mole_king 32×blowgun_hunter 9×bear_warrior 13×gearbreaker 5×mist_weaver 3×bell_warden 3×iron_monk
+round 5 Δ0.1 accept siege_bombardier→blowgun_hunter 0.10:  64.2  st 1.45  1*  70%  3*  15%  66×chain_sickle_reaper 63×blowgun_hunter 29×mole_king 10×siege_bombardier 9×bear_warrior 13×gearbreaker 5×mist_weaver 3×bell_warden 3×iron_monk
+round 6 Δ0.1 no improvement (best 60.1)
+round 7 Δ0.1 no improvement (best 58.8)
+END support_light:  64.2  st 1.45  1*  70%  3*  15%  66×chain_sickle_reaper 63×blowgun_hunter 29×mole_king 10×siege_bombardier 9×bear_warrior 13×gearbreaker 5×mist_weaver 3×bell_warden 3×iron_monk  (evals 94, 473 s)

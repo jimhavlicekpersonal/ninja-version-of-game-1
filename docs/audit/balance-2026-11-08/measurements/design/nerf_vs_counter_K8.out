@@ -1,0 +1,19 @@
+== Keep 8: mean destruction % (three-star %), 10 bases (5 layouts x 2, bias 0.5) x 2 entry seeds, bot plan, hero
+army                     V0_today          V1_nerf   V2_counter_all  V2p_counter_one         V3_blend
+best_found             79.5 (50%)       76.8 (40%)       73.0 (30%)       79.0 (50%)       77.2 (45%)
+suggested              65.8 (20%)       65.8 (20%)       64.0 (15%)       64.9 (20%)       64.9 (20%)
+throwers_monks          57.5 (0%)        58.3 (0%)        50.6 (5%)        53.5 (5%)        52.2 (0%)
+throwers_warden         51.2 (0%)        51.2 (0%)        47.4 (0%)        48.8 (0%)        48.8 (0%)
+blade_rush             54.1 (15%)       54.5 (15%)       50.5 (10%)       50.8 (10%)       51.4 (10%)
+shadow                  43.3 (0%)        43.3 (0%)        43.3 (0%)        43.3 (0%)        43.3 (0%)
+air                     45.5 (0%)        45.5 (0%)        45.5 (0%)        45.5 (0%)        45.5 (0%)
+siege_blades            24.3 (0%)        24.3 (0%)        24.3 (0%)        24.3 (0%)        24.3 (0%)
+beasts                  28.1 (0%)        28.1 (0%)        27.4 (0%)        27.9 (0%)        27.9 (0%)
+healed_blades           41.0 (0%)        42.1 (5%)        40.2 (0%)        40.6 (0%)        40.0 (0%)
+
+variant | best army (dest) | runner-up | best - suggested | armies within 5 pts of best | spread best - median | mean of all ten
+V0_today | best_found 79.5 | suggested 65.8 | 13.7 | 1: best_found | 34.0 | 49.0
+V1_nerf | best_found 76.8 | suggested 65.8 | 10.9 | 1: best_found | 31.2 | 49.0
+V2_counter_all | best_found 73.0 | suggested 64.0 | 9.0 | 1: best_found | 27.4 | 46.6
+V2p_counter_one | best_found 79.0 | suggested 64.9 | 14.1 | 1: best_found | 33.5 | 47.9
+V3_blend | best_found 77.2 | suggested 64.9 | 12.3 | 1: best_found | 31.6 | 47.5

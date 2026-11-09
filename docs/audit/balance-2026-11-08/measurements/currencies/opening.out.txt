@@ -1,0 +1,60 @@
+== catalogue cost at Keeps 1-4 (everything hall.json allows, buildings.json prices; decor costs Jade and is left out)
+Keep 1: whole catalogue 2.0k Coins + 1.8k Prov (+ walls 1.0k C), 4 builder-min; next Keep 1.0k C / 4 min; income at this Keep's max 400/h each
+   acorn_orchard x1 L2 0C/450P, dewdrop_well x1 L2 450C/0P, acorn_silo x1 L1 0C/300P, dew_cistern x1 L1 300C/0P, burrow_barracks x1 L2 0C/800P, army_camp x1 L1 0C/250P, acorn_cannon x1 L2 1.3kC/0P
+Keep 2: whole catalogue 24.1k Coins + 15.2k Prov (+ walls 10.0k C), 31 builder-min; next Keep 4.0k C / 10 min; income at this Keep's max 1600/h each
+   acorn_orchard x2 L4 0C/5.1kP, dewdrop_well x2 L4 5.1kC/0P, acorn_silo x1 L3 0C/2.5kP, dew_cistern x1 L3 2.5kC/0P, burrow_barracks x1 L3 0C/2.3kP, army_camp x1 L3 0C/5.3kP, acorn_cannon x2 L3 10.5kC/0P, wasp_nest x1 L2 5.0kC/0P, grove_lodge x1 L1 1.0kC/0P
+Keep 3: whole catalogue 168.8k Coins + 101.5k Prov (+ walls 63.0k C), 218 builder-min; next Keep 20.0k C / 27 min; income at this Keep's max 3900/h each
+   acorn_orchard x3 L6 0C/37.6kP, dewdrop_well x3 L6 37.6kC/0P, acorn_silo x2 L6 0C/47.1kP, dew_cistern x2 L6 47.1kC/0P, burrow_barracks x1 L4 0C/6.3kP, army_camp x2 L3 0C/10.5kP, acorn_cannon x2 L4 42.5kC/0P, wasp_nest x1 L3 20.0kC/0P, pinecone_catapult x1 L1 8.0kC/0P, thorn_snare x2 L2 3.8kC/0P, sap_puddle x1 L1 800C/0P, grove_lodge x1 L2 9.0kC/0P
+Keep 4: whole catalogue 898.5k Coins + 574.1k Prov (+ walls 244.0k C), 1187 builder-min; next Keep 100.0k C / 72 min; income at this Keep's max 8800/h each
+   acorn_orchard x4 L8 0C/218.2kP, dewdrop_well x4 L8 218.2kC/0P, acorn_silo x2 L8 0C/197.1kP, dew_cistern x2 L8 197.1kC/0P, burrow_barracks x1 L5 0C/18.3kP, army_camp x2 L5 0C/140.5kP, acorn_cannon x3 L5 213.8kC/0P, wasp_nest x2 L4 130.0kC/0P, pinecone_catapult x1 L2 40.0kC/0P, firefly_tower x1 L1 22.0kC/0P, thorn_snare x3 L3 23.7kC/0P, sap_puddle x1 L2 4.8kC/0P, grove_lodge x1 L3 49.0kC/0P
+start: {"acorns":2500,"dew":2500,"nightsap":0,"moonstones":500}, 2 Artisans; 3rd/4th/5th cost 250/500/1000 Jade; obstacles give ~91 Jade; first 24 h shielded (newPlayerShieldHours 24).
+
+== model player (regular policy) command log, first 60 minutes then the rest of day 1
+0 min | Keep 1 | 3.0kC 2.5kP 500J | openDailyChest
+0 min | Keep 1 | 2.0kC 2.5kP 500J | upgrade elder_toadstool -> L2
+4 min | Keep 2 | 2.0kC 2.3kP 500J | place army_camp
+4 min | Keep 2 | 2.0kC 2.0kP 500J | place burrow_barracks
+6 min | Keep 2 | 2.0kC 650P 500J | upgrade army_camp -> L2
+6 min | Keep 2 | 2.0kC 50P 500J | upgrade burrow_barracks -> L2
+8 min | Keep 2 | 1.9kC 0P 500J | place dewdrop_well
+8 min | Keep 2 | 1.7kC 0P 500J | place dewdrop_well
+10 min | Keep 2 | 1.4kC 12P 500J | upgrade dewdrop_well -> L2
+10 min | Keep 2 | 1.1kC 12P 500J | upgrade dewdrop_well -> L2
+12 min | Keep 2 | 400C 14P 500J | upgrade dewdrop_well -> L3
+12 min | Keep 2 | 100C 14P 500J | place dew_cistern
+18 min | Keep 2 | 2.4kC 1.3kP 500J | place acorn_orchard
+18 min | Keep 2 | 2.4kC 1.2kP 500J | place acorn_orchard
+20 min | Keep 2 | 2.4kC 924P 500J | upgrade acorn_orchard -> L2
+20 min | Keep 2 | 2.4kC 624P 500J | upgrade acorn_orchard -> L2
+22 min | Keep 2 | 1.7kC 657P 500J | upgrade dewdrop_well -> L3
+22 min | Keep 2 | 321C 657P 500J | upgrade dewdrop_well -> L4
+24 min | Keep 2 | 347C 371P 500J | place acorn_silo
+28 min | Keep 2 | 2.5kC 343P 500J | upgrade burrow_barracks -> L3
+30 min | Keep 2 | 1.2kC 389P 500J | upgrade dewdrop_well -> L4
+38 min | Keep 2 | 3.3kC 1.2kP 500J | upgrade acorn_orchard -> L3
+40 min | Keep 2 | 3.3kC 536P 500J | upgrade acorn_orchard -> L3
+42 min | Keep 2 | 2.6kC 588P 500J | upgrade dew_cistern -> L2
+44 min | Keep 2 | 2.4kC 642P 500J | place acorn_cannon
+44 min | Keep 2 | 2.1kC 642P 500J | place acorn_cannon
+48 min | Keep 2 | 265C 2.4kP 500J | upgrade elder_toadstool -> L3
+48 min | Keep 2 | 265C 980P 500J | upgrade acorn_orchard -> L4
+50 min | Keep 2 | 287C 284P 500J | upgrade acorn_silo -> L2
+58 min | Keep 3 | 2.2kC 150P 500J | place acorn_silo
+58 min | Keep 3 | 1.9kC 150P 500J | place dew_cistern
+(+ 159 train commands) after 60 min: Keep 3, resources {"acorns":1945,"dew":150,"nightsap":0,"moonstones":500}, capacity {"acorns":9500,"dew":9500,"nightsap":0,"moonstones":null}, buildings: elder_toadstool[3] beaver_lodge[1][1] army_camp[2] burrow_barracks[3] dewdrop_well[4][4] dew_cistern[2][1] acorn_orchard[4][3] acorn_silo[2][1] acorn_cannon[1][1]
+270 min | Keep 3 | 9.5kC 5.6kP 500J | upgrade acorn_silo -> L2
+270 min | Keep 3 | 8.7kC 5.6kP 500J | upgrade dew_cistern -> L2
+280 min | Keep 3 | 11.0kC 4.6kP 500J | research hedgehog_roller
+280 min | Keep 3 | 11.0kC 3.1kP 500J | upgrade acorn_silo -> L3
+280 min | Keep 3 | 11.0kC 1.6kP 500J | upgrade acorn_silo -> L3
+600 min | Keep 3 | 17.0kC 5.9kP 500J | research frog_lobber
+600 min | Keep 3 | 15.5kC 5.9kP 500J | upgrade dew_cistern -> L3
+600 min | Keep 3 | 14.0kC 5.9kP 500J | upgrade dew_cistern -> L3
+610 min | Keep 3 | 17.0kC 6.4kP 500J | upgrade acorn_silo -> L4
+610 min | Keep 3 | 17.0kC 3.4kP 500J | upgrade acorn_silo -> L4
+840 min | Keep 3 | 26.8kC 8.5kP 500J | research beetle_brute
+840 min | Keep 3 | 6.8kC 8.5kP 500J | upgrade elder_toadstool -> L4
+840 min | Keep 3 | 6.8kC 8.3kP 500J | place army_camp
+850 min | Keep 3 | 7.0kC 6.8kP 500J | upgrade army_camp -> L2
+end of day 1: Keep 4 (reached: {"1":"0.0 h","2":"0.1 h","3":"1.0 h","4":"16.0 h"}), resources {"acorns":6996,"dew":6802,"nightsap":0,"moonstones":500}, raids 10, raided 0
+end of day 3: Keep 4 (reached: {"1":"0.0 h","2":"0.1 h","3":"1.0 h","4":"16.0 h"}), raids 18, raided 7, stolen total 57.0k, looted total 123.3k
