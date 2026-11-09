@@ -7,7 +7,7 @@ import { ENGLISH, catalogFor, deviceLocale, format, installCatalog, labelText as
 import type { Catalog, MessageRef } from '../../../locales/runtime';
 import { PRESET_CHAT } from '../../backend/net/protocol';
 export type { MessageRef } from '../../../locales/runtime';
-type Lang = { code: string; name: string; native: string; script: string; dir: 'ltr' | 'rtl'; alsoFor?: string[]; generatedNames?: 'noun-first' };
+type Lang = { code: string; name: string; native: string; script: string; dir: 'ltr' | 'rtl'; alsoFor?: string[]; generatedNames?: 'noun-first' | 'compound' };
 type Availability = { coverage: number; ready: boolean; hash?: string; path?: string; keys?: number };
 const LANGS = (languagesFile as { languages: Lang[] }).languages;
 const AVAILABLE = availabilityFile as Record<string, Availability>;
@@ -93,6 +93,14 @@ export function chatText(m: { text: string; kind: string; presetId?: number }, c
 export function renderMessage(ref: MessageRef | undefined, fallback: string): string { return ref ? translate(ref.key, ref.params) : messageText(fallback); }
 export function formatMessage(msg: string, params?: Record<string, unknown>): string { return format(msg, params); }
 export function fmtNumber(n: number): string { return numberText(n, deviceLocale(), true); }
+/** A decimal for display (1,25 in German, 1.25 in English), never `toFixed`. */
+export function fmtDecimal(n: number, digits: number): string {
+  return new Intl.NumberFormat(deviceLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits, numberingSystem: 'latn' } as Intl.NumberFormatOptions).format(n);
+}
+/** A percentage written in the language's own way (12%, 12 %, %12). */
+export function fmtPercent(percent: number, digits = 0): string {
+  return new Intl.NumberFormat(deviceLocale(), { style: 'percent', maximumFractionDigits: digits, numberingSystem: 'latn' } as Intl.NumberFormatOptions).format(percent / 100);
+}
 export function pointLabel(letter: string): string { const i = 'ABCDEFGH'.indexOf(letter); return language().script !== 'Latn' && i >= 0 ? String(i + 1) : letter; }
 export function dateText(at: number | Date, options?: Intl.DateTimeFormatOptions): string {
   return new Intl.DateTimeFormat(deviceLocale(), options ?? { dateStyle: 'medium', timeStyle: 'short' }).format(at);
@@ -105,7 +113,13 @@ export function generatedName(value: string, kind: 'place' | 'grove' = 'place'):
   if (kind === 'place' && value.includes(' · ')) { const [head, ...tail] = value.split(' · '); return `${labelText(head)} · ${generatedName(tail.join(' · '))}`; }
   const first = Object.entries(ENGLISH).filter(([k]) => k.startsWith(kind === 'place' ? 'data.names.placeFirst.' : 'data.social.groveNames.first.'));
   const second = Object.entries(ENGLISH).filter(([k]) => k.startsWith(kind === 'place' ? 'data.names.placeSecond.' : 'data.social.groveNames.second.'));
-  for (const [a, x] of first) for (const [b, y] of second) if (value === `${x} ${y}`) return LANGS.find(l => l.code === deviceLocale())?.generatedNames === 'noun-first' ? `${t(b)} ${t(a)}` : `${t(a)} ${t(b)}`;
+  const order = LANGS.find(l => l.code === deviceLocale())?.generatedNames;
+  for (const [a, x] of first) for (const [b, y] of second) if (value === `${x} ${y}`) {
+    if (order === 'noun-first') return `${t(b)} ${t(a)}`;
+    // German writes the two parts as one word (Donner + Gipfel = Donnergipfel); the first part carries any linking letters.
+    if (order === 'compound') { const tail = t(b); return `${t(a)}${tail.charAt(0).toLocaleLowerCase(deviceLocale())}${tail.slice(1)}`; }
+    return `${t(a)} ${t(b)}`;
+  }
   return messageText(value);
 }
 /** Only canonical game data may be passed here, never player-owned objects.

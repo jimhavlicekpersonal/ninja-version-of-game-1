@@ -1,7 +1,7 @@
 import { messageText as ownedError } from './i18n';
 import { dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
-import { t as i18nText } from './i18n';
+import { t as i18nText, fmtPercent } from './i18n';
 /**
  * Daily chest (odds always shown before opening, free, one a day) and the
  * limited-time events panel (fixed schedule, real countdowns).
@@ -22,7 +22,7 @@ import { icons } from './icons';
 import { uiArt } from './feedback';
 import { sound } from '../audio/sound';
 
-const pct = (p: number) => `${p < 10 ? p.toFixed(1) : Math.round(p)}%`;
+const pct = (p: number) => fmtPercent(p < 10 ? p : Math.round(p), p < 10 ? 1 : 0);
 const when = (t: number) => i18nDate(t, { weekday: 'short', hour: '2-digit', minute: '2-digit' });
 
 export interface DailyOpts {
