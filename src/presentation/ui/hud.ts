@@ -554,9 +554,7 @@ export class Hud {
 
   /** The Events button's pill: time left on the running event, else when the next starts. */
   private updateEventPill(): void {
-    const text = DailyUi.chipText(this.c.now(), this.c);
-    const live = !text.startsWith('Next') && text !== 'Events';
-    const short = text.includes('·') ? text.split('·').pop()!.replace(' left', '').trim() : text.replace(/^Next: .* in /, '');
+    const { text, live, short } = DailyUi.chipParts(this.c.now(), this.c);
     this.eventChip.textContent = short;
     this.eventChip.classList.toggle('live', live);
     this.railBtns.Events?.setAttribute('aria-label', i18nText("ui.events_f1a48ff1d1", { arg1: text }));

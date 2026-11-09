@@ -1,0 +1,174 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "fr",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Pincée de Jade",
+      "description": "45 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Bourse de Jade",
+      "description": "100 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Sac de Jade",
+      "description": "280 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Boîte de Jade",
+      "description": "600 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Coffre de Jade",
+      "description": "1300 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Chambre forte de Jade",
+      "description": "3500 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Trésor du Dragon de Jade",
+      "description": "7500 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Parchemin premium",
+      "description": "Voie premium de cette saison",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Pack de départ",
+      "description": "Du Jade et des ressources pour les nouveaux clans",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Lot de l'Artisan",
+      "description": "Du Jade pour un Artisan de plus, et des ressources",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Provisions de guerre",
+      "description": "Provisions et Jade pour la Guerre d'Alliance",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kit de reconstruction",
+      "description": "Du Jade et des ressources pour reconstruire",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Solde du Clan",
+      "description": "30 versements quotidiens de 12 Jade",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Fête du Donjon",
+      "description": "Ressources et Jade pour fêter ton nouveau Donjon",
+      "locale": "fr_FR"
+    },
+    {
+      "productId": "jade_pinch",
+      "displayName": "Pincée de Jade",
+      "description": "45 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Bourse de Jade",
+      "description": "100 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Sac de Jade",
+      "description": "280 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Boîte de Jade",
+      "description": "600 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Coffre de Jade",
+      "description": "1300 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Chambre forte de Jade",
+      "description": "3500 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Trésor du Dragon de Jade",
+      "description": "7500 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Parchemin premium",
+      "description": "Voie premium de cette saison",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Pack de départ",
+      "description": "Du Jade et des ressources pour les nouveaux clans",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Lot de l'Artisan",
+      "description": "Du Jade pour un Artisan de plus, et des ressources",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Provisions de guerre",
+      "description": "Provisions et Jade pour la Guerre d'Alliance",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kit de reconstruction",
+      "description": "Du Jade et des ressources pour reconstruire",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Solde du Clan",
+      "description": "30 versements quotidiens de 12 Jade",
+      "locale": "fr_CA"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Fête du Donjon",
+      "description": "Ressources et Jade pour fêter ton nouveau Donjon",
+      "locale": "fr_CA"
+    }
+  ]
+}

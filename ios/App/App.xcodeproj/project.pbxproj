@@ -45,6 +45,8 @@
 		B9C32A701A00100000000005 /* hi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B9C32A701A00100000000006 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B9C32A701A00100000000007 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B9C32A701A00100000000008 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B9C32A701A00100000000009 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +149,8 @@
 				hi,
 				pt,
 				de,
+				fr,
+				it,
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
@@ -212,7 +216,7 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
-		B9C32A701A00100000000002 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (B9C32A701A00100000000003 /* en */, B9C32A701A00100000000004 /* es */, B9C32A701A00100000000005 /* hi */, B9C32A701A00100000000006 /* pt */, B9C32A701A00100000000007 /* de */); name = InfoPlist.strings; sourceTree = "<group>"; };
+		B9C32A701A00100000000002 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (B9C32A701A00100000000003 /* en */, B9C32A701A00100000000004 /* es */, B9C32A701A00100000000005 /* hi */, B9C32A701A00100000000006 /* pt */, B9C32A701A00100000000007 /* de */, B9C32A701A00100000000008 /* fr */, B9C32A701A00100000000009 /* it */); name = InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
