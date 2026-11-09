@@ -276,6 +276,8 @@ export class App {
       grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? i18nText("ui.gang_war_relay_9376500e38") : i18nText("ui.gang_war_d4e65acc95") } : {}) } : undefined,
       practice,
       special: special ? { title: special.title } : undefined,
+      // Declared stakes: raids only, offline or on a server that settles them (protocol 11).
+      stakes: !replayOf && !grove && !duel && trialTier === undefined && !practice && !special && (!this.ticket || this.d.connection.canStakes),
       trial:
         trialTier !== undefined
           ? (() => {
@@ -372,7 +374,7 @@ export class App {
         }
         lastRecord = out.record;
         if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true };
-        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus };
+        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);

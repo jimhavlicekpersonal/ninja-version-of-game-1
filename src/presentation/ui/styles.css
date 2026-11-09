@@ -902,3 +902,20 @@ html[dir="rtl"] .side-rail { right: auto; left: calc(8px + var(--safe-l)); }
 html[dir="rtl"] .b-left { left: auto; right: calc(8px + var(--safe-r)); }
 html[dir="rtl"] .b-right { right: auto; left: calc(8px + var(--safe-l)); }
 html[dir="rtl"] .objective-chip, html[dir="rtl"] .log-row { text-align: right; }
+
+/* Tempering, declared stakes and either-currency walls (balance audit 2026-11-08). */
+.temper { margin: 8px 0; padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, .55); }
+.temper h3 { margin: 0 0 4px; font-size: 15px; }
+.temper-row { display: grid; grid-template-columns: minmax(72px, auto) 44px 1fr 44px auto; align-items: center; gap: 6px; margin: 4px 0; }
+.temper-row .btn { min-height: 44px; min-width: 44px; padding: 0; font-size: 20px; }
+.temper-axis { font-weight: 700; font-size: 13px; }
+.temper-val { font-weight: 700; font-size: 13px; min-width: 3.2em; text-align: end; }
+.temper .actions { margin-top: 6px; }
+.stake-row, .pay-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
+.scout-report .stake-row { flex-wrap: nowrap; overflow-x: auto; margin: 4px 0 2px; }
+.scout-report .stake-row .chip { flex: none; min-height: 40px; }
+.stake-row .chip, .pay-choice .chip { min-height: 44px; border: none; cursor: pointer; font: 700 13px var(--font); padding: 4px 12px; }
+.stake-row .chip.on, .pay-choice .chip.on { background: #ffe27a; box-shadow: 0 0 0 2px var(--sun-dark); }
+.btn.upgrade-dew .chip { color: var(--ink); text-shadow: none; background: rgba(255, 255, 255, .85); }
+.note.good { color: #2b6a1f; }
+.note.short { color: #c2281f; }

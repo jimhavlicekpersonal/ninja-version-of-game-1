@@ -1697,8 +1697,9 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
     return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'rejected' }] };
   }
   const result = cmd.result;
-  // The stake the server settled with (it was fixed when the raid started), else the one recorded here.
-  const stake = validStake(cmd.stake, data) ? cmd.stake : validStake(rec.stake, data) ? rec.stake : undefined;
+  // Only the stake the server settled with counts (it was fixed when the raid started); a server without
+  // stakes settles with none, whatever this game recorded.
+  const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
   const carry = raidCarry(result, rec.setup, stake, data);
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data, carry);
   rec.result = { ...result, loot: { ...result.loot } };

@@ -53,6 +53,8 @@ interface Placement {
   valid: boolean;
   /** Buy the missing resources with Jade on confirm (the HUD asks first). */
   buy?: boolean;
+  /** A wall or trap paid in Provisions (either-currency defences, `economy.provisionsPayable`). */
+  pay?: 'dew';
 }
 
 interface DragState {
@@ -157,7 +159,7 @@ export class VillageScene extends Phaser.Scene {
         }
         if (finished.some((f) => f.level > 0)) sound.play('levelUp');
       }),
-      this.bus.on('placement:start', (p) => (p.kind === 'new' ? this.startPlacement('new', p.buildingType, undefined, p.buy) : this.startPlacement('move', undefined, p.id))),
+      this.bus.on('placement:start', (p) => (p.kind === 'new' ? this.startPlacement('new', p.buildingType, undefined, p.buy, p.pay) : this.startPlacement('move', undefined, p.id))),
       this.bus.on('placement:confirm', () => this.confirmPlacement()),
       this.bus.on('placement:cancel', () => this.endPlacement()),
       this.bus.on('select', (id) => {
@@ -702,7 +704,7 @@ export class VillageScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------ placement
 
-  private startPlacement(kind: 'new' | 'move', type?: string, id?: string, buy = false): void {
+  private startPlacement(kind: 'new' | 'move', type?: string, id?: string, buy = false, pay?: 'dew'): void {
     this.endPlacement();
     const gd = this.controller.data;
     const state = this.controller.state;
@@ -733,7 +735,7 @@ export class VillageScene extends Phaser.Scene {
     const o = buildingOrigin(tex, size);
     const ghost = this.add.image(0, 0, key).setOrigin(o.x, o.y).setScale(buildingScale(tex, size)).setAlpha(0.85).setDepth(OVERLAY_DEPTH - 5);
     const outline = this.add.graphics().setDepth(OVERLAY_DEPTH - 6);
-    this.placement = { kind, type: type!, id, x, y, size, ghost, outline, valid: false, buy };
+    this.placement = { kind, type: type!, id, x, y, size, ghost, outline, valid: false, buy, ...(pay ? { pay } : {}) };
     this.tweens.add({ targets: this.grid, alpha: 1, duration: 200 });
     this.selectedId = null;
     this.bus.emit('select', null);
@@ -793,7 +795,7 @@ export class VillageScene extends Phaser.Scene {
     }
     const r =
       pl.kind === 'new'
-        ? this.controller.dispatch({ type: 'place', buildingType: pl.type, x: pl.x, y: pl.y })
+        ? this.controller.dispatch({ type: 'place', buildingType: pl.type, x: pl.x, y: pl.y, ...(pl.pay ? { pay: pl.pay } : {}) })
         : this.controller.dispatch({ type: 'move', id: pl.id!, x: pl.x, y: pl.y });
     if (!r.ok) {
       this.bus.emit('toast', { text: r.message, kind: 'error' });

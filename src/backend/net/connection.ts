@@ -345,6 +345,10 @@ export class Connection {
   }
   // ------------------------------------------------------------ duels and Gangs (roadmap steps 62-63)
 
+  /** Declared stakes (protocol 11): the server fixes a stake at the raid's start and settles with it. */
+  get canStakes(): boolean {
+    return this.online && Boolean(this.server?.features.includes('stakes'));
+  }
   get canDuels(): boolean {
     return this.online && Boolean(this.server?.features.includes('duels'));
   }
