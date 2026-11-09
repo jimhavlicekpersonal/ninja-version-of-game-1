@@ -22,7 +22,7 @@ Standart Türkçe, samimi *sen* hitabı (küçük harfle, yasal metinlerde de). 
 | Infiltration Points | Sızma Noktaları |
 | Raid / attack / raider | baskın / saldırı / baskıncı |
 | Warrior / Defense / Shield | savaşçı / savunma / kalkan |
-| Honor / Power / League | Onur / Güç / Lig (Bambu Ligi, Sedir Ligi, Demir Ligi, Obsidyen Ligi, Yeşim Ligi, Fırtına Ligi, Gölge Ligi, Kage Ligi) |
+| Honor / Power / League | Onur / Güç / Lig (Bambu Ligi, Sedir Ligi, Demir Ligi, Obsidyen Ligi, Kor Ligi, Fırtına Ligi, Gölge Ligi, Kage Ligi) |
 | Star(s) | yıldız |
 | Daily chest / streak / skip | günlük sandık / seri / joker |
 | Clan Stipend / Looks | Klan Maaşı / Görünümler |
