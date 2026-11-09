@@ -12,7 +12,7 @@ import { isolateName } from '../../gameplay/sim/social/names';
  */
 import type { Connection } from '../../backend/net/connection';
 import { REPORT_REASONS, type ChatView, type FriendView, type ReportReason, type RequestView, type SquadResponse } from '../../backend/net/protocol';
-import { h } from './dom';
+import { h, isSubmitEnter, limitCodePoints } from './dom';
 import type { UiKit } from './economyUi';
 import { formatDuration } from './format';
 import { presetChatRow } from './ageScreen';
@@ -189,7 +189,8 @@ export class GangUi {
       list.append(h('div', { class: `chat-msg ${m.kind}` }, m.from ? h('span', { class: 'chat-who' }, `${isolateName(m.from.name)} `) : null, h('span', { class: 'chat-text', dir: 'auto', style: 'unicode-bidi:plaintext' }, chatText(m)), more));
     }
     if (!this.chat.length) list.append(h('p', { class: 'muted small' }, i18nText("ui.no_messages_yet_f0d5968f61")));
-    const input = h('input', { class: 'text', type: 'text', dir: 'auto', /* 160 code points, as the server's chat filter (a UTF-16 maxlength splits emoji and counts other scripts wrongly) */ oninput: (e: Event) => { const el = e.target as HTMLInputElement; const cps = Array.from(el.value); if (cps.length > 160) el.value = cps.slice(0, 160).join(''); }, placeholder: i18nText("ui.message_your_gang_6dc45a51d6"), 'aria-label': i18nText("ui.message_your_gang_6dc45a51d6") }) as HTMLInputElement;
+    const input = h('input', { class: 'text', type: 'text', dir: 'auto', placeholder: i18nText("ui.message_your_gang_6dc45a51d6"), 'aria-label': i18nText("ui.message_your_gang_6dc45a51d6") }) as HTMLInputElement;
+    limitCodePoints(input, 160); // as the server's chat filter
     const send = () => {
       const text = input.value;
       if (!text.trim()) return;
@@ -197,7 +198,7 @@ export class GangUi {
     };
     input.addEventListener('keydown', (e) => {
       e.stopPropagation();
-      if (e.key === 'Enter') send();
+      if (isSubmitEnter(e)) send();
     });
     // Under 13 (re-audit): ready-made messages only (the server refuses free text).
     if (this.conn.ageBand === 'under13') body.append(list, presetChatRow((text) => void this.run(() => this.conn.postSquadChat(text)), this.busy), h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.load() }, i18nText("ui.refresh_0e91610117")));

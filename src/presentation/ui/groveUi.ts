@@ -14,7 +14,7 @@ import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/
 import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/social/names';
 import { groveRaidChest } from '../../gameplay/sim/social/groveRaid';
 import { hallLevel } from '../../gameplay/sim/village';
-import { clear, h, icon } from './dom';
+import { clear, h, icon, isSubmitEnter, limitCodePoints } from './dom';
 import type { UiKit } from './economyUi';
 import { rewardChips } from './economyUi';
 import { formatDuration, formatNumber } from './format';
@@ -164,7 +164,7 @@ export class GroveUi {
     const search = h('input', { class: 'text', type: 'search', dir: 'auto', placeholder: i18nText("ui.search_alliances_a696ac16e8") }) as HTMLInputElement;
     search.addEventListener('keydown', (e) => {
       e.stopPropagation();
-      if (e.key === 'Enter') void this.src.search(search.value);
+      if (isSubmitEnter(e)) void this.src.search(search.value);
     });
     body.append(h('div', { class: 'chat-input-row' }, search, h('button', { class: 'btn ghost', type: 'button', onclick: () => void this.src.search(search.value) }, i18nText("ui.search_49c266baaa"))));
     if (!snap.listings.length) body.append(h('p', { class: 'muted' }, i18nText("ui.no_alliances_with_free_places_right_no_f7210c42d6")));
@@ -212,7 +212,8 @@ export class GroveUi {
       );
     }
     if (!snap.chat.length) list.append(h('p', { class: 'muted' }, i18nText("ui.no_messages_yet_say_hello_1e22279963")));
-    const input = h('input', { class: 'text', type: 'text', dir: 'auto', /* 160 code points, as filterText (a UTF-16 maxlength cut emoji and other scripts short) */ oninput: (e: Event) => { const el = e.target as HTMLInputElement; const cps = Array.from(el.value); if (cps.length > 160) el.value = cps.slice(0, 160).join(''); }, placeholder: i18nText("ui.say_something_nice_5ec7fcffa6"), value: keep }) as HTMLInputElement;
+    const input = h('input', { class: 'text', type: 'text', dir: 'auto', placeholder: i18nText("ui.say_something_nice_5ec7fcffa6"), value: keep }) as HTMLInputElement;
+    limitCodePoints(input, 160); // as filterText
     const send = async () => {
       const text = input.value;
       // Real players (an online Alliance): the community rules, once (audit R06).
@@ -226,7 +227,7 @@ export class GroveUi {
     };
     input.addEventListener('keydown', (e) => {
       e.stopPropagation();
-      if (e.key === 'Enter') void send();
+      if (isSubmitEnter(e)) void send();
     });
     // Under 13 in a real Alliance (re-audit): ready-made messages only (the server refuses free text).
     if (snap.moderation && this.c.state.profile.ageBand === 'under13') {

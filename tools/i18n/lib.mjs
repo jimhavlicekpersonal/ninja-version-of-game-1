@@ -177,6 +177,16 @@ const SCRIPT = {
   Ethi: /\p{Script=Ethiopic}/u,
 };
 
+// Unicode has one Han script for Simplified, Traditional and Japanese, so the script share cannot tell
+// them apart. These common characters are never Simplified Chinese (Traditional forms, then Japanese
+// shinjitai forms); the second list is common Simplified-only characters that do not belong in zh-Hant.
+const NOT_SIMPLIFIED = /[們這個為會來時說對發點開戰鬥歸據門問題現實際與從長幾無過還進選擇運動電話國語學習買賣讀寫聽見觀覺關係網絡經驗圖書館體號碼頁麼東車馬鳥魚龍風飛雲氣變處當將應該給讓認識記錄設計劃級線結術藝園區隊員幣糧倉庫壘劍獎勵寶榮譽聯萬億裡錢銀鐵銅鍛煉練戦気剣図楽帰黒円売読単対発権歩済効険検験駅様拡広変恵悪営労弾隠鉄両囲亜仏価桜蔵総]/u;
+const NOT_TRADITIONAL = /[们这个为会来时说对发点开战归据门问题现实际与从长无过还进选择运动电话国语学习买卖读写听见观觉关网络经验图书]/u;
+export function wrongHanForms(text, script) {
+  const re = script === 'Hans' ? NOT_SIMPLIFIED : script === 'Hant' ? NOT_TRADITIONAL : null;
+  return re ? [...new Set([...text].filter(ch => re.test(ch)))] : [];
+}
+
 /** Share of letters (outside placeholders) written in the expected script. */
 export function scriptShare(texts, script) {
   const re = SCRIPT[script];
@@ -240,6 +250,9 @@ export function checkWorksheet(lang, ns, src, ws) {
     // other invisible controls, including CGJ, fillers and stray selectors.
     const visible = t.replace(/[\u200C\u200D]/g, '').replace(/(\p{Extended_Pictographic}|[0-9#*])[\uFE0E\uFE0F]/gu, '$1');
     if (/[\p{Default_Ignorable_Code_Point}\p{Cc}]/u.test(visible.replace(/\n/g, ''))) errors.push(`${ns}: ${k} contains invisible direction or control characters`);
+    const wrongHan = wrongHanForms(t, lang.script);
+    if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
+    else if (wrongHan.length) warnings.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified-only characters`);
     if (t === en && /\p{L}/u.test(en)) warnings.push(`${ns}: ${k} is identical to English`);
     if (SCRIPT[lang.script] && t !== en && scriptShare([t], lang.script) < 0.7) warnings.push(`${ns}: ${k} mostly uses a different script`);
     if (t.length > en.length * 2.5 + 8) warnings.push(`${ns}: ${k} is ${(t.length / en.length).toFixed(1)}x the English length`);

@@ -38,3 +38,22 @@ export function icon(svgMarkup: string, cls = 'icon'): HTMLSpanElement {
 export function clear(el: Element): void {
   while (el.firstChild) el.removeChild(el.firstChild);
 }
+
+/**
+ * The Enter that sends or searches, not the Enter that confirms an input-method candidate (Chinese pinyin,
+ * Japanese, Korean): that one must never send a half-typed message. Safari reports it as keyCode 229 with
+ * isComposing false, so both are checked.
+ */
+export function isSubmitEnter(e: KeyboardEvent): boolean {
+  return e.key === 'Enter' && !e.isComposing && e.keyCode !== 229;
+}
+
+/**
+ * Keeps a text field to `max` code points (a UTF-16 maxlength splits emoji and counts other scripts wrongly),
+ * without cutting into an input-method composition: the limit applies once the composition ends.
+ */
+export function limitCodePoints(el: HTMLInputElement | HTMLTextAreaElement, max: number): void {
+  const trim = () => { const cps = Array.from(el.value); if (cps.length > max) el.value = cps.slice(0, max).join(''); };
+  el.addEventListener('input', (e) => { if (!(e as InputEvent).isComposing) trim(); });
+  el.addEventListener('compositionend', trim);
+}

@@ -8,7 +8,12 @@ export function matchLanguage(device, shipped, aliases) {
     raw = device[i]; if (!raw || typeof raw !== 'string') continue;
     tag = raw.replace(/_/g, '-').toLowerCase();
     if (/^zh(?:-|$)/.test(tag)) {
-      if (/-hant\b|-(tw|hk|mo)\b/.test(tag) && lower['zh-hant']) return lower['zh-hant'];
+      // The script subtag wins over the region (zh-Hans-HK is Simplified). Traditional devices never get
+      // Simplified Chinese while zh-Hant is not shipped: they move on to their next language, as iOS and Android do.
+      if (/-hant(?:-|$)/.test(tag) || (!/-hans(?:-|$)/.test(tag) && /-(?:tw|hk|mo)(?:-|$)/.test(tag))) {
+        if (lower['zh-hant']) return lower['zh-hant'];
+        continue;
+      }
       if (lower['zh-hans']) return lower['zh-hans'];
     }
     while (tag) {

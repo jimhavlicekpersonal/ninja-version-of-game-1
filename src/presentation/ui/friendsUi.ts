@@ -14,7 +14,7 @@ import { NAME_MAX } from '../../backend/net/connection';
 import { REPORT_REASONS, type ChallengesResponse, type DuelsResponse, type DuelView, type Findable, type FriendsResponse, type FriendView, type PlayerCard, type ReportReason } from '../../backend/net/protocol';
 import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { GangUi } from './gangUi';
-import { clear, h } from './dom';
+import { clear, h, isSubmitEnter } from './dom';
 import type { UiKit } from './economyUi';
 import { formatDuration } from './format';
 import { REASON_LABELS } from './groveUi';
@@ -221,7 +221,7 @@ export class FriendsUi {
     const input = h('input', { class: 'text find', type: 'text', dir: 'auto', placeholder: i18nText("ui.exact_name_or_friend_code_8a23ecea09"), value: this.query, 'aria-label': i18nText("ui.exact_name_or_friend_code_8a23ecea09") }) as HTMLInputElement;
     input.addEventListener('keydown', (e) => {
       e.stopPropagation();
-      if (e.key === 'Enter') void this.find(input.value);
+      if (isSubmitEnter(e)) void this.find(input.value);
     });
     input.addEventListener('input', () => (this.query = input.value));
     body.append(
