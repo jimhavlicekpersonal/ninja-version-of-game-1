@@ -41,6 +41,11 @@
           "displayName": "Prise Jade",
           "description": "45 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "一撮翡翠",
+          "description": "45 翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "jade_pinch",
@@ -86,6 +91,11 @@
           "displayName": "Jadebeutel",
           "description": "100 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "一小袋翡翠",
+          "description": "100 翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "jade_pouch",
@@ -131,6 +141,11 @@
           "displayName": "Jadesack",
           "description": "280 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "一包翡翠",
+          "description": "280 翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "jade_bag",
@@ -176,6 +191,11 @@
           "displayName": "Jadekiste",
           "description": "600 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "一盒翡翠",
+          "description": "600 翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "jade_box",
@@ -221,6 +241,11 @@
           "displayName": "Jadetruhe",
           "description": "1300 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "一箱翡翠",
+          "description": "1300 翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "jade_chest",
@@ -266,6 +291,11 @@
           "displayName": "Jadetresor",
           "description": "3500 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "一库翡翠",
+          "description": "3500 翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "jade_vault",
@@ -311,6 +341,11 @@
           "displayName": "Jade-Drachenhort",
           "description": "7500 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "巨龙的翡翠宝藏",
+          "description": "7500 翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "jade_hoard",
@@ -356,6 +391,11 @@
           "displayName": "Premium-Saisonrolle",
           "description": "Premium-Pfad dieser Saison",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "高级赛季卷轴",
+          "description": "本赛季的高级路线",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "season_scroll",
@@ -401,6 +441,11 @@
           "displayName": "Starterpaket",
           "description": "Jade und Ressourcen für neue Clanoberhäupter",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "新手礼包",
+          "description": "为新任族长准备的翡翠和资源",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "offer_starter",
@@ -446,6 +491,11 @@
           "displayName": "Handwerkerbündel",
           "description": "Jade für einen weiteren Handwerker, plus Ressourcen",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "工匠礼包",
+          "description": "可再雇一名工匠的翡翠，外加资源",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "offer_builder",
@@ -491,6 +541,11 @@
           "displayName": "Kriegsvorräte",
           "description": "Proviant und Jade für den Allianzkrieg",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "战争补给",
+          "description": "同盟战用的粮草和翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "offer_war_prep",
@@ -536,6 +591,11 @@
           "displayName": "Wiederaufbau-Set",
           "description": "Jade und Ressourcen für den Wiederaufbau",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "重建礼包",
+          "description": "用于重建的翡翠和资源",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "offer_rebuild",
@@ -581,6 +641,11 @@
           "displayName": "Clan-Sold",
           "description": "30 tägliche Zahlungen à 12 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "忍族俸禄",
+          "description": "每天发放 12 翡翠，共 30 次",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "clan_stipend",
@@ -626,6 +691,11 @@
           "displayName": "Burgfest",
           "description": "Ressourcen und Jade für deine neue Burgstufe",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "天守庆典",
+          "description": "庆祝天守阁升级的资源和翡翠",
+          "locale": "zh_Hans"
         }
       ],
       "productID": "offer_keep",

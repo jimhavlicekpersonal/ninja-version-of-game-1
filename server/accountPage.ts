@@ -2,9 +2,10 @@ import spanishPages from '../locales/compiled/pages-es.json';
 import hindiPages from '../locales/compiled/pages-hi.json';
 import portuguesePages from '../locales/compiled/pages-pt.json';
 import germanPages from '../locales/compiled/pages-de.json';
+import chinesePages from '../locales/compiled/pages-zh-Hans.json';
 
 /** Completed page translations (tools/i18n/pages.mjs); every other locale gets English. */
-const translatedPages: Record<string, { account: string }> = { es: spanishPages, hi: hindiPages, pt: portuguesePages, de: germanPages };
+const translatedPages: Record<string, { account: string }> = { es: spanishPages, hi: hindiPages, pt: portuguesePages, de: germanPages, 'zh-Hans': chinesePages };
 /**
  * The web account-deletion page (roadmap step 14), served by the API server at
  * GET /account/delete. Google Play asks for a web link where players can ask

@@ -22,7 +22,10 @@ const portuguese = key => ptData[key]?.text || '';
 const deData = read('locales/de/data.json');
 const shortGerman = {starter_pack: 'Jade und Ressourcen für neue Clanoberhäupter', builder_pack: 'Jade für einen weiteren Handwerker, plus Ressourcen', war_prep_pack: 'Proviant und Jade für den Allianzkrieg', rebuild_pack: 'Jade und Ressourcen für den Wiederaufbau', keep_pack: 'Ressourcen und Jade für deine neue Burgstufe'};
 const german = key => deData[key]?.text || '';
-// Never cut Hindi or German to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling) or a German compound, so overlong text fails here instead.
+const zhData = read('locales/zh-Hans/data.json');
+const shortChinese = {starter_pack: '为新任族长准备的翡翠和资源', builder_pack: '可再雇一名工匠的翡翠，外加资源', war_prep_pack: '同盟战用的粮草和翡翠', rebuild_pack: '用于重建的翡翠和资源', keep_pack: '庆祝天守阁升级的资源和翡翠'};
+const chinese = key => zhData[key]?.text || '';
+// Never cut Hindi, German or Chinese to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a German compound or a Chinese word, so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -65,6 +68,12 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? german(`store.packs.${gameId}.name`) : offer ? german(`offers.rules.${offer.id}.title`) : stipend ? german('store.stipend.name') : isPass ? `Premium-${german('pass.name')}` : name, 30, 'German'),
         description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortGerman[offer.id] || german(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} tägliche Zahlungen à ${stipend.jadePerPayment} Jade` : 'Premium-Pfad dieser Saison', 55, 'German'),
         locale: 'de_DE',
+      },
+      // Simplified Chinese (App Store "Chinese (Simplified)"), shown in every storefront whose device language is zh-Hans.
+      {
+        displayName: clip(pack ? chinese(`store.packs.${gameId}.name`) : offer ? chinese(`offers.rules.${offer.id}.title`) : stipend ? chinese('store.stipend.name') : isPass ? `高级${chinese('pass.name')}` : name, 30, 'Chinese'),
+        description: clip(pack ? `${pack.moonstones} 翡翠` : offer ? (shortChinese[offer.id] || chinese(`offers.rules.${offer.id}.description`)) : stipend ? `每天发放 ${stipend.jadePerPayment} 翡翠，共 ${stipend.payments} 次` : '本赛季的高级路线', 55, 'Chinese'),
+        locale: 'zh_Hans',
       },
     ],
     productID: storeId,

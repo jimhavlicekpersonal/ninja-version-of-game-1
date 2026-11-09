@@ -1,0 +1,92 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "zh-Hans",
+  "appStoreLocalization": "Chinese (Simplified)",
+  "googlePlayLanguage": "zh-CN",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "一撮翡翠",
+      "description": "45 翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "一小袋翡翠",
+      "description": "100 翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "一包翡翠",
+      "description": "280 翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "一盒翡翠",
+      "description": "600 翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "一箱翡翠",
+      "description": "1300 翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "一库翡翠",
+      "description": "3500 翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "巨龙的翡翠宝藏",
+      "description": "7500 翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "高级赛季卷轴",
+      "description": "本赛季的高级路线",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "新手礼包",
+      "description": "为新任族长准备的翡翠和资源",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "工匠礼包",
+      "description": "可再雇一名工匠的翡翠，外加资源",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "战争补给",
+      "description": "同盟战用的粮草和翡翠",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "重建礼包",
+      "description": "用于重建的翡翠和资源",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "忍族俸禄",
+      "description": "每天发放 12 翡翠，共 30 次",
+      "locale": "zh_Hans"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "天守庆典",
+      "description": "庆祝天守阁升级的资源和翡翠",
+      "locale": "zh_Hans"
+    }
+  ]
+}
