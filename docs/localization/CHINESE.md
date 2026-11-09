@@ -20,7 +20,7 @@ and PWA manifest under `public/zh-Hans/`, the account-deletion form
 in `docs/store/zh-Hans/`. Terms are in `locales/zh-Hans/TERMS.md`; reviewed warnings in
 `locales/zh-Hans/REVIEW.json`.
 
-The translation is AI-written and validated by the repository checks below. **No native
+Implemented in commit `d82a88f` (2026-11-09). The translation is AI-written and validated by the repository checks below. **No native
 Chinese speaker has reviewed it**, nor the legal pages.
 
 ## What Mandarin needed
