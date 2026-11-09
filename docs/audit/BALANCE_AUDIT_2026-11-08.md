@@ -2,6 +2,8 @@
 
 Fourth independent review of `jimhavlicekpersonal/ninja-version-of-game-1`, at commit `64eafb5` (the tip of `main` on 2026-11-08). Question set by the owner: find the game's flaws, digging deepest into the balance of the warriors, the buildings, their mathematical combinations, the drop zones (Infiltration Points), the economy of Jade and of the two normal currencies, and the "grand unified game theory". The owner's requirement: **the game must have balance, and it must be almost impossible for a human to find the optimal strategy.**
 
+> **Follow-up (2026-11-09):** on the owner's request the fixes were built: the fielded-strength and hero-only-practice rule fixes, Tempering (battle rules 6) and the round-2 economy and ladder rules (protocol 11, save v21). What was built and how it differs from the proposals: `docs/DECISIONS.md` ("Tempering", "Raids and honor after the balance audit"), `docs/game-theory/TEMPERING_CALIBRATION_2026-11-09.md`. The findings below describe commit `64eafb5` and are kept as written.
+
 This is analysis only. Nothing in the game, server, data or tests was changed. Every number below was measured against the real simulation and data of this commit, with the scripts kept under `docs/audit/balance-2026-11-08/scripts/` (see Appendix B for how to rerun them).
 
 ---

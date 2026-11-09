@@ -40,7 +40,7 @@ export function recordFixture(engine: RulesEngine): RulesFixture {
   // From rules 6 (Tempering): the towers carry a mixed temper, so the fixture plays the reshaped defences too.
   if (engine.rules >= 6) {
     for (const b of base.buildings) {
-      if (b.type === 'acorn_cannon') b.temper = { reach: 4, watch: 3 };
+      if (b.type === 'acorn_cannon') b.temper = { reach: 6, watch: 3 };
       else if (b.type === 'wasp_nest') b.temper = { reach: 5 };
     }
   }

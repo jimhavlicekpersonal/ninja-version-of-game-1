@@ -217,22 +217,22 @@
     }
   },
   "temper": {
-    "$comment": "Tempering (docs/game-theory/DESIGN_TEMPERING_2026-11-08.md, IMPLEMENTATION_NOTE_TEMPERING.md). From unlockKeep, the owner sets each tempered building type to a profile in steps of 1/steps on three axes (sum <= steps); every building of the type carries it. Per axis at full weight f = points/steps: range adds, splashRadius sets, fireSlow lengthens the fire interval, damageCost is subtracted from damage additively across axes (damage x (1 - sum damageCost x f)). preferFarAt: from this Reach share the tower prefers attackers fighting from prefersBeyond tiles (the Longbow Yagura rule). baseWide axes act on other buildings by the base profile (the mean f over all tempered buildings). Re-tempering a type costs retemperCostShare of the cumulative Coins of its buildings. Calibrated in the real sim (2026-11-09): each pure profile moves a ten-army panel's mean destruction by at most 4.2 points at Keeps 12 and 15 (power-neutral), while Reach cuts ranged lines, Blast swarms and Eclipse, and Watch air (docs/game-theory/TEMPERING_CALIBRATION_2026-11-09.md).",
+    "$comment": "Tempering (docs/game-theory/DESIGN_TEMPERING_2026-11-08.md, IMPLEMENTATION_NOTE_TEMPERING.md). From unlockKeep, the owner sets each tempered building type to a profile in steps of 1/steps on three axes (sum <= steps); every building of the type carries it. Per axis at full weight f = points/steps: range adds, splashRadius sets, fireSlow lengthens the fire interval, damageCost is subtracted from damage additively across axes (damage x (1 - sum damageCost x f)). preferFarAt: from this Reach share the tower prefers attackers fighting from prefersBeyond tiles (the Longbow Yagura rule). baseWide axes act on other buildings by the base profile (the mean f over all tempered buildings). Re-tempering a type costs retemperCostShare of the cumulative Coins of its buildings. Calibrated in the real sim (2026-11-09, docs/game-theory/TEMPERING_CALIBRATION_2026-11-09.md): against the raid bots' army each pure profile stays near an untempered base at Keeps 6-15, and on a ten-army panel at Keeps 12 and 15 near its mean, while Reach cuts ranged lines, Blast swarms and Eclipse Ninjas, and Watch air.",
     "unlockKeep": 5,
     "steps": 10,
     "retemperCostShare": 0.05,
     "types": {
       "acorn_cannon": {
         "reach": {
-          "range": 2,
-          "damageCost": 0.45,
+          "range": 1.0,
+          "damageCost": 0.4,
           "preferFarAt": 0.5,
           "prefersBeyond": 3.5
         },
         "blast": {
-          "splashRadius": 0.3,
-          "fireSlow": 1.0,
-          "damageCost": 0.35
+          "splashRadius": 0.35,
+          "fireSlow": 0.8,
+          "damageCost": 0.3
         },
         "watch": {
           "damageCost": 0.1
@@ -240,8 +240,8 @@
       },
       "wasp_nest": {
         "reach": {
-          "range": 2,
-          "damageCost": 0.45,
+          "range": 1.0,
+          "damageCost": 0.4,
           "preferFarAt": 0.5,
           "prefersBeyond": 3.5
         },
@@ -267,6 +267,9 @@
         },
         "thorn_snare": {
           "damage": 1
+        },
+        "sap_puddle": {
+          "damage": 1.0
         }
       }
     },
@@ -301,17 +304,15 @@
         }
       }
     },
-    "$rivalsComment": "Each rival clan`s home temper and how its outposts differ, so Next is a choice: lootScale multiplies the outpost`s loot and biasShift its buildings` closeness to the Keep`s caps.",
+    "$rivalsComment": "Each rival clan's home temper (Crimson Lotus Reach, Iron Tide Blast with watchful Shuriken Towers, Moon Veil Watch) and how its outposts differ, so Next is a choice: lootScale multiplies the outpost's loot and biasShift its buildings' closeness to the Keep's caps. One axis per clan keeps the average outpost as hard as an untempered one for the raid bots' army at every Keep.",
     "rivals": {
       "crimson_lotus": {
         "tempers": {
           "acorn_cannon": {
-            "reach": 5,
-            "watch": 5
+            "reach": 10
           },
           "wasp_nest": {
-            "reach": 5,
-            "watch": 5
+            "reach": 10
           }
         },
         "lootScale": 1,
@@ -323,16 +324,23 @@
             "blast": 10
           },
           "wasp_nest": {
-            "reach": 10
+            "watch": 10
           }
         },
-        "lootScale": 1.2,
-        "biasShift": 0.25
+        "lootScale": 1.1,
+        "biasShift": 0.1
       },
       "moon_veil": {
-        "tempers": {},
-        "lootScale": 0.85,
-        "biasShift": -0.25
+        "tempers": {
+          "acorn_cannon": {
+            "watch": 10
+          },
+          "wasp_nest": {
+            "watch": 10
+          }
+        },
+        "lootScale": 0.9,
+        "biasShift": -0.1
       }
     }
   }

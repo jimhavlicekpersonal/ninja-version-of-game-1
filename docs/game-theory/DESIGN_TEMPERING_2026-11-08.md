@@ -1,6 +1,6 @@
 # Design: Tempering — a sliding scale instead of stances
 
-Owner: GAME THEORY. Status: proposal with measurements, not implemented. Step-by-step build note for a future session: [`IMPLEMENTATION_NOTE_TEMPERING.md`](IMPLEMENTATION_NOTE_TEMPERING.md). Written 2026-11-08. Replaces the four discrete stances of [`DESIGN_LIVING_FORTRESS_2026-11-08.md`](DESIGN_LIVING_FORTRESS_2026-11-08.md) with one continuous mechanism built into the upgrades that already exist. Everything below was measured in the real simulation with data-only changes to a scratch copy; scripts in `docs/audit/balance-2026-11-08/scripts/design/temper.ts` and `equilibrium.mjs`, outputs in `measurements/design/temper*_K*.out` and `temper_equilibria.txt`.
+Owner: GAME THEORY. Status: **implemented 2026-11-09** (battle rules 6) with re-calibrated numbers (`TEMPERING_CALIBRATION_2026-11-09.md`); the text below is the design as proposed. Step-by-step build note for a future session: [`IMPLEMENTATION_NOTE_TEMPERING.md`](IMPLEMENTATION_NOTE_TEMPERING.md). Written 2026-11-08. Replaces the four discrete stances of [`DESIGN_LIVING_FORTRESS_2026-11-08.md`](DESIGN_LIVING_FORTRESS_2026-11-08.md) with one continuous mechanism built into the upgrades that already exist. Everything below was measured in the real simulation with data-only changes to a scratch copy; scripts in `docs/audit/balance-2026-11-08/scripts/design/temper.ts` and `equilibrium.mjs`, outputs in `measurements/design/temper*_K*.out` and `temper_equilibria.txt`.
 
 ## 1. The idea in one paragraph
 

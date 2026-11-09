@@ -1,6 +1,6 @@
 # Simulation round 2: co-evolution, a player-versus-player population, Trials and the Next lottery
 
-Owner: GAME THEORY. Status: measurements and proposals, nothing implemented. Written 2026-11-09 on top of [`docs/audit/BALANCE_AUDIT_2026-11-08.md`](../audit/BALANCE_AUDIT_2026-11-08.md) and [`DESIGN_TEMPERING_2026-11-08.md`](DESIGN_TEMPERING_2026-11-08.md). Scripts: `docs/audit/balance-2026-11-08/scripts/design/{coevo.ts,pvp_pop.ts,misc.ts}` (they import the patched scratch sim `scratch/gp`, recreated from `counter_hook.patch`); outputs: `measurements/design/{coevo_K12.out,coevo_K15.out,pvp_pop.out,misc.out}`.
+Owner: GAME THEORY. Status: measurements and proposals; the section 4 proposals were **implemented 2026-11-09** (`docs/DECISIONS.md`, "Raids and honor after the balance audit"), with declared stakes made opt-in (2★ ×1.1, 3★ ×1.25; a mandatory stake would have forfeited the loot of every 0–1-star raid). Written 2026-11-09 on top of [`docs/audit/BALANCE_AUDIT_2026-11-08.md`](../audit/BALANCE_AUDIT_2026-11-08.md) and [`DESIGN_TEMPERING_2026-11-08.md`](DESIGN_TEMPERING_2026-11-08.md). Scripts: `docs/audit/balance-2026-11-08/scripts/design/{coevo.ts,pvp_pop.ts,misc.ts}` (they import the patched scratch sim `scratch/gp`, recreated from `counter_hook.patch`); outputs: `measurements/design/{coevo_K12.out,coevo_K15.out,pvp_pop.out,misc.out}`.
 
 ## 1. Co-evolution with Tempering
 
@@ -42,7 +42,7 @@ New holes:
 - **Trials** (bot mix at caps + hero, primary fortress then up to four alternates, 2 stars to clear): a Keep 8 army clears tiers 25–35 and stalls on the first Keep 9 fortress (tier 36); a Keep 12 army clears 41–51 and stalls at 52. Each new Keep harvests about 4 average raids of resources and 5 Jade at once. Bounded; no exploit.
 - **Next** (300 scouted offers per Keep at the campaign honor): the richest offer holds only 1.20–1.32× the poorest; the best accept-or-reroll policy gains 1.6–4.5 % per raid against a fee of 1.3–1.5 % of a mean offer. The reroll is a non-decision.
 
-## 4. Balance proposals these results suggest (not implemented)
+## 4. Balance proposals these results suggest (implemented 2026-11-09; see the status line)
 
 | Proposal | Rule | Fixes |
 |---|---|---|

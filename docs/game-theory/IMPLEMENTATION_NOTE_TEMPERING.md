@@ -1,6 +1,6 @@
-# Implementation note: Tempering (NOT IMPLEMENTED)
+# Implementation note: Tempering (implemented 2026-11-09)
 
-> **Status: possibility, not current behaviour.** Nothing in `src/`, `server/`, data or tests implements this. Do not describe it to players, do not assume any field below exists, and do not implement it without an explicit owner request. This note tells a future AI session exactly how it *would* be built.
+> **Status: implemented** on the owner's request (battle rules 6, save v21, protocol 11). The code is the reference now: `src/gameplay/sim/battle/temper.ts`, `battle.json` `temper`, the `temper` command and `temperQuote` in `sim/village.ts`, scouting in `sim/battle/scout.ts`, rival outposts in `sim/matchmaking.ts`, server validation in `server/core/pvp.ts`, the HUD panel in `ui/hud.ts`, tests `tests/gameplay/battle/temper.test.ts`. What changed from this note: tempers are set **per building type** with one command (not points bought per level); the numbers were re-calibrated on the real simulation (`TEMPERING_CALIBRATION_2026-11-09.md`; the round-3 prototype values were not power-neutral); the Sky re-budget was dropped (measured unnecessary); rules 5 and 4 stay compatible because an untempered base plays exactly as before. The text below is the original plan, kept as history.
 >
 > Design and measurements: [`DESIGN_TEMPERING_2026-11-08.md`](DESIGN_TEMPERING_2026-11-08.md). Audit it answers: [`docs/audit/BALANCE_AUDIT_2026-11-08.md`](../audit/BALANCE_AUDIT_2026-11-08.md). Prototype scripts: `docs/audit/balance-2026-11-08/scripts/design/temper.ts` (round 3 values), `equilibrium.mjs`, `counter_hook.patch`. Written against commit `64eafb5` + the audit commits; revalidate file paths and line numbers before editing.
 
