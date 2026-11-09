@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "it",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Pizzico di Giada",
+      "description": "45 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Borsellino di Giada",
+      "description": "100 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Sacca di Giada",
+      "description": "280 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Scatola di Giada",
+      "description": "600 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Forziere di Giada",
+      "description": "1300 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Caveau di Giada",
+      "description": "3500 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Tesoro del Drago di Giada",
+      "description": "7500 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Pergamena premium",
+      "description": "Percorso premium di questa stagione",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Pacchetto iniziale",
+      "description": "Giada e risorse per i nuovi clan",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Pacchetto dell'Artigiano",
+      "description": "Giada per un altro Artigiano, più risorse",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Rifornimenti di guerra",
+      "description": "Provviste e Giada per la Guerra d'Alleanza",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kit di ricostruzione",
+      "description": "Giada e risorse per ricostruire",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Stipendio del Clan",
+      "description": "30 pagamenti giornalieri da 12 Giada",
+      "locale": "it_IT"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Festa della Rocca",
+      "description": "Risorse e Giada per festeggiare la nuova Rocca",
+      "locale": "it_IT"
+    }
+  ]
+}

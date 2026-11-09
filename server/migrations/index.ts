@@ -1,4 +1,5 @@
 import m0029 from './0029_localization.sql?raw';
+import m0030 from './0030_ticket_stake.sql?raw';
 /**
  * Every migration, bundled into the server build (no files are read at run
  * time). Add each new file here: an explicit list, because a glob import would
@@ -65,4 +66,5 @@ export const migrations = loadMigrations({
   '0027_play_statistics.sql': m0027,
   '0028_rules_acceptance.sql': m0028,
   '0029_localization.sql': m0029,
+  '0030_ticket_stake.sql': m0030,
 });

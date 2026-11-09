@@ -183,6 +183,12 @@
       "key": "pages.account.2",
       "text": "Kagemura: Ninja Clans",
       "reason": "the official game name, kept as the logo"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
     }
   ],
   "latinScriptReviewed": [

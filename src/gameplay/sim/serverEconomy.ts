@@ -94,6 +94,7 @@ export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['ty
   'place',
   'move',
   'upgrade',
+  'temper',
   'cancel',
   'collect',
   'clear',

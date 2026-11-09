@@ -26,16 +26,21 @@ import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveR
 import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
-import type { Building, BuildingLimit, BuildingType, Cost, GameData, PurchaseRecord, PurchaseRefund, ResourceKind, VillageState, PendingBattle } from './types';
+import type { Building, BuildingLimit, BuildingType, Cost, GameData, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, VillageState, PendingBattle } from './types';
+import { normalizeTemper, sameTemper, temperable, temperDef, validTemper } from './battle/temper';
+import { carriedLoot, raidCarry, validStake } from './carry';
 import { RESOURCE_KINDS } from './types';
 import { bandChangeAllowed, isAgeBand, type AgeBand } from './age';
 
 // ---------- Commands ----------
 
 export type Command =
-  | { type: 'place'; buildingType: BuildingType; x: number; y: number }
+  /** `pay: 'dew'`: pay a wall or trap in Provisions instead of Coins (`economy.provisionsPayable`, save v21). */
+  | { type: 'place'; buildingType: BuildingType; x: number; y: number; pay?: PayWith }
   | { type: 'move'; id: string; x: number; y: number }
-  | { type: 'upgrade'; id: string }
+  | { type: 'upgrade'; id: string; pay?: PayWith }
+  /** Tempering (save v21): set the profile of every building of one temperable type (sim/battle/temper.ts). */
+  | { type: 'temper'; buildingType: BuildingType; temper: Temper }
   | { type: 'cancel'; id: string }
   | { type: 'collect'; id: string }
   /** Queue `count` warriors (default 1); as many as fit and can be paid for are queued. */
@@ -129,7 +134,8 @@ export type Command =
    * bank its result, or turn the attack into a practice result when it was
    * refused (expired ticket, rule violation). Safe to apply twice.
    */
-  | { type: 'settleOnlineAttack'; ticket: string; result?: BattleResult; trophies?: number; playerTrophies?: number; rejected?: string }
+  /** `stake`: the stake the server fixed when the raid started (sim/carry.ts), protocol 11. */
+  | { type: 'settleOnlineAttack'; ticket: string; result?: BattleResult; trophies?: number; playerTrophies?: number; rejected?: string; stake?: number }
   /** An interrupted battle that can no longer be banked: its deployed troops are spent, nothing is won. */
   | { type: 'abandonBattle'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'leaveLocalGrove' }
@@ -176,6 +182,7 @@ export type SimEvent =
   | { kind: 'upgrade_cancel'; buildingType: BuildingType; id: string; toLevel: number; refund: Cost }
   | { kind: 'collect'; buildingType: BuildingType; id: string; resource: ResourceKind; amount: number; eventBonus?: number }
   | { kind: 'move'; buildingType: BuildingType; id: string }
+  | { kind: 'temper'; buildingType: BuildingType; temper: Temper; cost: Cost }
   | { kind: 'train_start'; troop: string; seconds: number; cost: Cost; count?: number }
   | { kind: 'dismiss'; troop: string; count: number; refund: Cost }
   | { kind: 'train_cancel'; troop: string; count?: number }
@@ -433,8 +440,24 @@ export function canHireArtisan(state: VillageState, data: GameData): boolean {
   return have >= 2 && data.economy.builderHutCosts[have - 2] !== undefined && have < limitFor(state, data, type).count;
 }
 
+export type PayWith = 'acorns' | 'dew';
+
+/** Whether a building type may be paid in Provisions (either-currency defences). */
+export function payableInProvisions(type: BuildingType, data: GameData): boolean {
+  const cat = data.buildings[type]?.category;
+  return cat !== undefined && (data.economy.provisionsPayable ?? []).includes(cat);
+}
+
+/** A Coin price paid in Provisions instead, one for one (other parts of the price stay). */
+function inProvisions(cost: Cost): Cost {
+  if (!cost.acorns) return cost;
+  const out: Cost = { ...cost, dew: (cost.dew ?? 0) + cost.acorns };
+  delete out.acorns;
+  return out;
+}
+
 /** Can a new building of this type be bought right now (ignoring where it goes)? */
-export function placeQuote(state: VillageState, data: GameData, type: BuildingType, now: number): QuoteResult {
+export function placeQuote(state: VillageState, data: GameData, type: BuildingType, now: number, pay: PayWith = 'acorns'): QuoteResult {
   const s = advance(state, now, data).state;
   const def = data.buildings[type];
   if (!def || !def.inShop) return fail('NOT_AVAILABLE', 'That building is not available.');
@@ -446,6 +469,10 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
     const price = data.economy.builderHutCosts[i];
     if (price === undefined || i < 0) return fail('LIMIT_REACHED', 'You have all the Village Artisans you can hire.');
     cost = { moonstones: price };
+  }
+  if (pay === 'dew') {
+    if (!payableInProvisions(type, data)) return fail('NOT_AVAILABLE', 'Only walls and traps can be paid in Provisions.');
+    cost = inProvisions(cost);
   }
   const quote: Quote = { toLevel: 1, cost, seconds: Math.round(first.buildSeconds * buildTimeFactor(s, now, data)) };
   const lim = limitFor(s, data, type);
@@ -467,7 +494,7 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
 }
 
 /** What the next upgrade of a building costs, and whether it can start now. */
-export function upgradeQuote(state: VillageState, id: string, data: GameData, now: number): QuoteResult {
+export function upgradeQuote(state: VillageState, id: string, data: GameData, now: number, pay: PayWith = 'acorns'): QuoteResult {
   const s = advance(state, now, data).state;
   const b = s.buildings.find((x) => x.id === id);
   if (!b) return fail('NOT_FOUND', 'Building not found.');
@@ -479,14 +506,16 @@ export function upgradeQuote(state: VillageState, id: string, data: GameData, no
   if (!next || b.level >= maxDefinedLevel(data, b.type) || (def.category === 'hall' && b.level >= lim.maxLevel)) {
     return fail('MAX_LEVEL', `${def.name} is at its highest level.`);
   }
-  const quote: Quote = { toLevel: next.level, cost: next.cost, seconds: Math.round(next.buildSeconds * buildTimeFactor(s, now, data)) };
+  if (pay === 'dew' && !payableInProvisions(b.type, data)) return fail('NOT_AVAILABLE', 'Only walls and traps can be paid in Provisions.');
+  const price = pay === 'dew' ? inProvisions(next.cost) : next.cost;
+  const quote: Quote = { toLevel: next.level, cost: price, seconds: Math.round(next.buildSeconds * buildTimeFactor(s, now, data)) };
   if (next.level > lim.maxLevel) {
     const need = hallLevelRequiredFor(data, b.type, (l) => l.maxLevel >= next.level);
     return need
       ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} first.`), quote }
       : { ...fail('MAX_LEVEL', `${def.name} is at its highest level.`), quote };
   }
-  if (!canAfford(s.resources, next.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(next.cost, data)}).`), quote };
+  if (!canAfford(s.resources, price)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(price, data)}).`), quote };
   if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
     return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
   }
@@ -542,11 +571,13 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
 function runCommand(s: VillageState, cmd: Command, now: number, data: GameData): CommandResult {
   switch (cmd.type) {
     case 'place':
-      return place(s, cmd.buildingType, cmd.x, cmd.y, now, data);
+      return place(s, cmd.buildingType, cmd.x, cmd.y, now, data, cmd.pay);
     case 'move':
       return move(s, cmd.id, cmd.x, cmd.y, data);
     case 'upgrade':
-      return upgrade(s, cmd.id, now, data);
+      return upgrade(s, cmd.id, now, data, cmd.pay);
+    case 'temper':
+      return temper(s, cmd.buildingType, cmd.temper, now, data);
     case 'cancel':
       return cancel(s, cmd.id, now, data);
     case 'collect':
@@ -1580,6 +1611,15 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   if (bad) return fail('INVALID_BATTLE', bad);
   const result = known ? structuredClone(known) : runBattle(rec.setup, rec.deployments, data, rec.endTick).result;
   spendTroops(s, result.used, rec.setup);
+  if (!foughtWithWarriors(result, rec.setup)) {
+    // Balance audit 2026-11-08 (DZ-3): the clan hero joins for free, so a battle where no warrior was
+    // deployed is practice: no loot, no honor, the shield stays (it used to bank 17k-327k per battle).
+    s.scout = null;
+    const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: {}, rules: SIM_RULES, settlement: 'rejected', rejected: 'no_warriors' };
+    s.battleLog.push(record);
+    trimLog(s.battleLog, data.battle.maxReplays);
+    return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+  }
   if (rec.ticket) {
     // Online attack: the server re-runs it and decides. Troops are spent now
     // (they fought), but loot and honor wait for the server's answer, so a
@@ -1588,6 +1628,7 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
     s.shieldUntil = Math.min(s.shieldUntil, now);
     s.scout = null;
     const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: {}, rules: SIM_RULES, settlement: 'pending' };
+    if (!validStake(record.stake, data)) delete record.stake;
     s.battleLog.push(record);
     trimLog(s.battleLog, data.battle.maxReplays);
     return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
@@ -1596,7 +1637,9 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   // simulation says), the bonuses on top (league, limited-time event), and what
   // really reached storage. Whatever was won but did not fit is kept as
   // `overflow`, so the results screen can say so precisely.
-  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data);
+  const stake = validStake(rec.stake, data) ? rec.stake : undefined;
+  const carry = raidCarry(result, rec.setup, stake, data);
+  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data, carry);
   const opp = rec.setup.base.trophies ?? s.trophies;
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
@@ -1604,6 +1647,9 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   s.shieldUntil = Math.min(s.shieldUntil, now);
   s.scout = null;
   const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies, banked, rules: SIM_RULES };
+  delete record.stake;
+  if (stake !== undefined) record.stake = stake;
+  if (carry !== 1) record.carry = carry;
   if (hasAny(overflow)) record.overflow = overflow;
   if (hasAny(bonus)) record.leagueBonus = bonus;
   if (hasAny(eventBonus)) record.eventBonus = eventBonus;
@@ -1612,18 +1658,27 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
 }
 
-/** Bank a won attack's loot plus the league and event bonuses. Returns banked, overflow and the bonuses. Mutates. */
-function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: GameData): { banked: Cost; overflow: Cost; bonus: Cost; eventBonus: Cost } {
+/** Whether any warrior (not just the free hero) was deployed: a battle without one is practice. */
+export function foughtWithWarriors(result: Pick<BattleResult, 'used'>, setup: Pick<BattleSetup, 'hero'>): boolean {
+  return Object.entries(result.used).some(([t, n]) => n > 0 && t !== setup.hero?.id);
+}
+
+/**
+ * Bank a won attack's loot plus the league and event bonuses. `carry` (sim/carry.ts) is the share of the battle's
+ * loot the attacker carries home. Returns banked, overflow and the bonuses. Mutates.
+ */
+function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: GameData, carry = 1): { banked: Cost; overflow: Cost; bonus: Cost; eventBonus: Cost } {
   const cap = capacity(s, data);
-  const fromBattle = addCapped(s.resources, result.loot, cap);
+  const loot = carriedLoot(result.loot, carry);
+  const fromBattle = addCapped(s.resources, loot, cap);
   const bonusWanted = leagueWinBonus(s.trophies, result.stars, data);
   const bonus = positive(addCapped(s.resources, bonusWanted, cap));
   const lootBonus = result.stars >= 1 ? eventEffect(at, data).raidLootBonus : 0;
   const eventWanted: Cost = {};
-  if (lootBonus > 0) for (const [k, v] of Object.entries(result.loot) as [ResourceKind, number][]) if (v > 0) eventWanted[k] = Math.floor(v * lootBonus);
+  if (lootBonus > 0) for (const [k, v] of Object.entries(loot) as [ResourceKind, number][]) if (v > 0) eventWanted[k] = Math.floor(v * lootBonus);
   const eventBonus = positive(addCapped(s.resources, eventWanted, cap));
   const banked = positive(sumCost(fromBattle, bonus, eventBonus));
-  return { banked, overflow: shortfall(sumCost(result.loot, bonusWanted, eventWanted), banked), bonus, eventBonus };
+  return { banked, overflow: shortfall(sumCost(loot, bonusWanted, eventWanted), banked), bonus, eventBonus };
 }
 
 /**
@@ -1642,9 +1697,16 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
     return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'rejected' }] };
   }
   const result = cmd.result;
-  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data);
+  // Only the stake the server settled with counts (it was fixed when the raid started); a server without
+  // stakes settles with none, whatever this game recorded.
+  const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
+  const carry = raidCarry(result, rec.setup, stake, data);
+  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data, carry);
   rec.result = { ...result, loot: { ...result.loot } };
   rec.banked = banked;
+  if (stake !== undefined) rec.stake = stake;
+  else delete rec.stake;
+  if (carry !== 1) rec.carry = carry;
   if (hasAny(overflow)) rec.overflow = overflow;
   if (hasAny(bonus)) rec.leagueBonus = bonus;
   if (hasAny(eventBonus)) rec.eventBonus = eventBonus;
@@ -1840,8 +1902,8 @@ function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord,
 
 export type { BattleSetup, Deployment };
 
-function place(s: VillageState, type: BuildingType, x: number, y: number, now: number, data: GameData): CommandResult {
-  const q = placeQuote(s, data, type, now);
+function place(s: VillageState, type: BuildingType, x: number, y: number, now: number, data: GameData, pay?: PayWith): CommandResult {
+  const q = placeQuote(s, data, type, now, pay === 'dew' ? 'dew' : 'acorns');
   if (!q.ok) return q;
   if (!canPlace(s, data, type, x, y).ok) return fail('INVALID_PLACEMENT', "That spot isn't free.");
   const def = buildingDef(data, type);
@@ -1857,8 +1919,44 @@ function place(s: VillageState, type: BuildingType, x: number, y: number, now: n
     upgrade: seconds > 0 ? { toLevel: 1, startedAt: now, endsAt, cost } : null,
     collector: def.produces ? { stored: 0, accrueFrom: endsAt } : null,
   };
+  // Tempering: a new building takes the profile its type already has.
+  const sibling = s.buildings.find((o) => o.type === type && o.temper);
+  if (sibling?.temper) b.temper = { ...sibling.temper };
   s.buildings.push(b);
   return { ok: true, state: s, events: [{ kind: 'upgrade_start', buildingType: type, id: b.id, toLevel: 1, seconds, cost }] };
+}
+
+/**
+ * What tempering every building of `type` to `next` costs, and whether it can happen now (sim/battle/temper.ts):
+ * `temper.retemperCostShare` of the Coins its buildings cost to build up to their levels, no builder, no timer.
+ */
+export function temperQuote(state: VillageState, type: BuildingType, next: Temper, data: GameData): { ok: true; cost: Cost } | { ok: false; code: ErrorCode; message: string; cost?: Cost } {
+  const def = temperDef(data);
+  if (!def || !temperable(type, data)) return fail('NOT_AVAILABLE', 'This building cannot be tempered.');
+  if (hallLevel(state, data) < def.unlockKeep) return fail('LOCKED', `Needs a level ${def.unlockKeep} Clan Keep.`);
+  if (!validTemper(type, next, data)) return fail('NOT_AVAILABLE', 'That temper is not possible.');
+  const own = state.buildings.filter((b) => b.type === type);
+  if (!own.length) return fail('NOT_FOUND', 'Building not found.');
+  if (own.every((b) => sameTemper(b.temper, next))) return fail('NOT_AVAILABLE', 'Already tempered that way.');
+  let coins = 0;
+  for (const b of own) for (let l = 1; l <= b.level; l++) coins += levelDef(data, type, l)?.cost.acorns ?? 0;
+  const cost: Cost = { acorns: Math.ceil(coins * def.retemperCostShare) };
+  if (!canAfford(state.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`), cost };
+  return { ok: true, cost };
+}
+
+function temper(s: VillageState, type: BuildingType, next: Temper, now: number, data: GameData): CommandResult {
+  const q = temperQuote(s, type, next, data);
+  if (!q.ok) return q;
+  subtractCost(s.resources, q.cost);
+  const t = normalizeTemper(next);
+  for (const b of s.buildings) {
+    if (b.type !== type) continue;
+    if (t) b.temper = { ...t };
+    else delete b.temper;
+  }
+  void now;
+  return { ok: true, state: s, events: [{ kind: 'temper', buildingType: type, temper: t ?? {}, cost: q.cost }] };
 }
 
 function move(s: VillageState, id: string, x: number, y: number, data: GameData): CommandResult {
@@ -1870,8 +1968,8 @@ function move(s: VillageState, id: string, x: number, y: number, data: GameData)
   return { ok: true, state: s, events: [{ kind: 'move', buildingType: b.type, id }] };
 }
 
-function upgrade(s: VillageState, id: string, now: number, data: GameData): CommandResult {
-  const q = upgradeQuote(s, id, data, now);
+function upgrade(s: VillageState, id: string, now: number, data: GameData, pay?: PayWith): CommandResult {
+  const q = upgradeQuote(s, id, data, now, pay === 'dew' ? 'dew' : 'acorns');
   if (!q.ok) return q;
   const b = s.buildings.find((v) => v.id === id)!;
   const { cost, seconds, toLevel } = q.quote;

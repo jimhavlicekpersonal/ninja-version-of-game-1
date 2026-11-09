@@ -1,0 +1,51 @@
+== Keep 15: mean destruction %, 10 bases (5 layouts x 2, bias 0.5) x 2 entry seeds, bot plan, hero; profiles are power-neutral re-shapes of Kunai + Shuriken Towers
+army                     today         reach         blast         sight   reach_blast   blast_sight   reach_sight
+best_found                89.6          71.5          62.3          83.8          64.0          85.0          81.2
+suggested                 80.5          73.0          49.8          82.5          65.7          70.7          67.8
+throwers_oni              81.1          63.5          52.9          71.5          54.6          71.0          68.0
+blade_rush                57.0          51.7          28.9          66.1          40.6          55.8          59.9
+blade_swarm               53.0          48.6          25.4          49.4          34.6          36.0          41.6
+eclipse                   97.2          93.5          40.1          88.8          59.5          62.1          94.4
+air                      100.0         100.0         100.0          58.5         100.0          94.3          96.2
+tanks_heal                43.0          41.5          29.7          39.2          63.8          61.0          43.5
+beasts                    54.6          51.8          26.1          54.5          33.9          33.2          51.3
+siege_blades              43.4          42.5          26.2          40.3          29.8          32.0          37.9
+best_found_spread          90.6          69.6          92.5          88.7          93.5          97.0          75.8
+blades_spread             72.9          64.4          43.9          67.1          59.1          54.1          70.4
+
+profile | best army | 2nd | 3rd | best - 2nd | armies within 5 of best | mean of panel
+today | air 100.0 | eclipse 97.2 | best_found_spread 90.6 | 2.8 | 2: air, eclipse | 71.9
+reach | air 100.0 | eclipse 93.5 | suggested 73.0 | 6.5 | 1: air | 64.3
+blast | air 100.0 | best_found_spread 92.5 | best_found 62.3 | 7.5 | 1: air | 48.1
+sight | eclipse 88.8 | best_found_spread 88.7 | best_found 83.8 | 0.1 | 3: eclipse, best_found_spread, best_found | 65.9
+reach_blast | air 100.0 | best_found_spread 93.5 | suggested 65.7 | 6.5 | 1: air | 58.3
+blast_sight | best_found_spread 97.0 | air 94.3 | best_found 85.0 | 2.8 | 2: best_found_spread, air | 62.7
+reach_sight | air 96.2 | eclipse 94.4 | best_found 81.2 | 1.8 | 2: air, eclipse | 65.7
+
+army | best profile against it (lowest destruction) | worst profile (highest) | swing
+best_found | blast 62.3 | today 89.6 | 27.3
+suggested | blast 49.8 | sight 82.5 | 32.8
+throwers_oni | blast 52.9 | today 81.1 | 28.2
+blade_rush | blast 28.9 | sight 66.1 | 37.2
+blade_swarm | blast 25.4 | today 53.0 | 27.6
+eclipse | blast 40.1 | today 97.2 | 57.0
+air | sight 58.5 | reach_blast 100.0 | 41.5
+tanks_heal | blast 29.7 | reach_blast 63.8 | 34.0
+beasts | blast 26.1 | today 54.6 | 28.5
+siege_blades | blast 26.2 | today 43.4 | 17.2
+best_found_spread | reach 69.6 | blast_sight 97.0 | 27.4
+blades_spread | blast 43.9 | today 72.9 | 29.0
+
+continuity (pure A, pure B, 50/50 blend):
+  best_found: reach 71.5, blast 62.3, blend 64.0 | best_found: blast 62.3, sight 83.8, blend 85.0
+  suggested: reach 73.0, blast 49.8, blend 65.7 | suggested: blast 49.8, sight 82.5, blend 70.7
+  throwers_oni: reach 63.5, blast 52.9, blend 54.6 | throwers_oni: blast 52.9, sight 71.5, blend 71.0
+  blade_rush: reach 51.7, blast 28.9, blend 40.6 | blade_rush: blast 28.9, sight 66.1, blend 55.8
+  blade_swarm: reach 48.6, blast 25.4, blend 34.6 | blade_swarm: blast 25.4, sight 49.4, blend 36.0
+  eclipse: reach 93.5, blast 40.1, blend 59.5 | eclipse: blast 40.1, sight 88.8, blend 62.1
+  air: reach 100.0, blast 100.0, blend 100.0 | air: blast 100.0, sight 58.5, blend 94.3
+  tanks_heal: reach 41.5, blast 29.7, blend 63.8 | tanks_heal: blast 29.7, sight 39.2, blend 61.0
+  beasts: reach 51.8, blast 26.1, blend 33.9 | beasts: blast 26.1, sight 54.5, blend 33.2
+  siege_blades: reach 42.5, blast 26.2, blend 29.8 | siege_blades: blast 26.2, sight 40.3, blend 32.0
+  best_found_spread: reach 69.6, blast 92.5, blend 93.5 | best_found_spread: blast 92.5, sight 88.7, blend 97.0
+  blades_spread: reach 64.4, blast 43.9, blend 59.1 | blades_spread: blast 43.9, sight 67.1, blend 54.1

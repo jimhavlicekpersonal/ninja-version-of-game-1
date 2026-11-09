@@ -43,6 +43,21 @@
           "locale": "de_DE"
         },
         {
+          "displayName": "Pincée de Jade",
+          "description": "45 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Pincée de Jade",
+          "description": "45 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Pizzico di Giada",
+          "description": "45 Giada",
+          "locale": "it_IT"
+        },
+        {
           "displayName": "一撮翡翠",
           "description": "45 翡翠",
           "locale": "zh_Hans"
@@ -91,6 +106,21 @@
           "displayName": "Jadebeutel",
           "description": "100 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "Bourse de Jade",
+          "description": "100 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Bourse de Jade",
+          "description": "100 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Borsellino di Giada",
+          "description": "100 Giada",
+          "locale": "it_IT"
         },
         {
           "displayName": "一小袋翡翠",
@@ -143,6 +173,21 @@
           "locale": "de_DE"
         },
         {
+          "displayName": "Sac de Jade",
+          "description": "280 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Sac de Jade",
+          "description": "280 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Sacca di Giada",
+          "description": "280 Giada",
+          "locale": "it_IT"
+        },
+        {
           "displayName": "一包翡翠",
           "description": "280 翡翠",
           "locale": "zh_Hans"
@@ -191,6 +236,21 @@
           "displayName": "Jadekiste",
           "description": "600 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "Boîte de Jade",
+          "description": "600 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Boîte de Jade",
+          "description": "600 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Scatola di Giada",
+          "description": "600 Giada",
+          "locale": "it_IT"
         },
         {
           "displayName": "一盒翡翠",
@@ -243,6 +303,21 @@
           "locale": "de_DE"
         },
         {
+          "displayName": "Coffre de Jade",
+          "description": "1300 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Coffre de Jade",
+          "description": "1300 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Forziere di Giada",
+          "description": "1300 Giada",
+          "locale": "it_IT"
+        },
+        {
           "displayName": "一箱翡翠",
           "description": "1300 翡翠",
           "locale": "zh_Hans"
@@ -291,6 +366,21 @@
           "displayName": "Jadetresor",
           "description": "3500 Jade",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "Chambre forte de Jade",
+          "description": "3500 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Chambre forte de Jade",
+          "description": "3500 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Caveau di Giada",
+          "description": "3500 Giada",
+          "locale": "it_IT"
         },
         {
           "displayName": "一库翡翠",
@@ -343,6 +433,21 @@
           "locale": "de_DE"
         },
         {
+          "displayName": "Trésor du Dragon de Jade",
+          "description": "7500 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Trésor du Dragon de Jade",
+          "description": "7500 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Tesoro del Drago di Giada",
+          "description": "7500 Giada",
+          "locale": "it_IT"
+        },
+        {
           "displayName": "巨龙的翡翠宝藏",
           "description": "7500 翡翠",
           "locale": "zh_Hans"
@@ -391,6 +496,21 @@
           "displayName": "Premium-Saisonrolle",
           "description": "Premium-Pfad dieser Saison",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "Parchemin premium",
+          "description": "Voie premium de cette saison",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Parchemin premium",
+          "description": "Voie premium de cette saison",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Pergamena premium",
+          "description": "Percorso premium di questa stagione",
+          "locale": "it_IT"
         },
         {
           "displayName": "高级赛季卷轴",
@@ -443,6 +563,21 @@
           "locale": "de_DE"
         },
         {
+          "displayName": "Pack de départ",
+          "description": "Du Jade et des ressources pour les nouveaux clans",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Pack de départ",
+          "description": "Du Jade et des ressources pour les nouveaux clans",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Pacchetto iniziale",
+          "description": "Giada e risorse per i nuovi clan",
+          "locale": "it_IT"
+        },
+        {
           "displayName": "新手礼包",
           "description": "为新任族长准备的翡翠和资源",
           "locale": "zh_Hans"
@@ -491,6 +626,21 @@
           "displayName": "Handwerkerbündel",
           "description": "Jade für einen weiteren Handwerker, plus Ressourcen",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "Lot de l'Artisan",
+          "description": "Du Jade pour un Artisan de plus, et des ressources",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Lot de l'Artisan",
+          "description": "Du Jade pour un Artisan de plus, et des ressources",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Pacchetto dell'Artigiano",
+          "description": "Giada per un altro Artigiano, più risorse",
+          "locale": "it_IT"
         },
         {
           "displayName": "工匠礼包",
@@ -543,6 +693,21 @@
           "locale": "de_DE"
         },
         {
+          "displayName": "Provisions de guerre",
+          "description": "Provisions et Jade pour la Guerre d'Alliance",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Provisions de guerre",
+          "description": "Provisions et Jade pour la Guerre d'Alliance",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Rifornimenti di guerra",
+          "description": "Provviste e Giada per la Guerra d'Alleanza",
+          "locale": "it_IT"
+        },
+        {
           "displayName": "战争补给",
           "description": "同盟战用的粮草和翡翠",
           "locale": "zh_Hans"
@@ -591,6 +756,21 @@
           "displayName": "Wiederaufbau-Set",
           "description": "Jade und Ressourcen für den Wiederaufbau",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "Kit de reconstruction",
+          "description": "Du Jade et des ressources pour reconstruire",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Kit de reconstruction",
+          "description": "Du Jade et des ressources pour reconstruire",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Kit di ricostruzione",
+          "description": "Giada e risorse per ricostruire",
+          "locale": "it_IT"
         },
         {
           "displayName": "重建礼包",
@@ -643,6 +823,21 @@
           "locale": "de_DE"
         },
         {
+          "displayName": "Solde du Clan",
+          "description": "30 versements quotidiens de 12 Jade",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Solde du Clan",
+          "description": "30 versements quotidiens de 12 Jade",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Stipendio del Clan",
+          "description": "30 pagamenti giornalieri da 12 Giada",
+          "locale": "it_IT"
+        },
+        {
           "displayName": "忍族俸禄",
           "description": "每天发放 12 翡翠，共 30 次",
           "locale": "zh_Hans"
@@ -691,6 +886,21 @@
           "displayName": "Burgfest",
           "description": "Ressourcen und Jade für deine neue Burgstufe",
           "locale": "de_DE"
+        },
+        {
+          "displayName": "Fête du Donjon",
+          "description": "Ressources et Jade pour fêter ton nouveau Donjon",
+          "locale": "fr_FR"
+        },
+        {
+          "displayName": "Fête du Donjon",
+          "description": "Ressources et Jade pour fêter ton nouveau Donjon",
+          "locale": "fr_CA"
+        },
+        {
+          "displayName": "Festa della Rocca",
+          "description": "Risorse e Giada per festeggiare la nuova Rocca",
+          "locale": "it_IT"
         },
         {
           "displayName": "天守庆典",

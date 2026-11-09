@@ -2,8 +2,8 @@
   "en": {
     "coverage": 1,
     "ready": true,
-    "hash": "d57151ae43d42209",
-    "keys": 2675,
+    "hash": "53443f84738dd872",
+    "keys": 2706,
     "namespaces": {
       "boot": {
         "total": 17,
@@ -14,25 +14,25 @@
         "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 1863
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
         "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 126
+        "total": 151,
+        "translated": 151
       }
     }
   },
   "es": {
     "coverage": 1,
     "ready": true,
-    "hash": "dfa393fdb35734a5",
-    "keys": 2675,
-    "path": "lang/es-dfa393fdb35734a5.json",
+    "hash": "42112fbad919afcb",
+    "keys": 2706,
+    "path": "lang/es-42112fbad919afcb.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -43,25 +43,25 @@
         "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 1863
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
         "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 126
+        "total": 151,
+        "translated": 151
       }
     }
   },
   "pt": {
     "coverage": 1,
     "ready": true,
-    "hash": "b8b7df4cca07adba",
-    "keys": 2675,
-    "path": "lang/pt-b8b7df4cca07adba.json",
+    "hash": "ec4d606a8189e63d",
+    "keys": 2706,
+    "path": "lang/pt-ec4d606a8189e63d.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -72,53 +72,54 @@
         "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 1863
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
         "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 126
+        "total": 151,
+        "translated": 151
       }
     }
   },
   "fr": {
-    "coverage": 0,
-    "ready": false,
-    "hash": "44136fa355b3678a",
-    "keys": 0,
+    "coverage": 1,
+    "ready": true,
+    "hash": "5885aa28b562f33e",
+    "keys": 2706,
+    "path": "lang/fr-5885aa28b562f33e.json",
     "namespaces": {
       "boot": {
         "total": 17,
-        "translated": 0
+        "translated": 17
       },
       "data": {
         "total": 669,
-        "translated": 0
+        "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 0
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
-        "translated": 0
+        "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 0
+        "total": 151,
+        "translated": 151
       }
     }
   },
   "de": {
     "coverage": 1,
     "ready": true,
-    "hash": "2ddedc38c7a04572",
-    "keys": 2675,
-    "path": "lang/de-2ddedc38c7a04572.json",
+    "hash": "3f1af956ae89d10a",
+    "keys": 2706,
+    "path": "lang/de-3f1af956ae89d10a.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -129,16 +130,16 @@
         "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 1863
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
         "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 126
+        "total": 151,
+        "translated": 151
       }
     }
   },
@@ -157,7 +158,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -165,7 +166,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -173,9 +174,9 @@
   "zh-Hans": {
     "coverage": 1,
     "ready": true,
-    "hash": "5ba95a5ba741bf3b",
-    "keys": 2675,
-    "path": "lang/zh-Hans-5ba95a5ba741bf3b.json",
+    "hash": "2ad04e72a5e2f5f0",
+    "keys": 2706,
+    "path": "lang/zh-Hans-2ad04e72a5e2f5f0.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -186,16 +187,16 @@
         "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 1863
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
         "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 126
+        "total": 151,
+        "translated": 151
       }
     }
   },
@@ -214,7 +215,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -222,7 +223,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -242,7 +243,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -250,7 +251,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -270,7 +271,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -278,7 +279,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -298,7 +299,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -306,7 +307,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -326,7 +327,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -334,7 +335,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -342,9 +343,9 @@
   "hi": {
     "coverage": 1,
     "ready": true,
-    "hash": "1901862381877371",
-    "keys": 2675,
-    "path": "lang/hi-1901862381877371.json",
+    "hash": "0e06112c74785970",
+    "keys": 2706,
+    "path": "lang/hi-0e06112c74785970.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -355,16 +356,16 @@
         "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 1863
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
         "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 126
+        "total": 151,
+        "translated": 151
       }
     }
   },
@@ -383,7 +384,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -391,7 +392,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -411,7 +412,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -419,7 +420,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -439,7 +440,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -447,36 +448,37 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
   },
   "it": {
-    "coverage": 0,
-    "ready": false,
-    "hash": "44136fa355b3678a",
-    "keys": 0,
+    "coverage": 1,
+    "ready": true,
+    "hash": "8aa30b2f9e49c000",
+    "keys": 2706,
+    "path": "lang/it-8aa30b2f9e49c000.json",
     "namespaces": {
       "boot": {
         "total": 17,
-        "translated": 0
+        "translated": 17
       },
       "data": {
         "total": 669,
-        "translated": 0
+        "translated": 669
       },
       "messages": {
-        "total": 1863,
-        "translated": 0
+        "total": 1869,
+        "translated": 1869
       },
       "pages": {
         "total": 314,
-        "translated": 0
+        "translated": 314
       },
       "ui": {
-        "total": 126,
-        "translated": 0
+        "total": 151,
+        "translated": 151
       }
     }
   },
@@ -495,7 +497,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -503,7 +505,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -523,7 +525,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -531,7 +533,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -551,7 +553,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -559,7 +561,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -579,7 +581,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -587,7 +589,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -607,7 +609,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -615,7 +617,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -635,7 +637,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -643,7 +645,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -663,7 +665,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -671,7 +673,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -691,7 +693,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -699,7 +701,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -719,7 +721,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -727,7 +729,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -747,7 +749,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -755,7 +757,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -775,7 +777,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -783,7 +785,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -803,7 +805,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -811,7 +813,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -831,7 +833,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -839,7 +841,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -859,7 +861,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -867,7 +869,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -887,7 +889,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -895,7 +897,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -915,7 +917,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -923,7 +925,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -943,7 +945,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -951,7 +953,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -971,7 +973,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -979,7 +981,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -999,7 +1001,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1007,7 +1009,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1027,7 +1029,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1035,7 +1037,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1055,7 +1057,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1063,7 +1065,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1083,7 +1085,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1091,7 +1093,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1111,7 +1113,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1119,7 +1121,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1139,7 +1141,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1147,7 +1149,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1167,7 +1169,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1175,7 +1177,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1195,7 +1197,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1203,7 +1205,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1223,7 +1225,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1231,7 +1233,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1251,7 +1253,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1259,7 +1261,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1279,7 +1281,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1287,7 +1289,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1307,7 +1309,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1315,7 +1317,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1335,7 +1337,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1343,7 +1345,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1363,7 +1365,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1371,7 +1373,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }
@@ -1391,7 +1393,7 @@
         "translated": 0
       },
       "messages": {
-        "total": 1863,
+        "total": 1869,
         "translated": 0
       },
       "pages": {
@@ -1399,7 +1401,7 @@
         "translated": 0
       },
       "ui": {
-        "total": 126,
+        "total": 151,
         "translated": 0
       }
     }

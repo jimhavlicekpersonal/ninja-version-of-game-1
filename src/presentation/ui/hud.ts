@@ -11,7 +11,7 @@ import type { OfflineSummary } from '../../gameplay/sim/offline';
 import { hallUnlocks, troopCapUnlock, type UnlockItem } from '../../gameplay/sim/preview';
 import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFor } from '../../gameplay/sim/resources';
 import { decodeExportCode, deserialize, encodeExportCode, serialize } from '../../gameplay/sim/save';
-import type { Building, Cost, ResourceKind } from '../../gameplay/sim/types';
+import type { Building, Cost, ResourceKind, Temper, TemperAxis } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/social/names';
 import { armyHousing, housingCapacity, troopUnlock } from '../../gameplay/sim/army';
@@ -44,7 +44,8 @@ import { WARRIORS as CANONICAL_WARRIORS, MODEL as CANONICAL_MODEL } from '../../
 import type { GroveSource } from '../../backend/social/groveSource';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
-import { builderStatus, countOfType, hallLevel, limitFor, placeQuote, skipQuote, topUpQuote, upgradeQuote, type QuoteResult } from '../../gameplay/sim/village';
+import { builderStatus, countOfType, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
+import { TEMPER_AXES, temperAxes, temperable, temperDef } from '../../gameplay/sim/battle/temper';
 import { troopLevelOf } from '../../gameplay/sim/research';
 import { role as canonicalRoleDef, warriorUnlockKeep } from '../../gameplay/sim/progression';
 import { canTryAlternate, nextTrialTier, trialInfo, trialReward, trialVariant } from '../../gameplay/sim/trials';
@@ -263,6 +264,7 @@ export class Hud {
     });
     this.bus.on('select', (id) => {
       this.selectedId = id;
+      this.temperDraft = null;
       this.renderSheet();
     });
     this.bus.on('placement:changed', ({ active, valid }) => {
@@ -554,9 +556,7 @@ export class Hud {
 
   /** The Events button's pill: time left on the running event, else when the next starts. */
   private updateEventPill(): void {
-    const text = DailyUi.chipText(this.c.now(), this.c);
-    const live = !text.startsWith('Next') && text !== 'Events';
-    const short = text.includes('·') ? text.split('·').pop()!.replace(' left', '').trim() : text.replace(/^Next: .* in /, '');
+    const { text, live, short } = DailyUi.chipParts(this.c.now(), this.c);
     this.eventChip.textContent = short;
     this.eventChip.classList.toggle('live', live);
     this.railBtns.Events?.setAttribute('aria-label', i18nText("ui.events_f1a48ff1d1", { arg1: text }));
@@ -1126,7 +1126,9 @@ export class Hud {
     const busy = Boolean(b.upgrade && now < b.upgrade.endsAt);
     const q = busy ? null : upgradeQuote(this.c.state, b.id, localizedData(this.c.data), now);
     const missing = q && !q.ok && q.quote ? Object.keys(missingFor(this.c.state.resources, q.quote.cost)).join() : '';
-    return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing]);
+    // Walls and traps also offer Provisions; towers show their temper (balance audit 2026-11-08).
+    const dq = !busy && payableInProvisions(b.type, this.c.data) ? upgradeQuote(this.c.state, b.id, localizedData(this.c.data), now, 'dew') : null;
+    return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing, dq ? (dq.ok ? 'ok' : dq.code) : '-', b.temper ?? null, hallLevel(this.c.state, this.c.data)]);
   }
 
   /** Update timers and collector amounts without replacing any buttons. */
@@ -1371,6 +1373,9 @@ export class Hud {
       );
     }
 
+    // Tempering (balance audit 2026-11-08): Kunai and Shuriken Towers, every one of a type at once.
+    if (temperable(b.type, gd) && level >= 1) this.sheet.append(this.temperPanel(b.type));
+
     // Actions
     const actions = h('div', { class: 'actions' });
     if (def.produces && level >= 1) {
@@ -1394,6 +1399,11 @@ export class Hud {
     } else if (def.category !== 'decor') {
       const uq = upgradeQuote(this.c.state, b.id, gd, now);
       actions.append(this.upgradeButton(b, uq));
+      // Either-currency defences: walls and traps can also be paid in Provisions.
+      if (payableInProvisions(b.type, gd)) {
+        const dq = upgradeQuote(this.c.state, b.id, gd, now, 'dew');
+        if (dq.quote) actions.append(this.upgradeButton(b, dq, 'dew'));
+      }
       if (!uq.ok && uq.code === 'NOT_ENOUGH_RESOURCES' && uq.quote) {
         const action = { type: 'upgrade', id: b.id } as const;
         const tq = topUpQuote(this.c.state, action, now, gd);
@@ -1445,26 +1455,99 @@ export class Hud {
     this.sheet.append(h('div', { class: 'actions' }, btn));
   }
 
-  private upgradeButton(b: Building, q: QuoteResult): HTMLElement {
+  private upgradeButton(b: Building, q: QuoteResult, pay: PayWith = 'acorns'): HTMLElement {
     if (!q.ok && !q.quote) return h('div', { class: 'note' }, i18nMessage(q.message));
     const quote = q.ok ? q.quote : q.quote!;
     const missing = missingFor(this.c.state.resources, quote.cost);
+    const dew = pay === 'dew';
     const btn = h(
       'button',
       {
-        class: 'btn primary upgrade',
+        // The tutorial points at `.btn.primary.upgrade`, so the Provisions button has its own class.
+        class: dew ? 'btn sky upgrade-dew' : 'btn primary upgrade',
         type: 'button',
         disabled: !q.ok,
+        'data-id': dew ? 'upgrade-dew' : 'upgrade',
         onclick: () => {
-          const r = this.c.dispatch({ type: 'upgrade', id: b.id });
+          const r = this.c.dispatch({ type: 'upgrade', id: b.id, ...(dew ? { pay: 'dew' as const } : {}) });
           if (!r.ok) this.toast(i18nMessage(r.message, true), 'error');
         },
       },
-      h('span', { class: 'btn-label' }, icon(icons.up), i18nText("ui.upgrade_to_lv_f98c8c59a3", { arg1: quote.toLevel })),
+      h('span', { class: 'btn-label' }, icon(icons.up), dew ? t('pay.upgrade', { level: quote.toLevel }) : i18nText("ui.upgrade_to_lv_f98c8c59a3", { arg1: quote.toLevel })),
       h('span', { class: 'btn-sub' }, costChips(quote.cost, missing), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(quote.seconds * 1000))),
     );
     if (q.ok) return btn;
     return h('div', { class: 'upgrade-wrap' }, btn, h('div', { class: 'note' }, i18nMessage(q.message)));
+  }
+
+  /** The draft temper being edited on a tower's sheet (applied with one command). */
+  private temperDraft: { type: string; id: string | null; temper: Temper } | null = null;
+
+  /**
+   * Tempering (balance audit 2026-11-08): a stepper per axis the type can take (whole points, `steps` in total),
+   * the price, and one button that tempers every building of the type. Locked below `temper.unlockKeep`.
+   */
+  private temperPanel(type: string): HTMLElement {
+    const gd = localizedData(this.c.data);
+    const def = temperDef(gd)!;
+    const name = buildingDef(gd, type).name;
+    const wrap = h('div', { class: 'temper', 'data-id': 'temper' }, h('h3', {}, t('temper.title')));
+    if (hallLevel(this.c.state, gd) < def.unlockKeep) {
+      wrap.append(h('p', { class: 'muted small' }, t('temper.locked', { level: def.unlockKeep })));
+      return wrap;
+    }
+    const current = this.c.state.buildings.find((x) => x.type === type)?.temper ?? {};
+    // A fresh draft for each opened sheet (another building, or the same one reopened after a change).
+    if (!this.temperDraft || this.temperDraft.type !== type || this.temperDraft.id !== this.selectedId) this.temperDraft = { type, id: this.selectedId, temper: { ...current } };
+    const draft = this.temperDraft.temper;
+    const used = TEMPER_AXES.reduce((s, a) => s + (draft[a] ?? 0), 0);
+    const axisName: Record<TemperAxis, string> = { reach: t('temper.axis.reach'), blast: t('temper.axis.blast'), watch: t('temper.axis.watch') };
+    wrap.append(h('p', { class: 'muted small' }, t('temper.intro', { building: name })));
+    const step = (a: TemperAxis, by: number) => {
+      draft[a] = Math.max(0, (draft[a] ?? 0) + by);
+      this.renderSheet();
+    };
+    for (const a of temperAxes(type, gd)) {
+      const v = draft[a] ?? 0;
+      wrap.append(
+        h(
+          'div',
+          { class: 'temper-row', 'data-axis': a },
+          h('span', { class: 'temper-axis' }, axisName[a]),
+          h('button', { class: 'btn ghost small-btn', type: 'button', 'aria-label': t('temper.less', { axis: axisName[a] }), disabled: v <= 0, onclick: () => step(a, -1) }, '−'),
+          h('div', { class: 'progress' }, h('i', { style: `width:${(v / def.steps) * 100}%` })),
+          h('button', { class: 'btn ghost small-btn', type: 'button', 'aria-label': t('temper.more', { axis: axisName[a] }), disabled: used >= def.steps, onclick: () => step(a, 1) }, '+'),
+          h('span', { class: 'temper-val' }, `${formatNumber(v)}/${formatNumber(def.steps)}`),
+        ),
+      );
+    }
+    wrap.append(h('p', { class: 'muted small' }, t('temper.left', { n: def.steps - used })));
+    const q = temperQuote(this.c.state, type, draft, gd);
+    const same = !q.ok && q.code === 'NOT_AVAILABLE' && !q.cost;
+    const apply = h(
+      'button',
+      {
+        class: 'btn primary',
+        type: 'button',
+        'data-id': 'temper-apply',
+        disabled: !q.ok,
+        onclick: () => {
+          const r = this.c.dispatch({ type: 'temper', buildingType: type, temper: { ...draft } });
+          if (!r.ok) this.toast(i18nMessage(r.message, true), 'error');
+          else {
+            this.temperDraft = null;
+            this.toast(t('temper.done', { building: name }), 'success');
+          }
+        },
+      },
+      h('span', { class: 'btn-label' }, t('temper.apply', { building: name })),
+      q.ok || q.cost ? h('span', { class: 'btn-sub' }, costChips((q.ok ? q.cost : q.cost)!, missingFor(this.c.state.resources, (q.ok ? q.cost : q.cost)!))) : null,
+    );
+    const row = h('div', { class: 'actions' }, apply);
+    if (used > 0) row.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => { for (const a of TEMPER_AXES) delete draft[a]; this.renderSheet(); } }, t('temper.reset')));
+    wrap.append(row);
+    if (!q.ok && !same) wrap.append(h('div', { class: 'note' }, i18nMessage(q.message)));
+    return wrap;
   }
 
   private collect(b: Building): void {
@@ -1507,10 +1590,40 @@ export class Hud {
         })),
       );
       const cats = (visible.find(([id]) => id === this.shopTab) ?? visible[0])[2];
+      // Either-currency defences: walls and traps can be paid in Coins or Provisions (a per-device choice).
+      if (Object.entries(localizedData(this.c.data).buildings).some(([type, d]) => d.inShop && cats.includes(d.category) && payableInProvisions(type, this.c.data))) {
+        const dew = this.payWallsWithProvisions();
+        const choice = (on: boolean, label: string) => {
+          const b = h('button', { type: 'button', class: `chip${on === dew ? ' on' : ''}`, 'aria-pressed': String(on === dew), 'data-id': on ? 'pay-dew' : 'pay-coins' }, label);
+          b.addEventListener('click', () => {
+            this.setPayWallsWithProvisions(on);
+            draw();
+          });
+          return b;
+        };
+        body.append(h('div', { class: 'chips pay-choice', role: 'group', 'aria-label': t('pay.label') }, h('span', { class: 'muted small' }, t('pay.label')), choice(false, t('pay.coins')), choice(true, t('pay.provisions'))));
+      }
       body.append(this.shopGrid(cats, () => close()));
     };
     draw();
     const close = this.modal(i18nText("ui.build_bdd254b65b"), body, [], 'wide');
+  }
+
+  /** Walls and traps paid in Provisions in the shop (a per-device choice; Coins when storage is blocked). */
+  private payWallsWithProvisions(): boolean {
+    try {
+      return localStorage.getItem('tk.payWalls') === 'dew';
+    } catch {
+      return false;
+    }
+  }
+
+  private setPayWallsWithProvisions(dew: boolean): void {
+    try {
+      localStorage.setItem('tk.payWalls', dew ? 'dew' : 'acorns');
+    } catch {
+      /* storage blocked: Coins */
+    }
   }
 
   /** Confirm the Jade, then buy what the building is missing and place it in one step. */
@@ -1549,9 +1662,10 @@ export class Hud {
     const grid = h('div', { class: 'shop-grid' });
     for (const [type, def] of Object.entries(gd.buildings)) {
       if (!def.inShop || !categories.includes(def.category)) continue;
-      const q = placeQuote(this.c.state, gd, type, now);
-      // Short only of resources: offer to buy them with Jade when the spot is confirmed.
-      const tq = !q.ok && q.code === 'NOT_ENOUGH_RESOURCES' ? topUpQuote(this.c.state, { type: 'place', buildingType: type, x: 0, y: 0 }, now, gd) : null;
+      const pay: PayWith = payableInProvisions(type, gd) && this.payWallsWithProvisions() ? 'dew' : 'acorns';
+      const q = placeQuote(this.c.state, gd, type, now, pay);
+      // Short only of resources: offer to buy them with Jade when the spot is confirmed (Coin prices only).
+      const tq = pay === 'acorns' && !q.ok && q.code === 'NOT_ENOUGH_RESOURCES' ? topUpQuote(this.c.state, { type: 'place', buildingType: type, x: 0, y: 0 }, now, gd) : null;
       const lim = limitFor(this.c.state, gd, type);
       const have = countOfType(this.c.state, type);
       const first = def.levels[0];
@@ -1572,7 +1686,7 @@ export class Hud {
             }
             close();
             // Jade-priced buildings (Artisan's Hut) also go through the HUD's confirm when the spot is chosen.
-            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !q.ok || Boolean(price.moonstones) });
+            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !q.ok || Boolean(price.moonstones), ...(pay === 'dew' ? { pay } : {}) });
           },
         },
         thumb ? h('img', { src: thumb, alt: '' }) : h('div', { class: 'thumb-ph' }),

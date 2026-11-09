@@ -8,7 +8,7 @@ import { buildEnvelope, envelopeEndpoint, parseDsn, parseStack, ReportThrottle, 
 import { Routes } from '../../../src/backend/net/protocol';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
-import { baseAt, rush } from './harness';
+import { baseAt, noTroops } from './harness';
 
 const DSN = 'https://abc123@o42.ingest.sentry.io/4507';
 
@@ -112,7 +112,9 @@ describe('observability over HTTP', () => {
     const a = await s.register('Ann');
     await s.call('PUT', Routes.base, a.token, { base: baseAt(1, 3) });
     const m = (await s.call('GET', Routes.match, a.token)).body;
-    const { army, deployments } = rush(10);
+    // One warrior through the first Infiltration Point: a battle where none fights is practice and is refused
+    // (balance audit 2026-11-08), and a rush along an edge only fights when an edge tile happens to be in a point.
+    const { army, deployments } = noTroops(m);
     await s.call('POST', Routes.attacks, a.token, { ticket: m.ticket, seed: m.seed, army, deployments, clientHash: 'not-the-real-hash' });
     await s.call('POST', Routes.attacks, a.token, { ticket: 'nope', seed: 1, army, deployments });
     expect((await s.call('GET', '/metrics')).status).toBe(401);

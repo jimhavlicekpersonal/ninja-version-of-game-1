@@ -233,10 +233,23 @@ export class DailyUi {
 
   /** Short text for the HUD chip. */
   static chipText(now: number, c: UiKit['c']): string {
+    return DailyUi.chipParts(now, c).text;
+  }
+  /** The sentence, whether an event is running, and the pill's short form (the time alone, so no
+   * translated words have to be stripped: the rail pill once parsed the English "Next" and " left"). */
+  static chipParts(now: number, c: UiKit['c']): { text: string; live: boolean; short: string } {
     const gd = localizedData(c.data);
     const live = activeEvents(now, gd)[0];
-    if (live) return i18nText("ui.left_12f73d4584", { arg1: live.name, arg2: formatDuration(live.end - now) });
+    if (live) {
+      const left = formatDuration(live.end - now);
+      return { text: i18nText("ui.left_12f73d4584", { arg1: live.name, arg2: left }), live: true, short: left };
+    }
     const next = upcomingEvents(now, 1, gd)[0];
-    return next ? i18nText("ui.next_in_ac5ddfc0d1", { arg1: next.name, arg2: formatDuration(next.start - now) }) : i18nText("ui.events_8d14f6e72d");
+    if (next) {
+      const wait = formatDuration(next.start - now);
+      return { text: i18nText("ui.next_in_ac5ddfc0d1", { arg1: next.name, arg2: wait }), live: false, short: wait };
+    }
+    const none = i18nText("ui.events_8d14f6e72d");
+    return { text: none, live: false, short: none };
   }
 }

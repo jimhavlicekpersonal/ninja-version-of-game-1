@@ -1,0 +1,8 @@
+# Keep 8 climb from bot:  58.6  st 1.15  1*  70%  3*  10%  97×wind_step_assassin 16×bell_warden 67×blowgun_hunter 13×gearbreaker
+round 0 Δ0.1 accept blowgun_hunter→iron_monk 0.10:  68.0  st 1.55  1*  60%  3*  35%  99×wind_step_assassin 16×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk
+round 1 Δ0.1 no improvement (best 66.2)
+round 2 Δ0.1 no improvement (best 66.1)
+round 3 Δ0.05 accept bell_warden→wall_climber 0.05:  70.2  st 1.70  1*  70%  3*  35%  102×wind_step_assassin 13×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk 6×wall_climber
+round 4 Δ0.05 no improvement (best 68.4)
+round 5 Δ0.05 no improvement (best 68.3)
+END bot:  70.2  st 1.70  1*  70%  3*  35%  102×wind_step_assassin 13×bell_warden 40×blowgun_hunter 13×gearbreaker 5×iron_monk 6×wall_climber  (evals 66, 242 s)

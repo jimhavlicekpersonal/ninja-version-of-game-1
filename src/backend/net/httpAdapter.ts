@@ -476,8 +476,8 @@ export class HttpServerAdapter implements ServerPort {
     return this.orNull(this.req<MatchResponse>('GET', Routes.match), 'no_opponents');
   }
 
-  startAttack(ticket: string): Promise<AttackStartResponse> {
-    return this.req('POST', Routes.attackStart, { ticket });
+  startAttack(ticket: string, stake?: number): Promise<AttackStartResponse> {
+    return this.req('POST', Routes.attackStart, { ticket, ...(stake !== undefined ? { stake } : {}) });
   }
 
   voidAttack(ticket: string): Promise<{ voided: boolean }> {

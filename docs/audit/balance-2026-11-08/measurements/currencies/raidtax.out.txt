@@ -1,0 +1,58 @@
+== A. measured bot raids against the model player (tools/balance/playerModel.ts, real offline raids)
+regular: 30 days, 58 raids against the village (1.93/day), destruction >=30%: 100%, >=60%: 98%, >=90%: 95%, held (0 stars): 0%, mean shield per raid 15.9 h, final Keep 9
+   Keep 4: 9 raids, mean destruction 89%, mean stolen 10.3k
+   Keep 5: 10 raids, mean destruction 100%, mean stolen 62.4k
+   Keep 6: 13 raids, mean destruction 100%, mean stolen 147.7k
+   Keep 7: 14 raids, mean destruction 100%, mean stolen 223.9k
+   Keep 8: 6 raids, mean destruction 100%, mean stolen 419.1k
+   Keep 9: 6 raids, mean destruction 100%, mean stolen 627.5k
+casual: 30 days, 32 raids against the village (1.07/day), destruction >=30%: 100%, >=60%: 97%, >=90%: 91%, held (0 stars): 3%, mean shield per raid 15.8 h, final Keep 5
+   Keep 3: 3 raids, mean destruction 62%, mean stolen 10.0k
+   Keep 4: 10 raids, mean destruction 100%, mean stolen 15.8k
+   Keep 5: 19 raids, mean destruction 100%, mean stolen 61.2k
+(20 s)
+
+== B. Monte Carlo raids per day (raidTimes slots 60 min x 12%, shields 12/14/16 h at 30/60/90%, grace 2 min); no-shield ceiling = 2.88 x offline share
+schedule | destr. sample | raids/day, attack drops shield (current code) | raids/day if attacks kept the shield | no-shield ceiling | share of raid slots blocked by shield (current)
+0.5 h: one 30-min visit (18:00) | regular | 1.20 | 1.00 | 2.82 | 57%
+0.5 h: one 30-min visit (18:00) | casual | 1.21 | 1.01 | 2.82 | 57%
+1 h: two 30-min visits (8:00, 20:00) | regular | 1.53 | 0.99 | 2.76 | 44%
+1 h: two 30-min visits (8:00, 20:00) | casual | 1.53 | 1.00 | 2.76 | 44%
+3 h: four 45-min sessions (8, 12:30, 18, 22) | regular | 1.84 | 0.96 | 2.52 | 26%
+3 h: four 45-min sessions (8, 12:30, 18, 22) | casual | 1.84 | 0.97 | 2.52 | 26%
+3 h: one 3-h evening (19-22) | regular | 1.07 | 0.96 | 2.52 | 57%
+3 h: one 3-h evening (19-22) | casual | 1.08 | 0.96 | 2.52 | 57%
+8 h: four 2-h sessions | regular | 1.41 | 0.85 | 1.92 | 25%
+8 h: four 2-h sessions | casual | 1.41 | 0.86 | 1.92 | 25%
+
+== C. the tax per Keep from the campaign (stolen per raid x raids against per day) against production and loot
+K | regular: raided/day | stolen/raid | stolen/day | % of 22 h production | % of loot | casual: raided/day | stolen/raid | stolen/day | % of 8 h production | % of loot | stolen per raid as % of generated avg loot (reg/cas)
+3 | 0.00 | 0 | 0 | 0% | 0% | 1.30 | 10.0k | 13.1k | 21% | 517% | 0%/59%
+4 | 2.57 | 10.3k | 26.5k | 7% | 76% | 1.11 | 15.8k | 17.5k | 12% | 263% | 25%/38%
+5 | 1.61 | 62.4k | 100.6k | 13% | 78% | 1.11 | 97.7k | 108.2k | 39% | 508% | 59%/93%
+6 | 2.10 | 147.7k | 309.8k | 27% | 101% | 1.02 | 216.7k | 220.6k | 53% | 231% | 64%/94%
+7 | 2.06 | 223.9k | 461.0k | 32% | 58% | 1.10 | 269.4k | 296.4k | 57% | 210% | 56%/68%
+8 | 1.40 | 419.1k | 584.7k | 23% | 39% | 1.06 | 308.5k | 326.7k | 36% | 120% | 76%/56%
+9 | 2.65 | 673.2k | 1.79M | 52% | 71% | 1.19 | 618.4k | 732.9k | 59% | 219% | 68%/63%
+10 | 1.70 | 927.4k | 1.58M | 24% | 66% | 1.13 | 1.11M | 1.24M | 52% | 207% | 58%/69%
+11 | 2.09 | 1.91M | 3.99M | 43% | 67% | 1.13 | 1.64M | 1.86M | 55% | 142% | 70%/61%
+12 | 1.64 | 2.70M | 4.43M | 24% | 62% | 1.11 | 2.26M | 2.50M | 37% | 141% | 74%/62%
+13 | 2.01 | 3.16M | 6.35M | 24% | 65% | 1.14 | 2.71M | 3.09M | 32% | 243% | 41%/35%
+14 | 1.92 | 7.45M | 14.30M | 26% | 63% | 1.13 | 5.09M | 5.73M | 29% | 143% | 55%/38%
+15 | 1.75 | 8.73M | 15.30M | 20% | 64% | 1.12 | 7.24M | 8.13M | 29% | 154% | 36%/30%
+
+== D. held-defence reward (5% of min loot, both currencies) and the rematch (15% x stars/3 of min loot, both; costs the army)
+K | held reward per held raid | P(held) campaign reg/cas | EV/day reg | rematch reward 3 stars | at campaign avg stars | army Prov cost (bot mix at cap) | net at 3 stars | net at avg stars | rematch EV/day (reg, every raid answered)
+3 | 600 | 0%/33% | 0 | 1.8k | 750 | 4.2k | -2400 | -3450 | 0
+4 | 1.4k | 0%/0% | 0 | 4.2k | 1.9k | 8.4k | -4160 | -6448 | -16580
+5 | 3.5k | 0%/0% | 0 | 10.5k | 7.7k | 17.6k | -7110 | -9951 | -16050
+6 | 8.0k | 0%/0% | 0 | 24.0k | 11.5k | 31.1k | -7100 | -19554 | -41001
+7 | 16.0k | 0%/0% | 0 | 47.9k | 35.7k | 66.5k | -18619 | -30749 | -63307
+8 | 22.1k | 0%/0% | 0 | 66.2k | 33.8k | 91.9k | -25738 | -58149 | -81139
+9 | 39.5k | 0%/0% | 0 | 118.5k | 56.0k | 164.6k | -46085 | -108565 | -288031
+10 | 64.1k | 0%/0% | 0 | 192.4k | 80.9k | 267.3k | -74843 | -186383 | -316851
+11 | 108.4k | 0%/0% | 0 | 325.3k | 183.2k | 451.8k | -126500 | -268599 | -562185
+12 | 145.7k | 0%/0% | 0 | 437.0k | 118.9k | 606.9k | -169938 | -488032 | -801247
+13 | 306.3k | 0%/0% | 0 | 918.8k | 366.3k | 1.28M | -357299 | -909765 | -1826694
+14 | 542.8k | 0%/0% | 0 | 1.63M | 654.8k | 2.26M | -633277 | -1606903 | -3085719
+15 | 960.0k | 0%/0% | 0 | 2.88M | 834.4k | 4.00M | -1120023 | -3165705 | -5550262

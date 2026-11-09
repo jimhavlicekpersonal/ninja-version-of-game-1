@@ -1,0 +1,36 @@
+# Keep 12 final. Distinct compositions evaluated (seed 1): 253; within 3 pts of best (78.5): 3 (1%)
+
+## Final table (entry seed 1 | entry seed 2 | mean of both), 20 bases each
+top1               s1  78.5 | s2  80.3 | avg  79.4  st 2.08 1*  90% 3*  38%  18×mountain_shield 67×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×spirit_caller 5×herbalist 7×gearbreaker
+top2               s1  77.0 | s2  81.0 | avg  79.0  st 2.05 1*  93% 3*  32%  18×mountain_shield 82×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×herbalist 7×gearbreaker
+top3               s1  76.7 | s2  78.0 | avg  77.3  st 1.92 1*  90% 3*  30%  18×mountain_shield 82×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×spirit_caller 7×gearbreaker
+top4               s1  73.0 | s2  77.8 | avg  75.4  st 2.00 1*  95% 3*  25%  97×chain_sickle_reaper 18×mountain_shield 38×moonblade_master 30×blowgun_hunter 6×iron_monk 15×gearbreaker
+top9               s1  71.7 | s2  79.0 | avg  75.3  st 2.00 1*  90% 3*  28%  97×chain_sickle_reaper 18×mountain_shield 54×moonblade_master 30×blowgun_hunter 6×iron_monk 7×gearbreaker
+top10              s1  71.5 | s2  78.7 | avg  75.1  st 1.88 1*  93% 3*  22%  18×mountain_shield 84×chain_sickle_reaper 54×moonblade_master 6×iron_monk 5×spirit_caller 14×blowgun_hunter 7×gearbreaker 7×mirage_twin
+top6               s1  72.0 | s2  78.0 | avg  75.0  st 1.80 1*  85% 3*  20%  102×chain_sickle_reaper 14×mountain_shield 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×spirit_caller 7×gearbreaker
+top8               s1  71.7 | s2  76.8 | avg  74.3  st 1.88 1*  90% 3*  25%  18×mountain_shield 81×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 15×gearbreaker
+top5               s1  72.3 | s2  73.8 | avg  73.0  st 1.88 1*  90% 3*  28%  18×mountain_shield 85×chain_sickle_reaper 38×moonblade_master 30×blowgun_hunter 6×iron_monk 15×gearbreaker 3×crane_glider
+top7               s1  71.7 | s2  69.5 | avg  70.6  st 1.82 1*  93% 3*  25%  160×chain_sickle_reaper 31×mountain_shield
+best@twin_gates    s1  66.9 | s2  71.2 | avg  69.1  st 1.63 1*  78% 3*  23%  117×moonblade_master 18×mountain_shield 78×chain_sickle_reaper 6×iron_monk
+best@bias1         s1  69.5 | s2  59.4 | avg  64.4  st 1.42 1*  77% 3*  13%  225×chain_sickle_reaper 18×mountain_shield
+suggested          s1  53.3 | s2  60.7 | avg  57.0  st 1.15 1*  65% 3*   3%  117×moonblade_master 18×mountain_shield 78×chain_sickle_reaper 15×fuse_master
+lab:artillery      s1  50.5 | s2  47.6 | avg  49.0  st 0.90 1*  57% 3*   0%  75×blowgun_hunter 74×chain_sickle_reaper 24×siege_bombardier 16×mole_king 16×fuse_master 10×bear_warrior
+lab:support_light  s1  46.1 | s2  47.9 | avg  47.0  st 0.70 1*  43% 3*   0%  20×bear_warrior 29×mole_king 29×fuse_master 32×chain_sickle_reaper 32×blowgun_hunter 10×siege_bombardier 5×spirit_caller 5×mist_weaver 5×drum_monk
+lab:breach         s1  40.5 | s2  41.1 | avg  40.8  st 0.53 1*  35% 3*   0%  16×bear_warrior 24×mole_king 24×fuse_master 34×blowgun_hunter 32×chain_sickle_reaper 10×siege_bombardier 9×bomb_carrier 8×fire_monk 8×ram_crew
+lab:shadow         s1  42.5 | s2  38.9 | avg  40.7  st 0.50 1*  32% 3*   0%  37×night_blade 37×mirage_twin 36×void_walker 16×mole_king 16×fuse_master 10×bear_warrior
+lab:melee          s1  39.5 | s2  35.0 | avg  37.3  st 0.33 1*  23% 3*   3%  53×fuse_master 35×bear_warrior 52×mole_king
+lab:support        s1  28.1 | s2  28.1 | avg  28.1  st 0.25 1*  18% 3*   0%  32×fuse_master 21×bear_warrior 31×mole_king 14×spirit_caller 14×mist_weaver 14×drum_monk
+lab:siege          s1  28.2 | s2  26.9 | avg  27.5  st 0.22 1*  15% 3*   0%  18×bear_warrior 27×mole_king 27×fuse_master 17×bomb_carrier 17×fire_monk 17×ram_crew
+lab:air            s1  27.8 | s2  27.0 | avg  27.4  st 0.08 1*   8% 3*   0%  21×thunder_kite 21×lantern_balloon 21×crane_glider 11×fuse_master 7×bear_warrior 10×mole_king
+
+BEST top1: 79.4 = 18×mountain_shield 67×chain_sickle_reaper 54×moonblade_master 30×blowgun_hunter 6×iron_monk 5×spirit_caller 5×herbalist 7×gearbreaker (types 8)
+/home/user/ninja-version-of-game-1/scratch/army_search/harness.ts:558
+	console.log(`margin over suggested ${(top.avg - sugg.avg).toFixed(1)}, over bot_mix ${(top.avg - bot.avg).toFixed(1)}`);
+	                                                                                                     ^
+
+TypeError: Cannot read properties of undefined (reading 'avg')
+    at runFinal (/home/user/ninja-version-of-game-1/scratch/army_search/harness.ts:558:103)
+    at main (/home/user/ninja-version-of-game-1/scratch/army_search/harness.ts:692:29)
+    at file:///home/user/ninja-version-of-game-1/scratch/run.mjs:14:39
+
+Node.js v22.23.4

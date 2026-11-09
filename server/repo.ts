@@ -265,6 +265,8 @@ export interface Ticket {
   response?: unknown;
   /** When the game said this battle started (the player tapped Attack): from then on it counts (re-audit). */
   startedAt?: number;
+  /** The star count declared when the battle started (declared stakes, sim/carry.ts; migration 0030). */
+  stake?: number;
   /** Reports refused after a re-simulation; the ticket is burned after MAX_TICKET_FAILURES. */
   failures?: number;
 }
@@ -810,7 +812,8 @@ export interface BattleStore {
    */
   useTicket(id: string, response?: unknown): Promise<boolean>;
   /** Mark an unused ticket started (first call wins); false when it is used or unknown. */
-  startTicket(id: string, at: number): Promise<boolean>;
+  /** Mark the battle started (once); `stake` is kept only with the first start. */
+  startTicket(id: string, at: number, stake?: number): Promise<boolean>;
   /** Count one refused report on a ticket; returns the new count. */
   bumpTicketFailures(id: string): Promise<number>;
   /** This attacker's unused tickets of a kind (any expiry, newest first). */
@@ -1679,10 +1682,13 @@ export class MemoryRepo implements Repo {
     if (response !== undefined) t.response = clone(response);
     return true;
   }
-  async startTicket(id: string, at: number): Promise<boolean> {
+  async startTicket(id: string, at: number, stake?: number): Promise<boolean> {
     const t = this.tickets.get(id);
     if (!t || t.used) return false;
-    if (t.startedAt === undefined) t.startedAt = at;
+    if (t.startedAt === undefined) {
+      t.startedAt = at;
+      if (stake !== undefined) t.stake = stake;
+    }
     return true;
   }
   async bumpTicketFailures(id: string): Promise<number> {

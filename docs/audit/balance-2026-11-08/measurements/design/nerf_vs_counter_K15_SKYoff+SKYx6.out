@@ -1,0 +1,10 @@
+== Keep 15: mean destruction % (three-star %), 10 bases (5 layouts x 2, bias 0.5) x 2 entry seeds, bot plan, hero
+army                       SKYoff            SKYx6
+air                  100.0 (100%)       90.0 (75%)
+eclipse                94.7 (85%)       94.7 (85%)
+best_found             86.6 (55%)       86.6 (55%)
+suggested              80.4 (35%)       80.4 (35%)
+
+variant | best army (dest) | runner-up | best - suggested | armies within 5 pts of best | spread best - median | mean of all ten
+SKYoff | air 100.0 | eclipse 94.7 | 19.6 | 1: air | 13.4 | 90.4
+SKYx6 | eclipse 94.7 | air 90.0 | 14.3 | 2: eclipse, air | 8.1 | 87.9

@@ -1,4 +1,4 @@
-import type { Cost } from '../types';
+import type { Cost, Temper } from '../types';
 
 export interface BaseBuilding {
   id: string;
@@ -10,6 +10,8 @@ export interface BaseBuilding {
   loot?: Cost;
   /** Defenses being upgraded do not fire. */
   upgrading?: boolean;
+  /** Tempering (SIM_RULES 6): the building's profile; absent = untempered. */
+  temper?: Temper;
 }
 
 export interface BaseLayout {
@@ -112,6 +114,12 @@ export interface BattleRecord {
    */
   banked?: Cost;
   overflow?: Cost;
+  /**
+   * Raids (save v21, balance audit 2026-11-08, sim/carry.ts): the star count declared before the raid, and the share
+   * of `result.loot` carried home (diversity times stake; absent = all of it).
+   */
+  stake?: number;
+  carry?: number;
   /**
    * The battle rules (SIM_RULES) the fight was recorded under. A replay is only
    * shown when it matches the current rules; absent = recorded before rules were versioned.

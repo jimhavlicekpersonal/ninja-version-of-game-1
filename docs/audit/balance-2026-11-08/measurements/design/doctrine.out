@@ -1,0 +1,33 @@
+
+== Keep 8: destruction % (3-star %) by army x doctrine; 5 layouts x 2 seeds x 2 entry seeds, bias 0.5
+army                         none           wind        thicket            sky
+best_AS                 65.8 (5%)      61.6 (0%)      60.5 (5%)      65.8 (5%)
+suggested               62.2 (5%)     61.7 (10%)      55.8 (5%)      62.2 (5%)
+throw_guard             50.9 (5%)      51.1 (5%)     52.1 (10%)      50.9 (5%)
+blade_rush             62.0 (15%)     63.5 (10%)     58.1 (10%)     62.0 (15%)
+shadow                  43.5 (0%)      43.7 (5%)      42.6 (0%)      43.5 (0%)
+air                     30.8 (0%)      32.6 (0%)      30.8 (0%)      11.7 (0%)
+guard_heal_blade       49.1 (10%)      47.5 (0%)     50.6 (10%)     49.1 (10%)
+best army per doctrine: none=best_AS 65.8 | wind=blade_rush 63.5 | thicket=best_AS 60.5 | sky=best_AS 65.8
+
+== Keep 12: destruction % (3-star %) by army x doctrine; 5 layouts x 2 seeds x 2 entry seeds, bias 0.5
+army                         none           wind        thicket            sky
+best_AS                90.7 (60%)     80.8 (45%)     79.3 (40%)     90.7 (60%)
+suggested              64.9 (10%)      60.3 (5%)     61.5 (10%)     64.9 (10%)
+throw_guard            80.3 (25%)     76.8 (20%)     70.0 (10%)     80.3 (25%)
+blade_rush              47.3 (0%)      47.9 (0%)      46.2 (0%)      47.3 (0%)
+shadow                  48.1 (0%)      48.5 (0%)      46.8 (0%)      48.1 (0%)
+air                    61.5 (20%)     63.3 (25%)     61.5 (20%)      15.7 (0%)
+guard_heal_blade        47.6 (0%)      48.5 (5%)      45.9 (0%)      47.6 (0%)
+best army per doctrine: none=best_AS 90.7 | wind=best_AS 80.8 | thicket=best_AS 79.3 | sky=best_AS 90.7
+
+== Keep 15: destruction % (3-star %) by army x doctrine; 5 layouts x 2 seeds x 2 entry seeds, bias 0.5
+army                         none           wind        thicket            sky
+best_AS                85.2 (50%)     87.0 (50%)     83.7 (40%)     85.2 (50%)
+suggested              71.0 (20%)     75.3 (15%)     76.5 (30%)     71.0 (20%)
+throw_guard            70.0 (15%)     74.4 (20%)     73.2 (15%)     70.0 (15%)
+blade_rush             49.4 (10%)     50.5 (10%)     48.8 (10%)     49.4 (10%)
+shadow                 98.3 (95%)     96.8 (90%)   100.0 (100%)     98.3 (95%)
+air                    82.0 (65%)     82.2 (70%)     82.0 (65%)      26.6 (0%)
+guard_heal_blade        53.4 (5%)     55.4 (15%)      47.5 (5%)      53.4 (5%)
+best army per doctrine: none=shadow 98.3 | wind=shadow 96.8 | thicket=shadow 100.0 | sky=shadow 98.3

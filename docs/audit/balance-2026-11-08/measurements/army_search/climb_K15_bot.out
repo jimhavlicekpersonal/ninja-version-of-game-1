@@ -1,0 +1,10 @@
+# Keep 15 climb from bot:  61.9  st 1.60  1*  75%  3*  15%  137×storm_sovereign 20×oni_breaker 89×thousand_needle 17×ghost_engineer
+round 0 Δ0.1 accept storm_sovereign→thousand_needle 0.10:  65.0  st 1.65  1*  85%  3*  10%  126×thousand_needle 21×oni_breaker 93×storm_sovereign 18×ghost_engineer
+round 1 Δ0.1 accept storm_sovereign→iron_monk 0.10:  69.0  st 1.90  1*  95%  3*  15%  128×thousand_needle 21×oni_breaker 56×storm_sovereign 18×ghost_engineer 7×iron_monk
+round 2 Δ0.1 accept ghost_engineer→chain_sickle_reaper 0.10:  76.3  st 1.90  1* 100%  3*  10%  128×thousand_needle 21×oni_breaker 56×storm_sovereign 36×chain_sickle_reaper 7×iron_monk
+round 3 Δ0.1 accept storm_sovereign→mountain_shield 0.10:  77.8  st 2.10  1* 100%  3*  30%  129×thousand_needle 21×oni_breaker 36×chain_sickle_reaper 7×iron_monk 7×mountain_shield 20×storm_sovereign
+round 4 Δ0.1 no improvement (best 75.5)
+round 5 Δ0.1 accept mountain_shield→chain_sickle_reaper 0.10:  79.3  st 2.15  1* 100%  3*  25%  128×thousand_needle 21×oni_breaker 72×chain_sickle_reaper 7×iron_monk 20×storm_sovereign
+round 6 Δ0.1 no improvement (best 75.0)
+round 7 Δ0.1 no improvement (best 77.7)
+END bot:  79.3  st 2.15  1* 100%  3*  25%  128×thousand_needle 21×oni_breaker 72×chain_sickle_reaper 7×iron_monk 20×storm_sovereign  (evals 90, 529 s)

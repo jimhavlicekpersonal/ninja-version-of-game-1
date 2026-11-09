@@ -1,0 +1,36 @@
+regular raider: 25 days in 13 s, Keep 8, 47 raids against it, held 0%, mean destruction 97.9
+regular defender: 25 days in 12 s, Keep 8, 48 raids against it, held 0%, mean destruction 96.8
+casual raider: 25 days in 2 s, Keep 5, 29 raids against it, held 3%, mean destruction 94.9
+
+== Model villages vs generated bases of the same Keep (same attacker: capped bot mix + hero of that Keep; 4 battle seeds x 2 entry seeds)
+                                     village   dest  held  3st  traps
+
+regular raider at Keep 8: acorn:2/4@1.0/9 wasp:0/3@-/8 pinecone:0/2@-/6 firefly:0/2@-/4 kite:0/1@-/2 thorn:0/4@-/5 sap:0/2@-/4 paper:0/2@-/3 clockwork:0/1@-/4 bitter:0/1@-/4 bramble:0/125@-/8 defence spread 5.5 tiles from centre
+      as is (villageToBase, upgrades paused)  100.0    0% 100%  0.0/0
+                    as is, nothing upgrading  100.0    0% 100%  0.0/0
+     defences/walls at cap-1 (like bias 0.5)  100.0    0% 100%  0.0/0
+         defences/walls at cap (like bias 1)  100.0    0% 100%  0.0/0
+                     walls removed, at cap-1  100.0    0% 100%  0.0/0
+generated Keep 8 bases, bias 0.5 (5 layouts x 2)   67.3   25%  25%  2.0/8
+generated Keep 8 bases, bias 1 (5 layouts x 2)   49.3   55%   5%  1.1/8
+generated sample (walled_keep, bias 0.5): acorn:4/4@8.0/9 wasp:3/3@7.0/8 pinecone:2/2@5.0/6 firefly:2/2@3.0/4 kite:1/1@1.0/2 thorn:4/4@4.0/5 sap:2/2@3.0/4 paper:2/2@2.0/3 clockwork:1/1@3.0/4 bitter:1/1@3.0/4 bramble:125/125@7.0/8 defence spread 6.8 tiles from centre
+
+regular defender at Keep 8: acorn:4/4@1.0/9 wasp:3/3@1.0/8 pinecone:2/2@1.0/6 firefly:2/2@1.0/4 kite:0/1@-/2 thorn:4/4@1.0/5 sap:2/2@1.0/4 paper:2/2@1.0/3 clockwork:1/1@1.0/4 bitter:1/1@1.0/4 bramble:0/125@-/8 defence spread 11.0 tiles from centre
+      as is (villageToBase, upgrades paused)  100.0    0% 100%  1.9/8
+                    as is, nothing upgrading  100.0    0% 100%  1.9/8
+     defences/walls at cap-1 (like bias 0.5)  100.0    0% 100%  3.3/8
+         defences/walls at cap (like bias 1)   98.0    0%  75%  2.3/8
+                     walls removed, at cap-1  100.0    0% 100%  3.3/8
+generated Keep 8 bases, bias 0.5 (5 layouts x 2)   67.3   25%  25%  2.0/8
+generated Keep 8 bases, bias 1 (5 layouts x 2)   49.3   55%   5%  1.1/8
+generated sample (walled_keep, bias 0.5): acorn:4/4@8.0/9 wasp:3/3@7.0/8 pinecone:2/2@5.0/6 firefly:2/2@3.0/4 kite:1/1@1.0/2 thorn:4/4@4.0/5 sap:2/2@3.0/4 paper:2/2@2.0/3 clockwork:1/1@3.0/4 bitter:1/1@3.0/4 bramble:125/125@7.0/8 defence spread 6.8 tiles from centre
+
+casual raider at Keep 5: acorn:2/3@1.0/6 wasp:0/2@-/5 pinecone:0/2@-/3 firefly:0/1@-/2 thorn:0/4@-/3 sap:0/2@-/2 paper:0/1@-/1 bramble:0/100@-/5 defence spread 5.5 tiles from centre
+      as is (villageToBase, upgrades paused)  100.0    0% 100%  0.0/0
+                    as is, nothing upgrading  100.0    0% 100%  0.0/0
+     defences/walls at cap-1 (like bias 0.5)  100.0    0% 100%  0.0/0
+         defences/walls at cap (like bias 1)  100.0    0% 100%  0.0/0
+                     walls removed, at cap-1  100.0    0% 100%  0.0/0
+generated Keep 5 bases, bias 0.5 (5 layouts x 2)   73.8   15%  25%  1.9/7
+generated Keep 5 bases, bias 1 (5 layouts x 2)   62.1   15%   5%  1.6/7
+generated sample (walled_keep, bias 0.5): acorn:3/3@5.0/6 wasp:2/2@4.0/5 pinecone:2/2@2.0/3 firefly:1/1@1.0/2 thorn:4/4@2.0/3 sap:2/2@1.0/2 paper:1/1@1.0/1 bramble:100/100@4.0/5 defence spread 5.1 tiles from centre

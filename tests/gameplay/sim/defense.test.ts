@@ -145,7 +145,8 @@ describe('leaf ranks', () => {
     expect(s1.trophies).toBe(100 + winTrophies(100, 120, data));
     expect(s1.battleLog[0].trophies).toBe(winTrophies(100, 120, data));
     expect(s1.shieldUntil).toBeLessThanOrEqual(clock.now());
-    const s2 = must(s1, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s1.army }, deployments: [] } }, clock.now());
+    // One Shinobi that never reaches anything (a battle with no warrior deployed is practice, balance audit 2026-11-08).
+    const s2 = must(s1, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s1.army }, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: 0, y: 0 }], endTick: 1 } }, clock.now());
     expect(s2.trophies).toBe(s1.trophies - lossTrophies(s1.trophies, 120, data));
   });
 });

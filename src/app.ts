@@ -276,6 +276,8 @@ export class App {
       grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? i18nText("ui.gang_war_relay_9376500e38") : i18nText("ui.gang_war_d4e65acc95") } : {}) } : undefined,
       practice,
       special: special ? { title: special.title } : undefined,
+      // Declared stakes: raids only, offline or on a server that settles them (protocol 11).
+      stakes: !replayOf && !grove && !duel && trialTier === undefined && !practice && !special && (!this.ticket || this.d.connection.canStakes),
       trial:
         trialTier !== undefined
           ? (() => {
@@ -294,7 +296,7 @@ export class App {
         // reported, and only now sends the battle seed (ledger audit A1). No seed, no battle.
         if (!grove && !duel && trialTier === undefined && !practice && this.ticket) {
           try {
-            const seed = await this.d.connection.startAttack(this.ticket);
+            const seed = await this.d.connection.startAttack(this.ticket, session.stake);
             if (seed !== undefined) session.reseed(seed);
           } catch (e) {
             this.battleHud?.toast((e as Error).message);
@@ -361,7 +363,7 @@ export class App {
         }
         const ticket = this.ticket ?? undefined;
         // Online: recorded as pending; loot and honor arrive with the server's confirmation.
-        const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name, ticket);
+        const out = c.finishBattle(session.setup, session.deployments, session.endTick, session.setup.base.name, ticket, undefined, session.stake);
         if (!out) return null;
         if (ticket) {
           // The server re-runs the battle from seed + deployments; the outbox
@@ -372,7 +374,7 @@ export class App {
         }
         lastRecord = out.record;
         if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true };
-        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus };
+        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);
@@ -409,6 +411,7 @@ export class App {
             ticket,
             at: startedAt,
             rules: SIM_RULES,
+            ...(session.stake !== undefined ? { stake: session.stake } : {}),
             ...(grove?.channel ? { channel: grove.channel } : {}),
             ...(special?.kind === 'bounty' ? { eventKey: special.eventKey } : special?.kind === 'rematch' ? { defenseId: special.defenseId } : {}),
           });

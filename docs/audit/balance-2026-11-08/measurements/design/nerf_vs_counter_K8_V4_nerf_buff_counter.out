@@ -1,0 +1,15 @@
+== Keep 8: mean destruction % (three-star %), 10 bases (5 layouts x 2, bias 0.5) x 2 entry seeds, bot plan, hero
+army             V4_nerf_buff_counter
+best_found             74.6 (30%)
+suggested              64.9 (20%)
+throwers_monks          52.0 (0%)
+throwers_warden         48.8 (0%)
+blade_rush             49.3 (10%)
+shadow                  43.2 (0%)
+air                     45.5 (0%)
+siege_blades            28.4 (0%)
+beasts                  45.6 (5%)
+healed_blades           39.9 (0%)
+
+variant | best army (dest) | runner-up | best - suggested | armies within 5 pts of best | spread best - median | mean of all ten
+V4_nerf_buff_counter | best_found 74.6 | suggested 64.9 | 9.7 | 1: best_found | 28.9 | 49.2

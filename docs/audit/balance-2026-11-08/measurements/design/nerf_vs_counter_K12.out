@@ -1,0 +1,19 @@
+== Keep 12: mean destruction % (three-star %), 10 bases (5 layouts x 2, bias 0.5) x 2 entry seeds, bot plan, hero
+army                     V0_today          V1_nerf   V2_counter_all  V2p_counter_one         V3_blend
+best_found             86.4 (50%)       76.9 (25%)       81.8 (45%)       82.8 (45%)       75.5 (25%)
+suggested               65.8 (5%)        55.5 (0%)        57.2 (5%)       63.6 (15%)        57.9 (5%)
+throwers_shield        77.5 (25%)       66.7 (20%)       68.8 (15%)       72.6 (20%)        64.0 (5%)
+mixed_no_aura          64.0 (10%)       65.9 (15%)       60.4 (10%)       62.5 (10%)       61.4 (10%)
+blade_rush             51.4 (10%)       50.6 (10%)        50.0 (5%)       51.0 (10%)       51.3 (10%)
+shadow                  44.3 (0%)        44.3 (0%)        44.3 (0%)        44.3 (0%)        44.3 (0%)
+air                    56.9 (20%)        45.0 (5%)       56.9 (20%)       56.9 (20%)       47.6 (15%)
+siege_blades            33.8 (0%)        33.8 (0%)        33.8 (0%)        33.8 (0%)        33.8 (0%)
+beasts                  46.5 (0%)        46.5 (0%)        46.5 (0%)        46.5 (0%)        46.5 (0%)
+healed_blades           50.1 (5%)        44.6 (5%)        45.6 (5%)        45.4 (5%)        46.4 (5%)
+
+variant | best army (dest) | runner-up | best - suggested | armies within 5 pts of best | spread best - median | mean of all ten
+V0_today | best_found 86.4 | throwers_shield 77.5 | 20.6 | 1: best_found | 35.0 | 57.7
+V1_nerf | best_found 76.9 | throwers_shield 66.7 | 21.4 | 1: best_found | 30.5 | 53.0
+V2_counter_all | best_found 81.8 | throwers_shield 68.8 | 24.6 | 1: best_found | 31.8 | 54.5
+V2p_counter_one | best_found 82.8 | throwers_shield 72.6 | 19.2 | 1: best_found | 31.8 | 55.9
+V3_blend | best_found 75.5 | throwers_shield 64.0 | 17.6 | 1: best_found | 27.9 | 52.9

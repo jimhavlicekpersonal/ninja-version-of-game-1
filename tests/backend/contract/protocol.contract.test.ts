@@ -224,6 +224,35 @@ describe('protocol contract', () => {
     expect((await a.me()).trophies).toBe(r.playerTrophies);
   });
 
+  it('pvp: a declared stake is fixed when the raid starts and comes back with the result (protocol 11)', async () => {
+    const a = await player('Staker', 3);
+    const m = (await a.match())!;
+    const started = await a.startAttack!(m.ticket, 3);
+    expect(started.stake).toBe(3);
+    // Only the first start declares: a retry cannot change it.
+    expect((await a.startAttack!(m.ticket, 2)).stake).toBe(3);
+    const r = await a.submitAttack({ ticket: m.ticket, seed: started.seed!, ...rush(25) });
+    expect(r.stake).toBe(3);
+    // An undeclarable stake is ignored.
+    const m2 = (await a.match())!;
+    expect((await a.startAttack!(m2.ticket, 7)).stake).toBeUndefined();
+  });
+
+  it('pvp: a base may carry one valid temper per tower type from the unlock Keep (protocol 11)', async () => {
+    const c = await player('Temperer', 5);
+    const unlock = data.battle.temper!.unlockKeep;
+    const tempered = (keep: number, t: (i: number) => object) => {
+      const b = generateOpponent(9, keep, data);
+      let i = 0;
+      b.buildings = b.buildings.map((x) => (x.type === 'acorn_cannon' ? { ...x, temper: t(i++) } : x));
+      return b;
+    };
+    expect(await c.uploadBase({ base: tempered(unlock, () => ({ reach: 4, watch: 3 })) })).toBeUndefined();
+    expect(await errorOf(c.uploadBase({ base: tempered(unlock, () => ({ reach: 11 })) }))).toMatchObject({ status: 400, code: 'bad_request' });
+    expect(await errorOf(c.uploadBase({ base: tempered(unlock, (i) => ({ reach: i })) }))).toMatchObject({ status: 400, code: 'bad_request' });
+    expect(await errorOf(c.uploadBase({ base: tempered(unlock - 1, () => ({ reach: 4 })) }))).toMatchObject({ status: 400, code: 'bad_request' });
+  });
+
   it('pvp: refuses foreign tickets, oversized armies and troop levels above the hall cap', async () => {
     const a = await player('Ann');
     const b = await player('Ben');

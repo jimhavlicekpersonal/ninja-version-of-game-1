@@ -4,7 +4,7 @@ import type { ResourceKind } from '../../gameplay/sim/types';
 export interface UiEvents {
   select: string | null;
   /** `buy`: the player is short of resources and chose to buy them with Jade when the spot is confirmed. */
-  'placement:start': { kind: 'new'; buildingType: string; buy?: boolean } | { kind: 'move'; id: string };
+  'placement:start': { kind: 'new'; buildingType: string; buy?: boolean; pay?: 'dew' } | { kind: 'move'; id: string };
   'placement:changed': { active: boolean; valid: boolean };
   'placement:confirm': void;
   'placement:cancel': void;

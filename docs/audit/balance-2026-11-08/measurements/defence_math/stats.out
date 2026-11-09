@@ -1,0 +1,82 @@
+
+== Keep 6 (bias 0.5): paired differences baseline - variant (positive = helps the defender), 15 bases x 2 entry seeds
+var                               name        cost  dDest    se     t  dHeld  d3st   pts/1M   se/1M held%/1M
+  a                           Kunai +1      800000   +8.6   1.6   5.3   +17%   +7%    10.71    2.02    20.83
+  b                        Shuriken +1      750000  +10.2   2.1   5.0   +20%   +3%    13.56    2.73    26.67
+  c                          Mortar +1      600000   +2.6   1.3   2.1   +10%   +0%     4.39    2.09    16.67
+  d                          SkyBow +1      540000   +0.4   0.7   0.6    -3%   +0%     0.74    1.26    -6.17
+  g                           Walls +1      854444   +1.6   0.7   2.1   +11%   +0%     1.82    0.85    13.00
+  h                      Walls removed     -687828   -3.1   3.4  -0.9    -6%   -6%    -4.44    4.91    -8.08
+  j              Soft counters removed     -270000   -2.4   2.7  -0.9   -17%   +3%    -8.89   10.17   -61.73
+  l  Collectors+storage +1 (HP filler)     2572000   +0.2   0.9   0.3    +0%   +0%     0.09    0.36     0.00
+  m         All 6 shooting defences +1     2690000  +17.4   1.9   9.1   +43%   +7%     6.46    0.71    16.11
+  n                     Traps +1 level      110000   +0.2   0.2   1.1    +0%   +0%     1.52    1.38     0.00
+  o                   Soft counters +1      391500   +0.8   0.6   1.3    +0%   +0%     1.96    1.55     0.00
+ranking of purchases by destruction points saved per 1M resources: 1.b 13.56  2.a 10.71  3.m 6.46  4.c 4.39  5.o 1.96  6.g 1.82  7.n 1.52  8.d 0.74  9.l 0.09
+
+== Keep 9 (bias 0.5): paired differences baseline - variant (positive = helps the defender), 15 bases x 2 entry seeds
+var                               name        cost  dDest    se     t  dHeld  d3st   pts/1M   se/1M held%/1M
+  a                           Kunai +1     2438900   +6.9   2.5   2.7   +10%  +10%     2.82    1.03     4.10
+  b                        Shuriken +1     1576875   +1.2   1.7   0.7    +0%   +3%     0.74    1.11     0.00
+  c                          Mortar +1     1740000   +7.2   1.8   4.0    +3%  +20%     4.14    1.03     1.92
+  d                          SkyBow +1     1566000   +1.0   0.9   1.1    +0%   +0%     0.64    0.58     0.00
+  e                        Ballista +1      841000   +1.0   0.9   1.2    +0%   +3%     1.19    1.02     0.00
+  g                           Walls +1     1670319   +1.3   2.8   0.5    +0%   +0%     0.80    1.68     0.00
+  h                      Walls removed    -2585917  -12.7   4.2  -3.0    +0%  -22%    -4.90    1.62     0.00
+  j              Soft counters removed    -1971200   -4.7   3.7  -1.3    -3%  -10%    -2.37    1.86    -1.69
+  k            Ballista+Yagura removed     -980000   -3.4   4.0  -0.8    -3%   -7%    -3.44    4.10    -3.40
+  l  Collectors+storage +1 (HP filler)    11614148   +3.4   2.2   1.6    +3%   +7%     0.30    0.19     0.29
+  m         All 6 shooting defences +1     8162775  +18.9   2.2   8.6   +17%  +43%     2.32    0.27     2.04
+  n                     Traps +1 level      211700   +1.3   0.8   1.8    +0%   +3%     6.30    3.58     0.00
+  o                   Soft counters +1     1187200   +1.3   1.3   1.0    +0%   +7%     1.12    1.08     0.00
+ranking of purchases by destruction points saved per 1M resources: 1.n 6.30  2.c 4.14  3.a 2.82  4.m 2.32  5.e 1.19  6.o 1.12  7.g 0.80  8.b 0.74  9.d 0.64  10.l 0.30
+
+== Keep 12 (bias 0.5): paired differences baseline - variant (positive = helps the defender), 15 bases x 2 entry seeds
+var                               name        cost  dDest    se     t  dHeld  d3st   pts/1M   se/1M held%/1M
+  a                           Kunai +1     5127788   +4.4   2.3   2.0    +7%  +13%     0.86    0.44     1.30
+  b                        Shuriken +1     4807302   +3.5   2.3   1.5    +0%   +7%     0.72    0.47     0.00
+  c                          Mortar +1     2523000   +6.1   2.1   2.9    +3%  +13%     2.42    0.84     1.32
+  d                          SkyBow +1     4938774   +1.5   1.6   0.9    +0%   +0%     0.30    0.32     0.00
+  e                        Ballista +1     5127800   +0.7   1.3   0.6    -7%   +3%     0.14    0.26    -1.30
+  f                          Yagura +1     2535000   -1.0   1.0  -1.0    +0%   +0%    -0.38    0.39     0.00
+  g                           Walls +1     5448245   +2.7   2.4   1.1    +0%   +6%     0.50    0.45     0.00
+  h                      Walls removed   -10902610   +0.7   4.1   0.2   -28%   +6%     0.06    0.38    -2.55
+  j              Soft counters removed    -7110400   -0.5   3.7  -0.1    +0%   +0%    -0.08    0.52     0.00
+  k            Ballista+Yagura removed   -13067200   -7.5   4.1  -1.8   -13%  -20%    -0.57    0.31    -1.02
+  l  Collectors+storage +1 (HP filler)    58156249   +1.8   2.3   0.8    +3%   +7%     0.03    0.04     0.06
+  m         All 6 shooting defences +1    25059664  +17.6   3.0   5.9   +27%  +17%     0.70    0.12     1.06
+  n                     Traps +1 level      335346   +0.7   0.5   1.4    +0%   +3%     2.19    1.58     0.00
+  o                   Soft counters +1     3499600   +2.4   1.3   1.8    +0%   +0%     0.69    0.38     0.00
+ranking of purchases by destruction points saved per 1M resources: 1.c 2.42  2.n 2.19  3.a 0.86  4.b 0.72  5.m 0.70  6.o 0.69  7.g 0.50  8.d 0.30  9.e 0.14  10.l 0.03  11.f -0.38
+
+== Keep 15 (bias 0.5): paired differences baseline - variant (positive = helps the defender), 15 bases x 2 entry seeds
+var                               name        cost  dDest    se     t  dHeld  d3st   pts/1M   se/1M held%/1M
+  a                           Kunai +1    15632700   +3.5   3.2   1.1    +7%   +3%     0.22    0.21     0.43
+  b                        Shuriken +1    10107348   +5.0   2.0   2.5    +3%  +10%     0.49    0.20     0.33
+  c                          Mortar +1     5304608   +8.0   2.7   2.9    +3%  +13%     1.50    0.52     0.63
+  d                          SkyBow +1    15056700   +1.7   1.0   1.8    +0%   +3%     0.12    0.07     0.00
+  e                        Ballista +1    22667400   +0.4   0.8   0.5    +3%   +3%     0.02    0.04     0.15
+  f                          Yagura +1    31813400   -0.9   1.0  -0.9    +0%   -3%    -0.03    0.03     0.00
+  g                           Walls +1    10871043   -3.3   2.7  -1.2    +6%   +0%    -0.31    0.25     0.51
+  h                      Walls removed   -23014523   -1.6   4.2  -0.4    +0%   +6%    -0.07    0.18     0.00
+  j              Soft counters removed   -15299800   -1.6   2.5  -0.6    +0%   -3%    -0.10    0.16     0.00
+  k            Ballista+Yagura removed  -144639400  -12.8   3.8  -3.3    +0%  -37%    -0.09    0.03     0.00
+  l  Collectors+storage +1 (HP filler)   257022488   +3.9   2.7   1.4    +0%  +10%     0.02    0.01     0.00
+  m         All 6 shooting defences +1   100582156  +19.2   3.4   5.7   +27%  +30%     0.19    0.03     0.27
+  n                     Traps +1 level      645396   +0.4   0.3   1.6    +3%   +0%     0.62    0.40     5.16
+  o                   Soft counters +1     7184800   -0.9   1.0  -0.9    +0%   -3%    -0.13    0.14     0.00
+ranking of purchases by destruction points saved per 1M resources: 1.c 1.50  2.n 0.62  3.b 0.49  4.a 0.22  5.m 0.19  6.d 0.12  7.e 0.02  8.l 0.02  9.f -0.03  10.o -0.13  11.g -0.31
+
+== Rank per Keep (1 = best purchase per 1M)
+var      K6      K9     K12     K15
+  b 1(13.6)  8(0.7)  4(0.7)  3(0.5)
+  a 2(10.7)  3(2.8)  3(0.9)  4(0.2)
+  m  3(6.5)  4(2.3)  5(0.7)  5(0.2)
+  c  4(4.4)  2(4.1)  1(2.4)  1(1.5)
+  o  5(2.0)  6(1.1)  6(0.7) 10(-0.1)
+  g  6(1.8)  7(0.8)  7(0.5) 11(-0.3)
+  n  7(1.5)  1(6.3)  2(2.2)  2(0.6)
+  d  8(0.7)  9(0.6)  8(0.3)  6(0.1)
+  l  9(0.1) 10(0.3) 10(0.0)  8(0.0)
+  e       -  5(1.2)  9(0.1)  7(0.0)
+  f       -       - 11(-0.4) 9(-0.0)

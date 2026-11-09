@@ -1,0 +1,42 @@
+matrix 10 armies x 8 profiles (scratch/design/temper_K12.out)
+pure saddle point: YES (one answer); maximin 62.3, minimax 62.3
+mixed equilibrium value 62.3 destruction
+attacker mix (support 1): best_found 100%
+defender mix (support 1): blast 100%
+today only: best army best_found 94.0; armies within 5: 1
+
+matrix 10 armies x 8 profiles (scratch/design/temper2_K12.out)
+pure saddle point: YES (one answer); maximin 75.5, minimax 75.5
+mixed equilibrium value 75.5 destruction
+attacker mix (support 1): best_found 100%
+defender mix (support 1): blast 100%
+today only: best army best_found 94.0; armies within 5: 1
+
+matrix 12 armies x 7 profiles (scratch/design/temper3_K12.out)
+pure saddle point: no; maximin 77.0, minimax 81.5
+mixed equilibrium value 78.4 destruction
+attacker mix (support 2): best_found 85%, air 15%
+defender mix (support 2): reach 69%, reach_sight 31%
+today only: best army best_found 94.0; armies within 5: 1
+
+matrix 10 armies x 8 profiles (scratch/design/temper_K15.out)
+pure saddle point: no; maximin 49.3, minimax 76.2
+mixed equilibrium value 65.5 destruction
+attacker mix (support 2): best_found 62%, air 38%
+defender mix (support 2): blast_sight 74%, sight 26%
+today only: best army eclipse 97.2; armies within 5: 1
+
+matrix 10 armies x 8 profiles (scratch/design/temper2_K15.out)
+pure saddle point: no; maximin 57.5, minimax 74.5
+mixed equilibrium value 66.5 destruction
+attacker mix (support 2): best_found 68%, air 32%
+defender mix (support 2): blast 66%, sight 34%
+today only: best army eclipse 97.2; armies within 5: 1
+
+matrix 12 armies x 7 profiles (scratch/design/temper3_K15.out)
+pure saddle point: no; maximin 69.6, minimax 88.8
+mixed equilibrium value 82.0 destruction
+attacker mix (support 3): best_found_spread 54%, eclipse 23%, air 22%
+defender mix (support 3): sight 43%, reach 39%, blast 18%
+today only: best army air 100.0; armies within 5: 2
+

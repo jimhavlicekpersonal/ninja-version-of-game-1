@@ -1,0 +1,18 @@
+
+== Keep 12: destruction % (3-star %), 5 layouts x 2 seeds x 2 entry seeds, bias 0.5
+army                   none          wind2          wind3       thicket2       mountain
+best_AS          90.7 (60%)     60.7 (10%)      57.5 (0%)     92.0 (65%)     80.0 (35%)
+throw_guard      80.3 (25%)      54.6 (0%)      51.0 (0%)     82.5 (35%)      71.0 (5%)
+blade_rush        47.3 (0%)      40.2 (0%)      36.6 (0%)      49.3 (5%)      43.8 (0%)
+shadow            48.1 (0%)      42.4 (0%)      38.9 (0%)      51.6 (5%)      48.1 (0%)
+air              61.5 (20%)     44.5 (10%)     34.8 (10%)     70.4 (40%)     61.5 (20%)
+best per doctrine: none=best_AS 90.7 | wind2=best_AS 60.7 | wind3=best_AS 57.5 | thicket2=best_AS 92.0 | mountain=best_AS 80.0
+
+== Keep 15: destruction % (3-star %), 5 layouts x 2 seeds x 2 entry seeds, bias 0.5
+army                   none          wind2          wind3       thicket2       mountain
+best_AS          85.2 (50%)      62.9 (5%)      53.1 (0%)     89.0 (45%)     82.6 (40%)
+throw_guard      70.0 (15%)      55.0 (0%)      53.5 (0%)     81.0 (30%)      62.5 (5%)
+blade_rush       49.4 (10%)      44.5 (5%)      39.6 (5%)      54.3 (5%)      47.5 (5%)
+shadow           98.3 (95%)     89.1 (65%)     83.8 (50%)     97.8 (90%)     57.5 (10%)
+air              82.0 (65%)     75.6 (60%)     73.8 (50%)     87.5 (80%)     82.0 (65%)
+best per doctrine: none=shadow 98.3 | wind2=shadow 89.1 | wind3=shadow 83.8 | thicket2=shadow 97.8 | mountain=best_AS 82.6

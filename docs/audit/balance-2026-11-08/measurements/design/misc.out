@@ -1,0 +1,10 @@
+== (a) Shadow Trials with the bot mix at caps + hero (bot plan): primary fortress then up to 4 alternates; a tier is cleared at 2 stars
+Keep 8: own tiers 29-32; cleared 11 tiers from 25, stalled at 36 (Keep 9 fortress, 20 attempts); harvest 2023k Coins+Prov = 3.7 average raids, 5 Jade; alternates used: 4
+   25:✓ 26:✓ 27:alt1 28:✓ 29:✓ 30:✓ 31:✓ 32:alt1 33:alt1 34:✓ 35:alt1 36:✗
+Keep 12: own tiers 45-48; cleared 11 tiers from 41, stalled at 52 (Keep 13 fortress, 27 attempts); harvest 15055k Coins+Prov = 4.1 average raids, 5 Jade; alternates used: 4
+   41:✓ 42:alt1 43:✓ 44:✓ 45:✓ 46:✓ 47:alt3 48:✓ 49:✓ 50:alt3 51:alt4 52:✗
+
+== (b) the Next lottery: 300 offers per Keep via opponentFor at the campaign honor; loot in Coins+Prov; fee = scoutFee
+Keep 5: fee 1500; loot min 97220 p25 108151 median 113610 p75 119079 p90 123432 max 128077; mean 113532; max/min 1.32x; best accept-threshold 117960 -> expected 118587 per raid (+4.5% over taking the first offer; fee is 1.3% of a mean offer)
+Keep 8: fee 8273; loot min 499423 p25 536023 median 553643 p75 566296 p90 577462 max 600796; mean 551524; max/min 1.20x; best accept-threshold 553643 -> expected 560332 per raid (+1.6% over taking the first offer; fee is 1.5% of a mean offer)
+Keep 12: fee 54623; loot min 3296203 p25 3522804 median 3625621 p75 3732826 p90 3821995 max 3968469; mean 3622473; max/min 1.20x; best accept-threshold 3625621 -> expected 3692257 per raid (+1.9% over taking the first offer; fee is 1.5% of a mean offer)

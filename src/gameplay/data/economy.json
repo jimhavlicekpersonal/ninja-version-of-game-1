@@ -73,6 +73,7 @@
   "raidableStoredFraction": 0.2,
   "raidableUncollectedFraction": 0.5,
   "cancelRefundFraction": 0.5,
+  "provisionsPayable": ["hedge", "trap"],
   "queuedArmies": 1,
   "dismissRefundFraction": 0.5,
   "maxTrainBatch": 200,

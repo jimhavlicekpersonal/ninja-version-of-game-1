@@ -9,11 +9,11 @@ measurements: SPANISH_SIZE.json (measured.zh-Hans)
 
 # Simplified Chinese translation
 
-Simplified Chinese (`zh-Hans`, Mandarin, Han script) is the sixth complete language and the
+Simplified Chinese (`zh-Hans`, Mandarin, Han script) is the eighth complete language (after French and Italian, merged from main the same day) and the
 first in a Han script. It is written with mainland conventions and 你 (also in the legal
 pages), and served to `zh-CN`, `zh-SG`, `zh-MY`, `zh-Hans-*` and plain `zh` devices. It
 covers the same surfaces as German ([GERMAN.md](GERMAN.md)): every namespace (`boot` 17,
-`ui` 126, `data` 669, `messages` 1,863, `pages` 314 = 2,989 entries), the six public pages
+`ui` 151, `data` 669, `messages` 1,869, `pages` 314 = 3,020 entries, including the Tempering, stake and wall-payment text that arrived from main), the six public pages
 and PWA manifest under `public/zh-Hans/`, the account-deletion form
 (`/account/delete?lang=zh-Hans`), server push text, iOS (`zh-Hans.lproj`) and Android
 (`values-b+zh+Hans`) resources, StoreKit fixtures (`zh_Hans`), and listing and product copy
@@ -49,8 +49,8 @@ and tutorial buttons were shortened to fit at 320 px (跳过, 准备好了).
 ## Storage
 
 Measured by `npm run i18n:build` (`SPANISH_SIZE.json`, `measured.zh-Hans`): the runtime pack
-is 202,878 bytes UTF-8 (74,869 gzip, 60,199 Brotli) for 2,675 strings, smaller raw than
-German (222,318) because one Han character (three bytes) replaces a word; compressed it is
+is 205,040 bytes UTF-8 (75,780 gzip, 60,949 Brotli) for 2,706 strings, smaller raw than
+German (about 222,000) because one Han character (three bytes) replaces a word; compressed it is
 the same size. No font is bundled.
 
 ## Validation

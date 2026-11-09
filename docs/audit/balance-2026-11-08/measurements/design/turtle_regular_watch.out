@@ -1,0 +1,40 @@
+# policy turtle cadence regular raidsPerSession 2 FINAL days 85 (112 s) stopped: Keep 12 reached
+Keep reached (day): 1: 0 · 2: 0 · 3: 0.2 · 4: 1.4 · 5: 7.2 · 6: 17.4 · 7: 30.6 · 8: 45 · 9: 54 · 10: 58 · 11: 75.2 · 12: 84
+Watch index mean 0.94
+Totals: raids 323, looted 139752516, raided 168x, stolen 84397972, held 25, defence rewards 359168, Next presses 212
+Sessions 708: full storage (either) 25%, Coins full 6%, Provisions full 19%
+Research started 68, skipped (sandbag) 0; walls placed 125, wall upgrades 1190, Coins on walls 20199555; final honor 3771; final strength 11.50
+
+| Keep | days at Keep | Raids | Avg stars | Won | 3-star | Destr | Loot/raid | Opp Keep | Opp bias | Strength | Honor | Raided | Held | Stolen/raid | Honor lost/raid |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0 | 0 | - | - | - | - | - | - | - | - | - | 0 | - | - | - |
+| 2 | 0.2 | 5 | 2.80 | 100% | 80% | 98% | 3908 | 1.00 | 0.33 | 1.00 | 80 | 0 | - | - | - |
+| 3 | 1.2 | 8 | 1.38 | 75% | 0% | 52% | 3683 | 2.13 | 0.28 | 2.06 | 266 | 2 | 50% | 6278 | -1.0 |
+| 4 | 5.8 | 23 | 1.96 | 91% | 30% | 75% | 15057 | 3.17 | 0.52 | 3.43 | 763 | 12 | 42% | 4902 | 0.3 |
+| 5 | 10.2 | 41 | 1.41 | 78% | 2% | 59% | 62213 | 4.90 | 0.61 | 4.77 | 1382 | 21 | 10% | 72912 | 20.3 |
+| 6 | 13.2 | 53 | 0.85 | 49% | 0% | 47% | 105625 | 5.96 | 0.73 | 5.94 | 1609 | 31 | 32% | 141677 | 9.2 |
+| 7 | 14.4 | 52 | 0.98 | 58% | 6% | 53% | 183969 | 6.96 | 0.74 | 6.95 | 1965 | 26 | 12% | 234047 | 17.0 |
+| 8 | 9 | 36 | 1.31 | 75% | 6% | 57% | 277920 | 7.97 | 0.52 | 7.96 | 2524 | 19 | 11% | 394787 | 19.4 |
+| 9 | 4 | 16 | 1.56 | 75% | 13% | 60% | 334832 | 8.94 | 0.66 | 8.84 | 1983 | 7 | 0% | 695533 | 1.0 |
+| 10 | 17.2 | 50 | 1.64 | 80% | 12% | 61% | 757636 | 9.68 | 0.67 | 9.60 | 2825 | 29 | 3% | 794848 | 13.7 |
+| 11 | 8.8 | 35 | 1.49 | 77% | 6% | 62% | 1698600 | 10.97 | 0.66 | 10.88 | 3549 | 19 | 5% | 1720729 | 21.9 |
+| 12 | 1 | 4 | 1.75 | 75% | 25% | 63% | 2236697 | 11.50 | 0.42 | 11.25 | 3740 | 2 | 0% | 2102053 | 25.0 |
+
+day | keep | honor | strength | coins/cap | prov/cap | housing | walls@lvl | defences
+5 | 4 | 827 | 3.40 | 5388/206000 | 10859/96000 | 100 | 60@1.4 | acorn:3@3.3 wasp:2@3.0 pinecone:1@2.0 firefly:1@1.0 thorn:3@3.0 sap:1@2.0
+10 | 5 | 1230 | 4.40 | 92762/683000 | 106076/458000 | 180 | 60@1.4 | acorn:3@5.0 wasp:2@4.0 pinecone:2@2.5 firefly:1@2.0 thorn:4@3.0 sap:2@2.0 paper:1@1.0
+15 | 5 | 1487 | 5.00 | 177843/683000 | 233734/458000 | 180 | 100@4.2 | acorn:3@6.0 wasp:2@5.0 pinecone:2@3.0 firefly:1@2.0 thorn:4@3.0 sap:2@2.0 paper:1@1.0
+20 | 6 | 1631 | 6.00 | 191317/1360000 | 954414/1135000 | 180 | 100@5.0 | acorn:4@5.3 wasp:3@4.3 pinecone:2@3.0 firefly:2@2.0 thorn:4@3.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+25 | 6 | 1752 | 6.00 | 250987/1360000 | 1116236/1135000 | 240 | 100@5.0 | acorn:4@7.0 wasp:3@6.0 pinecone:2@4.0 firefly:2@3.0 thorn:4@4.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+30 | 6 | 1565 | 6.00 | 1011704/2560000 | 1460644/2560000 | 240 | 125@6.0 | acorn:4@7.0 wasp:3@6.0 pinecone:2@4.0 firefly:2@3.0 thorn:4@4.0 sap:2@3.0 paper:1@2.0 clockwork:1@2.0 bitter:1@2.0
+35 | 7 | 1748 | 7.00 | 6006/2565500 | 1658915/2565500 | 255 | 125@6.0 | acorn:4@8.0 wasp:3@7.0 pinecone:2@4.5 firefly:2@3.0 thorn:4@5.0 sap:2@3.0 paper:2@2.0 clockwork:1@3.0 bitter:1@3.0
+40 | 7 | 2077 | 7.00 | 344155/3033000 | 2456100/2565500 | 255 | 125@6.0 | acorn:4@8.3 wasp:3@8.0 pinecone:2@6.0 firefly:2@3.0 thorn:4@5.0 sap:2@3.0 paper:2@2.0 clockwork:1@3.0 bitter:1@3.0
+45 | 7 | 2289 | 7.00 | 808097/3968000 | 3500500/3500500 | 255 | 125@7.0 | acorn:4@9.0 wasp:3@8.0 pinecone:2@6.0 firefly:2@3.0 thorn:4@5.0 sap:2@3.0 paper:2@2.0 clockwork:1@3.0 bitter:1@3.0
+50 | 8 | 2601 | 8.00 | 1316083/3976525 | 3355541/3509025 | 270 | 125@7.9 | acorn:4@9.0 wasp:3@8.0 pinecone:2@6.0 firefly:2@4.0 thorn:4@5.0 sap:2@4.0 paper:2@3.0 clockwork:1@4.0 bitter:1@4.0 kite:1@2.0
+55 | 9 | 1550 | 8.75 | 2499477/3989739 | 3522239/3522239 | 270 | 125@8.0 | acorn:4@9.0 wasp:3@8.0 pinecone:2@6.0 firefly:2@4.0 thorn:4@5.3 sap:2@4.0 paper:2@3.0 clockwork:1@4.0 bitter:1@4.0 kite:1@3.0
+60 | 10 | 2035 | 8.57 | 2565712/5459470 | 2392006/4010220 | 270 | 125@8.5 | acorn:4@9.0 wasp:3@8.0 pinecone:2@6.0 firefly:2@4.0 thorn:4@5.3 sap:2@4.0 paper:2@4.0 clockwork:1@4.0 bitter:1@4.0 kite:1@3.0
+65 | 10 | 2375 | 8.75 | 1544411/6184095 | 990029/4010220 | 290 | 125@8.5 | acorn:4@9.0 wasp:3@8.0 pinecone:2@6.0 firefly:2@6.0 thorn:4@6.0 sap:2@5.0 paper:2@4.0 clockwork:1@5.0 bitter:1@5.0 kite:1@4.0
+70 | 10 | 2996 | 10.00 | 3181965/6184095 | 3756831/4010220 | 290 | 125@9.0 | acorn:4@10.8 wasp:3@9.0 pinecone:2@6.0 firefly:2@6.0 thorn:4@6.0 sap:2@5.0 paper:2@4.0 clockwork:1@6.0 bitter:1@6.0 kite:1@4.0
+75 | 10 | 3310 | 10.00 | 6184095/6184095 | 3612030/4010220 | 300 | 125@9.0 | acorn:4@11.0 wasp:3@9.0 pinecone:2@6.0 firefly:2@6.0 thorn:4@6.0 sap:2@5.0 paper:2@4.0 clockwork:1@6.0 bitter:1@6.0 kite:1@4.0
+80 | 11 | 3533 | 11.00 | 3349264/9585348 | 3815640/6215841 | 300 | 125@10.0 | acorn:4@11.0 wasp:3@9.0 pinecone:2@6.0 firefly:3@4.3 thorn:4@6.0 sap:2@5.0 paper:2@4.0 clockwork:1@6.0 bitter:1@6.0 kite:2@2.5
+85 | 12 | 3771 | 11.50 | 5783891/9634554 | 1957204/6265047 | 300 | 125@10.5 | acorn:4@11.0 wasp:3@9.0 pinecone:2@6.0 firefly:3@4.3 thorn:4@6.0 sap:2@5.0 paper:2@4.0 clockwork:1@6.0 bitter:1@6.0 kite:2@2.5 longbow:1@1.0

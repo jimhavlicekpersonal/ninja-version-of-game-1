@@ -1,0 +1,19 @@
+== Keep 15: mean destruction % (three-star %), 10 bases (5 layouts x 2, bias 0.5) x 2 entry seeds, bot plan, hero
+army                     V0_today          V1_nerf   V2_counter_all  V2p_counter_one         V3_blend
+best_found             86.6 (55%)       86.0 (40%)       84.3 (40%)       85.4 (40%)       84.0 (40%)
+suggested              80.4 (35%)       80.4 (35%)       76.0 (30%)       79.3 (35%)       79.3 (35%)
+throwers_oni           77.3 (15%)       77.3 (15%)       66.0 (10%)        73.0 (5%)        73.0 (5%)
+mixed_no_aura          77.5 (30%)       77.5 (30%)       75.6 (35%)       76.3 (35%)       76.3 (35%)
+blade_rush              54.3 (5%)       55.0 (10%)       54.4 (10%)       54.6 (10%)       55.0 (10%)
+eclipse                94.7 (85%)       88.0 (60%)       61.0 (10%)       78.5 (35%)       79.8 (55%)
+air                    90.0 (75%)       84.3 (65%)       90.0 (75%)       90.0 (75%)       90.5 (80%)
+siege_blades            32.3 (0%)        32.3 (0%)        32.3 (0%)        32.3 (0%)        32.3 (0%)
+beasts                 53.5 (10%)       53.5 (10%)       53.5 (10%)       53.5 (10%)       53.5 (10%)
+healed_blades          56.9 (15%)       54.8 (10%)       57.4 (15%)       57.4 (15%)       57.9 (15%)
+
+variant | best army (dest) | runner-up | best - suggested | armies within 5 pts of best | spread best - median | mean of all ten
+V0_today | eclipse 94.7 | air 90.0 | 14.3 | 2: eclipse, air | 17.4 | 70.3
+V1_nerf | eclipse 88.0 | best_found 86.0 | 7.5 | 3: eclipse, best_found, air | 10.7 | 68.9
+V2_counter_all | air 90.0 | best_found 84.3 | 14.0 | 1: air | 29.0 | 65.0
+V2p_counter_one | air 90.0 | best_found 85.4 | 10.7 | 2: air, best_found | 17.0 | 68.0
+V3_blend | air 90.5 | best_found 84.0 | 11.2 | 1: air | 17.5 | 68.1
