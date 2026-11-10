@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.sv)
 
 # Swedish translation
 
-Swedish (`sv`) was released together with Dutch on 2026-11-10 in commit `DUTCH_SWEDISH_COMMIT`. It is written in standard Swedish with *du*, also in the legal pages, and served to `sv-SE`, `sv-FI`, `sv-AX` and plain `sv` devices. It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/sv/`, the account-deletion form (`/account/delete?lang=sv`), server push text, iOS (`sv.lproj`) and Android (`values-sv`) resources, StoreKit fixtures for `sv`, and listing and product copy in `docs/store/sv/`. Terms: `locales/sv/TERMS.md`; reviewed warnings: `locales/sv/REVIEW.json`.
+Swedish (`sv`) was released together with Dutch on 2026-11-10 in commit `642deab`. It is written in standard Swedish with *du*, also in the legal pages, and served to `sv-SE`, `sv-FI`, `sv-AX` and plain `sv` devices. It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/sv/`, the account-deletion form (`/account/delete?lang=sv`), server push text, iOS (`sv.lproj`) and Android (`values-sv`) resources, StoreKit fixtures for `sv`, and listing and product copy in `docs/store/sv/`. Terms: `locales/sv/TERMS.md`; reviewed warnings: `locales/sv/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Swedish speaker has reviewed it**, nor the legal pages.
 

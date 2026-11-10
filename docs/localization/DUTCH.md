@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.nl)
 
 # Dutch translation
 
-Dutch (`nl`) was released together with Swedish on 2026-11-10 in commit `DUTCH_SWEDISH_COMMIT`. It is written in standard Dutch with *je/jij*, also in the legal pages, and served to `nl-NL`, `nl-BE`, `nl-SR` and plain `nl` devices (a Belgian device that ranks French first keeps French). It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/nl/`, the account-deletion form (`/account/delete?lang=nl`), server push text, iOS (`nl.lproj`) and Android (`values-nl`) resources, StoreKit fixtures for `nl_NL`, and listing and product copy in `docs/store/nl/`. Terms: `locales/nl/TERMS.md`; reviewed warnings: `locales/nl/REVIEW.json`.
+Dutch (`nl`) was released together with Swedish on 2026-11-10 in commit `642deab`. It is written in standard Dutch with *je/jij*, also in the legal pages, and served to `nl-NL`, `nl-BE`, `nl-SR` and plain `nl` devices (a Belgian device that ranks French first keeps French). It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/nl/`, the account-deletion form (`/account/delete?lang=nl`), server push text, iOS (`nl.lproj`) and Android (`values-nl`) resources, StoreKit fixtures for `nl_NL`, and listing and product copy in `docs/store/nl/`. Terms: `locales/nl/TERMS.md`; reviewed warnings: `locales/nl/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Dutch speaker has reviewed it**, nor the legal pages.
 
