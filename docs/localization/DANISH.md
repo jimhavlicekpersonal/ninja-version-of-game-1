@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.da)
 
 # Danish translation
 
-Danish (`da`) was released together with Norwegian Bokmål on 2026-11-10 in commit `DANISH_NORWEGIAN_COMMIT`. It is written in standard Danish with *du*, also in the legal pages, and served to `da-DK`, `da-GL`, `da-FO` and plain `da` devices. It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/da/`, the account-deletion form (`/account/delete?lang=da`), server push text, iOS (`da.lproj`) and Android (`values-da`) resources, StoreKit fixtures for `da`, and listing and product copy in `docs/store/da/`. Terms: `locales/da/TERMS.md`; reviewed warnings: `locales/da/REVIEW.json`.
+Danish (`da`) was released together with Norwegian Bokmål on 2026-11-10 in commit `5733b4b`. It is written in standard Danish with *du*, also in the legal pages, and served to `da-DK`, `da-GL`, `da-FO` and plain `da` devices. It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/da/`, the account-deletion form (`/account/delete?lang=da`), server push text, iOS (`da.lproj`) and Android (`values-da`) resources, StoreKit fixtures for `da`, and listing and product copy in `docs/store/da/`. Terms: `locales/da/TERMS.md`; reviewed warnings: `locales/da/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Danish speaker has reviewed it**, nor the legal pages.
 
