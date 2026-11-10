@@ -193,8 +193,9 @@ export function wrongHanForms(text, script) {
 
 // Korean particles that change with the final sound of the word before them (책을/차를, 산이/바다가, 산은/바다는,
 // 산과/바다와, 산으로/바다로, 산이나/바다나, 산이에요/바다예요). A placeholder's last sound is unknown (a name, a building,
-// a number read aloud), so none of them may follow one; 의, 에, 에서, 에게, 도, 만, 까지 and 부터 never change.
-const KOREAN_VARIABLE_PARTICLE = /(?:\}|#)(?:을|를|이|가|은|는|과|와|으로|로|이나|나|이랑|랑|아|야|이에요|예요|이야|였|이었)(?![\p{Script=Hangul}])/u;
+// a number read aloud), so none of them may follow one; 의, 에, 에서, 에게, 도, 만, 까지 and 부터 never change. The
+// written-both-ways form 을(를) is allowed.
+const KOREAN_VARIABLE_PARTICLE = /(?:\}|#)(?:을|를|이|가|은|는|과|와|으로|로|이나|나|이랑|랑|아|야|이에요|예요|이야|였|이었)(?![\p{Script=Hangul}(])/u;
 /** A particle whose form depends on the placeholder before it (`{name}을`, `{building}이`, `#가`). */
 export function koreanParticleAfterPlaceholder(text) { return KOREAN_VARIABLE_PARTICLE.test(text); }
 // Modern Korean games write Hangul only: no Hanja, no Japanese kana.
