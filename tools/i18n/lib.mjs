@@ -258,6 +258,8 @@ export function checkWorksheet(lang, ns, src, ws) {
     if (lang.code === 'ro' && /[\u015E\u015F\u0162\u0163]/u.test(t)) errors.push(`${ns}: ${k} uses the cedilla ş ţ; Romanian writes the comma-below ș ț (U+0219, U+021B)`);
     // Catalan l·l uses the middle dot U+00B7; the compatibility letters ŀ Ŀ are not used in modern text.
     if (lang.code === 'ca' && /[\u013F\u0140]/u.test(t)) errors.push(`${ns}: ${k} uses ŀ; Catalan writes l·l with the middle dot U+00B7`);
+    // Dutch IJ is the two letters i + j; the compatibility ligatures ĳ Ĳ break search, sorting and the Latin-1 fonts.
+    if (lang.code === 'nl' && /[\u0132\u0133]/u.test(t)) errors.push(`${ns}: ${k} uses the ligature ĳ; Dutch writes IJ as the two letters i + j`);
     const wrongHan = wrongHanForms(t, lang.script);
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
     else if (wrongHan.length) warnings.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified-only characters`);
