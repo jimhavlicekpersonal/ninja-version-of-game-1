@@ -71,6 +71,16 @@
           "displayName": "Pessic de Jade",
           "description": "45 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Snufje Jade",
+          "description": "45 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "En nypa Jade",
+          "description": "45 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "jade_pinch",
@@ -146,6 +156,16 @@
           "displayName": "Bosseta de Jade",
           "description": "100 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Buidel Jade",
+          "description": "100 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Pung med Jade",
+          "description": "100 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "jade_pouch",
@@ -221,6 +241,16 @@
           "displayName": "Sac de Jade",
           "description": "280 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Zak Jade",
+          "description": "280 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Påse med Jade",
+          "description": "280 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "jade_bag",
@@ -296,6 +326,16 @@
           "displayName": "Capsa de Jade",
           "description": "600 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Doos Jade",
+          "description": "600 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Låda med Jade",
+          "description": "600 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "jade_box",
@@ -371,6 +411,16 @@
           "displayName": "Cofre de Jade",
           "description": "1300 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Kist Jade",
+          "description": "1300 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Kista med Jade",
+          "description": "1300 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "jade_chest",
@@ -446,6 +496,16 @@
           "displayName": "Cambra de Jade",
           "description": "3500 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Kluis Jade",
+          "description": "3500 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Valv med Jade",
+          "description": "3500 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "jade_vault",
@@ -521,6 +581,16 @@
           "displayName": "Tresor del Drac de Jade",
           "description": "7500 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Drakenschat aan Jade",
+          "description": "7500 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Drakskatt av Jade",
+          "description": "7500 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "jade_hoard",
@@ -596,6 +666,16 @@
           "displayName": "Pergamí premium",
           "description": "Recorregut premium d'aquesta temporada",
           "locale": "ca"
+        },
+        {
+          "displayName": "Premium-Seizoensrol",
+          "description": "Premiumspoor van dit seizoen",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Premium-Säsongsrulle",
+          "description": "Premiumspår för den här säsongen",
+          "locale": "sv"
         }
       ],
       "productID": "season_scroll",
@@ -671,6 +751,16 @@
           "displayName": "Paquet inicial",
           "description": "Jade i recursos per als clans nous",
           "locale": "ca"
+        },
+        {
+          "displayName": "Startpakket",
+          "description": "Jade en grondstoffen voor nieuwe clanleiders",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Startpaket",
+          "description": "Jade och resurser för nya klanledare",
+          "locale": "sv"
         }
       ],
       "productID": "offer_starter",
@@ -746,6 +836,16 @@
           "displayName": "Lot de l'Artesà",
           "description": "Jade per a un altre Artesà, i recursos",
           "locale": "ca"
+        },
+        {
+          "displayName": "Ambachtsbundel",
+          "description": "Jade voor nog een Ambachtsman, plus grondstoffen",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Hantverkarpaket",
+          "description": "Jade för ännu en Hantverkare, plus resurser",
+          "locale": "sv"
         }
       ],
       "productID": "offer_builder",
@@ -821,6 +921,16 @@
           "displayName": "Subministraments de guerra",
           "description": "Provisions i Jade per a la Guerra d'Aliances",
           "locale": "ca"
+        },
+        {
+          "displayName": "Oorlogsvoorraad",
+          "description": "Proviand en Jade voor de Alliantieoorlog",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Krigsförråd",
+          "description": "Proviant och Jade för Allianskriget",
+          "locale": "sv"
         }
       ],
       "productID": "offer_war_prep",
@@ -896,6 +1006,16 @@
           "displayName": "Kit de reconstrucció",
           "description": "Jade i recursos per reconstruir",
           "locale": "ca"
+        },
+        {
+          "displayName": "Herbouwset",
+          "description": "Jade en grondstoffen om te herbouwen",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Återuppbyggnadspaket",
+          "description": "Jade och resurser för att bygga upp igen",
+          "locale": "sv"
         }
       ],
       "productID": "offer_rebuild",
@@ -971,6 +1091,16 @@
           "displayName": "Sou del Clan",
           "description": "30 pagaments diaris de 12 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "Clantoelage",
+          "description": "30 dagelijkse betalingen van 12 Jade",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Klanstipendium",
+          "description": "30 dagliga utbetalningar på 12 Jade",
+          "locale": "sv"
         }
       ],
       "productID": "clan_stipend",
@@ -1046,6 +1176,16 @@
           "displayName": "Celebració de la Fortalesa",
           "description": "Recursos i Jade per celebrar la nova Fortalesa",
           "locale": "ca"
+        },
+        {
+          "displayName": "Burchtfeest",
+          "description": "Grondstoffen en Jade voor je nieuwe Burcht",
+          "locale": "nl_NL"
+        },
+        {
+          "displayName": "Borgfest",
+          "description": "Resurser och Jade för din nya Borg",
+          "locale": "sv"
         }
       ],
       "productID": "offer_keep",

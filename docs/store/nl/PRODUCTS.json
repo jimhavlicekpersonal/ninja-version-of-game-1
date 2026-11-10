@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "nl",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Snufje Jade",
+      "description": "45 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Buidel Jade",
+      "description": "100 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Zak Jade",
+      "description": "280 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Doos Jade",
+      "description": "600 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Kist Jade",
+      "description": "1300 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Kluis Jade",
+      "description": "3500 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Drakenschat aan Jade",
+      "description": "7500 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Premium-Seizoensrol",
+      "description": "Premiumspoor van dit seizoen",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Startpakket",
+      "description": "Jade en grondstoffen voor nieuwe clanleiders",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Ambachtsbundel",
+      "description": "Jade voor nog een Ambachtsman, plus grondstoffen",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Oorlogsvoorraad",
+      "description": "Proviand en Jade voor de Alliantieoorlog",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Herbouwset",
+      "description": "Jade en grondstoffen om te herbouwen",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Clantoelage",
+      "description": "30 dagelijkse betalingen van 12 Jade",
+      "locale": "nl_NL"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Burchtfeest",
+      "description": "Grondstoffen en Jade voor je nieuwe Burcht",
+      "locale": "nl_NL"
+    }
+  ]
+}

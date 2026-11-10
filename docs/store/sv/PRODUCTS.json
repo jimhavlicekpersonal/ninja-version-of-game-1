@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "sv",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "En nypa Jade",
+      "description": "45 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Pung med Jade",
+      "description": "100 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Påse med Jade",
+      "description": "280 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Låda med Jade",
+      "description": "600 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Kista med Jade",
+      "description": "1300 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Valv med Jade",
+      "description": "3500 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Drakskatt av Jade",
+      "description": "7500 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Premium-Säsongsrulle",
+      "description": "Premiumspår för den här säsongen",
+      "locale": "sv"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Startpaket",
+      "description": "Jade och resurser för nya klanledare",
+      "locale": "sv"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Hantverkarpaket",
+      "description": "Jade för ännu en Hantverkare, plus resurser",
+      "locale": "sv"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Krigsförråd",
+      "description": "Proviant och Jade för Allianskriget",
+      "locale": "sv"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Återuppbyggnadspaket",
+      "description": "Jade och resurser för att bygga upp igen",
+      "locale": "sv"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klanstipendium",
+      "description": "30 dagliga utbetalningar på 12 Jade",
+      "locale": "sv"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Borgfest",
+      "description": "Resurser och Jade för din nya Borg",
+      "locale": "sv"
+    }
+  ]
+}
