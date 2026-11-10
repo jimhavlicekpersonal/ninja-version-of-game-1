@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.th)
 
 # Thai translation
 
-Thai (`th`, script `Thai`) was released together with Korean on 2026-11-10 in commit `RELEASE_COMMIT`, with the instruction and code fixes in `1baa123`. It is the first language written without spaces between words that is not a Han script. It is served to `th`, `th-TH` and `th_TH` devices and covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/th/`, the account-deletion form (`/account/delete?lang=th`), server push text, iOS (`th.lproj`) and Android (`values-th`) resources, StoreKit fixtures (`th`), and listing and product copy in `docs/store/th/`. Terms: `locales/th/TERMS.md`; reviewed warnings: `locales/th/REVIEW.json`.
+Thai (`th`, script `Thai`) was released together with Korean on 2026-11-10 in commit `c150f76`, with the instruction and code fixes in `1baa123`. It is the first language written without spaces between words that is not a Han script. It is served to `th`, `th-TH` and `th_TH` devices and covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/th/`, the account-deletion form (`/account/delete?lang=th`), server push text, iOS (`th.lproj`) and Android (`values-th`) resources, StoreKit fixtures (`th`), and listing and product copy in `docs/store/th/`. Terms: `locales/th/TERMS.md`; reviewed warnings: `locales/th/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Thai speaker has reviewed it**, nor the legal pages.
 

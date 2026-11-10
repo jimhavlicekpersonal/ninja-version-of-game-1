@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ko)
 
 # Korean translation
 
-Korean (`ko`, script `Kore`, written in Hangul only) was released together with Thai on 2026-11-10 in commit `RELEASE_COMMIT`, with the instruction and code fixes in `1baa123`. It is served to `ko`, `ko-KR` and `ko_KR` devices and covers every namespace (`boot` 17, `ui` 151, `data` 669, `messages` 1,869, `pages` 314 = 3,020 entries), the six public pages and PWA manifest under `public/ko/`, the account-deletion form (`/account/delete?lang=ko`), server push text, iOS (`ko.lproj`) and Android (`values-ko`) resources, StoreKit fixtures (`ko`), and listing and product copy in `docs/store/ko/`. Terms: `locales/ko/TERMS.md`; reviewed warnings: `locales/ko/REVIEW.json`.
+Korean (`ko`, script `Kore`, written in Hangul only) was released together with Thai on 2026-11-10 in commit `c150f76`, with the instruction and code fixes in `1baa123`. It is served to `ko`, `ko-KR` and `ko_KR` devices and covers every namespace (`boot` 17, `ui` 151, `data` 669, `messages` 1,869, `pages` 314 = 3,020 entries), the six public pages and PWA manifest under `public/ko/`, the account-deletion form (`/account/delete?lang=ko`), server push text, iOS (`ko.lproj`) and Android (`values-ko`) resources, StoreKit fixtures (`ko`), and listing and product copy in `docs/store/ko/`. Terms: `locales/ko/TERMS.md`; reviewed warnings: `locales/ko/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Korean speaker has reviewed it**, nor the legal pages.
 
