@@ -19,7 +19,7 @@ public pages and PWA manifest under `public/ja/`, the account-deletion form
 StoreKit fixtures (`ja`), and listing and product copy in `docs/store/ja/`. Terms are in
 `locales/ja/TERMS.md`; reviewed warnings in `locales/ja/REVIEW.json`.
 
-The translation is AI-written and validated by the repository checks below. **No native Japanese
+Implemented in commit `949b0da` (2026-11-10), with the instruction fixes in `4c6b0d0`. The translation is AI-written and validated by the repository checks below. **No native Japanese
 speaker has reviewed it**, nor the legal pages. For Japan the legal pages matter more than elsewhere:
 the two statutory pages (特定商取引法に基づく表記, 資金決済法に基づく表示) are required Japanese pages.
 
