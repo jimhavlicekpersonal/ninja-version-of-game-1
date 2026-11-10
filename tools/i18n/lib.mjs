@@ -197,9 +197,14 @@ export function wrongHanForms(text, script) {
 // written-both-ways form 을(를) is allowed.
 const KOREAN_VARIABLE_PARTICLE = /(?:\}|#)(?:을|를|이|가|은|는|과|와|으로|로|이나|나|이랑|랑|아|야|이에요|예요|이야|였|이었)(?![\p{Script=Hangul}(])/u;
 /** A particle whose form depends on the placeholder before it (`{name}을`, `{building}이`, `#가`). */
-export function koreanParticleAfterPlaceholder(text) { return KOREAN_VARIABLE_PARTICLE.test(text); }
-// Modern Korean games write Hangul only: no Hanja, no Japanese kana.
-const NOT_KOREAN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
+// A page's rich-text token that closes written words (`{t0}커뮤니티 규칙{t1}을`) leaves the particle after known text;
+// an empty pair (`{t0}{t1}`, a value not published yet) does not, so only a token right after a letter is dropped.
+export function koreanParticleAfterPlaceholder(text) { return KOREAN_VARIABLE_PARTICLE.test(text.replace(/(?<=[^\s{}])\{t\d+\}/gu, '')); }
+// Modern Korean games write Hangul only: no Hanja, no Japanese kana. A run copied from the English source is a
+// quotation (the Japanese statutory page titles), not a spelling choice.
+const NOT_KOREAN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\u30FC]+/gu;
+/** Han or kana runs in a Korean text that the English does not have. */
+export function notKoreanRuns(text, en = '') { return (text.match(NOT_KOREAN) ?? []).filter(run => !en.includes(run)); }
 // Thai polite particles and first-person pronouns are chosen by the speaker's gender (ครับ/ผม for men, ค่ะ/คะ/ดิฉัน for
 // women). The game, Sensei Hoshi and the bot chat have no gender, so none of them may appear. คะ is matched only as a
 // whole word, since it begins คะแนน (score).
@@ -284,7 +289,7 @@ export function checkWorksheet(lang, ns, src, ws) {
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
     else if (wrongHan.length && lang.script === 'Jpan') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Chinese forms, not Japanese ones`);
     else if (wrongHan.length) warnings.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified-only characters`);
-    if (lang.script === 'Kore' && NOT_KOREAN.test(t)) errors.push(`${ns}: ${k} uses Hanja or kana; Korean is written in Hangul only`);
+    if (lang.script === 'Kore' && notKoreanRuns(t, en).length) errors.push(`${ns}: ${k} uses Hanja or kana; Korean is written in Hangul only`);
     if (lang.script === 'Kore' && koreanParticleAfterPlaceholder(t)) errors.push(`${ns}: ${k} puts a particle that changes with the final sound (을/를, 이/가, 은/는, 과/와, 으로/로…) right after a placeholder; rephrase or use 의, 에, 도, 만 or a colon`);
     if (lang.script === 'Thai' && thaiGenderedWords(t).length) errors.push(`${ns}: ${k} uses ${thaiGenderedWords(t).join(' ')}, which mark the speaker's gender; Thai text in the game is gender-neutral`);
     if (t === en && /\p{L}/u.test(en)) warnings.push(`${ns}: ${k} is identical to English`);
