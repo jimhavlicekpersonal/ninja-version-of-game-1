@@ -304,7 +304,8 @@ export function checkWorksheet(lang, ns, src, ws) {
     const W = w => new RegExp(`(?<!\\p{L})(?:${w})(?!\\p{L})|[äöÄÖ]`, 'iu');
     const nordic = { da: W('igjen|enhet\\p{L}*|kjøp\\p{L}*|etter|hva|ennå|ikkje'), nb: W('nu|igen|enhed\\p{L}*|købe|køb\\p{L}*|efter|hvad|endnu') };
     if (nordic[lang.code]?.test(t)) errors.push(`${ns}: ${k} uses ${lang.code === 'da' ? 'Norwegian or Swedish' : 'Danish or Swedish'} spelling (${t.match(nordic[lang.code])[0]}); write ${lang.code === 'da' ? 'Danish' : 'Norwegian Bokmål'}`);
-    const wrongHan = wrongHanForms(t, lang.script);
+    // A Han or kana run copied from the English (the Japanese statutory page titles) is a quotation, not a spelling choice.
+    const wrongHan = wrongHanForms(t.replace(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\u30FC]+/gu, run => en.includes(run) ? '' : run), lang.script);
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
     else if (wrongHan.length && lang.script === 'Jpan') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Chinese forms, not Japanese ones`);
     else if (wrongHan.length && lang.script === 'Hant') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified or Japanese forms, not Traditional Chinese ones`);
