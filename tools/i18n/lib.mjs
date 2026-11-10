@@ -285,6 +285,10 @@ export function checkWorksheet(lang, ns, src, ws) {
     if (lang.code === 'ca' && /[\u013F\u0140]/u.test(t)) errors.push(`${ns}: ${k} uses ŀ; Catalan writes l·l with the middle dot U+00B7`);
     // Dutch IJ is the two letters i + j; the compatibility ligatures ĳ Ĳ break search, sorting and the Latin-1 fonts.
     if (lang.code === 'nl' && /[\u0132\u0133]/u.test(t)) errors.push(`${ns}: ${k} uses the ligature ĳ; Dutch writes IJ as the two letters i + j`);
+    // Danish and Norwegian Bokmål are close but separate: refuse the other language's commonest spellings and Swedish ä ö.
+    const W = w => new RegExp(`(?<!\\p{L})(?:${w})(?!\\p{L})|[äöÄÖ]`, 'iu');
+    const nordic = { da: W('igjen|enhet\\p{L}*|kjøp\\p{L}*|etter|hva|ennå|ikkje'), nb: W('nu|igen|enhed\\p{L}*|købe|køb\\p{L}*|efter|hvad|endnu') };
+    if (nordic[lang.code]?.test(t)) errors.push(`${ns}: ${k} uses ${lang.code === 'da' ? 'Norwegian or Swedish' : 'Danish or Swedish'} spelling (${t.match(nordic[lang.code])[0]}); write ${lang.code === 'da' ? 'Danish' : 'Norwegian Bokmål'}`);
     const wrongHan = wrongHanForms(t, lang.script);
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
     else if (wrongHan.length && lang.script === 'Jpan') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Chinese forms, not Japanese ones`);

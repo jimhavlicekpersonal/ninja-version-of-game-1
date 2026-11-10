@@ -88,6 +88,16 @@
           "locale": "sv"
         },
         {
+          "displayName": "En knivspids Jade",
+          "description": "45 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "En klype Jade",
+          "description": "45 Jade",
+          "locale": "nb"
+        },
+        {
           "displayName": "비취 한 꼬집",
           "description": "비취 45개",
           "locale": "ko"
@@ -186,6 +196,16 @@
           "displayName": "Pung med Jade",
           "description": "100 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Pung med Jade",
+          "description": "100 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Pung med Jade",
+          "description": "100 Jade",
+          "locale": "nb"
         },
         {
           "displayName": "비취 주머니",
@@ -288,6 +308,16 @@
           "locale": "sv"
         },
         {
+          "displayName": "Pose med Jade",
+          "description": "280 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Pose med Jade",
+          "description": "280 Jade",
+          "locale": "nb"
+        },
+        {
           "displayName": "비취 자루",
           "description": "비취 280개",
           "locale": "ko"
@@ -386,6 +416,16 @@
           "displayName": "Låda med Jade",
           "description": "600 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Æske med Jade",
+          "description": "600 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Eske med Jade",
+          "description": "600 Jade",
+          "locale": "nb"
         },
         {
           "displayName": "비취 상자",
@@ -488,6 +528,16 @@
           "locale": "sv"
         },
         {
+          "displayName": "Kiste med Jade",
+          "description": "1300 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Kiste med Jade",
+          "description": "1300 Jade",
+          "locale": "nb"
+        },
+        {
           "displayName": "비취 궤짝",
           "description": "비취 1300개",
           "locale": "ko"
@@ -586,6 +636,16 @@
           "displayName": "Valv med Jade",
           "description": "3500 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Boks med Jade",
+          "description": "3500 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Hvelv med Jade",
+          "description": "3500 Jade",
+          "locale": "nb"
         },
         {
           "displayName": "비취 금고",
@@ -688,6 +748,16 @@
           "locale": "sv"
         },
         {
+          "displayName": "Dragens skat af Jade",
+          "description": "7500 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Drageskatt av Jade",
+          "description": "7500 Jade",
+          "locale": "nb"
+        },
+        {
           "displayName": "용의 비취 보물",
           "description": "비취 7500개",
           "locale": "ko"
@@ -786,6 +856,16 @@
           "displayName": "Premium-Säsongsrulle",
           "description": "Premiumspår för den här säsongen",
           "locale": "sv"
+        },
+        {
+          "displayName": "Premium-Sæsonrulle",
+          "description": "Premiumspor for denne sæson",
+          "locale": "da"
+        },
+        {
+          "displayName": "Premium-Sesongrull",
+          "description": "Premiumspor for denne sesongen",
+          "locale": "nb"
         },
         {
           "displayName": "프리미엄 시즌 두루마리",
@@ -888,6 +968,16 @@
           "locale": "sv"
         },
         {
+          "displayName": "Startpakke",
+          "description": "Jade og ressourcer til nye klanledere",
+          "locale": "da"
+        },
+        {
+          "displayName": "Startpakke",
+          "description": "Jade og ressurser for nye klanledere",
+          "locale": "nb"
+        },
+        {
           "displayName": "스타터 팩",
           "description": "새 가문 지도자를 위한 비취와 자원",
           "locale": "ko"
@@ -986,6 +1076,16 @@
           "displayName": "Hantverkarpaket",
           "description": "Jade för ännu en Hantverkare, plus resurser",
           "locale": "sv"
+        },
+        {
+          "displayName": "Håndværkerpakke",
+          "description": "Jade til endnu en Håndværker, plus ressourcer",
+          "locale": "da"
+        },
+        {
+          "displayName": "Håndverkerpakke",
+          "description": "Jade til enda en Håndverker, pluss ressurser",
+          "locale": "nb"
         },
         {
           "displayName": "장인 꾸러미",
@@ -1088,6 +1188,16 @@
           "locale": "sv"
         },
         {
+          "displayName": "Krigsforsyninger",
+          "description": "Proviant og Jade til Alliancekrigen",
+          "locale": "da"
+        },
+        {
+          "displayName": "Krigsforsyninger",
+          "description": "Proviant og Jade til Alliansekrigen",
+          "locale": "nb"
+        },
+        {
           "displayName": "전쟁 보급품",
           "description": "동맹전을 위한 군량과 비취",
           "locale": "ko"
@@ -1186,6 +1296,16 @@
           "displayName": "Återuppbyggnadspaket",
           "description": "Jade och resurser för att bygga upp igen",
           "locale": "sv"
+        },
+        {
+          "displayName": "Genopbygningssæt",
+          "description": "Jade og ressourcer til genopbygning",
+          "locale": "da"
+        },
+        {
+          "displayName": "Gjenoppbyggingssett",
+          "description": "Jade og ressurser til gjenoppbygging",
+          "locale": "nb"
         },
         {
           "displayName": "재건 키트",
@@ -1288,6 +1408,16 @@
           "locale": "sv"
         },
         {
+          "displayName": "Klanstipendium",
+          "description": "30 daglige udbetalinger på 12 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Klanstipend",
+          "description": "30 daglige utbetalinger på 12 Jade",
+          "locale": "nb"
+        },
+        {
           "displayName": "가문 녹봉",
           "description": "비취 12개씩 매일 30회 지급",
           "locale": "ko"
@@ -1386,6 +1516,16 @@
           "displayName": "Borgfest",
           "description": "Resurser och Jade för din nya Borg",
           "locale": "sv"
+        },
+        {
+          "displayName": "Borgfest",
+          "description": "Ressourcer og Jade til din nye Borg",
+          "locale": "da"
+        },
+        {
+          "displayName": "Borgfest",
+          "description": "Ressurser og Jade til den nye Borgen din",
+          "locale": "nb"
         },
         {
           "displayName": "본성 축하",

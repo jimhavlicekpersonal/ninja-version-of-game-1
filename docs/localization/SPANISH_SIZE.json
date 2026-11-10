@@ -135,16 +135,16 @@
           },
           {
             "path": "android/app/src/main/res/xml/locales_config.xml",
-            "installedUtf8": 634,
-            "gzip": 192,
-            "brotli": 146,
-            "deflate": 174
+            "installedUtf8": 700,
+            "gzip": 198,
+            "brotli": 150,
+            "deflate": 180
           }
         ],
-        "installedUtf8": 273784,
-        "gzipSum": 92619,
-        "brotliSum": 77962,
-        "zipArchive": 93953,
+        "installedUtf8": 273850,
+        "gzipSum": 92625,
+        "brotliSum": 77966,
+        "zipArchive": 93959,
         "extraFontBytes": 0,
         "excludes": [
           "Shared English fallback and localization code (measured in built JS separately)",
@@ -543,32 +543,92 @@
           "translated": 151
         }
       }
+    },
+    "da": {
+      "ready": true,
+      "strings": 2706,
+      "installedUtf8": 211480,
+      "gzip": 71014,
+      "brotli": 60674,
+      "zipDeflatePayload": 70996,
+      "namespaces": {
+        "boot": {
+          "total": 17,
+          "translated": 17
+        },
+        "data": {
+          "total": 669,
+          "translated": 669
+        },
+        "messages": {
+          "total": 1869,
+          "translated": 1869
+        },
+        "pages": {
+          "total": 314,
+          "translated": 314
+        },
+        "ui": {
+          "total": 151,
+          "translated": 151
+        }
+      }
+    },
+    "nb": {
+      "ready": true,
+      "strings": 2706,
+      "installedUtf8": 211786,
+      "gzip": 70959,
+      "brotli": 60625,
+      "zipDeflatePayload": 70941,
+      "namespaces": {
+        "boot": {
+          "total": 17,
+          "translated": 17
+        },
+        "data": {
+          "total": 669,
+          "translated": 669
+        },
+        "messages": {
+          "total": 1869,
+          "translated": 1869
+        },
+        "pages": {
+          "total": 314,
+          "translated": 314
+        },
+        "ui": {
+          "total": 151,
+          "translated": 151
+        }
+      }
     }
   },
   "projections": {
     "50_languages_at_1x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 13689200,
-      "gzip": 4630950,
-      "brotli": 3898100,
-      "zipArchive": 4697650
+      "installedUtf8": 13692500,
+      "gzip": 4631250,
+      "brotli": 3898300,
+      "zipArchive": 4697950
     },
     "50_languages_at_1.5x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 20533800,
-      "gzip": 6946425,
-      "brotli": 5847150,
-      "zipArchive": 7046475
+      "installedUtf8": 20538750,
+      "gzip": 6946875,
+      "brotli": 5847450,
+      "zipArchive": 7046925
     },
     "50_languages_at_2x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 27378400,
-      "gzip": 9261900,
-      "brotli": 7796200,
-      "zipArchive": 9395300
+      "installedUtf8": 27385000,
+      "gzip": 9262500,
+      "brotli": 7796600,
+      "zipArchive": 9395900
     }
   },
   "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",
