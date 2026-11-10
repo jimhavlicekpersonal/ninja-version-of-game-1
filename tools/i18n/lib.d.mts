@@ -33,5 +33,8 @@ export function wrongHanForms(text: string, script: string): string[];
 export function koreanParticleAfterPlaceholder(text: string): boolean;
 export function notKoreanRuns(text: string, en?: string): string[];
 export function thaiGenderedWords(text: string): string[];
+export function mainlandTerms(text: string): string[];
+export function vietnameseGendered(text: string): string[];
+export function oldStyleTones(text: string): string[];
 export function checkWorksheet(lang: Language, ns: string, src: Record<string, string>, ws: unknown): { total: number; done: number; errors: string[]; warnings: string[]; translated: string[] };
 export function checkLanguage(lang: Language): { code: string; total: number; done: number; errors: string[]; warnings: string[] };

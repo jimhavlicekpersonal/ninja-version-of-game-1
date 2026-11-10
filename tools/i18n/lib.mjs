@@ -182,7 +182,13 @@ const SCRIPT = {
 // them apart. These common characters are never Simplified Chinese (Traditional forms, then Japanese
 // shinjitai forms); the second list is common Simplified-only characters that do not belong in zh-Hant.
 const NOT_SIMPLIFIED = /[們這個為會來時說對發點開戰鬥歸據門問題現實際與從長幾無過還進選擇運動電話國語學習買賣讀寫聽見觀覺關係網絡經驗圖書館體號碼頁麼東車馬鳥魚龍風飛雲氣變處當將應該給讓認識記錄設計劃級線結術藝園區隊員幣糧倉庫壘劍獎勵寶榮譽聯萬億裡錢銀鐵銅鍛煉練戦気剣図楽帰黒円売読単対発権歩済効険検験駅様拡広変恵悪営労弾隠鉄両囲亜仏価桜蔵総]/u;
-const NOT_TRADITIONAL = /[们这个为会来时说对发点开战归据门问题现实际与从长无过还进选择运动电话国语学习买卖读写听见观觉关网络经验图书]/u;
+// zh-Hant also refuses the Japanese shinjitai forms (戦, 気, 剣, 図…), which a Japanese-trained font or IME can slip in.
+const NOT_TRADITIONAL = /[们这个为会来时说对发点开战归据门问题现实际与从长无过还进选择运动电话国语学习买卖读写听见观觉关网络经验图书级线结术艺园区队员币仓库垒剑奖励宝荣誉联万亿钱银铁铜锻炼练戦気剣図楽帰黒円売読単対発権歩済効険検験駅様拡広変恵悪営労弾隠鉄両囲亜仏価桜蔵総]/u;
+// Mainland vocabulary in Traditional characters is what a character conversion of zh-Hans produces; Taiwan and Hong Kong
+// players read it as foreign (視頻 → 影片, 服務器 → 伺服器, 網絡 → 網路, 默認 → 預設, 登錄 → 登入, 設置 → 設定).
+const MAINLAND_TERMS = /視頻|服務器|默認|軟件|硬件|屏幕|鼠標|網絡|賬號|賬戶|登錄|激活|質量|信息|菜單|設置|數據庫|寬帶/gu;
+/** Mainland-only words in a Traditional Chinese text. */
+export function mainlandTerms(text) { return [...new Set(text.match(MAINLAND_TERMS) ?? [])]; }
 // Common Simplified-only and Traditional-only forms that Japanese never uses (Japanese writes 们 as たち,
 // 战/戰 as 戦, 图/圖 as 図, 气/氣 as 気). Characters Japanese shares with either (会 来 点 与 国 学 写 区 万 宝 時 問題 電話 網) are left out.
 const NOT_JAPANESE = /[们这个为时说对发开战归门问题现实际从长无过还进选择运动电话语习买卖读听见观觉关网络经验图书级线结术艺园队员币仓库垒剑奖荣联亿钱银铁铜锻炼练們這戰鬥點圖氣劍寶獎體樂歸黑賣讀對發權區處應變當將聯萬錢鐵與從學國會來說經驗觀覺關]/u;
@@ -211,6 +217,15 @@ export function notKoreanRuns(text, en = '') { return (text.match(NOT_KOREAN) ??
 const THAI_GENDERED = /ครับ|ค่ะ|ดิฉัน|ผม(?!วด)|คะ(?![\p{Script=Thai}])/u;
 /** A Thai word that marks the speaker as a man or a woman. */
 export function thaiGenderedWords(text) { return [...new Set(text.match(new RegExp(THAI_GENDERED.source, 'gu')) ?? [])]; }
+
+// Vietnamese third-person pronouns are kinship words that state gender and age (anh ấy, cô ấy, chị ấy, ông ấy, bà ấy, em ấy);
+// the game knows neither for a player or a {name}.
+const VI_GENDERED = /(?<!\p{L})(?:anh|cô|chị|ông|bà|em|chú|cậu)\s+ấy(?!\p{L})/giu;
+export function vietnameseGendered(text) { return [...new Set(text.match(VI_GENDERED) ?? [])]; }
+// Old-style tone placement on oa, oe, uy at the end of a syllable (hoà, khoẻ, thuỷ); modern spelling puts it on the first
+// vowel (hòa, khỏe, thủy). qu + y is a consonant + vowel, so quý is right either way.
+const VI_OLD_TONES = /(?<!q)(?:o[àáảãạ]|o[èéẻẽẹ]|u[ỳýỷỹỵ])(?!\p{L})/giu;
+export function oldStyleTones(text) { return [...new Set(text.normalize('NFC').match(VI_OLD_TONES) ?? [])]; }
 
 const DENSE = new Set(['Hans', 'Hant', 'Jpan', 'Kore']);
 /** Share of letters (outside placeholders) written in the expected script. */
@@ -292,7 +307,12 @@ export function checkWorksheet(lang, ns, src, ws) {
     const wrongHan = wrongHanForms(t, lang.script);
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
     else if (wrongHan.length && lang.script === 'Jpan') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Chinese forms, not Japanese ones`);
-    else if (wrongHan.length) warnings.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified-only characters`);
+    else if (wrongHan.length && lang.script === 'Hant') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified or Japanese forms, not Traditional Chinese ones`);
+    if (lang.script === 'Hant' && mainlandTerms(t).length) errors.push(`${ns}: ${k} uses mainland vocabulary (${mainlandTerms(t).join(' ')}); write the Taiwan word (影片, 伺服器, 網路, 預設, 登入, 設定, 訊息…)`);
+    // 妳 is the feminine "you" in Taiwan; the game does not know the player's gender.
+    if (lang.script === 'Hant' && /[妳她]/u.test(t)) errors.push(`${ns}: ${k} uses 妳 or 她; the player's gender is unknown (use 你, 對方 or the name)`);
+    if (lang.code === 'vi' && vietnameseGendered(t).length) errors.push(`${ns}: ${k} uses ${vietnameseGendered(t).join(', ')}, which name a gender and an age; use bạn, người chơi, đối thủ or the name`);
+    if (lang.code === 'vi' && oldStyleTones(t).length) errors.push(`${ns}: ${k} places the tone the old way (${oldStyleTones(t).join(', ')}); write the modern form (hòa, khỏe, thủy)`);
     if (lang.script === 'Kore' && notKoreanRuns(t, en).length) errors.push(`${ns}: ${k} uses Hanja or kana; Korean is written in Hangul only`);
     if (lang.script === 'Kore' && koreanParticleAfterPlaceholder(t)) errors.push(`${ns}: ${k} puts a particle that changes with the final sound (을/를, 이/가, 은/는, 과/와, 으로/로…) right after a placeholder; rephrase or use 의, 에, 도, 만 or a colon`);
     if (lang.script === 'Thai' && thaiGenderedWords(t).length) errors.push(`${ns}: ${k} uses ${thaiGenderedWords(t).join(' ')}, which mark the speaker's gender; Thai text in the game is gender-neutral`);

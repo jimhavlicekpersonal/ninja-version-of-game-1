@@ -633,7 +633,7 @@
   },
   "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",
   "builtJavaScript": {
-    "phase": "after_client_build",
+    "phase": "existing_dist_before_build",
     "files": [
       {
         "path": "esm-Do6J5Xt5.js",
