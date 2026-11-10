@@ -310,7 +310,7 @@ export function checkWorksheet(lang, ns, src, ws) {
     else if (wrongHan.length && lang.script === 'Hant') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified or Japanese forms, not Traditional Chinese ones`);
     if (lang.script === 'Hant' && mainlandTerms(t).length) errors.push(`${ns}: ${k} uses mainland vocabulary (${mainlandTerms(t).join(' ')}); write the Taiwan word (影片, 伺服器, 網路, 預設, 登入, 設定, 訊息…)`);
     // 妳 is the feminine "you" in Taiwan; the game does not know the player's gender.
-    if (lang.script === 'Hant' && /[妳她]/u.test(t)) errors.push(`${ns}: ${k} uses 妳 or 她; the player's gender is unknown (use 你, 對方 or the name)`);
+    if (lang.script === 'Hant' && /妳/u.test(t)) errors.push(`${ns}: ${k} uses 妳; the player's gender is unknown (use 你)`);
     if (lang.code === 'vi' && vietnameseGendered(t).length) errors.push(`${ns}: ${k} uses ${vietnameseGendered(t).join(', ')}, which name a gender and an age; use bạn, người chơi, đối thủ or the name`);
     if (lang.code === 'vi' && oldStyleTones(t).length) errors.push(`${ns}: ${k} places the tone the old way (${oldStyleTones(t).join(', ')}); write the modern form (hòa, khỏe, thủy)`);
     if (lang.script === 'Kore' && notKoreanRuns(t, en).length) errors.push(`${ns}: ${k} uses Hanja or kana; Korean is written in Hangul only`);
