@@ -39,13 +39,16 @@ const roCount = n => `${n}${new Intl.PluralRules('ro').select(n) === 'other' ? '
 const caData = read('locales/ca/data.json');
 const shortCatalan = {starter_pack: 'Jade i recursos per als clans nous', builder_pack: 'Jade per a un altre Artesà, i recursos', war_prep_pack: "Provisions i Jade per a la Guerra d'Aliances", rebuild_pack: 'Jade i recursos per reconstruir', keep_pack: 'Recursos i Jade per celebrar la nova Fortalesa'};
 const catalan = key => caData[key]?.text || '';
+const jaData = read('locales/ja/data.json');
+const shortJapanese = {starter_pack: '新しい頭領のための翡翠と資源', builder_pack: '職人をもう1人雇える翡翠と資源', war_prep_pack: '同盟戦のための兵糧と翡翠', rebuild_pack: '再建のための翡翠と資源', keep_pack: '天守閣の強化を祝う資源と翡翠'};
+const japanese = key => jaData[key]?.text || '';
 const nlData = read('locales/nl/data.json');
 const shortDutch = {starter_pack: 'Jade en grondstoffen voor nieuwe clanleiders', builder_pack: 'Jade voor nog een Ambachtsman, plus grondstoffen', war_prep_pack: 'Proviand en Jade voor de Alliantieoorlog', rebuild_pack: 'Jade en grondstoffen om te herbouwen', keep_pack: 'Grondstoffen en Jade voor je nieuwe Burcht'};
 const dutch = key => nlData[key]?.text || '';
 const svData = read('locales/sv/data.json');
 const shortSwedish = {starter_pack: 'Jade och resurser för nya klanledare', builder_pack: 'Jade för ännu en Hantverkare, plus resurser', war_prep_pack: 'Proviant och Jade för Allianskriget', rebuild_pack: 'Jade och resurser för att bygga upp igen', keep_pack: 'Resurser och Jade för din nya Borg'};
 const swedish = key => svData[key]?.text || '';
-// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Dutch or Swedish to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound or a Chinese word, so overlong text fails here instead.
+// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch or Swedish to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound or a Chinese word, so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -117,6 +120,12 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? catalan(`store.packs.${gameId}.name`) : offer ? catalan(`offers.rules.${offer.id}.title`) : stipend ? catalan('store.stipend.name') : isPass ? 'Pergamí premium' : name, 30, 'Catalan'),
         description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortCatalan[offer.id] || catalan(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagaments diaris de ${stipend.jadePerPayment} Jade` : "Recorregut premium d'aquesta temporada", 55, 'Catalan'),
         locale: 'ca',
+      },
+      // Japanese (the App Store's Japanese localization).
+      {
+        displayName: clip(pack ? japanese(`store.packs.${gameId}.name`) : offer ? japanese(`offers.rules.${offer.id}.title`) : stipend ? japanese('store.stipend.name') : isPass ? `プレミアム${japanese('pass.name')}` : name, 30, 'Japanese'),
+        description: clip(pack ? `翡翠${pack.moonstones}個` : offer ? (shortJapanese[offer.id] || japanese(`offers.rules.${offer.id}.description`)) : stipend ? `翡翠${stipend.jadePerPayment}個を毎日1回、全${stipend.payments}回` : '今シーズンのプレミアム枠', 55, 'Japanese'),
+        locale: 'ja',
       },
       // Dutch (the App Store's one Dutch localization), also shown in Belgium.
       {

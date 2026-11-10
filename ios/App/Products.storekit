@@ -73,6 +73,11 @@
           "locale": "ca"
         },
         {
+          "displayName": "ひとつまみの翡翠",
+          "description": "翡翠45個",
+          "locale": "ja"
+        },
+        {
           "displayName": "Snufje Jade",
           "description": "45 Jade",
           "locale": "nl_NL"
@@ -156,6 +161,11 @@
           "displayName": "Bosseta de Jade",
           "description": "100 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "翡翠の小袋",
+          "description": "翡翠100個",
+          "locale": "ja"
         },
         {
           "displayName": "Buidel Jade",
@@ -243,6 +253,11 @@
           "locale": "ca"
         },
         {
+          "displayName": "翡翠の袋",
+          "description": "翡翠280個",
+          "locale": "ja"
+        },
+        {
           "displayName": "Zak Jade",
           "description": "280 Jade",
           "locale": "nl_NL"
@@ -326,6 +341,11 @@
           "displayName": "Capsa de Jade",
           "description": "600 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "翡翠の箱",
+          "description": "翡翠600個",
+          "locale": "ja"
         },
         {
           "displayName": "Doos Jade",
@@ -413,6 +433,11 @@
           "locale": "ca"
         },
         {
+          "displayName": "翡翠の宝箱",
+          "description": "翡翠1300個",
+          "locale": "ja"
+        },
+        {
           "displayName": "Kist Jade",
           "description": "1300 Jade",
           "locale": "nl_NL"
@@ -496,6 +521,11 @@
           "displayName": "Cambra de Jade",
           "description": "3500 Jade",
           "locale": "ca"
+        },
+        {
+          "displayName": "翡翠の蔵",
+          "description": "翡翠3500個",
+          "locale": "ja"
         },
         {
           "displayName": "Kluis Jade",
@@ -583,6 +613,11 @@
           "locale": "ca"
         },
         {
+          "displayName": "龍の翡翠財宝",
+          "description": "翡翠7500個",
+          "locale": "ja"
+        },
+        {
           "displayName": "Drakenschat aan Jade",
           "description": "7500 Jade",
           "locale": "nl_NL"
@@ -666,6 +701,11 @@
           "displayName": "Pergamí premium",
           "description": "Recorregut premium d'aquesta temporada",
           "locale": "ca"
+        },
+        {
+          "displayName": "プレミアムシーズン巻物",
+          "description": "今シーズンのプレミアム枠",
+          "locale": "ja"
         },
         {
           "displayName": "Premium-Seizoensrol",
@@ -753,6 +793,11 @@
           "locale": "ca"
         },
         {
+          "displayName": "スターターパック",
+          "description": "新しい頭領のための翡翠と資源",
+          "locale": "ja"
+        },
+        {
           "displayName": "Startpakket",
           "description": "Jade en grondstoffen voor nieuwe clanleiders",
           "locale": "nl_NL"
@@ -836,6 +881,11 @@
           "displayName": "Lot de l'Artesà",
           "description": "Jade per a un altre Artesà, i recursos",
           "locale": "ca"
+        },
+        {
+          "displayName": "職人セット",
+          "description": "職人をもう1人雇える翡翠と資源",
+          "locale": "ja"
         },
         {
           "displayName": "Ambachtsbundel",
@@ -923,6 +973,11 @@
           "locale": "ca"
         },
         {
+          "displayName": "戦の備え",
+          "description": "同盟戦のための兵糧と翡翠",
+          "locale": "ja"
+        },
+        {
           "displayName": "Oorlogsvoorraad",
           "description": "Proviand en Jade voor de Alliantieoorlog",
           "locale": "nl_NL"
@@ -1006,6 +1061,11 @@
           "displayName": "Kit de reconstrucció",
           "description": "Jade i recursos per reconstruir",
           "locale": "ca"
+        },
+        {
+          "displayName": "再建セット",
+          "description": "再建のための翡翠と資源",
+          "locale": "ja"
         },
         {
           "displayName": "Herbouwset",
@@ -1093,6 +1153,11 @@
           "locale": "ca"
         },
         {
+          "displayName": "一族の俸禄",
+          "description": "翡翠12個を毎日1回、全30回",
+          "locale": "ja"
+        },
+        {
           "displayName": "Clantoelage",
           "description": "30 dagelijkse betalingen van 12 Jade",
           "locale": "nl_NL"
@@ -1176,6 +1241,11 @@
           "displayName": "Celebració de la Fortalesa",
           "description": "Recursos i Jade per celebrar la nova Fortalesa",
           "locale": "ca"
+        },
+        {
+          "displayName": "天守閣の祝い",
+          "description": "天守閣の強化を祝う資源と翡翠",
+          "locale": "ja"
         },
         {
           "displayName": "Burchtfeest",

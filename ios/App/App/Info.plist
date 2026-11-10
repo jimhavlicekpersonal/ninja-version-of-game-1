@@ -7,7 +7,7 @@
   <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleLocalizations</key>
-	<array><string>en</string><string>es</string><string>hi</string><string>pt</string><string>de</string><string>fr</string><string>it</string><string>zh-Hans</string><string>ro</string><string>ca</string><string>nl</string><string>sv</string></array>
+	<array><string>en</string><string>es</string><string>hi</string><string>pt</string><string>de</string><string>fr</string><string>it</string><string>zh-Hans</string><string>ro</string><string>ca</string><string>ja</string><string>nl</string><string>sv</string></array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>

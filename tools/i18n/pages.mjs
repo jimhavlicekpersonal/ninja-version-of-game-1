@@ -15,6 +15,7 @@ const ACCOUNT_FAILURE = {
   'zh-Hans': '请求没有发送成功。请检查你填写的信息和网络连接，然后重试。',
   ro: 'Cererea nu a putut fi trimisă. Verifică datele și conexiunea și încearcă din nou.',
   ca: 'No s’ha pogut enviar la sol·licitud. Comprova les dades i la connexió i torna-ho a provar.',
+  ja: 'リクエストを送信できませんでした。入力内容と接続を確認して、もう一度お試しください。',
   nl: 'Het verzoek kon niet worden verstuurd. Controleer je gegevens en je verbinding en probeer het opnieuw.',
   sv: 'Begäran kunde inte skickas. Kontrollera uppgifterna och anslutningen och försök igen.',
 };

@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ja",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "ひとつまみの翡翠",
+      "description": "翡翠45個",
+      "locale": "ja"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "翡翠の小袋",
+      "description": "翡翠100個",
+      "locale": "ja"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "翡翠の袋",
+      "description": "翡翠280個",
+      "locale": "ja"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "翡翠の箱",
+      "description": "翡翠600個",
+      "locale": "ja"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "翡翠の宝箱",
+      "description": "翡翠1300個",
+      "locale": "ja"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "翡翠の蔵",
+      "description": "翡翠3500個",
+      "locale": "ja"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "龍の翡翠財宝",
+      "description": "翡翠7500個",
+      "locale": "ja"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "プレミアムシーズン巻物",
+      "description": "今シーズンのプレミアム枠",
+      "locale": "ja"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "スターターパック",
+      "description": "新しい頭領のための翡翠と資源",
+      "locale": "ja"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "職人セット",
+      "description": "職人をもう1人雇える翡翠と資源",
+      "locale": "ja"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "戦の備え",
+      "description": "同盟戦のための兵糧と翡翠",
+      "locale": "ja"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "再建セット",
+      "description": "再建のための翡翠と資源",
+      "locale": "ja"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "一族の俸禄",
+      "description": "翡翠12個を毎日1回、全30回",
+      "locale": "ja"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "天守閣の祝い",
+      "description": "天守閣の強化を祝う資源と翡翠",
+      "locale": "ja"
+    }
+  ]
+}

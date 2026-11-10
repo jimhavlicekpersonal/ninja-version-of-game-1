@@ -40,7 +40,7 @@ Dutch letters (é ë ï ö) are inside the Latin-1 subsets of the bundled fonts,
 ## Validation
 
 - `npm run i18n:check -- nl`: no errors; English-identical entries reviewed in `REVIEW.json` (Japanese names, brands, parameter-only templates, script names and words Dutch uses as they are). The length warnings are the Japanese statutory titles.
-- `tests/locales/dutch.test.ts`: catalog complete and ready, device choice, numbers, one/other, IJ (and the check refusing ĳ), compound names, nothing attached to a placeholder, unchanged canonical data, pages, account form and push text. `npm test` passes (153 files).
+- `tests/locales/dutch.test.ts`: catalog complete and ready, device choice, numbers, one/other, IJ (and the check refusing ĳ), compound names, nothing attached to a placeholder, unchanged canonical data, pages, account form and push text. `npm test` passes (155 files, after merging Japanese).
 - Built client in Chromium (`nl-BE`, scratch copy of `tools/i18n/smoke.mjs`): all 12 panels and tabs with no untranslated markers or page errors; the Army action buttons do not overflow; the bottom bar fits and Build opens at 320, 360, 390, 568 and 844 px; the scout card shows no English rival names; only the Dutch pack is fetched and cached; offline reload stays in Dutch; switching to English keeps every building's identity. The synthetic failed-switch step could not be reproduced (the pack was still served from the service-worker cache, so the switch succeeded), as in the Romanian run; the Swedish run covered it. Emulation is not physical-device evidence.
 
 ## Remaining before release
