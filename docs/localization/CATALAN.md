@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ca)
 
 # Catalan translation
 
-Catalan (`ca`) was released together with Romanian on 2026-11-10 (commit recorded in [ROMANIAN.md](ROMANIAN.md)). It is written in standard central Catalan with *tu*, also in the legal pages, and served to `ca-ES`, `ca-AD`, `ca-FR` and `ca-ES-valencia` devices; a device that ranks Spanish above Catalan keeps Spanish. It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/ca/`, the account-deletion form (`/account/delete?lang=ca`), server push text, iOS (`ca.lproj`) and Android (`values-ca`) resources, StoreKit fixtures for `ca`, and listing and product copy in `docs/store/ca/`. Terms: `locales/ca/TERMS.md`; reviewed warnings: `locales/ca/REVIEW.json`.
+Catalan (`ca`) was released together with Romanian on 2026-11-10 in commit `cc64cdf` ([ROMANIAN.md](ROMANIAN.md)). It is written in standard central Catalan with *tu*, also in the legal pages, and served to `ca-ES`, `ca-AD`, `ca-FR` and `ca-ES-valencia` devices; a device that ranks Spanish above Catalan keeps Spanish. It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/ca/`, the account-deletion form (`/account/delete?lang=ca`), server push text, iOS (`ca.lproj`) and Android (`values-ca`) resources, StoreKit fixtures for `ca`, and listing and product copy in `docs/store/ca/`. Terms: `locales/ca/TERMS.md`; reviewed warnings: `locales/ca/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Catalan speaker has reviewed it**, nor the legal pages.
 

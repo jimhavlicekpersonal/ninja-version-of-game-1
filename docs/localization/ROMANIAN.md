@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ro)
 
 # Romanian translation
 
-Romanian (`ro`) was released together with Catalan on 2026-11-10 (commit recorded below). It is written in standard Romanian with *tu*, also in the legal pages, and served to `ro-RO` and `ro-MD` devices (and the old `mo` code). It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/ro/`, the account-deletion form (`/account/delete?lang=ro`), server push text, iOS (`ro.lproj`) and Android (`values-ro`) resources, StoreKit fixtures for `ro`, and listing and product copy in `docs/store/ro/`. Terms: `locales/ro/TERMS.md`; reviewed warnings: `locales/ro/REVIEW.json`.
+Romanian (`ro`) was released together with Catalan on 2026-11-10 in commit `cc64cdf`. It is written in standard Romanian with *tu*, also in the legal pages, and served to `ro-RO` and `ro-MD` devices (and the old `mo` code). It covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/ro/`, the account-deletion form (`/account/delete?lang=ro`), server push text, iOS (`ro.lproj`) and Android (`values-ro`) resources, StoreKit fixtures for `ro`, and listing and product copy in `docs/store/ro/`. Terms: `locales/ro/TERMS.md`; reviewed warnings: `locales/ro/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Romanian speaker has reviewed it**, nor the legal pages.
 
