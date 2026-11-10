@@ -48,7 +48,13 @@ const dutch = key => nlData[key]?.text || '';
 const svData = read('locales/sv/data.json');
 const shortSwedish = {starter_pack: 'Jade och resurser för nya klanledare', builder_pack: 'Jade för ännu en Hantverkare, plus resurser', war_prep_pack: 'Proviant och Jade för Allianskriget', rebuild_pack: 'Jade och resurser för att bygga upp igen', keep_pack: 'Resurser och Jade för din nya Borg'};
 const swedish = key => svData[key]?.text || '';
-// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch or Swedish to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound or a Chinese word, so overlong text fails here instead.
+const koData = read('locales/ko/data.json');
+const shortKorean = {starter_pack: '새 가문 지도자를 위한 비취와 자원', builder_pack: '장인 한 명을 더 고용할 비취와 자원', war_prep_pack: '동맹전을 위한 군량과 비취', rebuild_pack: '재건을 위한 비취와 자원', keep_pack: '새 본성 레벨을 위한 자원과 비취'};
+const korean = key => koData[key]?.text || '';
+const thData = read('locales/th/data.json');
+const shortThai = {starter_pack: 'หยกและทรัพยากรสำหรับผู้นำตระกูลมือใหม่', builder_pack: 'หยกสำหรับจ้างช่างเพิ่ม พร้อมทรัพยากร', war_prep_pack: 'เสบียงและหยกสำหรับสงครามพันธมิตร', rebuild_pack: 'หยกและทรัพยากรสำหรับสร้างใหม่', keep_pack: 'ทรัพยากรและหยกสำหรับป้อมเลเวลใหม่'};
+const thai = key => thData[key]?.text || '';
+// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch, Swedish, Korean or Thai to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound, a Chinese word or a Thai syllable (a vowel or tone mark cut from its consonant), so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -138,6 +144,18 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? swedish(`store.packs.${gameId}.name`) : offer ? swedish(`offers.rules.${offer.id}.title`) : stipend ? swedish('store.stipend.name') : isPass ? 'Premium-Säsongsrulle' : name, 30, 'Swedish'),
         description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortSwedish[offer.id] || swedish(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} dagliga utbetalningar på ${stipend.jadePerPayment} Jade` : 'Premiumspår för den här säsongen', 55, 'Swedish'),
         locale: 'sv',
+      },
+      // Korean (the App Store's Korean localization).
+      {
+        displayName: clip(pack ? korean(`store.packs.${gameId}.name`) : offer ? korean(`offers.rules.${offer.id}.title`) : stipend ? korean('store.stipend.name') : isPass ? `프리미엄 ${korean('pass.name')}` : name, 30, 'Korean'),
+        description: clip(pack ? `비취 ${pack.moonstones}개` : offer ? (shortKorean[offer.id] || korean(`offers.rules.${offer.id}.description`)) : stipend ? `비취 ${stipend.jadePerPayment}개씩 매일 ${stipend.payments}회 지급` : '이번 시즌의 프리미엄 트랙', 55, 'Korean'),
+        locale: 'ko',
+      },
+      // Thai (the App Store's Thai localization).
+      {
+        displayName: clip(pack ? thai(`store.packs.${gameId}.name`) : offer ? thai(`offers.rules.${offer.id}.title`) : stipend ? thai('store.stipend.name') : isPass ? `${thai('pass.name')}พรีเมียม` : name, 30, 'Thai'),
+        description: clip(pack ? `หยก ${pack.moonstones}` : offer ? (shortThai[offer.id] || thai(`offers.rules.${offer.id}.description`)) : stipend ? `หยกวันละ ${stipend.jadePerPayment} จำนวน ${stipend.payments} วัน` : 'เส้นทางพรีเมียมของซีซันนี้', 55, 'Thai'),
+        locale: 'th',
       },
     ],
     productID: storeId,

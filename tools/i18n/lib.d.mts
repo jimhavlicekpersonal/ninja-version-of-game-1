@@ -30,5 +30,8 @@ export function syncWorksheet(src: Record<string, string>, ws: Record<string, En
 export function scriptShare(texts: string[], script: string): number;
 /** Characters in `text` that do not belong in Simplified (Hans) or Traditional (Hant) Chinese. */
 export function wrongHanForms(text: string, script: string): string[];
+export function koreanParticleAfterPlaceholder(text: string): boolean;
+export function notKoreanRuns(text: string, en?: string): string[];
+export function thaiGenderedWords(text: string): string[];
 export function checkWorksheet(lang: Language, ns: string, src: Record<string, string>, ws: unknown): { total: number; done: number; errors: string[]; warnings: string[]; translated: string[] };
 export function checkLanguage(lang: Language): { code: string; total: number; done: number; errors: string[]; warnings: string[] };

@@ -91,10 +91,18 @@ export function labelText(value: string, code = device, pack = catalogFor(code))
   return key ? pack[key] ?? ENGLISH[key] : value;
 }
 const kinds = parameterKinds as Record<string, Record<string, 'detail' | 'label' | 'number' | 'cost' | 'utc' | 'utcBare' | 'fragment'>>;
+/**
+ * A list in the language's own way (Intl.ListFormat). Thai CLDR joins the last item straight onto และ/หรือ, which is
+ * right for a Thai word but runs a number or a Latin word into it (และ2,400): Thai puts a space around those.
+ */
+export function listFormat(values: readonly string[], code = device, type: 'conjunction' | 'disjunction' = 'conjunction'): string {
+  const text = new Intl.ListFormat(code, { style: 'long', type }).format(values);
+  return code === 'th' ? text.replace(/(และ|หรือ)(?=[^\s\p{Script=Thai}])/gu, '$1 ') : text;
+}
 function costText(value: string, code: string, pack: Catalog): string {
   const parts = value.split(' and ').map(part => /^([\d,]+(?:\.\d+)?) (Coins|Provisions|Shadow Ink|Jade)$/.exec(part));
   if (!parts.every(Boolean)) return value;
-  return new Intl.ListFormat(code, {type:'conjunction'}).format(parts.map(m => `${numberText(Number(m![1].replace(/,/g, '')), code)} ${labelText(m![2], code, pack)}`));
+  return listFormat(parts.map(m => `${numberText(Number(m![1].replace(/,/g, '')), code)} ${labelText(m![2], code, pack)}`), code);
 }
 function utcText(value: string, code: string, includeZone: boolean): string {
   const at = Date.parse(value.replace(/:$/, '') + (value.endsWith('GMT') ? '' : ' GMT'));

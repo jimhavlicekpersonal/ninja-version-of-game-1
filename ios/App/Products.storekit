@@ -86,6 +86,16 @@
           "displayName": "En nypa Jade",
           "description": "45 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "비취 한 꼬집",
+          "description": "비취 45개",
+          "locale": "ko"
+        },
+        {
+          "displayName": "หยกหยิบมือ",
+          "description": "หยก 45",
+          "locale": "th"
         }
       ],
       "productID": "jade_pinch",
@@ -176,6 +186,16 @@
           "displayName": "Pung med Jade",
           "description": "100 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "비취 주머니",
+          "description": "비취 100개",
+          "locale": "ko"
+        },
+        {
+          "displayName": "ถุงหยกใบเล็ก",
+          "description": "หยก 100",
+          "locale": "th"
         }
       ],
       "productID": "jade_pouch",
@@ -266,6 +286,16 @@
           "displayName": "Påse med Jade",
           "description": "280 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "비취 자루",
+          "description": "비취 280개",
+          "locale": "ko"
+        },
+        {
+          "displayName": "ถุงหยก",
+          "description": "หยก 280",
+          "locale": "th"
         }
       ],
       "productID": "jade_bag",
@@ -356,6 +386,16 @@
           "displayName": "Låda med Jade",
           "description": "600 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "비취 상자",
+          "description": "비취 600개",
+          "locale": "ko"
+        },
+        {
+          "displayName": "กล่องหยก",
+          "description": "หยก 600",
+          "locale": "th"
         }
       ],
       "productID": "jade_box",
@@ -446,6 +486,16 @@
           "displayName": "Kista med Jade",
           "description": "1300 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "비취 궤짝",
+          "description": "비취 1300개",
+          "locale": "ko"
+        },
+        {
+          "displayName": "หีบหยก",
+          "description": "หยก 1300",
+          "locale": "th"
         }
       ],
       "productID": "jade_chest",
@@ -536,6 +586,16 @@
           "displayName": "Valv med Jade",
           "description": "3500 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "비취 금고",
+          "description": "비취 3500개",
+          "locale": "ko"
+        },
+        {
+          "displayName": "คลังหยก",
+          "description": "หยก 3500",
+          "locale": "th"
         }
       ],
       "productID": "jade_vault",
@@ -626,6 +686,16 @@
           "displayName": "Drakskatt av Jade",
           "description": "7500 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "용의 비취 보물",
+          "description": "비취 7500개",
+          "locale": "ko"
+        },
+        {
+          "displayName": "ขุมทรัพย์หยกของมังกร",
+          "description": "หยก 7500",
+          "locale": "th"
         }
       ],
       "productID": "jade_hoard",
@@ -716,6 +786,16 @@
           "displayName": "Premium-Säsongsrulle",
           "description": "Premiumspår för den här säsongen",
           "locale": "sv"
+        },
+        {
+          "displayName": "프리미엄 시즌 두루마리",
+          "description": "이번 시즌의 프리미엄 트랙",
+          "locale": "ko"
+        },
+        {
+          "displayName": "คัมภีร์ซีซันพรีเมียม",
+          "description": "เส้นทางพรีเมียมของซีซันนี้",
+          "locale": "th"
         }
       ],
       "productID": "season_scroll",
@@ -806,6 +886,16 @@
           "displayName": "Startpaket",
           "description": "Jade och resurser för nya klanledare",
           "locale": "sv"
+        },
+        {
+          "displayName": "스타터 팩",
+          "description": "새 가문 지도자를 위한 비취와 자원",
+          "locale": "ko"
+        },
+        {
+          "displayName": "แพ็กเริ่มต้น",
+          "description": "หยกและทรัพยากรสำหรับผู้นำตระกูลมือใหม่",
+          "locale": "th"
         }
       ],
       "productID": "offer_starter",
@@ -896,6 +986,16 @@
           "displayName": "Hantverkarpaket",
           "description": "Jade för ännu en Hantverkare, plus resurser",
           "locale": "sv"
+        },
+        {
+          "displayName": "장인 꾸러미",
+          "description": "장인 한 명을 더 고용할 비취와 자원",
+          "locale": "ko"
+        },
+        {
+          "displayName": "ชุดช่างฝีมือ",
+          "description": "หยกสำหรับจ้างช่างเพิ่ม พร้อมทรัพยากร",
+          "locale": "th"
         }
       ],
       "productID": "offer_builder",
@@ -986,6 +1086,16 @@
           "displayName": "Krigsförråd",
           "description": "Proviant och Jade för Allianskriget",
           "locale": "sv"
+        },
+        {
+          "displayName": "전쟁 보급품",
+          "description": "동맹전을 위한 군량과 비취",
+          "locale": "ko"
+        },
+        {
+          "displayName": "เสบียงสงคราม",
+          "description": "เสบียงและหยกสำหรับสงครามพันธมิตร",
+          "locale": "th"
         }
       ],
       "productID": "offer_war_prep",
@@ -1076,6 +1186,16 @@
           "displayName": "Återuppbyggnadspaket",
           "description": "Jade och resurser för att bygga upp igen",
           "locale": "sv"
+        },
+        {
+          "displayName": "재건 키트",
+          "description": "재건을 위한 비취와 자원",
+          "locale": "ko"
+        },
+        {
+          "displayName": "ชุดฟื้นฟู",
+          "description": "หยกและทรัพยากรสำหรับสร้างใหม่",
+          "locale": "th"
         }
       ],
       "productID": "offer_rebuild",
@@ -1166,6 +1286,16 @@
           "displayName": "Klanstipendium",
           "description": "30 dagliga utbetalningar på 12 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "가문 녹봉",
+          "description": "비취 12개씩 매일 30회 지급",
+          "locale": "ko"
+        },
+        {
+          "displayName": "เบี้ยหวัดตระกูล",
+          "description": "หยกวันละ 12 จำนวน 30 วัน",
+          "locale": "th"
         }
       ],
       "productID": "clan_stipend",
@@ -1256,6 +1386,16 @@
           "displayName": "Borgfest",
           "description": "Resurser och Jade för din nya Borg",
           "locale": "sv"
+        },
+        {
+          "displayName": "본성 축하",
+          "description": "새 본성 레벨을 위한 자원과 비취",
+          "locale": "ko"
+        },
+        {
+          "displayName": "ฉลองป้อม",
+          "description": "ทรัพยากรและหยกสำหรับป้อมเลเวลใหม่",
+          "locale": "th"
         }
       ],
       "productID": "offer_keep",

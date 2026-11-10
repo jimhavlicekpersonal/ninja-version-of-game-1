@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "th",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "หยกหยิบมือ",
+      "description": "หยก 45",
+      "locale": "th"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "ถุงหยกใบเล็ก",
+      "description": "หยก 100",
+      "locale": "th"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "ถุงหยก",
+      "description": "หยก 280",
+      "locale": "th"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "กล่องหยก",
+      "description": "หยก 600",
+      "locale": "th"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "หีบหยก",
+      "description": "หยก 1300",
+      "locale": "th"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "คลังหยก",
+      "description": "หยก 3500",
+      "locale": "th"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ขุมทรัพย์หยกของมังกร",
+      "description": "หยก 7500",
+      "locale": "th"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "คัมภีร์ซีซันพรีเมียม",
+      "description": "เส้นทางพรีเมียมของซีซันนี้",
+      "locale": "th"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "แพ็กเริ่มต้น",
+      "description": "หยกและทรัพยากรสำหรับผู้นำตระกูลมือใหม่",
+      "locale": "th"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "ชุดช่างฝีมือ",
+      "description": "หยกสำหรับจ้างช่างเพิ่ม พร้อมทรัพยากร",
+      "locale": "th"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "เสบียงสงคราม",
+      "description": "เสบียงและหยกสำหรับสงครามพันธมิตร",
+      "locale": "th"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "ชุดฟื้นฟู",
+      "description": "หยกและทรัพยากรสำหรับสร้างใหม่",
+      "locale": "th"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "เบี้ยหวัดตระกูล",
+      "description": "หยกวันละ 12 จำนวน 30 วัน",
+      "locale": "th"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "ฉลองป้อม",
+      "description": "ทรัพยากรและหยกสำหรับป้อมเลเวลใหม่",
+      "locale": "th"
+    }
+  ]
+}

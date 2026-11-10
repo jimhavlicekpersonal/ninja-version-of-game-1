@@ -3,7 +3,7 @@
 import { matchLanguage } from '../../../locales/matcher.mjs';
 import languagesFile from '../../../locales/languages.json';
 import availabilityFile from '../../../locales/availability.json';
-import { ENGLISH, catalogFor, deviceLocale, format, installCatalog, labelText as sharedLabel, numberText, setDeviceLocale, sourceText as sharedSource, translate } from '../../../locales/runtime';
+import { ENGLISH, catalogFor, deviceLocale, format, installCatalog, labelText as sharedLabel, listFormat, numberText, setDeviceLocale, sourceText as sharedSource, translate } from '../../../locales/runtime';
 import type { Catalog, MessageRef } from '../../../locales/runtime';
 import { PRESET_CHAT } from '../../backend/net/protocol';
 export type { MessageRef } from '../../../locales/runtime';
@@ -106,7 +106,7 @@ export function dateText(at: number | Date, options?: Intl.DateTimeFormatOptions
   return new Intl.DateTimeFormat(deviceLocale(), options ?? { dateStyle: 'medium', timeStyle: 'short' }).format(at);
 }
 export function listText(values: readonly string[], type: 'conjunction' | 'disjunction' = 'conjunction'): string {
-  return new Intl.ListFormat(deviceLocale(), { style: 'long', type }).format(values);
+  return listFormat(values, deviceLocale(), type);
 }
 /** Only call for an explicitly computer-generated identity. */
 export function generatedName(value: string, kind: 'place' | 'grove' = 'place'): string {

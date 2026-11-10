@@ -1,0 +1,365 @@
+{
+  "language": "ko",
+  "variant": "Standard Korean for South Korea, polite 해요체 in the game and formal 합니다체 in the legal pages, no second-person pronoun",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_2d68ca8191",
+      "text": "{arg1} vs {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f130559f0e",
+      "text": "vs",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f471e2dc90",
+      "text": "vs {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
+    }
+  ],
+  "latinScriptReviewed": [
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_delete_reject_or_overri_c210e90890",
+      "text": "action은 'delete', 'reject', 'override' 중 하나여야 해요",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_dismiss_remove_message__dd711086db",
+      "text": "action은 'dismiss', 'remove_message', 'mute' 중 하나여야 해요",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.app_store_notification_6199f7d5e6",
+      "text": "App Store 알림",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.band_must_be_under13_13to17_adult_or_n_1f387f3cc7",
+      "text": "band는 under13, 13to17, adult, null 중 하나여야 해요.",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.findable_must_be_everyone_friends_of_f_f0a3ad42a4",
+      "text": "findable은 everyone, friends_of_friends, nobody 중 하나여야 해요.",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.ends_utc_5598bc85ac",
+      "text": "{arg1} 종료: {arg2} UTC.",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_ninja_clans_built_647b18e769",
+      "text": "Kagemura: Ninja Clans {arg1} · 빌드 {arg2}",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_staff_7a8dfa11fc",
+      "text": "Kagemura 직원",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.keep_lv_78a2d3d210",
+      "text": "본성 Lv.{arg1}",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.lv_445f51ab9e",
+      "text": "Lv.{arg1}",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.lv_6dd209682a",
+      "text": " · Lv.{arg1}",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.lv_99eff11c93",
+      "text": "Lv.{arg1} → {arg2}",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.qr_code_2c24d35a11",
+      "text": "QR 코드",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.the_app_store_8768b638e4",
+      "text": "App Store",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.missingProduct",
+      "text": "productId 없음",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.transaction",
+      "text": "transactionId 없음",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.token",
+      "text": "purchaseToken 없음",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.2",
+      "text": "Kagemura: Ninja Clans · 최종 수정일 {t0}{t1}",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.2",
+      "text": "Kagemura: Ninja Clans · 시행일 {t0}{t1}",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.44",
+      "text": "12. App Store와 Google Play",
+      "reason": "Korean text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    }
+  ],
+  "notes": [
+    "Particles that change with the final sound (을/를, 이/가, 은/는, 과/와, 으로/로) never follow a placeholder or #; i18n:check fails on them, and 을(를), 이(가), (으)로 are used only where a sentence needs the particle.",
+    "Hangul only; the two Japanese statutory page titles quoted from the English pages are the only Han/kana runs.",
+    "Generated names keep the default order with a space: 천둥 + 봉우리 = 천둥 봉우리, 쌍둥이 + 칼날 = 쌍둥이 칼날.",
+    "Japanese names are written by sound in Hangul (Kaito 카이토, Takeda 다케다); Sensei Hoshi is 호시 사범.",
+    "Computer players' generated names (Kaito Mori) are stored text and stay in Latin letters, as in every language."
+  ]
+}

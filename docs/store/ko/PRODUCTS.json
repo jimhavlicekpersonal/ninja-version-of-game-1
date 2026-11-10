@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ko",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "비취 한 꼬집",
+      "description": "비취 45개",
+      "locale": "ko"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "비취 주머니",
+      "description": "비취 100개",
+      "locale": "ko"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "비취 자루",
+      "description": "비취 280개",
+      "locale": "ko"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "비취 상자",
+      "description": "비취 600개",
+      "locale": "ko"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "비취 궤짝",
+      "description": "비취 1300개",
+      "locale": "ko"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "비취 금고",
+      "description": "비취 3500개",
+      "locale": "ko"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "용의 비취 보물",
+      "description": "비취 7500개",
+      "locale": "ko"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "프리미엄 시즌 두루마리",
+      "description": "이번 시즌의 프리미엄 트랙",
+      "locale": "ko"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "스타터 팩",
+      "description": "새 가문 지도자를 위한 비취와 자원",
+      "locale": "ko"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "장인 꾸러미",
+      "description": "장인 한 명을 더 고용할 비취와 자원",
+      "locale": "ko"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "전쟁 보급품",
+      "description": "동맹전을 위한 군량과 비취",
+      "locale": "ko"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "재건 키트",
+      "description": "재건을 위한 비취와 자원",
+      "locale": "ko"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "가문 녹봉",
+      "description": "비취 12개씩 매일 30회 지급",
+      "locale": "ko"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "본성 축하",
+      "description": "새 본성 레벨을 위한 자원과 비취",
+      "locale": "ko"
+    }
+  ]
+}
