@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ro",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Un vârf de Jad",
+      "description": "45 de Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Pungă de Jad",
+      "description": "100 de Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Sac de Jad",
+      "description": "280 de Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Cutie de Jad",
+      "description": "600 de Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Cufăr de Jad",
+      "description": "1300 de Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Seif de Jad",
+      "description": "3500 de Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Comoara Dragonului de Jad",
+      "description": "7500 de Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Pergament premium",
+      "description": "Traseul premium al acestui sezon",
+      "locale": "ro"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Pachet de început",
+      "description": "Jad și resurse pentru clanurile noi",
+      "locale": "ro"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Pachetul Meșteșugarului",
+      "description": "Jad pentru încă un Meșteșugar, plus resurse",
+      "locale": "ro"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Provizii de război",
+      "description": "Provizii și Jad pentru Războiul Alianțelor",
+      "locale": "ro"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Trusa de reconstrucție",
+      "description": "Jad și resurse pentru reconstrucție",
+      "locale": "ro"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Solda Clanului",
+      "description": "30 de plăți zilnice a câte 12 Jad",
+      "locale": "ro"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Sărbătoarea Cetății",
+      "description": "Resurse și Jad pentru noua ta Cetate",
+      "locale": "ro"
+    }
+  ]
+}

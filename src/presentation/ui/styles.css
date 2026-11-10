@@ -905,6 +905,14 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
  */
 html[data-script]:not([data-script="Latn"]) { --font-display: var(--font-fallback); }
 html[data-script]:not([data-script="Latn"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
+/*
+ * Latin-script languages with letters outside the bundled subsets (Latin-1): Romanian ă ș ț (U+0103, U+0219, U+021B).
+ * Without this, each such letter falls back to a system font on its own, so one word mixes two typefaces (the a-breve of
+ * "Armată" in the title). These languages use the phone's fonts throughout, like other scripts; add a language here when
+ * its letters are not in the subsets (render/fonts.ts SYSTEM_FONT_LANGS too).
+ */
+html:is([lang="ro"]) { --font: var(--font-fallback); --font-display: var(--font-fallback); }
+html:is([lang="ro"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
 /* Devanagari (Hindi, Marathi) hangs its letters from a joined headline; letter-spacing cuts it into pieces, and vowel signs above and below need more line height than Latin. */
 html[data-script="Deva"] body, html[data-script="Deva"] body * { letter-spacing: normal !important; }
 html[data-script="Deva"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }

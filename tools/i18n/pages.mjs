@@ -13,6 +13,8 @@ const ACCOUNT_FAILURE = {
   fr: 'La demande n’a pas pu être envoyée. Vérifie tes informations et ta connexion, puis réessaie.',
   it: 'Non è stato possibile inviare la richiesta. Controlla i dati e la connessione e riprova.',
   'zh-Hans': '请求没有发送成功。请检查你填写的信息和网络连接，然后重试。',
+  ro: 'Cererea nu a putut fi trimisă. Verifică datele și conexiunea și încearcă din nou.',
+  ca: 'No s’ha pogut enviar la sol·licitud. Comprova les dades i la connexió i torna-ho a provar.',
 };
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;

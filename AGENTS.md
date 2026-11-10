@@ -8,7 +8,7 @@ ordered implementation plan and completion criteria; `docs/localization/INVENTOR
 source units and locations. The 659 data + 99 UI keys on its newer-main baseline are only an extracted
 subset, not the entire game. The census is a pinned historical baseline. Spanish implementation, actual shipping bytes,
 and validation are recorded in `docs/localization/SPANISH_IMPLEMENTATION.json`,
-`SPANISH.md` and `SPANISH_SIZE.json`; Hindi in `HINDI.md`; Brazilian Portuguese in `PORTUGUESE.md`; German in `GERMAN.md`; French and Italian in `FRENCH.md` and `ITALIAN.md`; Simplified Chinese in `CHINESE.md`. Only English, Spanish, Hindi, Portuguese, German, French, Italian and Simplified Chinese are ready. Preserve
+`SPANISH.md` and `SPANISH_SIZE.json`; Hindi in `HINDI.md`; Brazilian Portuguese in `PORTUGUESE.md`; German in `GERMAN.md`; French and Italian in `FRENCH.md` and `ITALIAN.md`; Simplified Chinese in `CHINESE.md`; Romanian and Catalan in `ROMANIAN.md` and `CATALAN.md`. Only English, Spanish, Hindi, Portuguese, German, French, Italian, Simplified Chinese, Romanian and Catalan are ready. Preserve
 canonical game/save data and authored names/chat; do not infer worldwide release readiness
 from translation coverage or unit tests.
 

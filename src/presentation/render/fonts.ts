@@ -8,10 +8,16 @@ const HAN_FONTS: Record<string, string> = {
   Hant: '"M PLUS 1 Han", "PingFang TC", "PingFang HK", "Microsoft JhengHei UI", "Microsoft JhengHei", "Noto Sans CJK TC", "Noto Sans TC", ',
 };
 const han = HAN_FONTS[typeof document === 'undefined' ? '' : document.documentElement.getAttribute('data-script') ?? ''];
+/**
+ * Latin-script languages with letters the bundled subsets lack (Romanian ă ș ț): their canvas text uses the system font
+ * throughout, so a word never mixes two typefaces (styles.css has the same list for the HUD).
+ */
+export const SYSTEM_FONT_LANGS: readonly string[] = ['ro'];
+const systemOnly = typeof document !== 'undefined' && SYSTEM_FONT_LANGS.includes(document.documentElement.lang);
 /** Font stacks for canvas text, matching the HUD (src/presentation/ui/styles.css, fonts in ui/fonts). */
-export const BODY_FONT = han ? `${han}"Segoe UI", system-ui, -apple-system, Roboto, sans-serif` : '"M PLUS 1", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif';
+export const BODY_FONT = han ? `${han}"Segoe UI", system-ui, -apple-system, Roboto, sans-serif` : systemOnly ? '"Segoe UI", system-ui, -apple-system, Roboto, sans-serif' : '"M PLUS 1", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif';
 /** Titles and big labels. Dela Gothic One has one weight: draw it at normal weight, never bold. */
-export const DISPLAY_FONT = han ? `"Dela Gothic One", ${han}"Segoe UI", system-ui, sans-serif` : '"Dela Gothic One", "M PLUS 1", "Segoe UI", system-ui, sans-serif';
+export const DISPLAY_FONT = han ? `"Dela Gothic One", ${han}"Segoe UI", system-ui, sans-serif` : systemOnly ? '"Segoe UI", system-ui, -apple-system, Roboto, sans-serif' : '"Dela Gothic One", "M PLUS 1", "Segoe UI", system-ui, sans-serif';
 
 /**
  * Wait (briefly) for the interface fonts, so canvas labels drawn at start-up use them:

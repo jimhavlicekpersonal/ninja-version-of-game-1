@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ca",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Pessic de Jade",
+      "description": "45 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Bosseta de Jade",
+      "description": "100 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Sac de Jade",
+      "description": "280 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Capsa de Jade",
+      "description": "600 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Cofre de Jade",
+      "description": "1300 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Cambra de Jade",
+      "description": "3500 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Tresor del Drac de Jade",
+      "description": "7500 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Pergamí premium",
+      "description": "Recorregut premium d'aquesta temporada",
+      "locale": "ca"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Paquet inicial",
+      "description": "Jade i recursos per als clans nous",
+      "locale": "ca"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Lot de l'Artesà",
+      "description": "Jade per a un altre Artesà, i recursos",
+      "locale": "ca"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Subministraments de guerra",
+      "description": "Provisions i Jade per a la Guerra d'Aliances",
+      "locale": "ca"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kit de reconstrucció",
+      "description": "Jade i recursos per reconstruir",
+      "locale": "ca"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Sou del Clan",
+      "description": "30 pagaments diaris de 12 Jade",
+      "locale": "ca"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Celebració de la Fortalesa",
+      "description": "Recursos i Jade per celebrar la nova Fortalesa",
+      "locale": "ca"
+    }
+  ]
+}

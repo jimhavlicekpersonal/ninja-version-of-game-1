@@ -61,6 +61,16 @@
           "displayName": "一撮翡翠",
           "description": "45 翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Un vârf de Jad",
+          "description": "45 de Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Pessic de Jade",
+          "description": "45 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "jade_pinch",
@@ -126,6 +136,16 @@
           "displayName": "一小袋翡翠",
           "description": "100 翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Pungă de Jad",
+          "description": "100 de Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Bosseta de Jade",
+          "description": "100 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "jade_pouch",
@@ -191,6 +211,16 @@
           "displayName": "一包翡翠",
           "description": "280 翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Sac de Jad",
+          "description": "280 de Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Sac de Jade",
+          "description": "280 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "jade_bag",
@@ -256,6 +286,16 @@
           "displayName": "一盒翡翠",
           "description": "600 翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Cutie de Jad",
+          "description": "600 de Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Capsa de Jade",
+          "description": "600 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "jade_box",
@@ -321,6 +361,16 @@
           "displayName": "一箱翡翠",
           "description": "1300 翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Cufăr de Jad",
+          "description": "1300 de Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Cofre de Jade",
+          "description": "1300 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "jade_chest",
@@ -386,6 +436,16 @@
           "displayName": "一库翡翠",
           "description": "3500 翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Seif de Jad",
+          "description": "3500 de Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Cambra de Jade",
+          "description": "3500 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "jade_vault",
@@ -451,6 +511,16 @@
           "displayName": "巨龙的翡翠宝藏",
           "description": "7500 翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Comoara Dragonului de Jad",
+          "description": "7500 de Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Tresor del Drac de Jade",
+          "description": "7500 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "jade_hoard",
@@ -516,6 +586,16 @@
           "displayName": "高级赛季卷轴",
           "description": "本赛季的高级路线",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Pergament premium",
+          "description": "Traseul premium al acestui sezon",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Pergamí premium",
+          "description": "Recorregut premium d'aquesta temporada",
+          "locale": "ca"
         }
       ],
       "productID": "season_scroll",
@@ -581,6 +661,16 @@
           "displayName": "新手礼包",
           "description": "为新任族长准备的翡翠和资源",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Pachet de început",
+          "description": "Jad și resurse pentru clanurile noi",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Paquet inicial",
+          "description": "Jade i recursos per als clans nous",
+          "locale": "ca"
         }
       ],
       "productID": "offer_starter",
@@ -646,6 +736,16 @@
           "displayName": "工匠礼包",
           "description": "可再雇一名工匠的翡翠，外加资源",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Pachetul Meșteșugarului",
+          "description": "Jad pentru încă un Meșteșugar, plus resurse",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Lot de l'Artesà",
+          "description": "Jade per a un altre Artesà, i recursos",
+          "locale": "ca"
         }
       ],
       "productID": "offer_builder",
@@ -711,6 +811,16 @@
           "displayName": "战争补给",
           "description": "同盟战用的粮草和翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Provizii de război",
+          "description": "Provizii și Jad pentru Războiul Alianțelor",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Subministraments de guerra",
+          "description": "Provisions i Jade per a la Guerra d'Aliances",
+          "locale": "ca"
         }
       ],
       "productID": "offer_war_prep",
@@ -776,6 +886,16 @@
           "displayName": "重建礼包",
           "description": "用于重建的翡翠和资源",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Trusa de reconstrucție",
+          "description": "Jad și resurse pentru reconstrucție",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Kit de reconstrucció",
+          "description": "Jade i recursos per reconstruir",
+          "locale": "ca"
         }
       ],
       "productID": "offer_rebuild",
@@ -841,6 +961,16 @@
           "displayName": "忍族俸禄",
           "description": "每天发放 12 翡翠，共 30 次",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Solda Clanului",
+          "description": "30 de plăți zilnice a câte 12 Jad",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Sou del Clan",
+          "description": "30 pagaments diaris de 12 Jade",
+          "locale": "ca"
         }
       ],
       "productID": "clan_stipend",
@@ -906,6 +1036,16 @@
           "displayName": "天守庆典",
           "description": "庆祝天守阁升级的资源和翡翠",
           "locale": "zh_Hans"
+        },
+        {
+          "displayName": "Sărbătoarea Cetății",
+          "description": "Resurse și Jad pentru noua ta Cetate",
+          "locale": "ro"
+        },
+        {
+          "displayName": "Celebració de la Fortalesa",
+          "description": "Recursos i Jade per celebrar la nova Fortalesa",
+          "locale": "ca"
         }
       ],
       "productID": "offer_keep",

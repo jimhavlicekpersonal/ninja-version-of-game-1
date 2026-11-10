@@ -1,0 +1,823 @@
+{
+  "language": "ro",
+  "variant": "Standard Romanian (Romania) with tu, also served to Moldova",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.0",
+      "text": "Kaito",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.1",
+      "text": "Rin",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.2",
+      "text": "Sora",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.3",
+      "text": "Hana",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.4",
+      "text": "Ren",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.5",
+      "text": "Yuki",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.6",
+      "text": "Daichi",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.7",
+      "text": "Mei",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.8",
+      "text": "Takeshi",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.9",
+      "text": "Aiko",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.10",
+      "text": "Haru",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.11",
+      "text": "Kenji",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.12",
+      "text": "Nami",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.13",
+      "text": "Shin",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.14",
+      "text": "Tomo",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.15",
+      "text": "Kira",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.0",
+      "text": "Mori",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.1",
+      "text": "Takeda",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.2",
+      "text": "Kawamura",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.3",
+      "text": "Ishida",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.4",
+      "text": "Hayashi",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.5",
+      "text": "Sakamoto",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.6",
+      "text": "Okada",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.7",
+      "text": "Kimura",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.8",
+      "text": "Matsuda",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.9",
+      "text": "Ueda",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.10",
+      "text": "Nakano",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.11",
+      "text": "Fujita",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "progression.tiers.tier2.name",
+      "text": "Adept",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "data",
+      "key": "progression.tiers.tier3.name",
+      "text": "Veteran",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "data",
+      "key": "progression.roles.infiltrator.name",
+      "text": "Infiltrator",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "data",
+      "key": "roster.warriors.shinobi.name",
+      "text": "Shinobi",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "data",
+      "key": "troops.hedgehog_roller.name",
+      "text": "Shinobi",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.7e39068eb8",
+      "text": "Kage",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.9db22d416e",
+      "text": "Obsidian",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.bf35db7460",
+      "text": "decor",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.c49bdf91cf",
+      "text": "Decor",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.adlam_46b7485555",
+      "text": "Adlam",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bamum_f172a8db88",
+      "text": "Bamum",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.batak_cb568479fd",
+      "text": "Batak",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bengali_e7f4fe2631",
+      "text": "Bengali",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bopomofo_98fa38f155",
+      "text": "Bopomofo",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.buhid_bf01f926b1",
+      "text": "Buhid",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.chakma_47143a0b98",
+      "text": "Chakma",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.cham_d63d110257",
+      "text": "Cham",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.cherokee_000e5e05a5",
+      "text": "Cherokee",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.devanagari_bc8e600721",
+      "text": "Devanagari",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.gujarati_aa1324f5df",
+      "text": "Gujarati",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.gurmukhi_28766224e2",
+      "text": "Gurmukhi",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.han_861af54f72",
+      "text": "Han",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hangul_5db6aaf978",
+      "text": "Hangul",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hanunoo_34539251fd",
+      "text": "Hanunoo",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hiragana_63a7a6c8a7",
+      "text": "Hiragana",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.kannada_4829406f52",
+      "text": "Kannada",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.katakana_ff92aee95a",
+      "text": "Katakana",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.khmer_08d72ec6a1",
+      "text": "Khmer",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lao_6d2138c6f2",
+      "text": "Lao",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lepcha_e418a0a6af",
+      "text": "Lepcha",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.limbu_543b10a96d",
+      "text": "Limbu",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lisu_3cc130feed",
+      "text": "Lisu",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.makasar_bc732d689b",
+      "text": "Makasar",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.malayalam_2247ef59ce",
+      "text": "Malayalam",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.miao_a1e0e59510",
+      "text": "Miao",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.mro_d3e6054d62",
+      "text": "Mro",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.myanmar_ba2039a4cf",
+      "text": "Myanmar",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.newa_8d897dbb59",
+      "text": "Newa",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.oriya_7cad037e58",
+      "text": "Oriya",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.osage_ea699037c2",
+      "text": "Osage",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.rejang_54160d2075",
+      "text": "Rejang",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.saurashtra_d82e14c137",
+      "text": "Saurashtra",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tagalog_605eac3030",
+      "text": "Tagalog",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tagbanwa_ab2498989d",
+      "text": "Tagbanwa",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tangsa_7a4fd080f7",
+      "text": "Tangsa",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.telugu_a4504b3d0f",
+      "text": "Telugu",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.thaana_1b2045d95b",
+      "text": "Thaana",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tifinagh_25e03d7123",
+      "text": "Tifinagh",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.toto_b41419df9b",
+      "text": "Toto",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.vai_d0cfbdc71d",
+      "text": "Vai",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.wancho_71a2270d98",
+      "text": "Wancho",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.yi_caf1928d4e",
+      "text": "Yi",
+      "reason": "Script (writing system) name used unchanged in Romanian"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.aa_9b915ac88a",
+      "text": " · AA",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.chat_460b3a7da0",
+      "text": "Chat",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.codex_616efbe968",
+      "text": "Codex",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.decor_c49bdf91cf",
+      "text": "Decor",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.duel_15ea5c59d2",
+      "text": "Duel",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "Standard unit abbreviation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.ok_565339bc4d",
+      "text": "OK",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.online_3103617e69",
+      "text": " · online",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.premium_de88c121a8",
+      "text": "Premium",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.test_7394a4113a",
+      "text": "{arg1} (test)",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_2d68ca8191",
+      "text": "{arg1} vs {arg2}",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f130559f0e",
+      "text": "vs",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f471e2dc90",
+      "text": "vs {arg1}",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.c3e839df60",
+      "text": "Online",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.368ebbb099",
+      "text": "Cost: ",
+      "reason": "Romanian word, loanword or term Romanian uses as it is (Adept, Veteran, Infiltrator, Obsidian, Decor, Chat, Codex, Duel, Online, Premium, Test)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.hm",
+      "text": "{h}h {m}m",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.h",
+      "text": "{h}h",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.ms",
+      "text": "{m}m {s}s",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.m",
+      "text": "{m}m",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.s",
+      "text": "{s}s",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    }
+  ],
+  "otherWarningsReviewed": [
+    "pages: pages.tokushoho.1 is 6.4x the English length",
+    "pages: pages.shikin-kessai.0 is 3.3x the English length",
+    "pages: pages.shikin-kessai.1 is 5.5x the English length"
+  ],
+  "notes": [
+    "Japanese statutory titles expand into Romanian explanations; long page headings wrap.",
+    "Resource amounts built by generic templates (\"{arg1} {arg2}\", \"{arg1} Jad\") stay in label style without \"de\" (500 Monede, as Romanian writes 20 lei); sentences with a count before a noun use a plural with few/other branches or put the count after a colon.",
+    "Actual player names, authored chat, technical IDs (IndexedDB, productId, enum values such as delete or reject) and provider-owned sheets are outside automatic translation.",
+    "No native Romanian speaker has reviewed this translation yet; that review remains a release step."
+  ]
+}

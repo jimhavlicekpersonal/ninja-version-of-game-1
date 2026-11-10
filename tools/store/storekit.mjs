@@ -31,7 +31,15 @@ const italian = key => itData[key]?.text || '';
 const zhData = read('locales/zh-Hans/data.json');
 const shortChinese = {starter_pack: '为新任族长准备的翡翠和资源', builder_pack: '可再雇一名工匠的翡翠，外加资源', war_prep_pack: '同盟战用的粮草和翡翠', rebuild_pack: '用于重建的翡翠和资源', keep_pack: '庆祝天守阁升级的资源和翡翠'};
 const chinese = key => zhData[key]?.text || '';
-// Never cut Hindi, German, French, Italian or Chinese to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound or a Chinese word, so overlong text fails here instead.
+const roData = read('locales/ro/data.json');
+const shortRomanian = {starter_pack: 'Jad și resurse pentru clanurile noi', builder_pack: 'Jad pentru încă un Meșteșugar, plus resurse', war_prep_pack: 'Provizii și Jad pentru Războiul Alianțelor', rebuild_pack: 'Jad și resurse pentru reconstrucție', keep_pack: 'Resurse și Jad pentru noua ta Cetate'};
+const romanian = key => roData[key]?.text || '';
+// Romanian counts from 20 up (CLDR plural 'other') take "de": 30 de plăți, 12 plăți.
+const roCount = n => `${n}${new Intl.PluralRules('ro').select(n) === 'other' ? ' de' : ''}`;
+const caData = read('locales/ca/data.json');
+const shortCatalan = {starter_pack: 'Jade i recursos per als clans nous', builder_pack: 'Jade per a un altre Artesà, i recursos', war_prep_pack: "Provisions i Jade per a la Guerra d'Aliances", rebuild_pack: 'Jade i recursos per reconstruir', keep_pack: 'Recursos i Jade per celebrar la nova Fortalesa'};
+const catalan = key => caData[key]?.text || '';
+// Never cut Hindi, German, French, Italian, Chinese, Romanian or Catalan to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound or a Chinese word, so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -91,6 +99,18 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? chinese(`store.packs.${gameId}.name`) : offer ? chinese(`offers.rules.${offer.id}.title`) : stipend ? chinese('store.stipend.name') : isPass ? `高级${chinese('pass.name')}` : name, 30, 'Chinese'),
         description: clip(pack ? `${pack.moonstones} 翡翠` : offer ? (shortChinese[offer.id] || chinese(`offers.rules.${offer.id}.description`)) : stipend ? `每天发放 ${stipend.jadePerPayment} 翡翠，共 ${stipend.payments} 次` : '本赛季的高级路线', 55, 'Chinese'),
         locale: 'zh_Hans',
+      },
+      // Romanian (Romania), also shown in Moldova.
+      {
+        displayName: clip(pack ? romanian(`store.packs.${gameId}.name`) : offer ? romanian(`offers.rules.${offer.id}.title`) : stipend ? romanian('store.stipend.name') : isPass ? 'Pergament premium' : name, 30, 'Romanian'),
+        description: clip(pack ? `${roCount(pack.moonstones)} Jad` : offer ? (shortRomanian[offer.id] || romanian(`offers.rules.${offer.id}.description`)) : stipend ? `${roCount(stipend.payments)} plăți zilnice a câte ${stipend.jadePerPayment} Jad` : 'Traseul premium al acestui sezon', 55, 'Romanian'),
+        locale: 'ro',
+      },
+      // Catalan (the App Store's Catalan localization), shown in Spain and Andorra to Catalan devices.
+      {
+        displayName: clip(pack ? catalan(`store.packs.${gameId}.name`) : offer ? catalan(`offers.rules.${offer.id}.title`) : stipend ? catalan('store.stipend.name') : isPass ? 'Pergamí premium' : name, 30, 'Catalan'),
+        description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortCatalan[offer.id] || catalan(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pagaments diaris de ${stipend.jadePerPayment} Jade` : "Recorregut premium d'aquesta temporada", 55, 'Catalan'),
+        locale: 'ca',
       },
     ],
     productID: storeId,
