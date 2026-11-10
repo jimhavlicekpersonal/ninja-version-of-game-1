@@ -191,6 +191,21 @@ export function wrongHanForms(text, script) {
   return re ? [...new Set([...text].filter(ch => re.test(ch)))] : [];
 }
 
+// Korean particles that change with the final sound of the word before them (책을/차를, 산이/바다가, 산은/바다는,
+// 산과/바다와, 산으로/바다로, 산이나/바다나, 산이에요/바다예요). A placeholder's last sound is unknown (a name, a building,
+// a number read aloud), so none of them may follow one; 의, 에, 에서, 에게, 도, 만, 까지 and 부터 never change.
+const KOREAN_VARIABLE_PARTICLE = /(?:\}|#)(?:을|를|이|가|은|는|과|와|으로|로|이나|나|이랑|랑|아|야|이에요|예요|이야|였|이었)(?![\p{Script=Hangul}])/u;
+/** A particle whose form depends on the placeholder before it (`{name}을`, `{building}이`, `#가`). */
+export function koreanParticleAfterPlaceholder(text) { return KOREAN_VARIABLE_PARTICLE.test(text); }
+// Modern Korean games write Hangul only: no Hanja, no Japanese kana.
+const NOT_KOREAN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
+// Thai polite particles and first-person pronouns are chosen by the speaker's gender (ครับ/ผม for men, ค่ะ/คะ/ดิฉัน for
+// women). The game, Sensei Hoshi and the bot chat have no gender, so none of them may appear. คะ is matched only as a
+// whole word, since it begins คะแนน (score).
+const THAI_GENDERED = /ครับ|ค่ะ|ดิฉัน|ผม(?!วด)|คะ(?![\p{Script=Thai}])/u;
+/** A Thai word that marks the speaker as a man or a woman. */
+export function thaiGenderedWords(text) { return [...new Set(text.match(new RegExp(THAI_GENDERED.source, 'gu')) ?? [])]; }
+
 const DENSE = new Set(['Hans', 'Hant', 'Jpan', 'Kore']);
 /** Share of letters (outside placeholders) written in the expected script. */
 export function scriptShare(texts, script) {
@@ -268,6 +283,9 @@ export function checkWorksheet(lang, ns, src, ws) {
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
     else if (wrongHan.length && lang.script === 'Jpan') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Chinese forms, not Japanese ones`);
     else if (wrongHan.length) warnings.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified-only characters`);
+    if (lang.script === 'Kore' && NOT_KOREAN.test(t)) errors.push(`${ns}: ${k} uses Hanja or kana; Korean is written in Hangul only`);
+    if (lang.script === 'Kore' && koreanParticleAfterPlaceholder(t)) errors.push(`${ns}: ${k} puts a particle that changes with the final sound (을/를, 이/가, 은/는, 과/와, 으로/로…) right after a placeholder; rephrase or use 의, 에, 도, 만 or a colon`);
+    if (lang.script === 'Thai' && thaiGenderedWords(t).length) errors.push(`${ns}: ${k} uses ${thaiGenderedWords(t).join(' ')}, which mark the speaker's gender; Thai text in the game is gender-neutral`);
     if (t === en && /\p{L}/u.test(en)) warnings.push(`${ns}: ${k} is identical to English`);
     if (SCRIPT[lang.script] && t !== en && scriptShare([t], lang.script) < 0.7) warnings.push(`${ns}: ${k} mostly uses a different script`);
     if (t.length > en.length * 2.5 + 8) warnings.push(`${ns}: ${k} is ${(t.length / en.length).toFixed(1)}x the English length`);

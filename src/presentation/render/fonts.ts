@@ -1,5 +1,5 @@
 /**
- * Chinese and Japanese canvas text names its own fonts (Chinese fonts for Chinese, Japanese for Japanese) before the system font (as styles.css does for the HUD): Han code
+ * Chinese, Japanese, Korean and Thai canvas text names its own fonts (Chinese fonts for Chinese, Japanese for Japanese) before the system font (as styles.css does for the HUD): Han code
  * points are shared with Japanese, and a Japanese-first fallback draws Japanese glyph forms. The start-up script
  * sets <html data-script> before any module runs, and changing the language reloads the page.
  */
@@ -9,6 +9,10 @@ const HAN_FONTS: Record<string, string> = {
   // Japanese: without a named Japanese font, canvas kana and kanji fell to whatever system font the browser picked
   // (on Windows sometimes a Chinese one).
   Jpan: '"M PLUS 1 Han", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", "Noto Sans JP", "Noto Sans CJK JP", Meiryo, ',
+  // Korean: Korean system fonts before the shared fallback, whose Japanese fonts draw any Hangul they have in Japanese metrics.
+  Kore: '"Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Noto Sans CJK KR", "Source Han Sans KR", ',
+  // Thai: Thai system fonts first, so vowel and tone marks stack in a font designed for them.
+  Thai: '"Thonburi", "Sukhumvit Set", "Leelawadee UI", "Leelawadee", "Noto Sans Thai", "Noto Sans Thai UI", ',
 };
 const han = HAN_FONTS[typeof document === 'undefined' ? '' : document.documentElement.getAttribute('data-script') ?? ''];
 /**

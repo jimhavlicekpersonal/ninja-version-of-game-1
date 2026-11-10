@@ -926,6 +926,22 @@ html[data-script="Hans"] { --font-fallback: 'PingFang SC', 'Hiragino Sans GB', '
 html[data-script="Hant"] { --font-fallback: 'PingFang TC', 'PingFang HK', 'Microsoft JhengHei UI', 'Microsoft JhengHei', 'Noto Sans CJK TC', 'Noto Sans TC', 'Source Han Sans TC', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; --font: 'M PLUS 1 Han', var(--font-fallback); }
 /* Japanese: Japanese system fonts first and never a Chinese one (Han unification); M PLUS 1 Han leaves General Punctuation to the Japanese font, so …… and ― are full-width. */
 html[data-script="Jpan"] { --font-fallback: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Noto Sans JP', 'Noto Sans CJK JP', 'Source Han Sans JP', Meiryo, 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; --font: 'M PLUS 1 Han', var(--font-fallback); }
+/*
+ * Korean: Korean system fonts first (the shared fallback lists Japanese fonts first, and Noto Sans CJK JP would draw Hangul
+ * in Japanese metrics). Korean separates words with spaces and breaks lines only there (keep-all); the default breaks
+ * inside a word, between any two syllables.
+ */
+html[data-script="Kore"] { --font-fallback: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Noto Sans CJK KR', 'Source Han Sans KR', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; }
+html[data-script="Kore"] body { word-break: keep-all; overflow-wrap: anywhere; }
+/*
+ * Thai: no spaces between words; the browser's dictionary line breaking finds the breaks, so nothing may force
+ * break-all. Letter-spacing pulls vowel and tone marks off their consonants, and marks above and below need more line
+ * height than Latin.
+ */
+html[data-script="Thai"] { --font-fallback: Thonburi, 'Sukhumvit Set', 'Leelawadee UI', Leelawadee, 'Noto Sans Thai', 'Noto Sans Thai UI', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; }
+html[data-script="Thai"] body, html[data-script="Thai"] body * { letter-spacing: normal !important; }
+html[data-script="Thai"] :is(.round-btn span, .round-btn.big span:last-child, .btn) { line-height: 1.3; }
+html[data-script="Thai"] .event { word-break: normal; overflow-wrap: anywhere; }
 /* Right-to-left (Arabic, Hebrew, Urdu): text and flex rows follow `dir`; the fixed edges are mirrored here. */
 html[dir="rtl"] .side-rail { right: auto; left: calc(8px + var(--safe-l)); }
 html[dir="rtl"] .b-left { left: auto; right: calc(8px + var(--safe-r)); }

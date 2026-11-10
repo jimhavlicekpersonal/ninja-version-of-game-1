@@ -7,7 +7,7 @@ import { ENGLISH, catalogFor, deviceLocale, format, installCatalog, labelText as
 import type { Catalog, MessageRef } from '../../../locales/runtime';
 import { PRESET_CHAT } from '../../backend/net/protocol';
 export type { MessageRef } from '../../../locales/runtime';
-type Lang = { code: string; name: string; native: string; script: string; dir: 'ltr' | 'rtl'; alsoFor?: string[]; generatedNames?: 'noun-first' | 'compound' };
+type Lang = { code: string; name: string; native: string; script: string; dir: 'ltr' | 'rtl'; alsoFor?: string[]; generatedNames?: 'noun-first' | 'noun-first-joined' | 'compound' };
 type Availability = { coverage: number; ready: boolean; hash?: string; path?: string; keys?: number };
 const LANGS = (languagesFile as { languages: Lang[] }).languages;
 const AVAILABLE = availabilityFile as Record<string, Availability>;
@@ -116,6 +116,8 @@ export function generatedName(value: string, kind: 'place' | 'grove' = 'place'):
   const order = LANGS.find(l => l.code === deviceLocale())?.generatedNames;
   for (const [a, x] of first) for (const [b, y] of second) if (value === `${x} ${y}`) {
     if (order === 'noun-first') return `${t(b)} ${t(a)}`;
+    // Thai puts the modifier after the noun and writes a name with no space (ยอดเขา + สายฟ้า = ยอดเขาสายฟ้า): a space would split it into two phrases.
+    if (order === 'noun-first-joined') return `${t(b)}${t(a)}`;
     // German writes the two parts as one word (Donner + Gipfel = Donnergipfel); the first part carries any linking letters.
     if (order === 'compound') { const tail = t(b); return `${t(a)}${tail.charAt(0).toLocaleLowerCase(deviceLocale())}${tail.slice(1)}`; }
     return `${t(a)} ${t(b)}`;
