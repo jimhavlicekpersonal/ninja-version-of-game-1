@@ -1,0 +1,146 @@
+{
+  "$comment": "The game factory's settings. Everything the owner can change without touching code is here; see factory/README.md. `template` is the slot for the game to mimic: by default it is this repository as it is now, so pushing a new version of the ninja game is all it takes.",
+
+  "template": {
+    "path": "..",
+    "git": null,
+    "ref": null,
+    "exclude": ["factory/**", ".github/workflows/factory.yml", "node_modules/**", "dist/**", "dist-server/**", "public/lang/**", "locales/compiled/**"],
+    "survey": true,
+    "shared": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "README.md",
+      "compartments.json",
+      "docs/STATUS.md",
+      "docs/DECISIONS.md",
+      "docs/rebuild/01-REBUILD-ANALYSIS.md",
+      "docs/rebuild/02-ARCHITECTURE.md",
+      "docs/rebuild/ID_MAP.md"
+    ],
+    "stages": {
+      "market": ["docs/audit/STATE_OF_THE_GAME.md", "docs/store/LISTING.md"],
+      "brand": ["docs/store/LISTING.md", "locales/GLOSSARY.md", "src/gameplay/data/names.json", "docs/art/ART_AI_BRIEF.md"],
+      "monetization": ["src/gameplay/data/store.json", "src/gameplay/data/offers.json", "src/gameplay/data/pass.json", "src/gameplay/data/economy.json", "src/gameplay/data/daily.json", "src/gameplay/data/cosmetics.json", "docs/game-theory/TOP_UP.md", "docs/legal/MARKETS.md"],
+      "compliance": ["docs/legal/*.md", "docs/store/README.md", "docs/store/PRIVACY.md", "docs/store/REVIEW_NOTES.md", "docs/store/RELEASE.md", "docs/store/WORLDWIDE_AUDIT.md"],
+      "languages": ["locales/CLAUDE.md", "locales/GLOSSARY.md", "locales/languages.json", "docs/localization/README.md"],
+      "economy": ["src/gameplay/CLAUDE.md", "docs/game-theory/PROGRESSION_MODEL.md", "docs/game-theory/ROSTER.md", "docs/game-theory/CAMPAIGN.md", "docs/game-theory/ARMY_BALANCE.md", "locales/en/data.json", "src/gameplay/data/economy.json", "src/gameplay/data/trials.json", "src/gameplay/data/events.json", "src/gameplay/data/ranks.json"],
+      "engine": ["src/presentation/CLAUDE.md", "docs/prompts/LOW_END_AND_BAD_NETWORK.md", "docs/prompts/DOWNLOAD_AND_LANGUAGE.md", "src/presentation/render/quality.ts", "vite.config.ts"],
+      "art": ["src/presentation/art/CLAUDE.md", "docs/art/ART_AI_BRIEF.md", "docs/art/ASSET_KEYS.md", "docs/art/REQUESTS.md", "src/presentation/art/toolkit.ts"],
+      "gui": ["src/presentation/CLAUDE.md", "locales/en/ui.json", "locales/en/boot.json", "src/presentation/ui/tutorial.ts"],
+      "plan": ["src/gameplay/CLAUDE.md", "src/presentation/CLAUDE.md", "src/presentation/art/CLAUDE.md", "src/backend/CLAUDE.md", "locales/CLAUDE.md", "docs/SHIPPING.md"]
+    },
+    "nameSurface": { "file": "locales/en/data.json", "entityPattern": "(\\.name$|^economy\\.resourceNames\\.)" },
+    "themeLexicon": ["Kagemura", "ninja", "shinobi", "kunai", "shuriken", "dojo", "sensei", "Hoshi", "kamon", "Clan Keep", "Jade", "Shadow Trial", "Toadstool"],
+    "lanes": {
+      "integration": {
+        "agent": "INTEGRATION",
+        "brief": "AGENTS.md",
+        "owns": ["**"],
+        "generated": [],
+        "requests": null
+      },
+      "gameplay": {
+        "agent": "GAME THEORY AI",
+        "brief": "src/gameplay/CLAUDE.md",
+        "owns": ["src/gameplay/**", "docs/game-theory/**", "tools/progression/**", "tools/balance/**", "tests/gameplay/**"],
+        "generated": ["locales/**", "docs/STATUS.md", "docs/rebuild/ID_MAP.md"],
+        "requests": "docs/backend/REQUESTS.md"
+      },
+      "art": {
+        "agent": "ART AI",
+        "brief": "src/presentation/art/CLAUDE.md",
+        "owns": ["src/presentation/art/**", "src/presentation/audio/**", "public/art/**", "docs/art/**", "tools/brand/**", "tests/presentation/art/**", "tests/presentation/audio/**"],
+        "generated": ["public/*.png", "public/icons/**", "ios/App/App/Assets.xcassets/**", "android/app/src/main/res/**"],
+        "requests": "docs/art/REQUESTS.md"
+      },
+      "gui": {
+        "agent": "GUI & INTERACTION AI",
+        "brief": "src/presentation/CLAUDE.md",
+        "owns": ["src/presentation/render/**", "src/presentation/ui/**", "locales/en/ui.json", "locales/en/boot.json", "locales/en/messages.json", "tests/presentation/**"],
+        "generated": ["locales/**", "docs/STATUS.md"],
+        "requests": "docs/game-theory/REQUESTS.md"
+      },
+      "backend": {
+        "agent": "BACKEND AI",
+        "brief": "src/backend/CLAUDE.md",
+        "owns": ["src/backend/**", "server/**", "docs/PROTOCOL.md", "docs/SHIPPING.md", "docs/store/**", "docs/legal/**", "docs/backend/**", "public/*.html", "public/legal.js", "locales/en/pages.json", "tools/store/**", "tests/backend/**"],
+        "generated": ["locales/**", "docs/STATUS.md"],
+        "requests": "docs/backend/REQUESTS.md"
+      },
+      "translation": {
+        "agent": "TRANSLATION AI",
+        "brief": "locales/CLAUDE.md",
+        "owns": ["locales/{code}/**", "docs/localization/**"],
+        "generated": [],
+        "requests": null,
+        "checks": ["npm run i18n:check -- {code}", "npm test -- tests/locales"]
+      }
+    },
+    "install": "npm ci",
+    "checks": [
+      { "name": "tests", "command": "npm test" },
+      { "name": "web build", "command": "npm run build" },
+      { "name": "server types", "command": "npm run typecheck:server" },
+      { "name": "server build", "command": "npm run server:build" }
+    ]
+  },
+
+  "models": {
+    "thinker": "claude-opus-5-5",
+    "builder": "claude-opus-5-5",
+    "translator": "claude-opus-5-5"
+  },
+
+  "effort": {
+    "survey": "medium",
+    "research": "medium",
+    "think": "high",
+    "critique": "high",
+    "decide": "medium",
+    "build": "high",
+    "translate": "medium"
+  },
+
+  "api": {
+    "fallbacks": true,
+    "webSearch": true,
+    "maxSearchesPerProbe": 8,
+    "concurrency": 3,
+    "compaction": true,
+    "cacheTtl": "1h",
+    "maxRetries": 4
+  },
+
+  "skeleton": {
+    "depth": "standard",
+    "stages": ["market", "brand", "monetization", "compliance", "languages", "economy", "engine", "art", "gui", "plan"]
+  },
+
+  "build": {
+    "outputDir": "games",
+    "shell": "ci-only",
+    "shellTimeoutSeconds": 900,
+    "maxTurnsPerOrder": 250,
+    "maxFixRounds": 3,
+    "languages": "plan"
+  },
+
+  "budget": {
+    "skeletonUsd": 50,
+    "buildUsd": 400
+  },
+
+  "pricing": {
+    "models": {
+      "claude-opus-5-5": { "input": 4, "output": 20, "cacheRead": 0.2, "cacheWrite5m": 5, "cacheWrite1h": 8 },
+      "claude-opus-5": { "input": 5, "output": 25, "cacheRead": 0.5, "cacheWrite5m": 6.25, "cacheWrite1h": 10 },
+      "claude-opus-4-8": { "input": 5, "output": 25, "cacheRead": 0.5, "cacheWrite5m": 6.25, "cacheWrite1h": 10 },
+      "claude-fable-5-2": { "input": 8, "output": 40, "cacheRead": 0.2, "cacheWrite5m": 10, "cacheWrite1h": 16 },
+      "claude-sonnet-5-5": { "input": 2, "output": 10, "cacheRead": 0.1, "cacheWrite5m": 2.5, "cacheWrite1h": 4 },
+      "claude-sonnet-5": { "input": 2, "output": 10, "cacheRead": 0.2, "cacheWrite5m": 2.5, "cacheWrite1h": 4 },
+      "claude-haiku-5-5": { "input": 0.1, "output": 0.5, "cacheRead": 0.01, "cacheWrite5m": 0.125, "cacheWrite1h": 0.2 }
+    },
+    "webSearchPerRequest": 0.01
+  }
+}

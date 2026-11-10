@@ -1,0 +1,17 @@
+{
+  "$comment": "Games this factory line has made. The market stage reads it so a new game does not repeat an old one. `approve` adds to it.",
+  "games": [
+    {
+      "name": "Toadstool Kingdoms",
+      "theme": "cartoon woodland fantasy: mushroom-folk villages, acorns and dew, hedgehog and frog troops",
+      "audience": "broad casual strategy players",
+      "status": "the first build; superseded by the rebuild below"
+    },
+    {
+      "name": "Kagemura: Ninja Clans",
+      "theme": "an original ninja clan and its hidden mountain village: smoke bombs, sabotage, an endless ladder of fortresses",
+      "audience": "mobile strategy players worldwide, cheap phones and weak networks included",
+      "status": "the current template; not released"
+    }
+  ]
+}

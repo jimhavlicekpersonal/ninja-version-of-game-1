@@ -53,3 +53,9 @@ merely by adding this inventory.
 ## Stack
 
 Phaser 3.90 (the production build bundles `render/phaserBuild.js`, not all of Phaser), Vite 8, Vitest 5, TypeScript 5.9, plain DOM + CSS HUD. Server: Fastify, `pg`, optional Redis through a small hand-written client, Sentry envelopes without the SDK. Owner-only steps (store accounts, products, secrets, hosting) are in `docs/SHIPPING.md`.
+
+<!-- factory:start -->
+## Game factory (not part of the game)
+
+`factory/` calls the Claude API to design and build new games with this repository as the template (`factory/README.md`; brief in `factory/CLAUDE.md`). It is its own package, outside the compartments, the bundle, the Docker image and the game's tests. When a brief moves, a lane or a check changes, or the name catalogue changes shape, update `factory/factory.config.json`: `cd factory && npm test` fails when its settings no longer match this repository.
+<!-- factory:end -->

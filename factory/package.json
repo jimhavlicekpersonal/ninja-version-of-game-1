@@ -1,0 +1,31 @@
+{
+  "name": "game-factory",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Press GO: calls the Claude API to design, then build, a new game on the template in this repository.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "go": "tsx src/cli.ts go",
+    "status": "tsx src/cli.ts status",
+    "approve": "tsx src/cli.ts approve",
+    "build": "tsx src/cli.ts build",
+    "plan": "tsx src/cli.ts plan",
+    "template": "tsx src/cli.ts template",
+    "factory": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.7.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

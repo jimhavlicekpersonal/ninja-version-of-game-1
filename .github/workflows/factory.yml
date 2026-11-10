@@ -1,0 +1,200 @@
+# The game factory's GO button (factory/README.md).
+#
+# Actions -> Game Factory -> Run workflow:
+#   action = go     designs a new game from the template on the chosen branch and stops at the skeleton.
+#                   The skeleton is shown in the run's summary and kept on the branch factory/run-<id>.
+#   action = build  builds that game. Starting it with the run id is the owner's approval.
+#                   The game is pushed to the branch game/<slug>; run it again to continue after a stop.
+#
+# Needs the repository secret ANTHROPIC_API_KEY (not needed with mock = true).
+# Build sessions run commands Claude writes; a hosted runner is a disposable machine, which is why
+# they are allowed here by default and not on a laptop (build.shell in factory/factory.config.json).
+name: Game Factory
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'go = design a new game and stop at the skeleton. build = build an approved run.'
+        type: choice
+        options: [go, build]
+        default: go
+      idea:
+        description: 'go: an idea to start from (leave empty and the market stage chooses)'
+        type: string
+        default: ''
+      depth:
+        description: 'go: quick (1 call per stage), standard, or deep (every lens, two reviews)'
+        type: choice
+        options: [standard, quick, deep]
+        default: standard
+      run_id:
+        description: 'build: the run id from the go run. Running build approves that skeleton.'
+        type: string
+        default: ''
+      mock:
+        description: 'go: try the wiring without calling the API (placeholder output)'
+        type: boolean
+        default: false
+  # The factory's own tests, when the factory changes.
+  push:
+    paths: ['factory/**', '.github/workflows/factory.yml']
+  pull_request:
+    paths: ['factory/**', '.github/workflows/factory.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: game-factory-${{ github.event_name }}-${{ inputs.run_id || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Factory tests
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: factory
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: factory/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  go:
+    name: Design a new game
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'go'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: factory/package-lock.json
+      - run: npm ci
+        working-directory: factory
+
+      - name: GO
+        id: go
+        working-directory: factory
+        timeout-minutes: 270
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IDEA: ${{ inputs.idea }}
+          DEPTH: ${{ inputs.depth }}
+          MOCK: ${{ inputs.mock }}
+        run: |
+          args=(--depth "$DEPTH")
+          if [ -n "$IDEA" ]; then args+=(--idea "$IDEA"); fi
+          if [ "$MOCK" = "true" ]; then args+=(--mock); fi
+          npm run go -- "${args[@]}" || echo "stopped=true" >> "$GITHUB_OUTPUT"
+
+      # Kept even when the run stopped early (budget, network): `go -- --run <id>` on that branch continues it.
+      - name: Keep the run on its own branch
+        id: keep
+        if: always()
+        run: |
+          id="$(ls factory/runs 2>/dev/null | sort | tail -1)"
+          if [ -z "$id" ]; then echo "No run folder was written."; exit 0; fi
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          git checkout -b "factory/run-$id"
+          git add "factory/runs/$id"
+          git -c user.name="Game Factory" -c user.email="game-factory@users.noreply.github.com" commit --quiet -m "Game factory run $id"
+          git push origin "factory/run-$id"
+          {
+            if [ -f "factory/runs/$id/SKELETON.md" ]; then cat "factory/runs/$id/SKELETON.md"; else echo "# Run $id stopped before the skeleton"; echo; tail -20 "factory/runs/$id/run.log" || true; fi
+            echo
+            echo "---"
+            echo "Run id: \`$id\`. Branch: \`factory/run-$id\`. To build it: Actions -> Game Factory -> Run workflow -> action = build, run_id = $id."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Say so if the run stopped early
+        if: steps.go.outputs.stopped == 'true'
+        run: |
+          echo "::error::The run stopped before the skeleton was finished (see the GO step). It is saved on the branch factory/run-${{ steps.keep.outputs.id }}."
+          exit 1
+
+  build:
+    name: Build the approved game
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'build'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    permissions:
+      contents: write
+    env:
+      RUN_ID: ${{ inputs.run_id }}
+    steps:
+      - name: Check the run id
+        run: |
+          if ! [[ "$RUN_ID" =~ ^[0-9]{8}-[0-9]{4}-[0-9a-f]{4}$ ]]; then
+            echo "::error::run_id must be the id a go run printed, like 20261110-1636-e04a."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+        with:
+          ref: factory/run-${{ inputs.run_id }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: factory/package-lock.json
+      - run: npm ci
+        working-directory: factory
+
+      # A build that stopped (time limit, budget) pushed the game so far; carry on from it.
+      - name: Bring back the game so far
+        run: |
+          slug="$(node -p "require('./factory/runs/$RUN_ID/state.json').game.slug")"
+          echo "SLUG=$slug" >> "$GITHUB_ENV"
+          if git fetch --quiet origin "game/$slug:game/$slug" 2>/dev/null; then
+            mkdir -p factory/games
+            git clone --quiet --branch "game/$slug" --single-branch . "factory/games/$slug"
+            git -C "factory/games/$slug" checkout --quiet -B main
+            echo "Continuing the game on branch game/$slug."
+          fi
+
+      - name: Build
+        id: build
+        working-directory: factory
+        timeout-minutes: 320
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run build -- "$RUN_ID" --approve || echo "stopped=true" >> "$GITHUB_OUTPUT"
+
+      - name: Keep the game (branch game/<slug>) and the run
+        if: always()
+        run: |
+          if [ -d "factory/games/$SLUG/.git" ]; then
+            git fetch --quiet "factory/games/$SLUG" "main:game/$SLUG"
+            git push origin "game/$SLUG"
+          fi
+          git add "factory/runs/$RUN_ID" factory/portfolio.json
+          if ! git diff --cached --quiet; then
+            git -c user.name="Game Factory" -c user.email="game-factory@users.noreply.github.com" commit --quiet -m "Game factory run $RUN_ID: build progress"
+            git push origin "HEAD:factory/run-$RUN_ID"
+          fi
+          {
+            if [ -f "factory/runs/$RUN_ID/build/BUILD_REPORT.md" ]; then cat "factory/runs/$RUN_ID/build/BUILD_REPORT.md"; else echo "# The build of run $RUN_ID has not produced a report yet"; fi
+            echo
+            echo "---"
+            echo "Game branch: \`game/$SLUG\` (its own history; push it to a new repository to make it a project). Run record: \`factory/run-$RUN_ID\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Say so if the build stopped early
+        if: steps.build.outputs.stopped == 'true'
+        run: |
+          echo "::error::The build stopped before the last work order (budget, time or an API error; see the Build step). Nothing is lost: run the workflow again with action = build and the same run_id to continue."
+          exit 1

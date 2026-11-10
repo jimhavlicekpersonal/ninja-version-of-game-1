@@ -1,0 +1,12 @@
+node_modules/
+.cache/
+
+# New games are their own git repositories; they are not part of this one.
+games/
+
+# A run's decisions and skeleton can be committed. Its raw call log is a working record only.
+runs/*/calls/
+runs/*/run.log
+
+# The owner's own brief for the next run (brief.example.json is the committed pattern).
+brief.json
