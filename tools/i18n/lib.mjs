@@ -162,7 +162,8 @@ const SCRIPT = {
   Hebr: /\p{Script=Hebrew}/u,
   Hans: /\p{Script=Han}/u,
   Hant: /\p{Script=Han}/u,
-  Jpan: /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u,
+  // ー (U+30FC, the katakana long-vowel mark) is Script=Common but only ever written in Japanese (リレー, サーバー).
+  Jpan: /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\u30FC]/u,
   Kore: /[\p{Script=Hangul}\p{Script=Han}]/u,
   Deva: /\p{Script=Devanagari}/u,
   Beng: /\p{Script=Bengali}/u,
