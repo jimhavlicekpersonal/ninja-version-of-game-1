@@ -48,7 +48,13 @@ const dutch = key => nlData[key]?.text || '';
 const svData = read('locales/sv/data.json');
 const shortSwedish = {starter_pack: 'Jade och resurser för nya klanledare', builder_pack: 'Jade för ännu en Hantverkare, plus resurser', war_prep_pack: 'Proviant och Jade för Allianskriget', rebuild_pack: 'Jade och resurser för att bygga upp igen', keep_pack: 'Resurser och Jade för din nya Borg'};
 const swedish = key => svData[key]?.text || '';
-// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch or Swedish to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound or a Chinese word, so overlong text fails here instead.
+const daData = read('locales/da/data.json');
+const shortDanish = {starter_pack: 'Jade og ressourcer til nye klanledere', builder_pack: 'Jade til endnu en Håndværker, plus ressourcer', war_prep_pack: 'Proviant og Jade til Alliancekrigen', rebuild_pack: 'Jade og ressourcer til genopbygning', keep_pack: 'Ressourcer og Jade til din nye Borg'};
+const danish = key => daData[key]?.text || '';
+const nbData = read('locales/nb/data.json');
+const shortNorwegian = {starter_pack: 'Jade og ressurser for nye klanledere', builder_pack: 'Jade til enda en Håndverker, pluss ressurser', war_prep_pack: 'Proviant og Jade til Alliansekrigen', rebuild_pack: 'Jade og ressurser til gjenoppbygging', keep_pack: 'Ressurser og Jade til den nye Borgen din'};
+const norwegian = key => nbData[key]?.text || '';
+// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch, Swedish, Danish or Norwegian to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound or a Chinese word, so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -138,6 +144,18 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? swedish(`store.packs.${gameId}.name`) : offer ? swedish(`offers.rules.${offer.id}.title`) : stipend ? swedish('store.stipend.name') : isPass ? 'Premium-Säsongsrulle' : name, 30, 'Swedish'),
         description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortSwedish[offer.id] || swedish(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} dagliga utbetalningar på ${stipend.jadePerPayment} Jade` : 'Premiumspår för den här säsongen', 55, 'Swedish'),
         locale: 'sv',
+      },
+      // Danish.
+      {
+        displayName: clip(pack ? danish(`store.packs.${gameId}.name`) : offer ? danish(`offers.rules.${offer.id}.title`) : stipend ? danish('store.stipend.name') : isPass ? 'Premium-Sæsonrulle' : name, 30, 'Danish'),
+        description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortDanish[offer.id] || danish(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} daglige udbetalinger på ${stipend.jadePerPayment} Jade` : 'Premiumspor for denne sæson', 55, 'Danish'),
+        locale: 'da',
+      },
+      // Norwegian Bokmål (App Store Connect lists it as Norwegian), also shown to nn and no devices.
+      {
+        displayName: clip(pack ? norwegian(`store.packs.${gameId}.name`) : offer ? norwegian(`offers.rules.${offer.id}.title`) : stipend ? norwegian('store.stipend.name') : isPass ? 'Premium-Sesongrull' : name, 30, 'Norwegian'),
+        description: clip(pack ? `${pack.moonstones} Jade` : offer ? (shortNorwegian[offer.id] || norwegian(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} daglige utbetalinger på ${stipend.jadePerPayment} Jade` : 'Premiumspor for denne sesongen', 55, 'Norwegian'),
+        locale: 'nb',
       },
     ],
     productID: storeId,

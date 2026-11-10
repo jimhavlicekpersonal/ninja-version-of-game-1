@@ -86,6 +86,16 @@
           "displayName": "En nypa Jade",
           "description": "45 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "En knivspids Jade",
+          "description": "45 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "En klype Jade",
+          "description": "45 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "jade_pinch",
@@ -176,6 +186,16 @@
           "displayName": "Pung med Jade",
           "description": "100 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Pung med Jade",
+          "description": "100 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Pung med Jade",
+          "description": "100 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "jade_pouch",
@@ -266,6 +286,16 @@
           "displayName": "Påse med Jade",
           "description": "280 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Pose med Jade",
+          "description": "280 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Pose med Jade",
+          "description": "280 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "jade_bag",
@@ -356,6 +386,16 @@
           "displayName": "Låda med Jade",
           "description": "600 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Æske med Jade",
+          "description": "600 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Eske med Jade",
+          "description": "600 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "jade_box",
@@ -446,6 +486,16 @@
           "displayName": "Kista med Jade",
           "description": "1300 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Kiste med Jade",
+          "description": "1300 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Kiste med Jade",
+          "description": "1300 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "jade_chest",
@@ -536,6 +586,16 @@
           "displayName": "Valv med Jade",
           "description": "3500 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Boks med Jade",
+          "description": "3500 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Hvelv med Jade",
+          "description": "3500 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "jade_vault",
@@ -626,6 +686,16 @@
           "displayName": "Drakskatt av Jade",
           "description": "7500 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Dragens skat af Jade",
+          "description": "7500 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Drageskatt av Jade",
+          "description": "7500 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "jade_hoard",
@@ -716,6 +786,16 @@
           "displayName": "Premium-Säsongsrulle",
           "description": "Premiumspår för den här säsongen",
           "locale": "sv"
+        },
+        {
+          "displayName": "Premium-Sæsonrulle",
+          "description": "Premiumspor for denne sæson",
+          "locale": "da"
+        },
+        {
+          "displayName": "Premium-Sesongrull",
+          "description": "Premiumspor for denne sesongen",
+          "locale": "nb"
         }
       ],
       "productID": "season_scroll",
@@ -806,6 +886,16 @@
           "displayName": "Startpaket",
           "description": "Jade och resurser för nya klanledare",
           "locale": "sv"
+        },
+        {
+          "displayName": "Startpakke",
+          "description": "Jade og ressourcer til nye klanledere",
+          "locale": "da"
+        },
+        {
+          "displayName": "Startpakke",
+          "description": "Jade og ressurser for nye klanledere",
+          "locale": "nb"
         }
       ],
       "productID": "offer_starter",
@@ -896,6 +986,16 @@
           "displayName": "Hantverkarpaket",
           "description": "Jade för ännu en Hantverkare, plus resurser",
           "locale": "sv"
+        },
+        {
+          "displayName": "Håndværkerpakke",
+          "description": "Jade til endnu en Håndværker, plus ressourcer",
+          "locale": "da"
+        },
+        {
+          "displayName": "Håndverkerpakke",
+          "description": "Jade til enda en Håndverker, pluss ressurser",
+          "locale": "nb"
         }
       ],
       "productID": "offer_builder",
@@ -986,6 +1086,16 @@
           "displayName": "Krigsförråd",
           "description": "Proviant och Jade för Allianskriget",
           "locale": "sv"
+        },
+        {
+          "displayName": "Krigsforsyninger",
+          "description": "Proviant og Jade til Alliancekrigen",
+          "locale": "da"
+        },
+        {
+          "displayName": "Krigsforsyninger",
+          "description": "Proviant og Jade til Alliansekrigen",
+          "locale": "nb"
         }
       ],
       "productID": "offer_war_prep",
@@ -1076,6 +1186,16 @@
           "displayName": "Återuppbyggnadspaket",
           "description": "Jade och resurser för att bygga upp igen",
           "locale": "sv"
+        },
+        {
+          "displayName": "Genopbygningssæt",
+          "description": "Jade og ressourcer til genopbygning",
+          "locale": "da"
+        },
+        {
+          "displayName": "Gjenoppbyggingssett",
+          "description": "Jade og ressurser til gjenoppbygging",
+          "locale": "nb"
         }
       ],
       "productID": "offer_rebuild",
@@ -1166,6 +1286,16 @@
           "displayName": "Klanstipendium",
           "description": "30 dagliga utbetalningar på 12 Jade",
           "locale": "sv"
+        },
+        {
+          "displayName": "Klanstipendium",
+          "description": "30 daglige udbetalinger på 12 Jade",
+          "locale": "da"
+        },
+        {
+          "displayName": "Klanstipend",
+          "description": "30 daglige utbetalinger på 12 Jade",
+          "locale": "nb"
         }
       ],
       "productID": "clan_stipend",
@@ -1256,6 +1386,16 @@
           "displayName": "Borgfest",
           "description": "Resurser och Jade för din nya Borg",
           "locale": "sv"
+        },
+        {
+          "displayName": "Borgfest",
+          "description": "Ressourcer og Jade til din nye Borg",
+          "locale": "da"
+        },
+        {
+          "displayName": "Borgfest",
+          "description": "Ressurser og Jade til den nye Borgen din",
+          "locale": "nb"
         }
       ],
       "productID": "offer_keep",

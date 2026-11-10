@@ -18,6 +18,8 @@ const ACCOUNT_FAILURE = {
   ja: 'リクエストを送信できませんでした。入力内容と接続を確認して、もう一度お試しください。',
   nl: 'Het verzoek kon niet worden verstuurd. Controleer je gegevens en je verbinding en probeer het opnieuw.',
   sv: 'Begäran kunde inte skickas. Kontrollera uppgifterna och anslutningen och försök igen.',
+  da: 'Anmodningen kunne ikke sendes. Tjek dine oplysninger og din forbindelse, og prøv igen.',
+  nb: 'Forespørselen kunne ikke sendes. Sjekk opplysningene og tilkoblingen, og prøv igjen.',
 };
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;

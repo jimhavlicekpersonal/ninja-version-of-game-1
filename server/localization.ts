@@ -11,8 +11,10 @@ import catalan from '../locales/compiled/ca.json';
 import japanese from '../locales/compiled/ja.json';
 import dutch from '../locales/compiled/nl.json';
 import swedish from '../locales/compiled/sv.json';
+import danish from '../locales/compiled/da.json';
+import norwegian from '../locales/compiled/nb.json';
 import { ENGLISH, sourceText, type Catalog } from '../locales/runtime';
-const catalogs: Record<string, Catalog> = { en: ENGLISH, es: spanish, hi: hindi, pt: portuguese, de: german, fr: french, it: italian, 'zh-Hans': chinese, ro: romanian, ca: catalan, ja: japanese, nl: dutch, sv: swedish };
+const catalogs: Record<string, Catalog> = { en: ENGLISH, es: spanish, hi: hindi, pt: portuguese, de: german, fr: french, it: italian, 'zh-Hans': chinese, ro: romanian, ca: catalan, ja: japanese, nl: dutch, sv: swedish, da: danish, nb: norwegian };
 export function notificationText(text: string, locale = 'en'): string {
   const code = Object.hasOwn(catalogs, locale) ? locale : 'en';
   return sourceText(text, code, catalogs[code]);

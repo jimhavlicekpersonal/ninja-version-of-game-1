@@ -1,0 +1,836 @@
+{
+  "language": "nb",
+  "variant": "Norwegian Bokmål with du, also served to Nynorsk (nn) and plain Norwegian (no) devices",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "data",
+      "key": "economy.resourceNames.moonstones",
+      "text": "Jade",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.placeFirst.8",
+      "text": "Frost",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.placeFirst.10",
+      "text": "Lotus",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.placeFirst.11",
+      "text": "Storm",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.placeSecond.1",
+      "text": "Pass",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.0",
+      "text": "Kaito",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.1",
+      "text": "Rin",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.2",
+      "text": "Sora",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.3",
+      "text": "Hana",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.4",
+      "text": "Ren",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.5",
+      "text": "Yuki",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.6",
+      "text": "Daichi",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.7",
+      "text": "Mei",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.8",
+      "text": "Takeshi",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.9",
+      "text": "Aiko",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.10",
+      "text": "Haru",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.11",
+      "text": "Kenji",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.12",
+      "text": "Nami",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.13",
+      "text": "Shin",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.14",
+      "text": "Tomo",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.15",
+      "text": "Kira",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.0",
+      "text": "Mori",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.1",
+      "text": "Takeda",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.2",
+      "text": "Kawamura",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.3",
+      "text": "Ishida",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.4",
+      "text": "Hayashi",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.5",
+      "text": "Sakamoto",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.6",
+      "text": "Okada",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.7",
+      "text": "Kimura",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.8",
+      "text": "Matsuda",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.9",
+      "text": "Ueda",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.10",
+      "text": "Nakano",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.11",
+      "text": "Fujita",
+      "reason": "Japanese personal/family name preserved"
+    },
+    {
+      "namespace": "data",
+      "key": "progression.tiers.tier2.name",
+      "text": "Adept",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "progression.tiers.tier3.name",
+      "text": "Veteran",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "roster.warriors.shinobi.name",
+      "text": "Shinobi",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "data",
+      "key": "roster.warriors.tunnel_runner.ability.name",
+      "text": "Tunnel",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "social.groveNames.first.3",
+      "text": "Jade",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "social.groveNames.second.1",
+      "text": "Lotus",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "social.groveNames.second.2",
+      "text": "Tiger",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "data",
+      "key": "troops.hedgehog_roller.name",
+      "text": "Shinobi",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.281a37477f",
+      "text": "tank",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.5870f9bfd1",
+      "text": "Storm",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.7e39068eb8",
+      "text": "Kage",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.9db22d416e",
+      "text": "Obsidian",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.9fbbe982e1",
+      "text": "Jade",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.adlam_46b7485555",
+      "text": "Adlam",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bamum_f172a8db88",
+      "text": "Bamum",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.batak_cb568479fd",
+      "text": "Batak",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bopomofo_98fa38f155",
+      "text": "Bopomofo",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.buhid_bf01f926b1",
+      "text": "Buhid",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.chakma_47143a0b98",
+      "text": "Chakma",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.cham_d63d110257",
+      "text": "Cham",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.cherokee_000e5e05a5",
+      "text": "Cherokee",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.devanagari_bc8e600721",
+      "text": "Devanagari",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.gujarati_aa1324f5df",
+      "text": "Gujarati",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.gurmukhi_28766224e2",
+      "text": "Gurmukhi",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.han_861af54f72",
+      "text": "Han",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hangul_5db6aaf978",
+      "text": "Hangul",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hanunoo_34539251fd",
+      "text": "Hanunoo",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hiragana_63a7a6c8a7",
+      "text": "Hiragana",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.kannada_4829406f52",
+      "text": "Kannada",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.katakana_ff92aee95a",
+      "text": "Katakana",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.khmer_08d72ec6a1",
+      "text": "Khmer",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lepcha_e418a0a6af",
+      "text": "Lepcha",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.limbu_543b10a96d",
+      "text": "Limbu",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lisu_3cc130feed",
+      "text": "Lisu",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.malayalam_2247ef59ce",
+      "text": "Malayalam",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.miao_a1e0e59510",
+      "text": "Miao",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.mro_d3e6054d62",
+      "text": "Mro",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.newa_8d897dbb59",
+      "text": "Newa",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.osage_ea699037c2",
+      "text": "Osage",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.rejang_54160d2075",
+      "text": "Rejang",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.saurashtra_d82e14c137",
+      "text": "Saurashtra",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tagalog_605eac3030",
+      "text": "Tagalog",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tagbanwa_ab2498989d",
+      "text": "Tagbanwa",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tamil_135d78ac8f",
+      "text": "Tamil",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tangsa_7a4fd080f7",
+      "text": "Tangsa",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.telugu_a4504b3d0f",
+      "text": "Telugu",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.thaana_1b2045d95b",
+      "text": "Thaana",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.thai_ad705ee19c",
+      "text": "Thai",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tifinagh_25e03d7123",
+      "text": "Tifinagh",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.toto_b41419df9b",
+      "text": "Toto",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.vai_d0cfbdc71d",
+      "text": "Vai",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.wancho_71a2270d98",
+      "text": "Wancho",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.yi_caf1928d4e",
+      "text": "Yi",
+      "reason": "Script (writing system) name used unchanged in Norwegian"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.base_7b47361aad",
+      "text": "Base",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.chat_460b3a7da0",
+      "text": "Chat",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.codex_616efbe968",
+      "text": "Codex",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.for_jade_e82ccb5ba3",
+      "text": "{arg1} for {arg2} Jade?",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "Standard unit abbreviation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.hp_0c9cb32a1b",
+      "text": "{arg1} HP",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.jade_9fbbe982e1",
+      "text": "Jade",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.jade_9ff8af5a0c",
+      "text": "{arg1} Jade",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.ok_565339bc4d",
+      "text": "OK",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand or product name kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.premium_de88c121a8",
+      "text": "Premium",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.send_f6f4688ff2",
+      "text": "Send",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.test_7394a4113a",
+      "text": "{arg1} (test)",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.under_13_dd8ef95136",
+      "text": "Under 13",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.under_18_eaf7be3c12",
+      "text": "Under 18",
+      "reason": "Norwegian word, cognate or term Norwegian uses as it is (Jade, Storm, Lotus, Frost, Tiger, Adept, Veteran, Obsidian, Base, Chat, Konto, Premium, Codex)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Japanese word used as a name (Shinobi, Kage); transliterated, not translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.d",
+      "text": "{d}d",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.ms",
+      "text": "{m}m {s}s",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.m",
+      "text": "{m}m",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.s",
+      "text": "{s}s",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "Placeholder/punctuation template; no translatable words"
+    }
+  ],
+  "otherWarningsReviewed": [
+    "pages: pages.support.26 mostly uses a different script",
+    "pages: pages.tokushoho.1 is 4.5x the English length",
+    "pages: pages.shikin-kessai.1 is 4.7x the English length"
+  ],
+  "notes": [
+    "Generated names are compounds with indefinite second parts (generatedNames: compound): Torden + topp = Tordentopp, Jern + port = Jernport.",
+    "The Japanese statutory titles expand into Norwegian explanations; long page headings wrap.",
+    "Nothing attaches to a placeholder: no definite ending or genitive s (By: {name}, bygningen {building}); tests/locales/norwegian.test.ts checks it, and the check refuses Danish spellings (nu, igen, enhed, købe, efter).",
+    "Nynorsk and plain no devices get this Bokmål text (alsoFor); a separate Nynorsk translation does not exist.",
+    "No native Norwegian speaker has reviewed this translation yet, nor the legal pages; that review remains a release step."
+  ]
+}
