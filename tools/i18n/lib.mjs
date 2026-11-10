@@ -182,8 +182,11 @@ const SCRIPT = {
 // shinjitai forms); the second list is common Simplified-only characters that do not belong in zh-Hant.
 const NOT_SIMPLIFIED = /[們這個為會來時說對發點開戰鬥歸據門問題現實際與從長幾無過還進選擇運動電話國語學習買賣讀寫聽見觀覺關係網絡經驗圖書館體號碼頁麼東車馬鳥魚龍風飛雲氣變處當將應該給讓認識記錄設計劃級線結術藝園區隊員幣糧倉庫壘劍獎勵寶榮譽聯萬億裡錢銀鐵銅鍛煉練戦気剣図楽帰黒円売読単対発権歩済効険検験駅様拡広変恵悪営労弾隠鉄両囲亜仏価桜蔵総]/u;
 const NOT_TRADITIONAL = /[们这个为会来时说对发点开战归据门问题现实际与从长无过还进选择运动电话国语学习买卖读写听见观觉关网络经验图书]/u;
+// Common Simplified-only and Traditional-only forms that Japanese never uses (Japanese writes 们 as たち,
+// 战/戰 as 戦, 图/圖 as 図, 气/氣 as 気). Characters Japanese shares with either (会 来 点 与 国 学 写 区 万 宝 時 問題 電話 網) are left out.
+const NOT_JAPANESE = /[们这个为时说对发开战归门问题现实际从长无过还进选择运动电话语习买卖读听见观觉关网络经验图书级线结术艺园队员币仓库垒剑奖荣联亿钱银铁铜锻炼练們這戰鬥點圖氣劍寶獎體樂歸黑賣讀對發權區處應變當將聯萬錢鐵與從學國會來說經驗觀覺關]/u;
 export function wrongHanForms(text, script) {
-  const re = script === 'Hans' ? NOT_SIMPLIFIED : script === 'Hant' ? NOT_TRADITIONAL : null;
+  const re = script === 'Hans' ? NOT_SIMPLIFIED : script === 'Hant' ? NOT_TRADITIONAL : script === 'Jpan' ? NOT_JAPANESE : null;
   return re ? [...new Set([...text].filter(ch => re.test(ch)))] : [];
 }
 
@@ -260,6 +263,7 @@ export function checkWorksheet(lang, ns, src, ws) {
     if (lang.code === 'ca' && /[\u013F\u0140]/u.test(t)) errors.push(`${ns}: ${k} uses ŀ; Catalan writes l·l with the middle dot U+00B7`);
     const wrongHan = wrongHanForms(t, lang.script);
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
+    else if (wrongHan.length && lang.script === 'Jpan') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Chinese forms, not Japanese ones`);
     else if (wrongHan.length) warnings.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified-only characters`);
     if (t === en && /\p{L}/u.test(en)) warnings.push(`${ns}: ${k} is identical to English`);
     if (SCRIPT[lang.script] && t !== en && scriptShare([t], lang.script) < 0.7) warnings.push(`${ns}: ${k} mostly uses a different script`);
