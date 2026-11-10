@@ -50,6 +50,7 @@
 		B9C32A701A0010000000000A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		B9C32A701A0010000000000B /* ro */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ro; path = ro.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B9C32A701A0010000000000C /* ca */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ca; path = ca.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B9C32A701A0010000000000D /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +158,7 @@
 				"zh-Hans",
 				ro,
 				ca,
+				ja,
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
@@ -222,7 +224,7 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
-		B9C32A701A00100000000002 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (B9C32A701A00100000000003 /* en */, B9C32A701A00100000000004 /* es */, B9C32A701A00100000000005 /* hi */, B9C32A701A00100000000006 /* pt */, B9C32A701A00100000000007 /* de */, B9C32A701A00100000000008 /* fr */, B9C32A701A00100000000009 /* it */, B9C32A701A0010000000000A /* zh-Hans */, B9C32A701A0010000000000B /* ro */, B9C32A701A0010000000000C /* ca */); name = InfoPlist.strings; sourceTree = "<group>"; };
+		B9C32A701A00100000000002 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (B9C32A701A00100000000003 /* en */, B9C32A701A00100000000004 /* es */, B9C32A701A00100000000005 /* hi */, B9C32A701A00100000000006 /* pt */, B9C32A701A00100000000007 /* de */, B9C32A701A00100000000008 /* fr */, B9C32A701A00100000000009 /* it */, B9C32A701A0010000000000A /* zh-Hans */, B9C32A701A0010000000000B /* ro */, B9C32A701A0010000000000C /* ca */, B9C32A701A0010000000000D /* ja */); name = InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */

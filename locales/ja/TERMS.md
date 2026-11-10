@@ -7,7 +7,7 @@
 | Clan Keep / Keep / Keep 7 | 天守閣 / 天守閣（短：天守）/ 天守閣Lv.7 |
 | Coin Mint / Terraced Farm | 小判鋳造所（短：鋳造所）/ 棚田 |
 | Treasury / Provision Storehouse / storage | 金蔵 / 兵糧蔵 / 蔵 |
-| Coins / Provisions / Shadow Ink / Jade | 小判（枚）/ 兵糧 / 影墨 / 翡翠（個）。資源の量には助数詞を付けない場合もある：500 小判 → 小判500枚、兵糧500 |
+| Coins / Provisions / Shadow Ink / Jade | 小判（枚：小判500枚）/ 兵糧 / 影墨 / 翡翠（個）。兵糧と影墨は助数詞なし（兵糧500） |
 | Training Dojo / Squad Courtyard | 修行道場（短：道場）/ 陣屋 |
 | Village Artisan / Artisan's Hut | 村の職人 / 職人小屋 |
 | Alliance / Alliance Lodge / Alliance War | 同盟 / 同盟会館 / 同盟戦 |
