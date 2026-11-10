@@ -254,6 +254,10 @@ export function checkWorksheet(lang, ns, src, ws) {
     // other invisible controls, including CGJ, fillers and stray selectors.
     const visible = t.replace(/[\u200C\u200D]/g, '').replace(/(\p{Extended_Pictographic}|[0-9#*])[\uFE0E\uFE0F]/gu, '$1');
     if (/[\p{Default_Ignorable_Code_Point}\p{Cc}]/u.test(visible.replace(/\n/g, ''))) errors.push(`${ns}: ${k} contains invisible direction or control characters`);
+    // Romanian ș ț are comma-below letters; the look-alike cedilla forms break search and sorting.
+    if (lang.code === 'ro' && /[\u015E\u015F\u0162\u0163]/u.test(t)) errors.push(`${ns}: ${k} uses the cedilla ş ţ; Romanian writes the comma-below ș ț (U+0219, U+021B)`);
+    // Catalan l·l uses the middle dot U+00B7; the compatibility letters ŀ Ŀ are not used in modern text.
+    if (lang.code === 'ca' && /[\u013F\u0140]/u.test(t)) errors.push(`${ns}: ${k} uses ŀ; Catalan writes l·l with the middle dot U+00B7`);
     const wrongHan = wrongHanForms(t, lang.script);
     if (wrongHan.length && lang.script === 'Hans') errors.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are not Simplified Chinese characters`);
     else if (wrongHan.length) warnings.push(`${ns}: ${k} uses ${wrongHan.join(' ')}, which are Simplified-only characters`);
