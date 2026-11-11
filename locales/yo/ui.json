@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "" },
   "temper.reset": { "en": "Back to untempered", "text": "" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "" },
   "stake.label": { "en": "Stake", "text": "" },
   "stake.none": { "en": "No stake", "text": "" },

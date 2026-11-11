@@ -62,6 +62,14 @@ export interface TemperAxisDef {
   fireSlow?: number;
 }
 
+/** What a tempered base takes off the attackers' support (`TemperDef.troopCuts`). */
+export interface TemperTroopCuts {
+  heal?: number;
+  aura?: number;
+  splashAura?: number;
+  revive?: number;
+}
+
 /** A base-wide effect of the base's temper profile on another building type. */
 export interface TemperBaseWideDef {
   /** Damage raised by this share at a full profile. */
@@ -82,6 +90,11 @@ export interface TemperDef {
   retemperCostShare: number;
   types: Record<BuildingType, Partial<Record<TemperAxis, TemperAxisDef>>>;
   baseWide: Partial<Record<TemperAxis, Record<BuildingType, TemperBaseWideDef>>>;
+  /**
+   * Base-wide cuts to the attackers' support (by the base's mean temper on an axis, at full weight): healing,
+   * toughness/haste auras, the Mountain Shield's splash cover and revives. Capped at 0.9 in total.
+   */
+  troopCuts?: Partial<Record<TemperAxis, TemperTroopCuts>>;
   offers: { recentRaids: number; counterShare: number; counters: Record<TemperFamily, Record<BuildingType, Temper>> };
   rivals: Record<string, { tempers: Record<BuildingType, Temper>; lootScale: number; biasShift: number }>;
 }

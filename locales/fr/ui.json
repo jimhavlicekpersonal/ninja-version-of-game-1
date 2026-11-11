@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Tremper chaque {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Trempé : chaque {building} a sa nouvelle forme." },
   "temper.reset": { "en": "Back to untempered", "text": "Revenir à sans trempe" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "La Veille affaiblit aussi, dans toute la base, les soins, les résurrections, la résistance et la protection des boucliers des attaquants." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Trempe : Portée {reach} · Explosion {blast} · Veille {watch}" },
   "stake.label": { "en": "Stake", "text": "Mise" },
   "stake.none": { "en": "No stake", "text": "Sans mise" },

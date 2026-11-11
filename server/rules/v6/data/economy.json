@@ -1,0 +1,116 @@
+{
+  "resourceNames": {
+    "acorns": "Coins",
+    "dew": "Provisions",
+    "nightsap": "Shadow Ink",
+    "moonstones": "Jade"
+  },
+  "mapSize": 40,
+  "startingResources": {
+    "acorns": 2500,
+    "dew": 2500,
+    "nightsap": 0,
+    "moonstones": 500
+  },
+  "startingLayout": [
+    {
+      "type": "elder_toadstool",
+      "x": 18,
+      "y": 18,
+      "level": 1
+    },
+    {
+      "type": "beaver_lodge",
+      "x": 14,
+      "y": 19,
+      "level": 1
+    },
+    {
+      "type": "beaver_lodge",
+      "x": 24,
+      "y": 19,
+      "level": 1
+    }
+  ],
+  "startingDecor": [
+    {
+      "type": "lantern_post",
+      "x": 17,
+      "y": 23
+    },
+    {
+      "type": "lantern_post",
+      "x": 22,
+      "y": 23
+    },
+    {
+      "type": "flower_bed",
+      "x": 16,
+      "y": 17
+    },
+    {
+      "type": "flower_bed",
+      "x": 23,
+      "y": 17
+    },
+    {
+      "type": "flower_bed",
+      "x": 13,
+      "y": 22
+    },
+    {
+      "type": "flower_bed",
+      "x": 26,
+      "y": 22
+    },
+    {
+      "type": "mushroom_ring",
+      "x": 20,
+      "y": 25
+    }
+  ],
+  "collectorHoursCap": 8,
+  "raidableStoredFraction": 0.2,
+  "raidableUncollectedFraction": 0.5,
+  "cancelRefundFraction": 0.5,
+  "provisionsPayable": ["hedge", "trap"],
+  "queuedArmies": 1,
+  "dismissRefundFraction": 0.5,
+  "maxTrainBatch": 200,
+  "maxArmyPresets": 4,
+  "welcomeBackMinAwaySeconds": 60,
+  "collectBubbleMinFraction": 0.02,
+  "minCollectAmount": 1,
+  "builderHutCosts": [
+    250,
+    500,
+    1000
+  ],
+  "obstacles": {
+    "count": 26,
+    "kinds": [
+      "obstacle_bush",
+      "obstacle_bush",
+      "obstacle_stump",
+      "obstacle_rock"
+    ],
+    "keepClearRadius": 7
+  },
+  "rewardScaleByHall": [
+    0.03,
+    0.06,
+    0.14,
+    0.3,
+    0.6,
+    1,
+    1.99485,
+    2.7576,
+    4.93767,
+    8.01873,
+    13.55346,
+    18.20754,
+    38.28195,
+    67.85097,
+    120.00231
+  ]
+}

@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Hærd alle {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Hærdet: alle {building} har fået deres nye form." },
   "temper.reset": { "en": "Back to untempered", "text": "Tilbage til uhærdet" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Vagt svækker også angribernes heling, genoplivninger, sejhed og skjolddækning i hele basen." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Hærdet: Rækkevidde {reach} · Sprængkraft {blast} · Vagt {watch}" },
   "stake.label": { "en": "Stake", "text": "Indsats" },
   "stake.none": { "en": "No stake", "text": "Ingen indsats" },

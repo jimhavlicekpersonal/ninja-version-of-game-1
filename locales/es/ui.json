@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Templar cada {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Templado: cada {building} tiene su nueva forma." },
   "temper.reset": { "en": "Back to untempered", "text": "Volver a sin templar" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Vigilancia también debilita, en toda la base, la curación, las resurrecciones, la resistencia y la protección de escudos de los atacantes." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Templada: Alcance {reach} · Estallido {blast} · Vigilancia {watch}" },
   "stake.label": { "en": "Stake", "text": "Apuesta" },
   "stake.none": { "en": "No stake", "text": "Sin apuesta" },
