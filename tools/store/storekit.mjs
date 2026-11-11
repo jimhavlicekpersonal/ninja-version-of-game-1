@@ -60,7 +60,13 @@ const korean = key => koData[key]?.text || '';
 const thData = read('locales/th/data.json');
 const shortThai = {starter_pack: 'หยกและทรัพยากรสำหรับผู้นำตระกูลมือใหม่', builder_pack: 'หยกสำหรับจ้างช่างเพิ่ม พร้อมทรัพยากร', war_prep_pack: 'เสบียงและหยกสำหรับสงครามพันธมิตร', rebuild_pack: 'หยกและทรัพยากรสำหรับสร้างใหม่', keep_pack: 'ทรัพยากรและหยกสำหรับป้อมเลเวลใหม่'};
 const thai = key => thData[key]?.text || '';
-// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch, Swedish, Danish, Norwegian, Korean or Thai to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound, a Chinese word or a Thai syllable (a vowel or tone mark cut from its consonant), so overlong text fails here instead.
+const hantData = read('locales/zh-Hant/data.json');
+const shortTraditional = {starter_pack: '給新族長的翡翠和資源', builder_pack: '可再雇用一位工匠的翡翠，外加資源', war_prep_pack: '同盟戰用的糧草和翡翠', rebuild_pack: '用於重建的翡翠和資源', keep_pack: '慶祝天守閣升級的資源和翡翠'};
+const traditional = key => hantData[key]?.text || '';
+const viData = read('locales/vi/data.json');
+const shortVietnamese = {starter_pack: 'Ngọc Bích và tài nguyên cho thủ lĩnh mới', builder_pack: 'Ngọc Bích để thuê thêm Thợ Làng, kèm tài nguyên', war_prep_pack: 'Lương Thực và Ngọc Bích cho Liên Minh Chiến', rebuild_pack: 'Ngọc Bích và tài nguyên để tái thiết', keep_pack: 'Tài nguyên và Ngọc Bích mừng Thành mới'};
+const vietnamese = key => viData[key]?.text || '';
+// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch, Swedish, Danish, Norwegian, Korean, Thai, Traditional Chinese or Vietnamese to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound, a Chinese word or a Thai syllable (a vowel or tone mark cut from its consonant), so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -174,6 +180,18 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? thai(`store.packs.${gameId}.name`) : offer ? thai(`offers.rules.${offer.id}.title`) : stipend ? thai('store.stipend.name') : isPass ? `${thai('pass.name')}พรีเมียม` : name, 30, 'Thai'),
         description: clip(pack ? `หยก ${pack.moonstones}` : offer ? (shortThai[offer.id] || thai(`offers.rules.${offer.id}.description`)) : stipend ? `หยกวันละ ${stipend.jadePerPayment} จำนวน ${stipend.payments} วัน` : 'เส้นทางพรีเมียมของซีซันนี้', 55, 'Thai'),
         locale: 'th',
+      },
+      // Traditional Chinese (the App Store's Traditional Chinese localization).
+      {
+        displayName: clip(pack ? traditional(`store.packs.${gameId}.name`) : offer ? traditional(`offers.rules.${offer.id}.title`) : stipend ? traditional('store.stipend.name') : isPass ? `進階${traditional('pass.name')}` : name, 30, 'Traditional Chinese'),
+        description: clip(pack ? `${pack.moonstones} 翡翠` : offer ? (shortTraditional[offer.id] || traditional(`offers.rules.${offer.id}.description`)) : stipend ? `每天發放 ${stipend.jadePerPayment} 翡翠，共 ${stipend.payments} 次` : '本賽季的進階路線', 55, 'Traditional Chinese'),
+        locale: 'zh_Hant',
+      },
+      // Vietnamese (the App Store's Vietnamese localization).
+      {
+        displayName: clip(pack ? vietnamese(`store.packs.${gameId}.name`) : offer ? vietnamese(`offers.rules.${offer.id}.title`) : stipend ? vietnamese('store.stipend.name') : isPass ? `${vietnamese('pass.name')} Cao Cấp` : name, 30, 'Vietnamese'),
+        description: clip(pack ? `${pack.moonstones} Ngọc Bích` : offer ? (shortVietnamese[offer.id] || vietnamese(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} lần nhận mỗi ngày, mỗi lần ${stipend.jadePerPayment} Ngọc Bích` : 'Nhánh cao cấp của mùa này', 55, 'Vietnamese'),
+        locale: 'vi',
       },
     ],
     productID: storeId,

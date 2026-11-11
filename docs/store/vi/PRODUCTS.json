@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "vi",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Nhúm Ngọc Bích",
+      "description": "45 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Túi Nhỏ Ngọc Bích",
+      "description": "100 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Túi Ngọc Bích",
+      "description": "280 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Hộp Ngọc Bích",
+      "description": "600 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Rương Ngọc Bích",
+      "description": "1300 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Kho Ngọc Bích",
+      "description": "3500 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Kho Báu Ngọc Bích Của Rồng",
+      "description": "7500 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Cuộn Mùa Giải Cao Cấp",
+      "description": "Nhánh cao cấp của mùa này",
+      "locale": "vi"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Gói Khởi Đầu",
+      "description": "Ngọc Bích và tài nguyên cho thủ lĩnh mới",
+      "locale": "vi"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Gói Thợ Thủ Công",
+      "description": "Ngọc Bích để thuê thêm Thợ Làng, kèm tài nguyên",
+      "locale": "vi"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Tiếp Tế Chiến Tranh",
+      "description": "Lương Thực và Ngọc Bích cho Liên Minh Chiến",
+      "locale": "vi"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Bộ Tái Thiết",
+      "description": "Ngọc Bích và tài nguyên để tái thiết",
+      "locale": "vi"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Bổng Lộc Gia Tộc",
+      "description": "30 lần nhận mỗi ngày, mỗi lần 12 Ngọc Bích",
+      "locale": "vi"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Mừng Thành Mới",
+      "description": "Tài nguyên và Ngọc Bích mừng Thành mới",
+      "locale": "vi"
+    }
+  ]
+}

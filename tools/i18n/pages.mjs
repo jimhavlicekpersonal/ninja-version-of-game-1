@@ -22,6 +22,8 @@ const ACCOUNT_FAILURE = {
   nb: 'Forespørselen kunne ikke sendes. Sjekk opplysningene og tilkoblingen, og prøv igjen.',
   ko: '요청을 보내지 못했어요. 입력한 내용과 연결을 확인하고 다시 시도하세요.',
   th: 'ส่งคำขอไม่สำเร็จ ตรวจสอบข้อมูลและการเชื่อมต่อแล้วลองอีกครั้ง',
+  'zh-Hant': '請求沒有成功送出。請檢查你填寫的資料和網路連線，然後再試一次。',
+  vi: 'Không gửi được yêu cầu. Hãy kiểm tra thông tin và kết nối rồi thử lại.',
 };
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;

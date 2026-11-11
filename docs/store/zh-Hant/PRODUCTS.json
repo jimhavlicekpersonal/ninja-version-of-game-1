@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "zh-Hant",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "一撮翡翠",
+      "description": "45 翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "翡翠小袋",
+      "description": "100 翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "翡翠袋",
+      "description": "280 翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "翡翠盒",
+      "description": "600 翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "翡翠寶箱",
+      "description": "1300 翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "翡翠寶庫",
+      "description": "3500 翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "巨龍翡翠寶藏",
+      "description": "7500 翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "進階賽季卷軸",
+      "description": "本賽季的進階路線",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "新手禮包",
+      "description": "給新族長的翡翠和資源",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "工匠組合",
+      "description": "可再雇用一位工匠的翡翠，外加資源",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "戰爭補給",
+      "description": "同盟戰用的糧草和翡翠",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "重建工具包",
+      "description": "用於重建的翡翠和資源",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "忍族俸祿",
+      "description": "每天發放 12 翡翠，共 30 次",
+      "locale": "zh_Hant"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "天守閣慶典",
+      "description": "慶祝天守閣升級的資源和翡翠",
+      "locale": "zh_Hant"
+    }
+  ]
+}

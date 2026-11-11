@@ -1,0 +1,414 @@
+{
+  "language": "zh-Hant",
+  "variant": "Traditional Chinese as used in Taiwan (zh-TW), also served to Hong Kong and Macau; Taiwanese vocabulary, 你 for the player, 您 in the legal pages",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, or a CSS class string the extractor captured, kept in Latin letters"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
+    }
+  ],
+  "latinScriptReviewed": [
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_delete_reject_or_overri_c210e90890",
+      "text": "action 必須是 'delete'、'reject' 或 'override'",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_dismiss_remove_message__dd711086db",
+      "text": "action 必須是 'dismiss'、'remove_message' 或 'mute'",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.app_store_notification_6199f7d5e6",
+      "text": "App Store 通知",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.band_must_be_under13_13to17_adult_or_n_1f387f3cc7",
+      "text": "band 必須是 under13、13to17、adult 或 null。",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.findable_must_be_everyone_friends_of_f_f0a3ad42a4",
+      "text": "findable 必須是 everyone、friends_of_friends 或 nobody。",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.kind_must_be_chat_or_player_c0b46dca1d",
+      "text": "kind 必須是 'chat' 或 'player'",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.provider_must_be_gamecenter_or_playgam_5b0afd8b2e",
+      "text": "provider 必須是 gamecenter 或 playgames。",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_no_apple_team_id_ap_364837b310",
+      "text": "透過 Apple 登入：沒有 APPLE_TEAM_ID/APPLE_KEY_ID/APPLE_PRIVATE_KEY，授權碼不會被兌換（之後沒有東西要撤銷）",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.service_worker_registration_failed_def1c08bdf",
+      "text": "Service Worker 註冊失敗",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_ninja_clans_built_647b18e769",
+      "text": "Kagemura: Ninja Clans {arg1} · 建置 {arg2}",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_support_af3c907500",
+      "text": "Kagemura 客服",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.player_id_c3e96fa625",
+      "text": "玩家 ID",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.qr_code_2c24d35a11",
+      "text": "QR 碼",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.the_app_store_8768b638e4",
+      "text": "App Store",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.update_kagemura_1a67e6e9e1",
+      "text": "更新 Kagemura",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.missingProduct",
+      "text": "缺少 productId",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.transaction",
+      "text": "缺少 transactionId",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.token",
+      "text": "缺少 purchaseToken",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.7d9e847788",
+      "text": "不是 App Store 收據。",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.d8b187e2a5",
+      "text": "Game Center 金鑰太大。",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.45cec126e4",
+      "text": "缺少 Play Games 登入。",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.e42a63820f",
+      "text": "Google 登入",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.2",
+      "text": "Kagemura: Ninja Clans · 最後更新：{t0}{t1}",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.92",
+      "text": "Kagemura 頁面",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.0",
+      "text": "Kagemura 客服",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.1",
+      "text": "Kagemura 客服",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.27",
+      "text": "Kagemura 頁面",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.30",
+      "text": "Kagemura 頁面",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.2",
+      "text": "Kagemura: Ninja Clans · 自 {t0}{t1}起生效",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.44",
+      "text": "12. App Store 與 Google Play",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.50",
+      "text": "Kagemura 頁面",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.16",
+      "text": "App Store 或 Google Play 提供的付款方式。{t0}{t1}",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.29",
+      "text": "Kagemura 頁面",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.shikin-kessai.24",
+      "text": "Kagemura 頁面",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.16",
+      "text": "玩家 ID",
+      "reason": "Traditional Chinese text around a brand, product, platform or technical identifier that stays in Latin letters (Kagemura, App Store, Google Play, Game Center, IndexedDB, UTC, XP, Lv., server field values)"
+    }
+  ],
+  "notes": [
+    "A separate translation, not converted from Simplified Chinese; i18n:check fails on Simplified or Japanese shinjitai forms and on mainland vocabulary (視頻, 服務器, 網絡, 默認, 登錄, 設置, 信息, 賬號).",
+    "The player is always 你; 妳 fails the check. Fixed game characters (Akane, Yoru) may be 她.",
+    "Han runs quoted from the English (the two Japanese statutory page titles) are exempt from the shinjitai check.",
+    "Generated names are joined with no space in the default order: 雷霆 + 峰 = 雷霆峰, 雙生 + 刃 = 雙生刃.",
+    "A half-width space separates Han from numbers, Latin words and number placeholders; none next to full-width punctuation or text placeholders.",
+    "Computer players' generated names (Kaito Mori) are stored text and stay in Latin letters, as in every language."
+  ]
+}

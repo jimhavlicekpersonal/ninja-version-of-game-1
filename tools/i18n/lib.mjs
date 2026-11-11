@@ -183,7 +183,7 @@ const SCRIPT = {
 // shinjitai forms); the second list is common Simplified-only characters that do not belong in zh-Hant.
 const NOT_SIMPLIFIED = /[們這個為會來時說對發點開戰鬥歸據門問題現實際與從長幾無過還進選擇運動電話國語學習買賣讀寫聽見觀覺關係網絡經驗圖書館體號碼頁麼東車馬鳥魚龍風飛雲氣變處當將應該給讓認識記錄設計劃級線結術藝園區隊員幣糧倉庫壘劍獎勵寶榮譽聯萬億裡錢銀鐵銅鍛煉練戦気剣図楽帰黒円売読単対発権歩済効険検験駅様拡広変恵悪営労弾隠鉄両囲亜仏価桜蔵総]/u;
 // zh-Hant also refuses the Japanese shinjitai forms (戦, 気, 剣, 図…), which a Japanese-trained font or IME can slip in.
-const NOT_TRADITIONAL = /[们这个为会来时说对发点开战归据门问题现实际与从长无过还进选择运动电话国语学习买卖读写听见观觉关网络经验图书级线结术艺园区队员币仓库垒剑奖励宝荣誉联万亿钱银铁铜锻炼练戦気剣図楽帰黒円売読単対発権歩済効険検験駅様拡広変恵悪営労弾隠鉄両囲亜仏価桜蔵総]/u;
+const NOT_TRADITIONAL = /[们这个为会来时说对发点开战归据门问题现实际与从长无过还进选择运动电话国语学习买卖读写听见观觉关网络经验图书级线结术艺园区队员币仓库垒剑奖励宝荣誉联万亿钱银铁铜锻炼练戦気剣図楽帰黒円売読単対発権歩済効険検験駅様拡広変恵悪営労弾隠鉄両囲亜仏価桜蔵総阁页设击护补给兑换赛让请样认证账户邮删隐条规则显钟间诉侦礼续签视频务络级览载输帮团锁钥]/u;
 // Mainland vocabulary in Traditional characters is what a character conversion of zh-Hans produces; Taiwan and Hong Kong
 // players read it as foreign (視頻 → 影片, 服務器 → 伺服器, 網絡 → 網路, 默認 → 預設, 登錄 → 登入, 設置 → 設定).
 const MAINLAND_TERMS = /視頻|服務器|默認|軟件|硬件|屏幕|鼠標|網絡|賬號|賬戶|登錄|激活|質量|信息|菜單|設置|數據庫|寬帶/gu;

@@ -17,4 +17,6 @@
     <locale android:name="nb" />
     <locale android:name="ko" />
     <locale android:name="th" />
+    <locale android:name="zh-Hant" />
+    <locale android:name="vi" />
 </locale-config>
