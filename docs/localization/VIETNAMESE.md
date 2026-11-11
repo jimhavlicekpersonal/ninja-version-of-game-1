@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.vi)
 
 # Vietnamese translation
 
-Vietnamese (`vi`, script `Latn`) was released together with Traditional Chinese on 2026-11-10 in commit `RELEASE_COMMIT`, with the instruction and code fixes in `7a690eb`. It is served to `vi`, `vi-VN` and `vi_VN` devices and covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/vi/`, the account-deletion form (`/account/delete?lang=vi`), server push text, iOS (`vi.lproj`) and Android (`values-vi`) resources, StoreKit fixtures (`vi`), and listing and product copy in `docs/store/vi/`. Terms: `locales/vi/TERMS.md`; reviewed warnings: `locales/vi/REVIEW.json`.
+Vietnamese (`vi`, script `Latn`) was released together with Traditional Chinese on 2026-11-10 in commit `ad80729`, with the instruction and code fixes in `7a690eb`. It is served to `vi`, `vi-VN` and `vi_VN` devices and covers every namespace (3,020 entries), the six public pages and PWA manifest under `public/vi/`, the account-deletion form (`/account/delete?lang=vi`), server push text, iOS (`vi.lproj`) and Android (`values-vi`) resources, StoreKit fixtures (`vi`), and listing and product copy in `docs/store/vi/`. Terms: `locales/vi/TERMS.md`; reviewed warnings: `locales/vi/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Vietnamese speaker has reviewed it**, nor the legal pages.
 
