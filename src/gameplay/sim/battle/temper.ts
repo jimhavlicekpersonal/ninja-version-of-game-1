@@ -179,3 +179,31 @@ export function temperBase(base: BaseLayout, tempers: Record<BuildingType, Tempe
     if (t && validTemper(b.type, t, data)) b.temper = { ...t };
   }
 }
+
+/** The attackers' support a tempered base cuts (`troopCuts` by the profile); all zero untempered. */
+export interface TroopCuts {
+  heal: number;
+  aura: number;
+  splash: number;
+  revive: number;
+}
+
+export function troopCuts(profile: TemperProfile, data: GameData): TroopCuts {
+  const out: TroopCuts = { heal: 0, aura: 0, splash: 0, revive: 0 };
+  const def = temperDef(data)?.troopCuts;
+  if (!def) return out;
+  for (const a of TEMPER_AXES) {
+    const c = def[a];
+    const w = profile[a];
+    if (!c || w <= 0) continue;
+    out.heal += (c.heal ?? 0) * w;
+    out.aura += (c.aura ?? 0) * w;
+    out.splash += (c.splashAura ?? 0) * w;
+    out.revive += (c.revive ?? 0) * w;
+  }
+  out.heal = Math.min(0.9, out.heal);
+  out.aura = Math.min(0.9, out.aura);
+  out.splash = Math.min(0.9, out.splash);
+  out.revive = Math.min(0.9, out.revive);
+  return out;
+}

@@ -1503,6 +1503,7 @@ export class Hud {
     const used = TEMPER_AXES.reduce((s, a) => s + (draft[a] ?? 0), 0);
     const axisName: Record<TemperAxis, string> = { reach: t('temper.axis.reach'), blast: t('temper.axis.blast'), watch: t('temper.axis.watch') };
     wrap.append(h('p', { class: 'muted small' }, t('temper.intro', { building: name })));
+    if (gd.battle.temper?.troopCuts?.watch) wrap.append(h('p', { class: 'muted small' }, t('temper.watchSupport')));
     const step = (a: TemperAxis, by: number) => {
       draft[a] = Math.max(0, (draft[a] ?? 0) + by);
       this.renderSheet();

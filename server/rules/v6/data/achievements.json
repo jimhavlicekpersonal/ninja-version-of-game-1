@@ -1,0 +1,250 @@
+[
+  {
+    "id": "green_thumb",
+    "name": "Coin Collector",
+    "text": "Collect {n} Coins",
+    "stat": "collectedAcorns",
+    "tiers": [
+      [
+        10000,
+        10
+      ],
+      [
+        100000,
+        25
+      ],
+      [
+        1000000,
+        50
+      ],
+      [
+        10000000,
+        75
+      ],
+      [
+        100000000,
+        100
+      ]
+    ]
+  },
+  {
+    "id": "dew_gatherer",
+    "name": "Quartermaster",
+    "text": "Collect {n} Provisions",
+    "stat": "collectedDew",
+    "tiers": [
+      [
+        10000,
+        10
+      ],
+      [
+        100000,
+        25
+      ],
+      [
+        1000000,
+        50
+      ],
+      [
+        10000000,
+        75
+      ],
+      [
+        100000000,
+        100
+      ]
+    ]
+  },
+  {
+    "id": "raider",
+    "name": "Night Raider",
+    "text": "Win {n} raids",
+    "stat": "raidsWon",
+    "tiers": [
+      [
+        5,
+        10
+      ],
+      [
+        25,
+        25
+      ],
+      [
+        100,
+        50
+      ],
+      [
+        250,
+        75
+      ],
+      [
+        600,
+        100
+      ],
+      [
+        1200,
+        150
+      ]
+    ]
+  },
+  {
+    "id": "stargazer",
+    "name": "Star Strategist",
+    "text": "Earn {n} stars",
+    "stat": "starsEarned",
+    "tiers": [
+      [
+        15,
+        10
+      ],
+      [
+        75,
+        25
+      ],
+      [
+        300,
+        50
+      ],
+      [
+        750,
+        75
+      ],
+      [
+        1800,
+        100
+      ],
+      [
+        3600,
+        150
+      ]
+    ]
+  },
+  {
+    "id": "busy_beaver",
+    "name": "Master Artisan",
+    "text": "Finish {n} upgrades",
+    "stat": "upgradesDone",
+    "tiers": [
+      [
+        10,
+        10
+      ],
+      [
+        50,
+        25
+      ],
+      [
+        200,
+        50
+      ],
+      [
+        500,
+        75
+      ],
+      [
+        1000,
+        100
+      ]
+    ]
+  },
+  {
+    "id": "lumberjack",
+    "name": "Clear Paths",
+    "text": "Clear {n} obstacles",
+    "stat": "obstaclesCleared",
+    "tiers": [
+      [
+        5,
+        10
+      ],
+      [
+        15,
+        20
+      ],
+      [
+        26,
+        40
+      ]
+    ]
+  },
+  {
+    "id": "elder",
+    "name": "Clan Elder",
+    "text": "Reach Clan Keep {n}",
+    "stat": "hallLevel",
+    "tiers": [
+      [
+        3,
+        20
+      ],
+      [
+        5,
+        40
+      ],
+      [
+        6,
+        60
+      ],
+      [
+        9,
+        80
+      ],
+      [
+        12,
+        100
+      ],
+      [
+        15,
+        150
+      ]
+    ]
+  },
+  {
+    "id": "scholar",
+    "name": "Scholar",
+    "text": "Finish {n} research",
+    "stat": "researchDone",
+    "tiers": [
+      [
+        10,
+        10
+      ],
+      [
+        50,
+        25
+      ],
+      [
+        150,
+        50
+      ],
+      [
+        400,
+        100
+      ]
+    ]
+  },
+  {
+    "id": "trial_walker",
+    "name": "Trial Walker",
+    "text": "Clear {n} Shadow Trial tiers",
+    "stat": "trialsCleared",
+    "tiers": [
+      [
+        5,
+        20
+      ],
+      [
+        25,
+        40
+      ],
+      [
+        60,
+        75
+      ],
+      [
+        100,
+        100
+      ]
+    ]
+  }
+]

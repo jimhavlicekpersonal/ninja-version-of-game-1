@@ -1,0 +1,176 @@
+{
+  "currency": "USD",
+  "packs": [
+    {
+      "id": "moonstones_0",
+      "name": "Pinch of Jade",
+      "usd": 0.99,
+      "moonstones": 45
+    },
+    {
+      "id": "moonstones_1",
+      "name": "Pouch of Jade",
+      "usd": 1.99,
+      "moonstones": 100
+    },
+    {
+      "id": "moonstones_2",
+      "name": "Bag of Jade",
+      "usd": 4.99,
+      "moonstones": 280
+    },
+    {
+      "id": "moonstones_3",
+      "name": "Box of Jade",
+      "usd": 9.99,
+      "moonstones": 600
+    },
+    {
+      "id": "moonstones_4",
+      "name": "Chest of Jade",
+      "usd": 19.99,
+      "moonstones": 1300
+    },
+    {
+      "id": "moonstones_5",
+      "name": "Vault of Jade",
+      "usd": 49.99,
+      "moonstones": 3500
+    },
+    {
+      "id": "moonstones_6",
+      "name": "Dragon Hoard of Jade",
+      "usd": 99.99,
+      "moonstones": 7500
+    }
+  ],
+  "skipCurve": [
+    [
+      0,
+      0
+    ],
+    [
+      60,
+      1
+    ],
+    [
+      3600,
+      15
+    ],
+    [
+      86400,
+      180
+    ],
+    [
+      604800,
+      720
+    ]
+  ],
+  "trainingSkipCurve": [
+    [
+      0,
+      0
+    ],
+    [
+      60,
+      1
+    ],
+    [
+      3600,
+      25
+    ],
+    [
+      86400,
+      300
+    ],
+    [
+      604800,
+      1200
+    ]
+  ],
+  "topUpCurve": [
+    [
+      0,
+      0
+    ],
+    [
+      100,
+      1
+    ],
+    [
+      1000,
+      10
+    ],
+    [
+      10000,
+      60
+    ],
+    [
+      100000,
+      500
+    ],
+    [
+      1000000,
+      3000
+    ]
+  ],
+  "minorMonthlyCapUsd": 50,
+  "topUpScaleByHall": [
+    0.2225,
+    0.3008,
+    0.4024,
+    0.6325,
+    1,
+    1.48,
+    1.9493,
+    2.2918,
+    3.0668,
+    3.9082,
+    5.081,
+    5.8891,
+    8.5392,
+    11.3684,
+    15.1187
+  ],
+  "trainingSkipScaleByHall": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1.48,
+    1.9493,
+    2.2918,
+    3.0668,
+    3.9082,
+    5.081,
+    5.8891,
+    8.5392,
+    11.3684,
+    15.1187
+  ],
+  "storeProductIds": {
+    "moonstones_0": "jade_pinch",
+    "moonstones_1": "jade_pouch",
+    "moonstones_2": "jade_bag",
+    "moonstones_3": "jade_box",
+    "moonstones_4": "jade_chest",
+    "moonstones_5": "jade_vault",
+    "moonstones_6": "jade_hoard",
+    "lantern_pass": "season_scroll",
+    "offer_starter": "offer_starter",
+    "offer_builder": "offer_builder",
+    "offer_war_prep": "offer_war_prep",
+    "offer_rebuild": "offer_rebuild",
+    "clan_stipend": "clan_stipend",
+    "offer_keep": "offer_keep"
+  },
+  "stipend": {
+    "$comment": "Clan Stipend: a consumable (not auto-renewing). Buying it adds `payments` daily Jade payments; one can be claimed per UTC day while the game is open. Missed days are not lost: the stipend lasts until every payment is claimed. It can be bought again once no payments are left. Report section 5 step 6 (economy E03): 12 Jade a payment (360 for $2.99, 120 Jade/$), so it is the entry product and not the ceiling: the $9.99 Box (600) used to equal a $2.99 stipend. A stipend bought before keeps the Jade it was sold with (save v18 `stipend.jade`).",
+    "id": "clan_stipend",
+    "name": "Clan Stipend",
+    "usd": 2.99,
+    "payments": 30,
+    "jadePerPayment": 12
+  }
+}

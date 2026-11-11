@@ -82,6 +82,20 @@ What this shows:
 - **Specialising pays.** The mixed profile (points spread over every axis) is the weakest defence at Keep 12 (+8.8 points) and about neutral at Keep 15: a base should lean.
 - Blast is the strongest defence on the panel at Keep 15 (−9.6), almost all of it against Eclipse, blades and beasts; air is its answer.
 
+## Follow-up (2026-11-11, battle rules 7): Watch cuts the attackers' support
+
+The Keep 12 universal army (shields, healers, throwers and blades) wins through its support, not its damage. Watch now also cuts, across the whole base by its mean Watch, the attackers' healing and shelter heals, haste and toughness auras and shelter shields, the Mountain Shield's splash cover, and revives (`temper.troopCuts.watch`: 0.8 / 0.8 / 0.9 / 0.8 at full Watch). Variants measured (Keep 12 panel against a Watch base; the raid bots' army at Keeps 6–15):
+
+| Cuts at full Watch (heal / aura / splash cover / revive) | Keep 12 searched army vs Watch | Best army vs Watch | Panel mean vs Watch | Raid bots' army vs Watch, stars change at Keeps 6 / 8 / 10 / 12 / 15 |
+|---|---|---|---|---|
+| none (rules 6) | 94.7 | searched army, +12.0 | 57.0 | +0.03 / +0.02 / +0.17 / +0.20 / +0.11 |
+| 0.5 / 0.5 / 0.5 / 0.5 | 83.0 | searched army, +6.2 | 53.2 | – |
+| 0.6 / 0.6 / 0.8 / 0.6 | 73.4 | searched army, +1.7 | 51.1 | +0.03 / +0.02 / −0.13 / +0.13 / +0.11 |
+| 0.6 / 0.6 / 0.8 / 0.6, Watch −20% damage | 81.0 | searched army, +4.9 | 54.3 | – |
+| **0.8 / 0.8 / 0.9 / 0.8 (shipped)** | **69.5** | **throwers + shields 70.4** | **49.9** | +0.03 / +0.02 / −0.17 / +0.10 / +0.11 |
+
+Cutting only the Mountain Shield's splash cover under Blast barely moved it (91.8). With the shipped cuts the searched army is no longer the best answer against a Watch base, so **no army is best against every profile at Keep 12 either**; the margins are small (throwers + shields 70.4, searched army 69.5, suggested army 66.3). Watch's lower panel mean comes from the support-heavy armies (tanks + healers 42.5 → 24.8, searched army −25); against the raid bots' army Watch stays within 0.17 stars of an untempered base at every Keep, so it is not a dominant defence. Keep 15 is unchanged except tanks + healers (40.9 → 25.6). The campaign gates still pass (regular 1.52 and defender 1.51 average stars from Keep 6; Keep 15 on day 113).
+
 ## Rival outposts
 
 Each clan leans on one axis: Crimson Lotus Reach, Iron Tide Blast (Shuriken Towers on Watch) with 10% more loot and buildings 0.1 closer to their caps, Moon Veil Watch with 10% less loot and 0.1 further. The first assignment (Crimson Lotus Reach 5 / Watch 5 on both towers, Iron Tide ±0.25 and ×1.2 loot) cost the model players 0.3–0.8 stars at Keeps 8–14: the campaign's raider takes the first offer worth twice the average loot, so a ×1.2-loot, much harder clan was picked far more often than chance. With one axis per clan and a ±0.1 spread the average outpost is as hard as an untempered one for the raid bots' army.
@@ -92,4 +106,4 @@ With every audit change in place (strength counts the fielded army, staked honor
 
 ## Limits
 
-The bot deployment plan, one seed set per cell, a fixed panel (a real player adapts both the army and the plan), and campaigns played by model players, not people. The Keep 12 universal army above is measured and not fixed.
+The bot deployment plan, one seed set per cell, a fixed panel (a real player adapts both the army and the plan), and campaigns played by model players, not people. The Keep 12 universal army above was answered by the rules 7 follow-up, by a margin of about one point.
