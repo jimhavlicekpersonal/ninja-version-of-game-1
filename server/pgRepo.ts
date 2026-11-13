@@ -1047,13 +1047,18 @@ export class PgRepo implements Repo {
     return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
   }
 
-  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null> {
-    const r = await this.rows('select status, body from idempotency_keys where scope = $1 and key = $2', [scope, key]);
-    return r[0] ? { status: num(r[0].status), body: r[0].body ?? null } : null;
+  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown; fingerprint: string | null } | null> {
+    const r = await this.rows('select status, body, fingerprint from idempotency_keys where scope = $1 and key = $2', [scope, key]);
+    return r[0] ? { status: num(r[0].status), body: r[0].body ?? null, fingerprint: (r[0].fingerprint as string | null) ?? null } : null;
   }
 
-  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void> {
-    await this.db.query('insert into idempotency_keys (scope, key, status, body, created_at) values ($1,$2,$3,$4,$5) on conflict do nothing', [scope, key, status, body === undefined ? null : JSON.stringify(body), at]);
+  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number, fingerprint: string | null = null): Promise<void> {
+    await this.db.query('insert into idempotency_keys (scope, key, status, body, created_at, fingerprint) values ($1,$2,$3,$4,$5,$6) on conflict do nothing', [scope, key, status, body === undefined ? null : JSON.stringify(body), at, fingerprint]);
+  }
+
+  async dropIdempotentScopes(scopes: string[]): Promise<number> {
+    if (!scopes.length) return 0;
+    return (await this.db.query('delete from idempotency_keys where scope = any($1::text[])', [scopes])).rowCount ?? 0;
   }
 
   // ------------------------------------------------------------ account deletion

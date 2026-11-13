@@ -93,7 +93,9 @@ export type ErrorCode =
   /** 403: this player's age group does not allow it (free-text chat or a chosen name under 13; the message says what does work). */
   | 'age_restricted'
   /** 403: accept the community rules first (`PUT /v1/me/rules`; report section 5 step 7, compliance C14). */
-  | 'rules_required';
+  | 'rules_required'
+  /** 422: this Idempotency-Key was already used for another route or another body (backend batch 2026-11-13, A13); not retried. */
+  | 'idempotency_mismatch';
 
 export interface ErrorBody {
   error: ErrorCode;

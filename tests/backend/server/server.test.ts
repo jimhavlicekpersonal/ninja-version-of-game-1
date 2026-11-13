@@ -357,9 +357,11 @@ describe('server HTTP adapter', () => {
       const a = await s.register('Ann');
       const b = await s.register('Ben');
       const first = await s.call('PUT', Routes.me, a.token, { name: 'Ann Prime' }, { headers: { 'idempotency-key': 'k-1' } });
-      const again = await s.call('PUT', Routes.me, a.token, { name: 'Ann Other' }, { headers: { 'idempotency-key': 'k-1' } });
+      const again = await s.call('PUT', Routes.me, a.token, { name: 'Ann Prime' }, { headers: { 'idempotency-key': 'k-1' } });
       expect(again.body).toEqual(first.body);
       expect(again.headers['idempotent-replay']).toBe('true');
+      // Backend A13: the same key with another body is refused, not answered with the first answer.
+      expect((await s.call('PUT', Routes.me, a.token, { name: 'Ann Other' }, { headers: { 'idempotency-key': 'k-1' } })).status).toBe(422);
       expect((await s.call('GET', Routes.me, a.token)).body.name).toBe('Ann Prime'); // the second write never ran
       // Another player's same key is their own.
       expect((await s.call('PUT', Routes.me, b.token, { name: 'Ben Prime' }, { headers: { 'idempotency-key': 'k-1' } })).body.name).toBe('Ben Prime');

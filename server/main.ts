@@ -9,6 +9,9 @@
  *   so rate limits see each player's IP instead of the proxy's; 'false' when
  *   players connect directly. Production requires it and refuses 'true'
  *   (which lets a client choose its IP through X-Forwarded-For);
+ * - RATE_LIMIT_INSTANCES: how many API instances run (default 1). Limits counted on one instance
+ *   (no REDIS_URL, or the fallback while Redis is down) are divided by it (backend A8). Keep it at the
+ *   usual instance count; autoscaling above it loosens limits only while Redis is down.
  * - RATE_LIMITS: optional JSON overriding rules of DEFAULT_RATE_LIMITS, e.g.
  *   {"register":{"limit":200,"windowMs":3600000}} on a staging server.
  * - ADMIN_TOKENS: per-staff tokens "name:token,name2:token2" (each token at
@@ -81,7 +84,7 @@ import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
 import type { SharedStores } from './nodeContext';
 import { PgRepo } from './pgRepo';
-import { DEFAULT_RATE_LIMITS, type RateLimiter, type RateLimits } from './rateLimit';
+import { DEFAULT_RATE_LIMITS, MemoryRateLimiter, shareOf, type RateLimiter, type RateLimits } from './rateLimit';
 import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
 import { RedisLeaderboard, RedisLocks, RedisRateLimiter, redisErrorReporter } from './shared';
@@ -146,6 +149,9 @@ async function main(): Promise<void> {
     console.warn('DATABASE_URL not set: using in-memory storage (data is lost on restart).');
     repo = new MemoryRepo();
   }
+  // Backend A8: how many API instances run behind the load balancer (default 1). Limits counted per
+  // instance (no Redis, or while Redis is down) are divided by it, so N instances do not allow N times as much.
+  const instances = Math.max(1, Math.floor(Number(process.env.RATE_LIMIT_INSTANCES)) || 1);
   const rateLimits = process.env.RATE_LIMITS ? (JSON.parse(process.env.RATE_LIMITS) as Partial<RateLimits>) : undefined;
   let shared: SharedStores | undefined;
   let rateLimiter: RateLimiter | undefined;
@@ -172,7 +178,11 @@ async function main(): Promise<void> {
       board.markStale();
     }
     shared = { board, locks: new RedisLocks(redis, undefined, onError) };
-    rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits }, undefined, onError);
+    // Backend A8: while Redis is down each instance counts on its own, so its share is the limit / instances.
+    rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits }, undefined, onError, new MemoryRateLimiter(shareOf({ ...DEFAULT_RATE_LIMITS, ...rateLimits }, instances)));
+  } else if (instances > 1) {
+    // Several instances without Redis: each counts its share.
+    rateLimiter = new MemoryRateLimiter(shareOf({ ...DEFAULT_RATE_LIMITS, ...rateLimits }, instances));
   }
   // Every outbound call has a deadline, body included (report section 5 step 2, A10).
   const timed = timedFetch(globalThis.fetch, Number(process.env.OUTBOUND_TIMEOUT_MS) || OUTBOUND_TIMEOUT_MS);

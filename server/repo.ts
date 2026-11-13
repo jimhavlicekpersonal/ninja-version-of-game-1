@@ -1028,9 +1028,14 @@ export interface Repo extends PlayerStore, PurchaseStore, OpsStore, BattleStore,
    */
   claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean>;
   /** The answer remembered for a write's Idempotency-Key (protocol 7), per caller. */
-  getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null>;
-  /** Remember it (the first answer wins). */
-  putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void>;
+  getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown; fingerprint: string | null } | null>;
+  /**
+   * Remember it (the first answer wins). `fingerprint` (backend A13): the method, route and body hash of the
+   * request it answered, so the same key on another route or with another body is refused instead of replayed.
+   */
+  putIdempotent(scope: string, key: string, status: number, body: unknown, at: number, fingerprint?: string | null): Promise<void>;
+  /** Forget every remembered answer of these callers (a signed-out or rotated token; backend A12/A16). */
+  dropIdempotentScopes(scopes: string[]): Promise<number>;
   /** Run `fn` atomically: what it writes through `tx` lands together, or not at all if it throws. */
   transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T>;
   /** Throws when the store cannot answer (readiness checks). */
@@ -1108,7 +1113,7 @@ export class MemoryRepo implements Repo {
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
   commandRows: CommandLogRow[] = [];
-  idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number }>();
+  idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number; fingerprint: string | null }>();
   private seq = 0;
   /** Transactions run one at a time (memory has no row locks). */
   private txChain: Promise<unknown> = Promise.resolve();
@@ -1143,13 +1148,19 @@ export class MemoryRepo implements Repo {
     }
   }
 
-  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null> {
+  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown; fingerprint: string | null } | null> {
     const r = this.idempotencyRows.get(`${scope}\u0000${key}`);
-    return r ? { status: r.status, body: clone(r.body) } : null;
+    return r ? { status: r.status, body: clone(r.body), fingerprint: r.fingerprint } : null;
   }
-  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void> {
+  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number, fingerprint: string | null = null): Promise<void> {
     const k = `${scope}\u0000${key}`;
-    if (!this.idempotencyRows.has(k)) this.idempotencyRows.set(k, { status, body: clone(body), createdAt: at });
+    if (!this.idempotencyRows.has(k)) this.idempotencyRows.set(k, { status, body: clone(body), createdAt: at, fingerprint });
+  }
+  async dropIdempotentScopes(scopes: string[]): Promise<number> {
+    const set = new Set(scopes);
+    let n = 0;
+    for (const k of [...this.idempotencyRows.keys()]) if (set.has(k.split('\u0000')[0])) n += Number(this.idempotencyRows.delete(k));
+    return n;
   }
   async getVillage(playerId: string): Promise<VillageRow | null> {
     const v = this.villageRows.get(playerId);

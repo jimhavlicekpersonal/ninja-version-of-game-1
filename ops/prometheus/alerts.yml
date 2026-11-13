@@ -89,3 +89,10 @@ groups:
         labels: { severity: info }
         annotations:
           summary: 'Many requests are rate limited (abuse, or limits too tight for real traffic).'
+
+      # Backend A28: wrong staff tokens (guessing, or a revoked token still in someone's tool).
+      - alert: StaffAuthFailures
+        expr: sum(increase(tk_staff_auth_failures_total[15m])) > 10
+        labels: { severity: warn }
+        annotations:
+          summary: 'More than 10 wrong staff tokens in 15 minutes: someone is guessing at /admin (check ADMIN_ALLOW_IPS and the request logs).'
