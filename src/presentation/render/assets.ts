@@ -240,6 +240,20 @@ function maxTextureSize(scene: Phaser.Scene): number {
 
 type Ctx = CanvasRenderingContext2D;
 
+/**
+ * Paint one code-art texture once and add it as an image texture (never a `CanvasTexture`, which
+ * keeps an `ImageData` copy: device F8). `scale` px per art unit; the art's origin is at
+ * (`w`/2, `originY`). Real art or an earlier paint with the same key wins.
+ */
+export function paintArtTexture(textures: Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, art: (ctx: Ctx) => void, scale = TEX_SCALE): string {
+  const c = canvasFor(textures, key, w, h, originY, scale);
+  if (c) {
+    art(c.ctx);
+    c.done();
+  }
+  return key;
+}
+
 function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, scale = TEX_SCALE): { ctx: Ctx; done: () => void; bytes: number } | null {
   const textures = target instanceof Phaser.Textures.TextureManager ? target : target.textures;
   if (textures.exists(key)) return null; // real art (or an earlier run) already provided it
@@ -280,7 +294,7 @@ type BuildingType = { type: string; size: number; maxLevel: number };
 type TextureData = { buildings: Record<string, { size: number; levels?: unknown[] }>; economy: { mapSize: number }; cosmetics?: { hallSkins: { id: string; cap: string; spots: string }[] } };
 
 /** Every placeholder texture as a list of jobs, in the order `generatePlaceholders` paints them (fx shadow last). */
-function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: number, buildingTypes: BuildingType[], mapSize: number, _lazyTiers: boolean): Job[] {
+function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: number, buildingTypes: BuildingType[], mapSize: number): Job[] {
   const jobs: Job[] = [];
   const paint = (key: string, w: number, h: number, originY: number, scale: number | undefined, art: (ctx: Ctx) => void) =>
     jobs.push(() => {
@@ -337,8 +351,8 @@ function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: numb
 }
 
 /** Create every placeholder texture that real art has not already provided. */
-export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: BuildingType[], mapSize: number, lazyTiers = quality().lazyTiers): void {
-  for (const job of placeholderJobs(scene.textures, maxTextureSize(scene), buildingTypes, mapSize, lazyTiers)) job();
+export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: BuildingType[], mapSize: number): void {
+  for (const job of placeholderJobs(scene.textures, maxTextureSize(scene), buildingTypes, mapSize)) job();
 }
 
 function buildingTypesOf(data: TextureData): BuildingType[] {
@@ -377,7 +391,7 @@ export async function prepareTextures(
   sliceMs = 40,
 ): Promise<void> {
   const textures = scene.textures;
-  const jobs: Job[] = textures.exists(Keys.shadow) ? [] : placeholderJobs(textures, maxTextureSize(scene), buildingTypesOf(data), data.economy.mapSize, quality().lazyTiers);
+  const jobs: Job[] = textures.exists(Keys.shadow) ? [] : placeholderJobs(textures, maxTextureSize(scene), buildingTypesOf(data), data.economy.mapSize);
   jobs.push(...hallSkinJobs(textures, data));
   for (const b of shown) {
     const size = data.buildings[b.type]?.size;
