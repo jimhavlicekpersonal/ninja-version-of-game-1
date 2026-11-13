@@ -1356,7 +1356,7 @@
   "ui.rewards_59afe47d9d": { "en": "Rewards", "text": "Hadiah" },
   "ui.roof_colours_f7a5a7becd": { "en": "{arg1} roof colours", "text": "Warna atap {arg1}" },
   "ui.running_now_cb9581b3d2": { "en": "Running now", "text": "Sedang berlangsung" },
-  "ui.s_have_bced00a61e": { "en": "s have", "text": " (semua)" },
+  "ui.s_have_bced00a61e": { "en": "s have", "text": "semua" },
   "ui.safari_may_delete_this_village_after_a_9133912cdf": { "en": "Safari may delete this village after a week without a visit. To keep it: copy a save code first, then add Kagemura to your Home Screen (Share → Add to Home Screen), open it from there and load the code (Settings → Load from code). The Home Screen app keeps its own village, apart from Safari’s. You can also link a sign-in under Online play.", "text": "Safari mungkin menghapus desa ini setelah seminggu tidak dikunjungi. Untuk menyimpannya: salin kode simpanan dulu, lalu tambahkan Kagemura ke Layar Utama (Bagikan → Tambahkan ke Layar Utama), buka dari sana, dan muat kodenya (Pengaturan → Muat dari kode). Aplikasi di Layar Utama punya desanya sendiri, terpisah dari Safari. Kamu juga bisa menautkan cara masuk di Main online." },
   "ui.sandbox_clock_is_ahead_of_real_time_c3954a0322": { "en": "Sandbox clock is {arg1} ahead of real time.", "text": "Jam sandbox {arg1} lebih cepat dari waktu nyata." },
   "ui.sandbox_clock_matches_real_time_10a57b19e8": { "en": "Sandbox clock matches real time.", "text": "Jam sandbox sama dengan waktu nyata." },
