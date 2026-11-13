@@ -45,9 +45,18 @@ export function auraStrength(sim: BattleSim, target: SimTroop, aura: WarriorKit[
       value = Math.max(value, kit.strength ?? 1);
     }
   }
-  // Bitter Incense Burner weakens haste and toughness auras on the warriors it reaches.
-  if (value > 0 && (aura === 'haste' || aura === 'resist')) value *= 1 - target.auraCut;
+  // Bitter Incense Burner weakens haste and toughness auras on the warriors it reaches; a tempered base
+  // (troopCuts) weakens them everywhere, and the Mountain Shield's splash cover too.
+  const cut = sim.temperCut;
+  if (value > 0 && (aura === 'haste' || aura === 'resist')) value *= 1 - (cut && cut.aura > target.auraCut ? cut.aura : target.auraCut);
+  if (value > 0 && aura === 'splash' && cut && cut.splash > 0) value *= 1 - cut.splash;
   return value;
+}
+
+/** Healing cut on a warrior: the Bitter Incense Burner's, or a tempered base's if larger. */
+function healCutOf(sim: BattleSim, t: SimTroop): number {
+  const c = sim.temperCut?.heal ?? 0;
+  return c > t.healCut ? c : t.healCut;
 }
 
 export function isHidden(sim: BattleSim, t: SimTroop): boolean {
@@ -150,7 +159,7 @@ export function stepWarriorEffects(sim: BattleSim, actions: Actions): void {
     const seconds = sim.data.battle.warriorRules.supportIntervalTicks / sim.data.battle.ticksPerSecond;
     for (const t of sim.troops) {
       if (t.dead || t.decoyUntil) continue;
-      const heal = auraStrength(sim, t, 'heal') * (1 - t.healCut);
+      const heal = auraStrength(sim, t, 'heal') * (1 - healCutOf(sim, t));
       if (heal > 0) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * heal * seconds);
     }
   }
@@ -188,7 +197,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
   if (kit.revive && t.charges > 0) {
     const fallen = sim.troops.find((ally) => ally.dead && !ally.summoned && !ally.revived && ally.id !== t.id && distance(t.x, t.y, ally.x, ally.y) <= radius);
     if (fallen) {
-      fallen.dead = false; fallen.revived = true; fallen.hp = fallen.maxHp * kit.revive;
+      fallen.dead = false; fallen.revived = true; fallen.hp = fallen.maxHp * kit.revive * (sim.temperCut && sim.temperCut.revive > 0 ? 1 - sim.temperCut.revive : 1);
       fallen.target = -1; fallen.path = null; fallen.shieldUntil = 0;
       // Rendering rebuilds the sprite through the same deploy event used for reinforcements.
       sim.events.push({ k: 'deploy', troop: fallen.id }); t.charges--;
@@ -199,9 +208,9 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
     const allies = sim.troops.filter((ally) => !ally.dead && !ally.decoyUntil && sim.tick >= ally.shieldReady && distance(t.x, t.y, ally.x, ally.y) <= radius);
     if (allies.some((ally) => ally.hp < ally.maxHp)) {
       for (const ally of allies) {
-        ally.hp = Math.min(ally.maxHp, ally.hp + ally.maxHp * kit.shelter * (1 - ally.healCut));
+        ally.hp = Math.min(ally.maxHp, ally.hp + ally.maxHp * kit.shelter * (1 - healCutOf(sim, ally)));
         if (sim.tick >= ally.shieldReady) {
-          ally.shieldUntil = sim.tick + (kit.shieldTicks ?? 0) * (1 - ally.auraCut);
+          ally.shieldUntil = sim.tick + (kit.shieldTicks ?? 0) * (1 - (sim.temperCut && sim.temperCut.aura > ally.auraCut ? sim.temperCut.aura : ally.auraCut));
           ally.shieldReady = sim.tick + rules.shieldCooldownTicks;
         }
       }

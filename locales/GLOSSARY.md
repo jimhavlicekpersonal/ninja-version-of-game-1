@@ -110,6 +110,30 @@ Translate a term the same way every time it appears. When you choose a translati
 - Punctuation: Thai uses few marks and no full stop in its own sentences: end a sentence with nothing, and separate two sentences in one string with a space. The one exception is `text.period`, the full stop the game appends after a sentence built from parts: it must not be empty, so keep it `.`; Latin ! ? : ( ) are fine where English has them; quotes “ ”; ellipsis …; ๆ (repetition) is normal Thai: write a space before and after it, as the Royal Institute does (อื่น ๆ, ต่าง ๆ). Use Arabic digits; the game formats numbers, and Thai dates use the Buddhist-era year that `Intl` gives (พ.ศ. 2569).
 - Loanwords: common game words in the transliteration Thai games use (อัปเกรด, ลีก, โบนัส), following the Royal Institute spelling (อัป, not อัพ). Ninja terms in Thai (นินจา, โดโจ or สำนักฝึก, ระเบิดควัน).
 
+### Slavic languages (Russian, Ukrainian, Polish, Czech, Slovak, Slovenian, Croatian)
+
+- Informal *you* (ты, ти, ty, ty, ty, ti, ti). Past tenses and adjectives agree in gender, so never write a past-tense verb or adjective whose subject is the player, another player or a `{name}`: use the present tense, an impersonal form or a noun (Russian `Победа: {name}`, not `{name} победил`).
+- Plurals: Russian, Ukrainian, Polish and Croatian use `one`, `few`, `many` and `other`; Czech and Slovak use `one`, `few`, `many` (fractions) and `other`; Slovenian uses `one`, `two`, `few` and `other`. Write every category `Intl.PluralRules` gives your code.
+- Case endings cannot attach to a placeholder; put the placeholder after a colon or in apposition to a declined noun (`здание {building}`).
+- Ukrainian is translated from English, never from Russian; the check fails on ы э ъ ё in `uk` and on і ї є ґ in `ru`.
+
+### Turkish, Hungarian and Finnish
+
+- Suffixes follow vowel harmony and the last sound of the word, which the game cannot know for `{name}`, `{building}`, `{troop}` or a number. `npm run i18n:check` fails on any letter, apostrophe suffix or hyphen suffix directly after a placeholder or `#` (`{n}'den`, `{building}ı`, `#-szor`). Rephrase: a colon (`Hazır: {building}`), or a noun after the placeholder that carries the suffix (`{n} askeri`, `{name} adlı köyü`).
+- Turkish: informal *sen*; dotted and dotless i are different letters (i/İ, ı/I). Hungarian: informal *te*. Finnish: informal *sinä*, but prefer passive or imperative forms over pronouns.
+
+### Right-to-left languages (Arabic, Urdu, Hebrew)
+
+- Write normally; the game sets the direction. Never add direction marks (U+200E, U+200F, U+061C): the check fails on them.
+- Verbs, adjectives and *you* are gendered in Hebrew (and Arabic). Address the player with imperatives in the plural or infinitive (Hebrew `לבנות`, `שדרגו`) or with neutral nouns, never with a masculine or feminine singular *you*; Urdu uses *آپ* with gender-neutral verb forms where possible and rephrases around `{name}`.
+
+### Indic languages, Amharic and the African Latin-script languages
+
+- Bangla, Marathi, Telugu, Tamil, Gujarati, Kannada, Malayalam, Punjabi, Odia: write in the native script, respectful *you* (আপনি, तुम्ही/आपण, మీరు, நீங்கள், તમે, ನೀವು, നിങ്ങൾ, ਤੁਸੀਂ, ଆପଣ), and normalize to NFC (nukta letters are base + nukta). Postpositions and case suffixes attach to the word before them: put none directly after a placeholder in Dravidian languages (Tamil, Telugu, Kannada, Malayalam), where they join the word; use a noun after the placeholder to carry them.
+- Amharic: Ge'ez script, Ethiopic punctuation (። ፣) inside sentences, gender-neutral phrasing (plural-of-respect imperatives).
+- Hausa: the hooked letters ɓ ɗ ƙ and ƴ (not apostrophe spellings). Yoruba: full tone marks and subdots (ẹ ọ ṣ), NFC. Igbo: the dotted vowels ị ọ ụ and ṅ. Swahili and Zulu: standard written forms; Zulu noun-class prefixes cannot attach to a placeholder (use a colon).
+- Many words (server, account, email) have no common native term: use the word speakers of your language actually use in apps, and keep game proper names as the glossary says.
+
 ## Generated names
 
 Places, rival outposts and computer Alliances get two-part names from `names.placeFirst` × `names.placeSecond` and `social.groveNames.first` × `social.groveNames.second` (Thunder + Peak). Every first part must fit every second part. How the parts are joined is set per language by `generatedNames` in `languages.json` (an integration setting):

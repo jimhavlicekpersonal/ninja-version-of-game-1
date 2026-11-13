@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Tümünü tavla: {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Tavlandı: her {building} yeni biçimini aldı." },
   "temper.reset": { "en": "Back to untempered", "text": "Tavlanmamış hâle dön" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Nöbet ayrıca tüm üs genelinde baskıncıların iyileşmesini, diriltmelerini, dayanıklılığını ve kalkan korumasını zayıflatır." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tavlama: Menzil {reach} · Patlama {blast} · Nöbet {watch}" },
   "stake.label": { "en": "Stake", "text": "Bahis" },
   "stake.none": { "en": "No stake", "text": "Bahis yok" },

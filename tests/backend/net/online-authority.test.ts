@@ -245,12 +245,13 @@ describe('F18: replays are tied to the battle rules they were fought under', () 
   it('new records carry the current rules; old ones are not offered for replay', () => {
     expect(replayable({ rules: SIM_RULES })).toBe(true);
     expect(replayable({})).toBe(false);
-    // Rules 6 (Tempering) plays an untempered base exactly as rules 5, which plays a hero-less battle exactly as
-    // rules 4, so both stay watchable; rules 4 (design re-audit) changed combat, so rules 3 replays are shown as
-    // unavailable, never replayed wrongly.
-    expect(replayable({ rules: SIM_RULES - 1 })).toBe(true);
+    // Rules 7 changed what a Watch base does, so rules 6 replays retire (the server keeps the rules 6 engine).
+    // An untempered base still plays exactly as rules 5, which plays a hero-less battle exactly as rules 4, so both
+    // stay watchable; rules 4 (design re-audit) changed combat, so rules 3 replays are unavailable.
+    expect(replayable({ rules: SIM_RULES - 1 })).toBe(false);
     expect(replayable({ rules: SIM_RULES - 2 })).toBe(true);
-    expect(replayable({ rules: SIM_RULES - 3 })).toBe(false);
+    expect(replayable({ rules: SIM_RULES - 3 })).toBe(true);
+    expect(replayable({ rules: SIM_RULES - 4 })).toBe(false);
     expect(replayable({ rules: 1 })).toBe(false);
   });
 });
