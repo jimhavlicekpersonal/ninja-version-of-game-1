@@ -12,7 +12,7 @@ Rules (for reviewers):
 |---|---|
 | Kagemura: Ninja Clans | Kagemura: Dangin Ninja |
 | Clan / clan | Dangi (dangin) |
-| Clan Keep / Keep / Keep 7 | Hasumiyar Dangi / Hasumiya / Hasumiya mataki 7 |
+| Clan Keep / Keep / Keep 7 | Fadar Dangi / Fada / Fada mataki 7 |
 | Coins / Coin Mint | Kuɗi / Masana'antar Kuɗi |
 | Provisions / Terraced Farm | Guzuri / Gonar Matakai |
 | Treasury / Provision Storehouse | Baitulmali / Rumbun Guzuri |
