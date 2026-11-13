@@ -1,0 +1,166 @@
+{
+  "startingTrophies": 0,
+  "attackWin": {
+    "base": 24,
+    "perTrophyDiff": 0.05,
+    "min": 1,
+    "max": 50,
+    "perTrophyBelow": 0.25
+  },
+  "attackLoss": {
+    "base": 20,
+    "perTrophyDiff": 0.05,
+    "min": 2,
+    "max": 40
+  },
+  "matchTrophyRange": 80,
+  "seasonResetFloor": 400,
+  "leagues": [
+    {
+      "id": "sprout",
+      "name": "Bamboo League",
+      "min": 0,
+      "chest": {
+        "acorns": 20000,
+        "dew": 20000,
+        "moonstones": 10
+      },
+      "winBonus": {}
+    },
+    {
+      "id": "fern",
+      "name": "Cedar League",
+      "min": 400,
+      "chest": {
+        "acorns": 60000,
+        "dew": 60000,
+        "moonstones": 25
+      },
+      "winBonus": {
+        "acorns": 1000,
+        "dew": 1000
+      }
+    },
+    {
+      "id": "oak",
+      "name": "Iron League",
+      "min": 1000,
+      "chest": {
+        "acorns": 150000,
+        "dew": 150000,
+        "moonstones": 50
+      },
+      "winBonus": {
+        "acorns": 5000,
+        "dew": 5000
+      }
+    },
+    {
+      "id": "elder",
+      "name": "Obsidian League",
+      "min": 2000,
+      "chest": {
+        "acorns": 300000,
+        "dew": 300000,
+        "moonstones": 100
+      },
+      "winBonus": {
+        "acorns": 20000,
+        "dew": 20000
+      }
+    },
+    {
+      "id": "jade",
+      "name": "Ember League",
+      "min": 2800,
+      "chest": {
+        "acorns": 450000,
+        "dew": 450000,
+        "moonstones": 125
+      },
+      "winBonus": {
+        "acorns": 30000,
+        "dew": 30000
+      }
+    },
+    {
+      "id": "storm",
+      "name": "Storm League",
+      "min": 3600,
+      "chest": {
+        "acorns": 600000,
+        "dew": 600000,
+        "moonstones": 150
+      },
+      "winBonus": {
+        "acorns": 45000,
+        "dew": 45000
+      }
+    },
+    {
+      "id": "shadow",
+      "name": "Shadow League",
+      "min": 4400,
+      "chest": {
+        "acorns": 800000,
+        "dew": 800000,
+        "moonstones": 175
+      },
+      "winBonus": {
+        "acorns": 60000,
+        "dew": 60000
+      }
+    },
+    {
+      "id": "kage",
+      "name": "Kage League",
+      "min": 5200,
+      "chest": {
+        "acorns": 1000000,
+        "dew": 1000000,
+        "moonstones": 200
+      },
+      "winBonus": {
+        "acorns": 80000,
+        "dew": 80000
+      }
+    }
+  ],
+  "matchmaking": {
+    "trophiesPerHall": 350,
+    "strengthJitter": 0.35,
+    "hallsBelow": 1,
+    "hallsAbove": 1,
+    "trophyJitter": 30,
+    "powerSlack": 0.25,
+    "powerSlackByKeep": [0.75, 0.75, 1, 0.75, 0.25, 0.5, 0.15, 0.75, 0.5, 0.5, 0.5, 0.75, 0.75, 0.5, 0.5],
+    "researchFloorKeeps": 1.5,
+    "exposureHours": 12
+  },
+  "lootPenaltyByHallDiff": [
+    1,
+    0.8,
+    0.5,
+    0.25,
+    0.05
+  ],
+  "lootPenaltyUpByHallDiff": [1, 0.9, 0.8],
+  "defenseHonorLossShare": 0,
+  "rating": {
+    "$comment": "Hidden ratings for matchmaking (roadmap Phase 3, src/gameplay/sim/rating.ts). Attack Rating (AR) is an attacker's skill, Base Rating (BR) how hard a base is to raid. Honor stays the visible ladder.",
+    "initial": 1500,
+    "initialRd": 350,
+    "minRd": 60,
+    "rdShrinkPerBattle": 0.93,
+    "rdGrowthPerIdleDay": 6,
+    "powerWeight": 150,
+    "kNew": 40,
+    "kSettled": 16,
+    "starWeight": 0.6,
+    "destructionWeight": 0.4,
+    "matchTarget": 0.55,
+    "layoutResetShare": 0.25,
+    "defenderDailyHonorLossCap": 150,
+    "powerBoardMinBattles": 5
+  }
+}

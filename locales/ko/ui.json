@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "모든 {building} 단련" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "단련 완료: 모든 {building}의 형태가 바뀌었어요." },
   "temper.reset": { "en": "Back to untempered", "text": "단련 전으로 되돌리기" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "경계는 기지 전체에서 공격자의 치유, 부활, 강인함, 방패 엄호도 약하게 해요." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "단련: 사거리 {reach} · 폭발 {blast} · 경계 {watch}" },
   "stake.label": { "en": "Stake", "text": "내기" },
   "stake.none": { "en": "No stake", "text": "내기 없음" },

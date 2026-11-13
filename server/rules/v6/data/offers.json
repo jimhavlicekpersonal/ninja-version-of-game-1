@@ -1,0 +1,92 @@
+{
+  "durationHoursMin": 24,
+  "durationHoursMax": 72,
+  "maxPerSession": 1,
+  "rules": [
+    {
+      "id": "starter_pack",
+      "trigger": "first_long_wait",
+      "title": "Starter Pack",
+      "description": "A one-time boost for new clan leaders: Jade and resources to speed things up.",
+      "productId": "offer_starter",
+      "usd": 1.99,
+      "contents": {
+        "moonstones": 300,
+        "acorns": 5000,
+        "dew": 5000
+      },
+      "durationHours": 72,
+      "oncePerAccount": true,
+      "cooldownHours": 0,
+      "minAccountHours": 24
+    },
+    {
+      "id": "builder_pack",
+      "trigger": "all_builders_busy",
+      "title": "Artisan's Bundle",
+      "description": "Jade to hire another Village Artisan, plus a little extra.",
+      "productId": "offer_builder",
+      "usd": 4.99,
+      "contents": {
+        "moonstones": 650
+      },
+      "durationHours": 48,
+      "oncePerAccount": false,
+      "cooldownHours": 168,
+      "minAccountHours": 24,
+      "afterOffer": "starter_pack"
+    },
+    {
+      "id": "war_prep_pack",
+      "trigger": "grove_raid_soon",
+      "title": "War Supplies",
+      "description": "Get ready for the Alliance War: Provisions for your warriors, and Jade.",
+      "productId": "offer_war_prep",
+      "usd": 2.99,
+      "contents": {
+        "moonstones": 150,
+        "dew": 25000
+      },
+      "durationHours": 24,
+      "oncePerAccount": false,
+      "cooldownHours": 144,
+      "minAccountHours": 24
+    },
+    {
+      "id": "keep_pack",
+      "trigger": "keep_reached",
+      "title": "Keep Celebration",
+      "description": "Your Keep grew. Supplies sized for your new Keep level, and Jade.",
+      "productId": "offer_keep",
+      "usd": 4.99,
+      "contents": {
+        "moonstones": 300,
+        "acorns": 40000,
+        "dew": 40000
+      },
+      "durationHours": 48,
+      "oncePerAccount": false,
+      "cooldownHours": 72,
+      "minAccountHours": 24,
+      "afterOffer": "starter_pack"
+    },
+    {
+      "id": "rebuild_pack",
+      "trigger": "heavy_defense_loss",
+      "title": "Rebuild Kit",
+      "description": "Raiders hit hard. Restock your storage.",
+      "productId": "offer_rebuild",
+      "usd": 2.99,
+      "contents": {
+        "moonstones": 100,
+        "acorns": 20000,
+        "dew": 20000
+      },
+      "durationHours": 24,
+      "oncePerAccount": false,
+      "cooldownHours": 72,
+      "minAccountHours": 24,
+      "retired": true
+    }
+  ]
+}
