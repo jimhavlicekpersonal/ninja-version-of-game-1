@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Analytics, MemoryEventStore } from '../../../src/backend/analytics/events';
-import { MemorySaveStore, SaveConflictError, type MemorySlot } from '../../../src/backend/persist/saveStore';
+import { MAX_BACKUPS, MemorySaveStore, SaveConflictError, backupsToDrop, type MemorySlot } from '../../../src/backend/persist/saveStore';
 import { GameController } from '../../../src/gameplay/control/controller';
 import { FakeClock } from '../../../src/gameplay/sim/clock';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
@@ -132,5 +132,21 @@ describe('a save that cannot be read', () => {
     expect(controller.state.training).toHaveLength(3);
     expect(hallLevel(controller.state, data)).toBe(1);
     expect(stored(slot).version).toBe(SAVE_VERSION);
+  });
+});
+
+describe('damaged-save backups are capped (device F15)', () => {
+  it('keeps only the newest MAX_BACKUPS', async () => {
+    const store = new MemorySaveStore();
+    for (let i = 0; i < MAX_BACKUPS + 4; i++) await store.backupDamaged({ n: i });
+    const kept = await store.listBackups();
+    expect(kept).toHaveLength(MAX_BACKUPS);
+    expect(kept.map((b) => (b.raw as { n: number }).n)).toEqual([8, 7, 6, 5, 4]);
+  });
+
+  it('picks the oldest IndexedDB keys to delete by their time stamp', () => {
+    const keys = ['tk-save-damaged-1700000000005', 'tk-save-damaged-1700000000001', 'tk-save-damaged-1700000000009', 'tk-save-damaged-1700000000003'];
+    expect(backupsToDrop(keys, 2)).toEqual(['tk-save-damaged-1700000000003', 'tk-save-damaged-1700000000001']);
+    expect(backupsToDrop(keys.slice(0, 2), 5)).toEqual([]);
   });
 });
