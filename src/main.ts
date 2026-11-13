@@ -11,7 +11,7 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
-import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, villageTexture } from './presentation/render/assets';
+import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, trimTextureCaches, villageTexture } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
@@ -615,7 +615,7 @@ async function boot(): Promise<void> {
   if (sandbox) hud.toast(i18nText("ui.testing_sandbox_a_separate_practice_vi_e3d2ae64e5"), 'info');
   if (params.has('debug')) {
     // Testing hook, only with ?debug in the URL.
-    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes };
+    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes, textureBytes: () => textureBytes(game.textures) };
   }
 
   // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
@@ -668,14 +668,45 @@ async function boot(): Promise<void> {
     }
   }, 5000);
 
-  // Autosave regularly and whenever the app goes to the background or closes.
-  window.setInterval(() => void controller.save(), 15_000);
+  // Autosave whenever the app goes to the background or closes, and every 15 s only when the village
+  // changed without a save (device F14: every command and finished timer already saves at once, so
+  // this mostly re-wrote an unchanged village, 150-300 KB at late Keeps, four times a minute). At
+  // least every 2 minutes it saves anyway, which keeps "last seen" fresh for a killed app.
+  let autosaved: unknown = null;
+  let autosavedAt = 0;
+  window.setInterval(() => {
+    const now = performance.now();
+    if (controller.state === autosaved && now - autosavedAt < 120_000) return;
+    void controller.save();
+    autosaved = controller.state;
+    autosavedAt = now;
+  }, 15_000);
+  /**
+   * The app may be killed from here on (background, page closing, Capacitor pause): save, send the
+   * actions waiting for the server now instead of at the next 15 s tick (GLOBAL-010), and let go
+   * of painted art no scene shows (device F19; repainted when needed).
+   */
+  let leftAt = 0;
+  const goingAway = () => {
+    app?.flushBattle();
+    void controller.save();
+    const now = performance.now();
+    if (now - leftAt < 1000) return; // hidden, pagehide and pause arrive together: one send is enough
+    leftAt = now;
+    void connection.flush().catch(() => undefined);
+    lowMemory();
+  };
+  const lowMemory = () => {
+    trimTextureCaches(game.textures);
+    thumbs.clear();
+  };
+  // Android onTrimMemory and iOS memory warnings, forwarded by the app's native code (MainActivity, TkViewController).
+  window.addEventListener('tkmemorywarning', lowMemory);
   document.addEventListener('visibilitychange', () => {
     const hidden = document.visibilityState === 'hidden';
     sound.suspend(hidden);
     if (hidden) {
-      app?.flushBattle();
-      void controller.save();
+      goingAway();
       void connection.uploadBase();
       if (prefs.get('reminders')) {
         // Opt-in only: the player's chosen types, no quiet-hours pings, a daily cap.
@@ -692,10 +723,13 @@ async function boot(): Promise<void> {
       void controller.save();
     }
   });
-  window.addEventListener('pagehide', () => {
-    app?.flushBattle();
-    void controller.save();
-  });
+  window.addEventListener('pagehide', goingAway);
+  // In the apps the WebView may stay "visible" while the app is paused (iOS app switcher, Android split screen).
+  if (isNative()) {
+    void import('@capacitor/app')
+      .then(({ App: CapApp }) => CapApp.addListener('pause', goingAway))
+      .catch(() => undefined);
+  }
   // A failed save is shown (at most once a minute), never only logged.
   let lastSaveWarning = 0;
   let retryingSave = false;
