@@ -133,7 +133,8 @@ const FLASH = 'fx.flash';
  * `CanvasTexture` kept a full `ImageData` copy of every ridge, fog band, ruin and sprite.
  */
 function artTexture(scene: Phaser.Scene, key: string, w: number, h: number, originY: number, paint: (ctx: CanvasRenderingContext2D) => void, scale = TEX_SCALE): string {
-  return paintArtTexture(scene.textures, key, w, h, originY, paint, scale);
+  // Scenery is only drawn, never read back: its painting canvas goes once WebGL has it.
+  return paintArtTexture(scene.textures, key, w, h, originY, paint, scale, key.startsWith('scenery.'));
 }
 
 function ensureBattleFx(scene: Phaser.Scene): void {

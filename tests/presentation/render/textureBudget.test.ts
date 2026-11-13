@@ -42,4 +42,18 @@ describe('TextureBudget', () => {
     b.hold('village', ['lv2']);
     expect(removed).toEqual(['lv1']);
   });
+
+  it('trim (low memory, device F19) removes everything not on screen, under budget or not', () => {
+    const removed: string[] = [];
+    const b = new TextureBudget(64 * MB, (k) => void removed.push(k));
+    b.added('scouted.a', MB);
+    b.added('scouted.b', MB);
+    b.added('home.keep', MB);
+    b.hold('village', ['home.keep']);
+    expect(removed).toEqual([]); // well under budget
+    b.trim();
+    expect(removed).toEqual(['scouted.a', 'scouted.b']);
+    expect(b.keys()).toEqual(['home.keep']);
+    expect(b.bytes).toBe(MB);
+  });
 });
