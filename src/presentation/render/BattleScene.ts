@@ -14,7 +14,7 @@ import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
 import { noteBattleFps, quality } from './quality';
 import { expectedFps, frames, refreshHz, slowDown } from './frameRate';
-import { addScenery, canvasRenderer, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
+import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
 import { haptic, sound } from '../audio/sound';
 
 export interface BattleHooks {
@@ -100,6 +100,8 @@ interface TView {
   ring: Phaser.GameObjects.Image;
   /** White hit flash ends at this scene time. */
   flashUntil: number;
+  /** The troop's own texture key (under the Canvas renderer the image may show a tinted copy). */
+  key: string;
 }
 
 const OVER = 1_000_000;
@@ -198,7 +200,11 @@ export class BattleScene extends Phaser.Scene {
     // Report section 5 step 3 (device F1): this base's art stays while the battle shows it; the last
     // base's (scouting, Next, replays) can go once this scene shuts down.
     holdBuildingTextures(this.textures, 'battle', this.bviews.map((v) => v.image.texture.key));
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => releaseBuildingTextures(this.textures, 'battle'));
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      releaseBuildingTextures(this.textures, 'battle');
+      for (const k of this.tintKeys) if (this.textures.exists(k)) this.textures.remove(k);
+      this.tintKeys.clear();
+    });
     this.zone = this.add.graphics().setDepth(-4).setAlpha(0);
     this.drawZone();
     this.drawEntry();
@@ -639,7 +645,27 @@ export class BattleScene extends Phaser.Scene {
     const bar = this.add.graphics().setDepth(OVER - 9);
     image.setScale(baseScale * 0.4);
     this.tweens.add({ targets: image, scale: baseScale, duration: 260, ease: 'Back.easeOut' });
-    return { image, shadow, bar, dead: false, baseScale, lastHp: -1, ring, flashUntil: 0 };
+    return { image, shadow, bar, dead: false, baseScale, lastHp: -1, ring, flashUntil: 0, key };
+  }
+
+  /** Tinted copies made for the Canvas renderer in this battle (removed on shutdown). */
+  private tintKeys = new Set<string>();
+
+  /**
+   * Tint a warrior: hit flash, lit stealth warrior, grounded flyer. Device F13: Phaser's Canvas
+   * renderer (no WebGL) ignores tint, so these battle cues vanished there; it shows a pre-tinted
+   * copy of the texture instead (`tintedTexture`).
+   */
+  private tintTroop(v: TView, color: number | null, fill = false): void {
+    if (!this.canvasMode) {
+      if (color === null) v.image.clearTint();
+      else if (fill) v.image.setTintFill(color);
+      else v.image.setTint(color);
+      return;
+    }
+    const key = color === null ? v.key : tintedTexture(this, v.key, color, fill);
+    if (key !== v.key) this.tintKeys.add(key);
+    if (v.image.texture.key !== key) v.image.setTexture(key);
   }
 
   /** Short floating label over a troop or building (ability names, counter effects). Throttled per key. */
@@ -831,10 +857,10 @@ export class BattleScene extends Phaser.Scene {
       v.image.setPosition(w.x, w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
       v.image.setFlipX(t.facing < 0);
       v.image.setAlpha(t.decoyUntil ? 0.45 : isHidden(sim, t) ? 0.6 : 1);
-      if (now < v.flashUntil) v.image.setTintFill(0xffffff);
-      else if (t.litUntil > sim.tick) v.image.setTint(0xfff0b0);
-      else if (t.air && !flying) v.image.setTint(0xc8c8c8);
-      else v.image.clearTint();
+      if (now < v.flashUntil) this.tintTroop(v, 0xffffff, true);
+      else if (t.litUntil > sim.tick) this.tintTroop(v, 0xfff0b0);
+      else if (t.air && !flying) this.tintTroop(v, 0xc8c8c8);
+      else this.tintTroop(v, null);
       if (t.attacking && !t.air) v.image.setScale(v.baseScale * (1 + Math.max(0, Math.sin(now / 60)) * 0.08), v.baseScale * (1 - Math.max(0, Math.sin(now / 60)) * 0.06));
       else if (v.image.scaleX !== v.baseScale && !this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale);
       v.shadow.setPosition(w.x, w.y + 1);

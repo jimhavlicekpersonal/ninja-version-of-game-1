@@ -205,6 +205,36 @@ export function canvasRenderer(scene: Phaser.Scene): boolean {
   return scene.sys.game.renderer.type === Phaser.CANVAS;
 }
 
+/**
+ * A tinted copy of a texture for Phaser's Canvas renderer, which ignores `setTint` (device F13):
+ * multiplied by `color` (as `setTint` does), or filled with it (`setTintFill`), keeping the
+ * original's alpha. Made once per key and colour; the caller removes it when done
+ * (`textures.remove`). Under WebGL use the real tint instead.
+ */
+export function tintedTexture(scene: Phaser.Scene, key: string, color: number, fill = false): string {
+  const hex = color.toString(16).padStart(6, '0');
+  const out = `${key}#${fill ? 'fill' : 'tint'}${hex}`;
+  if (scene.textures.exists(out) || !scene.textures.exists(key)) return scene.textures.exists(out) ? out : key;
+  const frame = scene.textures.getFrame(key);
+  const src = frame.source.image as CanvasImageSource;
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, frame.cutWidth);
+  c.height = Math.max(1, frame.cutHeight);
+  const ctx = c.getContext('2d');
+  if (!ctx) return key;
+  ctx.drawImage(src, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, c.width, c.height);
+  ctx.globalCompositeOperation = fill ? 'source-in' : 'multiply';
+  ctx.fillStyle = `#${hex}`;
+  ctx.fillRect(0, 0, c.width, c.height);
+  if (!fill) {
+    // Multiply also coloured the transparent pixels: keep only the original's shape.
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(src, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, c.width, c.height);
+  }
+  scene.textures.addImage(out, c as unknown as HTMLImageElement);
+  return out;
+}
+
 /** Tracer colours by projectile kind. */
 const TRACER_TINT: Record<string, number> = { acorn: 0xf4f7ff, pebble: 0xf4f7ff, pinecone: 0xffa040, sting: 0xbfe9ff, spark: 0xffe08a, seedbomb: 0xff8a3c, arrow: 0xfff6d8, bolas: 0xcfd6e0, sap: 0xb4b9c1, thorns: 0xb7e08a };
 

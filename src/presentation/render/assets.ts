@@ -308,6 +308,39 @@ export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = qu
   }
 }
 
+/** Longest side of a HUD thumbnail in CSS pixels: the largest place one is shown (the Build menu's 96 px cards) plus a margin. */
+const THUMB_CSS_PX = 112;
+
+/**
+ * A small PNG of a texture for the HUD (device F11, review M10). `getBase64` encoded the whole
+ * texture (buildings at 2.5x: 100-300 KB data URLs, 5-20 ms of main-thread encoding each on a
+ * slow phone, kept for the session); this draws it at the size the HUD shows (112 CSS px at the
+ * screen's density, at most 2x) first, so the encode and the string are several times smaller.
+ * Empty when the texture has no readable image.
+ */
+export function thumbnailDataUrl(textures: Phaser.Textures.TextureManager, key: string): string {
+  if (!textures.exists(key)) return '';
+  const frame = textures.getFrame(key);
+  const img = frame?.source.image as CanvasImageSource & { width: number; height: number } | undefined;
+  if (!frame || !img || img.width <= 1) return '';
+  const dpr = typeof window === 'undefined' ? 1 : Math.min(2, window.devicePixelRatio || 1);
+  const max = Math.round(THUMB_CSS_PX * dpr);
+  const k = Math.min(1, max / Math.max(frame.cutWidth, frame.cutHeight));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(frame.cutWidth * k));
+  c.height = Math.max(1, Math.round(frame.cutHeight * k));
+  const ctx = c.getContext('2d');
+  if (!ctx) return '';
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, c.width, c.height);
+  try {
+    // PNG: WebP was 6x smaller but 5x slower to encode in Chromium (measured), and this runs on a tap.
+    return c.toDataURL('image/png');
+  } catch {
+    return '';
+  }
+}
+
 /** Thumbnail key for the HUD: real art for the plain key wins, else level 1 (real tier art, then code art). */
 export function buildingThumbKey(textures: Phaser.Textures.TextureManager, type: string): string {
   const base = Keys.buildingBase(type);

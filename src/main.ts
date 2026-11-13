@@ -11,7 +11,7 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
-import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, trimTextureCaches, villageTexture } from './presentation/render/assets';
+import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, thumbnailDataUrl, trimTextureCaches, villageTexture } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
@@ -452,11 +452,11 @@ async function boot(): Promise<void> {
 
   const thumbs = new Map<string, string>();
   // Only real images are remembered: a texture that isn't ready yet is asked for again next time.
+  // Thumbnail-sized (device F11): the full texture's PNG was 100-300 KB per building.
   const thumbOf = (key: string): string | null => {
     const known = thumbs.get(key);
     if (known) return known;
-    if (!game.textures.exists(key)) return null;
-    const url = game.textures.getBase64(key) as string;
+    const url = thumbnailDataUrl(game.textures, key);
     if (url) thumbs.set(key, url);
     return url || null;
   };
