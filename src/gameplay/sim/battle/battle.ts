@@ -222,6 +222,12 @@ export interface BattleSim {
   warriorEffects: WarriorEffect[];
   supportTroops: number[];
   /**
+   * Quality 28: `supportTroops` split by aura kind, in the same order (each list is a subsequence of
+   * `supportTroops`). A troop's kit never changes, so `auraStrength` and the taunt lookup read only the
+   * sources of the aura they ask about, with the same checks in the same order: results are unchanged.
+   */
+  auraSources: Partial<Record<NonNullable<import('../types').WarriorKit['aura']>, number[]>>;
+  /**
    * Report section 5 step 10 (quality 28): what each troop looks like to the defenses this tick, built once
    * before the defense phase. Nothing in that phase moves, reveals, lights, grounds or kills a troop (damage
    * lands later, in stepProjectiles), so the defenses read exactly what they used to compute per call.
@@ -372,6 +378,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     abilitiesUsed: {},
     warriorEffects: [],
     supportTroops: [],
+    auraSources: {},
   };
 }
 
@@ -721,9 +728,10 @@ function stepDefense(sim: BattleSim, bi: number): void {
     const range = (smoke && inSmoke(sim, t.x, t.y)) || veiled ? smokedRange : c.range;
     return d <= range && d >= (c.minRange ?? 0);
   };
-  const taunt = sim.supportTroops.find((index) => {
+  // Quality 28: only the taunting sources (`auraSources.taunt` keeps `supportTroops` order, so the first match is the same).
+  const taunt = sim.auraSources.taunt?.find((index) => {
     const t = sim.troops[index];
-    return troopDef(sim.data, t.type).kit?.aura === 'taunt' && ok(t) && dist(cx, cy, t.x, t.y) <= (troopDef(sim.data, t.type).kit?.radius ?? 0);
+    return ok(t) && dist(cx, cy, t.x, t.y) <= (troopDef(sim.data, t.type).kit?.radius ?? 0);
   }) ?? -1;
   if (taunt >= 0) b.targetTroop = taunt;
   // Longbow Yagura: re-picks each shot, preferring warriors that attack from long range.
