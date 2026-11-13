@@ -1,0 +1,160 @@
+{
+  "newPlayerShieldHours": 24,
+  "newPlayerRaids": {
+    "$comment": "The first `count` bot raids a village ever faces (after the new-player shield) bring a smaller, less researched army, so a new village with its first Kunai Tower usually holds (sim/defense.ts attackerFor).",
+    "count": 3,
+    "housingShare": 0.5,
+    "levelsBelowCap": 2
+  },
+  "defenseWin": {
+    "$comment": "A bot raid that wins no star pays the defender this share of its Keep's lowest generated raid loot, in Coins and Provisions (storage-capped).",
+    "shareOfRaidLoot": 0.05
+  },
+  "rematch": {
+    "$comment": "Settle the score: once per bot raid, within `windowHours`, attack the raider's own generated base. No loot from buildings and no honor; a win (1+ stars) pays `shareOfRaidLoot` x stars/3 of the Keep's lowest raid loot.",
+    "windowHours": 72,
+    "shareOfRaidLoot": 0.15
+  },
+  "exhaustion": {
+    "$comment": "Balance audit 2026-11-08 (exhausted stores): each raid the village lost (1+ star) in the last windowHours multiplies what the next raider can take by factor, offline and online.",
+    "windowHours": 24,
+    "factor": 0.5
+  },
+  "diversity": {
+    "$comment": "Balance audit 2026-11-08 (diversity carries more): a won raid carries minShare + (1 - minShare) x min(1, D / fullAt) of its loot, D = 1 - sum of squared housing shares by role of the warriors that fought (the hero not counted).",
+    "minShare": 0.85,
+    "fullAt": 0.6
+  },
+  "stakes": {
+    "$comment": "Balance audit 2026-11-08 (declared stakes, opt-in): before a raid the attacker may declare 2 or 3 stars; reaching it carries the loot x byStars[stake], missing it carries nothing and a real defender keeps it. Without a declaration a raid carries its loot as before.",
+    "byStars": { "2": 1.1, "3": 1.25 }
+  },
+  "shieldTiers": [
+    {
+      "destruction": 30,
+      "hours": 12
+    },
+    {
+      "destruction": 60,
+      "hours": 14
+    },
+    {
+      "destruction": 90,
+      "hours": 16
+    }
+  ],
+  "slotMinutes": 60,
+  "chancePerSlot": 0.12,
+  "graceMinutes": 2,
+  "maxRaidsPerCatchUp": 24,
+  "maxDefenseLog": 10,
+  "botArmyMix": [
+    {
+      "hedgehog_roller": 0.7,
+      "frog_lobber": 0.3
+    },
+    {
+      "hedgehog_roller": 0.55,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15
+    },
+    {
+      "hedgehog_roller": 0.45,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.1
+    },
+    {
+      "hedgehog_roller": 0.4,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.08,
+      "mole_digger": 0.07
+    },
+    {
+      "hedgehog_roller": 0.35,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.1,
+      "mole_digger": 0.1
+    },
+    {
+      "hedgehog_roller": 0.35,
+      "frog_lobber": 0.3,
+      "beetle_brute": 0.15,
+      "owl_bomber": 0.1,
+      "mole_digger": 0.1
+    },
+    {
+      "wind_step_assassin": 0.35,
+      "blowgun_hunter": 0.25,
+      "bell_warden": 0.3,
+      "gearbreaker": 0.1
+    },
+    {
+      "wind_step_assassin": 0.35,
+      "blowgun_hunter": 0.25,
+      "bell_warden": 0.3,
+      "gearbreaker": 0.1
+    },
+    {
+      "wind_step_assassin": 0.35,
+      "blowgun_hunter": 0.25,
+      "bell_warden": 0.3,
+      "gearbreaker": 0.1
+    },
+    {
+      "moonblade_master": 0.35,
+      "chain_sickle_reaper": 0.25,
+      "mountain_shield": 0.3,
+      "fuse_master": 0.1
+    },
+    {
+      "moonblade_master": 0.35,
+      "chain_sickle_reaper": 0.25,
+      "mountain_shield": 0.3,
+      "fuse_master": 0.1
+    },
+    {
+      "moonblade_master": 0.35,
+      "chain_sickle_reaper": 0.25,
+      "mountain_shield": 0.3,
+      "fuse_master": 0.1
+    },
+    {
+      "storm_sovereign": 0.35,
+      "thousand_needle": 0.25,
+      "oni_breaker": 0.3,
+      "ghost_engineer": 0.1
+    },
+    {
+      "storm_sovereign": 0.35,
+      "thousand_needle": 0.25,
+      "oni_breaker": 0.3,
+      "ghost_engineer": 0.1
+    },
+    {
+      "storm_sovereign": 0.35,
+      "thousand_needle": 0.25,
+      "oni_breaker": 0.3,
+      "ghost_engineer": 0.1
+    }
+  ],
+  "storageLootCapByHall": [
+    1500,
+    4000,
+    10000,
+    25000,
+    60000,
+    130000,
+    159588,
+    220608,
+    395014,
+    641498,
+    1084277,
+    1456603,
+    3062556,
+    5428078,
+    9600185
+  ]
+}

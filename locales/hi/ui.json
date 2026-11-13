@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "हर {building} को साधें" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "साधा गया: हर {building} को नया रूप मिल गया।" },
   "temper.reset": { "en": "Back to untempered", "text": "बिना साधे पर लौटें" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "चौकसी पूरे ठिकाने में हमलावरों की चिकित्सा, पुनर्जीवन, सहनशक्ति और ढाल की ओट को भी कमज़ोर करती है।" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "साधा हुआ: पहुँच {reach} · धमाका {blast} · चौकसी {watch}" },
   "stake.label": { "en": "Stake", "text": "दाँव" },
   "stake.none": { "en": "No stake", "text": "कोई दाँव नहीं" },

@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Tempa semua {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Selesai ditempa: semua {building} punya bentuk baru." },
   "temper.reset": { "en": "Back to untempered", "text": "Kembali ke tanpa tempaan" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Jaga juga melemahkan penyembuhan, kebangkitan, ketangguhan, dan perlindungan perisai milik penyerbu di seluruh markas." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tempaan: Jangkauan {reach} · Ledakan {blast} · Jaga {watch}" },
   "stake.label": { "en": "Stake", "text": "Taruhan" },
   "stake.none": { "en": "No stake", "text": "Tanpa taruhan" },

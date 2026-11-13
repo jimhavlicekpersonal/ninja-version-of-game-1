@@ -45,6 +45,8 @@ export function recordFixture(engine: RulesEngine): RulesFixture {
     }
   }
   const army: Record<string, number> = { hedgehog_roller: 20, frog_lobber: 12, beetle_brute: 4 };
+  // From rules 7 (Watch cuts the attackers' support): healers in the army, so the cut is exercised.
+  if (engine.rules >= 7) army.herbalist = 4;
   const size = engine.data.economy.mapSize;
   const deployments: Deployment[] = [];
   let tick = 0;
