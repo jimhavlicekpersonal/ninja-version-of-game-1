@@ -244,6 +244,36 @@
         }
       }
     },
+    "ar": {
+      "ready": true,
+      "strings": 2708,
+      "installedUtf8": 272246,
+      "gzip": 79678,
+      "brotli": 65309,
+      "zipDeflatePayload": 79660,
+      "namespaces": {
+        "boot": {
+          "total": 17,
+          "translated": 17
+        },
+        "data": {
+          "total": 669,
+          "translated": 669
+        },
+        "messages": {
+          "total": 1870,
+          "translated": 1870
+        },
+        "pages": {
+          "total": 314,
+          "translated": 314
+        },
+        "ui": {
+          "total": 152,
+          "translated": 152
+        }
+      }
+    },
     "zh-Hans": {
       "ready": true,
       "strings": 2708,
@@ -693,35 +723,35 @@
   },
   "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",
   "builtJavaScript": {
-    "phase": "after_client_build",
+    "phase": "existing_dist_before_build",
     "files": [
       {
-        "path": "esm-YNGrOw_s.js",
-        "sha256": "27ec50f67fc27ab12bf37896b2447b0ad1e24fedee953b42544143aa9a0b06eb",
+        "path": "esm-CWFJxvT8.js",
+        "sha256": "19701635eb39c35d6f668993f0d1b1919d31c5a1f032730f1b5a9b941e44cfbe",
         "raw": 355,
         "gzip": 261,
-        "brotli": 264
+        "brotli": 263
       },
       {
-        "path": "friendsUi-BmOye5fw.js",
-        "sha256": "3eb730a33fd805faf78a04d0fce1c6f5843e217f4a1e4b10f1f3e0adbebac1dc",
+        "path": "friendsUi-4MPN8_ll.js",
+        "sha256": "5ef2e910068bf941810b5dfba557f2205468233d5479f6706f462cd551724902",
         "raw": 28353,
-        "gzip": 9275,
-        "brotli": 8312
+        "gzip": 9277,
+        "brotli": 8310
       },
       {
-        "path": "gangWarUi-De5O9rYF.js",
-        "sha256": "9a4715dfc08fc63fafffb54bdde636345c82e3a01db19a23c74dd9925114fce3",
+        "path": "gangWarUi-BCpbg8FN.js",
+        "sha256": "61db8a2c2d5350e73c0c9a63bf6c300bad4f33d43315ba3a6f6a9ddf2a6c4cef",
         "raw": 5728,
-        "gzip": 2289,
+        "gzip": 2292,
         "brotli": 2073
       },
       {
-        "path": "index-B_U78oq0.js",
-        "sha256": "16f4d12182a52b7645b02d34a97616baeaee97a392caffa80981825f70bda346",
-        "raw": 1146971,
-        "gzip": 354627,
-        "brotli": 267658
+        "path": "index-eYvX7NST.js",
+        "sha256": "1a2983dfb18ff0856911ea12f44d736ec52a1ec9d6999773b31438d49a65d369",
+        "raw": 1147049,
+        "gzip": 354639,
+        "brotli": 267794
       },
       {
         "path": "phaser-BNIGqvgW.js",
@@ -731,31 +761,31 @@
         "brotli": 140447
       },
       {
-        "path": "web-CAQqAU-5.js",
-        "sha256": "55a69f8a284038f93ad6bcdd385da7692f1e543cbfdabbbd7fe9fd016835ec85",
-        "raw": 844,
-        "gzip": 401,
-        "brotli": 310
-      },
-      {
-        "path": "web-CrV1Uy3D.js",
-        "sha256": "af510185dbacaeb9c428c78a282a28cc157ee6210c1da3b0131c2047e3cb4bfe",
+        "path": "web-C2UejsaQ.js",
+        "sha256": "93a0fd4e957fe087ae03d4292d7faf9332726b8076f297bab9148c794bdedc10",
         "raw": 4438,
         "gzip": 1290,
-        "brotli": 1103
+        "brotli": 1095
       },
       {
-        "path": "web-DPkt2kkY.js",
-        "sha256": "7908550a42e349abfe863d0e0653ad18db351ccd5910c2150e2d18e5f88c000a",
+        "path": "web-_a6Aa9z7.js",
+        "sha256": "410e28480adc43e5f15a0fe419cfd6d7beeddc38318db2fd18e98a798a0c7bd5",
         "raw": 894,
-        "gzip": 460,
-        "brotli": 374
+        "gzip": 459,
+        "brotli": 376
+      },
+      {
+        "path": "web-xayhqXdu.js",
+        "sha256": "5f0c7dcef958c1c65fd7dc50cf3286bb2dc65014069cebf63a2c93cf19ba0a82",
+        "raw": 844,
+        "gzip": 401,
+        "brotli": 305
       }
     ],
-    "raw": 1848163,
-    "gzip": 542088,
-    "brotli": 420541,
-    "indexHtmlUtf8": 78879,
+    "raw": 1848241,
+    "gzip": 542104,
+    "brotli": 420663,
+    "indexHtmlUtf8": 82285,
     "baseline": {
       "ref": "9d0eaa7bf245c752b66dfe3d9575738ac6fe4df9",
       "raw": 1933642,
@@ -763,9 +793,9 @@
       "brotli": 466239
     },
     "delta": {
-      "raw": -85479,
-      "gzip": -23699,
-      "brotli": -45698
+      "raw": -85401,
+      "gzip": -23683,
+      "brotli": -45576
     },
     "note": "All JavaScript, including shared English fallback/formatters and engine code. Baseline includes 49 empty UI worksheet chunks removed by compact packs. This is not the isolated cost of Spanish."
   }

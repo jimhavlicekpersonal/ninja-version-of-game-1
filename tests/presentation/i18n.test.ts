@@ -44,7 +44,7 @@ describe('picking the language (device preference, never the save)', () => {
 
 describe('an untranslated language', () => {
   it('keeps the game in English until its interface is translated (no right-to-left English)', async () => {
-    expect(await initLanguage(['ar-EG'])).toBe('en');
+    expect(await initLanguage(['ur-PK'])).toBe('en');
     expect(await initLanguage(['en-GB'])).toBe('en');
   });
 });
