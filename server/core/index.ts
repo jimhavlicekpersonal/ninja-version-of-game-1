@@ -91,7 +91,10 @@ export function createCore(ctx: ServerContext) {
     notices: moderation.notices.bind(null, ctx),
     markNoticesRead: moderation.markNoticesRead.bind(null, ctx),
     revokeOtherSessions: links.revokeOthers.bind(null, ctx),
-    appleSignInNotification: (body: { payload?: unknown } | undefined) => links.appleSignInNotification(ctx, body, (p) => account.deleteAccount(ctx, p)),
+    appleSignInNotification: (body: { payload?: unknown } | undefined) => links.appleSignInNotification(ctx, body),
+    authNonce: () => links.issueNonce(ctx),
+    signOutDevice: links.signOutDevice.bind(null, ctx),
+    rotateToken: links.rotateToken.bind(null, ctx),
     /** Hourly with retention: extra device tokens unused for 400 days. */
     pruneTokens: () => links.pruneTokens(ctx),
     getVillage: village.getVillage.bind(null, ctx),

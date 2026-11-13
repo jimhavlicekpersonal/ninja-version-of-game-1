@@ -317,7 +317,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     }
     const rules = (req.routeOptions?.config as RateConfig | undefined)?.rate;
     for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
-      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' || rule === 'stats' ? ip : who, t);
+      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' || rule === 'stats' || rule === 'nonce' || rule === 'complaint' ? ip : who, t);
       if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookup' || rule === 'lookupDay' ? 'Too many player searches. Try again later.' : 'Slow down a little.', rule);
     }
   });
@@ -508,6 +508,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.notices, authed(async (me) => core.notices(me)));
   app.post(Routes.noticesRead, authed(async (me, req) => core.markNoticesRead(me, body<{ ids: string[] }>(req).ids)));
   app.post(Routes.sessionsRevokeOthers, rate('moderation'), authed(async (me) => core.revokeOtherSessions(me)));
+  // Backend A15/A16: sign-in nonces, signing out this device, rotating its token.
+  app.post(Routes.authNonce, rate('nonce'), async () => core.authNonce());
+  app.delete(Routes.sessionsCurrent, rate('moderation'), authed(async (me) => core.signOutDevice(me)));
+  app.post(Routes.sessionsRotate, rate('moderation'), authed(async (me) => core.rotateToken(me)));
   app.post(Routes.appleSignInNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
     await core.appleSignInNotification(req.body as never);
     return { ok: true };

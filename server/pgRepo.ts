@@ -1044,6 +1044,7 @@ export class PgRepo implements Repo {
     const idem = c.idempotencyBefore === undefined ? null : await this.db.query('delete from idempotency_keys where created_at < $1', [c.idempotencyBefore]);
     if (c.intentsBefore !== undefined) await this.db.query('delete from purchase_intents where at < $1', [c.intentsBefore]);
     if (c.deletionRequestsBefore !== undefined) await this.db.query(`delete from deletion_requests where status <> 'open' and resolved_at < $1`, [c.deletionRequestsBefore]);
+    if (c.noncesBefore !== undefined) await this.db.query('delete from auth_nonces where expires_at < $1', [c.noncesBefore]);
     return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
   }
 
@@ -1191,6 +1192,22 @@ export class PgRepo implements Repo {
       [playerId, keepHash],
     );
     return num(r[0]?.n ?? 0);
+  }
+
+  async replaceToken(playerId: string, oldHash: string, newHash: string): Promise<boolean> {
+    const main = await this.db.query('update players set token_hash = $3 where id = $1 and token_hash = $2', [playerId, oldHash, newHash]);
+    if (main.rowCount) return true;
+    const dev = await this.db.query('update player_tokens set token_hash = $3 where player_id = $1 and token_hash = $2', [playerId, oldHash, newHash]);
+    return (dev.rowCount ?? 0) > 0;
+  }
+
+  async addNonce(nonce: string, expiresAt: number): Promise<void> {
+    await this.db.query('insert into auth_nonces (nonce, expires_at) values ($1, $2) on conflict do nothing', [nonce, expiresAt]);
+  }
+
+  async useNonce(nonce: string, now: number): Promise<boolean> {
+    const r = await this.db.query('delete from auth_nonces where nonce = $1 returning expires_at', [nonce]);
+    return Boolean(r.rows[0]) && num((r.rows[0] as Row).expires_at) > now;
   }
 
   async pruneTokens(unusedBefore: number): Promise<number> {

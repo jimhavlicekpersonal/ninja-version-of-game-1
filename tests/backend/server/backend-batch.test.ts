@@ -3,7 +3,8 @@
  * idempotency, logs and request ids (A7, A8, A12, A13, A28, A30, A31, A33).
  */
 import { describe, expect, it } from 'vitest';
-import { buildServer, clientRequestId, redactUrl, requestFingerprint, type ServerOptions } from '../../../server/app';
+import { buildServer, clientRequestId, redactUrl, requestFingerprint } from '../../../server/app';
+import { setup } from './httpHarness';
 import { DEFAULT_RATE_LIMITS, MemoryRateLimiter, shareOf } from '../../../server/rateLimit';
 import { MemoryRepo } from '../../../server/repo';
 import { RedisRateLimiter } from '../../../server/shared';
@@ -12,18 +13,6 @@ import { defaultData as data } from '../../../src/gameplay/sim/data';
 
 const MIN = 60_000;
 const STAFF = 'staff-token-0123456789-abcdefgh';
-
-export function setup(opts: Partial<ServerOptions> = {}) {
-  let t = Date.UTC(2026, 10, 13);
-  const repo = (opts.repo as MemoryRepo | undefined) ?? new MemoryRepo();
-  const app = buildServer({ repo, data, now: () => t, ...opts });
-  const call = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', url: string, token?: string, payload?: unknown, extra: { ip?: string; headers?: Record<string, string> } = {}) => {
-    const r = await app.inject({ method, url, payload: payload as object, remoteAddress: extra.ip, headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...extra.headers } });
-    return { status: r.statusCode, body: r.body ? JSON.parse(r.body) : null, headers: r.headers };
-  };
-  const register = async (name: string, ip?: string) => (await call('POST', Routes.players, undefined, { name }, { ip })).body as { playerId: string; token: string };
-  return { app, repo, call, register, advance: (ms: number) => (t += ms), now: () => t };
-}
 
 describe('A7: per-player limits count the player, not the token', () => {
   it('a second device token shares the first one’s budget', async () => {

@@ -229,6 +229,14 @@ export const Routes = {
   sessionsRevokeOthers: '/v1/sessions/revoke-others',
   /** POST, no token: Sign in with Apple server-to-server notifications (consent revoked, account deleted). */
   appleSignInNotifications: '/v1/webhooks/apple-signin',
+  /** POST, no token: a one-time sign-in nonce (`AuthNonceResponse`; feature `signin-nonce`, backend batch 2026-11-13, A15). */
+  authNonce: '/v1/auth/nonce',
+  /** DELETE: sign out this device (its token stops working; feature `session-control`, A16). */
+  sessionsCurrent: '/v1/sessions/current',
+  /** POST: replace this device's token with a new one (`RegisterResponse`; feature `session-control`, A16). */
+  sessionsRotate: '/v1/sessions/rotate',
+  /** POST, no token: a complaint about illegal or harmful content (EU DSA art. 16, UK OSA; feature `complaints`). */
+  complaints: '/v1/complaints',
 } as const;
 
 // ---------------------------------------------------------------- identity
@@ -864,7 +872,9 @@ export type LinkProvider = 'apple' | 'google' | 'gamecenter' | 'playgames';
 
 /**
  * What a provider's sign-in gives the game, passed through to the server:
- * apple/google `{ idToken }`; gamecenter `{ teamPlayerId, bundleId,
+ * apple/google `{ idToken, nonce? }` (`nonce`: the raw value from POST /v1/auth/nonce that the game
+ * handed to the provider: Sign in with Apple native gets its SHA-256 hex, the web and Google get it as
+ * it is; the server checks the token carries it and uses it up); gamecenter `{ teamPlayerId, bundleId,
  * timestamp, salt, signature, publicKeyUrl }`; playgames `{ serverAuthCode }`.
  */
 export type LinkCredential = Record<string, unknown>;
@@ -1198,6 +1208,27 @@ export interface NoticeView {
 export interface NoticesResponse {
   notices: NoticeView[];
 }
+/** POST /v1/auth/nonce (backend A15): one sign-in nonce, usable once before `expiresAt`. */
+export interface AuthNonceResponse {
+  nonce: string;
+  expiresAt: number;
+}
+
+/** POST /v1/complaints (no token): what someone reports as illegal or harmful (EU DSA art. 16, UK OSA). */
+export interface ComplaintRequest {
+  /** What it is about: a player name, Alliance or Gang name, chat text, or a player id. */
+  subject: string;
+  /** Why it is illegal or harmful (required, up to 2,000 characters). */
+  reason: string;
+  /** Optional: where to answer (an email address). Kept only to answer, deleted with the complaint. */
+  contact?: string;
+  /** Optional: the complainant's player id. */
+  playerId?: string;
+}
+export interface ComplaintResponse {
+  id: string;
+}
+
 export interface RevokeOthersResponse {
   /** How many other devices were signed out. */
   revoked: number;

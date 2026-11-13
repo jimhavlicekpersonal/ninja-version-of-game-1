@@ -222,3 +222,27 @@ export function paymentsFromEnv(env: Record<string, string | undefined>, fetch: 
   const cap = Number(env.SANDBOX_CREDIT_CAP_USD ?? 10);
   return { apple, google, ...(deploy === 'production' ? { testCreditCapUsd: Number.isFinite(cap) && cap >= 0 ? cap : 10 } : {}) };
 }
+
+/**
+ * Server policy knobs from the environment (backend batch 2026-11-13; `ServerPolicy` in core/context.ts).
+ * Anything unset keeps `DEFAULT_POLICY`.
+ */
+export function policyFromEnv(env: Record<string, string | undefined>): Partial<import('./core/context').ServerPolicy> {
+  const out: Partial<import('./core/context').ServerPolicy> = {};
+  const n = (v: string | undefined) => (v !== undefined && v.trim() !== '' && Number.isFinite(Number(v)) && Number(v) >= 0 ? Number(v) : undefined);
+  if (env.SIGNIN_NONCE_REQUIRED !== undefined) out.signInNonceRequired = env.SIGNIN_NONCE_REQUIRED === '1';
+  if (n(env.SESSION_IDLE_DAYS)) out.sessionIdleDays = n(env.SESSION_IDLE_DAYS)!;
+  if (n(env.DORMANT_ACCOUNT_DAYS) !== undefined) out.dormantAccountDays = n(env.DORMANT_ACCOUNT_DAYS)!;
+  if (n(env.DORMANT_MAX_KEEP) !== undefined) out.dormantMaxKeep = n(env.DORMANT_MAX_KEEP)!;
+  if (n(env.SANDBOX_CREDIT_DAILY_CAP_USD) !== undefined) out.sandboxDailyCapUsd = n(env.SANDBOX_CREDIT_DAILY_CAP_USD)!;
+  if (env.USD_RATES) {
+    let raw: Record<string, unknown>;
+    try {
+      raw = JSON.parse(env.USD_RATES) as Record<string, unknown>;
+    } catch {
+      throw new Error('USD_RATES must be JSON like {"EUR":1.08,"INR":0.012}.');
+    }
+    out.usdRates = { USD: 1, ...Object.fromEntries(Object.entries(raw).filter(([k, v]) => /^[A-Z]{3}$/.test(k) && typeof v === 'number' && v > 0 && Number.isFinite(v))) } as Record<string, number>;
+  }
+  return out;
+}

@@ -41,6 +41,8 @@ export async function prune(ctx: ServerContext): Promise<PruneResult & { friendR
     intentsBefore: t - 90 * 24 * HOUR,
     // Handled deletion requests are kept a year as the record that it was done, then go (re-audit).
     deletionRequestsBefore: t - 365 * 24 * HOUR,
+    // Sign-in nonces (backend A15) live minutes.
+    noncesBefore: t,
   });
   // Extra device tokens unused for 400 days are signed out (re-audit; links.ts TOKEN_UNUSED_DAYS).
   await pruneTokens(ctx);

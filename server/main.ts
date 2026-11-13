@@ -70,6 +70,14 @@
  *   after OUTBOUND_TIMEOUT_MS (10000), body included (server/outbound.ts).
  * - Periodic jobs (retention, voided purchases, Gang War reminders) run on one
  *   instance at a time, through leases in the database (server/jobs.ts).
+ * - Policy (backend batch 2026-11-13, server/config.ts policyFromEnv): SIGNIN_NONCE_REQUIRED=1
+ *   (Apple/Google sign-ins must carry a server nonce; off by default so older games sign in),
+ *   SESSION_IDLE_DAYS (400: another device's token unused this long is signed out),
+ *   DORMANT_ACCOUNT_DAYS (730; 0 = off) and DORMANT_MAX_KEEP (3): anonymous accounts never seen for
+ *   that long, with no purchase, link or staff role and no server-held village above that Keep, are
+ *   deleted; SANDBOX_CREDIT_DAILY_CAP_USD (production: Sandbox/test purchases credited per day on the
+ *   whole server); USD_RATES (JSON, USD per unit of a currency: local store prices count against the
+ *   under-18 cap and in revenue reports); GAMECENTER_CA_PEM (the CA that must sign Game Center keys).
  */
 import { randomUUID } from 'node:crypto';
 import { hostname } from 'node:os';
@@ -97,7 +105,7 @@ import { SIM_RULES } from '../src/gameplay/sim/battle/battle';
 import type { GameData } from '../src/gameplay/sim/types';
 import { verifierFromEnv } from './identity/verify';
 import { accountFromEnv } from './identity/appleTokens';
-import { checkConfig, paymentsFromEnv, parseAdminTokens, parseTrustProxy, pgPoolSettings } from './config';
+import { checkConfig, paymentsFromEnv, parseAdminTokens, parseTrustProxy, pgPoolSettings, policyFromEnv } from './config';
 import { pushTransportFromEnv, ServerPush } from './push/push';
 import type { Fetch } from './payments/google';
 
@@ -248,7 +256,7 @@ async function main(): Promise<void> {
     metrics.gauge('tk_resim_queue', () => [{ labels: {}, value: pool.queued }]);
     resim = pool;
   }
-  shared = { ...shared, payments, push, rules, balance, balanceCohorts, resim };
+  shared = { ...shared, payments, push, rules, balance, balanceCohorts, resim, policy: policyFromEnv(process.env) };
   console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Re-simulation workers: ${workers || 'none (main thread)'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({

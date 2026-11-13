@@ -645,6 +645,8 @@ export interface PruneCutoffs {
   resolvedReportsBefore?: number;
   /** Handled account-deletion requests resolved before this time are deleted (re-audit: they were kept for ever). */
   deletionRequestsBefore?: number;
+  /** Sign-in nonces that expired before this go (backend A15). */
+  noncesBefore?: number;
   /** Command log lines before this time are deleted (the ledger is kept). */
   commandsBefore?: number;
   /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
@@ -731,6 +733,15 @@ export interface PlayerStore {
   revokeOtherTokens(playerId: string, keepHash: string): Promise<number>;
   /** Delete extra device tokens last used (or made) before this time; how many. */
   pruneTokens(unusedBefore: number): Promise<number>;
+  /**
+   * Backend A16: give the token `oldHash` of this player the hash `newHash` (rotation), whether it is the
+   * account's first token or another device's. False when the player holds no such token.
+   */
+  replaceToken(playerId: string, oldHash: string, newHash: string): Promise<boolean>;
+  /** Backend A15: a sign-in nonce the server issued, usable once until `expiresAt`. */
+  addNonce(nonce: string, expiresAt: number): Promise<void>;
+  /** Use a nonce up: true only the first time, before it expired. */
+  useNonce(nonce: string, now: number): Promise<boolean>;
   setLinkToken(provider: string, subject: string, refreshToken: string | null, clientId: string | null): Promise<void>;
   /** Links of this player that hold a refresh token. */
   linkTokensOf(playerId: string): Promise<{ provider: string; subject: string; refreshToken: string; clientId: string | null }[]>;
@@ -1102,6 +1113,7 @@ export class MemoryRepo implements Repo {
   gangClaimRows: { warId: string; playerId: string; outcome: string; at: number }[] = [];
   villageRows = new Map<string, VillageRow>();
   tokenRows: TokenRow[] = [];
+  nonceRows = new Map<string, number>();
   deletionCodeRows = new Map<string, { codeHash: string; createdAt: number; expiresAt: number }>();
   noticeRows: PlayerNotice[] = [];
   linkRows: IdentityLink[] = [];
@@ -1763,6 +1775,8 @@ export class MemoryRepo implements Repo {
     if (delBefore !== undefined) this.deletionRows = this.deletionRows.filter((r) => r.status === 'open' || (r.resolvedAt ?? 0) >= delBefore);
     const intentsBefore = c.intentsBefore;
     if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
+    const noncesBefore = c.noncesBefore;
+    if (noncesBefore !== undefined) for (const [n, exp] of this.nonceRows) if (exp < noncesBefore) this.nonceRows.delete(n);
     let idempotency = 0;
     const idemBefore = c.idempotencyBefore;
     if (idemBefore !== undefined) {
@@ -1869,6 +1883,26 @@ export class MemoryRepo implements Repo {
     }
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== playerId);
     return n;
+  }
+  async replaceToken(playerId: string, oldHash: string, newHash: string): Promise<boolean> {
+    const p = this.players.get(playerId);
+    if (!p) return false;
+    if (p.tokenHash === oldHash) {
+      p.tokenHash = newHash;
+      return true;
+    }
+    const t = this.tokenRows.find((x) => x.playerId === playerId && x.tokenHash === oldHash);
+    if (!t) return false;
+    t.tokenHash = newHash;
+    return true;
+  }
+  async addNonce(nonce: string, expiresAt: number): Promise<void> {
+    this.nonceRows.set(nonce, expiresAt);
+  }
+  async useNonce(nonce: string, now: number): Promise<boolean> {
+    const exp = this.nonceRows.get(nonce);
+    this.nonceRows.delete(nonce);
+    return exp !== undefined && exp > now;
   }
   async pruneTokens(unusedBefore: number): Promise<number> {
     const before = this.tokenRows.length;

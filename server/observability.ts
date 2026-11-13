@@ -48,6 +48,7 @@ export const METRIC_HELP: Record<string, string> = {
   tk_notices_total: 'Moderation notices sent to players, by kind (report_outcome, moderation_action, account).',
   tk_apple_revocations_total: 'Sign in with Apple token revocations, by trigger (delete, unlink, notification) and result (ok, failed, skipped).',
   tk_sessions_revoked_total: 'Device tokens signed out, by reason (unlink, others, prune, current, rotate, idle).',
+  tk_signin_nonce_total: 'Apple/Google sign-ins by nonce check result (ok, legacy without one, missing, mismatch, used).',
   tk_staff_auth_failures_total: 'Staff API requests refused for a wrong or missing staff token (backend A28).',
   tk_redis_errors_total: 'Redis calls that failed and degraded (rate limits let the request through, leaderboard read the database, locks fell back to tickets), by use.',
   tk_redis_up: 'Whether this instance can reach Redis right now (1) or is failing fast after an outage (0).',
