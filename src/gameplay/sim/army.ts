@@ -1,5 +1,5 @@
 import { buildingDef, hallType, levelDef, troopDef } from './data';
-import type { GameData, TrainingItem, VillageState } from './types';
+import type { Cost, GameData, ResourceKind, TrainingItem, VillageState } from './types';
 
 /** Total Army Camp space in finished camps. */
 export function housingCapacity(state: VillageState, data: GameData): number {
@@ -46,6 +46,7 @@ export function finishTraining(state: VillageState, now: number, data: GameData)
     if (item.endsAt > now || used + size > cap) return true;
     used += size;
     state.army[item.troop] = (state.army[item.troop] ?? 0) + 1;
+    notePaid(state, item);
     if (state.stats) state.stats.troopsTrained++;
     done.push(item.troop);
     return false;
@@ -181,4 +182,66 @@ export function troopEarliestKeep(troop: string, data: GameData): number {
   const def = troopDef(data, troop);
   const dojoKeep = data.hall.levels.findIndex((l) => (l.limits.burrow_barracks?.maxLevel ?? 0) >= def.barracksLevel) + 1 || data.hall.levels.length;
   return Math.max(def.unlockKeep ?? 1, dojoKeep);
+}
+
+/** What a queued warrior cost from storage: its price less the share a Jade top-up bought (CU-3). */
+export function paidFromStorage(item: Pick<TrainingItem, 'cost' | 'topUp'>): Cost {
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(item.cost) as [ResourceKind, number][]) {
+    const left = (v ?? 0) - (item.topUp?.cost[k] ?? 0);
+    if (left > 0) out[k] = left;
+  }
+  return out;
+}
+
+/** A finished warrior joins the army: remember what it cost from storage (save v22, CU-7). Mutates. */
+function notePaid(state: VillageState, item: TrainingItem): void {
+  const paid = (state.armyPaid ??= {});
+  const row = (paid[item.troop] ??= { n: 0, cost: {} });
+  row.n++;
+  for (const [k, v] of Object.entries(paidFromStorage(item)) as [ResourceKind, number][]) row.cost[k] = (row.cost[k] ?? 0) + v;
+}
+
+/**
+ * Take `n` ready warriors of a type out of the army (battle, donation, dismiss). The tracked price paid
+ * (`armyPaid`) shrinks in proportion, so it always describes the warriors still there. Mutates.
+ */
+export function takeFromArmy(state: VillageState, troop: string, n: number): void {
+  const have = state.army[troop] ?? 0;
+  const take = Math.max(0, Math.min(have, n));
+  const row = state.armyPaid?.[troop];
+  if (row && take > 0) {
+    // Untracked (pre-v22) warriors are assumed to leave in the same share as tracked ones.
+    const tracked = Math.min(row.n, have);
+    const leaving = Math.min(tracked, Math.round((take * tracked) / have));
+    for (const k of Object.keys(row.cost) as ResourceKind[]) {
+      row.cost[k] = tracked > 0 ? Math.round(((row.cost[k] ?? 0) * (tracked - leaving)) / tracked) : 0;
+      if (!(row.cost[k]! > 0)) delete row.cost[k];
+    }
+    row.n = tracked - leaving;
+    if (row.n <= 0) delete state.armyPaid![troop];
+  }
+  state.army[troop] = have - take;
+  if (state.army[troop] <= 0) delete state.army[troop];
+}
+
+/**
+ * The resources `count` ready warriors of a type are worth on a refund (before the refund fraction): the price
+ * paid from storage for tracked warriors (never above `current`, today's price), today's price for untracked
+ * ones, averaged over the type's whole army.
+ */
+export function armyValue(state: VillageState, troop: string, count: number, current: Cost): Cost {
+  const have = state.army[troop] ?? 0;
+  const out: Cost = {};
+  if (!(have > 0) || !(count > 0)) return out;
+  const row = state.armyPaid?.[troop];
+  const tracked = Math.min(row?.n ?? 0, have);
+  const untracked = have - tracked;
+  for (const [k, each] of Object.entries(current) as [ResourceKind, number][]) {
+    const paid = Math.min(row?.cost[k] ?? 0, (each ?? 0) * tracked);
+    const total = paid + untracked * (each ?? 0);
+    const v = (total * Math.min(count, have)) / have;
+    if (v > 0) out[k] = v;
+  }
+  return out;
 }

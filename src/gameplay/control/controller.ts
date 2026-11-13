@@ -151,6 +151,8 @@ export class GameController {
 
   dispatch(cmd: Command): CommandResult {
     const now = this.now();
+    // Economy E18: the daily chest rolls its next salt from fresh device entropy (the simulation itself is seeded).
+    if (cmd.type === 'openDailyChest' && cmd.entropy === undefined) cmd = { ...cmd, entropy: randomUint32() };
     const result = applyCommand(this.state, cmd, now, this.deps.data);
     if (!result.ok) return result;
     this.state = result.state;
@@ -171,6 +173,9 @@ export class GameController {
         this.deps.analytics.log('reward', { source: e.source, grants: e.grants });
       } else if (e.kind === 'donation') {
         this.deps.analytics.log('donation', { troop: e.troop, count: e.count, xp: e.xp });
+      } else if (e.kind === 'defense_untraced') {
+        // Quality 33: a real raid this build could not re-simulate; its losses were not taken on the device.
+        console.warn(`Raid ${e.id} could not be traced (${e.reason}); its losses were not taken here.`);
       } else if (e.kind === 'raid_end') {
         const r = e.record.result;
         this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason });
@@ -541,7 +546,7 @@ export class GameController {
     }
     // Could not be banked (for example the war ended): the deployed troops are
     // still spent, so quitting never undoes an attack, but nothing is won.
-    this.dispatch({ type: 'abandonBattle', record: { at: p.at, opponentName: p.opponentName, setup: p.setup, deployments: p.deployments } });
+    this.dispatch({ type: 'abandonBattle', record: { at: p.at, opponentName: p.opponentName, setup: p.setup, deployments: p.deployments, ...(p.ticket ? { ticket: p.ticket } : {}) } });
     if (this.state.pendingBattle) this.trackBattle(null);
     return null;
   }
@@ -642,4 +647,11 @@ export class GameController {
   private emit(finished: FinishedUpgrade[]): void {
     for (const fn of this.listeners) fn(finished);
   }
+}
+
+/** A random 32-bit number from the platform's secure generator (Math.random where there is none). */
+function randomUint32(): number {
+  const c = (globalThis as { crypto?: { getRandomValues?: (a: Uint32Array) => Uint32Array } }).crypto;
+  if (c?.getRandomValues) return c.getRandomValues(new Uint32Array(1))[0];
+  return Math.floor(Math.random() * 4294967296) >>> 0;
 }

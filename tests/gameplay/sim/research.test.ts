@@ -121,7 +121,10 @@ describe('task counters count finished work (#10)', () => {
     let s = state;
     for (let i = 0; i < 5; i++) {
       s = must(s, { type: 'upgrade', id: camp.id }, clock.now());
-      s = must(s, { type: 'cancel', id: camp.id }, clock.now());
+      // Room for the refund (balance audit CU-7: a refund that would not fit is refused).
+      const rich = s.resources;
+      s = must({ ...s, resources: { ...s.resources, acorns: 0, dew: 0 } }, { type: 'cancel', id: camp.id }, clock.now());
+      s = { ...s, resources: rich };
     }
     expect(s.stats.upgradesDone).toBe(state.stats.upgradesDone);
     s = must(s, { type: 'upgrade', id: camp.id }, clock.now());

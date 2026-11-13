@@ -4,6 +4,7 @@
  * twice. Pure functions; the connection manager turns server answers into
  * commands that call these.
  */
+import { takeFromArmy } from './army';
 import { scaleReward } from './economy';
 import { addCapped, capacity } from './resources';
 import { addReinforcements } from './social/grove';
@@ -56,8 +57,7 @@ export function receiveDonations(state: VillageState, items: ServerDonation[], d
 /** The player donated troops to a real friend: they leave the army and earn Grove XP. Mutates. */
 export function spendDonation(state: VillageState, troop: string, count: number, xp: number): boolean {
   if (!(count > 0) || (state.army[troop] ?? 0) < count) return false;
-  state.army[troop] -= count;
-  if (state.army[troop] === 0) delete state.army[troop];
+  takeFromArmy(state, troop, count);
   state.grove.xp += Math.max(0, Math.floor(xp));
   state.stats.donations += count;
   return true;

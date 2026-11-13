@@ -48,7 +48,8 @@ describe('E01: the Starter Pack is not lost to a refused first try', () => {
     expect(c.dispatch({ type: 'upgrade', id: keep.id }).ok).toBe(true);
     expect(shown).toEqual([]); // age unknown: no offers at all
     expect(c.state.flags.longWaitSeen).toBe(false);
-    expect(c.dispatch({ type: 'cancel', id: keep.id }).ok).toBe(true);
+    // The upgrade is stopped (this fixture's storage could not hold a cancel's refund, balance audit CU-7).
+    await c.replace({ ...c.state, buildings: c.state.buildings.map((b) => (b.id === keep.id ? { ...b, upgrade: null } : b)) });
     c.dispatch({ type: 'setProfile', under18: false, ageBand: 'adult' });
     expect(c.dispatch({ type: 'upgrade', id: keep.id }).ok).toBe(true);
     expect(shown).toEqual(['starter_pack']);

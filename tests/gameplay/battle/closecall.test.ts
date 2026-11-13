@@ -31,6 +31,8 @@ describe('close calls', () => {
     const notes = closeCalls(sim, data);
     expect(notes.map((n) => n.kind)).toContain('hall');
     expect(notes.find((n) => n.kind === 'hall')!.text).toContain(`${Math.max(1, Math.round((hall.hp / hall.maxHp) * 100))}%`);
+    // GUI request (step 9): the number travels beside the English, for the interface to word.
+    expect(notes.find((n) => n.kind === 'hall')!.params).toEqual({ hpPercent: Math.max(1, Math.round((hall.hp / hall.maxHp) * 100)) });
     // And the note never changes the result.
     expect(sim.hallDestroyed).toBe(false);
   });

@@ -13,7 +13,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 21;
+export const SAVE_VERSION = 22;
 const EXPORT_PREFIX = 'TK1';
 
 export interface SaveFile {
@@ -209,6 +209,18 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
   if (out.version < 21 && v && typeof v === 'object') {
     // v20 -> v21 (balance audit 2026-11-08): buildings may carry `temper` (Tempering) and attack records
     // `stake` (declared stakes). Older saves have neither: untempered, unstaked. Nothing to convert.
+  }
+  if (out.version < 22 && v && typeof v === 'object') {
+    // v21 -> v22 (game-theory batch 2026-11-13): timers may carry `topUp` (the share a Jade top-up bought, CU-3),
+    // the village `armyPaid` (what ready warriors cost, CU-7), `daily.salt` (E18) and `pass.tierKeep` (CU-6).
+    // Older timers and warriors have no record and refund as before. Tiers already unlocked this season are
+    // recorded at today's Keep, so waiting for a Keep upgrade no longer raises them from here on.
+    const pass = v.pass as { points?: number; tierKeep?: number[] } | undefined;
+    if (data && pass && typeof pass === 'object' && !Array.isArray(pass.tierKeep) && Array.isArray(v.buildings)) {
+      const hall = (v.buildings as { type: string; level: number }[]).find((b) => data.buildings[b?.type]?.category === 'hall');
+      const tiers = Math.min(data.pass.tiers.length, Math.floor((Number(pass.points) || 0) / data.pass.pointsPerTier));
+      if (hall && Number.isInteger(hall.level) && hall.level >= 1 && tiers > 0) pass.tierKeep = Array.from({ length: tiers }, () => hall.level);
+    }
   }
   repairTrainingQueue(v);
   if (data) repairTempers(v, data);

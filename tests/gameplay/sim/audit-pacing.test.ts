@@ -51,8 +51,8 @@ describe('F26: research lanes', () => {
     s = must(s, { type: 'research', troop: 'frog_lobber' }, clock.now());
     expect(s.research.active.map((a) => a.troop)).toEqual(['hedgehog_roller', 'frog_lobber']);
     expect(applyCommand(s, { type: 'research', troop: 'saboteur' }, clock.now(), data).ok).toBe(false);
-    // Finish or cancel a particular lane.
-    s = must(s, { type: 'cancelResearch', troop: 'frog_lobber' }, clock.now());
+    // Finish or cancel a particular lane (with room for the refund: balance audit CU-7).
+    s = must({ ...s, resources: { ...s.resources, dew: 0 } }, { type: 'cancelResearch', troop: 'frog_lobber' }, clock.now());
     expect(s.research.active.map((a) => a.troop)).toEqual(['hedgehog_roller']);
     const done = advance(s, clock.now() + 7 * 86_400_000, data).state;
     expect(done.research.levels.hedgehog_roller).toBe(2);

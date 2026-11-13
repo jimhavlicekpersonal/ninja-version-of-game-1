@@ -31,7 +31,12 @@ export interface ScoutReport {
 /** An axis counts as the base's leaning from this mean temper. */
 const LEANING = 0.3;
 
-export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
+/**
+ * What scouting `base` shows. With `army` (the attacker's warriors, troop id -> count), a tip built around a
+ * warrior the attacker did not bring is left out and the next one takes its place (GUI request 2026-11: the
+ * battle HUD used to drop such tips itself, after the list was already cut to three). Without it, every tip.
+ */
+export function scoutReport(base: BaseLayout, data: GameData, army?: Record<string, number>): ScoutReport {
   const defenses: Record<string, number> = {};
   const counters: Record<string, number> = {};
   const centres: { type: string; x: number; y: number; range: number }[] = [];
@@ -66,6 +71,11 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
   }
   const tips: string[] = [];
   const total = centres.length;
+  // Who the attacker brings (any of `ids`); everyone when the army is not given.
+  const brings = (test: (id: string) => boolean) => !army || Object.entries(army).some(([id, n]) => n > 0 && Boolean(data.troops[id]) && test(id));
+  const jammer = (id: string) => data.troops[id].ability === 'sabotage' || Boolean(data.troops[id].kit?.jamTicks);
+  const flyer = (id: string) => Boolean(data.troops[id].air);
+  const named = (...ids: string[]) => (id: string) => ids.includes(id);
   // Tempering and counter buildings change which warriors work, so they come first.
   const has = (kind: string) => Object.keys(counters).some((t) => data.buildings[t].effect?.kind === kind);
   // The base's tempered leaning: its strongest first, any other after the counters.
@@ -80,16 +90,17 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
   // Watch also cuts the raiders' support across the base (`temper.troopCuts`).
   if (leanings[0] === 'watch' && data.battle.temper?.troopCuts?.watch) tips.push('Watch also weakens your healers, revives and shield cover.');
   if (has('counter_artillery')) tips.push('A Longbow Yagura outranges siege warriors but is blind up close: rush it with melee first.');
-  if (has('ground_flyers')) tips.push('A Kite-Cutter Ballista grounds flyers: take it out before sending kites.');
+  if (has('ground_flyers') && brings(flyer)) tips.push('A Kite-Cutter Ballista grounds flyers: take it out before sending kites.');
   if (has('shorten_disables')) tips.push('A Repair Crane cuts jams short: destroy it, or jam defenses out of its reach.');
   if (has('anti_heal')) tips.push('Bitter Incense weakens healing and auras near it: fight away from it, or break it first.');
   for (const a of leanings.slice(1)) tips.push(leaningTip[a]);
   if (total === 0) tips.push('No working defenses: any squad will do.');
-  if (coveringPairs >= 2) tips.push('Defenses cover each other: jam one with a Saboteur, and throw smoke over your squad as it walks into the others\' range.');
-  else if (total > 0 && coveringPairs === 0) tips.push('Defenses stand alone: pick them off one at a time.');
+  if (coveringPairs >= 2) {
+    if (brings(jammer)) tips.push('Defenses cover each other: jam one with a Saboteur, and throw smoke over your squad as it walks into the others\' range.');
+  } else if (total > 0 && coveringPairs === 0) tips.push('Defenses stand alone: pick them off one at a time.');
   if (hasSplash) tips.push('A Firework Mortar splashes groups and is blind up close: jam it or spread out.');
-  if (walls >= 20) tips.push('Thick walls: Saboteurs and Tunnel Runners slip past; Guardians break through.');
-  if (!hasAntiAir && total > 0) tips.push('No anti-air: Kite Raiders fly in safely.');
+  if (walls >= 20 && brings(named('saboteur', 'mole_digger', 'beetle_brute'))) tips.push('Thick walls: Saboteurs and Tunnel Runners slip past; Guardians break through.');
+  if (!hasAntiAir && total > 0 && brings(named('owl_bomber'))) tips.push('No anti-air: Kite Raiders fly in safely.');
   if (mayHaveTraps) tips.push('Spike Pits and Caltrops may be hidden on the paths.');
   return { defenses, counters, walls, coveringPairs, hasAntiAir, hasSplash, mayHaveTraps, profile, tips: tips.slice(0, 3) };
 }
