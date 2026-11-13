@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Tsara kowane {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "An tsara: kowane gini na {building} yana da sabon tsarinsa." },
   "temper.reset": { "en": "Back to untempered", "text": "Koma ba tare da tsari ba" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "An tsara: Nisa {reach} · Fashewa {blast} · Tsaro {watch}" },
   "stake.label": { "en": "Stake", "text": "Alƙawari" },
   "stake.none": { "en": "No stake", "text": "Babu alƙawari" },
