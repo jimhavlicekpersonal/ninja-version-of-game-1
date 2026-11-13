@@ -20,7 +20,8 @@ Bahasa Indonesia baku yang ramah, menyapa pemain dengan "kamu" (posesif "-mu": d
 | Infiltration Points | Titik Penyusupan |
 | Raid / attack / raider | serbuan, menyerbu / serangan, menyerang / penyerbu |
 | Warrior / troops / Defense / Shield | prajurit / pasukan / pertahanan / Perisai |
-| Honor / Power / League | Kehormatan / Kekuatan / Liga: Bambu, Aras, Besi, Obsidian, Giok, Badai, Bayangan, Kage |
+| Honor / Power / League | Kehormatan / Kekuatan / Liga: Bambu, Aras, Besi, Obsidian, Bara (Ember), Badai, Bayangan, Kage |
+| Fortress (Ujian, buruan) / bounty / outpost | kubu (bukan Benteng) / buruan / pos |
 | Daily chest / streak / skip | peti harian / runtunan / lompatan |
 | Clan Stipend | Tunjangan Klan |
 | Looks | tampilan |
@@ -40,6 +41,6 @@ Nama Jepang tetap dalam ejaan Latin yang biasa (Kaito, Takeda, Gorō). Julukan b
 
 Nama yang dibuat game: `noun-first` (bagian kedua, spasi, bagian pertama), seperti bahasa Vietnam dan Spanyol, karena bahasa Indonesia menaruh kata benda sebelum penjelasnya (Puncak + Guntur = Puncak Guntur, Gerbang Besi, Bilah Kembar). Bagian pertama adalah penjelas yang cocok setelah kata benda apa pun; tanpa "dari" atau "milik". Pengaturan `generatedNames: "noun-first"` di `languages.json` adalah langkah integrasi.
 
-Jamak hanya `other`. Angka sebelum kata benda tanpa bentuk jamak ({n} prajurit, {n} bangunan, {n} kali, {n} bintang). Waktu: {d} hari {h} jam, {h} jam {m} mnt.
+Jamak hanya `other`. Angka sebelum kata benda tanpa bentuk jamak ({n} prajurit, {n} bangunan, {n} kali, {n} bintang). Waktu singkat: {d}h {h}j, {h}j {m}m, {m}m {s}d (hari, jam, menit, detik).
 
 Terjemahan ini belum ditinjau oleh penutur asli bahasa Indonesia.
