@@ -15,6 +15,17 @@
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>Kagemura: Ninja Clans</title>
     <style>
+      /* Critical start-up rules (device F7, F17): the game's stylesheet no longer blocks the first
+         paint (vite.config.ts loads it without blocking), so the splash is laid out from these.
+         They mirror html/body, #boot and .boot-* in src/presentation/ui/styles.css, which loads
+         after them and wins (same specificity, later) with the interface fonts. */
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #1f2a36; }
+      #boot { position: fixed; inset: 0; display: grid; place-items: center; z-index: 50; background: radial-gradient(circle at 50% 40%, #3a4a5e, #141b24); color: #f7f0e1; font: 400 24px 'Dela Gothic One', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: .5px; text-shadow: 0 2px 0 rgba(10, 14, 20, .6), 0 0 22px rgba(233, 180, 76, .35); }
+      .boot-card { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+      .boot-mark { width: 112px; height: 112px; border-radius: 50%; box-shadow: 0 0 0 3px #e9b44c, 0 0 0 7px rgba(233, 180, 76, .2), 0 14px 40px rgba(0, 0, 0, .5); margin-bottom: 14px; }
+      .boot-title { font: 400 34px/1.15 'Dela Gothic One', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 1px; }
+      .boot-sub { font: 800 12px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 4px; text-transform: uppercase; color: #e9b44c; text-shadow: none; }
+      .boot-status { margin-top: 22px; font: 500 14px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: rgba(247, 240, 225, .7); text-shadow: none; letter-spacing: .3px; }
       /* Session-long notices (main.ts showBanner): above the map and HUD layer, under dialogs. */
       .tk-banner { position: fixed; z-index: 9; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 104px); max-width: 520px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-radius: 14px; background: #f7f0e1; color: #26303d; box-shadow: 0 6px 24px rgba(0, 0, 0, .35); font: 600 14px/1.35 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
       .tk-banner span { flex: 1 1 220px; }

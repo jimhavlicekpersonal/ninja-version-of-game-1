@@ -86,6 +86,27 @@ function showBanner(id: string, text: string, actions: { label: string; onClick:
   return close;
 }
 
+/**
+ * The game's stylesheet has arrived (device F7: it no longer blocks the first paint, see
+ * vite.config.ts `nonBlockingStyles`). The splash waits for it before fading, so the HUD is never
+ * seen unstyled; after `timeoutMs` it goes anyway.
+ */
+function stylesReady(timeoutMs = 20_000): Promise<void> {
+  const pending = [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].filter((l) => !l.sheet);
+  if (!pending.length) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    let left = pending.length;
+    const one = () => {
+      if (--left <= 0) resolve();
+    };
+    for (const l of pending) {
+      l.addEventListener('load', one, { once: true });
+      l.addEventListener('error', one, { once: true });
+    }
+    setTimeout(resolve, timeoutMs);
+  });
+}
+
 /** The save store this boot opened, for the error screen's "Copy save code". */
 let bootStore: SaveStore | null = null;
 
@@ -200,6 +221,10 @@ async function boot(): Promise<void> {
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   // Report section 5 step 9: the player's language (stored choice, else the device's), before any game text shows.
   await initLanguage();
+  // Device F17: the interface fonts load while storage opens and the village starts, instead of
+  // a 1.5 s wait of their own just before the map is created (canvas text drawn before they
+  // arrive keeps the fallback font, so the map still waits for them a little, see below).
+  const fontsLoading = loadInterfaceFonts(3000);
   bootStatus(i18nText("ui.opening_your_village_985a7b5b5b"));
   const [{ store, events, db }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
   bootStore = store;
@@ -356,7 +381,7 @@ async function boot(): Promise<void> {
       .catch((e) => console.warn(i18nText("ui.push_registration_failed_9a9f4cdbb5"), e));
   analytics.log('session_start', { isNew, awayMs: offline?.awayMs ?? 0, platform: platformName(), standalone: matchMedia('(display-mode: standalone)').matches });
 
-  await loadInterfaceFonts();
+  await Promise.race([fontsLoading, new Promise<void>((r) => setTimeout(r, 500))]);
   const host = document.getElementById('game')!;
   // Draw at the screen's real density (iPhone 3x, Pixel 7 2.6x) so lines and text are smooth, not upscaled;
   // low quality (cheap phones, ?quality=low, Settings) stops at 2x and 30 FPS (render/quality.ts).
@@ -739,6 +764,7 @@ async function boot(): Promise<void> {
 
   // The splash goes once the village's first frame is drawn; then the queued toasts and banners.
   await firstFrame;
+  await stylesReady();
   document.getElementById('boot')?.classList.add('done');
   bootGuard?.done();
   shown = true;
