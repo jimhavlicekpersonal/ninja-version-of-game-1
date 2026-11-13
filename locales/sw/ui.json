@@ -120,7 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Fua kila jengo: {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Umefua: kila jengo la aina {building} lina umbo jipya." },
   "temper.reset": { "en": "Back to untempered", "text": "Rudisha bila ufuaji" },
-  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Ulinzi pia hudhoofisha uponyaji, ufufuaji, ustahimilivu na kinga ya ngao za wavamizi katika kambi nzima." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Ufuaji: Masafa {reach} · Mlipuko {blast} · Ulinzi {watch}" },
   "stake.label": { "en": "Stake", "text": "Dau" },
   "stake.none": { "en": "No stake", "text": "Hakuna dau" },
