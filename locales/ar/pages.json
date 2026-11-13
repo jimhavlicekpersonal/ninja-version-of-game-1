@@ -291,7 +291,7 @@
   "pages.account.1": { "en": "Delete your Kagemura online account", "text": "حذف حسابك في Kagemura عبر الإنترنت" },
   "pages.account.2": { "en": "Kagemura: Ninja Clans", "text": "Kagemura: عشائر النينجا" },
   "pages.account.3": { "en": "In the game (fastest)", "text": "داخل اللعبة (الأسرع)" },
-  "pages.account.4": { "en": "Open {t0}Settings → Online play → Account → Delete online account{t1}. Your online account is deleted at once. This works even if you switched to {t2}Play offline{t3}: the game connects just to delete it.", "text": "يمكنك فتح {t0}الإعدادات ← اللعب عبر الإنترنت ← الحساب ← حذف الحساب عبر الإنترنت{t1}. يُحذف حسابك عبر الإنترنت فورًا. ويعمل ذلك حتى بعد التحويل إلى {t2}اللعب دون اتصال{t3}: إذ تتصل اللعبة لحذفه فقط." },
+  "pages.account.4": { "en": "Open {t0}Settings → Online play → Account → Delete online account{t1}. Your online account is deleted at once. This works even if you switched to {t2}Play offline{t3}: the game connects just to delete it.", "text": "يمكنك فتح {t0}الإعدادات ← اللعب عبر الإنترنت ← الحساب ← حذف الحساب على الإنترنت{t1}. يُحذف حسابك عبر الإنترنت فورًا. ويعمل ذلك حتى بعد التحويل إلى {t2}اللعب دون اتصال{t3}: إذ تتصل اللعبة لحذفه فقط." },
   "pages.account.5": { "en": "What is deleted", "text": "ما يُحذف" },
   "pages.account.6": { "en": "Your player name and online account, the base you shared for raids, and your village if it is kept on our server.", "text": "اسم اللاعب والحساب عبر الإنترنت، والقاعدة التي شاركتها للغارات، وقريتك إن كانت محفوظة على خادمنا." },
   "pages.account.7": { "en": "Your friends and friend requests, your Gang membership and your linked sign-ins.", "text": "أصدقاؤك وطلبات الصداقة، وعضويتك في العصبة، وتسجيلات الدخول المرتبطة." },
