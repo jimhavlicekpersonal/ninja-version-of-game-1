@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Tremp per a cada {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Fet: cada {building} té la seva nova forma." },
   "temper.reset": { "en": "Back to untempered", "text": "Torna a sense tremp" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "La Guaita també afebleix, a tota la base, la curació, les ressurreccions, la resistència i la protecció dels escuts dels atacants." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tremp: Abast {reach} · Esclat {blast} · Guaita {watch}" },
   "stake.label": { "en": "Stake", "text": "Repte" },
   "stake.none": { "en": "No stake", "text": "Sense repte" },

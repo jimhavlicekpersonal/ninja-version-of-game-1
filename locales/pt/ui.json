@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Temperar cada {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Temperado: cada {building} tem sua nova forma." },
   "temper.reset": { "en": "Back to untempered", "text": "Voltar a sem têmpera" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Vigia também enfraquece, em toda a base, a cura, as ressurreições, a resistência e a proteção de escudos dos atacantes." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Temperada: Alcance {reach} · Explosão {blast} · Vigia {watch}" },
   "stake.label": { "en": "Stake", "text": "Aposta" },
   "stake.none": { "en": "No stake", "text": "Sem aposta" },

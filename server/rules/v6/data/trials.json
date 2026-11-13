@@ -1,0 +1,18 @@
+{
+  "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses Keep min(15, 1 + floor((t-1)/tiersPerHall)) (the last Keep level in hall.json); past it (tier 60), defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier.",
+  "tiersPerHall": 4,
+  "powerGrowthPerTier": 0.06,
+  "maxPower": 1000000000,
+  "starsToClear": 2,
+  "rewardShareOfRaidLoot": 0.25,
+  "rewardLog2Growth": 0.1,
+  "jadeEveryTiers": 10,
+  "jadeReward": 5,
+  "candidates": 5,
+  "maxAlternates": 4,
+  "layoutPower": { "kunai_ring": 1, "walled_keep": 1, "mortar_core": 0.94, "twin_gates": 1, "open_court": 1.08 },
+  "modifiers": [
+    { "id": "ironclad", "every": 5, "name": "Ironclad Walls", "description": "Walls have double HP.", "wallPower": 2 },
+    { "id": "elite", "every": 10, "name": "Elite Garrison", "description": "Defenses are 20% tougher and hit 20% harder.", "power": 1.2 }
+  ]
+}

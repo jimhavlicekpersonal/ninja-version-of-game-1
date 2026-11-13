@@ -273,6 +273,15 @@
         }
       }
     },
+    "$troopCutsComment": "Watch also weakens the attackers' support across the base, by the base's mean Watch: healing (heal), haste and toughness auras and shelter shields (aura), the Mountain Shield's splash cover (splashAura) and revives (revive), each at most 0.9. Measured: the searched Keep 12 mixed army falls from 95% to 70% against a Watch base and is no longer the best answer there, while Watch stays neutral against the raid bots' army at Keeps 6-15 (docs/game-theory/TEMPERING_CALIBRATION_2026-11-09.md).",
+    "troopCuts": {
+      "watch": {
+        "heal": 0.8,
+        "aura": 0.8,
+        "splashAura": 0.9,
+        "revive": 0.8
+      }
+    },
     "offers": {
       "$comment": "Generated rivals answer the player: with probability counterShare (seeded) an outpost is tempered against the role family that made up most of the player`s last recentRaids raids; otherwise it keeps its clan`s home temper.",
       "recentRaids": 10,

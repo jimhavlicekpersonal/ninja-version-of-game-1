@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Закалить все: {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Закалено: все здания {building} получили новую настройку." },
   "temper.reset": { "en": "Back to untempered", "text": "Сбросить закалку" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Дозор также ослабляет лечение, воскрешения, стойкость и прикрытие щитами у налётчиков по всей базе." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Закалка: Дальность {reach} · Залп {blast} · Дозор {watch}" },
   "stake.label": { "en": "Stake", "text": "Ставка" },
   "stake.none": { "en": "No stake", "text": "Без ставки" },
