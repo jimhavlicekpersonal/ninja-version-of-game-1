@@ -12,15 +12,17 @@ const read = (p: string) => readFileSync(join(ROOT, p), 'utf8');
 describe('code splitting', () => {
   it('the HUD imports the social panels only lazily', () => {
     const hud = read('src/presentation/ui/hud.ts');
-    for (const m of ['friendsUi', 'gangWarUi', 'gangUi']) {
+    for (const m of ['friendsUi', 'gangWarUi', 'gangUi', 'groveUi']) {
       expect(hud, m).not.toMatch(new RegExp(`^import \\{[^}]*\\} from '\\./${m}'`, 'm'));
     }
     expect(hud).toMatch(/import\('\.\/friendsUi'\)/);
     expect(hud).toMatch(/import\('\.\/gangWarUi'\)/);
+    // 2026-11-13 runtime batch: the Alliance panel too.
+    expect(hud).toMatch(/import\('\.\/groveUi'\)/);
   });
 
   it('nothing else in the start-up graph imports them statically', () => {
-    for (const p of ['src/main.ts', 'src/app.ts']) expect(read(p)).not.toMatch(/from '\.\/presentation\/ui\/(friendsUi|gangWarUi|gangUi)'/);
+    for (const p of ['src/main.ts', 'src/app.ts']) expect(read(p)).not.toMatch(/from '\.\/presentation\/ui\/(friendsUi|gangWarUi|gangUi|groveUi)'/);
   });
 
   it('the production build puts Phaser in its own chunk', () => {

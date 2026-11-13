@@ -38,7 +38,7 @@ import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
 import { sound } from '../audio/sound';
 import type { FriendsUi } from './friendsUi';
-import { GroveUi } from './groveUi';
+import type { GroveUi } from './groveUi';
 import { ledgerReason } from './ledgerReason';
 import { WARRIORS as CANONICAL_WARRIORS, MODEL as CANONICAL_MODEL } from '../../gameplay/sim/progression';
 import type { GroveSource } from '../../backend/social/groveSource';
@@ -154,7 +154,9 @@ export class Hud {
   private showFps = false;
   private openModals = new Set<() => void>();
   readonly econ: EconomyUi;
-  readonly grove: GroveUi;
+  /** The Alliance panel, loaded on first open (2026-11-13 runtime batch, quality 31 / review M2). */
+  private grove!: () => Promise<GroveUi>;
+  private groveLoading: Promise<GroveUi> | null = null;
   private friendsPanel!: () => Promise<FriendsUi>;
   private friendsLoading: Promise<FriendsUi> | null = null;
   readonly daily: DailyUi;
@@ -196,12 +198,13 @@ export class Hud {
       skinThumb: (skin) => this.deps.skinThumbnail?.(skin) ?? null,
       askAge: (why) => this.askAge(why),
     });
-    this.grove = new GroveUi({
-      kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
-      source: this.deps.groveSource,
-      troopThumb: (t) => this.deps.troopThumb(t),
-      onGroveAttack: (i) => this.deps.onGroveAttack(i),
-    });
+    this.grove = () =>
+      (this.groveLoading ??= import('./groveUi').then(({ GroveUi }) => new GroveUi({
+        kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
+        source: this.deps.groveSource,
+        troopThumb: (t) => this.deps.troopThumb(t),
+        onGroveAttack: (i) => this.deps.onGroveAttack(i),
+      })));
     // Report section 5 step 10 (quality 17, 31): Friends, Gangs, Gang Wars and the QR code load on first use,
     // not with the first download (most players open them late or never).
     this.friendsPanel = () =>
@@ -387,7 +390,7 @@ export class Hud {
       railBtn('Events', icons.clock, () => this.daily.openEvents(), this.eventChip),
       railBtn('Pass', icons.lantern, () => this.econ.openPass()),
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
-      railBtn('Alliance', icons.grove, () => this.grove.open()),
+      railBtn('Alliance', icons.grove, () => void this.grove().then((g) => g.open())),
       railBtn('Friends', icons.friends, () => void this.friendsPanel().then((f) => f.open())),
       railBtn('Trials', icons.leaf, () => this.openTrials()),
     );
