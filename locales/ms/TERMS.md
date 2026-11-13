@@ -1,6 +1,6 @@
 # Bahasa Melayu: istilah yang dipilih
 
-Bahasa Melayu Malaysia (bukan Bahasa Indonesia: "kedai", "tetapan", "kemas kini", "percuma", "akaun", "telefon"). Nada mesra dan yakin; pemain dipanggil "kamu" (halaman undang-undang boleh guna "anda"). Sensei Hoshi menyebut dirinya "aku" atau "saya" tidak perlu; elakkan kata ganti yang menunjukkan jantina (Bahasa Melayu "dia" neutral, jadi selamat).
+Bahasa Melayu Malaysia (bukan Bahasa Indonesia: "kedai", "tetapan", "kemas kini", "percuma", "akaun", "telefon"). Nada mesra dan yakin; pemain dipanggil "kamu" dalam permainan dan sembang; halaman web dan undang-undang (pages) menggunakan "anda". Sensei Hoshi menyebut dirinya "saya"; label yang diketik oleh pemain dan sembang bot menggunakan "aku". Bahasa Melayu tiada jantina tatabahasa dan "dia" neutral, jadi tiada apa yang perlu sepadan dengan {name} atau pemain.
 
 | English | Bahasa Melayu |
 |---|---|
