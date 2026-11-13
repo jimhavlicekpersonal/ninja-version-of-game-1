@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Tôi luyện mọi {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Đã tôi luyện: mọi {building} có hình dạng mới." },
   "temper.reset": { "en": "Back to untempered", "text": "Trở về chưa tôi luyện" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Canh Gác cũng làm suy yếu khả năng hồi máu, hồi sinh, độ bền và lá chắn che chở của quân tấn công trên toàn căn cứ." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tôi Luyện: Tầm Xa {reach} · Nổ {blast} · Canh Gác {watch}" },
   "stake.label": { "en": "Stake", "text": "Cược" },
   "stake.none": { "en": "No stake", "text": "Không cược" },
