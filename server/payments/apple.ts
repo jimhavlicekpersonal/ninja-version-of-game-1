@@ -48,6 +48,8 @@ export interface AppleNotification {
   notificationType: string;
   subtype: string | null;
   notificationUUID: string;
+  /** When Apple signed it (ms), for ordering (backend A29); null when absent. */
+  signedDate: number | null;
   environment: string;
   bundleId: string;
   transaction: AppleTransaction | null;
@@ -127,6 +129,7 @@ export class AppleVerifier {
       notificationType: String(n.notificationType ?? ''),
       subtype: n.subtype ? String(n.subtype) : null,
       notificationUUID: String(n.notificationUUID ?? ''),
+      signedDate: Number.isFinite(Number(n.signedDate)) && n.signedDate != null ? Number(n.signedDate) : null,
       environment: String(data.environment),
       bundleId: String(data.bundleId),
       transaction,

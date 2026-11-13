@@ -137,6 +137,11 @@ export class VillageSync {
   }
 
   /** The server keeps this village. */
+  /** This device's queue id (sent with purchase intents too: backend batch 2026-11-13, A5/A24). */
+  get device(): string | undefined {
+    return this.stored.device;
+  }
+
   get active(): boolean {
     return this.stored.active;
   }

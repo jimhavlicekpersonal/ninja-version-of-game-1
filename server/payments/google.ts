@@ -123,8 +123,12 @@ export class GoogleVerifier {
     if (r.status === 404 || r.status === 400 || r.status === 410) throw new PurchaseError('Google Play does not know this purchase.');
     if (!r.ok) throw new Error(`Google Play did not answer (${r.status}).`);
     const p = r.body;
+    // Backend A11: the answer must be for the product the client named. The URL already names it, but the
+    // check no longer depends on Google refusing a token under another product's path.
+    if (typeof p.productId === 'string' && p.productId && p.productId !== productId) throw new PurchaseError('This purchase is for another product.');
     if (Number(p.purchaseState ?? 0) === 1) throw new PurchaseError('This purchase was cancelled.');
     if (Number(p.purchaseState ?? 0) === 2) throw new PurchaseError('This purchase is still waiting for payment.');
+    if (p.purchaseState !== undefined && p.purchaseState !== null && Number(p.purchaseState) !== 0) throw new PurchaseError('This purchase is not complete.');
     const test = Number(p.purchaseType) === 0;
     if (test && !this.o.allowTest) throw new PurchaseError('Test purchases are not accepted here.');
     return {

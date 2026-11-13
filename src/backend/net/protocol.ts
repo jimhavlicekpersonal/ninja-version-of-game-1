@@ -1086,6 +1086,11 @@ export interface PurchaseIntentRequest {
   productId: string;
   /** The player's age group from the game; ignored when the server holds the village (it knows). */
   under18: boolean | null;
+  /**
+   * This device's command-queue id (CommandBatch.device), when it has one (backend batch 2026-11-13, A5/A24):
+   * refunds and Sandbox credit are counted per device as well as per account. Optional; older games omit it.
+   */
+  device?: string;
 }
 export interface PurchaseIntentResponse {
   /** A UUID: Apple appAccountToken / Google obfuscatedAccountId. */

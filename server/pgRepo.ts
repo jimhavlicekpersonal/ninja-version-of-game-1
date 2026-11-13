@@ -6,7 +6,7 @@ import type { Rating } from '../src/gameplay/sim/rating';
 import { isAgeBand, type AgeBand } from '../src/gameplay/sim/age';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
-import { DELETED_PLAYER, NameTakenError, nameNoticePatterns } from './repo';
+import { DELETED_PLAYER, NameTakenError, nameNoticePatterns, STATE_NOTICES } from './repo';
 import type {
   AttackRecord,
   Block,
@@ -404,9 +404,9 @@ export class PgRepo implements Repo {
 
   async addPurchase(p: PurchaseRow): Promise<boolean> {
     const r = await this.db.query(
-      `insert into purchases (store, transaction_id, player_id, product_id, cents, at, environment, status, refunded_at, ref, held_on_server, storefront, currency, price_micros)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) on conflict do nothing`,
-      [p.store, p.transactionId, p.playerId, p.productId, p.cents, p.at, p.environment, p.status, p.refundedAt, p.ref, p.heldOnServer, p.storefront ?? null, p.currency ?? null, p.priceMicros ?? null],
+      `insert into purchases (store, transaction_id, player_id, product_id, cents, at, environment, status, refunded_at, ref, held_on_server, storefront, currency, price_micros, device)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) on conflict do nothing`,
+      [p.store, p.transactionId, p.playerId, p.productId, p.cents, p.at, p.environment, p.status, p.refundedAt, p.ref, p.heldOnServer, p.storefront ?? null, p.currency ?? null, p.priceMicros ?? null, p.device ?? null],
     );
     return (r.rowCount ?? 0) > 0;
   }
@@ -440,6 +440,31 @@ export class PgRepo implements Repo {
       [playerId, since, now],
     );
     return num(r[0]?.cents);
+  }
+
+  async linkedPurchases(playerId: string, devices: string[], since: number): Promise<PurchaseRow[]> {
+    const r = await this.rows(
+      `select * from purchases p where p.at >= $3 and (
+         p.player_id = $1
+         or (cardinality($2::text[]) > 0 and p.device = any($2::text[]))
+         or (cardinality($2::text[]) > 0 and p.player_id in (select v.player_id from villages v where v.device_seqs ?| $2::text[])))
+       order by p.at desc limit 500`,
+      [playerId, devices, since],
+    );
+    return r.map(toPurchase);
+  }
+
+  async testCentsSince(since: number): Promise<number> {
+    const r = await this.rows(`select coalesce(sum(cents), 0) as cents from purchases where environment <> 'Production' and at >= $1`, [since]);
+    return num(r[0]?.cents);
+  }
+
+  async noteStoreNotification(n: { id: string; store: string; ref: string | null; type: string; signedAt: number; receivedAt: number }): Promise<{ duplicate: boolean; newerAt: number | null }> {
+    const ins = await this.db.query('insert into store_notifications (id, store, ref, type, signed_at, received_at) values ($1,$2,$3,$4,$5,$6) on conflict do nothing', [n.id, n.store, n.ref, n.type, n.signedAt, n.receivedAt]);
+    if (!ins.rowCount) return { duplicate: true, newerAt: null };
+    if (!n.ref) return { duplicate: false, newerAt: null };
+    const r = await this.rows(`select max(signed_at) as at from store_notifications where store = $1 and ref = $2 and id <> $3 and type = any($4::text[])`, [n.store, n.ref, n.id, [...STATE_NOTICES]]);
+    return { duplicate: false, newerAt: r[0]?.at == null ? null : num(r[0].at) };
   }
 
   async lockPurchases(playerId: string): Promise<void> {
@@ -535,12 +560,12 @@ export class PgRepo implements Repo {
   }
 
   async addIntent(i: PurchaseIntent): Promise<void> {
-    await this.db.query('insert into purchase_intents (id, player_id, product_id, cents, at, used, hold_until) values ($1,$2,$3,$4,$5,$6,$7)', [i.id, i.playerId, i.productId, i.cents, i.at, i.used, i.holdUntil]);
+    await this.db.query('insert into purchase_intents (id, player_id, product_id, cents, at, used, hold_until, device) values ($1,$2,$3,$4,$5,$6,$7,$8)', [i.id, i.playerId, i.productId, i.cents, i.at, i.used, i.holdUntil, i.device ?? null]);
   }
 
   async getIntent(id: string): Promise<PurchaseIntent | null> {
     const r = await this.rows('select * from purchase_intents where id = $1', [id]);
-    return r[0] ? { id: String(r[0].id), playerId: String(r[0].player_id), productId: String(r[0].product_id), cents: num(r[0].cents), at: num(r[0].at), used: Boolean(r[0].used), holdUntil: r[0].hold_until == null ? num(r[0].at) + 1_800_000 : num(r[0].hold_until) } : null;
+    return r[0] ? { id: String(r[0].id), playerId: String(r[0].player_id), productId: String(r[0].product_id), cents: num(r[0].cents), at: num(r[0].at), used: Boolean(r[0].used), holdUntil: r[0].hold_until == null ? num(r[0].at) + 1_800_000 : num(r[0].hold_until), device: strOrNull(r[0].device) } : null;
   }
 
   async useIntent(id: string): Promise<void> {
@@ -1044,6 +1069,7 @@ export class PgRepo implements Repo {
     const idem = c.idempotencyBefore === undefined ? null : await this.db.query('delete from idempotency_keys where created_at < $1', [c.idempotencyBefore]);
     if (c.intentsBefore !== undefined) await this.db.query('delete from purchase_intents where at < $1', [c.intentsBefore]);
     if (c.deletionRequestsBefore !== undefined) await this.db.query(`delete from deletion_requests where status <> 'open' and resolved_at < $1`, [c.deletionRequestsBefore]);
+    if (c.storeNotificationsBefore !== undefined) await this.db.query('delete from store_notifications where received_at < $1', [c.storeNotificationsBefore]);
     if (c.noncesBefore !== undefined) await this.db.query('delete from auth_nonces where expires_at < $1', [c.noncesBefore]);
     return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
   }
@@ -1640,5 +1666,6 @@ function toPurchase(r: Record<string, unknown>): PurchaseRow {
     storefront: strOrNull(r.storefront),
     currency: strOrNull(r.currency),
     priceMicros: r.price_micros == null ? null : num(r.price_micros),
+    device: strOrNull(r.device),
   };
 }

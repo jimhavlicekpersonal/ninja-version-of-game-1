@@ -564,6 +564,8 @@ export interface PurchaseRow {
   storefront?: string | null;
   currency?: string | null;
   priceMicros?: number | null;
+  /** The device that asked for it (its purchase intent's `device`; backend A5/A24), when known. */
+  device?: string | null;
 }
 
 /** Asked before paying: the age cap was checked, and the store purchase carries this id back (Apple appAccountToken, Google obfuscatedAccountId). */
@@ -580,6 +582,8 @@ export interface PurchaseIntent {
    * cancelled; longer while a store reports it pending (Ask to Buy).
    */
   holdUntil: number;
+  /** The device that asked (PurchaseIntentRequest.device; backend A5/A24), when the game sent one. */
+  device?: string | null;
 }
 
 /** What a village move held back because the server could not confirm where it came from (GLOBAL-002). */
@@ -647,6 +651,8 @@ export interface PruneCutoffs {
   deletionRequestsBefore?: number;
   /** Sign-in nonces that expired before this go (backend A15). */
   noncesBefore?: number;
+  /** Store notifications received before this go (backend A29: kept long enough to order late deliveries). */
+  storeNotificationsBefore?: number;
   /** Command log lines before this time are deleted (the ledger is kept). */
   commandsBefore?: number;
   /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
@@ -767,6 +773,20 @@ export interface PurchaseStore {
   setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
   /** Cents of credited purchases since `since`, plus unused intents still holding at `now` (reserved by the age cap). */
   spentCents(playerId: string, since: number, now: number): Promise<number>;
+  /**
+   * Backend A5/A24: purchases since `since` (newest first, at most 500) of this player, of these devices
+   * (by the intent that asked), and of every player whose server-held village was played on one of them.
+   * A new free account on the same phone is the same buyer.
+   */
+  linkedPurchases(playerId: string, devices: string[], since: number): Promise<PurchaseRow[]>;
+  /** Backend A24: cents of Sandbox/test purchases (environment other than Production) credited since `since`, all players. */
+  testCentsSince(since: number): Promise<number>;
+  /**
+   * Backend A29: note a store notification (`id` unique per store). `duplicate`: seen before (skip it).
+   * `newerAt`: the latest signed time of another refund-state notification (REFUND, REVOKE,
+   * REFUND_REVERSED) for the same transaction, so an older one arriving late is not applied over it.
+   */
+  noteStoreNotification(n: { id: string; store: string; ref: string | null; type: string; signedAt: number; receivedAt: number }): Promise<{ duplicate: boolean; newerAt: number | null }>;
   // push (roadmap step 40)
   /** Adds or refreshes a device (a token that moved to another player now belongs to them). */
   putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void>;
@@ -1055,6 +1075,9 @@ export interface Repo extends PlayerStore, PurchaseStore, OpsStore, BattleStore,
 
 const clone = <T>(v: T): T => structuredClone(v);
 
+/** Store notifications that set a purchase's refund state (backend A29: the latest by signed time wins). */
+export const STATE_NOTICES = new Set(['REFUND', 'REVOKE', 'REFUND_REVERSED']);
+
 /**
  * The Alliance notices that name a player (server/core/groves.ts writes them):
  * "<name> founded …!", "<name> joined the Alliance. Say hello!",
@@ -1118,6 +1141,7 @@ export class MemoryRepo implements Repo {
   noticeRows: PlayerNotice[] = [];
   linkRows: IdentityLink[] = [];
   purchaseRows: PurchaseRow[] = [];
+  storeNoticeRows: { id: string; store: string; ref: string | null; type: string; signedAt: number; receivedAt: number }[] = [];
   staffRows: StaffAction[] = [];
   intentRows: PurchaseIntent[] = [];
   ageRows = new Map<string, { under18: boolean; at: number; band?: AgeBand | null }>();
@@ -1296,6 +1320,24 @@ export class MemoryRepo implements Repo {
     const bought = this.purchaseRows.filter((p) => p.playerId === playerId && p.status === 'credited' && p.at >= since).reduce((s, p) => s + p.cents, 0);
     const held = this.intentRows.filter((i) => i.playerId === playerId && !i.used && i.holdUntil > now).reduce((s, i) => s + i.cents, 0);
     return bought + held;
+  }
+  async linkedPurchases(playerId: string, devices: string[], since: number): Promise<PurchaseRow[]> {
+    const devs = new Set(devices);
+    const shared = new Set([...this.villageRows.values()].filter((v) => Object.keys(v.deviceSeqs ?? {}).some((d) => devs.has(d))).map((v) => v.playerId));
+    return this.purchaseRows
+      .filter((p) => p.at >= since && (p.playerId === playerId || (p.device && devs.has(p.device)) || shared.has(p.playerId)))
+      .sort((a, b) => b.at - a.at)
+      .slice(0, 500)
+      .map(clone);
+  }
+  async testCentsSince(since: number): Promise<number> {
+    return this.purchaseRows.filter((p) => p.environment !== 'Production' && p.at >= since).reduce((s, p) => s + p.cents, 0);
+  }
+  async noteStoreNotification(n: { id: string; store: string; ref: string | null; type: string; signedAt: number; receivedAt: number }): Promise<{ duplicate: boolean; newerAt: number | null }> {
+    if (this.storeNoticeRows.some((x) => x.id === n.id)) return { duplicate: true, newerAt: null };
+    const others = n.ref ? this.storeNoticeRows.filter((x) => x.store === n.store && x.ref === n.ref && STATE_NOTICES.has(x.type)).map((x) => x.signedAt) : [];
+    this.storeNoticeRows.push({ ...n });
+    return { duplicate: false, newerAt: others.length ? Math.max(...others) : null };
   }
   async lockPurchases(): Promise<void> {
     /* memory transactions already run one at a time */
@@ -1775,6 +1817,8 @@ export class MemoryRepo implements Repo {
     if (delBefore !== undefined) this.deletionRows = this.deletionRows.filter((r) => r.status === 'open' || (r.resolvedAt ?? 0) >= delBefore);
     const intentsBefore = c.intentsBefore;
     if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
+    const snBefore = c.storeNotificationsBefore;
+    if (snBefore !== undefined) this.storeNoticeRows = this.storeNoticeRows.filter((n) => n.receivedAt >= snBefore);
     const noncesBefore = c.noncesBefore;
     if (noncesBefore !== undefined) for (const [n, exp] of this.nonceRows) if (exp < noncesBefore) this.nonceRows.delete(n);
     let idempotency = 0;

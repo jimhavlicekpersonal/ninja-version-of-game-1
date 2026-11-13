@@ -43,6 +43,8 @@ export async function prune(ctx: ServerContext): Promise<PruneResult & { friendR
     deletionRequestsBefore: t - 365 * 24 * HOUR,
     // Sign-in nonces (backend A15) live minutes.
     noncesBefore: t,
+    // App Store notifications seen (backend A29): a year, far beyond Apple's retry window.
+    storeNotificationsBefore: t - 365 * 24 * HOUR,
   });
   // Extra device tokens unused for 400 days are signed out (re-audit; links.ts TOKEN_UNUSED_DAYS).
   await pruneTokens(ctx);
