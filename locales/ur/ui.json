@@ -120,7 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "ہر {building} کو نکھاریں" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "نکھار مکمل: ہر {building} کو نئی ساخت مل گئی۔" },
   "temper.reset": { "en": "Back to untempered", "text": "بغیر نکھار پر واپس" },
-  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "چوکسی پورے اڈے پر حملہ آوروں کی شفا، دوبارہ زندہ کرنے، سختی اور ڈھال کی حفاظت کو بھی کمزور کرتی ہے۔" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "نکھار: رسائی {reach} · دھماکا {blast} · چوکسی {watch}" },
   "stake.label": { "en": "Stake", "text": "داؤ" },
   "stake.none": { "en": "No stake", "text": "کوئی داؤ نہیں" },
