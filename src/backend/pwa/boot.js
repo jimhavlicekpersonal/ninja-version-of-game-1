@@ -5,13 +5,17 @@
    1. Polyfills the few newer built-ins the game calls on iOS 15.0-15.3 and Android WebView < 98:
       structuredClone (plain data: objects, arrays, Map, Set, Date, typed arrays) and .at().
    2. Feature check: without ES modules, modern syntax, Promise/Map/Set or a 2D canvas the game
-      cannot run, so it shows "please update" instead of a splash that never ends.
+      cannot run, so it shows "please update" instead of a splash that never ends. Inside the
+      Capacitor app it names Android System WebView, not a browser (device F12; capacitor.config.ts
+      also sets android.minWebViewVersion 80, so Capacitor's own update page normally comes first).
    3. Load guard: if the module fails to download or parse, the splash turns into "Couldn't load
       Kagemura" with Retry. If start-up makes no progress for SLOW_MS (the game reports each step
       with window.__tkBoot.progress(text)), a "taking a long time" card is added under the splash,
       which keeps its progress line; it goes away again when progress resumes (report section 5
       step 3: on a slow phone and a slow network the card used to replace the splash at 25 s while
-      painting was nearly done, and its Retry restarted the whole download). The first Retry
+      painting was nearly done, and its Retry restarted the whole download). Until the game's module
+      runs, every finished download (PerformanceObserver 'resource') also counts as progress, so a
+      slow 2G download of the scripts is not mistaken for a hang (device F3). The first Retry
       re-downloads the page and its script past the HTTP cache; a later one (the same failure
       again) also removes the service worker and its caches when online, so a broken offline copy
       can't keep serving. The game calls window.__tkBoot.done() once its first frame is on screen.
@@ -203,7 +207,14 @@
     }
     if (kind === 'unsupported') {
       card.appendChild(el('p', { style: 'margin:0 0 8px;font-size:17px' }, 'Kagemura needs a newer browser'));
-      card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, tr('This browser is missing: {detail}. Update your phone (iOS 15 or later) or your browser (Chrome, Safari, Edge or Firefox from 2021 or later), then open Kagemura again.').replace('{detail}', detail)));
+      if (nativeApp()) {
+        // Inside the iOS/Android app (device F12) the fix is the system WebView (Android System
+        // WebView in Google Play) or iOS itself, never "Chrome": the app does not use the browser.
+        card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, 'Update your browser or Android System WebView, then try again. Your saved village stays on this device.'));
+        var miss = el('p', { style: 'margin:8px 0 0;font:400 12px monospace;color:#5f6b78;word-break:break-word' });
+        miss.textContent = detail;
+        card.appendChild(miss);
+      } else card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, tr('This browser is missing: {detail}. Update your phone (iOS 15 or later) or your browser (Chrome, Safari, Edge or Firefox from 2021 or later), then open Kagemura again.').replace('{detail}', detail)));
     } else {
       card.appendChild(el('p', { style: 'margin:0 0 8px;font-size:17px' }, kind === 'slow' ? 'Kagemura is taking a long time to load' : "Couldn't load Kagemura"));
       card.appendChild(el('p', { style: 'margin:0;font-weight:500' }, kind === 'slow' ? 'Nothing has moved for a while. It keeps loading in the background, or you can start again.' : 'Check your connection and try again. Your village is saved on this device.'));
@@ -217,6 +228,16 @@
       card.appendChild(retry);
     }
     b.appendChild(card);
+  }
+
+  /** Running inside the Capacitor app (its bridge script runs before this one). */
+  function nativeApp() {
+    var cap = w.Capacitor;
+    try {
+      return Boolean(cap && (typeof cap.isNativePlatform === 'function' ? cap.isNativePlatform() : cap.platform && cap.platform !== 'web'));
+    } catch (e) {
+      return false;
+    }
   }
 
   function reload() {
@@ -340,6 +361,19 @@
   }
 
   armSlowTimer();
+
+  // Every file of the game that finishes downloading counts as progress too (device F3): before the
+  // game's module runs it cannot report steps itself, and on a 2G link its scripts take longer than
+  // the slow card's clock. Browsers without PerformanceObserver keep the plain clock.
+  try {
+    if (typeof w.PerformanceObserver === 'function') {
+      new w.PerformanceObserver(function () {
+        if (!w.__tkStarted) api.progress();
+      }).observe({ type: 'resource', buffered: false });
+    }
+  } catch (e) {
+    /* 'type' unsupported (old WebKit): no download progress */
+  }
 
   // The game's module (or its stylesheet) failed to download: resource errors don't bubble, so
   // listen in the capture phase.
