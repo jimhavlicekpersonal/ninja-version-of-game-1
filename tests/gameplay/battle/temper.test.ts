@@ -217,3 +217,44 @@ describe('rival outposts differ', () => {
     expect(low.buildings.some((x) => x.temper)).toBe(false);
   });
 });
+
+describe('Watch weakens the attackers\' support (rules 7)', () => {
+  it('no cuts untempered; a full Watch base cuts healing, auras, splash cover and revives', () => {
+    const b = base(12, 7);
+    expect(sim(b).temperCut).toEqual({ heal: 0, aura: 0, splash: 0, revive: 0 });
+    const cuts = def.troopCuts!.watch!;
+    const w = sim(withTemper(b, { acorn_cannon: { watch: 10 }, wasp_nest: { watch: 10 } })).temperCut!;
+    expect(w.heal).toBeCloseTo(cuts.heal!, 9);
+    expect(w.aura).toBeCloseTo(cuts.aura!, 9);
+    expect(w.splash).toBeCloseTo(cuts.splashAura!, 9);
+    expect(w.revive).toBeCloseTo(cuts.revive!, 9);
+    // Half the towers on Watch: half the cut.
+    expect(sim(withTemper(b, { acorn_cannon: { watch: 10 } })).temperCut!.heal).toBeLessThan(cuts.heal!);
+  });
+
+  it('a support army does worse against a Watch base than against the same base untempered', () => {
+    const b = base(12, 21);
+    const army = { mountain_shield: 30, herbalist: 20, spirit_caller: 10, iron_monk: 10 };
+    const levels = Object.fromEntries(Object.keys(army).map((t) => [t, 8]));
+    const run = (x: BaseLayout) => {
+      const setup: BattleSetup = { seed: 9, base: x, army, levels, infiltration: true };
+      const probe = createBattle(setup, data);
+      const e = probe.entry!;
+      const deps = Object.entries(army).flatMap(([t, n]) => Array.from({ length: n }, (_, i) => ({ tick: i, troop: t, x: Math.floor(e.points[i % 2].x), y: Math.floor(e.points[i % 2].y) })));
+      return runBattle(setup, deps, data).result.destruction;
+    };
+    // Watch also costs the towers 10% damage, so compare with the cuts switched off on the same Watch base.
+    const watch = withTemper(b, { acorn_cannon: { watch: 10 }, wasp_nest: { watch: 10 } });
+    const noCuts = structuredClone(data);
+    delete noCuts.battle.temper!.troopCuts;
+    const setupWith = run(watch);
+    const setupWithout = (() => {
+      const setup: BattleSetup = { seed: 9, base: watch, army, levels, infiltration: true };
+      const probe = createBattle(setup, noCuts);
+      const e = probe.entry!;
+      const deps = Object.entries(army).flatMap(([t, n]) => Array.from({ length: n }, (_, i) => ({ tick: i, troop: t, x: Math.floor(e.points[i % 2].x), y: Math.floor(e.points[i % 2].y) })));
+      return runBattle(setup, deps, noCuts).result.destruction;
+    })();
+    expect(setupWith).toBeLessThanOrEqual(setupWithout);
+  });
+});

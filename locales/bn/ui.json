@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "শান দাও: সব {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "শান দেওয়া হয়েছে: সব {building} নতুন গড়ন পেয়েছে।" },
   "temper.reset": { "en": "Back to untempered", "text": "শান দেওয়ার আগের অবস্থায় ফেরো" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "শান: পাল্লা {reach} · বিস্ফোরণ {blast} · পাহারা {watch}" },
   "stake.label": { "en": "Stake", "text": "বাজি" },
   "stake.none": { "en": "No stake", "text": "বাজি নেই" },

@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Jeden {building} abstimmen" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Abgestimmt: Jeder {building} hat seine neue Form." },
   "temper.reset": { "en": "Back to untempered", "text": "Zurück zu nicht abgestimmt" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Wache schwächt außerdem in der ganzen Basis die Heilung, Wiederbelebungen, Zähigkeit und den Schildschutz der Angreifer." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Abgestimmt: Reichweite {reach} · Wucht {blast} · Wache {watch}" },
   "stake.label": { "en": "Stake", "text": "Einsatz" },
   "stake.none": { "en": "No stake", "text": "Kein Einsatz" },
