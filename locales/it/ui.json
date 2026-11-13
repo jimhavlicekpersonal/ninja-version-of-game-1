@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Tempra ogni {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Temprato: ogni {building} ha la sua nuova forma." },
   "temper.reset": { "en": "Back to untempered", "text": "Torna a senza tempra" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "La Vigilanza indebolisce anche, in tutta la base, le cure, le rianimazioni, la resistenza e la copertura degli scudi degli attaccanti." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tempra: Gittata {reach} · Esplosione {blast} · Vigilanza {watch}" },
   "stake.label": { "en": "Stake", "text": "Posta" },
   "stake.none": { "en": "No stake", "text": "Nessuna posta" },

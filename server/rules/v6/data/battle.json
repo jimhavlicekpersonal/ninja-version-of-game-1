@@ -1,0 +1,347 @@
+{
+  "ticksPerSecond": 10,
+  "durationSeconds": 180,
+  "starThresholds": {
+    "destruction": 50,
+    "full": 100
+  },
+  "deployMarginTiles": 1,
+  "hedgePathCost": 10,
+  "maxReplays": 10,
+  "scoutFeeByHall": [
+    80,
+    150,
+    250,
+    600,
+    1500,
+    3500,
+    5985,
+    8273,
+    14813,
+    24056,
+    40660,
+    54623,
+    114846,
+    203553,
+    360007
+  ],
+  "generatedLootByHall": [
+    {
+      "min": 2000,
+      "max": 3200
+    },
+    {
+      "min": 3500,
+      "max": 6000
+    },
+    {
+      "min": 6000,
+      "max": 11000
+    },
+    {
+      "min": 14000,
+      "max": 28000
+    },
+    {
+      "min": 35000,
+      "max": 70000
+    },
+    {
+      "min": 80000,
+      "max": 150000
+    },
+    {
+      "min": 159588,
+      "max": 239382
+    },
+    {
+      "min": 220608,
+      "max": 330912
+    },
+    {
+      "min": 395014,
+      "max": 592520
+    },
+    {
+      "min": 641498,
+      "max": 962248
+    },
+    {
+      "min": 1084277,
+      "max": 1626415
+    },
+    {
+      "min": 1456603,
+      "max": 2184905
+    },
+    {
+      "min": 3062556,
+      "max": 4593834
+    },
+    {
+      "min": 5428078,
+      "max": 8142116
+    },
+    {
+      "min": 9600185,
+      "max": 14400277
+    }
+  ],
+  "lootShares": {
+    "storage": 0.6,
+    "collector": 0.25,
+    "hall": 0.15
+  },
+  "catapultSpread": 0.6,
+  "deploySpread": 0.3,
+  "closeCall": {
+    "starMargin": 5,
+    "hallHpFraction": 0.15,
+    "buildingsLeft": 2,
+    "perfectMinDestruction": 80
+  },
+  "abilities": {
+    "smoke_bomb": {
+      "name": "Smoke Bomb",
+      "description": "Throw it over your warriors as they walk into a defense's range. For 8 seconds, warriors inside the cloud can only be shot from close up (Night Blades also hit buildings inside it twice as hard).",
+      "radius": 3,
+      "durationTicks": 80,
+      "rangeFactor": 0.4,
+      "minTargetRange": 2,
+      "baseCharges": 1,
+      "housingPerCharge": 40,
+      "maxCharges": 3
+    }
+  },
+  "sabotage": {
+    "rangeTiles": 0.8,
+    "disableTicks": 60,
+    "immunityTicks": 100
+  },
+  "infiltration": {
+    "points": 6,
+    "insetTiles": 1.5,
+    "radius": 2.5,
+    "minPoints": 3,
+    "minCover": 15
+  },
+  "warriorRules": {
+    "supportIntervalTicks": 10,
+    "supportAllyTries": 3,
+    "defaultAuraRadius": 3,
+    "abilityCooldownTicks": 60,
+    "shieldCooldownTicks": 100,
+    "shieldMaximumDamage": 0.5,
+    "teleportDistance": 6,
+    "summonOffset": 0.5,
+    "decoyHpMultiplier": 2
+  },
+  "heroes": {
+    "shadow_captain": {
+      "$comment": "Report section 5 step 8 (growth 5): the first playable hero (roster.json heroes[0]). Joins every attack from Keep 7 for free (not trained, no housing, one per battle); its level follows the Keep (Keep 7 = 1 ... Keep 15 = 9); stats are the Wind-Step Assassin at the Keep's research cap, HP x10 and damage x3. Rally: on its first hit, warriors within 4 tiles deal 30% more damage for 8 seconds, once per battle.",
+      "name": "Shadow Captain",
+      "description": "Clan hero. On his first strike he rallies nearby warriors: 30% more damage for 8 seconds, once per battle.",
+      "housing": 0,
+      "attackIntervalTicks": 10,
+      "range": 0.8,
+      "speed": 0.15,
+      "air": false,
+      "prefers": "any",
+      "ignoresHedges": false,
+      "trainSeconds": 0,
+      "barracksLevel": 1,
+      "unlockKeep": 7,
+      "ability": "rally",
+      "kit": {
+        "aura": "rally",
+        "radius": 4,
+        "strength": 0.3,
+        "durationTicks": 80
+      },
+      "levels": [
+        {
+          "level": 1,
+          "hp": 1320,
+          "damage": 69.594,
+          "cost": {}
+        },
+        {
+          "level": 2,
+          "hp": 1530,
+          "damage": 80.73,
+          "cost": {}
+        },
+        {
+          "level": 3,
+          "hp": 2060,
+          "damage": 108.63,
+          "cost": {}
+        },
+        {
+          "level": 4,
+          "hp": 2390,
+          "damage": 126.012,
+          "cost": {}
+        },
+        {
+          "level": 5,
+          "hp": 3220,
+          "damage": 169.56,
+          "cost": {}
+        },
+        {
+          "level": 6,
+          "hp": 3740,
+          "damage": 196.689,
+          "cost": {}
+        },
+        {
+          "level": 7,
+          "hp": 5030,
+          "damage": 264.666,
+          "cost": {}
+        },
+        {
+          "level": 8,
+          "hp": 6770,
+          "damage": 356.133,
+          "cost": {}
+        },
+        {
+          "level": 9,
+          "hp": 9110,
+          "damage": 479.214,
+          "cost": {}
+        }
+      ]
+    }
+  },
+  "temper": {
+    "$comment": "Tempering (docs/game-theory/DESIGN_TEMPERING_2026-11-08.md, IMPLEMENTATION_NOTE_TEMPERING.md). From unlockKeep, the owner sets each tempered building type to a profile in steps of 1/steps on three axes (sum <= steps); every building of the type carries it. Per axis at full weight f = points/steps: range adds, splashRadius sets, fireSlow lengthens the fire interval, damageCost is subtracted from damage additively across axes (damage x (1 - sum damageCost x f)). preferFarAt: from this Reach share the tower prefers attackers fighting from prefersBeyond tiles (the Longbow Yagura rule). baseWide axes act on other buildings by the base profile (the mean f over all tempered buildings). Re-tempering a type costs retemperCostShare of the cumulative Coins of its buildings. Calibrated in the real sim (2026-11-09, docs/game-theory/TEMPERING_CALIBRATION_2026-11-09.md): against the raid bots' army each pure profile stays near an untempered base at Keeps 6-15, and on a ten-army panel at Keeps 12 and 15 near its mean, while Reach cuts ranged lines, Blast swarms and Eclipse Ninjas, and Watch air.",
+    "unlockKeep": 5,
+    "steps": 10,
+    "retemperCostShare": 0.05,
+    "types": {
+      "acorn_cannon": {
+        "reach": {
+          "range": 1.0,
+          "damageCost": 0.4,
+          "preferFarAt": 0.5,
+          "prefersBeyond": 3.5
+        },
+        "blast": {
+          "splashRadius": 0.35,
+          "fireSlow": 0.8,
+          "damageCost": 0.3
+        },
+        "watch": {
+          "damageCost": 0.1
+        }
+      },
+      "wasp_nest": {
+        "reach": {
+          "range": 1.0,
+          "damageCost": 0.4,
+          "preferFarAt": 0.5,
+          "prefersBeyond": 3.5
+        },
+        "watch": {
+          "damageCost": 0.1
+        }
+      }
+    },
+    "baseWide": {
+      "blast": {
+        "pinecone_catapult": {
+          "damage": 0.15
+        }
+      },
+      "watch": {
+        "firefly_tower": {
+          "damage": 0.3,
+          "fireFaster": 0.4
+        },
+        "bitter_incense_burner": {
+          "radius": 2,
+          "cutAdd": 0.5
+        },
+        "thorn_snare": {
+          "damage": 1
+        },
+        "sap_puddle": {
+          "damage": 1.0
+        }
+      }
+    },
+    "offers": {
+      "$comment": "Generated rivals answer the player: with probability counterShare (seeded) an outpost is tempered against the role family that made up most of the player`s last recentRaids raids; otherwise it keeps its clan`s home temper.",
+      "recentRaids": 10,
+      "counterShare": 0.5,
+      "counters": {
+        "ranged": {
+          "acorn_cannon": {
+            "reach": 10
+          },
+          "wasp_nest": {
+            "reach": 10
+          }
+        },
+        "air": {
+          "acorn_cannon": {
+            "watch": 10
+          },
+          "wasp_nest": {
+            "watch": 10
+          }
+        },
+        "ground": {
+          "acorn_cannon": {
+            "blast": 10
+          },
+          "wasp_nest": {
+            "reach": 10
+          }
+        }
+      }
+    },
+    "$rivalsComment": "Each rival clan's home temper (Crimson Lotus Reach, Iron Tide Blast with watchful Shuriken Towers, Moon Veil Watch) and how its outposts differ, so Next is a choice: lootScale multiplies the outpost's loot and biasShift its buildings' closeness to the Keep's caps. One axis per clan keeps the average outpost as hard as an untempered one for the raid bots' army at every Keep.",
+    "rivals": {
+      "crimson_lotus": {
+        "tempers": {
+          "acorn_cannon": {
+            "reach": 10
+          },
+          "wasp_nest": {
+            "reach": 10
+          }
+        },
+        "lootScale": 1,
+        "biasShift": 0
+      },
+      "iron_tide": {
+        "tempers": {
+          "acorn_cannon": {
+            "blast": 10
+          },
+          "wasp_nest": {
+            "watch": 10
+          }
+        },
+        "lootScale": 1.1,
+        "biasShift": 0.1
+      },
+      "moon_veil": {
+        "tempers": {
+          "acorn_cannon": {
+            "watch": 10
+          },
+          "wasp_nest": {
+            "watch": 10
+          }
+        },
+        "lootScale": 0.9,
+        "biasShift": -0.1
+      }
+    }
+  }
+}

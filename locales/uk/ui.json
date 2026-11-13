@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Загартувати всі: {building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Загартовано: усі споруди «{building}» мають нову форму." },
   "temper.reset": { "en": "Back to untempered", "text": "Скинути гартування" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Пильність також послаблює лікування, воскресіння, стійкість і щити нападників по всій базі." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Гартування: Дальність {reach} · Вибух {blast} · Пильність {watch}" },
   "stake.label": { "en": "Stake", "text": "Ставка" },
   "stake.none": { "en": "No stake", "text": "Без ставки" },

@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "Elke {building} harden" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Gehard: elke {building} heeft zijn nieuwe vorm." },
   "temper.reset": { "en": "Back to untempered", "text": "Terug naar ongehard" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Wacht verzwakt ook in de hele basis het genezen, de heroplevingen, de taaiheid en de schilddekking van aanvallers." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Gehard: Bereik {reach} · Explosie {blast} · Wacht {watch}" },
   "stake.label": { "en": "Stake", "text": "Inzet" },
   "stake.none": { "en": "No stake", "text": "Geen inzet" },

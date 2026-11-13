@@ -1,0 +1,86 @@
+{
+  "placeFirst": [
+    "Silent",
+    "Crimson",
+    "Iron",
+    "Willow",
+    "Cedar",
+    "Thunder",
+    "Moonlit",
+    "Ember",
+    "Frost",
+    "Raven",
+    "Lotus",
+    "Storm",
+    "Ashen",
+    "Pine",
+    "Granite",
+    "Misty"
+  ],
+  "placeSecond": [
+    "Peak",
+    "Pass",
+    "Gorge",
+    "Falls",
+    "Ridge",
+    "Terrace",
+    "Valley",
+    "Hollow",
+    "Gate",
+    "Harbor",
+    "Fortress",
+    "Crossing"
+  ],
+  "playerFirst": [
+    "Kaito",
+    "Rin",
+    "Sora",
+    "Hana",
+    "Ren",
+    "Yuki",
+    "Daichi",
+    "Mei",
+    "Takeshi",
+    "Aiko",
+    "Haru",
+    "Kenji",
+    "Nami",
+    "Shin",
+    "Tomo",
+    "Kira"
+  ],
+  "playerSecond": [
+    "Mori",
+    "Takeda",
+    "Kawamura",
+    "Ishida",
+    "Hayashi",
+    "Sakamoto",
+    "Okada",
+    "Kimura",
+    "Matsuda",
+    "Ueda",
+    "Nakano",
+    "Fujita"
+  ],
+  "rivalClans": [
+    {
+      "id": "crimson_lotus",
+      "name": "Crimson Lotus",
+      "leader": "Akane of the Red Fan",
+      "bio": "A river clan that trades in secrets. Akane never fights where she can be seen; her outposts lean on traps and mortars."
+    },
+    {
+      "id": "iron_tide",
+      "name": "Iron Tide",
+      "leader": "Old Gorō",
+      "bio": "Salt-hardened raiders from the coast. Gorō builds thick walls and dares you to break them."
+    },
+    {
+      "id": "moon_veil",
+      "name": "Moon Veil",
+      "leader": "Sister Yoru",
+      "bio": "Mountain hermits who see in the dark. Yoru spreads her towers wide so no path is safe."
+    }
+  ]
+}

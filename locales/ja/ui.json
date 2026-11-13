@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "すべての{building}を調律する" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "調律完了：すべての{building}が新しい調整になりました。" },
   "temper.reset": { "en": "Back to untempered", "text": "調律を解除する" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "警戒は拠点全体で、攻め手の回復、蘇生、耐久力、盾の守りも弱めます。" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "調律：射程{reach} · 爆風{blast} · 警戒{watch}" },
   "stake.label": { "en": "Stake", "text": "賭け" },
   "stake.none": { "en": "No stake", "text": "賭けなし" },

@@ -120,6 +120,7 @@
   "temper.apply": { "en": "Temper every {building}", "text": "淬鍊所有{building}" },
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "淬鍊完成：所有{building}都換上了新形態。" },
   "temper.reset": { "en": "Back to untempered", "text": "恢復未淬鍊" },
+  "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "警戒還會在整個基地削弱進攻方的治療、復活、韌性和護盾掩護。" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "淬鍊：射程 {reach} · 爆破 {blast} · 警戒 {watch}" },
   "stake.label": { "en": "Stake", "text": "賭注" },
   "stake.none": { "en": "No stake", "text": "不下注" },
