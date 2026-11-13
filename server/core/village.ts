@@ -14,13 +14,15 @@
 import { capBaseLoot, layoutReset } from './pvp';
 import { villageToBase } from '../../src/gameplay/sim/defense';
 import { deserialize, serialize, type SaveFile } from '../../src/gameplay/sim/save';
-import { BATTLE_COMMANDS, economyHash, economyOf, PLAYER_COMMANDS } from '../../src/gameplay/sim/serverEconomy';
+import { BATTLE_COMMANDS, economyHash, PLAYER_COMMANDS } from '../../src/gameplay/sim/serverEconomy';
 import type { Resources, VillageState } from '../../src/gameplay/sim/types';
 import { applyCommand, createNewVillage, type Command } from '../../src/gameplay/sim/village';
 import type { CommandBatch, CommandBatchResponse, CommandOutcome, LedgerResponse, VillageResponse } from '../../src/backend/net/protocol';
 import type { CommandLogRow, LedgerEntry, Player, Repo, VillageRow } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { BATTLE_COMMANDS_PER_MINUTE, MemoryRateLimiter, type RateLimiter } from '../rateLimit';
+import { ResimBusyError } from '../resim/resim';
+import { replayVillage, type ReplayStep, type VillageReplayJob, type VillageReplayOutcome } from './villageReplay';
 
 /** Most commands one batch may carry. */
 export const MAX_BATCH = 200;
@@ -45,12 +47,11 @@ export const MAX_BATTLE_COMMAND_BYTES = 192 * 1024;
 /**
  * Battle commands (trialEnd, abandonBattle) one player may send per minute,
  * across batches and, through the shared rate limiter, across instances
- * (`battleCommands` in DEFAULT_RATE_LIMITS). They run a whole battle on the
- * request thread inside the village transaction, so they are capped instead.
- * (Running them before taking the row lock is not possible cleanly: each one
- * is simulated by `applyCommand`, a game rule, on the state the earlier
- * commands of the batch made, and the sim has no hook to take a result
- * computed elsewhere, e.g. in the re-simulation workers.)
+ * (`battleCommands` in DEFAULT_RATE_LIMITS). Each runs a whole battle inside
+ * `applyCommand`, so a batch that carries one is replayed whole (backend A3,
+ * `replayVillage`) in the re-simulation pool before the row is locked, and
+ * written only if the village did not change meanwhile; the cap stays as a
+ * CPU budget per player.
  */
 export { BATTLE_COMMANDS_PER_MINUTE };
 /** Longest command type kept in the log for a refused command. */
@@ -171,69 +172,97 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
   }
   const sorted = [...list].sort((a, b) => a.seq - b.seq);
   const device = typeof body!.device === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(body!.device) ? body!.device : null;
-  return ctx.repo.transaction(async (tx) => {
-    const loaded = await load(tx, ctx, me.id, true);
-    if (!loaded) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
-    const { row } = loaded;
+  // Refusals decided before the replay, by command number: a retry after a conflict reuses them, so the
+  // battle budget (a rate limit) is not spent twice for one command.
+  const decided = new Map<number, string | null>();
+  const plan = async (repo: Repo, row: VillageRow) => {
     if (!device && row.deviceSeqs && Object.keys(row.deviceSeqs).length) {
       ctx.metrics.count('tk_refused_total', { reason: 'commands_without_device', rules: '?' });
       throw new ApiError(426, 'version_mismatch', 'This village is already played with a newer version of Kagemura. Update the game on this device to keep playing online.');
     }
-    let state = loaded.state;
-    // `seq` is the village's own counter (the command log's key); with a device id the
-    // batch's numbers are that device's, tracked in `deviceSeqs` (GLOBAL-009).
+    const lastSeq = device ? (row.deviceSeqs?.[device] ?? 0) : row.seq;
+    const now = ctx.now();
+    const steps: ReplayStep[] = [];
+    let battles = 0;
+    for (const c of sorted) {
+      if (c.seq <= lastSeq) continue; // applied before: a retried batch
+      const type = c.command.type;
+      const battle = BATTLE_COMMANDS.has(type);
+      let error: string | null;
+      if (decided.has(c.seq)) error = decided.get(c.seq)!;
+      else {
+        error = null;
+        if (!PLAYER_COMMANDS.has(type)) error = 'NOT_ALLOWED';
+        else if (commandBytes(c.command) > (battle ? MAX_BATTLE_COMMAND_BYTES : MAX_COMMAND_BYTES)) error = 'TOO_LARGE';
+        else if (type === 'setProfile' && (c.command as { under18?: unknown }).under18 === false && (await repo.getAgeGroup(me.id))?.under18) error = 'LOCKED'; // GLOBAL-006: under 18 stays (staff can reset)
+        else if (battle && (++battles > MAX_BATTLES_PER_BATCH || !(await limiterOf(ctx).hit('battleCommands', me.id, now)).ok)) error = 'TOO_MANY_BATTLES';
+        decided.set(c.seq, error);
+      }
+      steps.push({ seq: c.seq, clientAt: Number(c.t), command: c.command as Command, error });
+    }
+    const job: VillageReplayJob = { file: row.file, at: row.at, now, earliest: now - MAX_BACKDATE_MS, skewMs: CLOCK_SKEW_MS, steps };
+    return { job, battles: steps.some((s) => !s.error && BATTLE_COMMANDS.has(s.command.type)) };
+  };
+
+  // Backend A3: a batch with battle commands is replayed in a worker thread before the row is locked, then
+  // written only if the village is still the one it was replayed on (else replayed again, a few times).
+  // Other batches replay in place under the lock, as before (cheap; no thread hop for a ~300 KB file).
+  for (let attempt = 0; ; attempt++) {
+    let pre: { row: VillageRow; out: VillageReplayOutcome } | null = null;
+    if (ctx.resim.replayVillage && sorted.some((c) => BATTLE_COMMANDS.has(c.command.type))) {
+      const row = await ctx.repo.getVillage(me.id);
+      if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
+      const p = await plan(ctx.repo, row);
+      if (p.battles) {
+        try {
+          pre = { row, out: await ctx.resim.replayVillage(p.job, ctx.data) };
+        } catch (e) {
+          if (e instanceof ResimBusyError) {
+            ctx.metrics.count('tk_resim_busy_total', { kind: 'village' });
+            throw new ApiError(503, 'busy', e.message);
+          }
+          throw e;
+        }
+        ctx.metrics.observe('tk_resim_ms', pre.out.ms, { kind: 'village' });
+      }
+    }
+    const answer = await ctx.repo.transaction(async (tx) => {
+      const row = await tx.getVillage(me.id, { forUpdate: true });
+      if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
+      if (pre && row.revision !== pre.row.revision) return null; // changed meanwhile: replay again
+      const out = pre ? pre.out : replayVillage((await plan(tx, row)).job, ctx.data);
+      return commit(tx, row, out);
+    });
+    if (answer) return answer;
+    ctx.metrics.count('tk_village_replay_conflicts_total');
+    if (attempt >= 2) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
+  }
+
+  async function commit(tx: Repo, row: VillageRow, out: VillageReplayOutcome): Promise<CommandBatchResponse> {
+    const now = ctx.now();
     let seq = row.seq;
     const deviceSeqs = { ...(row.deviceSeqs ?? {}) };
     let deviceSeq = device ? (deviceSeqs[device] ?? 0) : 0;
-    let at = row.at;
-    let battles = 0;
-    let applied = 0;
-    const now = ctx.now();
-    const earliest = now - MAX_BACKDATE_MS;
-    const ledger: LedgerEntry[] = [];
     const log: CommandLogRow[] = [];
     const results: CommandOutcome[] = [];
-    for (const c of sorted) {
-      if (device ? c.seq <= deviceSeq : c.seq <= seq) continue; // applied before: a retried batch
-      const clientAt = Number(c.t);
-      const when = Math.max(at, earliest, clientAt > now + CLOCK_SKEW_MS ? now : clientAt);
+    const byNumber = new Map(sorted.map((c) => [c.seq, c]));
+    for (const o of out.outcomes) {
+      const c = byNumber.get(o.seq)!;
       const type = c.command.type;
-      const battle = BATTLE_COMMANDS.has(type);
-      let error: string | null = null;
-      if (!PLAYER_COMMANDS.has(type)) error = 'NOT_ALLOWED';
-      else if (commandBytes(c.command) > (battle ? MAX_BATTLE_COMMAND_BYTES : MAX_COMMAND_BYTES)) error = 'TOO_LARGE';
-      else if (type === 'setProfile' && (c.command as { under18?: unknown }).under18 === false && (await tx.getAgeGroup(me.id))?.under18) error = 'LOCKED'; // GLOBAL-006: under 18 stays (staff can reset)
-      else if (battle && (++battles > MAX_BATTLES_PER_BATCH || !(await limiterOf(ctx).hit('battleCommands', me.id, now)).ok)) error = 'TOO_MANY_BATTLES';
-      else {
-        let r: ReturnType<typeof applyCommand>;
-        try {
-          r = applyCommand(state, c.command as Command, when, ctx.data);
-        } catch {
-          r = { ok: false, code: 'INVALID_BATTLE', message: 'That command could not be read.' };
-        }
-        if (r.ok && type === 'setProfile' && (c.command as { under18?: unknown }).under18 === true) await tx.setAgeGroup(me.id, true, now);
-        if (r.ok) {
-          ledger.push(...ledgerDiff(me.id, state.resources, r.state.resources, when, `command:${type}`, String(c.seq)));
-          state = r.state;
-        } else error = r.code;
-      }
-      ctx.metrics.count('tk_village_commands_total', { result: error ? 'refused' : 'ok' });
-      results.push(error ? { seq: c.seq, ok: false, error } : { seq: c.seq, ok: true });
+      if (o.ok && type === 'setProfile' && (c.command as { under18?: unknown }).under18 === true) await tx.setAgeGroup(me.id, true, now);
+      ctx.metrics.count('tk_village_commands_total', { result: o.error ? 'refused' : 'ok' });
+      results.push(o.error ? { seq: o.seq, ok: false, error: o.error } : { seq: o.seq, ok: true });
       if (device) {
         seq += 1;
-        deviceSeq = c.seq;
-      } else seq = c.seq;
-      if (error) {
+        deviceSeq = o.seq;
+      } else seq = o.seq;
+      if (o.error) {
         // Type and reason only: a refused command's body is never stored (it can be anything up to the body limit).
         const shortType = type.slice(0, MAX_LOGGED_TYPE);
-        log.push({ playerId: me.id, seq, at: when, clientAt, type: shortType, command: { type: shortType }, ok: false, error });
-      } else {
-        log.push({ playerId: me.id, seq, at: when, clientAt, type, command: c.command, ok: true, error: null });
-        applied++;
-        at = when;
-      }
+        log.push({ playerId: me.id, seq, at: o.when, clientAt: Number(c.t), type: shortType, command: { type: shortType }, ok: false, error: o.error });
+      } else log.push({ playerId: me.id, seq, at: o.when, clientAt: Number(c.t), type, command: c.command, ok: true, error: null });
     }
-    const stateHash = economyHash(state);
+    const { stateHash, at } = out;
     if (results.length) {
       if (device) {
         // Most recent devices first; an old device beyond the limit starts over safely with a new id.
@@ -243,20 +272,22 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
         for (const [k, v] of kept) deviceSeqs[k] = v;
         deviceSeqs[device] = deviceSeq;
       }
-      const written = applied
-        ? (await tx.saveVillage({ ...row, file: serialize(state, at), revision: row.revision + 1, seq, at, stateHash, updatedAt: now, ...(device ? { deviceSeqs } : {}) }, row.revision, ledger, log))
-        : // Nothing changed: only the command numbers (and the short log lines) are written, not the ~300 KB village or the raid base.
-          await tx.recordVillageCommands({ playerId: me.id, revision: row.revision + 1, seq, updatedAt: now, ...(device ? { deviceSeqs } : {}) }, row.revision, log);
+      const ledger: LedgerEntry[] = out.ledger.map((l) => ({ playerId: me.id, ...l }));
+      const written =
+        out.applied && out.file
+          ? await tx.saveVillage({ ...row, file: out.file, revision: row.revision + 1, seq, at, stateHash, updatedAt: now, ...(device ? { deviceSeqs } : {}) }, row.revision, ledger, log)
+          : // Nothing changed: only the command numbers (and the short log lines) are written, not the ~300 KB village or the raid base.
+            await tx.recordVillageCommands({ playerId: me.id, revision: row.revision + 1, seq, updatedAt: now, ...(device ? { deviceSeqs } : {}) }, row.revision, log);
       if (!written) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
-      if (applied) await refreshBase(tx, ctx, me, state, at);
+      if (out.applied && out.file) await refreshBase(tx, ctx, me, deserialize(out.file, ctx.data), at);
     }
-    const out: CommandBatchResponse = { ackSeq: device ? deviceSeq : Math.max(seq, row.seq), revision: results.length ? row.revision + 1 : row.revision, stateHash, results };
+    const res: CommandBatchResponse = { ackSeq: device ? deviceSeq : Math.max(seq, row.seq), revision: results.length ? row.revision + 1 : row.revision, stateHash, results };
     if (typeof body!.stateHash !== 'string' || body!.stateHash !== stateHash) {
-      out.corrections = { economy: economyOf(state), at };
+      res.corrections = { economy: out.economy, at };
       ctx.metrics.count('tk_village_corrections_total');
     }
-    return out;
-  });
+    return res;
+  }
 }
 
 /**

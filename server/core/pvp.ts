@@ -24,7 +24,7 @@ import { normalizeTemper, sameTemper, validTemper } from '../../src/gameplay/sim
 import type { AttackResponse, AttackStartResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Repo, Ticket } from '../repo';
 import type { ClientInfo, RulesEngine } from '../rules/registry';
-import { ResimBusyError, type ResimOutcome } from '../resim/resim';
+import { ResimBusyError, ResimTimeoutError, type ResimOutcome } from '../resim/resim';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 
@@ -460,9 +460,17 @@ export async function requireArmyOnServer(ctx: ServerContext, me: Player, army: 
 }
 
 /** Count a refused report; after MAX_TICKET_FAILURES the ticket is used up (no more re-simulations). */
+/** Backend A32: a re-simulation that ran past the worker timeout (503 busy for the game; counts against the ticket). */
+export class ResimTimedOut extends ApiError {
+  constructor(message: string) {
+    super(503, 'busy', message);
+  }
+}
+
 export async function burnAfterFailures(ctx: ServerContext, ticket: Ticket, e: unknown): Promise<void> {
-  // A busy queue or a server fault is not the player's failure: only refusals count.
-  if (!(e instanceof ApiError) || e.status >= 500 || e.status === 429) return;
+  // A busy queue or a server fault is not the player's failure: only refusals count, and (backend A32) a
+  // battle that ran past the worker timeout, so one that never finishes cannot be resubmitted for ever.
+  if (!(e instanceof ApiError) || ((e.status >= 500 || e.status === 429) && !(e instanceof ResimTimedOut))) return;
   if ((await ctx.repo.bumpTicketFailures(ticket.id)) >= MAX_TICKET_FAILURES) {
     await ctx.repo.useTicket(ticket.id, undefined);
     if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, ticket.attackerId);
@@ -604,7 +612,7 @@ export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'due
   } catch (e) {
     if (e instanceof ResimBusyError) {
       ctx.metrics.count('tk_resim_busy_total', { kind });
-      throw new ApiError(503, 'busy', e.message);
+      throw e instanceof ResimTimeoutError ? new ResimTimedOut(e.message) : new ApiError(503, 'busy', e.message);
     }
     throw e;
   }
