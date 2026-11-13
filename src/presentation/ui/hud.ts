@@ -55,14 +55,13 @@ import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
 import { uiArt } from './feedback';
+import { statsExplainer } from './statsText';
 
 const MODEL = localizedData(CANONICAL_MODEL, 'progression');
 const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
 const roleDef = (id: Parameters<typeof canonicalRoleDef>[0]) => localizedData(canonicalRoleDef(id), `progression.roles.${id}`);
 
-/** What sharing play statistics means, in Settings and in the one-time question (main.ts). */
-export const STATS_EXPLAINER =
-  'Sends what you do in the game (sessions, tutorial steps, raids, upgrades, offers seen and purchases, with their numbers) under a random statistics id, never your name, Player ID, village, chat or IP address, so we can see where players get stuck. Turning it on also sends what this device recorded so far; turning it off deletes what was sent.';
+export { STATS_EXPLAINER, statsExplainer } from './statsText';
 
 export interface HudDeps {
   root: HTMLElement;
@@ -2043,7 +2042,7 @@ export class Hud {
       statsToggle.addEventListener('change', () => void stats.set(statsToggle.checked));
       body.append(
         h('label', { class: 'toggle' }, statsToggle, i18nText("ui.share_play_statistics_off_until_you_tu_5b3ea7662c")),
-        h('p', { class: 'muted small' }, i18nLabel(STATS_EXPLAINER)),
+        h('p', { class: 'muted small' }, statsExplainer()),
       );
     }
 

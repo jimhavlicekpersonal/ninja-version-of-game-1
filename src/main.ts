@@ -39,7 +39,7 @@ import { chestSvg, revealChest } from './presentation/art/chest';
 import { OffsetClock, SystemClock } from './gameplay/sim/clock';
 import { defaultData } from './gameplay/sim/data';
 import { Bus, type UiEvents } from './presentation/ui/bus';
-import { Hud, STATS_EXPLAINER } from './presentation/ui/hud';
+import { Hud, statsExplainer } from './presentation/ui/hud';
 import { acceptedRulesVersion, onCommunityRulesAccepted } from './presentation/ui/communityRules';
 import { encodeExportCode, NewerSaveError, serialize, type SaveFile } from './gameplay/sim/save';
 
@@ -326,7 +326,7 @@ async function boot(): Promise<void> {
         label: i18nText("ui.what_is_shared_742745a508"),
         onClick: (close) => {
           close();
-          void hud?.confirm(i18nText("ui.share_play_statistics_551c0c9c62"), STATS_EXPLAINER, i18nText("ui.share_29887a5ff9"), false, i18nText("ui.no_thanks_49780701dc")).then(answer);
+          void hud?.confirm(i18nText("ui.share_play_statistics_551c0c9c62"), statsExplainer(), i18nText("ui.share_29887a5ff9"), false, i18nText("ui.no_thanks_49780701dc")).then(answer);
         },
       },
     ]);
