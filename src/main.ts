@@ -17,6 +17,7 @@ import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
 import { quality, renderScaleFor } from './presentation/render/quality';
+import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './presentation/render/frameRate';
 import { App } from './app';
 import { browserKeyValue, Connection, resolveServerUrl } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
@@ -476,7 +477,8 @@ async function boot(): Promise<void> {
       const keep = controller.state.buildings.find((b) => controller.data.buildings[b.type]?.category === 'hall');
       return thumbOf(villageTexture(game.textures, 'elder_toadstool', Math.max(1, keep?.level ?? 1), controller.data.buildings.elder_toadstool.size, skin));
     },
-    getFps: () => game.loop.actualFps,
+    // Frames actually drawn (device F2): `actualFps` counts display frames, also those the limit skips.
+    getFps: () => Math.round(frames.fps(performance.now())),
     troopThumb: (type) => thumbOf(Keys.troop(type)),
     warriorIcon: (id) => thumbOf(Keys.warriorIcon(id)),
     onAttack: () => app?.scout(false),
@@ -773,27 +775,41 @@ async function boot(): Promise<void> {
 
   // Battery (client re-audit item 17): the village drops to ~20 FPS after a few seconds without
   // input or game events, and comes back at the first touch, key, wheel or event. Never in battle.
+  // While a dialog covers the village (its backdrop blurs the map on high), the village draws at
+  // ~10 FPS whatever the input (2026-11-13 runtime batch, review M6): each village frame made the
+  // browser blur the whole screen again.
   const loop = game.loop as unknown as { _limitRate: number; hasFpsLimit: boolean };
-  const activeRate = loop._limitRate;
+  pacing.activeMs = loop._limitRate;
+  game.events.on(Phaser.Core.Events.POST_RENDER, () => frames.tick(performance.now()));
+  // Device F2: a 120 Hz phone on high ran at 120 FPS (twice the profile's work); limit it to 60.
+  void measureRefreshHz().then((hz) => {
+    const limit = limitFor(q.fps, hz);
+    if (loop.hasFpsLimit && 1000 / limit > pacing.activeMs) setActiveLimit(loop, limit);
+  });
   const IDLE_RATE = 1000 / 21;
+  const COVERED_RATE = 1000 / 11;
   const IDLE_AFTER_MS = 5000;
   let lastActive = performance.now();
-  let idle = false;
+  let mode: 'active' | 'idle' | 'covered' = 'active';
+  const covered = () => !app?.inBattle && document.querySelector('#hud .modal-backdrop') !== null;
+  const setMode = (m: typeof mode) => {
+    if (mode === m || !loop.hasFpsLimit) return;
+    mode = m;
+    loop._limitRate = m === 'active' ? pacing.activeMs : Math.max(pacing.activeMs, m === 'idle' ? IDLE_RATE : COVERED_RATE);
+  };
   const active = () => {
     lastActive = performance.now();
-    if (idle) {
-      idle = false;
-      loop._limitRate = activeRate;
-    }
+    setMode(covered() ? 'covered' : 'active');
   };
   for (const t of ['pointerdown', 'pointermove', 'wheel', 'keydown', 'touchstart']) window.addEventListener(t, active, { capture: true, passive: true });
+  // After the tap or key has been handled (a dialog may have just closed): full rate at once.
+  for (const t of ['click', 'keyup']) window.addEventListener(t, active, { passive: true });
   controller.onEvents(() => active());
   window.setInterval(() => {
     if (app?.inBattle) return active();
-    if (!idle && loop.hasFpsLimit && activeRate < IDLE_RATE && performance.now() - lastActive > IDLE_AFTER_MS) {
-      idle = true;
-      loop._limitRate = IDLE_RATE;
-    }
+    if (covered()) setMode('covered');
+    else if (mode === 'covered') setMode('active');
+    else if (mode === 'active' && performance.now() - lastActive > IDLE_AFTER_MS) setMode('idle');
   }, 1000);
 
   // The splash goes once the village's first frame is drawn; then the queued toasts and banners.
