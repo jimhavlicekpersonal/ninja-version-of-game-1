@@ -10,7 +10,7 @@ import { BLOCKED, HEDGE, distToRect, findPath, type PathGrid, type Rect } from '
 import { activeInBattle, type BattleRecord, type BattleResult, type BattleSetup, type Deployment, type EndReason } from './types';
 import { stepFortifications } from './fortifications';
 import { coverLeft, planInfiltration, pointAt, type InfiltrationPlan } from './infiltration';
-import { applyBaseWide, applyTemper, baseProfile } from './temper';
+import { applyBaseWide, applyTemper, baseProfile, troopCuts, type TroopCuts } from './temper';
 import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isHidden, resolveWarriorHit, stepWarriorEffects, type WarriorEffect } from './warriors';
 
 /**
@@ -37,8 +37,13 @@ import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isH
  * 6 (balance audit 2026-11-08): Tempering (`BaseBuilding.temper`, sim/battle/temper.ts). A base whose
  * buildings carry no temper plays exactly as under 5 (and a hero-less one as under 4), so both stay
  * compatible; rules 5 is archived in server/rules/v5 all the same.
+ *
+ * 7 (balance follow-up 2026-11-11): a Watch-tempered base also weakens the attackers' support
+ * (`temper.troopCuts`: healing, auras, the Mountain Shield's splash cover, revives). Rules 6 battles
+ * against a Watch base play differently, so 6 is archived in server/rules/v6 and is not compatible;
+ * untempered battles still play exactly as under 5 and 4.
  */
-export const SIM_RULES = 6;
+export const SIM_RULES = 7;
 
 /**
  * Older rules this code plays out identically (their battles never use the
@@ -185,6 +190,8 @@ export type SimEvent =
 export interface BattleSim {
   setup: BattleSetup;
   data: GameData;
+  /** Tempering: the attackers' support the base cuts (all zero untempered). */
+  temperCut?: TroopCuts;
   tick: number;
   duration: number;
   rng: Rng;
@@ -309,7 +316,8 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
   // Tempering (SIM_RULES 6): each tempered building's own shape, then the base-wide effects of the base's profile.
   // A base whose buildings carry no temper plays exactly as under rules 5.
   setup.base.buildings.forEach((bb, i) => applyTemper(buildings[i], bb.temper, data));
-  applyBaseWide(buildings, baseProfile(setup.base, data), data);
+  const profile = baseProfile(setup.base, data);
+  applyBaseWide(buildings, profile, data);
   // Relay assaults (step 64): damage an earlier strike already did.
   const lostHp = setup.startDamage ?? {};
   for (const b of buildings) {
@@ -338,6 +346,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
   return {
     setup,
     data,
+    temperCut: troopCuts(profile, data),
     entry: planInfiltration(setup, deployable, size, data),
     tick: 0,
     duration: data.battle.durationSeconds * data.battle.ticksPerSecond,

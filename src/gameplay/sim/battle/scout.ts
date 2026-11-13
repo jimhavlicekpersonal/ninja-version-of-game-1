@@ -77,6 +77,8 @@ export function scoutReport(base: BaseLayout, data: GameData): ScoutReport {
     watch: 'Towers tempered to Watch make the Sky Bow Tower, Bitter Smoke Brazier and traps stronger: keep your squad on the ground.',
   };
   if (leanings.length) tips.push(leaningTip[leanings[0]]);
+  // Watch also cuts the raiders' support across the base (`temper.troopCuts`).
+  if (leanings[0] === 'watch' && data.battle.temper?.troopCuts?.watch) tips.push('Watch also weakens your healers, revives and shield cover.');
   if (has('counter_artillery')) tips.push('A Longbow Yagura outranges siege warriors but is blind up close: rush it with melee first.');
   if (has('ground_flyers')) tips.push('A Kite-Cutter Ballista grounds flyers: take it out before sending kites.');
   if (has('shorten_disables')) tips.push('A Repair Crane cuts jams short: destroy it, or jam defenses out of its reach.');

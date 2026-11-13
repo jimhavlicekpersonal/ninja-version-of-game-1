@@ -1,0 +1,72 @@
+{
+  "hallSkins": [
+    {
+      "id": "classic",
+      "name": "Classic Slate",
+      "moonstones": 0,
+      "cap": "#3d4a5c",
+      "spots": "#c8402f"
+    },
+    {
+      "id": "royal_plum",
+      "name": "Royal Plum",
+      "moonstones": 200,
+      "cap": "#6e3f8f",
+      "spots": "#f1d48a"
+    },
+    {
+      "id": "sunny_meadow",
+      "name": "Golden Dawn",
+      "moonstones": 250,
+      "cap": "#d99a1e",
+      "spots": "#fff3d6"
+    },
+    {
+      "id": "frosty_cap",
+      "name": "Winter Snow",
+      "moonstones": 300,
+      "cap": "#3f6f93",
+      "spots": "#ffffff"
+    },
+    {
+      "id": "jade_pagoda",
+      "name": "Jade Pagoda",
+      "moonstones": 450,
+      "minKeep": 5,
+      "cap": "#2f7d62",
+      "spots": "#e8d9a8"
+    },
+    {
+      "id": "crimson_shogun",
+      "name": "Crimson Shogun",
+      "moonstones": 650,
+      "minKeep": 8,
+      "cap": "#9b1f2b",
+      "spots": "#f0c45a"
+    },
+    {
+      "id": "midnight_shadow",
+      "name": "Midnight Shadow",
+      "moonstones": 900,
+      "minKeep": 11,
+      "cap": "#1f2433",
+      "spots": "#9fb4ff"
+    },
+    {
+      "id": "moonlit_shrine",
+      "name": "Moonlit Shrine",
+      "moonstones": 0,
+      "calendarOnly": true,
+      "cap": "#2b2f52",
+      "spots": "#e9e3c4"
+    },
+    {
+      "id": "lantern_elder",
+      "name": "Lantern Festival",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#d9632a",
+      "spots": "#ffe9a0"
+    }
+  ]
+}
