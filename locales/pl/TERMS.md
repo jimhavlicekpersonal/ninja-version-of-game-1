@@ -10,6 +10,7 @@ Standardowa polszczyzna, przyjazny ton, gracz na „ty” (bez wielkiej litery).
 | Coins / Provisions / Shadow Ink / Jade | Monety / Prowiant / Tusz Cienia / Jadeit |
 | Training Dojo / Squad Courtyard | Dojo Treningowe (krótko: Dojo) / Dziedziniec Oddziałów |
 | Village Artisan / Artisan's Hut | Rzemieślnik / Chata Rzemieślnika |
+| Hawk Tamer | Treserka Jastrzębi (postać kobieca w oryginale) |
 | Alliance / Alliance Lodge / Alliance War | Sojusz / Siedziba Sojuszu / Wojna Sojuszy |
 | Gang / Gang War / Gang leader | Banda / Wojna Band / przywódca Bandy |
 | Friendly Duel | Pojedynek Towarzyski |
@@ -20,7 +21,7 @@ Standardowa polszczyzna, przyjazny ton, gracz na „ty” (bez wielkiej litery).
 | Infiltration Points | Punkty Infiltracji |
 | Raid / attack / raider | najazd / atak / najeźdźca |
 | Warrior / Defense / Shield | wojownik / obrona (budowla obronna) / tarcza |
-| Honor / Power / League | honor / siła / Liga: Bambusowa, Cedrowa, Żelazna, Obsydianowa, Jadeitowa, Burzowa, Liga Cienia, Liga Kage |
+| Honor / Power / League | honor / siła / Liga Bambusowa, Cedrowa, Żelazna, Obsydianowa, Liga Żaru (Ember), Liga Burzy, Liga Cienia, Liga Kage |
 | Daily chest / streak / skip | codzienna skrzynia / seria / pominięcie |
 | Clan Stipend | Stypendium Klanu |
 | Tempering | Hartowanie |
