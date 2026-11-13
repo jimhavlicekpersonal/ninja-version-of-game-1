@@ -966,3 +966,16 @@ html[dir="rtl"] .objective-chip, html[dir="rtl"] .log-row { text-align: right; }
 .btn.upgrade-dew .chip { color: var(--ink); text-shadow: none; background: rgba(255, 255, 255, .85); }
 .note.good { color: #2b6a1f; }
 .note.short { color: #c2281f; }
+
+/* ---------- GUI batch 2026-11-13 (battle) ---------- */
+/* Art audit F4: the opponent card folds to one line (name, Keep level, caret); a tap shows the rest. */
+.b-left .b-name { border: 0; background: none; padding: 0; margin: 0; color: inherit; text-align: start; cursor: pointer; width: 100%; min-height: 32px; }
+.b-caret::before { content: '▾'; font: 900 0.8rem/1 var(--font); color: var(--ink-soft); }
+.b-left.collapsed .b-caret::before { content: '▸'; }
+html[dir="rtl"] .b-left.collapsed .b-caret::before { content: '◂'; }
+.b-left.collapsed .b-more { display: none; }
+.b-left.collapsed { padding-top: 4px; padding-bottom: 4px; }
+/* Art audit F12: battle cards show the warrior's badge (role disc and tier ring) instead of the dark field sprite. */
+.troop-card.badge-art img { height: 46px; padding: 2px 6px 0; filter: drop-shadow(0 1px 1px rgba(38, 48, 61, .3)); }
+/* Art audit F8: one chevron for points in the same direction. */
+.entry-chevron.merged b { letter-spacing: 1px; }

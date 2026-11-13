@@ -56,6 +56,7 @@ import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
 import { uiArt } from './feedback';
 import { statsExplainer } from './statsText';
+import { provideBadges } from './cardArt';
 
 const MODEL = localizedData(CANONICAL_MODEL, 'progression');
 const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
@@ -179,6 +180,8 @@ export class Hud {
     this.c = deps.controller;
     this.bus = deps.bus;
     this.root = deps.root;
+    // Battle troop cards use the warrior badges (art audit F12; ui/cardArt.ts).
+    provideBadges((id) => this.deps.warriorIcon(id));
     // The low quality profile drops costly CSS (dialog blur) too (re-audit design item 10).
     document.documentElement.classList.toggle('q-low', quality().profile === 'low');
     try {
