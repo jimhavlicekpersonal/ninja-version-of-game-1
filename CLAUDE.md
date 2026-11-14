@@ -48,7 +48,7 @@ merely by adding this inventory.
 
 ## Checks
 
-`npm test` (includes the boundary and status tests), `npm run build`, `npm run typecheck:server`, `npm run server:build`; `TEST_DATABASE_URL`/`TEST_REDIS_URL` run the Postgres/Redis tests (CI's Server release workflow does). After costs, times, loot or combat numbers change: the model-player and balance tests in `tests/gameplay/balance/`, `npm run balance:armies`, `npm run balance:campaign` (about three minutes; `campaign-gates.test.ts` holds its results to lower and upper bounds and fails while they are stale). After changing the numbers in `docs/STATUS.md`'s table: `npm run status`.
+`npm test` (includes the boundary, import-cycle and status tests), `npm run lint`, `npm run build`, `npm run typecheck:server`, `npm run server:build`; `TEST_DATABASE_URL`/`TEST_REDIS_URL` run the Postgres/Redis tests (CI's Server release workflow does). After costs, times, loot or combat numbers change: `npm run test:slow` (the model-player campaigns and battle timing, `tests/slow.ts`, left out of `npm test`; CI runs them), the balance tests in `tests/gameplay/balance/`, `npm run balance:armies`, `npm run balance:campaign` (about three minutes; `campaign-gates.test.ts` holds its results to lower and upper bounds and fails while they are stale). After changing the numbers in `docs/STATUS.md`'s table: `npm run status`.
 
 ## Stack
 

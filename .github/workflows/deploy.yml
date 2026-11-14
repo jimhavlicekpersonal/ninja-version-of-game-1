@@ -32,6 +32,8 @@ jobs:
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
       - run: npm test
+      # The model-player campaigns and the battle timing check (tests/slow.ts), outside the default suite.
+      - run: npm run test:slow
       - run: npm run typecheck:server
       - run: npm run build
         env:

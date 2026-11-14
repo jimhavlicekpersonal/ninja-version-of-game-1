@@ -411,13 +411,13 @@ describe('a Redis outage degrades instead of failing requests', () => {
     await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
     const port = (server.address() as { port: number }).port;
     const c = new RedisClient({ host: '127.0.0.1', port, timeoutMs: 200, retryMs: 5_000 });
-    let t = Date.now();
+    // Quality 25: no wall-clock bounds. The first command ends on the client's own timeout ("in time"); the
+    // second fails fast, without opening another connection to the hung server.
     await expect(c.command('PING')).rejects.toThrow(/in time/);
-    expect(Date.now() - t).toBeLessThan(1000);
     expect(c.available).toBe(false);
-    t = Date.now();
+    const connections = sockets.length;
     await expect(c.command('PING')).rejects.toThrow(/unavailable/);
-    expect(Date.now() - t).toBeLessThan(50);
+    expect(sockets.length).toBe(connections);
     // Nothing listening at all: the connection failure trips the breaker too.
     const closed = new RedisClient({ host: '127.0.0.1', port: 1, retryMs: 5_000 });
     await expect(closed.command('PING')).rejects.toThrow();
