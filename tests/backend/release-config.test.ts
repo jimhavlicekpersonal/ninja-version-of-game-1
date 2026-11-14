@@ -188,3 +188,68 @@ describe('report section 5 step 10 (quality 32): the server image carries only s
     }
   });
 });
+
+/**
+ * Backend A26 follow-up (2026-11-14 code-debt batch): no Docker daemon runs where the tests run, so the
+ * image is never built here. This parses the Dockerfile the way the builder reads it (comments, line
+ * continuations, instructions) and checks what a build would trip over first: unknown instructions,
+ * ARG/stage references, JSON-form ENTRYPOINT/CMD, HEALTHCHECK options, and COPY sources that exist.
+ */
+describe('the Dockerfile parses (A26 follow-up)', () => {
+  const INSTRUCTIONS = new Set(['FROM', 'RUN', 'CMD', 'LABEL', 'EXPOSE', 'ENV', 'ADD', 'COPY', 'ENTRYPOINT', 'VOLUME', 'USER', 'WORKDIR', 'ARG', 'ONBUILD', 'STOPSIGNAL', 'HEALTHCHECK', 'SHELL']);
+  function instructions(text: string): { op: string; args: string; line: number }[] {
+    const out: { op: string; args: string; line: number }[] = [];
+    let buf = '';
+    let start = 0;
+    text.split('\n').forEach((raw, i) => {
+      const line = raw.replace(/\r$/, '');
+      if (!buf && (/^\s*#/.test(line) || !line.trim())) return;
+      if (buf && /^\s*#/.test(line)) return; // comments inside a continued instruction are dropped
+      if (!buf) start = i + 1;
+      buf += (buf ? ' ' : '') + line.replace(/\\$/, '').trim();
+      if (line.endsWith('\\')) return;
+      const m = /^(\S+)\s*(.*)$/.exec(buf)!;
+      out.push({ op: m[1]!.toUpperCase(), args: m[2]!, line: start });
+      buf = '';
+    });
+    expect(buf, 'the last instruction ends with a line continuation').toBe('');
+    return out;
+  }
+
+  it('every instruction is known, stages and build arguments resolve, and COPY sources exist', () => {
+    const list = instructions(read('Dockerfile'));
+    const stages: string[] = [];
+    const args = new Set<string>();
+    let seenFrom = false;
+    for (const { op, args: rest, line } of list) {
+      const at = `Dockerfile:${line} ${op}`;
+      expect(INSTRUCTIONS.has(op), at).toBe(true);
+      if (op === 'ARG') args.add(rest.split('=')[0]!.trim());
+      else if (!seenFrom) expect(op, `${at}: only ARG may come before the first FROM`).toBe('FROM');
+      if (op === 'FROM') {
+        seenFrom = true;
+        const m = /^(\S+)(?:\s+AS\s+(\S+))?$/i.exec(rest);
+        expect(m, at).not.toBeNull();
+        for (const v of m![1]!.matchAll(/\$\{(\w+)\}/g)) expect(args.has(v[1]!), `${at}: ARG ${v[1]} declared before FROM`).toBe(true);
+        stages.push(m![2] ?? String(stages.length));
+      }
+      if (op === 'COPY' || op === 'ADD') {
+        const parts = rest.split(/\s+/);
+        const from = parts.find((p) => p.startsWith('--from='))?.slice('--from='.length);
+        const files = parts.filter((p) => !p.startsWith('--'));
+        expect(files.length, at).toBeGreaterThanOrEqual(2);
+        if (from) expect(stages.slice(0, -1), `${at}: --from names an earlier stage`).toContain(from);
+        else for (const src of files.slice(0, -1)) expect(existsSync(new URL(`../../${src}`, import.meta.url)), `${at}: ${src} exists`).toBe(true);
+      }
+      if (op === 'ENTRYPOINT' || op === 'CMD') expect(Array.isArray(JSON.parse(rest)), `${at}: JSON form`).toBe(true);
+      if (op === 'HEALTHCHECK') {
+        const m = /^((?:--\w[\w-]*=\S+\s+)*)CMD\s+(.+)$/.exec(rest);
+        expect(m, at).not.toBeNull();
+        for (const o of m![1]!.trim().split(/\s+/).filter(Boolean)) expect(o, at).toMatch(/^--(interval|timeout|start-period|start-interval|retries)=\d+[smh]?$/);
+      }
+      if (op === 'EXPOSE') expect(rest, at).toMatch(/^\d+(\/(tcp|udp))?$/);
+    }
+    expect(stages.length).toBe(2);
+    expect(list.at(-1)!.op).toBe('CMD');
+  });
+});
