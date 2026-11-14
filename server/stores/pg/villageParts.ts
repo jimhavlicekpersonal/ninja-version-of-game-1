@@ -12,7 +12,7 @@
 import { contentHash } from '../../contentHash';
 
 /** Top-level keys of `file.village` stored in each part. Keys not listed stay in `villages.file`. */
-export const VILLAGE_PARTS = {
+const VILLAGE_PARTS = {
   layout: ['buildings'],
   progress: ['tasks', 'daily', 'pass', 'grove', 'research', 'trials', 'calendar', 'cosmetics', 'offers', 'profile', 'tutorial', 'flags', 'stipend'],
 } as const satisfies Record<string, readonly string[]>;

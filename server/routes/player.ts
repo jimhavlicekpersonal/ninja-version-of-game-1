@@ -28,7 +28,7 @@ import type { RouteKit } from './kit';
 import { array, body, boolean, fields, nullable, number, object, params, query, string } from './schema';
 
 /** Lookups and friend requests are rate limited per minute and per day. */
-export const LOOKUP_RATE: (keyof RateLimits)[] = ['lookup', 'lookupDay'];
+const LOOKUP_RATE: (keyof RateLimits)[] = ['lookup', 'lookupDay'];
 /** Most JSON bodies of a platform friend list stay under this. */
 const PLATFORM_FRIENDS_BODY_LIMIT = 32 * 1024;
 

@@ -18,7 +18,7 @@ import { array, body, boolean, fields, nullable, number, object, query, record, 
  * A battle report. The fields every supported game sends are required; deployments and the hero stay
  * objects here (the re-simulation reads them, and refuses what it cannot replay).
  */
-export const battleBody = requiredBody(
+const battleBody = requiredBody(
   fields<BattleSubmission>()(
     {
       ticket: string(),
