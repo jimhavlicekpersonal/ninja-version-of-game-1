@@ -36,4 +36,4 @@ Imena stavb, bojevnikov in virov pišemo po slovenskem pravopisu: z veliko le pr
 
 Množina: one / two / few / other (`few` tudi za necela števila): `{n, plural, one {# bojevnik} two {# bojevnika} few {# bojevniki} other {# bojevnikov}}`.
 
-Ustvarjena imena: `noun-first` (drugi del, presledek, prvi del). Drugi deli so samostalniki (Vrh, Prelaz, Dolina, Žerjav, Rezilo), prvi deli so rodilniki samostalnikov ali besednih zvez (Groma, Megle, Železa, Polnoči, Vzhajajočega sonca), ki se ne ujemajo v spolu in se prilegajo vsakemu samostalniku: Prelaz Groma, Dolina Železa, Žerjav Polnoči.
+Ustvarjena imena: `noun-first` (drugi del, presledek, prvi del). Drugi deli so samostalniki (Vrh, Prelaz, Dolina, Žerjav, Rezilo), prvi deli so rodilniki samostalnikov ali besednih zvez (groma, megle, železa, polnoči, vzhajajočega sonca; z malo začetnico, kot zahteva pravopis), ki se ne ujemajo v spolu in se prilegajo vsakemu samostalniku: Prelaz groma, Dolina železa, Žerjav polnoči.
