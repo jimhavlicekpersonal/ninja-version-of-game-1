@@ -106,6 +106,34 @@ describe('A16: rotating this device token (HTTP adapter)', () => {
   });
 });
 
+describe('a 401 that arrives after the rotation swapped tokens (second verification 2026-11-14)', () => {
+  it('a request sent with the old token is sent once more with the current one', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const seen: string[] = [];
+    const json = (status: number, body: unknown) => ({ status, ok: status < 300, text: async () => JSON.stringify(body) }) as Response;
+    const fetchFn = (async (input: string, init: RequestInit = {}) => {
+      const path = new URL(String(input)).pathname;
+      const auth = ((init.headers ?? {}) as Record<string, string>).authorization;
+      seen.push(`${init.method ?? 'GET'} ${path} ${auth}`);
+      if (path === Routes.sessionsRotate) return json(200, { token: 'new-token', playerId: 'p1' });
+      if (path === Routes.me && auth === 'Bearer old-token') {
+        await gate; // slow on the network: the server swapped meanwhile
+        return json(401, { error: 'unauthorized', message: 'Unknown player token.' });
+      }
+      if (path === Routes.me && auth === 'Bearer new-token') return json(200, { id: 'p1', name: 'Rota' });
+      return json(404, { error: 'not_found', message: 'no' });
+    }) as typeof fetch;
+    const tokens = tokenStore('old-token');
+    const port = new HttpServerAdapter('http://game.test', { tokens, fetch: fetchFn, retries: 0, retryDelayMs: 0 });
+    const slow = port.me();
+    expect(await port.rotateToken()).toBe(true); // adopted: the waiting token is cleared
+    release();
+    expect((await slow).id).toBe('p1');
+    expect(seen.filter((l) => l.startsWith(`GET ${Routes.me}`))).toEqual([`GET ${Routes.me} Bearer old-token`, `GET ${Routes.me} Bearer new-token`, `GET ${Routes.me} Bearer new-token`]);
+  });
+});
+
 describe('A16: Connection rotates every 30 days and signs this device out', () => {
   let now = Date.UTC(2026, 10, 14);
   beforeEach(() => {
@@ -163,6 +191,97 @@ describe('A16: Connection rotates every 30 days and signs this device out', () =
   });
 });
 
+/**
+ * Second verification 2026-11-14: a sign-out the server carried out whose answer was lost left the dead token
+ * here, and the next start's 401 quietly registered a new, empty player. Now a pending sign-out (or a key of an
+ * account that had a linked sign-in) finishes as a sign-out: online play off, nothing registered.
+ */
+describe('a 401 after a sign-out or for a linked account never registers a new player', () => {
+  const identity = { providers: ['gamecenter' as const], verify: async (_p: string, c: unknown) => ({ provider: 'gamecenter' as const, subject: String((c as { id: string }).id) }) };
+
+  it('a lost sign-out answer: the next start goes to the signed-out state', async () => {
+    const w = world({ shared: { identity } as never });
+    const game = village(w);
+    const port = new InProcessServerAdapter(w.core);
+    const kv = memoryKv();
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await conn.sync();
+    const id = conn.player!.id;
+    await conn.link('gamecenter', { id: 'gc-lost' });
+    // The server signs the device out; the answer never arrives (the adapter keeps the token).
+    const token = port.credentials;
+    vi.spyOn(port, 'signOutDevice').mockImplementationOnce(async () => {
+      await w.core.signOutDevice(await w.core.authenticate(token ?? undefined));
+      throw new ServerError(0, 'network', 'connection reset');
+    });
+    await expect(conn.signOutDevice()).rejects.toBeInstanceOf(ServerError);
+    expect(port.hasIdentity()).toBe(true);
+    conn.stop();
+
+    // Next launch: same storage, same dead token.
+    const register = vi.spyOn(port, 'register');
+    const next = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await next.sync();
+    expect(register).not.toHaveBeenCalled();
+    expect(next.status).toBe('off');
+    expect(port.hasIdentity()).toBe(false);
+    expect(Connection.chosen(kv)).toBe('off');
+    // The account is still there for the linked sign-in.
+    expect((await new InProcessServerAdapter(w.core).signIn('gamecenter', { id: 'gc-lost' })).playerId).toBe(id);
+  });
+
+  it('a lost answer, then the player taps Sign out again: the 401 finishes it', async () => {
+    const w = world({ shared: { identity } as never });
+    const game = village(w);
+    const port = new InProcessServerAdapter(w.core);
+    const kv = memoryKv();
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await conn.sync();
+    await conn.link('gamecenter', { id: 'gc-again' });
+    const token = port.credentials;
+    vi.spyOn(port, 'signOutDevice').mockImplementationOnce(async () => {
+      await w.core.signOutDevice(await w.core.authenticate(token ?? undefined));
+      throw new ServerError(0, 'network', 'connection reset');
+    });
+    await expect(conn.signOutDevice()).rejects.toBeInstanceOf(ServerError);
+    await conn.signOutDevice();
+    expect(conn.status).toBe('off');
+    expect(port.hasIdentity()).toBe(false);
+  });
+
+  it('a key revoked for an account with a linked sign-in: signed out, not a new player', async () => {
+    const w = world({ shared: { identity } as never });
+    const game = village(w);
+    const port = new InProcessServerAdapter(w.core);
+    const kv = memoryKv();
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await conn.sync();
+    await conn.link('gamecenter', { id: 'gc-rev' });
+    conn.stop();
+    // Another device signs in with the link and signs every other device out.
+    const other = new InProcessServerAdapter(w.core);
+    await other.signIn('gamecenter', { id: 'gc-rev' });
+    await other.revokeOtherSessions();
+    const register = vi.spyOn(port, 'register');
+    const next = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await next.sync();
+    expect(register).not.toHaveBeenCalled();
+    expect(next.status).toBe('off');
+  });
+
+  it('an anonymous account the server forgot still starts a new player (unchanged)', async () => {
+    const w = world();
+    const game = village(w);
+    const port = new InProcessServerAdapter(w.core, 'a-token-from-an-old-database-0123456789');
+    const kv = memoryKv();
+    const register = vi.spyOn(port, 'register');
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv, makePort: () => port, log: () => undefined });
+    await conn.sync();
+    expect(register).toHaveBeenCalledTimes(1);
+    expect(conn.status).toBe('online');
+  });
+});
+
 describe('A15: sign-in nonces on the game side', () => {
   it('asks for a nonce only for Apple/Google and only from a server that offers them', async () => {
     const w = world();
@@ -175,19 +294,23 @@ describe('A15: sign-in nonces on the game side', () => {
     expect(ask).not.toHaveBeenCalled();
     const n = await conn.signInNonce('apple');
     expect(typeof n).toBe('string');
-    expect(ask).toHaveBeenCalledTimes(1);
-    // A nonce fetched ahead is used first (the provider's popup opens straight from the tap).
-    conn.prefetchSignInNonce();
-    await Promise.resolve();
-    await new Promise((r) => setTimeout(r, 0));
-    const ahead = await conn.signInNonce('google');
+    // Second verification 2026-11-14: the used nonce is replaced at once in the background, so a retry (the
+    // sign-in was cancelled or failed) opens the provider's popup straight from the tap.
     expect(ask).toHaveBeenCalledTimes(2);
+    await new Promise((r) => setTimeout(r, 0));
+    // A nonce fetched ahead is used first; a second prefetch while one is in hand asks nothing.
+    conn.prefetchSignInNonce();
+    expect(ask).toHaveBeenCalledTimes(2);
+    let asked = -1;
+    const ahead = await conn.signInNonce('google').then((v) => ((asked = ask.mock.calls.length), v));
+    expect(asked).toBe(3); // the nonce came from the one in hand; only the replacement was asked for
     expect(ahead).toBeTruthy();
     expect(ahead).not.toBe(n);
     // An older server without the feature: no nonce, the sign-in goes as before.
+    await new Promise((r) => setTimeout(r, 0));
     conn.server!.features = conn.server!.features.filter((f) => f !== 'signin-nonce');
     expect(await conn.signInNonce('apple')).toBeUndefined();
-    expect(ask).toHaveBeenCalledTimes(2);
+    expect(ask).toHaveBeenCalledTimes(3);
   });
 
   it('the hashed nonce a native Apple request carries is what the server accepts', async () => {

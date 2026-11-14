@@ -59,3 +59,39 @@ describe('contacts written around the filter, on the device', () => {
     expect(serverContactRemoved).toBe(CONTACT_REMOVED);
   });
 });
+
+/**
+ * Second verification 2026-11-14: folding look-alikes turned Cyrillic "Со" into "co", and a sentence ending
+ * before it read as a domain, so whole ordinary messages were replaced. A dot with a space beside it now only
+ * counts before com/net/org/xyz/biz, and a dot before a word with no Latin letter is a sentence break.
+ */
+describe('ordinary sentences in many scripts are not read as links', () => {
+  const corpus = [
+    'Привет. Со мной всё хорошо',
+    'Ok. Со временем станет лучше',
+    'Привет.Со мной всё хорошо',
+    'Я поймал. Сом большой',
+    'Добрий день. Со мною все гаразд. Іду в атаку',
+    'Γεια. Το πρωί επιτιθέμεθα',
+    'Καλημέρα. Κανε επίθεση',
+    'Merhaba. Bugün saldıralım. Co-op mu?',
+    'مرحبا. سنهاجم في الصباح',
+    'नमस्ते. सुबह हमला करेंगे',
+    'Halo. Me tunggu di gerbang. Info: serang jam 10',
+    'Ok. In the morning',
+    'Hi. To be honest',
+    'Ok. Me too',
+    'Ok. Info here',
+    'Bye. Co-op later',
+    'Nice. Top raid!',
+  ];
+  it('passes them whole', () => {
+    for (const s of corpus) {
+      expect(filterText(s, defaultData), s).toBe(s);
+      expect(hasContact(s), s).toBe(false);
+    }
+  });
+  it('still catches look-alike domains and short links', () => {
+    for (const d of ['т.ме/kagemura', 'kage.сом', 'kage . сом', 'gооgle.com', 'kage . com', 'kage. net']) expect(filterText(d, defaultData), d).toMatch(/removed/);
+  });
+});

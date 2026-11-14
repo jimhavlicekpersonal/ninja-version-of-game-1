@@ -19,6 +19,7 @@ import type { UiKit } from './economyUi';
 import { formatDuration } from './format';
 import { REASON_LABELS } from './groveUi';
 import { qrSvg } from './qr';
+import { inviteSection, type GrowthDeps } from './growthUi';
 import type { SignInSource } from '../../backend/platform/auth';
 import { communityRulesAccepted, ensureCommunityRules } from './communityRules';
 
@@ -35,6 +36,8 @@ interface FriendsUiDeps {
   onDuel?(friendId: string, friendName: string, opts?: { layout?: 'live' | 'duel'; challengeId?: string }): void;
   /** Watch a duel's replay. */
   onReplay?(record: BattleRecord): void;
+  /** Growth batch 2026-11-14 (G13): friend invites (`growthUi.ts`), while the server offers them. */
+  growth?: GrowthDeps;
   /** The Gang War section of the Gang tab (step 67). */
   war?(body: HTMLElement, redraw: () => void, leader: boolean, members: number): void;
 }
@@ -176,6 +179,7 @@ export class FriendsUi {
       return;
     }
     this.codeBox(body, f);
+    if (this.d.growth?.canRefer) body.append(inviteSection(this.d.kit, this.d.growth));
     if (f.incoming.length) {
       body.append(h('h3', {}, i18nText("ui.requests_fc6d2bd2a0", { arg1: f.incoming.length })));
       for (const r of f.incoming) {
@@ -262,7 +266,8 @@ export class FriendsUi {
         { class: 'row friend-code' },
         h('b', { class: 'code' }, f.code),
         h('button', { class: 'btn ghost', type: 'button', onclick: () => copy(f.code, i18nText("ui.friend_code_fbc7fe31b1")) }, i18nText("ui.copy_e21f935f11")),
-        h('button', { class: 'btn ghost', type: 'button', onclick: share }, link ? i18nText("ui.share_link_712a4823cc") : i18nText("ui.share_29887a5ff9")),
+        // Growth batch 2026-11-14: no share sheet for under-13 players (the code can still be copied or shown).
+        this.conn.ageBand === 'under13' ? null : h('button', { class: 'btn ghost', type: 'button', onclick: share }, link ? i18nText("ui.share_link_712a4823cc") : i18nText("ui.share_29887a5ff9")),
         qrBtn,
       ),
       qrHost,

@@ -13,6 +13,7 @@ import { goalEventView } from '../../gameplay/sim/goalEvents';
 import type { BaseLayout } from '../../gameplay/sim/battle/types';
 import { dayIndex } from '../../gameplay/sim/pass';
 import { calendarView } from '../../gameplay/sim/calendar';
+import { calendarWindows } from './growthUi';
 import { dailyChestOverflowRisk, hallLevel } from '../../gameplay/sim/village';
 import type { Cost } from '../../gameplay/sim/types';
 import { clear, h, icon } from './dom';
@@ -30,6 +31,8 @@ interface DailyOpts {
   stipendCard?(redraw: () => void): HTMLElement | null;
   /** Attack a goal event's bounty fortress (app.ts: a battle settled with `bountyEnd`). */
   onBounty?(eventKey: string, base: BaseLayout): void;
+  /** Growth batch 2026-11-14 (G10): whether the schedule came from the server or is the built-in one. */
+  scheduleSource?(): 'built-in' | 'server';
 }
 
 export class DailyUi {
@@ -225,8 +228,11 @@ export class DailyUi {
       );
       if (this.opts.onBounty) body.append(h('div', { class: 'actions' }, attack));
     }
-    body.append(h('h3', {}, i18nText("ui.coming_up_b743c76082")));
-    for (const e of upcomingEvents(now, 4, gd)) body.append(row(e, false));
+    // Growth batch 2026-11-14 (G10): the calendar of the next 4 weeks, from the schedule in force.
+    body.append(h('h3', {}, t('events.calendar.title')));
+    const windows = calendarWindows(now, gd);
+    for (const e of windows.length ? windows : upcomingEvents(now, 4, gd)) body.append(row(e, false));
+    body.append(h('p', { class: 'muted small' }, t(this.opts.scheduleSource?.() === 'server' ? 'events.calendar.server' : 'events.calendar.builtIn')));
     body.append(h('p', { class: 'muted small' }, i18nText("ui.events_follow_a_fixed_schedule_that_re_423f6e2134")));
     this.kit.modal(i18nText("ui.events_8d14f6e72d"), body, [], 'normal');
   }

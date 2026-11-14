@@ -24,6 +24,9 @@ import * as pushTokens from './pushTokens';
 import * as pvp from './pvp';
 import * as retention from './retention';
 import * as stats from './stats';
+import * as statsLocal from './statsLocal';
+import * as referrals from './referrals';
+import * as sharedReplays from './sharedReplays';
 import * as rules from './rules';
 import * as village from './village';
 import * as villageImport from './villageImport';
@@ -38,7 +41,9 @@ export function createCore(ctx: ServerContext) {
     balance: () => identity.balance(ctx),
     postStats: (body: unknown) => stats.postStats(ctx, body),
     deleteStats: (install: unknown) => stats.deleteStats(ctx, install),
-    rollupStats: () => stats.rollupStats(ctx),
+    /** Hourly: incremental since the growth batch 2026-11-14 (`statsLocal.ts`); `rollupStatsFull` re-reads every event. */
+    rollupStats: () => statsLocal.rollupIncremental(ctx),
+    rollupStatsFull: () => stats.rollupStats(ctx),
     statsReport: (days: unknown) => stats.statsReport(ctx, days),
     register: (name: unknown) => identity.register(ctx, name),
     authenticate: (token: string | undefined) => identity.authenticate(ctx, token),
@@ -147,6 +152,18 @@ export function createCore(ctx: ServerContext) {
     /** Retention: old replays, tickets and unreferenced base versions. */
     prune: (stillHeld?: import('../jobs').StillHeld) => retention.prune(ctx, stillHeld),
     pruneDormant: (stillHeld?: import('../jobs').StillHeld) => retention.pruneDormant(ctx, stillHeld),
+    /** Growth batch 2026-11-14 (routes in server/growthRoutes.ts). */
+    growth: {
+      referrals: (me: Parameters<typeof referrals.view>[1]) => referrals.view(ctx, me),
+      linkReferral: referrals.link.bind(null, ctx),
+      claimReferrals: referrals.claim.bind(null, ctx),
+      shareReplay: sharedReplays.share.bind(null, ctx),
+      sharedReplay: sharedReplays.get.bind(null, ctx),
+      myReplays: sharedReplays.mine.bind(null, ctx),
+      deleteSharedReplay: sharedReplays.remove.bind(null, ctx),
+      statsLocalReport: statsLocal.statsLocalReport.bind(null, ctx),
+      statsFunnel: statsLocal.statsFunnel.bind(null, ctx),
+    },
     /** Staff only (the admin API in server/app.ts). */
     admin: {
       deletionQueue: account.deletionQueue.bind(null, ctx),

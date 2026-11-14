@@ -1497,6 +1497,11 @@ export class PgRepo implements Repo {
     return r[0] ? num(r[0].balance) : null;
   }
 
+  async ledgerSumAt(playerId: string, resource: string, reason: string, at: number): Promise<number> {
+    const r = await this.rows('select coalesce(sum(delta), 0) as s from ledger where player_id = $1 and resource = $2 and reason = $3 and at <= $4', [playerId, resource, reason, at]);
+    return r[0] ? num(r[0].s) : 0;
+  }
+
   async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
     return (await this.rows('select * from command_log where player_id = $1 and seq > $2 order by seq limit $3', [playerId, sinceSeq, limit])).map(toCommand);
   }

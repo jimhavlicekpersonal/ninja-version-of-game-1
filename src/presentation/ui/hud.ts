@@ -39,6 +39,7 @@ import { sound } from '../audio/sound';
 import type { FriendsUi } from './friendsUi';
 import type { GroveUi } from './groveUi';
 import { ledgerReason } from './ledgerReason';
+import { openShareReplay, shareable } from './growthUi';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
@@ -164,6 +165,7 @@ export class Hud {
         kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
         connection: this.deps.connection,
         shareBase: () => this.deps.friendLinkBase?.() ?? null,
+        growth: this.deps.growth,
         platform: this.deps.signIn,
         onDuel: (id, name, opts) => this.deps.onDuel?.(id, name, opts),
         onReplay: (r) => this.deps.onReplay(r),
@@ -176,7 +178,7 @@ export class Hud {
       }), failed);
     this.daily = new DailyUi(
       { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
-      { stipendCard: (redraw) => this.econ.stipendCard(redraw), onBounty: this.deps.onBounty ? (key, base) => this.deps.onBounty!(key, base) : undefined },
+      { stipendCard: (redraw) => this.econ.stipendCard(redraw), onBounty: this.deps.onBounty ? (key, base) => this.deps.onBounty!(key, base) : undefined, scheduleSource: () => this.deps.eventScheduleSource?.() ?? 'built-in' },
     );
     this.army = new ArmyUi({
       kit: { c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() },
@@ -2005,6 +2007,11 @@ export class Hud {
         this.closeAllModals();
         this.deps.onReplay(r);
       });
+      // Growth batch 2026-11-14 (G14): share one replay, by the player's choice (never under 13).
+      const g = this.deps.growth;
+      const share = g?.canShareReplays && shareable(r, canReplay) && this.deps.connection.ageBand !== 'under13'
+        ? h('button', { class: 'btn ghost', type: 'button', onclick: () => openShareReplay({ c: this.c, modal: (...a) => this.modal(...a), confirm: (...a) => this.confirm(...a), toast: (...a) => this.toast(...a), closeAllModals: () => this.closeAllModals() }, g, r, this.deps.connection.ageBand === 'adult') }, t('growth.share.button'))
+        : null;
       // Attacks show what reached storage; old records stored that in result.loot.
       const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
       // A held defense pays a small reward (`banked` on the defense record).
@@ -2017,7 +2024,7 @@ export class Hud {
           'div',
           { class: 'log-row' },
           h('div', {}, h('b', {}, r.kind === 'attack' ? i18nText("ui.you_raided_b4bf27bb8b", { arg1: isolateName(r.opponentName), arg2: r.setup.base.practice ? i18nLabel(' (practice)') : '' }) : i18nText("ui.raided_you_29f66d0636", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '' })), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, i18nText("ui.ago_ecf7d53ab9", { arg1: r.result.destruction, arg2: formatDuration(this.c.now() - r.at) })), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, i18nText("ui.no_loot_bdac804bb2")), held)),
-          h('div', { class: 'row' }, settle, replay),
+          h('div', { class: 'row' }, settle, share, replay),
         ),
       );
     }

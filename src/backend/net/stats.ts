@@ -45,7 +45,19 @@ export interface StatsBatch {
   build: string;
   /** The balance-bundle experiment arm this game plays ("experiment:arm"), if any. */
   arm?: string;
+  /**
+   * The device's offset from UTC in minutes (rounded to 15; growth batch 2026-11-14), so days can be
+   * counted on the player's own calendar. Absent: days count in UTC.
+   */
+  tz?: number;
   events: StatsEvent[];
+}
+
+/** A UTC offset as shared: whole minutes rounded to 15, −12 h to +14 h; anything else is dropped. */
+export function cleanTz(v: unknown): number | undefined {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return undefined;
+  const q = Math.round(v / 15) * 15;
+  return q >= -720 && q <= 840 ? q + 0 : undefined;
 }
 
 const ID = /^[a-z0-9_:.-]{1,40}$/i;
@@ -74,7 +86,8 @@ export function cleanStatsBatch(b: unknown): StatsBatch | { error: string } {
   const build = typeof x.build === 'string' ? x.build.slice(0, 40) : '';
   const arm = typeof x.arm === 'string' && ID.test(x.arm) ? x.arm : undefined;
   const events = x.events.map((e) => cleanStatsEvent(e as never)).filter((e): e is StatsEvent => e !== null);
-  return { install: x.install.toLowerCase(), build, ...(arm ? { arm } : {}), events };
+  const tz = cleanTz(x.tz);
+  return { install: x.install.toLowerCase(), build, ...(arm ? { arm } : {}), ...(tz !== undefined ? { tz } : {}), events };
 }
 
 /**

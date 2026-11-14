@@ -29,6 +29,8 @@ export const METRIC_HELP: Record<string, string> = {
   tk_rate_limited_total: 'Requests refused by a rate limit, by rule.',
   tk_consent_rescinded_total: 'App Store parental consent withdrawals (RESCIND_CONSENT), by whether the account was found.',
   tk_stats_events_total: 'Shared play-statistics events kept (report section 5 step 5).',
+  tk_referrals_total: 'Friend invites linked and rewards paid (growth batch 2026-11-14, by what).',
+  tk_shared_replays_total: 'Replays shared and shared replays opened (growth batch 2026-11-14, by what).',
   tk_battles_total: 'Battles re-simulated and settled, by kind (pvp, raid) and battle rules version.',
   tk_resim_ms: 'Time to re-simulate one battle in milliseconds, by kind.',
   tk_desyncs_total: "Battles whose client result hash differed from the server's, by kind and battle rules version.",

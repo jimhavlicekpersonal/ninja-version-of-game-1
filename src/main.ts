@@ -22,6 +22,16 @@ import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './pr
 import { App } from './app';
 import { browserKeyValue, Connection, resolveServerUrl } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
+import { EventScheduleLoader } from './backend/net/eventScheduleLoader';
+import { fetchSharedReplay, GrowthClient } from './backend/net/growthClient';
+import { parseShareCode, shareLink } from './backend/net/growth';
+import { AchievementReporter, nativeAchievementPort } from './backend/platform/achievements';
+import { nativeReviewRequest } from './backend/platform/native';
+import { sharedReplayCard } from './presentation/ui/growthUi';
+import { provideReviewHook } from './presentation/ui/reviewPrompt';
+import { replayable } from './gameplay/sim/battle/battle';
+import type { BattleRecord } from './gameplay/sim/battle/types';
+import { messageText as messageTextOf } from './presentation/ui/i18n';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { LocalGroveSource, RemoteGroveSource, type GroveSource } from './backend/social/groveSource';
 import { sound } from './presentation/audio/sound';
@@ -253,6 +263,9 @@ async function boot(): Promise<void> {
   // Experiment arms (report section 5 step 5) are picked by the statistics id: only players who share are in one.
   const balance = sandbox ? null : new BalanceLoader(browserKeyValue, defaultData, SIM_RULES, (import.meta.env.VITE_BALANCE_PUBLIC_KEY as string | undefined) ?? '', () => StatsSharing.installIdIn(browserKeyValue));
   await balance?.applyCached();
+  // Growth batch 2026-11-14 (G10): the event timing the server sent last time (it plays the same), else built-in.
+  const eventSchedule = sandbox ? null : new EventScheduleLoader(browserKeyValue, defaultData);
+  eventSchedule?.applyCached();
   // Content batch 2026-11-14: `?sandbox&preview` (or `?debug&preview`) adds the designed but non-live buildings,
   // heroes, Hero Hall and Warrior Mastery for playtesting (sim/plannedContent.ts). Only in the sandbox, which has
   // its own save and never goes online; the public build always plays the shipped data.
@@ -261,8 +274,24 @@ async function boot(): Promise<void> {
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}) });
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}), ...(eventSchedule ? { events: eventSchedule } : {}) });
   onCommunityRulesAccepted(() => void connection.acceptRules());
+  const growth = new GrowthClient(connection);
+  const statsTz = (import.meta.env.VITE_STATS_TZ as string | undefined) === '1';
+  // Growth batch 2026-11-14: platform achievements (G31; no-op without the native plugin) and the store review sheet (G26).
+  if (!sandbox) {
+    const reporter = new AchievementReporter(nativeAchievementPort(), browserKeyValue);
+    let seen = '';
+    const report = () => {
+      const now = JSON.stringify(controller.state.achievements);
+      if (now === seen) return;
+      seen = now;
+      void reporter.sync(controller.state.achievements);
+    };
+    report();
+    controller.subscribe(report);
+    provideReviewHook(nativeReviewRequest());
+  }
   // Report section 5 step 8 (growth 9): task days roll at the player's own midnight (the sim allows a change once a week).
   {
     const minutes = -new Date().getTimezoneOffset();
@@ -279,6 +308,8 @@ async function boot(): Promise<void> {
         ageBand: () => connection.ageBand,
         arm: () => armOf(balance?.applied ?? null),
         serverReady: () => Boolean(connection.server?.features.includes('stats')),
+        // Growth batch 2026-11-14: the UTC offset for local-day statistics, once the privacy page lists it (owner).
+        sendTz: statsTz,
         backlog: (n) => analytics.recent(n),
       });
   if (stats) {
@@ -358,7 +389,7 @@ async function boot(): Promise<void> {
         label: i18nText("ui.what_is_shared_742745a508"),
         onClick: (close) => {
           close();
-          void hud?.confirm(i18nText("ui.share_play_statistics_551c0c9c62"), statsExplainer(), i18nText("ui.share_29887a5ff9"), false, i18nText("ui.no_thanks_49780701dc")).then(answer);
+          void hud?.confirm(i18nText("ui.share_play_statistics_551c0c9c62"), statsTz ? `${statsExplainer()} ${t('stats.tzNote')}` : statsExplainer(), i18nText("ui.share_29887a5ff9"), false, i18nText("ui.no_thanks_49780701dc")).then(answer);
         },
       },
     ]);
@@ -525,6 +556,25 @@ async function boot(): Promise<void> {
     // Friend links (step 59): the web game's own address; in the apps, VITE_PUBLIC_URL (the web game) if set.
     friendLinkBase: () => (isNative() ? (env.VITE_PUBLIC_URL ?? null) || null : `${location.origin}${location.pathname}`),
     updateWebApp: (beforeReload, note) => updateWebApp(beforeReload, note),
+    // Growth batch 2026-11-14: friend invites and shared replays (G13, G14), the event schedule's source (G10).
+    growth: {
+      get canRefer() {
+        return growth.canRefer;
+      },
+      get canShareReplays() {
+        return growth.canShareReplays;
+      },
+      referrals: () => growth.referrals(),
+      enterCode: (code) => growth.enterCode(code),
+      claim: () => growth.claim(),
+      share: (req) => growth.share(req),
+      replayLink: (code) => {
+        const base = isNative() ? (env.VITE_PUBLIC_URL ?? null) || null : `${location.origin}${location.pathname}`;
+        return base ? shareLink(base, code) : null;
+      },
+    },
+    eventScheduleSource: () => eventSchedule?.source ?? 'built-in',
+    statsTzNote: statsTz,
   });
 
   // Toasts raised before the first frame (interrupted raid, sandbox notice, load errors, purchases
@@ -612,6 +662,18 @@ async function boot(): Promise<void> {
       hud.openFriends(code);
     });
   };
+  // Growth batch 2026-11-14 (G14): a shared replay link (?replay=CODE) opens the replay, with or without an account.
+  const replayCode = sandbox ? null : parseShareCode(params.get('replay') ?? '');
+  if (replayCode && connection.url) {
+    void fetchSharedReplay(connection.url, replayCode)
+      .then((v) => {
+        const record: BattleRecord = { id: `shared:${v.code}`, at: v.at, kind: 'attack', opponentName: t('growth.viewer.title'), setup: v.setup, deployments: v.deployments, ...(v.endTick !== undefined ? { endTick: v.endTick } : {}), result: v.result as BattleRecord['result'], rules: v.rules };
+        const watch = replayable(record) ? () => app?.replay(record) : null;
+        const card = sharedReplayCard(v, watch);
+        hud.modal(t('growth.viewer.title'), card, watch ? [{ label: t('growth.viewer.watch'), primary: true, onClick: () => (hud.closeAllModals(), watch()) }] : [], 'normal');
+      })
+      .catch((e) => hud.toast(`${t('growth.viewer.failed')} ${messageTextOf(e)}`, 'error'));
+  }
   const friendParam = parseGameLink(location.search).friend;
   if (friendParam && !sandbox) openFriendWhenOnline(friendParam);
   // R09: in the apps the same links arrive as App Links / Universal Links (once the owner's domain is set up).

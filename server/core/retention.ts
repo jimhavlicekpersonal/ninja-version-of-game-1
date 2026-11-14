@@ -16,6 +16,7 @@ import { pruneTokens } from './links';
 import { STATS_RETENTION_DAYS } from './stats';
 import { requireLease, type StillHeld } from '../jobs';
 import { deleteAccount } from './account';
+import { growthOf } from '../growthRepo';
 
 /** Backend A18: retention deletes in batches of this many rows, and gives up for the hour after this long. */
 export const RETENTION_BATCH = 5000;
@@ -28,7 +29,7 @@ export const REPLAY_RETENTION_MS = REPLAY_RETENTION_DAYS * 24 * HOUR;
 /** How long an expired, unused ticket (and an unreferenced base version) is kept. */
 export const STALE_MS = 24 * HOUR;
 
-export async function prune(ctx: ServerContext, stillHeld?: StillHeld): Promise<PruneResult & { friendRequests: number; duels: number; forfeits: number; stats: number }> {
+export async function prune(ctx: ServerContext, stillHeld?: StillHeld): Promise<PruneResult & { friendRequests: number; duels: number; forfeits: number; stats: number; sharedReplays: number }> {
   const t = ctx.now();
   // Raids never reported settle as losses before their tickets can be pruned (re-audit).
   let forfeits = 0;
@@ -71,7 +72,11 @@ export async function prune(ctx: ServerContext, stillHeld?: StillHeld): Promise<
   await pruneTokens(ctx);
   // Shared play statistics (report section 5 step 5) are kept 400 days.
   const stats = await ctx.repo.pruneStats(t - STATS_RETENTION_DAYS * 24 * HOUR);
-  return { ...result, friendRequests, duels, forfeits, stats };
+  // Growth batch 2026-11-14: expired shared replays, and statistics summaries of ids past retention.
+  const g = growthOf(ctx.repo);
+  const sharedReplays = await g.pruneSharedReplays(t);
+  await g.pruneInstalls(t - STATS_RETENTION_DAYS * 24 * HOUR);
+  return { ...result, friendRequests, duels, forfeits, stats, sharedReplays };
 }
 
 /**

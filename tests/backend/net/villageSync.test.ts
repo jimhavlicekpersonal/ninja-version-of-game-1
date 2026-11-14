@@ -302,6 +302,25 @@ describe('worldwide audit: several devices and storage failures', () => {
     expect(a.conn.refusedActions).toEqual([{ at: expect.any(Number), type: 'place', code: 'NO_FREE_BUILDER', building: placed }]);
   });
 
+  it('GLOBAL-009 follow-up: refusedLog keeps only the newest REFUSED_LOG_SIZE (20) refused actions', async () => {
+    const { REFUSED_LOG_SIZE } = await import('../../../src/backend/net/villageSync');
+    expect(REFUSED_LOG_SIZE).toBe(20);
+    const w = world();
+    const a = await setup(w);
+    await a.conn.village!.enable();
+    expect(placeCollector(a.controller, 'acorns').ok).toBe(true);
+    const real = a.port.sendCommands.bind(a.port);
+    a.port.sendCommands = async (batch) => {
+      const r = await real(batch);
+      // 25 refusals at once, oldest first (times 1..25).
+      return { ...r, results: Array.from({ length: 25 }, (_, i) => ({ seq: 10_000 + i, ok: false, error: 'NO_FREE_BUILDER', type: 'upgrade', at: i + 1 })) };
+    };
+    await a.conn.village!.flush();
+    expect(a.conn.village!.refused).toBe(25);
+    expect(a.conn.refusedActions).toHaveLength(20);
+    expect(a.conn.refusedActions.map((x) => x.at)).toEqual(Array.from({ length: 20 }, (_, i) => i + 6));
+  });
+
   it('GLOBAL-009 follow-up: the server names refused commands (type and time) in its answer', async () => {
     const w = world();
     const a = await setup(w);

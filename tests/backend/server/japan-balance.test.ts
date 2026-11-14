@@ -66,6 +66,29 @@ describe('Japan C17: unused paid balance on a base date', () => {
     expect(repo.staffRows.find((a) => a.action === 'jp-unused-balance')).toMatchObject({ actor: 'accountant', detail: expect.objectContaining({ baseDate: BASE, unusedPaidJade: 1200 }) });
   });
 
+  it('second verification 2026-11-14: Clan Stipend Jade still to be delivered is owed in full; the figure is labelled an upper bound', async () => {
+    const w = world({ start: Date.parse('2026-10-10T00:00:00Z') });
+    const repo = w.repo as MemoryRepo;
+    const st = w.data.store.stipend!;
+    const total = st.payments * st.jadePerPayment;
+    const before = BASE_END - 10 * 86_400_000;
+    await repo.addPurchase(purchase({ transactionId: 's1', playerId: 'su', productId: st.id, at: before }));
+    // Five payments claimed by the base date, 40 Jade left in the balance; a sixth after it does not count.
+    let bal = 0;
+    for (let i = 0; i < 5; i++) {
+      bal += st.jadePerPayment;
+      repo.ledgerRows.push({ playerId: 'su', at: before + (i + 1) * 86_400_000, resource: 'moonstones', delta: st.jadePerPayment, balance: bal, reason: 'command:claimStipend', ref: String(i) });
+    }
+    repo.ledgerRows.push({ playerId: 'su', at: before + 6 * 86_400_000, resource: 'moonstones', delta: 40 - bal, balance: 40, reason: 'command:topUp', ref: '9' });
+    repo.ledgerRows.push({ playerId: 'su', at: BASE_END + 1000, resource: 'moonstones', delta: st.jadePerPayment, balance: 40 + st.jadePerPayment, reason: 'command:claimStipend', ref: '10' });
+    const r = await w.core.admin.japanBalance('accountant', BASE);
+    const owed = total - 5 * st.jadePerPayment;
+    expect(r.undeliveredStipendJade).toBe(owed);
+    expect(r.unusedPaidJade).toBe(40 + owed);
+    expect(r.upperBound).toBe(true);
+    expect(r.notes.join(' ')).toMatch(/Upper bound/);
+  });
+
   it('over ¥10,000,000: says so and gives the deposit due (half)', async () => {
     const w = world({ start: Date.parse('2026-10-10T00:00:00Z') });
     const repo = w.repo as MemoryRepo;

@@ -29,7 +29,10 @@ export function stripBasicContacts(text: string): string {
   return text
     .replace(/\b(?:https?:\/\/|www\.)\S+/giu, '[link removed]')
     .replace(/[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/gu, '[contact removed]')
-    .replace(/\b[\p{L}\p{N}-]{2,}\s?(?:\.|\s?dot\s?)\s?(?:com|net|org|io|gg|me|app|xyz|ru|cn|ly|link|site|online|top|info|biz|co)\b(?:\/\S*)?/giu, '[link removed]')
+    .replace(/\b[\p{L}\p{N}-]{2,}(?:\.|\s?dot\s?)(?:com|net|org|io|gg|me|app|xyz|ru|cn|ly|link|site|online|top|info|biz|co)\b(?:\/\S*)?/giu, '[link removed]')
+    // A dot with a space beside it is how sentences end ("Ok. Me too", "Ok. Info here", "Bye. Co-op"): only
+    // endings that are not everyday words count there (second verification 2026-11-14).
+    .replace(/\b[\p{L}\p{N}-]{2,}(?:\s\.\s?|\.\s)(?:com|net|org|xyz|biz)\b(?:\/\S*)?/giu, '[link removed]')
     .replace(/(?:\+?\d[\s().-]?){7,}/gu, '[contact removed]')
     .replace(HANDLE_RE, '[contact removed]');
 }
@@ -46,11 +49,34 @@ const CONFUSABLE: Record<string, string> = {
   α: 'a', β: 'b', ε: 'e', η: 'n', ι: 'i', κ: 'k', ν: 'v', ο: 'o', ρ: 'p', τ: 't', υ: 'u', χ: 'x', ω: 'w',
 };
 
+const foldLetters = (w: string) => Array.from(w, (ch) => CONFUSABLE[ch] ?? ch).join('');
+const SHORT_HOST_RE = /^(?:t|wa|telegram|discord|dsc|bit|tinyurl|linktr|lnkd|goo|cutt)\.(?:me|gg|ly|ee|in|gl|co|io|com|link)$/;
+
+/**
+ * Second verification 2026-11-14: a dot before a word with no Latin letter is a sentence break, not a domain,
+ * unless the look-alikes are written to read as one. "Привет. Со мной всё хорошо" and "Ok. Со временем" would
+ * otherwise fold to "... co" and lose the whole message. The dot stays (and the look-alikes fold) when the word
+ * before it has Latin letters and the dot touches both words ("kage.сом"), when the two words read as a short
+ * link ("т.ме"), or when a Latin word, a spaced dot and "сом"/"нет"-style look-alikes spell com/net/org.
+ */
+function breakSentenceDots(s: string): string {
+  return s.replace(/([\p{L}\p{N}]*)(\s*)\.(\s*)(\p{L}+)/gu, (all, left: string, s1: string, s2: string, right: string) => {
+    if (/[a-z]/.test(right)) return all;
+    const spaced = s1 !== '' || s2 !== '';
+    const latinLeft = /[a-z]/.test(left);
+    const tld = foldLetters(right);
+    if (!spaced && (latinLeft || SHORT_HOST_RE.test(`${foldLetters(left)}.${tld}`))) return all;
+    if (latinLeft && (tld === 'com' || tld === 'net' || tld === 'org')) return all;
+    return `${left}${s1} ${s2}${right}`;
+  });
+}
+
 /** The text as a filter should read it: compatibility forms, no invisible characters, look-alikes and spelled punctuation folded. */
 export function foldForContact(text: string): string {
   let s = text.normalize('NFKC').toLowerCase();
   s = s.replace(/[\p{Cf}͏ᅟᅠㅤﾠ]/gu, ''); // zero-width and other invisible characters
   s = s.normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC'); // accents written over Latin letters
+  s = breakSentenceDots(s);
   s = Array.from(s, (ch) => CONFUSABLE[ch] ?? ch).join('');
   s = s.replace(/h\s*x\s*x\s*p\s*(s?)\s*:\s*\/\s*\//g, 'http$1://');
   s = s.replace(/\s*[([{<]\s*(?:dot|\.|d0t)\s*[)\]}>]\s*/g, '.').replace(/\s+(?:dot|d0t)\s+/g, '.');
