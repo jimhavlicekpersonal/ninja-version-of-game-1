@@ -3,6 +3,7 @@
  * database. server/app.ts puts it behind HTTP; server/inProcess.ts calls it
  * directly. A future server can reuse it with other adapters.
  */
+import { japanBalanceReport } from './japanBalance';
 import * as complaints from './complaints';
 import * as account from './account';
 import * as age from './age';
@@ -161,6 +162,7 @@ export function createCore(ctx: ServerContext) {
       actions: admin.actions.bind(null, ctx),
       rename: admin.rename.bind(null, ctx),
       releaseImportHold: admin.releaseImportHold.bind(null, ctx),
+      japanBalance: japanBalanceReport.bind(null, ctx),
       complaintQueue: complaints.complaintQueue.bind(null, ctx),
       resolveComplaint: complaints.resolveComplaint.bind(null, ctx),
     },
