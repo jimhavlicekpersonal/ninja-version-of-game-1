@@ -4,7 +4,8 @@
  *   `public/legal-config.js` dates the terms (`termsEffective`); "Not now" keeps the village offline;
  * - the Apple consumption consent switch (`consumptionConsentBlock`, audit A5): adults, Settings → Online
  *   play → Account, off until the player turns it on, stored on the server;
- * - the approximate real-money value of a Jade price in EU storefronts (`jadeValueText`, audit C16): only
+ * - the approximate real-money value of a Jade price in EU storefronts (`jadeValueText`, audit C16; a range since the
+ *   third verification fixes 2026-11-14, and in the Store only): only
  *   in the Store and the player's own spend confirm, never in an offer that pops up.
  */
 import { language, t } from './i18n';
@@ -86,6 +87,46 @@ export function consumptionConsentBlock(conn: ConsentLink, toast: (text: string,
   return h('div', { class: 'consent-block' }, h('label', { class: 'toggle' }, box, t('consent.apple.label')), h('p', { class: 'muted small' }, t('consent.apple.detail')));
 }
 
+// ------------------------------------------------------------------ shared replays: my base
+
+export interface ReplayPrivacyLink {
+  readonly canReplayPrivacy: boolean;
+  replayPrivacy(): Promise<{ baseInReplays: boolean }>;
+  setReplayPrivacy(allowBase: boolean): Promise<{ baseInReplays: boolean }>;
+}
+
+/**
+ * Third verification fixes 2026-11-14 (8c): Settings → Online play → Account, adults only: "Allow my base in other
+ * players' shared replays" (on by default for adults; a minor's base is never shared and gets no switch).
+ */
+export function replayPrivacyBlock(conn: ReplayPrivacyLink, toast: (text: string, kind?: 'info' | 'error' | 'success') => void): HTMLElement | null {
+  if (!conn.canReplayPrivacy) return null;
+  const box = h('input', { type: 'checkbox', disabled: true, 'data-id': 'replay-privacy' }) as HTMLInputElement;
+  void conn.replayPrivacy().then(
+    (v) => {
+      box.checked = v.baseInReplays !== false;
+      box.disabled = false;
+    },
+    () => undefined,
+  );
+  box.addEventListener('change', () => {
+    const want = box.checked;
+    box.disabled = true;
+    void conn.setReplayPrivacy(want).then(
+      (v) => {
+        box.checked = v.baseInReplays !== false;
+        box.disabled = false;
+      },
+      (e: Error) => {
+        box.checked = !want;
+        box.disabled = false;
+        toast(e.message, 'error');
+      },
+    );
+  });
+  return h('div', { class: 'consent-block' }, h('label', { class: 'toggle' }, box, t('replays.allowBase.label')), h('p', { class: 'muted small' }, t('replays.allowBase.detail')));
+}
+
 // ------------------------------------------------------------------ EU real-money value of Jade
 
 /** EU and EEA storefronts (alpha-2 and the alpha-3 codes StoreKit may report). */
@@ -106,32 +147,49 @@ export function jadeValueOn(): boolean {
   return jadeValueSwitch();
 }
 
+/** Real money per Jade across the Jade packs of one storefront (third verification fixes 2026-11-14). */
+export interface JadeUnitRange {
+  /** The cheapest per Jade (usually the biggest pack). */
+  minMicrosPerJade: number;
+  /** The dearest per Jade (usually the smallest pack). */
+  maxMicrosPerJade: number;
+  currency: string;
+}
+
 /**
- * Real money per Jade from the store's own pack prices: the cheapest per Jade among the packs priced in one
- * currency (so the figure never overstates what Jade costs). Null without usable prices.
+ * Real money per Jade from the store's own pack prices: from the cheapest per Jade to the dearest per Jade, among
+ * the packs priced in one currency. Null without usable prices (or with two currencies).
  */
-export function jadeUnitPrice(packs: readonly { storeId: string; moonstones: number }[], prices: Record<string, StorePrice> | null | undefined): { microsPerJade: number; currency: string } | null {
+export function jadeUnitRange(packs: readonly { storeId: string; moonstones: number }[], prices: Record<string, StorePrice> | null | undefined): JadeUnitRange | null {
   if (!prices) return null;
-  let best: { microsPerJade: number; currency: string } | null = null;
+  let r = null as JadeUnitRange | null;
   for (const p of packs) {
     const sp = prices[p.storeId];
     if (!sp || !sp.currency || !Number.isFinite(sp.micros) || (sp.micros ?? 0) <= 0 || p.moonstones <= 0) continue;
-    if (best && best.currency !== sp.currency) return null;
+    if (r && r.currency !== sp.currency) return null;
     const per = sp.micros! / p.moonstones;
-    if (!best || per < best.microsPerJade) best = { microsPerJade: per, currency: sp.currency };
+    const prev: JadeUnitRange | null = r;
+    r = prev ? { currency: prev.currency, minMicrosPerJade: Math.min(prev.minMicrosPerJade, per), maxMicrosPerJade: Math.max(prev.maxMicrosPerJade, per) } : { minMicrosPerJade: per, maxMicrosPerJade: per, currency: sp.currency };
   }
-  return best;
+  return r;
 }
 
-/** "about €0.42" for a Jade price, or null when the switch is off, the storefront is not in the EU or prices are unknown. */
-export function jadeValueText(jade: number, unit: { microsPerJade: number; currency: string } | null, storefront: string | null | undefined, on = jadeValueOn()): string | null {
-  if (!on || !unit || !euStorefront(storefront) || !(jade > 0)) return null;
-  const amount = (jade * unit.microsPerJade) / 1_000_000;
-  let value: string;
+/**
+ * "about €0.33–€0.60" for a Jade price (docs/legal/MARKETS.md, EU CPC): what that much Jade costs bought in the
+ * cheapest pack per Jade, up to bought in the dearest, so neither end overstates or understates it; "about €0.33"
+ * when the two ends round the same. Null when the switch is off, the storefront is not in the EU or prices are
+ * unknown. Only the Store shows it (real prices only in the Store and its confirm step).
+ */
+export function jadeValueText(jade: number, range: JadeUnitRange | null, storefront: string | null | undefined, on = jadeValueOn()): string | null {
+  if (!on || !range || !euStorefront(storefront) || !(jade > 0)) return null;
+  let low: string;
+  let high: string;
   try {
-    value = new Intl.NumberFormat(language().code, { style: 'currency', currency: unit.currency, maximumFractionDigits: 2, numberingSystem: 'latn' } as Intl.NumberFormatOptions).format(amount);
+    const f = new Intl.NumberFormat(language().code, { style: 'currency', currency: range.currency, maximumFractionDigits: 2, numberingSystem: 'latn' } as Intl.NumberFormatOptions);
+    low = f.format((jade * range.minMicrosPerJade) / 1_000_000);
+    high = f.format((jade * range.maxMicrosPerJade) / 1_000_000);
   } catch {
     return null;
   }
-  return t('jade.about', { value });
+  return low === high ? t('jade.about', { value: low }) : t('jade.aboutRange', { low, high });
 }

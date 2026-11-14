@@ -20,6 +20,14 @@ interface CrashReporterOptions {
   now?(): number;
 }
 
+/**
+ * Whether crash reports may be sent now (compliance switches 2026-11-14, C04; main.ts `enabled`): the player
+ * switched them on, and the village's band is not under 13 (never for an under-13 band, in any mode).
+ */
+export function crashReportsAllowed(prefOn: boolean, band: string | null | undefined): boolean {
+  return prefOn && band !== 'under13';
+}
+
 export class CrashReporter {
   private readonly dsn: SentryDsn | null;
   private readonly throttle = new ReportThrottle(10, 60_000);

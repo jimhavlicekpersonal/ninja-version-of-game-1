@@ -13,7 +13,7 @@ import { withPreview } from '../../../src/gameplay/sim/plannedContent';
 import { applyCommand, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
 import type { GameData, VillageState } from '../../../src/gameplay/sim/types';
 import { heroPickerSection, masteryRows, masterySection } from '../../../src/presentation/ui/contentPreviewUi';
-import { euStorefront, jadeUnitPrice, jadeValueText, termsGate } from '../../../src/presentation/ui/complianceUi';
+import { euStorefront, jadeUnitRange, jadeValueText, termsGate } from '../../../src/presentation/ui/complianceUi';
 import { chatText } from '../../../src/presentation/ui/i18n';
 import en from '../../../locales/en/ui.json';
 
@@ -139,14 +139,17 @@ describe('EU real-money value of Jade (C16)', () => {
     { storeId: 'b', moonstones: 600 },
   ];
   const prices = { a: { formatted: '€1.99', currency: 'EUR', micros: 1_990_000 }, b: { formatted: '€9.99', currency: 'EUR', micros: 9_990_000 } };
-  it('takes the cheapest per Jade, in one currency only', () => {
-    expect(jadeUnitPrice(packs, prices)).toEqual({ microsPerJade: 9_990_000 / 600, currency: 'EUR' });
-    expect(jadeUnitPrice(packs, { ...prices, b: { formatted: '$9.99', currency: 'USD', micros: 9_990_000 } })).toBeNull();
-    expect(jadeUnitPrice(packs, null)).toBeNull();
+  it('spans the cheapest to the dearest per Jade, in one currency only', () => {
+    expect(jadeUnitRange(packs, prices)).toEqual({ minMicrosPerJade: 9_990_000 / 600, maxMicrosPerJade: 1_990_000 / 100, currency: 'EUR' });
+    expect(jadeUnitRange(packs, { ...prices, b: { formatted: '$9.99', currency: 'USD', micros: 9_990_000 } })).toBeNull();
+    expect(jadeUnitRange(packs, null)).toBeNull();
   });
-  it('says "about" and only when switched on in an EU storefront', () => {
-    const unit = jadeUnitPrice(packs, prices);
-    expect(jadeValueText(60, unit, 'DE', true)).toBe('about €1.00');
+  it('says "about" a range and only when switched on in an EU storefront', () => {
+    const unit = jadeUnitRange(packs, prices);
+    // 60 Jade: €1.00 in the 600 pack's price per Jade, up to €1.19 in the 100 pack's.
+    expect(jadeValueText(60, unit, 'DE', true)).toBe('about €1.00–€1.19');
+    // One pack (or ends that round the same): a single figure.
+    expect(jadeValueText(60, jadeUnitRange([packs[1]], prices), 'DE', true)).toBe('about €1.00');
     expect(jadeValueText(60, unit, 'DEU', true)).not.toBeNull();
     expect(jadeValueText(60, unit, 'US', true)).toBeNull();
     expect(jadeValueText(60, unit, 'DE', false)).toBeNull();
@@ -154,9 +157,11 @@ describe('EU real-money value of Jade (C16)', () => {
     expect(euStorefront('NO')).toBe(true);
     expect(euStorefront('GB')).toBe(false);
   });
-  it('never in an offer that pops up: only the Store looks and the spend confirm use it', () => {
+  it('only in the Store: never in an offer that pops up, never in the in-village spend confirm', () => {
     const econ = readFileSync(join(__dirname, '../../../src/presentation/ui/economyUi.ts'), 'utf8');
-    expect(econ.match(/this\.jadeAbout\(/g)).toHaveLength(2);
+    expect(econ.match(/this\.jadeAbout\(/g)).toHaveLength(1);
+    const spend = econ.slice(econ.indexOf('async spendMoonstones('), econ.indexOf('// ------------------------------------------------------------ store'));
+    expect(spend).not.toMatch(/jadeAbout|jade-about|jadeValueText/);
     expect(readFileSync(join(__dirname, '../../../src/presentation/ui/hud.ts'), 'utf8')).not.toMatch(/jadeValueText|jadeAbout/);
   });
 });

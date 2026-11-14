@@ -49,6 +49,12 @@ export function inviteSection(kit: UiKit, g: GrowthDeps): HTMLElement {
       return;
     }
     const v = view;
+    // Third verification fixes 2026-11-14: rewards are for adults only; a minor (or unstated) player sees a kind
+    // line instead of the reward, the counts, Collect and the code field.
+    if (v.adultsOnly) {
+      box.append(h('p', { class: 'small adults-only' }, t('growth.invite.adultsOnly')));
+      return;
+    }
     box.append(
       h('p', { class: 'small' }, t('growth.invite.rule', { keep: v.keep })),
       h('div', { class: 'row' }, h('span', { class: 'chip good' }, t('growth.invite.reward', { jade: v.rewardJade })), h('span', { class: 'muted small' }, t('growth.invite.cap', { cap: v.monthlyCap }))),

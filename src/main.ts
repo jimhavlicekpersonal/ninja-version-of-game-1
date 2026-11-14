@@ -5,7 +5,7 @@ import { listText as i18nList, fmtNumber, initLanguage, labelText as i18nLabel, 
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
-import { CrashReporter } from './backend/analytics/crashReports';
+import { CrashReporter, crashReportsAllowed } from './backend/analytics/crashReports';
 import { httpStatsTransport, StatsSharing } from './backend/analytics/share';
 import { armOf } from './backend/net/balanceBundle';
 import { platformSignIn } from './backend/platform/auth';
@@ -44,7 +44,7 @@ import { MockPaymentProvider, type PaymentProvider } from './backend/payments/pr
 import { StoreKitPaymentProvider, UnavailablePaymentProvider } from './backend/payments/storekit';
 import { PlayBillingPaymentProvider } from './backend/payments/playBilling';
 import { pushDevice } from './backend/platform/push';
-import { choosePaymentProvider, isSandbox, paymentPath } from './backend/payments/select';
+import { choosePaymentProvider, isSandbox, paymentPath, previewAllowed } from './backend/payments/select';
 import { planNotifications, upcomingReminders } from './gameplay/sim/reminders';
 import { Tutorial } from './presentation/ui/tutorial';
 import { provideUiArt } from './presentation/ui/feedback';
@@ -232,7 +232,7 @@ async function boot(): Promise<void> {
     dsn: sandbox ? undefined : (import.meta.env.VITE_SENTRY_DSN as string | undefined),
     release: `kagemura@${__APP_VERSION__}`,
     environment: isNative() ? platform() : 'web',
-    enabled: () => prefs.get('crashReports') && crashBand() !== 'under13',
+    enabled: () => crashReportsAllowed(prefs.get('crashReports'), crashBand()),
     tags: { device: platformName() },
   });
   crashReporter.install();
@@ -274,8 +274,9 @@ async function boot(): Promise<void> {
   eventSchedule?.applyCached();
   // Content batch 2026-11-14: `?sandbox&preview` (or `?debug&preview`) adds the designed but non-live buildings,
   // heroes, Hero Hall and Warrior Mastery for playtesting (sim/plannedContent.ts). Only in the sandbox, which has
-  // its own save and never goes online; the public build always plays the shipped data.
-  const gameData = sandbox && params.has('preview') ? withPreview(defaultData) : defaultData;
+  // its own save and never goes online. Third verification fixes 2026-11-14: only in a dev build, or `?debug&preview`
+  // in a build with VITE_ALLOW_PREVIEW=1 (never set by the deploy workflow), so the public build always plays the shipped data.
+  const gameData = previewAllowed(location.search, { dev: import.meta.env.DEV, allowPreview: import.meta.env.VITE_ALLOW_PREVIEW === '1' }) ? withPreview(defaultData) : defaultData;
   const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: gameData, payments, botRaids: !serverUrl, sandbox });
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;

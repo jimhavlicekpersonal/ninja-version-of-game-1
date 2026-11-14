@@ -1,4 +1,4 @@
-import { ComplianceRoutes, under13ModeOf, type ComplianceView, type Under13Mode } from './compliance';
+import { ComplianceRoutes, under13ModeOf, type ComplianceView, type ReplayPrivacyView, type Under13Mode } from './compliance';
 import { deviceLocale, rememberServerMessage } from '../../../locales/runtime';
 /**
  * Online play: picks the server, keeps this device's player registered,
@@ -26,7 +26,7 @@ import type { RaidBattle } from '../social/raidBattle';
 export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './names';
 export type { RefusedAction } from './villageSync';
 import type { PurchaseVerifier } from '../payments/provider';
-import { VillageSync, type RefusedAction, type SyncGame } from './villageSync';
+import { newDeviceId, VillageSync, type RefusedAction, type SyncGame } from './villageSync';
 import { SIM_RULES } from '../../gameplay/sim/battle/battle';
 import { NEWER_VILLAGE_MESSAGE, updateNeeded } from './versionCheck';
 import { NewerSaveError } from '../../gameplay/sim/save';
@@ -43,6 +43,18 @@ export interface GameLink {
   onCommand?: SyncGame['onCommand'];
   adoptEconomy?: SyncGame['adoptEconomy'];
   adoptVillage?: SyncGame['adoptVillage'];
+}
+
+/** Where the stable installation id lives (third verification fixes 2026-11-14; `Connection.installId`). */
+export const INSTALL_KEY = 'tk.device.install';
+
+/** The stored installation id, made once; null when storage will not keep it (so no id changes per start). */
+export function installIdIn(kv: KeyValue): string | null {
+  const have = kv.get(INSTALL_KEY);
+  if (have && /^[A-Za-z0-9_-]{8,64}$/.test(have)) return have;
+  const made = newDeviceId();
+  const ok = kv.trySet ? kv.trySet(INSTALL_KEY, made) : (kv.set(INSTALL_KEY, made), true);
+  return ok && kv.get(INSTALL_KEY) === made ? made : null;
 }
 
 /** Small key-value storage (localStorage in the browser). */
@@ -197,6 +209,17 @@ export class Connection {
     }
   }
 
+  /**
+   * Third verification fixes 2026-11-14: this installation's stable id, generated once and kept in device storage
+   * (`INSTALL_KEY`), sent with a friend code, a reward claim and purchase intents so the server's "no shared
+   * device" and refund checks see the same phone across villages and accounts. The per-village queue id
+   * (`VillageSync.device`) keeps its own purposes. Never the statistics id (`tk.stats.install`), which must not be
+   * tied to a player. Null when nothing can be stored (a private window): then nothing is sent.
+   */
+  get installId(): string | null {
+    return installIdIn(this.kv);
+  }
+
   /** Actions the server refused since this start, newest last (GLOBAL-009: News names them with their reasons). */
   get refusedActions(): readonly RefusedAction[] {
     return this.village?.refusedLog ?? [];
@@ -250,7 +273,10 @@ export class Connection {
       return this.port;
     };
     return {
-      intent: async (s, productId, under18) => (await ready()).purchaseIntent({ store: s, productId, under18, ...(this.village?.device ? { device: this.village.device } : {}) }),
+      intent: async (s, productId, under18) => {
+        const install = this.installId;
+        return (await ready()).purchaseIntent({ store: s, productId, under18, ...(this.village?.device ? { device: this.village.device } : {}), ...(install ? { install } : {}) });
+      },
       redeem: async (r) => (await ready()).redeem({ store: r.store, storeProductId: r.storeProductId, receipt: r.receipt }),
       history: async () => (checks && this.port && this.online ? (await this.port.purchaseHistory()).purchases : []),
       release: async (accountToken, outcome) => {
@@ -652,6 +678,24 @@ export class Connection {
   /** Switch the Apple consumption consent (stored on the server, off by default). */
   async setConsumptionConsent(consent: boolean): Promise<ComplianceView> {
     return (this.port as unknown as { call<T>(m: 'PUT', p: string, b: unknown): Promise<T> }).call<ComplianceView>('PUT', ComplianceRoutes.consumptionConsent, { consent });
+  }
+
+  /**
+   * Third verification fixes 2026-11-14 (feature `replay-privacy`): whether the switch "Allow my base in other players'
+   * shared replays" is offered: online, an adult band, and a server that has the route. A minor's base is never in one.
+   */
+  get canReplayPrivacy(): boolean {
+    return this.online && this.ageBand === 'adult' && Boolean(this.server?.features.includes('replay-privacy')) && typeof (this.port as Partial<{ call: unknown }> | null)?.call === 'function';
+  }
+
+  /** Allow (or stop) this player's base appearing in other players' shared replays; stopping removes existing ones. */
+  async setReplayPrivacy(allowBase: boolean): Promise<ReplayPrivacyView> {
+    return (this.port as unknown as { call<T>(m: 'PUT', p: string, b: unknown): Promise<T> }).call<ReplayPrivacyView>('PUT', ComplianceRoutes.replayPrivacy, { allowBase });
+  }
+
+  /** Whether this player's base may appear in other players' shared replays, as the server keeps it. */
+  async replayPrivacy(): Promise<ReplayPrivacyView> {
+    return (this.port as unknown as { call<T>(m: 'GET', p: string): Promise<T> }).call<ReplayPrivacyView>('GET', ComplianceRoutes.replayPrivacy);
   }
 
   /** Make the band stricter on the device (the game refuses anything else). */

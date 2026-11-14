@@ -95,6 +95,9 @@ describe('growth client over HTTP (G13, G14)', () => {
       };
       const ann = await mk('Growth Ann');
       const ben = await mk('Growth Ben');
+      // Third verification fixes 2026-11-14: friend-invite rewards are for adults only.
+      await ann.stateAge({ band: 'adult' });
+      await ben.stateAge({ band: 'adult' });
       const hello = await ben.hello();
       const g = new GrowthClient({ online: true, server: hello, port: ben, village: { device: 'dev-ben' } });
       expect(g.canRefer && g.canShareReplays).toBe(true);

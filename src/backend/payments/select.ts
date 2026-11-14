@@ -15,6 +15,17 @@ export function isSandbox(search: string): boolean {
   return q.has('sandbox') || q.has('debug');
 }
 
+/**
+ * Third verification fixes 2026-11-14 (8f): the designed-but-not-live content preview (`?sandbox&preview`,
+ * `withPreview`) only in a development build (`npm run dev`), or with `?debug&preview` in a build made with
+ * `VITE_ALLOW_PREVIEW=1`. The deploy workflow never sets it, so the public web build always plays the shipped data.
+ */
+export function previewAllowed(search: string, build: { dev: boolean; allowPreview: boolean }): boolean {
+  const q = new URLSearchParams(search);
+  if (!isSandbox(search) || !q.has('preview')) return false;
+  return build.dev || (q.has('debug') && build.allowPreview);
+}
+
 type PaymentPath = 'storekit' | 'play' | 'mock' | 'unavailable';
 
 export function paymentPath(platform: string, sandbox: boolean, playBilling = false): PaymentPath {

@@ -1,5 +1,5 @@
 import { heroPickerSection } from './contentPreviewUi';
-import { consumptionConsentBlock } from './complianceUi';
+import { consumptionConsentBlock, replayPrivacyBlock } from './complianceUi';
 import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText, fmtDecimal, fmtPercent } from './i18n';
@@ -1024,6 +1024,8 @@ export class Hud {
       conn.server?.features.includes('notices') ? h('div', {}, h('label', { class: 'muted small' }, i18nText("ui.messages_from_our_moderators_71bfb2b01a")), noticesBox) : null,
       // Compliance switches 2026-11-14 (A5): adults may let Apple be told about a purchase when asked about a refund.
       consumptionConsentBlock(conn, (m, k) => this.toast(i18nMessage(m, true), k)),
+      // Third verification fixes 2026-11-14 (8c): adults may keep their base out of other players' shared replays.
+      replayPrivacyBlock(conn, (m, k) => this.toast(i18nMessage(m, true), k)),
     );
     details.addEventListener('toggle', () => {
       if (!details.open) return;

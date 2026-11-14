@@ -22,7 +22,7 @@ import { Capacitor } from '@capacitor/core';
 
 export type { UiKit } from './uiKit';
 import type { UiKit } from './uiKit';
-import { jadeUnitPrice, jadeValueOn, jadeValueText } from './complianceUi';
+import { jadeUnitRange, jadeValueOn, jadeValueText } from './complianceUi';
 
 const usd = (n: number) => new Intl.NumberFormat(language().code, { style: 'currency', currency: 'USD' }).format(n);
 /** The device's language is Japanese (the purchase confirm then links the Japanese notices). */
@@ -157,15 +157,16 @@ export class EconomyUi {
   private storefrontKnown: string | null = null;
 
   /**
-   * Compliance switches 2026-11-14 (EU CPC, audit C16): "about €0.42" beside a Jade price, from the cheapest
-   * Jade pack per Jade in this storefront, when switched on and the storefront is in the EU. Only the Store
-   * and the player's own spend confirm use it, never an offer that pops up.
+   * Compliance switches 2026-11-14 (EU CPC, audit C16): "about €0.33–€0.60" beside a Jade price, from the cheapest
+   * to the dearest Jade pack per Jade in this storefront, when switched on and the storefront is in the EU. Only
+   * the Store uses it (third verification fixes 2026-11-14: no longer the in-village spend confirm, since real
+   * prices appear only in the Store and its confirm step), never an offer that pops up.
    */
   private jadeAbout(jade: number): string | null {
     if (!jadeValueOn() || this.c.payments.name === 'mock') return null;
     const sp = this.storePrices;
     const d = localizedData(this.c.data);
-    const unit = sp && typeof sp === 'object' ? jadeUnitPrice(d.store.packs.map((p) => ({ storeId: storeProductId(d, p.id), moonstones: p.moonstones })), sp) : null;
+    const unit = sp && typeof sp === 'object' ? jadeUnitRange(d.store.packs.map((p) => ({ storeId: storeProductId(d, p.id), moonstones: p.moonstones })), sp) : null;
     return jadeValueText(jade, unit, this.storefrontKnown);
   }
 
@@ -231,9 +232,9 @@ export class EconomyUi {
       if (go) this.openStore('moonstones');
       return;
     }
-    const about = this.jadeAbout(moonstones);
+    // No real-money figure here: this confirm sits in the village, outside the Store (CLAUDE.md, money rules).
     const text = i18nText("ui.for_jade_e82ccb5ba3", { arg1: what, arg2: moonstones });
-    const ok = await this.kit.confirm(title, about ? h('div', {}, h('p', {}, text), h('p', { class: 'muted small jade-about' }, about)) : text, i18nText("ui.spend_f1b31dbc4d", { arg1: moonstones }), false, i18nText("ui.cancel_19766ed6cc"));
+    const ok = await this.kit.confirm(title, text, i18nText("ui.spend_f1b31dbc4d", { arg1: moonstones }), false, i18nText("ui.cancel_19766ed6cc"));
     if (ok && !run()) this.kit.toast(i18nText("ui.that_did_not_work_try_again_d38eba7d01"), 'error');
   }
 

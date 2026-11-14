@@ -20,6 +20,8 @@ export interface GrowthLink {
   readonly server: { features: string[] } | null;
   readonly port: unknown;
   readonly village?: { device?: string } | null;
+  /** Third verification fixes 2026-11-14: the installation's stable id (`Connection.installId`). */
+  readonly installId?: string | null;
 }
 
 export class GrowthClient {
@@ -48,11 +50,13 @@ export class GrowthClient {
 
   enterCode(code: string): Promise<ReferralView> {
     const device = this.link.village?.device;
-    return this.caller()!.call('POST', GrowthRoutes.referrals, { code, ...(device ? { device } : {}) });
+    const install = this.link.installId;
+    return this.caller()!.call('POST', GrowthRoutes.referrals, { code, ...(device ? { device } : {}), ...(install ? { install } : {}) });
   }
 
   claim(): Promise<ReferralView> {
-    return this.caller()!.call('POST', GrowthRoutes.referralClaim);
+    const install = this.link.installId;
+    return this.caller()!.call('POST', GrowthRoutes.referralClaim, install ? { install } : undefined);
   }
 
   share(req: ShareReplayRequest): Promise<ShareReplayResponse> {
