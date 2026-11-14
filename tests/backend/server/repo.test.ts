@@ -50,6 +50,17 @@ for (const [label, make] of repoFactories) {
       expect((await repo.getPlayer('a'))!.groveId).toBeNull();
     });
 
+    it('keeps a notice with its message codes; older notices have none (migration 0037)', async () => {
+      await fresh();
+      await repo.createPlayer(player('a', { base: null }));
+      const parts = [{ key: 'moderation.suspended', params: { until: 'Sat, 14 Nov 2026 10:00:00 GMT', reason: 'Rule 7' } }, { key: 'moderation.appeal' }];
+      await repo.addNotice({ id: 'n1', playerId: 'a', at: T, kind: 'account', text: 'old English', read: false });
+      await repo.addNotice({ id: 'n2', playerId: 'a', at: T + 1, kind: 'moderation_action', text: 'new English', read: false, parts });
+      const [n2, n1] = await repo.noticesOf('a', 10);
+      expect(n2).toMatchObject({ id: 'n2', text: 'new English', parts });
+      expect(n1.parts ?? null).toBeNull();
+    });
+
     it('finds opponents by hall, trophies, shield, exclusions and open tickets', async () => {
       await fresh();
       await repo.createPlayer(player('me'));
