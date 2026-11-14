@@ -700,7 +700,7 @@
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "உங்கள் படை தயார்" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "உங்கள் குல உதவித்தொகையில் இன்னும் பெற வேண்டிய கொடுப்பனவுகள் உள்ளன. அனைத்தையும் பெற்ற பிறகு இன்னொன்றை வாங்கலாம்." },
   "sim.your_coins_and_provisions_are_waiting__389ff2e5a8": { "en": "Your Coins and Provisions are waiting to be collected.", "text": "உங்கள் நாணயங்களும் உணவும் சேகரிக்கக் காத்திருக்கின்றன." },
-  "sim.your_keep_allows_no_more_of_these_of_ace47bb1da": { "en": "Your Keep allows no more of these ({arg1}: {arg2} of {arg3}).", "text": "உங்கள் கோட்டை இவற்றில் இனி அனுமதிக்காது ({arg1}: {arg3}-இல் {arg2})." },
+  "sim.your_keep_allows_no_more_of_these_of_ace47bb1da": { "en": "Your Keep allows no more of these ({arg1}: {arg2} of {arg3}).", "text": "உங்கள் கோட்டை இவற்றில் இனி அனுமதிக்காது ({arg1}: {arg2} / {arg3})." },
   "sim.your_purchase_went_through_it_will_be__a974c067f0": { "en": "Your purchase went through. It will be delivered as soon as the server can be reached.", "text": "உங்கள் வாங்குதல் நிறைவடைந்தது. சர்வரை அடைய முடிந்தவுடன் வழங்கப்படும்." },
   "sim.your_shield_has_ended_082621ce1b": { "en": "Your shield has ended", "text": "உங்கள் கேடயம் முடிந்தது" },
   "sim.your_squad_courtyards_and_the_next_arm_990ad55e41": { "en": "Your Squad Courtyards and the next-army queue are full.", "text": "உங்கள் அணி முற்றங்களும் அடுத்த படை வரிசையும் நிரம்பியுள்ளன." },
