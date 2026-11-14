@@ -92,6 +92,7 @@ import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
 import type { SharedStores } from './nodeContext';
 import { PgRepo } from './pgRepo';
+import { DEFAULT_RESIM_QUEUE } from './resim/resim';
 import { DEFAULT_RATE_LIMITS, MemoryRateLimiter, shareOf, type RateLimiter, type RateLimits } from './rateLimit';
 import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
@@ -113,6 +114,20 @@ declare const __APP_VERSION__: string;
 
 const release = process.env.RELEASE || `kagemura-server@${__APP_VERSION__}`;
 const sentry = ServerSentry.fromDsn(process.env.SENTRY_DSN, release, process.env.SENTRY_ENVIRONMENT || 'production');
+// Server tuning (quality Q20): named once, unchanged values.
+const HOUR_MS = 3_600_000;
+const DAY_MS = 24 * HOUR_MS;
+/** A crash report gets this long to leave before the process exits. */
+const CRASH_EXIT_DELAY_MS = 1000;
+/** PORT when unset. */
+const DEFAULT_PORT = 8787;
+/** SERVER_NOTICE is cut to this many characters. */
+const SERVER_NOTICE_MAX = 300;
+/** Gang War pushes (battle day begins, 2 hours left) are checked this often. */
+const GANG_WAR_REMINDERS_EVERY_MS = 5 * 60_000;
+/** Google's Voided Purchases API is asked for this far back each hour (refunds a notification missed). */
+const VOIDED_LOOKBACK_MS = 3 * DAY_MS;
+
 // Crashes outside a request still reach Sentry (and the log) before the process exits.
 process.on('unhandledRejection', (e) => {
   console.error('Unhandled rejection', e);
@@ -121,7 +136,7 @@ process.on('unhandledRejection', (e) => {
 process.on('uncaughtException', (e) => {
   console.error('Uncaught exception', e);
   sentry?.capture(e, { level: 'fatal', tags: { kind: 'uncaughtException' } });
-  setTimeout(() => process.exit(1), 1000).unref();
+  setTimeout(() => process.exit(1), CRASH_EXIT_DELAY_MS).unref();
 });
 
 async function main(): Promise<void> {
@@ -249,7 +264,7 @@ async function main(): Promise<void> {
   if (workers > 0) {
     const pool = new WorkerResimulator({
       size: workers,
-      maxQueue: Number(process.env.RESIM_QUEUE) || 200,
+      maxQueue: Number(process.env.RESIM_QUEUE) || DEFAULT_RESIM_QUEUE,
       spawn: () => new Worker(new URL('./resimWorker.js', import.meta.url), { workerData: { data } }) as never,
       log: (lvl, msg, f) => console[lvl](msg, f ?? {}),
     });
@@ -277,9 +292,9 @@ async function main(): Promise<void> {
     readiness,
     metrics,
     environment: config.deploy === 'production' ? undefined : config.deploy,
-    notice: process.env.SERVER_NOTICE?.slice(0, 300) || undefined,
+    notice: process.env.SERVER_NOTICE?.slice(0, SERVER_NOTICE_MAX) || undefined,
   });
-  const port = Number(process.env.PORT ?? 8787);
+  const port = Number(process.env.PORT ?? DEFAULT_PORT);
   // '::' takes IPv6 and IPv4 (step 45); a machine without IPv6 falls back to IPv4 only.
   try {
     await app.listen({ port, host: process.env.HOST || '::' });
@@ -300,16 +315,16 @@ async function main(): Promise<void> {
   const job = (name: string, everyMs: number, run: (stillHeld: StillHeld) => Promise<unknown>) => () =>
     void runLeased(repo, holder, Date.now(), name, everyMs, run).catch((e) => app.log.error(e, `${name} failed`));
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.
-  const prune = job('retention', 3_600_000, (held) => app.core.prune(held).then((r) => app.log.info({ pruned: r }, 'retention')));
+  const prune = job('retention', HOUR_MS, (held) => app.core.prune(held).then((r) => app.log.info({ pruned: r }, 'retention')));
   // Dormant anonymous accounts (backend A23; DORMANT_ACCOUNT_DAYS, 0 = off): daily, a batch per run.
-  const dormant = job('dormant-accounts', 24 * 3_600_000, (held) => app.core.pruneDormant(held).then((n) => n && app.log.info({ deleted: n }, 'dormant accounts')));
+  const dormant = job('dormant-accounts', DAY_MS, (held) => app.core.pruneDormant(held).then((n) => n && app.log.info({ deleted: n }, 'dormant accounts')));
   // Gang War pushes (step 68): battle day begins, 2 hours left. Every 5 minutes; each sent once per war.
-  const reminders = job('gang-war-reminders', 5 * 60_000, (held) => app.core.gangWarReminders(held));
-  timers.push(setInterval(reminders, 5 * 60_000));
+  const reminders = job('gang-war-reminders', GANG_WAR_REMINDERS_EVERY_MS, (held) => app.core.gangWarReminders(held));
+  timers.push(setInterval(reminders, GANG_WAR_REMINDERS_EVERY_MS));
   // Google's Voided Purchases API (refunds that a notification missed): the last 3 days, hourly.
-  const voided = job('voided-purchases', 3_600_000, () => app.core.pollVoided(Date.now() - 3 * 86_400_000).then((n) => n && app.log.info({ revoked: n }, 'voided purchases')));
+  const voided = job('voided-purchases', HOUR_MS, () => app.core.pollVoided(Date.now() - VOIDED_LOOKBACK_MS).then((n) => n && app.log.info({ revoked: n }, 'voided purchases')));
   // Shared play statistics (report section 5 step 5): the D1/D7/D30 and funnel table for the last 40 install days.
-  const statsRollup = job('stats-rollup', 3_600_000, () => app.core.rollupStats().then((r) => app.log.info({ stats: r }, 'stats rollup')));
+  const statsRollup = job('stats-rollup', HOUR_MS, () => app.core.rollupStats().then((r) => app.log.info({ stats: r }, 'stats rollup')));
   const firstHourly = setTimeout(() => {
     prune();
     voided();
@@ -320,10 +335,10 @@ async function main(): Promise<void> {
       voided();
       statsRollup();
       dormant(); // its lease is a day long: one instance runs it once a day
-    }, 3_600_000);
+    }, HOUR_MS);
     hourly.unref();
     timers.push(hourly);
-  }, Math.floor(Math.random() * 3_600_000));
+  }, Math.floor(Math.random() * HOUR_MS));
   for (const t of timers) t.unref();
   firstHourly.unref();
 

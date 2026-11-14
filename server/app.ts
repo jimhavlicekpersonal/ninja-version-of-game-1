@@ -86,6 +86,17 @@ const sameSecret = (got: string | undefined, want: Buffer) => timingSafeEqual(cr
 /** Answers smaller than this are sent as they are (compression would not pay for its headers). */
 export const COMPRESS_MIN_BYTES = 1024;
 
+// HTTP tuning (quality Q20): named once, unchanged values.
+/** Browsers keep to HTTPS for a year once they saw it here (step 45). */
+const HSTS_MAX_AGE_S = 31_536_000;
+/** Longer Idempotency-Key headers are ignored (the write runs as without one). */
+const IDEMPOTENCY_KEY_MAX = 100;
+/** Each GET /readyz dependency must answer within this. */
+const READY_CHECK_TIMEOUT_MS = 2000;
+/** Compression effort for answers: fast enough for the event loop, ~5 KB for a whole village. */
+const BROTLI_QUALITY = 5;
+const GZIP_LEVEL = 6;
+
 /** br, else gzip, as an Accept-Encoding header allows (q=0 refuses one); null for neither. */
 export function pickEncoding(header: string | string[] | undefined): 'br' | 'gzip' | null {
   const q = new Map<string, number>();
@@ -234,7 +245,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       req.log = req.log.child({ clientReqId: clientId });
     }
     // Over HTTPS (directly, or X-Forwarded-Proto from a trusted proxy): browsers keep to HTTPS (step 45).
-    if (req.protocol === 'https') reply.header('Strict-Transport-Security', 'max-age=31536000');
+    if (req.protocol === 'https') reply.header('Strict-Transport-Security', `max-age=${HSTS_MAX_AGE_S}`);
     if (req.method === 'OPTIONS') return reply.code(204).send();
   });
 
@@ -257,7 +268,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   const idemScope = (req: FastifyRequest) => {
     const key = req.headers[ClientHeaders.idempotencyKey];
     const token = bearer(req);
-    if (req.method === 'GET' || req.method === 'OPTIONS' || typeof key !== 'string' || !token || key.length > 100) return null;
+    if (req.method === 'GET' || req.method === 'OPTIONS' || typeof key !== 'string' || !token || key.length > IDEMPOTENCY_KEY_MAX) return null;
     return { scope: createHash('sha256').update(token).digest('hex').slice(0, 32), key };
   };
   /** Players whose token a hook already verified (the route reuses it). */
@@ -399,8 +410,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (!enc) return payload;
     const out =
       enc === 'br'
-        ? await brotliAsync(payload, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 5, [zlibConstants.BROTLI_PARAM_SIZE_HINT]: size } })
-        : await gzipAsync(payload, { level: 6 });
+        ? await brotliAsync(payload, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: BROTLI_QUALITY, [zlibConstants.BROTLI_PARAM_SIZE_HINT]: size } })
+        : await gzipAsync(payload, { level: GZIP_LEVEL });
     reply.header('content-encoding', enc);
     reply.removeHeader('content-length');
     metrics.count('tk_http_compressed_total', { encoding: enc });
@@ -449,7 +460,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     let ok = true;
     for (const [name, check] of Object.entries(checks)) {
       try {
-        await Promise.race([check(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 2000).unref())]);
+        await Promise.race([check(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), READY_CHECK_TIMEOUT_MS).unref())]);
         out[name] = 'ok';
       } catch (e) {
         ok = false;

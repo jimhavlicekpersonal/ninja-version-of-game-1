@@ -7,9 +7,13 @@
  */
 import type { Repo } from './repo';
 
+/** A lease is at least this share of the job's interval, and at most a minute shorter than it (quality Q20). */
+const LEASE_SHARE = 0.8;
+const LEASE_MARGIN_MS = 60_000;
+
 /** The lease for a job that runs every `everyMs`: a little shorter, so the same holder renews it every run. */
 export function leaseFor(everyMs: number): number {
-  return Math.max(Math.floor(everyMs * 0.8), everyMs - 60_000);
+  return Math.max(Math.floor(everyMs * LEASE_SHARE), everyMs - LEASE_MARGIN_MS);
 }
 
 /**
