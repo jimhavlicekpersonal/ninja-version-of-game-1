@@ -44,6 +44,8 @@ interface IdentityPort {
   rename(name: string): Promise<PlayerView>;
   /** Delete this player's online account on the server, then forget its credentials on this device. */
   deleteAccount(): Promise<void>;
+  /** Forget this device's credentials here only (a token the server no longer accepts). */
+  forgetIdentity?(): void;
   /** Friends (roadmap step 59; servers with the `friends` feature). */
   friends(): Promise<FriendsResponse>;
   /** One player by exact name (404 when there is none, or they hide from name search). */

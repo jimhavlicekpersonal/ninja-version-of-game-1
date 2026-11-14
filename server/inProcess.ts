@@ -22,6 +22,10 @@ export class InProcessServerAdapter implements ServerPort {
     return Boolean(this.token);
   }
 
+  forgetIdentity(): void {
+    this.token = null;
+  }
+
   /** The player's secret, for tests that need to share it. */
   get credentials(): string | null {
     return this.token;
