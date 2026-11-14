@@ -1,0 +1,852 @@
+{
+  "language": "am",
+  "variant": "Standard Amharic (am-ET) in Ge'ez script, polite gender-neutral address (እርስዎ, -ዎ, plural-of-respect imperatives), Ethiopic punctuation",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "technical unit abbreviation (frames per second), kept as in the device settings"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "a CSS class string the extractor captured (not shown to players), left unchanged"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.a5331c078a",
+      "text": "Sign in with Apple",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand kept in Latin letters"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
+    }
+  ],
+  "latinScriptReviewed": [
+    {
+      "namespace": "boot",
+      "key": "boot.failureTitle",
+      "text": "Kagemura ሊጫን አልቻለም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "boot",
+      "key": "boot.realUnsupported",
+      "text": "Kagemura አዲስ አሳሽ ይፈልጋል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "boot",
+      "key": "boot.missing",
+      "text": "ይህ አሳሽ የሚጎድለው፦ {detail}። ስልክዎን (iOS 15 ወይም ከዚያ በኋላ) ወይም አሳሽዎን (ከ2021 ወይም ከዚያ በኋላ የወጣ Chrome፣ Safari፣ Edge ወይም Firefox) ያዘምኑ፣ ከዚያ Kagemuraን እንደገና ይክፈቱ።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "boot",
+      "key": "boot.realSlow",
+      "text": "Kagemura ለመጫን ብዙ ጊዜ እየወሰደ ነው",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_delete_reject_or_overri_c210e90890",
+      "text": "action 'delete'፣ 'reject' ወይም 'override' መሆን አለበት",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_dismiss_remove_message__dd711086db",
+      "text": "action 'dismiss'፣ 'remove_message' ወይም 'mute' መሆን አለበት",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.app_store_notification_6199f7d5e6",
+      "text": "የApp Store ማሳወቂያ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.band_must_be_under13_13to17_adult_or_n_1f387f3cc7",
+      "text": "band under13፣ 13to17፣ adult ወይም null መሆን አለበት።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.commands_must_be_a_list_a7821d0e27",
+      "text": "commands ዝርዝር መሆን አለበት",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.findable_must_be_everyone_friends_of_f_f0a3ad42a4",
+      "text": "findable everyone፣ friends_of_friends ወይም nobody መሆን አለበት።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.google_play_purchases_are_not_set_up_o_0abbc8e170",
+      "text": "የGoogle Play ግዢዎች በዚህ አገልጋይ ላይ አልተዋቀሩም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.kind_must_be_chat_or_player_c0b46dca1d",
+      "text": "kind 'chat' ወይም 'player' መሆን አለበት",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.provider_must_be_gamecenter_or_playgam_5b0afd8b2e",
+      "text": "provider gamecenter ወይም playgames መሆን አለበት።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_a_refresh_token_cou_1da9966ac0",
+      "text": "Sign in with Apple፦ የማደሻ ቶከን ሊሰረዝ አልቻለም (አልተዋቀረም)",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_apple_account_delet_cc14cd6845",
+      "text": "Sign in with Apple፦ የApple መለያ ተሰርዟል፣ የጨዋታ መለያ ተሰርዟል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_consent_revoked_lin_7fabcedfa8",
+      "text": "Sign in with Apple፦ ፈቃድ ተነስቷል፣ ግንኙነቱ ተወግዷል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_is_not_set_up_on_th_711f3305bb",
+      "text": "Sign in with Apple በዚህ አገልጋይ ላይ አልተዋቀረም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_no_apple_team_id_ap_364837b310",
+      "text": "Sign in with Apple፦ APPLE_TEAM_ID/APPLE_KEY_ID/APPLE_PRIVATE_KEY የለም፣ የፈቃድ ኮዱ አልተለወጠም (በኋላ የሚሰረዝ ነገር የለም)",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_revocation_after_de_8df6723986",
+      "text": "Sign in with Apple፦ ከስረዛ በኋላ ያለው መሻር አልተሳካም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_revoking_a_refresh__cbe4d77626",
+      "text": "Sign in with Apple፦ የማደሻ ቶከንን መሻር አልተሳካም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.could_not_open_indexeddb_f2ebaea729",
+      "text": "IndexedDB ሊከፈት አልቻለም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.google_sign_in_was_cancelled_a269b7298e",
+      "text": "የGoogle መግቢያ ተሰርዟል።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_could_not_be_reopened_6068af14eb",
+      "text": "IndexedDB እንደገና ሊከፈት አልቻለም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_did_not_answer_333a9912a5",
+      "text": "IndexedDB ምላሽ አልሰጠም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_is_blocked_by_another_tab_82917d2922",
+      "text": "IndexedDB በሌላ ትር ታግዷል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_is_not_available_e0e14003f9",
+      "text": "IndexedDB አይገኝም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.mockpaymentprovider_sold_as_7987bdd8e4",
+      "text": "[MockPaymentProvider] {arg1} (${arg2}) እንደ {arg3} ተሽጧል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.service_worker_registration_failed_def1c08bdf",
+      "text": "የService worker ምዝገባ አልተሳካም",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.that_address_is_not_a_kagemura_ninja_c_156e05a9b5",
+      "text": "ያ አድራሻ የKagemura: Ninja Clans አገልጋይ አይደለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.ends_utc_5598bc85ac",
+      "text": "{arg1} የሚያበቃው፦ {arg2} UTC።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.that_doesn_t_look_like_a_kagemura_ninj_582b0d6d03",
+      "text": "ያ የKagemura: Ninja Clans የቁጠባ ኮድ አይመስልም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.add_me_in_kagemura_4b94ebc055",
+      "text": "በKagemura ውስጥ ያክሉኝ፦ {arg1}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.be_my_friend_in_kagemura_1adcadc4c7",
+      "text": "በKagemura ውስጥ ጓደኛዬ ይሁኑ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_ninja_clans_built_647b18e769",
+      "text": "Kagemura: Ninja Clans {arg1} · የተገነባው፦ {arg2}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_staff_7a8dfa11fc",
+      "text": "የKagemura ሠራተኞች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_support_af3c907500",
+      "text": "የKagemura ድጋፍ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.leave_kagemura_0b798fad93",
+      "text": "ከKagemura ይውጡ?",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.played_in_safari_before_1b168b5abe",
+      "text": "ከዚህ በፊት በSafari ተጫውተዋል?",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.qr_code_2c24d35a11",
+      "text": "QR ኮድ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.the_app_store_8768b638e4",
+      "text": "App Store",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.update_kagemura_1a67e6e9e1",
+      "text": "Kagemuraን ያዘምኑ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.missingProduct",
+      "text": "productId ጎድሏል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.appStoreItem",
+      "text": "ይህ ዕቃ እስካሁን በApp Store ውስጥ አይገኝም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.transaction",
+      "text": "transactionId ጎድሏል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.appleToken",
+      "text": "Sign in with Apple ምንም ቶከን አልሰጠም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.appleCancelled",
+      "text": "Sign in with Apple ተሰርዟል።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterPermission",
+      "text": "Kagemura የGame Center ጓደኞችዎን ማየት ላይችል ይችላል። በSettings መተግበሪያ ውስጥ ሊፈቅዱት ይችላሉ (Game Center → Friends List)።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterFriends",
+      "text": "Game Center ጓደኞችዎን አላጋራም፦ {detail}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterSignIn",
+      "text": "የGame Center መግቢያ አልተጠናቀቀም፦ {detail}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterIdentity",
+      "text": "Game Center ማንነትዎን ማረጋገጥ አልቻለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.billing",
+      "text": "Google Play Billing አይገኝም፦ {detail}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.playItem",
+      "text": "ይህ ዕቃ እዚህ በGoogle Play ውስጥ አይገኝም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.restore",
+      "text": "Google Playን ስለ ግዢዎች መጠየቅ አልተቻለም፦ {detail}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.token",
+      "text": "purchaseToken ጎድሏል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.finish",
+      "text": "ግዢውን በGoogle Play ውስጥ ማጠናቀቅ አልተቻለም፦ {detail}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.androidSignIn",
+      "text": "ይህ መግቢያ በAndroid ላይ አይገኝም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.googleFailed",
+      "text": "የGoogle መግቢያ አልሠራም{detail}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.f568fe4f80",
+      "text": "የGoogle Play ግዢ አይደለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.dd459d8fb4",
+      "text": "Google Play ይህን ግዢ አያውቀውም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.7d9e847788",
+      "text": "የApp Store ደረሰኝ አይደለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.6250ac86cc",
+      "text": "የማይደገፍ የApp Store ደረሰኝ።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.b5c72037c7",
+      "text": "የApp Store ደረሰኙ በApple አልተፈረመም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.457df2201c",
+      "text": "የApp Store ደረሰኙ ሰርቲፊኬት ጊዜው አልፏል።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.8fef58779f",
+      "text": "የApp Store ደረሰኙ እውነተኛ አይደለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.6a6eb7ab49",
+      "text": "የApp Store ደረሰኙ ለሌላ መተግበሪያ ነው።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.679579b5e4",
+      "text": "የApp Store ደረሰኙ ምንም ግብይት የለውም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.d8b187e2a5",
+      "text": "የGame Center ቁልፉ በጣም ትልቅ ነው።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.7bfd3f60a4",
+      "text": "የGame Center ቁልፉ ለመጫን በጣም ረጅም ጊዜ ወስዷል።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.8b3f4e2bc4",
+      "text": "የGame Center ቁልፉን መጫን አልተቻለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.afbe9bf754",
+      "text": "የGame Center ቁልፉ ሊነበብ አልቻለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.2e94087994",
+      "text": "ያልተሟላ የGame Center መግቢያ።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.894c5540ed",
+      "text": "የGame Center መግቢያው ለሌላ መተግበሪያ ነው።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.6542e7ebb9",
+      "text": "የማይታመን የGame Center ቁልፍ።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.eb24b3a09a",
+      "text": "የGame Center መግቢያው በጣም ያረጀ ነው። እንደገና ይሞክሩ።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.4be5bb572d",
+      "text": "የGame Center መግቢያው እውነተኛ አይደለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.45cec126e4",
+      "text": "የPlay Games መግቢያ ጎድሏል።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.8576365aaf",
+      "text": "Play Games መግቢያውን አልተቀበለም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.2f2c244f49",
+      "text": "Play Games ማንነትዎን አልገለጸም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.e42a63820f",
+      "text": "የGoogle መግቢያ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.f16d4fcdc4",
+      "text": "Game Center በዚህ አገልጋይ ላይ አልተዋቀረም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.fd8109533e",
+      "text": "Play Games በዚህ አገልጋይ ላይ አልተዋቀረም።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.0",
+      "text": "የKagemura የግላዊነት ፖሊሲ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.1",
+      "text": "የKagemura የግላዊነት ፖሊሲ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.2",
+      "text": "Kagemura: Ninja Clans · ለመጨረሻ ጊዜ የተሻሻለው፦ {t0}{t1}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.91",
+      "text": "Kagemura: Ninja Clans · {t0}ድጋፍ{t1} · {t2}የማኅበረሰብ ደንቦች{t3} · {t4}የአገልግሎት ውል{t5}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.92",
+      "text": "የKagemura ገጾች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.0",
+      "text": "የKagemura ድጋፍ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.1",
+      "text": "የKagemura ድጋፍ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.16",
+      "text": "ጄድ የገንዘብ ዋጋ የለውም፣ ጊዜውም አያልፍም፤ {t0}የአገልግሎት ውሉን{t1} ይመልከቱ። በጃፓን ላሉ ተጫዋቾች፦ {t2}特定商取引法に基づく表記{t3} · {t4}資金決済法に基づく表示{t5}።",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.26",
+      "text": "Kagemura: Ninja Clans · {t0}የግላዊነት ፖሊሲ{t1} · {t2}የማኅበረሰብ ደንቦች{t3} · {t4}የአገልግሎት ውል{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.27",
+      "text": "የKagemura ገጾች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.0",
+      "text": "የKagemura የማኅበረሰብ ደንቦች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.1",
+      "text": "የKagemura የማኅበረሰብ ደንቦች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.29",
+      "text": "Kagemura: Ninja Clans · {t0}የግላዊነት ፖሊሲ{t1} · {t2}ድጋፍ{t3}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.30",
+      "text": "የKagemura ገጾች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.0",
+      "text": "የKagemura የአገልግሎት ውል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.1",
+      "text": "የKagemura የአገልግሎት ውል",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.2",
+      "text": "Kagemura: Ninja Clans · ተግባራዊ የሆነበት ቀን፦ {t0}{t1}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.44",
+      "text": "12. App Store እና Google Play",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.48",
+      "text": "Kagemura: Ninja Clans · {t0}የግላዊነት ፖሊሲ{t1} · {t2}የማኅበረሰብ ደንቦች{t3} · {t4}ድጋፍ{t5}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.50",
+      "text": "የKagemura ገጾች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.2",
+      "text": "Kagemura: Ninja Clans · በጃፓን የተለዩ የንግድ ግብይቶች ሕግ መሠረት የሚሰጥ ማሳወቂያ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.16",
+      "text": "App Store ወይም Google Play የሚያቀርቧቸው የክፍያ ዘዴዎች።{t0}{t1}",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.29",
+      "text": "የKagemura ገጾች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.shikin-kessai.24",
+      "text": "የKagemura ገጾች",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.0",
+      "text": "የKagemura መለያን ይሰርዙ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.1",
+      "text": "የKagemura የመስመር ላይ መለያዎን ይሰርዙ",
+      "reason": "Ethiopic text that contains the Latin brand or platform names Kagemura, App Store, Google Play, Game Center, Android System WebView, Chrome, Safari, Edge or Firefox, which outweigh the short Amharic part"
+    }
+  ],
+  "notes": [
+    "The player is addressed only with polite forms (ይገንቡ, ያሻሽሉ, መንደርዎ); masculine or feminine singular imperatives (ገንባ/ገንቢ) are not used, and players or {name} in the third person take plural/honorific verbs (ተቀላቅለዋል), which state no gender.",
+    "No preposition (የ, በ, ለ, ከ) or suffix (-ን) is attached to a placeholder or #: a colon (ዝግጁ፦ {building}) or a noun beside the placeholder carries it. Where the English itself glues a fragment placeholder to a word (message{arg1}), the same position is kept.",
+    "Generated names use the default order (first part, space, second part): first parts are genitive phrases with የ or invariant adjectives (የነጎድጓድ, ቀይ, መንታ), second parts nouns (ጫፍ, ሸለቆ), so every pair reads naturally (የነጎድጓድ ጫፍ). No generatedNames setting is needed.",
+    "Japanese given and family names are transliterated into Ge'ez script (ካይቶ, ታኬዳ); Sensei Hoshi is መምህር ሆሺ; Shinobi, oni and Kage are transliterated (ሺኖቢ, ኦኒ, ካጌ), and the Kage League (የካጌ ሊግ) stays distinct from the Shadow League (የጥላ ሊግ).",
+    "Plural messages use one (0 and 1) and other, as Intl.PluralRules(\"am\") gives. Gregorian month names are written as Amharic loanwords (ጃንዋሪ, ኤፕሪል), not Ethiopian months, because birth dates and seasons follow the Gregorian calendar.",
+    "Ethiopic script is outside the bundled Latin fonts, so the game needs the device fonts (Noto Sans Ethiopic on Android, Kefa on Apple, Nyala/Ebrima on Windows) when Amharic is activated."
+  ]
+}
