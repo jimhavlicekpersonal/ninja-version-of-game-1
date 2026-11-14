@@ -230,6 +230,13 @@ export interface VillageState {
   localTime?: { offsetMinutes: number; setAt: number };
   /** Goal events (sim/goalEvents.ts, save v16): progress in the current goal event occurrence. */
   goalEvent: GoalEventState | null;
+  /**
+   * Warrior Mastery (save v23, sim/mastery.ts): EXP per warrior type. Earned only while `features.mastery` is on
+   * (off in the shipped data), so it stays empty in the live game.
+   */
+  mastery?: Record<string, number>;
+  /** Hero Hall (save v23, sim/heroes.ts): the hero the player chose; read only while `features.heroChoice` is on. */
+  hero?: { chosen?: string };
 }
 
 export interface CalendarState {
@@ -425,7 +432,13 @@ export interface LevelDef {
  * `levels[].effect`). Each kind answers one family of warrior abilities.
  */
 export interface BuildingEffect {
-  kind: 'reveal_line' | 'shorten_disables' | 'anti_heal' | 'ground_flyers' | 'counter_artillery';
+  kind:
+    | 'reveal_line' | 'shorten_disables' | 'anti_heal' | 'ground_flyers' | 'counter_artillery'
+    // Content batch 2026-11-14: the fifteen non-live counters (`planned.json`, sim/battle/previewCounters.ts).
+    // No live building carries these kinds, so live battles never reach their code.
+    | 'spin_aoe' | 'extinguish' | 'detect_underground' | 'regrow_wall' | 'beast_decoy' | 'reflect_projectiles'
+    | 'smother_splash' | 'focus_aura' | 'instant_retarget' | 'no_projectile_aoe' | 'sleep' | 'line_crush'
+    | 'arrival_stun' | 'no_revive' | 'absorb_lightning';
   /** Tiles from the building's centre the effect reaches. */
   radius?: number;
   /** reveal_line: seconds a warrior stays lit. ground_flyers: seconds a flyer stays grounded. */
@@ -442,6 +455,50 @@ export interface BuildingEffect {
   immuneSeconds?: number;
   /** counter_artillery: preferred targets are warriors with at least this attack range. */
   prefersBeyond?: number;
+  // ---- Content batch 2026-11-14 (non-live counters; see sim/battle/previewCounters.ts) ----
+  /** spin_aoe: hits ground warriors only. */
+  groundOnly?: boolean;
+  /** extinguish: burning and poison on buildings in reach end this many seconds after they are first doused. */
+  burnMaxSeconds?: number;
+  /** extinguish: firebomb (burn) area cut; smother_splash: splash damage cut on buildings in reach. */
+  splashCutPct?: number;
+  /** extinguish: extra damage chained lightning deals to buildings standing on the wet ground. */
+  conductPct?: number;
+  /** detect_underground, arrival_stun: seconds a warrior is stunned (once per warrior per building kind). */
+  stunSeconds?: number;
+  /** detect_underground: unseen walkers within this many tiles are revealed. */
+  revealRadius?: number;
+  /**
+   * The troop types an effect singles out: the diggers (detect_underground), the beasts lured
+   * (beast_decoy), the climbers who can't climb it (regrow_wall), the dashers a spotter calls
+   * (instant_retarget), the movers gravel stuns (arrival_stun), the lightning a rod absorbs (absorb_lightning).
+   */
+  troops?: string[];
+  /** beast_decoy: birds that swerve away from targets within `radius`; flammable: burn damage on it ×. */
+  scaresBirds?: boolean;
+  birds?: string[];
+  burnMultiplier?: number;
+  /** regrow_wall: share of max HP regrown per second; wall-breaking multipliers count this share of their bonus. */
+  regenPctPerSecond?: number;
+  wallMultDamp?: number;
+  noClimb?: boolean;
+  /** reflect_projectiles: every `every`-th projectile flies back, with `reflectPct` of its damage. */
+  every?: number;
+  reflectPct?: number;
+  /** smother_splash: planted charges defused per battle. */
+  defuses?: number;
+  /** focus_aura: what the covered defenses ignore ('taunt', 'decoy'). */
+  ignores?: string[];
+  /** no_projectile_aoe: ends smoke clouds whose centre is in reach. */
+  clearsSmoke?: boolean;
+  /** sleep: each warrior can be put to sleep once. */
+  oncePerTarget?: boolean;
+  /** line_crush: the lane's width and length in tiles. */
+  width?: number;
+  length?: number;
+  /** absorb_lightning: absorbed damage needed to fire back (share of the rod's max HP), and the share fired back. */
+  capacity?: number;
+  returnPct?: number;
 }
 
 export type TargetLayer = 'ground' | 'air' | 'both';
@@ -534,6 +591,22 @@ export interface WarriorKit {
   burnFraction?: number;
   suicide?: boolean;
   defenseSlow?: number;
+  /**
+   * Rally (balance audit RM-3 design question, content batch 2026-11-14): true = the Rally starts on the hero's
+   * first hit of the battle only. Absent (today's behaviour, no rules change) = it re-arms on every new target.
+   */
+  oncePerBattle?: boolean;
+  /**
+   * Non-live heroes (content batch 2026-11-14, sim/battle/heroAbilities.ts): the ability their first hit starts,
+   * once per battle. bulwark: troops within `radius` of the hero and inside its forward cone (`coneCos`, the cosine
+   * of the half-angle) take `strength` less damage from defense fire for `durationTicks`. squall: every flyer moves
+   * `pushTiles` toward its target and takes `strength` less damage from defenses for `durationTicks`. inner_calm:
+   * every warrior on the field heals `heal` of its max HP and ignores the next trap, splash hit or stun.
+   */
+  heroAbility?: 'bulwark' | 'squall' | 'inner_calm';
+  coneCos?: number;
+  pushTiles?: number;
+  heal?: number;
 }
 
 /** A tactical ability the attacker places on the map (Smoke Bomb). */
@@ -1049,7 +1122,20 @@ export interface NotificationsDef {
   types: { id: string; label: string; default: boolean }[];
 }
 
+/**
+ * Features a designer switches on for playtesting (content batch 2026-11-14). Absent in the shipped data
+ * (`defaultData`), so every one is off; `withPreview` (sim/plannedContent.ts) turns them on in the sandbox.
+ */
+export interface FeatureFlags {
+  /** Warrior Mastery (audit B4): attacks earn EXP per warrior type and mastery raises its HP and damage. */
+  mastery?: boolean;
+  /** Hero Hall: the player picks one unlocked hero instead of the automatic one. */
+  heroChoice?: boolean;
+}
+
 export interface GameData {
+  /** Absent in the shipped data: every feature off. */
+  features?: FeatureFlags;
   buildings: Record<BuildingType, BuildingDef>;
   hall: { levels: HallLevelDef[] };
   economy: EconomyDef;

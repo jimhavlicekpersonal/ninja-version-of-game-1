@@ -94,7 +94,10 @@ describe('data files match their TypeScript types', () => {
   for (const prop of checker.getPropertiesOfType(gameData)) {
     it(`${prop.name}.json`, () => {
       const out: string[] = [];
-      check((defaultData as unknown as Record<string, unknown>)[prop.name], checker.getTypeOfSymbol(prop), prop.name, out);
+      const value = (defaultData as unknown as Record<string, unknown>)[prop.name];
+      // An optional section the shipped data leaves out (`features`, content batch 2026-11-14) has no file.
+      if (value === undefined && (prop.flags & ts.SymbolFlags.Optional) !== 0) return;
+      check(value, checker.getTypeOfSymbol(prop), prop.name, out);
       expect(out.slice(0, 40)).toEqual([]);
     });
   }

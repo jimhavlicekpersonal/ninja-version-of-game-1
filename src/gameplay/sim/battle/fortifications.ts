@@ -17,6 +17,7 @@
  */
 import type { BattleSim, SimTroop } from './state';
 import { auraStrength, isHidden } from './warriors';
+import { stepPreviewCounters } from './previewCounters';
 
 const dist = (ax: number, ay: number, bx: number, by: number) => Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
 
@@ -78,4 +79,6 @@ export function stepFortifications(sim: BattleSim): void {
       });
     }
   });
+  // Content batch 2026-11-14: the non-live counters (only on a base that holds one; never in a live battle).
+  if (sim.previewKinds) stepPreviewCounters(sim);
 }

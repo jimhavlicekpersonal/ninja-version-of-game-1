@@ -12,6 +12,8 @@ import { stepFortifications } from './fortifications';
 import { coverLeft, planInfiltration, pointAt } from './infiltration';
 import { applyBaseWide, applyTemper, baseProfile, troopCuts } from './temper';
 import { auraStrength, attackDamage, beforeWarriorAction, initializeWarrior, isHidden, resolveWarriorHit, stepWarriorEffects } from './warriors';
+import { areaStrike, logLane, lureTarget, previewKindsOf, reflects, scaresBird, sealIfCovered, sleepHit, springBlocks } from './previewCounters';
+import { heroShield } from './heroAbilities';
 
 /**
  * Version of the battle rules and combat numbers. Bump it whenever a change
@@ -135,11 +137,12 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       combat: def.combat && active ? { ...def.combat, damage: kind === 'hedge' || mult === 1 ? ld.damage ?? 0 : (ld.damage ?? 0) * mult } : null,
       cooldown: 0,
       targetTroop: -1,
-      hidden: kind === 'trap',
+      // A Straw Scarecrow (non-live) stands in plain sight.
+      hidden: kind === 'trap' && effect?.kind !== 'beast_decoy',
       disabledUntil: 0,
       immuneUntil: 0,
       vulnerableUntil: 0, vulnerability: 0, slowedUntil: 0, fireSlow: 0,
-      effect, uses: effect?.uses ?? 0, repairedUntil: -1, repairedSlowUntil: -1,
+      effect, uses: effect?.uses ?? effect?.defuses ?? 0, repairedUntil: -1, repairedSlowUntil: -1,
     };
   });
   // Tempering (SIM_RULES 6): each tempered building's own shape, then the base-wide effects of the base's profile.
@@ -172,7 +175,10 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       for (let x = Math.max(0, b.x - m); x < Math.min(size, b.x + b.size + m); x++) deployable[y * size + x] = 0;
     }
   }
+  // Content batch 2026-11-14: only a base holding a non-live counter carries `previewKinds`.
+  const previewKinds = previewKindsOf(buildings);
   return {
+    ...(previewKinds ? { previewKinds } : {}),
     setup,
     data,
     temperCut: troopCuts(profile, data),
@@ -258,11 +264,16 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
   const def = troopDef(sim.data, d.troop);
   // Donated troops come out first and keep the level they were donated at; the hero fights at its own level.
   let level = d.troop === sim.setup.hero?.id ? sim.setup.hero.level : sim.setup.levels?.[d.troop] ?? 1;
+  let donated = false;
   if ((sim.lodgeLeft[d.troop] ?? 0) > 0) {
     sim.lodgeLeft[d.troop]--;
     level = sim.setup.reinforcements![d.troop].level;
+    donated = true;
   }
-  const stats = troopLevel(sim.data, d.troop, level);
+  let stats = troopLevel(sim.data, d.troop, level);
+  // Warrior Mastery (behind a feature flag, never in a live battle): own warriors fight with their bonus.
+  const mastery = donated ? 0 : sim.setup.mastery?.[d.troop] ?? 0;
+  if (mastery > 0) stats = { ...stats, hp: stats.hp * (1 + mastery), damage: stats.damage * (1 + mastery) };
   const s = sim.data.battle.deploySpread;
   const x = Math.floor(d.x) + 0.5 + (next(sim.rng) * 2 - 1) * s;
   const y = Math.floor(d.y) + 0.5 + (next(sim.rng) * 2 - 1) * s;
@@ -292,6 +303,8 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
     litUntil: 0, litBonus: 0, groundedUntil: 0, groundImmuneUntil: 0, healCut: 0, auraCut: 0,
   };
   sim.troops.push(t);
+  // A non-live hero's ability (sim/battle/heroAbilities.ts) reads its hero back by index.
+  if (def.kit?.heroAbility && d.troop === sim.setup.hero?.id) sim.heroIndex = t.id;
   if (sim.entry) sim.entry.points[pointAt(sim.entry, d.x, d.y)].used += def.housing;
   sim.remaining[d.troop] -= 1;
   sim.used[d.troop] = (sim.used[d.troop] ?? 0) + 1;
@@ -319,6 +332,11 @@ function damageBuilding(sim: BattleSim, bi: number, amount: number): void {
 function damageTroop(sim: BattleSim, ti: number, amount: number, splash = false, origin?: { x: number; y: number }): void {
   const t = sim.troops[ti];
   if (t.dead) return;
+  // Grand Sensei's Inner Calm (non-live hero): the next splash hit is ignored.
+  if (splash && t.calm) {
+    t.calm = false;
+    return;
+  }
   if (t.shieldUntil > sim.tick) {
     t.shieldUntil = 0;
     amount = Math.max(0, amount - t.maxHp * sim.data.battle.warriorRules.shieldMaximumDamage);
@@ -331,6 +349,7 @@ function damageTroop(sim: BattleSim, ti: number, amount: number, splash = false,
   if (t.hp <= 0) {
     t.hp = 0;
     t.dead = true;
+    if (sim.previewKinds?.no_revive) sealIfCovered(sim, t);
     sim.events.push({ k: 'troopDied', troop: ti });
   }
 }
@@ -339,12 +358,22 @@ const warriorActions = { damageBuilding, damageTroop, moveToward };
 
 /** Nearest standing building this troop wants, by its preference. */
 function chooseTarget(sim: BattleSim, t: SimTroop): number {
+  if (!sim.previewKinds?.beast_decoy) return chooseTargetFrom(sim, t, false);
+  // Straw Scarecrow (non-live): a lured beast goes for it first; a bird avoids what it guards, if it can.
+  const lure = lureTarget(sim, t);
+  if (lure >= 0) return lure;
+  const wary = chooseTargetFrom(sim, t, true);
+  return wary >= 0 ? wary : chooseTargetFrom(sim, t, false);
+}
+
+function chooseTargetFrom(sim: BattleSim, t: SimTroop, wary: boolean): number {
   const def = troopDef(sim.data, t.type);
   const pick = (filter: (b: SimBuilding) => boolean) => {
     let best = -1;
     let bestD = Infinity;
     sim.buildings.forEach((b, i) => {
       if (b.destroyed || b.kind === 'trap' || (b.kind === 'hedge' && def.prefers !== 'walls' && def.prefers !== 'breach') || !filter(b)) return;
+      if (wary && scaresBird(sim, t, b)) return;
       const d = distToRect(t.x, t.y, rect(b));
       if (d < bestD) {
         bestD = d;
@@ -405,9 +434,20 @@ function stepTroop(sim: BattleSim, ti: number): void {
   t.px = t.x;
   t.py = t.y;
   const def = troopDef(sim.data, t.type);
+  // Non-live counters: a stunned or sleeping warrior does nothing (its cooldown waits too).
+  if (t.stunnedUntil !== undefined && t.stunnedUntil > sim.tick) { t.attacking = false; return; }
   if (t.cooldown > 0) t.cooldown -= 1 + auraStrength(sim, t, 'haste');
   if (t.decoyUntil > 0) { t.attacking = false; return; }
   if (beforeWarriorAction(sim, t, warriorActions)) return;
+  if (sim.previewKinds?.beast_decoy) {
+    // Straw Scarecrow (non-live): a beast that comes into its reach drops what it was doing.
+    const lure = lureTarget(sim, t);
+    if (lure >= 0 && lure !== t.target) {
+      t.target = lure;
+      t.path = null;
+      t.attacking = false;
+    }
+  }
   if (t.target < 0 || sim.buildings[t.target].destroyed) {
     t.target = chooseTarget(sim, t);
     t.path = null;
@@ -462,8 +502,10 @@ function stepTroop(sim: BattleSim, ti: number): void {
     return;
   }
   const n = sim.grid.size;
+  // Listening Jars (non-live) bring a digger to the surface: from then on it breaks walls like anyone else.
+  const ignoresHedges = def.ignoresHedges && !t.surfaced;
   if (!t.path || t.pathPos >= t.path.length) {
-    t.path = findPath(sim.grid, t.x, t.y, r, def.range, sim.data.battle.hedgePathCost, def.ignoresHedges);
+    t.path = findPath(sim.grid, t.x, t.y, r, def.range, sim.data.battle.hedgePathCost, ignoresHedges);
     t.pathPos = 0;
     if (!t.path) {
       // Fully walled in: walk straight at it.
@@ -481,12 +523,12 @@ function stepTroop(sim: BattleSim, ti: number): void {
   }
   const wp = t.path[t.pathPos];
   const cell = sim.grid.cells[wp];
-  if (cell === HEDGE && !def.ignoresHedges) {
-    // Break through the hedge in the way.
+  if (cell === HEDGE && (!ignoresHedges || sim.previewKinds?.regrow_wall)) {
+    // Break through the hedge in the way (a climber must also break a Living Bamboo Wall, non-live).
     const hx = wp % n;
     const hy = (wp - hx) / n;
     const hi = sim.buildings.findIndex((b) => !b.destroyed && b.kind === 'hedge' && b.x === hx && b.y === hy);
-    if (hi >= 0) {
+    if (hi >= 0 && (!ignoresHedges || springBlocks(t, sim.buildings[hi]))) {
       t.attacking = true;
       if (t.cooldown <= 0) {
         t.cooldown = def.attackIntervalTicks;
@@ -530,13 +572,19 @@ function stepDefense(sim: BattleSim, bi: number): void {
     if (sim.tick === b.disabledUntil) sim.events.push({ k: 'recovered', building: bi });
   }
   if (b.cooldown > 0) b.cooldown--;
+  // Whirling Blade Tower and Steam Vent (non-live) strike an area instead of shooting.
+  if (sim.previewKinds && areaStrike(sim, bi, damageTroop)) return;
   const cx = b.x + b.size / 2;
   const cy = b.y + b.size / 2;
   const smoke = sim.data.battle.abilities.smoke_bomb;
   const smokedRange = Math.max(smoke.minTargetRange, c.range * smoke.rangeFactor);
   const view = sim.defenseView;
+  // Discipline Banner (non-live): a focused defense ignores taunts and decoys.
+  const focusTaunt = b.focused === true && focusIgnores(sim, 'taunt');
+  const focusDecoy = b.focused === true && focusIgnores(sim, 'decoy');
   const ok = (t: SimTroop) => {
     if (t.dead) return false;
+    if (focusDecoy && t.decoyUntil > 0) return false;
     if (view && t.id < view.hidden.length) {
       if (view.hidden[t.id]) return false;
       if (view.air[t.id] ? c.targets === 'ground' : c.targets === 'air') return false;
@@ -552,21 +600,26 @@ function stepDefense(sim: BattleSim, bi: number): void {
     return d <= range && d >= (c.minRange ?? 0);
   };
   // Quality 28: only the taunting sources (`auraSources.taunt` keeps `supportTroops` order, so the first match is the same).
-  const taunt = sim.auraSources.taunt?.find((index) => {
+  const taunt = focusTaunt ? -1 : sim.auraSources.taunt?.find((index) => {
     const t = sim.troops[index];
     return ok(t) && dist(cx, cy, t.x, t.y) <= (troopDef(sim.data, t.type).kit?.radius ?? 0);
   }) ?? -1;
   if (taunt >= 0) b.targetTroop = taunt;
   // Longbow Yagura: re-picks each shot, preferring warriors that attack from long range.
   const longReach = taunt < 0 && b.effect?.kind === 'counter_artillery' && b.cooldown <= 0 ? b.effect.prefersBeyond ?? 0 : 0;
-  if (longReach > 0 || b.targetTroop < 0 || !ok(sim.troops[b.targetTroop])) {
+  // Non-live: a Sleep Dart Tower re-picks each shot, preferring warriors still awake; a Spotter's Perch makes a
+  // covered defense switch at once onto a listed dasher in range. Both are absent on every live building.
+  const sleeper = taunt < 0 && b.effect?.kind === 'sleep' && b.cooldown <= 0;
+  const called = taunt < 0 && b.spotter !== undefined ? sim.buildings[b.spotter].effect?.troops ?? null : null;
+  const spotted = called !== null && !(b.targetTroop >= 0 && called.includes(sim.troops[b.targetTroop].type)) && sim.troops.some((t) => called.includes(t.type) && ok(t));
+  if (longReach > 0 || sleeper || spotted || b.targetTroop < 0 || !ok(sim.troops[b.targetTroop])) {
     b.targetTroop = -1;
     let bestD = Infinity;
     let bestLong = false;
     sim.troops.forEach((t, i) => {
       if (!ok(t)) return;
       const d = dist(cx, cy, t.x, t.y);
-      const long = longReach > 0 && troopDef(sim.data, t.type).range >= longReach;
+      const long = sleeper ? !t.slept : called ? called.includes(t.type) : longReach > 0 && troopDef(sim.data, t.type).range >= longReach;
       if ((long && !bestLong) || (long === bestLong && d < bestD)) {
         bestD = d;
         bestLong = long;
@@ -608,9 +661,25 @@ function stepTraps(sim: BattleSim): void {
     b.hidden = false;
     b.destroyed = true;
     sim.events.push({ k: 'trap', building: bi });
+    if (b.effect?.kind === 'line_crush') {
+      // Rolling Log Chute (non-live): the log rolls through the lane; it is not splash.
+      const first = sim.troops.find((t) => vulnerable(t) && dist(cx, cy, t.x, t.y) <= c.range)!;
+      for (const ti of logLane(sim, b, first, vulnerable)) {
+        const t = sim.troops[ti];
+        if (t.calm) t.calm = false;
+        else damageTroop(sim, ti, c.damage);
+      }
+      sim.events.push({ k: 'hit', x: cx, y: cy, kind: c.projectile, splash: b.effect.length ?? 0 });
+      return;
+    }
     const radius = c.splashRadius ?? c.range;
     sim.troops.forEach((t, ti) => {
       if (!vulnerable(t) || dist(cx, cy, t.x, t.y) > radius) return;
+      // Grand Sensei's Inner Calm (non-live hero): the next trap is ignored.
+      if (t.calm) {
+        t.calm = false;
+        return;
+      }
       if (c.projectile === 'sap') t.slowTicks = 40;
       if (c.damage > 0) damageTroop(sim, ti, c.damage, true, { x: cx, y: cy });
     });
@@ -627,25 +696,36 @@ function stepProjectiles(sim: BattleSim): void {
       continue;
     }
     if (p.targetBuilding >= 0) {
-      if (p.sourceTroop !== undefined) resolveWarriorHit(sim, sim.troops[p.sourceTroop], p.targetBuilding, p.damage, warriorActions);
+      if (p.sourceTroop !== undefined && sim.previewKinds?.reflect_projectiles && reflects(sim, p.targetBuilding)) {
+        // Bronze Mirror Screen (non-live): this one flies back at its thrower.
+        const e = sim.buildings[p.targetBuilding].effect;
+        damageTroop(sim, p.sourceTroop, p.damage * (e?.reflectPct ?? 1));
+        sim.events.push({ k: 'counter', building: p.targetBuilding, troop: p.sourceTroop, target: -1, what: 'reflect' });
+      } else if (p.sourceTroop !== undefined) resolveWarriorHit(sim, sim.troops[p.sourceTroop], p.targetBuilding, p.damage, warriorActions);
       else damageBuilding(sim, p.targetBuilding, p.damage);
       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: 0 });
     } else if (p.splash > 0) {
       sim.troops.forEach((t, ti) => {
         if (t.dead || (airborne(sim, t) ? !p.hitsAir : !p.hitsGround)) return;
-        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, p.damage, true, { x: p.fromX, y: p.fromY });
+        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, sim.heroIndex !== undefined ? p.damage * heroShield(sim, t, p.fromX, p.fromY) : p.damage, true, { x: p.fromX, y: p.fromY });
       });
       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: p.splash });
     } else if (p.targetTroop >= 0) {
       const t = sim.troops[p.targetTroop];
       if (!t.dead) {
-        damageTroop(sim, p.targetTroop, p.damage);
+        damageTroop(sim, p.targetTroop, sim.heroIndex !== undefined ? p.damage * heroShield(sim, t, p.fromX, p.fromY) : p.damage);
         if (p.sourceBuilding !== undefined) groundFlyer(sim, p.sourceBuilding, p.targetTroop);
+        if (p.sourceBuilding !== undefined && sim.previewKinds?.sleep) sleepHit(sim, p.sourceBuilding, t);
         sim.events.push({ k: 'hit', x: t.x, y: t.y, kind: p.kind, splash: 0 });
       }
     }
   }
   sim.projectiles = keep;
+}
+
+/** Discipline Banner (non-live): whether a standing banner makes covered defenses ignore `what`. */
+function focusIgnores(sim: BattleSim, what: string): boolean {
+  return sim.buildings.some((f) => !f.destroyed && f.effect?.kind === 'focus_aura' && Boolean(f.effect.ignores?.includes(what)));
 }
 
 /** Kite-Cutter Ballista hit: tangle a flyer (once it has been free for the immunity window). */

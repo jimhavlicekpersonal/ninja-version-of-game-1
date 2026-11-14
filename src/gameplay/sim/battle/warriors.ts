@@ -4,6 +4,8 @@ import type { WarriorKit } from '../types';
 import { next } from '../rng';
 import { troopDef } from '../data';
 import { BLOCKED, distToRect, findPath, HEDGE } from './pathfind';
+import { absorbingRod, burnFactor, chargeRod, conductFactor, hittableTrap } from './previewCounters';
+import { startHeroAbility } from './heroAbilities';
 
 export type { WarriorEffect } from './state';
 
@@ -134,7 +136,7 @@ export function stepWarriorEffects(sim: BattleSim, actions: Actions): void {
     } else if (sim.tick < e.endsTick) {
       if (e.kind === 'poison') actions.damageBuilding(sim, e.target, e.damage);
       else sim.buildings.forEach((b, i) => {
-        if (!b.destroyed && b.kind !== 'trap' && distToRect(e.x, e.y, shape(b)) <= e.radius) {
+        if (!b.destroyed && (b.kind !== 'trap' || (sim.previewKinds && hittableTrap(b))) && distToRect(e.x, e.y, shape(b)) <= e.radius) {
           const types = burns.get(i) ?? new Map<string, number>();
           const type = sim.troops[e.source].type;
           types.set(type, Math.max(types.get(type) ?? 0, e.damage)); burns.set(i, types);
@@ -143,7 +145,8 @@ export function stepWarriorEffects(sim: BattleSim, actions: Actions): void {
       keep.push(e);
     }
   }
-  for (const [index, types] of burns) for (const damage of types.values()) actions.damageBuilding(sim, index, damage);
+  // Non-live counters: a Sand Bucket Post smothers embers and a Straw Scarecrow burns hotter (burnFactor).
+  for (const [index, types] of burns) for (const damage of types.values()) actions.damageBuilding(sim, index, sim.previewKinds ? damage * burnFactor(sim.buildings[index]) : damage);
   sim.warriorEffects = keep;
   for (const t of sim.troops) {
     if (!t.dead && t.decoyUntil > 0 && sim.tick >= t.decoyUntil) {
@@ -191,7 +194,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
     }
   }
   if (kit.revive && t.charges > 0) {
-    const fallen = sim.troops.find((ally) => ally.dead && !ally.summoned && !ally.revived && ally.id !== t.id && distance(t.x, t.y, ally.x, ally.y) <= radius);
+    const fallen = sim.troops.find((ally) => ally.dead && !ally.summoned && !ally.revived && !ally.sealed && ally.id !== t.id && distance(t.x, t.y, ally.x, ally.y) <= radius);
     if (fallen) {
       fallen.dead = false; fallen.revived = true; fallen.hp = fallen.maxHp * kit.revive * (sim.temperCut && sim.temperCut.revive > 0 ? 1 - sim.temperCut.revive : 1);
       fallen.target = -1; fallen.path = null; fallen.shieldUntil = 0;
@@ -297,7 +300,10 @@ export function attackDamage(sim: BattleSim, t: SimTroop, target: SimBuilding): 
   const flash = (what: string) => sim.events.push({ k: 'ability', troop: t.id, what });
   if (t.firstHit && kit.firstHitMultiplier) { damage *= kit.firstHitMultiplier; flash('firstHit'); }
   // Heroes (SIM_RULES 5): the first strike starts the Rally; every warrior near a rallying hero hits harder.
-  if (t.firstHit && kit.aura === 'rally') { t.rallyUntil = sim.tick + (kit.durationTicks ?? 0); flash('rally'); }
+  // `oncePerBattle` (RM-3 design question, absent = today's re-arm on every new target) keeps it to the first hit.
+  if (t.firstHit && kit.aura === 'rally' && !(kit.oncePerBattle && t.rallyUntil !== undefined)) { t.rallyUntil = sim.tick + (kit.durationTicks ?? 0); flash('rally'); }
+  // Non-live heroes (content batch 2026-11-14): Bulwark, Squall or Inner Calm on the first hit, once per battle.
+  if (t.firstHit && kit.heroAbility) startHeroAbility(sim, t, kit, target);
   if (sim.setup.hero) damage *= 1 + auraStrength(sim, t, 'rally');
   t.firstHit = false;
   if (kit.every && t.hits % kit.every === 0) { damage *= kit.hitMultiplier ?? 1; flash('every'); }
@@ -307,7 +313,9 @@ export function attackDamage(sim: BattleSim, t: SimTroop, target: SimBuilding): 
   if (target.kind === 'hedge') {
     // Boar Rider gets one charge; Ram Crew and Oni Breaker keep their wall bonus.
     if (troopDef(sim.data, t.type).ability !== 'charge' || t.charges > 0) {
-      damage = troopDef(sim.data, t.type).ability === 'charge' ? Math.max(damage, target.hp) : damage * (kit.wallMultiplier ?? 1);
+      // A Living Bamboo Wall (non-live) counts only `wallMultDamp` of a wall multiplier's bonus.
+      const wallMult = kit.wallMultiplier ?? 1;
+      damage = troopDef(sim.data, t.type).ability === 'charge' ? Math.max(damage, target.hp) : damage * (target.effect?.kind === 'regrow_wall' ? 1 + (wallMult - 1) * (target.effect.wallMultDamp ?? 1) : wallMult);
       if (troopDef(sim.data, t.type).ability === 'charge' && t.charges > 0) t.charges--;
     }
   }
@@ -341,18 +349,35 @@ export function resolveWarriorHit(sim: BattleSim, t: SimTroop, bi: number, damag
     }
     if (kit.poisonTicks) effect(sim, { ...base, kind: 'poison', damage: t.damage * (kit.poisonFraction ?? 0), endsTick: sim.tick + kit.poisonTicks });
     if (kit.burnTicks) effect(sim, { ...base, kind: 'burn', damage: t.damage * (kit.burnFraction ?? 0), endsTick: sim.tick + kit.burnTicks });
-    actions.damageBuilding(sim, bi, damage);
+    if (sim.previewKinds) previewHit(sim, t, bi, damage, actions);
+    else actions.damageBuilding(sim, bi, damage);
   }
   let hits = 0;
   sim.buildings.forEach((b, i) => {
-    if (hits >= (kit.extraTargets ?? 0) || i === bi || b.destroyed || b.kind === 'trap') return;
+    if (hits >= (kit.extraTargets ?? 0) || i === bi || b.destroyed || (b.kind === 'trap' && !(sim.previewKinds && hittableTrap(b)))) return;
     if (def.ability === 'chain_lightning' && b.kind !== 'defense') return;
     if (distToRect(cx, cy, shape(b)) > (kit.radius ?? 0)) return;
-    actions.damageBuilding(sim, i, damage * (kit.secondaryDamage ?? 0)); hits++;
+    // Non-live counters: a Sand Bucket Post smothers this splash, a Straw Scarecrow takes it, a rod may absorb it.
+    if (sim.previewKinds) previewHit(sim, t, i, damage * (kit.secondaryDamage ?? 0) * (1 - (b.smother ?? 0)), actions);
+    else actions.damageBuilding(sim, i, damage * (kit.secondaryDamage ?? 0));
+    hits++;
     sim.events.push({ k: 'hit', x: b.x + b.size / 2, y: b.y + b.size / 2, kind: def.projectile ?? 'pebble', splash: 0 });
   });
   if (kit.suicide && !t.dead) {
     t.hp = 0; t.dead = true;
     sim.events.push({ k: 'troopDied', troop: t.id });
   }
+}
+
+/**
+ * A warrior's hit on a base with a non-live counter (content batch 2026-11-14): a Lightning Rod Tower may take it
+ * instead, and the Rain Barrel Tower's wet ground makes listed lightning hit harder.
+ */
+function previewHit(sim: BattleSim, t: SimTroop, bi: number, damage: number, actions: Actions): void {
+  const rod = sim.previewKinds!.absorb_lightning ? absorbingRod(sim, t, bi) : -1;
+  if (rod >= 0) {
+    chargeRod(sim, rod, damage, t, (s, ti, amount) => actions.damageTroop(s, ti, amount));
+    return;
+  }
+  actions.damageBuilding(sim, bi, sim.previewKinds!.extinguish ? damage * conductFactor(sim, t, sim.buildings[bi]) : damage);
 }
