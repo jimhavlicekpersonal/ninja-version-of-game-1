@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "친구 코드로 시작해서 본성 {keep}에 도달했어요. 보상을 받을 수 있어요." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "친구 코드로 시작했고 보상을 받았어요." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "보상은 서버에 있는 마을로 지급돼요. 설정 → 온라인 플레이에서 마을을 서버로 옮기세요." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "친구 초대 보상은 성인만 받을 수 있어요. 친구 추가와 함께 플레이는 계속할 수 있어요." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "보상 받기" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "받은 보상: 비취 {jade}개" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "아직 받을 보상이 없어요." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Apple의 환불 판단 돕기 (켜기 전까지 꺼짐)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Apple에 환불을 요청하면 Apple이 해당 구매에 대해 저희에게 물어볼 수 있어요. 이 기능을 켜면 구매가 전달되었다는 사실과 계정 사용 기간, 구매 및 환불 금액의 범위를 Apple에 알려요. 이름, 마을, 채팅은 절대 보내지 않아요. Apple에 환불을 거절해 달라고 요청하지 않아요." },
   "jade.about": { "en": "about {value}", "text": "약 {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "약 {low}~{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "다른 플레이어의 공유 리플레이에 내 기지 표시 허용" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "누군가 내 마을을 습격한 리플레이를 공유하면 내 기지 배치가 보여요(이름은 절대 보이지 않아요). 끄면 내 기지는 보이지 않고, 이미 공유된 리플레이도 삭제돼요." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "이 업데이트로 Kagemura의 작동 방식이 바뀌어요. 보호자가 사용 전에 확인할 수 있어요." }
 }

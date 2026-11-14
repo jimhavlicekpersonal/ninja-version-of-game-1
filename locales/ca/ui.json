@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Has començat amb el codi d'un amic i has arribat a la Fortalesa {keep}: la teva recompensa és a punt." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Has començat amb el codi d'un amic i ja has recollit la teva recompensa." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Les recompenses van a un poble al servidor. Porta-hi el teu poble a Configuració → Joc en línia." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Les recompenses per convidar amics són només per a adults. Pots continuar afegint amics i jugant junts." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Recull les recompenses" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Recollit: Jade {jade}" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Encara no hi ha res per recollir." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Ajuda Apple a decidir les sol·licituds de reemborsament (desactivat fins que l'activis)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Quan demanes un reemborsament a Apple, Apple ens pot preguntar per la compra. Amb això activat, diem a Apple que es va lliurar i donem intervals de l'antiguitat del teu compte i de quant has comprat i se t'ha reemborsat. Mai el teu nom, el teu poble ni el teu xat. Mai demanem a Apple que rebutgi un reemborsament." },
   "jade.about": { "en": "about {value}", "text": "uns {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "uns {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Permetre la meva base a les repeticions compartides d'altres jugadors" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Quan algú comparteix una repetició d'un atac al teu poble, mostra la disposició de la teva base (mai el teu nom). Si ho desactives, la teva base no es mostrarà mai i s'eliminaran les repeticions ja compartides amb ella." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Aquesta actualització canvia com funciona Kagemura. Un pare, una mare o un tutor la pot revisar abans d'utilitzar-la." }
 }

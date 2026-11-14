@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Bir arkadaşının koduyla başladın ve Kale {keep} seviyesine ulaştın: ödülün hazır." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Bir arkadaşının koduyla başladın ve ödülünü aldın." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Ödüller sunucudaki bir köye gider. Köyünü oraya Ayarlar → Çevrim içi oyun bölümünden taşı." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Arkadaş davet ödülleri yalnızca yetişkinler içindir. Yine de arkadaş ekleyip birlikte oynayabilirsin." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Ödülleri al" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Alınan: {jade} Yeşim" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Henüz alınacak bir şey yok." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Apple'ın iade kararlarına yardım et (sen açana kadar kapalı)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Apple'dan iade istediğinde Apple bize satın alma hakkında soru sorabilir. Bu açıkken Apple'a satın almanın teslim edildiğini söyler; hesabının ne kadar eski olduğu ile toplam satın alma ve iade tutarların için aralıklar bildiririz. Adın, köyün ya da sohbetin asla gönderilmez. Apple'dan asla bir iadeyi reddetmesini istemeyiz." },
   "jade.about": { "en": "about {value}", "text": "yaklaşık {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "yaklaşık {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Üssümün diğer oyuncuların paylaştığı tekrarlarda görünmesine izin ver" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Biri köyüne yapılan bir baskının tekrarını paylaştığında, tekrar üssünün yerleşimini gösterir (adını asla göstermez). Bunu kapatırsan üssün hiç gösterilmez ve onunla daha önce paylaşılmış tekrarlar kaldırılır." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Bu güncelleme Kagemura'nın çalışma şeklini değiştirir. Ebeveyn veya vasi kullanmadan önce inceleyebilir." }
 }

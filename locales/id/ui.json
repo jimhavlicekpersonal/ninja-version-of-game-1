@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Kamu mulai dengan kode teman dan sudah mencapai Benteng {keep}: hadiahmu siap." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Kamu mulai dengan kode teman dan sudah mengambil hadiahmu." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Hadiah masuk ke desa di server. Pindahkan desamu ke sana di Pengaturan → Bermain online." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Hadiah undang teman hanya untuk orang dewasa. Kamu tetap bisa menambah teman dan bermain bersama." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Ambil hadiah" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Diambil: {jade} Giok" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Belum ada yang bisa diambil." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Bantu Apple memutuskan permintaan refund (mati sampai kamu menyalakannya)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Saat kamu meminta refund ke Apple, Apple bisa bertanya kepada kami tentang pembelian itu. Jika ini menyala, kami memberi tahu Apple bahwa pembelian sudah diterima dan memberikan rentang usia akunmu serta total pembelian dan refund-mu. Tidak pernah namamu, desamu, atau obrolanmu. Kami tidak pernah meminta Apple menolak refund." },
   "jade.about": { "en": "about {value}", "text": "sekitar {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "sekitar {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Izinkan markasku muncul di tayangan ulang yang dibagikan pemain lain" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Saat seseorang membagikan tayangan ulang serangan ke desamu, tayangan itu menampilkan tata letak markasmu (tidak pernah namamu). Matikan ini dan markasmu tidak akan pernah ditampilkan, dan tayangan ulang yang sudah dibagikan dengan markas itu akan dihapus." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Pembaruan ini mengubah cara kerja Kagemura. Orang tua atau wali bisa meninjaunya sebelum digunakan." }
 }

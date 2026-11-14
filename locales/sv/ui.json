@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Du började med en väns kod och nådde Borg {keep}: din belöning är klar." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Du började med en väns kod och har hämtat din belöning." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Belöningar går till en by på servern. Flytta din by dit under Inställningar → Onlinespel." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Belöningar för att bjuda in vänner är bara för vuxna. Du kan fortfarande lägga till vänner och spela tillsammans." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Hämta belöningar" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Hämtat: {jade} Jade" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Inget att hämta än." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Hjälp Apple att avgöra återbetalningar (av tills du slår på det)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "När du ber Apple om en återbetalning kan Apple fråga oss om köpet. Med detta på berättar vi för Apple att köpet levererades och ger intervall för hur gammalt ditt konto är och hur mycket du har köpt och fått tillbaka. Aldrig ditt namn, din by eller din chatt. Vi ber aldrig Apple att neka en återbetalning." },
   "jade.about": { "en": "about {value}", "text": "ungefär {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "ungefär {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Tillåt min bas i andra spelares delade repriser" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "När någon delar en repris av en räd mot din by visar den din bas layout (aldrig ditt namn). Stäng av detta så visas din bas aldrig, och repriser som redan delats med den tas bort." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Den här uppdateringen ändrar hur Kagemura fungerar. En förälder eller vårdnadshavare kan granska den innan den används." }
 }

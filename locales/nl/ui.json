@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Je bent begonnen met de code van een vriend en hebt Burcht {keep} bereikt: je beloning staat klaar." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Je bent begonnen met de code van een vriend en hebt je beloning opgehaald." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Beloningen gaan naar een dorp op de server. Verplaats je dorp daarheen via Instellingen → Online spelen." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Beloningen voor vrienden uitnodigen zijn alleen voor volwassenen. Je kunt nog steeds vrienden toevoegen en samen spelen." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Beloningen ophalen" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Opgehaald: {jade} Jade" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Nog niets op te halen." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Apple helpen bij terugbetalingsverzoeken (uit tot je het aanzet)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Als je Apple om een terugbetaling vraagt, kan Apple ons naar de aankoop vragen. Staat dit aan, dan vertellen we Apple dat de aankoop is geleverd en geven we bereiken voor hoe oud je account is en hoeveel je hebt gekocht en terugbetaald gekregen. Nooit je naam, je dorp of je chat. We vragen Apple nooit om een terugbetaling te weigeren." },
   "jade.about": { "en": "about {value}", "text": "ongeveer {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "ongeveer {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Mijn basis toestaan in gedeelde herhalingen van andere spelers" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Als iemand een herhaling van een overval op je dorp deelt, toont die de indeling van je basis (nooit je naam). Zet dit uit en je basis wordt nooit getoond; herhalingen die al met je basis zijn gedeeld, worden verwijderd." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Deze update verandert hoe Kagemura werkt. Een ouder of voogd kan hem bekijken voordat hij wordt gebruikt." }
 }

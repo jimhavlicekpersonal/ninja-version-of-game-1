@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Ai început cu codul unui prieten și ai ajuns la Cetatea {keep}: recompensa ta te așteaptă." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Ai început cu codul unui prieten și ți-ai luat recompensa." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Recompensele merg într-un sat de pe server. Mută-ți satul acolo din Setări → Joc online." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Recompensele pentru invitarea prietenilor sunt doar pentru adulți. Poți adăuga în continuare prieteni și juca împreună." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Ia recompensele" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Primit: Jad {jade}" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Încă nu e nimic de luat." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Ajută Apple să decidă cererile de rambursare (dezactivat până îl activezi)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Când îi ceri Apple o rambursare, Apple ne poate întreba despre achiziție. Cu această opțiune activată, îi spunem Apple că a fost livrată și dăm intervale pentru vechimea contului tău și pentru cât ai cumpărat și cât ți s-a rambursat. Niciodată numele, satul sau chatul tău. Nu îi cerem niciodată Apple să refuze o rambursare." },
   "jade.about": { "en": "about {value}", "text": "aproximativ {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "aproximativ {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Permite baza mea în reluările distribuite de alți jucători" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Când cineva distribuie reluarea unui raid asupra satului tău, aceasta arată planul bazei tale (niciodată numele tău). Dezactivează opțiunea și baza ta nu va mai fi arătată, iar reluările deja distribuite cu ea vor fi șterse." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Această actualizare schimbă felul în care funcționează Kagemura. Un părinte sau tutore o poate verifica înainte de folosire." }
 }

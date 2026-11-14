@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Bạn đã bắt đầu bằng mã của một người bạn và đạt Thành cấp {keep}: phần thưởng đã sẵn sàng." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Bạn đã bắt đầu bằng mã của một người bạn và đã nhận phần thưởng." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Phần thưởng được gửi vào ngôi làng trên máy chủ. Hãy chuyển ngôi làng lên đó trong Cài đặt → Chơi trực tuyến." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Phần thưởng mời bạn bè chỉ dành cho người lớn. Bạn vẫn có thể kết bạn và chơi cùng nhau." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Nhận thưởng" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Đã nhận: {jade} Ngọc Bích" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Chưa có gì để nhận." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Giúp Apple quyết định yêu cầu hoàn tiền (tắt cho đến khi bạn bật)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Khi bạn yêu cầu Apple hoàn tiền, Apple có thể hỏi chúng tôi về giao dịch mua. Khi bật mục này, chúng tôi cho Apple biết giao dịch đã được giao và cung cấp khoảng ước lượng về tuổi tài khoản cũng như số tiền bạn đã mua và được hoàn. Không bao giờ có tên, làng hay tin nhắn của bạn. Chúng tôi không bao giờ đề nghị Apple từ chối hoàn tiền." },
   "jade.about": { "en": "about {value}", "text": "khoảng {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "khoảng {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Cho phép căn cứ của tôi xuất hiện trong bản xem lại do người chơi khác chia sẻ" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Khi ai đó chia sẻ bản xem lại một trận tấn công làng của bạn, bản đó hiện bố cục căn cứ của bạn (không bao giờ hiện tên). Tắt mục này thì căn cứ của bạn sẽ không bao giờ được hiển thị, và các bản đã chia sẻ có căn cứ đó sẽ bị xóa." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Bản cập nhật này thay đổi cách Kagemura hoạt động. Cha mẹ hoặc người giám hộ có thể xem lại trước khi sử dụng." }
 }

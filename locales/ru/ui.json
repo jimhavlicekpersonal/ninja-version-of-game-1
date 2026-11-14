@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Аккаунт создан по коду друга, Цитадель {keep} достигнута: награда готова." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Аккаунт создан по коду друга, награда уже получена." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "Награды приходят в деревню на сервере. Перенеси деревню туда: Настройки → Онлайн-игра." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "Награды за приглашение друзей только для взрослых. Ты по-прежнему можешь добавлять друзей и играть вместе." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Забрать награды" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Получено нефрита: {jade}" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Пока забирать нечего." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Помогать Apple с запросами на возврат (выключено, пока не включишь)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Когда просишь Apple о возврате, Apple может спросить нас о покупке. Если это включено, мы сообщаем Apple, что покупка доставлена, и указываем диапазоны: возраст аккаунта, сумма покупок и сумма возвратов. Никогда имя, деревню или чат. Мы никогда не просим Apple отказать в возврате." },
   "jade.about": { "en": "about {value}", "text": "около {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "около {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Разрешить показывать мою базу в повторах, которыми делятся другие игроки" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Когда кто-то делится повтором набега на твою деревню, в нём видна планировка твоей базы (но никогда не имя). Выключи это — и твоя база больше не будет показываться, а уже опубликованные повторы с ней удалятся." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Это обновление меняет работу Kagemura. Родитель или опекун может проверить его перед использованием." }
 }

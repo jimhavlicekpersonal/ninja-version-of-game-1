@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "आपने एक दोस्त के कोड से शुरुआत की और किला {keep} तक पहुँच गए: आपका इनाम तैयार है।" },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "आपने एक दोस्त के कोड से शुरुआत की और अपना इनाम ले लिया है।" },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "इनाम सर्वर पर रखे गाँव में जाते हैं। सेटिंग्स → ऑनलाइन खेल में अपना गाँव वहाँ ले जाएँ।" },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "दोस्तों को बुलाने के इनाम सिर्फ़ वयस्कों के लिए हैं। आप अब भी दोस्त जोड़ सकते हैं और साथ खेल सकते हैं।" },
   "growth.invite.collect": { "en": "Collect rewards", "text": "इनाम लें" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "मिला: {jade} जेड" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "अभी लेने के लिए कुछ नहीं है।" },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "रिफ़ंड अनुरोधों पर Apple की मदद करें (जब तक आप चालू न करें, बंद)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "जब आप Apple से रिफ़ंड माँगते हैं, तो Apple हमसे उस ख़रीद के बारे में पूछ सकता है। इसे चालू करने पर हम Apple को बताते हैं कि ख़रीद डिलीवर हुई थी, और आपके खाते की उम्र तथा आपकी कुल ख़रीद और रिफ़ंड की सीमाएँ बताते हैं। आपका नाम, गाँव या चैट कभी नहीं। हम Apple से कभी रिफ़ंड ठुकराने को नहीं कहते।" },
   "jade.about": { "en": "about {value}", "text": "लगभग {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "लगभग {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "दूसरे खिलाड़ियों के साझा रीप्ले में मेरा बेस दिखने दें" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "जब कोई आपके गाँव पर हुए हमले का रीप्ले साझा करता है, तो उसमें आपके बेस का लेआउट दिखता है (आपका नाम कभी नहीं)। इसे बंद करें तो आपका बेस कभी नहीं दिखेगा, और उसके पहले से साझा रीप्ले हटा दिए जाएँगे।" },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "यह अपडेट Kagemura के काम करने का तरीका बदलता है। माता-पिता या अभिभावक इस्तेमाल से पहले इसे देख सकते हैं।" }
 }

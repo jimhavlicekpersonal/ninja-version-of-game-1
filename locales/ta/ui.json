@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "" },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "" },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "" },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "" },
   "growth.invite.collect": { "en": "Collect rewards", "text": "" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "" },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "" },
   "jade.about": { "en": "about {value}", "text": "" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "" },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "" }
 }

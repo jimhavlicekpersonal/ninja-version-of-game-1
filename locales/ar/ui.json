@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "انضممت برمز صديق ووصلت إلى القلعة {keep}: مكافأتك جاهزة." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "انضممت برمز صديق واستلمت مكافأتك." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "تذهب المكافآت إلى قرية على الخادم. يمكنك نقل قريتك إليه من الإعدادات ← اللعب عبر الإنترنت." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "مكافآت دعوة الأصدقاء للبالغين فقط. لا يزال بإمكانك إضافة أصدقاء واللعب معًا." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "استلام المكافآت" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "تم الاستلام: {jade} من اليشم" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "لا شيء للاستلام بعد." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "مساعدة Apple في البت في طلبات الاسترداد (متوقفة حتى التشغيل)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "عند طلب استرداد من Apple، قد تسألنا Apple عن عملية الشراء. عند تشغيل هذا الخيار نخبر Apple بأن الشراء قد سُلِّم، ونقدّم نطاقات لعمر حسابك ولإجمالي مشترياتك والمبالغ المستردة. لا نرسل أبدًا اسمك أو قريتك أو محادثاتك. ولا نطلب من Apple أبدًا رفض الاسترداد." },
   "jade.about": { "en": "about {value}", "text": "حوالي {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "حوالي {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "السماح بظهور قاعدتي في الإعادات التي يشاركها لاعبون آخرون" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "عندما يشارك أحدهم إعادة لغارة على قريتك، تظهر فيها تخطيط قاعدتك (وليس اسمك أبدًا). أوقف هذا الخيار فلن تظهر قاعدتك أبدًا، وتُحذف الإعادات التي شوركت بها من قبل." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "يغيّر هذا التحديث طريقة عمل Kagemura. يمكن لأحد الوالدين أو الوصي مراجعته قبل استخدامه." }
 }

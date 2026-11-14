@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "Você entrou com o código de um amigo e chegou à Fortaleza {keep}: sua recompensa está pronta." },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "Você entrou com o código de um amigo e já coletou sua recompensa." },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "As recompensas vão para uma vila no servidor. Leve sua vila para lá em Configurações → Jogo online." },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "As recompensas por convidar amigos são só para adultos. Você ainda pode adicionar amigos e jogar junto." },
   "growth.invite.collect": { "en": "Collect rewards", "text": "Coletar recompensas" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "Coletado: {jade} de Jade" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "Ainda não há nada para coletar." },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "Ajudar a Apple a decidir pedidos de reembolso (desativado até você ativar)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "Quando você pede um reembolso à Apple, a Apple pode nos perguntar sobre a compra. Com isto ativado, dizemos à Apple que ela foi entregue e informamos faixas de há quanto tempo existe sua conta e de quanto você comprou e recebeu de reembolso. Nunca seu nome, sua aldeia ou seu chat. Nunca pedimos à Apple que recuse um reembolso." },
   "jade.about": { "en": "about {value}", "text": "cerca de {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "cerca de {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Permitir minha base nos replays compartilhados de outros jogadores" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Quando alguém compartilha um replay de um ataque à sua vila, ele mostra o layout da sua base (nunca o seu nome). Desative isto e sua base nunca será mostrada, e os replays já compartilhados com ela serão removidos." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Esta atualização muda como o Kagemura funciona. Um responsável pode revisá-la antes de ela ser usada." }
 }

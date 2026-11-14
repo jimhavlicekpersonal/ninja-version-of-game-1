@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "你是用好友码加入的，并已达到天守阁 {keep} 级：你的奖励可以领取了。" },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "你是用好友码加入的，已经领取了奖励。" },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "奖励会发放到服务器上的村庄。请在设置 → 在线游戏中把村庄移到服务器。" },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "邀请好友奖励仅限成年人。你仍然可以添加好友并一起玩。" },
   "growth.invite.collect": { "en": "Collect rewards", "text": "领取奖励" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "已领取：{jade} 翡翠" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "暂时没有可领取的奖励。" },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "帮助 Apple 处理退款申请（你打开前一直关闭）" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "你向 Apple 申请退款时，Apple 可能会向我们询问这笔购买。打开后，我们会告诉 Apple 购买已交付，并提供你的账户时长以及购买和退款金额的范围。绝不包括你的名字、村庄或聊天。我们绝不会要求 Apple 拒绝退款。" },
   "jade.about": { "en": "about {value}", "text": "约 {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "约 {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "允许其他玩家分享的回放中出现我的基地" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "当有人分享袭击你村庄的回放时，会显示你的基地布局（绝不显示你的名字）。关闭后，你的基地将不会再出现，已分享的相关回放也会被删除。" },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "此更新改变了 Kagemura 的运作方式。家长或监护人可以在使用前查看。" }
 }

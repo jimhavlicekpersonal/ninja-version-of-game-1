@@ -209,6 +209,7 @@
   "growth.invite.mine.ready": { "en": "You joined with a friend's code and reached Keep {keep}: your reward is ready.", "text": "คุณเริ่มเล่นด้วยรหัสของเพื่อนและไปถึงป้อมระดับ {keep} แล้ว: รางวัลพร้อมให้รับ" },
   "growth.invite.mine.rewarded": { "en": "You joined with a friend's code and collected your reward.", "text": "คุณเริ่มเล่นด้วยรหัสของเพื่อนและรับรางวัลไปแล้ว" },
   "growth.invite.needsServer": { "en": "Rewards go to a village on the server. Move your village there in Settings → Online play.", "text": "รางวัลจะเข้าหมู่บ้านบนเซิร์ฟเวอร์ ย้ายหมู่บ้านของคุณไปที่นั่นได้ใน ตั้งค่า → การเล่นออนไลน์" },
+  "growth.invite.adultsOnly": { "en": "Friend invite rewards are for adults only. You can still add friends and play together.", "text": "รางวัลชวนเพื่อนมีให้เฉพาะผู้ใหญ่ คุณยังเพิ่มเพื่อนและเล่นด้วยกันได้" },
   "growth.invite.collect": { "en": "Collect rewards", "text": "รับรางวัล" },
   "growth.invite.collected": { "en": "Collected: {jade} Jade", "text": "รับแล้ว: หยก {jade}" },
   "growth.invite.nothing": { "en": "Nothing to collect yet.", "text": "ยังไม่มีอะไรให้รับ" },
@@ -265,5 +266,8 @@
   "consent.apple.label": { "en": "Help Apple decide refund requests (off until you turn it on)", "text": "ช่วย Apple ตัดสินคำขอคืนเงิน (ปิดอยู่จนกว่าคุณจะเปิด)" },
   "consent.apple.detail": { "en": "When you ask Apple for a refund, Apple may ask us about the purchase. With this on, we tell Apple that it was delivered and give ranges for how old your account is and how much you have bought and been refunded. Never your name, village or chat. We never ask Apple to refuse a refund.", "text": "เมื่อคุณขอคืนเงินจาก Apple ทาง Apple อาจถามเราเกี่ยวกับการซื้อนั้น เมื่อเปิดตัวเลือกนี้ เราจะแจ้ง Apple ว่าส่งมอบแล้ว พร้อมช่วงอายุบัญชีของคุณ และช่วงยอดซื้อและยอดคืนเงินทั้งหมด ไม่ส่งชื่อ หมู่บ้าน หรือแชตของคุณ และเราไม่เคยขอให้ Apple ปฏิเสธการคืนเงิน" },
   "jade.about": { "en": "about {value}", "text": "ประมาณ {value}" },
+  "jade.aboutRange": { "en": "about {low}–{high}", "text": "ประมาณ {low}–{high}" },
+  "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "อนุญาตให้ฐานของฉันปรากฏในรีเพลย์ที่ผู้เล่นอื่นแชร์" },
+  "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "เมื่อมีคนแชร์รีเพลย์การบุกหมู่บ้านของคุณ รีเพลย์จะแสดงผังฐานของคุณ (ไม่แสดงชื่อเด็ดขาด) ถ้าปิดไว้ ฐานของคุณจะไม่ถูกแสดงอีก และรีเพลย์ที่แชร์ไว้แล้วจะถูกลบ" },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "อัปเดตนี้เปลี่ยนวิธีการทำงานของ Kagemura ผู้ปกครองตรวจดูได้ก่อนใช้งาน" }
 }
