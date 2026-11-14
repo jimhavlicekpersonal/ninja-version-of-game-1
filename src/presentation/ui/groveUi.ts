@@ -10,7 +10,8 @@ import { t as i18nText } from './i18n';
 import { t } from './i18n';
 import { REPORT_REASONS, type ReportReason } from '../../backend/net/protocol';
 import type { GroveSnapshot, GroveSource, ReportTarget } from '../../backend/social/groveSource';
-import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
+import { hasContact, reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
+import { CONTACT_NAME_REFUSED } from '../../gameplay/sim/social/contactFilter';
 import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/social/names';
 import { groveRaidChest } from '../../gameplay/sim/social/groveRaid';
 import { hallLevel } from '../../gameplay/sim/village';
@@ -187,6 +188,8 @@ export class GroveUi {
       // Any script works (names.ts); the server applies the same rules.
       const checked = checkName(name.value);
       if (checked.error) return this.d.kit.toast(NAME_ERROR_TEXT[checked.error], 'error');
+      // C25: the shared contact filter refuses here what the server would refuse.
+      if (hasContact(checked.name)) return this.d.kit.toast(i18nMessage(CONTACT_NAME_REFUSED, true), 'error');
       name.value = checked.name;
       void this.run(() => this.src.create(checked.name), redraw, false);
     });

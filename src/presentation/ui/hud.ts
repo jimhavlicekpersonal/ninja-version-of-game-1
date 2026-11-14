@@ -11,6 +11,8 @@ import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFo
 import type { Building, Cost, ResourceKind, Temper, TemperAxis } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { NAME_ERROR_TEXT, checkName, isolateName } from '../../gameplay/sim/social/names';
+import { hasContact } from '../../gameplay/sim/social/grove';
+import { CONTACT_NAME_REFUSED } from '../../gameplay/sim/social/contactFilter';
 import { armyHousing, housingCapacity, troopUnlock } from '../../gameplay/sim/army';
 import { replayable } from '../../gameplay/sim/battle/battle';
 import { rematchable } from '../../gameplay/sim/rematch';
@@ -728,6 +730,8 @@ export class Hud {
             // Any script works (names.ts); the server applies the same rules.
             const checked = checkName(name.value);
             if (checked.error) return this.toast(NAME_ERROR_TEXT[checked.error], 'error');
+            // C25: the shared contact filter refuses here what the server would refuse.
+            if (hasContact(checked.name)) return this.toast(i18nMessage(CONTACT_NAME_REFUSED, true), 'error');
             name.value = checked.name;
             void conn.rename(checked.name).then(
               () => this.toast(i18nText("ui.name_saved_555c2551ec"), 'success'),

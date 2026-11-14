@@ -1,7 +1,7 @@
 import { presetChatId } from '../../src/backend/net/protocol';
 /** Real Groves: membership, filtered chat, troop requests and donations. */
 import { filterText } from '../../src/gameplay/sim/social/grove';
-import { enforceChat } from './contactFilter';
+import { CONTACT_REMOVED, enforceChat } from './contactFilter';
 import { isolateName } from '../../src/gameplay/sim/social/names';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummary, GroveView, GrovesResponse, InboxResponse, MemberView, RequestView, RequestsResponse } from '../../src/backend/net/protocol';
@@ -153,8 +153,9 @@ export async function postChatIn(ctx: ServerContext, me: Player, scopeId: string
   if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');
   // Chat is always filtered (also for players who are not under 18); the server's stronger contact check
   // (backend batch 2026-11-13, C25 / UK OSA) replaces a message that writes a link or contact around it.
+  // Since 2026-11-14 the shared filterText replaces it already (the device does the same); enforceChat finds nothing more.
   const enforced = enforceChat(filterText(raw, ctx.data));
-  if (enforced.removed) ctx.metrics.count('tk_chat_contacts_removed_total', {});
+  if (enforced.removed || enforced.text === CONTACT_REMOVED) ctx.metrics.count('tk_chat_contacts_removed_total', {});
   const row = await ctx.repo.addChat({ id: ctx.uuid(), groveId: grove.id, at: ctx.now(), playerId: me.id, name: me.name, text: enforced.text, kind: 'chat', ...((await ageBandOf(ctx.repo, me.id)) === 'under13' ? {presetId: presetChatId(String(raw))} : {}) });
   return chatView(row);
 }
