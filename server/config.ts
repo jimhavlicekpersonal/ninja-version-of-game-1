@@ -17,6 +17,7 @@ import type { ConnectionOptions } from 'node:tls';
 import { AppleVerifier } from './payments/apple';
 import { parseCidrs } from './rateLimit';
 import { GoogleVerifier, type Fetch, type ServiceAccount } from './payments/google';
+import { parseUnder13Mode } from '../src/backend/net/compliance';
 
 export type DeployEnv = 'development' | 'staging' | 'production';
 
@@ -235,6 +236,19 @@ export function policyFromEnv(env: Record<string, string | undefined>): Partial<
   if (n(env.DORMANT_ACCOUNT_DAYS) !== undefined) out.dormantAccountDays = n(env.DORMANT_ACCOUNT_DAYS)!;
   if (n(env.DORMANT_MAX_KEEP) !== undefined) out.dormantMaxKeep = n(env.DORMANT_MAX_KEEP)!;
   if (n(env.SANDBOX_CREDIT_DAILY_CAP_USD) !== undefined) out.sandboxDailyCapUsd = n(env.SANDBOX_CREDIT_DAILY_CAP_USD)!;
+  // Compliance switches 2026-11-14 (net/compliance.ts): unset keeps the safest default.
+  if (env.UNDER13_MODE !== undefined && env.UNDER13_MODE.trim() !== '') {
+    const m = parseUnder13Mode(env.UNDER13_MODE);
+    if (!m) throw new Error('UNDER13_MODE must be offline, limited or families.');
+    out.under13Mode = m;
+  }
+  if (env.EU_JADE_VALUE !== undefined) out.euJadeValue = env.EU_JADE_VALUE === '1';
+  if (env.APPLE_CONSUMPTION_RESPONSE !== undefined) out.appleConsumptionResponse = env.APPLE_CONSUMPTION_RESPONSE === '1';
+  if (env.SIGNIFICANT_UPDATE_BUILD !== undefined && env.SIGNIFICANT_UPDATE_BUILD.trim() !== '') {
+    const b = env.SIGNIFICANT_UPDATE_BUILD.trim();
+    if (!/^\d+(\.\d+){0,3}$/.test(b)) throw new Error('SIGNIFICANT_UPDATE_BUILD must be a build number like 1.4.0.');
+    out.significantUpdateBuild = b;
+  }
   if (env.USD_RATES) {
     let raw: Record<string, unknown>;
     try {

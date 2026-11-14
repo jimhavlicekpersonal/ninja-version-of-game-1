@@ -40,6 +40,11 @@ export async function stateAge(ctx: ServerContext, me: Player, body: AgeRequest 
   // Same or stricter only (an "under 18" from before bands never becomes adult).
   const next: AgeBand = !row || bandChangeAllowed(row.band, row.under18, asked) ? asked : before!;
   if (!row || row.band !== next) await ctx.repo.setAgeBand(me.id, next, ctx.now());
+  // Compliance switches 2026-11-14 (UNDER13_MODE=offline): the band is kept (only ever stricter), then refused.
+  if (next === 'under13' && ctx.policy.under13Mode === 'offline') {
+    if (row?.band !== 'under13') await ctx.repo.updatePlayer(me.id, { findable: 'nobody', showOnline: false });
+    throw fail(403, 'age_restricted', 'age.under13_offline');
+  }
   // First time a minor band is stated: private defaults (a later explicit choice is kept).
   const wasMinor = row?.band === 'under13' || row?.band === '13to17';
   if (next === 'under13' && row?.band !== 'under13') await ctx.repo.updatePlayer(me.id, { findable: 'nobody', showOnline: false });

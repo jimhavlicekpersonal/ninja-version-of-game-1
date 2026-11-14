@@ -9,6 +9,7 @@ import { changeName, nameChangeAt, nameForNewPlayer } from './names';
 import { NameTakenError } from '../repo';
 import { serverHasContact } from './contactFilter';
 import { confirmRotation } from './links';
+import { complianceFeatures } from './compliance';
 import { fail, detailError, utcDate, appeal } from './errors';
 
 /**
@@ -21,7 +22,7 @@ export const MIN_PROTOCOL = 7;
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', 'age-bands', 'deletion-codes', 'notices', 'sessions', 'attack-commit', 'seed-at-start', 'stats', 'rules-acceptance', 'tempering', 'stakes', 'signin-nonce', 'session-control', 'complaints', 'referrals', 'shared-replays', 'event-schedule', ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}), ...(ctx.eventSchedule ? { events: ctx.eventSchedule } : {}) };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', 'age-bands', 'deletion-codes', 'notices', 'sessions', 'attack-commit', 'seed-at-start', 'stats', 'rules-acceptance', 'tempering', 'stakes', 'signin-nonce', 'session-control', 'complaints', 'referrals', 'shared-replays', 'event-schedule', ...complianceFeatures(ctx), ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}), ...(ctx.eventSchedule ? { events: ctx.eventSchedule } : {}), ...(ctx.policy.significantUpdateBuild ? { significantUpdateBuild: ctx.policy.significantUpdateBuild } : {}) };
 }
 
 /** GET /v1/balance (step 76): the signed number changes in force, for games with the same battle rules. */

@@ -9,6 +9,7 @@ import type { DeletionCodeResponse, DeletionRequestBody, DeletionRequestResponse
 import { DELETED_PLAYER, type DeletionRequest, type Player } from '../repo';
 import { HOUR, type ServerContext } from './context';
 import { growthOf } from '../growthRepo';
+import { complianceOf } from '../complianceRepo';
 import { leaveGrove } from './groves';
 import { revokeAppleTokens } from './links';
 import { leave as leaveSquad } from './squads';
@@ -27,6 +28,8 @@ export async function deleteAccount(ctx: ServerContext, me: Player): Promise<voi
   await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
   // Growth batch 2026-11-14: referrals either way and the player's shared replays (server/growthRepo.ts).
   await growthOf(ctx.repo).deletePlayer(me.id);
+  // Compliance switches 2026-11-14: terms acceptance and consumption consent (server/complianceRepo.ts).
+  await complianceOf(ctx.repo).deletePlayer(me.id);
   // Report section 5 step 7 (backend A12): the name stays taken for NAME_HOLD_DAYS, so nobody takes it at once
   // to pose as the deleted player (an ex-Alliance leader, a known rival).
   if (me.nameKey) await ctx.repo.holdName(me.nameKey, DELETED_PLAYER.id, ctx.now() + NAME_HOLD_DAYS * 24 * HOUR);

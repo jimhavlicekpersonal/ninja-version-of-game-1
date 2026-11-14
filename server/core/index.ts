@@ -5,6 +5,7 @@
  */
 import { japanBalanceReport } from './japanBalance';
 import * as complaints from './complaints';
+import * as compliance from './compliance';
 import * as account from './account';
 import * as age from './age';
 import * as admin from './admin';
@@ -94,6 +95,14 @@ export function createCore(ctx: ServerContext) {
     /** Re-audit: account protections (age bands, deletion codes, notices, sessions, Sign in with Apple notifications). */
     stateAge: age.stateAge.bind(null, ctx),
     acceptRules: rules.acceptRules.bind(null, ctx),
+    /** Compliance switches 2026-11-14 (routes in server/complianceRoutes.ts). */
+    compliance: {
+      view: compliance.complianceView.bind(null, ctx),
+      acceptTerms: compliance.acceptTerms.bind(null, ctx),
+      setConsumptionConsent: compliance.setConsumptionConsent.bind(null, ctx),
+      checkUnder13Online: compliance.checkUnder13Online.bind(null, ctx),
+      under13Mode: () => compliance.under13Mode(ctx),
+    },
     deletionCode: account.deletionCode.bind(null, ctx),
     notices: moderation.notices.bind(null, ctx),
     markNoticesRead: moderation.markNoticesRead.bind(null, ctx),

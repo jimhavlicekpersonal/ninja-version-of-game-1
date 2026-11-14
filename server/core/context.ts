@@ -33,6 +33,18 @@ export interface ServerPolicy {
    * catalog USD price, as before.
    */
   usdRates: Record<string, number>;
+  /**
+   * Compliance switches 2026-11-14 (net/compliance.ts). UNDER13_MODE: `offline` (under-13 players do not
+   * play online), `limited` (default: fixed phrases only, others' free text withheld, no push, never
+   * findable) or `families` (reserved for a verified parental-consent flow; enforced as `limited`).
+   */
+  under13Mode: import('../../src/backend/net/compliance').Under13Mode;
+  /** EU_JADE_VALUE=1: games show the approximate real-money value next to Jade prices in EU storefronts (C16). */
+  euJadeValue: boolean;
+  /** APPLE_CONSUMPTION_RESPONSE=1: answer App Store CONSUMPTION_REQUESTs for players who consented (A5). */
+  appleConsumptionResponse: boolean;
+  /** SIGNIFICANT_UPDATE_BUILD: the oldest build counted as a significant update (C02); null: none. */
+  significantUpdateBuild: string | null;
 }
 
 export const DEFAULT_POLICY: ServerPolicy = {
@@ -42,6 +54,10 @@ export const DEFAULT_POLICY: ServerPolicy = {
   dormantMaxKeep: 3,
   sandboxDailyCapUsd: null,
   usdRates: { USD: 1 },
+  under13Mode: 'limited',
+  euJadeValue: false,
+  appleConsumptionResponse: false,
+  significantUpdateBuild: null,
 };
 
 export interface ServerContext {
@@ -92,6 +108,8 @@ export interface ServerContext {
    * a player is credited in all (re-audit); absent = no cap (staging, tests).
    */
   payments: { apple: AppleVerifier | null; google: GoogleVerifier | null; testCreditCapUsd?: number };
+  /** App Store Server API (compliance switches 2026-11-14: consumption information); absent without its key. */
+  appleApi?: import('../payments/appleServerApi').AppleServerApi | null;
   /** Server-sent push (roadmap step 40); a no-op without APNs/FCM keys. */
   push: Pusher;
   /** A structured log line (the request's logger in the HTTP adapter). */

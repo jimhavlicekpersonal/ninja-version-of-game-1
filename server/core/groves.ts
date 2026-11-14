@@ -11,6 +11,7 @@ import { HOUR, MIN, type ServerContext } from './context';
 import { chosenName } from './identity';
 import { blockedIds, checkNotMuted } from './moderation';
 import { checkChatAllowed, ageBandOf } from './age';
+import { withholdForReader } from './compliance';
 import { maxReinforcementAt } from './pvp';
 import { applyServerResult } from './village';
 import { fail } from './errors';
@@ -133,7 +134,9 @@ export async function chatIn(ctx: ServerContext, me: Player, scopeId: string, af
   const cursor = rows.length ? String(rows[rows.length - 1].seq) : String(afterSeq);
   // Players the caller blocked are not shown to them; hidden messages are not shown to anyone.
   const blocked = await blockedIds(ctx, me);
-  const messages = rows.filter((r) => !r.playerId || !blocked.has(r.playerId)).map(chatView);
+  const shown = rows.filter((r) => !r.playerId || !blocked.has(r.playerId)).map(chatView);
+  // Compliance switches 2026-11-14 (under13-limited): an under-13 reader sees fixed phrases only.
+  const messages = (await ageBandOf(ctx.repo, me.id)) === 'under13' ? withholdForReader(shown, me.id) : shown;
   return { messages, cursor, hidden: await ctx.repo.hiddenChatIds(grove.id, 100) };
 }
 

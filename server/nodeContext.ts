@@ -45,6 +45,8 @@ export interface SharedStores {
   account?: import('./identity/appleTokens').AccountSettings;
   /** Policy knobs that differ from DEFAULT_POLICY (backend batch 2026-11-13; main.ts reads them from the environment). */
   policy?: Partial<import('./core/context').ServerPolicy>;
+  /** App Store Server API client (compliance switches 2026-11-14: CONSUMPTION_REQUEST answers). */
+  appleApi?: import('./payments/appleServerApi').AppleServerApi | null;
 }
 
 export function nodeContext(repo: Repo, data: GameData, now: () => number = () => Date.now(), random: () => number = Math.random, shared: SharedStores = {}): ServerContext {
@@ -64,6 +66,7 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     account: shared.account ?? {},
     payments: { apple: shared.payments?.apple ?? null, google: shared.payments?.google ?? null, ...(shared.payments?.testCreditCapUsd !== undefined ? { testCreditCapUsd: shared.payments.testCreditCapUsd } : {}) },
     push: shared.push ?? noPush,
+    appleApi: shared.appleApi ?? null,
     log: shared.log ?? (() => undefined),
     now,
     uuid: () => randomUUID(),

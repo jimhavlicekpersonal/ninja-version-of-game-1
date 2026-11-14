@@ -286,6 +286,12 @@ export interface HelloResponse {
    * built-in limited-time events (`eventSchedule.ts`), which the server also plays. Absent: the built-in schedule.
    */
   events?: import('./eventSchedule').EventSchedule;
+  /**
+   * Compliance switches 2026-11-14 (audit C02, `SIGNIFICANT_UPDATE_BUILD`): the oldest build whose changes
+   * count as a significant update; a minor's device asks again (iOS Declared Age Range) when the build a
+   * parent last acknowledged is older. Absent: no acknowledgement is asked for.
+   */
+  significantUpdateBuild?: string;
 }
 
 /** GET /v1/balance (roadmap step 76): the operators' signed number changes, or null. */
@@ -821,6 +827,11 @@ export interface ChatView {
   from: { id: string; name: string } | null;
   text: string;
   kind: 'chat' | 'request' | 'donation' | 'system';
+  /**
+   * Compliance switches 2026-11-14 (`under13-limited`): free-text chat from another player, withheld from an
+   * under-13 reader; `text` is then `WITHHELD_CHAT_TEXT` (net/compliance.ts) for games that do not know this.
+   */
+  withheld?: true;
 }
 
 export interface ChatResponse {
@@ -1275,3 +1286,5 @@ export interface RevokeOthersResponse {
 // re-exported here so the HUD reaches them through this contract file.
 export type { ReferralView, ShareReplayRequest, ShareReplayResponse, SharedOpponent, SharedReplayView } from './growth';
 export { parseShareCode, shareLink, SHARED_REPLAY_DAYS } from './growth';
+export type { ComplianceView, ConsumptionConsentRequest, TermsRequest, Under13Mode } from './compliance';
+export { ComplianceRoutes, under13ModeOf, validTermsVersion, WITHHELD_CHAT_TEXT } from './compliance';

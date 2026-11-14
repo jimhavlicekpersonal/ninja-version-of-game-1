@@ -17,6 +17,7 @@
  *    Purchases API): the record is marked refunded and a server-held village
  *    gives back what is still there (`revokePurchase`, ledger `refund:<store>`).
  */
+import { answerConsumptionRequest } from './compliance';
 import type { IntentReleaseResponse, PurchaseHistoryResponse, PurchaseIntentResponse, PurchaseStore, RedeemResponse } from '../../src/backend/net/protocol';
 import { monthStart, productForStoreId, productInfo, storeProductId } from '../../src/gameplay/sim/monetization';
 import { deserialize } from '../../src/gameplay/sim/save';
@@ -432,9 +433,10 @@ export async function appleNotification(ctx: ServerContext, body: { signedPayloa
   } else if (n.notificationType === 'REFUND_REVERSED') {
     await reinstate(ctx, 'apple', t.transactionId);
   } else if (n.notificationType === 'CONSUMPTION_REQUEST') {
-    // Apple asks for consumption data to decide a refund. Sending it requires the customer's consent
-    // (`customerConsented`), which the game does not collect, so nothing is sent (re-audit: documented choice).
-    ctx.metrics.count('tk_consumption_requests_total', {});
+    // Apple asks for consumption data to decide a refund. Compliance switches 2026-11-14 (A5): sent only with
+    // APPLE_CONSUMPTION_RESPONSE=1, the App Store Server API key and the player's own consent (Settings, adults).
+    const result = await answerConsumptionRequest(ctx, t, n.environment);
+    ctx.metrics.count('tk_consumption_requests_total', { result });
   }
 }
 

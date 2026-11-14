@@ -6,6 +6,7 @@
  */
 import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
 import { registerGrowthRoutes, registerGrowthStaffRoutes } from './growthRoutes';
+import { registerComplianceRoutes } from './complianceRoutes';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { brotliCompress, constants as zlibConstants, gzip } from 'node:zlib';
@@ -635,6 +636,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.groveRaidAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.raidAttack(me, req.body as never)));
   app.post(Routes.groveRaidClaim, authed(async (me, req) => core.claimRaid(me, body<{ week: number }>(req).week)));
   registerGrowthRoutes(app, { core, authed, rate }); // growth batch 2026-11-14: referrals, shared replays
+  registerComplianceRoutes(app, { core, authed, rate }); // compliance switches 2026-11-14: terms, consent, under-13 offline
 
   // Staff API: only with strong tokens, compared in constant time. Per-staff tokens (ADMIN_TOKENS) name
   // their holder in the staff log; the legacy shared ADMIN_TOKEN takes the name from x-staff-name.

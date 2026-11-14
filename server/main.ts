@@ -72,6 +72,9 @@
  *   after OUTBOUND_TIMEOUT_MS (10000), body included (server/outbound.ts).
  * - Periodic jobs (retention, voided purchases, Gang War reminders) run on one
  *   instance at a time, through leases in the database (server/jobs.ts).
+ * - Compliance switches (2026-11-14, net/compliance.ts, docs/SHIPPING.md 3l): UNDER13_MODE
+ *   (offline|limited|families, default limited), EU_JADE_VALUE=1, APPLE_CONSUMPTION_RESPONSE=1 with
+ *   APPLE_IAP_KEY_ID/APPLE_IAP_ISSUER_ID/APPLE_IAP_PRIVATE_KEY, SIGNIFICANT_UPDATE_BUILD.
  * - Policy (backend batch 2026-11-13, server/config.ts policyFromEnv): SIGNIN_NONCE_REQUIRED=1
  *   (Apple/Google sign-ins must carry a server nonce; off by default so older games sign in),
  *   SESSION_IDLE_DAYS (400: another device's token unused this long is signed out),
@@ -86,6 +89,7 @@ import { hostname } from 'node:os';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { runLeased, type StillHeld } from './jobs';
 import { OUTBOUND_TIMEOUT_MS, timedFetch } from './outbound';
+import { appleServerApiFromEnv } from './payments/appleServerApi';
 import { gracefulShutdown, SHUTDOWN_DEADLINE_MS, SHUTDOWN_DRAIN_MS } from './shutdown';
 import { availableParallelism } from 'node:os';
 import { Worker } from 'node:worker_threads';
@@ -214,6 +218,8 @@ async function main(): Promise<void> {
     return points;
   });
   const payments = paymentsFromEnv(process.env, fetchFn, Date.now);
+  // Compliance switches 2026-11-14 (A5): App Store Server API for CONSUMPTION_REQUEST answers (APPLE_IAP_*).
+  const appleApi = appleServerApiFromEnv(process.env, fetchFn, Date.now);
   const transport = pushTransportFromEnv(process.env, fetchFn, Date.now);
   const push = transport ? new ServerPush({ repo, data: defaultData, transport, now: Date.now, metrics, log: (l, m, f) => console[l === 'info' ? 'log' : l](m, f ?? {}) }) : undefined;
   // Balance bundle (step 76): its numbers become the live data; a bad bundle stops the start.
@@ -269,7 +275,7 @@ async function main(): Promise<void> {
     metrics.gauge('tk_resim_queue', () => [{ labels: {}, value: pool.queued }]);
     resim = pool;
   }
-  shared = { ...shared, payments, push, rules, balance, balanceCohorts, eventSchedule, resim, policy: policyFromEnv(process.env) };
+  shared = { ...shared, payments, push, rules, balance, balanceCohorts, eventSchedule, resim, appleApi, policy: policyFromEnv(process.env) };
   console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Re-simulation workers: ${workers || 'none (main thread)'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
