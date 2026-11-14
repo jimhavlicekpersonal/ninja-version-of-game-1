@@ -138,6 +138,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   | `purchase_refused` | 403 | a purchase is not allowed (under-18 monthly cap, age group unknown, or the store is not set up on this server); nothing was charged |
   | `banned` | 403 | staff suspended this account from online play; the message says why and until when |
   | `rate_limited` | 429 | too many requests; wait `Retry-After` seconds (the header is exposed to the web game through CORS) |
+  | `idempotency_mismatch` | 422 | the `Idempotency-Key` was already used for another route or another body (backend batch 2026-11-13); never retried |
 
   - **Retries:** the client retries network errors, 5xx answers and `rate_limited` (on its next round, not at once). It never retries other 4xx answers.
 - **Limits (our server; other servers may choose their own):**
@@ -145,7 +146,7 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   | what | limit |
   |---|---|
   | every request, per IPv4 address or IPv6 /64 | 3,000 a minute |
-  | every request, per player token | 240 a minute |
+  | every request, per player (all of its device tokens together; a token that is not a player's counts by itself) | 240 a minute |
   | new players and sign-ins (`POST /v1/players`, `/v1/sessions`), per IPv4 address or IPv6 /64 | 300 an hour |
   | opponent searches and war tickets, per player | 30 a minute |
   | battle reports (re-simulated), per player | 20 a minute |
@@ -153,11 +154,17 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   | battle commands in village batches (`trialEnd`, `abandonBattle`), per player | 3 a batch, 6 a minute (`TOO_MANY_BATTLES`) |
   | purchases (intent, release, receipt, history), per player | 120 an hour |
   | reports, blocks, links, push tokens, Gangs, duel challenges, per player | 30 an hour |
+  | sign-in nonces (`POST /v1/auth/nonce`), per IPv4 address or IPv6 /64 | 600 an hour |
+  | complaints (`POST /v1/complaints`), per IPv4 address or IPv6 /64 | 20 an hour |
+  | wrong staff tokens, per IPv4 address or IPv6 /64 | 10 a minute, then `429` |
   | request body | 16 KB; `PUT /v1/base` 128 KB; battle reports and command batches 256 KB (`413` above) |
   | one village command | 8 KB; battle commands 192 KB (`TOO_LARGE`) |
   | chat message | 200 characters (`400 bad_request` above) |
 
   The per-IP limits are deliberately loose: carrier-grade NAT puts thousands of phones behind one IPv4 address in much of the world, so the per-token limits do the real work. With Redis (`REDIS_URL`) every instance shares one budget; without it each instance counts its own (N instances allow up to N times as much). While Redis is down the limits fail open rather than refusing everyone. Behind a load balancer the server must see each player's own IP address (`TRUST_PROXY` as a hop count or the proxies' CIDRs, never `true`; `docs/SHIPPING.md`), or all players share one per-IP budget.
+- **Several instances (backend A8):** limits counted on one instance (no Redis, or the fallback while Redis is down) are divided by `RATE_LIMIT_INSTANCES`, so N instances together allow about the shared limit.
+- **Idempotency (backend A12, A13):** a stored answer is replayed only to the same method, route pattern and body (a fingerprint kept with it); the same key with anything else answers `422 idempotency_mismatch`. Answers that carry the whole village (`POST /v1/village`, `POST /v1/village/import`) are kept without the file, and a replay reads the village again (it may be newer). Signing a token out or rotating it forgets its answers.
+- **Request ids (backend A33):** `X-Request-Id` on every answer is always the server's own; a caller's well-formed `X-Request-Id` comes back as `X-Client-Request-Id` (exposed through CORS) and is logged beside it.
 - **Compression:** answers over 1 KB (JSON, text) are sent with `Content-Encoding: br` or `gzip` when the request's `Accept-Encoding` allows it (`Vary: Accept-Encoding`); a village file of ~290 KB becomes a few KB. Browsers, WebViews and Node's `fetch` decode it themselves; a port must send `Accept-Encoding` only for encodings it decodes. Request bodies are not compressed.
 - **Versioning:** `GET /v1/hello` reports `protocol` and `minProtocol`. The game refuses a server whose `minProtocol` is above the game's version, or whose `protocol` is below it. Bump `PROTOCOL_VERSION` in `protocol.ts` for any change that would break older clients.
 - **Time:** all times are epoch milliseconds, taken from the server's clock.
@@ -197,7 +204,11 @@ Every battle report must also be checked:
 | `PUT /v1/me/age` | `{ band: 'under13' \| '13to17' \| 'adult' \| null }` | `{ band }`: the strictest band the server keeps (feature `age-bands`) |
 | `GET /v1/notices` · `POST /v1/notices/read` | · `{ ids }` | `{ notices: [{ id, at, kind, text, read }] }` · `204` (feature `notices`) |
 | `POST /v1/sessions/revoke-others` | | `{ revoked }`: every other device token of this account is signed out (feature `sessions`) |
-| `POST /v1/webhooks/apple-signin` | `{ payload: JWT }` (Apple, no token) | `{ ok: true }`; `consent-revoked` unlinks Apple, `account-delete` deletes the player |
+| `POST /v1/webhooks/apple-signin` | `{ payload: JWT }` (Apple, no token) | `{ ok: true }`; `consent-revoked` unlinks Apple; `account-delete` (backend A29) unlinks Apple, signs out its devices, sends a notice and queues a verified deletion request for staff (deleted after review, not at once) |
+| `POST /v1/auth/nonce` | (no token) | `AuthNonceResponse` `{ nonce, expiresAt }` (feature `signin-nonce`, backend A15): usable once, 10 minutes |
+| `DELETE /v1/sessions/current` | | `204`: this device's token stops working (feature `session-control`, A16); `409 conflict` for the only key of an account without a linked sign-in |
+| `POST /v1/sessions/rotate` | | `RegisterResponse` `{ playerId, token }`: a new token for this device, the old one stops working (feature `session-control`) |
+| `POST /v1/complaints` | `ComplaintRequest` `{ subject, reason, contact?, playerId? }` (no token) | `201 { id }` (feature `complaints`; EU DSA art. 16, UK OSA). `GET /complaints` is the HTML form. |
 
 - New players start with `ranks.startingTrophies` and a shield of `raids.newPlayerShieldHours`.
 - Names are trimmed, filtered for bad words, and 2–24 characters long. Anything else becomes "Ruler".
@@ -207,7 +218,10 @@ Every battle report must also be checked:
 - **Report section 5 step 7:** names (players, Alliances, Gangs) are refused when they carry a link, an address, a number to call or a messaging-app handle, also written around the filter ("d1sc0rd"); chat replaces them. A friend request by `playerId` follows the search rules (findability, under 13, suspended, blocks) unless the two are tied (the other asked first, same Alliance or Gang). Deleting an account drops its stored idempotent answers at once and keeps its name taken for 35 days. An App Store `RESCIND_CONSENT` notification suspends online play for the account it can be traced to.
 - **Age bands** (re-audit): the game sends the band from its age screen or the store's age signal before it registers or goes online. The server keeps the strictest one it heard (an `adult` after a minor band is ignored; staff can reset it). `under13`: chat accepts only the `PRESET_CHAT` phrases, and the `PRESET_CHAT_RETIRED` ones older games still offer ("troops" became "warriors" in the remnant audit, 2026-11-06) (`403 age_restricted` otherwise), no renames (`403 age_restricted`), never found by name or in platform-friend lists, `findable` stays `nobody`. `13to17`, the first time it is stated: `findable` `friends_of_friends` (if it was `everyone`) and `showOnline` off; later choices are kept.
 - **Notices** (EU DSA art. 16(5)/17): when staff act on a report, each reporter gets the outcome and the affected player gets the decision, the reason and how to appeal (`SUPPORT_CONTACT`); suspensions add one too. A muted chat send (`403 muted`) says the reason and until when.
+- **Sign-in nonces (backend A15):** a game that supports them asks `POST /v1/auth/nonce`, hands the nonce to the provider (Sign in with Apple native: its SHA-256 hex; Apple on the web and Google: as it is) and sends `credential.nonce` (the raw value) with `POST /v1/links` / `POST /v1/sessions`. The server checks the ID token carries it and uses it up; an ID token issued in the future (`iat`) is refused. Without `credential.nonce` older games still sign in, unless the server sets `SIGNIN_NONCE_REQUIRED=1`. Game Center key certificates must be in date and issued to Apple (and signed by `GAMECENTER_CA_PEM` when set); the signed timestamp may be at most 10 minutes off.
 - **Sessions**: each device token remembers the sign-in that made it; unlinking that provider signs those devices out (not the one asking). Extra device tokens unused for 400 days are deleted by retention; the first device's token is the account itself and stays.
+
+- **Contacts in names and chat (backend batch 2026-11-13, C25 / UK OSA):** on top of the shared filter the server checks a folded copy (full-width and look-alike letters, invisible characters, spelled `dot`/`at`, short links, more apps, phone numbers in words): such a name is `400 bad_request`; such a chat message is stored and shown as `[message removed: links and contact details are not allowed]`.
 
 ### PvP
 
@@ -311,6 +325,8 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
   - Allowed after the raid ends, once per player per week. Repeating a claim is safe: it returns `alreadyClaimed: true` with the same outcome.
   - `RaidView.chests` lists this week's and last week's ended raids the player took part in, with whether each chest was claimed. The game claims every listed week it has not received yet.
   - The chest's contents are `groveRaidChest(outcome, hall)`, added by the game.
+
+**Backend batch 2026-11-13 (no protocol bump; older games keep working):** `PurchaseIntentRequest.device` (optional, the command-queue device id) lets refunds and Sandbox credit count per device as well as per account (A5, A24); a receipt whose intent was released or lapsed is checked against the under-18 cap at redeem (GLOBAL-005); a store-reported local price counts in USD with `USD_RATES` (GLOBAL-007; `RedeemResponse.usd` shows it); App Store notifications are applied once per `notificationUUID` and in `signedDate` order (A29); an online Alliance War chest needs at least `chestMinAttacks` attacks by the member (E14: `409 conflict` otherwise, and `RaidView.chests` lists none). Battle commands in a village batch are replayed off the request thread before the row lock (A3), invisible on the wire except that a batch racing another device's may take a moment longer.
 
 ## Server-owned village (beta)
 
