@@ -17,7 +17,7 @@ describe('the complete Spanish release catalog', () => {
     expect(availability.es.ready).toBe(true);
     expect(Object.keys(spanish).sort()).toEqual(Object.keys(ENGLISH).sort());
     expect(Object.values(spanish).every(v => typeof v === 'string' && v.length > 0)).toBe(true);
-    expect(Object.entries(availability).filter(([,v])=>v.ready).map(([k])=>k).sort()).toEqual(['bn','ca','cs','da','de','el','en','es','fi','fr','ha','he','hi','hr','hu','id','it','ja','ko','mr','ms','nb','nl','or','pl','pt','ro','ru','sk','sl','sv','sw','th','tr','uk','ur','vi','zh-Hans','zh-Hant']);
+    expect(Object.entries(availability).filter(([,v])=>v.ready).map(([k])=>k).sort()).toEqual(['bn','ca','cs','da','de','el','en','es','fi','fr','ha','he','hi','hr','hu','id','it','ja','ko','mr','ms','nb','nl','or','pl','pt','ro','ru','sk','sl','sv','sw','th','tr','uk','ur','vi','yo','zh-Hans','zh-Hant']);
   });
   it('uses the first completed device preference, including Spanish regional tags', async () => {
     installCatalog('es', spanish);
