@@ -42,6 +42,9 @@
 | Friendly Duel | دوستانہ مقابلہ |
 | Looks | روپ |
 | Shinobi / Oni Breaker | شنوبی / اونی شکن |
+| Kunai Tower / Sky Bow Tower / Bitter Smoke Brazier | کنائی مینار / آسمانی کمان مینار / کڑوے دھوئیں کی انگیٹھی |
+| Night Blade / Hawk Tamer / Crane Glider | شب تیغ / باز بان / سارس گلائیڈر |
+| simulated raider / computer rival | نقلی حملہ آور / کمپیوٹر حریف |
 | Settings / Store / Codex | ترتیبات / دکان / کتابِ علم |
 
 برانڈ اور تکنیکی نام (Kagemura، App Store، Google Play، Game Center، Play Games، IndexedDB، Sentry) لاطینی ہی رہتے ہیں۔
