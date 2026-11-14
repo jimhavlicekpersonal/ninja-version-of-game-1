@@ -68,6 +68,20 @@ describe('E16: abandoning the scouted offline opponent after sending warriors in
     expect(out.trophies).toBe(500);
   });
 
+  it('2026-11-14: another battle seed in the record does not keep the opponent (the village decides from its own scout)', () => {
+    const { s, setup, now } = scouted();
+    const out = must(s, { type: 'abandonBattle', record: { at: now, opponentName: 'x', setup: { ...setup, seed: setup.seed + 1 }, deployments: sent } }, now);
+    expect(out.scout).toBeNull();
+    expect(out.trophies).toBeLessThan(500);
+  });
+
+  it('2026-11-14: with no opponent scouted, an abandon only spends the warriors', () => {
+    const { s, setup, now } = scouted();
+    const out = must({ ...s, scout: null }, { type: 'abandonBattle', record: { at: now, opponentName: 'x', setup, deployments: sent } }, now);
+    expect(out.trophies).toBe(500);
+    expect(out.army[SHINOBI]).toBe(4);
+  });
+
   it('an online raid (with a ticket) is left to the server', () => {
     const { s, setup, now } = scouted();
     const out = must(s, { type: 'abandonBattle', record: { at: now, opponentName: 'x', setup, deployments: sent, ticket: 't1' } }, now);

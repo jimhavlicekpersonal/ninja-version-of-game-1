@@ -10,7 +10,7 @@ import { MemoryRepo, type Ticket } from '../../../server/repo';
 import { InlineResimulator, ResimTimeoutError, WorkerResimulator, type ResimReply, type VillageJob, type WorkerLike } from '../../../server/resim/resim';
 import type { GameData } from '../../../src/gameplay/sim/types';
 import { createNewVillage } from '../../../src/gameplay/sim/village';
-import { serialize } from '../../../src/gameplay/sim/save';
+import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { baseAt, world } from './harness';
 
@@ -136,6 +136,53 @@ describe('A3: battle commands replay before the row lock', () => {
     const a = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [1, 2, 3]) });
     const b = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [4, 5, 6]) });
     expect([...a.results, ...b.results].every((x) => x.ok)).toBe(true);
+  });
+});
+
+describe('E16 (2026-11-14): an abandoned raid on a server-held village', () => {
+  async function held(w: ReturnType<typeof world>, name: string) {
+    const p = await w.player(name);
+    await p.startVillage();
+    const row = (await w.repo.getVillage(p.id))!;
+    const st = deserialize(row.file, data);
+    st.army = { hedgehog_roller: 5 };
+    st.scout = { seed: 42 };
+    st.trophies = 500;
+    await w.repo.saveVillage({ ...row, file: serialize(st, row.at), revision: row.revision + 1 }, row.revision, [], []);
+    return p;
+  }
+  const abandon = (w: ReturnType<typeof world>, ticket: string, warriors = 5) => ({
+    seq: 1,
+    t: w.now(),
+    command: { type: 'abandonBattle', record: { at: w.now(), opponentName: 'x', ticket, setup: { seed: 7, base: { ...baseAt(1), trophies: 500 }, army: { hedgehog_roller: warriors }, infiltration: true }, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: 0, y: 0 }] } } as never,
+  });
+
+  it('a made-up ticket is dropped: walking away from the scouted opponent is a lost attack', async () => {
+    const w = world();
+    const ann = await held(w, 'Ann');
+    const r = await ann.sendCommands({ device: 'device-e16-ann', stateHash: '', commands: [abandon(w, 'made-up-ticket')] });
+    expect(r.results).toEqual([{ seq: 1, ok: true }]);
+    const st = deserialize((await w.repo.getVillage(ann.id))!.file, data);
+    expect(st.scout).toBeNull();
+    expect(st.trophies).toBeLessThan(500);
+    expect(st.army.hedgehog_roller).toBe(4);
+  });
+
+  it('a real ticket of this player is left to the server rule (a started raid without a report is a loss)', async () => {
+    const w = world();
+    const ben = await held(w, 'Ben');
+    const t = w.now();
+    await w.repo.createTicket({ id: 'real-ticket', kind: 'pvp', attackerId: ben.id, defenderId: null, defenderName: 'x', base: baseAt(1), defenderTrophies: 500, createdAt: t, expiresAt: t + 3_600_000, used: false } as Ticket);
+    const other = await w.player('Cat');
+    await w.repo.createTicket({ id: 'cats-ticket', kind: 'pvp', attackerId: other.id, defenderId: null, defenderName: 'x', base: baseAt(1), defenderTrophies: 500, createdAt: t, expiresAt: t + 3_600_000, used: false } as Ticket);
+    await ben.sendCommands({ device: 'device-e16-ben', stateHash: '', commands: [abandon(w, 'real-ticket')] });
+    let st = deserialize((await w.repo.getVillage(ben.id))!.file, data);
+    expect(st.scout).toEqual({ seed: 42 });
+    expect(st.trophies).toBe(500);
+    // Someone else's ticket counts as made up.
+    await ben.sendCommands({ device: 'device-e16-ben', stateHash: '', commands: [{ ...abandon(w, 'cats-ticket', 4), seq: 2 }] });
+    st = deserialize((await w.repo.getVillage(ben.id))!.file, data);
+    expect(st.scout).toBeNull();
   });
 });
 

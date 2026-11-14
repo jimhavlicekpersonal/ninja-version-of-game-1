@@ -208,10 +208,23 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
         }
         decided.set(c.seq, error);
       }
-      steps.push({ seq: c.seq, clientAt: Number(c.t), command: c.command as Command, error });
+      steps.push({ seq: c.seq, clientAt: Number(c.t), command: error ? (c.command as Command) : await realTicketsOnly(repo, c.command as Command), error });
     }
     const job: VillageReplayJob = { file: row.file, at: row.at, now, earliest: now - MAX_BACKDATE_MS, skewMs: CLOCK_SKEW_MS, steps };
     return { job, battles: steps.some((s) => !s.error && BATTLE_COMMANDS.has(s.command.type)) };
+  };
+
+  // Economy E16 (2026-11-14): an abandoned raid is left to the server's own rule (a started ticket without a
+  // report is a loss) only when its ticket is a real ticket of this player; a made-up one is dropped, so the
+  // village treats the abandon as walking away from its scouted opponent.
+  const tickets = new Map<string, boolean>();
+  const realTicketsOnly = async (repo: Repo, cmd: Command): Promise<Command> => {
+    if (cmd.type !== 'abandonBattle' || !cmd.record?.ticket) return cmd;
+    const id = String(cmd.record.ticket);
+    if (!tickets.has(id)) tickets.set(id, (await repo.getTicket(id))?.attackerId === me.id);
+    if (tickets.get(id)) return cmd;
+    const { ticket: _forged, ...record } = cmd.record;
+    return { ...cmd, record };
   };
 
   // Backend A3: a batch with battle commands is replayed in a worker thread before the row is locked, then
