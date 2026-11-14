@@ -30,6 +30,9 @@ export const CAMPAIGNS: CampaignSpec[] = [
   { id: 'regular', name: "Regular (4 sessions a day, raid bots' army mix)", opts: { raidsPerSession: 2 }, casual: false, maxDays: 220 },
   { id: 'regular_defender', name: 'Regular defender (4 sessions a day, builds the five counters, defenses before collectors)', opts: { raidsPerSession: 2, policy: 'defender' }, casual: false, maxDays: 220 },
   { id: 'casual', name: "Casual (one visit a day, suggested army: the raid bots' roles, Trials and tasks)", opts: { raidsPerSession: 2, engaged: true }, casual: true, maxDays: 400 },
+  // Balance audit 2026-11-08 Change-12 (PS-1): the dominance margins are tracked by playing the rival policies.
+  { id: 'regular_rusher', name: 'Regular rusher (4 sessions a day, never builds defenses or traps)', opts: { raidsPerSession: 2, policy: 'rusher' }, casual: false, maxDays: 220 },
+  { id: 'regular_sandbagger', name: 'Regular sandbagger (4 sessions a day, research held at Keep - 1.4 to meet weaker bases)', opts: { raidsPerSession: 2, policy: 'sandbagger' }, casual: false, maxDays: 220 },
   { id: 'casual_explorer', name: 'Casual (one visit a day, explorer: newest warrior of each family, Trials and tasks)', opts: { raidsPerSession: 2, policy: 'explorer', engaged: true }, casual: true, maxDays: 400 },
 ];
 

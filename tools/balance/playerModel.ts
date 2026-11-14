@@ -26,6 +26,9 @@
  * - 'explorer': trains the newest unlocked warrior of each family (melee,
  *   ranged, support, siege, shadow, air) instead of the raid bots' mix, and
  *   researches them.
+ * - 'rusher' (balance audit 2026-11-08 PS-1, Change-12): never builds or upgrades defenses or traps.
+ * - 'sandbagger' (PS): like the raider, but never starts a research that would lift its earned
+ *   strength (`attackerStrength`) above Keep - `sandbagMargin` (1.4), to meet weaker bases.
  * `engaged` adds the other long-term goals: a Shadow Trial attempt when the
  * army is full after raiding, and claiming finished tasks and pass tiers.
  */
@@ -52,7 +55,9 @@ export interface ModelOptions {
   raidsPerSession: number;
   /** Max paid "Next" presses per raid. */
   maxNext?: number;
-  policy?: 'raider' | 'defender' | 'explorer';
+  policy?: 'raider' | 'defender' | 'explorer' | 'rusher' | 'sandbagger';
+  /** 'sandbagger': never research past attackerStrength = Keep - this (balance audit PS, default 1.4). */
+  sandbagMargin?: number;
   /** Also play Shadow Trials and claim tasks and pass tiers. */
   engaged?: boolean;
 }
@@ -193,7 +198,7 @@ export class ModelPlayer {
       for (const t of ['army_camp', 'burrow_barracks']) consider(t, 1);
       for (const t of ['acorn_orchard', 'dewdrop_well']) consider(t, 2);
       const defender = this.opts.policy === 'defender';
-      for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle']) consider(t, defender ? 2.6 : 4);
+      if (this.opts.policy !== 'rusher') for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle']) consider(t, defender ? 2.6 : 4);
       if (defender) for (const t of COUNTER_BUILDINGS) consider(t, 2.5);
       options.sort((a, b) => a.prio - b.prio);
       let did = false;
@@ -266,6 +271,12 @@ export class ModelPlayer {
     for (const [t] of this.mix().sort((a, b) => b[1] - a[1])) {
       const q = researchStartQuote(this.state, t, this.clock.now(), d);
       if (!q.ok || this.state.resources.dew - (q.quote.cost.dew ?? 0) < reserve) continue;
+      if (this.opts.policy === 'sandbagger') {
+        // Would this research lift the earned strength above Keep - margin? Then it stays undone.
+        const lvl = Math.max(1, this.state.research.levels[t] ?? 1);
+        const probe: VillageState = { ...this.state, research: { ...this.state.research, levels: { ...this.state.research.levels, [t]: lvl + 1 } } };
+        if (attackerStrength(probe, d) > hallLevel(this.state, d) - (this.opts.sandbagMargin ?? 1.4)) continue;
+      }
       if (this.run({ type: 'research', troop: t })) return;
     }
   }

@@ -1525,7 +1525,8 @@ function openDailyChest(s: VillageState, now: number, data: GameData, entropy?: 
   const lost = hasAny(overflow) ? { overflow } : {};
   const sj = jadeDue ? streakJade(st.step, data) : 0;
   const history = [...s.daily.history, { day, outcome, step: st.step, grants, ...lost, ...(sj ? { streakJade: sj } : {}) }].slice(-data.daily.streak.historyDays);
-  const nextSalt = mixSeed(salt, Number.isFinite(entropy) ? Math.floor(entropy!) >>> 0 : day);
+  // Without entropy (an older game, the model player) the salt stays: the draw is the seed's, as before v22.
+  const nextSalt = Number.isFinite(entropy) ? mixSeed(salt, Math.floor(entropy!) >>> 0) : salt;
   s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history, salt: nextSalt };
   return {
     ok: true,

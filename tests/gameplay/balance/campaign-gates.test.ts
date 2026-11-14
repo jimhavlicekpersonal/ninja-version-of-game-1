@@ -89,3 +89,23 @@ describe('defense is measured (E26)', () => {
     expect(r.totals.stolen / r.totals.looted).toBeLessThan(0.8);
   });
 });
+
+describe('policy dominance margins (balance audit 2026-11-08 Change-12, PS-1)', () => {
+  it('sandbagging does not pay: holding research back to meet weaker bases reaches Keeps 12 and 15 no sooner', () => {
+    const reg = byId('regular').reached;
+    const sand = byId('regular_sandbagger').reached;
+    expect(sand[12], 'Keep 12').toBeGreaterThanOrEqual(reg[12]);
+    expect(sand[15], 'Keep 15').toBeGreaterThanOrEqual(reg[15]);
+  });
+
+  it('KNOWN FAILING (PS-1, open): skipping defense should cost at least 10% of the pace to Keep 12 against the defender', () => {
+    // The audit's target is rusher >= 1.1 x the defender's days to Keep 12. Measured 2026-11-13: rusher 52.6 days,
+    // defender 51.4 (1.00x); the rusher plays exactly like the regular raider, who already never builds defenses
+    // before Keep 12. Defense buys no progression (DM-2): a design change (raids.json held-raid reward, loot cap),
+    // not a test change. Held here as a known failure: when the margin reaches 10%, this assertion fails and must
+    // become the real gate (expect(...).toBeGreaterThanOrEqual(1.1)).
+    const ratio = byId('regular_rusher').reached[12] / byId('regular_defender').reached[12];
+    expect(ratio, 'PS-1 fixed: turn this into the real gate').toBeLessThan(1.1);
+  });
+});
+
