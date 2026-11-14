@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
-import { buildLanguageAssets, languageBootScript, measureLanguageBuild } from './tools/i18n/build.mjs';
+import { buildLanguageAssets, languageBootScript } from './tools/i18n/build.mjs';
 
 buildLanguageAssets();
 
@@ -140,7 +140,7 @@ export default defineConfig(({ command }) => ({
   },
   // Production ships a smaller Phaser (no physics, sound, tilemaps: phaserBuild.js); dev and tests use the full package.
   resolve: command === 'build' && !process.env.VITEST ? { alias: [{ find: /^phaser$/, replacement: fileURLToPath(new URL('./src/presentation/render/phaserBuild.js', import.meta.url)) }] } : {},
-  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags(), { name: 'tk-language-sizes', apply: 'build', closeBundle() { measureLanguageBuild(); } }],
+  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags()],
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',

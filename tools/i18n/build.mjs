@@ -34,12 +34,24 @@ function builtSizes() {
   }
   return result;
 }
-/** Called after the client build, when the final artifact bytes exist. */
+const SIZE_REPORT = join(ROOT, 'docs/localization/SPANISH_SIZE.json');
+/** Writes the size report only when its text changes, so builds and tests leave the committed file alone. */
+function writeSizeReport(report) {
+  const text = JSON.stringify(report, null, 2) + '\n';
+  if (existsSync(SIZE_REPORT) && readFileSync(SIZE_REPORT, 'utf8') === text) return;
+  mkdirSync(dirname(SIZE_REPORT), { recursive: true });
+  writeFileSync(SIZE_REPORT, text);
+}
+/**
+ * Measures the built JavaScript in `dist/` into the size report. Only `npm run i18n:size` calls it
+ * (after a build): the hashes and byte counts change with every code change, so an automatic write on
+ * each build or test run made the committed report churn.
+ */
 export function measureLanguageBuild() {
-  const path = join(ROOT, 'docs/localization/SPANISH_SIZE.json');
-  const report = JSON.parse(readFileSync(path, 'utf8'));
+  if (!existsSync(join(ROOT, 'dist/assets'))) throw new Error('No dist/ build to measure: run npm run build first.');
+  const report = JSON.parse(readFileSync(SIZE_REPORT, 'utf8'));
   report.builtJavaScript = { phase: 'after_client_build', ...builtSizes() };
-  writeFileSync(path, JSON.stringify(report, null, 2) + '\n');
+  writeSizeReport(report);
   return report;
 }
 export function languageBootScript() {
@@ -131,15 +143,18 @@ export function buildLanguageAssets({ serverOnly = false } = {}) {
     spanish.serverDeletionPageUtf8 = Buffer.byteLength(serverPages.account);
   }
   if (spanish) for (const factor of [1, 1.5, 2]) report.projections[`50_languages_at_${factor}x_spanish`] = {
-    estimate: true, basis: 'Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 48 target languages are not translated or measured; fonts use the existing OS fallback policy.',
+    estimate: true, basis: 'Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. ' + `The other ${Object.values(available).filter(m => !m.ready).length} target languages are not ready or measured; fonts use the existing OS fallback policy.`,
     installedUtf8: Math.ceil((spanish.packagedAssets?.installedUtf8 ?? spanish.installedUtf8) * 50 * factor), gzip: Math.ceil((spanish.packagedAssets?.gzipSum ?? spanish.gzip) * 50 * factor), brotli: Math.ceil((spanish.packagedAssets?.brotliSum ?? spanish.brotli) * 50 * factor), zipArchive: Math.ceil((spanish.packagedAssets?.zipArchive ?? spanish.zipDeflatePayload) * 50 * factor),
   };
-  if (existsSync(join(ROOT, 'dist/assets'))) report.builtJavaScript = { phase: 'existing_dist_before_build', ...builtSizes() };
-  mkdirSync(join(ROOT, 'docs/localization'), { recursive: true });
-  writeFileSync(join(ROOT, 'docs/localization/SPANISH_SIZE.json'), JSON.stringify(report, null, 2) + '\n');
+  // The built-JavaScript measurement is kept from the committed report (npm run i18n:size refreshes it).
+  try {
+    const previous = JSON.parse(readFileSync(SIZE_REPORT, 'utf8'));
+    if (previous.builtJavaScript) report.builtJavaScript = previous.builtJavaScript;
+  } catch { /* no report yet */ }
+  writeSizeReport(report);
   return { available, report };
 }
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const result = buildLanguageAssets();
+  const result = process.argv.includes('--measure-dist') ? { report: measureLanguageBuild() } : buildLanguageAssets();
   if (!process.argv.includes('--quiet')) process.stdout.write(JSON.stringify(result.report, null, 2) + '\n');
 }
