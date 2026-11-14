@@ -1,0 +1,40 @@
+{
+  "name": "Kagemura: Ninja Clans",
+  "short_name": "Kagemura",
+  "description": "ನಿಂಜಾ ಕುಲವನ್ನು ಮುನ್ನಡೆಸಿ: ಗುಪ್ತ ಪರ್ವತ ಗ್ರಾಮವನ್ನು ಕಟ್ಟಿ, ಯೋಧರಿಗೆ ತರಬೇತಿ ನೀಡಿ, ಹೊಗೆ ಮತ್ತು ವಿಧ್ವಂಸದಿಂದ ಪ್ರತಿಸ್ಪರ್ಧಿಗಳ ಕೋಟೆಗಳ ಮೇಲೆ ದಾಳಿ ಮಾಡಿ.",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#1f2a36",
+  "theme_color": "#1f2a36",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "lang": "kn"
+}
