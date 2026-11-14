@@ -41,6 +41,6 @@ Bahasa Indonesia baku yang ramah, menyapa pemain dengan "kamu" (juga di halaman 
 
 Nama Jepang tetap dalam ejaan Latin (Kaito, Takeda, Gorō). Merek dan istilah teknis (Kagemura, App Store, Google Play, Game Center, Play Games, IndexedDB, Sentry) tidak diterjemahkan.
 
-Nama tempat yang dibuat: bagian kedua adalah kata benda (Puncak, Lembah), bagian pertama adalah penjelas (Guntur, Besi), ditulis kata benda dulu: Puncak Guntur. Ini butuh `generatedNames: "noun-first"` di `languages.json` (langkah integrasi).
+Nama tempat yang dibuat: bagian kedua adalah kata benda (Puncak, Lembah), bagian pertama adalah penjelas (Guntur, Besi), ditulis kata benda dulu: Puncak Guntur. `generatedNames: "noun-first"` sudah diatur di `languages.json`.
 
 Jamak hanya `other`. Waktu: {d}h {h}j, {h}j {m}m, {m}m {s}d (hari, jam, menit, detik). Halaman hukum Jepang diterjemahkan penuh. Terjemahan ini belum ditinjau penutur asli.

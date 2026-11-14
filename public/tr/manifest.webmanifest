@@ -1,0 +1,90 @@
+{
+  "name": "Kagemura: Ninja Clans",
+  "short_name": "Kagemura",
+  "description": "Bir ninja klanına liderlik et: gizli bir dağ köyü kur, savaşçılar eğit, rakip kalelere duman ve sabotajla baskın düzenle.",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#1f2a36",
+  "theme_color": "#1f2a36",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Günlük",
+      "short_name": "Günlük",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ordu",
+      "short_name": "Ordu",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Mağaza",
+      "short_name": "Mağaza",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Haberler ve mesajlar",
+      "short_name": "Haberler ve mesajlar",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "lang": "tr"
+}

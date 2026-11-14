@@ -17,8 +17,12 @@ import korean from '../locales/compiled/ko.json';
 import thai from '../locales/compiled/th.json';
 import traditionalChinese from '../locales/compiled/zh-Hant.json';
 import vietnamese from '../locales/compiled/vi.json';
+import arabic from '../locales/compiled/ar.json';
+import indonesian from '../locales/compiled/id.json';
+import russian from '../locales/compiled/ru.json';
+import turkish from '../locales/compiled/tr.json';
 import { ENGLISH, sourceText, type Catalog } from '../locales/runtime';
-const catalogs: Record<string, Catalog> = { en: ENGLISH, es: spanish, hi: hindi, pt: portuguese, de: german, fr: french, it: italian, 'zh-Hans': chinese, ro: romanian, ca: catalan, ja: japanese, nl: dutch, sv: swedish, da: danish, nb: norwegian, ko: korean, th: thai, 'zh-Hant': traditionalChinese, vi: vietnamese };
+const catalogs: Record<string, Catalog> = { en: ENGLISH, es: spanish, hi: hindi, pt: portuguese, de: german, fr: french, it: italian, 'zh-Hans': chinese, ro: romanian, ca: catalan, ja: japanese, nl: dutch, sv: swedish, da: danish, nb: norwegian, ko: korean, th: thai, 'zh-Hant': traditionalChinese, vi: vietnamese, ar: arabic, id: indonesian, ru: russian, tr: turkish };
 export function notificationText(text: string, locale = 'en'): string {
   const code = Object.hasOwn(catalogs, locale) ? locale : 'en';
   return sourceText(text, code, catalogs[code]);

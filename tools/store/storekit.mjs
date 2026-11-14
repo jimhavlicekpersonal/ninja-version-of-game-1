@@ -66,7 +66,19 @@ const traditional = key => hantData[key]?.text || '';
 const viData = read('locales/vi/data.json');
 const shortVietnamese = {starter_pack: 'Ngọc Bích và tài nguyên cho thủ lĩnh mới', builder_pack: 'Ngọc Bích để thuê thêm Thợ Làng, kèm tài nguyên', war_prep_pack: 'Lương Thực và Ngọc Bích cho Liên Minh Chiến', rebuild_pack: 'Ngọc Bích và tài nguyên để tái thiết', keep_pack: 'Tài nguyên và Ngọc Bích mừng Thành mới'};
 const vietnamese = key => viData[key]?.text || '';
-// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch, Swedish, Danish, Norwegian, Korean, Thai, Traditional Chinese or Vietnamese to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound, a Chinese word or a Thai syllable (a vowel or tone mark cut from its consonant), so overlong text fails here instead.
+const arData = read('locales/ar/data.json');
+const shortArabic = {starter_pack: 'يشم وموارد لقادة العشائر الجدد', builder_pack: 'يشم لتوظيف حرفي قرية إضافي، مع موارد', war_prep_pack: 'مؤن ويشم لحرب التحالفات', rebuild_pack: 'يشم وموارد لإعادة البناء', keep_pack: 'موارد ويشم احتفالًا بمستوى القلعة الجديد'};
+const arabic = key => arData[key]?.text || '';
+const idData = read('locales/id/data.json');
+const shortIndonesian = {starter_pack: 'Giok dan sumber daya untuk pemimpin klan baru', builder_pack: 'Giok untuk Perajin Desa tambahan, plus sumber daya', war_prep_pack: 'Perbekalan dan Giok untuk Perang Aliansi', rebuild_pack: 'Giok dan sumber daya untuk membangun ulang', keep_pack: 'Sumber daya dan Giok untuk Benteng barumu'};
+const indonesian = key => idData[key]?.text || '';
+const ruData = read('locales/ru/data.json');
+const shortRussian = {starter_pack: 'Нефрит и ресурсы для новых глав клана', builder_pack: 'Нефрит на ещё одного мастера деревни и ресурсы', war_prep_pack: 'Провизия и нефрит для войны альянсов', rebuild_pack: 'Нефрит и ресурсы для восстановления', keep_pack: 'Ресурсы и нефрит в честь нового уровня Цитадели'};
+const russian = key => ruData[key]?.text || '';
+const trData = read('locales/tr/data.json');
+const shortTurkish = {starter_pack: 'Yeni klan liderleri için Yeşim ve kaynaklar', builder_pack: 'Bir Köy Zanaatkârı daha için Yeşim ve kaynaklar', war_prep_pack: 'İttifak Savaşı için Erzak ve Yeşim', rebuild_pack: 'Yeniden kurmak için Yeşim ve kaynaklar', keep_pack: 'Yeni Kale seviyesi için kaynaklar ve Yeşim'};
+const turkish = key => trData[key]?.text || '';
+// Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch, Swedish, Danish, Norwegian, Korean, Thai, Traditional Chinese, Vietnamese, Arabic, Indonesian, Russian or Turkish to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound, a Chinese word, a Thai syllable (a vowel or tone mark cut from its consonant) or an Arabic word (its joined letters change shape), so overlong text fails here instead.
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -192,6 +204,30 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         displayName: clip(pack ? vietnamese(`store.packs.${gameId}.name`) : offer ? vietnamese(`offers.rules.${offer.id}.title`) : stipend ? vietnamese('store.stipend.name') : isPass ? `${vietnamese('pass.name')} Cao Cấp` : name, 30, 'Vietnamese'),
         description: clip(pack ? `${pack.moonstones} Ngọc Bích` : offer ? (shortVietnamese[offer.id] || vietnamese(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} lần nhận mỗi ngày, mỗi lần ${stipend.jadePerPayment} Ngọc Bích` : 'Nhánh cao cấp của mùa này', 55, 'Vietnamese'),
         locale: 'vi',
+      },
+      // Arabic (the App Store's Arabic localization), shown in every Arabic-speaking storefront.
+      {
+        displayName: clip(pack ? arabic(`store.packs.${gameId}.name`) : offer ? arabic(`offers.rules.${offer.id}.title`) : stipend ? arabic('store.stipend.name') : isPass ? `${arabic('pass.name')}: البريميوم` : name, 30, 'Arabic'),
+        description: clip(pack ? `${pack.moonstones} يشم` : offer ? (shortArabic[offer.id] || arabic(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} دفعة يومية، كل منها ${stipend.jadePerPayment} يشم` : 'مسار البريميوم لهذا الموسم', 55, 'Arabic'),
+        locale: 'ar',
+      },
+      // Indonesian (the App Store's Indonesian localization).
+      {
+        displayName: clip(pack ? indonesian(`store.packs.${gameId}.name`) : offer ? indonesian(`offers.rules.${offer.id}.title`) : stipend ? indonesian('store.stipend.name') : isPass ? `${indonesian('pass.name')} Premium` : name, 30, 'Indonesian'),
+        description: clip(pack ? `${pack.moonstones} Giok` : offer ? (shortIndonesian[offer.id] || indonesian(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} pembayaran harian, masing-masing ${stipend.jadePerPayment} Giok` : 'Jalur premium musim ini', 55, 'Indonesian'),
+        locale: 'id',
+      },
+      // Russian (the App Store's Russian localization).
+      {
+        displayName: clip(pack ? russian(`store.packs.${gameId}.name`) : offer ? russian(`offers.rules.${offer.id}.title`) : stipend ? russian('store.stipend.name') : isPass ? `${russian('pass.name')}: премиум` : name, 30, 'Russian'),
+        description: clip(pack ? `${pack.moonstones} нефрита` : offer ? (shortRussian[offer.id] || russian(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} ежедневных выплат по ${stipend.jadePerPayment} нефрита` : 'Премиальная дорожка этого сезона', 55, 'Russian'),
+        locale: 'ru',
+      },
+      // Turkish (the App Store's Turkish localization). No suffix follows a number.
+      {
+        displayName: clip(pack ? turkish(`store.packs.${gameId}.name`) : offer ? turkish(`offers.rules.${offer.id}.title`) : stipend ? turkish('store.stipend.name') : isPass ? `Premium ${turkish('pass.name')}` : name, 30, 'Turkish'),
+        description: clip(pack ? `${pack.moonstones} Yeşim` : offer ? (shortTurkish[offer.id] || turkish(`offers.rules.${offer.id}.description`)) : stipend ? `Günde ${stipend.jadePerPayment} Yeşim, toplam ${stipend.payments} ödeme` : 'Bu sezonun premium yolu', 55, 'Turkish'),
+        locale: 'tr',
       },
     ],
     productID: storeId,

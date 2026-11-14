@@ -16,9 +16,13 @@ import koreanPages from '../locales/compiled/pages-ko.json';
 import thaiPages from '../locales/compiled/pages-th.json';
 import traditionalChinesePages from '../locales/compiled/pages-zh-Hant.json';
 import vietnamesePages from '../locales/compiled/pages-vi.json';
+import arabicPages from '../locales/compiled/pages-ar.json';
+import indonesianPages from '../locales/compiled/pages-id.json';
+import russianPages from '../locales/compiled/pages-ru.json';
+import turkishPages from '../locales/compiled/pages-tr.json';
 
 /** Completed page translations (tools/i18n/pages.mjs); every other locale gets English. */
-const translatedPages: Record<string, { account: string }> = { es: spanishPages, hi: hindiPages, pt: portuguesePages, de: germanPages, fr: frenchPages, it: italianPages, 'zh-Hans': chinesePages, ro: romanianPages, ca: catalanPages, ja: japanesePages, nl: dutchPages, sv: swedishPages, da: danishPages, nb: norwegianPages, ko: koreanPages, th: thaiPages, 'zh-Hant': traditionalChinesePages, vi: vietnamesePages };
+const translatedPages: Record<string, { account: string }> = { es: spanishPages, hi: hindiPages, pt: portuguesePages, de: germanPages, fr: frenchPages, it: italianPages, 'zh-Hans': chinesePages, ro: romanianPages, ca: catalanPages, ja: japanesePages, nl: dutchPages, sv: swedishPages, da: danishPages, nb: norwegianPages, ko: koreanPages, th: thaiPages, 'zh-Hant': traditionalChinesePages, vi: vietnamesePages, ar: arabicPages, id: indonesianPages, ru: russianPages, tr: turkishPages };
 /**
  * The web account-deletion page (roadmap step 14), served by the API server at
  * GET /account/delete. Google Play asks for a web link where players can ask
@@ -64,7 +68,7 @@ export function deletionPage(locale = 'en'): string {
   p, li { color: var(--ink); }
   .muted { color: var(--muted); }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-top: 16px; }
-  ul { padding-left: 20px; margin: 8px 0; }
+  ul { padding-inline-start: 20px; margin: 8px 0; }
   label { display: block; font-weight: 600; margin: 14px 0 4px; }
   label span { font-weight: 400; color: var(--muted); }
   input, textarea { width: 100%; font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }

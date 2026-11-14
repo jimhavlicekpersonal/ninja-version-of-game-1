@@ -60,10 +60,10 @@ The game does not know the player's gender, so written forms that differ by gend
 
 ## Generated names
 
-Arabic puts the noun first. `names.placeSecond` and `social.groveNames.second` are indefinite nouns in construct form (قمة، وادي، نمر، قناع) and the first parts are definite nouns in the genitive (الرعد، الصمت، القرمز), so every pair forms a correct idafa with no gender agreement: قمة الرعد، نمر الصمت. This needs `generatedNames: "noun-first"` in `languages.json` (integration step); without it the parts appear in the wrong order.
+Arabic puts the noun first. `names.placeSecond` and `social.groveNames.second` are indefinite nouns in construct form (قمة، وادي، نمر، قناع) and the first parts are definite nouns in the genitive (الرعد، الصمت، القرمز), so every pair forms a correct idafa with no gender agreement: قمة الرعد، نمر الصمت. `generatedNames: "noun-first"` is set in `languages.json`.
 
 Japanese names are transliterated (كايتو، تاكيدا); Rin = رين, Ren = رِن.
 
 ## Not translated
 
-`ui.on_slam_*` (" on slam") is a CSS class string, and `ui.s_have_*` ("s have") is an extraction fragment with no visible use; both are kept as in English. Brand and platform names (App Store, Google Play, Game Center, Play Games, Sentry, IndexedDB) stay in Latin. Legal pages keep their draft notices; the Japanese statutory pages are translated in full as the Spanish worksheet does, and Japan's own Japanese text is served to Japanese players.
+The English catalog no longer has `ui.on_slam_*` (a CSS class string), `ui.s_have_*` or the spliced `ui.your_purchase_been_delivered_*` (integration removed them on 2026-11-14: nothing displays them). Brand and platform names (App Store, Google Play, Game Center, Play Games, Sentry, IndexedDB) stay in Latin. Legal pages keep their draft notices; the Japanese statutory pages are translated in full as the Spanish worksheet does, and Japan's own Japanese text is served to Japanese players.

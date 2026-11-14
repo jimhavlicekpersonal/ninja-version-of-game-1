@@ -1,0 +1,90 @@
+{
+  "name": "Kagemura: Ninja Clans",
+  "short_name": "Kagemura",
+  "description": "Pimpin klan ninja: bangun desa tersembunyi di pegunungan, latih prajurit, dan serbu benteng saingan dengan asap dan sabotase.",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#1f2a36",
+  "theme_color": "#1f2a36",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Harian",
+      "short_name": "Harian",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Pasukan",
+      "short_name": "Pasukan",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Toko",
+      "short_name": "Toko",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Berita dan pesan",
+      "short_name": "Berita dan pesan",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "lang": "id"
+}

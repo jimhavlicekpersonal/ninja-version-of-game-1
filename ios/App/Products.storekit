@@ -116,6 +116,26 @@
           "displayName": "Nhúm Ngọc Bích",
           "description": "45 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "رشّة يشم",
+          "description": "45 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Sejumput Giok",
+          "description": "45 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Щепотка нефрита",
+          "description": "45 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Bir Tutam Yeşim",
+          "description": "45 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_pinch",
@@ -236,6 +256,26 @@
           "displayName": "Túi Nhỏ Ngọc Bích",
           "description": "100 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "كيس يشم صغير",
+          "description": "100 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Kantong Giok",
+          "description": "100 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Кошель нефрита",
+          "description": "100 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Kese Dolusu Yeşim",
+          "description": "100 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_pouch",
@@ -356,6 +396,26 @@
           "displayName": "Túi Ngọc Bích",
           "description": "280 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "حقيبة يشم",
+          "description": "280 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Tas Giok",
+          "description": "280 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Мешок нефрита",
+          "description": "280 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Torba Dolusu Yeşim",
+          "description": "280 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_bag",
@@ -476,6 +536,26 @@
           "displayName": "Hộp Ngọc Bích",
           "description": "600 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "علبة يشم",
+          "description": "600 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Kotak Giok",
+          "description": "600 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Ларец нефрита",
+          "description": "600 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Kutu Dolusu Yeşim",
+          "description": "600 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_box",
@@ -596,6 +676,26 @@
           "displayName": "Rương Ngọc Bích",
           "description": "1300 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "صندوق يشم",
+          "description": "1300 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Peti Giok",
+          "description": "1300 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Сундук нефрита",
+          "description": "1300 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Sandık Dolusu Yeşim",
+          "description": "1300 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_chest",
@@ -716,6 +816,26 @@
           "displayName": "Kho Ngọc Bích",
           "description": "3500 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "خزنة يشم",
+          "description": "3500 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Brankas Giok",
+          "description": "3500 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Сокровищница нефрита",
+          "description": "3500 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Kasa Dolusu Yeşim",
+          "description": "3500 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_vault",
@@ -836,6 +956,26 @@
           "displayName": "Kho Báu Ngọc Bích Của Rồng",
           "description": "7500 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "كنز التنين من اليشم",
+          "description": "7500 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Timbunan Naga Giok",
+          "description": "7500 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Драконьи запасы нефрита",
+          "description": "7500 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Ejderha Hazinesi Yeşim",
+          "description": "7500 Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "jade_hoard",
@@ -956,6 +1096,26 @@
           "displayName": "Cuộn Mùa Giải Cao Cấp",
           "description": "Nhánh cao cấp của mùa này",
           "locale": "vi"
+        },
+        {
+          "displayName": "لفافة الموسم: البريميوم",
+          "description": "مسار البريميوم لهذا الموسم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Gulungan Musim Premium",
+          "description": "Jalur premium musim ini",
+          "locale": "id"
+        },
+        {
+          "displayName": "Свиток сезона: премиум",
+          "description": "Премиальная дорожка этого сезона",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Premium Sezon Parşömeni",
+          "description": "Bu sezonun premium yolu",
+          "locale": "tr"
         }
       ],
       "productID": "season_scroll",
@@ -1076,6 +1236,26 @@
           "displayName": "Gói Khởi Đầu",
           "description": "Ngọc Bích và tài nguyên cho thủ lĩnh mới",
           "locale": "vi"
+        },
+        {
+          "displayName": "حزمة البداية",
+          "description": "يشم وموارد لقادة العشائر الجدد",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Paket Pemula",
+          "description": "Giok dan sumber daya untuk pemimpin klan baru",
+          "locale": "id"
+        },
+        {
+          "displayName": "Стартовый набор",
+          "description": "Нефрит и ресурсы для новых глав клана",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Başlangıç Paketi",
+          "description": "Yeni klan liderleri için Yeşim ve kaynaklar",
+          "locale": "tr"
         }
       ],
       "productID": "offer_starter",
@@ -1196,6 +1376,26 @@
           "displayName": "Gói Thợ Thủ Công",
           "description": "Ngọc Bích để thuê thêm Thợ Làng, kèm tài nguyên",
           "locale": "vi"
+        },
+        {
+          "displayName": "حزمة الحرفي",
+          "description": "يشم لتوظيف حرفي قرية إضافي، مع موارد",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Paket Perajin",
+          "description": "Giok untuk Perajin Desa tambahan, plus sumber daya",
+          "locale": "id"
+        },
+        {
+          "displayName": "Набор мастера",
+          "description": "Нефрит на ещё одного мастера деревни и ресурсы",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Zanaatkâr Paketi",
+          "description": "Bir Köy Zanaatkârı daha için Yeşim ve kaynaklar",
+          "locale": "tr"
         }
       ],
       "productID": "offer_builder",
@@ -1316,6 +1516,26 @@
           "displayName": "Tiếp Tế Chiến Tranh",
           "description": "Lương Thực và Ngọc Bích cho Liên Minh Chiến",
           "locale": "vi"
+        },
+        {
+          "displayName": "مؤن الحرب",
+          "description": "مؤن ويشم لحرب التحالفات",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Perbekalan Perang",
+          "description": "Perbekalan dan Giok untuk Perang Aliansi",
+          "locale": "id"
+        },
+        {
+          "displayName": "Военные припасы",
+          "description": "Провизия и нефрит для войны альянсов",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Savaş Malzemeleri",
+          "description": "İttifak Savaşı için Erzak ve Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "offer_war_prep",
@@ -1436,6 +1656,26 @@
           "displayName": "Bộ Tái Thiết",
           "description": "Ngọc Bích và tài nguyên để tái thiết",
           "locale": "vi"
+        },
+        {
+          "displayName": "عدّة إعادة البناء",
+          "description": "يشم وموارد لإعادة البناء",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Paket Pembangunan Ulang",
+          "description": "Giok dan sumber daya untuk membangun ulang",
+          "locale": "id"
+        },
+        {
+          "displayName": "Набор восстановления",
+          "description": "Нефрит и ресурсы для восстановления",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Yeniden Kurma Seti",
+          "description": "Yeniden kurmak için Yeşim ve kaynaklar",
+          "locale": "tr"
         }
       ],
       "productID": "offer_rebuild",
@@ -1556,6 +1796,26 @@
           "displayName": "Bổng Lộc Gia Tộc",
           "description": "30 lần nhận mỗi ngày, mỗi lần 12 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "راتب العشيرة",
+          "description": "30 دفعة يومية، كل منها 12 يشم",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Tunjangan Klan",
+          "description": "30 pembayaran harian, masing-masing 12 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Жалованье клана",
+          "description": "30 ежедневных выплат по 12 нефрита",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Klan Maaşı",
+          "description": "Günde 12 Yeşim, toplam 30 ödeme",
+          "locale": "tr"
         }
       ],
       "productID": "clan_stipend",
@@ -1676,6 +1936,26 @@
           "displayName": "Mừng Thành Mới",
           "description": "Tài nguyên và Ngọc Bích mừng Thành mới",
           "locale": "vi"
+        },
+        {
+          "displayName": "احتفال القلعة",
+          "description": "موارد ويشم احتفالًا بمستوى القلعة الجديد",
+          "locale": "ar"
+        },
+        {
+          "displayName": "Perayaan Benteng",
+          "description": "Sumber daya dan Giok untuk Benteng barumu",
+          "locale": "id"
+        },
+        {
+          "displayName": "Праздник Цитадели",
+          "description": "Ресурсы и нефрит в честь нового уровня Цитадели",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Kale Kutlaması",
+          "description": "Yeni Kale seviyesi için kaynaklar ve Yeşim",
+          "locale": "tr"
         }
       ],
       "productID": "offer_keep",

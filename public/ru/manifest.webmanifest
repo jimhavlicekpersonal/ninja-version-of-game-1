@@ -1,0 +1,90 @@
+{
+  "name": "Kagemura: Ninja Clans",
+  "short_name": "Kagemura",
+  "description": "Возглавь клан ниндзя: построй тайную горную деревню, обучи воинов и совершай набеги на крепости соперников с дымом и диверсиями.",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#1f2a36",
+  "theme_color": "#1f2a36",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Награды",
+      "short_name": "Награды",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Армия",
+      "short_name": "Армия",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Магазин",
+      "short_name": "Магазин",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Новости и сообщения",
+      "short_name": "Новости и сообщения",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "lang": "ru"
+}
