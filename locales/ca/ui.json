@@ -195,5 +195,6 @@
   "unlock.later": { "en": "Later", "text": "Més tard" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "El teu primer cofre diari és a punt: Acaba l'obre." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "No s’ha pogut obrir. Comprova la connexió i torna-ho a provar." },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Hi ha una versió més nova de Kagemura. Torna a carregar per obrir-ho." }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Hi ha una versió més nova de Kagemura. Torna a carregar per obrir-ho." },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "Aquest telèfon mostrava les batalles a poc a poc, així que Kagemura farà servir gràfics més lleugers a partir de la propera obertura. Ho pots canviar a Configuració → Gràfics." }
 }

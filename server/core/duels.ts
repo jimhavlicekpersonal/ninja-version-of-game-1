@@ -15,8 +15,9 @@ import type { BattleSubmission, ChallengesResponse, ChallengeView, DuelLayoutReq
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import type { DuelChallenge, DuelTally, Player, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
 import { battleSeed, capBaseLoot, checkArmy, engineForClient, engineForTicket, normalizeBase, resimulate, takeTicket, TICKET_TTL_MS } from './pvp';
+import { fail, detailError } from './errors';
 
 const DAY = 24 * HOUR;
 export const CHALLENGE_HOURS = 24;
@@ -26,7 +27,7 @@ export const DUEL_RETENTION_DAYS = 30;
 async function requireFriend(ctx: ServerContext, me: Player, friendId: unknown): Promise<Player> {
   const id = String(friendId ?? '');
   const p = id ? await ctx.repo.getPlayer(id) : null;
-  if (!p || p.id === me.id || !(await ctx.repo.friendsOf(me.id)).some((f) => f.id === p.id)) throw new ApiError(404, 'not_found', 'You can only duel your friends.');
+  if (!p || p.id === me.id || !(await ctx.repo.friendsOf(me.id)).some((f) => f.id === p.id)) throw fail(404, 'not_found', 'duel.friends_only');
   return p;
 }
 
@@ -34,7 +35,7 @@ async function requireFriend(ctx: ServerContext, me: Player, friendId: unknown):
 function duelBase(p: Player, layout: 'live' | 'duel' | undefined): { base: BaseLayout; layout: 'live' | 'duel' } {
   const useDuel = layout === 'duel' && p.duelBase ? p.duelBase : null;
   const src = useDuel ?? p.base;
-  if (!src) throw new ApiError(409, 'not_found', `${isolateName(p.name)} has no village online yet.`);
+  if (!src) throw fail(409, 'not_found', 'duel.no_village', { name: isolateName(p.name) });
   const base = structuredClone(src);
   base.name = p.name;
   delete base.trophies;
@@ -90,9 +91,9 @@ export async function duelTicket(ctx: ServerContext, me: Player, req: DuelTicket
   if (req?.challengeId) {
     const c = await ctx.repo.getChallenge(String(req.challengeId));
     const side = c?.fromId === me.id ? 'from' : c?.toId === me.id ? 'to' : null;
-    if (!c || !side || (side === 'from' ? c.toId : c.fromId) !== friend.id) throw new ApiError(404, 'not_found', 'That challenge is gone.');
-    if (ctx.now() >= c.expiresAt) throw new ApiError(410, 'expired', 'That challenge is over.');
-    if ((side === 'from' ? c.fromResult : c.toResult) !== null) throw new ApiError(409, 'no_attacks_left', 'You already attacked in this challenge.');
+    if (!c || !side || (side === 'from' ? c.toId : c.fromId) !== friend.id) throw fail(404, 'not_found', 'duel.gone');
+    if (ctx.now() >= c.expiresAt) throw fail(410, 'expired', 'duel.over');
+    if ((side === 'from' ? c.fromResult : c.toResult) !== null) throw fail(409, 'no_attacks_left', 'duel.attacked');
     challengeId = c.id;
   }
   const { base, layout } = duelBase(friend, req?.layout);
@@ -135,7 +136,7 @@ export async function reportDuel(ctx: ServerContext, me: Player, sub: BattleSubm
   if (!done) {
     const again = await ctx.repo.getTicket(ticket.id);
     if (again?.response !== undefined) return again.response as DuelReportResponse;
-    throw new ApiError(409, 'conflict', 'This duel was already reported.');
+    throw fail(409, 'conflict', 'duel.already_reported');
   }
   ctx.push.notify(defenderId, { type: 'friends', title: `${isolateName(me.name)} dueled your village`, body: `${result.stars} star${result.stars === 1 ? '' : 's'}, ${Math.round(result.destruction)}%. A friendly duel: nothing was lost. Watch it in Friends.` });
   return response;
@@ -171,10 +172,10 @@ export async function setDuelLayout(ctx: ServerContext, me: Player, req: DuelLay
   }
   const rulesData = engineForClient(ctx, client).data;
   const n = normalizeBase(structuredClone(req.base), rulesData);
-  if ('error' in n) throw new ApiError(400, 'bad_request', n.error);
+  if ('error' in n) throw detailError(400, 'bad_request', n.error);
   const base = capBaseLoot(n.base, rulesData);
   for (const b of base.buildings) b.loot = {};
-  if (base.hallLevel > me.hallLevel) throw new ApiError(400, 'bad_request', 'A duel layout cannot be above your Keep.');
+  if (base.hallLevel > me.hallLevel) throw fail(400, 'bad_request', 'duel.layout_keep');
   base.name = me.name;
   await ctx.repo.updatePlayer(me.id, { duelBase: base });
 }
@@ -184,7 +185,7 @@ export async function challenge(ctx: ServerContext, me: Player, friendId: unknow
   const friend = await requireFriend(ctx, me, friendId);
   const t = ctx.now();
   const open = (await ctx.repo.challengesOf(me.id, t - CHALLENGE_HOURS * HOUR)).find((c) => (c.fromId === friend.id || c.toId === friend.id) && t < c.expiresAt && !(c.fromResult && c.toResult));
-  if (open) throw new ApiError(409, 'conflict', `You and ${isolateName(friend.name)} already have a challenge going.`);
+  if (open) throw fail(409, 'conflict', 'duel.already', { name: isolateName(friend.name) });
   const c: DuelChallenge = { id: ctx.uuid(), fromId: me.id, toId: friend.id, createdAt: t, expiresAt: t + CHALLENGE_HOURS * HOUR, fromResult: null, toResult: null };
   await ctx.repo.addChallenge(c);
   ctx.push.notify(friend.id, { type: 'friends', title: `${isolateName(me.name)} challenged you to a duel`, body: 'Attack each other within 24 hours: more stars wins. Open Friends.' });

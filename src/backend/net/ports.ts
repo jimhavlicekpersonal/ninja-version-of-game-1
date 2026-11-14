@@ -6,7 +6,8 @@
  *   - InProcessServerAdapter (server/inProcess.ts): calls our server core
  *     directly, for tests and local sandboxes.
  */
-import type { AuthNonceResponse, AgeRequest, AgeResponse, RulesRequest, RulesResponse, AttackResponse, AttackStartResponse, BalanceResponse, BattleSubmission, BlocksResponse, ChallengeView, ChallengesResponse, ChatResponse, ChatView, CommandBatch, CommandBatchResponse, DefensesResponse, DeletionCodeResponse, DonateRequest, DonateResponse, DuelLayoutRequest, DuelReportResponse, DuelTicketRequest, DuelTicketResponse, DuelsResponse, ErrorCode, FriendRequestBody, FriendRequestResult, FriendsResponse, GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GroveView, GrovesResponse, HelloResponse, InboxResponse, IntentReleaseRequest, IntentReleaseResponse, LeaderboardResponse, LedgerResponse, LinkCredential, LinkProvider, LinksResponse, MatchResponse, NoticesResponse, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PlayerView, PowerLeaderboardResponse, PrivacyRequest, PurchaseHistoryResponse, PurchaseIntentRequest, PurchaseIntentResponse, PushTokenRequest, RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, RedeemRequest, RedeemResponse, RegisterResponse, ReportRequest, ReportResponse, RequestView, RequestsResponse, RevokeOthersResponse, SquadResponse, UploadBaseRequest, VillageResponse } from './protocol';
+import { rememberServerMessage } from '../../../locales/runtime';
+import type { AuthNonceResponse, AgeRequest, AgeResponse, RulesRequest, RulesResponse, AttackResponse, AttackStartResponse, BalanceResponse, BattleSubmission, BlocksResponse, ChallengeView, ChallengesResponse, ChatResponse, ChatView, CommandBatch, CommandBatchResponse, DefensesResponse, DeletionCodeResponse, DonateRequest, DonateResponse, DuelLayoutRequest, DuelReportResponse, DuelTicketRequest, DuelTicketResponse, DuelsResponse, ErrorCode, FriendRequestBody, MessageRef, FriendRequestResult, FriendsResponse, GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GroveView, GrovesResponse, HelloResponse, InboxResponse, IntentReleaseRequest, IntentReleaseResponse, LeaderboardResponse, LedgerResponse, LinkCredential, LinkProvider, LinksResponse, MatchResponse, NoticesResponse, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PlayerView, PowerLeaderboardResponse, PrivacyRequest, PurchaseHistoryResponse, PurchaseIntentRequest, PurchaseIntentResponse, PushTokenRequest, RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, RedeemRequest, RedeemResponse, RegisterResponse, ReportRequest, ReportResponse, RequestView, RequestsResponse, RevokeOthersResponse, SquadResponse, UploadBaseRequest, VillageResponse } from './protocol';
 
 /** A failed server call, with the protocol error code. */
 export class ServerError extends Error {
@@ -14,8 +15,15 @@ export class ServerError extends Error {
     readonly status: number,
     readonly code: ErrorCode | 'network',
     message: string,
+    /**
+     * The message as codes (`ErrorBody.key`/`params`/`more`), when the server sent them and this build
+     * knows every code; the English `message` is also remembered with them (`rememberServerMessage`), so
+     * every display path shows them in the player's language.
+     */
+    readonly parts?: MessageRef[],
   ) {
     super(message);
+    if (parts?.length) rememberServerMessage(message, parts);
   }
   /**
    * Network problems, server hiccups and rate limits can be retried later;

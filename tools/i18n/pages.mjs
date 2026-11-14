@@ -3,7 +3,9 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { ROOT, formatSource, formatWorksheet, syncWorksheet } from './lib.mjs';
-const files = ['privacy', 'support', 'community', 'terms', 'tokushoho', 'shikin-kessai', 'account'];
+const files = ['privacy', 'support', 'community', 'terms', 'tokushoho', 'shikin-kessai', 'account', 'complaints'];
+/** Pages served by the API server: one template literal in a TypeScript file (no `${}` inside). */
+const SERVER_PAGES = { account: 'server/accountPage.ts', complaints: 'server/complaintPage.ts' };
 /** The account form's fallback for a failed request (it would otherwise show the browser's English error). Add one per completed language. */
 const ACCOUNT_FAILURE = {
   es: 'No se pudo enviar la solicitud. Comprueba tus datos y tu conexión e inténtalo de nuevo.',
@@ -26,9 +28,9 @@ const ACCOUNT_FAILURE = {
   vi: 'Không gửi được yêu cầu. Hãy kiểm tra thông tin và kết nối rồi thử lại.',
 };
 function htmlFor(name) {
-  const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;
+  const path = SERVER_PAGES[name] ?? `public/${name}.html`;
   const s = readFileSync(join(ROOT, path), 'utf8');
-  return { path, html: name === 'account' ? s.slice(s.indexOf('return `') + 8, s.lastIndexOf('`;')) : s };
+  return { path, html: SERVER_PAGES[name] ? s.slice(s.indexOf('return `') + 8, s.lastIndexOf('`;')) : s };
 }
 const decode = s => s.replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&#39;', "'").replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&nbsp;', '\u00a0');
 const encode = s => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -44,14 +46,16 @@ export function pageUnits(names = files) {
       const start = m.index + m[0].indexOf('>') + 1;
       out[`pages.${name}.${i++}`] = {file: path, name, start, end: start + inner.length, en, tokens, kind: 'html'};
     }
-    for (const m of html.matchAll(/\b(data-unset|data-label|aria-label)="([^"]+)"/g)) {
+    // The complaint form's field hints are text too (other pages' placeholders are formats, not words).
+    const attrs = name === 'complaints' ? /\b(data-unset|data-label|aria-label|placeholder)="([^"]+)"/g : /\b(data-unset|data-label|aria-label)="([^"]+)"/g;
+    for (const m of html.matchAll(attrs)) {
       const start = m.index + m[0].indexOf('"') + 1;
       out[`pages.${name}.${i++}`] = {file:path,name,start,end:start+m[2].length,en:decode(m[2]),tokens:[],kind:'attribute'};
     }
-    if (name === 'account') {
+    if (SERVER_PAGES[name]) {
       const start = html.indexOf('<script>') + 8, end = html.indexOf('</script>', start);
       const sf = ts.createSourceFile('account.js', html.slice(start,end), ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-      const walk = n => { if(ts.isStringLiteral(n) && /[A-Z][a-z]+(?: [a-z]+|…)/.test(n.text)) out[`pages.account.${i++}`] = {file:path,name,start:start+n.getStart(sf),end:start+n.end,en:n.text,tokens:[],kind:'script'};ts.forEachChild(n,walk); };walk(sf);
+      const walk = n => { if(ts.isStringLiteral(n) && /[A-Z][a-z]+(?: [a-z]+|…)/.test(n.text)) out[`pages.${name}.${i++}`] = {file:path,name,start:start+n.getStart(sf),end:start+n.end,en:n.text,tokens:[],kind:'script'};ts.forEachChild(n,walk); };walk(sf);
     }
   }
   return out;
@@ -84,7 +88,7 @@ export function buildPages(code, { names = files, writePublic = true } = {}) {
     result[name]=html;
   }
   if (writePublic) {
-    const dir=join(ROOT,'public',code);mkdirSync(dir,{recursive:true});for(const [name,html]of Object.entries(result))if(name!=='account')writeFileSync(join(dir,`${name}.html`),html);
+    const dir=join(ROOT,'public',code);mkdirSync(dir,{recursive:true});for(const [name,html]of Object.entries(result))if(!SERVER_PAGES[name])writeFileSync(join(dir,`${name}.html`),html);
   }
   mkdirSync(join(ROOT,'locales/compiled'),{recursive:true});writeFileSync(join(ROOT,`locales/compiled/pages-${code}.json`),JSON.stringify(result));
   return result;

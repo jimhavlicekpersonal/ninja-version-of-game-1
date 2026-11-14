@@ -40,6 +40,8 @@
  * physical cheap-phone measurement.
  */
 
+import { t } from '../ui/i18n';
+
 type QualityProfile = 'high' | 'low';
 /** What the player picked in Settings: `auto` follows the device signals. */
 export type QualityChoice = 'auto' | QualityProfile;
@@ -282,7 +284,7 @@ export function noteBattleFps(fps: number, expected = 60): string | null {
   } catch {
     return null;
   }
-  return 'This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.';
+  return t('quality.slowBattles');
 }
 
 /** The player's stored choice (`auto` when none, or when storage is blocked). */

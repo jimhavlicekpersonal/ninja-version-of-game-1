@@ -18,7 +18,7 @@ const ALLOWED = new Set(['Great Dragon Cannon']);
  * Catalog entries kept on purpose: wording only archived battle rules (server/rules/v3) still write into
  * old history, technical refusals a normal game never triggers, and a country's name.
  */
-const KEPT_KEYS = new Set(['extra.d7e56446de', 'extra.d86e58821f', 'extra.1385b76c86', 'extra.0d2a668902', 'server.bad_troop_level_7dbee25d35', 'server.bad_troop_levels_eee0c4cb4b', 'server.troop_not_unlocked_f8191b3918', 'sim.unknown_troop_type_65c4d6aaae', 'pages.privacy.8']);
+const KEPT_KEYS = new Set(['extra.d7e56446de', 'extra.d86e58821f', 'extra.1385b76c86', 'extra.0d2a668902', 'server.bad_troop_level_7dbee25d35', 'server.bad_troop_levels_eee0c4cb4b', 'server.troop_not_unlocked_f8191b3918', 'srv.army.bad_level', 'srv.army.bad_levels', 'srv.army.troop_locked', 'sim.unknown_troop_type_65c4d6aaae', 'pages.privacy.8']);
 
 const read = (p: string) => JSON.parse(readFileSync(new URL(`../../../${p}`, import.meta.url), 'utf8')) as Record<string, string>;
 

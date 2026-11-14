@@ -5,7 +5,7 @@
  * docs/PROTOCOL.md describes it in prose.
  *
  * Plain JSON over HTTPS. Auth is a bearer token from POST /v1/players.
- * Errors: HTTP status + { error: ErrorCode, message }.
+ * Errors: HTTP status + { error: ErrorCode, message, key?, params?, more? } (ErrorBody).
  * Pure types and constants only (shared by browser and Node).
  */
 import type { BaseLayout, BattleResult, Deployment } from '../../gameplay/sim/battle/types';
@@ -97,11 +97,29 @@ export type ErrorCode =
   /** 422: this Idempotency-Key was already used for another route or another body (backend batch 2026-11-13, A13); not retried. */
   | 'idempotency_mismatch';
 
+/**
+ * A server message as a stable code plus parameters (error codes, 2026-11-14). The game shows `srv.<key>`
+ * from its text packs (locales/en/messages.json) in the player's language; an unknown key (a newer
+ * server) falls back to the English text next to it. Parameter values are numbers, names, dates as
+ * UTC strings, or English the game translates itself (labels, nested server English).
+ */
+export interface MessageRef {
+  key: string;
+  params?: Record<string, string | number>;
+}
+
 export interface ErrorBody {
   error: ErrorCode;
+  /** The English sentence, for games before error codes (and logs). Always present. */
   message: string;
   /** `name_taken` and refused names: free names close to the one asked for. */
   suggestions?: string[];
+  /** The message's code (`MessageRef.key`, e.g. `pvp.opponent_gone`); absent on errors that have none (malformed requests). */
+  key?: string;
+  /** The code's parameters. */
+  params?: Record<string, string | number>;
+  /** Sentences that follow the first, in order (a reason, how to appeal). The English `message` is all of them joined. */
+  more?: MessageRef[];
 }
 
 export const Routes = {
@@ -1213,8 +1231,11 @@ export interface NoticeView {
   id: string;
   at: number;
   kind: 'report_outcome' | 'moderation_action' | 'account';
+  /** The English text (games before error codes, and notices written before them). */
   text: string;
   read: boolean;
+  /** The same notice as codes (`MessageRef`), in order; absent on notices written before 2026-11-14. */
+  parts?: MessageRef[];
 }
 export interface NoticesResponse {
   notices: NoticeView[];

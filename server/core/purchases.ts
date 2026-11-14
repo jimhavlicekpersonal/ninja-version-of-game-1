@@ -22,9 +22,10 @@ import { monthStart, productForStoreId, productInfo, storeProductId } from '../.
 import { deserialize } from '../../src/gameplay/sim/save';
 import { PurchaseError } from '../payments/apple';
 import { STATE_NOTICES, type Player, type PurchaseRow, type Repo } from '../repo';
-import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult } from './village';
 import { notify } from './moderation';
+import { fail, detailError, msg, staffError } from './errors';
 
 /** How long an unused intent holds its share of an under-18 player's monthly cap. */
 export const INTENT_HOLD_MS = 30 * MIN;
@@ -50,8 +51,8 @@ export function purchaseFeatures(ctx: ServerContext): string[] {
 
 function storeOf(ctx: ServerContext, raw: unknown): PurchaseStore {
   const store = STORES.find((s) => s === raw);
-  if (!store) throw new ApiError(400, 'bad_request', 'Unknown store.');
-  if (!ctx.payments[store]) throw new ApiError(403, 'purchase_refused', 'Purchases are not set up on this server yet. Nothing was charged.');
+  if (!store) throw fail(400, 'bad_request', 'purchase.unknown_store');
+  if (!ctx.payments[store]) throw fail(403, 'purchase_refused', 'purchase.not_set_up');
   return store;
 }
 
@@ -118,15 +119,15 @@ export function countedCents(ctx: ServerContext, catalogUsd: number, currency: s
 export async function purchaseIntent(ctx: ServerContext, me: Player, body: { store?: unknown; productId?: unknown; under18?: unknown; device?: unknown } | undefined): Promise<PurchaseIntentResponse> {
   storeOf(ctx, body?.store);
   const product = productInfo(ctx.data, String(body?.productId ?? ''));
-  if (!product) throw new ApiError(400, 'bad_request', 'That item is not available.');
+  if (!product) throw fail(400, 'bad_request', 'purchase.unavailable');
   const under18 = await ageGroupFor(ctx.repo, ctx, me.id, body?.under18);
-  if (under18 === null) throw new ApiError(403, 'purchase_refused', 'Please tell us your age group first.');
+  if (under18 === null) throw fail(403, 'purchase_refused', 'purchase.age_first');
   // Re-audit: buy, spend, refund, repeat. After several refunds, purchases pause until support has a look.
   const device = deviceId(body?.device);
   const refunds = await recentRefunds(ctx, me, await devicesOf(ctx, me, device));
   if (refunds >= REFUNDS_BEFORE_PAUSE) {
     ctx.metrics.count('tk_refused_total', { reason: 'refund_pause' });
-    throw new ApiError(403, 'purchase_refused', 'Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.');
+    throw fail(403, 'purchase_refused', 'purchase.paused_refunds');
   }
   // Check and reserve in one locked step (GLOBAL-004): two taps, two devices or two
   // server instances cannot both pass the cap with the same headroom.
@@ -137,7 +138,7 @@ export async function purchaseIntent(ctx: ServerContext, me: Player, body: { sto
       const cap = cents(ctx.data.store.minorMonthlyCapUsd);
       const spent = await tx.spentCents(me.id, monthStart(now), now);
       if (spent + cents(product.usd) > cap) {
-        throw new ApiError(403, 'purchase_refused', `Monthly spending limit of $${(cap / 100).toFixed(2)} reached for players under 18. Nothing was charged.`);
+        throw fail(403, 'purchase_refused', 'purchase.minor_cap', { limit: (cap / 100).toFixed(2) });
       }
     }
     const id = ctx.uuid().toLowerCase();
@@ -156,7 +157,7 @@ export async function purchaseIntent(ctx: ServerContext, me: Player, body: { sto
 export async function releaseIntent(ctx: ServerContext, me: Player, body: { accountToken?: unknown; outcome?: unknown } | undefined): Promise<IntentReleaseResponse> {
   const id = typeof body?.accountToken === 'string' ? body.accountToken.toLowerCase() : '';
   const outcome = body?.outcome;
-  if (!id || (outcome !== 'cancelled' && outcome !== 'pending')) throw new ApiError(400, 'bad_request', 'Say which purchase, and whether it was cancelled or is pending.');
+  if (!id || (outcome !== 'cancelled' && outcome !== 'pending')) throw fail(400, 'bad_request', 'purchase.say_which');
   return ctx.repo.transaction(async (tx) => {
     await tx.lockPurchases(me.id);
     const intent = await tx.getIntent(id);
@@ -206,7 +207,7 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
       finish: p.consumed ? null : (held) => (held ? google.consume(p.productId, p.purchaseToken) : p.acknowledged ? Promise.resolve() : google.acknowledge(p.productId, p.purchaseToken)),
     };
   } catch (e) {
-    if (e instanceof PurchaseError) throw new ApiError(400, 'bad_request', e.message);
+    if (e instanceof PurchaseError) throw detailError(400, 'bad_request', e.message);
     throw e;
   }
 }
@@ -235,26 +236,22 @@ async function holdOverCap(tx: Repo, ctx: ServerContext, me: Player, counted: nu
   ctx.metrics.count('tk_refused_total', { reason: 'minor_cap_at_redeem' });
   ctx.log('warn', 'purchase over the under-18 cap held at redeem', { player: me.id });
   const limit = (cap / 100).toFixed(2);
-  throw new ApiError(
-    403,
-    'purchase_refused',
-    'This purchase would go past the $' + limit + " monthly limit for players under 18, so it was not delivered. It stays with the store: it is delivered when next month's limit leaves room, or the store can refund it (Google Play refunds an undelivered purchase within 3 days).",
-  );
+  throw fail(403, 'purchase_refused', 'purchase.over_cap_held', { limit });
 }
 
 export async function redeem(ctx: ServerContext, me: Player, body: { store?: unknown; storeProductId?: unknown; receipt?: unknown } | undefined): Promise<RedeemResponse> {
   const store = storeOf(ctx, body?.store);
   const c = await check(ctx, store, String(body?.storeProductId ?? ''), body?.receipt);
   const product = productForStoreId(ctx.data, c.storeProductId);
-  if (!product) throw new ApiError(400, 'bad_request', 'The game does not sell that product.');
+  if (!product) throw fail(400, 'bad_request', 'purchase.not_sold');
   // Re-audit: the store refunded or voided this purchase before it reached us (an offline or modified game
   // kept the receipt). The receipt the device holds still looks valid; the notice says otherwise.
   if ((await ctx.repo.refundNotice(store, c.transactionId)) || (await ctx.repo.refundNotice(store, c.ref))) {
     ctx.metrics.count('tk_refused_total', { reason: 'refunded_before_redeem' });
-    throw new ApiError(400, 'bad_request', 'This purchase was refunded.');
+    throw fail(400, 'bad_request', 'purchase.refunded');
   }
   const answer = (row: PurchaseRow, already: boolean): RedeemResponse => {
-    if (row.playerId !== me.id) throw new ApiError(409, 'conflict', 'This purchase belongs to another player.');
+    if (row.playerId !== me.id) throw fail(409, 'conflict', 'purchase.other_player');
     return { transactionId: villageId(store, row.transactionId), productId: row.productId, usd: row.cents / 100, heldOnServer: row.heldOnServer, already };
   };
   const known = await ctx.repo.getPurchase(store, c.transactionId);
@@ -262,7 +259,7 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     const out = answer(known, true);
     if (known.status === 'refunded') {
       ctx.metrics.count('tk_refused_total', { reason: 'refunded_before_delivery' });
-      throw new ApiError(400, 'bad_request', 'This purchase was refunded.');
+      throw fail(400, 'bad_request', 'purchase.refunded');
     }
     // Credited for a village on the device that has since moved here: the device may never have
     // delivered it (a lost answer, a failed save), so the server's village gets it now unless the move
@@ -296,7 +293,7 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     const today = daily !== null ? await ctx.repo.testCentsSince(now - (now % (24 * HOUR))) : 0;
     if (testSpent + cents(product.usd) > cents(testCap) || (daily !== null && today + cents(product.usd) > cents(daily))) {
       ctx.metrics.count('tk_refused_total', { reason: 'test_purchase_cap' });
-      throw new ApiError(403, 'purchase_refused', 'Test purchases are limited on the live server.');
+      throw fail(403, 'purchase_refused', 'purchase.test_limited');
     }
   }
   const result = await ctx.repo.transaction(async (tx) => {
@@ -305,7 +302,7 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     // a token already used by an earlier purchase; a pruned one) reserved nothing, so it counts now.
     await tx.lockPurchases(me.id);
     const intent = c.accountToken ? await tx.getIntent(c.accountToken) : null;
-    if (intent && intent.playerId !== me.id) throw new ApiError(409, 'conflict', 'This purchase belongs to another player.');
+    if (intent && intent.playerId !== me.id) throw fail(409, 'conflict', 'purchase.other_player');
     // GLOBAL-005: an intent the game released (or whose hold ran out) reserves nothing any more, so the
     // receipt counts now too: a modified game cannot free its hold, buy something else, then pay this one.
     if (!intent || intent.used || intent.holdUntil <= now) await holdOverCap(tx, ctx, me, counted, now);
@@ -402,12 +399,12 @@ export async function reinstate(ctx: ServerContext, store: PurchaseStore, transa
 
 /** App Store Server Notifications v2 (`{ signedPayload }`). */
 export async function appleNotification(ctx: ServerContext, body: { signedPayload?: unknown } | undefined): Promise<void> {
-  if (!ctx.payments.apple) throw new ApiError(404, 'not_found', 'App Store purchases are not set up on this server.');
+  if (!ctx.payments.apple) throw fail(404, 'not_found', 'purchase.apple_off');
   let n;
   try {
     n = ctx.payments.apple.notification(body?.signedPayload);
   } catch (e) {
-    if (e instanceof PurchaseError) throw new ApiError(400, 'bad_request', e.message);
+    if (e instanceof PurchaseError) throw detailError(400, 'bad_request', e.message);
     throw e;
   }
   ctx.log('info', 'app store notification', { type: n.notificationType, subtype: n.subtype, id: n.notificationUUID, environment: n.environment });
@@ -467,17 +464,17 @@ async function rescindConsent(ctx: ServerContext, t: { transactionId: string; ap
   await ctx.repo.updatePlayer(player.id, { bannedUntil: UNTIL_LIFTED, banReason: 'A parent or guardian withdrew consent for this game (App Store).' });
   await ctx.repo.setAgeGroup(player.id, true, now);
   await ctx.repo.addStaffAction({ id: ctx.uuid(), at: now, actor: 'app-store', action: 'consent_rescinded', playerId: player.id, detail: { transactionId: t?.transactionId ?? null } });
-  await notify(ctx, player.id, 'account', 'A parent or guardian withdrew consent for this game in the App Store, so online play is off for this account. To ask about it, contact support from Settings → Privacy and help.');
+  await notify(ctx, player.id, 'account', [msg('account.consent_withdrawn')]);
 }
 
 /** Google Play Real-time Developer Notifications (Pub/Sub push). */
 export async function googleNotification(ctx: ServerContext, authorization: string | undefined, body: unknown): Promise<void> {
-  if (!ctx.payments.google) throw new ApiError(404, 'not_found', 'Google Play purchases are not set up on this server.');
+  if (!ctx.payments.google) throw fail(404, 'not_found', 'purchase.google_off');
   let n;
   try {
     n = await ctx.payments.google.notification(authorization, body);
   } catch (e) {
-    if (e instanceof PurchaseError) throw new ApiError(401, 'unauthorized', e.message);
+    if (e instanceof PurchaseError) throw staffError(401, 'unauthorized', e.message);
     throw e;
   }
   if (n.voided) await revoke(ctx, 'google', { ref: n.voided.purchaseToken }, n.voided.voidedAt, 'voided');

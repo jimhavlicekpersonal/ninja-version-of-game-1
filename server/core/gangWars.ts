@@ -26,10 +26,11 @@ import { botGangScores, carryRelayDamage, gangWarOutcome, gangWarPhase, gangWarT
 import type { BattleSubmission, GangWarAttackResponse, GangWarBaseView, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GangWarView } from '../../src/backend/net/protocol';
 import type { GangQueueEntry, GangRelay, GangWar, GangWarAttack, GangWarEntry, GangWarSide, Player, Squad, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
-import { ApiError, MIN, type ServerContext } from './context';
+import { MIN, type ServerContext } from './context';
 import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer } from './pvp';
 import { requireSquad, setRosterLock } from './squads';
 import { applyServerResult } from './village';
+import { fail } from './errors';
 
 /** The roster lock squads.ts asks about: a war that has not ended. */
 setRosterLock(async (ctx, squadId) => Boolean(await ctx.repo.activeWarOf(squadId, ctx.now())));
@@ -142,12 +143,12 @@ function mainAlliance(alliances: (string | null)[]): string | null {
 /** POST /v1/squad/war/queue (leader). */
 export async function queue(ctx: ServerContext, me: Player): Promise<GangWarResponse> {
   const { squad, member } = await requireSquad(ctx, me);
-  if (member.role !== 'leader') throw new ApiError(403, 'unauthorized', 'Only the Gang leader can start a Gang War.');
+  if (member.role !== 'leader') throw fail(403, 'unauthorized', 'war.leader_starts');
   const g = ctx.data.social.gangWar;
-  if (await ctx.repo.activeWarOf(squad.id, ctx.now())) throw new ApiError(409, 'conflict', 'Your Gang is already in a war.');
+  if (await ctx.repo.activeWarOf(squad.id, ctx.now())) throw fail(409, 'conflict', 'war.already');
   if (await ctx.repo.queuedGang(squad.id)) return war(ctx, me);
   const roster = await rosterOf(ctx, squad);
-  if (roster.length < g.minSize || roster.length > g.maxSize) throw new ApiError(409, 'conflict', `A Gang War needs ${g.minSize}-${g.maxSize} members.`);
+  if (roster.length < g.minSize || roster.length > g.maxSize) throw fail(409, 'conflict', 'war.size', { min: g.minSize, max: g.maxSize });
   const members = await Promise.all(roster.map((e) => ctx.repo.getPlayer(e.playerId!)));
   const mine: GangQueueEntry = { squadId: squad.id, size: roster.length, rating: ratingOf(ctx, squad).rating, power: roster.reduce((s, e) => s + e.keep, 0), alliances: members.map((p) => p?.groveId ?? null), queuedAt: ctx.now() };
   const recent = new Set((await ctx.repo.warsOf(squad.id, g.recentOpponents)).map((w) => (w.a.squadId === squad.id ? w.b.squadId : w.a.squadId)));
@@ -173,7 +174,7 @@ export async function queue(ctx: ServerContext, me: Player): Promise<GangWarResp
 /** DELETE /v1/squad/war/queue (leader). */
 export async function cancelQueue(ctx: ServerContext, me: Player): Promise<GangWarResponse> {
   const { squad, member } = await requireSquad(ctx, me);
-  if (member.role !== 'leader') throw new ApiError(403, 'unauthorized', 'Only the Gang leader can stop the search.');
+  if (member.role !== 'leader') throw fail(403, 'unauthorized', 'war.leader_stops');
   await ctx.repo.dequeueGang(squad.id);
   return war(ctx, me);
 }
@@ -266,7 +267,7 @@ export async function war(ctx: ServerContext, me: Player): Promise<GangWarRespon
 async function myWar(ctx: ServerContext, me: Player): Promise<{ w: GangWar; side: 'a' | 'b'; entry: GangWarEntry | undefined }> {
   const { squad } = await requireSquad(ctx, me);
   const w = await ctx.repo.activeWarOf(squad.id, ctx.now());
-  if (!w) throw new ApiError(404, 'not_found', 'Your Gang is not in a war.');
+  if (!w) throw fail(404, 'not_found', 'war.none');
   const side = sideOf(w, squad.id)!;
   return { w, side, entry: w[side].roster.find((e) => e.playerId === me.id) };
 }
@@ -274,8 +275,8 @@ async function myWar(ctx: ServerContext, me: Player): Promise<{ w: GangWar; side
 /** POST /v1/squad/war/base: during prep, copy my village into the war again. */
 export async function refreshBase(ctx: ServerContext, me: Player): Promise<GangWarResponse> {
   const { w, side, entry } = await myWar(ctx, me);
-  if (gangWarPhase(ctx.now(), w) !== 'prep') throw new ApiError(409, 'conflict', 'War bases can only change during prep.');
-  if (!entry) throw new ApiError(404, 'not_found', 'You joined after this war started.');
+  if (gangWarPhase(ctx.now(), w) !== 'prep') throw fail(409, 'conflict', 'war.prep_only');
+  if (!entry) throw fail(404, 'not_found', 'war.joined_after');
   const fresh = await ctx.repo.getPlayer(me.id);
   const roster = w[side].roster.map((e) => (e.index === entry.index ? { ...e, keep: fresh?.hallLevel ?? e.keep, base: warBase(fresh?.base ?? e.base, me.name, fresh?.hallLevel ?? e.keep, 0, ctx) } : e));
   await ctx.repo.updateWar(w.id, { [side]: { ...w[side], roster } } as Partial<Pick<GangWar, 'a' | 'b'>>);
@@ -287,23 +288,23 @@ export async function warTicket(ctx: ServerContext, me: Player, req: GangWarTick
   const engine = engineForClient(ctx, client);
   const { w, side, entry } = await myWar(ctx, me);
   const t = ctx.now();
-  if (gangWarPhase(t, w) !== 'battle') throw new ApiError(409, 'raid_not_live', 'The battle day has not started yet.');
-  if (!entry) throw new ApiError(404, 'not_found', 'You joined your Gang after this war started.');
+  if (gangWarPhase(t, w) !== 'battle') throw fail(409, 'raid_not_live', 'war.not_battle_day');
+  if (!entry) throw fail(404, 'not_found', 'war.joined_gang_after');
   // Re-audit: a ticket is the attack. One that is never reported (a loss hidden by not sending it)
   // still uses the attack, so unreported tickets count until the war ends.
   const reported = (await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
   const unreported = (await ctx.repo.openTickets(me.id, 'war')).filter((x) => x.warId === w.id).length;
-  if (reported + unreported >= ctx.data.social.gangWar.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Gang War attacks (an attack counts from the moment it is begun).');
+  if (reported + unreported >= ctx.data.social.gangWar.attacksPerMember) throw fail(409, 'no_attacks_left', 'war.attacks_used_long');
   const target = Math.floor(Number(req?.target));
   const enemy = w[other(side)].roster.find((e) => e.index === target);
-  if (!enemy) throw new ApiError(404, 'not_found', 'No such enemy base.');
+  if (!enemy) throw fail(404, 'not_found', 'war.no_base');
   const relay = req?.relay === true;
   const rules = ctx.rules.ticketRules(engine, client);
   let startDamage: Record<string, number> | undefined;
   if (relay) {
-    if (rules < 3) throw new ApiError(426, 'version_mismatch', 'Relay strikes need the latest Kagemura. Update the game, or make a solo strike.');
+    if (rules < 3) throw fail(426, 'version_mismatch', 'war.relay_update');
     // One relay striker at a time on a base; the hold lasts as long as the ticket.
-    if (!(await ctx.repo.holdRelay(w.id, side, target, me.id, t + TICKET_TTL_MS, t))) throw new ApiError(409, 'conflict', 'A Gang mate is striking this base in the relay right now. Try again when they finish.');
+    if (!(await ctx.repo.holdRelay(w.id, side, target, me.id, t + TICKET_TTL_MS, t))) throw fail(409, 'conflict', 'war.relay_busy');
     const r = await ctx.repo.getRelay(w.id, side, target);
     startDamage = r?.damage ?? {};
   }
@@ -317,10 +318,10 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'war');
   if (answered) return answered as GangWarAttackResponse;
   const w = ticket.warId ? await ctx.repo.getWar(ticket.warId) : null;
-  if (!w) throw new ApiError(404, 'not_found', 'That war is gone.');
+  if (!w) throw fail(404, 'not_found', 'war.gone');
   const member = await ctx.repo.squadOf(me.id);
   const side = member ? sideOf(w, member.squadId) : null;
-  if (!side) throw new ApiError(404, 'not_found', 'You are not in this war.');
+  if (!side) throw fail(404, 'not_found', 'war.not_in_war');
   const engine = engineForTicket(ctx, ticket, sub);
   const seed = battleSeed(ticket, sub);
   const { army, levels, reinforcements, hero } = checkArmy(sub, me, engine.data);
@@ -336,7 +337,7 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
   const target = ticket.target!;
   const response = await ctx.repo.transaction(async (tx) => {
     const used = (await tx.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
-    if (used >= ctx.data.social.gangWar.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Gang War attacks.');
+    if (used >= ctx.data.social.gangWar.attacksPerMember) throw fail(409, 'no_attacks_left', 'war.attacks_used');
     await tx.addWarAttack({ id: ctx.uuid(), warId: w.id, side, attackerId: me.id, target, relay: Boolean(ticket.relay), stars: result.stars, destruction: result.destruction, at: t });
     if (ticket.relay) {
       const prev = await tx.getRelay(w.id, side, target);
@@ -344,12 +345,12 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
     }
     // A village the server keeps spends the warriors who fought (as in an Alliance War).
     const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'remoteGroveBattleEnd', target, record: { at: ctx.now(), opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick }, known: result }, reason: 'gangwar:troops' }], ticket.id);
-    if (spent && !spent.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${spent.message}`);
+    if (spent && !spent.ok) throw fail(400, 'bad_request', 'village.says', { detail: spent.message });
     const after = await tx.warAttacks(w.id);
     const ours = sideTotal(await bestOn(ctx, w, side, ctx.now(), after));
     const theirs = sideTotal(await bestOn(ctx, w, other(side), ctx.now(), after));
     const res: GangWarAttackResponse = { result, ours, theirs };
-    if (!(await tx.useTicket(ticket.id, res))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
+    if (!(await tx.useTicket(ticket.id, res))) throw fail(409, 'conflict', 'battle.already_reported');
     return res;
   });
   // Step 68: the next relay striker, and the defenders, hear about it.
@@ -401,10 +402,10 @@ export async function gangWarReminders(ctx: ServerContext, stillHeld?: StillHeld
 /** POST /v1/squad/war/claim { warId }: once the war has ended, each member's chest, once. */
 export async function claim(ctx: ServerContext, me: Player, warId: unknown): Promise<GangWarClaimResponse> {
   const w = await ctx.repo.getWar(String(warId ?? ''));
-  if (!w) throw new ApiError(404, 'not_found', 'No such Gang War.');
+  if (!w) throw fail(404, 'not_found', 'war.no_such');
   const side = w.a.roster.some((e) => e.playerId === me.id) ? 'a' : w.b.roster.some((e) => e.playerId === me.id) ? 'b' : null;
-  if (!side) throw new ApiError(404, 'not_found', 'You did not take part in that Gang War.');
-  if (ctx.now() < w.endsAt) throw new ApiError(409, 'raid_not_ended', 'That Gang War has not ended yet.');
+  if (!side) throw fail(404, 'not_found', 'war.not_part');
+  if (ctx.now() < w.endsAt) throw fail(409, 'raid_not_ended', 'war.not_ended');
   await rateIfEnded(ctx, w);
   const { ours, theirs } = await totals(ctx, w, side, w.endsAt);
   const outcome = gangWarOutcome(sideTotal(ours), sideTotal(theirs));

@@ -6,6 +6,7 @@
 import { SIM_RULES } from '../../gameplay/sim/battle/battle';
 import { defaultData } from '../../gameplay/sim/data';
 import { dataVersionOf } from './dataVersion';
+import { messageParts } from '../../../locales/runtime';
 import { ServerError, type ServerPort } from './ports';
 import {
   type AgeRequest,
@@ -265,7 +266,7 @@ export class HttpServerAdapter implements ServerPort {
     }
     if (!res.ok) {
       const err = (json ?? {}) as Partial<ErrorBody>;
-      throw new ServerError(res.status, err.error ?? (res.status >= 500 ? 'network' : 'bad_request'), err.message ?? `Server answered ${res.status}.`);
+      throw new ServerError(res.status, err.error ?? (res.status >= 500 ? 'network' : 'bad_request'), err.message ?? `Server answered ${res.status}.`, err.key ? messageParts([{ key: err.key, params: err.params }, ...(Array.isArray(err.more) ? err.more : [])]) : undefined);
     }
     // A successful answer that does not parse was cut off or mangled on the way: never hand it on as "no data".
     if (unreadable) throw new ServerError(0, 'network', 'The server\'s answer was cut off. Check your connection and try again.');

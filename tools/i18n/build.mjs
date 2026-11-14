@@ -110,7 +110,7 @@ export function buildLanguageAssets({ serverOnly = false } = {}) {
       if (lang.code !== 'en' && !serverOnly) writeFileSync(join(publicDir, filename), bytes);
       report.measured[lang.code] = { ready, strings: Object.keys(pack).length, installedUtf8: bytes.length, gzip: gzipSync(bytes, { level: 9 }).length, brotli: brotliCompressSync(bytes).length, zipDeflatePayload: deflateRawSync(bytes, { level: 9 }).length, namespaces: perNamespace };
       if (ready && lang.code !== 'en') {
-        buildPages(lang.code, serverOnly ? { names: ['account'], writePublic: false } : undefined);
+        buildPages(lang.code, serverOnly ? { names: ['account', 'complaints'], writePublic: false } : undefined);
         if (serverOnly) continue;
         const manifest = JSON.parse(readFileSync(join(ROOT, 'public/manifest.webmanifest'), 'utf8'));
         // Home-screen shortcuts (retention audit G23) carry their names in the language and point one folder up.

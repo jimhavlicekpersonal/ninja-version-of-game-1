@@ -100,6 +100,8 @@ export class ApiError extends Error {
     message: string,
     /** Free names close to a refused one (`name_taken`). */
     readonly suggestions?: string[],
+    /** The message as codes (`core/errors.ts` `fail`); absent only on staff-facing errors. */
+    readonly parts?: import('../../src/backend/net/protocol').MessageRef[],
   ) {
     super(message);
   }
