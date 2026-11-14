@@ -911,8 +911,8 @@ html[data-script]:not([data-script="Latn"]) :is(h1, h2, h3, .boot-title, .round-
  * "Armată" in the title). These languages use the phone's fonts throughout, like other scripts; add a language here when
  * its letters are not in the subsets (render/fonts.ts SYSTEM_FONT_LANGS too).
  */
-html:is([lang="ro"], [lang="vi"], [lang="tr"], [lang="pl"], [lang="ha"]) { --font: var(--font-fallback); --font-display: var(--font-fallback); }
-html:is([lang="ro"], [lang="vi"], [lang="tr"], [lang="pl"], [lang="ha"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
+html:is([lang="ro"], [lang="vi"], [lang="tr"], [lang="pl"], [lang="ha"], [lang="hr"], [lang="cs"], [lang="hu"], [lang="sk"], [lang="sl"], [lang="yo"], [lang="ig"]) { --font: var(--font-fallback); --font-display: var(--font-fallback); }
+html:is([lang="ro"], [lang="vi"], [lang="tr"], [lang="pl"], [lang="ha"], [lang="hr"], [lang="cs"], [lang="hu"], [lang="sk"], [lang="sl"], [lang="yo"], [lang="ig"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
 /* Vietnamese stacks a tone mark on a vowel mark (ệ, ở, ữ): tight labels clip the top of the stack at line-height 1.05. */
 html[lang="vi"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
 /* Devanagari (Hindi, Marathi) hangs its letters from a joined headline; letter-spacing cuts it into pieces, and vowel signs above and below need more line height than Latin. */
