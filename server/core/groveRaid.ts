@@ -5,11 +5,11 @@
  */
 import { createRng, int, mixSeed, next } from '../../src/gameplay/sim/rng';
 import { enemyGrove, raidPhase, raidWindow } from '../../src/gameplay/sim/social/groveRaid';
-import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, BattleSubmission } from '../../src/backend/net/protocol';
+import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView } from '../../src/backend/net/protocol';
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
 import { HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';
-import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer } from './pvp';
+import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
 import type { ClientInfo } from '../rules/registry';
 import { applyServerResult } from './village';
 import { fail } from './errors';
@@ -222,7 +222,7 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
   return { ticket: ticket.id, seed: ticket.seed, base: entry.base, expiresAt };
 }
 
-export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<RaidAttackResponse> {
+export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<RaidAttackResponse> {
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'raid');
   const week = ticket.week!;
   if (answered) {
