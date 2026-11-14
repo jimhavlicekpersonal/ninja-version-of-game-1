@@ -264,6 +264,8 @@ export class RedisLocks implements MatchLocks {
 
 /** INCR the window's counter; the first hit sets its expiry. Returns [count, ms left]. */
 const HIT = `local n = redis.call('INCR', KEYS[1]) if n == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end return {n, redis.call('PTTL', KEYS[1])}`;
+/** Give back one hit while the window lasts (never below zero, never creating a key). */
+const REFUND = `local n = tonumber(redis.call('GET', KEYS[1]) or '0') if n > 0 then redis.call('DECR', KEYS[1]) end return 0`;
 
 /**
  * Rate limits counted in Redis, so every instance shares one budget per
@@ -299,6 +301,15 @@ export class RedisRateLimiter implements RateLimiter {
     } catch (e) {
       this.onError?.('rateLimit', e as Error);
       return this.fallback.hit(rule, key, now);
+    }
+  }
+
+  async refund(rule: keyof RateLimits, key: string, now: number = Date.now()): Promise<void> {
+    try {
+      await this.redis.command('EVAL', REFUND, 1, `${this.prefix}${rule}:${key}`);
+    } catch (e) {
+      this.onError?.('rateLimit', e as Error);
+      await this.fallback.refund?.(rule, key, now);
     }
   }
 }

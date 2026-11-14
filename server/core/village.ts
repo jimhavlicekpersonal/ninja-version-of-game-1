@@ -178,6 +178,9 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
   // Refusals decided before the replay, by command number: a retry after a conflict reuses them, so the
   // battle budget (a rate limit) is not spent twice for one command.
   const decided = new Map<number, string | null>();
+  // Battle-budget hits this request took; given back when the batch ends without being written (a 409 after
+  // repeated conflicts, a busy pool), so the game's retry is not charged again (2026-11-14 verification fix).
+  let charged = 0;
   const plan = async (repo: Repo, row: VillageRow) => {
     if (!device && row.deviceSeqs && Object.keys(row.deviceSeqs).length) {
       ctx.metrics.count('tk_refused_total', { reason: 'commands_without_device', rules: '?' });
@@ -198,7 +201,11 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
         if (!PLAYER_COMMANDS.has(type)) error = 'NOT_ALLOWED';
         else if (commandBytes(c.command) > (battle ? MAX_BATTLE_COMMAND_BYTES : MAX_COMMAND_BYTES)) error = 'TOO_LARGE';
         else if (type === 'setProfile' && (c.command as { under18?: unknown }).under18 === false && (await repo.getAgeGroup(me.id))?.under18) error = 'LOCKED'; // GLOBAL-006: under 18 stays (staff can reset)
-        else if (battle && (++battles > MAX_BATTLES_PER_BATCH || !(await limiterOf(ctx).hit('battleCommands', me.id, now)).ok)) error = 'TOO_MANY_BATTLES';
+        else if (battle && ++battles > MAX_BATTLES_PER_BATCH) error = 'TOO_MANY_BATTLES';
+        else if (battle) {
+          if ((await limiterOf(ctx).hit('battleCommands', me.id, now)).ok) charged++;
+          else error = 'TOO_MANY_BATTLES';
+        }
         decided.set(c.seq, error);
       }
       steps.push({ seq: c.seq, clientAt: Number(c.t), command: c.command as Command, error });
@@ -210,35 +217,45 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
   // Backend A3: a batch with battle commands is replayed in a worker thread before the row is locked, then
   // written only if the village is still the one it was replayed on (else replayed again, a few times).
   // Other batches replay in place under the lock, as before (cheap; no thread hop for a ~300 KB file).
-  for (let attempt = 0; ; attempt++) {
-    let pre: { row: VillageRow; out: VillageReplayOutcome } | null = null;
-    if (ctx.resim.replayVillage && sorted.some((c) => BATTLE_COMMANDS.has(c.command.type))) {
-      const row = await ctx.repo.getVillage(me.id);
-      if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
-      const p = await plan(ctx.repo, row);
-      if (p.battles) {
-        try {
-          pre = { row, out: await ctx.resim.replayVillage(p.job, ctx.data) };
-        } catch (e) {
-          if (e instanceof ResimBusyError) {
-            ctx.metrics.count('tk_resim_busy_total', { kind: 'village' });
-            throw new ApiError(503, 'busy', e.message);
+  try {
+    return await replayAndWrite();
+  } catch (e) {
+    const limiter = limiterOf(ctx);
+    for (; charged > 0; charged--) await limiter.refund?.('battleCommands', me.id, ctx.now());
+    throw e;
+  }
+
+  async function replayAndWrite(): Promise<CommandBatchResponse> {
+    for (let attempt = 0; ; attempt++) {
+      let pre: { row: VillageRow; out: VillageReplayOutcome } | null = null;
+      if (ctx.resim.replayVillage && sorted.some((c) => BATTLE_COMMANDS.has(c.command.type))) {
+        const row = await ctx.repo.getVillage(me.id);
+        if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
+        const p = await plan(ctx.repo, row);
+        if (p.battles) {
+          try {
+            pre = { row, out: await ctx.resim.replayVillage(p.job, ctx.data) };
+          } catch (e) {
+            if (e instanceof ResimBusyError) {
+              ctx.metrics.count('tk_resim_busy_total', { kind: 'village' });
+              throw new ApiError(503, 'busy', e.message);
+            }
+            throw e;
           }
-          throw e;
+          ctx.metrics.observe('tk_resim_ms', pre.out.ms, { kind: 'village' });
         }
-        ctx.metrics.observe('tk_resim_ms', pre.out.ms, { kind: 'village' });
       }
+      const answer = await ctx.repo.transaction(async (tx) => {
+        const row = await tx.getVillage(me.id, { forUpdate: true });
+        if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
+        if (pre && row.revision !== pre.row.revision) return null; // changed meanwhile: replay again
+        const out = pre ? pre.out : replayVillage((await plan(tx, row)).job, ctx.data);
+        return commit(tx, row, out);
+      });
+      if (answer) return answer;
+      ctx.metrics.count('tk_village_replay_conflicts_total');
+      if (attempt >= 2) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
     }
-    const answer = await ctx.repo.transaction(async (tx) => {
-      const row = await tx.getVillage(me.id, { forUpdate: true });
-      if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
-      if (pre && row.revision !== pre.row.revision) return null; // changed meanwhile: replay again
-      const out = pre ? pre.out : replayVillage((await plan(tx, row)).job, ctx.data);
-      return commit(tx, row, out);
-    });
-    if (answer) return answer;
-    ctx.metrics.count('tk_village_replay_conflicts_total');
-    if (attempt >= 2) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
   }
 
   async function commit(tx: Repo, row: VillageRow, out: VillageReplayOutcome): Promise<CommandBatchResponse> {

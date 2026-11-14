@@ -130,6 +130,11 @@ export interface RateDecision {
 /** The port: a Redis adapter can replace the memory one without touching the routes. */
 export interface RateLimiter {
   hit(rule: keyof RateLimits, key: string, now: number): Promise<RateDecision>;
+  /**
+   * Give back one allowed hit in the current window (2026-11-14, backend A3: battle commands of a batch
+   * that ended without being written, so a retry is not charged twice). Best effort; optional.
+   */
+  refund?(rule: keyof RateLimits, key: string, now: number): Promise<void>;
 }
 
 export class MemoryRateLimiter implements RateLimiter {
@@ -150,6 +155,11 @@ export class MemoryRateLimiter implements RateLimiter {
     if (w.count >= r.limit) return { ok: false, retryAfterMs: w.end - now };
     w.count++;
     return { ok: true, retryAfterMs: 0 };
+  }
+
+  async refund(rule: keyof RateLimits, key: string, now: number): Promise<void> {
+    const w = this.windows.get(`${rule}:${key}`);
+    if (w && now < w.end && w.count > 0) w.count--;
   }
 
   /** Forget finished windows now and then, so memory follows active callers only. */
