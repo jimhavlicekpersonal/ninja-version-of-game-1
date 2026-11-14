@@ -102,6 +102,28 @@ describe('Android sign-in for account recovery (GLOBAL-008)', () => {
   });
 });
 
+describe('Japan C17: the storefront country decides the Japanese legal notices', () => {
+  it('Play billing country and the App Store storefront come back as alpha-2; anything else is null', async () => {
+    const { StoreKitPaymentProvider } = await import('../../src/backend/payments/storekit');
+    const { japaneseStorefront } = await import('../../src/presentation/ui/economyUi');
+    plugin('TkBilling').billingCountry = vi.fn(async () => ({ countryCode: 'JP' }));
+    expect(await new PlayBillingPaymentProvider().storefront()).toBe('JP');
+    plugin('TkStore').storefront = vi.fn(async () => ({ countryCode: 'JPN' }));
+    expect(await new StoreKitPaymentProvider().storefront()).toBe('JP');
+    plugin('TkStore').storefront = vi.fn(async () => ({ countryCode: '' }));
+    expect(await new StoreKitPaymentProvider().storefront()).toBeNull();
+    plugin('TkBilling').billingCountry = vi.fn(async () => {
+      throw new Error('older plugin');
+    });
+    expect(await new PlayBillingPaymentProvider().storefront()).toBeNull();
+    // The storefront wins over the device language; without one the language decides, as before.
+    expect(japaneseStorefront('JP', false)).toBe(true);
+    expect(japaneseStorefront('US', true)).toBe(false);
+    expect(japaneseStorefront(null, true)).toBe(true);
+    expect(japaneseStorefront(null, false)).toBe(false);
+  });
+});
+
 describe('Play Billing store prices', () => {
   it('returns Play’s formatted price, currency and micros keyed by store id; unreturned products are missing', async () => {
     plugin('TkBilling').getProducts = vi.fn(async () => ({

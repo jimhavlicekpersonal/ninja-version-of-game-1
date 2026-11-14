@@ -33,6 +33,16 @@ function japaneseDevice(): boolean {
     return false;
   }
 }
+
+/**
+ * Japan C17: the Japanese legal notices (特定商取引法, 資金決済法) belong to purchases in the Japanese storefront,
+ * whatever the device language. The store's storefront country decides when it reports one (StoreKit
+ * `Storefront.current`, Play `BillingConfig`); otherwise the device language does, as before.
+ */
+export function japaneseStorefront(storefront: string | null | undefined, deviceIsJapanese: boolean): boolean {
+  return storefront ? storefront === 'JP' : deviceIsJapanese;
+}
+
 /** A small padlock for things that can't be claimed yet. */
 const LOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4.5 7V5.2a3.5 3.5 0 0 1 7 0V7h.6c.5 0 .9.4.9.9v6.2c0 .5-.4.9-.9.9H3.9a.9.9 0 0 1-.9-.9V7.9c0-.5.4-.9.9-.9h.6Zm1.8 0h3.4V5.2a1.7 1.7 0 0 0-3.4 0V7Z"/></svg>';
 const RES_NAME: Record<ResourceKind, string> = { acorns: 'Coins', dew: 'Provisions', nightsap: 'Shadow Ink', moonstones: 'Jade' };
@@ -79,6 +89,7 @@ export class EconomyUi {
    */
   private loadPrices(redraw: () => void): void {
     const pay = this.c.payments;
+    void this.storefront(); // Japan C17: known before the confirm step opens
     if (!pay.prices || !pay.available() || this.storePrices === 'loading' || this.pricesComplete || this.pricesAskedBy === redraw) return;
     this.pricesAskedBy = redraw;
     const d = localizedData(this.c.data);
@@ -133,6 +144,15 @@ export class EconomyUi {
     return this.c.dispatch({ type: 'setProfile', under18: band !== 'adult', ageBand: band }).ok;
   }
 
+  /** The store's storefront country (Japan C17), asked once per session; null when the store does not say. */
+  private storefrontCode: Promise<string | null> | null = null;
+  private storefront(): Promise<string | null> {
+    const pay = this.c.payments;
+    if (!pay.storefront || !pay.available()) return Promise.resolve(null);
+    this.storefrontCode ??= pay.storefront().catch(() => null);
+    return this.storefrontCode;
+  }
+
   /** Full purchase flow: age group, clear confirm step, provider, result. */
   async buy(productId: string): Promise<void> {
     if (!(await this.ensureAge())) return;
@@ -164,7 +184,7 @@ export class EconomyUi {
       h('p', {}, i18nText("ui.price_8c7a15f4eb", { arg1: what, arg2: pr.label, arg3: note })),
       // The stipend is not delivered at once: its payments start at once (remnant audit 2026-11-06).
       h('p', { class: 'muted small withdrawal' }, p.kind === 'stipend' ? t('store.withdrawalStipend') : i18nText("ui.the_item_is_delivered_at_once_by_buyin_2f987c8cb3")),
-      japaneseDevice()
+      japaneseStorefront(await this.storefront(), japaneseDevice())
         ? h('p', { class: 'small legal-ja', lang: 'ja' }, this.legalLink('特定商取引法に基づく表記', './tokushoho.html'), ' · ', this.legalLink('資金決済法に基づく表示', './shikin-kessai.html'))
         : null,
     );

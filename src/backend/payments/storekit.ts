@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
-import { storeErrorMessage, type PaymentProvider, type PaymentResult, type ProductRequest, type StorePrice, type StoreReceipt } from './provider';
+import { storeErrorMessage, storefrontCountry, type PaymentProvider, type PaymentResult, type ProductRequest, type StorePrice, type StoreReceipt } from './provider';
 
 interface AppleTransaction {
   transactionId: string;
@@ -14,6 +14,8 @@ interface TkStorePlugin {
   finish(opts: { transactionId: string }): Promise<void>;
   unfinished(): Promise<{ transactions: AppleTransaction[] }>;
   startListening(): Promise<void>;
+  /** Japan C17: `Storefront.current?.countryCode` (ISO 3166-1 alpha-3, e.g. "JPN"). */
+  storefront?(): Promise<{ countryCode?: string }>;
   addListener(event: 'transaction', cb: (t: AppleTransaction) => void): Promise<PluginListenerHandle>;
 }
 
@@ -75,6 +77,15 @@ export class StoreKitPaymentProvider implements PaymentProvider {
       out[p.id] = { formatted: p.displayPrice, ...(p.currency ? { currency: p.currency } : {}), ...(Number.isFinite(p.price) ? { micros: Math.round(p.price * 1e6) } : {}) };
     }
     return out;
+  }
+
+  /** Japan C17: the App Store storefront's country (alpha-2), null when unknown or the plugin is older. */
+  async storefront(): Promise<string | null> {
+    try {
+      return storefrontCountry((await withTimeout(TkStore.storefront!(), PRICES_TIMEOUT_MS)).countryCode);
+    } catch {
+      return null;
+    }
   }
 
   /** Purchases approved later (Ask to Buy) are delivered through this callback. */
