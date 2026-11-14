@@ -471,16 +471,16 @@
     "file": "public/privacy.html",
     "name": "privacy",
     "start": 8166,
-    "end": 8530,
-    "en": "If you ask the game to find your Game Center friends, we use their ids once to see which of them play Kagemura; we do not keep that list. We do not make decisions about you by automated means that have legal or similarly significant effects. One automatic safety step exists: a chat message reported by three different players is hidden until our staff look at it.",
+    "end": 9168,
+    "en": "If you ask the game to find your Game Center friends, we use their ids once to see which of them play Kagemura; we do not keep that list. We do not make decisions about you by automated means that have legal or similarly significant effects. One automatic safety step exists: a chat message reported by three different players is hidden until our staff look at it. When you play online, the game also makes a random installation id on your device (not your Player ID and not the statistics id) and sends it when you enter a friend code to accept an invite, collect an invite reward or start a purchase. We keep the ids sent for your account, and with each purchase intent and purchase, only to prevent abuse: for example, no invite reward for accounts on the same phone, and refunds counted per phone. The ids kept for your account are deleted with it; purchase records keep theirs without your Player ID (below). Clearing the game's data makes a new id. Basis: legitimate interests (preventing abuse).",
     "tokens": [],
     "kind": "html"
   },
   "pages.privacy.49": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 8542,
-    "end": 8595,
+    "start": 9180,
+    "end": 9233,
     "en": "Play statistics (off unless you say yes; adults only)",
     "tokens": [],
     "kind": "html"
@@ -488,8 +488,8 @@
   "pages.privacy.50": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 8606,
-    "end": 10115,
+    "start": 9244,
+    "end": 10753,
     "en": "When you play online and have told us you are an adult, the game asks once whether you want to share play statistics; Settings has the same switch. It is off until you say yes, and the game never asks, or sends statistics, for players under 18 or whose age it does not know. When it is on, the game sends what you do in the game (sessions starting, tutorial steps, raids with their stars and destruction, upgrades and research started, offers shown, Jade spent on speed-ups and purchases with their product and price) under a random statistics id made for this purpose. The statistics id is not your Player ID and is never sent together with it; the game does not add your name, village, chat or sign-in token, and our server does not store the IP address with them. Saying yes also sends what this device recorded before (so we can see the first minutes of play). Turning the switch off deletes what that statistics id sent; saying yes again starts a new one. We keep shared statistics for 400 days and use them only in totals (for example, how many new players came back the next day). Players who share may receive slightly different timings for in-game offers, to compare which works better; prices, rewards and game rules are the same for everyone. Some versions of the game also send your time zone's offset from UTC (for example, two hours ahead), never the name of the time zone or your location, so that days can be counted on your own calendar; it is kept with the statistics id and deleted with it.",
     "tokens": [],
     "kind": "html"
@@ -497,8 +497,8 @@
   "pages.privacy.51": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 10127,
-    "end": 10170,
+    "start": 10765,
+    "end": 10808,
     "en": "Crash reports (off unless you turn them on)",
     "tokens": [],
     "kind": "html"
@@ -506,8 +506,8 @@
   "pages.privacy.52": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 10181,
-    "end": 10907,
+    "start": 10819,
+    "end": 11545,
     "en": "Versions of the game that include crash reporting show a \"Send crash reports\" switch in Settings. It is off until you turn it on. When it is on and the game hits an error, the game sends the error message, where in the game's code it happened, the game version and the platform to our error-tracking service (Sentry). The game does not attach your name, Player ID, village, chat or save, and removes web-address parameters and anything shaped like an email address from the message. An error message can still occasionally include text the game was working on when it failed. The service sees the IP address the report comes from; we set the service not to store IP addresses. Turning the switch off stops new reports at once.",
     "tokens": [],
     "kind": "html"
@@ -515,8 +515,8 @@
   "pages.privacy.53": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 10919,
-    "end": 10950,
+    "start": 11557,
+    "end": 11588,
     "en": "Reports, moderation and notices",
     "tokens": [],
     "kind": "html"
@@ -524,8 +524,8 @@
   "pages.privacy.54": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 10961,
-    "end": 11413,
+    "start": 11599,
+    "end": 12051,
     "en": "When you report a message or a player, our staff review it and can remove the message, mute chat or suspend the account (see the {t0}community rules{t1}). We tell the player who reported what happened, and we tell a player when we remove their message, mute them or suspend them, with the reason and how to appeal. We do not tell a reported player who reported them. Every staff action is logged so that decisions can be checked.",
     "tokens": [
       "<a href=\"./community.html\">",
@@ -536,8 +536,8 @@
   "pages.privacy.55": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 11425,
-    "end": 11444,
+    "start": 12063,
+    "end": 12082,
     "en": "When you contact us",
     "tokens": [],
     "kind": "html"
@@ -545,8 +545,8 @@
   "pages.privacy.56": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 11465,
-    "end": 11621,
+    "start": 12103,
+    "end": 12259,
     "en": "{t0}Support email.{t1} If you write to us, we receive your email address and what you send, and use them only to answer you and keep a record of that answer.",
     "tokens": [
       "<b>",
@@ -557,8 +557,8 @@
   "pages.privacy.57": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 11635,
-    "end": 11891,
+    "start": 12273,
+    "end": 12529,
     "en": "{t0}Web deletion requests.{t1} The account deletion page asks for your Player ID, the deletion code the game gives you, and an optional note. It does not ask for an email address. We keep the request and what we did about it as a record that it was handled.",
     "tokens": [
       "<b>",
@@ -569,8 +569,8 @@
   "pages.privacy.58": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 11912,
-    "end": 11929,
+    "start": 12550,
+    "end": 12567,
     "en": "What we do not do",
     "tokens": [],
     "kind": "html"
@@ -578,8 +578,8 @@
   "pages.privacy.59": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 11940,
-    "end": 12215,
+    "start": 12578,
+    "end": 12853,
     "en": "We do not ask for your email address in the game, and we do not collect your contacts, precise location, photos or advertising id. There are no ads and no third-party tracking, and we do not sell your data or share it for advertising or cross-context behavioural advertising.",
     "tokens": [],
     "kind": "html"
@@ -587,8 +587,8 @@
   "pages.privacy.60": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 12227,
-    "end": 12254,
+    "start": 12865,
+    "end": 12892,
     "en": "Who processes it, and where",
     "tokens": [],
     "kind": "html"
@@ -596,8 +596,8 @@
   "pages.privacy.61": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 12265,
-    "end": 12814,
+    "start": 12903,
+    "end": 13452,
     "en": "We use service providers who process data only on our instructions: our hosting provider (server and database: {t0}{t1}), our error-tracking service Sentry (crash reports only if you turn them on, and our server's own errors; data region: {t2}{t3}), and Apple and Google (sign-in, purchases and notifications, under their own privacy policies). Our staff see what they need to answer support and moderate.",
     "tokens": [
       "<span data-legal=\"hosting\" data-unset=\"provider and region not published yet\">",
@@ -610,8 +610,8 @@
   "pages.privacy.62": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 12824,
-    "end": 13221,
+    "start": 13462,
+    "end": 13859,
     "en": "Some of these providers may process data outside your country, including outside the EU, UK or Brazil. Where data leaves the EU or UK for a country without an adequacy decision, we rely on the European Commission's Standard Contractual Clauses (and the UK addendum or International Data Transfer Agreement) or another transfer mechanism the law allows. You can ask us for a copy of the safeguards.",
     "tokens": [],
     "kind": "html"
@@ -619,8 +619,8 @@
   "pages.privacy.63": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13233,
-    "end": 13252,
+    "start": 13871,
+    "end": 13890,
     "en": "How long we keep it",
     "tokens": [],
     "kind": "html"
@@ -628,8 +628,8 @@
   "pages.privacy.64": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13273,
-    "end": 13505,
+    "start": 13911,
+    "end": 14143,
     "en": "Your online account and what belongs to it: as long as the account exists. Accounts not used online for {t0}{t1} are deleted after a notice in the game.",
     "tokens": [
       "<span data-legal=\"retentionInactiveAccounts\" data-unset=\"period not decided yet\">",
@@ -640,8 +640,8 @@
   "pages.privacy.65": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13519,
-    "end": 13622,
+    "start": 14157,
+    "end": 14260,
     "en": "Battle replays and Friendly Duels: 30 days. The last 30 days of village actions on our server: 30 days.",
     "tokens": [],
     "kind": "html"
@@ -649,8 +649,8 @@
   "pages.privacy.66": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13636,
-    "end": 13666,
+    "start": 14274,
+    "end": 14304,
     "en": "Open friend requests: 14 days.",
     "tokens": [],
     "kind": "html"
@@ -658,8 +658,8 @@
   "pages.privacy.67": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13680,
-    "end": 13830,
+    "start": 14318,
+    "end": 14468,
     "en": "Handled reports, with the reported text: 90 days after the decision. If a reported player deletes their account, the reported text is removed at once.",
     "tokens": [],
     "kind": "html"
@@ -667,8 +667,8 @@
   "pages.privacy.68": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13844,
-    "end": 13916,
+    "start": 14482,
+    "end": 14554,
     "en": "Records of purchase intents (the step before a store purchase): 90 days.",
     "tokens": [],
     "kind": "html"
@@ -676,8 +676,8 @@
   "pages.privacy.69": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13930,
-    "end": 14084,
+    "start": 14568,
+    "end": 14722,
     "en": "Server logs with IP addresses: {t0}{t1}. Rate-limit counters: at most an hour.",
     "tokens": [
       "<span data-legal=\"retentionServerLogs\" data-unset=\"period not published yet\">",
@@ -688,8 +688,8 @@
   "pages.privacy.70": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14098,
-    "end": 14222,
+    "start": 14736,
+    "end": 14860,
     "en": "Support email: {t0}{t1} after the last message.",
     "tokens": [
       "<span data-legal=\"retentionSupportMail\" data-unset=\"period not published yet\">",
@@ -700,8 +700,8 @@
   "pages.privacy.71": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14236,
-    "end": 14358,
+    "start": 14874,
+    "end": 14996,
     "en": "Handled web deletion requests: {t0}{t1}.",
     "tokens": [
       "<span data-legal=\"retentionDeletionRequests\" data-unset=\"period not published yet\">",
@@ -712,8 +712,8 @@
   "pages.privacy.72": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14372,
-    "end": 14491,
+    "start": 15010,
+    "end": 15129,
     "en": "Purchase records are kept after an account is deleted, without your Player ID, as long as tax and refund rules require.",
     "tokens": [],
     "kind": "html"
@@ -721,8 +721,8 @@
   "pages.privacy.73": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14512,
-    "end": 14533,
+    "start": 15150,
+    "end": 15171,
     "en": "Deleting your account",
     "tokens": [],
     "kind": "html"
@@ -730,8 +730,8 @@
   "pages.privacy.74": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14554,
-    "end": 14631,
+    "start": 15192,
+    "end": 15269,
     "en": "{t0}In the game:{t1} Settings → Online play → Account → Delete online account.",
     "tokens": [
       "<b>",
@@ -742,8 +742,8 @@
   "pages.privacy.75": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14645,
-    "end": 15220,
+    "start": 15283,
+    "end": 15858,
     "en": "{t0}On the web, if you can no longer open the game:{t1} {t2}{t3}. Enter your Player ID and a deletion code: ask for one in Settings → Online play → Account while you still have the game (it works once and for 30 days; asking again replaces it, and we keep only a one-way hash of it). With the code we carry the request out; without it, we first have to make sure the request comes from the account's owner, because Player IDs and names are visible to other players. We carry out requests within 30 days.",
     "tokens": [
       "<b>",
@@ -756,8 +756,8 @@
   "pages.privacy.76": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 15234,
-    "end": 15596,
+    "start": 15872,
+    "end": 16234,
     "en": "Deleting removes your online account, name, base, chat messages, friends, Gang membership, reports you made, linked sign-ins and the village kept on our server. If you linked Sign in with Apple, we also ask Apple to revoke the game's access. Raids you made stay in other players' replays as \"Deleted player\"; purchase records stay without your Player ID (above).",
     "tokens": [],
     "kind": "html"
@@ -765,8 +765,8 @@
   "pages.privacy.77": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 15610,
-    "end": 15769,
+    "start": 16248,
+    "end": 16407,
     "en": "{t0}Your village on the device{t1} is removed by uninstalling the app or clearing the site's data in your browser; Settings → \"Start a new village\" replaces it.",
     "tokens": [
       "<b>",
@@ -777,8 +777,8 @@
   "pages.privacy.78": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 15790,
-    "end": 15801,
+    "start": 16428,
+    "end": 16439,
     "en": "Your rights",
     "tokens": [],
     "kind": "html"
@@ -786,8 +786,8 @@
   "pages.privacy.79": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 15812,
-    "end": 15849,
+    "start": 16450,
+    "end": 16487,
     "en": "Wherever you live, you can ask us to:",
     "tokens": [],
     "kind": "html"
@@ -795,8 +795,8 @@
   "pages.privacy.80": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 15869,
-    "end": 16005,
+    "start": 16507,
+    "end": 16643,
     "en": "{t0}access{t1} your data and get a copy, and receive the data you gave us in a commonly used, machine-readable form ({t2}portability{t3});",
     "tokens": [
       "<b>",
@@ -809,8 +809,8 @@
   "pages.privacy.81": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 16019,
-    "end": 16070,
+    "start": 16657,
+    "end": 16708,
     "en": "{t0}correct{t1} it, or {t2}delete{t3} it (see above);",
     "tokens": [
       "<b>",
@@ -823,8 +823,8 @@
   "pages.privacy.82": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 16084,
-    "end": 16205,
+    "start": 16722,
+    "end": 16843,
     "en": "{t0}restrict{t1} how we use it while a question is being settled, and {t2}object{t3} to uses based on legitimate interests;",
     "tokens": [
       "<b>",
@@ -837,8 +837,8 @@
   "pages.privacy.83": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 16219,
-    "end": 16411,
+    "start": 16857,
+    "end": 17049,
     "en": "{t0}withdraw consent{t1} at any time (crash reports, play statistics, notifications: Settings), without affecting what happened before. Turning play statistics off also deletes what was shared.",
     "tokens": [
       "<b>",
@@ -849,8 +849,8 @@
   "pages.privacy.84": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 16430,
-    "end": 17283,
+    "start": 17068,
+    "end": 17921,
     "en": "Write to {t0}{t1} with your Player ID. We answer within one month (in Brazil, within the time the LGPD sets; in California, within 45 days) and may need to confirm the account is yours first. You can also complain to a data protection authority: in the EU the authority where you live or work, in the UK the Information Commissioner's Office (ico.org.uk), in Brazil the ANPD (gov.br/anpd). Residents of California have the rights of the CCPA/CPRA, including to know, delete, correct and not be discriminated against for using them; we do not sell or share personal information as those laws define it. Under the LGPD you can also ask for confirmation that we process your data, anonymisation, information about whom we share it with, and the consequences of refusing consent.",
     "tokens": [
       "<span data-legal=\"supportEmail\" data-unset=\"contact address not published yet\">",
@@ -861,8 +861,8 @@
   "pages.privacy.85": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 17295,
-    "end": 17304,
+    "start": 17933,
+    "end": 17942,
     "en": "Purchases",
     "tokens": [],
     "kind": "html"
@@ -870,8 +870,8 @@
   "pages.privacy.86": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 17315,
-    "end": 17507,
+    "start": 17953,
+    "end": 18145,
     "en": "Purchases are made through the App Store or Google Play. They handle your payment details; we never see them. The {t0}terms of service{t1} describe Jade and other purchases.",
     "tokens": [
       "<a href=\"./terms.html\">",
@@ -882,8 +882,8 @@
   "pages.privacy.87": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 17519,
-    "end": 17527,
+    "start": 18157,
+    "end": 18165,
     "en": "Security",
     "tokens": [],
     "kind": "html"
@@ -891,8 +891,8 @@
   "pages.privacy.88": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 17538,
-    "end": 17806,
+    "start": 18176,
+    "end": 18444,
     "en": "The game talks to our server only over encrypted connections (HTTPS), sign-in tokens are stored as one-way hashes, and staff access is limited and logged. No system is perfectly secure; if a breach affects you, we will tell you and the authorities as the law requires.",
     "tokens": [],
     "kind": "html"
@@ -900,8 +900,8 @@
   "pages.privacy.89": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 17818,
-    "end": 17825,
+    "start": 18456,
+    "end": 18463,
     "en": "Changes",
     "tokens": [],
     "kind": "html"
@@ -909,8 +909,8 @@
   "pages.privacy.90": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 17836,
-    "end": 17952,
+    "start": 18474,
+    "end": 18590,
     "en": "We update this page and its date when what we collect changes, and tell players in the game about important changes.",
     "tokens": [],
     "kind": "html"
@@ -918,8 +918,8 @@
   "pages.privacy.91": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 17982,
-    "end": 18137,
+    "start": 18620,
+    "end": 18775,
     "en": "Kagemura: Ninja Clans · {t0}Support{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5}",
     "tokens": [
       "<a href=\"./support.html\">",
@@ -988,8 +988,8 @@
   "pages.privacy.98": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 12415,
-    "end": 12452,
+    "start": 13053,
+    "end": 13090,
     "en": "provider and region not published yet",
     "tokens": [],
     "kind": "attribute"
@@ -997,8 +997,8 @@
   "pages.privacy.99": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 12630,
-    "end": 12647,
+    "start": 13268,
+    "end": 13285,
     "en": "not published yet",
     "tokens": [],
     "kind": "attribute"
@@ -1006,8 +1006,8 @@
   "pages.privacy.100": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 13434,
-    "end": 13456,
+    "start": 14072,
+    "end": 14094,
     "en": "period not decided yet",
     "tokens": [],
     "kind": "attribute"
@@ -1015,8 +1015,8 @@
   "pages.privacy.101": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14012,
-    "end": 14036,
+    "start": 14650,
+    "end": 14674,
     "en": "period not published yet",
     "tokens": [],
     "kind": "attribute"
@@ -1024,8 +1024,8 @@
   "pages.privacy.102": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14165,
-    "end": 14189,
+    "start": 14803,
+    "end": 14827,
     "en": "period not published yet",
     "tokens": [],
     "kind": "attribute"
@@ -1033,8 +1033,8 @@
   "pages.privacy.103": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14324,
-    "end": 14348,
+    "start": 14962,
+    "end": 14986,
     "en": "period not published yet",
     "tokens": [],
     "kind": "attribute"
@@ -1042,8 +1042,8 @@
   "pages.privacy.104": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 14743,
-    "end": 14772,
+    "start": 15381,
+    "end": 15410,
     "en": "web address not published yet",
     "tokens": [],
     "kind": "attribute"
@@ -1051,8 +1051,8 @@
   "pages.privacy.105": {
     "file": "public/privacy.html",
     "name": "privacy",
-    "start": 16483,
-    "end": 16516,
+    "start": 17121,
+    "end": 17154,
     "en": "contact address not published yet",
     "tokens": [],
     "kind": "attribute"

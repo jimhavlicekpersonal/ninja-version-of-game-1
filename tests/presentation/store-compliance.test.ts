@@ -103,6 +103,20 @@ describe('privacy defaults and declarations (GLOBAL-019)', () => {
     expect(env).toContain('GET https://h.test/a failed');
     expect(env).not.toContain('b=c');
   });
+  it('the privacy page names the stable installation id (last gaps 2026-11-14), in English and every ready language', () => {
+    const en = read('public/privacy.html');
+    expect(en).toContain('random installation id');
+    expect(en).toContain('only to prevent abuse');
+    expect(en).toContain('The ids kept for your account are deleted with it');
+    const pages = JSON.parse(read('locales/en/pages.json')) as Record<string, string>;
+    const key = Object.keys(pages).find((k) => k.startsWith('pages.privacy.') && pages[k]!.includes('random installation id'))!;
+    for (const code of ['es', 'pt', 'fr', 'de', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'hi', 'vi', 'th', 'it', 'nl', 'ro', 'sv', 'ca', 'da', 'nb', 'ar', 'id', 'ru', 'tr']) {
+      const ws = JSON.parse(read(`locales/${code}/pages.json`)) as Record<string, { en: string; text: string }>;
+      expect(ws[key]!.en, code).toBe(pages[key]);
+      expect(ws[key]!.text.length, code).toBeGreaterThan(pages[key]!.length / 3);
+    }
+    expect(read('docs/store/PRIVACY.md')).toMatch(/Device or other IDs \| FCM push token; the game's random installation id/);
+  });
   it('the store docs no longer claim email is never collected or that everything is earnable', () => {
     expect(read('docs/store/LISTING.md')).not.toContain('everything in the game can be earned by playing');
     expect(read('public/privacy.html')).toContain('It is off until you turn it on');
