@@ -10,6 +10,7 @@ import { PROTOCOL_VERSION } from '../../src/backend/net/protocol';
 import { SIM_RULES, SIM_RULES_COMPATIBLE } from '../../src/gameplay/sim/battle/battle';
 import { defaultData } from '../../src/gameplay/sim/data';
 import { SAVE_VERSION } from '../../src/gameplay/sim/save';
+import { PREVIEW, previewBuildingIds, previewHeroIds } from '../../src/gameplay/sim/plannedContent';
 import { MIN_PROTOCOL } from '../../server/core/identity';
 
 const ROOT = process.cwd();
@@ -47,6 +48,7 @@ export function statusMarkdown(): string {
     ['Warriors live', `${roster.warriors.filter((w) => w.liveTroop).length} of ${roster.warriors.length}`],
     ['Heroes live', `${heroes.length} of ${roster.heroes.length}${heroes.length ? ` (${heroes.join(', ')})` : ''}`],
     ['Buildings in the catalog', `${catalog.length} (${catalog.filter((b) => b.live).length} live)`],
+    ['Built, not live (`data/planned.json`, sandbox `?preview` only)', `${previewBuildingIds().length} buildings, ${previewHeroIds().length} heroes; features off: ${Object.keys(PREVIEW.features).join(', ')}`],
     ['Keep levels', String(defaultData.hall.levels.length)],
     ['Store products', String(products)],
     ['Languages', `${languages.length} (\`locales/languages.json\`)`],
