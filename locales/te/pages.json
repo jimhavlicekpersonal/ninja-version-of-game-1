@@ -307,7 +307,7 @@
   "pages.account.17": { "en": "Deletion code {t0}(from Settings → Online play → Account){t1}", "text": "" },
   "pages.account.18": { "en": "Anything else {t0}(optional; please don't include contact details){t1}", "text": "" },
   "pages.account.19": { "en": "Request deletion", "text": "" },
-  "pages.account.20": { "en": "Enter your Player ID (Settings → Online play → Account).", "text": "" },
+  "pages.account.20": { "en": "Enter your Player ID (Settings → Online play → Account).", "text": "మీ ఆటగాడి ఐడి నమోదు చేయండి (సెట్టింగ్‌లు → ఆన్‌లైన్ ఆట → ఖాతా)." },
   "pages.account.21": { "en": "Sending…", "text": "" },
   "pages.account.22": { "en": "The request did not go through. Try again later.", "text": "" },
   "pages.account.23": { "en": "Request received and confirmed with your code. Your reference: ", "text": "" },
