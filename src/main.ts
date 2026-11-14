@@ -11,12 +11,13 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
-import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, villageTexture } from './presentation/render/assets';
+import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, thumbnailDataUrl, trimTextureCaches, villageTexture } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
 import { quality, renderScaleFor } from './presentation/render/quality';
+import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './presentation/render/frameRate';
 import { App } from './app';
 import { browserKeyValue, Connection, resolveServerUrl } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
@@ -84,6 +85,27 @@ function showBanner(id: string, text: string, actions: { label: string; onClick:
   }
   document.body.append(el);
   return close;
+}
+
+/**
+ * The game's stylesheet has arrived (device F7: it no longer blocks the first paint, see
+ * vite.config.ts `nonBlockingStyles`). The splash waits for it before fading, so the HUD is never
+ * seen unstyled; after `timeoutMs` it goes anyway.
+ */
+function stylesReady(timeoutMs = 20_000): Promise<void> {
+  const pending = [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].filter((l) => !l.sheet);
+  if (!pending.length) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    let left = pending.length;
+    const one = () => {
+      if (--left <= 0) resolve();
+    };
+    for (const l of pending) {
+      l.addEventListener('load', one, { once: true });
+      l.addEventListener('error', one, { once: true });
+    }
+    setTimeout(resolve, timeoutMs);
+  });
 }
 
 /** The save store this boot opened, for the error screen's "Copy save code". */
@@ -200,6 +222,10 @@ async function boot(): Promise<void> {
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   // Report section 5 step 9: the player's language (stored choice, else the device's), before any game text shows.
   await initLanguage();
+  // Device F17: the interface fonts load while storage opens and the village starts, instead of
+  // a 1.5 s wait of their own just before the map is created (canvas text drawn before they
+  // arrive keeps the fallback font, so the map still waits for them a little, see below).
+  const fontsLoading = loadInterfaceFonts(3000);
   bootStatus(i18nText("ui.opening_your_village_985a7b5b5b"));
   const [{ store, events, db }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
   bootStore = store;
@@ -356,7 +382,7 @@ async function boot(): Promise<void> {
       .catch((e) => console.warn(i18nText("ui.push_registration_failed_9a9f4cdbb5"), e));
   analytics.log('session_start', { isNew, awayMs: offline?.awayMs ?? 0, platform: platformName(), standalone: matchMedia('(display-mode: standalone)').matches });
 
-  await loadInterfaceFonts();
+  await Promise.race([fontsLoading, new Promise<void>((r) => setTimeout(r, 500))]);
   const host = document.getElementById('game')!;
   // Draw at the screen's real density (iPhone 3x, Pixel 7 2.6x) so lines and text are smooth, not upscaled;
   // low quality (cheap phones, ?quality=low, Settings) stops at 2x and 30 FPS (render/quality.ts).
@@ -426,11 +452,11 @@ async function boot(): Promise<void> {
 
   const thumbs = new Map<string, string>();
   // Only real images are remembered: a texture that isn't ready yet is asked for again next time.
+  // Thumbnail-sized (device F11): the full texture's PNG was 100-300 KB per building.
   const thumbOf = (key: string): string | null => {
     const known = thumbs.get(key);
     if (known) return known;
-    if (!game.textures.exists(key)) return null;
-    const url = game.textures.getBase64(key) as string;
+    const url = thumbnailDataUrl(game.textures, key);
     if (url) thumbs.set(key, url);
     return url || null;
   };
@@ -451,7 +477,8 @@ async function boot(): Promise<void> {
       const keep = controller.state.buildings.find((b) => controller.data.buildings[b.type]?.category === 'hall');
       return thumbOf(villageTexture(game.textures, 'elder_toadstool', Math.max(1, keep?.level ?? 1), controller.data.buildings.elder_toadstool.size, skin));
     },
-    getFps: () => game.loop.actualFps,
+    // Frames actually drawn (device F2): `actualFps` counts display frames, also those the limit skips.
+    getFps: () => Math.round(frames.fps(performance.now())),
     troopThumb: (type) => thumbOf(Keys.troop(type)),
     warriorIcon: (id) => thumbOf(Keys.warriorIcon(id)),
     onAttack: () => app?.scout(false),
@@ -590,7 +617,7 @@ async function boot(): Promise<void> {
   if (sandbox) hud.toast(i18nText("ui.testing_sandbox_a_separate_practice_vi_e3d2ae64e5"), 'info');
   if (params.has('debug')) {
     // Testing hook, only with ?debug in the URL.
-    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes };
+    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes, textureBytes: () => textureBytes(game.textures) };
   }
 
   // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
@@ -643,14 +670,45 @@ async function boot(): Promise<void> {
     }
   }, 5000);
 
-  // Autosave regularly and whenever the app goes to the background or closes.
-  window.setInterval(() => void controller.save(), 15_000);
+  // Autosave whenever the app goes to the background or closes, and every 15 s only when the village
+  // changed without a save (device F14: every command and finished timer already saves at once, so
+  // this mostly re-wrote an unchanged village, 150-300 KB at late Keeps, four times a minute). At
+  // least every 2 minutes it saves anyway, which keeps "last seen" fresh for a killed app.
+  let autosaved: unknown = null;
+  let autosavedAt = 0;
+  window.setInterval(() => {
+    const now = performance.now();
+    if (controller.state === autosaved && now - autosavedAt < 120_000) return;
+    void controller.save();
+    autosaved = controller.state;
+    autosavedAt = now;
+  }, 15_000);
+  /**
+   * The app may be killed from here on (background, page closing, Capacitor pause): save, send the
+   * actions waiting for the server now instead of at the next 15 s tick (GLOBAL-010), and let go
+   * of painted art no scene shows (device F19; repainted when needed).
+   */
+  let leftAt = 0;
+  const goingAway = () => {
+    app?.flushBattle();
+    void controller.save();
+    const now = performance.now();
+    if (now - leftAt < 1000) return; // hidden, pagehide and pause arrive together: one send is enough
+    leftAt = now;
+    void connection.flush().catch(() => undefined);
+    lowMemory();
+  };
+  const lowMemory = () => {
+    trimTextureCaches(game.textures);
+    thumbs.clear();
+  };
+  // Android onTrimMemory and iOS memory warnings, forwarded by the app's native code (MainActivity, TkViewController).
+  window.addEventListener('tkmemorywarning', lowMemory);
   document.addEventListener('visibilitychange', () => {
     const hidden = document.visibilityState === 'hidden';
     sound.suspend(hidden);
     if (hidden) {
-      app?.flushBattle();
-      void controller.save();
+      goingAway();
       void connection.uploadBase();
       if (prefs.get('reminders')) {
         // Opt-in only: the player's chosen types, no quiet-hours pings, a daily cap.
@@ -667,10 +725,13 @@ async function boot(): Promise<void> {
       void controller.save();
     }
   });
-  window.addEventListener('pagehide', () => {
-    app?.flushBattle();
-    void controller.save();
-  });
+  window.addEventListener('pagehide', goingAway);
+  // In the apps the WebView may stay "visible" while the app is paused (iOS app switcher, Android split screen).
+  if (isNative()) {
+    void import('@capacitor/app')
+      .then(({ App: CapApp }) => CapApp.addListener('pause', goingAway))
+      .catch(() => undefined);
+  }
   // A failed save is shown (at most once a minute), never only logged.
   let lastSaveWarning = 0;
   let retryingSave = false;
@@ -714,31 +775,46 @@ async function boot(): Promise<void> {
 
   // Battery (client re-audit item 17): the village drops to ~20 FPS after a few seconds without
   // input or game events, and comes back at the first touch, key, wheel or event. Never in battle.
+  // While a dialog covers the village (its backdrop blurs the map on high), the village draws at
+  // ~10 FPS whatever the input (2026-11-13 runtime batch, review M6): each village frame made the
+  // browser blur the whole screen again.
   const loop = game.loop as unknown as { _limitRate: number; hasFpsLimit: boolean };
-  const activeRate = loop._limitRate;
+  pacing.activeMs = loop._limitRate;
+  game.events.on(Phaser.Core.Events.POST_RENDER, () => frames.tick(performance.now()));
+  // Device F2: a 120 Hz phone on high ran at 120 FPS (twice the profile's work); limit it to 60.
+  void measureRefreshHz().then((hz) => {
+    const limit = limitFor(q.fps, hz);
+    if (loop.hasFpsLimit && 1000 / limit > pacing.activeMs) setActiveLimit(loop, limit);
+  });
   const IDLE_RATE = 1000 / 21;
+  const COVERED_RATE = 1000 / 11;
   const IDLE_AFTER_MS = 5000;
   let lastActive = performance.now();
-  let idle = false;
+  let mode: 'active' | 'idle' | 'covered' = 'active';
+  const covered = () => !app?.inBattle && document.querySelector('#hud .modal-backdrop') !== null;
+  const setMode = (m: typeof mode) => {
+    if (mode === m || !loop.hasFpsLimit) return;
+    mode = m;
+    loop._limitRate = m === 'active' ? pacing.activeMs : Math.max(pacing.activeMs, m === 'idle' ? IDLE_RATE : COVERED_RATE);
+  };
   const active = () => {
     lastActive = performance.now();
-    if (idle) {
-      idle = false;
-      loop._limitRate = activeRate;
-    }
+    setMode(covered() ? 'covered' : 'active');
   };
   for (const t of ['pointerdown', 'pointermove', 'wheel', 'keydown', 'touchstart']) window.addEventListener(t, active, { capture: true, passive: true });
+  // After the tap or key has been handled (a dialog may have just closed): full rate at once.
+  for (const t of ['click', 'keyup']) window.addEventListener(t, active, { passive: true });
   controller.onEvents(() => active());
   window.setInterval(() => {
     if (app?.inBattle) return active();
-    if (!idle && loop.hasFpsLimit && activeRate < IDLE_RATE && performance.now() - lastActive > IDLE_AFTER_MS) {
-      idle = true;
-      loop._limitRate = IDLE_RATE;
-    }
+    if (covered()) setMode('covered');
+    else if (mode === 'covered') setMode('active');
+    else if (mode === 'active' && performance.now() - lastActive > IDLE_AFTER_MS) setMode('idle');
   }, 1000);
 
   // The splash goes once the village's first frame is drawn; then the queued toasts and banners.
   await firstFrame;
+  await stylesReady();
   document.getElementById('boot')?.classList.add('done');
   bootGuard?.done();
   shown = true;

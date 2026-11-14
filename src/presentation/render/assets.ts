@@ -21,7 +21,7 @@ import {
 import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
 import { TILE_H, TILE_W, mapBounds, worldToTile } from './iso';
 import { HEROES, WARRIORS } from '../../gameplay/sim/progression';
-import { quality } from './quality';
+import { quality, renderScaleFor } from './quality';
 import { TextureBudget } from './textureBudget';
 
 registerWarriorArt([...WARRIORS.map((w) => ({ ...w, id: w.liveTroop ?? w.id })), ...HEROES.map((h) => ({ id: h.id, role: h.heroOf, tier: 5, look: h.look as unknown as Record<string, string>, hero: true }))]);
@@ -47,11 +47,20 @@ export const TEX_SCALE = 2;
  * canvas budget. Low quality draws buildings at 1.5x and warriors and badges at 2x. Scenes size
  * these from the image itself (`buildingScale`, `troopSize`), so the values can change per device.
  */
-export const BUILDING_SCALE = quality().buildingScale;
-export const HD_SCALE = Math.min(quality().hdScale, typeof window !== 'undefined' && (window.devicePixelRatio || 1) >= 2 ? 3 : 2.5);
+/**
+ * Art resolution follows the canvas density (2026-11-13 runtime batch): the camera magnifies the
+ * map at most 2x past its fit and usually far less, so art drawn at more than 1.5x the canvas
+ * pixels per CSS pixel is rarely seen. A DPR 1 laptop or a DPR 1.5 phone no longer paints and
+ * uploads 2.5x buildings (2.8x the pixels of 1.5x).
+ */
+const ART_CAP = Math.max(1, 1.5 * renderScaleFor());
+export const BUILDING_SCALE = Math.min(quality().buildingScale, ART_CAP);
+export const HD_SCALE = Math.min(quality().hdScale, typeof window !== 'undefined' && (window.devicePixelRatio || 1) >= 2 ? 3 : 2.5, ART_CAP);
 
 /** The island is big: drawn at 1.5x (1x in low quality), or less if the GPU can't hold a texture that wide. */
-const GROUND_SCALE = quality().groundScale;
+const GROUND_SCALE = Math.min(quality().groundScale, ART_CAP);
+/** The island is painted in this many horizontal strips, one per start-up slice (it was one ~4 s task at CPU x6). */
+const GROUND_STRIPS = 8;
 
 export const Keys = {
   ground: 'ground',
@@ -113,6 +122,82 @@ export function releaseBuildingTextures(textures: Phaser.Textures.TextureManager
 /** Bytes of painted building art kept now (perf checks, `window.tk`). */
 export function paintedBuildingBytes(): number {
   return paintedBudget?.bytes ?? 0;
+}
+
+/**
+ * Low memory (device F19: the app went to the background, Android `onTrimMemory`, an iOS memory
+ * warning): remove every painted building look no scene shows now; they are painted again when
+ * needed. Returns the bytes freed.
+ */
+export function trimTextureCaches(textures: Phaser.Textures.TextureManager): number {
+  const before = paintedBuildingBytes();
+  budget(textures).trim();
+  return before - paintedBuildingBytes();
+}
+
+/**
+ * Texture memory by kind, in bytes of one copy (perf logs, `window.tk.textureBytes`): `gpu` counts
+ * every texture's pixels, `cpu` the painting canvases still kept beside them (released ones are
+ * 1 px), `building` the budgeted building looks (device F1).
+ */
+export function textureBytes(textures: Phaser.Textures.TextureManager): { gpu: number; cpu: number; building: number; island: number; troops: number } {
+  let gpu = 0;
+  let cpu = 0;
+  let island = 0;
+  let troops = 0;
+  for (const [key, tex] of Object.entries(textures.list)) {
+    if (key.startsWith('__')) continue;
+    for (const src of tex.source) {
+      const px = src.width * src.height * 4;
+      gpu += px;
+      const img = src.image as { width?: number; height?: number; getContext?: unknown } | undefined;
+      if (img && typeof img.getContext === 'function') cpu += (img.width ?? 0) * (img.height ?? 0) * 4;
+      if (key === Keys.ground) island += px;
+      if (key.startsWith('troop.') || key.startsWith('icon.warrior.')) troops += px;
+    }
+  }
+  return { gpu, cpu, building: paintedBuildingBytes(), island, troops };
+}
+
+/**
+ * Textures whose painting canvas was dropped after upload, with the painter that makes it again
+ * after a lost WebGL context (rare: the GPU process restarted, a driver reset).
+ */
+const released = new Map<string, () => HTMLCanvasElement | null>();
+let restoreHooked = false;
+
+/**
+ * Device F1/M1: drop a big texture's CPU canvas once WebGL holds it. The island's canvas (16 MB
+ * on low, 37 MB on high) used to stay for the whole session for hit tests that never run on it.
+ * Only under WebGL (the Canvas renderer draws from the canvas) and only for keys nothing reads
+ * pixels from (no `getPixelAlpha`/`getBase64`). After a lost and restored context the texture is
+ * painted again and re-uploaded, then released again.
+ */
+function releaseCpuCopy(textures: Phaser.Textures.TextureManager, key: string, repaint: () => HTMLCanvasElement | null): void {
+  const game = textures.game;
+  if (!game?.renderer || game.renderer.type === Phaser.CANVAS || !textures.exists(key)) return;
+  const src = textures.get(key).source[0];
+  const canvas = src?.image as HTMLCanvasElement | undefined;
+  if (!src?.glTexture || !canvas || typeof canvas.getContext !== 'function') return;
+  // The pixels are on the GPU (`addImage` uploads at once); the source keeps its own width/height.
+  canvas.width = 1;
+  canvas.height = 1;
+  released.set(key, repaint);
+  if (restoreHooked) return;
+  restoreHooked = true;
+  game.renderer.on(Phaser.Renderer.Events.RESTORE_WEBGL, () => {
+    for (const [k, paint] of released) {
+      if (!textures.exists(k)) continue;
+      const s = textures.get(k).source[0];
+      const t = s.glTexture;
+      const fresh = paint();
+      if (!t || !fresh) continue;
+      s.image = fresh;
+      t.update(fresh, s.width, s.height, t.flipY, t.wrapS, t.wrapT, t.minFilter, t.magFilter, t.format);
+      fresh.width = 1;
+      fresh.height = 1;
+    }
+  });
 }
 
 /** Size and level count per building type, filled in when textures are generated. */
@@ -185,7 +270,8 @@ export function groundSize(mapSize: number): { w: number; h: number } {
 
 /** Display scale for the island image, whatever resolution it was drawn (or supplied) at. */
 export function groundScale(textures: Phaser.Textures.TextureManager, mapSize: number): number {
-  const src = textures.get(Keys.ground).getSourceImage() as { width: number };
+  // The texture source's size, not its image's: the painted canvas may have been released (`releaseCpuCopy`).
+  const src = textures.get(Keys.ground).source[0];
   return groundSize(mapSize).w / Math.max(1, src.width);
 }
 
@@ -222,6 +308,39 @@ export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = qu
   }
 }
 
+/** Longest side of a HUD thumbnail in CSS pixels: the largest place one is shown (the Build menu's 96 px cards) plus a margin. */
+const THUMB_CSS_PX = 112;
+
+/**
+ * A small PNG of a texture for the HUD (device F11, review M10). `getBase64` encoded the whole
+ * texture (buildings at 2.5x: 100-300 KB data URLs, 5-20 ms of main-thread encoding each on a
+ * slow phone, kept for the session); this draws it at the size the HUD shows (112 CSS px at the
+ * screen's density, at most 2x) first, so the encode and the string are several times smaller.
+ * Empty when the texture has no readable image.
+ */
+export function thumbnailDataUrl(textures: Phaser.Textures.TextureManager, key: string): string {
+  if (!textures.exists(key)) return '';
+  const frame = textures.getFrame(key);
+  const img = frame?.source.image as CanvasImageSource & { width: number; height: number } | undefined;
+  if (!frame || !img || img.width <= 1) return '';
+  const dpr = typeof window === 'undefined' ? 1 : Math.min(2, window.devicePixelRatio || 1);
+  const max = Math.round(THUMB_CSS_PX * dpr);
+  const k = Math.min(1, max / Math.max(frame.cutWidth, frame.cutHeight));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(frame.cutWidth * k));
+  c.height = Math.max(1, Math.round(frame.cutHeight * k));
+  const ctx = c.getContext('2d');
+  if (!ctx) return '';
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, c.width, c.height);
+  try {
+    // PNG: WebP was 6x smaller but 5x slower to encode in Chromium (measured), and this runs on a tap.
+    return c.toDataURL('image/png');
+  } catch {
+    return '';
+  }
+}
+
 /** Thumbnail key for the HUD: real art for the plain key wins, else level 1 (real tier art, then code art). */
 export function buildingThumbKey(textures: Phaser.Textures.TextureManager, type: string): string {
   const base = Keys.buildingBase(type);
@@ -239,6 +358,33 @@ function maxTextureSize(scene: Phaser.Scene): number {
 // ---------------------------------------------------------------------------
 
 type Ctx = CanvasRenderingContext2D;
+
+/**
+ * Paint one code-art texture once and add it as an image texture (never a `CanvasTexture`, which
+ * keeps an `ImageData` copy: device F8). `scale` px per art unit; the art's origin is at
+ * (`w`/2, `originY`). Real art or an earlier paint with the same key wins.
+ */
+export function paintArtTexture(textures: Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, art: (ctx: Ctx) => void, scale = TEX_SCALE, release = false): string {
+  const c = canvasFor(textures, key, w, h, originY, scale);
+  if (c) {
+    art(c.ctx);
+    c.done();
+    // Scenery nothing reads pixels from: WebGL keeps the only copy (device F1).
+    if (release) {
+      releaseCpuCopy(textures, key, () => {
+        const again = paintingCanvas(Math.ceil(w * scale), Math.ceil(h * scale));
+        if (!again) return null;
+        again.ctx.scale(scale, scale);
+        again.ctx.translate(w / 2, originY);
+        again.ctx.lineJoin = 'round';
+        again.ctx.lineCap = 'round';
+        art(again.ctx);
+        return again.canvas;
+      });
+    }
+  }
+  return key;
+}
 
 function canvasFor(target: Phaser.Scene | Phaser.Textures.TextureManager, key: string, w: number, h: number, originY: number, scale = TEX_SCALE): { ctx: Ctx; done: () => void; bytes: number } | null {
   const textures = target instanceof Phaser.Textures.TextureManager ? target : target.textures;
@@ -269,6 +415,18 @@ function paintingCanvas(width: number, height: number): { canvas: HTMLCanvasElem
   return ctx ? { canvas, ctx } : null;
 }
 
+/** Paint the island's device-pixel rows `y0`..`y1` (the rest of the canvas is untouched). */
+function paintGroundRows(ctx: Ctx, mapSize: number, scale: number, y0: number, y1: number, width: number): void {
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.beginPath();
+  ctx.rect(0, y0, width, y1 - y0);
+  ctx.clip();
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  paintGround(ctx, mapSize);
+  ctx.restore();
+}
+
 function addPainted(textures: Phaser.Textures.TextureManager, key: string, canvas: HTMLCanvasElement): void {
   if (!textures.exists(key)) textures.addImage(key, canvas as unknown as HTMLImageElement);
 }
@@ -280,7 +438,7 @@ type BuildingType = { type: string; size: number; maxLevel: number };
 type TextureData = { buildings: Record<string, { size: number; levels?: unknown[] }>; economy: { mapSize: number }; cosmetics?: { hallSkins: { id: string; cap: string; spots: string }[] } };
 
 /** Every placeholder texture as a list of jobs, in the order `generatePlaceholders` paints them (fx shadow last). */
-function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: number, buildingTypes: BuildingType[], mapSize: number, _lazyTiers: boolean): Job[] {
+function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: number, buildingTypes: BuildingType[], mapSize: number): Job[] {
   const jobs: Job[] = [];
   const paint = (key: string, w: number, h: number, originY: number, scale: number | undefined, art: (ctx: Ctx) => void) =>
     jobs.push(() => {
@@ -290,17 +448,34 @@ function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: numb
         c.done();
       }
     });
-  jobs.push(() => {
-    if (textures.exists(Keys.ground)) return;
+  // The island, in GROUND_STRIPS slices (2026-11-13 runtime batch: it was one task of ~4 s at CPU
+  // x6 on high). Each strip paints the whole picture clipped to its rows (the painter is seeded, so
+  // the strips join: Chromium found ~12 differing pixels of 6 million, single grains at the edges);
+  // the strips cost ~20-30% more in total than one paint, but the longest is ~1/5 of it.
+  if (!textures.exists(Keys.ground)) {
     const { w, h } = groundSize(mapSize);
     const s = Math.max(1, Math.min(GROUND_SCALE, maxSize / w, maxSize / h));
-    const paper = paintingCanvas(Math.floor(w * s), Math.floor(h * s));
-    if (paper) {
-      paper.ctx.scale(s, s);
-      paintGround(paper.ctx, mapSize);
-      addPainted(textures, Keys.ground, paper.canvas);
+    const cw = Math.floor(w * s);
+    const ch = Math.floor(h * s);
+    let paper: ReturnType<typeof paintingCanvas> = null;
+    for (let i = 0; i < GROUND_STRIPS; i++) {
+      jobs.push(() => {
+        if (textures.exists(Keys.ground)) return;
+        if (i === 0) paper = paintingCanvas(cw, ch);
+        if (!paper) return;
+        paintGroundRows(paper.ctx, mapSize, s, Math.floor((ch * i) / GROUND_STRIPS), Math.floor((ch * (i + 1)) / GROUND_STRIPS), cw);
+        if (i === GROUND_STRIPS - 1) {
+          addPainted(textures, Keys.ground, paper.canvas);
+          releaseCpuCopy(textures, Keys.ground, () => {
+            const again = paintingCanvas(cw, ch);
+            if (again) paintGroundRows(again.ctx, mapSize, s, 0, ch, cw);
+            return again?.canvas ?? null;
+          });
+          paper = null;
+        }
+      });
     }
-  });
+  }
   // Building art is painted per level on first use (`buildingTexture`), in every profile.
   for (const { type, size, maxLevel } of buildingTypes) buildingInfo.set(type, { size, maxLevel });
   for (const size of [1, 2, 3, 4]) {
@@ -337,8 +512,8 @@ function placeholderJobs(textures: Phaser.Textures.TextureManager, maxSize: numb
 }
 
 /** Create every placeholder texture that real art has not already provided. */
-export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: BuildingType[], mapSize: number, lazyTiers = quality().lazyTiers): void {
-  for (const job of placeholderJobs(scene.textures, maxTextureSize(scene), buildingTypes, mapSize, lazyTiers)) job();
+export function generatePlaceholders(scene: Phaser.Scene, buildingTypes: BuildingType[], mapSize: number): void {
+  for (const job of placeholderJobs(scene.textures, maxTextureSize(scene), buildingTypes, mapSize)) job();
 }
 
 function buildingTypesOf(data: TextureData): BuildingType[] {
@@ -377,7 +552,7 @@ export async function prepareTextures(
   sliceMs = 40,
 ): Promise<void> {
   const textures = scene.textures;
-  const jobs: Job[] = textures.exists(Keys.shadow) ? [] : placeholderJobs(textures, maxTextureSize(scene), buildingTypesOf(data), data.economy.mapSize, quality().lazyTiers);
+  const jobs: Job[] = textures.exists(Keys.shadow) ? [] : placeholderJobs(textures, maxTextureSize(scene), buildingTypesOf(data), data.economy.mapSize);
   jobs.push(...hallSkinJobs(textures, data));
   for (const b of shown) {
     const size = data.buildings[b.type]?.size;

@@ -66,13 +66,15 @@ class FakeCacheStorage {
 type Net = (url: string, req: ReqLike) => Promise<Response>;
 
 /** One worker script instance (one build) in a fake global. */
-function worker(opts: { build: string; files: string[]; caches: FakeCacheStorage; net: Net }) {
-  const source = TEMPLATE.replace('__BUILD_ID__', opts.build).replace('__PRECACHE__', JSON.stringify(opts.files));
+function worker(opts: { build: string; files: string[]; caches: FakeCacheStorage; net: Net; hashes?: Record<string, string> }) {
+  const source = TEMPLATE.replace('__BUILD_ID__', opts.build).replace('__PRECACHE__', JSON.stringify(opts.files)).replace('/*__HASHES__*/ {}', JSON.stringify(opts.hashes ?? {}));
   const listeners = new Map<string, (e: unknown) => void>();
   const log: { url: string; cache?: string }[] = [];
   let skipped = false;
+  let updates = 0;
   const self = {
     location: new URL(`${SCOPE}sw.js`),
+    registration: { update: async () => void updates++ },
     addEventListener: (t: string, f: (e: unknown) => void) => listeners.set(t, f),
     skipWaiting: async () => {
       skipped = true;
@@ -89,7 +91,9 @@ function worker(opts: { build: string; files: string[]; caches: FakeCacheStorage
     },
     Request,
     Response,
+    Headers,
     URL,
+    Date,
     setTimeout: (f: () => void, ms: number) => setTimeout(f, ms),
     clearTimeout: (t: ReturnType<typeof setTimeout>) => clearTimeout(t),
     console,
@@ -103,6 +107,9 @@ function worker(opts: { build: string; files: string[]; caches: FakeCacheStorage
     log,
     get skipped() {
       return skipped;
+    },
+    get updates() {
+      return updates;
     },
     async install() {
       const e = extendable();
@@ -173,7 +180,8 @@ describe('service worker template', () => {
     expect(await c.text('./')).toBe('b1:(shell)');
     // Client re-audit item 10: the page just downloaded the hashed files, so the install reuses
     // the HTTP cache for them instead of downloading the whole game a second time.
-    for (const l of sw.log) expect(l.cache).toBe(l.url.includes('/assets/') ? 'default' : 'reload');
+    // Device F5: everything else is revalidated with the server (a 304 when unchanged), never re-downloaded blindly.
+    for (const l of sw.log) expect(l.cache).toBe(l.url.includes('/assets/') ? 'default' : 'no-cache');
     expect(sw.log.filter((l) => l.cache === 'default').map((l) => l.url.slice(SCOPE.length)).sort()).toEqual(['assets/index-abc.css', 'assets/index-abc.js']);
   });
 
@@ -205,11 +213,25 @@ describe('navigation', () => {
     expect(await ((await within(sw404.request('./?friend=abc', 'navigate'), 0)) as Response).text()).toBe('b1:(shell)');
   });
 
-  it('a good page comes from the network but never overwrites the precached shell', async () => {
+  it("the game's page comes from the cache at once (no network wait), then the worker checks for a new build (device F4)", async () => {
     const caches = new FakeCacheStorage();
     await installed('b1', caches);
-    const sw = worker({ build: 'b1', files: FILES, caches, net: async () => new Response('b2 page naming b2 scripts', { status: 200 }) });
-    expect(await ((await within(sw.request('./', 'navigate'), 0)) as Response).text()).toBe('b2 page naming b2 scripts');
+    const sw = worker({ build: 'b1', files: FILES, caches, net: () => new Promise<Response>(() => undefined) });
+    for (const page of ['./', './?friend=KAGE-1', './index.html', './index.html?sandbox']) {
+      expect(await ((await within(sw.request(page, 'navigate'), 0)) as Response).text()).toBe(page.startsWith('./index') ? 'b1:index.html' : 'b1:(shell)');
+    }
+    expect(sw.log).toHaveLength(0);
+    expect(sw.updates).toBe(1); // at most one explicit check a minute
+    await vi.advanceTimersByTimeAsync(61_000);
+    await within(sw.request('./', 'navigate'), 0);
+    expect(sw.updates).toBe(2);
+  });
+
+  it('another page comes from the network but never overwrites the precached shell', async () => {
+    const caches = new FakeCacheStorage();
+    await installed('b1', caches);
+    const sw = worker({ build: 'b1', files: FILES, caches, net: async () => new Response('fresh news page', { status: 200 }) });
+    expect(await ((await within(sw.request('./news.html', 'navigate'), 0)) as Response).text()).toBe('fresh news page');
     expect(await caches.map.get('tk-b1')!.text('./')).toBe('b1:(shell)');
   });
 
@@ -217,7 +239,7 @@ describe('navigation', () => {
     const caches = new FakeCacheStorage();
     await installed('b1', caches);
     const sw = worker({ build: 'b1', files: FILES, caches, net: () => new Promise<Response>(() => undefined) });
-    const p = sw.request('./', 'navigate');
+    const p = sw.request('./news.html', 'navigate');
     expect(await within(p, NAV_TIMEOUT_MS - 1)).toBe('pending');
     const res = await within(p, 1);
     expect(await (res as Response).text()).toBe('b1:(shell)');
@@ -339,6 +361,27 @@ describe('install and update', () => {
     expect(caches.map.has('tk-b1')).toBe(true);
     await sw2.activate();
     expect([...caches.map.keys()].sort()).toEqual(['other-app', 'tk-b2']);
+  });
+
+  it('a public file with the same content hash is copied from the previous build, a changed one downloaded (device F5)', async () => {
+    const caches = new FakeCacheStorage();
+    const files = [...FILES, './privacy.html'];
+    const h1 = { 'manifest.webmanifest': 'm1', 'icons/icon-192.png': 'i1', 'privacy.html': 'p1' };
+    const sw1 = worker({ build: 'b1', files, caches, net: serve('b1'), hashes: h1 });
+    await sw1.install();
+    await sw1.activate();
+    // b2 changes only the privacy page.
+    const sw2 = worker({ build: 'b2', files, caches, net: serve('b2'), hashes: { ...h1, 'privacy.html': 'p2' } });
+    await sw2.install();
+    const fetched = sw2.log.map((l) => l.url.slice(SCOPE.length));
+    expect(fetched).not.toContain('icons/icon-192.png');
+    expect(fetched).not.toContain('manifest.webmanifest');
+    expect(fetched).toContain('privacy.html');
+    const c2 = caches.map.get('tk-b2')!;
+    expect(await c2.text('./icons/icon-192.png')).toBe('b1:icons/icon-192.png');
+    expect(await c2.text('./privacy.html')).toBe('b2:privacy.html');
+    expect((await c2.match('./privacy.html'))!.headers.get('x-tk-hash')).toBe('p2');
+    expect(c2.entries.size).toBe(files.length);
   });
 
   it('a redirected or opaque answer is never precached', async () => {

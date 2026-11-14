@@ -239,6 +239,32 @@ describe('load guard', () => {
     expect(boot.text()).not.toMatch(/taking a long time/);
   });
 
+  it('a finished download counts as progress before the game module runs (device F3)', () => {
+    const { boot, ctx, win } = load({ preamble: 'var observers = []; function PerformanceObserver(cb) { observers.push(cb); } PerformanceObserver.prototype.observe = function () {};' });
+    const downloaded = () => vm.runInContext('observers.forEach(function (cb) { cb({ getEntries: function () { return []; } }); })', ctx);
+    // A 2G link: a script arrives every 20 s, so the card never shows.
+    for (let i = 0; i < 4; i++) {
+      vi.advanceTimersByTime(20_000);
+      downloaded();
+    }
+    expect(boot.text()).not.toMatch(/taking a long time/);
+    // Once the game runs it reports its own steps; downloads (art, language) no longer reset the clock.
+    win.__tkStarted = true;
+    vi.advanceTimersByTime(20_000);
+    downloaded();
+    vi.advanceTimersByTime(6_000);
+    expect(boot.text()).toMatch(/taking a long time/);
+  });
+
+  it('inside the app, "needs a newer browser" names the system WebView, not Chrome (device F12)', () => {
+    const { boot } = load({ noModule: false, preamble: 'var Capacitor = { isNativePlatform: function () { return true; } };' });
+    expect(boot.text()).toMatch(/Android System WebView/);
+    expect(boot.text()).not.toMatch(/Chrome/);
+    expect(boot.text()).toMatch(/JavaScript modules/);
+    const web = load({ noModule: false });
+    expect(web.boot.text()).toMatch(/Chrome/);
+  });
+
   it('done() stands the guard down', () => {
     const { boot, win, fire } = load();
     win.__tkBoot.done();
@@ -289,5 +315,14 @@ describe('ES5 only (it must run on browsers too old for the game)', () => {
     expect(code).not.toMatch(/\b(let|const|class)\s/);
     expect(code).not.toMatch(/`/);
     expect(code).not.toMatch(/,\s*\)/);
+  });
+});
+
+describe('Android WebView floor (device F12)', () => {
+  it('the app refuses WebViews older than the bundle needs (Chrome 80: optional chaining, ??)', () => {
+    const config = readFileSync(new URL('../../../capacitor.config.ts', import.meta.url), 'utf8');
+    expect(config).toMatch(/minWebViewVersion:\s*80\b/);
+    const vite = readFileSync(new URL('../../../vite.config.ts', import.meta.url), 'utf8');
+    expect(vite).toMatch(/target:\s*'es2020'/);
   });
 });

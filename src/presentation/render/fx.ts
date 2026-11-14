@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { BUILDING_SCALE, HD_SCALE, Keys, TEX_SCALE } from './assets';
+import { BUILDING_SCALE, HD_SCALE, Keys, TEX_SCALE, paintArtTexture } from './assets';
 import { quality } from './quality';
 import { DISPLAY_FONT } from './fonts';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, worldToTile } from './iso';
@@ -127,19 +127,14 @@ const RING = 'fx.ring';
 const TRACER = 'fx.tracer';
 const FLASH = 'fx.flash';
 
-/** Paint a code-art texture once (art painters are resolution-independent; `scale` px per unit). */
+/**
+ * Paint a code-art texture once (art painters are resolution-independent; `scale` px per unit).
+ * Device F8: through `paintArtTexture` (an image texture), no longer `createCanvas`, whose
+ * `CanvasTexture` kept a full `ImageData` copy of every ridge, fog band, ruin and sprite.
+ */
 function artTexture(scene: Phaser.Scene, key: string, w: number, h: number, originY: number, paint: (ctx: CanvasRenderingContext2D) => void, scale = TEX_SCALE): string {
-  if (scene.textures.exists(key)) return key;
-  const tex = scene.textures.createCanvas(key, Math.ceil(w * scale), Math.ceil(h * scale));
-  if (!tex) return key;
-  const ctx = tex.getContext();
-  ctx.scale(scale, scale);
-  ctx.translate(w / 2, originY);
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  paint(ctx);
-  tex.refresh();
-  return key;
+  // Scenery is only drawn, never read back: its painting canvas goes once WebGL has it.
+  return paintArtTexture(scene.textures, key, w, h, originY, paint, scale, key.startsWith('scenery.'));
 }
 
 function ensureBattleFx(scene: Phaser.Scene): void {
@@ -208,6 +203,36 @@ export function troopRing(scene: Phaser.Scene, troopType: string, air: boolean):
 /** Phaser drew with Canvas (no WebGL): tints are ignored there, so effects that rely on them need another cue. */
 export function canvasRenderer(scene: Phaser.Scene): boolean {
   return scene.sys.game.renderer.type === Phaser.CANVAS;
+}
+
+/**
+ * A tinted copy of a texture for Phaser's Canvas renderer, which ignores `setTint` (device F13):
+ * multiplied by `color` (as `setTint` does), or filled with it (`setTintFill`), keeping the
+ * original's alpha. Made once per key and colour; the caller removes it when done
+ * (`textures.remove`). Under WebGL use the real tint instead.
+ */
+export function tintedTexture(scene: Phaser.Scene, key: string, color: number, fill = false): string {
+  const hex = color.toString(16).padStart(6, '0');
+  const out = `${key}#${fill ? 'fill' : 'tint'}${hex}`;
+  if (scene.textures.exists(out) || !scene.textures.exists(key)) return scene.textures.exists(out) ? out : key;
+  const frame = scene.textures.getFrame(key);
+  const src = frame.source.image as CanvasImageSource;
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, frame.cutWidth);
+  c.height = Math.max(1, frame.cutHeight);
+  const ctx = c.getContext('2d');
+  if (!ctx) return key;
+  ctx.drawImage(src, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, c.width, c.height);
+  ctx.globalCompositeOperation = fill ? 'source-in' : 'multiply';
+  ctx.fillStyle = `#${hex}`;
+  ctx.fillRect(0, 0, c.width, c.height);
+  if (!fill) {
+    // Multiply also coloured the transparent pixels: keep only the original's shape.
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(src, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, c.width, c.height);
+  }
+  scene.textures.addImage(out, c as unknown as HTMLImageElement);
+  return out;
 }
 
 /** Tracer colours by projectile kind. */
@@ -348,8 +373,9 @@ export function starSlam(scene: Phaser.Scene, index: number, renderScale: number
 
 /**
  * Mountains behind the plateau: three ridge bands at different scroll factors (parallax) with fog
- * bands drifting between them. Textures are drawn small and displayed large (soft shapes survive
- * scaling): about 5.9 MB at high quality, 1.5 MB at low.
+ * bands drifting between them (low: the far band and its fog only, `quality().sceneryLayers`).
+ * Textures are drawn small and displayed large (soft shapes survive scaling): about 5.9 MB at
+ * high quality, 0.5 MB at low.
  */
 export function addScenery(scene: Phaser.Scene, mapSize: number): void {
   const mb = mapBounds(mapSize);
@@ -363,11 +389,14 @@ export function addScenery(scene: Phaser.Scene, mapSize: number): void {
   const cy = mb.y + mb.height / 2;
   const sx0 = cx - cam.width / 2;
   const sy0 = cy - cam.height / 2;
-  const layers: [0 | 1 | 2, number, number, number][] = [
+  const all: [0 | 1 | 2, number, number, number][] = [
     [0, 0.35, -560, 2.6],
     [1, 0.55, -380, 2.3],
     [2, 0.78, -230, 2.0],
   ];
+  // Device F10: every band is a full-width alpha layer drawn each frame (with its fog band). Low
+  // keeps the far band (with the sun) and its fog: 2 layers instead of 6.
+  const layers = all.slice(0, Math.max(1, Math.min(all.length, quality().sceneryLayers)));
   for (const [layer, sf, dy, scale] of layers) {
     const key = artTexture(scene, `scenery.ridge.${layer}`, W, H, 0, (ctx) => { ctx.translate(-W / 2, 0); paintRidge(ctx, W, H, layer); }, res);
     // Seen position = x + scroll * (1 - scrollFactor): offset so the band sits right when the camera is centred.
@@ -409,12 +438,43 @@ export interface LifeBuilding {
  * Keep and the Dojo, two ninja sparring at the Dojo, villagers walking between buildings and
  * swallows crossing the sky. Cheap sprites and tweens; counts follow `quality().particleScale`.
  * `sync` rebuilds only when the set of buildings changes.
+ *
+ * Device F20: smoke puffs and birds come from a pool (they used to be a new image, destroyed
+ * again, every second or two per chimney: steady garbage at the idle frame rate), and a calm
+ * village (`quality().calmLife`: low, reduced motion) has no walkers, petals or cloud shadows.
  */
 export class VillageLife {
   private objs: Phaser.GameObjects.GameObject[] = [];
   private timers: Phaser.Time.TimerEvent[] = [];
   private sig = '';
   private birdTimer: Phaser.Time.TimerEvent | null = null;
+  /** Idle pooled images by texture key (puffs, birds), reused instead of made and destroyed. */
+  private spare = new Map<string, Phaser.GameObjects.Image[]>();
+  private pooled: Phaser.GameObjects.Image[] = [];
+  private readonly calm = quality().calmLife;
+  /** Pooled images made so far (tests, perf checks). */
+  get pooledCount(): number {
+    return this.pooled.length;
+  }
+
+  /** A pooled image, reset and shown at (x, y). */
+  private take(key: string, x: number, y: number): Phaser.GameObjects.Image {
+    const free = this.spare.get(key)?.pop();
+    if (free) return free.setPosition(x, y).setActive(true).setVisible(true).setAngle(0).setFlipX(false);
+    const im = this.scene.add.image(x, y, key);
+    this.pooled.push(im);
+    return im;
+  }
+
+  /** Back to the pool (hidden; no tween left on it). */
+  private give(im: Phaser.GameObjects.Image): void {
+    if (!im.scene) return; // destroyed with the scene
+    this.scene.tweens.killTweensOf(im);
+    im.setActive(false).setVisible(false);
+    const list = this.spare.get(im.texture.key) ?? [];
+    list.push(im);
+    this.spare.set(im.texture.key, list);
+  }
 
   constructor(private scene: Phaser.Scene, private mapSize: number, private overlayDepth: number) {
     ensureFxTextures(scene);
@@ -422,8 +482,10 @@ export class VillageLife {
     artTexture(scene, 'fx.streamer', 40, 14, 7, (ctx) => { ctx.translate(-18, 0); paintStreamer(ctx); }, HD_SCALE);
     for (let v = 0; v < 4; v++) artTexture(scene, `fx.villager.${v}`, 28, 30, 26, (ctx) => paintVillager(ctx, v), HD_SCALE);
     this.scheduleBird();
-    this.cloudShadows();
-    this.petals();
+    if (!this.calm) {
+      this.cloudShadows();
+      this.petals();
+    }
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroy());
   }
 
@@ -450,7 +512,7 @@ export class VillageLife {
       }
     }
     const walkers = built.filter((b) => b.size >= 2);
-    if (walkers.length >= 2) for (let i = 0; i < Math.max(1, Math.round(4 * ps)); i++) this.walker(i, walkers);
+    if (!this.calm && walkers.length >= 2) for (let i = 0; i < Math.max(1, Math.round(4 * ps)); i++) this.walker(i, walkers);
   }
 
   private track<T extends Phaser.GameObjects.GameObject>(o: T): T {
@@ -461,8 +523,8 @@ export class VillageLife {
   private smoke(x: number, y: number, depth: number, every: number, tint = 0xeef0f4): void {
     const s = this.scene;
     const puff = () => {
-      const p = s.add.image(x, y, Keys.puff).setScale(0.18 / TEX_SCALE).setTint(tint).setAlpha(0.6).setDepth(depth);
-      s.tweens.add({ targets: p, y: y - 34, x: x + 6 + Math.random() * 8, scale: 0.55 / TEX_SCALE, alpha: 0, duration: 2600, ease: 'Sine.easeOut', onComplete: () => p.destroy() });
+      const p = this.take(Keys.puff, x, y).setScale(0.18 / TEX_SCALE).setTint(tint).setAlpha(0.6).setDepth(depth);
+      s.tweens.add({ targets: p, y: y - 34, x: x + 6 + Math.random() * 8, scale: 0.55 / TEX_SCALE, alpha: 0, duration: 2600, ease: 'Sine.easeOut', onComplete: () => this.give(p) });
     };
     puff();
     this.timers.push(s.time.addEvent({ delay: every, loop: true, callback: puff }));
@@ -541,9 +603,9 @@ export class VillageLife {
         const y0 = mb.y + mb.height * (0.1 + Math.random() * 0.6);
         const x0 = ltr ? mb.x - 200 : mb.x + mb.width + 200;
         const x1 = ltr ? mb.x + mb.width + 200 : mb.x - 200;
-        const b = s.add.image(x0, y0, 'fx.bird').setScale(1.2 / HD_SCALE).setFlipX(!ltr).setDepth(this.overlayDepth - 20).setAlpha(0.85);
+        const b = this.take('fx.bird', x0, y0).setScale(1.2 / HD_SCALE).setFlipX(!ltr).setDepth(this.overlayDepth - 20).setAlpha(0.85);
         s.tweens.add({ targets: b, scaleY: 0.4 / HD_SCALE, duration: 130, yoyo: true, repeat: -1 });
-        s.tweens.add({ targets: b, x: x1, y: y0 - 120 + Math.random() * 80, duration: 9000 + Math.random() * 4000, onComplete: () => b.destroy() });
+        s.tweens.add({ targets: b, x: x1, y: y0 - 120 + Math.random() * 80, duration: 9000 + Math.random() * 4000, onComplete: () => this.give(b) });
       },
     });
   }
@@ -612,5 +674,11 @@ export class VillageLife {
     this.clear();
     this.birdTimer?.remove(false);
     this.birdTimer = null;
+    for (const im of this.pooled) if (im.scene) {
+      this.scene.tweens.killTweensOf(im);
+      im.destroy();
+    }
+    this.pooled = [];
+    this.spare.clear();
   }
 }

@@ -1,7 +1,10 @@
 /**
  * Original sound effects and music, synthesized with the Web Audio API at
  * runtime (no audio files). The audio context starts on the first tap, which
- * iOS requires.
+ * iOS requires, and only while sound effects or music are on (device F9/F18: with
+ * both off no context is made, so the game never takes the phone's audio session
+ * or runs the audio thread; switching one on in Settings, a tap, makes it then).
+ * With both switched off later, the context is suspended.
  *
  * The palette matches the look (art re-audit item 9): plucked koto and shamisen strings made by
  * Karplus-Strong synthesis (a short noise burst circulating in a filtered delay line, rendered
@@ -54,8 +57,19 @@ class SoundEngine {
   /** Karplus-Strong string buffers by pitch and voice. */
   private strings = new Map<string, AudioBuffer>();
 
-  /** Call from a user gesture. Safe to call many times. */
+  /** Sound effects or music are switched on. */
+  private get wanted(): boolean {
+    return this.settings.sfx || this.settings.music;
+  }
+
+  /** An audio context exists (tests, perf checks). */
+  get started(): boolean {
+    return this.ctx !== null;
+  }
+
+  /** Call from a user gesture. Safe to call many times. Does nothing while all sound is off. */
   unlock(): void {
+    if (!this.wanted) return;
     if (!this.ctx) {
       const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctor) return;
@@ -108,6 +122,7 @@ class SoundEngine {
     this.settings.sfx = on;
     if (this.ctx) this.sfxGain.gain.value = on ? 0.55 : 0;
     this.save();
+    this.afterSwitch(on);
   }
 
   setMusic(on: boolean): void {
@@ -115,6 +130,13 @@ class SoundEngine {
     if (this.ctx) this.musicGain.gain.value = on ? 0.14 : 0;
     this.syncMusicLoop();
     this.save();
+    this.afterSwitch(on);
+  }
+
+  /** A switch changed (from a tap in Settings): start the context now, or let it rest when all is off. */
+  private afterSwitch(on: boolean): void {
+    if (on) this.unlock();
+    else if (this.ctx && this.ctx.state !== 'closed') void this.ctx.suspend();
   }
 
   private save(): void {
@@ -130,7 +152,7 @@ class SoundEngine {
     this.musicPaused = hidden;
     this.syncMusicLoop();
     if (!this.ctx) return;
-    if (hidden) void this.ctx.suspend();
+    if (hidden || !this.wanted) void this.ctx.suspend();
     else {
       void this.ctx.resume();
       // The beat clock stood still while suspended: start the next bar from now.

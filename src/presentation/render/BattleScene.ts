@@ -12,8 +12,9 @@ import { isHidden } from '../../gameplay/sim/battle/warriors';
 import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize, holdBuildingTextures, releaseBuildingTextures } from './assets';
 import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
-import { noteBattleFps } from './quality';
-import { addScenery, canvasRenderer, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
+import { noteBattleFps, quality } from './quality';
+import { expectedFps, frames, refreshHz, slowDown } from './frameRate';
+import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
 import { haptic, sound } from '../audio/sound';
 
 export interface BattleHooks {
@@ -99,6 +100,8 @@ interface TView {
   ring: Phaser.GameObjects.Image;
   /** White hit flash ends at this scene time. */
   flashUntil: number;
+  /** The troop's own texture key (under the Canvas renderer the image may show a tinted copy). */
+  key: string;
 }
 
 const OVER = 1_000_000;
@@ -197,7 +200,11 @@ export class BattleScene extends Phaser.Scene {
     // Report section 5 step 3 (device F1): this base's art stays while the battle shows it; the last
     // base's (scouting, Next, replays) can go once this scene shuts down.
     holdBuildingTextures(this.textures, 'battle', this.bviews.map((v) => v.image.texture.key));
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => releaseBuildingTextures(this.textures, 'battle'));
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      releaseBuildingTextures(this.textures, 'battle');
+      for (const k of this.tintKeys) if (this.textures.exists(k)) this.textures.remove(k);
+      this.tintKeys.clear();
+    });
     this.zone = this.add.graphics().setDepth(-4).setAlpha(0);
     this.drawZone();
     this.drawEntry();
@@ -542,6 +549,10 @@ export class BattleScene extends Phaser.Scene {
     const rx = (c.radius * TILE_W) / Math.SQRT2;
     const ry = (c.radius * TILE_H) / Math.SQRT2;
     const centre = tileToWorld(c.x, c.y);
+    // Review M7: redrawn only when the time-left arc gains or loses a step (48 per cloud) or the zoom changes.
+    const sig = `${Math.max(2, Math.ceil(48 * left))}|${this.cam.userZoom}`;
+    if (this.drawn.get(g) === sig) return;
+    this.drawn.set(g, sig);
     g.clear();
     // Dashed ring marks the exact area; the bright arc shows the time left.
     g.lineStyle(2 / this.cam.userZoom, 0xe9eef5, 0.55);
@@ -590,6 +601,15 @@ export class BattleScene extends Phaser.Scene {
     }
     v.jam.setPosition(v.image.x, top - 16 / z).setScale(1 / TEX_SCALE / z).setVisible(jammed);
     const g = v.ring!;
+    const sab = this.session.data.battle.sabotage;
+    const done = jammed ? 1 - (b.disabledUntil - sim.tick) / sab.disableTicks : 0;
+    // Review M7: the recovery ring is redrawn when it gains a step (1/48), not every frame.
+    const sig = `${jammed ? Math.round(Math.max(0.02, done) * 48) : 'immune'}|${z}`;
+    if (this.drawn.get(g) === sig) {
+      if (jammed) v.image.setTint(0x8a93a3); // a hit flash may have cleared it
+      return;
+    }
+    this.drawn.set(g, sig);
     g.clear();
     if (jammed) {
       v.image.setTint(0x8a93a3);
@@ -598,11 +618,9 @@ export class BattleScene extends Phaser.Scene {
         v.image.setAlpha(v.image.alpha * 0.6);
         v.dimmed = true;
       }
-      const sab = this.session.data.battle.sabotage;
-      const done = 1 - (b.disabledUntil - sim.tick) / sab.disableTicks;
       g.lineStyle(3 / z, 0x8ad0ff, 1);
       g.beginPath();
-      g.arc(v.image.x, top - 16 / z, 13 / z, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, done));
+      g.arc(v.image.x, top - 16 / z, 13 / z, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * Math.max(1, Math.round(done * 48))) / 48);
       g.strokePath();
     } else {
       v.image.clearTint();
@@ -627,7 +645,27 @@ export class BattleScene extends Phaser.Scene {
     const bar = this.add.graphics().setDepth(OVER - 9);
     image.setScale(baseScale * 0.4);
     this.tweens.add({ targets: image, scale: baseScale, duration: 260, ease: 'Back.easeOut' });
-    return { image, shadow, bar, dead: false, baseScale, lastHp: -1, ring, flashUntil: 0 };
+    return { image, shadow, bar, dead: false, baseScale, lastHp: -1, ring, flashUntil: 0, key };
+  }
+
+  /** Tinted copies made for the Canvas renderer in this battle (removed on shutdown). */
+  private tintKeys = new Set<string>();
+
+  /**
+   * Tint a warrior: hit flash, lit stealth warrior, grounded flyer. Device F13: Phaser's Canvas
+   * renderer (no WebGL) ignores tint, so these battle cues vanished there; it shows a pre-tinted
+   * copy of the texture instead (`tintedTexture`).
+   */
+  private tintTroop(v: TView, color: number | null, fill = false): void {
+    if (!this.canvasMode) {
+      if (color === null) v.image.clearTint();
+      else if (fill) v.image.setTintFill(color);
+      else v.image.setTint(color);
+      return;
+    }
+    const key = color === null ? v.key : tintedTexture(this, v.key, color, fill);
+    if (key !== v.key) this.tintKeys.add(key);
+    if (v.image.texture.key !== key) v.image.setTexture(key);
   }
 
   /** Short floating label over a troop or building (ability names, counter effects). Throttled per key. */
@@ -664,22 +702,52 @@ export class BattleScene extends Phaser.Scene {
     this.drawPath();
   }
 
-  private drawBar(g: Phaser.GameObjects.Graphics, x: number, y: number, frac: number, color: number): void {
+  /** What each bar graphic last drew (review M7): unchanged bars only move. */
+  private drawn = new WeakMap<Phaser.GameObjects.Graphics, string>();
+
+  /** Empty a bar graphic (and forget what it showed). */
+  private clearBar(g: Phaser.GameObjects.Graphics): void {
+    if (!this.drawn.has(g)) return;
+    this.drawn.delete(g);
+    g.clear();
+  }
+
+  /**
+   * A health bar centred on (x, y), with an optional shield ring `shieldDy` below it. Review M7:
+   * bars were retessellated every frame (4 rounded rects each, for every damaged building and
+   * troop); now a bar is drawn around its own origin and only moved, and redrawn only when its
+   * health (in 1/64 steps), colour, shield or the zoom changes.
+   */
+  private drawBar(g: Phaser.GameObjects.Graphics, x: number, y: number, frac: number, color: number, shieldDy?: number): void {
     const z = this.cam.userZoom;
+    const sig = `${Math.round(frac * 64)}|${color}|${z}|${shieldDy ?? ''}`;
+    g.setPosition(x, y);
+    if (this.drawn.get(g) === sig) return;
+    this.drawn.set(g, sig);
+    frac = Math.round(frac * 64) / 64;
+    x = 0;
+    y = 0;
     const w = 34 / z;
     const h = 6 / z;
     g.clear();
-    // Ink frame and a dark track; the fill gets a lighter top half so it reads as a glossy bar.
-    g.fillStyle(0x26303d, 0.92);
-    g.fillRoundedRect(x - w / 2 - 1.5 / z, y - h / 2 - 1.5 / z, w + 3 / z, h + 3 / z, (h + 3 / z) / 2);
-    g.fillStyle(0x4a5262, 1);
-    g.fillRoundedRect(x - w / 2, y - h / 2, w, h, h / 2);
-    const fw = Math.max(h, w * frac);
-    const low = frac < 0.3;
-    g.fillStyle(low ? 0xc8402f : color, 1);
-    g.fillRoundedRect(x - w / 2, y - h / 2, fw, h, h / 2);
-    g.fillStyle(0xffffff, 0.35);
-    g.fillRoundedRect(x - w / 2 + 1 / z, y - h / 2 + 0.8 / z, Math.max(0, fw - 2 / z), h * 0.38, h * 0.19);
+    // A negative fraction: no bar (full health), only the shield ring.
+    if (frac >= 0) {
+      // Ink frame and a dark track; the fill gets a lighter top half so it reads as a glossy bar.
+      g.fillStyle(0x26303d, 0.92);
+      g.fillRoundedRect(x - w / 2 - 1.5 / z, y - h / 2 - 1.5 / z, w + 3 / z, h + 3 / z, (h + 3 / z) / 2);
+      g.fillStyle(0x4a5262, 1);
+      g.fillRoundedRect(x - w / 2, y - h / 2, w, h, h / 2);
+      const fw = Math.max(h, w * frac);
+      const low = frac < 0.3;
+      g.fillStyle(low ? 0xc8402f : color, 1);
+      g.fillRoundedRect(x - w / 2, y - h / 2, fw, h, h / 2);
+      g.fillStyle(0xffffff, 0.35);
+      g.fillRoundedRect(x - w / 2 + 1 / z, y - h / 2 + 0.8 / z, Math.max(0, fw - 2 / z), h * 0.38, h * 0.19);
+    }
+    if (shieldDy !== undefined) {
+      g.lineStyle(2 / z, 0x8ad0ff, 0.8);
+      g.strokeCircle(0, shieldDy, 24);
+    }
   }
 
   /** When the next frame-rate sample is due (report section 5 step 3, device F2). */
@@ -690,8 +758,12 @@ export class BattleScene extends Phaser.Scene {
     // While the battle runs (never idle-throttled), sample the frame rate once a second.
     if (this.session.running && time >= this.nextFpsSample) {
       this.nextFpsSample = time + 1000;
-      const msg = noteBattleFps(this.game.loop.actualFps);
-      if (msg) this.hooks.notice?.(msg);
+      // Frames drawn, judged against what this display and profile can show (device F2).
+      const msg = noteBattleFps(frames.fps(performance.now()), expectedFps(quality().fps, refreshHz()));
+      if (msg) {
+        slowDown(this.game.loop as unknown as Parameters<typeof slowDown>[0]);
+        this.hooks.notice?.(msg);
+      }
     }
     // The path highlight is a scouting aid: gone once the battle starts.
     if (this.pathIndex !== null && this.session.mode !== 'scout') this.highlightPath(null);
@@ -712,7 +784,7 @@ export class BattleScene extends Phaser.Scene {
       if (b.kind === 'defense') this.syncJam(b, v);
       if (b.destroyed && !v.destroyed) {
         v.destroyed = true;
-        v.bar.clear();
+        this.clearBar(v.bar);
         if (b.kind === 'trap') {
           v.image.setVisible(false);
           return;
@@ -766,7 +838,7 @@ export class BattleScene extends Phaser.Scene {
       if (t.dead) {
         if (!v.dead) {
           v.dead = true;
-          v.bar.clear();
+          this.clearBar(v.bar);
           const ix = v.image.x;
           const iy = v.image.y;
           deathPuff(this, ix, iy - 8, OVER - 20);
@@ -785,20 +857,17 @@ export class BattleScene extends Phaser.Scene {
       v.image.setPosition(w.x, w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
       v.image.setFlipX(t.facing < 0);
       v.image.setAlpha(t.decoyUntil ? 0.45 : isHidden(sim, t) ? 0.6 : 1);
-      if (now < v.flashUntil) v.image.setTintFill(0xffffff);
-      else if (t.litUntil > sim.tick) v.image.setTint(0xfff0b0);
-      else if (t.air && !flying) v.image.setTint(0xc8c8c8);
-      else v.image.clearTint();
+      if (now < v.flashUntil) this.tintTroop(v, 0xffffff, true);
+      else if (t.litUntil > sim.tick) this.tintTroop(v, 0xfff0b0);
+      else if (t.air && !flying) this.tintTroop(v, 0xc8c8c8);
+      else this.tintTroop(v, null);
       if (t.attacking && !t.air) v.image.setScale(v.baseScale * (1 + Math.max(0, Math.sin(now / 60)) * 0.08), v.baseScale * (1 - Math.max(0, Math.sin(now / 60)) * 0.06));
       else if (v.image.scaleX !== v.baseScale && !this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale);
       v.shadow.setPosition(w.x, w.y + 1);
       v.ring.setPosition(w.x, w.y + 1).setVisible(!isHidden(sim, t) || Boolean(t.decoyUntil));
-      if (t.hp < t.maxHp) this.drawBar(v.bar, w.x, w.y - lift - 34, t.hp / t.maxHp, 0xe9b44c);
-      else v.bar.clear();
-      if (t.shieldUntil > sim.tick) {
-        v.bar.lineStyle(2 / this.cam.userZoom, 0x8ad0ff, 0.8);
-        v.bar.strokeCircle(w.x, w.y - lift - 18, 24);
-      }
+      const shield = t.shieldUntil > sim.tick ? 16 : undefined;
+      if (t.hp < t.maxHp || shield !== undefined) this.drawBar(v.bar, w.x, w.y - lift - 34, t.hp < t.maxHp ? t.hp / t.maxHp : -1, 0xe9b44c, shield);
+      else this.clearBar(v.bar);
     });
 
     // Projectiles: drawn larger when zoomed out (never under ~18 CSS px long) with a tracer streak,

@@ -4,8 +4,12 @@
  * - `high` is the original look: canvas at the screen's density up to 3x, 60 FPS, the
  *   high-performance GPU, buildings drawn at 2.5x, warriors and badges at 3x, the island at 1.5x.
  * - `low` caps the canvas at 2x, runs at 30 FPS on the default GPU, draws buildings at 1.5x,
- *   warriors and badges at 2x and the island at 1x, generates building tier art only when a
- *   building at that tier is shown, and uses fewer decorative particles and cloud wisps.
+ *   warriors and badges at 2x and the island at 1x, uses fewer decorative particles and cloud
+ *   wisps, one mountain band and fog band instead of three and two (device F10), and a calm
+ *   village (no walkers, petals or cloud shadows: device F20).
+ * - Both profiles paint building art per level on first use, within `paintedBudgetMB`
+ *   (`render/textureBudget.ts`). Device F16: a `lazyTiers` flag used to claim this for low only;
+ *   it was never read and is gone.
  *
  * The profile is picked once at start-up (textures are generated from it), from, in order:
  * `?quality=low|high` in the address, the player's stored choice (`tk.quality`), then cheap
@@ -58,8 +62,13 @@ export interface QualitySettings {
   hdScale: number;
   /** Resolution of the generated island (lowered further if the GPU can't hold it). */
   groundScale: number;
-  /** Generate building tier art on first use instead of all tiers at start. */
-  lazyTiers: boolean;
+  /** Mountain bands behind the plateau (1-3); each is a full-width alpha layer (device F10). */
+  sceneryLayers: number;
+  /**
+   * A calm village (device F20): no villagers walking, petals or cloud shadows, which create
+   * objects and per-frame work all session. Low and `prefers-reduced-motion`.
+   */
+  calmLife: boolean;
   /** Multiplier for decorative particle counts (confetti, resource bursts, debris). */
   particleScale: number;
   /** Cloud wisps drifting around the plateau. */
@@ -120,7 +129,8 @@ const HIGH: Omit<QualitySettings, 'profile' | 'reason'> = {
   buildingScale: 2.5,
   hdScale: 3,
   groundScale: 1.5,
-  lazyTiers: false,
+  sceneryLayers: 3,
+  calmLife: false,
   particleScale: 1,
   wispCount: 60,
   paintedBudgetMB: 64,
@@ -133,7 +143,8 @@ const LOW: Omit<QualitySettings, 'profile' | 'reason'> = {
   buildingScale: 1.5,
   hdScale: 2,
   groundScale: 1,
-  lazyTiers: true,
+  sceneryLayers: 1,
+  calmLife: true,
   particleScale: 0.5,
   wispCount: 24,
   paintedBudgetMB: 24,
@@ -219,6 +230,7 @@ export function resolveQuality(search: string, choice: QualityChoice, signals: Q
   if (signals.reducedMotion) {
     settings.particleScale = Math.min(settings.particleScale, 0.5);
     settings.wispCount = Math.min(settings.wispCount, 24);
+    settings.calmLife = true;
   }
   return settings;
 }
@@ -233,22 +245,26 @@ function storedFlag(key: string): boolean {
 
 /**
  * The verdict on battle frame rates (pure, for tests): null until `FPS_SAMPLES` samples, then
- * whether the median stayed under `FPS_DOWNGRADE`.
+ * whether the median stayed under `FPS_DOWNGRADE` scaled to what the display can show
+ * (`expected`: 60 on a 60 Hz or faster display for high, where 120 Hz phones are limited to 60;
+ * a 50 Hz display is judged against 50, so its line is ~33).
  */
-export function slowBattles(samples: number[]): boolean | null {
+export function slowBattles(samples: number[], expected = 60): boolean | null {
   if (samples.length < FPS_SAMPLES) return null;
   const sorted = [...samples].sort((a, b) => a - b);
-  return sorted[Math.floor(sorted.length / 2)] < FPS_DOWNGRADE;
+  return sorted[Math.floor(sorted.length / 2)] < (FPS_DOWNGRADE * Math.min(60, expected)) / 60;
 }
 
 const fpsSamples: number[] = [];
 let fpsDecided = false;
 
 /**
- * One frame-rate sample from a running battle (call about once a second). On an automatic `high`
- * whose battles stay slow, the next start uses `low`; returns the message to show, once.
+ * One frame-rate sample from a running battle (call about once a second), in frames actually
+ * drawn (`render/frameRate.ts`, not Phaser's `actualFps`, which counts display frames). On an
+ * automatic `high` whose battles stay slow, the next start uses `low` (and the caller lowers the
+ * frame rate at once, `frameRate.slowDown`); returns the message to show, once.
  */
-export function noteBattleFps(fps: number): string | null {
+export function noteBattleFps(fps: number, expected = 60): string | null {
   if (fpsDecided || !Number.isFinite(fps) || fps <= 0) return null;
   const q = quality();
   // Only an automatic high: the player's own choice and ?quality are never second-guessed.
@@ -257,7 +273,7 @@ export function noteBattleFps(fps: number): string | null {
     return null;
   }
   fpsSamples.push(fps);
-  const verdict = slowBattles(fpsSamples);
+  const verdict = slowBattles(fpsSamples, expected);
   if (verdict === null) return null;
   fpsDecided = true;
   if (!verdict) return null;

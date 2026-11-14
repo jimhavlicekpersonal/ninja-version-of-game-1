@@ -59,6 +59,14 @@ export class TextureBudget {
     this.evict();
   }
 
+  /**
+   * Low memory (device F19): remove every painted texture no holder shows now, whatever the
+   * budget. They are painted again when needed.
+   */
+  trim(): void {
+    this.evict(0);
+  }
+
   /** Bytes of painted textures currently kept. */
   get bytes(): number {
     return this.total;
@@ -74,10 +82,10 @@ export class TextureBudget {
     return false;
   }
 
-  private evict(): void {
-    if (this.total <= this.budgetBytes) return;
+  private evict(limit = this.budgetBytes): void {
+    if (this.total <= limit) return;
     for (const [key, bytes] of [...this.painted]) {
-      if (this.total <= this.budgetBytes) break;
+      if (this.total <= limit) break;
       if (this.held(key)) continue;
       this.painted.delete(key);
       this.total -= bytes;

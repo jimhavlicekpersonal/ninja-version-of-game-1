@@ -21,7 +21,12 @@ class FakeNode {
   start() {}
   stop() {}
 }
+let contexts = 0;
+let suspends = 0;
 class FakeAudioContext {
+  constructor() {
+    contexts++;
+  }
   state = 'running';
   currentTime = 0;
   sampleRate = 8000;
@@ -32,7 +37,7 @@ class FakeAudioContext {
   createBufferSource = () => new FakeNode();
   createBuffer = (_c: number, len: number) => ({ getChannelData: () => new Float32Array(len) });
   resume = async () => undefined;
-  suspend = async () => undefined;
+  suspend = async () => void suspends++;
 }
 
 let sound: typeof import('../../../src/presentation/audio/sound').sound;
@@ -65,5 +70,32 @@ describe('music scheduler', () => {
     expect(sound.musicRunning).toBe(true);
     sound.music(null);
     expect(sound.musicRunning).toBe(false);
+  });
+});
+
+describe('audio context (device F9/F18)', () => {
+  it('is not created while sound effects and music are both off; switching one on creates it', async () => {
+    vi.resetModules();
+    const fresh = (await import('../../../src/presentation/audio/sound')).sound;
+    const before = contexts;
+    fresh.setSfx(false);
+    fresh.setMusic(false);
+    fresh.unlock(); // the first tap
+    fresh.music('village');
+    fresh.play('tap');
+    expect(fresh.started).toBe(false);
+    expect(contexts).toBe(before);
+    // Settings: music on (a tap) makes the context and starts the track.
+    fresh.setMusic(true);
+    expect(fresh.started).toBe(true);
+    expect(contexts).toBe(before + 1);
+    expect(fresh.musicRunning).toBe(true);
+    // Both off again: the context is suspended, and a return from the background does not wake it.
+    const s0 = suspends;
+    fresh.setMusic(false);
+    expect(suspends).toBe(s0 + 1);
+    fresh.suspend(false);
+    expect(suspends).toBe(s0 + 2);
+    expect(fresh.musicRunning).toBe(false);
   });
 });

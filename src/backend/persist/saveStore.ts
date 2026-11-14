@@ -44,6 +44,20 @@ export interface SaveStore {
 const SAVE_KEY = 'village';
 const backupPrefix = (key: string) => `${key}-damaged-`;
 
+/**
+ * Backups kept per save (device F15): a village stuck in a load-repair loop wrote a new copy on
+ * every start, without limit, on phones with little storage (and Android Auto Backup stops above
+ * 25 MB). The newest are kept; recovery offers the furthest-along one among them.
+ */
+export const MAX_BACKUPS = 5;
+
+/** Backup keys to delete so only the newest `max` stay (keys end in the time they were made). */
+export function backupsToDrop(keys: readonly string[], max = MAX_BACKUPS): string[] {
+  const stamp = (k: string) => Number(k.slice(k.lastIndexOf('-') + 1)) || 0;
+  const newestFirst = [...keys].sort((a, b) => stamp(b) - stamp(a));
+  return newestFirst.slice(Math.max(0, max));
+}
+
 /** What a browser's storage is to its tabs: pass one to two stores to act out two tabs in a test. */
 export interface MemorySlot {
   data: string | null;
@@ -69,6 +83,7 @@ export class MemorySaveStore implements SaveStore {
   readonly backups: unknown[] = [];
   async backupDamaged(raw: unknown): Promise<void> {
     this.backups.push(raw);
+    if (this.backups.length > MAX_BACKUPS) this.backups.splice(0, this.backups.length - MAX_BACKUPS);
   }
   async listBackups(): Promise<SaveBackup[]> {
     return this.backups.map((raw, i) => ({ key: `memory-${i}`, raw })).reverse();
@@ -123,6 +138,14 @@ export class IdbSaveStore implements SaveStore {
   }
   async backupDamaged(raw: unknown): Promise<void> {
     await transact(this.db, KV_STORE, 'readwrite', (s) => s.put(raw, `${backupPrefix(this.key)}${Date.now()}`));
+    // Only the newest MAX_BACKUPS stay (device F15). A failed clean-up keeps them all, never the save.
+    try {
+      const prefix = backupPrefix(this.key);
+      const keys = (await transact<IDBValidKey[]>(this.db, KV_STORE, 'readonly', (s) => s.getAllKeys(IDBKeyRange.bound(prefix, `${prefix}\uffff`)))) ?? [];
+      for (const key of backupsToDrop(keys.map(String))) await transact(this.db, KV_STORE, 'readwrite', (s) => s.delete(key));
+    } catch (e) {
+      console.warn('Could not prune old backups', e);
+    }
   }
   async listBackups(): Promise<SaveBackup[]> {
     const prefix = backupPrefix(this.key);

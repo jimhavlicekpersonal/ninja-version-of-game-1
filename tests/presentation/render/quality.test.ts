@@ -8,14 +8,14 @@ describe('rendering quality (audit R03)', () => {
 
   it('high is the original look', () => {
     const q = resolveQuality('', 'high', {});
-    expect(q).toMatchObject({ profile: 'high', maxRenderScale: 3, fps: 60, powerPreference: 'high-performance', buildingScale: 2.5, hdScale: 3, groundScale: 1.5, lazyTiers: false, particleScale: 1, wispCount: 60 });
+    expect(q).toMatchObject({ profile: 'high', maxRenderScale: 3, fps: 60, powerPreference: 'high-performance', buildingScale: 2.5, hdScale: 3, groundScale: 1.5, sceneryLayers: 3, calmLife: false, particleScale: 1, wispCount: 60 });
     expect(renderScaleFor(q, 3.5)).toBe(3);
     expect(renderScaleFor(q, 2.625)).toBe(2.625);
   });
 
   it('low caps density, frame rate and texture resolution', () => {
     const q = resolveQuality('', 'low', {});
-    expect(q).toMatchObject({ profile: 'low', maxRenderScale: 2, fps: 30, powerPreference: 'default', buildingScale: 1.5, hdScale: 2, groundScale: 1, lazyTiers: true });
+    expect(q).toMatchObject({ profile: 'low', maxRenderScale: 2, fps: 30, powerPreference: 'default', buildingScale: 1.5, hdScale: 2, groundScale: 1, sceneryLayers: 1, calmLife: true });
     expect(renderScaleFor(q, 3)).toBe(2);
     expect(renderScaleFor(q, 1)).toBe(1);
   });
