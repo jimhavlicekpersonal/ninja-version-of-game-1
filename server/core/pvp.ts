@@ -29,7 +29,7 @@ import { ResimBusyError, ResimTimeoutError, type ResimOutcome } from '../resim/r
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 import { capBaseLoot, layoutReset } from './baseRules';
-import { fail, detailError, busyCode } from './errors';
+import { fail, detailError, busyCode, english, msg } from './errors';
 
 export { capBaseLoot, layoutReset } from './baseRules';
 
@@ -414,14 +414,15 @@ export async function requireArmyOnServer(ctx: ServerContext, me: Player, army: 
   // Settled to now first: warriors whose training ended are in the army (applyServerResult does the same).
   const have = advance(deserialize(row.file, ctx.data), Math.max(row.at, ctx.now()), ctx.data).state.army;
   const short = Object.entries(army).find(([t, n]) => n > 0 && (have[t] ?? 0) < n);
-  if (short) throw fail(400, 'bad_request', 'pvp.fewer_troops', { troop: ctx.data.troops[short[0]]?.name ?? short[0] });
+  if (short) throw fail(400, 'bad_request', 'pvp.fewer_troops', { warrior: ctx.data.troops[short[0]]?.name ?? short[0] });
 }
 
 /** Count a refused report; after MAX_TICKET_FAILURES the ticket is used up (no more re-simulations). */
 /** Backend A32: a re-simulation that ran past the worker timeout (503 busy for the game; counts against the ticket). */
 export class ResimTimedOut extends ApiError {
   constructor(message: string) {
-    super(503, 'busy', message);
+    const parts = [msg(busyCode(message))];
+    super(503, 'busy', english(parts), undefined, parts);
   }
 }
 

@@ -161,7 +161,7 @@ describe('observability over HTTP', () => {
     const app = buildServer({ repo, data, sentry });
     const bad = await app.inject({ method: 'GET', url: Routes.me, headers: { authorization: 'Bearer x' } });
     expect(bad.statusCode).toBe(500);
-    expect(JSON.parse(bad.body)).toEqual({ error: 'bad_request', message: 'Server error.' });
+    expect(JSON.parse(bad.body)).toEqual({ error: 'bad_request', message: 'Server error.', key: 'request.server_error' });
     await app.inject({ method: 'GET', url: Routes.me }); // 401: not reported
     expect(posts).toHaveLength(1);
     const ev = JSON.parse(posts[0].trim().split('\n')[2]);

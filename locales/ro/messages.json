@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "Lupta a fost anulată înainte să înceapă." },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "Raportarea acestei lupte a durat prea mult și a contat ca înfrângere." },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "Raportarea acestei lupte a durat prea mult." },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "Satul tău de pe server are mai puțin decât a folosit această luptă: {troop}." },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Satul tău de pe server are mai puțin decât a folosit această luptă: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Adversarul nu mai e disponibil. Găsește altul." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Această cercetare a expirat. Găsește un adversar nou." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Lupta a început: poate fi doar raportată." },

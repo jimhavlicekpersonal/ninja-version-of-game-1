@@ -100,15 +100,7 @@ export function checkNotMuted(ctx: ServerContext, me: Player): void {
 // ------------------------------------------------------------------ notices (re-audit: EU DSA 16(5), 17)
 
 /** Words a player understands, for each report reason. */
-export const REASON_TEXT: Record<ReportReason, string> = {
-  harassment: 'harassment or bullying',
-  hate: 'hate speech',
-  sexual: 'sexual content',
-  spam: 'spam or scams',
-  cheating: 'cheating',
-  name: 'an inappropriate name',
-  other: 'breaking the community rules',
-};
+export const REASON_TEXT = Object.fromEntries(REPORT_REASONS.map((r) => [r, english([msg(`moderation.rule.${r}`)])])) as Record<ReportReason, string>;
 
 /** How to disagree with a decision, in English (the notice and error texts use `appeal`, its code). */
 export function appealText(ctx: ServerContext): string {

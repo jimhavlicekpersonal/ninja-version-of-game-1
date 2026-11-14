@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "這場戰鬥在開始前就取消了。" },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "這場戰鬥太久才回報，算作戰敗。" },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "這場戰鬥太久才回報。" },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "你在伺服器上的村莊的 {troop} 比這場戰鬥用掉的還少。" },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "你在伺服器上的村莊的 {warrior} 比這場戰鬥用掉的還少。" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "這位對手已經無法進攻。請尋找新的對手。" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "這次偵察已過期。請尋找新的對手。" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "這場戰鬥已經開始：只能回報結果。" },

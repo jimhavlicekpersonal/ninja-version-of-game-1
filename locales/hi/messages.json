@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "यह लड़ाई शुरू होने से पहले रद्द हो गई।" },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "इस लड़ाई की रिपोर्ट भेजने में बहुत देर हुई और यह हार गिनी गई।" },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "इस लड़ाई की रिपोर्ट भेजने में बहुत देर हुई।" },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "सर्वर पर आपके गाँव में इस लड़ाई में इस्तेमाल हुए {troop} से कम हैं।" },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "सर्वर पर आपके गाँव में इस लड़ाई में इस्तेमाल हुए {warrior} से कम हैं।" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "यह प्रतिद्वंद्वी अब उपलब्ध नहीं है। नया ढूँढें।" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "यह जासूसी पुरानी हो गई है। नया प्रतिद्वंद्वी ढूँढें।" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "यह लड़ाई शुरू हो चुकी है: अब सिर्फ़ इसकी रिपोर्ट भेजी जा सकती है।" },

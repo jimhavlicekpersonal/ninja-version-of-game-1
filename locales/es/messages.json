@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "Esta batalla se canceló antes de comenzar." },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "Se tardó demasiado en enviar el resultado y la batalla contó como derrota." },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "Se tardó demasiado en enviar el resultado de esta batalla." },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "Tu aldea en el servidor tiene menos {troop} que los usados en esta batalla." },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Tu aldea en el servidor tiene menos {warrior} que los usados en esta batalla." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Este oponente ya no está disponible. Busca otro." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "La exploración ha caducado. Busca otro oponente." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Esta batalla ya comenzó: solo puede enviarse el resultado." },

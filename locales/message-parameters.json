@@ -356,7 +356,7 @@
     "detail": "detail"
   },
   "srv.pvp.fewer_troops": {
-    "troop": "label"
+    "warrior": "label"
   },
   "srv.name.cooldown": {
     "date": "utc"

@@ -88,6 +88,10 @@ describe('protocol contract', () => {
     expect(e.status).toBe(401);
     expect(e.code).toBe('unauthorized');
     expect(e.message).toBeTruthy();
+    // Error codes (2026-11-14, additive): the body also names the message's code; the game parses it into parts.
+    const raw = await fetch(`${url}${Routes.me}`);
+    expect(await raw.json()).toMatchObject({ error: 'unauthorized', key: 'auth.unknown_token', message: expect.any(String) });
+    expect(e.parts).toEqual([{ key: 'auth.unknown_token' }]);
     const r = await c.register(`Contract Pip ${tag}`);
     await c.acceptRules({ version: COMMUNITY_RULES_VERSION });
     expect(r.playerId).toBeTruthy();

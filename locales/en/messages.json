@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": "This battle was cancelled before it started.",
   "srv.pvp.forfeit": "This battle took too long to report and counted as a loss.",
   "srv.pvp.too_late": "This battle took too long to report.",
-  "srv.pvp.fewer_troops": "Your village on the server has fewer {troop} than this battle used.",
+  "srv.pvp.fewer_troops": "Your village on the server has fewer {warrior} than this battle used.",
   "srv.pvp.opponent_gone": "This opponent is no longer available. Find a new one.",
   "srv.pvp.scout_expired": "This scout has expired. Find a new opponent.",
   "srv.pvp.started": "This battle has started: it can only be reported.",

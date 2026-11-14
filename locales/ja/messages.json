@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "この戦闘は開始前にキャンセルされました。" },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "この戦闘は報告までに時間がかかりすぎたため、敗北として扱われました。" },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "この戦闘は報告までに時間がかかりすぎました。" },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "サーバー上の村の{troop}が、この戦闘で使った数より少なくなっています。" },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "サーバー上の村の{warrior}が、この戦闘で使った数より少なくなっています。" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "この相手はもう対戦できません。新しい相手を探してください。" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "この偵察は期限切れです。新しい相手を探してください。" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "この戦闘は始まっています。報告することしかできません。" },

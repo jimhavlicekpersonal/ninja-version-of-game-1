@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "이 전투는 시작 전에 취소되었어요." },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "이 전투는 보고하기까지 너무 오래 걸려서 패배로 처리되었어요." },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "이 전투는 보고하기까지 너무 오래 걸렸어요." },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "서버에 있는 마을의 {troop}이(가) 이 전투에 쓴 것보다 적어요." },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "서버에 있는 마을의 {warrior}이(가) 이 전투에 쓴 것보다 적어요." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "이 상대는 더 이상 이용할 수 없어요. 새 상대를 찾으세요." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "이 정찰은 만료되었어요. 새 상대를 찾으세요." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "이 전투는 이미 시작됐어요. 결과 보고만 할 수 있어요." },

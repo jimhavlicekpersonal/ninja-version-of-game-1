@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "Aquesta batalla s'ha cancel·lat abans de començar." },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "Aquesta batalla ha trigat massa a informar-se i ha comptat com a derrota." },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "Aquesta batalla ha trigat massa a informar-se." },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "El teu poble al servidor en té menys dels que ha fet servir aquesta batalla: {troop}." },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "El teu poble al servidor en té menys dels que ha fet servir aquesta batalla: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Aquest adversari ja no està disponible. Busca'n un altre." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Aquesta exploració ha caducat. Busca un adversari nou." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Aquesta batalla ha començat: només es pot informar del resultat." },

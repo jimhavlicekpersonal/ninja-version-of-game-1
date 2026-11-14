@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "การรบนี้ถูกยกเลิกก่อนเริ่ม" },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "การรบนี้รายงานช้าเกินไป จึงนับเป็นการแพ้" },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "การรบนี้รายงานช้าเกินไป" },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "หมู่บ้านของคุณบนเซิร์ฟเวอร์มี {troop} น้อยกว่าที่ใช้ในการรบนี้" },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "หมู่บ้านของคุณบนเซิร์ฟเวอร์มี {warrior} น้อยกว่าที่ใช้ในการรบนี้" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "คู่ต่อสู้นี้ไม่พร้อมแล้ว หาคนใหม่" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "การสอดแนมนี้หมดอายุแล้ว หาคู่ต่อสู้ใหม่" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "การรบนี้เริ่มแล้ว ทำได้เพียงรายงานผล" },

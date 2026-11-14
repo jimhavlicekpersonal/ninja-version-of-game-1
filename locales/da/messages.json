@@ -1904,7 +1904,7 @@
   "srv.pvp.cancelled": { "en": "This battle was cancelled before it started.", "text": "Denne kamp blev annulleret, før den begyndte." },
   "srv.pvp.forfeit": { "en": "This battle took too long to report and counted as a loss.", "text": "Det tog for lang tid at indberette denne kamp, så den talte som et nederlag." },
   "srv.pvp.too_late": { "en": "This battle took too long to report.", "text": "Det tog for lang tid at indberette denne kamp." },
-  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {troop} than this battle used.", "text": "Din landsby på serveren har mindre {troop}, end denne kamp brugte." },
+  "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Din landsby på serveren har mindre {warrior}, end denne kamp brugte." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Denne modstander er ikke længere tilgængelig. Find en ny." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Denne spejdning er udløbet. Find en ny modstander." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Denne kamp er begyndt: den kan kun indberettes." },
