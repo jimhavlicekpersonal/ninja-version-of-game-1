@@ -3,6 +3,9 @@ import Capacitor
 #if canImport(DeclaredAgeRange)
 import DeclaredAgeRange
 #endif
+#if canImport(PermissionKit)
+import PermissionKit
+#endif
 
 /// The store's age signal (re-audit; laws such as Texas SB 2420), exposed as the
 /// "TkAge" Capacitor plugin like the Android one (TkAgePlugin.java). On iOS 26+
@@ -25,6 +28,8 @@ public class TkAgePlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "TkAge"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "ageRange", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "regulatoryFeatures", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "acknowledgeSignificantUpdate", returnType: CAPPluginReturnPromise),
     ]
 
     @objc func ageRange(_ call: CAPPluginCall) {
@@ -44,6 +49,73 @@ public class TkAgePlugin: CAPPlugin, CAPBridgedPlugin {
                         call.resolve(out)
                     case .declinedSharing:
                         self.unavailable(call, "declined")
+                    @unknown default:
+                        self.unavailable(call, "unknown")
+                    }
+                } catch {
+                    self.unavailable(call, "error")
+                }
+            }
+            return
+        }
+        #endif
+        unavailable(call, "os")
+    }
+
+    // MARK: Compliance switches 2026-11-14 (audit C02), UNCOMPILED
+    //
+    // Written from Apple's iOS 26.2 documentation for DeclaredAgeRange (`AgeRangeService.isEligibleForAgeFeatures`,
+    // `requiredRegulatoryFeatures`) and PermissionKit (`SignificantAppUpdateTopic`, `AskCenter`) without Xcode:
+    // never compiled or run. Every call sits behind `#if canImport` and `if #available(iOS 26.2, *)`, so an
+    // older SDK or OS answers "unavailable" and the game carries on as before. Before shipping, build with the
+    // iOS 26.2 SDK and check each name against the current documentation (docs/SHIPPING.md 3l).
+    // TS side: src/backend/platform/ageRegulatory.ts.
+
+    /// ["status": "ok", "eligible": Bool, "features": [String]] or ["status": "unavailable", "reason": ...].
+    @objc func regulatoryFeatures(_ call: CAPPluginCall) {
+        #if canImport(DeclaredAgeRange)
+        if #available(iOS 26.2, *) {
+            Task {
+                do {
+                    let eligible = try await AgeRangeService.shared.isEligibleForAgeFeatures
+                    var features: [String] = []
+                    if eligible {
+                        // UNCOMPILED: the set of regulatory features Apple says apply (names as Apple describes them).
+                        let required = try await AgeRangeService.shared.requiredRegulatoryFeatures
+                        features = required.map { String(describing: $0) }
+                    }
+                    call.resolve(["status": "ok", "eligible": eligible, "features": features])
+                } catch {
+                    self.unavailable(call, "error")
+                }
+            }
+            return
+        }
+        #endif
+        unavailable(call, "os")
+    }
+
+    /// Asks the parent or guardian to acknowledge a significant update (PermissionKit).
+    /// ["status": "approved" | "declined" | "unavailable"].
+    @objc func acknowledgeSignificantUpdate(_ call: CAPPluginCall) {
+        let description = call.getString("description") ?? ""
+        #if canImport(PermissionKit)
+        if #available(iOS 26.2, *) {
+            Task { @MainActor in
+                guard let vc = self.bridge?.viewController else {
+                    self.unavailable(call, "no_view")
+                    return
+                }
+                do {
+                    // UNCOMPILED: a significant-change question sent to the family organizer through Ask.
+                    let topic = SignificantAppUpdateTopic(description: description)
+                    let question = PermissionQuestion<SignificantAppUpdateTopic>(significantAppUpdateTopic: topic)
+                    let answer = try await AskCenter.shared.ask(question, in: vc)
+                    switch answer {
+                    case .approved:
+                        call.resolve(["status": "approved"])
+                    case .declined:
+                        call.resolve(["status": "declined"])
                     @unknown default:
                         self.unavailable(call, "unknown")
                     }
