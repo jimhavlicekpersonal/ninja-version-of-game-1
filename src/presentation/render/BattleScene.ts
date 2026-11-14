@@ -18,7 +18,8 @@ import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepColla
 import { haptic, sound } from '../audio/sound';
 import { placeCallout, type CalloutBox } from './calloutLayout';
 import { OPENING_GLIDE_MS, OPENING_HOLD_MS, battleOpening } from './cameraFrame';
-import { reducedMotion } from './motion';
+import { DAMAGE_TINT, damageStage, reducedMotion, turnToward, warriorPose } from './motion';
+import { BARREL_ORIGIN_X, BARREL_REACH, barrelTexture, crackTexture } from './battleMarks';
 
 export interface BattleHooks {
   selectedTroop(): string | null;
@@ -92,6 +93,14 @@ interface BView {
   flashAt: number;
   /** The warrior this defense last locked on to (a new lock draws a targeting line). */
   lockedOn: number;
+  /** Damage stage shown (art audit F7: 0, 1 at 66 % health, 2 at 33 %), its crack overlay and next smoke puff time. */
+  stage: 0 | 1 | 2;
+  cracks: Phaser.GameObjects.Image | null;
+  smokeAt: number;
+  /** Barrel showing where a defense aims (art audit F27), its angle (radians) and the end of a recoil. */
+  aim: Phaser.GameObjects.Image | null;
+  aimAngle: number;
+  recoilUntil: number;
 }
 
 interface SView {
@@ -121,6 +130,8 @@ const COUNTER_LABEL: Record<string, string> = { lit: 'Lit up!', repair: 'Repaire
 /** Milliseconds between callouts over the same troop or building, so a fight stays readable. */
 const CALLOUT_GAP_MS = 1400;
 const AIR_HEIGHT = 46;
+/** Defense barrels at this size (world px per texture unit). */
+const BARREL_SCALE = 1.1;
 /**
  * Lowest start zoom (CSS px per world px) when fitting every open point: a whole 40-tile base is about 2,400 world px
  * wide, so a 390 px phone needs ~0.14. Below this a narrow phone gets edge chevrons instead (rings would be too small).
@@ -186,8 +197,17 @@ export class BattleScene extends Phaser.Scene {
   /** Drawing with Canvas (no WebGL): tints are ignored, so some cues use alpha instead. */
   private canvasMode = false;
 
+  /** Reduced motion (no warrior hop, lean or lunge; barrels turn at once) and whether damaged buildings smoke. */
+  private reduced = false;
+  private smokeOn = true;
+  /** Warriors lean into steps and swings (not on the low profile, art audit F6). */
+  private leanOn = true;
+
   create(): void {
     this.canvasMode = canvasRenderer(this);
+    this.reduced = reducedMotion();
+    this.smokeOn = quality().profile !== 'low' && !this.reduced;
+    this.leanOn = quality().profile !== 'low';
     const gd = this.session.data;
     ensureTextures(this, gd);
     const mapSize = gd.economy.mapSize;
@@ -467,7 +487,7 @@ export class BattleScene extends Phaser.Scene {
     const image = this.add.image(c.x, c.y, key).setOrigin(o.x, o.y).setScale(buildingScale(tex, b.size)).setDepth(depthFor(b.x, b.y, b.size));
     if (b.hidden) image.setVisible(false);
     const bar = this.add.graphics().setDepth(OVER - 10);
-    return { image, bar, destroyed: false, lastHp: b.hp, jam: null, ring: null, flashUntil: 0, flashAt: -1e9, lockedOn: -1 };
+    return { image, bar, destroyed: false, lastHp: b.hp, jam: null, ring: null, flashUntil: 0, flashAt: -1e9, lockedOn: -1, stage: 0, cracks: null, smokeAt: 0, aim: null, aimAngle: Math.PI * 0.75, recoilUntil: 0 };
   }
 
   private drawZone(): void {
@@ -665,7 +685,7 @@ export class BattleScene extends Phaser.Scene {
         v.ring?.destroy();
         v.jam = null;
         v.ring = null;
-        v.image.clearTint();
+        this.restoreTint(v);
       }
       return;
     }
@@ -699,7 +719,7 @@ export class BattleScene extends Phaser.Scene {
       g.arc(v.image.x, top - 16 / z, 13 / z, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * Math.max(1, Math.round(done * 48))) / 48);
       g.strokePath();
     } else {
-      v.image.clearTint();
+      this.restoreTint(v);
       if (v.dimmed) {
         v.image.setAlpha(v.image.alpha / 0.6);
         v.dimmed = false;
@@ -707,6 +727,68 @@ export class BattleScene extends Phaser.Scene {
       g.lineStyle(2 / z, 0x8ad0ff, 0.5);
       g.strokeCircle(v.image.x, top - 16 / z, 8 / z);
     }
+  }
+
+  /** Back to the building's own colour: the damage tint (art audit F7) or none. */
+  private restoreTint(v: BView): void {
+    if (v.stage) v.image.setTint(DAMAGE_TINT[v.stage]);
+    else v.image.clearTint();
+  }
+
+  /**
+   * Art audit F7: between full health and ruins a building shows two damage stages, cracks and a darker scorched tint
+   * at 66 % and more cracks with a scorch at 33 %, where (high profile, no reduced motion) it also smokes. Art audit
+   * F27: a defense shows a barrel that turns toward the warrior it shoots at. Both read the battle state only.
+   */
+  private syncDamage(b: SimBuilding, v: BView, delta: number): void {
+    const stage = damageStage(b.hp, b.maxHp);
+    const im = v.image;
+    const jammed = this.session.sim.tick < b.disabledUntil;
+    if (stage !== v.stage) {
+      v.stage = stage;
+      if (!jammed) this.restoreTint(v);
+      if (!stage) {
+        v.cracks?.destroy();
+        v.cracks = null;
+      } else {
+        const key = crackTexture(this, stage);
+        v.cracks ??= this.add.image(0, 0, key).setAlpha(0.9);
+        v.cracks.setTexture(key);
+        // Over the walls (upper middle of the art), about two fifths of the building's width.
+        const w = im.displayWidth * 0.42;
+        v.cracks.setPosition(im.x, im.y - im.displayHeight * im.originY * 0.42).setDisplaySize(w, w * 0.75).setDepth(im.depth + 0.3);
+      }
+    }
+    v.cracks?.setVisible(im.visible);
+    if (stage === 2 && this.smokeOn && im.visible && this.time.now >= v.smokeAt) {
+      v.smokeAt = this.time.now + 650 + Math.random() * 500;
+      const x = im.x + (Math.random() - 0.5) * im.displayWidth * 0.3;
+      const y = im.y - im.displayHeight * im.originY * 0.6;
+      const p = this.add.image(x, y, Keys.puff).setScale(0.22 / TEX_SCALE).setTint(0x6a6560).setAlpha(0.55).setDepth(im.depth + 0.4);
+      this.tweens.add({ targets: p, y: y - 34, x: x + 8, scale: 0.6 / TEX_SCALE, alpha: 0, duration: 1300, ease: 'Sine.easeOut', onComplete: () => p.destroy() });
+    }
+    if (b.kind !== 'defense' || !b.combat) return;
+    if (!v.aim) {
+      v.aim = this.add.image(0, 0, barrelTexture(this)).setOrigin(BARREL_ORIGIN_X, 0.5).setScale(BARREL_SCALE / TEX_SCALE);
+    }
+    // Mounted on the roof deck: a little above the middle of the art (its spire or banner stays above it).
+    const mx = im.x;
+    const my = im.y - im.displayHeight * im.originY * 0.56;
+    const t = b.targetTroop >= 0 ? this.session.sim.troops[b.targetTroop] : undefined;
+    if (t && !t.dead && !jammed) {
+      const a = this.session.alpha();
+      const tw = tileToWorld(t.px + (t.x - t.px) * a, t.py + (t.y - t.py) * a);
+      const want = Math.atan2(tw.y - (airborne(this.session.sim, t) ? AIR_HEIGHT : 0) - 8 - my, tw.x - mx);
+      // About 0.75 turns a second: a visible swing, never a snap (reduced motion: straight there).
+      v.aimAngle = this.reduced ? want : turnToward(v.aimAngle, want, delta * 0.0047);
+    }
+    const back = this.time.now < v.recoilUntil ? 3 : 0;
+    v.aim
+      .setPosition(mx - Math.cos(v.aimAngle) * back, my - Math.sin(v.aimAngle) * back)
+      .setRotation(v.aimAngle)
+      .setDepth(im.depth + 0.6)
+      .setVisible(im.visible)
+      .setAlpha(jammed ? 0.55 : 1);
   }
 
   private makeTroop(type: string, air: boolean): TView {
@@ -888,6 +970,10 @@ export class BattleScene extends Phaser.Scene {
       if (b.destroyed && !v.destroyed) {
         v.destroyed = true;
         this.clearBar(v.bar);
+        v.cracks?.destroy();
+        v.cracks = null;
+        v.aim?.destroy();
+        v.aim = null;
         if (b.kind === 'trap') {
           v.image.setVisible(false);
           return;
@@ -920,8 +1006,9 @@ export class BattleScene extends Phaser.Scene {
       // A 60 ms white flash on a hit, then back to normal (a jammed defense re-tints next frame).
       if (v.flashUntil && this.time.now >= v.flashUntil) {
         v.flashUntil = 0;
-        if (!b.destroyed) v.image.clearTint();
+        if (!b.destroyed) this.restoreTint(v);
       }
+      if (!b.destroyed && b.kind !== 'hedge' && b.kind !== 'trap') this.syncDamage(b, v, delta);
       v.lastHp = b.hp;
     });
 
@@ -954,18 +1041,20 @@ export class BattleScene extends Phaser.Scene {
       const w = tileToWorld(x, y);
       const moving = t.x !== t.px || t.y !== t.py;
       const flying = airborne(sim, t);
-      const bob = flying ? Math.sin(now / 220 + i) * 4 : moving ? -Math.abs(Math.sin(now / 90 + i)) * 3 : 0;
+      // Art audit F6: a procedural step/swing cycle on the single-frame sprite (motion.ts); flyers keep their float.
+      const pose = warriorPose(t.attacking ? 'attack' : moving ? 'walk' : 'idle', now, i, { reduced: this.reduced, lean: this.leanOn && !t.air });
+      const face = t.facing < 0 ? -1 : 1;
+      const bob = flying ? (this.reduced ? 0 : Math.sin(now / 220 + i) * 4) : pose.dy;
       // A grounded flyer (Kite-Cutter Ballista) drops most of the way down while it is tangled.
       const lift = flying ? AIR_HEIGHT : t.air ? AIR_HEIGHT * 0.25 : 0;
-      v.image.setPosition(w.x, w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
-      v.image.setFlipX(t.facing < 0);
+      v.image.setPosition(w.x + (t.air ? 0 : pose.dx * face), w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
+      v.image.setFlipX(face < 0).setAngle(pose.lean * face);
       v.image.setAlpha(t.decoyUntil ? 0.45 : isHidden(sim, t) ? 0.6 : 1);
       if (now < v.flashUntil) this.tintTroop(v, 0xffffff, true);
       else if (t.litUntil > sim.tick) this.tintTroop(v, 0xfff0b0);
       else if (t.air && !flying) this.tintTroop(v, 0xc8c8c8);
       else this.tintTroop(v, null);
-      if (t.attacking && !t.air) v.image.setScale(v.baseScale * (1 + Math.max(0, Math.sin(now / 60)) * 0.08), v.baseScale * (1 - Math.max(0, Math.sin(now / 60)) * 0.06));
-      else if (v.image.scaleX !== v.baseScale && !this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale);
+      if (!this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale * pose.sx, v.baseScale * pose.sy);
       v.shadow.setPosition(w.x, w.y + 1);
       v.ring.setPosition(w.x, w.y + 1).setVisible(!isHidden(sim, t) || Boolean(t.decoyUntil));
       const shield = t.shieldUntil > sim.tick ? 16 : undefined;
@@ -1074,8 +1163,14 @@ export class BattleScene extends Phaser.Scene {
         if (v && b) {
           // Muzzle flash at the top of the tower, and a brief line when it locks on to a new warrior.
           const z = this.cam.userZoom;
-          const mx = v.image.x;
-          const my = v.image.y - v.image.displayHeight * v.image.originY * 0.75;
+          let mx = v.image.x;
+          let my = v.image.y - v.image.displayHeight * v.image.originY * 0.75;
+          if (v.aim) {
+            // From the barrel's mouth, which kicks back (art audit F27).
+            mx = v.aim.x + Math.cos(v.aimAngle) * BARREL_REACH * BARREL_SCALE;
+            my = v.aim.y + Math.sin(v.aimAngle) * BARREL_REACH * BARREL_SCALE;
+            v.recoilUntil = this.time.now + 90;
+          }
           muzzleFlash(this, mx, my, z, OVER - 14);
           const target = b.targetTroop >= 0 ? sim.troops[b.targetTroop] : undefined;
           if (target && b.targetTroop !== v.lockedOn) {
