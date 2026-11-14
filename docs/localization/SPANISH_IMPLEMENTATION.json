@@ -1103,7 +1103,7 @@
     "Upload/review Spanish store listing and product metadata in actual consoles; use current Spanish screenshots",
     "Verify install/first launch, per-app language, glyph coverage, sign-in, real prices/purchases/refunds, notification background delivery and OS permission text on physical iOS/Android devices",
     "Complete publisher facts/legal review and native-language linguistic/accessibility review; staff/support and Spanish moderation operations need owner validation",
-    "Keep the other 48 target languages unready until separately translated and checked"
+    "Keep the other target languages that are not ready (31 on 2026-11-14; locales/availability.json is the live list) unready until separately translated and checked"
   ],
   "implementation_commit": "1daab27",
   "integrated_upstream": "12d5996c3d0b17f9336107ed1a9acb907a0b6385"
