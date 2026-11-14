@@ -25,7 +25,7 @@
 | Clan Stipend | קצבת השבט |
 | Tempering | חישול |
 | splash / anti-air | נזק מתפשט / נגד אוויר |
-| generated | נוצר על ידי המחשב |
+| generated | יצירת מחשב (בתווית אחרי שם), נוצר על ידי המחשב (בתיאור) |
 | Settings / Store / Online play | הגדרות / חנות / משחק מקוון |
 | Codex | אנציקלופדיה |
 | Sensei Hoshi | סנסאי הושי |
@@ -33,7 +33,7 @@
 
 שמות מותגים וטכניים (Kagemura, App Store, Google Play, Game Center, Play Games, IndexedDB, Sentry) נשארים באותיות לטיניות. שמות יפניים מתועתקים לעברית (קאיטו, הנה, טאקדה).
 
-ריבוי: one, two, other (Intl.PluralRules('he')). one: "לוחם אחד", two: "2 לוחמים" או "שני לוחמים", other: "# לוחמים". זמן: {h} שע' {m} דק'.
+ריבוי: one, two, other (Intl.PluralRules('he')). one: "לוחם אחד", two: "2 לוחמים" או "שני לוחמים", other: "# לוחמים". זמן: {d} י' {h} ש', {h} ש' {m} ד', {m} ד' {s} שנ'.
 
 שמות נוצרים (generatedNames): `noun-first` — החלק השני (שם עצם בסמיכות: פסגת, עמק, להב) ואחריו החלק הראשון (שם עצם מיודע: הרעם, הערפל), עם רווח: פסגת הרעם. אין תארים, כדי שלא תהיה התאמה במין.
 
