@@ -24,6 +24,8 @@ public class TkAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorizationControlle
             DispatchQueue.main.async {
                 let request = ASAuthorizationAppleIDProvider().createRequest()
                 request.requestedScopes = []
+                // Backend A15: the game passes the SHA-256 hex of the server's nonce (Apple's rule); the ID token carries it.
+                if let nonce = call.getString("nonce"), !nonce.isEmpty { request.nonce = nonce }
                 let controller = ASAuthorizationController(authorizationRequests: [request])
                 controller.delegate = self
                 controller.presentationContextProvider = self

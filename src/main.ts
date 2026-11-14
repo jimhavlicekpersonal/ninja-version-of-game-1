@@ -11,7 +11,8 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
-import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, thumbnailDataUrl, trimTextureCaches, villageTexture } from './presentation/render/assets';
+import { listenForAppLinks, parseGameLink } from './backend/platform/links';
+import { Keys, buildingTexture, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, thumbnailDataUrl, trimTextureCaches, villageTexture } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
@@ -472,6 +473,11 @@ async function boot(): Promise<void> {
     analytics,
     store,
     thumbnail: (type) => thumbOf(buildingThumbKey(game.textures, type)),
+    // Art F26: the building sheet's head and its next-level picture, painted per level on first use.
+    levelThumbnail: (type, level) => {
+      const size = controller.data.buildings[type]?.size;
+      return size ? thumbOf(buildingTexture(game.textures, type, Math.max(1, level), size)) : null;
+    },
     // The Keep at the player's own level in each look (Store → Looks), painted on first use.
     skinThumbnail: (skin) => {
       const keep = controller.state.buildings.find((b) => controller.data.buildings[b.type]?.category === 'hall');
@@ -593,13 +599,22 @@ async function boot(): Promise<void> {
   if (!connection.enabled) recoverPurchases();
 
   // A friend link (?friend=KAGE-XXXXXX) opens Friends on that player once the game is online.
-  const friendParam = new URLSearchParams(location.search).get('friend');
-  if (friendParam && !sandbox) {
+  const openFriendWhenOnline = (code: string) => {
+    if (connection.canFriends) return hud.openFriends(code);
     const stop = connection.subscribe(() => {
       if (!connection.canFriends) return;
       stop();
-      hud.openFriends(friendParam);
+      hud.openFriends(code);
     });
+  };
+  const friendParam = parseGameLink(location.search).friend;
+  if (friendParam && !sandbox) openFriendWhenOnline(friendParam);
+  // R09: in the apps the same links arrive as App Links / Universal Links (once the owner's domain is set up).
+  if (isNative() && !sandbox) {
+    void listenForAppLinks((link) => {
+      if (link.friend) openFriendWhenOnline(link.friend);
+      if (link.open) window.setTimeout(() => hud.openShortcut(link.open!), 300);
+    }).catch(() => undefined);
   }
 
   // A raid the app closed in the middle of plays out now, so it can't be erased by quitting.

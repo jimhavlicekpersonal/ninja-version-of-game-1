@@ -61,6 +61,23 @@ export interface PaymentProvider {
    * not return is missing: it cannot be bought in this storefront.
    */
   prices?(storeProductIds: string[]): Promise<Record<string, StorePrice>>;
+  /**
+   * The store's storefront country as ISO 3166-1 alpha-2 (`JP`), or null when the store does not say
+   * (Japan C17: the Japanese legal notices follow the storefront, not the device language). Never throws.
+   */
+  storefront?(): Promise<string | null>;
+}
+
+/** ISO 3166-1 alpha-3 codes StoreKit may report, for the storefronts the game treats specially. */
+const ALPHA3: Record<string, string> = { JPN: 'JP', USA: 'US', GBR: 'GB', KOR: 'KR', CHN: 'CN', TWN: 'TW', HKG: 'HK' };
+
+/** A storefront code as alpha-2 (`JPN` → `JP`); null for anything unreadable. */
+export function storefrontCountry(code: unknown): string | null {
+  if (typeof code !== 'string') return null;
+  const c = code.trim().toUpperCase();
+  if (/^[A-Z]{2}$/.test(c)) return c;
+  if (/^[A-Z]{3}$/.test(c)) return ALPHA3[c] ?? c;
+  return null;
 }
 
 /** The server's side of a purchase (roadmap Phase 4). */

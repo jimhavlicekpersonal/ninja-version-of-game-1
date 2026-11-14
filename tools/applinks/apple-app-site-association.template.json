@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["__APPLE_TEAM_ID__.__IOS_BUNDLE_ID__"],
+        "components": [
+          { "?": { "friend": "?*" }, "comment": "Friend links: ?friend=CODE opens Friends on that player" },
+          { "?": { "open": "?*" }, "comment": "Panel links: ?open=daily|army|store|news" }
+        ]
+      }
+    ]
+  }
+}

@@ -160,6 +160,10 @@ for (const [label, make] of repoFactories) {
       expect(await repo.saveVillage({ ...next, revision: 2, stateHash: 'stale' }, 1, led, [])).toBe(false);
       expect(await repo.getVillage('a')).toEqual(next);
       expect((await repo.ledgerOf('a', 10)).map((l) => l.reason)).toEqual(['command:collect', 'command:upgrade']);
+      // Japan C17 report: the balance as of a time, null before the first line.
+      expect(await repo.balanceAt('a', 'acorns', T + 5)).toBe(900);
+      expect(await repo.balanceAt('a', 'acorns', T + 4)).toBeNull();
+      expect(await repo.balanceAt('a', 'moonstones', T + 5)).toBeNull();
       expect((await repo.commandsOf('a', 1, 10)).map((c) => [c.seq, c.ok, c.error])).toEqual([
         [2, true, null],
         [3, false, 'NOTHING_TO_COLLECT'],
@@ -276,6 +280,21 @@ for (const [label, make] of repoFactories) {
       expect(claims.filter(Boolean)).toHaveLength(1);
       expect(await repo.getClaim(3, 'a')).toMatchObject({ outcome: 'win' });
       expect(await repo.getClaim(4, 'a')).toBeNull();
+    });
+
+    it('Japan C17: purchases by storefront (any case) up to a time, oldest first', async () => {
+      await fresh();
+      for (const id of ['a', 'b', 'c']) await repo.createPlayer(player(id));
+      const buy = (id: string, playerId: string, at: number, storefront: string | null) =>
+        repo.addPurchase({ store: 'apple', transactionId: id, playerId, productId: 'moonstones_1', cents: 199, at, environment: 'Production', status: 'credited', refundedAt: null, ref: id, heldOnServer: false, storefront, currency: 'JPY', priceMicros: 300_000_000 });
+      await buy('t2', 'a', T + 2, 'JPN');
+      await buy('t1', 'b', T + 1, 'jp');
+      await buy('t3', 'c', T + 3, 'USA');
+      await buy('t4', 'a', T + 9, 'JPN');
+      await buy('t5', 'c', T + 1, null);
+      const found = await repo.storefrontPurchases(['JPN', 'JP'], T + 5);
+      expect(found.map((p) => p.transactionId)).toEqual(['t1', 't2']);
+      expect(found[1]).toMatchObject({ storefront: 'JPN', currency: 'JPY', priceMicros: 300_000_000 });
     });
 
     it('A5: linked purchases follow the player, the asking devices, and accounts whose server village shares a device', async () => {

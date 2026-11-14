@@ -19,6 +19,7 @@ public class TkStorePlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "finish", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "unfinished", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "startListening", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "storefront", returnType: CAPPluginReturnPromise),
     ]
 
     private var updatesTask: Task<Void, Never>?
@@ -39,6 +40,15 @@ public class TkStorePlugin: CAPPlugin, CAPBridgedPlugin {
             } catch {
                 call.reject("Could not load products: \(error.localizedDescription)", "unavailable")
             }
+        }
+    }
+
+    /// Japan C17: the App Store storefront's country (ISO 3166-1 alpha-3, e.g. "JPN"), so the game shows the
+    /// Japanese legal notices for the Japanese storefront whatever the device language. Not compiled here.
+    @objc func storefront(_ call: CAPPluginCall) {
+        Task {
+            let current = await Storefront.current
+            call.resolve(["countryCode": current?.countryCode ?? ""])
         }
     }
 

@@ -284,7 +284,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
       const type = c.command.type;
       if (o.ok && type === 'setProfile' && (c.command as { under18?: unknown }).under18 === true) await tx.setAgeGroup(me.id, true, now);
       ctx.metrics.count('tk_village_commands_total', { result: o.error ? 'refused' : 'ok' });
-      results.push(o.error ? { seq: o.seq, ok: false, error: o.error } : { seq: o.seq, ok: true });
+      results.push(o.error ? { seq: o.seq, ok: false, error: o.error, type: type.slice(0, MAX_LOGGED_TYPE), at: o.when } : { seq: o.seq, ok: true });
       if (device) {
         seq += 1;
         deviceSeq = o.seq;

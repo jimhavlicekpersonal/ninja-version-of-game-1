@@ -827,6 +827,12 @@ export interface PurchaseStore {
   purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null>;
   /** Newest first. */
   purchasesOf(playerId: string, limit: number): Promise<PurchaseRow[]>;
+  /**
+   * Japan C17 (資金決済法 base-date report): every purchase made in one of these storefronts (Apple alpha-3 `JPN`,
+   * Play region `JP`, compared case-insensitively) at or before `before`, refunded ones included (the report
+   * decides by `refundedAt`). Oldest first.
+   */
+  storefrontPurchases(storefronts: string[], before: number): Promise<PurchaseRow[]>;
   /** False if it already had that status. */
   setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
   /** Cents of credited purchases since `since`, plus unused intents still holding at `now` (reserved by the age cap). */
@@ -1099,6 +1105,8 @@ export interface VillageStore {
   recordVillageCommands(v: Pick<VillageRow, 'playerId' | 'revision' | 'seq' | 'updatedAt' | 'deviceSeqs'>, expectedRevision: number, commands: CommandLogRow[]): Promise<boolean>;
   /** Newest first. */
   ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
+  /** The balance of `resource` after the last ledger line at or before `at`; null when there is none (Japan C17 report). */
+  balanceAt(playerId: string, resource: string, at: number): Promise<number | null>;
   /** Oldest first, after `sinceSeq`. */
   commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]>;
 }
@@ -1308,6 +1316,11 @@ export class MemoryRepo implements Repo {
       .reverse()
       .map(clone);
   }
+  async balanceAt(playerId: string, resource: string, at: number): Promise<number | null> {
+    let found: LedgerEntry | null = null;
+    for (const l of this.ledgerRows) if (l.playerId === playerId && l.resource === resource && l.at <= at && (!found || l.at >= found.at)) found = l;
+    return found ? found.balance : null;
+  }
   async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
     return this.commandRows
       .filter((c) => c.playerId === playerId && c.seq > sinceSeq)
@@ -1380,6 +1393,13 @@ export class MemoryRepo implements Repo {
       .filter((p) => p.playerId === playerId)
       .sort((a, b) => b.at - a.at)
       .slice(0, limit)
+      .map(clone);
+  }
+  async storefrontPurchases(storefronts: string[], before: number): Promise<PurchaseRow[]> {
+    const want = new Set(storefronts.map((f) => f.toUpperCase()));
+    return this.purchaseRows
+      .filter((p) => p.at <= before && want.has(String(p.storefront ?? '').toUpperCase()))
+      .sort((a, b) => a.at - b.at)
       .map(clone);
   }
   async setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean> {

@@ -6,7 +6,7 @@
  * checked and delivered it; without a server the game consumes it itself.
  */
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
-import { storeErrorMessage, type PaymentProvider, type PaymentResult, type ProductRequest, type StorePrice, type StoreReceipt } from './provider';
+import { storeErrorMessage, storefrontCountry, type PaymentProvider, type PaymentResult, type ProductRequest, type StorePrice, type StoreReceipt } from './provider';
 
 interface PlayPurchase {
   purchaseToken: string;
@@ -32,6 +32,8 @@ interface TkBillingPlugin {
   purchase(opts: { productId: string; accountId?: string }): Promise<PlayPurchase>;
   unfinished(): Promise<{ purchases: PlayPurchase[] }>;
   consume(opts: { purchaseToken: string }): Promise<void>;
+  /** Japan C17: Play Billing `getBillingConfigAsync` → `BillingConfig.getCountryCode()` (ISO 3166-1 alpha-2). */
+  billingCountry?(): Promise<{ countryCode?: string }>;
   addListener(event: 'purchase', cb: (p: PlayPurchase) => void): Promise<PluginListenerHandle>;
 }
 
@@ -96,6 +98,15 @@ export class PlayBillingPaymentProvider implements PaymentProvider {
       };
     }
     return out;
+  }
+
+  /** Japan C17: the Play billing country (alpha-2), null when unknown or the plugin is older. */
+  async storefront(): Promise<string | null> {
+    try {
+      return storefrontCountry((await withTimeout(TkBilling.billingCountry!(), PRICES_TIMEOUT_MS)).countryCode);
+    } catch {
+      return null;
+    }
   }
 
   async finish(receipt: StoreReceipt): Promise<void> {

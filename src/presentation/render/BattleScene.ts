@@ -16,6 +16,10 @@ import { noteBattleFps, quality } from './quality';
 import { expectedFps, frames, refreshHz, slowDown } from './frameRate';
 import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
 import { haptic, sound } from '../audio/sound';
+import { placeCallout, type CalloutBox } from './calloutLayout';
+import { OPENING_GLIDE_MS, OPENING_HOLD_MS, battleOpening } from './cameraFrame';
+import { DAMAGE_TINT, damageStage, reducedMotion, turnToward, warriorPose } from './motion';
+import { BARREL_ORIGIN_X, BARREL_REACH, barrelTexture, crackTexture } from './battleMarks';
 
 export interface BattleHooks {
   selectedTroop(): string | null;
@@ -30,6 +34,13 @@ export interface BattleHooks {
   attachView?(view: BattleView): void;
   /** A one-line message for the player (the battle HUD's toast). */
   notice?(text: string): void;
+}
+
+/** A camera position: zoom (CSS px per world px) and the world point at the canvas centre. */
+interface CameraShot {
+  zoom: number;
+  x: number;
+  y: number;
 }
 
 export interface ScreenInsets {
@@ -82,6 +93,14 @@ interface BView {
   flashAt: number;
   /** The warrior this defense last locked on to (a new lock draws a targeting line). */
   lockedOn: number;
+  /** Damage stage shown (art audit F7: 0, 1 at 66 % health, 2 at 33 %), its crack overlay and next smoke puff time. */
+  stage: 0 | 1 | 2;
+  cracks: Phaser.GameObjects.Image | null;
+  smokeAt: number;
+  /** Barrel showing where a defense aims (art audit F27), its angle (radians) and the end of a recoil. */
+  aim: Phaser.GameObjects.Image | null;
+  aimAngle: number;
+  recoilUntil: number;
 }
 
 interface SView {
@@ -111,6 +130,8 @@ const COUNTER_LABEL: Record<string, string> = { lit: 'Lit up!', repair: 'Repaire
 /** Milliseconds between callouts over the same troop or building, so a fight stays readable. */
 const CALLOUT_GAP_MS = 1400;
 const AIR_HEIGHT = 46;
+/** Defense barrels at this size (world px per texture unit). */
+const BARREL_SCALE = 1.1;
 /**
  * Lowest start zoom (CSS px per world px) when fitting every open point: a whole 40-tile base is about 2,400 world px
  * wide, so a 390 px phone needs ~0.14. Below this a narrow phone gets edge chevrons instead (rings would be too small).
@@ -165,6 +186,8 @@ export class BattleScene extends Phaser.Scene {
     this.entryLabels = [];
     this.entrySig = '';
     this.lastCallout = new Map();
+    this.liveCallouts = [];
+    this.opening = null;
   }
 
   preload(): void {
@@ -174,14 +197,23 @@ export class BattleScene extends Phaser.Scene {
   /** Drawing with Canvas (no WebGL): tints are ignored, so some cues use alpha instead. */
   private canvasMode = false;
 
+  /** Reduced motion (no warrior hop, lean or lunge; barrels turn at once) and whether damaged buildings smoke. */
+  private reduced = false;
+  private smokeOn = true;
+  /** Warriors lean into steps and swings (not on the low profile, art audit F6). */
+  private leanOn = true;
+
   create(): void {
     this.canvasMode = canvasRenderer(this);
+    this.reduced = reducedMotion();
+    this.smokeOn = quality().profile !== 'low' && !this.reduced;
+    this.leanOn = quality().profile !== 'low';
     const gd = this.session.data;
     ensureTextures(this, gd);
     const mapSize = gd.economy.mapSize;
     const mb = mapBounds(mapSize);
     this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setScale(groundScale(this.textures, mapSize)).setDepth(-10);
-    addSurroundings(this, mapSize);
+    addSurroundings(this, mapSize, undefined, BATTLE_BOUNDS_PAD + 100);
     addScenery(this, mapSize);
     this.cam = new CameraControl(this, {
       renderScale: this.renderScale,
@@ -212,6 +244,7 @@ export class BattleScene extends Phaser.Scene {
     // Open on every open point (re-audit design item 1); the HUD is laid out by now.
     this.pathGfx = this.add.graphics().setDepth(-2);
     this.fitEntry();
+    this.startOpening();
     const refit = () => {
       // Turning the phone before the first warrior goes in shows the whole base again.
       if (!this.session.deployments.length) this.time.delayedCall(60, () => this.fitEntry());
@@ -255,10 +288,10 @@ export class BattleScene extends Phaser.Scene {
     return (open.length ? open : entry.points).map((p) => tileToWorld(p.x, p.y));
   }
 
-  /** Zoom and pan so every open point's ring sits inside the free area (down to FIT_FLOOR). */
-  private fitEntry(): void {
+  /** Zoom and world centre that put every open point's ring inside the free area (down to FIT_FLOOR), or null. */
+  private entryFit(): CameraShot | null {
     const pts = this.framedPoints();
-    if (!pts.length) return;
+    if (!pts.length) return null;
     const entry = this.session.sim.entry!;
     const fa = this.freeArea();
     // Ring half-sizes in world px; a 22 px label sits above each ring.
@@ -272,15 +305,77 @@ export class BattleScene extends Phaser.Scene {
     const labelPx = 24;
     const availW = Math.max(60, fa.right - fa.left - pad * 2);
     const availH = Math.max(60, fa.bottom - fa.top - pad * 2 - labelPx);
-    const z = Phaser.Math.Clamp(Math.min(availW / (maxX - minX), availH / (maxY - minY)), FIT_FLOOR, 0.9);
-    this.cam.stop();
-    this.cam.setZoom(z);
-    const zoom = this.cam.userZoom;
+    const z = Phaser.Math.Clamp(Math.min(availW / (maxX - minX), availH / (maxY - minY)), Math.max(FIT_FLOOR, this.cam.minZoom()), 0.9);
     // Put the middle of the points at the middle of the free area (the label band sits above it).
     const fx = (fa.left + fa.right) / 2 - fa.cssW / 2;
     const fy = (fa.top + labelPx + fa.bottom) / 2 - fa.cssH / 2;
-    this.cameras.main.centerOn((minX + maxX) / 2 - fx / zoom, (minY + maxY) / 2 - fy / zoom);
+    return { zoom: z, x: (minX + maxX) / 2 - fx / z, y: (minY + maxY) / 2 - fy / z };
+  }
+
+  private applyShot(s: CameraShot): void {
+    this.cam.stop();
+    this.cam.setZoom(s.zoom);
+    this.cameras.main.centerOn(s.x, s.y);
     this.rescaleOverlays();
+  }
+
+  /** Zoom and pan so every open point's ring sits inside the free area (during the opening shot: where it glides to). */
+  private fitEntry(): void {
+    const f = this.entryFit();
+    if (!f) return;
+    if (this.opening) this.opening.target = f;
+    else this.applyShot(f);
+  }
+
+  /** The opening shot in progress (art audit F4): the base up close, then a glide out to `target`. */
+  private opening: { target: CameraShot; timer: Phaser.Time.TimerEvent | null; tween: Phaser.Tweens.Tween | null } | null = null;
+
+  /**
+   * Art audit F4: on a portrait phone the fit of every point is ~0.14 zoom (a postage-stamp base). Show the base at a
+   * readable zoom first, hold, then glide out to the fit. A touch, a replay or reduced motion skips it.
+   */
+  private startOpening(): void {
+    const target = this.entryFit();
+    if (!target) return;
+    const fa = this.freeArea();
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const v of this.bviews) {
+      if (!v.image.visible) continue;
+      const b = v.image.getBounds();
+      x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.right); y1 = Math.max(y1, b.bottom);
+    }
+    const zoom = battleOpening({ fitZoom: target.zoom, baseW: x1 - x0, baseH: y1 - y0, freeW: fa.right - fa.left, freeH: fa.bottom - fa.top, skip: this.session.mode === 'replay' || reducedMotion() });
+    if (zoom === null) return;
+    const fx = (fa.left + fa.right) / 2 - fa.cssW / 2;
+    const fy = (fa.top + fa.bottom) / 2 - fa.cssH / 2;
+    const from: CameraShot = { zoom, x: (x0 + x1) / 2 - fx / zoom, y: (y0 + y1) / 2 - fy / zoom };
+    this.applyShot(from);
+    const op: NonNullable<BattleScene['opening']> = { target, timer: null, tween: null };
+    this.opening = op;
+    const finish = () => {
+      if (this.opening !== op) return;
+      op.timer?.remove();
+      op.tween?.stop();
+      this.opening = null;
+      this.input.off('pointerdown', finish);
+      this.applyShot(op.target);
+    };
+    this.input.once('pointerdown', finish);
+    op.timer = this.time.delayedCall(OPENING_HOLD_MS, () => {
+      op.tween = this.tweens.addCounter({
+        from: 0,
+        to: 1,
+        duration: OPENING_GLIDE_MS,
+        ease: 'Cubic.easeInOut',
+        onUpdate: (tw) => {
+          const k = tw.getValue() ?? 0;
+          const t = op.target;
+          // Zoom eases in log space so the glide feels even; the centre follows the zoom.
+          this.applyShot({ zoom: from.zoom * Math.pow(t.zoom / from.zoom, k), x: from.x + (t.x - from.x) * k, y: from.y + (t.y - from.y) * k });
+        },
+        onComplete: finish,
+      });
+    });
   }
 
   private entriesOnScreen(): EntryOnScreen[] {
@@ -294,7 +389,8 @@ export class BattleScene extends Phaser.Scene {
     return entry.points.map((p, i) => {
       const w = tileToWorld(p.x, p.y);
       const c = this.toCss(w.x, w.y);
-      const inside = c.x - hx > fa.left && c.x + hx < fa.right && c.y - 4 > fa.top && c.y + hy < fa.bottom;
+      // During the opening shot the camera is on its way to frame every point: no chevrons for that moment.
+      const inside = Boolean(this.opening) || (c.x - hx > fa.left && c.x + hx < fa.right && c.y - 4 > fa.top && c.y + hy < fa.bottom);
       return { index: i, label: p.label, left: coverLeft(entry, i), x: c.x + fa.ox, y: c.y + fa.oy, inside };
     });
   }
@@ -391,7 +487,7 @@ export class BattleScene extends Phaser.Scene {
     const image = this.add.image(c.x, c.y, key).setOrigin(o.x, o.y).setScale(buildingScale(tex, b.size)).setDepth(depthFor(b.x, b.y, b.size));
     if (b.hidden) image.setVisible(false);
     const bar = this.add.graphics().setDepth(OVER - 10);
-    return { image, bar, destroyed: false, lastHp: b.hp, jam: null, ring: null, flashUntil: 0, flashAt: -1e9, lockedOn: -1 };
+    return { image, bar, destroyed: false, lastHp: b.hp, jam: null, ring: null, flashUntil: 0, flashAt: -1e9, lockedOn: -1, stage: 0, cracks: null, smokeAt: 0, aim: null, aimAngle: Math.PI * 0.75, recoilUntil: 0 };
   }
 
   private drawZone(): void {
@@ -589,7 +685,7 @@ export class BattleScene extends Phaser.Scene {
         v.ring?.destroy();
         v.jam = null;
         v.ring = null;
-        v.image.clearTint();
+        this.restoreTint(v);
       }
       return;
     }
@@ -623,7 +719,7 @@ export class BattleScene extends Phaser.Scene {
       g.arc(v.image.x, top - 16 / z, 13 / z, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * Math.max(1, Math.round(done * 48))) / 48);
       g.strokePath();
     } else {
-      v.image.clearTint();
+      this.restoreTint(v);
       if (v.dimmed) {
         v.image.setAlpha(v.image.alpha / 0.6);
         v.dimmed = false;
@@ -631,6 +727,68 @@ export class BattleScene extends Phaser.Scene {
       g.lineStyle(2 / z, 0x8ad0ff, 0.5);
       g.strokeCircle(v.image.x, top - 16 / z, 8 / z);
     }
+  }
+
+  /** Back to the building's own colour: the damage tint (art audit F7) or none. */
+  private restoreTint(v: BView): void {
+    if (v.stage) v.image.setTint(DAMAGE_TINT[v.stage]);
+    else v.image.clearTint();
+  }
+
+  /**
+   * Art audit F7: between full health and ruins a building shows two damage stages, cracks and a darker scorched tint
+   * at 66 % and more cracks with a scorch at 33 %, where (high profile, no reduced motion) it also smokes. Art audit
+   * F27: a defense shows a barrel that turns toward the warrior it shoots at. Both read the battle state only.
+   */
+  private syncDamage(b: SimBuilding, v: BView, delta: number): void {
+    const stage = damageStage(b.hp, b.maxHp);
+    const im = v.image;
+    const jammed = this.session.sim.tick < b.disabledUntil;
+    if (stage !== v.stage) {
+      v.stage = stage;
+      if (!jammed) this.restoreTint(v);
+      if (!stage) {
+        v.cracks?.destroy();
+        v.cracks = null;
+      } else {
+        const key = crackTexture(this, stage);
+        v.cracks ??= this.add.image(0, 0, key).setAlpha(0.9);
+        v.cracks.setTexture(key);
+        // Over the walls (upper middle of the art), about two fifths of the building's width.
+        const w = im.displayWidth * 0.42;
+        v.cracks.setPosition(im.x, im.y - im.displayHeight * im.originY * 0.42).setDisplaySize(w, w * 0.75).setDepth(im.depth + 0.3);
+      }
+    }
+    v.cracks?.setVisible(im.visible);
+    if (stage === 2 && this.smokeOn && im.visible && this.time.now >= v.smokeAt) {
+      v.smokeAt = this.time.now + 650 + Math.random() * 500;
+      const x = im.x + (Math.random() - 0.5) * im.displayWidth * 0.3;
+      const y = im.y - im.displayHeight * im.originY * 0.6;
+      const p = this.add.image(x, y, Keys.puff).setScale(0.22 / TEX_SCALE).setTint(0x6a6560).setAlpha(0.55).setDepth(im.depth + 0.4);
+      this.tweens.add({ targets: p, y: y - 34, x: x + 8, scale: 0.6 / TEX_SCALE, alpha: 0, duration: 1300, ease: 'Sine.easeOut', onComplete: () => p.destroy() });
+    }
+    if (b.kind !== 'defense' || !b.combat) return;
+    if (!v.aim) {
+      v.aim = this.add.image(0, 0, barrelTexture(this)).setOrigin(BARREL_ORIGIN_X, 0.5).setScale(BARREL_SCALE / TEX_SCALE);
+    }
+    // Mounted on the roof deck: a little above the middle of the art (its spire or banner stays above it).
+    const mx = im.x;
+    const my = im.y - im.displayHeight * im.originY * 0.56;
+    const t = b.targetTroop >= 0 ? this.session.sim.troops[b.targetTroop] : undefined;
+    if (t && !t.dead && !jammed) {
+      const a = this.session.alpha();
+      const tw = tileToWorld(t.px + (t.x - t.px) * a, t.py + (t.y - t.py) * a);
+      const want = Math.atan2(tw.y - (airborne(this.session.sim, t) ? AIR_HEIGHT : 0) - 8 - my, tw.x - mx);
+      // About 0.75 turns a second: a visible swing, never a snap (reduced motion: straight there).
+      v.aimAngle = this.reduced ? want : turnToward(v.aimAngle, want, delta * 0.0047);
+    }
+    const back = this.time.now < v.recoilUntil ? 3 : 0;
+    v.aim
+      .setPosition(mx - Math.cos(v.aimAngle) * back, my - Math.sin(v.aimAngle) * back)
+      .setRotation(v.aimAngle)
+      .setDepth(im.depth + 0.6)
+      .setVisible(im.visible)
+      .setAlpha(jammed ? 0.55 : 1);
   }
 
   private makeTroop(type: string, air: boolean): TView {
@@ -668,19 +826,46 @@ export class BattleScene extends Phaser.Scene {
     if (v.image.texture.key !== key) v.image.setTexture(key);
   }
 
-  /** Short floating label over a troop or building (ability names, counter effects). Throttled per key. */
+  /** Callout labels still on screen (art audit F8: they are laid out against each other, `calloutLayout.ts`). */
+  private liveCallouts: { label: Phaser.GameObjects.Text; text: string; tween: Phaser.Tweens.Tween | null }[] = [];
+
+  /** Short floating label over a troop or building (ability names, counter effects). Throttled per key, stacked, merged. */
   private callout(key: string, x: number, y: number, text: string, color: string): void {
     const now = this.time.now;
     if (now - (this.lastCallout.get(key) ?? -Infinity) < CALLOUT_GAP_MS) return;
     this.lastCallout.set(key, now);
     const zoom = this.cam.userZoom;
+    const shown = ownedText(text);
     const label = this.add
-      .text(x, y, ownedText(text), { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
+      .text(x, y, shown, { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
       .setShadow(0, 2, 'rgba(15,20,30,0.45)', 3, true, true)
       .setOrigin(0.5, 1)
       .setScale(1 / zoom)
       .setDepth(OVER);
-    this.tweens.add({ targets: label, y: y - 26 / zoom, alpha: { from: 1, to: 0 }, duration: 1100, ease: 'Cubic.easeOut', onComplete: () => label.destroy() });
+    this.liveCallouts = this.liveCallouts.filter((c) => c.label.active);
+    const box = (l: Phaser.GameObjects.Text, t: string): CalloutBox => {
+      const c = this.toCss(l.x, l.y);
+      return { text: t, x: c.x, y: c.y, w: l.width, h: l.height };
+    };
+    const at = placeCallout(this.liveCallouts.map((c) => box(c.label, c.text)), box(label, shown), this.hooks.safeArea?.().top ?? 0);
+    if (at.kind !== 'place') {
+      label.destroy();
+      // The same words close by: show the live one again instead of printing a second copy.
+      if (at.kind === 'merge') this.floatCallout(this.liveCallouts[at.index]);
+      return;
+    }
+    label.y += (at.y - box(label, shown).y) / zoom;
+    const entry = { label, text: shown, tween: null as Phaser.Tweens.Tween | null };
+    this.liveCallouts.push(entry);
+    this.floatCallout(entry);
+  }
+
+  /** Float a callout up and fade it out (again, when a merged copy refreshes it). */
+  private floatCallout(c: { label: Phaser.GameObjects.Text; tween: Phaser.Tweens.Tween | null }): void {
+    c.tween?.stop();
+    const l = c.label.setAlpha(1);
+    const rise = 26 / this.cam.userZoom;
+    c.tween = this.tweens.add({ targets: l, y: l.y - rise, alpha: { from: 1, to: 0 }, duration: 1100, ease: 'Cubic.easeOut', onComplete: () => l.destroy() });
   }
 
   private puff(x: number, y: number, scale: number): void {
@@ -785,6 +970,10 @@ export class BattleScene extends Phaser.Scene {
       if (b.destroyed && !v.destroyed) {
         v.destroyed = true;
         this.clearBar(v.bar);
+        v.cracks?.destroy();
+        v.cracks = null;
+        v.aim?.destroy();
+        v.aim = null;
         if (b.kind === 'trap') {
           v.image.setVisible(false);
           return;
@@ -817,8 +1006,9 @@ export class BattleScene extends Phaser.Scene {
       // A 60 ms white flash on a hit, then back to normal (a jammed defense re-tints next frame).
       if (v.flashUntil && this.time.now >= v.flashUntil) {
         v.flashUntil = 0;
-        if (!b.destroyed) v.image.clearTint();
+        if (!b.destroyed) this.restoreTint(v);
       }
+      if (!b.destroyed && b.kind !== 'hedge' && b.kind !== 'trap') this.syncDamage(b, v, delta);
       v.lastHp = b.hp;
     });
 
@@ -851,18 +1041,20 @@ export class BattleScene extends Phaser.Scene {
       const w = tileToWorld(x, y);
       const moving = t.x !== t.px || t.y !== t.py;
       const flying = airborne(sim, t);
-      const bob = flying ? Math.sin(now / 220 + i) * 4 : moving ? -Math.abs(Math.sin(now / 90 + i)) * 3 : 0;
+      // Art audit F6: a procedural step/swing cycle on the single-frame sprite (motion.ts); flyers keep their float.
+      const pose = warriorPose(t.attacking ? 'attack' : moving ? 'walk' : 'idle', now, i, { reduced: this.reduced, lean: this.leanOn && !t.air });
+      const face = t.facing < 0 ? -1 : 1;
+      const bob = flying ? (this.reduced ? 0 : Math.sin(now / 220 + i) * 4) : pose.dy;
       // A grounded flyer (Kite-Cutter Ballista) drops most of the way down while it is tangled.
       const lift = flying ? AIR_HEIGHT : t.air ? AIR_HEIGHT * 0.25 : 0;
-      v.image.setPosition(w.x, w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
-      v.image.setFlipX(t.facing < 0);
+      v.image.setPosition(w.x + (t.air ? 0 : pose.dx * face), w.y - lift + bob).setDepth(t.air ? OVER - 30 + y : depthFor(x - 0.5, y - 0.5, 1) + 1);
+      v.image.setFlipX(face < 0).setAngle(pose.lean * face);
       v.image.setAlpha(t.decoyUntil ? 0.45 : isHidden(sim, t) ? 0.6 : 1);
       if (now < v.flashUntil) this.tintTroop(v, 0xffffff, true);
       else if (t.litUntil > sim.tick) this.tintTroop(v, 0xfff0b0);
       else if (t.air && !flying) this.tintTroop(v, 0xc8c8c8);
       else this.tintTroop(v, null);
-      if (t.attacking && !t.air) v.image.setScale(v.baseScale * (1 + Math.max(0, Math.sin(now / 60)) * 0.08), v.baseScale * (1 - Math.max(0, Math.sin(now / 60)) * 0.06));
-      else if (v.image.scaleX !== v.baseScale && !this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale);
+      if (!this.tweens.isTweening(v.image)) v.image.setScale(v.baseScale * pose.sx, v.baseScale * pose.sy);
       v.shadow.setPosition(w.x, w.y + 1);
       v.ring.setPosition(w.x, w.y + 1).setVisible(!isHidden(sim, t) || Boolean(t.decoyUntil));
       const shield = t.shieldUntil > sim.tick ? 16 : undefined;
@@ -971,8 +1163,14 @@ export class BattleScene extends Phaser.Scene {
         if (v && b) {
           // Muzzle flash at the top of the tower, and a brief line when it locks on to a new warrior.
           const z = this.cam.userZoom;
-          const mx = v.image.x;
-          const my = v.image.y - v.image.displayHeight * v.image.originY * 0.75;
+          let mx = v.image.x;
+          let my = v.image.y - v.image.displayHeight * v.image.originY * 0.75;
+          if (v.aim) {
+            // From the barrel's mouth, which kicks back (art audit F27).
+            mx = v.aim.x + Math.cos(v.aimAngle) * BARREL_REACH * BARREL_SCALE;
+            my = v.aim.y + Math.sin(v.aimAngle) * BARREL_REACH * BARREL_SCALE;
+            v.recoilUntil = this.time.now + 90;
+          }
           muzzleFlash(this, mx, my, z, OVER - 14);
           const target = b.targetTroop >= 0 ? sim.troops[b.targetTroop] : undefined;
           if (target && b.targetTroop !== v.lockedOn) {

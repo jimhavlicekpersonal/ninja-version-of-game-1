@@ -23,8 +23,9 @@ import type { BattleSetup } from '../../gameplay/sim/battle/types';
 import type { RaidBattle } from '../social/raidBattle';
 // Name rules for instant hints in the UI (the server decides; step 59).
 export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './names';
+export type { RefusedAction } from './villageSync';
 import type { PurchaseVerifier } from '../payments/provider';
-import { VillageSync, type SyncGame } from './villageSync';
+import { VillageSync, type RefusedAction, type SyncGame } from './villageSync';
 import { SIM_RULES } from '../../gameplay/sim/battle/battle';
 import { NEWER_VILLAGE_MESSAGE, updateNeeded } from './versionCheck';
 import { NewerSaveError } from '../../gameplay/sim/save';
@@ -97,6 +98,8 @@ export interface OutboxItem {
 
 const SERVER_KEY = 'tk.net.server';
 const NAME_KEY = 'tk.net.name';
+/** Backend A16: how often this device swaps its token for a new one (feature `session-control`). */
+export const ROTATE_EVERY_MS = 30 * 86_400_000;
 
 /**
  * The server address: the one chosen in Settings, else the one built into
@@ -182,6 +185,11 @@ export class Connection {
         this.village.onChange = () => this.emit();
       }
     }
+  }
+
+  /** Actions the server refused since this start, newest last (GLOBAL-009: News names them with their reasons). */
+  get refusedActions(): readonly RefusedAction[] {
+    return this.village?.refusedLog ?? [];
   }
 
   /** Why the server would not take this village (protocol 7 auto-move), if it refused. */
@@ -660,6 +668,96 @@ export class Connection {
   }
 
   /**
+   * Backend A15: a one-time nonce for the next Apple/Google sign-in, or undefined when this server does not
+   * issue them (older servers; the sign-in then goes without one, as before) or could not be reached for one.
+   * A nonce fetched ahead (`prefetchSignInNonce`, when the Account section opens) is used first, so the
+   * provider's popup opens straight from the tap (Safari blocks a popup that waited for the network).
+   */
+  async signInNonce(provider: LinkProvider): Promise<string | undefined> {
+    if (provider !== 'apple' && provider !== 'google') return undefined;
+    const ready = this.nonceAhead;
+    this.nonceAhead = null;
+    if (ready && ready.expiresAt - 60_000 > Date.now()) return ready.nonce;
+    return (await this.fetchNonce())?.nonce;
+  }
+
+  /** Fetch a sign-in nonce ahead of the tap that needs it (see `signInNonce`). */
+  prefetchSignInNonce(): void {
+    if (this.nonceAhead && this.nonceAhead.expiresAt - 60_000 > Date.now()) return;
+    void this.fetchNonce().then((n) => {
+      // The device's own clock (the server's `expiresAt` is on the server's clock): a nonce lives 10 minutes there.
+      if (n) this.nonceAhead = { nonce: n.nonce, expiresAt: Date.now() + 9 * 60_000 };
+    });
+  }
+
+  private nonceAhead: { nonce: string; expiresAt: number } | null = null;
+
+  private async fetchNonce(): Promise<{ nonce: string; expiresAt: number } | null> {
+    const port = this.port;
+    if (!port?.authNonce || !this.server?.features.includes('signin-nonce')) return null;
+    try {
+      const r = await port.authNonce();
+      return r.nonce ? r : null;
+    } catch (e) {
+      this.log('Online play: no sign-in nonce from the server', e);
+      return null;
+    }
+  }
+
+  /** Whether this server can sign out just this device (feature `session-control`). */
+  get canSignOutDevice(): boolean {
+    return this.online && Boolean(this.server?.features.includes('session-control') && this.port?.signOutDevice);
+  }
+
+  /**
+   * Backend A16: sign out this device. The server refuses (`409 conflict`, thrown as a `ServerError`) when
+   * this device holds the account's last key; nothing changes then. Otherwise online play switches off
+   * here (as after deleting the account, so it does not quietly register a new player); the account stays
+   * on the server and can come back through a linked sign-in.
+   */
+  async signOutDevice(): Promise<void> {
+    const port = this.port_();
+    if (!this.server?.features.includes('session-control') || !port.signOutDevice) throw new Error('This server cannot sign out this device yet.');
+    // Reports and actions waiting here belong to this account: send them while the token still works.
+    await this.flush().catch(() => undefined);
+    await port.signOutDevice();
+    this.stop();
+    this.village?.reset();
+    this.village?.stop();
+    const g = this.o.game;
+    for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'signed_out' });
+    this.saveOutbox([]);
+    this.kv.set(`tk.net.rotatedAt:${this.url}`, null);
+    Connection.choose('off', this.kv);
+    this.player = null;
+    this.setStatus('off');
+  }
+
+  /**
+   * Backend A16: rotate this device's token every `ROTATE_EVERY_MS` (feature `session-control`), so a token
+   * copied from the device stops being useful. The clock starts the first time this server offers it; a
+   * failed rotation is tried again a day later. Never breaks a sync.
+   */
+  private async maybeRotate(port: ServerPort): Promise<void> {
+    if (!port.rotateToken || !this.server?.features.includes('session-control')) return;
+    const key = `tk.net.rotatedAt:${this.url}`;
+    const now = Date.now();
+    const last = Number(this.kv.get(key) ?? 0);
+    if (!last || last > now) {
+      this.kv.set(key, String(now));
+      return;
+    }
+    if (now - last < ROTATE_EVERY_MS) return;
+    try {
+      const switched = await port.rotateToken();
+      this.kv.set(key, String(switched ? now : now - ROTATE_EVERY_MS + 86_400_000));
+    } catch (e) {
+      this.kv.set(key, String(now - ROTATE_EVERY_MS + 86_400_000));
+      this.log('Online play: could not rotate this device\'s token', e);
+    }
+  }
+
+  /**
    * Servers this device still holds an online account token for, although
    * online play with them is off here (Settings → Play offline). The account
    * still exists on the server, so Settings offers to delete it (re-audit).
@@ -839,6 +937,7 @@ export class Connection {
       await this.flush();
       this.player = await port.me();
       g.dispatch({ type: 'syncRank', trophies: this.player.trophies, shieldUntil: this.player.shieldUntil });
+      await this.maybeRotate(port);
       this.emit();
     } catch (e) {
       this.handleError(e);
