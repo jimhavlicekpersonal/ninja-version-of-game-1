@@ -345,7 +345,7 @@ export class ArmyUi {
     const tu = row.topUp;
     if (tu) {
       const what = i18nText("ui.the_missing_and_queue_5af8353596", { arg1: missingText(tu.missing), arg2: tu.count, arg3: def.name });
-      const b = h('button', { class: 'btn gold buy', type: 'button', title: i18nText("ui.buy_a95681848f", { arg1: what }) }, i18nText("ui.buy_64fe2149d3", { arg1: ahead ? i18nText("ui.next_1ff57a29d7") : i18nText("ui.fill_033955d469"), arg2: tu.count }), h('span', { class: 'chip' }, icon(icons.moonstones), String(tu.moonstones)));
+      const b = h('button', { class: 'btn gold buy', type: 'button', title: i18nText("ui.buy_a95681848f", { arg1: what }) }, i18nText(ahead ? 'common.buyNext' : 'common.buyFill', { n: tu.count }), h('span', { class: 'chip' }, icon(icons.moonstones), String(tu.moonstones)));
       b.addEventListener('click', () => {
         const action = { type: 'train', troop: t, count: tu.count } as const;
         const price = topUpQuote(c.state, action, c.now(), gd)?.moonstones ?? tu.moonstones;
