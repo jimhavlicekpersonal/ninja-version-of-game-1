@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|---|---|---|---|
 | Blade (`blade`) | 1 | 0.6 | 0.17 | any |  |  | 1 | 5.7 | Fast melee that strikes the nearest building. |
 | Thrower (`thrower`) | 1 | 3.5 | 0.15 | any |  |  | 0.627 | 3.43 | Fragile ranged damage from behind the front line. |
-| Guardian (`guardian`) | 5 | 0.8 | 0.1 | defense |  |  | 1 | 39 | Armoured frontliner that walks into defenses and soaks fire. |
+| Guardian (`guardian`) | 5 | 0.8 | 0.1 | defense |  |  | 1 | 39 | Armored frontliner that walks into defenses and soaks fire. |
 | Saboteur (`saboteur`) | 2 | 0.6 | 0.22 | defense |  | yes | 0.72 | 25 | Specialist that disables defenses for a short time. |
 | Infiltrator (`infiltrator`) | 2 | 0.6 | 0.22 | any |  | yes | 0.95 | 6.25 | Gets past walls by tunnel, rope or rooftop. |
 | Sky (`sky`) | 4 | 0.5 | 0.2 | defense | yes | yes | 0.568 | 2.7 | Flies over everything; only anti-air can touch it, so it is fragile and hits lighter. |
@@ -31,7 +31,7 @@
 | 6 | **Kunai Adept** `kunai_adept` | Thrower | 1 Initiate | 1 | Kunai Volley: Fragile ranged damage from behind the front line. | 24 / 7 | 20 | 403 / 117 | 7310 | yes (`frog_lobber`) |
 | 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 34 / 10 | 18 | 426 / 124 | 8650 | yes (`shuriken_storm`) |
 | 8 | **Blowgun Hunter** `blowgun_hunter` | Thrower | 3 Veteran | 7 | Venom Dart: Darts keep damaging a building for 5 seconds. | 64 / 19 | 16 | 443 / 129 | 10k | yes (`blowgun_hunter`) |
-| 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armour Shred: Hits make the target take 20% more damage from everyone. | 121 / 35 | 14 | 461 / 135 | 12k | yes (`chain_sickle_reaper`) |
+| 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armor Shred: Hits make the target take 20% more damage from everyone. | 121 / 35 | 14 | 461 / 135 | 12k | yes (`chain_sickle_reaper`) |
 | 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 46 | 12 | 480 / 84 | 14k | yes (`thousand_needle`) |
 | 11 | **Armored Guardian** `armored_guardian` | Guardian | 1 Initiate | 2 | Stand Firm: Walks straight into defenses and soaks their fire. | 755 / 19 | 20 | 11k / 280 | 37k | yes (`beetle_brute`) |
 | 12 | **Iron Monk** `iron_monk` | Guardian | 2 Adept | 4 | Iron Skin: Warriors beside him take 15% less damage. | 918 / 24 | 18 | 11k / 293 | 43k | yes (`iron_monk`) |

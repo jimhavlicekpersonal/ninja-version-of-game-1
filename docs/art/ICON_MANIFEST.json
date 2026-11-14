@@ -534,7 +534,7 @@
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armor Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.chain_sickle_reaper.s2",
@@ -548,7 +548,7 @@
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armor Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.chain_sickle_reaper.s3",
@@ -562,7 +562,7 @@
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armor Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.chain_sickle_reaper.s4",
@@ -576,7 +576,7 @@
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armour Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Chain-Sickle Reaper, a thrower warrior (fragile ranged damage from behind the front line.) Signature: Armor Shred. #3a2a2a outfit, #c9ced6 accents, sickle on a chain. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.chain_sickle_reaper",
@@ -664,7 +664,7 @@
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.armored_guardian.s2",
@@ -678,7 +678,7 @@
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.armored_guardian.s3",
@@ -692,7 +692,7 @@
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.armored_guardian.s4",
@@ -706,7 +706,7 @@
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Armored Guardian, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Stand Firm. #3a2f2a outfit, #7a2e26 accents, iron-studded club, red lacquer armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.beetle_brute",
@@ -729,7 +729,7 @@
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.iron_monk.s2",
@@ -743,7 +743,7 @@
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.iron_monk.s3",
@@ -757,7 +757,7 @@
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.iron_monk.s4",
@@ -771,7 +771,7 @@
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Iron Monk, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Iron Skin. #5a4a3a outfit, #e9b44c accents, iron staff, bronze bracers armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.iron_monk",
@@ -794,7 +794,7 @@
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.bell_warden.s2",
@@ -808,7 +808,7 @@
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.bell_warden.s3",
@@ -822,7 +822,7 @@
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.bell_warden.s4",
@@ -836,7 +836,7 @@
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Bell Warden, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Alarm Bell. #4a3a2a outfit, #d9632a accents, great bell and hammer, bronze armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.bell_warden",
@@ -859,7 +859,7 @@
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.mountain_shield.s2",
@@ -873,7 +873,7 @@
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.mountain_shield.s3",
@@ -887,7 +887,7 @@
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.mountain_shield.s4",
@@ -901,7 +901,7 @@
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Mountain Shield, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Great Wall. #3d4a5c outfit, #9aa0aa accents, tower shield, stone-grey plates armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.mountain_shield",
@@ -924,7 +924,7 @@
         5
       ],
       "live": true,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 1: plain cloth, wooden or iron gear, no trim."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 1: plain cloth, wooden or iron gear, no trim."
     },
     {
       "key": "icon.warrior.oni_breaker.s2",
@@ -938,7 +938,7 @@
         10
       ],
       "live": true,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 2: dyed cloth with a coloured sash, polished steel, one clan crest."
     },
     {
       "key": "icon.warrior.oni_breaker.s3",
@@ -952,7 +952,7 @@
         15
       ],
       "live": true,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 3: lacquered armour plates, silver trim, crest on the back, faint aura."
     },
     {
       "key": "icon.warrior.oni_breaker.s4",
@@ -966,7 +966,7 @@
         20
       ],
       "live": true,
-      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armoured frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
+      "prompt": "Portrait icon of Oni Breaker, a guardian warrior (armored frontliner that walks into defenses and soaks fire.) Signature: Oni Smash. #2a1a1a outfit, #c8402f accents, giant spiked club, black lacquer with horned helm armour. Stage 4: gold leaf trim, glowing weapon edge, flowing scarf, strong aura."
     },
     {
       "key": "troop.oni_breaker",
@@ -7062,9 +7062,9 @@
       "file": "public/art/icons/abilities/armor_shred.png",
       "size": 128,
       "group": "ability",
-      "subject": "Armour Shred",
+      "subject": "Armor Shred",
       "live": true,
-      "prompt": "Ability icon \"Armour Shred\": Hits make the target take 20% more damage from everyone. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Armor Shred\": Hits make the target take 20% more damage from everyone. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.needle_rain",
@@ -7649,7 +7649,7 @@
       "group": "role",
       "subject": "Guardian",
       "live": false,
-      "prompt": "Role symbol for Guardian: Armoured frontliner that walks into defenses and soaks fire."
+      "prompt": "Role symbol for Guardian: Armored frontliner that walks into defenses and soaks fire."
     },
     {
       "key": "icon.role.saboteur",
@@ -7775,7 +7775,7 @@
       "group": "trial",
       "subject": "Twin Gates",
       "live": true,
-      "prompt": "Top-down map glyph of the \"Twin Gates\" layout: Two gates funnel troops onto hidden traps: choose a gate, or go over the wall."
+      "prompt": "Top-down map glyph of the \"Twin Gates\" layout: Two gates funnel warriors onto hidden traps: choose a gate, or go over the wall."
     },
     {
       "key": "icon.layout.open_court",
