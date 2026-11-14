@@ -23,11 +23,19 @@
 | Defense (building) | સંરક્ષણ |
 | Shield | ઢાલ |
 | Honor / Power / League | સન્માન / શક્તિ / લીગ |
-| Leagues | વાંસ, દેવદાર, લોખંડ, ઓબ્સિડિયન, જેડ, તોફાન, છાયા, કાગે (કાગે લીગ ≠ છાયા લીગ) |
+| Leagues | વાંસ, દેવદાર, લોહ, ઓબ્સિડિયન, અંગાર, તોફાન, છાયા, કાગે (કાગે લીગ ≠ છાયા લીગ) |
 | Daily chest / streak / skip | દૈનિક પેટી / સિલસિલો / છૂટ |
 | Star(s) | તારો / તારા |
 | Research / Upgrade | સંશોધન / અપગ્રેડ |
 | Looks | દેખાવ |
+| Clan Stipend | કુળ વેતન |
+| Tempering (Reach / Blast / Watch) | ઘડતર (પહોંચ / વિસ્ફોટ / ચોકી) |
+| Stake | દાવ |
+| splash / anti-air | છાંટો / હવાઈ-રક્ષા |
+| Codex | જ્ઞાનકોશ |
+| Tile | ખાનું |
+| Settle the score (rematch) | હિસાબ સરભર કરો |
+| Report / Block | ફરિયાદ / બ્લૉક |
 | generated (opponent, Gang) | કમ્પ્યુટર-નિર્મિત |
 | Settings / Store | સેટિંગ્સ / સ્ટોર |
 | Sensei Hoshi | ગુરુ હોશી |
