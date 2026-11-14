@@ -13,7 +13,7 @@ isiZulu esijwayelekile (eNingizimu Afrika). Umdlali ubizwa ngo-"wena" (ubunye, n
 | Shadow Ink | uyinki wesithunzi |
 | Jade | ijeyidi |
 | Honor | udumo |
-| League | iligi: yoQalo, yoMsedari, yeNsimbi, yeTshe Elimnyama, yeJeyidi, yesiPhepho, yesiThunzi, yeKage |
+| League | iligi: yoQalo, yoMsedari, yeNsimbi, yeTshe Elimnyama, yeLahle (Ember), yesiPhepho, yesiThunzi, yeKage |
 | Warrior / troops / hero | iqhawe (amaqhawe) / amaqhawe / umpetha |
 | Training Dojo / Dojo | Idojo Lokuqeqesha / Idojo |
 | Squad Courtyard | Igceke Lamaqembu |
