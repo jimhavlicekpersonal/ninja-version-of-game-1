@@ -330,6 +330,43 @@ Rules: the same schedule and scoring as the offline Grove Raid in `src/gameplay/
 
 **Backend batch 2026-11-13 (no protocol bump; older games keep working):** `PurchaseIntentRequest.device` (optional, the command-queue device id) lets refunds and Sandbox credit count per device as well as per account (A5, A24); a receipt whose intent was released or lapsed is checked against the under-18 cap at redeem (GLOBAL-005); a store-reported local price counts in USD with `USD_RATES` (GLOBAL-007; `RedeemResponse.usd` shows it); App Store notifications are applied once per `notificationUUID` and in `signedDate` order (A29); an online Alliance War chest needs at least `chestMinAttacks` attacks by the member (E14: `409 conflict` otherwise, and `RaidView.chests` lists none). Battle commands in a village batch are replayed off the request thread before the row lock (A3), invisible on the wire except that a batch racing another device's may take a moment longer.
 
+## Growth batch (2026-11-14, additive, no protocol bump)
+
+Types in `src/backend/net/growth.ts` and `eventSchedule.ts` (re-exported from `protocol.ts`); server rules in `server/core/referrals.ts`, `sharedReplays.ts`, `statsLocal.ts`; routes registered from `server/growthRoutes.ts`. Each part is announced in `/v1/hello` `features`; older games ignore all of it, older servers simply lack the features.
+
+### Event schedule (`event-schedule`, retention audit G10)
+
+- `HelloResponse.events?: EventSchedule` `{ format: 1, id, epoch, periodDays, entries: [{ id, startHour, durationHours }] }`: the operators' timing for the built-in limited-time events (`EVENT_SCHEDULE_FILE` on the server). Timing only: every entry names an `events.json` id (unknown or repeated ids refuse the whole schedule), `periodDays` 7-56, `durationHours` 1-168, each entry inside one period. Names, texts, effects and goals stay the built-in ones.
+- The server plays the same schedule (its live data, re-simulation workers and economy carry it, so `dataVersion` changes with it). The game checks it with `checkEventSchedule`, applies it at once (`EventScheduleLoader.offer`), keeps it for offline starts (`tk.events.schedule`), and goes back to the built-in schedule when a server that lists `event-schedule` sends none. A refused schedule changes nothing. Change it only between events (a goal event's key is `<id>#<period>`).
+
+### Friend invites (`referrals`, G13)
+
+| | request | response |
+|---|---|---|
+| `GET /v1/referrals` | | `ReferralView` |
+| `POST /v1/referrals` | `{ code, device? }` | `ReferralView` (`404` no such code, `400` own code, `409` too late, already set, or not allowed) |
+| `POST /v1/referrals/claim` | `{}` | `ReferralView` with `granted` (Jade paid now) |
+
+- A new account (within `REFERRAL_WINDOW_DAYS` = 7 of its creation) may enter one inviter's friend code. Refused: an inviter account younger than a day or newer than the recruit, a block either way, and a device in common (`device` or the villages' `device_seqs`). One row per recruit (migration 0038 `referrals`), so one reward pair per recruit.
+- A pair qualifies once the server holds the recruit's village at Keep `REFERRAL_KEEP` (3) or above, with no import still held back (`import_holds`) and no suspension. Each side then collects `REFERRAL_JADE` (20) free Jade once, into the village the server holds (ledger `referral:recruit` / `referral:inviter`; `needsServerVillage` until it has one). The inviter collects at most `REFERRAL_MONTHLY_CAP` (5) per UTC month; the rest waits for the next month. Fixed, never random, never sold. Counts only, never names.
+
+### Shared replays (`shared-replays`, G14)
+
+| | request | response |
+|---|---|---|
+| `POST /v1/replays/shared` | `ShareReplayRequest` `{ setup, deployments, endTick?, rules, dataVersion?, opponent, showName? }` | `201` `{ code, expiresAt }` |
+| `GET /v1/replays/shared` | | `{ shares: [{ code, at, expiresAt, views }] }` (the player's own) |
+| `GET /v1/replays/shared/:code` | (no token) | `SharedReplayView` `{ code, at, expiresAt, rules, setup, deployments, endTick?, result: { stars, destruction }, sharerName, opponent, views }` |
+| `DELETE /v1/replays/shared/:code` | | `{ deleted }` (the sharer only) |
+
+- Every share is the player's own choice. The server refuses rules it cannot play (`422`, `replay.rules`), bounds the base (1-400 buildings) and deployments (2,000) and the body (200 KB), re-simulates in the pool and stores its own `result`. The base's name is dropped; the opponent is only `player`, `generated` or `practice` (a base marked `rival`, `power` or `practice` is labelled so whatever the request says); `sharerName` only when an adult asked for it. Under-13 accounts get `403 age_restricted`. 10 shares a day per player (`429`); kept 90 days, deleted with the account (migration 0038 `shared_replays`).
+- The web game opens `?replay=<code>` (also a pasted link, `parseShareCode`) without an account, shows what it is (who shared, the opponent's kind, the server's result) and plays it when `replayable(record)`.
+
+### Statistics (growth 1/3)
+
+- `StatsBatch.tz?` (minutes east of UTC, rounded to 15, -720..840; `cleanTz`): the device's offset, stored per statistics id (`stats_install_tz`), never with a player id. Older games send none: their days count in UTC.
+- The hourly rollup is incremental (`stats_installs` summaries rebuilt only for ids with events received after the `stats_watermarks` mark) and rebuilds `stats_daily` from them. Staff: `GET /admin/v1/stats/local?days=&basis=local|utc` (D1/D7/D30 by install day on that basis), `GET /admin/v1/stats/funnel?days=&basis=` (tutorial steps, first raid and purchase within 7 days, returns), and the page `GET /admin/stats` (no data in the page; the staff token is pasted, as on `/admin`).
+
 ## Server-owned village (beta)
 
 | | request | response |
