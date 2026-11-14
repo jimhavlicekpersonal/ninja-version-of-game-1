@@ -58,14 +58,4 @@ export default tseslint.config(
     files: ['src/backend/pwa/sw.template.js'],
     languageOptions: { globals: { __PRECACHE__: 'readonly' } },
   },
-  {
-    // The BACKEND compartment (server/, src/backend/) had a handful of findings when linting started
-    // (2026-11-14): they report as warnings there until that session fixes them, then move to errors.
-    files: ['server/**', 'src/backend/**'],
-    rules: {
-      'no-useless-assignment': 'warn',
-      'preserve-caught-error': 'warn',
-      'prefer-const': ['warn', { ignoreReadBeforeAssign: true }],
-    },
-  },
 );

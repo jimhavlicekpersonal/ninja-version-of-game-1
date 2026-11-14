@@ -1,9 +1,8 @@
 /**
  * Import cycles (quality 22/23). A value-level cycle works only while no module reads another's
  * top-level binding during load; a type-only cycle is harmless at run time but usually means a type
- * lives in the wrong file. `src/` has none of either, apart from the allow-list below, and this test
- * fails on a new one. `server/` is checked too, with its known cycle listed; the frozen rules archives
- * (`server/rules/v*`, verbatim snapshots that are never edited) are left out.
+ * lives in the wrong file. `src/` and `server/` have none of either, and this test fails on a new one.
+ * The frozen rules archives (`server/rules/v*`, verbatim snapshots that are never edited) are left out.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, normalize, relative } from 'node:path';
@@ -12,11 +11,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = normalize(join(__dirname, '..', '..'));
 
 /** Known cycles, as their sorted member files joined by ' ↔ '. Shrink this list; never grow it without a reason. */
-const ALLOWED = new Set([
-  // Backend (type-only): the connection hands its grove adapter types back and forth.
-  'src/backend/net/connection.ts ↔ src/backend/social/groveSource.ts',
-  // Server (value): PvP settlement and the held-village replayer call each other inside functions only.
-  'server/core/pvp.ts ↔ server/core/village.ts',
+const ALLOWED = new Set<string>([
+  // Empty since 2026-11-14 (battle/state.ts, keep.ts, ui/uiKit.ts, social/raidBattle.ts, server/core/baseRules.ts).
 ]);
 
 function walk(dir: string): string[] {

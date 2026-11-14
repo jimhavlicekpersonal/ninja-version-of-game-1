@@ -4,8 +4,9 @@
  * (LocalGroveSource) or a real Grove on a server (RemoteGroveSource).
  */
 import { isolateName } from '../../gameplay/sim/social/names';
-import type { BattleRecord, BattleSetup, Deployment } from '../../gameplay/sim/battle/types';
+import type { BattleSetup } from '../../gameplay/sim/battle/types';
 import type { Connection } from '../net/connection';
+import type { RaidBattle } from './raidBattle';
 import { ServerError } from '../net/ports';
 import type { BlockView, ChatView, GroveView, GroveSummary, RaidView, ReportReason, RequestView } from '../net/protocol';
 import { troopLevels } from '../../gameplay/sim/research';
@@ -98,19 +99,7 @@ export interface ReportTarget {
   messageId?: string;
 }
 
-/** A Grove Raid battle ready to play: the base, and how to report it when done. */
-export interface RaidBattle {
-  setup: BattleSetup;
-  enemyName: string;
-  /** The enemy base attacked (for interrupted-battle recovery). */
-  target: number;
-  /** Server ticket of an online Alliance War attack. */
-  ticket?: string;
-  /** A Gang War strike (step 67): reported to the Gang War. */
-  channel?: 'gangwar';
-  /** Bank the attack. The record is kept in the battle log so it can be replayed. */
-  finish(deployments: Deployment[], endTick: number | undefined): { stars: number; destruction: number; record: BattleRecord } | null;
-}
+export type { RaidBattle } from './raidBattle';
 
 export interface GroveSource {
   readonly kind: 'local' | 'online';

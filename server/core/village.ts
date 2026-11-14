@@ -11,7 +11,7 @@
  * chests) are applied here too (`applyServerResult`), inside the transaction
  * of the request that made them, and every resource change goes in the ledger.
  */
-import { capBaseLoot, layoutReset } from './pvp';
+import { capBaseLoot, layoutReset } from './baseRules';
 import { contentHash } from '../contentHash';
 import { villageToBase } from '../../src/gameplay/sim/defense';
 import { deserialize, serialize, type SaveFile } from '../../src/gameplay/sim/save';

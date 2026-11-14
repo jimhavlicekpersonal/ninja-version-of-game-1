@@ -145,7 +145,7 @@ export async function runMigrations(pool: SqlPool, migrations: Migration[], now:
             for (const stmt of splitStatements(m.sql)) await client.query(stmt);
             await client.query('insert into schema_migrations (version, name, checksum, applied_at) values ($1, $2, $3, $4)', [m.version, m.name, m.checksum, now()]);
           } catch (e) {
-            throw new Error(`Migration ${m.name} (no transaction) failed part way; its statements are idempotent, so fix the cause and run it again: ${(e as Error).message}`);
+            throw new Error(`Migration ${m.name} (no transaction) failed part way; its statements are idempotent, so fix the cause and run it again: ${(e as Error).message}`, { cause: e });
           }
           done.push(m.name);
           continue;
@@ -157,7 +157,7 @@ export async function runMigrations(pool: SqlPool, migrations: Migration[], now:
           await client.query('commit');
         } catch (e) {
           await client.query('rollback');
-          throw new Error(`Migration ${m.name} failed and was rolled back: ${(e as Error).message}`);
+          throw new Error(`Migration ${m.name} failed and was rolled back: ${(e as Error).message}`, { cause: e });
         }
         done.push(m.name);
       }
