@@ -16,7 +16,7 @@ import type { UiKit } from './uiKit';
 
 const TERMS_KEY = 'tk.terms.accepted';
 
-export function termsAcceptedVersion(): string | null {
+function termsAcceptedVersion(): string | null {
   try {
     return localStorage.getItem(TERMS_KEY);
   } catch {

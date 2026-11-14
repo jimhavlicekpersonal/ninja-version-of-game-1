@@ -190,6 +190,12 @@ export function validLevels(levels: unknown, hallLevel: number, data: GameData):
 }
 
 /**
+ * A battle report as the HTTP adapter passes it on: its JSON types are checked (server/routes/battles.ts),
+ * but only the ticket is required; everything else is checked here and by the re-simulation.
+ */
+export type BattleReport = Pick<BattleSubmission, 'ticket'> & Partial<BattleSubmission>;
+
+/**
  * Check a battle submission against the attacker's Keep. Own troops must be
  * trainable at that Keep (its gate and the Dojo level the Keep allows: no Kite
  * Raider at Keep 1) and fit full Army Camps; donated troops (`reinforcements`)
@@ -199,7 +205,7 @@ export function validLevels(levels: unknown, hallLevel: number, data: GameData):
  * This is a legality check, not an inventory ledger: the server does not yet
  * track what each player trained or researched (docs/PROTOCOL.md, "Trust model").
  */
-export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number>; reinforcements: Record<string, { count: number; level: number }>; hero?: { id: string; level: number } } {
+export function checkArmy(sub: BattleReport, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number>; reinforcements: Record<string, { count: number; level: number }>; hero?: { id: string; level: number } } {
   const army = sub.army ?? {};
   if (typeof army !== 'object') throw fail(400, 'bad_request', 'army.bad');
   const reinforcements: Record<string, { count: number; level: number }> = {};
@@ -545,7 +551,7 @@ export function engineForClient(ctx: ServerContext, client: ClientInfo | undefin
  * the one that asked for the ticket (it updated mid-battle): refused, as is a
  * ticket whose rules the server has since retired.
  */
-export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleSubmission): RulesEngine {
+export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleReport): RulesEngine {
   if (ticket.rules !== undefined && sub.rules !== undefined && sub.rules !== null && Number(sub.rules) !== ticket.rules) {
     ctx.metrics.count('tk_refused_total', { reason: 'rules_changed', rules: String(sub.rules) });
     throw fail(400, 'bad_request', 'pvp.rules_differ');
@@ -562,7 +568,7 @@ export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleS
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
-export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel' | 'war', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleSubmission, engine: RulesEngine = ctx.rules.live): Promise<ResimOutcome> {
+export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel' | 'war', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleReport, engine: RulesEngine = ctx.rules.live): Promise<ResimOutcome> {
   let out: ResimOutcome;
   try {
     // Step 57: in a worker thread in production, so a long battle never stalls other requests.
@@ -592,7 +598,7 @@ export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'due
  * so its result would not match). Tickets issued before server seeds have none
  * and keep the client's.
  */
-export function battleSeed(ticket: Ticket, sub: BattleSubmission): number {
+export function battleSeed(ticket: Ticket, sub: BattleReport): number {
   if (ticket.seed === undefined) return Number(sub.seed) >>> 0;
   if (sub.seed !== undefined && sub.seed !== null && Number(sub.seed) >>> 0 !== ticket.seed) {
     throw fail(400, 'bad_request', 'pvp.wrong_seed');
@@ -608,7 +614,7 @@ export function battleSeed(ticket: Ticket, sub: BattleSubmission): number {
  * with ledger lines. An attacker whose server-held village lacks the troops is
  * refused (nothing changes and the ticket stays unused).
  */
-export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<AttackResponse> {
+export async function attack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<AttackResponse> {
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
   if (answered) return answered as AttackResponse;

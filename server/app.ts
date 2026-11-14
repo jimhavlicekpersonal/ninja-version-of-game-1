@@ -5,24 +5,26 @@
  * errors into protocol errors.
  */
 import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
-import { registerGrowthRoutes, registerGrowthStaffRoutes } from './growthRoutes';
-import { registerComplianceRoutes } from './complianceRoutes';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { brotliCompress, constants as zlibConstants, gzip } from 'node:zlib';
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
-import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../src/backend/net/protocol';
+import Fastify, { type FastifyError, type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
+import { ClientHeaders, Routes, type ErrorBody } from '../src/backend/net/protocol';
 import { MIN_PROTOCOL } from './core/identity';
 import type { GameData } from '../src/gameplay/sim/types';
-import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
-import { COMPLAINT_PAGE_CSP, complaintPage } from './complaintPage';
 import { ApiError, createCore, type ServerCore } from './core';
 import { bodyFor, errorBody, staffError, type MessageCode } from './core/errors';
 import { nodeContext, type SharedStores } from './nodeContext';
 import { PromMetrics, type ServerSentry } from './observability';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
 import type { Player, Repo } from './repo';
-import type { ClientInfo } from './rules/registry';
+import { battleRoutes } from './routes/battles';
+import { complianceRoutes } from './routes/compliance';
+import { growthRoutes, growthStaffRoutes } from './routes/growth';
+import { bearer, routeKit, type RateConfig } from './routes/kit';
+import { playerRoutes } from './routes/player';
+import { socialRoutes } from './routes/social';
+import { staffRoutes, type StaffRoute } from './routes/staff';
 
 export { maxHousing, validateBase, validLevels } from './core/pvp';
 export { nodeContext } from './nodeContext';
@@ -86,6 +88,17 @@ const sameSecret = (got: string | undefined, want: Buffer) => timingSafeEqual(cr
 /** Answers smaller than this are sent as they are (compression would not pay for its headers). */
 export const COMPRESS_MIN_BYTES = 1024;
 
+// HTTP tuning (quality Q20): named once, unchanged values.
+/** Browsers keep to HTTPS for a year once they saw it here (step 45). */
+const HSTS_MAX_AGE_S = 31_536_000;
+/** Longer Idempotency-Key headers are ignored (the write runs as without one). */
+const IDEMPOTENCY_KEY_MAX = 100;
+/** Each GET /readyz dependency must answer within this. */
+const READY_CHECK_TIMEOUT_MS = 2000;
+/** Compression effort for answers: fast enough for the event loop, ~5 KB for a whole village. */
+const BROTLI_QUALITY = 5;
+const GZIP_LEVEL = 6;
+
 /** br, else gzip, as an Accept-Encoding header allows (q=0 refuses one); null for neither. */
 export function pickEncoding(header: string | string[] | undefined): 'br' | 'gzip' | null {
   const q = new Map<string, number>();
@@ -98,9 +111,6 @@ export function pickEncoding(header: string | string[] | undefined): 'br' | 'gzi
   const ok = (e: string) => (q.has(e) ? q.get(e)! : (q.get('*') ?? 0)) > 0;
   return ok('br') ? 'br' : ok('gzip') ? 'gzip' : null;
 }
-
-/** Route option: which extra rate rule the route counts against. */
-type RateConfig = { rate?: keyof RateLimits | (keyof RateLimits)[] };
 
 /** A caller's own request id, when it looks like one (backend A33: echoed and logged, never used as ours). */
 export function clientRequestId(h: unknown): string | null {
@@ -179,11 +189,6 @@ export function trustProxyOption(tp: boolean | number | string | undefined): boo
   return tp ?? false;
 }
 
-function bearer(req: FastifyRequest): string | undefined {
-  const h = req.headers.authorization ?? '';
-  return h.startsWith('Bearer ') ? h.slice(7) : undefined;
-}
-
 export function buildServer(opts: ServerOptions): FastifyInstance & { core: ServerCore; metrics: PromMetrics } {
   const now = opts.now ?? (() => Date.now());
   const metrics = opts.metrics ?? new PromMetrics();
@@ -205,6 +210,9 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     // Backend A33: the server always makes its own request id (a client cannot forge or collide log lines);
     // a caller's own x-request-id is echoed back as x-client-request-id and logged beside it.
     genReqId: () => randomUUID(),
+    // Request schemas (server/routes/schema.ts) check types without changing them: no coercion, so a
+    // "5" stays a string and is refused where the protocol says number; extra fields are kept.
+    ajv: { customOptions: { coerceTypes: false } },
   });
   // The same limiter serves the routes and the core's own limits (battle commands per minute).
   const limiter = opts.rateLimiter ?? new MemoryRateLimiter({ ...DEFAULT_RATE_LIMITS, ...opts.rateLimits });
@@ -239,7 +247,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       req.log = req.log.child({ clientReqId: clientId });
     }
     // Over HTTPS (directly, or X-Forwarded-Proto from a trusted proxy): browsers keep to HTTPS (step 45).
-    if (req.protocol === 'https') reply.header('Strict-Transport-Security', 'max-age=31536000');
+    if (req.protocol === 'https') reply.header('Strict-Transport-Security', `max-age=${HSTS_MAX_AGE_S}`);
     if (req.method === 'OPTIONS') return reply.code(204).send();
   });
 
@@ -262,7 +270,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   const idemScope = (req: FastifyRequest) => {
     const key = req.headers[ClientHeaders.idempotencyKey];
     const token = bearer(req);
-    if (req.method === 'GET' || req.method === 'OPTIONS' || typeof key !== 'string' || !token || key.length > 100) return null;
+    if (req.method === 'GET' || req.method === 'OPTIONS' || typeof key !== 'string' || !token || key.length > IDEMPOTENCY_KEY_MAX) return null;
     return { scope: createHash('sha256').update(token).digest('hex').slice(0, 32), key };
   };
   /** Players whose token a hook already verified (the route reuses it). */
@@ -404,8 +412,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (!enc) return payload;
     const out =
       enc === 'br'
-        ? await brotliAsync(payload, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 5, [zlibConstants.BROTLI_PARAM_SIZE_HINT]: size } })
-        : await gzipAsync(payload, { level: 6 });
+        ? await brotliAsync(payload, { params: { [zlibConstants.BROTLI_PARAM_QUALITY]: BROTLI_QUALITY, [zlibConstants.BROTLI_PARAM_SIZE_HINT]: size } })
+        : await gzipAsync(payload, { level: GZIP_LEVEL });
     reply.header('content-encoding', enc);
     reply.removeHeader('content-length');
     metrics.count('tk_http_compressed_total', { encoding: enc });
@@ -419,6 +427,18 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       const body = errorBody(err);
       return reply.code(err.status).send(body);
     }
+    // A request its route's schema refuses (quality Q19): the field and a message code the game can show.
+    const validation = (err as FastifyError).validation;
+    if (validation) {
+      metrics.count('tk_errors_total', { code: 'bad_request' });
+      const first = validation[0] as { instancePath?: string; params?: { missingProperty?: unknown } } | undefined;
+      const missing = typeof first?.params?.missingProperty === 'string' ? `/${first.params.missingProperty}` : '';
+      const field = `${(err as FastifyError).validationContext ?? 'body'}${first?.instancePath ?? ''}${missing}`.slice(0, 80);
+      req.log.info({ field }, 'request refused by schema');
+      // Code `detail` (the game shows its own translated "something went wrong" for it): no new catalog
+      // text, since every language would need it; the English names the field for support.
+      return reply.code(400).send(bodyFor('bad_request', 'detail', { detail: `Request field ${field} has the wrong type or is missing.` }));
+    }
     const status = (err as { statusCode?: number }).statusCode ?? 500;
     metrics.count('tk_errors_total', { code: status >= 500 ? 'server_error' : 'bad_request' });
     if (status >= 500) {
@@ -431,24 +451,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     return reply.code(status).send(body);
   });
 
-  type Handler = (me: Player, req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
-  /** A route that needs a registered player. Undefined results become 204. */
-  const authed = (h: Handler) => async (req: FastifyRequest, reply: FastifyReply) => {
-    const me = verified.get(req) ?? (await core.authenticate(bearer(req)));
-    const out = await h(me, req, reply);
-    if (out === undefined) return reply.code(204).send();
-    return out;
-  };
-  const body = <T>(req: FastifyRequest) => (req.body ?? {}) as Partial<T> & Record<string, unknown>;
-  /** What the request's headers say about the game (rules version, data version, build): roadmap step 72. */
-  const client = (req: FastifyRequest): ClientInfo => {
-    const h = (k: string) => (typeof req.headers[k] === 'string' ? (req.headers[k] as string).slice(0, 60) : undefined);
-    const rules = h(ClientHeaders.simRules);
-    const protocol = h(ClientHeaders.protocol);
-    return { protocol: protocol !== undefined && /^\d+$/.test(protocol) ? Number(protocol) : undefined, rules: rules !== undefined && /^\d+$/.test(rules) ? Number(rules) : undefined, dataVersion: h(ClientHeaders.dataVersion), build: h(ClientHeaders.clientBuild) };
-  };
-  const query = (req: FastifyRequest) => (req.query ?? {}) as Record<string, string | undefined>;
-  const param = (req: FastifyRequest, k: string) => String((req.params as Record<string, string>)[k] ?? '');
+  const kit = routeKit(app, core, verified);
 
   // Liveness: the process answers (no dependencies, so a database outage never restarts every instance).
   app.get('/healthz', async () => ({ ok: true, version: opts.version ?? 'dev', uptimeS: Math.floor((Date.now() - started) / 1000) }));
@@ -459,7 +462,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     let ok = true;
     for (const [name, check] of Object.entries(checks)) {
       try {
-        await Promise.race([check(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 2000).unref())]);
+        await Promise.race([check(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), READY_CHECK_TIMEOUT_MS).unref())]);
         out[name] = 'ok';
       } catch (e) {
         ok = false;
@@ -494,149 +497,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.balance, async () => core.balance());
   app.get(Routes.hello, async () => ({ ...core.hello(), ...(opts.environment ? { environment: opts.environment } : {}), ...(opts.notice ? { notice: opts.notice } : {}) }));
 
-  // Identity
-  const rate = (r: keyof RateLimits): { config: RateConfig } => ({ config: { rate: r } });
-  app.post(Routes.players, rate('register'), async (req, reply) => reply.code(201).send(await core.register(body<{ name: string }>(req).name)));
-  app.get(Routes.me, authed(async (me) => core.me(me)));
-  app.put(Routes.me, authed(async (me, req) => core.rename(me, body<{ name: string }>(req).name)));
-  app.delete(Routes.me, authed(async (me) => core.deleteAccount(me)));
-
-  // Friends and names (roadmap step 59). Lookups and requests are rate limited per minute and per day.
-  const lookupRate = { config: { rate: ['lookup', 'lookupDay'] as (keyof RateLimits)[] } };
-  app.get(Routes.friends, authed(async (me) => core.friends(me)));
-  app.put(Routes.privacy, authed(async (me, req) => core.setPrivacy(me, req.body as never)));
-  app.get(Routes.playerLookup, lookupRate, authed(async (me, req) => core.lookupPlayer(me, (req.query as { name?: string }).name)));
-  app.get('/v1/players/code/:code', lookupRate, authed(async (me, req) => core.playerByCode(me, (req.params as { code: string }).code)));
-  app.post(Routes.friendRequests, lookupRate, authed(async (me, req) => core.friendRequest(me, req.body as never)));
-  app.post('/v1/friends/requests/:id', authed(async (me, req) => core.answerFriendRequest(me, (req.params as { id: string }).id, body<{ accept: boolean }>(req).accept)));
-  app.delete('/v1/friends/requests/:id', authed(async (me, req) => core.cancelFriendRequest(me, (req.params as { id: string }).id)));
-  app.post(Routes.platformFriends, { ...lookupRate, bodyLimit: 32 * 1024 }, authed(async (me, req) => core.platformFriends(me, req.body as never)));
-  app.delete('/v1/friends/:id', authed(async (me, req) => core.unfriend(me, (req.params as { id: string }).id)));
-
-  // Linked sign-ins = cloud save (step 24)
-  app.get(Routes.links, authed(async (me) => core.links(me)));
-  app.post(Routes.links, rate('moderation'), authed(async (me, req) => core.link(me, req.body as never)));
-  app.delete('/v1/links/:provider', authed(async (me, req) => core.unlink(me, param(req, 'provider'))));
-  app.post(Routes.sessions, rate('register'), async (req) => core.signIn(req.body as never));
-  // Re-audit: account protections (age bands, notices, deletion codes, signing out other devices, Apple notifications).
-  app.put(Routes.meAge, rate('moderation'), authed(async (me, req) => core.stateAge(me, req.body as never)));
-  app.put(Routes.meRules, authed(async (me, req) => core.acceptRules(me, req.body as never)));
-  app.post(Routes.deletionCode, rate('moderation'), authed(async (me) => core.deletionCode(me)));
-  app.get(Routes.notices, authed(async (me) => core.notices(me)));
-  app.post(Routes.noticesRead, authed(async (me, req) => core.markNoticesRead(me, body<{ ids: string[] }>(req).ids)));
-  app.post(Routes.sessionsRevokeOthers, rate('moderation'), authed(async (me) => core.revokeOtherSessions(me)));
-  // Backend A15/A16: sign-in nonces, signing out this device, rotating its token.
-  app.post(Routes.authNonce, rate('nonce'), async () => core.authNonce());
-  app.delete(Routes.sessionsCurrent, rate('moderation'), authed(async (me) => core.signOutDevice(me)));
-  app.post(Routes.sessionsRotate, rate('moderation'), authed(async (me) => core.rotateToken(me)));
-  app.post(Routes.appleSignInNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
-    await core.appleSignInNotification(req.body as never);
-    return { ok: true };
-  });
-
-  // Server-owned village (roadmap Phase 2)
-  app.get(Routes.village, authed(async (me) => core.getVillage(me)));
-  app.post(Routes.village, authed(async (me) => core.startVillage(me)));
-  app.post(Routes.villageImport, { ...rate('villageImport'), bodyLimit: BODY_LIMITS.battle * 4 }, authed(async (me, req) => core.importVillage(me, req.body as never)));
-  app.post(Routes.villageCommands, { ...rate('commands'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.villageCommands(me, req.body as never)));
-  app.get(Routes.villageLedger, authed(async (me, req) => core.ledger(me, query(req).limit)));
-
-  // Purchases (roadmap Phase 4): ask, redeem once, history; store notifications carry their own signatures.
-  app.post(Routes.purchaseIntent, rate('purchase'), authed(async (me, req) => core.purchaseIntent(me, req.body as never)));
-  app.post(Routes.purchaseIntentRelease, rate('purchase'), authed(async (me, req) => core.releaseIntent(me, req.body as never)));
-  app.post(Routes.purchases, { ...rate('purchase'), bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.redeem(me, req.body as never)));
-  app.get(Routes.purchases, rate('purchase'), authed(async (me) => core.purchaseHistory(me)));
-  app.post(Routes.appleNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
-    await core.appleNotification(req.body as never);
-    return { ok: true };
-  });
-  app.post(Routes.googleNotifications, { bodyLimit: BODY_LIMITS.base }, async (req, reply) => {
-    await core.googleNotification(req.headers.authorization, req.body);
-    return reply.code(204).send();
-  });
-
-  // Server push (step 40): this device's token and choices.
-  app.put(Routes.pushTokens, rate('moderation'), authed(async (me, req) => core.putPushToken(me, req.body as never)));
-  app.delete(Routes.pushTokens, authed(async (me, req) => core.deletePushToken(me, query(req).token)));
-
-  // Reports and blocks
-  app.post(Routes.reports, rate('moderation'), authed(async (me, req, reply) => reply.code(201).send(await core.report(me, req.body as never))));
-  app.get(Routes.blocks, authed(async (me) => core.blocks(me)));
-  app.post(Routes.blocks, rate('moderation'), authed(async (me, req) => core.block(me, body<{ playerId: string }>(req).playerId)));
-  app.delete('/v1/blocks/:id', authed(async (me, req) => core.unblock(me, param(req, 'id'))));
-
-  // Account deletion without the game: the web page and its requests (no token).
-  app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage(String((_req.query as {lang?: unknown})?.lang ?? 'en'))));
-  app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
-  // Complaints about illegal or harmful content (EU DSA art. 16, UK OSA): a form and its endpoint, no token.
-  app.get('/complaints', async (req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', COMPLAINT_PAGE_CSP).header('Cache-Control', 'no-store').send(complaintPage(core.ctx.account?.supportContact, String((req.query as { lang?: unknown })?.lang ?? 'en'))));
-  app.post(Routes.complaints, { ...rate('complaint'), logLevel: 'warn' }, async (req, reply) => reply.code(201).send(await core.submitComplaint(req.body)));
-
-  // Shared play statistics (report section 5 step 5): no token, and no request log line (it would hold the IP address).
-  app.post(Routes.stats, { ...rate('stats'), bodyLimit: BODY_LIMITS.base, logLevel: 'warn' }, async (req) => core.postStats(req.body));
-  app.delete(Routes.stats, { ...rate('stats'), logLevel: 'warn' }, async (req) => core.deleteStats(query(req).install));
-
-  // PvP
-  app.put(Routes.base, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.uploadBase(me, req.body as never, client(req))));
-  app.get(Routes.match, rate('match'), authed(async (me, req) => core.match(me, client(req))));
-  app.post(Routes.attacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.attack(me, req.body as never)));
-  app.post(Routes.attackStart, rate('battle'), authed(async (me, req) => core.startAttack(me, req.body as never)));
-  app.post(Routes.attackVoid, rate('battle'), authed(async (me, req) => core.voidAttack(me, req.body as never)));
-  app.get(Routes.defenses, authed(async (me, req) => core.defenses(me, Number(query(req).since ?? 0))));
-  app.get(Routes.leaderboard, authed(async (me, req) => core.leaderboard(me, Number(query(req).limit ?? 50))));
-  app.get(Routes.powerLeaderboard, authed(async (me, req) => core.powerLeaderboard(me, Number(query(req).limit ?? 50))));
-
-  // Groves
-  app.get(Routes.groves, authed(async (me, req) => core.listGroves(me, query(req).q ?? '')));
-  app.post(Routes.groves, authed(async (me, req, reply) => reply.code(201).send(await core.createGrove(me, body<{ name: string }>(req).name))));
-  app.post('/v1/groves/:id/join', authed(async (me, req) => core.joinGrove(me, param(req, 'id'))));
-  app.get(Routes.grove, authed(async (me): Promise<MyGroveResponse> => ({ grove: await core.myGrove(me) })));
-  app.post(Routes.groveLeave, authed(async (me) => core.leaveGrove(me)));
-  app.get(Routes.groveChat, authed(async (me, req) => core.chat(me, query(req).after)));
-  app.post(Routes.groveChat, authed(async (me, req, reply) => reply.code(201).send(await core.postChat(me, body<{ text: string }>(req).text))));
-  app.get(Routes.groveRequests, authed(async (me) => core.requests(me)));
-  app.post(Routes.groveRequests, authed(async (me, req, reply) => reply.code(201).send(await core.requestTroops(me, body<{ capacity: number }>(req).capacity))));
-  app.post('/v1/grove/requests/:id/donate', authed(async (me, req) => core.donate(me, param(req, 'id'), req.body as never)));
-  app.get(Routes.groveInbox, authed(async (me) => core.inbox(me)));
-  app.post(Routes.groveInboxAck, authed(async (me, req) => core.ackInbox(me, body<{ ids: string[] }>(req).ids)));
-
-  // Friendly Duels (step 62): re-simulated like attacks, so they count against the battle limit.
-  app.post(Routes.duelTicket, rate('match'), authed(async (me, req) => core.duelTicket(me, req.body as never, client(req))));
-  app.post(Routes.duels, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.reportDuel(me, req.body as never)));
-  app.get(Routes.duels, authed(async (me, req) => core.duels(me, query(req).since)));
-  app.put(Routes.duelLayout, { bodyLimit: BODY_LIMITS.base }, authed(async (me, req) => core.setDuelLayout(me, req.body as never, client(req))));
-  app.post(Routes.duelChallenges, rate('moderation'), authed(async (me, req) => core.challenge(me, body<{ friendId: string }>(req).friendId)));
-  app.get(Routes.duelChallenges, authed(async (me) => core.challenges(me)));
-
-  // Gangs (step 63)
-  app.get(Routes.squad, authed(async (me) => core.squad(me)));
-  app.post(Routes.squad, rate('moderation'), authed(async (me, req) => core.createSquad(me, body<{ name: string }>(req).name)));
-  app.post(Routes.squadInvites, rate('moderation'), authed(async (me, req) => core.squadInvite(me, body<{ friendId: string }>(req).friendId)));
-  app.post('/v1/squad/invites/:id', authed(async (me, req) => core.answerSquadInvite(me, param(req, 'id'), body<{ accept: boolean }>(req).accept)));
-  app.post(Routes.squadLeave, authed(async (me) => core.leaveSquad(me)));
-  app.post(Routes.squadLeader, authed(async (me, req) => core.squadLeader(me, body<{ playerId: string }>(req).playerId)));
-  app.get(Routes.squadChat, authed(async (me, req) => core.squadChat(me, query(req).after)));
-  app.post(Routes.squadChat, authed(async (me, req, reply) => reply.code(201).send(await core.postSquadChat(me, body<{ text: string }>(req).text))));
-  app.get(Routes.squadRequests, authed(async (me) => core.squadRequests(me)));
-  app.post(Routes.squadRequests, authed(async (me, req, reply) => reply.code(201).send(await core.squadRequestTroops(me, body<{ capacity: number }>(req).capacity))));
-  app.post('/v1/squad/requests/:id/donate', authed(async (me, req) => core.squadDonate(me, param(req, 'id'), req.body as never)));
-
-  // Gang Wars (steps 65-66)
-  app.get(Routes.squadWar, authed(async (me) => core.gangWar(me)));
-  app.post(Routes.squadWarQueue, rate('match'), authed(async (me) => core.gangWarQueue(me)));
-  app.delete(Routes.squadWarQueue, authed(async (me) => core.gangWarCancel(me)));
-  app.post(Routes.squadWarBase, rate('moderation'), authed(async (me) => core.gangWarBase(me)));
-  app.post(Routes.squadWarTicket, rate('match'), authed(async (me, req) => core.gangWarTicket(me, req.body as never, client(req))));
-  app.post(Routes.squadWarAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.gangWarAttack(me, req.body as never)));
-  app.post(Routes.squadWarClaim, authed(async (me, req) => core.gangWarClaim(me, body<{ warId: string }>(req).warId)));
-
-  // Grove Raid
-  app.get(Routes.groveRaid, authed(async (me) => core.raid(me)));
-  app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target, client(req))));
-  app.post(Routes.groveRaidAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.raidAttack(me, req.body as never)));
-  app.post(Routes.groveRaidClaim, authed(async (me, req) => core.claimRaid(me, body<{ week: number }>(req).week)));
-  registerGrowthRoutes(app, { core, authed, rate }); // growth batch 2026-11-14: referrals, shared replays
-  registerComplianceRoutes(app, { core, authed, rate }); // compliance switches 2026-11-14: terms, consent, under-13 offline
+  // The game's routes, by area (server/routes/): each names its request schemas and rate rules.
+  complianceRoutes(kit); // compliance switches 2026-11-14: first, so UNDER13_MODE=offline's guard covers every route
+  playerRoutes(kit);
+  battleRoutes(kit);
+  socialRoutes(kit);
+  growthRoutes(kit); // growth batch 2026-11-14: referrals, shared replays
 
   // Staff API: only with strong tokens, compared in constant time. Per-staff tokens (ADMIN_TOKENS) name
   // their holder in the staff log; the legacy shared ADMIN_TOKEN takes the name from x-staff-name.
@@ -649,7 +515,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     for (const t of staffTokens) if (t.token.length < 24) throw new Error(t.named ? `ADMIN_TOKENS: the token for "${t.name}" must be at least 24 characters.` : 'ADMIN_TOKEN must be at least 24 characters.');
     const wants = staffTokens.map((t) => ({ name: t.name, named: t.named, hash: createHash('sha256').update(t.token).digest() }));
     const staffBy = new WeakMap<FastifyRequest, { name: string; named: boolean }>();
-    const staff = <T>(h: (req: FastifyRequest) => Promise<T>) => async (req: FastifyRequest, reply: FastifyReply) => {
+    // Checked before the body is validated, so a caller without a staff token learns nothing about the API.
+    const staffGuard = async (req: FastifyRequest, reply: FastifyReply) => {
       const got = createHash('sha256').update(bearer(req) ?? '').digest();
       let who: { name: string; named: boolean } | null = null;
       // Every token is compared (no early exit), each in constant time.
@@ -663,35 +530,15 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
         throw staffError(401, 'unauthorized', 'Staff token required.');
       }
       staffBy.set(req, who);
-      return h(req);
     };
-    app.get('/admin/v1/deletion-requests', staff(async (req) => core.admin.deletionQueue(query(req).status === 'all' ? 'all' : 'open')));
-    app.post('/admin/v1/deletion-requests/:id', staff(async (req) => core.admin.resolveDeletion(param(req, 'id'), body<{ action: string }>(req).action, body<{ note: string }>(req).note)));
-    app.get('/admin/v1/reports', staff(async (req) => core.admin.reportQueue(query(req).status === 'all' ? 'all' : 'open')));
-    app.post('/admin/v1/reports/:id', staff(async (req) => core.admin.resolveReport(param(req, 'id'), req.body as never)));
-    // The admin tool (roadmap step 48): player lookup, give/take, suspend, rating reset, staff log.
+    // The admin tool (roadmap step 48) names the actor in the staff log.
     const actor = (req: FastifyRequest) => {
       const who = staffBy.get(req);
       return who?.named ? who.name : String(req.headers['x-staff-name'] ?? 'staff').slice(0, 40);
     };
-    app.get('/admin/v1/players', staff(async (req) => core.admin.search(query(req).q)));
-    app.get('/admin/v1/players/:id', staff(async (req) => core.admin.player(param(req, 'id'))));
-    // Japan C17: the unused paid Jade balance on a 資金決済法 base date (?date=YYYY-03-31|YYYY-09-30; default the latest).
-    app.get('/admin/v1/reports/jp-unused-balance', staff(async (req) => core.admin.japanBalance(actor(req), query(req).date)));
-    app.post('/admin/v1/players/:id/adjust', staff(async (req) => core.admin.adjust(actor(req), param(req, 'id'), req.body as never)));
-    app.post('/admin/v1/players/:id/ban', staff(async (req) => core.admin.ban(actor(req), param(req, 'id'), req.body as never)));
-    app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
-    app.post('/admin/v1/players/:id/reset-age', staff(async (req) => core.admin.resetAge(actor(req), param(req, 'id'), req.body as never)));
-    app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
-    // Backend batch 2026-11-13: replace an offending name, release a held import (GLOBAL-002), complaints.
-    app.post('/admin/v1/players/:id/rename', staff(async (req) => core.admin.rename(actor(req), param(req, 'id'), req.body as never)));
-    app.post('/admin/v1/players/:id/import-holds/:hold/release', staff(async (req) => core.admin.releaseImportHold(actor(req), param(req, 'id'), param(req, 'hold'), req.body as never)));
-    app.get('/admin/v1/complaints', staff(async (req) => core.admin.complaintQueue(query(req).status === 'all' ? 'all' : 'open')));
-    app.post('/admin/v1/complaints/:id', staff(async (req) => core.admin.resolveComplaint(actor(req), param(req, 'id'), req.body as never)));
-    app.get('/admin/v1/stats', staff(async (req) => core.statsReport(query(req).days)));
-    registerGrowthStaffRoutes(app, { core, staff }); // growth batch 2026-11-14: local days, funnel, /admin/stats
-    // Backend A31: what this server sees as the caller's address, to check TRUST_PROXY after a deploy.
-    app.get('/admin/v1/ip', staff(async (req) => ipEcho(req)));
+    const staff: StaffRoute = (method, url, spec, h) => kit.open(method, url, { ...spec, preValidation: staffGuard }, async (input) => h(actor(input.req), input));
+    staffRoutes(staff, core, ({ req }) => ipEcho(req));
+    growthStaffRoutes(app, staff, core); // growth batch 2026-11-14: local days, funnel, /admin/stats
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
     app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));
   }

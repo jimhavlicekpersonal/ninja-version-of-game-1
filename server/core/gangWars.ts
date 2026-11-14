@@ -23,11 +23,11 @@ import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import { newRating, rateTeams, type Rating } from '../../src/gameplay/sim/rating';
 import { mixSeed } from '../../src/gameplay/sim/rng';
 import { botGangScores, carryRelayDamage, gangWarOutcome, gangWarPhase, gangWarTimes, sideTotal, type BaseScore } from '../../src/gameplay/sim/social/gangWar';
-import type { BattleSubmission, GangWarAttackResponse, GangWarBaseView, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GangWarView } from '../../src/backend/net/protocol';
+import type { GangWarAttackResponse, GangWarBaseView, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GangWarView } from '../../src/backend/net/protocol';
 import type { GangQueueEntry, GangRelay, GangWar, GangWarAttack, GangWarEntry, GangWarSide, Player, Squad, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
 import { MIN, type ServerContext } from './context';
-import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer } from './pvp';
+import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
 import { requireSquad, setRosterLock } from './squads';
 import { applyServerResult } from './village';
 import { fail } from './errors';
@@ -284,7 +284,7 @@ export async function refreshBase(ctx: ServerContext, me: Player): Promise<GangW
 }
 
 /** POST /v1/squad/war/ticket { target, relay } */
-export async function warTicket(ctx: ServerContext, me: Player, req: GangWarTicketRequest | undefined, client?: ClientInfo): Promise<GangWarTicketResponse> {
+export async function warTicket(ctx: ServerContext, me: Player, req: Partial<GangWarTicketRequest> | undefined, client?: ClientInfo): Promise<GangWarTicketResponse> {
   const engine = engineForClient(ctx, client);
   const { w, side, entry } = await myWar(ctx, me);
   const t = ctx.now();
@@ -314,7 +314,7 @@ export async function warTicket(ctx: ServerContext, me: Player, req: GangWarTick
 }
 
 /** POST /v1/squad/war/attacks */
-export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<GangWarAttackResponse> {
+export async function warAttack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<GangWarAttackResponse> {
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'war');
   if (answered) return answered as GangWarAttackResponse;
   const w = ticket.warId ? await ctx.repo.getWar(ticket.warId) : null;

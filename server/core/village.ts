@@ -167,7 +167,7 @@ function badBatch(message: string): ApiError {
  * cannot be told apart from the village's own, so it would be acknowledged
  * and silently dropped.
  */
-export async function applyCommands(ctx: ServerContext, me: Player, body: CommandBatch | undefined): Promise<CommandBatchResponse> {
+export async function applyCommands(ctx: ServerContext, me: Player, body: Partial<CommandBatch> | undefined): Promise<CommandBatchResponse> {
   const list = Array.isArray(body?.commands) ? body!.commands : null;
   if (!list) throw badBatch('commands must be a list');
   if (list.length > MAX_BATCH) throw badBatch(`At most ${MAX_BATCH} commands at a time.`);

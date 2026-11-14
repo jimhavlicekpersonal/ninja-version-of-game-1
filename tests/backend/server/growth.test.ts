@@ -17,7 +17,6 @@ import { hallType } from '../../../src/gameplay/sim/data';
 import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import type { ApiError } from '../../../server/core';
 import { funnelOf, summarize } from '../../../server/core/statsLocal';
-import { growthOf } from '../../../server/growthRepo';
 import type { Repo } from '../../../server/repo';
 import { HOUR, world } from './harness';
 import { repoFactories } from './pg';
@@ -186,7 +185,7 @@ for (const [label, makeRepo] of repoFactories) {
       const ben = await recruit('Ben');
       await w.core.growth.linkReferral(ben.me, { code });
       await w.core.deleteAccount(ben.me);
-      expect(await growthOf(w.repo).referralsBy((await annMe()).id)).toEqual([]);
+      expect(await w.repo.referralsBy((await annMe()).id)).toEqual([]);
     });
   });
 

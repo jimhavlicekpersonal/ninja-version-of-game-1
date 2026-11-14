@@ -11,8 +11,8 @@
 import { createPrivateKey, sign, type KeyObject } from 'node:crypto';
 import type { Fetch } from './google';
 
-export const APPLE_API_PRODUCTION = 'https://api.storekit.itunes.apple.com';
-export const APPLE_API_SANDBOX = 'https://api.storekit-sandbox.itunes.apple.com';
+const APPLE_API_PRODUCTION = 'https://api.storekit.itunes.apple.com';
+const APPLE_API_SANDBOX = 'https://api.storekit-sandbox.itunes.apple.com';
 
 /** Apple's ConsumptionRequest (v1). Ranged fields are Apple's buckets (`tenureBucket`, `playTimeBucket`, `dollarsBucket`). */
 export interface ConsumptionRequest {

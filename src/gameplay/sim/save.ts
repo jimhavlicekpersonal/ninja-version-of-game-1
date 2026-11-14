@@ -16,6 +16,19 @@ import type { GameData as GD } from './types';
 export const SAVE_VERSION = 23;
 const EXPORT_PREFIX = 'TK1';
 
+// Values the save migrations fill in (quality Q20). They describe what each old format meant and never change.
+const HOUR_MS = 3_600_000;
+const DAY_MS = 86_400_000;
+const DAYS_PER_WEEK = 7;
+/** 2^32: a 64-bit creation time split into the two 32-bit halves of the village seed (v1 -> v2). */
+const UINT32_RANGE = 4294967296;
+/** The new-player shield a village from before honor (v2 -> v3) starts with, in hours. */
+const FIRST_SHIELD_HOURS = 24;
+/** A tutorial step past the last one: villages from before the tutorial (v5 -> v6) count as done. */
+const TUTORIAL_DONE_STEP = 99;
+/** Jade every stipend payment bought before v18 was sold with. */
+const LEGACY_STIPEND_JADE = 20;
+
 export interface SaveFile {
   version: number;
   savedAt: number;
@@ -48,14 +61,14 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     v.training = v.training ?? [];
     v.battleLog = v.battleLog ?? [];
     const created = Number(v.createdAt) || 0;
-    v.seed = v.seed ?? mixSeed(created >>> 0, Math.floor(created / 4294967296));
+    v.seed = v.seed ?? mixSeed(created >>> 0, Math.floor(created / UINT32_RANGE));
     v.nextSeed = v.nextSeed ?? 1;
   }
   if (out.version < 3 && v && typeof v === 'object') {
     // v2 -> v3: leaf rank, shields, defense log, seasons.
     const last = Number(v.lastSeenAt) || 0;
     v.trophies = v.trophies ?? 0;
-    v.shieldUntil = v.shieldUntil ?? last + 24 * 3_600_000;
+    v.shieldUntil = v.shieldUntil ?? last + FIRST_SHIELD_HOURS * HOUR_MS;
     v.defenseLog = v.defenseLog ?? [];
     v.season = v.season ?? seasonOf(last);
     v.raidCheckAt = v.raidCheckAt ?? last;
@@ -67,9 +80,9 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     v.purchases = v.purchases ?? [];
     v.profile = v.profile ?? { under18: null };
     v.offers = v.offers ?? { active: [], lastShown: {}, bought: [] };
-    const day = data ? Math.floor((last - data.pass.epoch) / 86_400_000) : 0;
+    const day = data ? Math.floor((last - data.pass.epoch) / DAY_MS) : 0;
     v.pass = v.pass ?? { season: data ? Math.floor(day / data.pass.seasonDays) : 0, points: 0, premium: false, claimedFree: [], claimedPremium: [] };
-    v.tasks = v.tasks ?? { day, dayBaseline: emptyStats(), dayClaimed: [], week: Math.floor(day / 7), weekBaseline: emptyStats(), weekClaimed: [] };
+    v.tasks = v.tasks ?? { day, dayBaseline: emptyStats(), dayClaimed: [], week: Math.floor(day / DAYS_PER_WEEK), weekBaseline: emptyStats(), weekClaimed: [] };
     v.cosmetics = v.cosmetics ?? { owned: ['classic'], hallSkin: 'classic' };
     v.achievements = v.achievements ?? {};
     v.flags = v.flags ?? { longWaitSeen: false };
@@ -81,7 +94,7 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
   }
   if (out.version < 6 && v && typeof v === 'object') {
     // v5 -> v6: tutorial (existing players have already found their way around).
-    v.tutorial = v.tutorial ?? { step: 99, done: true };
+    v.tutorial = v.tutorial ?? { step: TUTORIAL_DONE_STEP, done: true };
   }
   if (out.version < 7 && v && typeof v === 'object') {
     // v6 -> v7: troop research, the kept scout opponent, and a counter of
@@ -191,7 +204,7 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // (`history[].streakJade`), now paid once a week; older entries have none, so the next top-step
     // chest pays it.
     const st = v.stipend as { left?: number; jade?: number } | undefined;
-    if (st && typeof st === 'object' && st.jade === undefined) st.jade = Math.max(0, Number(st.left) || 0) * 20;
+    if (st && typeof st === 'object' && st.jade === undefined) st.jade = Math.max(0, Number(st.left) || 0) * LEGACY_STIPEND_JADE;
   }
   if (out.version < 19 && v && typeof v === 'object') {
     // v18 -> v19 (report section 5 step 8): the 28-day calendar, and the device's UTC offset for local task days

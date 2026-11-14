@@ -31,7 +31,7 @@ export async function ageBandOf(repo: Repo, playerId: string): Promise<AgeBand |
 }
 
 /** PUT /v1/me/age { band }: keep the stricter band; answer with the band now kept. */
-export async function stateAge(ctx: ServerContext, me: Player, body: AgeRequest | undefined): Promise<AgeResponse> {
+export async function stateAge(ctx: ServerContext, me: Player, body: Partial<AgeRequest> | undefined): Promise<AgeResponse> {
   const asked = body?.band ?? null;
   if (asked !== null && !isAgeBand(asked)) throw fail(400, 'bad_request', 'age.bad_band');
   const row = await ctx.repo.getAgeBand(me.id);

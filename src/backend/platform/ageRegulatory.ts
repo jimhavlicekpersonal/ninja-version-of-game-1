@@ -34,7 +34,7 @@ interface TkAgeRegulatoryPlugin {
 
 const TkAge = registerPlugin<TkAgeRegulatoryPlugin>('TkAge');
 
-export async function regulatoryFeatures(): Promise<RegulatoryFeatures> {
+async function regulatoryFeatures(): Promise<RegulatoryFeatures> {
   if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return { eligible: false, features: [] };
   try {
     const r = await TkAge.regulatoryFeatures();
@@ -44,7 +44,7 @@ export async function regulatoryFeatures(): Promise<RegulatoryFeatures> {
   }
 }
 
-export async function acknowledgeSignificantUpdate(description: string): Promise<SignificantUpdateAnswer> {
+async function acknowledgeSignificantUpdate(description: string): Promise<SignificantUpdateAnswer> {
   if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return 'unavailable';
   try {
     const r = await TkAge.acknowledgeSignificantUpdate({ description: description.slice(0, 500) });
@@ -71,11 +71,11 @@ export function significantUpdateDue(required: string | null, currentBuild: stri
   return !valid(acknowledged) || compareBuilds(acknowledged, required) < 0;
 }
 
-export function acknowledgedBuild(kv: { get(k: string): string | null }): string | null {
+function acknowledgedBuild(kv: { get(k: string): string | null }): string | null {
   return kv.get(ACK_KEY);
 }
 
-export function rememberAcknowledged(kv: { set(k: string, v: string | null): void }, build: string): void {
+function rememberAcknowledged(kv: { set(k: string, v: string | null): void }, build: string): void {
   kv.set(ACK_KEY, build);
 }
 

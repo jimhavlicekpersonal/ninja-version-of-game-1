@@ -162,7 +162,7 @@ export function sharedReplayCard(v: SharedReplayView, onWatch: (() => void) | nu
 
 export type BannerTier = 'plain' | 'bronze' | 'silver' | 'gold';
 /** Alliance levels where the banner changes (presentation only: no game number depends on it). */
-export const BANNER_LEVELS: readonly [BannerTier, number][] = [
+const BANNER_LEVELS: readonly [BannerTier, number][] = [
   ['plain', 1],
   ['bronze', 3],
   ['silver', 6],

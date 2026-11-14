@@ -1,4 +1,4 @@
--- Migration 0039 (compliance switches 2026-11-14, audit C14 and A5).
+-- Migration 0040 (compliance switches 2026-11-14, audit C14 and A5).
 -- One row per player who accepted a terms of service version or switched
 -- the Apple consumption consent; both default to "nothing recorded / off".
 -- Account deletion removes the row (server/complianceRepo.ts).

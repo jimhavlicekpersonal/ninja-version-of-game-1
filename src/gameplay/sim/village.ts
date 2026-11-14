@@ -588,6 +588,9 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
   }
 }
 
+/** Longest army preset name kept, in UTF-16 units (quality Q20). */
+const ARMY_PRESET_NAME_MAX = 24;
+
 function runCommand(s: VillageState, cmd: Command, now: number, data: GameData): CommandResult {
   switch (cmd.type) {
     case 'place':
@@ -609,7 +612,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'saveArmyPreset': {
       const army = cleanArmy(cmd.army, data);
       if (!Object.keys(army).length) return fail('NOT_AVAILABLE', 'Pick some warriors first.');
-      const name = cmd.name.trim().slice(0, 24) || nextArmyName(s);
+      const name = cmd.name.trim().slice(0, ARMY_PRESET_NAME_MAX) || nextArmyName(s);
       const at = s.armyPresets.findIndex((p) => p.name === name);
       if (at >= 0) s.armyPresets[at] = { name, army };
       else {

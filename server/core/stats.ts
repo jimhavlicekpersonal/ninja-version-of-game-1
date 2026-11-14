@@ -16,7 +16,6 @@
 import { cleanStatsBatch, INSTALL_ID } from '../../src/backend/net/stats';
 import type { StatsResponse } from '../../src/backend/net/protocol';
 import type { StatsDailyRow, StatsInstallSummary } from '../repo';
-import { growthOf } from '../growthRepo';
 import { HOUR, type ServerContext } from './context';
 import { fail } from './errors';
 
@@ -39,14 +38,14 @@ export async function postStats(ctx: ServerContext, body: unknown): Promise<Stat
   const events = b.events.map((e) => ({ ...e, at: e.at < now - OLDEST_EVENT_MS || e.at > now + FUTURE_EVENT_MS ? now : e.at }));
   if (events.length) await ctx.repo.addStatsEvents(b.install, b.build, b.arm ?? '', events, now);
   // Growth batch 2026-11-14: the offset for local-day counting (statsLocal.ts), kept per statistics id.
-  if (events.length && b.tz !== undefined) await growthOf(ctx.repo).setInstallTz(b.install, b.tz, now);
+  if (events.length && b.tz !== undefined) await ctx.repo.setInstallTz(b.install, b.tz, now);
   ctx.metrics.count('tk_stats_events_total', {}, events.length);
   return { accepted: events.length };
 }
 
 export async function deleteStats(ctx: ServerContext, install: unknown): Promise<{ deleted: number }> {
   if (typeof install !== 'string' || !INSTALL_ID.test(install)) throw fail(400, 'bad_request', 'stats.bad_id');
-  await growthOf(ctx.repo).deleteInstall(install.toLowerCase());
+  await ctx.repo.deleteInstall(install.toLowerCase());
   return { deleted: await ctx.repo.deleteStats(install.toLowerCase()) };
 }
 

@@ -286,7 +286,7 @@ export const MAX_PLATFORM_IDS = 300;
  * limited, and players who hide from search (`nobody`) or blocked either way
  * are left out.
  */
-export async function platformFriends(ctx: ServerContext, me: Player, req: PlatformFriendsRequest | undefined): Promise<PlatformFriendsResponse> {
+export async function platformFriends(ctx: ServerContext, me: Player, req: Partial<PlatformFriendsRequest> | undefined): Promise<PlatformFriendsResponse> {
   const provider = req?.provider;
   if (provider !== 'gamecenter' && provider !== 'playgames') throw fail(400, 'bad_request', 'friend.bad_provider');
   const linked = (await ctx.repo.linksOf(me.id)).some((l) => l.provider === provider);

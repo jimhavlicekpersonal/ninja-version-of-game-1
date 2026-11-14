@@ -161,7 +161,7 @@ export function createCore(ctx: ServerContext) {
     /** Retention: old replays, tickets and unreferenced base versions. */
     prune: (stillHeld?: import('../jobs').StillHeld) => retention.prune(ctx, stillHeld),
     pruneDormant: (stillHeld?: import('../jobs').StillHeld) => retention.pruneDormant(ctx, stillHeld),
-    /** Growth batch 2026-11-14 (routes in server/growthRoutes.ts). */
+    /** Growth batch 2026-11-14 (routes in server/routes/growth.ts). */
     growth: {
       referrals: (me: Parameters<typeof referrals.view>[1]) => referrals.view(ctx, me),
       linkReferral: referrals.link.bind(null, ctx),

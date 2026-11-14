@@ -16,7 +16,6 @@ import { pruneTokens } from './links';
 import { STATS_RETENTION_DAYS } from './stats';
 import { requireLease, type StillHeld } from '../jobs';
 import { deleteAccount } from './account';
-import { growthOf } from '../growthRepo';
 
 /** Backend A18: retention deletes in batches of this many rows, and gives up for the hour after this long. */
 export const RETENTION_BATCH = 5000;
@@ -73,7 +72,7 @@ export async function prune(ctx: ServerContext, stillHeld?: StillHeld): Promise<
   // Shared play statistics (report section 5 step 5) are kept 400 days.
   const stats = await ctx.repo.pruneStats(t - STATS_RETENTION_DAYS * 24 * HOUR);
   // Growth batch 2026-11-14: expired shared replays, and statistics summaries of ids past retention.
-  const g = growthOf(ctx.repo);
+  const g = ctx.repo;
   const sharedReplays = await g.pruneSharedReplays(t);
   await g.pruneInstalls(t - STATS_RETENTION_DAYS * 24 * HOUR);
   return { ...result, friendRequests, duels, forfeits, stats, sharedReplays };

@@ -31,7 +31,7 @@ export const MAX_MUTE_HOURS = 24 * 365;
 
 const text = (v: unknown, max: number): string => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 
-export async function report(ctx: ServerContext, me: Player, req: ReportRequest | undefined): Promise<ReportResponse> {
+export async function report(ctx: ServerContext, me: Player, req: Partial<ReportRequest> | undefined): Promise<ReportResponse> {
   const reason = req?.reason;
   if (!reason || !REPORT_REASONS.includes(reason)) throw fail(400, 'bad_request', 'report.pick_reason');
   const base = { id: ctx.uuid(), at: ctx.now(), reporterId: me.id, reason, note: text(req?.note, 500), status: 'open' as const, resolvedAt: null, resolution: null };

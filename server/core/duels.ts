@@ -11,12 +11,12 @@ import { isolateName } from '../../src/gameplay/sim/social/names';
  * Duel challenges: both friends attack each other within 24 hours; more
  * stars, then more destruction, wins. Still unranked.
  */
-import type { BattleSubmission, ChallengesResponse, ChallengeView, DuelLayoutRequest, DuelReportResponse, DuelsResponse, DuelTicketRequest, DuelTicketResponse, DuelView, RivalryView } from '../../src/backend/net/protocol';
+import type { ChallengesResponse, ChallengeView, DuelLayoutRequest, DuelReportResponse, DuelsResponse, DuelTicketRequest, DuelTicketResponse, DuelView, RivalryView } from '../../src/backend/net/protocol';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import type { DuelChallenge, DuelTally, Player, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
 import { HOUR, type ServerContext } from './context';
-import { battleSeed, capBaseLoot, checkArmy, engineForClient, engineForTicket, normalizeBase, resimulate, takeTicket, TICKET_TTL_MS } from './pvp';
+import { battleSeed, capBaseLoot, checkArmy, engineForClient, engineForTicket, normalizeBase, resimulate, takeTicket, TICKET_TTL_MS, type BattleReport } from './pvp';
 import { fail, detailError } from './errors';
 
 const DAY = 24 * HOUR;
@@ -84,7 +84,7 @@ function challengeView(ctx: ServerContext, me: Player, c: DuelChallenge, names: 
 }
 
 /** POST /v1/duels/ticket */
-export async function duelTicket(ctx: ServerContext, me: Player, req: DuelTicketRequest | undefined, client?: ClientInfo): Promise<DuelTicketResponse> {
+export async function duelTicket(ctx: ServerContext, me: Player, req: Partial<DuelTicketRequest> | undefined, client?: ClientInfo): Promise<DuelTicketResponse> {
   const engine = engineForClient(ctx, client);
   const friend = await requireFriend(ctx, me, req?.friendId);
   let challengeId: string | undefined;
@@ -104,7 +104,7 @@ export async function duelTicket(ctx: ServerContext, me: Player, req: DuelTicket
 }
 
 /** POST /v1/duels: re-simulate, record, tally. Nothing else changes. */
-export async function reportDuel(ctx: ServerContext, me: Player, sub: BattleSubmission): Promise<DuelReportResponse> {
+export async function reportDuel(ctx: ServerContext, me: Player, sub: BattleReport): Promise<DuelReportResponse> {
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'duel');
   if (answered) return answered as DuelReportResponse;
   const engine = engineForTicket(ctx, ticket, sub);
@@ -165,7 +165,7 @@ export async function duels(ctx: ServerContext, me: Player, since: unknown): Pro
 }
 
 /** PUT /v1/duels/layout { base | null }: the layout friends duel against (checked like a village, never holds loot). */
-export async function setDuelLayout(ctx: ServerContext, me: Player, req: DuelLayoutRequest | undefined, client?: ClientInfo): Promise<void> {
+export async function setDuelLayout(ctx: ServerContext, me: Player, req: Partial<DuelLayoutRequest> | undefined, client?: ClientInfo): Promise<void> {
   if (!req || req.base === null || req.base === undefined) {
     await ctx.repo.updatePlayer(me.id, { duelBase: null });
     return;

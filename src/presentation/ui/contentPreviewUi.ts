@@ -16,7 +16,7 @@ import { formatNumber } from './format';
 import { h } from './dom';
 import { refusalText } from './refusalText';
 
-export function heroChoiceOn(data: GameData): boolean {
+function heroChoiceOn(data: GameData): boolean {
   return data.features?.heroChoice === true;
 }
 

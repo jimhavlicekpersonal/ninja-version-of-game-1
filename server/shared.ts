@@ -25,6 +25,9 @@ import type { Metrics } from './observability';
 /** Called when a Redis-backed store could not reach Redis and degraded. */
 export type RedisErrorHandler = (use: 'rateLimit' | 'leaderboard' | 'locks', e: Error) => void;
 
+/** Players per ZADD when the Redis leaderboard is rebuilt from the database (quality Q20). */
+const BOARD_REBUILD_CHUNK = 500;
+
 /** Counts every Redis failure (`tk_redis_errors_total`) and logs at most one line per `everyMs`. */
 export function redisErrorReporter(metrics: Metrics, log: (msg: string, fields: Record<string, unknown>) => void, everyMs = 10_000): RedisErrorHandler {
   let last = 0;
@@ -109,9 +112,9 @@ export class RedisLeaderboard implements Leaderboard {
       const tmp = `${this.key}:rebuild`;
       await this.redis.command('DEL', tmp);
       const all = await repo.rankedPlayers();
-      for (let i = 0; i < all.length; i += 500) {
+      for (let i = 0; i < all.length; i += BOARD_REBUILD_CHUNK) {
         const args: (string | number)[] = [];
-        for (const p of all.slice(i, i + 500)) args.push(boardScore(p.trophies, p.createdAt), p.id);
+        for (const p of all.slice(i, i + BOARD_REBUILD_CHUNK)) args.push(boardScore(p.trophies, p.createdAt), p.id);
         await this.redis.command('ZADD', tmp, ...args);
       }
       if (all.length) await this.redis.command('RENAME', tmp, this.key);
@@ -169,9 +172,9 @@ export class RedisLeaderboard implements Leaderboard {
   async rebuildIfMissing(repo: Repo): Promise<number> {
     if (Number(await this.redis.command('EXISTS', this.key)) > 0) return 0;
     const all = await repo.rankedPlayers();
-    for (let i = 0; i < all.length; i += 500) {
+    for (let i = 0; i < all.length; i += BOARD_REBUILD_CHUNK) {
       const args: (string | number)[] = [];
-      for (const p of all.slice(i, i + 500)) args.push(boardScore(p.trophies, p.createdAt), p.id);
+      for (const p of all.slice(i, i + BOARD_REBUILD_CHUNK)) args.push(boardScore(p.trophies, p.createdAt), p.id);
       await this.redis.command('ZADD', this.key, ...args);
     }
     return all.length;

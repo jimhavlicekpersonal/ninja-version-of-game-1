@@ -4,6 +4,7 @@
  * in and out, so it behaves like the network (no shared objects). Used by
  * tests, and handy for a local sandbox of a future server.
  */
+import { ComplianceRoutes } from '../src/backend/net/compliance';
 import { messageParts } from '../locales/runtime';
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
 import type { AgeRequest, RulesRequest, BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, GangWarTicketRequest, IntentReleaseRequest, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
@@ -31,7 +32,7 @@ export class InProcessServerAdapter implements ServerPort {
     return this.token;
   }
 
-  private async call<T>(fn: () => Promise<T> | T): Promise<T> {
+  private async run<T>(fn: () => Promise<T> | T): Promise<T> {
     try {
       return wire(await fn());
     } catch (e) {
@@ -40,19 +41,34 @@ export class InProcessServerAdapter implements ServerPort {
     }
   }
 
+  /**
+   * A call by route, like `HttpServerAdapter.call` (compliance switches 2026-11-14: the routes in
+   * `net/compliance.ts`, which the game reaches only through it). Other routes have their own methods here.
+   */
+  call<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
+    const b = (body ?? {}) as Record<string, unknown>;
+    return this.authed(async (me) => {
+      const c = this.core.compliance;
+      if (method === 'GET' && path === ComplianceRoutes.compliance) return c.view(me) as Promise<T>;
+      if (method === 'PUT' && path === ComplianceRoutes.terms) return c.acceptTerms(me, b) as Promise<T>;
+      if (method === 'PUT' && path === ComplianceRoutes.consumptionConsent) return c.setConsumptionConsent(me, b) as Promise<T>;
+      throw new ServerError(404, 'not_found', `No in-process route for ${method} ${path}.`);
+    });
+  }
+
   private authed<T>(fn: (me: Awaited<ReturnType<ServerCore['authenticate']>>) => Promise<T> | T): Promise<T> {
-    return this.call(async () => fn(await this.core.authenticate(this.token ?? undefined)));
+    return this.run(async () => fn(await this.core.authenticate(this.token ?? undefined)));
   }
 
   hello() {
-    return this.call(() => this.core.hello());
+    return this.run(() => this.core.hello());
   }
 
   balance() {
-    return this.call(() => this.core.balance());
+    return this.run(() => this.core.balance());
   }
   async register(name: string) {
-    const r = await this.call(() => this.core.register(name));
+    const r = await this.run(() => this.core.register(name));
     this.token = r.token;
     return r;
   }
@@ -80,7 +96,7 @@ export class InProcessServerAdapter implements ServerPort {
   }
   // Backend A15/A16.
   authNonce() {
-    return this.call(() => this.core.authNonce());
+    return this.run(() => this.core.authNonce());
   }
   async signOutDevice() {
     await this.authed((me) => this.core.signOutDevice(me));
@@ -210,7 +226,7 @@ export class InProcessServerAdapter implements ServerPort {
     return this.authed((me) => this.core.unlink(me, provider));
   }
   async signIn(provider: LinkProvider, credential: LinkCredential, device?: string) {
-    const r = await this.call(() => this.core.signIn(wire({ provider, credential, device })));
+    const r = await this.run(() => this.core.signIn(wire({ provider, credential, device })));
     this.token = r.token;
     return r;
   }

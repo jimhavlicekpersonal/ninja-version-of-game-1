@@ -28,9 +28,9 @@ export const ComplianceRoutes = {
 } as const;
 
 export type Under13Mode = 'offline' | 'limited' | 'families';
-export const UNDER13_MODES: readonly Under13Mode[] = ['offline', 'limited', 'families'];
+const UNDER13_MODES: readonly Under13Mode[] = ['offline', 'limited', 'families'];
 /** The mode a server that announces none (older servers) is treated as: what they already enforced. */
-export const DEFAULT_UNDER13_MODE: Under13Mode = 'limited';
+const DEFAULT_UNDER13_MODE: Under13Mode = 'limited';
 
 export function parseUnder13Mode(v: unknown): Under13Mode | null {
   return typeof v === 'string' && (UNDER13_MODES as readonly string[]).includes(v.trim()) ? (v.trim() as Under13Mode) : null;
@@ -52,7 +52,7 @@ export function under13ModeOf(features: readonly string[] | undefined): Under13M
 export const WITHHELD_CHAT_TEXT = '(Only ready-made phrases are shown.)';
 
 /** A terms version is the effective date, YYYY-MM-DD. */
-export const TERMS_VERSION_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TERMS_VERSION_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function validTermsVersion(v: unknown): v is string {
   if (typeof v !== 'string' || !TERMS_VERSION_RE.test(v)) return false;

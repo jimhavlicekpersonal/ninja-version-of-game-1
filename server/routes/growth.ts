@@ -1,52 +1,47 @@
 /**
- * HTTP routes of the growth batch (2026-11-14; docs/PROTOCOL.md "Growth batch"), registered from
- * server/app.ts with one line each (`registerGrowthRoutes`, `registerGrowthStaffRoutes`) so the
- * adapter's own route table stays as it is. Rules live in server/core (referrals.ts, sharedReplays.ts,
- * statsLocal.ts); this file only maps requests.
+ * Routes of the growth batch (2026-11-14; docs/PROTOCOL.md "Growth batch"): friend invites, shared replays,
+ * and the staff statistics by local day. Rules live in server/core (referrals.ts, sharedReplays.ts,
+ * statsLocal.ts); this file only maps requests, with schemas like every route (routes/schema.ts).
  *
  * Staff statistics page: GET /admin/stats (and /admin/stats.js), served only where the admin API exists.
  * Like /admin, the page holds no data: staff paste their token (kept in the tab), and the numbers come
  * from the staff API (`/admin/v1/stats`, `/admin/v1/stats/local`, `/admin/v1/stats/funnel`). English only.
  */
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { GrowthRoutes } from '../src/backend/net/growth';
-import { ADMIN_PAGE_CSP } from './adminPage';
-import type { ServerCore } from './core';
-import type { RateLimits } from './rateLimit';
-import type { Player } from './repo';
+import type { FastifyInstance } from 'fastify';
+import { GrowthRoutes, type ReferralRequest, type ShareReplayRequest } from '../../src/backend/net/growth';
+import { ADMIN_PAGE_CSP } from '../adminPage';
+import type { ServerCore } from '../core';
+import type { RouteKit } from './kit';
+import { array, body, boolean, fields, number, object, params, query, string } from './schema';
+import type { StaffRoute } from './staff';
 
-type Handler = (me: Player, req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
-type Route = (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
+/** A shared replay carries a whole battle (base, army, deployments). */
+const SHARED_REPLAY_BODY_LIMIT = 256 * 1024;
 
-export interface GrowthHelpers {
-  core: ServerCore;
-  authed(h: Handler): Route;
-  rate(r: keyof RateLimits): { config: { rate?: keyof RateLimits | (keyof RateLimits)[] } };
-}
-
-const q = (req: FastifyRequest) => (req.query ?? {}) as Record<string, string | undefined>;
-const p = (req: FastifyRequest, k: string) => String((req.params as Record<string, string>)[k] ?? '');
-
-export function registerGrowthRoutes(app: FastifyInstance, h: GrowthHelpers): void {
-  const g = h.core.growth;
-  app.get(GrowthRoutes.referrals, h.authed(async (me) => g.referrals(me)));
-  app.post(GrowthRoutes.referrals, { config: { rate: ['moderation', 'lookup'] as (keyof RateLimits)[] } }, h.authed(async (me, req) => g.linkReferral(me, req.body as never)));
-  app.post(GrowthRoutes.referralClaim, h.rate('moderation'), h.authed(async (me) => g.claimReferrals(me)));
-  app.post(GrowthRoutes.sharedReplays, { ...h.rate('battle'), bodyLimit: 256 * 1024 }, h.authed(async (me, req, reply) => reply.code(201).send(await g.shareReplay(me, req.body as never))));
-  app.get(GrowthRoutes.sharedReplays, h.authed(async (me) => g.myReplays(me)));
+export function growthRoutes({ open, player, core }: RouteKit): void {
+  const g = core.growth;
+  const code = params('code');
+  player('GET', GrowthRoutes.referrals, {}, async (me) => g.referrals(me));
+  player('POST', GrowthRoutes.referrals, { body: body(fields<ReferralRequest>()({ code: string(), device: string() })), rate: ['moderation', 'lookup'] }, async (me, { body }) => g.linkReferral(me, body));
+  player('POST', GrowthRoutes.referralClaim, { rate: 'moderation' }, async (me) => g.claimReferrals(me));
+  // Setup and deployments stay objects here: the core bounds them and re-simulates the battle.
+  const shareBody = body(fields<ShareReplayRequest>()({ setup: object(), deployments: array(object()), endTick: number(), rules: number(), dataVersion: string(), opponent: string(), showName: boolean() }));
+  player('POST', GrowthRoutes.sharedReplays, { body: shareBody, rate: 'battle', bodyLimit: SHARED_REPLAY_BODY_LIMIT }, async (me, { body, reply }) => reply.code(201).send(await g.shareReplay(me, body)));
+  player('GET', GrowthRoutes.sharedReplays, {}, async (me) => g.myReplays(me));
   // Anyone with the code may watch (a link opened in a browser has no account).
-  app.get('/v1/replays/shared/:code', h.rate('lookup'), async (req, reply) => reply.header('Cache-Control', 'no-store').send(await g.sharedReplay(p(req, 'code'))));
-  app.delete('/v1/replays/shared/:code', h.authed(async (me, req) => g.deleteSharedReplay(me, p(req, 'code'))));
+  open('GET', '/v1/replays/shared/:code', { params: code, rate: 'lookup' }, async ({ params, reply }) => reply.header('Cache-Control', 'no-store').send(await g.sharedReplay(params.code)));
+  player('DELETE', '/v1/replays/shared/:code', { params: code }, async (me, { params }) => g.deleteSharedReplay(me, params.code));
 }
 
-export function registerGrowthStaffRoutes(app: FastifyInstance, h: { core: ServerCore; staff<T>(fn: (req: FastifyRequest) => Promise<T>): Route }): void {
-  app.get('/admin/v1/stats/local', h.staff(async (req) => h.core.growth.statsLocalReport(q(req).days, q(req).basis)));
-  app.get('/admin/v1/stats/funnel', h.staff(async (req) => h.core.growth.statsFunnel(q(req).days, q(req).basis)));
+export function growthStaffRoutes(app: FastifyInstance, staff: StaffRoute, core: ServerCore): void {
+  const report = query('days', 'basis');
+  staff('GET', '/admin/v1/stats/local', { query: report }, async (_a, { query }) => core.growth.statsLocalReport(query.days, query.basis));
+  staff('GET', '/admin/v1/stats/funnel', { query: report }, async (_a, { query }) => core.growth.statsFunnel(query.days, query.basis));
   app.get('/admin/stats', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(statsPage()));
   app.get('/admin/stats.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(statsScript()));
 }
 
-export function statsPage(): string {
+function statsPage(): string {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
 <title>Kagemura play statistics</title>
@@ -75,7 +70,7 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #eee;pad
 </body></html>`;
 }
 
-export function statsScript(): string {
+function statsScript(): string {
   return `'use strict';
 const $ = (id) => document.getElementById(id);
 const el = (tag, attrs, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v); for (const c of kids) e.append(c instanceof Node ? c : document.createTextNode(String(c ?? ''))); return e; };

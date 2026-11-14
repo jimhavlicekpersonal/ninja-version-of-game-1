@@ -12,8 +12,7 @@
  *   player's consent; otherwise nothing is sent).
  */
 import { ComplianceRoutes, validTermsVersion, WITHHELD_CHAT_TEXT, type ComplianceView, type Under13Mode } from '../../src/backend/net/compliance';
-import type { ChatView } from '../../src/backend/net/protocol';
-import { complianceOf } from '../complianceRepo';
+import { presetChatId, type ChatView } from '../../src/backend/net/protocol';
 import { dollarsBucket, playTimeBucket, tenureBucket, type ConsumptionRequest } from '../payments/appleServerApi';
 import type { AppleTransaction } from '../payments/apple';
 import type { Player } from '../repo';
@@ -61,13 +60,13 @@ export async function checkPushAllowed(ctx: ServerContext, me: Player): Promise<
   if ((await ageBandOf(ctx.repo, me.id)) === 'under13') throw fail(403, 'age_restricted', 'push.not_for_age');
 }
 
-/** Free-text chat from other players, withheld from an under-13 reader (fixed phrases, system lines and their own messages stay). */
+/** Free-text chat from other players, withheld from an under-13 reader (fixed phrases, even typed by an adult, system lines and their own messages stay). */
 export function withholdForReader(messages: ChatView[], readerId: string): ChatView[] {
-  return messages.map((m) => (m.kind === 'chat' && m.from && m.from.id !== readerId && m.presetId === undefined ? { ...m, text: WITHHELD_CHAT_TEXT, withheld: true as const } : m));
+  return messages.map((m) => (m.kind === 'chat' && m.from && m.from.id !== readerId && m.presetId === undefined && presetChatId(m.text) < 0 ? { ...m, text: WITHHELD_CHAT_TEXT, withheld: true as const } : m));
 }
 
 export async function complianceView(ctx: ServerContext, me: Player): Promise<ComplianceView> {
-  const r = await complianceOf(ctx.repo).get(me.id);
+  const r = await ctx.repo.getCompliance(me.id);
   return { termsVersion: r?.termsVersion ?? null, consumptionConsent: r?.consumptionConsent ?? false };
 }
 
@@ -75,9 +74,8 @@ export async function complianceView(ctx: ServerContext, me: Player): Promise<Co
 export async function acceptTerms(ctx: ServerContext, me: Player, body: { version?: unknown } | undefined): Promise<ComplianceView> {
   const v = body?.version;
   if (!validTermsVersion(v) || Date.parse(`${v}T00:00:00Z`) > ctx.now() + 400 * DAY) throw fail(400, 'bad_request', 'terms.bad_version');
-  const store = complianceOf(ctx.repo);
-  const r = await store.get(me.id);
-  if (!r?.termsVersion || r.termsVersion < v) await store.setTerms(me.id, v, ctx.now());
+  const r = await ctx.repo.getCompliance(me.id);
+  if (!r?.termsVersion || r.termsVersion < v) await ctx.repo.setTermsAccepted(me.id, v, ctx.now());
   ctx.metrics.count('tk_terms_accepted_total', {});
   return complianceView(ctx, me);
 }
@@ -86,7 +84,7 @@ export async function acceptTerms(ctx: ServerContext, me: Player, body: { versio
 export async function setConsumptionConsent(ctx: ServerContext, me: Player, body: { consent?: unknown } | undefined): Promise<ComplianceView> {
   if (typeof body?.consent !== 'boolean') throw fail(400, 'bad_request', 'consent.bad_value');
   if (body.consent && (await ageBandOf(ctx.repo, me.id)) !== 'adult') throw fail(403, 'age_restricted', 'consent.not_adult');
-  await complianceOf(ctx.repo).setConsumptionConsent(me.id, body.consent, ctx.now());
+  await ctx.repo.setConsumptionConsent(me.id, body.consent, ctx.now());
   return complianceView(ctx, me);
 }
 
@@ -101,7 +99,7 @@ export async function answerConsumptionRequest(ctx: ServerContext, t: AppleTrans
   const purchase = await ctx.repo.getPurchase('apple', t.transactionId);
   const player = purchase ? await ctx.repo.getPlayer(purchase.playerId) : null;
   if (!player) return 'unknown_player';
-  const consent = (await complianceOf(ctx.repo).get(player.id))?.consumptionConsent === true;
+  const consent = (await ctx.repo.getCompliance(player.id))?.consumptionConsent === true;
   if (!consent || (await ageBandOf(ctx.repo, player.id)) !== 'adult') return 'no_consent';
   const history = await ctx.repo.purchasesOf(player.id, 500);
   const purchased = history.reduce((n, p) => n + p.cents, 0);

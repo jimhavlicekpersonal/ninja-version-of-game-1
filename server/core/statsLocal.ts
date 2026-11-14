@@ -12,11 +12,10 @@
  *   that never sent an offset counts in UTC.
  * - `statsFunnel`: installs in a window, how far they got in the tutorial step by step, first raid and
  *   first purchase within 7 days, and the D1/D7/D30 returns, on either basis (the staff page,
- *   `server/growthRoutes.ts` `/admin/stats`).
+ *   `server/routes/growth.ts` `/admin/stats`).
  * Still adults who opted in only: the client sends nothing otherwise (`analytics/share.ts`).
  */
-import type { StatsDailyRow, StatsInstallSummary } from '../repo';
-import { growthOf, type InstallSummaryRow, type StatsEventRow } from '../growthRepo';
+import type { InstallSummaryRow, StatsDailyRow, StatsEventRow, StatsInstallSummary } from '../repo';
 import type { ServerContext } from './context';
 import { cohortRows, DAY_MS, ROLLUP_DAYS, utcDay } from './stats';
 export { cleanTz } from '../../src/backend/net/stats';
@@ -71,7 +70,7 @@ export function onBasis(s: InstallSummaryRow, basis: 'utc' | 'local'): StatsInst
 
 /** Rebuild the summaries of every statistics id with events received since the watermark. */
 export async function summarizeNew(ctx: ServerContext): Promise<{ installs: number; watermark: number }> {
-  const g = growthOf(ctx.repo);
+  const g = ctx.repo;
   let wm = await g.getWatermark(WATERMARK);
   // A batch still being written when the last run read could carry a receipt time up to OVERLAP_MS before it.
   const lastRun = await g.getWatermark(LAST_RUN);
@@ -104,7 +103,7 @@ export async function rollupIncremental(ctx: ServerContext): Promise<{ days: num
   const now = ctx.now();
   const to = utcDay(now);
   const from = to - ROLLUP_DAYS;
-  const rows = cohortRows((await growthOf(ctx.repo).installSummaries('utc', from, to)).map((s) => onBasis(s, 'utc')), now);
+  const rows = cohortRows((await ctx.repo.installSummaries('utc', from, to)).map((s) => onBasis(s, 'utc')), now);
   await ctx.repo.putStatsDaily(from, to, rows);
   return { days: ROLLUP_DAYS + 1, rows: rows.length, installs };
 }
@@ -124,7 +123,7 @@ export async function statsLocalReport(ctx: ServerContext, days: unknown, basisR
   const basis = basisRaw === 'utc' ? 'utc' : 'local';
   const today = utcDay(ctx.now());
   const n = span(days);
-  const sums = await growthOf(ctx.repo).installSummaries(basis, today - n, today + 1);
+  const sums = await ctx.repo.installSummaries(basis, today - n, today + 1);
   const known = (after: number, day: number) => day + after < today;
   const rows = cohortRows(
     sums.map((s) => onBasis(s, basis)),
@@ -180,6 +179,6 @@ export async function statsFunnel(ctx: ServerContext, days: unknown, basisRaw: u
   const basis = basisRaw === 'utc' ? 'utc' : 'local';
   const today = utcDay(ctx.now());
   const n = span(days);
-  return funnelOf(await growthOf(ctx.repo).installSummaries(basis, today - n, today + 1), basis, today, n);
+  return funnelOf(await ctx.repo.installSummaries(basis, today - n, today + 1), basis, today, n);
 }
 

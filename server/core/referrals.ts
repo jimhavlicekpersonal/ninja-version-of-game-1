@@ -13,8 +13,7 @@ import { normalizeFriendCode } from '../../src/backend/net/names';
 import { REFERRAL_INVITER_MIN_DAYS, REFERRAL_JADE, REFERRAL_KEEP, REFERRAL_MONTHLY_CAP, REFERRAL_WINDOW_DAYS, type ReferralRequest, type ReferralView } from '../../src/backend/net/growth';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { hallLevel } from '../../src/gameplay/sim/village';
-import { growthOf, type ReferralRow } from '../growthRepo';
-import type { Player, Repo } from '../repo';
+import type { Player, ReferralRow, Repo } from '../repo';
 import { HOUR, type ServerContext } from './context';
 import { fail } from './errors';
 import { applyServerResult } from './village';
@@ -46,7 +45,7 @@ async function qualifies(repo: Repo, ctx: ServerContext, r: ReferralRow): Promis
 }
 
 export async function view(ctx: ServerContext, me: Player, granted?: number): Promise<ReferralView> {
-  const g = growthOf(ctx.repo);
+  const g = ctx.repo;
   const mine = await g.referralOf(me.id);
   const recruits = await g.referralsBy(me.id);
   const now = ctx.now();
@@ -75,14 +74,14 @@ export async function view(ctx: ServerContext, me: Player, granted?: number): Pr
 }
 
 /** POST /v1/referrals: this new account came from `code`. */
-export async function link(ctx: ServerContext, me: Player, body: ReferralRequest | undefined): Promise<ReferralView> {
+export async function link(ctx: ServerContext, me: Player, body: Partial<ReferralRequest> | undefined): Promise<ReferralView> {
   const now = ctx.now();
   if (now - me.createdAt > REFERRAL_WINDOW_DAYS * DAY) throw fail(409, 'conflict', 'referral.too_late', { days: REFERRAL_WINDOW_DAYS });
   const code = normalizeFriendCode(body?.code);
   const inviter = code ? await ctx.repo.playerByFriendCode(code) : null;
   if (!inviter) throw fail(404, 'not_found', 'referral.no_code');
   if (inviter.id === me.id) throw fail(400, 'bad_request', 'referral.self');
-  const g = growthOf(ctx.repo);
+  const g = ctx.repo;
   if (await g.referralOf(me.id)) throw fail(409, 'conflict', 'referral.already');
   // Anti-abuse: an inviter made minutes ago, a device the inviter plays on, a block either way.
   if (now - inviter.createdAt < REFERRAL_INVITER_MIN_DAYS * DAY || inviter.createdAt >= me.createdAt) throw fail(409, 'conflict', 'referral.not_allowed');
@@ -100,7 +99,7 @@ export async function link(ctx: ServerContext, me: Player, body: ReferralRequest
 
 /** POST /v1/referrals/claim: check every pair this player is in and pay what is due to them. */
 export async function claim(ctx: ServerContext, me: Player): Promise<ReferralView> {
-  const g0 = growthOf(ctx.repo);
+  const g0 = ctx.repo;
   const pairs = [...(await g0.referralsBy(me.id))];
   const mine = await g0.referralOf(me.id);
   if (mine) pairs.unshift(mine);
@@ -110,7 +109,7 @@ export async function claim(ctx: ServerContext, me: Player): Promise<ReferralVie
   if (await ctx.repo.getVillage(me.id)) {
     for (const r0 of pairs) {
       const paid = await ctx.repo.transaction(async (tx) => {
-        const g = growthOf(tx);
+        const g = tx;
         const r = await g.referralOf(r0.recruitId);
         if (!r || r.qualifiedAt === null) return 0;
         const side = r.recruitId === me.id ? 'recruit' : 'inviter';

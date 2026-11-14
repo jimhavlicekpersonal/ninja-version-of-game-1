@@ -34,7 +34,7 @@ export interface EventSchedule {
   entries: EventScheduleEntry[];
 }
 
-export const MAX_SCHEDULE_ENTRIES = 16;
+const MAX_SCHEDULE_ENTRIES = 16;
 const ID = /^[a-z0-9_.:-]{1,60}$/i;
 const MIN_EPOCH = Date.UTC(2024, 0, 1);
 const MAX_EPOCH = Date.UTC(2100, 0, 1);

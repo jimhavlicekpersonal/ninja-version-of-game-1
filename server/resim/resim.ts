@@ -148,6 +148,11 @@ export interface WorkerPoolOptions {
   log?: (level: 'warn' | 'error', msg: string, fields?: Record<string, unknown>) => void;
 }
 
+/** Battles waiting for a worker before the pool answers 503 busy (RESIM_QUEUE). */
+export const DEFAULT_RESIM_QUEUE = 200;
+/** A battle a worker has not finished in this long fails (503 busy; the game retries). */
+const DEFAULT_RESIM_TIMEOUT_MS = 15_000;
+
 export class WorkerResimulator implements Resimulator {
   private readonly slots: Slot[] = [];
   private readonly waiting: Pending[] = [];
@@ -157,8 +162,8 @@ export class WorkerResimulator implements Resimulator {
   private readonly timeoutMs: number;
 
   constructor(private readonly o: WorkerPoolOptions) {
-    this.maxQueue = o.maxQueue ?? 200;
-    this.timeoutMs = o.timeoutMs ?? 15_000;
+    this.maxQueue = o.maxQueue ?? DEFAULT_RESIM_QUEUE;
+    this.timeoutMs = o.timeoutMs ?? DEFAULT_RESIM_TIMEOUT_MS;
     for (let i = 0; i < Math.max(1, o.size); i++) this.slots.push(this.makeSlot());
   }
 

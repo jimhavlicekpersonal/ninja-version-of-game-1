@@ -15,7 +15,6 @@
 import { FRIEND_CODE_ALPHABET } from '../../src/backend/net/names';
 import { SHARE_CODE, SHARED_REPLAY_DAYS, SHARED_REPLAYS_PER_DAY, type ShareReplayRequest, type ShareReplayResponse, type SharedOpponent, type SharedReplayView } from '../../src/backend/net/growth';
 import type { BaseLayout, Deployment } from '../../src/gameplay/sim/battle/types';
-import { growthOf } from '../growthRepo';
 import type { Player } from '../repo';
 import { ResimBusyError } from '../resim/resim';
 import { HOUR, type ServerContext } from './context';
@@ -51,10 +50,10 @@ function cleanDeployments(raw: unknown): Deployment[] | null {
 }
 
 /** POST /v1/replays/shared. */
-export async function share(ctx: ServerContext, me: Player, body: ShareReplayRequest | undefined): Promise<ShareReplayResponse> {
+export async function share(ctx: ServerContext, me: Player, body: Partial<ShareReplayRequest> | undefined): Promise<ShareReplayResponse> {
   const band = (await ctx.repo.getAgeBand(me.id))?.band ?? null;
   if (band === 'under13') throw fail(403, 'age_restricted', 'replay.not_for_age');
-  const g = growthOf(ctx.repo);
+  const g = ctx.repo;
   const now = ctx.now();
   if ((await g.sharedReplaysOf(me.id, now - DAY)).length >= SHARED_REPLAYS_PER_DAY) throw fail(429, 'rate_limited', 'replay.too_many', { n: SHARED_REPLAYS_PER_DAY });
   if (!body || typeof body !== 'object' || !body.setup || typeof body.setup !== 'object') throw fail(400, 'bad_request', 'replay.bad');
@@ -83,7 +82,7 @@ export async function share(ctx: ServerContext, me: Player, body: ShareReplayReq
   }
   const showName = body.showName === true && band === 'adult';
   // Honesty: a base the game generated is labelled so whatever the request says.
-  const asked: SharedOpponent = OPPONENTS.includes(body.opponent) ? body.opponent : 'player';
+  const asked: SharedOpponent = body.opponent !== undefined && OPPONENTS.includes(body.opponent) ? body.opponent : 'player';
   const opponent: SharedOpponent = base.practice ? 'practice' : base.rival || (raw as { power?: unknown }).power !== undefined ? 'generated' : asked;
   const expiresAt = now + SHARED_REPLAY_DAYS * DAY;
   const record = { at: now, rules, setup, deployments, ...(endTick !== undefined ? { endTick } : {}), result: { stars: result.stars, destruction: result.destruction }, sharerName: showName ? me.name : null, opponent };
@@ -101,7 +100,7 @@ export async function share(ctx: ServerContext, me: Player, body: ShareReplayReq
 export async function get(ctx: ServerContext, rawCode: string): Promise<SharedReplayView> {
   const code = String(rawCode ?? '').toUpperCase();
   if (!SHARE_CODE.test(code)) throw fail(404, 'not_found', 'replay.not_found');
-  const r = await growthOf(ctx.repo).getSharedReplay(code, ctx.now(), true);
+  const r = await ctx.repo.getSharedReplay(code, ctx.now(), true);
   if (!r) throw fail(404, 'not_found', 'replay.not_found');
   const rec = r.record as Omit<SharedReplayView, 'code' | 'expiresAt' | 'views'>;
   ctx.metrics.count('tk_shared_replays_total', { what: 'viewed' });
@@ -110,12 +109,12 @@ export async function get(ctx: ServerContext, rawCode: string): Promise<SharedRe
 
 /** DELETE /v1/replays/shared/:code (the sharer). */
 export async function remove(ctx: ServerContext, me: Player, rawCode: string): Promise<{ deleted: boolean }> {
-  return { deleted: await growthOf(ctx.repo).deleteSharedReplay(String(rawCode ?? '').toUpperCase(), me.id) };
+  return { deleted: await ctx.repo.deleteSharedReplay(String(rawCode ?? '').toUpperCase(), me.id) };
 }
 
 /** GET /v1/replays/shared: the player's own shares (newest first, still open). */
 export async function mine(ctx: ServerContext, me: Player): Promise<{ shares: { code: string; at: number; expiresAt: number; views: number }[] }> {
   const now = ctx.now();
-  const rows = await growthOf(ctx.repo).sharedReplaysOf(me.id, now - SHARED_REPLAY_DAYS * DAY);
+  const rows = await ctx.repo.sharedReplaysOf(me.id, now - SHARED_REPLAY_DAYS * DAY);
   return { shares: rows.filter((r) => r.expiresAt > now).map((r) => ({ code: r.id, at: r.at, expiresAt: r.expiresAt, views: r.views })) };
 }
