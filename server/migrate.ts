@@ -17,7 +17,14 @@
  *   cannot be rolled back, and the next run starts the file over. Its
  *   bookkeeping row is written after the last statement. Keep such files to
  *   index builds; nothing in them may contain a `;` at the end of a line inside
- *   a string or body.
+ *   a string or body. A `create index concurrently if not exists <name>` that
+ *   failed part way leaves an INVALID index of that name, which `if not exists`
+ *   would then skip for good: the runner drops such an index before the
+ *   statement runs again (2026-11-14 verification fix).
+ * - The lock is taken with `pg_try_advisory_lock`, polled: a runner waiting
+ *   inside `pg_advisory_lock` holds a snapshot, and `create index concurrently`
+ *   in the runner holding the lock waits for that snapshot, a deadlock
+ *   (two release jobs at once, MIGRATE_ON_BOOT on several instances).
  */
 import { createHash } from 'node:crypto';
 
@@ -42,6 +49,35 @@ export interface SqlPool {
 
 /** Any fixed number: the lock only has to be the same for every runner of this game. */
 const LOCK_ID = 0x7a6b6d1;
+
+/** How long a runner waits between tries for the lock. */
+const LOCK_POLL_MS = 250;
+
+/** `create [unique] index concurrently if not exists <name>`: the index name, else null. */
+export function concurrentIndexName(stmt: string): string | null {
+  const m = /^create\s+(?:unique\s+)?index\s+concurrently\s+if\s+not\s+exists\s+"?([a-z_][a-z0-9_]*)"?\s/i.exec(stmt);
+  return m ? m[1]!.toLowerCase() : null;
+}
+
+/** Backend A22: drop an INVALID index of this name in the current schema (left by a failed concurrent build). */
+async function dropInvalidIndex(client: SqlClient, name: string, log: (msg: string) => void): Promise<void> {
+  const r = await client.query(
+    `select 1 from pg_index i join pg_class c on c.oid = i.indexrelid
+     where c.relname = $1 and c.relnamespace = current_schema()::regnamespace and not i.indisvalid`,
+    [name],
+  );
+  if (!r.rows.length) return;
+  log(`Dropping the invalid index ${name} left by a failed build…`);
+  await client.query(`drop index concurrently if exists "${name}"`);
+}
+
+async function takeLock(client: SqlClient, sleep: (ms: number) => Promise<void>): Promise<void> {
+  for (;;) {
+    const r = await client.query('select pg_try_advisory_lock($1) as ok', [LOCK_ID]);
+    if (r.rows[0]?.ok === true) return;
+    await sleep(LOCK_POLL_MS);
+  }
+}
 
 const FILE = /(?:^|\/)((\d{4})_[a-z0-9_]+)\.sql$/;
 
@@ -127,12 +163,18 @@ export async function migrationStatus(pool: SqlPool, migrations: Migration[]): P
 }
 
 /** Apply every pending migration in order; returns the names applied. Safe to run while other runners start. */
-export async function runMigrations(pool: SqlPool, migrations: Migration[], now: () => number = Date.now, log: (msg: string) => void = () => {}): Promise<string[]> {
+export async function runMigrations(
+  pool: SqlPool,
+  migrations: Migration[],
+  now: () => number = Date.now,
+  log: (msg: string) => void = () => {},
+  sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+): Promise<string[]> {
   const client = await pool.connect();
   const done: string[] = [];
   try {
     // Waits for any other runner; afterwards it sees what that runner applied.
-    await client.query('select pg_advisory_lock($1)', [LOCK_ID]);
+    await takeLock(client, sleep);
     try {
       const applied = await appliedOf(client);
       checkApplied(migrations, applied);
@@ -142,7 +184,11 @@ export async function runMigrations(pool: SqlPool, migrations: Migration[], now:
         if (isNoTransaction(m)) {
           // Backend A22: one statement at a time, outside a transaction (CREATE INDEX CONCURRENTLY).
           try {
-            for (const stmt of splitStatements(m.sql)) await client.query(stmt);
+            for (const stmt of splitStatements(m.sql)) {
+              const index = concurrentIndexName(stmt);
+              if (index) await dropInvalidIndex(client, index, log);
+              await client.query(stmt);
+            }
             await client.query('insert into schema_migrations (version, name, checksum, applied_at) values ($1, $2, $3, $4)', [m.version, m.name, m.checksum, now()]);
           } catch (e) {
             throw new Error(`Migration ${m.name} (no transaction) failed part way; its statements are idempotent, so fix the cause and run it again: ${(e as Error).message}`);
