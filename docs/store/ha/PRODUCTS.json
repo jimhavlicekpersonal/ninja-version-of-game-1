@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ha",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Ɗan Jed Kaɗan",
+      "description": "Jed 45",
+      "locale": "ha"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Ƙaramar Jakar Jed",
+      "description": "Jed 100",
+      "locale": "ha"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Jakar Jed",
+      "description": "Jed 280",
+      "locale": "ha"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Akwatin Jed",
+      "description": "Jed 600",
+      "locale": "ha"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Babban Akwatin Jed",
+      "description": "Jed 1300",
+      "locale": "ha"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Taskar Jed",
+      "description": "Jed 3500",
+      "locale": "ha"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Dukiyar Dodo ta Jed",
+      "description": "Jed 7500",
+      "locale": "ha"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Takardar Kaka ta Musamman",
+      "description": "Layin musamman na wannan kaka",
+      "locale": "ha"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Kunshin Farawa",
+      "description": "Jed da albarkatu don sababbin shugabanni",
+      "locale": "ha"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Kunshin Magini",
+      "description": "Jed don ɗaukar wani Magini, da albarkatu",
+      "locale": "ha"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Kayan Yaƙi",
+      "description": "Guzuri da Jed don Yaƙin Ƙawance",
+      "locale": "ha"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kayan Sake Gini",
+      "description": "Jed da albarkatu don sake gini",
+      "locale": "ha"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Albashin Dangi",
+      "description": "Biyan yau da kullum: 30, kowanne Jed 12",
+      "locale": "ha"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Murnar Fada",
+      "description": "Albarkatu da Jed don murnar sabuwar Fadarku",
+      "locale": "ha"
+    }
+  ]
+}

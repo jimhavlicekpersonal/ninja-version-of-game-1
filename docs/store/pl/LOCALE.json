@@ -1,0 +1,20 @@
+{
+  "language": "pl",
+  "iosFriendList": "Kagemura pokazuje, którzy z twoich znajomych z Game Center też grają, aby można było dodać ich do znajomych w grze.",
+  "legalUnset": "jeszcze nieopublikowane",
+  "accountFailure": "Nie udało się wysłać prośby. Sprawdź dane i połączenie z internetem, a potem spróbuj ponownie.",
+  "storekit": {
+    "premiumPass": "Zwój Sezonu premium",
+    "jade": "Jadeit: {n}",
+    "stipend": "Codzienne wypłaty Jadeitu: {payments} × {jade}",
+    "seasonTrack": "Ścieżka premium tego sezonu",
+    "short": {
+      "starter_pack": "Jadeit i zasoby na start nowego klanu",
+      "builder_pack": "Jadeit na kolejnego Rzemieślnika i zasoby",
+      "war_prep_pack": "Prowiant i Jadeit na Wojnę Sojuszy",
+      "rebuild_pack": "Jadeit i zasoby na odbudowę",
+      "keep_pack": "Zasoby i Jadeit na cześć nowego poziomu Twierdzy"
+    },
+    "displayNames": {}
+  }
+}

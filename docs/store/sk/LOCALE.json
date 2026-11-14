@@ -1,0 +1,20 @@
+{
+  "language": "sk",
+  "iosFriendList": "Kagemura ukazuje, ktorí z tvojich priateľov v Game Center hru tiež hrajú, takže si ich môžeš pridať medzi priateľov v hre.",
+  "legalUnset": "zatiaľ nezverejnené",
+  "accountFailure": "Žiadosť sa nepodarilo odoslať. Skontroluj svoje údaje a pripojenie a skús to znova.",
+  "storekit": {
+    "premiumPass": "Sezónny zvitok: prémiová cesta",
+    "jade": "{n} Nefritu",
+    "stipend": "Denné platby ({payments}) po {jade} Nefritu",
+    "seasonTrack": "Prémiová cesta tejto sezóny",
+    "short": {
+      "starter_pack": "Nefrit a suroviny pre nové vedenie klanu",
+      "builder_pack": "Nefrit na ďalšieho Remeselníka a k tomu suroviny",
+      "war_prep_pack": "Zásoby a Nefrit pre Vojnu aliancií",
+      "rebuild_pack": "Nefrit a suroviny na obnovu",
+      "keep_pack": "Suroviny a Nefrit na oslavu novej Pevnosti"
+    },
+    "displayNames": {}
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "uk",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Дрібка Нефриту",
+      "description": "Нефрит: 45",
+      "locale": "uk"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Гаманець Нефриту",
+      "description": "Нефрит: 100",
+      "locale": "uk"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Торба Нефриту",
+      "description": "Нефрит: 280",
+      "locale": "uk"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Скринька Нефриту",
+      "description": "Нефрит: 600",
+      "locale": "uk"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Скриня Нефриту",
+      "description": "Нефрит: 1300",
+      "locale": "uk"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Сховище Нефриту",
+      "description": "Нефрит: 3500",
+      "locale": "uk"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Драконів скарб Нефриту",
+      "description": "Нефрит: 7500",
+      "locale": "uk"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Преміум-Сувій сезону",
+      "description": "Преміум-доріжка цього сезону",
+      "locale": "uk"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Стартовий набір",
+      "description": "Нефрит і ресурси для нових очільників клану",
+      "locale": "uk"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Набір майстра",
+      "description": "Нефрит, щоб найняти ще одного майстра, і ресурси",
+      "locale": "uk"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Воєнні припаси",
+      "description": "Провіант і Нефрит для Війни альянсів",
+      "locale": "uk"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Набір для відбудови",
+      "description": "Нефрит і ресурси для відбудови",
+      "locale": "uk"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Платня клану",
+      "description": "Щоденні виплати Нефриту: 30 × 12",
+      "locale": "uk"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Свято Твердині",
+      "description": "Ресурси й Нефрит на честь нового рівня Твердині",
+      "locale": "uk"
+    }
+  ]
+}

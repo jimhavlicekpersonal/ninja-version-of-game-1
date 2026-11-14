@@ -1,0 +1,20 @@
+{
+  "language": "tr",
+  "iosFriendList": "Kagemura, Game Center arkadaşlarından hangilerinin de oynadığını gösterir; böylece onları oyunda arkadaş olarak ekleyebilirsin.",
+  "legalUnset": "henüz yayımlanmadı",
+  "accountFailure": "İstek gönderilemedi. Bilgilerini ve bağlantını kontrol edip tekrar dene.",
+  "storekit": {
+    "premiumPass": "Premium Sezon Parşömeni",
+    "jade": "{n} Yeşim",
+    "stipend": "{jade} Yeşimlik {payments} günlük ödeme",
+    "seasonTrack": "Bu sezonun premium yolu",
+    "short": {
+      "starter_pack": "Yeni liderler için Yeşim ve kaynaklar",
+      "builder_pack": "Bir Zanaatkâr daha tutmak için Yeşim ve kaynaklar",
+      "war_prep_pack": "İttifak Savaşı için Erzak ve Yeşim",
+      "rebuild_pack": "Yeniden inşa etmek için Yeşim ve kaynaklar",
+      "keep_pack": "Yeni Kaleni kutlamak için kaynaklar ve Yeşim"
+    },
+    "displayNames": {}
+  }
+}

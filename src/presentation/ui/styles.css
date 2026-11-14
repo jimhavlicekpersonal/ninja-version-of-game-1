@@ -916,8 +916,9 @@ html:is([lang="ro"], [lang="vi"], [lang="tr"], [lang="pl"], [lang="ha"], [lang="
 /* Vietnamese stacks a tone mark on a vowel mark (ệ, ở, ữ): tight labels clip the top of the stack at line-height 1.05. */
 html[lang="vi"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
 /* Devanagari (Hindi, Marathi) hangs its letters from a joined headline; letter-spacing cuts it into pieces, and vowel signs above and below need more line height than Latin. */
-html[data-script="Deva"] body, html[data-script="Deva"] body * { letter-spacing: normal !important; }
-html[data-script="Deva"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
+/* Indic and Ethiopic scripts: letter-spacing pulls vowel signs and conjuncts apart; their marks need taller lines. */
+html:is([data-script="Deva"], [data-script="Beng"], [data-script="Guru"], [data-script="Gujr"], [data-script="Orya"], [data-script="Taml"], [data-script="Telu"], [data-script="Knda"], [data-script="Mlym"], [data-script="Ethi"]) body, html:is([data-script="Deva"], [data-script="Beng"], [data-script="Guru"], [data-script="Gujr"], [data-script="Orya"], [data-script="Taml"], [data-script="Telu"], [data-script="Knda"], [data-script="Mlym"], [data-script="Ethi"]) body * { letter-spacing: normal !important; }
+html:is([data-script="Deva"], [data-script="Beng"], [data-script="Guru"], [data-script="Gujr"], [data-script="Orya"], [data-script="Taml"], [data-script="Telu"], [data-script="Knda"], [data-script="Mlym"], [data-script="Ethi"]) :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
 /*
  * Han (Chinese): one code point has different shapes in Chinese and Japanese (Han unification), and the shared
  * fallback lists Japanese fonts first, so Chinese text was drawn in Japanese glyph forms and switched font inside a

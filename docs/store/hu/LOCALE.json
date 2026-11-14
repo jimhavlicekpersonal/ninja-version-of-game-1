@@ -1,0 +1,20 @@
+{
+  "language": "hu",
+  "iosFriendList": "A Kagemura megmutatja, hogy Game Center-barátaid közül ki játszik még, így a játékban is felveheted őket barátnak.",
+  "legalUnset": "még nincs közzétéve",
+  "accountFailure": "A kérést nem sikerült elküldeni. Ellenőrizd az adataidat és a kapcsolatot, majd próbáld újra.",
+  "storekit": {
+    "premiumPass": "Szezontekercs (prémium)",
+    "jade": "{n} Jáde",
+    "stipend": "{payments} napi kifizetés, egyenként {jade} Jáde",
+    "seasonTrack": "A mostani szezon prémium sávja",
+    "short": {
+      "starter_pack": "Jáde és nyersanyagok új klánvezéreknek",
+      "builder_pack": "Jáde egy újabb Mester felfogadására, plusz nyersanyagok",
+      "war_prep_pack": "Élelem és Jáde a Szövetségi háborúhoz",
+      "rebuild_pack": "Jáde és nyersanyagok az újjáépítéshez",
+      "keep_pack": "Nyersanyagok és Jáde az új Várad ünneplésére"
+    },
+    "displayNames": {}
+  }
+}

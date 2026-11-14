@@ -16,9 +16,39 @@ import koreanPages from '../locales/compiled/pages-ko.json';
 import thaiPages from '../locales/compiled/pages-th.json';
 import traditionalChinesePages from '../locales/compiled/pages-zh-Hant.json';
 import vietnamesePages from '../locales/compiled/pages-vi.json';
+import indonesianPages from '../locales/compiled/pages-id.json';
+import malayPages from '../locales/compiled/pages-ms.json';
+import turkishPages from '../locales/compiled/pages-tr.json';
+import russianPages from '../locales/compiled/pages-ru.json';
+import ukrainianPages from '../locales/compiled/pages-uk.json';
+import polishPages from '../locales/compiled/pages-pl.json';
+import czechPages from '../locales/compiled/pages-cs.json';
+import slovakPages from '../locales/compiled/pages-sk.json';
+import slovenianPages from '../locales/compiled/pages-sl.json';
+import croatianPages from '../locales/compiled/pages-hr.json';
+import hungarianPages from '../locales/compiled/pages-hu.json';
+import finnishPages from '../locales/compiled/pages-fi.json';
+import greekPages from '../locales/compiled/pages-el.json';
+import hebrewPages from '../locales/compiled/pages-he.json';
+import urduPages from '../locales/compiled/pages-ur.json';
+import banglaPages from '../locales/compiled/pages-bn.json';
+import odiaPages from '../locales/compiled/pages-or.json';
+import punjabiPages from '../locales/compiled/pages-pa.json';
+import marathiPages from '../locales/compiled/pages-mr.json';
+import gujaratiPages from '../locales/compiled/pages-gu.json';
+import kannadaPages from '../locales/compiled/pages-kn.json';
+import tamilPages from '../locales/compiled/pages-ta.json';
+import teluguPages from '../locales/compiled/pages-te.json';
+import malayalamPages from '../locales/compiled/pages-ml.json';
+import swahiliPages from '../locales/compiled/pages-sw.json';
+import hausaPages from '../locales/compiled/pages-ha.json';
+import yorubaPages from '../locales/compiled/pages-yo.json';
+import igboPages from '../locales/compiled/pages-ig.json';
+import zuluPages from '../locales/compiled/pages-zu.json';
+import amharicPages from '../locales/compiled/pages-am.json';
 
 /** Completed page translations (tools/i18n/pages.mjs); every other locale gets English. */
-const translatedPages: Record<string, { account: string }> = { es: spanishPages, hi: hindiPages, pt: portuguesePages, de: germanPages, fr: frenchPages, it: italianPages, 'zh-Hans': chinesePages, ro: romanianPages, ca: catalanPages, ja: japanesePages, nl: dutchPages, sv: swedishPages, da: danishPages, nb: norwegianPages, ko: koreanPages, th: thaiPages, 'zh-Hant': traditionalChinesePages, vi: vietnamesePages };
+const translatedPages: Record<string, { account: string }> = { es: spanishPages, hi: hindiPages, pt: portuguesePages, de: germanPages, fr: frenchPages, it: italianPages, 'zh-Hans': chinesePages, ro: romanianPages, ca: catalanPages, ja: japanesePages, nl: dutchPages, sv: swedishPages, da: danishPages, nb: norwegianPages, ko: koreanPages, th: thaiPages, 'zh-Hant': traditionalChinesePages, vi: vietnamesePages, id: indonesianPages, ms: malayPages, tr: turkishPages, ru: russianPages, uk: ukrainianPages, pl: polishPages, cs: czechPages, sk: slovakPages, sl: slovenianPages, hr: croatianPages, hu: hungarianPages, fi: finnishPages, el: greekPages, he: hebrewPages, ur: urduPages, bn: banglaPages, or: odiaPages, pa: punjabiPages, mr: marathiPages, gu: gujaratiPages, kn: kannadaPages, ta: tamilPages, te: teluguPages, ml: malayalamPages, sw: swahiliPages, ha: hausaPages, yo: yorubaPages, ig: igboPages, zu: zuluPages, am: amharicPages };
 /**
  * The web account-deletion page (roadmap step 14), served by the API server at
  * GET /account/delete. Google Play asks for a web link where players can ask

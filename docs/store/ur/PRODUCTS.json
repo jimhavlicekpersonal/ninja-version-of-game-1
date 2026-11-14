@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ur",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "چٹکی بھر یشب",
+      "description": "45 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "یشب کی تھیلی",
+      "description": "100 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "یشب کا تھیلا",
+      "description": "280 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "یشب کا ڈبا",
+      "description": "600 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "یشب کا صندوق",
+      "description": "1300 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "یشب کی تجوری",
+      "description": "3500 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "اژدہے کا یشب خزانہ",
+      "description": "7500 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "پریمیم سیزن طومار",
+      "description": "اس سیزن کا پریمیم راستہ",
+      "locale": "ur"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "ابتدائی پیک",
+      "description": "نئے قبیلوں کے لیے یشب اور وسائل",
+      "locale": "ur"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "کاریگر کا بنڈل",
+      "description": "ایک اور کاریگر رکھنے کے لیے یشب، ساتھ وسائل بھی",
+      "locale": "ur"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "جنگی سامان",
+      "description": "اتحادی جنگ کے لیے رسد اور یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "تعمیرِ نو کٹ",
+      "description": "دوبارہ تعمیر کے لیے یشب اور وسائل",
+      "locale": "ur"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "قبیلے کا وظیفہ",
+      "description": "روزانہ ادائیگیاں: 30، ہر ادائیگی میں 12 یشب",
+      "locale": "ur"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "قلعے کا جشن",
+      "description": "نئے قلعے کی خوشی میں وسائل اور یشب",
+      "locale": "ur"
+    }
+  ]
+}

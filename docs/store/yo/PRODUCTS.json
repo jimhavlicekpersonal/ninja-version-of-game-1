@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "yo",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Jéèdì Díẹ̀",
+      "description": "Jéèdì 45",
+      "locale": "yo"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Àpò Kékeré Jéèdì",
+      "description": "Jéèdì 100",
+      "locale": "yo"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Àpò Jéèdì",
+      "description": "Jéèdì 280",
+      "locale": "yo"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Àpótí Jéèdì",
+      "description": "Jéèdì 600",
+      "locale": "yo"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Àpótí Ńlá Jéèdì",
+      "description": "Jéèdì 1300",
+      "locale": "yo"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Ilé Ìṣúra Jéèdì",
+      "description": "Jéèdì 3500",
+      "locale": "yo"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Ìṣúra Dírágónì Jéèdì",
+      "description": "Jéèdì 7500",
+      "locale": "yo"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Ìwé-àkájọ Àsìkò Àkànṣe",
+      "description": "Ọ̀nà ẹ̀bùn àkànṣe ti àsìkò yìí",
+      "locale": "yo"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Àpò Ìbẹ̀rẹ̀",
+      "description": "Jéèdì àti ohun-ìní fún àwọn aṣáájú tuntun",
+      "locale": "yo"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Àpò Oníṣẹ́-ọnà",
+      "description": "Jéèdì láti gba Oníṣẹ́-ọnà mìíràn, pẹ̀lú ohun-ìní",
+      "locale": "yo"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Ìpèsè Ogun",
+      "description": "Oúnjẹ àti Jéèdì fún Ogun Àjọṣepọ̀",
+      "locale": "yo"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Ohun Àtúnkọ́",
+      "description": "Jéèdì àti ohun-ìní láti tún kọ́lé",
+      "locale": "yo"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Owó-oṣù Ìdílé",
+      "description": "Ìsanwó ojoojúmọ́: 30, ọ̀kọ̀ọ̀kan Jéèdì 12",
+      "locale": "yo"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Ayẹyẹ Ilé Olódi",
+      "description": "Ohun-ìní àti Jéèdì fún ayẹyẹ Ilé Olódi tuntun rẹ",
+      "locale": "yo"
+    }
+  ]
+}

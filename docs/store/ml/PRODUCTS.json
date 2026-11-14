@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ml",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "ഒരു നുള്ള് ജേഡ്",
+      "description": "45 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "ജേഡ് സഞ്ചി",
+      "description": "100 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "ജേഡ് സഞ്ചിക്കെട്ട്",
+      "description": "280 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "ജേഡ് പെട്ടി",
+      "description": "600 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "ജേഡ് നിധിപ്പെട്ടി",
+      "description": "1300 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "ജേഡ് നിലവറ",
+      "description": "3500 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ജേഡ് വ്യാളിനിധി",
+      "description": "7500 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "പ്രീമിയം സീസൺ ചുരുൾ",
+      "description": "ഈ സീസണിലെ പ്രീമിയം പാത",
+      "locale": "ml"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "തുടക്ക പായ്ക്ക്",
+      "description": "പുതിയ നേതാക്കൾക്ക് ജേഡും വിഭവങ്ങളും",
+      "locale": "ml"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "ശില്പിയുടെ കെട്ട്",
+      "description": "മറ്റൊരു ശില്പിയെ നിയമിക്കാൻ ജേഡ്, കൂടെ വിഭവങ്ങൾ",
+      "locale": "ml"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "യുദ്ധ സാമഗ്രികൾ",
+      "description": "സഖ്യയുദ്ധത്തിന് ധാന്യവും ജേഡും",
+      "locale": "ml"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "പുനർനിർമ്മാണ കിറ്റ്",
+      "description": "പുനർനിർമ്മിക്കാൻ ജേഡും വിഭവങ്ങളും",
+      "locale": "ml"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "കുല വേതനം",
+      "description": "ദിവസേനയുള്ള തവണകൾ: 30 × 12 ജേഡ്",
+      "locale": "ml"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "കോട്ട ആഘോഷം",
+      "description": "പുതിയ കോട്ട ആഘോഷിക്കാൻ വിഭവങ്ങളും ജേഡും",
+      "locale": "ml"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "pl",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Szczypta Jadeitu",
+      "description": "Jadeit: 45",
+      "locale": "pl"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Sakiewka Jadeitu",
+      "description": "Jadeit: 100",
+      "locale": "pl"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Worek Jadeitu",
+      "description": "Jadeit: 280",
+      "locale": "pl"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Szkatuła Jadeitu",
+      "description": "Jadeit: 600",
+      "locale": "pl"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Skrzynia Jadeitu",
+      "description": "Jadeit: 1300",
+      "locale": "pl"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Skarbiec Jadeitu",
+      "description": "Jadeit: 3500",
+      "locale": "pl"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Smoczy Skarb Jadeitu",
+      "description": "Jadeit: 7500",
+      "locale": "pl"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Zwój Sezonu premium",
+      "description": "Ścieżka premium tego sezonu",
+      "locale": "pl"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Pakiet Startowy",
+      "description": "Jadeit i zasoby na start nowego klanu",
+      "locale": "pl"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Pakiet Rzemieślnika",
+      "description": "Jadeit na kolejnego Rzemieślnika i zasoby",
+      "locale": "pl"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Zapasy Wojenne",
+      "description": "Prowiant i Jadeit na Wojnę Sojuszy",
+      "locale": "pl"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Zestaw Odbudowy",
+      "description": "Jadeit i zasoby na odbudowę",
+      "locale": "pl"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Stypendium Klanu",
+      "description": "Codzienne wypłaty Jadeitu: 30 × 12",
+      "locale": "pl"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Święto Twierdzy",
+      "description": "Zasoby i Jadeit na cześć nowego poziomu Twierdzy",
+      "locale": "pl"
+    }
+  ]
+}

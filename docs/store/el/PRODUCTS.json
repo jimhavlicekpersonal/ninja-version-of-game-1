@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "el",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Πρέζα Νεφρίτη",
+      "description": "45 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Πουγκί Νεφρίτη",
+      "description": "100 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Σακούλι Νεφρίτη",
+      "description": "280 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Κουτί Νεφρίτη",
+      "description": "600 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Σεντούκι Νεφρίτη",
+      "description": "1300 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Θησαυροφυλάκιο Νεφρίτη",
+      "description": "3500 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Θησαυρός Δράκου από Νεφρίτη",
+      "description": "7500 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Premium Πάπυρος Σεζόν",
+      "description": "Η premium διαδρομή αυτής της σεζόν",
+      "locale": "el"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Πακέτο Εκκίνησης",
+      "description": "Νεφρίτης και πόροι για νέες φατρίες",
+      "locale": "el"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Πακέτο Τεχνίτη",
+      "description": "Νεφρίτης για άλλον έναν Τεχνίτη, και πόροι",
+      "locale": "el"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Εφόδια Πολέμου",
+      "description": "Προμήθειες και Νεφρίτης για τον Πόλεμο Συμμαχιών",
+      "locale": "el"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Σετ Ανοικοδόμησης",
+      "description": "Νεφρίτης και πόροι για ανοικοδόμηση",
+      "locale": "el"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Επίδομα Φατρίας",
+      "description": "Ημερήσιες πληρωμές: 30 × 12 Νεφρίτη",
+      "locale": "el"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Γιορτή του Ακρόπυργου",
+      "description": "Πόροι και Νεφρίτης για τον νέο σου Ακρόπυργο",
+      "locale": "el"
+    }
+  ]
+}

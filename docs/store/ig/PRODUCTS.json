@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ig",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Ntakịrị Jed",
+      "description": "Jed 45",
+      "locale": "ig"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Obere Akpa Jed",
+      "description": "Jed 100",
+      "locale": "ig"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Akpa Jed",
+      "description": "Jed 280",
+      "locale": "ig"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Igbe Jed",
+      "description": "Jed 600",
+      "locale": "ig"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Igbe Akụ Jed",
+      "description": "Jed 1300",
+      "locale": "ig"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Ọba Jed",
+      "description": "Jed 3500",
+      "locale": "ig"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Akụ Dragọn nke Jed",
+      "description": "Jed 7500",
+      "locale": "ig"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Mpịakọta Oge pụrụ iche",
+      "description": "Ụzọ pụrụ iche nke oge a",
+      "locale": "ig"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Ngwugwu Mmalite",
+      "description": "Jed na akụ maka ndị ndú ọhụrụ",
+      "locale": "ig"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Ngwugwu Onye Ọrụaka",
+      "description": "Jed iji were onye ọrụaka ọzọ, na akụ",
+      "locale": "ig"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Ngwa Agha",
+      "description": "Nri na Jed maka Agha Njikọ",
+      "locale": "ig"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Ngwa Mwughari",
+      "description": "Jed na akụ iji wughachi",
+      "locale": "ig"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Ụgwọ Agbụrụ",
+      "description": "Ụgwọ kwa ụbọchị: ugboro 30, Jed 12 n'otu n'otu",
+      "locale": "ig"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Mmemme Obi",
+      "description": "Akụ na Jed iji mee mmemme Obi ọhụrụ gị",
+      "locale": "ig"
+    }
+  ]
+}

@@ -113,7 +113,7 @@ Translate a term the same way every time it appears. When you choose a translati
 ### Slavic languages (Russian, Ukrainian, Polish, Czech, Slovak, Slovenian, Croatian)
 
 - Informal *you* (ты, ти, ty, ty, ty, ti, ti). Past tenses and adjectives agree in gender, so never write a past-tense verb or adjective whose subject is the player, another player or a `{name}`: use the present tense, an impersonal form or a noun (Russian `Победа: {name}`, not `{name} победил`).
-- Plurals: Russian, Ukrainian, Polish and Croatian use `one`, `few`, `many` and `other`; Czech and Slovak use `one`, `few`, `many` (fractions) and `other`; Slovenian uses `one`, `two`, `few` and `other`. Write every category `Intl.PluralRules` gives your code.
+- Plurals: Russian, Ukrainian and Polish use `one`, `few`, `many` and `other`; Croatian uses `one`, `few` and `other`; Czech and Slovak use `one`, `few`, `many` (fractions) and `other`; Slovenian uses `one`, `two`, `few` and `other`. Write every category `Intl.PluralRules` gives your code.
 - Case endings cannot attach to a placeholder; put the placeholder after a colon or in apposition to a declined noun (`здание {building}`).
 - Ukrainian is translated from English, never from Russian; the check fails on ы э ъ ё in `uk` and on і ї є ґ in `ru`.
 

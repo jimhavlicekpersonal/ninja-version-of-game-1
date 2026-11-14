@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "kn",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "ಚಿಟಿಕೆ ಜೇಡ್",
+      "description": "45 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "ಜೇಡ್ ಚೀಲ",
+      "description": "100 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "ಜೇಡ್ ಮೂಟೆ",
+      "description": "280 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "ಜೇಡ್ ಡಬ್ಬಿ",
+      "description": "600 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "ಜೇಡ್ ಪೆಟ್ಟಿಗೆ",
+      "description": "1300 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "ಜೇಡ್ ಕೋಶ",
+      "description": "3500 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ಡ್ರ್ಯಾಗನ್‌ನ ಜೇಡ್ ನಿಧಿ",
+      "description": "7500 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "ಪ್ರೀಮಿಯಂ ಸೀಸನ್ ಸುರುಳಿ",
+      "description": "ಈ ಸೀಸನ್ನಿನ ಪ್ರೀಮಿಯಂ ಹಾದಿ",
+      "locale": "kn"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "ಆರಂಭಿಕ ಪ್ಯಾಕ್",
+      "description": "ಹೊಸ ಕುಲ ನಾಯಕರಿಗೆ ಜೇಡ್ ಮತ್ತು ಸಂಪನ್ಮೂಲಗಳು",
+      "locale": "kn"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "ಕುಶಲಕರ್ಮಿಯ ಕಟ್ಟು",
+      "description": "ಇನ್ನೊಬ್ಬ ಕುಶಲಕರ್ಮಿಯ ನೇಮಕಕ್ಕೆ ಜೇಡ್, ಜೊತೆಗೆ ಸಂಪನ್ಮೂಲಗಳು",
+      "locale": "kn"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "ಯುದ್ಧ ಸಾಮಗ್ರಿ",
+      "description": "ಮೈತ್ರಿ ಯುದ್ಧಕ್ಕೆ ಪಡಿತರ ಮತ್ತು ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "ಮರುನಿರ್ಮಾಣ ಕಿಟ್",
+      "description": "ಮರುನಿರ್ಮಾಣಕ್ಕೆ ಜೇಡ್ ಮತ್ತು ಸಂಪನ್ಮೂಲಗಳು",
+      "locale": "kn"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "ಕುಲದ ಭತ್ಯೆ",
+      "description": "ದೈನಂದಿನ ಪಾವತಿಗಳು: 30, ಪ್ರತಿಯೊಂದೂ 12 ಜೇಡ್",
+      "locale": "kn"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "ಕೋಟೆಯ ಸಂಭ್ರಮ",
+      "description": "ಹೊಸ ಕೋಟೆಯ ಸಂಭ್ರಮಕ್ಕೆ ಸಂಪನ್ಮೂಲಗಳು ಮತ್ತು ಜೇಡ್",
+      "locale": "kn"
+    }
+  ]
+}

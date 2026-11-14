@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "sl",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Ščepec žada",
+      "description": "45 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Mošnjiček žada",
+      "description": "100 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Vreča žada",
+      "description": "280 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Škatla žada",
+      "description": "600 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Skrinja žada",
+      "description": "1300 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Trezor žada",
+      "description": "3500 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Zmajev zaklad žada",
+      "description": "7500 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Sezonski zvitek: premijska pot",
+      "description": "Premijska pot te sezone",
+      "locale": "sl"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Začetni paket",
+      "description": "Žad in viri za nove vodje klanov",
+      "locale": "sl"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Mojstrov sveženj",
+      "description": "Žad za še enega vaškega mojstra in viri",
+      "locale": "sl"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Vojne zaloge",
+      "description": "Živež in žad za vojno zavezništev",
+      "locale": "sl"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Komplet za obnovo",
+      "description": "Žad in viri za obnovo",
+      "locale": "sl"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klanska renta",
+      "description": "Dnevna plačila (30) po 12 žada",
+      "locale": "sl"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Praznovanje trdnjave",
+      "description": "Viri in žad za praznovanje nove trdnjave",
+      "locale": "sl"
+    }
+  ]
+}

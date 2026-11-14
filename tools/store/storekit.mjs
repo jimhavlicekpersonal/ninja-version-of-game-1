@@ -67,6 +67,12 @@ const viData = read('locales/vi/data.json');
 const shortVietnamese = {starter_pack: 'Ngọc Bích và tài nguyên cho thủ lĩnh mới', builder_pack: 'Ngọc Bích để thuê thêm Thợ Làng, kèm tài nguyên', war_prep_pack: 'Lương Thực và Ngọc Bích cho Liên Minh Chiến', rebuild_pack: 'Ngọc Bích và tài nguyên để tái thiết', keep_pack: 'Tài nguyên và Ngọc Bích mừng Thành mới'};
 const vietnamese = key => viData[key]?.text || '';
 // Never cut Hindi, German, French, Italian, Chinese, Romanian, Catalan, Japanese, Dutch, Swedish, Danish, Norwegian, Korean, Thai, Traditional Chinese or Vietnamese to the store limits: slicing can split a Devanagari cluster (leaving a vowel sign or virama dangling), a compound, a Chinese word or a Thai syllable (a vowel or tone mark cut from its consonant), so overlong text fails here instead.
+// Later languages keep their store text in docs/store/<code>/LOCALE.json (its "storekit" part) and their names in
+// locales/<code>/data.json. Only languages App Store Connect offers as a localization are written here; the
+// others still get Google Play copy in docs/store/<code>/. Each value is the StoreKit locale.
+const APP_STORE_LOCALES = {id: 'id', ms: 'ms', tr: 'tr', ru: 'ru', uk: 'uk', pl: 'pl', cs: 'cs', sk: 'sk', hr: 'hr', hu: 'hu', fi: 'fi', el: 'el', he: 'he'};
+const later = Object.entries(APP_STORE_LOCALES).map(([code, locale]) => ({code, locale, data: read(`locales/${code}/data.json`), ...read(`docs/store/${code}/LOCALE.json`).storekit}));
+const fill = (template, values) => template.replace(/\{(\w+)\}/g, (_, k) => String(values[k]));
 const clip = (text, max, language = 'Hindi') => { if (text.length > max) throw new Error(`${language} store text is over ${max} characters: ${text}`); return text; };
 const old = JSON.parse(readFileSync(path, 'utf8'));
 
@@ -193,6 +199,16 @@ const products = Object.entries(store.storeProductIds).map(([gameId, storeId], i
         description: clip(pack ? `${pack.moonstones} Ngọc Bích` : offer ? (shortVietnamese[offer.id] || vietnamese(`offers.rules.${offer.id}.description`)) : stipend ? `${stipend.payments} lần nhận mỗi ngày, mỗi lần ${stipend.jadePerPayment} Ngọc Bích` : 'Nhánh cao cấp của mùa này', 55, 'Vietnamese'),
         locale: 'vi',
       },
+      // Later languages, from docs/store/<code>/LOCALE.json (never cut: overlong text fails here).
+      ...later.map(({code, locale, data, premiumPass, jade, stipend: perDay, seasonTrack, short, displayNames = {}}) => {
+        const text = key => displayNames[key] || data[key]?.text || '';
+        const key = pack ? `store.packs.${gameId}.name` : offer ? `offers.rules.${offer.id}.title` : stipend ? 'store.stipend.name' : null;
+        return {
+          displayName: clip(key ? text(key) : isPass ? premiumPass : name, 30, code),
+          description: clip(pack ? fill(jade, {n: pack.moonstones}) : offer ? (short[offer.id] || data[`offers.rules.${offer.id}.description`]?.text || '') : stipend ? fill(perDay, {payments: stipend.payments, jade: stipend.jadePerPayment}) : seasonTrack, 55, code),
+          locale,
+        };
+      }),
     ],
     productID: storeId,
     referenceName: name,
