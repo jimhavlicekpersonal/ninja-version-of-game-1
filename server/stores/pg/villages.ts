@@ -20,8 +20,16 @@ async function putParts(db: Pick<import('pg').PoolClient, 'query'>, playerId: st
 
 export class PgVillages extends PgBase implements VillageStore {
   async getVillage(playerId: string, opts: { forUpdate?: boolean } = {}): Promise<VillageRow | null> {
-    // A row lock only means something inside a transaction.
-    const r = await this.rows(`${SELECT_VILLAGE}${opts.forUpdate && this.client ? ' for update of v' : ''}`, [playerId]);
+    // A row lock only means something inside a transaction. Third verification fixes 2026-11-14: the lock is taken by
+    // its own statement first, then the row and its parts are read by a second one. Under READ COMMITTED a single
+    // `select … (parts subquery) … for update of v` that waited for the lock re-read the new villages row but kept
+    // the part rows of its original snapshot, so a save wrote stale buildings back (a lost upgrade). The second
+    // statement takes a new snapshot after the lock, so it sees the parts the other transaction committed.
+    if (opts.forUpdate && this.client) {
+      const locked = await this.rows('select 1 from villages where player_id = $1 for update', [playerId]);
+      if (!locked.length) return null;
+    }
+    const r = await this.rows(SELECT_VILLAGE, [playerId]);
     return r[0] ? toVillage(r[0]) : null;
   }
 
