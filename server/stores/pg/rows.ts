@@ -1,6 +1,7 @@
 /** Row mappers and shared statements of the Postgres adapter (tables in server/migrations/). Bases and battle records are JSONB. */
 
 import type { Player, Ticket, AttackRecord, Grove, GroveSummaryRow, GroveMember, ChatRow, Report, Block, TroopRequest, Donation, RaidPairing, RaidAttack, RaidClaim, VillageRow, LedgerEntry, CommandLogRow, PurchaseRow, DeletionRequest } from '../types';
+import { joinVillageFile } from './villageParts';
 
 export type Row = Record<string, unknown>;
 export const num = (v: unknown) => Number(v ?? 0);
@@ -128,7 +129,8 @@ export const toReport = (r: Row): Report => ({
 });
 export const toVillage = (r: Row): VillageRow => ({
   playerId: String(r.player_id),
-  file: r.file,
+  // Backend A17: a file written in parts is joined with its `village_parts` rows (selected as `parts`).
+  file: joinVillageFile(r.file, r.parts),
   revision: num(r.revision),
   seq: num(r.seq),
   at: num(r.at),

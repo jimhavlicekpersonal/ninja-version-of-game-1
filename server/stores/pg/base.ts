@@ -3,11 +3,18 @@ import type pg from 'pg';
 import type { Repo } from '../ports';
 import type { Row } from './rows';
 
+/** How the adapter writes (server/config.ts reads them from the environment). */
+export interface PgOptions {
+  /** Backend A17: write server-held villages in parts (VILLAGE_PARTS=1; villageParts.ts, migration 0038). */
+  villageParts?: boolean;
+}
+
 export abstract class PgBase {
   /** `client`: a connection inside a transaction (see `transaction`); otherwise queries use the pool. */
   constructor(
     protected readonly pool: pg.Pool,
     protected readonly client: pg.PoolClient | null = null,
+    protected readonly options: PgOptions = {},
   ) {}
 
   protected get db(): pg.Pool | pg.PoolClient {

@@ -3,22 +3,42 @@ import type { VillageRow, LedgerEntry, CommandLogRow } from '../types';
 import type { VillageStore } from '../ports';
 import { num, toVillage, toLedger, toCommand } from './rows';
 import { PgBase, dbOf } from './base';
+import { splitVillageFile, type VillagePart } from './villageParts';
+
+/** A village row with its part rows (backend A17), as `toVillage` reads it. */
+const SELECT_VILLAGE = `select v.*, (select jsonb_object_agg(p.part, p.data) from village_parts p where p.player_id = v.player_id) as parts from villages v where v.player_id = $1`;
+
+/** Write the parts whose content changed: an unchanged hash leaves its row as it is (no new row version). */
+async function putParts(db: Pick<import('pg').PoolClient, 'query'>, playerId: string, parts: VillagePart[]): Promise<void> {
+  await db.query(
+    `insert into village_parts (player_id, part, hash, data)
+     select $1, p, h, d::jsonb from unnest($2::text[], $3::text[], $4::text[]) as x(p, h, d)
+     on conflict (player_id, part) do update set hash = excluded.hash, data = excluded.data where village_parts.hash <> excluded.hash`,
+    [playerId, parts.map((p) => p.part), parts.map((p) => p.hash), parts.map((p) => JSON.stringify(p.data))],
+  );
+}
 
 export class PgVillages extends PgBase implements VillageStore {
   async getVillage(playerId: string, opts: { forUpdate?: boolean } = {}): Promise<VillageRow | null> {
     // A row lock only means something inside a transaction.
-    const r = await this.rows(`select * from villages where player_id = $1${opts.forUpdate && this.client ? ' for update' : ''}`, [playerId]);
+    const r = await this.rows(`${SELECT_VILLAGE}${opts.forUpdate && this.client ? ' for update of v' : ''}`, [playerId]);
     return r[0] ? toVillage(r[0]) : null;
   }
 
   async createVillage(v: VillageRow): Promise<boolean> {
-    const r = await this.db.query(
-      `insert into villages (player_id, file, revision, seq, at, state_hash, created_at, updated_at)
-       select $1, $2, $3, $4, $5, $6, $7, $8 where exists (select 1 from players where id = $1)
-       on conflict (player_id) do nothing`,
-      [v.playerId, JSON.stringify(v.file), v.revision, v.seq, v.at, v.stateHash, v.createdAt, v.updatedAt],
-    );
-    return (r.rowCount ?? 0) > 0;
+    const split = this.options.villageParts ? splitVillageFile(v.file) : null;
+    return this.repo.transaction(async (tx) => {
+      const db = dbOf(tx);
+      const r = await db.query(
+        `insert into villages (player_id, file, revision, seq, at, state_hash, created_at, updated_at)
+         select $1, $2, $3, $4, $5, $6, $7, $8 where exists (select 1 from players where id = $1)
+         on conflict (player_id) do nothing`,
+        [v.playerId, JSON.stringify(split ? split.rest : v.file), v.revision, v.seq, v.at, v.stateHash, v.createdAt, v.updatedAt],
+      );
+      if ((r.rowCount ?? 0) === 0) return false;
+      if (split) await putParts(db, v.playerId, split.parts);
+      return true;
+    });
   }
 
   async saveVillage(v: VillageRow, expectedRevision: number, ledger: LedgerEntry[], commands: CommandLogRow[]): Promise<boolean> {
@@ -26,11 +46,16 @@ export class PgVillages extends PgBase implements VillageStore {
     try {
       return await this.repo.transaction(async (tx) => {
         const db = dbOf(tx);
+        // Backend A17: in parts (VILLAGE_PARTS=1), only the parts that changed are written again; written
+        // whole, any parts from before are dropped (switching the option off converges at the next batch).
+        const split = this.options.villageParts ? splitVillageFile(v.file) : null;
         const r = await db.query(
           `update villages set file = $2, revision = $3, seq = $4, at = $5, state_hash = $6, updated_at = $7, device_seqs = coalesce($9::jsonb, device_seqs) where player_id = $1 and revision = $8`,
-          [v.playerId, JSON.stringify(v.file), v.revision, v.seq, v.at, v.stateHash, v.updatedAt, expectedRevision, v.deviceSeqs ? JSON.stringify(v.deviceSeqs) : null],
+          [v.playerId, JSON.stringify(split ? split.rest : v.file), v.revision, v.seq, v.at, v.stateHash, v.updatedAt, expectedRevision, v.deviceSeqs ? JSON.stringify(v.deviceSeqs) : null],
         );
         if ((r.rowCount ?? 0) === 0) throw stale;
+        if (split) await putParts(db, v.playerId, split.parts);
+        else await db.query('delete from village_parts where player_id = $1', [v.playerId]);
         // Backend A17: one statement for all the ledger lines and one for all the log lines of a batch
         // (they were one round trip per line: up to MAX_BATCH × resources inserts per command batch).
         if (ledger.length) {

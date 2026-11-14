@@ -24,7 +24,9 @@ export async function freshPgRepo(): Promise<PgRepo> {
   await admin.end();
   const pool = new pg.Pool({ connectionString: url, options: `-c search_path=${schema}`, max: 4 });
   pools.push(pool);
-  const repo = new PgRepo(pool);
+  // Villages are written in parts (VILLAGE_PARTS=1, backend A17) unless TEST_VILLAGE_PARTS=0, so the
+  // Postgres suites cover the new form; village-writes.test.ts covers both forms and switching between them.
+  const repo = new PgRepo(pool, null, { villageParts: process.env.TEST_VILLAGE_PARTS !== '0' });
   await repo.migrate();
   return repo;
 }

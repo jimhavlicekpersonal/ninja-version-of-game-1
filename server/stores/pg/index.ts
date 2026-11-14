@@ -1,5 +1,5 @@
 /** Postgres storage adapter for the Repo port: its stores composed into one `Repo`. */
-import { pgPoolSettings, pgTls, type PgPoolSettings } from '../../config';
+import { pgOptions, pgPoolSettings, pgTls, type PgPoolSettings } from '../../config';
 import pg from 'pg';
 import { migrationStatus, runMigrations, type MigrationStatus } from '../../migrate';
 import { migrations } from '../../migrations';
@@ -45,7 +45,7 @@ export class PgRepo extends PgBase implements Repo {
     const client = await this.pool.connect();
     try {
       await client.query('begin');
-      const out = await fn(new PgRepo(this.pool, client));
+      const out = await fn(new PgRepo(this.pool, client, this.options));
       await client.query('commit');
       return out;
     } catch (e) {
@@ -64,7 +64,7 @@ export class PgRepo extends PgBase implements Repo {
    */
   static fromUrl(url: string, settings: PgPoolSettings = pgPoolSettings(process.env, { migrations: true }), env: Record<string, string | undefined> = process.env): PgRepo {
     const tls = pgTls(url, env);
-    return new PgRepo(new pg.Pool({ ...settings, connectionString: tls.connectionString, ssl: tls.ssl || undefined }));
+    return new PgRepo(new pg.Pool({ ...settings, connectionString: tls.connectionString, ssl: tls.ssl || undefined }), null, pgOptions(env));
   }
 
   /** Connections in the pool (for the tk_db_pool_connections gauge, step 47). */

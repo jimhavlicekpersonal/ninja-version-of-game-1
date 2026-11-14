@@ -7,6 +7,7 @@ import m0034 from './0034_match_trophies_index.sql?raw';
 import m0035 from './0035_complaints.sql?raw';
 import m0036 from './0036_token_rotations.sql?raw';
 import m0037 from './0037_notice_parts.sql?raw';
+import m0038 from './0038_village_parts.sql?raw';
 /**
  * Every migration, bundled into the server build (no files are read at run
  * time). Add each new file here: an explicit list, because a glob import would
@@ -81,4 +82,5 @@ export const migrations = loadMigrations({
   '0035_complaints.sql': m0035,
   '0036_token_rotations.sql': m0036,
   '0037_notice_parts.sql': m0037,
+  '0038_village_parts.sql': m0038,
 });
