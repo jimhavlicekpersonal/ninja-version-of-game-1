@@ -21,7 +21,7 @@ Kiswahili sanifu, cha kirafiki. Mchezaji anaitwa "wewe" (umoja: -ako, u-/ume-). 
 | Infiltration Points | Vituo vya Kupenya (kituo cha kupenya) |
 | Raid / attack / raider | uvamizi, vamia / shambulio, shambulia / mvamizi |
 | Warrior / Defense / Shield | mpiganaji (wapiganaji) / ulinzi, jengo la ulinzi / ngao |
-| Honor / Power / League | heshima / nguvu / Ligi: Mianzi, Mwerezi, Chuma, Obsidiani, Jade, Dhoruba, Kivuli, Kage |
+| Honor / Power / League | heshima / nguvu / Ligi: Mianzi, Mwerezi, Chuma, Obsidiani, Makaa (Ember), Dhoruba, Kivuli, Kage |
 | Daily chest / streak / skip | kasha la kila siku / mfululizo / msamaha |
 | Clan Stipend | Posho ya Ukoo |
 | Looks | mwonekano |
