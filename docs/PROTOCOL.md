@@ -344,11 +344,13 @@ Types in `src/backend/net/growth.ts` and `eventSchedule.ts` (re-exported from `p
 | | request | response |
 |---|---|---|
 | `GET /v1/referrals` | | `ReferralView` |
-| `POST /v1/referrals` | `{ code, device? }` | `ReferralView` (`404` no such code, `400` own code, `409` too late, already set, or not allowed) |
-| `POST /v1/referrals/claim` | `{}` | `ReferralView` with `granted` (Jade paid now) |
+| `POST /v1/referrals` | `{ code, device?, install? }` | `ReferralView` (`404` no such code, `400` own code, `403 age_restricted` `referral.adults_only` not an adult, `409` too late, already set, or not allowed) |
+| `POST /v1/referrals/claim` | `{ install? }` (optional body) | `ReferralView` with `granted` (Jade paid now) |
 
 - A new account (within `REFERRAL_WINDOW_DAYS` = 7 of its creation) may enter one inviter's friend code. Refused: an inviter account younger than a day or newer than the recruit, a block either way, and a device in common (`device` or the villages' `device_seqs`). One row per recruit (migration 0038 `referrals`), so one reward pair per recruit.
 - A pair qualifies once the server holds the recruit's village at Keep `REFERRAL_KEEP` (3) or above, with no import still held back (`import_holds`) and no suspension. Each side then collects `REFERRAL_JADE` (20) free Jade once, into the village the server holds (ledger `referral:recruit` / `referral:inviter`; `needsServerVillage` until it has one). The inviter collects at most `REFERRAL_MONTHLY_CAP` (5) per UTC month; the rest waits for the next month. Fixed, never random, never sold. Counts only, never names.
+
+- **Third verification fixes 2026-11-14 (additive):** adults only on both sides: a player whose band is not `adult` (under 18 or not stated) gets `ReferralView.adultsOnly: true`, `canEnterCode: false`, `claimable: 0`, and `POST /v1/referrals` answers `403 age_restricted` (`srv.referral.adults_only`, checked after the code lookup, so an unknown code is still `404`); a minor inviter's code is `409 referral.not_allowed`; a pair pays nothing while either side is not adult. `install` is the game's stable installation id (8-64 of `A-Za-z0-9_-`, `Connection.installId`); the server keeps the ids each account's game sent (`player_installs`, migration 0041) and refuses (at entry) or never qualifies (at claim) a pair that shares one. A claim locks the claiming player and marks each side with a conditional write, so parallel claims pay once and never pass the monthly cap; the cap counts `referral_rewards` (one anonymised row per inviter reward), which a recruit's account deletion does not remove. `PurchaseIntentRequest.install?` is the same id (kept on the intent instead of `device` when sent). Older games send none and keep working.
 
 ### Shared replays (`shared-replays`, G14)
 
@@ -360,6 +362,7 @@ Types in `src/backend/net/growth.ts` and `eventSchedule.ts` (re-exported from `p
 | `DELETE /v1/replays/shared/:code` | | `{ deleted }` (the sharer only) |
 
 - Every share is the player's own choice. The server refuses rules it cannot play (`422`, `replay.rules`), bounds the base (1-400 buildings) and deployments (2,000) and the body (200 KB), re-simulates in the pool and stores its own `result`. The base's name is dropped; the opponent is only `player`, `generated` or `practice` (a base marked `rival`, `power` or `practice` is labelled so whatever the request says); `sharerName` only when an adult asked for it. Under-13 accounts get `403 age_restricted`. 10 shares a day per player (`429`); kept 90 days, deleted with the account (migration 0038 `shared_replays`).
+- **Third verification fixes 2026-11-14:** the daily limit (`SHARED_REPLAYS_PER_DAY`) counts shares made in the last 24 h, deleted ones included (`shared_replay_log`, migration 0041). Only the battle fields are stored and served: `setup` keeps `seed`, `army`, `infiltration`, `levels`, `reinforcements`, `startDamage`, `hero`, `mastery`; the base keeps `hallLevel`, `trophies`, `practice`, `rival`, `trialTier`, `power`, `wallPower` and buildings with `id`, `type`, `level`, `x`, `y`, `loot`, `upgrading`, `temper`; deployments `tick`, `troop`, `x`, `y`; anything else is dropped before the re-simulation. When the sharer has an attack record with the setup's seed (the last 31 days), the server labels the opponent `player` whatever the request says (markers still win) and keeps the defender's id with the share (never served); that defender's base is refused with `409 conflict` `srv.replay.base_private` when they are not an adult or turned "Allow my base in other players' shared replays" off (`GET|PUT /v1/me/replay-privacy`, below), and their shares are removed when they turn it off, state a minor band or delete their account.
 - The web game opens `?replay=<code>` (also a pasted link, `parseShareCode`) without an account, shows what it is (who shared, the opponent's kind, the server's result) and plays it when `replayable(record)`.
 
 ### Statistics (growth 1/3)
@@ -382,6 +385,18 @@ Types in `src/backend/net/compliance.ts` (re-exported from `protocol.ts`); rules
 
 - **App Store `CONSUMPTION_REQUEST`:** answered with `PUT /inApps/v1/transactions/consumption/{transactionId}` (App Store Server API, ES256 JWT) only for a purchase this server credited, whose buyer is an adult with the consent on, while `APPLE_CONSUMPTION_RESPONSE=1`; otherwise ignored (metric `tk_consumption_requests_total{result}`). The body never carries a name, village or chat, `refundPreference` is 0 and `consumptionStatus`/`playTime` are 0 (undeclared).
 - Contract test: `tests/backend/contract/protocol.contract.test.ts` "compliance switches 2026-11-14".
+
+### Third verification fixes (2026-11-14, additive, no protocol bump)
+
+| | request | response |
+|---|---|---|
+| `GET /v1/me/replay-privacy` | — | `ReplayPrivacyView { baseInReplays: boolean }` (false for any band but adult) |
+| `PUT /v1/me/replay-privacy` | `ReplayPrivacyRequest { allowBase: boolean }` | `ReplayPrivacyView`; `allowBase: true` needs the adult band (`403 age_restricted`, `srv.consent.not_adult`); `false` also removes the shares of this player's base |
+
+- Hello feature `replay-privacy`. `ComplianceView` is unchanged (older games compare it whole).
+- `PUT /v1/me/age`: stating `under13` deletes the player's push tokens in every mode; in `offline` mode it also leaves the Alliance and Gang (the notice names nobody), removes the player from the Redis leaderboard, and `match` never offers an under-13 base. A minor band removes the shares of the player's base. Server push never sends to an under-13 band (`tk_push_total{result="age"}`; such tokens are removed).
+- Statistics rollup: only events received at least `LAG_MS` (5 min) ago are rolled, and the watermark never passes `now − LAG_MS`, so a batch committed late with an earlier receipt time is not skipped.
+- Friend invites, purchase intents and shared replays: see their sections above. Contract tests: the growth and compliance cases of `protocol.contract.test.ts` (adults-only view, replay privacy).
 
 ## Server-owned village (beta)
 
