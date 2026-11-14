@@ -1092,10 +1092,6 @@
     "source": "Scout tier {arg1}"
   },
   {
-    "key": "ui.your_purchase_been_delivered_6f88dee143",
-    "source": "Your purchase{arg1} been delivered."
-  },
-  {
     "key": "ui.jade_9ff8af5a0c",
     "source": "{arg1} Jade"
   },

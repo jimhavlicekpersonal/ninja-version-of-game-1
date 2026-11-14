@@ -2420,17 +2420,6 @@
       }
     ]
   },
-  "ui.on_slam_f7aa652317": {
-    "source": " on slam",
-    "group": "ui",
-    "parameters": [],
-    "sources": [
-      {
-        "file": "src/presentation/ui/battleHud.ts",
-        "line": 562
-      }
-    ]
-  },
   "ui.every_building_down_10af907f34": {
     "source": "Every building down",
     "group": "ui",
@@ -12489,33 +12478,6 @@
       {
         "file": "src/main.ts",
         "line": 251
-      }
-    ]
-  },
-  "ui.your_purchase_been_delivered_6f88dee143": {
-    "source": "Your purchase{arg1} been delivered.",
-    "group": "ui",
-    "parameters": [
-      {
-        "name": "arg1",
-        "expression": "delivered === 1 ? ' has' : 's have'"
-      }
-    ],
-    "sources": [
-      {
-        "file": "src/main.ts",
-        "line": 269
-      }
-    ]
-  },
-  "ui.s_have_bced00a61e": {
-    "source": "s have",
-    "group": "ui",
-    "parameters": [],
-    "sources": [
-      {
-        "file": "src/main.ts",
-        "line": 269
       }
     ]
   },
