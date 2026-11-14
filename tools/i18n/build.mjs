@@ -119,7 +119,7 @@ export function buildLanguageAssets({ serverOnly = false } = {}) {
           const name = key && pack[key] ? pack[key] : s.name;
           return { ...s, name, short_name: name, url: '../' + s.url.replace(/^\.\//, ''), icons: (s.icons ?? []).map(i => ({ ...i, src: '../' + i.src })) };
         });
-        writeFileSync(join(ROOT, `public/${lang.code}/manifest.webmanifest`), JSON.stringify({ ...manifest, lang: lang.code, description: pack['boot.pwaDescription'], id: '../', start_url: '../', scope: '../', icons: manifest.icons.map(i => ({ ...i, src: '../' + i.src })), ...(shortcuts.length ? { shortcuts } : {}) }, null, 2) + '\n');
+        writeFileSync(join(ROOT, `public/${lang.code}/manifest.webmanifest`), JSON.stringify({ ...manifest, lang: lang.code, ...(lang.dir === 'rtl' ? { dir: 'rtl' } : {}), description: pack['boot.pwaDescription'], id: '../', start_url: '../', scope: '../', icons: manifest.icons.map(i => ({ ...i, src: '../' + i.src })), ...(shortcuts.length ? { shortcuts } : {}) }, null, 2) + '\n');
       }
     }
   }

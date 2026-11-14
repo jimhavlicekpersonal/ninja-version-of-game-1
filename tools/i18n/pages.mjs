@@ -3,6 +3,9 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { ROOT, formatSource, formatWorksheet, syncWorksheet } from './lib.mjs';
+const LANGUAGES = JSON.parse(readFileSync(join(ROOT, 'locales/languages.json'), 'utf8')).languages;
+/** Right-to-left languages (Arabic) get <html dir="rtl"> on their pages and account form. */
+const rtl = code => LANGUAGES.find(l => l.code === code)?.dir === 'rtl';
 const files = ['privacy', 'support', 'community', 'terms', 'tokushoho', 'shikin-kessai', 'account'];
 /** The account form's fallback for a failed request (it would otherwise show the browser's English error). Add one per completed language. */
 const ACCOUNT_FAILURE = {
@@ -24,6 +27,10 @@ const ACCOUNT_FAILURE = {
   th: 'ส่งคำขอไม่สำเร็จ ตรวจสอบข้อมูลและการเชื่อมต่อแล้วลองอีกครั้ง',
   'zh-Hant': '請求沒有成功送出。請檢查你填寫的資料和網路連線，然後再試一次。',
   vi: 'Không gửi được yêu cầu. Hãy kiểm tra thông tin và kết nối rồi thử lại.',
+  ar: 'تعذّر إرسال الطلب. يُرجى التحقق من البيانات والاتصال ثم المحاولة مجددًا.',
+  id: 'Permintaan tidak bisa dikirim. Periksa data dan koneksimu, lalu coba lagi.',
+  ru: 'Не удалось отправить запрос. Проверь данные и подключение и попробуй снова.',
+  tr: 'İstek gönderilemedi. Bilgilerinizi ve bağlantınızı kontrol edip tekrar deneyin.',
 };
 function htmlFor(name) {
   const path = name === 'account' ? 'server/accountPage.ts' : `public/${name}.html`;
@@ -78,7 +85,7 @@ export function buildPages(code, { names = files, writePublic = true } = {}) {
     }
     for(const [start,end,text]of edits.sort((a,b)=>b[0]-a[0]))html=html.slice(0,start)+text+html.slice(end);
     for(const [key,u]of Object.entries(units).filter(([,u])=>u.name===name&&u.kind==='attribute')) html=html.replaceAll(`="${encode(u.en)}"`,`="${encode(ws[key].text)}"`);
-    html=html.replace(/<html lang="[^"]+">/,`<html lang="${code}">`).replaceAll('href="./legal.css"','href="../legal.css"').replaceAll('src="./legal','src="../legal');
+    html=html.replace(/<html lang="[^"]+">/,`<html lang="${code}"${rtl(code)?' dir="rtl"':''}>`).replaceAll('href="./legal.css"','href="../legal.css"').replaceAll('src="./legal','src="../legal');
     // The account form must not expose English provider/network diagnostics.
     if(name==='account' && ACCOUNT_FAILURE[code]) html=html.replace('err.message;',JSON.stringify(ACCOUNT_FAILURE[code])+';');
     result[name]=html;

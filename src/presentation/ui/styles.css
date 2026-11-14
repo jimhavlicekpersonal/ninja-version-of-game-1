@@ -906,18 +906,22 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 html[data-script]:not([data-script="Latn"]) { --font-display: var(--font-fallback); }
 html[data-script]:not([data-script="Latn"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
 /*
- * Latin-script languages with letters outside the bundled subsets (Latin-1): Romanian ă ș ț (U+0103, U+0219, U+021B).
+ * Latin-script languages with letters outside the bundled subsets (Latin-1): Romanian ă ș ț (U+0103, U+0219, U+021B),
+ * Vietnamese ă ơ ư đ, Turkish ğ ş İ (U+011F, U+015F, U+0130; dotless ı is in the subset, but ğ and ş are not).
  * Without this, each such letter falls back to a system font on its own, so one word mixes two typefaces (the a-breve of
  * "Armată" in the title). These languages use the phone's fonts throughout, like other scripts; add a language here when
  * its letters are not in the subsets (render/fonts.ts SYSTEM_FONT_LANGS too).
  */
-html:is([lang="ro"], [lang="vi"]) { --font: var(--font-fallback); --font-display: var(--font-fallback); }
-html:is([lang="ro"], [lang="vi"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
+html:is([lang="ro"], [lang="vi"], [lang="tr"]) { --font: var(--font-fallback); --font-display: var(--font-fallback); }
+html:is([lang="ro"], [lang="vi"], [lang="tr"]) :is(h1, h2, h3, .boot-title, .round-btn.big span:last-child, .modal-head h2, .btn, .chip b) { font-weight: 800; }
 /* Vietnamese stacks a tone mark on a vowel mark (ệ, ở, ữ): tight labels clip the top of the stack at line-height 1.05. */
 html[lang="vi"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
 /* Devanagari (Hindi, Marathi) hangs its letters from a joined headline; letter-spacing cuts it into pieces, and vowel signs above and below need more line height than Latin. */
 html[data-script="Deva"] body, html[data-script="Deva"] body * { letter-spacing: normal !important; }
 html[data-script="Deva"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
+/* Arabic letters join into words; letter-spacing pulls them apart (Chrome draws the gaps inside the joined word). Its vowel marks and dots also need more line height on tight labels. */
+html[data-script="Arab"] body, html[data-script="Arab"] body * { letter-spacing: normal !important; }
+html[data-script="Arab"] :is(.round-btn span, .round-btn.big span:last-child) { line-height: 1.25; }
 /*
  * Han (Chinese): one code point has different shapes in Chinese and Japanese (Han unification), and the shared
  * fallback lists Japanese fonts first, so Chinese text was drawn in Japanese glyph forms and switched font inside a
@@ -1058,7 +1062,8 @@ html[dir="rtl"] .b-left.collapsed .b-caret::before { content: '◂'; }
 /* Portrait phones: a long toast (it now stays long enough to read) keeps clear of the side rail's column. */
 @media (max-width: 600px) and (min-height: 481px) {
   .hud-head > .toasts { width: auto; max-width: calc(100% - 52px - var(--safe-r)); align-self: flex-start; }
-  html[dir="rtl"] .hud-head > .toasts { align-self: flex-end; max-width: calc(100% - 52px - var(--safe-l)); }
+  /* flex-start is the right side in right-to-left text, away from the rail (which moves to the left). */
+  html[dir="rtl"] .hud-head > .toasts { max-width: calc(100% - 52px - var(--safe-l)); }
 }
 
 /* Tall rails on short portrait phones: smaller buttons so the last one stays clear of Build. */
@@ -1102,11 +1107,14 @@ html[dir="rtl"] .fps { right: auto; left: calc(8px + var(--safe-l)); }
 html[dir="rtl"] .rail-pill { right: auto; left: -4px; }
 html[dir="rtl"] .chat-msg { border-radius: 16px 16px 6px 16px; }
 html[dir="rtl"] .chat-msg.mine { border-radius: 16px 16px 16px 6px; }
-html[dir="rtl"] .hud-head { align-items: flex-end; }
 html[dir="rtl"] .head-row { max-width: calc(100% - 58px - var(--safe-l)); }
 html[dir="rtl"] .log-row, html[dir="rtl"] .modal-body, html[dir="rtl"] .sheet { text-align: right; }
 html[dir="rtl"] .entry-chevron { flex-direction: row-reverse; }
 html[dir="rtl"] #battle-hud .scout-report { direction: rtl; }
+/* Dropdown chevrons sit at the end of the field: in right-to-left text that is the left side (found with Arabic: the chevron covered the first letters). */
+html[dir="rtl"] .modal select, html[dir="rtl"] .sheet select { padding: 6px 10px 6px 28px; background-position: left 10px center; }
+html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20px; background-position: left 7px center; }
+@media (max-width: 400px) { html[dir="rtl"] .training .actions.army-filters select { padding-left: 18px; padding-right: 8px; } }
 @media (max-height: 480px) {
   html[dir="rtl"] .hud-head { right: calc(8px + var(--safe-r)); left: calc(8px + var(--safe-l) + 108px); }
 }
