@@ -3,8 +3,9 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
-import { defineConfig } from 'vitest/config';
-import { buildLanguageAssets, languageBootScript, measureLanguageBuild } from './tools/i18n/build.mjs';
+import { configDefaults, defineConfig } from 'vitest/config';
+import { SLOW_TESTS } from './tests/slow';
+import { buildLanguageAssets, languageBootScript } from './tools/i18n/build.mjs';
 
 buildLanguageAssets();
 
@@ -116,7 +117,7 @@ function phaserFlags(): Plugin {
   };
 }
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   // Relative paths so the same build works on GitHub Pages, any static host, and later inside Capacitor.
   base: './',
   define: {
@@ -140,9 +141,10 @@ export default defineConfig(({ command }) => ({
   },
   // Production ships a smaller Phaser (no physics, sound, tilemaps: phaserBuild.js); dev and tests use the full package.
   resolve: command === 'build' && !process.env.VITEST ? { alias: [{ find: /^phaser$/, replacement: fileURLToPath(new URL('./src/presentation/render/phaserBuild.js', import.meta.url)) }] } : {},
-  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags(), { name: 'tk-language-sizes', apply: 'build', closeBundle() { measureLanguageBuild(); } }],
-  test: {
-    include: ['tests/**/*.test.ts'],
-    environment: 'node',
-  },
+  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags()],
+  // `npm test` leaves out the slow model-player and timing tests (tests/slow.ts); `npm run test:slow`
+  // (`vitest run --mode slow`) runs only those. CI runs both.
+  test: mode === 'slow'
+    ? { include: SLOW_TESTS, environment: 'node' }
+    : { include: ['tests/**/*.test.ts'], exclude: [...configDefaults.exclude, ...SLOW_TESTS], environment: 'node' },
 }));

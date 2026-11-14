@@ -4,12 +4,19 @@
  * war attacks counted at issue, re-simulation abuse, abandoned battles,
  * import dating and claims, Sandbox purchases on production, refund abuse.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Quality 25: the abandoned-battle check counts simulations instead of timing them. The spies call the
+// real functions, so every other test here is unchanged.
+vi.mock('../../../src/gameplay/sim/battle/battle', async (importOriginal) => {
+  const m = await importOriginal<typeof import('../../../src/gameplay/sim/battle/battle')>();
+  return { ...m, runBattle: vi.fn(m.runBattle), createBattle: vi.fn(m.createBattle) };
+});
 import { forfeitExpired, LATE_REPORT_MS, MAX_TICKET_FAILURES, TICKET_TTL_MS } from '../../../server/core/pvp';
 import { checkProvenance } from '../../../server/core/villageImport';
 import { InlineResimulator } from '../../../server/resim/resim';
 import { maxHousingAtHall } from '../../../src/gameplay/sim/army';
-import { runBattle } from '../../../src/gameplay/sim/battle/battle';
+import { createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import { applyCommand, createNewVillage, hallLevel } from '../../../src/gameplay/sim/village';
@@ -171,9 +178,11 @@ describe('abandoned battles and imports (re-audit)', () => {
     s.army = { hedgehog_roller: 10 };
     const k15 = baseAt(15);
     const giant = { ...k15, buildings: Array.from({ length: 2500 }, (_, i) => ({ ...k15.buildings[0], id: `x${i}` })) };
-    const started = performance.now();
+    vi.mocked(runBattle).mockClear();
+    vi.mocked(createBattle).mockClear();
     const r = applyCommand(s, { type: 'abandonBattle', record: { at: T, opponentName: 'x', setup: { seed: 1, base: giant as never, army: { hedgehog_roller: 10 }, infiltration: true }, deployments: [0, 1, 2].map((i) => ({ tick: i, troop: 'hedgehog_roller', x: 0, y: 0 })) } }, T, data);
-    expect(performance.now() - started).toBeLessThan(200);
+    expect(runBattle).not.toHaveBeenCalled();
+    expect(createBattle).not.toHaveBeenCalled();
     expect(r.ok).toBe(true);
     if (r.ok) s = r.state;
     expect(s.army.hedgehog_roller).toBe(7);

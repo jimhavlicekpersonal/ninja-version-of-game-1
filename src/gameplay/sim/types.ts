@@ -693,8 +693,8 @@ export interface EconomyDef {
   builderHutCosts: number[];
   obstacles: { count: number; kinds: string[]; keepClearRadius: number };
   /**
-   * Multiplier on the Acorns and Dew in fixed rewards (league chests, Grove
-   * Raid chests) by the player's Elder Toadstool level, so a reward is worth
+   * Multiplier on the Coins and Provisions in fixed rewards (league chests, Grove
+   * Raid chests) by the player's Keep level, so a reward is worth
    * about the same share of progress at every hall. Data amounts are for 1.0.
    */
   rewardScaleByHall: number[];
@@ -704,7 +704,7 @@ export interface LeagueDef {
   id: string;
   name: string;
   min: number;
-  /** Monthly chest; Acorns and Dew are scaled by `rewardScaleByHall`. */
+  /** Monthly chest; Coins and Provisions are scaled by `rewardScaleByHall`. */
   chest: Cost;
   /** Extra loot for a won attack in this league (paid in full at 3 stars, a third per star). */
   winBonus: Cost;
@@ -750,7 +750,7 @@ export interface RanksDef {
   leagues: LeagueDef[];
   /**
    * Generated opponents and bot raiders are picked by trophies. Strength is
-   * measured in Elder Toadstool levels: `trophies / trophiesPerHall`, so hall
+   * measured in Keep levels: `trophies / trophiesPerHall`, so hall
    * h covers strength [h-1, h). The fractional part sets how close the base's
    * buildings are to that hall's caps.
    */
@@ -777,7 +777,7 @@ export interface RanksDef {
   };
   /** Hidden matchmaking ratings (roadmap Phase 3, sim/rating.ts). */
   rating: RatingDef;
-  /** Loot multiplier when the target's Elder Toadstool is lower than the attacker's (index = difference). */
+  /** Loot multiplier when the target's Keep is lower than the attacker's (index = difference). */
   lootPenaltyByHallDiff: number[];
   /** The same when the target's Keep is higher (index = difference; balance audit 2026-11-08: lagging a Keep behind no longer pays). */
   lootPenaltyUpByHallDiff?: number[];

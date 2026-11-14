@@ -127,7 +127,7 @@ describe('leaf ranks', () => {
     const rewards = rollSeasons(s, Date.UTC(2026, 2, 2), data);
     expect(rewards).toHaveLength(2);
     expect(rewards[0].league).toBe('oak');
-    // Chest resources are sized to the player's Elder Toadstool level (here 1); Moonstones are not.
+    // Chest resources are sized to the player's Keep level (here 1); Jade are not.
     expect(rewards[0].chest).toEqual(leagueChest(data.ranks.leagues[2], 1, data));
     expect(rewards[0].chest.moonstones).toBe(data.ranks.leagues[2].chest.moonstones);
     expect(rewards[0].chest.acorns!).toBeLessThan(data.ranks.leagues[2].chest.acorns!);

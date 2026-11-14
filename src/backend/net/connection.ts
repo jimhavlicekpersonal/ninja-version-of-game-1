@@ -20,7 +20,7 @@ import { troopLevels } from '../../gameplay/sim/research';
 import { reinforcementCapacity, reinforcementHousing } from '../../gameplay/sim/social/grove';
 import { battleLoadout } from '../../gameplay/sim/village';
 import type { BattleSetup } from '../../gameplay/sim/battle/types';
-import type { RaidBattle } from '../social/groveSource';
+import type { RaidBattle } from '../social/raidBattle';
 // Name rules for instant hints in the UI (the server decides; step 59).
 export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './names';
 import type { PurchaseVerifier } from '../payments/provider';
@@ -1058,7 +1058,7 @@ export class Connection {
       return typeof r.seed === 'number' ? r.seed >>> 0 : undefined;
     } catch (e) {
       this.log('Online play: could not start the raid', e);
-      throw new Error(e instanceof ServerError && !e.retryable ? e.message : 'Could not reach the server to start the raid. Try again in a moment.');
+      throw new Error(e instanceof ServerError && !e.retryable ? e.message : 'Could not reach the server to start the raid. Try again in a moment.', { cause: e });
     }
   }
 

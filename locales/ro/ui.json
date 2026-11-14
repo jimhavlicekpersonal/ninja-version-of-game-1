@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Războinic nou deblocat!} few {Războinici noi deblocați!} other {Războinici noi deblocați!}}" },
   "unlock.train": { "en": "Train", "text": "Antrenează" },
   "unlock.later": { "en": "Later", "text": "Mai târziu" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Primul tău cufăr zilnic e gata: Termină îl deschide." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Primul tău cufăr zilnic e gata: Termină îl deschide." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Nu s-a putut deschide. Verifică-ți conexiunea și încearcă din nou." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "A apărut o versiune mai nouă a Kagemura. Reîncarcă pentru a deschide asta." }
 }

@@ -13,7 +13,7 @@ const HOUR = 3_600_000;
 
 function withLodge(): { state: VillageState; clock: FakeClock } {
   const g = newGame({ acorns: 5000, dew: 5000 });
-  // Elder Toadstool 2 unlocks the Grove Lodge.
+  // Keep 2 unlocks the Grove Lodge.
   let s: VillageState = { ...g.state, buildings: g.state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 2 } : b)) };
   s = must(s, { type: 'place', buildingType: 'grove_lodge', x: 4, y: 4 }, g.clock.now());
   g.clock.advanceSeconds(data.buildings.grove_lodge.levels[0].buildSeconds);

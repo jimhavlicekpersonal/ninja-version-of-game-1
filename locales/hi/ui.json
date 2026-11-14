@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {नया योद्धा खुल गया!} other {नए योद्धा खुल गए!}}" },
   "unlock.train": { "en": "Train", "text": "प्रशिक्षित करें" },
   "unlock.later": { "en": "Later", "text": "बाद में" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "आपका पहला रोज़ाना संदूक तैयार है: पूरा करें दबाने पर यह खुल जाएगा।" }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "आपका पहला रोज़ाना संदूक तैयार है: पूरा करें दबाने पर यह खुल जाएगा।" },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "यह खुल नहीं सका। अपना कनेक्शन जाँचें और फिर से कोशिश करें।" },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura का नया संस्करण आ गया है। इसे खोलने के लिए फिर से लोड करें।" }
 }

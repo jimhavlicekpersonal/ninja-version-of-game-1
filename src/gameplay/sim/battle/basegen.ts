@@ -4,6 +4,38 @@ import { createRng, int, next, pick, type Rng } from '../rng';
 import type { Cost, GameData, ResourceKind } from '../types';
 import type { BaseBuilding, BaseLayout } from './types';
 
+/*
+ * Layout constants (quality 20). They shape generated bases, never combat, and live here rather than in
+ * battle.json because battle.json is part of the combat fingerprint (tests/gameplay/battle/rules-version.test.ts):
+ * moving them would bump SIM_RULES for no change in play. Changing a value changes every generated base,
+ * so practice targets, Shadow Trials and bot raids (all replayed from their seed) would differ.
+ */
+/** Random spots tried per building before it is left out. */
+const PLACE_ATTEMPTS = 300;
+/** After this many failed tries the ring widens by `RING_WIDEN_TILES`. */
+const PLACE_WIDEN_AFTER = 200;
+const RING_WIDEN_TILES = 4;
+/** Default rings (Chebyshev distance from the centre) when no layout archetype is asked for. */
+const DEFAULT_RINGS = { defense: { r1: 3, r2: 7 }, storage: { r1: 2, r2: 6 }, other: { r1: 8, r2: 13 } };
+/** Builder huts: at least this many, plus up to `BUILDER_EXTRA_MAX` more (within the Keep's limit). */
+const BUILDER_MIN = 2;
+const BUILDER_EXTRA_MAX = 3;
+/** Levels below the Keep's cap: up to `LEVELS_BELOW_MAX`; a level bias of 0 sits about `LEVELS_BELOW_AT_ZERO_BIAS` below. */
+const LEVELS_BELOW_MAX = 3;
+const LEVELS_BELOW_AT_ZERO_BIAS = 2;
+/** The default hedge ring's distance from the core: tiles before its top-left and after its bottom-right edge. */
+const HEDGE_PAD_BEFORE = 2;
+const HEDGE_PAD_AFTER = 1;
+/** Gaps in the default hedge ring by Keep: 3 below Keep 2, 2 below Keep 4, then 1. */
+const hedgeGapsAt = (keep: number) => (keep >= 4 ? 1 : keep >= 2 ? 2 : 3);
+/** A gap (or a styled layout's gate) skips this tile and the one this many tiles further round the ring. */
+const GAP_SECOND_TILE = 2;
+/** Styled wall rings: the first sits this many tiles out from the core, each further ring this much further. */
+const WALL_RING_PAD = 2;
+const WALL_RING_STEP = 2;
+/** How far (as a share of one gate's stretch of ring) a styled gate may drift from even spacing. */
+const GATE_JITTER = 0.3;
+
 interface Occ {
   size: number;
   cells: Uint8Array;
@@ -26,8 +58,8 @@ function mark(o: Occ, x: number, y: number, s: number): void {
 
 /** Try random spots in a square ring around the centre. */
 function placeInRing(rng: Rng, o: Occ, s: number, c: number, r1: number, r2: number, gap: number): { x: number; y: number } | null {
-  for (let attempt = 0; attempt < 300; attempt++) {
-    const r = attempt > 200 ? r2 + 4 : r2;
+  for (let attempt = 0; attempt < PLACE_ATTEMPTS; attempt++) {
+    const r = attempt > PLACE_WIDEN_AFTER ? r2 + RING_WIDEN_TILES : r2;
     const x = int(rng, c - r, c + r) - Math.floor(s / 2);
     const y = int(rng, c - r, c + r) - Math.floor(s / 2);
     const cheb = Math.max(Math.abs(x + s / 2 - c), Math.abs(y + s / 2 - c));
@@ -131,7 +163,7 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
 
   const levelFor = (type: string) => {
     const max = limits[type]?.maxLevel ?? 1;
-    const below = Math.max(0, Math.min(3, Math.round((1 - bias) * 2 + next(rng) - 0.5)));
+    const below = Math.max(0, Math.min(LEVELS_BELOW_MAX, Math.round((1 - bias) * LEVELS_BELOW_AT_ZERO_BIAS + next(rng) - 0.5)));
     return Math.max(1, max - below);
   };
   const plan: { type: string; r1: number; r2: number }[] = [];
@@ -139,7 +171,7 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
     const def = buildingDef(data, type);
     if (def.category === 'hedge' || def.category === 'decor') continue;
     let count = lim.count;
-    if (def.category === 'builder') count = 2 + int(rng, 0, Math.min(3, lim.count - 2));
+    if (def.category === 'builder') count = BUILDER_MIN + int(rng, 0, Math.min(BUILDER_EXTRA_MAX, lim.count - BUILDER_MIN));
     else if (def.category === 'collector') count = Math.max(1, int(rng, Math.ceil(count / 2), count));
     for (let i = 0; i < count; i++) {
       const L = opts.layout;
@@ -156,7 +188,7 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
                   ? L.rings.storage
                   : L.rings.other,
           )
-        : def.category === 'defense' || def.category === 'trap' ? { r1: 3, r2: 7 } : def.category === 'storage' ? { r1: 2, r2: 6 } : { r1: 8, r2: 13 };
+        : def.category === 'defense' || def.category === 'trap' ? DEFAULT_RINGS.defense : def.category === 'storage' ? DEFAULT_RINGS.storage : DEFAULT_RINGS.other;
       plan.push({ type, ...ring });
     }
   }
@@ -199,20 +231,20 @@ export function generateOpponent(seed: number, hallLevel: number, data: GameData
       x1 = Math.max(x1, b.x + s);
       y1 = Math.max(y1, b.y + s);
     }
-    x0 -= 2;
-    y0 -= 2;
-    x1 += 1;
-    y1 += 1;
+    x0 -= HEDGE_PAD_BEFORE;
+    y0 -= HEDGE_PAD_BEFORE;
+    x1 += HEDGE_PAD_AFTER;
+    y1 += HEDGE_PAD_AFTER;
     const ring: [number, number][] = [];
     for (let x = x0; x <= x1; x++) ring.push([x, y0], [x, y1]);
     for (let y = y0 + 1; y < y1; y++) ring.push([x0, y], [x1, y]);
-    const gaps = hl >= 4 ? 1 : hl >= 2 ? 2 : 3;
+    const gaps = hedgeGapsAt(hl);
     const gapStarts = new Set<number>();
     for (let g = 0; g < gaps; g++) gapStarts.add(int(rng, 0, ring.length - 1));
     const skip = new Set<number>();
     for (const g of gapStarts) {
       skip.add(g);
-      skip.add((g + 2) % ring.length);
+      skip.add((g + GAP_SECOND_TILE) % ring.length);
     }
     let placed = 0;
     const lvl = levelFor('bramble_hedge');
@@ -328,7 +360,7 @@ function styledWalls(
   let placed = 0;
   const wallType = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'hedge') ?? 'bramble_hedge';
   for (let ringNo = 0; ringNo < layout.wallRings; ringNo++) {
-    const pad = 2 + ringNo * 2;
+    const pad = WALL_RING_PAD + ringNo * WALL_RING_STEP;
     const rx0 = x0 - pad;
     const ry0 = y0 - pad;
     const rx1 = x1 + pad - 1;
@@ -339,9 +371,9 @@ function styledWalls(
     const skip = new Set<number>();
     for (let g = 0; g < layout.wallGaps; g++) {
       // Gates on opposite sides, two tiles wide.
-      const start = Math.floor(((g + next(rng) * 0.3) * ring.length) / Math.max(1, layout.wallGaps));
+      const start = Math.floor(((g + next(rng) * GATE_JITTER) * ring.length) / Math.max(1, layout.wallGaps));
       skip.add(start % ring.length);
-      skip.add((start + 2) % ring.length);
+      skip.add((start + GAP_SECOND_TILE) % ring.length);
     }
     for (let i = 0; i < ring.length; i++) {
       if (placed >= limit) return;

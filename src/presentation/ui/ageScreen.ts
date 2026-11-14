@@ -12,7 +12,7 @@ import { t as i18nText } from './i18n';
 import { ageBandFromBirth, birthYearNeedsMonth, type AgeBand } from '../../gameplay/sim/age';
 import { PRESET_CHAT } from '../../backend/net/protocol';
 import { h } from './dom';
-import type { UiKit } from './economyUi';
+import type { UiKit } from './uiKit';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 

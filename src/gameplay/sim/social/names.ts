@@ -78,9 +78,11 @@ const LETTER = /\p{L}/u;
 const MARK = /\p{M}/u;
 const DIGIT = /\p{Nd}/u;
 const EMOJI = /[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}]/u;
-const EMOJI_PART = /[️⃣\u{1F3FB}-\u{1F3FF}]/u;
+// Variation selector 16, the keycap mark and the skin-tone modifiers, each matched on its own.
+// eslint-disable-next-line no-misleading-character-class -- single code points are wanted here
+const EMOJI_PART = /[\u{FE0F}\u{20E3}\u{1F3FB}-\u{1F3FF}]/u;
 const IGNORABLE = /\p{Default_Ignorable_Code_Point}/u;
-const WIDE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Bopomofo}\p{Script=Hangul}\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}゠-ヿㇰ-ㇿ　-〿]/u;
+const WIDE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Bopomofo}\p{Script=Hangul}\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{30A0}-\u{30FF}\u{31F0}-\u{31FF}\u{3000}-\u{303F}]/u;
 
 function scriptOf(ch: string): string | null {
   const common = COMMON_LETTERS.get(ch);

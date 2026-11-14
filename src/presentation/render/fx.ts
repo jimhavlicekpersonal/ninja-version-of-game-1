@@ -13,7 +13,7 @@ const COIN = 'fx.coin';
 const GRAIN = 'fx.grain';
 
 /** Small white shapes that particles tint at runtime. */
-export function ensureFxTextures(scene: Phaser.Scene): void {
+function ensureFxTextures(scene: Phaser.Scene): void {
   if (!scene.textures.exists(CONFETTI)) {
     const g = scene.make.graphics({ x: 0, y: 0 }, false);
     g.fillStyle(0xffffff, 1);
@@ -170,7 +170,7 @@ function ensureBattleFx(scene: Phaser.Scene): void {
 }
 
 /** Role colour (0xRRGGBB) of a troop texture id, for its ground ring. */
-export function roleTint(troopType: string): number {
+function roleTint(troopType: string): number {
   const role = roleOfTroop(troopType);
   return parseInt((role ? ROLE_RING[role] : '#e9e2cf').slice(1), 16);
 }
@@ -181,7 +181,7 @@ export function roleTint(troopType: string): number {
  * tint, so every ring was white and roles could not be told apart in battle. One small texture per
  * role colour (about ten) looks the same in both renderers.
  */
-export function ringTexture(scene: Phaser.Scene, color: number): string {
+function ringTexture(scene: Phaser.Scene, color: number): string {
   const key = `${RING}.${color.toString(16).padStart(6, '0')}`;
   if (scene.textures.exists(key)) return key;
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
@@ -423,7 +423,7 @@ export function addScenery(scene: Phaser.Scene, mapSize: number): void {
 
 // ---------------------------------------------------------------- village life (item 3)
 
-export interface LifeBuilding {
+interface LifeBuilding {
   id: string;
   type: string;
   level: number;

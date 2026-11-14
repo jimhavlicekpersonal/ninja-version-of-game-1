@@ -40,7 +40,7 @@ export interface ScreenInsets {
 }
 
 /** An Infiltration Point as the HUD sees it: CSS px from the viewport's top-left. */
-export interface EntryOnScreen {
+interface EntryOnScreen {
   index: number;
   label: string;
   /** Warrior space it still hides (0: full). */

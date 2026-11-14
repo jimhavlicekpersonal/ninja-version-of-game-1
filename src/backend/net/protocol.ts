@@ -1,5 +1,5 @@
 /**
- * The Toadstool Kingdoms multiplayer protocol: every request and response the
+ * The Kagemura multiplayer protocol: every request and response the
  * game exchanges with a server. Our server (server/) implements it, and so must
  * any future server. tests/contract/ checks an implementation against it, and
  * docs/PROTOCOL.md describes it in prose.

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { hallUnlocks, troopCapUnlock } from '../../../src/gameplay/sim/preview';
 import { data } from './helpers';
 
-describe('Elder Toadstool unlock preview', () => {
+describe('Keep unlock preview', () => {
   it('lists what the next hall level unlocks', () => {
     const items = hallUnlocks(1, data);
     expect(items).toContainEqual({ type: 'acorn_orchard', kind: 'more', from: 1, to: 2 });

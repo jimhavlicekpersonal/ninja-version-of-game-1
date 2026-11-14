@@ -35,7 +35,7 @@ export function parseDsn(dsn: string | undefined | null): SentryDsn | null {
   return { publicKey: u.username, projectId, envelopeUrl: `${u.protocol}//${u.host}${path}/api/${projectId}/envelope/`, dsn };
 }
 
-export interface StackFrame {
+interface StackFrame {
   function?: string;
   filename?: string;
   lineno?: number;

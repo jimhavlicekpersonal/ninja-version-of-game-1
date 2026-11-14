@@ -25,7 +25,7 @@ import { sound } from '../audio/sound';
 const pct = (p: number) => fmtPercent(p < 10 ? p : Math.round(p), p < 10 ? 1 : 0);
 const when = (t: number) => i18nDate(t, { weekday: 'short', hour: '2-digit', minute: '2-digit' });
 
-export interface DailyOpts {
+interface DailyOpts {
   /** The Clan Stipend's claim card (EconomyUi.stipendCard), shown on top of the daily chest. */
   stipendCard?(redraw: () => void): HTMLElement | null;
   /** Attack a goal event's bounty fortress (app.ts: a battle settled with `bountyEnd`). */

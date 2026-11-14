@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Nuovo guerriero sbloccato!} other {Nuovi guerrieri sbloccati!}}" },
   "unlock.train": { "en": "Train", "text": "Addestra" },
   "unlock.later": { "en": "Later", "text": "Più tardi" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Il tuo primo forziere giornaliero è pronto: Fine lo apre." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Il tuo primo forziere giornaliero è pronto: Fine lo apre." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Impossibile aprire. Controlla la connessione e riprova." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "È uscita una versione più recente di Kagemura. Ricarica per aprire questa schermata." }
 }

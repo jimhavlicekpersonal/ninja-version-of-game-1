@@ -18,7 +18,7 @@ import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
 import type { Hud } from './presentation/ui/hud';
 
-export interface AppDeps {
+interface AppDeps {
   game: Phaser.Game;
   controller: GameController;
   hud: Hud;

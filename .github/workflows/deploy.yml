@@ -25,12 +25,15 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run lint
       # Backend A27: known high/critical advisories in what ships (the game and the server image). A warning
       # for now, so an advisory without a fix yet does not block a release; the job log shows it.
       - name: Dependency audit (runtime packages)
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
       - run: npm test
+      # The model-player campaigns and the battle timing check (tests/slow.ts), outside the default suite.
+      - run: npm run test:slow
       - run: npm run typecheck:server
       - run: npm run build
         env:

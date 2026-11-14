@@ -16,7 +16,7 @@ import { h } from './dom';
 import type { UiKit } from './economyUi';
 import { formatDuration } from './format';
 
-export interface GangWarUiDeps {
+interface GangWarUiDeps {
   kit: UiKit;
   connection: Connection;
   /** Start a war strike (closes Friends and opens the battle). */

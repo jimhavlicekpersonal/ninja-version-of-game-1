@@ -5,7 +5,7 @@
  * until a human artist paints him (report section 6).
  */
 import type { GameData, VillageState } from './types';
-import { hallLevel } from './village';
+import { hallLevel } from './keep';
 
 /** The hero (and level) a Keep level brings, or null below every hero's Keep. */
 export function heroAtKeep(keep: number, data: GameData): { id: string; level: number } | null {

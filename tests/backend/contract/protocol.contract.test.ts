@@ -1,5 +1,5 @@
 /**
- * Protocol contract: what any Toadstool Kingdoms server must do, checked
+ * Protocol contract: what any Kagemura server must do, checked
  * through the game's own HTTP adapter. Run it against a deployed or future
  * server with
  *
@@ -198,7 +198,7 @@ describe('protocol contract', () => {
     expect(e).toMatchObject({ status: 400, code: 'bad_request' });
   });
 
-  it('pvp: match gives a base within one Elder Toadstool level; the server re-runs the battle exactly like the game', async () => {
+  it('pvp: match gives a base within one Keep level; the server re-runs the battle exactly like the game', async () => {
     const a = await player('Attacker', 2);
     const m = (await a.match())!;
     expect(m).not.toBeNull();

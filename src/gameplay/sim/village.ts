@@ -1,10 +1,11 @@
 import { heroFor } from './heroes';
+import { hallLevel } from './keep';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
 import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from './battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
-import { buildingDef, hallType, levelDef, maxDefinedLevel, troopLevel } from './data';
+import { buildingDef, levelDef, maxDefinedLevel, troopLevel } from './data';
 import { mixSeed } from './rng';
 import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies, type SeasonReward } from './ranks';
 import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
@@ -389,17 +390,13 @@ export function settleSeasons(s: VillageState, at: number, data: GameData): void
   }
 }
 
-export function hallLevel(state: VillageState, data: GameData): number {
-  const type = hallType(data);
-  const hall = state.buildings.find((b) => b.type === type);
-  return Math.max(1, hall?.level ?? 1);
-}
+export { hallLevel } from './keep';
 
 export function countOfType(state: VillageState, type: BuildingType): number {
   return state.buildings.filter((b) => b.type === type).length;
 }
 
-/** How many of a building the current Elder Toadstool level allows, and the highest level. */
+/** How many of a building the current Keep level allows, and the highest level. */
 export function limitFor(state: VillageState, data: GameData, type: BuildingType, atHallLevel?: number): BuildingLimit {
   if (buildingDef(data, type).category === 'hall') {
     return { count: 1, maxLevel: Math.min(data.hall.levels.length, maxDefinedLevel(data, type)) };
@@ -408,7 +405,7 @@ export function limitFor(state: VillageState, data: GameData, type: BuildingType
   return data.hall.levels[level - 1]?.limits[type] ?? { count: 0, maxLevel: 0 };
 }
 
-/** The lowest Elder Toadstool level that allows the condition, or null if none does. */
+/** The lowest Keep level that allows the condition, or null if none does. */
 export function hallLevelRequiredFor(data: GameData, type: BuildingType, test: (l: BuildingLimit) => boolean): number | null {
   for (const hl of data.hall.levels) {
     const lim = hl.limits[type];
@@ -1627,7 +1624,7 @@ function payRefund(s: VillageState, refund: Cost, data: GameData): Cost {
  * shifts every index, and the wrong warrior must never be cancelled.
  */
 function cancelTraining(s: VillageState, index: number, troop: string | undefined, count: number, now: number, data: GameData): CommandResult {
-  let at = troop !== undefined && s.training[index]?.troop !== troop ? s.training.map((q) => q.troop).lastIndexOf(troop) : index;
+  const at = troop !== undefined && s.training[index]?.troop !== troop ? s.training.map((q) => q.troop).lastIndexOf(troop) : index;
   const type = s.training[at]?.troop;
   if (type === undefined) return fail('NOT_FOUND', 'Nothing to cancel.');
   const items: TrainingItem[] = [];
@@ -1652,7 +1649,7 @@ export function scoutFee(state: VillageState, data: GameData): number {
 
 /**
  * Find an opponent. The first look after each attack is free, and it stays the
- * same opponent until the player attacks it or pays the Acorn fee for "Next":
+ * same opponent until the player attacks it or pays the Coin fee for "Next":
  * leaving and pressing Attack again shows the same base, so rerolling always
  * costs the fee.
  */

@@ -38,7 +38,7 @@ function village(w: ReturnType<typeof world>, extra: (s: VillageState) => void =
 }
 
 function addLodge(s: VillageState, data: GameData): void {
-  s.buildings.find((b) => b.type === 'elder_toadstool')!.level = 3; // Lodges come with Elder Toadstool 2+
+  s.buildings.find((b) => b.type === 'elder_toadstool')!.level = 3; // Lodges come with Keep 2+
   for (let y = 0; y < 38; y++) {
     for (let x = 0; x < 38; x++) {
       if (canPlace(s, data, 'grove_lodge', x, y).ok) {

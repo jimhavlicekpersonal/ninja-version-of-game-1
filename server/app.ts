@@ -270,7 +270,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.addHook('onSend', async (req, reply, payload) => {
     const id = idemScope(req);
     if (!id || !verified.has(req) || reply.getHeader('idempotent-replay') || reply.statusCode >= 300) return payload;
-    let body: unknown = null;
+    let body: unknown;
     try {
       body = typeof payload === 'string' && payload ? JSON.parse(payload) : null;
     } catch {

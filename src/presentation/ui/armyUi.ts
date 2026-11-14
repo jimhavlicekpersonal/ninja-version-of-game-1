@@ -30,7 +30,7 @@ const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
 
 type ArmyTab = 'train' | 'army' | 'research';
 
-export interface ArmyUiDeps {
+interface ArmyUiDeps {
   kit: UiKit;
   econ: EconomyUi;
   troopThumb(type: string): string | null;

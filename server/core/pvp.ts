@@ -1,6 +1,6 @@
 /**
  * Asynchronous PvP, following the game's matchmaking design
- * (src/sim/matchmaking.ts): opponents within one Elder Toadstool level of the
+ * (src/sim/matchmaking.ts): opponents within one Keep level of the
  * attacker, near their trophies; the loot penalty for hitting lower halls;
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
@@ -10,17 +10,17 @@ import { rivalFor, rivalOutpostName } from '../../src/gameplay/sim/rivals';
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
 import type { runBattle } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
-import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
-import { exhaustionFactor, scaleBaseLoot, shieldHoursFor, storageLootCap } from '../../src/gameplay/sim/defense';
+import { buildingDef } from '../../src/gameplay/sim/data';
+import { exhaustionFactor, scaleBaseLoot, shieldHoursFor } from '../../src/gameplay/sim/defense';
 import { applyLootPenalty, hallWindow, powerSlackAt, recentRaidArmies } from '../../src/gameplay/sim/matchmaking';
 import { defenseHonorLoss, lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { stakeMet, validStake } from '../../src/gameplay/sim/carry';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { advance, foughtWithWarriors } from '../../src/gameplay/sim/village';
-import { layoutChangedShare, newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
+import { newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { sanitizeName } from '../../src/gameplay/sim/social/names';
-import type { GameData, ResourceKind, Temper } from '../../src/gameplay/sim/types';
+import type { GameData, Temper } from '../../src/gameplay/sim/types';
 import { normalizeTemper, sameTemper, validTemper } from '../../src/gameplay/sim/battle/temper';
 import type { AttackResponse, AttackStartResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
 import type { Player, Repo, Ticket } from '../repo';
@@ -28,6 +28,9 @@ import type { ClientInfo, RulesEngine } from '../rules/registry';
 import { ResimBusyError, ResimTimeoutError, type ResimOutcome } from '../resim/resim';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
+import { capBaseLoot, layoutReset } from './baseRules';
+
+export { capBaseLoot, layoutReset } from './baseRules';
 
 /** How long a matched base stays reserved for its attacker. */
 export const TICKET_LOCK_MS = 5 * MIN;
@@ -129,14 +132,6 @@ export function validateBase(base: BaseLayout, data: GameData): string | null {
   return null;
 }
 
-/** A collector holds what it produces; a storage (or the Keep) holds what it stores. Jade is never loot. */
-function canHoldLoot(type: string, level: number, k: ResourceKind, data: GameData): boolean {
-  if (k === 'moonstones') return false;
-  const def = buildingDef(data, type);
-  if (def.produces === k) return true;
-  return (levelDef(data, type, level)?.storage?.[k] ?? 0) > 0;
-}
-
 /** An uploaded base reduced to the allowed shape (unknown fields dropped), or an error. */
 export function normalizeBase(raw: unknown, data: GameData): { base: BaseLayout } | { error: string } {
   const r = raw as BaseLayout | null;
@@ -166,47 +161,6 @@ export function normalizeBase(raw: unknown, data: GameData): { base: BaseLayout 
     else delete b.temper;
   }
   return { base };
-}
-
-/**
- * Clamp loot to what the rules allow: storages give at most the hall level's
- * storage loot cap, collectors at most their raidable share of a full
- * collector. Mutates and returns the base.
- */
-export function capBaseLoot(base: BaseLayout, data: GameData): BaseLayout {
-  const hall = base.buildings.find((b) => data.buildings[b.type]?.category === 'hall');
-  const hl = hall?.level ?? 1;
-  base.hallLevel = hl;
-  const storeCap = storageLootCap(hl, data);
-  const fromStores: Record<string, number> = {};
-  for (const b of base.buildings) {
-    const def = buildingDef(data, b.type);
-    const loot = b.loot ?? {};
-    for (const k of Object.keys(loot) as ResourceKind[]) {
-      if (!canHoldLoot(b.type, b.level, k, data)) {
-        delete loot[k];
-        continue;
-      }
-      if (def.produces === k) {
-        const ld = levelDef(data, b.type, b.level);
-        const max = Math.floor((ld?.ratePerHour ?? 0) * data.economy.collectorHoursCap * data.economy.raidableUncollectedFraction);
-        loot[k] = Math.min(loot[k] ?? 0, max);
-      } else {
-        fromStores[k] = (fromStores[k] ?? 0) + (loot[k] ?? 0);
-      }
-    }
-  }
-  for (const [k, total] of Object.entries(fromStores)) {
-    if (total <= storeCap) continue;
-    const scale = storeCap / total;
-    for (const b of base.buildings) {
-      const def = buildingDef(data, b.type);
-      const loot = b.loot as Record<string, number> | undefined;
-      if (!loot || def.produces === k || !loot[k]) continue;
-      loot[k] = Math.floor(loot[k] * scale);
-    }
-  }
-  return base;
 }
 
 /** Most donated troops (housing) the largest Grove Lodge allowed at this hall level holds. */
@@ -765,16 +719,6 @@ export async function defenses(ctx: ServerContext, me: Player, since: number): P
 /** A player's ratings, new ones for a player never rated. */
 export function ratingsOf(p: Player, now: number, ctx: ServerContext): { attack: Rating; base: Rating } {
   return p.ratings ?? { attack: newRating(now, ctx.data.ranks.rating), base: newRating(now, ctx.data.ranks.rating) };
-}
-
-/**
- * Step 30: a base whose layout changed by more than layoutResetShare starts
- * its Base Rating over (so a strong rating cannot hide a weak new layout).
- */
-export function layoutReset(ctx: ServerContext, me: Player, next: BaseLayout): { ratings: { attack: Rating; base: Rating } } | Record<string, never> {
-  if (!me.ratings || !me.base) return {};
-  if (layoutChangedShare(me.base, next) <= ctx.data.ranks.rating.layoutResetShare) return {};
-  return { ratings: { attack: me.ratings.attack, base: newRating(ctx.now(), ctx.data.ranks.rating) } };
 }
 
 /** Step 31: the Power Ranking, Attack Rating plus power (Keep), for players with enough rated attacks. */

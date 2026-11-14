@@ -107,7 +107,7 @@ export class GoogleVerifier {
   private async call(url: string, method = 'GET'): Promise<{ ok: boolean; status: number; body: Record<string, unknown> }> {
     const res = await this.o.fetch(url, { method, headers: { authorization: `Bearer ${await this.auth.token()}` } });
     const text = await res.text();
-    let body: Record<string, unknown> = {};
+    let body: Record<string, unknown>;
     try {
       body = text ? (JSON.parse(text) as Record<string, unknown>) : {};
     } catch {

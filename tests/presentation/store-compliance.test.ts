@@ -77,7 +77,7 @@ describe('privacy, support and community pages (GLOBAL-015, R06)', () => {
     expect(existsSync(resolve(root, 'public/legal.js'))).toBe(true);
   });
   it('Settings links all three pages, with build overrides', () => {
-    const hud = read('src/presentation/ui/hud.ts');
+    const hud = read('src/presentation/ui/settingsUi.ts');
     for (const [env, page] of [['VITE_PRIVACY_URL', './privacy.html'], ['VITE_SUPPORT_URL', './support.html'], ['VITE_COMMUNITY_URL', './community.html']]) {
       expect(hud).toContain(`env.${env}, '${page}'`);
     }

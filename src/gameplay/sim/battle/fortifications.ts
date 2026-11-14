@@ -15,7 +15,7 @@
  * Counters are soft: effects never stack across copies (the strongest
  * applies), disables are short, and every one can be destroyed or avoided.
  */
-import type { BattleSim, SimTroop } from './battle';
+import type { BattleSim, SimTroop } from './state';
 import { auraStrength, isHidden } from './warriors';
 
 const dist = (ax: number, ay: number, bx: number, by: number) => Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));

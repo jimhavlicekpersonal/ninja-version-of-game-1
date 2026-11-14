@@ -43,7 +43,7 @@ describe('troop research', () => {
     expect(s2.research.active).toEqual([]);
   });
 
-  it('is capped by the Elder Toadstool level and locked until the barracks unlocks the troop', () => {
+  it('is capped by the Keep level and locked until the barracks unlocks the troop', () => {
     const { state, clock } = lab(2);
     expect(troopLevelCapAt(2, data)).toBe(2);
     const s1 = { ...state, research: { levels: { hedgehog_roller: 2 }, active: [] } };

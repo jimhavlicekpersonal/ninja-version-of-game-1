@@ -105,7 +105,7 @@ describe('matchmaking by trophies (#3)', () => {
     void state;
   });
 
-  it('beating a lower Elder Toadstool pays less loot', () => {
+  it('beating a lower Keep pays less loot', () => {
     // At these trophies both a hall 2 and a hall 3 player meet the same hall 2 base.
     const trophies = Math.round(1.4 * data.ranks.matchmaking.trophiesPerHall);
     for (const seed of [4242, 99, 1234]) {

@@ -27,7 +27,7 @@ export class ServerError extends Error {
   }
 }
 
-export interface IdentityPort {
+interface IdentityPort {
   hello(): Promise<HelloResponse>;
   /** The signed balance bundle (step 76); servers without the feature have none. Optional so test ports can leave it out. */
   balance?(): Promise<BalanceResponse>;
@@ -83,7 +83,7 @@ export interface IdentityPort {
   signIn(provider: LinkProvider, credential: LinkCredential, device?: string): Promise<RegisterResponse>;
 }
 
-export interface PvpPort {
+interface PvpPort {
   uploadBase(req: UploadBaseRequest): Promise<void>;
   /** Null when there is nobody to attack right now. */
   match(): Promise<MatchResponse | null>;
@@ -98,7 +98,7 @@ export interface PvpPort {
   powerLeaderboard(limit?: number): Promise<PowerLeaderboardResponse>;
 }
 
-export interface GrovePort {
+interface GrovePort {
   listGroves(query?: string): Promise<GrovesResponse>;
   createGrove(name: string): Promise<GroveView>;
   joinGrove(id: string): Promise<GroveView>;
@@ -114,7 +114,7 @@ export interface GrovePort {
   ackInbox(ids: string[]): Promise<void>;
 }
 
-export interface GroveRaidPort {
+interface GroveRaidPort {
   raid(): Promise<RaidView>;
   raidTicket(target: number): Promise<RaidTicketResponse>;
   submitRaidAttack(sub: BattleSubmission): Promise<RaidAttackResponse>;
@@ -122,7 +122,7 @@ export interface GroveRaidPort {
 }
 
 /** A village kept on the server (roadmap Phase 2; feature `server-economy`). */
-export interface VillagePort {
+interface VillagePort {
   /** Null when this player's village lives on the device. */
   getVillage(): Promise<VillageResponse | null>;
   /** Start keeping a (new) village on the server, or get the one there. */
@@ -134,7 +134,7 @@ export interface VillagePort {
 }
 
 /** Store purchases checked by the server (roadmap Phase 4; features `purchases-apple`, `purchases-google`). */
-export interface PurchasePort {
+interface PurchasePort {
   purchaseIntent(req: PurchaseIntentRequest): Promise<PurchaseIntentResponse>;
   /** A purchase was cancelled or is pending (GLOBAL-005). */
   releaseIntent(req: IntentReleaseRequest): Promise<IntentReleaseResponse>;
@@ -143,13 +143,13 @@ export interface PurchasePort {
 }
 
 /** Server-sent push (roadmap step 40; feature `push`). */
-export interface PushPort {
+interface PushPort {
   putPushToken(req: PushTokenRequest): Promise<void>;
   deletePushToken(token: string): Promise<void>;
 }
 
 /** Reports and blocks (Apple 1.2). */
-export interface ModerationPort {
+interface ModerationPort {
   report(req: ReportRequest): Promise<ReportResponse>;
   block(playerId: string): Promise<void>;
   unblock(playerId: string): Promise<void>;
@@ -162,7 +162,7 @@ export interface ModerationPort {
  * also checks the server's features (`age-bands`, `deletion-codes`, `notices`,
  * `sessions`) before calling.
  */
-export interface AccountPort {
+interface AccountPort {
   stateAge?(req: AgeRequest): Promise<AgeResponse>;
   /** Report section 5 step 7 (feature `rules-acceptance`): this account accepted the community rules. */
   acceptRules?(req: RulesRequest): Promise<RulesResponse>;

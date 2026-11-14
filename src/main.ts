@@ -334,7 +334,7 @@ async function boot(): Promise<void> {
   let statsAsked = false;
   const askStats = () => {
     if (!stats?.shouldAsk || !connection.online) return;
-    let battle = false;
+    let battle: boolean;
     try {
       battle = Boolean(app?.inBattle);
     } catch {
@@ -628,7 +628,62 @@ async function boot(): Promise<void> {
   // A village kept after a failed load, further along than this one: offer it back.
   void hud.offerRecovery().catch((e) => console.warn(i18nText("ui.could_not_check_for_kept_villages_1d0aca4f81"), e));
 
-  // Sound: unlock on the first touch (iOS needs a gesture), tap clicks, event cues, music.
+  wireSound(controller, hud);
+
+  installBreakReminder(hud, analytics);
+
+  installAutosave(controller);
+  installLifecycle({ controller, connection, game, thumbs, reminders, currentApp: () => app });
+  watchSaveErrors(controller, hud, db);
+
+  installBackButton(controller, hud, () => app, battleBack);
+
+  installFramePacing(game, q.fps, controller, () => app);
+
+  // The splash goes once the village's first frame is drawn; then the queued toasts and banners.
+  await firstFrame;
+  await stylesReady();
+  document.getElementById('boot')?.classList.add('done');
+  bootGuard?.done();
+  shown = true;
+  earlyToasts.forEach(([text, kind], i) => setTimeout(() => showToast(text, kind), i * 1200));
+  if (!store.persistent) {
+    showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]);
+  } else if (!sandbox && !isNative()) {
+    void storageKept().then((kept) => {
+      if (kept) return;
+      // Safari (outside the Home Screen) and other browsers that refuse to keep storage may delete
+      // the village after a week away: say how to keep it, at most once a week.
+      persistAdvice = true;
+      if (!persistPromptDue()) return;
+      showBanner('tk-banner-persist', i18nText("ui.this_browser_may_delete_your_village_i_ae643ded55"), [
+        { label: i18nText("ui.keep_it_safe_190db1d347"), onClick: (close) => { close(); snoozePersistPrompt(); openPersistAdvice(); } },
+        { label: i18nText("ui.not_now_a0e63d7c71"), onClick: (close) => { close(); snoozePersistPrompt(); } },
+      ]);
+    });
+  }
+  // Report section 5 step 3 (device F6): opened from the iOS Home Screen with a brand-new village, the
+  // player may have a village in Safari, which this app cannot see. Say so once.
+  if (!sandbox && !isNative() && platformName() === 'ios' && standaloneWebApp() && !controller.state.tutorial.done && !homeScreenHintShown()) {
+    markHomeScreenHintShown();
+    hud.modal(
+      i18nText("ui.played_in_safari_before_1b168b5abe"),
+      (() => {
+        const p = document.createElement('p');
+        p.textContent = i18nText("ui.the_home_screen_app_keeps_its_own_vill_41ab3ab967");
+        return p;
+      })(),
+      [{ label: i18nText("ui.ok_565339bc4d"), primary: true, onClick: () => hud.closeAllModals() }],
+    );
+  }
+  if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
+}
+
+// ---------------------------------------------------------------- boot() helpers (quality 18)
+// Self-contained pieces of start-up, moved out of boot() so it reads as the sequence of steps.
+
+/** Sound: unlock on the first touch (iOS needs a gesture), tap clicks, event cues, music. */
+function wireSound(controller: GameController, hud: Hud): void {
   document.addEventListener('pointerdown', () => sound.unlock(), { capture: true });
   document.addEventListener('click', (e) => {
     if ((e.target as Element | null)?.closest?.("button, [role=\"button\"]")) sound.play('tap');
@@ -650,8 +705,10 @@ async function boot(): Promise<void> {
   });
   controller.onOffer(() => sound.play('notify'));
   sound.music('village');
+}
 
-  // Healthy play: one friendly break suggestion after an hour of play.
+/** Healthy play: one friendly break suggestion after an hour of play. */
+function installBreakReminder(hud: Hud, analytics: Analytics): void {
   let playedMs = 0;
   let lastTick = performance.now();
   let breakShown = false;
@@ -669,11 +726,13 @@ async function boot(): Promise<void> {
       );
     }
   }, 5000);
+}
 
-  // Autosave whenever the app goes to the background or closes, and every 15 s only when the village
-  // changed without a save (device F14: every command and finished timer already saves at once, so
-  // this mostly re-wrote an unchanged village, 150-300 KB at late Keeps, four times a minute). At
-  // least every 2 minutes it saves anyway, which keeps "last seen" fresh for a killed app.
+// Autosave whenever the app goes to the background or closes, and every 15 s only when the village
+// changed without a save (device F14: every command and finished timer already saves at once, so
+// this mostly re-wrote an unchanged village, 150-300 KB at late Keeps, four times a minute). At
+// least every 2 minutes it saves anyway, which keeps "last seen" fresh for a killed app.
+function installAutosave(controller: GameController): void {
   let autosaved: unknown = null;
   let autosavedAt = 0;
   window.setInterval(() => {
@@ -683,14 +742,18 @@ async function boot(): Promise<void> {
     autosaved = controller.state;
     autosavedAt = now;
   }, 15_000);
-  /**
-   * The app may be killed from here on (background, page closing, Capacitor pause): save, send the
-   * actions waiting for the server now instead of at the next 15 s tick (GLOBAL-010), and let go
-   * of painted art no scene shows (device F19; repainted when needed).
-   */
+}
+
+/**
+ * The app may be killed from here on (background, page closing, Capacitor pause): save, send the
+ * actions waiting for the server now instead of at the next 15 s tick (GLOBAL-010), and let go
+ * of painted art no scene shows (device F19; repainted when needed). Coming back cancels the
+ * device reminders and saves at once.
+ */
+function installLifecycle({ controller, connection, game, thumbs, reminders, currentApp }: { controller: GameController; connection: Connection; game: Phaser.Game; thumbs: Map<string, string>; reminders: ReminderService; currentApp: () => App | null }): void {
   let leftAt = 0;
   const goingAway = () => {
-    app?.flushBattle();
+    currentApp()?.flushBattle();
     void controller.save();
     const now = performance.now();
     if (now - leftAt < 1000) return; // hidden, pagehide and pause arrive together: one send is enough
@@ -732,7 +795,10 @@ async function boot(): Promise<void> {
       .then(({ App: CapApp }) => CapApp.addListener('pause', goingAway))
       .catch(() => undefined);
   }
-  // A failed save is shown (at most once a minute), never only logged.
+}
+
+/** A failed save is shown (at most once a minute), never only logged. */
+function watchSaveErrors(controller: GameController, hud: Hud, db: IDBDatabase | null): void {
   let lastSaveWarning = 0;
   let retryingSave = false;
   controller.onSaveError((e) => {
@@ -757,13 +823,15 @@ async function boot(): Promise<void> {
     lastSaveWarning = Date.now();
     hud.toast(i18nText("ui.your_village_could_not_be_saved_free_s_e56253c28f", { arg1: e.message }), 'error');
   });
+}
 
-  // Android Back (client re-audit item 6): close what is on top, leave a battle with a confirm, else ask before leaving.
+/** Android Back (client re-audit item 6): close what is on top, leave a battle with a confirm, else ask before leaving. */
+function installBackButton(controller: GameController, hud: Hud, currentApp: () => App | null, battleBack: () => void): void {
   if (isNative() && platform() === 'android') {
     void import('@capacitor/app')
       .then(({ App: CapApp }) =>
         CapApp.addListener('backButton', () => {
-          if (app?.inBattle) return battleBack();
+          if (currentApp()?.inBattle) return battleBack();
           if (hud.closeTop()) return;
           void hud.confirm(i18nText("ui.leave_kagemura_0b798fad93"), i18nText("ui.your_village_is_saved_and_your_artisan_85332ff544"), i18nText("ui.leave_fc6e4a408d"), false, i18nText("ui.stay_08fd1de4b0")).then((leave) => {
             if (leave) void controller.save().finally(() => void CapApp.exitApp());
@@ -772,18 +840,22 @@ async function boot(): Promise<void> {
       )
       .catch((e) => console.warn(i18nText("ui.back_button_unavailable_922733130d"), e));
   }
+}
 
-  // Battery (client re-audit item 17): the village drops to ~20 FPS after a few seconds without
-  // input or game events, and comes back at the first touch, key, wheel or event. Never in battle.
-  // While a dialog covers the village (its backdrop blurs the map on high), the village draws at
-  // ~10 FPS whatever the input (2026-11-13 runtime batch, review M6): each village frame made the
-  // browser blur the whole screen again.
+/**
+ * Battery (client re-audit item 17): the village drops to ~20 FPS after a few seconds without
+ * input or game events, and comes back at the first touch, key, wheel or event. Never in battle.
+ * While a dialog covers the village (its backdrop blurs the map on high), the village draws at
+ * ~10 FPS whatever the input (2026-11-13 runtime batch, review M6): each village frame made the
+ * browser blur the whole screen again.
+ */
+function installFramePacing(game: Phaser.Game, profileFps: number, controller: GameController, currentApp: () => App | null): void {
   const loop = game.loop as unknown as { _limitRate: number; hasFpsLimit: boolean };
   pacing.activeMs = loop._limitRate;
   game.events.on(Phaser.Core.Events.POST_RENDER, () => frames.tick(performance.now()));
   // Device F2: a 120 Hz phone on high ran at 120 FPS (twice the profile's work); limit it to 60.
   void measureRefreshHz().then((hz) => {
-    const limit = limitFor(q.fps, hz);
+    const limit = limitFor(profileFps, hz);
     if (loop.hasFpsLimit && 1000 / limit > pacing.activeMs) setActiveLimit(loop, limit);
   });
   const IDLE_RATE = 1000 / 21;
@@ -791,7 +863,7 @@ async function boot(): Promise<void> {
   const IDLE_AFTER_MS = 5000;
   let lastActive = performance.now();
   let mode: 'active' | 'idle' | 'covered' = 'active';
-  const covered = () => !app?.inBattle && document.querySelector('#hud .modal-backdrop') !== null;
+  const covered = () => !currentApp()?.inBattle && document.querySelector('#hud .modal-backdrop') !== null;
   const setMode = (m: typeof mode) => {
     if (mode === m || !loop.hasFpsLimit) return;
     mode = m;
@@ -806,49 +878,11 @@ async function boot(): Promise<void> {
   for (const t of ['click', 'keyup']) window.addEventListener(t, active, { passive: true });
   controller.onEvents(() => active());
   window.setInterval(() => {
-    if (app?.inBattle) return active();
+    if (currentApp()?.inBattle) return active();
     if (covered()) setMode('covered');
     else if (mode === 'covered') setMode('active');
     else if (mode === 'active' && performance.now() - lastActive > IDLE_AFTER_MS) setMode('idle');
   }, 1000);
-
-  // The splash goes once the village's first frame is drawn; then the queued toasts and banners.
-  await firstFrame;
-  await stylesReady();
-  document.getElementById('boot')?.classList.add('done');
-  bootGuard?.done();
-  shown = true;
-  earlyToasts.forEach(([text, kind], i) => setTimeout(() => showToast(text, kind), i * 1200));
-  if (!store.persistent) {
-    showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]);
-  } else if (!sandbox && !isNative()) {
-    void storageKept().then((kept) => {
-      if (kept) return;
-      // Safari (outside the Home Screen) and other browsers that refuse to keep storage may delete
-      // the village after a week away: say how to keep it, at most once a week.
-      persistAdvice = true;
-      if (!persistPromptDue()) return;
-      showBanner('tk-banner-persist', i18nText("ui.this_browser_may_delete_your_village_i_ae643ded55"), [
-        { label: i18nText("ui.keep_it_safe_190db1d347"), onClick: (close) => { close(); snoozePersistPrompt(); openPersistAdvice(); } },
-        { label: i18nText("ui.not_now_a0e63d7c71"), onClick: (close) => { close(); snoozePersistPrompt(); } },
-      ]);
-    });
-  }
-  // Report section 5 step 3 (device F6): opened from the iOS Home Screen with a brand-new village, the
-  // player may have a village in Safari, which this app cannot see. Say so once.
-  if (!sandbox && !isNative() && platformName() === 'ios' && standaloneWebApp() && !controller.state.tutorial.done && !homeScreenHintShown()) {
-    markHomeScreenHintShown();
-    hud.modal(
-      i18nText("ui.played_in_safari_before_1b168b5abe"),
-      (() => {
-        const p = document.createElement('p');
-        p.textContent = i18nText("ui.the_home_screen_app_keeps_its_own_vill_41ab3ab967");
-        return p;
-      })(),
-      [{ label: i18nText("ui.ok_565339bc4d"), primary: true, onClick: () => hud.closeAllModals() }],
-    );
-  }
-  if (!isNative()) registerServiceWorker((text) => hud.toast(text, 'info'));
 }
 
 /** Running as an installed web app (iOS Home Screen, or an installed PWA). */

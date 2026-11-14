@@ -40,14 +40,14 @@
  * physical cheap-phone measurement.
  */
 
-export type QualityProfile = 'high' | 'low';
+type QualityProfile = 'high' | 'low';
 /** What the player picked in Settings: `auto` follows the device signals. */
 export type QualityChoice = 'auto' | QualityProfile;
 
 /** localStorage key holding the player's choice. */
 export const QUALITY_STORAGE_KEY = 'tk.quality';
 
-export interface QualitySettings {
+interface QualitySettings {
   profile: QualityProfile;
   /** Why this profile was picked, in words (for Settings and perf logs). */
   reason: string;
@@ -82,7 +82,7 @@ export interface QualitySettings {
 }
 
 /** Cheap signals about the device, read once. Each is optional: browsers expose different ones. */
-export interface QualitySignals {
+interface QualitySignals {
   /** `navigator.deviceMemory` in GB (Chrome-based browsers only; rounded to a power of two). */
   deviceMemory?: number;
   /** `navigator.hardwareConcurrency` (logical cores). */
@@ -113,7 +113,7 @@ export const FPS_SAMPLES = 20;
 /** A battle median under this on high means the phone cannot keep up: low from the next start. */
 export const FPS_DOWNGRADE = 40;
 /** localStorage key: a session measured slow battles on high. */
-export const MEASURED_STORAGE_KEY = 'tk.quality.measured';
+const MEASURED_STORAGE_KEY = 'tk.quality.measured';
 
 /** Home-button iPhones (SE 1st-3rd gen, 6s-8 and Plus): 2-3 GB of memory, the oldest iOS 15 devices. */
 function homeButtonIphone(s: QualitySignals): boolean {
@@ -179,7 +179,7 @@ export function autoProfile(s: QualitySignals): { profile: QualityProfile; reaso
  * read so the drawing really happens. The game's start-up cost is this kind of drawing (textures
  * are painted in code), so it is the signal that matters when the browser hides its memory.
  */
-export function measureFillMs(): number | undefined {
+function measureFillMs(): number | undefined {
   try {
     const c = document.createElement('canvas');
     c.width = 128;
@@ -313,7 +313,7 @@ export function setQualityChoice(choice: QualityChoice): boolean {
 }
 
 /** Read the device signals (all optional; nothing here prompts or is slow). */
-export function readSignals(): QualitySignals {
+function readSignals(): QualitySignals {
   if (typeof window === 'undefined') return {};
   const nav = navigator as Navigator & { deviceMemory?: number };
   const mq = (q: string): boolean => {

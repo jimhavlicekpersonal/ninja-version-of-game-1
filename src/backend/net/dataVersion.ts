@@ -24,7 +24,7 @@ export function canonicalJson(v: unknown): string {
 }
 
 /** 53-bit string hash (cyrb53), as 14 hex digits. Not cryptographic: it names builds, it does not protect them. */
-export function hash53(s: string): string {
+function hash53(s: string): string {
   let h1 = 0xdeadbeef;
   let h2 = 0x41c6ce57;
   for (let i = 0; i < s.length; i++) {

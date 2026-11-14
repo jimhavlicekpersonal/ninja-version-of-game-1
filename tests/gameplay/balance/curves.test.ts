@@ -15,13 +15,13 @@ const avgLoot = (h: number) => {
   const r = data.battle.generatedLootByHall[h - 1];
   return (r.min + r.max) / 2;
 };
-/** Max Acorn storage at a hall level (silos at their cap plus the Elder Toadstool). */
+/** Max Coin storage at a hall level (silos at their cap plus the Keep). */
 const maxStorage = (h: number) => {
   const lim = data.hall.levels[h - 1].limits.acorn_silo;
   return lim.count * data.buildings.acorn_silo.levels[lim.maxLevel - 1].storage!.acorns! + hallLv[h - 1].storage!.acorns!;
 };
 
-describe('Elder Toadstool curve (#14, #15)', () => {
+describe('Keep curve (#14, #15)', () => {
   it('upgrade times grow by a steady factor to Keep 9, then climb gently to under a week (design re-audit)', () => {
     // Keeps 3-9: x2.2-3 per Keep (balance fix #14: the old curve jumped x36 at hall 4).
     for (let l = 3; l < 9; l++) {
@@ -59,7 +59,7 @@ describe('Elder Toadstool curve (#14, #15)', () => {
     }
   });
 
-  it('the Elder Toadstool itself stores little; storages do the storing', () => {
+  it('the Keep itself stores little; storages do the storing', () => {
     // (Halls 1-2 hold a useful share while there are hardly any storages yet.)
     for (let h = 3; h <= halls; h++) expect(hallLv[h - 1].storage!.acorns!).toBeLessThanOrEqual(0.1 * maxStorage(h));
     for (let h = 1; h < halls; h++) expect(maxStorage(h)).toBeGreaterThanOrEqual(hallLv[h].cost.acorns!);
@@ -118,7 +118,7 @@ describe('fixed rewards scale with the hall level (#19)', () => {
 });
 
 describe('buying progress (#20)', () => {
-  /** Moonstones to buy the next Elder Toadstool's Acorns (at the buyer's Keep price) and skip its timer. */
+  /** Jade to buy the next Keep's Coins (at the buyer's Keep price) and skip its timer. */
   const rush = (h: number) => topUpOne(hallLv[h].cost.acorns!, data, h) + skipCost(hallLv[h].buildSeconds, data);
 
   it('costs more at every hall, and the starting Moonstones cannot buy a mid-game hall', () => {

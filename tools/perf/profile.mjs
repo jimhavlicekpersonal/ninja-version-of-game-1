@@ -40,7 +40,7 @@ const buckets = {};
 let total = 0;
 for (const [id, us] of self) {
   total += us;
-  let n = byId.get(id);
+  const n = byId.get(id);
   const own = n.callFrame.functionName || n.callFrame.url.split('/').pop() || '(' + n.callFrame.functionName + ')';
   let bucket = null;
   for (let cur = id; cur != null; cur = parent.get(cur)) {

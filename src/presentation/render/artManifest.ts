@@ -18,7 +18,7 @@
  */
 import type Phaser from 'phaser';
 
-export interface ArtImage {
+interface ArtImage {
   key: string;
   url: string;
 }
@@ -29,7 +29,7 @@ export interface ArtManifestCache {
   set(value: string | null): void;
 }
 
-export interface LoadArtManifestOptions {
+interface LoadArtManifestOptions {
   /** Longest wait before boot carries on without a fresh manifest. */
   timeoutMs?: number;
   /** How long a late manifest may keep loading in the background (for the next launch). */
@@ -42,7 +42,7 @@ export interface LoadArtManifestOptions {
 export const ART_MANIFEST_TIMEOUT_MS = 2500;
 const ART_MANIFEST_BACKGROUND_MS = 30_000;
 /** One real-art image may take this long before the code-drawn art is used instead. */
-export const ART_IMAGE_TIMEOUT_MS = 20_000;
+const ART_IMAGE_TIMEOUT_MS = 20_000;
 const CACHE_KEY = 'tk.art.manifest';
 
 let images: ArtImage[] = [];

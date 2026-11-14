@@ -33,7 +33,7 @@ export function troopLevels(state: VillageState, data: GameData): Record<string,
   return out;
 }
 
-/** Highest troop level research can reach at an Elder Toadstool level. */
+/** Highest troop level research can reach at a Keep level. */
 export function troopLevelCapAt(hallLevel: number, data: GameData, troop?: string): number {
   const levels = data.hall.levels;
   const cap = levels[Math.max(1, Math.min(levels.length, hallLevel)) - 1]?.troopLevelCap ?? 1;

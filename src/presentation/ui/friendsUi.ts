@@ -22,7 +22,7 @@ import { qrSvg } from './qr';
 import type { SignInSource } from '../../backend/platform/auth';
 import { communityRulesAccepted, ensureCommunityRules } from './communityRules';
 
-export interface FriendsUiDeps {
+interface FriendsUiDeps {
   kit: UiKit;
   connection: Connection;
   /** The address a friend link opens (the web game, or VITE_PUBLIC_URL in the apps); null: no links, codes only. */
@@ -469,7 +469,7 @@ export class FriendsUi {
 }
 
 /** A duel as a battle-log record, for the replay viewer. */
-export function duelRecord(d: DuelView): BattleRecord {
+function duelRecord(d: DuelView): BattleRecord {
   return {
     id: `duel-${d.id}`,
     kind: d.side,

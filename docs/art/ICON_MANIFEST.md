@@ -567,7 +567,7 @@
 | `icon.ability.kunai_volley` | `public/art/icons/abilities/kunai_volley.png` | 128 | Kunai Volley |  | yes |
 | `icon.ability.fan_throw` | `public/art/icons/abilities/fan_throw.png` | 128 | Fan Throw |  | yes |
 | `icon.ability.venom_dart` | `public/art/icons/abilities/venom_dart.png` | 128 | Venom Dart |  | yes |
-| `icon.ability.armor_shred` | `public/art/icons/abilities/armor_shred.png` | 128 | Armour Shred |  | yes |
+| `icon.ability.armor_shred` | `public/art/icons/abilities/armor_shred.png` | 128 | Armor Shred |  | yes |
 | `icon.ability.needle_rain` | `public/art/icons/abilities/needle_rain.png` | 128 | Needle Rain |  | yes |
 | `icon.ability.stand_firm` | `public/art/icons/abilities/stand_firm.png` | 128 | Stand Firm |  | yes |
 | `icon.ability.iron_skin` | `public/art/icons/abilities/iron_skin.png` | 128 | Iron Skin |  | yes |

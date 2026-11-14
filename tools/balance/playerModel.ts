@@ -8,8 +8,8 @@
  *   never breaks), raids if its army is at least 80%
  *   full, refills the army, researches, then spends on a priority list (Elder
  *   Toadstool > storage it needs > army buildings > collectors > other
- *   storage > defenses and traps), saving half the next Elder Toadstool's cost
- *   before buying extras and keeping a builder free when the Elder Toadstool
+ *   storage > defenses and traps), saving half the next Keep's cost
+ *   before buying extras and keeping a builder free when the Keep
  *   is nearly affordable.
  * - Raids: it scouts the matched opponent, presses Next (paying the fee) up to
  *   `maxNext` times while the loot on offer is below average for its hall,
@@ -89,7 +89,7 @@ export class ModelPlayer {
   trialsTried = 0;
   private sessions = 0;
   tasksClaimed = 0;
-  /** Raids against the village: stars, destruction, Acorns + Dew stolen, the honor change and a held raid's reward. */
+  /** Raids against the village: stars, destruction, Coins + Provisions stolen, the honor change and a held raid's reward. */
   defenseLog: { hall: number; stars: number; destruction: number; lost: number; trophies: number; reward: number }[] = [];
   private readonly t0: number;
 
@@ -170,7 +170,7 @@ export class ModelPlayer {
       const res = this.state.resources as Record<string, number>;
       const capR = cap as Record<string, number>;
       const hallSoon = Object.keys(need).length > 0 && Object.entries(need).every(([k, v]) => res[k] >= v * 0.6 && capR[k] >= v);
-      // Keep the last free builder for the Elder Toadstool when it is nearly affordable.
+      // Keep the last free builder for the Keep when it is nearly affordable.
       if (hallSoon && builderStatus(this.state, d, now).free <= 1) return;
       const costOf = (cmd: Command): Record<string, number> => {
         if (cmd.type === 'place') return (d.buildings[cmd.buildingType].levels[0].cost ?? {}) as Record<string, number>;
@@ -203,7 +203,7 @@ export class ModelPlayer {
       options.sort((a, b) => a.prio - b.prio);
       let did = false;
       for (const o of options) {
-        // Extras (army, defenses) only if they leave enough saved for the next Elder Toadstool.
+        // Extras (army, defenses) only if they leave enough saved for the next Keep.
         if (o.prio >= 3) {
           const c = costOf(o.cmd);
           if (Object.entries(c).some(([k, v]) => res[k] - v < (need[k] ?? 0) * 0.5)) continue;

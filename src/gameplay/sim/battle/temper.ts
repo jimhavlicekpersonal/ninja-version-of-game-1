@@ -12,7 +12,7 @@
  */
 import type { BuildingType, GameData, Temper, TemperAxis, TemperDef, TemperFamily } from '../types';
 import type { BaseLayout } from './types';
-import type { SimBuilding } from './battle';
+import type { SimBuilding, TroopCuts } from './state';
 
 export const TEMPER_AXES: readonly TemperAxis[] = ['reach', 'blast', 'watch'];
 
@@ -180,13 +180,7 @@ export function temperBase(base: BaseLayout, tempers: Record<BuildingType, Tempe
   }
 }
 
-/** The attackers' support a tempered base cuts (`troopCuts` by the profile); all zero untempered. */
-export interface TroopCuts {
-  heal: number;
-  aura: number;
-  splash: number;
-  revive: number;
-}
+export type { TroopCuts } from './state';
 
 export function troopCuts(profile: TemperProfile, data: GameData): TroopCuts {
   const out: TroopCuts = { heal: 0, aura: 0, splash: 0, revive: 0 };

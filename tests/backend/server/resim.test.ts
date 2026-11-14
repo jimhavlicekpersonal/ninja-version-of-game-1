@@ -150,22 +150,17 @@ describe('real worker threads', () => {
   it('give the same results as the main thread, and leave it free while they work', async () => {
     const pool = realPool(2);
     const battles = [battle(8, 1), battle(12, 2), battle(15, 3), battle(4, 4)];
-    // Ticks of the main thread's event loop while the workers run: a blocked loop would show long gaps.
-    let maxGap = 0;
-    let last = performance.now();
-    const ticker = setInterval(() => {
-      const now = performance.now();
-      maxGap = Math.max(maxGap, now - last);
-      last = now;
-    }, 5);
-    const outs = await Promise.all(battles.map((b) => pool.run(engine, b.setup, b.deployments, undefined)));
-    clearInterval(ticker);
+    // The main thread never simulates while the workers run (quality 25: counted, not timed): the engine
+    // handed to the pool reports any battle run on this thread.
+    let mainThreadRuns = 0;
+    const watched = { ...engine, runBattle: ((...args: Parameters<typeof engine.runBattle>) => (mainThreadRuns++, engine.runBattle(...args))) as typeof engine.runBattle };
+    const outs = await Promise.all(battles.map((b) => pool.run(watched, b.setup, b.deployments, undefined)));
+    expect(mainThreadRuns).toBe(0);
     for (let i = 0; i < battles.length; i++) {
       const here = simulate(engine, battles[i].setup, battles[i].deployments, undefined);
       expect(outs[i].result).toEqual(here.result);
       expect(outs[i].fallen).toEqual(here.fallen);
     }
-    expect(maxGap).toBeLessThan(150);
   }, 60_000);
 
   it('settle a PvP attack over HTTP exactly as the in-place path does', async () => {

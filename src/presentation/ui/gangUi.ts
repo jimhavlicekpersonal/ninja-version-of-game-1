@@ -18,7 +18,7 @@ import { formatDuration } from './format';
 import { presetChatRow } from './ageScreen';
 import { REASON_LABELS } from './groveUi';
 
-export interface GangUiDeps {
+interface GangUiDeps {
   kit: UiKit;
   connection: Connection;
   /** My friends (the people a leader can invite). */
