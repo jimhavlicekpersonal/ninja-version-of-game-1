@@ -367,6 +367,22 @@ Types in `src/backend/net/growth.ts` and `eventSchedule.ts` (re-exported from `p
 - `StatsBatch.tz?` (minutes east of UTC, rounded to 15, -720..840; `cleanTz`): the device's offset, stored per statistics id (`stats_install_tz`), never with a player id. Older games send none: their days count in UTC.
 - The hourly rollup is incremental (`stats_installs` summaries rebuilt only for ids with events received after the `stats_watermarks` mark) and rebuilds `stats_daily` from them. Staff: `GET /admin/v1/stats/local?days=&basis=local|utc` (D1/D7/D30 by install day on that basis), `GET /admin/v1/stats/funnel?days=&basis=` (tutorial steps, first raid and purchase within 7 days, returns), and the page `GET /admin/stats` (no data in the page; the staff token is pasted, as on `/admin`).
 
+## Compliance switches (2026-11-14, additive, no protocol bump)
+
+Types in `src/backend/net/compliance.ts` (re-exported from `protocol.ts`); rules in `server/core/compliance.ts`; routes in `server/routes/compliance.ts`. Older games ignore every addition.
+
+- **Hello features:** `under13-offline` | `under13-limited` | `under13-families` (always one; a server without it counts as `limited`, `under13ModeOf`), `terms-acceptance`, `eu-jade-value` (only with `EU_JADE_VALUE=1`), `consumption-consent` (only with `APPLE_CONSUMPTION_RESPONSE=1`, App Store purchases and the App Store Server API key). `HelloResponse.significantUpdateBuild?: string` with `SIGNIFICANT_UPDATE_BUILD`.
+- **Under 13:** `limited`/`families`: `ChatView.withheld?: true` on another player's free-text chat read by an under-13 player, whose `text` is then `WITHHELD_CHAT_TEXT` (fixed phrases, even typed by an adult, system lines and the reader's own messages are unchanged); `PUT /v1/push/tokens` answers `403 age_restricted` (`srv.push.not_for_age`) for an under-13 player in every mode. `offline`: `PUT /v1/me/age { band: "under13" }` keeps the band, then answers `403 age_restricted` (`srv.age.under13_offline`); afterwards every `/v1/` request with that player's token answers the same, except `DELETE /v1/me`, `GET /v1/hello` and `GET /v1/me/compliance`. The game stops before registering when its own band is under 13 and the hello says `under13-offline`.
+
+| | request | response |
+|---|---|---|
+| `GET /v1/me/compliance` | — | `ComplianceView { termsVersion: string \| null, consumptionConsent: boolean }` |
+| `PUT /v1/me/terms` | `TermsRequest { version: "YYYY-MM-DD" }` (the terms' effective date, `legal-config.js` `termsEffective`) | `ComplianceView`; the newest date accepted is kept; `400 bad_request` (`srv.terms.bad_version`) for anything else |
+| `PUT /v1/me/consumption-consent` | `ConsumptionConsentRequest { consent: boolean }` | `ComplianceView`; switching on needs the adult band (`403 age_restricted`, `srv.consent.not_adult`) |
+
+- **App Store `CONSUMPTION_REQUEST`:** answered with `PUT /inApps/v1/transactions/consumption/{transactionId}` (App Store Server API, ES256 JWT) only for a purchase this server credited, whose buyer is an adult with the consent on, while `APPLE_CONSUMPTION_RESPONSE=1`; otherwise ignored (metric `tk_consumption_requests_total{result}`). The body never carries a name, village or chat, `refundPreference` is 0 and `consumptionStatus`/`playTime` are 0 (undeclared).
+- Contract test: `tests/backend/contract/protocol.contract.test.ts` "compliance switches 2026-11-14".
+
 ## Server-owned village (beta)
 
 | | request | response |
