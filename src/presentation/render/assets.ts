@@ -279,12 +279,14 @@ export function groundScale(textures: Phaser.Textures.TextureManager, mapSize: n
  * The world around the plateau: a dusk backdrop and slow wisps of the cloud sea.
  * Shared by the village and battle scenes.
  */
-export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = quality().wispCount): void {
+export function addSurroundings(scene: Phaser.Scene, mapSize: number, count = quality().wispCount, reach = 2000): void {
   const mb = mapBounds(mapSize);
   const cx = mb.x + mb.width / 2;
   const cy = mb.y + mb.height / 2;
   const bd = scene.add.image(cx, cy, Keys.backdrop).setDepth(-30);
-  bd.setDisplaySize(mb.width + 4000, mb.height + 4000);
+  // The backdrop must cover everything the camera can show (`reach`: world px past the map on each side). The battle
+  // camera may go 2,800 px past it; a 2,000 px backdrop showed its hard edges at 21:9 when zoomed out (art audit F3).
+  bd.setDisplaySize(mb.width + reach * 2, mb.height + reach * 2);
   let seed = 4242;
   const rand = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
   for (let i = 0, placed = 0; i < 500 && placed < count; i++) {

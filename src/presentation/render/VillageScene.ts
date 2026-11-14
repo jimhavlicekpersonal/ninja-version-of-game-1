@@ -10,6 +10,7 @@ import { collectorAmount, collectorCapacity, effectiveLevel } from '../../gamepl
 import type { Building } from '../../gameplay/sim/types';
 import type { UiBus } from '../ui/bus';
 import { formatDuration, formatNumber } from '../ui/format';
+import { villageStartFrame } from './cameraFrame';
 import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, villageTexture, holdBuildingTextures } from './assets';
 import { depthFor, footprintCenter, footprintCorners, mapBounds, tileToWorld, worldToTile } from './iso';
 import { VillageLife, addScenery, confetti, resourceBurst } from './fx';
@@ -145,6 +146,7 @@ export class VillageScene extends Phaser.Scene {
     }
 
     this.sync();
+    if (hall) this.frameForTutorial(hall.id);
     this.ready = true;
 
     this.unsubs.push(
@@ -454,6 +456,25 @@ export class VillageScene extends Phaser.Scene {
   }
 
   // ------------------------------------------------------------------ camera
+
+  /**
+   * Art audit F13: while the tutorial runs, the Sensei's bubble covers the top of a phone screen, so the first frame
+   * puts the Keep below it (portrait) or beside it (landscape) instead of in the middle (`cameraFrame.ts`).
+   */
+  private frameForTutorial(hallId: string): void {
+    const v = this.views.get(hallId);
+    if (!v || this.controller.state.tutorial.done) return;
+    const cssW = this.scale.width / this.renderScale;
+    const cssH = this.scale.height / this.renderScale;
+    const im = v.image;
+    const f = villageStartFrame({ cssW, cssH, keepW: im.displayWidth, keepH: im.displayHeight, zoom: this.userZoom, minZoom: this.minZoom(), tutorial: true });
+    if (!f) return;
+    this.userZoom = f.zoom;
+    this.applyZoom();
+    const kx = im.x - im.displayWidth * (im.originX - 0.5);
+    const ky = im.y - im.displayHeight * (im.originY - 0.5);
+    this.cameras.main.centerOn(kx - (f.keepX - cssW / 2) / f.zoom, ky - (f.keepY - cssH / 2) / f.zoom);
+  }
 
   private applyZoom(): void {
     this.cameras.main.setZoom(this.userZoom * this.renderScale);

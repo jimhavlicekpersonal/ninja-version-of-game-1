@@ -16,6 +16,9 @@ import { noteBattleFps, quality } from './quality';
 import { expectedFps, frames, refreshHz, slowDown } from './frameRate';
 import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
 import { haptic, sound } from '../audio/sound';
+import { placeCallout, type CalloutBox } from './calloutLayout';
+import { OPENING_GLIDE_MS, OPENING_HOLD_MS, battleOpening } from './cameraFrame';
+import { reducedMotion } from './motion';
 
 export interface BattleHooks {
   selectedTroop(): string | null;
@@ -30,6 +33,13 @@ export interface BattleHooks {
   attachView?(view: BattleView): void;
   /** A one-line message for the player (the battle HUD's toast). */
   notice?(text: string): void;
+}
+
+/** A camera position: zoom (CSS px per world px) and the world point at the canvas centre. */
+interface CameraShot {
+  zoom: number;
+  x: number;
+  y: number;
 }
 
 export interface ScreenInsets {
@@ -165,6 +175,8 @@ export class BattleScene extends Phaser.Scene {
     this.entryLabels = [];
     this.entrySig = '';
     this.lastCallout = new Map();
+    this.liveCallouts = [];
+    this.opening = null;
   }
 
   preload(): void {
@@ -181,7 +193,7 @@ export class BattleScene extends Phaser.Scene {
     const mapSize = gd.economy.mapSize;
     const mb = mapBounds(mapSize);
     this.add.image(mb.x - GROUND_PAD, mb.y - GROUND_PAD, Keys.ground).setOrigin(0, 0).setScale(groundScale(this.textures, mapSize)).setDepth(-10);
-    addSurroundings(this, mapSize);
+    addSurroundings(this, mapSize, undefined, BATTLE_BOUNDS_PAD + 100);
     addScenery(this, mapSize);
     this.cam = new CameraControl(this, {
       renderScale: this.renderScale,
@@ -212,6 +224,7 @@ export class BattleScene extends Phaser.Scene {
     // Open on every open point (re-audit design item 1); the HUD is laid out by now.
     this.pathGfx = this.add.graphics().setDepth(-2);
     this.fitEntry();
+    this.startOpening();
     const refit = () => {
       // Turning the phone before the first warrior goes in shows the whole base again.
       if (!this.session.deployments.length) this.time.delayedCall(60, () => this.fitEntry());
@@ -255,10 +268,10 @@ export class BattleScene extends Phaser.Scene {
     return (open.length ? open : entry.points).map((p) => tileToWorld(p.x, p.y));
   }
 
-  /** Zoom and pan so every open point's ring sits inside the free area (down to FIT_FLOOR). */
-  private fitEntry(): void {
+  /** Zoom and world centre that put every open point's ring inside the free area (down to FIT_FLOOR), or null. */
+  private entryFit(): CameraShot | null {
     const pts = this.framedPoints();
-    if (!pts.length) return;
+    if (!pts.length) return null;
     const entry = this.session.sim.entry!;
     const fa = this.freeArea();
     // Ring half-sizes in world px; a 22 px label sits above each ring.
@@ -272,15 +285,77 @@ export class BattleScene extends Phaser.Scene {
     const labelPx = 24;
     const availW = Math.max(60, fa.right - fa.left - pad * 2);
     const availH = Math.max(60, fa.bottom - fa.top - pad * 2 - labelPx);
-    const z = Phaser.Math.Clamp(Math.min(availW / (maxX - minX), availH / (maxY - minY)), FIT_FLOOR, 0.9);
-    this.cam.stop();
-    this.cam.setZoom(z);
-    const zoom = this.cam.userZoom;
+    const z = Phaser.Math.Clamp(Math.min(availW / (maxX - minX), availH / (maxY - minY)), Math.max(FIT_FLOOR, this.cam.minZoom()), 0.9);
     // Put the middle of the points at the middle of the free area (the label band sits above it).
     const fx = (fa.left + fa.right) / 2 - fa.cssW / 2;
     const fy = (fa.top + labelPx + fa.bottom) / 2 - fa.cssH / 2;
-    this.cameras.main.centerOn((minX + maxX) / 2 - fx / zoom, (minY + maxY) / 2 - fy / zoom);
+    return { zoom: z, x: (minX + maxX) / 2 - fx / z, y: (minY + maxY) / 2 - fy / z };
+  }
+
+  private applyShot(s: CameraShot): void {
+    this.cam.stop();
+    this.cam.setZoom(s.zoom);
+    this.cameras.main.centerOn(s.x, s.y);
     this.rescaleOverlays();
+  }
+
+  /** Zoom and pan so every open point's ring sits inside the free area (during the opening shot: where it glides to). */
+  private fitEntry(): void {
+    const f = this.entryFit();
+    if (!f) return;
+    if (this.opening) this.opening.target = f;
+    else this.applyShot(f);
+  }
+
+  /** The opening shot in progress (art audit F4): the base up close, then a glide out to `target`. */
+  private opening: { target: CameraShot; timer: Phaser.Time.TimerEvent | null; tween: Phaser.Tweens.Tween | null } | null = null;
+
+  /**
+   * Art audit F4: on a portrait phone the fit of every point is ~0.14 zoom (a postage-stamp base). Show the base at a
+   * readable zoom first, hold, then glide out to the fit. A touch, a replay or reduced motion skips it.
+   */
+  private startOpening(): void {
+    const target = this.entryFit();
+    if (!target) return;
+    const fa = this.freeArea();
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const v of this.bviews) {
+      if (!v.image.visible) continue;
+      const b = v.image.getBounds();
+      x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.right); y1 = Math.max(y1, b.bottom);
+    }
+    const zoom = battleOpening({ fitZoom: target.zoom, baseW: x1 - x0, baseH: y1 - y0, freeW: fa.right - fa.left, freeH: fa.bottom - fa.top, skip: this.session.mode === 'replay' || reducedMotion() });
+    if (zoom === null) return;
+    const fx = (fa.left + fa.right) / 2 - fa.cssW / 2;
+    const fy = (fa.top + fa.bottom) / 2 - fa.cssH / 2;
+    const from: CameraShot = { zoom, x: (x0 + x1) / 2 - fx / zoom, y: (y0 + y1) / 2 - fy / zoom };
+    this.applyShot(from);
+    const op: NonNullable<BattleScene['opening']> = { target, timer: null, tween: null };
+    this.opening = op;
+    const finish = () => {
+      if (this.opening !== op) return;
+      op.timer?.remove();
+      op.tween?.stop();
+      this.opening = null;
+      this.input.off('pointerdown', finish);
+      this.applyShot(op.target);
+    };
+    this.input.once('pointerdown', finish);
+    op.timer = this.time.delayedCall(OPENING_HOLD_MS, () => {
+      op.tween = this.tweens.addCounter({
+        from: 0,
+        to: 1,
+        duration: OPENING_GLIDE_MS,
+        ease: 'Cubic.easeInOut',
+        onUpdate: (tw) => {
+          const k = tw.getValue() ?? 0;
+          const t = op.target;
+          // Zoom eases in log space so the glide feels even; the centre follows the zoom.
+          this.applyShot({ zoom: from.zoom * Math.pow(t.zoom / from.zoom, k), x: from.x + (t.x - from.x) * k, y: from.y + (t.y - from.y) * k });
+        },
+        onComplete: finish,
+      });
+    });
   }
 
   private entriesOnScreen(): EntryOnScreen[] {
@@ -294,7 +369,8 @@ export class BattleScene extends Phaser.Scene {
     return entry.points.map((p, i) => {
       const w = tileToWorld(p.x, p.y);
       const c = this.toCss(w.x, w.y);
-      const inside = c.x - hx > fa.left && c.x + hx < fa.right && c.y - 4 > fa.top && c.y + hy < fa.bottom;
+      // During the opening shot the camera is on its way to frame every point: no chevrons for that moment.
+      const inside = Boolean(this.opening) || (c.x - hx > fa.left && c.x + hx < fa.right && c.y - 4 > fa.top && c.y + hy < fa.bottom);
       return { index: i, label: p.label, left: coverLeft(entry, i), x: c.x + fa.ox, y: c.y + fa.oy, inside };
     });
   }
@@ -668,19 +744,46 @@ export class BattleScene extends Phaser.Scene {
     if (v.image.texture.key !== key) v.image.setTexture(key);
   }
 
-  /** Short floating label over a troop or building (ability names, counter effects). Throttled per key. */
+  /** Callout labels still on screen (art audit F8: they are laid out against each other, `calloutLayout.ts`). */
+  private liveCallouts: { label: Phaser.GameObjects.Text; text: string; tween: Phaser.Tweens.Tween | null }[] = [];
+
+  /** Short floating label over a troop or building (ability names, counter effects). Throttled per key, stacked, merged. */
   private callout(key: string, x: number, y: number, text: string, color: string): void {
     const now = this.time.now;
     if (now - (this.lastCallout.get(key) ?? -Infinity) < CALLOUT_GAP_MS) return;
     this.lastCallout.set(key, now);
     const zoom = this.cam.userZoom;
+    const shown = ownedText(text);
     const label = this.add
-      .text(x, y, ownedText(text), { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
+      .text(x, y, shown, { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
       .setShadow(0, 2, 'rgba(15,20,30,0.45)', 3, true, true)
       .setOrigin(0.5, 1)
       .setScale(1 / zoom)
       .setDepth(OVER);
-    this.tweens.add({ targets: label, y: y - 26 / zoom, alpha: { from: 1, to: 0 }, duration: 1100, ease: 'Cubic.easeOut', onComplete: () => label.destroy() });
+    this.liveCallouts = this.liveCallouts.filter((c) => c.label.active);
+    const box = (l: Phaser.GameObjects.Text, t: string): CalloutBox => {
+      const c = this.toCss(l.x, l.y);
+      return { text: t, x: c.x, y: c.y, w: l.width, h: l.height };
+    };
+    const at = placeCallout(this.liveCallouts.map((c) => box(c.label, c.text)), box(label, shown), this.hooks.safeArea?.().top ?? 0);
+    if (at.kind !== 'place') {
+      label.destroy();
+      // The same words close by: show the live one again instead of printing a second copy.
+      if (at.kind === 'merge') this.floatCallout(this.liveCallouts[at.index]);
+      return;
+    }
+    label.y += (at.y - box(label, shown).y) / zoom;
+    const entry = { label, text: shown, tween: null as Phaser.Tweens.Tween | null };
+    this.liveCallouts.push(entry);
+    this.floatCallout(entry);
+  }
+
+  /** Float a callout up and fade it out (again, when a merged copy refreshes it). */
+  private floatCallout(c: { label: Phaser.GameObjects.Text; tween: Phaser.Tweens.Tween | null }): void {
+    c.tween?.stop();
+    const l = c.label.setAlpha(1);
+    const rise = 26 / this.cam.userZoom;
+    c.tween = this.tweens.add({ targets: l, y: l.y - rise, alpha: { from: 1, to: 0 }, duration: 1100, ease: 'Cubic.easeOut', onComplete: () => l.destroy() });
   }
 
   private puff(x: number, y: number, scale: number): void {
