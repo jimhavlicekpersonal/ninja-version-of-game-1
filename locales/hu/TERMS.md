@@ -21,7 +21,7 @@ Köznyelvi magyar (hu-HU), barátságos tegezés (te). Gombok: rövid főnév va
 | Raid / attack / raider | portya / támadás / portyázó |
 | Warrior / Defense / Shield | harcos / védelem (védőépület) / pajzs |
 | Honor / Power / League | becsület / erő / liga: Bambusz, Cédrus, Vas, Obszidián, Parázs, Vihar, Árny, Kage |
-| Daily chest / streak / skip | napi láda / sorozat / kihagyás |
+| Daily chest / streak / skip | napi láda / sorozat / pótnap |
 | Clan Stipend | Klánjáradék |
 | Looks | megjelenés |
 | Tempering (Reach / Blast / Watch) | Edzés (Hatótáv / Robbanás / Őrség) |
