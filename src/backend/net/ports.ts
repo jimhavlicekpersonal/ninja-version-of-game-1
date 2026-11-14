@@ -6,7 +6,7 @@
  *   - InProcessServerAdapter (server/inProcess.ts): calls our server core
  *     directly, for tests and local sandboxes.
  */
-import type { AgeRequest, AgeResponse, RulesRequest, RulesResponse, AttackResponse, AttackStartResponse, BalanceResponse, BattleSubmission, BlocksResponse, ChallengeView, ChallengesResponse, ChatResponse, ChatView, CommandBatch, CommandBatchResponse, DefensesResponse, DeletionCodeResponse, DonateRequest, DonateResponse, DuelLayoutRequest, DuelReportResponse, DuelTicketRequest, DuelTicketResponse, DuelsResponse, ErrorCode, FriendRequestBody, FriendRequestResult, FriendsResponse, GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GroveView, GrovesResponse, HelloResponse, InboxResponse, IntentReleaseRequest, IntentReleaseResponse, LeaderboardResponse, LedgerResponse, LinkCredential, LinkProvider, LinksResponse, MatchResponse, NoticesResponse, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PlayerView, PowerLeaderboardResponse, PrivacyRequest, PurchaseHistoryResponse, PurchaseIntentRequest, PurchaseIntentResponse, PushTokenRequest, RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, RedeemRequest, RedeemResponse, RegisterResponse, ReportRequest, ReportResponse, RequestView, RequestsResponse, RevokeOthersResponse, SquadResponse, UploadBaseRequest, VillageResponse } from './protocol';
+import type { AuthNonceResponse, AgeRequest, AgeResponse, RulesRequest, RulesResponse, AttackResponse, AttackStartResponse, BalanceResponse, BattleSubmission, BlocksResponse, ChallengeView, ChallengesResponse, ChatResponse, ChatView, CommandBatch, CommandBatchResponse, DefensesResponse, DeletionCodeResponse, DonateRequest, DonateResponse, DuelLayoutRequest, DuelReportResponse, DuelTicketRequest, DuelTicketResponse, DuelsResponse, ErrorCode, FriendRequestBody, FriendRequestResult, FriendsResponse, GangWarAttackResponse, GangWarClaimResponse, GangWarResponse, GangWarTicketRequest, GangWarTicketResponse, GroveView, GrovesResponse, HelloResponse, InboxResponse, IntentReleaseRequest, IntentReleaseResponse, LeaderboardResponse, LedgerResponse, LinkCredential, LinkProvider, LinksResponse, MatchResponse, NoticesResponse, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PlayerView, PowerLeaderboardResponse, PrivacyRequest, PurchaseHistoryResponse, PurchaseIntentRequest, PurchaseIntentResponse, PushTokenRequest, RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, RedeemRequest, RedeemResponse, RegisterResponse, ReportRequest, ReportResponse, RequestView, RequestsResponse, RevokeOthersResponse, SquadResponse, UploadBaseRequest, VillageResponse } from './protocol';
 
 /** A failed server call, with the protocol error code. */
 export class ServerError extends Error {
@@ -170,6 +170,16 @@ interface AccountPort {
   notices?(): Promise<NoticesResponse>;
   markNoticesRead?(ids: string[]): Promise<void>;
   revokeOtherSessions?(): Promise<RevokeOthersResponse>;
+  /** Backend A15 (feature `signin-nonce`): a one-time nonce for the next Apple/Google sign-in. */
+  authNonce?(): Promise<AuthNonceResponse>;
+  /** Backend A16 (feature `session-control`): sign out this device; `409 conflict` when it holds the account's last key. */
+  signOutDevice?(): Promise<void>;
+  /**
+   * Backend A16 (feature `session-control`): replace this device's token. True once the new token answered a
+   * request (the server then forgets the old one); false when the answer was lost, so the old token stays in use
+   * and the new one is kept aside for a 401 (a confirmation the server saw but whose answer never arrived).
+   */
+  rotateToken?(): Promise<boolean>;
 }
 
 /** Everything a multiplayer server provides. */

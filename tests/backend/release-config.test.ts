@@ -3,7 +3,7 @@
  * is no Android SDK or Actions runner in `npm test`, so these read the build
  * files: they catch a regression, they do not prove a build or upload works.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const read = (p: string) => readFileSync(new URL(`../../${p}`, import.meta.url), 'utf8');
@@ -112,6 +112,21 @@ describe('workflows', () => {
       const build = steps(file, job).find(isBuild);
       expect(envOf(build, 'VITE_PUBLIC_URL'), `${file} ${job}`).toBe('${{ vars.VITE_PUBLIC_URL }}');
     }
+  });
+
+  it('App Links / Universal Links: templates with placeholders never reach public/, the native hooks wait behind a TODO (R09)', () => {
+    const assetlinks = JSON.parse(read('tools/applinks/assetlinks.template.json'));
+    expect(assetlinks[0].target.sha256_cert_fingerprints).toEqual(['__PLAY_APP_SIGNING_SHA256__']);
+    expect(JSON.parse(read('tools/applinks/apple-app-site-association.template.json')).applinks.details[0].appIDs).toEqual(['__APPLE_TEAM_ID__.__IOS_BUNDLE_ID__']);
+    for (const f of ['public/.well-known/assetlinks.json', 'public/.well-known/apple-app-site-association']) expect(existsSync(new URL(`../../${f}`, import.meta.url)), f).toBe(false);
+    // Commented out until the owner's domain exists: an autoVerify filter for a placeholder host would fail verification.
+    const manifest = read('android/app/src/main/AndroidManifest.xml');
+    expect(manifest).toMatch(/TODO\(owner, audit R09\)[\s\S]*android:autoVerify="true"[\s\S]*YOUR_DOMAIN[\s\S]*-->/);
+    expect(manifest.replace(/<!--[\s\S]*?-->/g, '')).not.toMatch(/autoVerify/);
+    const ent = read('ios/App/App/App.entitlements');
+    expect(ent).toMatch(/TODO\(owner, audit R09\)[\s\S]*applinks:YOUR_DOMAIN/);
+    expect(ent.replace(/<!--[\s\S]*?-->/g, '')).not.toMatch(/associated-domains/);
+    expect(read('src/main.ts')).toMatch(/listenForAppLinks\(/);
   });
 });
 

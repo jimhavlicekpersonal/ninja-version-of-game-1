@@ -670,6 +670,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     };
     app.get('/admin/v1/players', staff(async (req) => core.admin.search(query(req).q)));
     app.get('/admin/v1/players/:id', staff(async (req) => core.admin.player(param(req, 'id'))));
+    // Japan C17: the unused paid Jade balance on a 資金決済法 base date (?date=YYYY-03-31|YYYY-09-30; default the latest).
+    app.get('/admin/v1/reports/jp-unused-balance', staff(async (req) => core.admin.japanBalance(actor(req), query(req).date)));
     app.post('/admin/v1/players/:id/adjust', staff(async (req) => core.admin.adjust(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/ban', staff(async (req) => core.admin.ban(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));

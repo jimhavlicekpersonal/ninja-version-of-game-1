@@ -5,6 +5,7 @@ import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
+import com.android.billingclient.api.GetBillingConfigParams;
 import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
@@ -174,6 +175,21 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
                 JSObject ret = new JSObject();
                 ret.put("products", out);
                 ret.put("unavailable", missing);
+                call.resolve(ret);
+            }));
+    }
+
+    /**
+     * Japan C17: the Play billing country (ISO 3166-1 alpha-2, e.g. "JP"), so the game shows the Japanese legal
+     * notices for the Japanese storefront whatever the device language. Not compiled here (no Android SDK).
+     */
+    @PluginMethod
+    public void billingCountry(PluginCall call) {
+        connected(call, () -> client.getBillingConfigAsync(
+            GetBillingConfigParams.newBuilder().build(),
+            (BillingResult result, com.android.billingclient.api.BillingConfig config) -> {
+                JSObject ret = new JSObject();
+                ret.put("countryCode", result.getResponseCode() == BillingClient.BillingResponseCode.OK && config != null ? config.getCountryCode() : "");
                 call.resolve(ret);
             }));
     }

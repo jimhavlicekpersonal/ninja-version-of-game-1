@@ -427,6 +427,11 @@ export class PgRepo implements Repo {
     return (await this.rows('select * from purchases where player_id = $1 order by at desc limit $2', [playerId, limit])).map(toPurchase);
   }
 
+  async storefrontPurchases(storefronts: string[], before: number): Promise<PurchaseRow[]> {
+    const want = storefronts.map((f) => f.toUpperCase());
+    return (await this.rows('select * from purchases where upper(storefront) = any($1::text[]) and at <= $2 order by at', [want, before])).map(toPurchase);
+  }
+
   async setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean> {
     const r = await this.db.query(
       `update purchases set status = $3, refunded_at = case when $3 = 'refunded' then $4::bigint else null end where store = $1 and transaction_id = $2 and status <> $3`,
@@ -1485,6 +1490,11 @@ export class PgRepo implements Repo {
 
   async ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]> {
     return (await this.rows('select * from ledger where player_id = $1 order by id desc limit $2', [playerId, limit])).map(toLedger);
+  }
+
+  async balanceAt(playerId: string, resource: string, at: number): Promise<number | null> {
+    const r = await this.rows('select balance from ledger where player_id = $1 and resource = $2 and at <= $3 order by at desc, id desc limit 1', [playerId, resource, at]);
+    return r[0] ? num(r[0].balance) : null;
   }
 
   async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {

@@ -18,7 +18,8 @@
  * the other device takes the result as a correction and replays its own
  * queue on top (the rebase). Commands the server refused (the village had
  * changed: the building was already upgraded elsewhere) are counted in
- * `refused`, never dropped silently.
+ * `refused` and listed in `refusedLog` (what, when and the server's reason
+ * code, for News), never dropped silently.
  *
  * The queue is the only copy of offline actions until the server has them, so
  * a failed write is not ignored (GLOBAL-010): `storageProblem` says so, the
@@ -30,7 +31,7 @@ import { economyHash, economyOf, PLAYER_COMMANDS, type Economy } from '../../gam
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import type { Command } from '../../gameplay/sim/village';
 import { ServerError, type ServerPort } from './ports';
-import type { VillageCommand } from './protocol';
+import type { CommandOutcome, VillageCommand } from './protocol';
 
 /** What the queue needs from the game (GameController provides it). */
 export interface SyncGame {
@@ -72,6 +73,22 @@ interface Stored {
   queue: Queued[];
 }
 
+/**
+ * One action the server refused (audit GLOBAL-009 follow-up): the command's type, the building or warrior
+ * it was about, when it was taken on this device and the server's reason code (a sim error code such as
+ * `NOT_ENOUGH_RESOURCES`, or `NOT_ALLOWED`, `TOO_LARGE`, `TOO_MANY_BATTLES`).
+ */
+export interface RefusedAction {
+  at: number;
+  type: string;
+  code: string;
+  building?: string;
+  troop?: string;
+}
+
+/** How many refused actions `refusedLog` keeps (newest last). */
+export const REFUSED_LOG_SIZE = 20;
+
 /** Most commands sent in one batch (the server's limit). */
 export const BATCH_SIZE = 200;
 /** Send at once when this many are waiting (otherwise every 15 s). */
@@ -85,6 +102,8 @@ export class VillageSync {
   corrections = 0;
   /** Commands the server refused since start (the village had changed, e.g. on another device). */
   refused = 0;
+  /** The last `REFUSED_LOG_SIZE` refused actions since start, newest last (News lists them). */
+  refusedLog: RefusedAction[] = [];
   /** What the server held back when this village moved (GLOBAL-002), to tell the player once. */
   importHeld: { jade: number; premium: boolean; purchases: number } | null = null;
   /** The last write of the queue failed: actions since then live only in memory until the server has them. */
@@ -252,11 +271,23 @@ export class VillageSync {
         }
         throw e;
       }
+      for (const x of r.results) if (!x.ok) this.noteRefused(x, batch.find((q) => q.seq === x.seq));
       this.stored.queue = this.stored.queue.filter((q) => q.seq > r.ackSeq);
-      this.refused += r.results.filter((x) => !x.ok).length;
       if (r.corrections) this.adopt(r.corrections.economy);
       this.persist();
     }
+  }
+
+  /** Count and keep a refused action; its subject comes from the queued command (or the server's `type`, protocol addition). */
+  private noteRefused(x: CommandOutcome, queued: Queued | undefined): void {
+    this.refused++;
+    const cmd = queued?.command as (Command & { buildingType?: string; troop?: string; id?: string }) | undefined;
+    const type = cmd?.type ?? x.type ?? 'unknown';
+    const entry: RefusedAction = { at: queued?.t ?? x.at ?? Date.now(), type, code: x.error ?? 'REFUSED' };
+    const building = cmd?.buildingType ?? (typeof cmd?.id === 'string' ? this.game.state.buildings.find((b) => b.id === cmd.id)?.type : undefined);
+    if (building) entry.building = building;
+    if (typeof cmd?.troop === 'string') entry.troop = cmd.troop;
+    this.refusedLog = [...this.refusedLog, entry].slice(-REFUSED_LOG_SIZE);
   }
 
   /** Put the server's economy in place and replay what is still waiting on top of it. */

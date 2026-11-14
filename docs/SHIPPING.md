@@ -35,7 +35,20 @@ The `aab` job of the Android workflow builds the Play release (audit GLOBAL-017)
 - the OAuth consent screen published (not "Testing"), or only listed test users can sign in.
 Then check on a phone: link Google, uninstall, reinstall from Play, **Sign in here** with Google: the village comes back from the server. Also on a second phone.
 
-**Friend links from the apps (R09).** Set the variable `VITE_PUBLIC_URL` to the web game's address (e.g. `https://<you>.github.io/<repo>/`): links and QR codes shared from the apps then open the web game with `?friend=…`. Opening such a link *in the app* (Android App Links, iOS Universal Links) is not set up yet, because the app cannot read the opened address: it needs `@capacitor/app` and an `appUrlOpen` handler in `src/main.ts` (an integration change), a domain you control serving `/.well-known/assetlinks.json` (package name + the Play app signing SHA-256) and `/.well-known/apple-app-site-association` at its root (a GitHub Pages *project* site cannot serve the root), then an `autoVerify` intent filter in `AndroidManifest.xml` and the Associated Domains capability (`applinks:<domain>`) in Xcode.
+**Friend links from the apps (R09).** Set the variable `VITE_PUBLIC_URL` to the web game's address (e.g. `https://<you>.github.io/<repo>/`): links and QR codes shared from the apps then open the web game with `?friend=…`. Opening such a link *in the app* (Android App Links, iOS Universal Links) needs your own domain: section 1c.
+
+## 1c. Links that open the app: App Links and Universal Links (R09, owner)
+
+The game's side is done (2026-11-14): `src/backend/platform/links.ts` listens for `appUrlOpen` and reads the launch URL (`@capacitor/app`), and routes `?friend=CODE` (Friends, once online) and `?open=daily|army|store|news` exactly like the web; anything else in a link is ignored. What only you can do:
+
+1. **A domain you control** that serves two files at its root over HTTPS, with no redirect (a GitHub Pages *project* site, `<you>.github.io/<repo>/`, cannot serve the root; a custom domain on Pages or any static host can). Point `VITE_PUBLIC_URL` at it so shared links use it.
+2. **`/.well-known/assetlinks.json`** from `tools/applinks/assetlinks.template.json`: `__ANDROID_PACKAGE__` = the application id (today `com.toadstoolkingdoms.app`), `__PLAY_APP_SIGNING_SHA256__` = Play Console → Test and release → App integrity → App signing key certificate, SHA-256 (`AA:BB:…`; add the upload key's fingerprint too to test release builds you install yourself).
+3. **`/.well-known/apple-app-site-association`** (no file extension, served as `application/json`) from `tools/applinks/apple-app-site-association.template.json`: `__APPLE_TEAM_ID__` (developer account → Membership) and `__IOS_BUNDLE_ID__`.
+4. **Android:** in `android/app/src/main/AndroidManifest.xml`, replace `YOUR_DOMAIN` in the commented `autoVerify` intent filter (marked `TODO(owner, audit R09)`) and uncomment it. Check with `adb shell pm get-app-links com.toadstoolkingdoms.app` after installing (`verified`).
+5. **iPhone:** enable Associated Domains for the App ID (developer account → Identifiers), replace `YOUR_DOMAIN` in the commented block of `ios/App/App/App.entitlements` and uncomment it (`applinks:<domain>`), and regenerate the provisioning profile.
+6. **Verify on devices:** share a friend link from one phone, tap it on another with the app installed (opens Friends on that player) and without it (opens the web game; store install, then the link again).
+
+Never copy the templates into `public/` with the placeholders in them (`release-config.test.ts` checks). Until then links keep opening the web game.
 
 ## 2. iPhone: TestFlight and a sandbox purchase
 
@@ -264,7 +277,7 @@ The installed iOS/Android app schedules real local notifications when you leave 
 
 - **Google Play** needs a Google Play Console account ($25 one-time). The release AAB (section 1b) has purchases on; the debug APK does not.
 - **Android sign-in:** Sign in with Google is in the app (section 1b; needs the OAuth clients). **Play Games** sign-in and Play Games friends are not (no Play Games SDK in `android/`).
-- **Links that open the app** (App Links / Universal Links): see section 1b, "Friend links from the apps".
+- **Links that open the app** (App Links / Universal Links): the game handles them; the domain, association files, manifest filter and entitlement are owner steps (section 1c).
 
 ## 5b. Store submission (roadmap steps 49-53, owner)
 

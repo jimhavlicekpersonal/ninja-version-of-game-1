@@ -102,7 +102,7 @@ for (const [label, makeRepo] of repoFactories) {
       const { w, ann } = await scene();
       const big = { type: 'collect', id: 'b1', pad: 'z'.repeat(MAX_COMMAND_BYTES) } as never;
       const r = await ann.sendCommands({ device: 'device-large-1', stateHash: '', commands: [{ seq: 1, t: w.now(), command: big }] });
-      expect(r.results).toEqual([{ seq: 1, ok: false, error: 'TOO_LARGE' }]);
+      expect(r.results).toEqual([{ seq: 1, ok: false, error: 'TOO_LARGE', type: 'collect', at: expect.any(Number) }]);
       expect((await w.repo.commandsOf(ann.id, 0, 1))[0].command).toEqual({ type: 'collect' });
     });
 

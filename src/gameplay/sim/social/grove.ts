@@ -3,6 +3,7 @@
  * requests and donations. All bot activity is generated from the grove seed
  * and the clock, so it is the same every time the save is loaded.
  */
+import { contactWrittenAround, enforceChat, stripBasicContacts } from './contactFilter';
 import { barracksLevel, takeFromArmy } from '../army';
 import { levelDef } from '../data';
 import { troopLevelOf } from '../research';
@@ -77,38 +78,20 @@ export function groveLevel(xp: number, data: GameData): number {
 
 /** Replace blocked words with flowers. Chat is always filtered. */
 export function filterText(text: string, data: GameData): string {
-  return censorText(stripContacts(Array.from(text).slice(0, 160).join('')), data);
+  // A message that writes a link or contact around the filter is replaced whole (`enforceChat`).
+  return enforceChat(censorText(stripBasicContacts(Array.from(text).slice(0, 160).join('')), data)).text;
 }
 
 /**
- * Messaging apps players use to move someone off the game, also when written around a filter ("d1sc0rd",
- * "tele gram", "wh@tsapp"): report section 5 step 7 (compliance C25). Each letter accepts its usual
- * look-alikes and may be split by spaces, dots, dashes or underscores; a handle written after it goes too.
+ * Contacts (links, addresses, phone numbers, messaging-app handles, also written around the filter) live in
+ * `contactFilter.ts`, shared with the server (compliance C25; folded in 2026-11-14 from the server's stronger
+ * check, so the device refuses the same names and replaces the same chat messages).
  */
-const OFF_GAME_APPS = ['discord', 'telegram', 'whatsapp', 'snapchat', 'instagram', 'insta', 'wechat', 'kik'];
-const LOOKALIKE: Record<string, string> = { a: 'a@4', c: 'c(', e: 'e3', g: 'g9', i: 'i1!|l', l: 'l1|i', o: 'o0', s: 's5$', t: 't7+' };
-const SEP = '[\\s._*-]*';
-const HANDLE_RE = new RegExp(
-  `(?<![\\p{L}\\p{N}])(?:${OFF_GAME_APPS.map((w) => [...w].map((ch) => `[${(LOOKALIKE[ch] ?? ch).replace(/[\]\\^-]/g, '\\$&')}]`).join(SEP)).join('|')})(?![\\p{L}\\p{N}])(?:${SEP}[:@]?${SEP}[\\p{L}\\p{N}_#.]{2,})?`,
-  'giu',
-);
+export { stripBasicContacts as stripContacts } from './contactFilter';
 
-/** Does this text carry a way to reach someone off the game (a link, an address, a phone number, a messaging app)? */
+/** Does this text carry a way to reach someone off the game (a link, an address, a phone number, a messaging app), also written around the filter? */
 export function hasContact(text: string): boolean {
-  return stripContacts(text) !== text || /\p{N}{6,}/u.test(text.replace(/[\s.()-]/g, ''));
-}
-
-/**
- * Links, email addresses and phone numbers are removed from chat (re-audit: UK Online Safety Act
- * gap; the usual first step of scams and grooming is moving a player off the game).
- */
-export function stripContacts(text: string): string {
-  return text
-    .replace(/\b(?:https?:\/\/|www\.)\S+/giu, '[link removed]')
-    .replace(/[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/gu, '[contact removed]')
-    .replace(/\b[\p{L}\p{N}-]{2,}\s?(?:\.|\s?dot\s?)\s?(?:com|net|org|io|gg|me|app|xyz|ru|cn|ly|link|site|online|top|info|biz|co)\b(?:\/\S*)?/giu, '[link removed]')
-    .replace(/(?:\+?\d[\s().-]?){7,}/gu, '[contact removed]')
-    .replace(HANDLE_RE, '[contact removed]');
+  return stripBasicContacts(text) !== text || /\p{N}{6,}/u.test(text.replace(/[\s.()-]/g, '')) || contactWrittenAround(text);
 }
 
 /** Censor without chat's length limit: names already have a grapheme width cap. */

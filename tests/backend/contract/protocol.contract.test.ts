@@ -436,6 +436,28 @@ describe('protocol contract', () => {
     }
   });
 
+  it('2026-11-14 client follow-ups: the adapter rotates (store and confirm), a last-key sign-out keeps the token, refused commands are named', async () => {
+    const hello = await client().hello();
+    if (!hello.features.includes('session-control')) return;
+    const tokens = memoryTokenStore();
+    const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
+    const reg = await c.register(`Contract Rotate ${tag}`);
+    const first = tokens.get();
+    expect((await c.authNonce()).nonce).toEqual(expect.any(String));
+    expect(await c.rotateToken()).toBe(true);
+    expect(tokens.get()).not.toBe(first);
+    expect((await c.me()).id).toBe(reg.playerId);
+    const refused = await errorOf(c.signOutDevice());
+    expect(refused.status).toBe(409);
+    expect(tokens.get()).not.toBeNull();
+    if (!hello.features.includes('server-economy')) return;
+    await c.startVillage();
+    const r = await c.sendCommands({ stateHash: '', device: `contract${tag}`, commands: [{ seq: 1, t: Date.now(), command: { type: 'upgrade', id: 'no-such-building' } }] });
+    expect(r.results[0]).toMatchObject({ seq: 1, ok: false, error: expect.any(String) });
+    // Additive: servers from 2026-11-14 name the refused command; older ones leave it out.
+    if (r.results[0].type !== undefined) expect(r.results[0].type).toBe('upgrade');
+  });
+
   it('purchases and push: a store the server does not check is refused before paying; forged receipts are refused; push tokens are checked', async () => {
     const hello = await client().hello();
     const p = await player('Buyer');

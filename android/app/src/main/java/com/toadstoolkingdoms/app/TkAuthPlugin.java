@@ -56,7 +56,11 @@ public class TkAuthPlugin extends Plugin {
         }
         // The button flow: always shows Google's account chooser, also for accounts
         // that never signed in to this app (needed to recover on a new device).
-        GetSignInWithGoogleOption option = new GetSignInWithGoogleOption.Builder(serverClientId).build();
+        // Backend A15: the server's one-time nonce goes into the ID token as it is (not compiled here; see SHIPPING 1b).
+        GetSignInWithGoogleOption.Builder builder = new GetSignInWithGoogleOption.Builder(serverClientId);
+        String nonce = call.getString("nonce");
+        if (nonce != null && !nonce.isEmpty()) builder.setNonce(nonce);
+        GetSignInWithGoogleOption option = builder.build();
         GetCredentialRequest request = new GetCredentialRequest.Builder().addCredentialOption(option).build();
         CredentialManager manager = CredentialManager.create(activity);
         manager.getCredentialAsync(
