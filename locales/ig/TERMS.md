@@ -19,7 +19,7 @@ Rules (for reviewers):
 | Shadow Ink | Inki Onyinyo |
 | Jade | Jed (premium gem, transliterated) |
 | Honor | Nsọpụrụ |
-| League (Bamboo, Cedar, Iron, Obsidian, Ember, Storm, Shadow, Kage) | Otu: Otu Achara, Otu Sida, Otu Igwe, Otu Nkume Ojii, Otu Ego Ọkụ, Otu Oke Ifufe, Otu Onyinyo, Otu Kage |
+| League (Bamboo, Cedar, Iron, Obsidian, Ember, Storm, Shadow, Kage) | Otu: Otu Achara, Otu Sida, Otu Igwe, Otu Nkume Ojii, Otu Unyi Ọkụ, Otu Oke Ifufe, Otu Onyinyo, Otu Kage |
 | Warrior / warriors | dike / ndị dike |
 | Army | usuu agha (Agha in the HUD) |
 | Training Dojo / Squad Courtyard | Dojo Ọzụzụ (short: Dojo) / Ogige Ndị Agha |
@@ -53,6 +53,6 @@ Brand and technical names stay as they are (Kagemura, App Store, Google Play, Ga
 
 ## Generated names
 
-Recommended `generatedNames`: **`noun-first`** (second part, space, first part). Igbo puts the head noun first and its modifier or associated noun after it (ugwu égbè eluigwe = "peak of thunder"). Second parts are nouns (Ugwu, Ọnụ Ụzọ, Ndagwurugwu), first parts are nouns or invariant modifiers that fit after any of them (Égbè Eluigwe, Igwe, Alụlụ): Ugwu Égbè Eluigwe, Ọnụ Ụzọ Igwe. Nothing agrees in gender, so every pair reads naturally.
+Recommended `generatedNames`: **`noun-first`** (second part, space, first part). Igbo puts the head noun first and its modifier or associated noun after it (ugwu egbe eluigwe = "peak of thunder"). Second parts are nouns (Ugwu, Ọnụ Ụzọ, Ndagwurugwu), first parts are nouns or invariant modifiers that fit after any of them (Egbe Eluigwe, Igwe, Alụlụ): Ugwu Egbe Eluigwe, Ọnụ Ụzọ Igwe. Nothing agrees in gender, so every pair reads naturally.
 
 Onye na-asụ Igbo dịka asụsụ obodo ya enyochabeghị ntụgharị a.
