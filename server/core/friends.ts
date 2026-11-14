@@ -17,8 +17,9 @@ import { FINDABLE, FRIEND_CODE_ALPHABET, NAME_CHANGE_DAYS, nameKey, nameShapePro
 import { leagueFor } from '../../src/gameplay/sim/ranks';
 import type { FriendRequestBody, FriendRequestResult, FriendRequestView, FriendsResponse, FriendView, PlatformFriendsRequest, PlatformFriendsResponse, PlayerCard, PrivacyRequest } from '../../src/backend/net/protocol';
 import { NameTakenError, type FriendRequest, type Player } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
 import { ageBandOf } from './age';
+import { fail } from './errors';
 
 const DAY = 24 * HOUR;
 /** Most friends a player can have. */
@@ -27,7 +28,6 @@ export const MAX_FRIENDS = 100;
 export const FRIEND_REQUEST_DAYS = 14;
 /** Most open requests a player can have sent at once. */
 export const MAX_OUTGOING = 50;
-const NOT_FOUND = 'No player with that name.';
 
 type Relation = PlayerCard['relation'];
 
@@ -112,7 +112,7 @@ export async function friendCodeOf(ctx: ServerContext, me: Player): Promise<stri
       if (!(e instanceof NameTakenError)) throw e;
     }
   }
-  throw new ApiError(503, 'conflict', 'Could not make a friend code. Try again.');
+  throw fail(503, 'conflict', 'friend.code_failed');
 }
 
 /** GET /v1/friends */
@@ -176,12 +176,12 @@ async function relatedByPlay(ctx: ServerContext, me: Player, p: Player, s: Socia
 /** GET /v1/players/lookup?name= : exactly one player, or "No player with that name" (also when they hide). */
 export async function lookup(ctx: ServerContext, me: Player, rawName: unknown): Promise<PlayerCard> {
   const name = tidyName(rawName);
-  if (nameShapeProblem(name)) throw new ApiError(404, 'not_found', NOT_FOUND);
+  if (nameShapeProblem(name)) throw fail(404, 'not_found', 'friend.no_name');
   const p = await ctx.repo.playerByNameKey(nameKey(name));
   const s = await socialOf(ctx, me);
   if (!p || !(await findableBy(ctx, me, p, s))) {
     ctx.metrics.count('tk_friend_lookups_total', { found: 'no' });
-    throw new ApiError(404, 'not_found', NOT_FOUND);
+    throw fail(404, 'not_found', 'friend.no_name');
   }
   ctx.metrics.count('tk_friend_lookups_total', { found: 'yes' });
   return card(ctx, p, relationTo(me, s, p.id));
@@ -192,15 +192,15 @@ export async function byCode(ctx: ServerContext, me: Player, rawCode: unknown): 
   const code = normalizeFriendCode(rawCode);
   const p = code ? await ctx.repo.playerByFriendCode(code) : null;
   const s = await socialOf(ctx, me);
-  if (!p || (p.id !== me.id && (await blockedEitherWay(ctx, me, p, s)))) throw new ApiError(404, 'not_found', 'No player with that friend code.');
+  if (!p || (p.id !== me.id && (await blockedEitherWay(ctx, me, p, s)))) throw fail(404, 'not_found', 'friend.no_code');
   return card(ctx, p, relationTo(me, s, p.id));
 }
 
 async function becomeFriends(ctx: ServerContext, a: Player, b: Player): Promise<number> {
   const t = ctx.now();
   const [fa, fb] = await Promise.all([ctx.repo.friendsOf(a.id), ctx.repo.friendsOf(b.id)]);
-  if (fa.length >= MAX_FRIENDS) throw new ApiError(409, 'full', `You have ${MAX_FRIENDS} friends, the most you can have. Remove someone first.`);
-  if (fb.length >= MAX_FRIENDS) throw new ApiError(409, 'full', `${isolateName(b.name)} has as many friends as they can have.`);
+  if (fa.length >= MAX_FRIENDS) throw fail(409, 'full', 'friend.you_full', { max: MAX_FRIENDS });
+  if (fb.length >= MAX_FRIENDS) throw fail(409, 'full', 'friend.they_full', { name: isolateName(b.name) });
   await ctx.repo.transaction(async (tx) => {
     await tx.addFriendship(a.id, b.id, t);
     await tx.deleteFriendRequestsBetween(a.id, b.id);
@@ -227,9 +227,9 @@ export async function request(ctx: ServerContext, me: Player, body: FriendReques
     const found = await ctx.repo.getPlayer(String(body.playerId));
     p = found && ((await findableBy(ctx, me, found, s)) || (await relatedByPlay(ctx, me, found, s))) ? found : null;
   }
-  if (!p) throw new ApiError(404, 'not_found', body?.code ? 'No player with that friend code.' : NOT_FOUND);
-  if (p.id === me.id) throw new ApiError(400, 'bad_request', 'That is you.');
-  if (await blockedEitherWay(ctx, me, p, s)) throw new ApiError(404, 'not_found', NOT_FOUND);
+  if (!p) throw fail(404, 'not_found', body?.code ? 'friend.no_code' : 'friend.no_name');
+  if (p.id === me.id) throw fail(400, 'bad_request', 'friend.self');
+  if (await blockedEitherWay(ctx, me, p, s)) throw fail(404, 'not_found', 'friend.no_name');
   if (s.friends.has(p.id)) return { status: 'friends', friend: await friendView(ctx, p, s.friends.get(p.id)!) };
   // They asked first: asking back makes you friends.
   if (s.incoming.some((r) => r.fromId === p!.id)) {
@@ -238,8 +238,8 @@ export async function request(ctx: ServerContext, me: Player, body: FriendReques
   }
   const open = s.outgoing.find((r) => r.toId === p!.id);
   if (open) return { status: 'sent', request: await requestView(ctx, open, p, 'requested') };
-  if (s.outgoing.length >= MAX_OUTGOING) throw new ApiError(409, 'full', 'You have many requests waiting. Wait for answers, or take some back.');
-  if (s.friends.size >= MAX_FRIENDS) throw new ApiError(409, 'full', `You have ${MAX_FRIENDS} friends, the most you can have. Remove someone first.`);
+  if (s.outgoing.length >= MAX_OUTGOING) throw fail(409, 'full', 'friend.requests_waiting');
+  if (s.friends.size >= MAX_FRIENDS) throw fail(409, 'full', 'friend.you_full', { max: MAX_FRIENDS });
   const r: FriendRequest = { id: ctx.uuid(), fromId: me.id, toId: p.id, at: ctx.now() };
   await ctx.repo.addFriendRequest(r);
   ctx.push.notify(p.id, { type: 'friends', title: `${isolateName(me.name)} wants to be friends`, body: 'Open Friends to answer.' });
@@ -250,11 +250,11 @@ export async function request(ctx: ServerContext, me: Player, body: FriendReques
 /** POST /v1/friends/requests/:id { accept } : answer a request to me. */
 export async function answer(ctx: ServerContext, me: Player, id: unknown, accept: unknown): Promise<FriendRequestResult | undefined> {
   const r = await ctx.repo.getFriendRequest(String(id ?? ''));
-  if (!r || r.toId !== me.id || r.at <= ctx.now() - FRIEND_REQUEST_DAYS * DAY) throw new ApiError(404, 'not_found', 'That request is gone.');
+  if (!r || r.toId !== me.id || r.at <= ctx.now() - FRIEND_REQUEST_DAYS * DAY) throw fail(404, 'not_found', 'friend.request_gone');
   const from = await ctx.repo.getPlayer(r.fromId);
   if (!from) {
     await ctx.repo.deleteFriendRequest(r.id);
-    throw new ApiError(404, 'not_found', 'That request is gone.');
+    throw fail(404, 'not_found', 'friend.request_gone');
   }
   if (accept !== true) {
     await ctx.repo.deleteFriendRequest(r.id);
@@ -288,9 +288,9 @@ export const MAX_PLATFORM_IDS = 300;
  */
 export async function platformFriends(ctx: ServerContext, me: Player, req: PlatformFriendsRequest | undefined): Promise<PlatformFriendsResponse> {
   const provider = req?.provider;
-  if (provider !== 'gamecenter' && provider !== 'playgames') throw new ApiError(400, 'bad_request', 'provider must be gamecenter or playgames.');
+  if (provider !== 'gamecenter' && provider !== 'playgames') throw fail(400, 'bad_request', 'friend.bad_provider');
   const linked = (await ctx.repo.linksOf(me.id)).some((l) => l.provider === provider);
-  if (!linked) throw new ApiError(403, 'unauthorized', `Link ${provider === 'gamecenter' ? 'Game Center' : 'Play Games'} to your account first (Settings → Online play → Sign-ins).`);
+  if (!linked) throw fail(403, 'unauthorized', 'friend.link_first', { provider: provider === 'gamecenter' ? 'Game Center' : 'Play Games' });
   const ids = [...new Set((Array.isArray(req?.ids) ? req.ids : []).filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 200))].slice(0, MAX_PLATFORM_IDS);
   const s = await socialOf(ctx, me);
   const players: PlayerCard[] = [];
@@ -311,8 +311,8 @@ export async function platformFriends(ctx: ServerContext, me: Player, req: Platf
 export async function setPrivacy(ctx: ServerContext, me: Player, req: PrivacyRequest | undefined): Promise<FriendsResponse> {
   const patch: { findable?: Player['findable']; showOnline?: boolean } = {};
   if (req?.findable !== undefined) {
-    if (!FINDABLE.includes(req.findable)) throw new ApiError(400, 'bad_request', 'findable must be everyone, friends_of_friends or nobody.');
-    if (req.findable !== 'nobody' && (await ageBandOf(ctx.repo, me.id)) === 'under13') throw new ApiError(403, 'age_restricted', 'Players under 13 can be found by friend code only.');
+    if (!FINDABLE.includes(req.findable)) throw fail(400, 'bad_request', 'friend.bad_findable');
+    if (req.findable !== 'nobody' && (await ageBandOf(ctx.repo, me.id)) === 'under13') throw fail(403, 'age_restricted', 'friend.under13_findable');
     patch.findable = req.findable;
   }
   if (req?.showOnline !== undefined) patch.showOnline = req.showOnline === true;

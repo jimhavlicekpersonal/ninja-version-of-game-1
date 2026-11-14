@@ -15,6 +15,7 @@ import type { GameData } from '../src/gameplay/sim/types';
 import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
 import { COMPLAINT_PAGE_CSP, complaintPage } from './core/complaints';
 import { ApiError, createCore, type ServerCore } from './core';
+import { bodyFor, errorBody, staffError, type MessageCode } from './core/errors';
 import { nodeContext, type SharedStores } from './nodeContext';
 import { PromMetrics, type ServerSentry } from './observability';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
@@ -248,7 +249,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (v !== undefined && req.url.startsWith('/v1/') && req.url !== Routes.hello && (Number(v) < MIN_PROTOCOL || tooOldBuild)) {
       metrics.count('tk_errors_total', { code: 'version_mismatch' });
       metrics.count('tk_refused_total', { reason: tooOldBuild ? 'build_too_old' : 'protocol_too_old', rules: String(req.headers[ClientHeaders.simRules] ?? '?').slice(0, 8) });
-      const body: ErrorBody = { error: 'version_mismatch', message: 'This version of Kagemura is too old for the server. Update the game to keep playing online.' };
+      const body = bodyFor('version_mismatch', 'version.too_old');
       return reply.code(426).send(body);
     }
     const build = req.headers[ClientHeaders.clientBuild];
@@ -295,12 +296,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
 
   // Rate limits: every caller by IP address, every player by token, and the
   // costly routes (new players, matches, battle reports, reports) on their own.
-  const tooMany = (reply: FastifyReply, d: RateDecision, what: string, rule: keyof RateLimits) => {
+  const tooMany = (reply: FastifyReply, d: RateDecision, what: MessageCode, rule: keyof RateLimits) => {
     metrics.count('tk_rate_limited_total', { rule });
     metrics.count('tk_errors_total', { code: 'rate_limited' });
     const secs = Math.max(1, Math.ceil(d.retryAfterMs / 1000));
     reply.header('Retry-After', String(secs));
-    const body: ErrorBody = { error: 'rate_limited', message: `${what} Try again in ${secs} second${secs === 1 ? '' : 's'}.` };
+    const body = bodyFor('rate_limited', what, { seconds: secs });
     return reply.code(429).send(body);
   };
   app.addHook('onRequest', async (req, reply) => {
@@ -309,7 +310,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     // IPv6 by /64 (one subscriber's block); IPv4 as it is (rateLimit.ts: why the IP limits are loose).
     const ip = `ip:${ipKey(req.ip)}`;
     let d = await limiter.hit('ip', ip, t);
-    if (!d.ok) return tooMany(reply, d, 'Too many requests from your network.', 'ip');
+    if (!d.ok) return tooMany(reply, d, 'rate.network', 'ip');
     const token = bearer(req);
     // Backend A7: per-player limits count per player, not per token (a linked account can mint a token
     // per sign-in). The token is checked here, once (the route reuses the player); a token that is not a
@@ -326,12 +327,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     }
     if (token) {
       d = await limiter.hit('player', who, t);
-      if (!d.ok) return tooMany(reply, d, 'Too many requests.', 'player');
+      if (!d.ok) return tooMany(reply, d, 'rate.player', 'player');
     }
     const rules = (req.routeOptions?.config as RateConfig | undefined)?.rate;
     for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
       d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' || rule === 'stats' || rule === 'nonce' || rule === 'complaint' ? ip : who, t);
-      if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookup' || rule === 'lookupDay' ? 'Too many player searches. Try again later.' : 'Slow down a little.', rule);
+      if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'rate.battle' : rule === 'lookup' || rule === 'lookupDay' ? 'rate.lookup' : 'rate.other', rule);
     }
   });
 
@@ -341,7 +342,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.addHook('onRequest', async (req, reply) => {
       if ((req.url === '/admin' || req.url.startsWith('/admin/') || req.url.startsWith('/admin?')) && !adminAllowed(req.ip)) {
         metrics.count('tk_errors_total', { code: 'admin_ip_refused' });
-        return reply.code(404).send({ error: 'not_found', message: 'Not found.' } satisfies ErrorBody);
+        return reply.code(404).send(bodyFor('not_found', 'request.not_found'));
       }
     });
   }
@@ -368,7 +369,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (!seen) return;
     if (seen.fingerprint && seen.fingerprint !== fingerprint) {
       metrics.count('tk_errors_total', { code: 'idempotency_mismatch' });
-      const err: ErrorBody = { error: 'idempotency_mismatch', message: 'This Idempotency-Key was already used for a different request.' };
+      const err = bodyFor('idempotency_mismatch', 'request.idempotency_mismatch');
       return reply.code(422).send(err);
     }
     reply.header('idempotent-replay', 'true');
@@ -378,7 +379,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       try {
         replay = { ...(await core.getVillage(me)), ...rest };
       } catch (e) {
-        if (e instanceof ApiError) return reply.code(e.status).send({ error: e.code, message: e.message } satisfies ErrorBody);
+        if (e instanceof ApiError) return reply.code(e.status).send(errorBody(e));
         throw e;
       }
     }
@@ -413,7 +414,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (err instanceof ApiError) {
       metrics.count('tk_errors_total', { code: err.code });
       req.log.info({ code: err.code, status: err.status }, err.message);
-      const body: ErrorBody = { error: err.code, message: err.message, ...(err.suggestions?.length ? { suggestions: err.suggestions } : {}) };
+      const body = errorBody(err);
       return reply.code(err.status).send(body);
     }
     const status = (err as { statusCode?: number }).statusCode ?? 500;
@@ -423,7 +424,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       opts.sentry?.capture(err, { tags: { route: req.routeOptions?.url ?? 'unmatched' }, request: { method: req.method, url: req.url } });
     }
     // Malformed JSON, oversized bodies and the like; details only for client errors.
-    const body: ErrorBody = { error: 'bad_request', message: status >= 500 ? 'Server error.' : (err as Error).message };
+    // Malformed requests keep Fastify's English and no code (the game shows its own fallback).
+    const body: ErrorBody = status >= 500 ? bodyFor('bad_request', 'request.server_error') : { error: 'bad_request', message: (err as Error).message };
     return reply.code(status).send(body);
   });
 
@@ -653,8 +655,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
         metrics.count('tk_staff_auth_failures_total', { reason: bearer(req) ? 'wrong_token' : 'no_token' });
         req.log.warn({ route: req.routeOptions?.url }, 'staff token refused');
         const d = await limiter.hit('staffAuth', `ip:${ipKey(req.ip)}`, now());
-        if (!d.ok) return tooMany(reply, d, 'Too many wrong staff tokens.', 'staffAuth');
-        throw new ApiError(401, 'unauthorized', 'Staff token required.');
+        if (!d.ok) return tooMany(reply, d, 'rate.staff', 'staffAuth');
+        throw staffError(401, 'unauthorized', 'Staff token required.');
       }
       staffBy.set(req, who);
       return h(req);

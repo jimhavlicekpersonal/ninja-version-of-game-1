@@ -11,15 +11,16 @@ import { RESOURCE_KINDS, type ResourceKind } from '../../src/gameplay/sim/types'
 import { NAME_HOLD_DAYS, nameKey } from '../../src/backend/net/names';
 import { DELETED_PLAYER, NameTakenError, type Player } from '../repo';
 import { nameFree, nameProblem, suggestNames } from './names';
-import { ApiError, HOUR, type ServerContext } from './context';
-import { appealText, notify } from './moderation';
+import { HOUR, type ServerContext } from './context';
+import { notify } from './moderation';
 import { applyServerResult } from './village';
+import { appeal, msg, staffError, utcDate } from './errors';
 
 const text = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 
 async function playerOr404(ctx: ServerContext, id: string): Promise<Player> {
   const p = await ctx.repo.getPlayer(String(id));
-  if (!p) throw new ApiError(404, 'not_found', 'No such player.');
+  if (!p) throw staffError(404, 'not_found', 'No such player.');
   return p;
 }
 
@@ -42,7 +43,7 @@ function summary(p: Player, now: number) {
 
 export async function search(ctx: ServerContext, q: unknown) {
   const query = text(q, 64);
-  if (query.length < 2) throw new ApiError(400, 'bad_request', 'Type at least 2 characters of a name, or a player id.');
+  if (query.length < 2) throw staffError(400, 'bad_request', 'Type at least 2 characters of a name, or a player id.');
   return { players: (await ctx.repo.searchPlayers(query, 25)).map((p) => summary(p, ctx.now())) };
 }
 
@@ -81,15 +82,15 @@ export async function detail(ctx: ServerContext, id: string) {
 export async function rename(ctx: ServerContext, actor: string, id: string, body: { name?: unknown; reason?: unknown } | undefined) {
   const p = await playerOr404(ctx, id);
   const reason = text(body?.reason, 200);
-  if (!reason) throw new ApiError(400, 'bad_request', 'Give a reason: the player is told it.');
+  if (!reason) throw staffError(400, 'bad_request', 'Give a reason: the player is told it.');
   let name = text(body?.name, 40);
   if (name) {
     const problem = nameProblem(ctx, name);
-    if (problem) throw new ApiError(400, 'bad_request', problem);
-    if (!(await nameFree(ctx, nameKey(name), p.id))) throw new ApiError(409, 'name_taken', 'That name is taken.');
+    if (problem) throw staffError(400, 'bad_request', problem);
+    if (!(await nameFree(ctx, nameKey(name), p.id))) throw staffError(409, 'name_taken', 'That name is taken.');
   } else {
     const [first] = await suggestNames(ctx, 'Shadow', p.id, 1);
-    if (!first) throw new ApiError(503, 'conflict', 'Could not find a free name. Try again.');
+    if (!first) throw staffError(503, 'conflict', 'Could not find a free name. Try again.');
     name = first;
   }
   const t = ctx.now();
@@ -99,10 +100,10 @@ export async function rename(ctx: ServerContext, actor: string, id: string, body
       if (p.nameKey) await tx.holdName(p.nameKey, DELETED_PLAYER.id, t + NAME_HOLD_DAYS * 24 * HOUR);
     });
   } catch (e) {
-    if (e instanceof NameTakenError) throw new ApiError(409, 'name_taken', 'That name was just taken.');
+    if (e instanceof NameTakenError) throw staffError(409, 'name_taken', 'That name was just taken.');
     throw e;
   }
-  await notify(ctx, p.id, 'moderation_action', `Your name was changed by a moderator because it broke the community rules. Reason: ${reason}. You can choose a new name in Settings now. ${appealText(ctx)}`);
+  await notify(ctx, p.id, 'moderation_action', [msg('moderation.renamed', { reason }), appeal(ctx)]);
   await audit(ctx, actor, 'rename', p.id, { from: p.name, to: name, reason });
   return detail(ctx, p.id);
 }
@@ -116,15 +117,15 @@ export async function rename(ctx: ServerContext, actor: string, id: string, body
 export async function releaseImportHold(ctx: ServerContext, actor: string, id: string, holdId: string, body: { note?: unknown } | undefined) {
   const p = await playerOr404(ctx, id);
   const note = text(body?.note, 200);
-  if (!note) throw new ApiError(400, 'bad_request', 'Say what support confirmed (note): it goes in the staff log.');
+  if (!note) throw staffError(400, 'bad_request', 'Say what support confirmed (note): it goes in the staff log.');
   const hold = (await ctx.repo.importHoldsOf(p.id)).find((h) => h.id === holdId);
-  if (!hold || hold.status !== 'held') throw new ApiError(404, 'not_found', 'No held import with that id for this player.');
+  if (!hold || hold.status !== 'held') throw staffError(404, 'not_found', 'No held import with that id for this player.');
   await ctx.repo.transaction(async (tx) => {
-    if (!(await tx.resolveImportHold(hold.id, p.id))) throw new ApiError(409, 'conflict', 'That hold was already released.');
+    if (!(await tx.resolveImportHold(hold.id, p.id))) throw staffError(409, 'conflict', 'That hold was already released.');
     if (hold.jade > 0) {
       const r = await applyServerResult(tx, ctx, p, [{ cmd: { type: 'staffAdjust', resources: { moonstones: hold.jade } }, reason: 'staff:import-release' }], `staff:${actor || 'staff'}`);
-      if (!r) throw new ApiError(404, 'no_village', 'This village is no longer kept on the server.');
-      if (!r.ok) throw new ApiError(400, 'bad_request', r.message);
+      if (!r) throw staffError(404, 'no_village', 'This village is no longer kept on the server.');
+      if (!r.ok) throw staffError(400, 'bad_request', r.message);
     }
   });
   await audit(ctx, actor, 'import-release', p.id, { hold: hold.id, jade: hold.jade, premium: hold.premium, purchases: hold.purchases.length, note });
@@ -135,18 +136,18 @@ export async function releaseImportHold(ctx: ServerContext, actor: string, id: s
 export async function adjust(ctx: ServerContext, actor: string, id: string, body: { resources?: unknown; note?: unknown } | undefined) {
   const p = await playerOr404(ctx, id);
   const note = text(body?.note, 200);
-  if (!note) throw new ApiError(400, 'bad_request', 'Say why (note): it goes in the ledger and the staff log.');
+  if (!note) throw staffError(400, 'bad_request', 'Say why (note): it goes in the ledger and the staff log.');
   const raw = (body?.resources ?? {}) as Record<string, unknown>;
   const known = RESOURCE_KINDS;
   const resources: Partial<Record<ResourceKind, number>> = {};
   for (const [k, v] of Object.entries(raw)) {
-    if (!known.includes(k as ResourceKind) || !Number.isFinite(Number(v)) || Math.abs(Number(v)) > 10_000_000) throw new ApiError(400, 'bad_request', `Bad amount for ${k}.`);
+    if (!known.includes(k as ResourceKind) || !Number.isFinite(Number(v)) || Math.abs(Number(v)) > 10_000_000) throw staffError(400, 'bad_request', `Bad amount for ${k}.`);
     if (Number(v)) resources[k as ResourceKind] = Math.round(Number(v));
   }
-  if (!Object.keys(resources).length) throw new ApiError(400, 'bad_request', 'Nothing to change.');
+  if (!Object.keys(resources).length) throw staffError(400, 'bad_request', 'Nothing to change.');
   const r = await ctx.repo.transaction((tx) => applyServerResult(tx, ctx, p, [{ cmd: { type: 'staffAdjust', resources }, reason: `staff:${note.slice(0, 60)}` }], `staff:${actor || 'staff'}`));
-  if (!r) throw new ApiError(404, 'no_village', 'This village lives on the device: the server cannot change it. Ask the player to move it to the server (Settings → Online play).');
-  if (!r.ok) throw new ApiError(400, 'bad_request', r.message);
+  if (!r) throw staffError(404, 'no_village', 'This village lives on the device: the server cannot change it. Ask the player to move it to the server (Settings → Online play).');
+  if (!r.ok) throw staffError(400, 'bad_request', r.message);
   await audit(ctx, actor, 'adjust', p.id, { resources, note });
   return detail(ctx, p.id);
 }
@@ -155,15 +156,15 @@ export async function adjust(ctx: ServerContext, actor: string, id: string, body
 export async function ban(ctx: ServerContext, actor: string, id: string, body: { hours?: unknown; reason?: unknown } | undefined) {
   const p = await playerOr404(ctx, id);
   const hours = Number(body?.hours);
-  if (!Number.isFinite(hours) || hours < 0 || hours > 24 * 3650) throw new ApiError(400, 'bad_request', 'hours must be 0 (lift) to 87600.');
+  if (!Number.isFinite(hours) || hours < 0 || hours > 24 * 3650) throw staffError(400, 'bad_request', 'hours must be 0 (lift) to 87600.');
   const reason = text(body?.reason, 200);
-  if (hours > 0 && !reason) throw new ApiError(400, 'bad_request', 'Give a reason: the player is told it.');
+  if (hours > 0 && !reason) throw staffError(400, 'bad_request', 'Give a reason: the player is told it.');
   const until = hours > 0 ? ctx.now() + hours * HOUR : 0;
   await ctx.repo.updatePlayer(p.id, { bannedUntil: until, banReason: hours > 0 ? reason : null });
   if (until) await ctx.board.remove(p.id);
   else if (p.base) await ctx.board.set(p.id, p.trophies, p.createdAt);
   // Statement of reasons with the appeal route (re-audit, EU DSA art. 17); the 403 on every request says it too.
-  if (hours > 0 || (p.bannedUntil ?? 0) > ctx.now()) await notify(ctx, p.id, 'moderation_action', hours > 0 ? `Your account is suspended from online play until ${new Date(until).toUTCString()}. Reason: ${reason}. ${appealText(ctx)}` : 'The suspension of your account has been lifted.');
+  if (hours > 0 || (p.bannedUntil ?? 0) > ctx.now()) await notify(ctx, p.id, 'moderation_action', hours > 0 ? [msg('moderation.suspended', { until: utcDate(until), reason }), appeal(ctx)] : [msg('moderation.unsuspended')]);
   await audit(ctx, actor, hours > 0 ? 'ban' : 'unban', p.id, { hours, reason });
   return detail(ctx, p.id);
 }
@@ -188,7 +189,7 @@ export async function resetRating(ctx: ServerContext, actor: string, id: string,
 export async function resetAge(ctx: ServerContext, actor: string, id: string, body: { note?: unknown } | undefined) {
   const p = await playerOr404(ctx, id);
   const note = text(body?.note, 200);
-  if (!note) throw new ApiError(400, 'bad_request', 'Say what was checked (note): it goes in the staff log.');
+  if (!note) throw staffError(400, 'bad_request', 'Say what was checked (note): it goes in the staff log.');
   const before = await ctx.repo.getAgeGroup(p.id);
   await ctx.repo.transaction(async (tx) => {
     await tx.setAgeGroup(p.id, null, ctx.now());

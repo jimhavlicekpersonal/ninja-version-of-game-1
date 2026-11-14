@@ -36,9 +36,10 @@ import { passSeason, unlockedTier } from '../../src/gameplay/sim/pass';
 import { achievementValue } from '../../src/gameplay/sim/achievements';
 import type { VillageResponse } from '../../src/backend/net/protocol';
 import type { ImportHold, Player, PurchaseRow, VillageRow } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
 import { maxReinforcementAt, normalizeBase } from './pvp';
 import { getVillage } from './village';
+import { fail } from './errors';
 
 /** No village holds more Jade than this, earned or bought: refused outright. Below it, unconfirmed Jade is held back (`checkProvenance`). */
 export const IMPORT_MAX_JADE = 200_000;
@@ -168,12 +169,12 @@ export function sandboxEvidence(s: VillageState): boolean {
 
 /** POST /v1/village/import: the device's village becomes the server's (once). */
 export async function importVillage(ctx: ServerContext, me: Player, body: { file?: unknown } | undefined): Promise<VillageResponse> {
-  if (await ctx.repo.getVillage(me.id)) throw new ApiError(409, 'conflict', 'Your village is already kept on the server.');
+  if (await ctx.repo.getVillage(me.id)) throw fail(409, 'conflict', 'import.already');
   let state: VillageState;
   try {
     state = deserialize(body?.file, ctx.data);
   } catch (e) {
-    throw new ApiError(400, 'bad_request', `That village could not be read: ${(e as Error).message}`);
+    throw fail(400, 'bad_request', 'import.unreadable', { detail: (e as Error).message });
   }
   const t = ctx.now();
   // GLOBAL-002: `flags.sandbox` is the game's own mark and a save code can be edited to drop it, so the
@@ -181,12 +182,12 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
   // every trace still leaves the provenance holds below and the account-age rule (A2).
   if (sandboxEvidence(state)) {
     ctx.log('warn', 'village import refused', { player: me.id, problem: 'sandbox' });
-    throw new ApiError(400, 'bad_request', 'This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).');
+    throw fail(400, 'bad_request', 'import.sandbox');
   }
   const problem = importProblem(state, t, ctx.data);
   if (problem) {
     ctx.log('warn', 'village import refused', { player: me.id, problem });
-    throw new ApiError(400, 'bad_request', `This village cannot move to the server: ${problem}`);
+    throw fail(400, 'bad_request', 'import.refused', { detail: problem });
   }
   const keep = hallLevel(state, ctx.data);
   const needDays = importMinAccountDays(keep);
@@ -195,11 +196,7 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
     ctx.metrics.count('tk_refused_total', { reason: 'import_account_too_new' });
     ctx.log('warn', 'village import refused', { player: me.id, problem: 'account_too_new', keep, ageDays: Math.floor(ageDays) });
     const wait = Math.max(1, Math.ceil(needDays - ageDays));
-    throw new ApiError(
-      403,
-      'cooldown',
-      `A village at Keep ${keep} can move to the server once this online account is ${Math.ceil(needDays)} days old (in ${wait} day${wait === 1 ? '' : 's'}). It stays on this device meanwhile: keep playing, and the game tries again each day.`,
-    );
+    throw fail(403, 'cooldown', 'import.too_new', { keep, days: Math.ceil(needDays), wait });
   }
   const checked = checkProvenance(state, t, ctx.data, await ctx.repo.purchasesOf(me.id, 1000));
   state = checked.state;
@@ -216,7 +213,7 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
   const at = t;
   const row: VillageRow = { playerId: me.id, file: serialize(state, at), revision: 1, seq: 0, at, stateHash: economyHash(state), createdAt: t, updatedAt: t };
   await ctx.repo.transaction(async (tx) => {
-    if (!(await tx.createVillage(row))) throw new ApiError(409, 'conflict', 'Your village is already kept on the server.');
+    if (!(await tx.createVillage(row))) throw fail(409, 'conflict', 'import.already');
     const opening = (Object.entries(state.resources) as [string, number][]).filter(([, v]) => v).map(([k, v]) => ({ playerId: me.id, at: t, resource: k, delta: Math.round(v), balance: Math.round(v), reason: 'import', ref: null }));
     await tx.saveVillage({ ...row, revision: 2 }, 1, opening, []);
     if (held) await tx.addImportHold(held);

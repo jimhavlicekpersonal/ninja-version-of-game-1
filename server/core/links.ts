@@ -8,16 +8,17 @@ import { createHash } from 'node:crypto';
 import type { AuthNonceResponse, LinkProvider, LinksResponse, RegisterResponse, RevokeOthersResponse } from '../../src/backend/net/protocol';
 import { IdentityError, PROVIDERS, type Provider } from '../identity/verify';
 import { REVOKED_TOKEN_PREFIX, type Player } from '../repo';
-import { ApiError, type ServerContext } from './context';
+import { type ServerContext } from './context';
 import { notify } from './moderation';
+import { fail, detailError, msg } from './errors';
 
 async function check(ctx: ServerContext, provider: unknown, credential: unknown): Promise<{ provider: Provider; subject: string; audience?: string }> {
-  if (!PROVIDERS.includes(provider as Provider)) throw new ApiError(400, 'bad_request', 'Unknown sign-in provider.');
+  if (!PROVIDERS.includes(provider as Provider)) throw fail(400, 'bad_request', 'signin.unknown_provider');
   let id;
   try {
     id = await ctx.identity.verify(provider as Provider, credential);
   } catch (e) {
-    if (e instanceof IdentityError) throw new ApiError(400, 'bad_request', e.message);
+    if (e instanceof IdentityError) throw detailError(400, 'bad_request', e.message);
     throw e;
   }
   await checkNonce(ctx, id, credential);
@@ -48,7 +49,7 @@ async function checkNonce(ctx: ServerContext, id: { provider: Provider; nonce?: 
   if (raw === undefined || raw === null || raw === '') {
     if (ctx.policy.signInNonceRequired) {
       ctx.metrics.count('tk_signin_nonce_total', { result: 'missing' });
-      throw new ApiError(400, 'bad_request', 'This sign-in needs a newer version of Kagemura. Update the game and try again.');
+      throw fail(400, 'bad_request', 'signin.update');
     }
     ctx.metrics.count('tk_signin_nonce_total', { result: 'legacy' });
     return;
@@ -56,11 +57,11 @@ async function checkNonce(ctx: ServerContext, id: { provider: Provider; nonce?: 
   const hashed = typeof raw === 'string' ? createHash('sha256').update(raw).digest('hex') : '';
   if (typeof raw !== 'string' || !id.nonce || (id.nonce !== raw && id.nonce.toLowerCase() !== hashed)) {
     ctx.metrics.count('tk_signin_nonce_total', { result: 'mismatch' });
-    throw new ApiError(400, 'bad_request', 'The sign-in does not match this request. Try again.');
+    throw fail(400, 'bad_request', 'signin.mismatch');
   }
   if (!(await ctx.repo.useNonce(raw, ctx.now()))) {
     ctx.metrics.count('tk_signin_nonce_total', { result: 'used' });
-    throw new ApiError(400, 'bad_request', 'This sign-in was already used or has expired. Try again.');
+    throw fail(400, 'bad_request', 'signin.used');
   }
   ctx.metrics.count('tk_signin_nonce_total', { result: 'ok' });
 }
@@ -72,9 +73,9 @@ export async function links(ctx: ServerContext, me: Player): Promise<LinksRespon
 export async function link(ctx: ServerContext, me: Player, body: { provider?: unknown; credential?: unknown } | undefined): Promise<LinksResponse> {
   const id = await check(ctx, body?.provider, body?.credential);
   const owner = await ctx.repo.playerByIdentity(id.provider, id.subject);
-  if (owner && owner !== me.id) throw new ApiError(409, 'conflict', 'That sign-in already belongs to another player. Use "Sign in on this device" to switch to it.');
+  if (owner && owner !== me.id) throw fail(409, 'conflict', 'signin.taken');
   if (!owner && !(await ctx.repo.addLink({ provider: id.provider, subject: id.subject, playerId: me.id, linkedAt: ctx.now() }))) {
-    throw new ApiError(409, 'conflict', 'You already linked another account from that provider. Unlink it first.');
+    throw fail(409, 'conflict', 'signin.already_linked');
   }
   await keepAppleToken(ctx, id, body?.credential);
   return links(ctx, me);
@@ -97,7 +98,7 @@ export async function unlink(ctx: ServerContext, me: Player, provider: string): 
 
 /** POST /v1/sessions/revoke-others: sign out every other device of this account. */
 export async function revokeOthers(ctx: ServerContext, me: Player): Promise<RevokeOthersResponse> {
-  if (!me.session) throw new ApiError(400, 'bad_request', 'Sign in on this device first.');
+  if (!me.session) throw fail(400, 'bad_request', 'signin.first');
   const revoked = await ctx.repo.revokeOtherTokens(me.id, me.session);
   if (revoked) ctx.metrics.count('tk_sessions_revoked_total', { reason: 'others' }, revoked);
   return { revoked };
@@ -138,9 +139,9 @@ async function keysLeft(ctx: ServerContext, me: Player, dropToken: string): Prom
  */
 export async function signOutDevice(ctx: ServerContext, me: Player): Promise<void> {
   const hash = me.session;
-  if (!hash) throw new ApiError(400, 'bad_request', 'Sign in on this device first.');
+  if (!hash) throw fail(400, 'bad_request', 'signin.first');
   if (!(await keysLeft(ctx, me, hash))) {
-    throw new ApiError(409, 'conflict', 'This device holds the only key to this account. Link Apple, Google or Game Center first (then you can sign back in), or delete the account.');
+    throw fail(409, 'conflict', 'signin.only_key');
   }
   // A hash no token can have: the device's token no longer finds the player.
   await ctx.repo.replaceToken(me.id, hash, `${REVOKED_TOKEN_PREFIX}${ctx.uuid()}`);
@@ -162,7 +163,7 @@ export const ROTATE_CONFIRM_MS = 10 * 60_000;
  */
 export async function rotateToken(ctx: ServerContext, me: Player): Promise<RegisterResponse> {
   const hash = me.session;
-  if (!hash) throw new ApiError(400, 'bad_request', 'Sign in on this device first.');
+  if (!hash) throw fail(400, 'bad_request', 'signin.first');
   const token = ctx.newToken();
   await ctx.repo.addRotation({ newHash: await ctx.hash(token), oldHash: hash, playerId: me.id, at: ctx.now() });
   return { playerId: me.id, token };
@@ -227,12 +228,12 @@ export async function revokeAppleTokens(ctx: ServerContext, tokens: { provider: 
  */
 export async function appleSignInNotification(ctx: ServerContext, body: { payload?: unknown } | undefined): Promise<void> {
   const verify = ctx.identity.appleNotification;
-  if (!verify) throw new ApiError(404, 'not_found', 'Sign in with Apple is not set up on this server.');
+  if (!verify) throw fail(404, 'not_found', 'signin.apple_off');
   let ev: { type: string; sub: string };
   try {
     ev = await verify(body?.payload);
   } catch (e) {
-    if (e instanceof IdentityError) throw new ApiError(400, 'bad_request', e.message);
+    if (e instanceof IdentityError) throw detailError(400, 'bad_request', e.message);
     throw e;
   }
   const playerId = await ctx.repo.playerByIdentity('apple', ev.sub);
@@ -255,7 +256,7 @@ export async function appleSignInNotification(ctx: ServerContext, body: { payloa
     if (n) ctx.metrics.count('tk_sessions_revoked_total', { reason: 'unlink' }, n);
     const at = ctx.now();
     await ctx.repo.addDeletionRequest({ id: ctx.uuid(), at, playerId, name: p.name, contact: '', note: 'Sign in with Apple: the Apple account was deleted (server-to-server notification).', status: 'open', resolvedAt: null, resolution: null, verified: true });
-    await notify(ctx, playerId, 'account', 'The Apple account linked to this game account was deleted, so Sign in with Apple was removed. This game account will be deleted after a short review. If you still play it, contact support from Settings → Privacy and help.');
+    await notify(ctx, playerId, 'account', [msg('account.apple_deleted')]);
     ctx.log('info', 'Sign in with Apple: Apple account deleted, deletion request queued for staff', { playerId });
   }
 }
@@ -264,7 +265,7 @@ export async function appleSignInNotification(ctx: ServerContext, body: { payloa
 export async function signIn(ctx: ServerContext, body: { provider?: unknown; credential?: unknown; device?: unknown } | undefined): Promise<RegisterResponse> {
   const id = await check(ctx, body?.provider, body?.credential);
   const playerId = await ctx.repo.playerByIdentity(id.provider, id.subject);
-  if (!playerId) throw new ApiError(404, 'not_found', 'No player is linked to that account yet. Link it from the device you play on first.');
+  if (!playerId) throw fail(404, 'not_found', 'signin.not_linked');
   const token = ctx.newToken();
   // The token remembers which sign-in made it: unlinking that provider signs this device out.
   await ctx.repo.addToken(playerId, await ctx.hash(token), ctx.now(), String(body?.device ?? '').slice(0, 40), id.provider);

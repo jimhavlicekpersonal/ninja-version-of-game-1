@@ -18,9 +18,10 @@ import { NAME_CHANGE_DAYS, NAME_HOLD_DAYS, NAME_MAX, isReservedName, nameKey, na
 import { censorText, hasContact } from '../../src/gameplay/sim/social/grove';
 import { nameWidth, sanitizeName } from '../../src/gameplay/sim/social/names';
 import { NameTakenError, type Player } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
 import { ageBandOf } from './age';
 import { serverHasContact } from './contactFilter';
+import { fail, detailError, utcDate } from './errors';
 
 const DAY = 24 * HOUR;
 
@@ -98,7 +99,7 @@ export async function nameForNewPlayer(ctx: ServerContext, wanted: unknown): Pro
   const name = tidyName(wanted);
   if (!nameProblem(ctx, name) && (await nameFree(ctx, nameKey(name), null))) return { name, nameKey: nameKey(name) };
   const [first] = await suggestNames(ctx, name || 'Shadow', null, 1);
-  if (!first) throw new ApiError(503, 'conflict', 'Could not find a free name. Try again.');
+  if (!first) throw fail(503, 'conflict', 'name.none_free');
   return { name: first, nameKey: nameKey(first) };
 }
 
@@ -108,18 +109,18 @@ export async function nameForNewPlayer(ctx: ServerContext, wanted: unknown): Pro
  */
 export async function changeName(ctx: ServerContext, me: Player, wanted: unknown): Promise<Player> {
   // Under 13 (re-audit): no chosen names, which could carry personal details; the generated one stays.
-  if ((await ageBandOf(ctx.repo, me.id)) === 'under13') throw new ApiError(403, 'age_restricted', 'Players under 13 keep the name the game gave them.');
+  if ((await ageBandOf(ctx.repo, me.id)) === 'under13') throw fail(403, 'age_restricted', 'name.under13');
   const t = ctx.now();
   const name = tidyName(wanted);
   const problem = nameProblem(ctx, name);
-  if (problem) throw new ApiError(400, 'bad_request', problem, await suggestNames(ctx, name, me.id));
+  if (problem) throw detailError(400, 'bad_request', problem, await suggestNames(ctx, name, me.id));
   const key = nameKey(name);
   if (name === me.name) return me;
   const sameName = key === me.nameKey;
   // Only capitals or separators changed: always allowed, not a name change.
   const waitUntil = sameName ? 0 : nameChangeAt(me, t);
-  if (waitUntil) throw new ApiError(429, 'name_cooldown', `You can change your name again on ${new Date(waitUntil).toUTCString().slice(0, 16)}.`);
-  if (!(await nameFree(ctx, key, me.id))) throw new ApiError(409, 'name_taken', 'That name is taken. Try one of these.', await suggestNames(ctx, name, me.id));
+  if (waitUntil) throw fail(429, 'name_cooldown', 'name.cooldown', { date: utcDate(waitUntil, 16) });
+  if (!(await nameFree(ctx, key, me.id))) throw fail(409, 'name_taken', 'name.taken', undefined, { suggestions: await suggestNames(ctx, name, me.id) });
   const patch = sameName
     ? { name, updatedAt: t }
     : { name, nameKey: key, previousName: me.name, nameChangedAt: t, freeRenames: Math.max(0, (me.freeRenames ?? 0) - (nameChangeAt({ ...me, freeRenames: 0 }, t) ? 1 : 0)), updatedAt: t };
@@ -129,7 +130,7 @@ export async function changeName(ctx: ServerContext, me: Player, wanted: unknown
       if (!sameName && me.nameKey) await tx.holdName(me.nameKey, me.id, t + NAME_HOLD_DAYS * DAY);
     });
   } catch (e) {
-    if (e instanceof NameTakenError) throw new ApiError(409, 'name_taken', 'That name was just taken. Try one of these.', await suggestNames(ctx, name, me.id));
+    if (e instanceof NameTakenError) throw fail(409, 'name_taken', 'name.just_taken', undefined, { suggestions: await suggestNames(ctx, name, me.id) });
     throw e;
   }
   return { ...me, ...patch };

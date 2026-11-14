@@ -7,11 +7,12 @@ import { createRng, int, mixSeed, next } from '../../src/gameplay/sim/rng';
 import { enemyGrove, raidPhase, raidWindow } from '../../src/gameplay/sim/social/groveRaid';
 import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView, BattleSubmission } from '../../src/backend/net/protocol';
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';
 import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer } from './pvp';
 import type { ClientInfo } from '../rules/registry';
 import { applyServerResult } from './village';
+import { fail } from './errors';
 
 const ACTIVE_WINDOW_MS = 3 * 24 * HOUR;
 
@@ -203,18 +204,18 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
   const { grove, joinedAt } = await requireGrove(ctx, me);
   const t = ctx.now();
   const ph = raidPhase(t, ctx.data);
-  if (ph.phase !== 'live') throw new ApiError(409, 'raid_not_live', 'The Alliance War is not running.');
-  if (!eligible(joinedAt, ph.week, ctx)) throw new ApiError(409, 'no_attacks_left', 'You joined during this Alliance War; you can take part from next week.');
+  if (ph.phase !== 'live') throw fail(409, 'raid_not_live', 'raid.not_live');
+  if (!eligible(joinedAt, ph.week, ctx)) throw fail(409, 'no_attacks_left', 'raid.joined_during');
   const pairing = await ensurePairing(ctx, grove.id, ph.week);
   const sideAttacks = await ctx.repo.raidAttacks(ph.week, grove.id);
   // Re-audit: a ticket is the attack; unreported ones count (hiding a loss by not reporting it uses the attack anyway).
   const unreported = (await ctx.repo.openTickets(me.id, 'raid')).filter((x) => x.week === ph.week && x.groveId === grove.id).length;
   const used = sideAttacks.filter((a) => a.attackerId === me.id).length + unreported;
-  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks (an attack counts from the moment it is begun).');
-  if (sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'Your Alliance has used all of its war attacks (both sides get the same number).');
+  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw fail(409, 'no_attacks_left', 'raid.attacks_used_long');
+  if (sideAttacks.length >= sideAttackCap(pairing, ctx)) throw fail(409, 'no_attacks_left', 'raid.side_used');
   const idx = Math.floor(Number(target));
   const entry = pairing.roster[idx];
-  if (!entry) throw new ApiError(404, 'not_found', 'No such enemy base.');
+  if (!entry) throw fail(404, 'not_found', 'war.no_base');
   const expiresAt = Math.min(t + TICKET_TTL_MS, ph.end + 10 * 60_000);
   const ticket = { id: ctx.uuid(), kind: 'raid' as const, attackerId: me.id, defenderId: entry.playerId, defenderName: entry.name, base: entry.base, defenderTrophies: entry.trophies, createdAt: t, expiresAt, used: false, week: ph.week, groveId: grove.id, target: idx, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
   await ctx.repo.createTicket(ticket);
@@ -236,7 +237,7 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   const pairing = (await ctx.repo.getPairing(week, ticket.groveId!))!;
   const sideAttacks = await ctx.repo.raidAttacks(week, ticket.groveId!);
   const used = sideAttacks.filter((a) => a.attackerId === me.id).length;
-  if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw new ApiError(409, 'no_attacks_left', 'You have used your Alliance War attacks.');
+  if (used >= ctx.data.social.groveRaid.attacksPerMember || sideAttacks.length >= sideAttackCap(pairing, ctx)) throw fail(409, 'no_attacks_left', 'raid.attacks_used');
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(hero ? { hero } : {}) };
   await requireArmyOnServer(ctx, me, army);
@@ -246,10 +247,10 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
   });
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
   await ctx.repo.transaction(async (tx) => {
-    if (!(await tx.useTicket(ticket.id, { result }))) throw new ApiError(409, 'conflict', 'This battle was already reported.');
+    if (!(await tx.useTicket(ticket.id, { result }))) throw fail(409, 'conflict', 'battle.already_reported');
     // A village the server keeps spends the warriors who fought (roadmap step 22).
     const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'remoteGroveBattleEnd', target: ticket.target!, record: { at: ctx.now(), opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick }, known: result }, reason: 'war:troops' }], ticket.id);
-    if (spent && !spent.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${spent.message}`);
+    if (spent && !spent.ok) throw fail(400, 'bad_request', 'village.says', { detail: spent.message });
     await tx.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
   });
   const s = await scores(ctx, pairing, ctx.now());
@@ -258,7 +259,7 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleSubm
 
 export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): Promise<RaidClaimResponse> {
   const w = Math.floor(Number(week));
-  if (!Number.isFinite(w)) throw new ApiError(400, 'bad_request', 'week must be a number');
+  if (!Number.isFinite(w)) throw fail(400, 'bad_request', 'request.bad_week');
   const { end } = raidWindow(w, ctx.data);
   const existing = await ctx.repo.getClaim(w, me.id);
   if (existing) {
@@ -268,15 +269,15 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
     return { week: w, outcome: existing.outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: true };
   }
   const { grove, joinedAt } = await requireGrove(ctx, me);
-  if (ctx.now() < end) throw new ApiError(409, 'raid_not_ended', 'That Alliance War has not ended yet.');
-  if (!eligible(joinedAt, w, ctx)) throw new ApiError(404, 'not_found', 'You joined your Alliance after that Alliance War started.');
+  if (ctx.now() < end) throw fail(409, 'raid_not_ended', 'raid.not_ended');
+  if (!eligible(joinedAt, w, ctx)) throw fail(404, 'not_found', 'raid.joined_after');
   const pairing = await ctx.repo.getPairing(w, grove.id);
-  if (!pairing) throw new ApiError(404, 'not_found', 'Your Alliance did not take part in that Alliance War.');
+  if (!pairing) throw fail(404, 'not_found', 'raid.not_paired');
   // Ledger audit E14: online wars pay their chest only to members who fought in them (`chestMinAttacks`,
   // the same rule the offline war uses), not to everyone on the roster.
   if (!(await foughtIn(ctx, w, grove.id, me.id))) {
     ctx.metrics.count('tk_refused_total', { reason: 'war_chest_without_attacks' });
-    throw new ApiError(409, 'conflict', `Only members who attacked in that Alliance War get its chest (at least ${ctx.data.social.groveRaid.chestMinAttacks}).`);
+    throw fail(409, 'conflict', 'raid.chest_min', { min: ctx.data.social.groveRaid.chestMinAttacks });
   }
   const s = await scores(ctx, pairing, end);
   const outcome = outcomeOf(s);

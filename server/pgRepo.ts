@@ -1365,11 +1365,11 @@ export class PgRepo implements Repo {
 
   async addNotice(n: PlayerNotice): Promise<void> {
     // A notice for a player deleted meanwhile is dropped (no orphan rows).
-    await this.db.query('insert into player_notices (id, player_id, at, kind, text, read) select $1,$2,$3,$4,$5,$6 where exists (select 1 from players where id = $2)', [n.id, n.playerId, n.at, n.kind, n.text, n.read]);
+    await this.db.query('insert into player_notices (id, player_id, at, kind, text, read, parts) select $1,$2,$3,$4,$5,$6,$7::jsonb where exists (select 1 from players where id = $2)', [n.id, n.playerId, n.at, n.kind, n.text, n.read, n.parts?.length ? JSON.stringify(n.parts) : null]);
   }
 
   async noticesOf(playerId: string, limit: number): Promise<PlayerNotice[]> {
-    return (await this.rows('select * from player_notices where player_id = $1 order by at desc limit $2', [playerId, limit])).map((r) => ({ id: String(r.id), playerId: String(r.player_id), at: num(r.at), kind: r.kind as PlayerNotice['kind'], text: String(r.text), read: Boolean(r.read) }));
+    return (await this.rows('select * from player_notices where player_id = $1 order by at desc limit $2', [playerId, limit])).map((r) => ({ id: String(r.id), playerId: String(r.player_id), at: num(r.at), kind: r.kind as PlayerNotice['kind'], text: String(r.text), read: Boolean(r.read), parts: Array.isArray(r.parts) ? (r.parts as PlayerNotice['parts']) : null }));
   }
 
   async markNoticesRead(playerId: string, ids: string[]): Promise<void> {

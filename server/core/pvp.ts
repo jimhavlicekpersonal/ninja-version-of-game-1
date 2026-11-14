@@ -29,6 +29,7 @@ import { ResimBusyError, ResimTimeoutError, type ResimOutcome } from '../resim/r
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 import { capBaseLoot, layoutReset } from './baseRules';
+import { fail, detailError, busyCode } from './errors';
 
 export { capBaseLoot, layoutReset } from './baseRules';
 
@@ -200,39 +201,39 @@ export function validLevels(levels: unknown, hallLevel: number, data: GameData):
  */
 export function checkArmy(sub: BattleSubmission, me: Player, data: GameData): { army: Record<string, number>; levels: Record<string, number>; reinforcements: Record<string, { count: number; level: number }>; hero?: { id: string; level: number } } {
   const army = sub.army ?? {};
-  if (typeof army !== 'object') throw new ApiError(400, 'bad_request', 'bad army');
+  if (typeof army !== 'object') throw fail(400, 'bad_request', 'army.bad');
   const reinforcements: Record<string, { count: number; level: number }> = {};
   const lodge = sub.reinforcements ?? {};
-  if (typeof lodge !== 'object') throw new ApiError(400, 'bad_request', 'bad reinforcements');
+  if (typeof lodge !== 'object') throw fail(400, 'bad_request', 'army.bad_reinforcements');
   const topKeep = data.hall.levels.length;
   let lodgeHousing = 0;
   for (const [k, r] of Object.entries(lodge)) {
     const def = data.troops[k];
     const count = Number(r?.count);
     const level = Number(r?.level);
-    if (!def || !Number.isInteger(count) || count < 0 || count > (army[k] ?? 0)) throw new ApiError(400, 'bad_request', 'bad reinforcements');
-    if (!Number.isInteger(level) || level < 1 || level > Math.min(troopLevelCapAt(topKeep, data, k), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop levels');
+    if (!def || !Number.isInteger(count) || count < 0 || count > (army[k] ?? 0)) throw fail(400, 'bad_request', 'army.bad_reinforcements');
+    if (!Number.isInteger(level) || level < 1 || level > Math.min(troopLevelCapAt(topKeep, data, k), def.levels.length)) throw fail(400, 'bad_request', 'army.bad_levels');
     if (count > 0) reinforcements[k] = { count, level };
     lodgeHousing += def.housing * count;
   }
   let ownHousing = 0;
   for (const [k, n] of Object.entries(army)) {
     const def = data.troops[k];
-    if (!def || !Number.isInteger(n) || n < 0) throw new ApiError(400, 'bad_request', 'bad army');
+    if (!def || !Number.isInteger(n) || n < 0) throw fail(400, 'bad_request', 'army.bad');
     const own = n - (reinforcements[k]?.count ?? 0);
-    if (own > 0 && me.hallLevel < troopEarliestKeep(k, data)) throw new ApiError(400, 'bad_request', 'troop not unlocked');
+    if (own > 0 && me.hallLevel < troopEarliestKeep(k, data)) throw fail(400, 'bad_request', 'army.troop_locked');
     ownHousing += def.housing * own;
   }
-  if (ownHousing > maxHousingAtHall(me.hallLevel, data) || lodgeHousing > maxReinforcementAt(me.hallLevel, data)) throw new ApiError(400, 'bad_request', 'army too big');
+  if (ownHousing > maxHousingAtHall(me.hallLevel, data) || lodgeHousing > maxReinforcementAt(me.hallLevel, data)) throw fail(400, 'bad_request', 'army.too_big');
   const levels = validLevels(sub.levels, me.hallLevel, data);
-  if (!levels) throw new ApiError(400, 'bad_request', 'bad troop levels');
+  if (!levels) throw fail(400, 'bad_request', 'army.bad_levels');
   // Report section 5 step 8 (SIM_RULES 5): the hero must be the one the attacker's Keep brings, at that level.
   let hero: { id: string; level: number } | undefined;
   if (sub.hero !== undefined && sub.hero !== null) {
     // One Keep of slack: the base the server holds can trail a Keep upgrade that just finished on the device.
     const most = heroAtKeep(me.hallLevel + 1, data);
     const level = Number(sub.hero?.level);
-    if (!most || typeof sub.hero !== 'object' || sub.hero.id !== most.id || !Number.isInteger(level) || level < 1 || level > most.level) throw new ApiError(400, 'bad_request', 'bad hero');
+    if (!most || typeof sub.hero !== 'object' || sub.hero.id !== most.id || !Number.isInteger(level) || level < 1 || level > most.level) throw fail(400, 'bad_request', 'army.bad_hero');
     hero = { id: most.id, level };
   }
   return { army, levels, reinforcements, ...(hero ? { hero } : {}) };
@@ -248,7 +249,7 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   // Checked against the rules of the game that sent it (an older app's Keep limits, step 73).
   const rulesData = engineForClient(ctx, client).data;
   const n = normalizeBase(structuredClone(req?.base), rulesData);
-  if ('error' in n) throw new ApiError(400, 'bad_request', n.error);
+  if ('error' in n) throw detailError(400, 'bad_request', n.error);
   const base = n.base;
   capBaseLoot(base, rulesData);
   base.name = me.name;
@@ -269,7 +270,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
   if (client?.protocol !== undefined && client.protocol < SEED_AT_START_PROTOCOL) {
     ctx.metrics.count('tk_refused_total', { reason: 'protocol_too_old', rules: String(client.rules ?? '?') });
-    throw new ApiError(426, 'version_mismatch', UPDATE_MESSAGE);
+    throw fail(426, 'version_mismatch', 'version.battle_update');
   }
   // Ledger audit A1/E15: for a village the server keeps, a new opponent needs a new scout in that village
   // (the first look after a raid is free; Next costs coins, replayed from the game's own command). The
@@ -277,7 +278,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   // loss about 98% of the time), so free rerolls were the way to pick only raids a simulation says win.
   const kept = await repo.getVillage(me.id);
   const scoutSeed = kept ? deserialize(kept.file, data).scout?.seed : undefined;
-  if (kept && scoutSeed === undefined) throw new ApiError(409, 'conflict', 'Look for an opponent from the Attack button first.');
+  if (kept && scoutSeed === undefined) throw fail(409, 'conflict', 'pvp.scout_first');
   if (scoutSeed !== undefined) {
     const same = (await repo.openTickets(me.id, 'pvp')).find((o) => o.startedAt === undefined && o.scoutSeed === scoutSeed && t < o.expiresAt);
     if (same) return matchAnswer(same);
@@ -387,17 +388,17 @@ function matchAnswer(ticket: Ticket): MatchResponse {
  */
 async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined, kind: Ticket['kind']): Promise<{ ticket: Ticket; answered?: unknown }> {
   const ticket = id ? await ctx.repo.getTicket(String(id)) : null;
-  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw new ApiError(404, 'not_found', 'Unknown ticket.');
+  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw fail(404, 'not_found', 'pvp.unknown_ticket');
   if (ticket.used) {
     // Re-audit: a ticket the server closed without a battle (voided, lapsed, forfeited, burned) has no answer to repeat.
     const closed = ticket.response as { voided?: boolean; lapsed?: boolean; forfeit?: boolean } | undefined;
-    if (closed?.voided || closed?.lapsed) throw new ApiError(409, 'conflict', 'This battle was cancelled before it started.');
-    if (closed?.forfeit) throw new ApiError(410, 'expired', 'This battle took too long to report and counted as a loss.');
+    if (closed?.voided || closed?.lapsed) throw fail(409, 'conflict', 'pvp.cancelled');
+    if (closed?.forfeit) throw fail(410, 'expired', 'pvp.forfeit');
     if (ticket.response !== undefined) return { ticket, answered: ticket.response };
-    throw new ApiError(409, 'conflict', 'This battle was already reported.');
+    throw fail(409, 'conflict', 'battle.already_reported');
   }
   const deadline = ticket.kind === 'pvp' ? ticket.expiresAt + LATE_REPORT_MS : ticket.expiresAt;
-  if (ctx.now() > deadline) throw new ApiError(410, 'expired', 'This battle took too long to report.');
+  if (ctx.now() > deadline) throw fail(410, 'expired', 'pvp.too_late');
   return { ticket };
 }
 
@@ -413,7 +414,7 @@ export async function requireArmyOnServer(ctx: ServerContext, me: Player, army: 
   // Settled to now first: warriors whose training ended are in the army (applyServerResult does the same).
   const have = advance(deserialize(row.file, ctx.data), Math.max(row.at, ctx.now()), ctx.data).state.army;
   const short = Object.entries(army).find(([t, n]) => n > 0 && (have[t] ?? 0) < n);
-  if (short) throw new ApiError(400, 'bad_request', `Your village on the server has fewer ${ctx.data.troops[short[0]]?.name ?? short[0]} than this battle used.`);
+  if (short) throw fail(400, 'bad_request', 'pvp.fewer_troops', { troop: ctx.data.troops[short[0]]?.name ?? short[0] });
 }
 
 /** Count a refused report; after MAX_TICKET_FAILURES the ticket is used up (no more re-simulations). */
@@ -443,12 +444,12 @@ export async function burnAfterFailures(ctx: ServerContext, ticket: Ticket, e: u
  */
 export async function startAttack(ctx: ServerContext, me: Player, body: { ticket?: unknown; stake?: unknown } | undefined): Promise<AttackStartResponse> {
   const ticket = typeof body?.ticket === 'string' ? await ctx.repo.getTicket(body.ticket) : null;
-  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw new ApiError(404, 'not_found', 'Unknown ticket.');
-  if (ticket.used) throw new ApiError(409, 'conflict', 'This opponent is no longer available. Find a new one.');
-  if (ticket.startedAt === undefined && ctx.now() > ticket.expiresAt) throw new ApiError(410, 'expired', 'This scout has expired. Find a new opponent.');
+  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw fail(404, 'not_found', 'pvp.unknown_ticket');
+  if (ticket.used) throw fail(409, 'conflict', 'pvp.opponent_gone');
+  if (ticket.startedAt === undefined && ctx.now() > ticket.expiresAt) throw fail(410, 'expired', 'pvp.scout_expired');
   // Declared stakes (protocol 11): fixed now, before the seed is sent, and only with the first start.
   const stake = ticket.startedAt === undefined && validStake(body?.stake, ctx.data) ? body!.stake as number : undefined;
-  if (!(await ctx.repo.startTicket(ticket.id, ctx.now(), stake))) throw new ApiError(409, 'conflict', 'This opponent is no longer available. Find a new one.');
+  if (!(await ctx.repo.startTicket(ticket.id, ctx.now(), stake))) throw fail(409, 'conflict', 'pvp.opponent_gone');
   const held = ticket.startedAt === undefined ? stake : ticket.stake;
   return { started: true, ...(ticket.seed !== undefined ? { seed: ticket.seed } : {}), ...(held !== undefined ? { stake: held } : {}) };
 }
@@ -459,9 +460,9 @@ export async function startAttack(ctx: ServerContext, me: Player, body: { ticket
  */
 export async function voidAttack(ctx: ServerContext, me: Player, body: { ticket?: unknown } | undefined): Promise<{ voided: boolean }> {
   const ticket = typeof body?.ticket === 'string' ? await ctx.repo.getTicket(body.ticket) : null;
-  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw new ApiError(404, 'not_found', 'Unknown ticket.');
+  if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw fail(404, 'not_found', 'pvp.unknown_ticket');
   if (ticket.used) return { voided: Boolean((ticket.response as { voided?: boolean } | undefined)?.voided) };
-  if (ticket.startedAt !== undefined) throw new ApiError(409, 'conflict', 'This battle has started: it can only be reported.');
+  if (ticket.startedAt !== undefined) throw fail(409, 'conflict', 'pvp.started');
   const voided = await ctx.repo.useTicket(ticket.id, { voided: true });
   if (voided && ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
   return { voided };
@@ -526,14 +527,13 @@ export async function forfeitExpired(ctx: ServerContext, limit = 500): Promise<n
   return n;
 }
 
-const UPDATE_MESSAGE = 'This version of Kagemura is too old for online battles. Update the game to keep playing online.';
 
 /** The rules engine for the game that sent this request, or 426 if the server no longer has its rules (step 73). */
 export function engineForClient(ctx: ServerContext, client: ClientInfo | undefined): RulesEngine {
   const e = ctx.rules.forClient(client);
   if (!e) {
     ctx.metrics.count('tk_refused_total', { reason: 'rules_unsupported', rules: String(client?.rules ?? '?') });
-    throw new ApiError(426, 'version_mismatch', UPDATE_MESSAGE);
+    throw fail(426, 'version_mismatch', 'version.battle_update');
   }
   return e;
 }
@@ -547,12 +547,12 @@ export function engineForClient(ctx: ServerContext, client: ClientInfo | undefin
 export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleSubmission): RulesEngine {
   if (ticket.rules !== undefined && sub.rules !== undefined && sub.rules !== null && Number(sub.rules) !== ticket.rules) {
     ctx.metrics.count('tk_refused_total', { reason: 'rules_changed', rules: String(sub.rules) });
-    throw new ApiError(400, 'bad_request', 'This battle was played with different rules than the ticket was issued for. Find a new opponent.');
+    throw fail(400, 'bad_request', 'pvp.rules_differ');
   }
   const e = ctx.rules.forTicket(ticket.rules, ticket.dataVersion);
   if (!e) {
     ctx.metrics.count('tk_refused_total', { reason: 'rules_retired', rules: String(ticket.rules ?? '?') });
-    throw new ApiError(426, 'version_mismatch', UPDATE_MESSAGE);
+    throw fail(426, 'version_mismatch', 'version.battle_update');
   }
   return e;
 }
@@ -569,7 +569,7 @@ export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'due
   } catch (e) {
     if (e instanceof ResimBusyError) {
       ctx.metrics.count('tk_resim_busy_total', { kind });
-      throw e instanceof ResimTimeoutError ? new ResimTimedOut(e.message) : new ApiError(503, 'busy', e.message);
+      throw e instanceof ResimTimeoutError ? new ResimTimedOut(e.message) : fail(503, 'busy', busyCode(e.message));
     }
     throw e;
   }
@@ -594,7 +594,7 @@ export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'due
 export function battleSeed(ticket: Ticket, sub: BattleSubmission): number {
   if (ticket.seed === undefined) return Number(sub.seed) >>> 0;
   if (sub.seed !== undefined && sub.seed !== null && Number(sub.seed) >>> 0 !== ticket.seed) {
-    throw new ApiError(400, 'bad_request', 'This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.');
+    throw fail(400, 'bad_request', 'pvp.wrong_seed');
   }
   return ticket.seed;
 }
@@ -621,7 +621,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   const protectedNow = async () => {
     await repo.useTicket(ticket.id, undefined);
     if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
-    return new ApiError(409, 'defender_protected', 'Another raid reached this village first and it is shielded now, so this battle counts as practice.');
+    return fail(409, 'defender_protected', 'pvp.defender_shielded');
   };
   if (ticket.defenderId && (await repo.defensesFor(ticket.defenderId, ticket.createdAt, 1)).length > 0) throw await protectedNow();
   // Re-audit: a server-held village that lacks these warriors is refused before the costly re-simulation.
@@ -636,7 +636,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   if (!foughtWithWarriors(result, setup)) {
     await repo.useTicket(ticket.id, undefined);
     if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
-    throw new ApiError(409, 'no_warriors', 'No warriors fought, so this battle counts as practice.');
+    throw fail(409, 'no_warriors', 'pvp.no_warriors');
   }
   const t = ctx.now();
   const attackId = ctx.uuid();
@@ -680,7 +680,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
       { cmd: { type: 'battleEnd', record: { at: t, opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick, ticket: ticket.id, ...(stake !== undefined ? { stake } : {}) }, known: result }, reason: 'attack:troops' },
       { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}) }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
     ], attackId);
-    if (mine && !mine.ok) throw new ApiError(400, 'bad_request', `Your village on the server says: ${mine.message}`);
+    if (mine && !mine.ok) throw fail(400, 'bad_request', 'village.says', { detail: mine.message });
     await tx.updatePlayer(attacker.id, mePatch);
     if (defender) {
       await tx.updatePlayer(defender.id, defPatch);
@@ -697,7 +697,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleSubmissi
   if (settled === 'used') {
     const again = await repo.getTicket(ticket.id);
     if (again?.response !== undefined) return again.response as AttackResponse;
-    throw new ApiError(409, 'conflict', 'This battle was already reported.');
+    throw fail(409, 'conflict', 'battle.already_reported');
   }
   const { response, attacker, defender } = settled;
   if (attacker.base) await ctx.board.set(attacker.id, response.playerTrophies, attacker.createdAt);

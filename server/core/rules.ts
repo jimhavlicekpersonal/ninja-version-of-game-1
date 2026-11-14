@@ -7,11 +7,12 @@
  */
 import { COMMUNITY_RULES_VERSION, type RulesRequest, type RulesResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
-import { ApiError, type ServerContext } from './context';
+import { type ServerContext } from './context';
+import { fail } from './errors';
 
 export async function acceptRules(ctx: ServerContext, me: Player, body: Partial<RulesRequest> | undefined): Promise<RulesResponse> {
   const v = Number(body?.version);
-  if (!Number.isInteger(v) || v < 1 || v > COMMUNITY_RULES_VERSION) throw new ApiError(400, 'bad_request', 'Unknown version of the community rules.');
+  if (!Number.isInteger(v) || v < 1 || v > COMMUNITY_RULES_VERSION) throw fail(400, 'bad_request', 'rules.unknown_version');
   if ((me.rulesVersion ?? 0) >= v) return { version: me.rulesVersion! };
   await ctx.repo.updatePlayer(me.id, { rulesVersion: v, rulesAcceptedAt: ctx.now() });
   return { version: v };
@@ -21,5 +22,5 @@ export async function acceptRules(ctx: ServerContext, me: Player, body: Partial<
 export function requireRules(ctx: ServerContext, me: Player): void {
   if (ctx.requireRules === false) return;
   if ((me.rulesVersion ?? 0) >= COMMUNITY_RULES_VERSION) return;
-  throw new ApiError(403, 'rules_required', 'Please accept the community rules first (Alliance or Friends shows them). If you did, update Kagemura.');
+  throw fail(403, 'rules_required', 'rules.required');
 }

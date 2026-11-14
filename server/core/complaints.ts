@@ -8,17 +8,18 @@
  */
 import type { ComplaintRequest, ComplaintResponse } from '../../src/backend/net/protocol';
 import type { Complaint } from '../repo';
-import { ApiError, type ServerContext } from './context';
+import { type ServerContext } from './context';
+import { fail, staffError } from './errors';
 
 const clean = (v: unknown, max: number) => String(v ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, max);
 
 export async function submitComplaint(ctx: ServerContext, body: Partial<ComplaintRequest> | undefined): Promise<ComplaintResponse> {
   const subject = clean(body?.subject, 300);
   const reason = clean(body?.reason, 2000);
-  if (!subject) throw new ApiError(400, 'bad_request', 'Say what the complaint is about (a player name, an Alliance or Gang, a message).');
-  if (reason.length < 10) throw new ApiError(400, 'bad_request', 'Say why it is illegal or harmful (at least a sentence).');
+  if (!subject) throw fail(400, 'bad_request', 'complaint.subject');
+  if (reason.length < 10) throw fail(400, 'bad_request', 'complaint.reason');
   const contact = clean(body?.contact, 200);
-  if (contact && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) throw new ApiError(400, 'bad_request', 'The contact must be an email address (or leave it empty).');
+  if (contact && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) throw fail(400, 'bad_request', 'complaint.contact');
   const c: Complaint = { id: ctx.uuid(), at: ctx.now(), subject, reason, contact: contact || null, playerId: clean(body?.playerId, 64) || null, status: 'open', resolvedAt: null, resolution: null };
   await ctx.repo.addComplaint(c);
   ctx.metrics.count('tk_complaints_total', {});
@@ -32,8 +33,8 @@ export async function complaintQueue(ctx: ServerContext, status: 'open' | 'all')
 /** Staff close a complaint with what was done (the statement of reasons when content was acted on). */
 export async function resolveComplaint(ctx: ServerContext, actor: string, id: string, body: { resolution?: unknown } | undefined): Promise<Complaint> {
   const resolution = clean(body?.resolution, 1000);
-  if (resolution.length < 5) throw new ApiError(400, 'bad_request', 'Say what was done (resolution).');
-  if (!(await ctx.repo.resolveComplaint(String(id), resolution, ctx.now()))) throw new ApiError(404, 'not_found', 'No open complaint with that id.');
+  if (resolution.length < 5) throw staffError(400, 'bad_request', 'Say what was done (resolution).');
+  if (!(await ctx.repo.resolveComplaint(String(id), resolution, ctx.now()))) throw staffError(404, 'not_found', 'No open complaint with that id.');
   await ctx.repo.addStaffAction({ id: ctx.uuid(), at: ctx.now(), actor: actor || 'staff', action: 'complaint', playerId: null, detail: { complaint: id, resolution } });
   const all = await ctx.repo.complaints('all', 500);
   return all.find((c) => c.id === id)!;

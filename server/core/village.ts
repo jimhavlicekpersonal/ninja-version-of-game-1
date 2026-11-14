@@ -24,6 +24,7 @@ import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { BATTLE_COMMANDS_PER_MINUTE, MemoryRateLimiter, type RateLimiter } from '../rateLimit';
 import { ResimBusyError } from '../resim/resim';
 import { replayVillage, type ReplayStep, type VillageReplayJob, type VillageReplayOutcome } from './villageReplay';
+import { fail, detailError, busyCode } from './errors';
 
 /** Most commands one batch may carry. */
 export const MAX_BATCH = 200;
@@ -113,7 +114,7 @@ async function refreshBase(repo: Repo, ctx: ServerContext, me: { id: string; nam
 
 export async function getVillage(ctx: ServerContext, me: Player): Promise<VillageResponse> {
   const row = await ctx.repo.getVillage(me.id);
-  if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
+  if (!row) throw fail(404, 'no_village', 'village.on_device');
   return view(row);
 }
 
@@ -146,7 +147,7 @@ export async function startVillage(ctx: ServerContext, me: Player): Promise<Vill
 }
 
 function badBatch(message: string): ApiError {
-  return new ApiError(400, 'bad_request', message);
+  return detailError(400, 'bad_request', message);
 }
 
 /**
@@ -184,7 +185,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
   const plan = async (repo: Repo, row: VillageRow) => {
     if (!device && row.deviceSeqs && Object.keys(row.deviceSeqs).length) {
       ctx.metrics.count('tk_refused_total', { reason: 'commands_without_device', rules: '?' });
-      throw new ApiError(426, 'version_mismatch', 'This village is already played with a newer version of Kagemura. Update the game on this device to keep playing online.');
+      throw fail(426, 'version_mismatch', 'version.village_newer');
     }
     const lastSeq = device ? (row.deviceSeqs?.[device] ?? 0) : row.seq;
     const now = ctx.now();
@@ -243,7 +244,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
       let pre: { row: VillageRow; out: VillageReplayOutcome } | null = null;
       if (ctx.resim.replayVillage && sorted.some((c) => BATTLE_COMMANDS.has(c.command.type))) {
         const row = await ctx.repo.getVillage(me.id);
-        if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
+        if (!row) throw fail(404, 'no_village', 'village.on_device');
         const p = await plan(ctx.repo, row);
         if (p.battles) {
           try {
@@ -251,7 +252,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
           } catch (e) {
             if (e instanceof ResimBusyError) {
               ctx.metrics.count('tk_resim_busy_total', { kind: 'village' });
-              throw new ApiError(503, 'busy', e.message);
+              throw fail(503, 'busy', busyCode(e.message));
             }
             throw e;
           }
@@ -260,14 +261,14 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
       }
       const answer = await ctx.repo.transaction(async (tx) => {
         const row = await tx.getVillage(me.id, { forUpdate: true });
-        if (!row) throw new ApiError(404, 'no_village', 'Your village lives on this device, not on the server.');
+        if (!row) throw fail(404, 'no_village', 'village.on_device');
         if (pre && row.revision !== pre.row.revision) return null; // changed meanwhile: replay again
         const out = pre ? pre.out : replayVillage((await plan(tx, row)).job, ctx.data);
         return commit(tx, row, out);
       });
       if (answer) return answer;
       ctx.metrics.count('tk_village_replay_conflicts_total');
-      if (attempt >= 2) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
+      if (attempt >= 2) throw fail(409, 'conflict', 'village.changed');
     }
   }
 
@@ -311,7 +312,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Comman
           ? await tx.saveVillage({ ...row, file: out.file, revision: row.revision + 1, seq, at, stateHash, updatedAt: now, ...(device ? { deviceSeqs } : {}) }, row.revision, ledger, log)
           : // Nothing changed: only the command numbers (and the short log lines) are written, not the ~300 KB village or the raid base.
             await tx.recordVillageCommands({ playerId: me.id, revision: row.revision + 1, seq, updatedAt: now, ...(device ? { deviceSeqs } : {}) }, row.revision, log);
-      if (!written) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
+      if (!written) throw fail(409, 'conflict', 'village.changed');
       if (out.applied && out.file) await refreshBase(tx, ctx, me, deserialize(out.file, ctx.data), at);
     }
     const res: CommandBatchResponse = { ackSeq: device ? deviceSeq : Math.max(seq, row.seq), revision: results.length ? row.revision + 1 : row.revision, stateHash, results };
@@ -345,7 +346,7 @@ export async function applyServerResult(tx: Repo, ctx: ServerContext, player: { 
     state = r.state;
   }
   const next: VillageRow = { ...row, file: serialize(state, when), revision: row.revision + 1, at: when, stateHash: economyHash(state), updatedAt: now };
-  if (!(await tx.saveVillage(next, row.revision, ledger, []))) throw new ApiError(409, 'conflict', 'Your village changed at the same moment. Try again.');
+  if (!(await tx.saveVillage(next, row.revision, ledger, []))) throw fail(409, 'conflict', 'village.changed');
   await refreshBase(tx, ctx, player, state, when);
   return { ok: true };
 }

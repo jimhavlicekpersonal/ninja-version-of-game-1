@@ -526,8 +526,11 @@ export interface PlayerNotice {
   playerId: string;
   at: number;
   kind: 'report_outcome' | 'moderation_action' | 'account';
+  /** The English (older games). */
   text: string;
   read: boolean;
+  /** The same notice as message codes (migration 0037; absent on older notices). */
+  parts?: import('../src/backend/net/protocol').MessageRef[] | null;
 }
 
 /** A device token (each sign-in on another device gets its own). */

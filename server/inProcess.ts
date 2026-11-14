@@ -4,6 +4,7 @@
  * in and out, so it behaves like the network (no shared objects). Used by
  * tests, and handy for a local sandbox of a future server.
  */
+import { messageParts } from '../locales/runtime';
 import { ServerError, type ServerPort } from '../src/backend/net/ports';
 import type { AgeRequest, RulesRequest, BattleSubmission, CommandBatch, DonateRequest, DuelLayoutRequest, DuelTicketRequest, FriendRequestBody, GangWarTicketRequest, IntentReleaseRequest, PlatformFriendsRequest, PrivacyRequest, LinkCredential, LinkProvider, PurchaseIntentRequest, PushTokenRequest, RedeemRequest, ReportRequest, UploadBaseRequest } from '../src/backend/net/protocol';
 import { ApiError, type ServerCore } from './core';
@@ -30,7 +31,7 @@ export class InProcessServerAdapter implements ServerPort {
     try {
       return wire(await fn());
     } catch (e) {
-      if (e instanceof ApiError) throw new ServerError(e.status, e.code, e.message);
+      if (e instanceof ApiError) throw new ServerError(e.status, e.code, e.message, e.parts ? messageParts(wire(e.parts)) : undefined);
       throw e;
     }
   }
