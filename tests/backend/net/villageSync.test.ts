@@ -11,7 +11,7 @@ import { ServerError } from '../../../src/backend/net/ports';
 import { MemorySaveStore } from '../../../src/backend/persist/saveStore';
 import { GameController } from '../../../src/gameplay/control/controller';
 import { canPlace } from '../../../src/gameplay/sim/grid';
-import { deserialize } from '../../../src/gameplay/sim/save';
+import { deserialize, SAVE_VERSION } from '../../../src/gameplay/sim/save';
 import { economyHash } from '../../../src/gameplay/sim/serverEconomy';
 import { HOUR, world } from '../server/harness';
 import { combineVerifiers, JwtVerifier } from '../../../server/identity/verify';
@@ -44,6 +44,29 @@ function placeCollector(c: GameController, res: 'acorns' | 'dew' = 'acorns') {
 }
 
 const serverHash = async (s: Awaited<ReturnType<typeof setup>>) => (await s.port.getVillage())!.stateHash;
+
+describe('rolling deploy (2026-11-14): a server village saved by a newer build', () => {
+  it('pauses online play with the "Update Kagemura" status instead of failing and retrying', async () => {
+    const s = await setup();
+    await s.conn.village!.enable();
+    // A newer game on another device wrote the village (a save version this build does not know).
+    const row = (await s.w.repo.getVillage(s.conn.player!.id))!;
+    await s.w.repo.saveVillage({ ...row, file: { ...(row.file as object), version: SAVE_VERSION + 1 }, revision: row.revision + 1 }, row.revision, [], []);
+    // This build meets it on a new device (cloud save): it cannot read the village.
+    const clock = { now: () => s.w.now() };
+    const store = new MemorySaveStore();
+    const { controller } = await GameController.start({ clock, store, data: s.w.data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false });
+    const port = new InProcessServerAdapter(s.w.core, s.port.credentials);
+    const conn = new Connection({ game: controller, builtInUrl: 'test.server', kv: memoryKv(), makePort: () => port, log: () => undefined });
+    await conn.sync();
+    expect(conn.status).toBe('incompatible');
+    expect(conn.lastError).toMatch(/new version of Kagemura/);
+    // It does not keep retrying (sync is a no-op while incompatible), and nothing was adopted.
+    await conn.sync();
+    expect(conn.status).toBe('incompatible');
+    expect(await store.listBackups()).toHaveLength(0);
+  });
+});
 
 describe('server-owned village: the game side', () => {
   it('moves to a village on the server, keeping the old one as a backup', async () => {
