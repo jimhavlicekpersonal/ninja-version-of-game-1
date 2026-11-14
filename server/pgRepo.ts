@@ -6,7 +6,7 @@ import type { Rating } from '../src/gameplay/sim/rating';
 import { isAgeBand, type AgeBand } from '../src/gameplay/sim/age';
 import { migrationStatus, runMigrations, type MigrationStatus } from './migrate';
 import { migrations } from './migrations';
-import { DELETED_PLAYER, NameTakenError, nameNoticePatterns, STATE_NOTICES } from './repo';
+import { DELETED_PLAYER, NameTakenError, nameNoticePatterns, REVOKED_TOKEN_PREFIX, STATE_NOTICES } from './repo';
 import type {
   AttackRecord,
   Block,
@@ -52,6 +52,7 @@ import type {
   VillageRow,
   Ticket,
   TroopRequest,
+  TokenRotation,
 } from './repo';
 
 type Row = Record<string, unknown>;
@@ -1234,6 +1235,7 @@ export class PgRepo implements Repo {
       // A server-held village, its ledger and command log are only theirs.
       await q('delete from villages where player_id = $1', [id]);
       await q('delete from player_tokens where player_id = $1', [id]);
+      await q('delete from token_rotations where player_id = $1', [id]);
       await q('delete from identity_links where player_id = $1', [id]);
       await q('delete from purchase_intents where player_id = $1', [id]);
       await q('delete from player_age where player_id = $1', [id]);
@@ -1304,8 +1306,40 @@ export class PgRepo implements Repo {
   }
 
   async pruneTokens(unusedBefore: number): Promise<number> {
-    const r = await this.db.query('delete from player_tokens where coalesce(last_used_at, created_at) < $1', [unusedBefore]);
+    // Backend A16: the newest device token of an account with no other way in (first token signed out, no link) stays.
+    const r = await this.db.query(
+      `delete from player_tokens t where coalesce(t.last_used_at, t.created_at) < $1
+         and (exists (select 1 from players p where p.id = t.player_id and left(p.token_hash, length($2)) <> $2)
+           or exists (select 1 from identity_links l where l.player_id = t.player_id)
+           or t.token_hash <> (select o.token_hash from player_tokens o where o.player_id = t.player_id
+                                order by coalesce(o.last_used_at, o.created_at) desc, o.token_hash limit 1))`,
+      [unusedBefore, REVOKED_TOKEN_PREFIX],
+    );
     return r.rowCount ?? 0;
+  }
+
+  async keysOf(playerId: string): Promise<{ main: string | null; devices: { hash: string; provider: string | null }[] }> {
+    const p = await this.rows('select token_hash from players where id = $1', [playerId]);
+    const main = p[0] ? String(p[0].token_hash) : null;
+    const devices = (await this.rows('select token_hash, provider from player_tokens where player_id = $1', [playerId])).map((r) => ({ hash: String(r.token_hash), provider: strOrNull(r.provider) }));
+    return { main: main && !main.startsWith(REVOKED_TOKEN_PREFIX) ? main : null, devices };
+  }
+
+  async addRotation(r: TokenRotation): Promise<void> {
+    await this.db.query('insert into token_rotations (new_hash, old_hash, player_id, created_at) values ($1,$2,$3,$4) on conflict do nothing', [r.newHash, r.oldHash, r.playerId, r.at]);
+  }
+
+  async rotationOf(newHash: string): Promise<TokenRotation | null> {
+    const r = (await this.rows('select * from token_rotations where new_hash = $1', [newHash]))[0];
+    return r ? { newHash: String(r.new_hash), oldHash: String(r.old_hash), playerId: String(r.player_id), at: num(r.created_at) } : null;
+  }
+
+  async dropRotations(oldHash: string): Promise<number> {
+    return (await this.db.query('delete from token_rotations where old_hash = $1', [oldHash])).rowCount ?? 0;
+  }
+
+  async pruneRotations(before: number): Promise<number> {
+    return (await this.db.query('delete from token_rotations where created_at < $1', [before])).rowCount ?? 0;
   }
 
   async setLinkToken(provider: string, subject: string, refreshToken: string | null, clientId: string | null): Promise<void> {

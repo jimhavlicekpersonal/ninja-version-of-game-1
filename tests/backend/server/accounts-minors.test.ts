@@ -271,6 +271,35 @@ for (const [label, makeRepo] of repoFactories) {
       expect((await phone.me()).id).toBe(ann.id); // the main token is the account
     });
 
+    it('A16 2026-11-14: pruning keeps an account\'s last working key; rotations wait for first use and go with the account', async () => {
+      const w = world({ repo: await makeRepo() });
+      const ann = await w.player('Ann');
+      const ben = await w.player('Ben');
+      const annMain = (await w.repo.keysOf(ann.id)).main!;
+      await w.repo.replaceToken(ann.id, annMain, 'revoked:x');
+      expect((await w.repo.keysOf(ann.id)).main).toBeNull();
+      await w.repo.addToken(ann.id, 'h-older', w.now(), 'tablet');
+      w.advance(1000);
+      await w.repo.addToken(ann.id, 'h-newer', w.now(), 'phone', 'google');
+      await w.repo.addToken(ben.id, 'h-ben-extra', w.now(), 'tablet');
+      w.advance(401 * 24 * 3_600_000);
+      expect(await w.core.pruneTokens()).toBe(2); // Ann's older one and Ben's extra (Ben keeps his first token)
+      expect((await w.repo.keysOf(ann.id)).devices).toEqual([{ hash: 'h-newer', provider: 'google' }]);
+      expect((await w.repo.keysOf(ben.id)).devices).toEqual([]);
+      // Rotations: stored, found by the new hash, dropped by the old one, pruned by age, deleted with the account.
+      await w.repo.addRotation({ newHash: 'n1', oldHash: 'h-newer', playerId: ann.id, at: w.now() });
+      await w.repo.addRotation({ newHash: 'n2', oldHash: 'h-newer', playerId: ann.id, at: w.now() });
+      expect(await w.repo.rotationOf('n1')).toEqual({ newHash: 'n1', oldHash: 'h-newer', playerId: ann.id, at: w.now() });
+      expect(await w.repo.dropRotations('h-newer')).toBe(2);
+      expect(await w.repo.rotationOf('n2')).toBeNull();
+      await w.repo.addRotation({ newHash: 'n3', oldHash: 'h-newer', playerId: ann.id, at: w.now() });
+      expect(await w.repo.pruneRotations(w.now())).toBe(0);
+      await w.repo.addRotation({ newHash: 'n4', oldHash: (await w.repo.keysOf(ben.id)).main!, playerId: ben.id, at: w.now() });
+      await ben.deleteAccount();
+      expect(await w.repo.rotationOf('n4')).toBeNull();
+      expect(await w.repo.pruneRotations(w.now() + 1)).toBe(1);
+    });
+
     it('revokes the Apple refresh token on deletion (never blocking it) and handles Apple notifications', async () => {
       const apple = appleProvider();
       const tokens = fakeAppleTokens();

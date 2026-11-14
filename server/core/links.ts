@@ -7,7 +7,7 @@
 import { createHash } from 'node:crypto';
 import type { AuthNonceResponse, LinkProvider, LinksResponse, RegisterResponse, RevokeOthersResponse } from '../../src/backend/net/protocol';
 import { IdentityError, PROVIDERS, type Provider } from '../identity/verify';
-import type { Player } from '../repo';
+import { REVOKED_TOKEN_PREFIX, type Player } from '../repo';
 import { ApiError, type ServerContext } from './context';
 import { notify } from './moderation';
 
@@ -83,6 +83,8 @@ export async function link(ctx: ServerContext, me: Player, body: { provider?: un
 /**
  * Unlink a provider: its stored Apple refresh token is revoked (best effort),
  * and the devices that signed in with it are signed out (all but this one).
+ * Backend A16: the calling device's token always stays, so unlinking never removes the account's last
+ * key by itself; signing that device out afterwards is what `signOutDevice` refuses when nothing else is left.
  */
 export async function unlink(ctx: ServerContext, me: Player, provider: string): Promise<LinksResponse> {
   const tokens = (await ctx.repo.linkTokensOf(me.id)).filter((t) => t.provider === provider);
@@ -110,42 +112,78 @@ export const TOKEN_UNUSED_DAYS = 400;
 export async function pruneTokens(ctx: ServerContext): Promise<number> {
   const n = await ctx.repo.pruneTokens(ctx.now() - (ctx.policy.sessionIdleDays || TOKEN_UNUSED_DAYS) * 24 * 3_600_000);
   if (n) ctx.metrics.count('tk_sessions_revoked_total', { reason: 'prune' }, n);
+  // Rotations nobody confirmed in time (the old token stayed): nothing to keep.
+  await ctx.repo.pruneRotations(ctx.now() - ROTATE_CONFIRM_MS);
   return n;
 }
 
 const scopeOf = (hash: string) => hash.slice(0, 32);
 
 /**
+ * Backend A16 (2026-11-14 verification fix): how many ways back into the account would remain without the
+ * token `dropToken`: working tokens (the first token unless signed out, other devices' tokens; pending
+ * rotations do not count, they lapse) and linked sign-ins.
+ */
+async function keysLeft(ctx: ServerContext, me: Player, dropToken: string): Promise<number> {
+  const keys = await ctx.repo.keysOf(me.id);
+  const tokens = [...(keys.main ? [keys.main] : []), ...keys.devices.map((d) => d.hash)].filter((h) => h !== dropToken);
+  return tokens.length + (await ctx.repo.linksOf(me.id)).length;
+}
+
+/**
  * DELETE /v1/sessions/current (backend A16): sign out this device. Its token stops working at once and the
- * answers remembered for it go. The account's first token is the account itself for a player without a
- * linked sign-in (an anonymous account has no other way back in), so it is refused there: link a
- * sign-in first, or delete the account.
+ * answers remembered for it go. Refused when this token is the account's last way back in (no other
+ * working token, no linked sign-in: 2026-11-14 verification fix, whichever token it is): link a sign-in
+ * first, or delete the account.
  */
 export async function signOutDevice(ctx: ServerContext, me: Player): Promise<void> {
   const hash = me.session;
   if (!hash) throw new ApiError(400, 'bad_request', 'Sign in on this device first.');
-  if (hash === me.tokenHash && !(await ctx.repo.linksOf(me.id)).length) {
+  if (!(await keysLeft(ctx, me, hash))) {
     throw new ApiError(409, 'conflict', 'This device holds the only key to this account. Link Apple, Google or Game Center first (then you can sign back in), or delete the account.');
   }
   // A hash no token can have: the device's token no longer finds the player.
-  await ctx.repo.replaceToken(me.id, hash, `revoked:${ctx.uuid()}`);
+  await ctx.repo.replaceToken(me.id, hash, `${REVOKED_TOKEN_PREFIX}${ctx.uuid()}`);
+  await ctx.repo.dropRotations(hash);
   await ctx.repo.dropIdempotentScopes([scopeOf(hash)]);
   ctx.metrics.count('tk_sessions_revoked_total', { reason: 'current' });
 }
 
+/** Backend A16 (2026-11-14): how long a rotated token waits for its first use before the rotation lapses. */
+export const ROTATE_CONFIRM_MS = 10 * 60_000;
+
 /**
- * POST /v1/sessions/rotate (backend A16): a new token for this device in place of the one it sent (the old
- * one stops working). Games that support it rotate now and then, so a token copied from the device
- * (localStorage on the web) stops being useful.
+ * POST /v1/sessions/rotate (backend A16): a new token for this device in place of the one it sent. Games
+ * that support it rotate now and then, so a token copied from the device (localStorage on the web) stops
+ * being useful. 2026-11-14 verification fix: the swap happens on the new token's first use (within
+ * ROTATE_CONFIRM_MS, `confirmRotation`); until then the old token keeps working, so an answer lost on the
+ * network (the only key of an anonymous account) never locks the player out. A rotation nobody confirms
+ * lapses and the old token stays.
  */
 export async function rotateToken(ctx: ServerContext, me: Player): Promise<RegisterResponse> {
   const hash = me.session;
   if (!hash) throw new ApiError(400, 'bad_request', 'Sign in on this device first.');
   const token = ctx.newToken();
-  if (!(await ctx.repo.replaceToken(me.id, hash, await ctx.hash(token)))) throw new ApiError(401, 'unauthorized', 'Unknown or missing player token.');
-  await ctx.repo.dropIdempotentScopes([scopeOf(hash)]);
-  ctx.metrics.count('tk_sessions_revoked_total', { reason: 'rotate' });
+  await ctx.repo.addRotation({ newHash: await ctx.hash(token), oldHash: hash, playerId: me.id, at: ctx.now() });
   return { playerId: me.id, token };
+}
+
+/**
+ * The first request with a rotated token (identity.ts `authenticate`): the old token stops working, the
+ * answers remembered for it go, and other rotations of it lapse. Null when `hash` is no pending rotation,
+ * it lapsed, or the old token was signed out or revoked meanwhile.
+ */
+export async function confirmRotation(ctx: ServerContext, hash: string): Promise<Player | null> {
+  const r = await ctx.repo.rotationOf(hash);
+  if (!r || ctx.now() - r.at > ROTATE_CONFIRM_MS) return null;
+  const swapped = await ctx.repo.replaceToken(r.playerId, r.oldHash, hash);
+  await ctx.repo.dropRotations(r.oldHash);
+  if (swapped) {
+    await ctx.repo.dropIdempotentScopes([scopeOf(r.oldHash)]);
+    ctx.metrics.count('tk_sessions_revoked_total', { reason: 'rotate' });
+  }
+  // Not swapped: a request at the same moment did it (the token now finds the player), or the old token is gone.
+  return ctx.repo.playerByTokenHash(hash);
 }
 
 /** Sign in with Apple: exchange the one-time authorization code for a refresh token to revoke later (5.1.1(v)). */

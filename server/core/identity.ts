@@ -9,6 +9,7 @@ import { appealText } from './moderation';
 import { changeName, nameChangeAt, nameForNewPlayer } from './names';
 import { NameTakenError } from '../repo';
 import { serverHasContact } from './contactFilter';
+import { confirmRotation } from './links';
 
 /**
  * The oldest game this server serves (protocol 7: villages kept on the server,
@@ -73,7 +74,8 @@ export async function register(ctx: ServerContext, name: unknown): Promise<Regis
 /** Find the player behind a bearer token, and note that they were seen. */
 export async function authenticate(ctx: ServerContext, token: string | undefined): Promise<Player> {
   const hash = token ? await ctx.hash(token) : '';
-  const p = hash ? await ctx.repo.playerByTokenHash(hash) : null;
+  // Backend A16: a rotated token's first use confirms the rotation (links.ts).
+  const p = hash ? ((await ctx.repo.playerByTokenHash(hash)) ?? (await confirmRotation(ctx, hash))) : null;
   if (!p) throw new ApiError(401, 'unauthorized', 'Unknown or missing player token.');
   // Which device token this is (re-audit: unlink and "sign out other devices" keep this one).
   p.session = hash;
