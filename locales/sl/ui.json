@@ -134,7 +134,7 @@
   "pay.provisions": { "en": "Pay with Provisions", "text": "Plačaj z živežem" },
   "pay.upgrade": { "en": "Upgrade to Lv {level} with Provisions", "text": "Izboljšaj na raven {level} z živežem" },
   "raid.rejected.account_deleted": { "en": "Your online account was deleted.", "text": "Tvoj spletni račun je bil izbrisan." },
-  "raid.rejected.conflict": { "en": "The opponent changed at the same moment.", "text": "Nasprotnik se je spremenil v istem trenutku." },
+  "raid.rejected.conflict": { "en": "The opponent changed at the same moment.", "text": "Nasprotnikova vas se je spremenila v istem trenutku." },
   "raid.rejected.version_mismatch": { "en": "This version of the game is too old.", "text": "Ta različica igre je prestara." },
   "raid.rejected.banned": { "en": "Your account is suspended.", "text": "Tvoj račun je začasno onemogočen." },
   "ledger.rematch": { "en": "Settle-the-score rematch", "text": "Povratni dvoboj za poravnavo računov" },
