@@ -921,30 +921,31 @@
     }
   },
   "gu": {
-    "coverage": 0,
-    "ready": false,
-    "hash": "44136fa355b3678a",
-    "keys": 0,
+    "coverage": 1,
+    "ready": true,
+    "hash": "39c7aa21dc7a49cc",
+    "keys": 2708,
+    "path": "lang/gu-39c7aa21dc7a49cc.json",
     "namespaces": {
       "boot": {
         "total": 17,
-        "translated": 0
+        "translated": 17
       },
       "data": {
         "total": 669,
-        "translated": 0
+        "translated": 669
       },
       "messages": {
         "total": 1870,
-        "translated": 0
+        "translated": 1870
       },
       "pages": {
         "total": 314,
-        "translated": 0
+        "translated": 314
       },
       "ui": {
         "total": 152,
-        "translated": 0
+        "translated": 152
       }
     }
   },
