@@ -26,7 +26,8 @@ export { NAME_MAX, NAME_MIN, nameShapeProblem, normalizeFriendCode } from './nam
 import type { PurchaseVerifier } from '../payments/provider';
 import { VillageSync, type SyncGame } from './villageSync';
 import { SIM_RULES } from '../../gameplay/sim/battle/battle';
-import { updateNeeded } from './versionCheck';
+import { NEWER_VILLAGE_MESSAGE, updateNeeded } from './versionCheck';
+import { NewerSaveError } from '../../gameplay/sim/save';
 import { bandFromProfile, type AgeBand } from '../../gameplay/sim/age';
 import type { DeletionCodeResponse, NoticeView } from './protocol';
 
@@ -847,6 +848,14 @@ export class Connection {
   private handleError(e: unknown): void {
     if (e instanceof ServerError && e.code === 'version_mismatch') {
       this.setStatus('incompatible', e.message);
+      return;
+    }
+    // Rolling deploy (2026-11-14): the server's village was saved by a newer build (another device updated
+    // first). This build cannot read it, so online play pauses with "Update Kagemura"; nothing is adopted
+    // and the village on this device keeps working offline. (Was: an "offline" status retried forever.)
+    if (e instanceof NewerSaveError) {
+      this.log('Online play: the village on the server is from a newer version of Kagemura', e);
+      this.setStatus('incompatible', NEWER_VILLAGE_MESSAGE);
       return;
     }
     if (e instanceof ServerError && e.code === 'banned') {

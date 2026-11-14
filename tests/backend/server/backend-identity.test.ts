@@ -119,14 +119,67 @@ describe('A15: Game Center key certificates', () => {
 });
 
 describe('A16: signing out this device and rotating its token', () => {
-  it('rotation gives a new token and the old one stops working', async () => {
+  it('rotation gives a new token; the old one stops working at the new one\'s first use', async () => {
     const s = setup();
     const a = await s.register('Ann');
     const r = await s.call('POST', Routes.sessionsRotate, a.token);
     expect(r.status).toBe(200);
     expect(r.body.playerId).toBe(a.playerId);
+    // 2026-11-14: until the new token is used, the old one still works (the answer may have been lost).
+    expect((await s.call('GET', Routes.me, a.token)).status).toBe(200);
+    expect((await s.call('GET', Routes.me, r.body.token)).status).toBe(200);
     expect((await s.call('GET', Routes.me, a.token)).status).toBe(401);
     expect((await s.call('GET', Routes.me, r.body.token)).status).toBe(200);
+    expect((s.repo as MemoryRepo).rotationRows).toEqual([]);
+  });
+
+  it('a rotation whose answer was lost lapses: the only key of an anonymous account keeps working', async () => {
+    const s = setup();
+    const a = await s.register('Ann');
+    const lost = (await s.call('POST', Routes.sessionsRotate, a.token)).body.token as string;
+    const lost2 = (await s.call('POST', Routes.sessionsRotate, a.token)).body.token as string;
+    s.advance(11 * 60_000);
+    expect((await s.call('GET', Routes.me, lost)).status).toBe(401);
+    expect((await s.call('GET', Routes.me, a.token)).status).toBe(200);
+    // Retention forgets the lapsed rotations.
+    await s.app.core.pruneTokens();
+    expect((s.repo as MemoryRepo).rotationRows).toEqual([]);
+    expect((await s.call('GET', Routes.me, lost2)).status).toBe(401);
+    // A token signed out meanwhile cannot be revived by its pending rotation.
+    const repo = s.repo as MemoryRepo;
+    await repo.addLink({ provider: 'google', subject: 'g-ann', playerId: a.playerId, linkedAt: s.now() });
+    const pending = (await s.call('POST', Routes.sessionsRotate, a.token)).body.token as string;
+    expect((await s.call('DELETE', Routes.sessionsCurrent, a.token)).status).toBe(204);
+    expect((await s.call('GET', Routes.me, pending)).status).toBe(401);
+  });
+
+  it('no answer holding a token is kept as an idempotent answer (rotation, sign-in, registration)', async () => {
+    const s = setup();
+    const a = await s.register('Ann');
+    const r = await s.call('POST', Routes.sessionsRotate, a.token, undefined, { headers: { 'idempotency-key': 'rotate-1' } });
+    expect(r.status).toBe(200);
+    const kept = JSON.stringify([...(s.repo as MemoryRepo).idempotencyRows.values()]);
+    expect(kept).not.toContain(r.body.token);
+    expect((s.repo as MemoryRepo).idempotencyRows.size).toBe(0);
+    // A registration sent with a bearer token and a key is not kept either.
+    const b = await s.call('POST', Routes.players, a.token, { name: 'Ben' }, { headers: { 'idempotency-key': 'reg-1' } });
+    expect(b.status).toBe(201);
+    expect(JSON.stringify([...(s.repo as MemoryRepo).idempotencyRows.values()])).not.toContain(b.body.token);
+  });
+
+  it('the last key is never signed out: device A signs out, device B unlinks the sign-in, B cannot sign out', async () => {
+    const s = setup();
+    const a = await s.register('Ann');
+    const repo = s.repo as MemoryRepo;
+    await repo.addLink({ provider: 'google', subject: 'g-ann', playerId: a.playerId, linkedAt: s.now() });
+    const b = 'device-b-token-abcdefghijklmnop';
+    await repo.addToken(a.playerId, await s.app.core.ctx.hash(b), s.now(), 'phone', 'google');
+    expect((await s.call('DELETE', Routes.sessionsCurrent, a.token)).status).toBe(204);
+    // B unlinks Google: B's own token stays, so the account still has one key.
+    expect((await s.call('DELETE', '/v1/links/google', b)).status).toBe(200);
+    const refused = await s.call('DELETE', Routes.sessionsCurrent, b);
+    expect(refused.status).toBe(409);
+    expect((await s.call('GET', Routes.me, b)).status).toBe(200);
   });
 
   it('a device token signs out; the only key of an anonymous account does not', async () => {
@@ -156,5 +209,21 @@ describe('A16: signing out this device and rotating its token', () => {
     w.advance(31 * 24 * 3_600_000);
     await w.core.prune();
     expect((w.repo as MemoryRepo).tokenRows).toEqual([]);
+  });
+
+  it('pruning never removes an account\'s last working key', async () => {
+    const w = world({ shared: { policy: { sessionIdleDays: 30 } } });
+    const ann = await w.player('Ann');
+    const repo = w.repo as MemoryRepo;
+    // Ann's first token was signed out and she has no link: two stale device tokens remain.
+    await repo.replaceToken(ann.id, repo.players.get(ann.id)!.tokenHash, 'revoked:x');
+    await repo.addToken(ann.id, 'h-older', w.now(), 'tablet');
+    w.advance(1000);
+    await repo.addToken(ann.id, 'h-newer', w.now(), 'phone');
+    w.advance(31 * 24 * 3_600_000);
+    await w.core.pruneTokens();
+    expect(repo.tokenRows.map((t) => t.tokenHash)).toEqual(['h-newer']);
+    await w.core.pruneTokens();
+    expect(repo.tokenRows.map((t) => t.tokenHash)).toEqual(['h-newer']);
   });
 });

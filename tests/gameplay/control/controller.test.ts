@@ -6,6 +6,8 @@ import { FakeClock } from '../../../src/gameplay/sim/clock';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { eventEffect } from '../../../src/gameplay/sim/events';
 import { capacity, collectorAmount } from '../../../src/gameplay/sim/resources';
+import { advance } from '../../../src/gameplay/sim/village';
+import { must } from '../sim/helpers';
 
 function deps(clock: FakeClock, store: MemorySaveStore, events: MemoryEventStore) {
   return { clock, store, data, analytics: new Analytics(events, clock, 'test') };
@@ -81,5 +83,26 @@ describe('GameController (save, reload, offline)', () => {
     clock.advanceSeconds(5);
     const r = await GameController.start(deps(clock, store, events));
     expect(r.offline).toBeNull();
+  });
+});
+
+describe('CU-7 (2026-11-14): a refused cancel reaches the interface with its amounts', () => {
+  it('controller.dispatch keeps the refusal params { refund, lost } for the GUI to show', async () => {
+    const clock = new FakeClock();
+    const { controller: c } = await GameController.start(deps(clock, new MemorySaveStore(), new MemoryEventStore()));
+    // A village with a Dojo, a camp and five Shinobi training, its Dew storage full.
+    let s = { ...c.state, resources: { ...c.state.resources, acorns: 1500, dew: 1500 }, buildings: c.state.buildings.filter((b) => data.buildings[b.type].category !== 'obstacle') };
+    s = must(s, { type: 'place', buildingType: 'burrow_barracks', x: 2, y: 2 }, clock.now());
+    s = must(s, { type: 'place', buildingType: 'army_camp', x: 6, y: 2 }, clock.now());
+    clock.advanceSeconds(3600);
+    s = advance(s, clock.now(), data).state;
+    s = must({ ...s, resources: { ...s.resources, dew: 1000 } }, { type: 'train', troop: 'hedgehog_roller', count: 5 }, clock.now());
+    await c.replace({ ...s, resources: { ...s.resources, dew: capacity(s, data).dew } });
+    const r = c.dispatch({ type: 'cancelTraining', index: 4, troop: 'hedgehog_roller', count: 5 });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.code).toBe('STORAGE_FULL');
+    expect(r.params).toMatchObject({ refund: { dew: expect.any(Number) }, lost: { dew: expect.any(Number) } });
+    expect(c.state.training).toHaveLength(5);
   });
 });

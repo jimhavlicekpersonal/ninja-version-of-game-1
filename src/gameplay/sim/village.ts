@@ -773,7 +773,12 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       // Economy E16: walking away from the scouted offline opponent after sending warriors in is a lost attack
       // (honor, shield, and the opponent goes), as an online start without a report already is. It used to keep
       // the opponent: drop one warrior, watch the defenses fire, abandon, then attack the same base for real.
-      const scouted = !cmd.record.ticket && s.scout && cmd.record.setup.seed === scoutBattleSeed(s.scout.seed);
+      // 2026-11-14 verification fix: it depends on what the village holds (an opponent is scouted, warriors
+      // were spent), not on the record's battle seed, which a modified game could change to keep the opponent.
+      // Only an online raid (a server ticket) is left to the server, which counts a started raid with no
+      // report as a loss; for a village the server keeps, a ticket that is not this player's real ticket is
+      // dropped before the replay (server/core/village.ts), so a made-up one changes nothing.
+      const scouted = !cmd.record.ticket && s.scout !== null;
       if (scouted && foughtWithWarriors({ used: sent }, cmd.record.setup)) {
         const opp = cmd.record.setup.base.trophies ?? s.trophies;
         s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, opp, data));

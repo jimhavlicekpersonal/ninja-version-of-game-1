@@ -14,7 +14,10 @@ function fakePool() {
   const client: SqlClient = {
     async query(sql, params = []) {
       const s = sql.trim();
-      if (s.startsWith('select pg_advisory_lock')) events.push('lock');
+      if (s.startsWith('select pg_try_advisory_lock')) {
+        events.push('lock');
+        return { rows: [{ ok: true }] };
+      } else if (s.startsWith('select pg_advisory_lock')) events.push('lock');
       else if (s.startsWith('select pg_advisory_unlock')) events.push('unlock');
       else if (s.startsWith('create table if not exists schema_migrations')) events.push('bookkeeping');
       else if (s.startsWith('select version')) return { rows: committed.map((r) => ({ ...r })) };

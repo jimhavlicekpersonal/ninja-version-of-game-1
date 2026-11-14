@@ -45,14 +45,25 @@ describe.skipIf(!process.env.TEST_DATABASE_URL || !redisUrl)('two instances, one
     // A rename retried on the other instance with the same key gets the first answer.
     const key = { [ClientHeaders.idempotencyKey]: 'rename-1', [ClientHeaders.protocol]: '7' };
     const first = await call(a, 'PUT', Routes.me, ann.token, { name: 'Annie' }, key);
-    const again = await call(b, 'PUT', Routes.me, ann.token, { name: 'Other' }, key);
+    const again = await call(b, 'PUT', Routes.me, ann.token, { name: 'Annie' }, key);
     expect(again.body).toEqual(first.body);
+    // Backend A13: the same key with another body is refused, not answered with the first answer.
+    expect((await call(b, 'PUT', Routes.me, ann.token, { name: 'Other' }, key)).status).toBe(422);
     // One leaderboard.
     expect((await call(a, 'GET', `${Routes.leaderboard}?limit=5`, ann.token)).body.players.map((p: { name: string }) => p.name)).toEqual(['Annie']);
     // One rate limit across both (3 registrations an hour from one address; Ann was the first).
     expect((await call(b, 'POST', Routes.players, undefined, { name: 'Bob' })).status).toBe(201);
     expect((await call(a, 'POST', Routes.players, undefined, { name: 'Cy' })).status).toBe(201);
     expect((await call(b, 'POST', Routes.players, undefined, { name: 'Dee' })).status).toBe(429);
+    // 2026-11-14: a refunded hit (a battle batch that ended unwritten) frees one place in the shared window.
+    const rl = new RedisRateLimiter(clients[0]!, { ...DEFAULT_RATE_LIMITS, battleCommands: { limit: 2, windowMs: 60_000 } }, `${prefix}:rl2`);
+    expect((await rl.hit('battleCommands', 'p', Date.now())).ok).toBe(true);
+    expect((await rl.hit('battleCommands', 'p', Date.now())).ok).toBe(true);
+    await rl.refund('battleCommands', 'p');
+    expect((await rl.hit('battleCommands', 'p', Date.now())).ok).toBe(true);
+    expect((await rl.hit('battleCommands', 'p', Date.now())).ok).toBe(false);
+    await rl.refund('battleCommands', 'nobody');
+    expect((await rl.hit('battleCommands', 'nobody', Date.now())).ok).toBe(true);
     await a.close();
     await b.close();
   });

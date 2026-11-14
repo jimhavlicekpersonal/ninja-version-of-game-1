@@ -152,6 +152,17 @@ export function requestFingerprint(method: string, route: string, body: unknown)
 const VILLAGE_ANSWER_ROUTES = new Set([`POST ${Routes.village}`, `POST ${Routes.villageImport}`]);
 
 /**
+ * Backend A12/A16 (2026-11-14 verification fix): answers that carry a bearer token (rotation, sign-in,
+ * registration) are never kept as idempotent answers, so no raw token sits in idempotency_keys. A retry of
+ * such a request runs again (a rotation is confirmed only by the new token's first use, so a second
+ * rotation is harmless). Any answer with a top-level `token` string is skipped too, whatever the route.
+ */
+const TOKEN_ANSWER_ROUTES = new Set([`POST ${Routes.sessionsRotate}`, `POST ${Routes.sessions}`, `POST ${Routes.players}`]);
+export function holdsToken(route: string, body: unknown): boolean {
+  return TOKEN_ANSWER_ROUTES.has(route) || (Boolean(body) && typeof body === 'object' && typeof (body as { token?: unknown }).token === 'string');
+}
+
+/**
  * TRUST_PROXY as Fastify takes it. A hop count becomes a function that trusts that many proxies in front
  * of the server (backend A31): Fastify 5.12 treats a plain number as "trust nobody" (fail closed), which
  * silently put every player behind one load balancer on the balancer's own address, so all of them
@@ -265,6 +276,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     } catch {
       return payload;
     }
+    if (holdsToken(routeKey(req), body)) return payload;
     // Backend A12: the village itself is never kept with the answer; a replay reads it again.
     if (VILLAGE_ANSWER_ROUTES.has(routeKey(req)) && body && typeof body === 'object' && 'file' in body) {
       const { file: _file, ...rest } = body as Record<string, unknown>;

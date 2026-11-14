@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { LeaseLost, requireLease, runLeased } from '../../../server/jobs';
-import { isNoTransaction, runMigrations, splitStatements, type SqlClient, type SqlPool } from '../../../server/migrate';
+import { concurrentIndexName, isNoTransaction, runMigrations, splitStatements, type SqlClient, type SqlPool } from '../../../server/migrate';
 import { PgRepo } from '../../../server/pgRepo';
 import { MemoryRepo } from '../../../server/repo';
 import { DORMANT_BATCH } from '../../../server/core/retention';
@@ -175,6 +175,7 @@ describe('A22: migrations that must run outside a transaction', () => {
       async query(sql, params = []) {
         const s = sql.trim();
         seen.push(s.split('\n')[0]!);
+        if (s.startsWith('select pg_try_advisory_lock')) return { rows: [{ ok: true }] };
         if (s.startsWith('select version')) return { rows: committed };
         if (s.startsWith('insert into schema_migrations')) committed.push({ version: params[0], name: params[1], checksum: params[2] });
         return { rows: [] };
@@ -188,5 +189,64 @@ describe('A22: migrations that must run outside a transaction', () => {
     expect(seen).not.toContain('begin');
     expect(seen.filter((s) => s.startsWith('create index concurrently'))).toHaveLength(2);
     expect(committed).toHaveLength(1);
+  });
+
+  it('2026-11-14: a rerun drops the INVALID index a failed concurrent build left, then builds it again', async () => {
+    // Recording stand-in: index "a" built, "b" failed part way (INVALID); the file is not recorded.
+    const seen: string[] = [];
+    const committed: Record<string, unknown>[] = [];
+    const indexes = new Map<string, 'valid' | 'invalid'>();
+    let failB = true;
+    const client: SqlClient = {
+      async query(sql, params = []) {
+        const s = sql.trim();
+        seen.push(s.replace(/\s+/g, ' '));
+        if (s.startsWith('select pg_try_advisory_lock')) return { rows: [{ ok: true }] };
+        if (s.startsWith('select version')) return { rows: committed };
+        if (s.startsWith('insert into schema_migrations')) committed.push({ version: params[0], name: params[1], checksum: params[2] });
+        if (s.includes('from pg_index')) return { rows: indexes.get(String(params[0])) === 'invalid' ? [{ '?column?': 1 }] : [] };
+        const drop = /^drop index concurrently if exists "(\w+)"/.exec(s);
+        if (drop) indexes.delete(drop[1]!);
+        const create = /^create index concurrently if not exists (\w+)/.exec(s);
+        if (create && !indexes.has(create[1]!)) {
+          if (create[1] === 'b' && failB) {
+            indexes.set('b', 'invalid');
+            throw new Error('could not create unique index (a deadlock, a duplicate)');
+          }
+          indexes.set(create[1]!, 'valid');
+        }
+        return { rows: [] };
+      },
+      release() {},
+    };
+    const pool: SqlPool = { connect: async () => client };
+    const file = { version: '9002', name: '9002_idx', sql: '-- migrate: no-transaction\ncreate index concurrently if not exists a on t (x);\ncreate index concurrently if not exists b on t (y);\n', checksum: 'c' };
+    await expect(runMigrations(pool, [file])).rejects.toThrow(/failed part way/);
+    expect(indexes.get('b')).toBe('invalid');
+    failB = false;
+    seen.length = 0;
+    expect(await runMigrations(pool, [file])).toEqual(['9002_idx']);
+    expect(indexes.get('b')).toBe('valid');
+    expect(seen).toContain('drop index concurrently if exists "b"');
+    expect(seen.filter((s) => s.startsWith('drop index'))).toHaveLength(1); // the valid "a" is left alone
+    expect(concurrentIndexName('create unique index concurrently if not exists "Players_X" on p (x)')).toBe('players_x');
+    expect(concurrentIndexName('create index x on y (z)')).toBeNull();
+  });
+
+  it('2026-11-14: waits for the lock by polling (no snapshot held while another runner builds an index)', async () => {
+    let tries = 0;
+    const sleeps: number[] = [];
+    const client: SqlClient = {
+      async query(sql) {
+        const s = sql.trim();
+        if (s.startsWith('select pg_advisory_lock')) throw new Error('blocking lock used');
+        if (s.startsWith('select pg_try_advisory_lock')) return { rows: [{ ok: ++tries >= 3 }] };
+        return { rows: [] };
+      },
+      release() {},
+    };
+    expect(await runMigrations({ connect: async () => client }, [], Date.now, () => {}, async (ms) => void sleeps.push(ms))).toEqual([]);
+    expect(tries).toBe(3);
+    expect(sleeps).toHaveLength(2);
   });
 });

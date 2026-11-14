@@ -10,7 +10,7 @@ import { MemoryRepo, type Ticket } from '../../../server/repo';
 import { InlineResimulator, ResimTimeoutError, WorkerResimulator, type ResimReply, type VillageJob, type WorkerLike } from '../../../server/resim/resim';
 import type { GameData } from '../../../src/gameplay/sim/types';
 import { createNewVillage } from '../../../src/gameplay/sim/village';
-import { serialize } from '../../../src/gameplay/sim/save';
+import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { baseAt, world } from './harness';
 
@@ -92,6 +92,97 @@ describe('A3: battle commands replay before the row lock', () => {
     // The battle budget was spent once for that command, not once per replay.
     const again = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: [2, 3, 4, 5, 6].map((seq) => ({ seq, t: w.now(), command: { type: 'abandonBattle', record: bogus(w.now()) } as never })) });
     expect(again.results.filter((x) => x.error === 'TOO_MANY_BATTLES')).toHaveLength(2); // 3 per batch
+  });
+
+  const battles = (w: { now(): number }, seqs: number[]) => seqs.map((seq) => ({ seq, t: w.now(), command: { type: 'abandonBattle', record: bogus(w.now()) } as never }));
+
+  it('2026-11-14: a conflict retry reuses the decision, so the per-minute battle budget is charged once per command', async () => {
+    const repo = new MemoryRepo();
+    const resim = new Watching(repo);
+    const w = world({ repo, shared: { resim } });
+    const ann = await w.player('Ann');
+    await ann.startVillage();
+    resim.before = async () => {
+      await ann.sendCommands({ device: 'device-other1', stateHash: '', commands: [{ seq: 1, t: w.now(), command: { type: 'collect', id: 'none' } as never }] });
+    };
+    expect((await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [1]) })).results).toEqual([{ seq: 1, ok: true }]);
+    expect(resim.calls).toBe(2);
+    // 6 per minute: 1 spent, so 3 + 2 more go through in this minute, and the sixth is refused.
+    const a = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [2, 3, 4]) });
+    const b = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [5, 6, 7]) });
+    expect([...a.results, ...b.results].map((x) => x.ok)).toEqual([true, true, true, true, true, false]);
+  });
+
+  it('2026-11-14: a batch that ends in 409 after repeated conflicts gives its battle budget back', async () => {
+    const repo = new MemoryRepo();
+    const resim = new Watching(repo);
+    const w = world({ repo, shared: { resim } });
+    const ann = await w.player('Ann');
+    await ann.startVillage();
+    let other = 0;
+    const conflict = async () => {
+      await ann.sendCommands({ device: 'device-other1', stateHash: '', commands: [{ seq: ++other, t: w.now(), command: { type: 'collect', id: 'none' } as never }] });
+    };
+    // Every replay of the battle batch races another device's write: three tries, then 409.
+    const hooked = resim.replayVillage.bind(resim);
+    resim.replayVillage = async (job, d) => {
+      resim.before = conflict;
+      return hooked(job, d);
+    };
+    const failed = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [1, 2, 3]) }).catch((e: { code?: string }) => e.code);
+    expect(failed).toBe('conflict');
+    resim.replayVillage = hooked;
+    // The retry and the rest of the minute have the whole budget (6), not 3.
+    const a = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [1, 2, 3]) });
+    const b = await ann.sendCommands({ device: 'device-replay1', stateHash: '', commands: battles(w, [4, 5, 6]) });
+    expect([...a.results, ...b.results].every((x) => x.ok)).toBe(true);
+  });
+});
+
+describe('E16 (2026-11-14): an abandoned raid on a server-held village', () => {
+  async function held(w: ReturnType<typeof world>, name: string) {
+    const p = await w.player(name);
+    await p.startVillage();
+    const row = (await w.repo.getVillage(p.id))!;
+    const st = deserialize(row.file, data);
+    st.army = { hedgehog_roller: 5 };
+    st.scout = { seed: 42 };
+    st.trophies = 500;
+    await w.repo.saveVillage({ ...row, file: serialize(st, row.at), revision: row.revision + 1 }, row.revision, [], []);
+    return p;
+  }
+  const abandon = (w: ReturnType<typeof world>, ticket: string, warriors = 5) => ({
+    seq: 1,
+    t: w.now(),
+    command: { type: 'abandonBattle', record: { at: w.now(), opponentName: 'x', ticket, setup: { seed: 7, base: { ...baseAt(1), trophies: 500 }, army: { hedgehog_roller: warriors }, infiltration: true }, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: 0, y: 0 }] } } as never,
+  });
+
+  it('a made-up ticket is dropped: walking away from the scouted opponent is a lost attack', async () => {
+    const w = world();
+    const ann = await held(w, 'Ann');
+    const r = await ann.sendCommands({ device: 'device-e16-ann', stateHash: '', commands: [abandon(w, 'made-up-ticket')] });
+    expect(r.results).toEqual([{ seq: 1, ok: true }]);
+    const st = deserialize((await w.repo.getVillage(ann.id))!.file, data);
+    expect(st.scout).toBeNull();
+    expect(st.trophies).toBeLessThan(500);
+    expect(st.army.hedgehog_roller).toBe(4);
+  });
+
+  it('a real ticket of this player is left to the server rule (a started raid without a report is a loss)', async () => {
+    const w = world();
+    const ben = await held(w, 'Ben');
+    const t = w.now();
+    await w.repo.createTicket({ id: 'real-ticket', kind: 'pvp', attackerId: ben.id, defenderId: null, defenderName: 'x', base: baseAt(1), defenderTrophies: 500, createdAt: t, expiresAt: t + 3_600_000, used: false } as Ticket);
+    const other = await w.player('Cat');
+    await w.repo.createTicket({ id: 'cats-ticket', kind: 'pvp', attackerId: other.id, defenderId: null, defenderName: 'x', base: baseAt(1), defenderTrophies: 500, createdAt: t, expiresAt: t + 3_600_000, used: false } as Ticket);
+    await ben.sendCommands({ device: 'device-e16-ben', stateHash: '', commands: [abandon(w, 'real-ticket')] });
+    let st = deserialize((await w.repo.getVillage(ben.id))!.file, data);
+    expect(st.scout).toEqual({ seed: 42 });
+    expect(st.trophies).toBe(500);
+    // Someone else's ticket counts as made up.
+    await ben.sendCommands({ device: 'device-e16-ben', stateHash: '', commands: [{ ...abandon(w, 'cats-ticket', 4), seq: 2 }] });
+    st = deserialize((await w.repo.getVillage(ben.id))!.file, data);
+    expect(st.scout).toBeNull();
   });
 });
 

@@ -541,6 +541,17 @@ export interface TokenRow {
   lastUsedAt?: number | null;
 }
 
+/** Backend A16: the hash a signed-out first token gets (no token hashes to it). */
+export const REVOKED_TOKEN_PREFIX = 'revoked:';
+
+/** Backend A16 (2026-11-14): a rotated token waiting for its first use (`POST /v1/sessions/rotate`). */
+export interface TokenRotation {
+  newHash: string;
+  oldHash: string;
+  playerId: string;
+  at: number;
+}
+
 /** A store purchase the server checked (roadmap steps 35-37): each store transaction once. */
 export interface PurchaseRow {
   store: 'apple' | 'google';
@@ -762,8 +773,24 @@ export interface PlayerStore {
   revokeTokens(playerId: string, provider: string, except?: string): Promise<number>;
   /** Sign out every device but `keepHash` (which becomes the player's main token); how many. */
   revokeOtherTokens(playerId: string, keepHash: string): Promise<number>;
-  /** Delete extra device tokens last used (or made) before this time; how many. */
+  /**
+   * Delete extra device tokens last used (or made) before this time; how many. Backend A16 (2026-11-14): an
+   * account's last working key is never deleted: for a player whose first token was signed out and who has
+   * no linked sign-in, the most recently used device token stays.
+   */
   pruneTokens(unusedBefore: number): Promise<number>;
+  /** Backend A16: the account's working keys: its first token (null once signed out) and other devices' tokens with the sign-in that made them. */
+  keysOf(playerId: string): Promise<{ main: string | null; devices: { hash: string; provider: string | null }[] }>;
+  /**
+   * Backend A16 (2026-11-14): a token rotation waiting for the new token's first use. Until then the old
+   * token keeps working; the first request with the new token swaps them (`replaceToken`).
+   */
+  addRotation(r: TokenRotation): Promise<void>;
+  rotationOf(newHash: string): Promise<TokenRotation | null>;
+  /** Forget every rotation waiting on this old token (it was swapped, signed out or revoked); how many. */
+  dropRotations(oldHash: string): Promise<number>;
+  /** Forget rotations made before this time (never confirmed); how many. */
+  pruneRotations(before: number): Promise<number>;
   /**
    * Backend A23: ids of anonymous accounts last seen before `seenBefore` that nothing else holds: no
    * purchase, no linked sign-in, not staff, not suspended, and no server-held village above `maxKeep`.
@@ -807,7 +834,10 @@ export interface PurchaseStore {
   /**
    * Backend A5/A24: purchases since `since` (newest first, at most 500) of this player, of these devices
    * (by the intent that asked), and of every player whose server-held village was played on one of them.
-   * A new free account on the same phone is the same buyer.
+   * A new free account on the same phone is the same buyer. Device ids are chosen by the game (a random
+   * id per install), never verified: a modified client can send a fresh id to look like a new device, or
+   * another player's id (if it learned it) to share their count. The link only ever adds refunds or test
+   * spend to the count (stricter), so a forged id cannot loosen a limit below the account's own history.
    */
   linkedPurchases(playerId: string, devices: string[], since: number): Promise<PurchaseRow[]>;
   /** Backend A24: cents of Sandbox/test purchases (environment other than Production) credited since `since`, all players. */
@@ -1177,6 +1207,7 @@ export class MemoryRepo implements Repo {
   gangClaimRows: { warId: string; playerId: string; outcome: string; at: number }[] = [];
   villageRows = new Map<string, VillageRow>();
   tokenRows: TokenRow[] = [];
+  rotationRows: TokenRotation[] = [];
   nonceRows = new Map<string, number>();
   deletionCodeRows = new Map<string, { codeHash: string; createdAt: number; expiresAt: number }>();
   noticeRows: PlayerNotice[] = [];
@@ -1942,6 +1973,7 @@ export class MemoryRepo implements Repo {
     // A server-held village, its ledger and command log, other devices' tokens and linked sign-ins are only theirs.
     this.villageRows.delete(id);
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== id);
+    this.rotationRows = this.rotationRows.filter((r) => r.playerId !== id);
     this.linkRows = this.linkRows.filter((l) => l.playerId !== id);
     this.deletionCodeRows.delete(id);
     this.noticeRows = this.noticeRows.filter((n) => n.playerId !== id);
@@ -2032,8 +2064,41 @@ export class MemoryRepo implements Repo {
   }
   async pruneTokens(unusedBefore: number): Promise<number> {
     const before = this.tokenRows.length;
-    this.tokenRows = this.tokenRows.filter((t) => (t.lastUsedAt ?? t.createdAt) >= unusedBefore);
+    const used = (t: TokenRow) => t.lastUsedAt ?? t.createdAt;
+    // The newest device token of an account with no other way in (first token signed out, no link) stays.
+    const lastKey = (t: TokenRow) => {
+      const p = this.players.get(t.playerId);
+      if (p && !p.tokenHash.startsWith(REVOKED_TOKEN_PREFIX)) return false;
+      if (this.linkRows.some((l) => l.playerId === t.playerId)) return false;
+      const newest = this.tokenRows.filter((x) => x.playerId === t.playerId).sort((a, b) => used(b) - used(a) || (a.tokenHash < b.tokenHash ? -1 : 1))[0];
+      return newest === t;
+    };
+    this.tokenRows = this.tokenRows.filter((t) => used(t) >= unusedBefore || lastKey(t));
     return before - this.tokenRows.length;
+  }
+  async keysOf(playerId: string): Promise<{ main: string | null; devices: { hash: string; provider: string | null }[] }> {
+    const p = this.players.get(playerId);
+    return {
+      main: p && !p.tokenHash.startsWith(REVOKED_TOKEN_PREFIX) ? p.tokenHash : null,
+      devices: this.tokenRows.filter((t) => t.playerId === playerId).map((t) => ({ hash: t.tokenHash, provider: t.provider ?? null })),
+    };
+  }
+  async addRotation(r: TokenRotation): Promise<void> {
+    this.rotationRows.push(clone(r));
+  }
+  async rotationOf(newHash: string): Promise<TokenRotation | null> {
+    const r = this.rotationRows.find((x) => x.newHash === newHash);
+    return r ? clone(r) : null;
+  }
+  async dropRotations(oldHash: string): Promise<number> {
+    const before = this.rotationRows.length;
+    this.rotationRows = this.rotationRows.filter((r) => r.oldHash !== oldHash);
+    return before - this.rotationRows.length;
+  }
+  async pruneRotations(before: number): Promise<number> {
+    const n = this.rotationRows.length;
+    this.rotationRows = this.rotationRows.filter((r) => r.at >= before);
+    return n - this.rotationRows.length;
   }
   async setLinkToken(provider: string, subject: string, refreshToken: string | null, clientId: string | null): Promise<void> {
     const l = this.linkRows.find((x) => x.provider === provider && x.subject === subject);

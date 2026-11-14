@@ -424,6 +424,8 @@ describe('protocol contract', () => {
     const bare = { authorization: auth.authorization, 'x-protocol': '7' };
     const rotated = await (await fetch(`${url}${Routes.sessionsRotate}`, { method: 'POST', headers: bare })).json();
     expect(typeof rotated.token).toBe('string');
+    // The new token works; once it has been used the old one stops (2026-11-14: servers before that swapped at once).
+    expect((await fetch(`${url}${Routes.me}`, { headers: { ...bare, authorization: `Bearer ${rotated.token}` } })).status).toBe(200);
     expect((await fetch(`${url}${Routes.me}`, { headers: bare })).status).toBe(401);
     // The only key of an account without a linked sign-in cannot sign itself out.
     expect((await fetch(`${url}${Routes.sessionsCurrent}`, { method: 'DELETE', headers: { ...bare, authorization: `Bearer ${rotated.token}` } })).status).toBe(409);
