@@ -1,6 +1,6 @@
 /** In-memory purchases, refunds, push tokens and the power leaderboards (`PurchaseStore`). */
 import { STATE_NOTICES } from '../notices';
-import type { Player, PurchaseRow, PushToken } from '../types';
+import type { BoardFilter, Player, PurchaseRow, PushToken } from '../types';
 import type { PurchaseStore } from '../ports';
 import { MemoryBase, clone } from './base';
 
@@ -85,20 +85,23 @@ export class MemoryPurchases extends MemoryBase implements PurchaseStore {
   private powerOf(p: Player, beta: number): number {
     return (p.ratings?.attack.rating ?? 1500) + beta * (Math.max(1, p.hallLevel) - 1);
   }
-  async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
+  async topByPower(limit: number, minBattles: number, beta: number, filter?: BoardFilter): Promise<Player[]> {
     return [...this.players.values()]
-      .filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles)
+      .filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.onBoard(p, filter))
       .sort((a, b) => this.powerOf(b, beta) - this.powerOf(a, beta) || a.createdAt - b.createdAt)
       .slice(0, limit)
       .map(clone);
   }
-  async powerValues(minBattles: number, beta: number): Promise<number[]> {
-    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles).map((p) => this.powerOf(p, beta));
+  async powerValues(minBattles: number, beta: number, filter?: BoardFilter): Promise<number[]> {
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.onBoard(p, filter)).map((p) => this.powerOf(p, beta));
   }
-  async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
-    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power).length;
+  async powerRankOf(power: number, minBattles: number, beta: number, filter?: BoardFilter): Promise<number> {
+    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power && this.onBoard(p, filter)).length;
   }
-  async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
-    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));
+  async rankedPlayers(filter?: BoardFilter): Promise<{ id: string; trophies: number; createdAt: number }[]> {
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil && this.onBoard(p, filter)).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));
+  }
+  async under13Among(ids: string[]): Promise<Set<string>> {
+    return new Set(ids.filter((id) => this.ageRows.get(id)?.band === 'under13'));
   }
 }

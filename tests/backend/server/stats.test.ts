@@ -72,7 +72,8 @@ describe('the server keeps statistics without a token, an id or an IP address', 
     expect(repo.statsRows).toHaveLength(2);
     // Nothing about the caller is stored: no IP address, no player, no token.
     expect(JSON.stringify(repo.statsRows)).not.toMatch(/127\.0\.0\.1|ip|token|player/i);
-    expect(Object.keys(repo.statsRows[0]).sort()).toEqual(['arm', 'at', 'build', 'day', 'install', 'name', 'props', 'receivedAt']);
+    // `seq`: the write's commit-order number (the rollup watermark, last gaps 2026-11-14), nothing about the caller.
+    expect(Object.keys(repo.statsRows[0]).sort()).toEqual(['arm', 'at', 'build', 'day', 'install', 'name', 'props', 'receivedAt', 'seq']);
     expect((await app.inject({ method: 'POST', url: Routes.stats, payload: { install: 'nope', events: batch.events } })).statusCode).toBe(400);
     const del = await app.inject({ method: 'DELETE', url: `${Routes.stats}?install=${ID}` });
     expect(del.json()).toEqual({ deleted: 2 });

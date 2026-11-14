@@ -16,7 +16,7 @@ import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import { hallType } from '../../../src/gameplay/sim/data';
 import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import type { ApiError } from '../../../server/core';
-import { funnelOf, LAG_MS, summarize } from '../../../server/core/statsLocal';
+import { funnelOf, summarize } from '../../../server/core/statsLocal';
 import type { Repo } from '../../../server/repo';
 import { HOUR, world } from './harness';
 import { repoFactories } from './pg';
@@ -248,17 +248,14 @@ for (const [label, makeRepo] of repoFactories) {
       const ev = (at: number, name = 'session_start', props: Record<string, unknown> = {}) => ({ name, at, props });
       await w.core.postStats({ install: ID, build: 't', tz: 540, events: [ev(T0), ev(T0, 'tutorial_step', { step: 3 })] });
       await w.core.postStats({ install: ID2, build: 't', events: [ev(T0)] });
-      // Third verification fixes 2026-11-14: a run rolls only events older than LAG_MS.
-      expect(await w.core.rollupStats()).toMatchObject({ installs: 0 });
-      w.advance(LAG_MS);
+      // Last gaps 2026-11-14: committed events roll at once (the watermark follows commit order, no lag window).
       expect(await w.core.rollupStats()).toMatchObject({ installs: 2 });
-      // Nothing new: with the lag window the previous run already read everything around it, so nothing.
+      // Nothing new: nothing is read twice.
       w.advance(2 * HOUR);
       expect((await w.core.rollupStats()).installs).toBe(0);
       // Next local day for ID (Tokyo), still the same UTC day+1 for both.
       w.setTime(T0 + 20 * HOUR);
       await w.core.postStats({ install: ID, build: 't', tz: 540, events: [ev(w.now())] });
-      w.advance(LAG_MS);
       expect((await w.core.rollupStats()).installs).toBe(1);
       const local = await w.core.growth.statsLocalReport(30, 'local');
       const utc = await w.core.growth.statsLocalReport(30, 'utc');

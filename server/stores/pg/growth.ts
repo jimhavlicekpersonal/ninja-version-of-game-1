@@ -117,11 +117,15 @@ export class PgGrowth extends PgBase implements GrowthStore {
   async setInstallTz(install: string, tz: number, at: number) {
     await this.db.query<Record<string, unknown>>('insert into stats_install_tz (install, tz, at) values ($1,$2,$3) on conflict (install) do update set tz = excluded.tz, at = excluded.at', [install, tz, at]);
   }
-  async statsTouched(after: number, limit: number, upTo?: number) {
+  async statsHorizon() {
+    // Every transaction with a lower id has ended (committed or rolled back), so its events are visible from here on.
+    return num((await this.db.query<Record<string, unknown>>('select pg_snapshot_xmin(pg_current_snapshot())::text::bigint as h')).rows[0]?.h);
+  }
+  async statsTouched(after: number, limit: number, before: number) {
     const rows = (
-      await this.db.query<Record<string, unknown>>('select install, max(received_at) as last from stats_events where received_at > $1 and ($3::bigint is null or received_at <= $3) group by install order by last limit $2', [after, limit, upTo ?? null])
+      await this.db.query<Record<string, unknown>>('select install, max(txid) as last from stats_events where txid > $1 and txid < $3 group by install order by last limit $2', [after, limit, before])
     ).rows;
-    return { installs: rows.map((r) => String(r.install)), maxReceived: rows.length ? num(rows[rows.length - 1].last) : after };
+    return { installs: rows.map((r) => String(r.install)), maxSeq: rows.length ? num(rows[rows.length - 1].last) : after };
   }
   async statsEventsOf(installs: string[]) {
     if (!installs.length) return [];

@@ -1,8 +1,8 @@
 /**
  * Third verification fixes 2026-11-14 (docs/store/WORLDWIDE_AUDIT.md): referral payments under parallel claims
  * and after recruit deletion, adults-only referrals and stable installation ids, push tokens and under-13 bands,
- * the `offline` under-13 mode's matchmaking and memberships, shared-replay limits, fields and defender privacy,
- * the statistics lag window, and the village-parts read under a row lock (Postgres).
+ * the `offline` under-13 mode's matchmaking and memberships, shared-replay limits, fields and defender privacy
+ * (the statistics watermark test moved to last-gaps.test.ts with the commit-order fix), and the village-parts read under a row lock (Postgres).
  */
 import { describe, expect, it } from 'vitest';
 import { REFERRAL_JADE, REFERRAL_MONTHLY_CAP, SHARED_REPLAYS_PER_DAY } from '../../../src/backend/net/growth';
@@ -12,7 +12,6 @@ import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { runBattle, SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import type { ApiError } from '../../../server/core';
-import { LAG_MS } from '../../../server/core/statsLocal';
 import { ServerPush, type PushMessage, type PushTransport } from '../../../server/push/push';
 import type { Repo } from '../../../server/repo';
 import { checkEventSchedule } from '../../../src/backend/net/eventSchedule';
@@ -304,28 +303,6 @@ for (const [label, makeRepo] of repoFactories) {
       const third = await w.core.growth.shareReplay(me, req(await raid(eve.id, 504)));
       await w.core.deleteAccount((await w.repo.getPlayer(eve.id))!);
       expect(await refusal(w.core.growth.sharedReplay(third.code))).toBe('replay.not_found');
-    });
-  });
-
-  describe(`statistics rollup on ${label} storage (third verification)`, () => {
-    it('rolls only events older than the lag window, so a late-committed batch is not skipped', async () => {
-      const T0 = Date.UTC(2026, 10, 1, 10);
-      const w = world({ repo: await makeRepo(), start: T0 });
-      const ID_A = '0f8fad5b-d9cb-469f-a165-70867728950e';
-      const ID_B = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
-      const ID_C = '16fd2706-8baf-433b-82eb-8c7fada847da';
-      const ev = (at: number) => ({ name: 'session_start', at, props: {} });
-      await w.core.postStats({ install: ID_A, build: 't', events: [ev(T0)] });
-      w.advance(10 * 60_000);
-      await w.core.postStats({ install: ID_B, build: 't', events: [ev(w.now())] });
-      await w.core.rollupStats();
-      // A batch whose receipt time was taken 90 s ago, committed only now (a slow insert, another instance's clock).
-      await w.repo.addStatsEvents(ID_C, 't', '', [ev(w.now() - 90_000)], w.now() - 90_000);
-      w.advance(HOUR);
-      await w.core.rollupStats();
-      const all = await w.repo.installSummaries('utc', 0, 100_000);
-      expect(all.map((s) => s.install).sort()).toEqual([ID_A, ID_B, ID_C].sort());
-      expect(LAG_MS).toBeGreaterThan(90_000);
     });
   });
 }

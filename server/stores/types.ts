@@ -708,6 +708,14 @@ export interface PruneResult {
   idempotency: number;
 }
 
+/**
+ * Last gaps 2026-11-14: who a leaderboard leaves out beyond banned players and players without a base.
+ * `hideUnder13`: players whose stated band is under 13 (`player_age.band`; only asked in `UNDER13_MODE=offline`).
+ */
+export interface BoardFilter {
+  hideUnder13?: boolean;
+}
+
 export interface OpponentQuery {
   excludeIds: string[];
   minHall: number;

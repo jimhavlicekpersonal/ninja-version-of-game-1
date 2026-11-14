@@ -2,10 +2,15 @@
  * Play statistics, growth 1/3 follow-up (growth batch 2026-11-14): incremental rollup and local days.
  *
  * - Incremental: `rollupStats` used to re-read 40 days of raw events every hour. Now each statistics id
- *   has one summary row (`stats_installs`), rebuilt only when the id sent events received after the
- *   watermark (`stats_watermarks` 'stats-rollup'; receipts up to OVERLAP_MS before the previous run are
- *   read again, so a batch still being written then is not missed; rebuilding a summary is idempotent). The UTC daily table
- *   (`stats_daily`, the existing staff view) is then rebuilt from the summaries.
+ *   has one summary row (`stats_installs`), rebuilt only when the id sent events written after the
+ *   watermark (`stats_watermarks` 'stats-rollup-seq'; rebuilding a summary is idempotent). The UTC daily
+ *   table (`stats_daily`, the existing staff view) is then rebuilt from the summaries.
+ * - Last gaps 2026-11-14: the watermark is commit-order safe. It used to follow receipt times, which are
+ *   taken before an insert commits, so a batch committed late (a slow insert, another instance) with a
+ *   receipt time below the watermark was skipped for good; a lag window only narrowed that. Now it follows
+ *   the writing transaction's id (`stats_events.txid`, migration 0042) and a run reads only up to
+ *   `Repo.statsHorizon` (the oldest transaction still running): everything below has committed or rolled
+ *   back, and a later commit is always at or above it. One indexed range read per run; nothing is re-read.
  * - Local days: a game that shares statistics also sends its UTC offset (`StatsBatch.tz`, minutes,
  *   rounded to 15; stored per statistics id, never with a player id). Each summary keeps its days on
  *   both bases, so D1/D7/D30 can be read by the player's own calendar day (`statsLocalReport`); an id
@@ -20,17 +25,8 @@ import type { ServerContext } from './context';
 import { cohortRows, DAY_MS, ROLLUP_DAYS, utcDay } from './stats';
 export { cleanTz } from '../../src/backend/net/stats';
 
-export const WATERMARK = 'stats-rollup';
-const LAST_RUN = 'stats-rollup-run';
-/** Receipt times re-read before the watermark each run (writes landing in the same instant). */
-export const OVERLAP_MS = 60_000;
-/**
- * Third verification fixes 2026-11-14 (8d): a run rolls only events received at least this long ago, and the
- * watermark never passes `now − LAG_MS`. A receipt time is taken before its insert commits (and on whichever
- * instance took the batch), so an event committed late with an earlier receipt time than events already read
- * was skipped for good once the watermark had moved past it. Events wait at most one more hourly run.
- */
-export const LAG_MS = 5 * 60_000;
+/** The commit-order watermark (positions, not times; the older time-based 'stats-rollup' row is no longer read). */
+export const WATERMARK = 'stats-rollup-seq';
 /** Statistics ids summarized per step, and steps per run (the rest waits for the next hour). */
 const BATCH = 500;
 const MAX_STEPS = 40;
@@ -75,18 +71,16 @@ export function onBasis(s: InstallSummaryRow, basis: 'utc' | 'local'): StatsInst
   };
 }
 
-/** Rebuild the summaries of every statistics id with events received since the watermark. */
+/** Rebuild the summaries of every statistics id with events written since the watermark. */
 export async function summarizeNew(ctx: ServerContext): Promise<{ installs: number; watermark: number }> {
   const g = ctx.repo;
   let wm = await g.getWatermark(WATERMARK);
-  // A batch still being written when the last run read could carry a receipt time up to OVERLAP_MS before it.
-  const lastRun = await g.getWatermark(LAST_RUN);
-  let after = Math.max(0, Math.min(wm, lastRun - OVERLAP_MS));
-  await g.setWatermark(LAST_RUN, ctx.now());
+  // Taken once, before reading: every event below it is visible now, and none can appear below it later.
+  const horizon = await g.statsHorizon();
   let installs = 0;
+  let done = false;
   for (let step = 0; step < MAX_STEPS; step++) {
-    const touched = await g.statsTouched(after, BATCH, ctx.now() - LAG_MS);
-    const fresh = touched.maxReceived > wm;
+    const touched = await g.statsTouched(wm, BATCH, horizon);
     if (touched.installs.length) {
       const events = await g.statsEventsOf(touched.installs);
       const tzs = await g.installTzs(touched.installs);
@@ -96,10 +90,18 @@ export async function summarizeNew(ctx: ServerContext): Promise<{ installs: numb
       await g.putInstallSummaries([...by].map(([i, ev]) => summarize(i, ev, tzs.get(i) ?? null, now)));
       installs += by.size;
     }
-    if (!fresh) break;
-    wm = after = touched.maxReceived;
+    if (touched.installs.length < BATCH) {
+      done = true;
+      break;
+    }
+    // A full page: continue after its newest position (ids whose newest event is later come next).
+    wm = touched.maxSeq;
     await g.setWatermark(WATERMARK, wm);
-    if (touched.installs.length < BATCH) break;
+  }
+  // Everything below the horizon has been read: the next run starts there.
+  if (done && horizon - 1 > wm) {
+    wm = horizon - 1;
+    await g.setWatermark(WATERMARK, wm);
   }
   return { installs, watermark: wm };
 }

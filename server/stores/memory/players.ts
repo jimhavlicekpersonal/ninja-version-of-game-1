@@ -2,7 +2,7 @@
 import type { AgeBand } from '../../../src/gameplay/sim/age';
 import { noticesNaming } from '../notices';
 import { NameTakenError, REVOKED_TOKEN_PREFIX, DELETED_PLAYER } from '../types';
-import type { ComplianceRow, Player, PlayerPatch, StaffAction, IdentityLink, PlayerNotice, TokenRow, TokenRotation, DeletionRequest, OpponentQuery } from '../types';
+import type { ComplianceRow, Player, PlayerPatch, StaffAction, IdentityLink, PlayerNotice, TokenRow, TokenRotation, DeletionRequest, OpponentQuery, BoardFilter } from '../types';
 import type { PlayerStore } from '../ports';
 import { MemoryBase, clone } from './base';
 
@@ -73,11 +73,11 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
       .slice(0, q.limit)
       .map(clone);
   }
-  async topPlayers(limit: number): Promise<Player[]> {
-    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil).sort((a, b) => b.trophies - a.trophies || a.createdAt - b.createdAt).slice(0, limit).map(clone);
+  async topPlayers(limit: number, filter?: BoardFilter): Promise<Player[]> {
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil && this.onBoard(p, filter)).sort((a, b) => b.trophies - a.trophies || a.createdAt - b.createdAt).slice(0, limit).map(clone);
   }
-  async rankOf(trophies: number): Promise<number> {
-    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && p.trophies > trophies).length;
+  async rankOf(trophies: number, filter?: BoardFilter): Promise<number> {
+    return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && p.trophies > trophies && this.onBoard(p, filter)).length;
   }
   async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;

@@ -2,9 +2,9 @@
 import { isAgeBand, type AgeBand } from '../../../src/gameplay/sim/age';
 import { nameNoticePatterns } from '../notices';
 import { NameTakenError, REVOKED_TOKEN_PREFIX, DELETED_PLAYER } from '../types';
-import type { ComplianceRow, Player, PlayerPatch, StaffAction, IdentityLink, PlayerNotice, TokenRotation, DeletionRequest, OpponentQuery } from '../types';
+import type { ComplianceRow, Player, PlayerPatch, StaffAction, IdentityLink, PlayerNotice, TokenRotation, DeletionRequest, OpponentQuery, BoardFilter } from '../types';
 import type { PlayerStore } from '../ports';
-import { type Row, num, strOrNull, toPlayer, isUniqueClash, toDeletion } from './rows';
+import { type Row, num, strOrNull, toPlayer, isUniqueClash, toDeletion, boardFilterSql } from './rows';
 import { PgBase, dbOf } from './base';
 
 export class PgPlayers extends PgBase implements PlayerStore {
@@ -147,12 +147,12 @@ export class PgPlayers extends PgBase implements PlayerStore {
       .slice(0, q.limit);
   }
 
-  async topPlayers(limit: number): Promise<Player[]> {
-    return (await this.rows('select * from players where base is not null and banned_until = 0 order by trophies desc, created_at asc limit $1', [limit])).map(toPlayer);
+  async topPlayers(limit: number, filter?: BoardFilter): Promise<Player[]> {
+    return (await this.rows(`select * from players where base is not null and banned_until = 0${boardFilterSql(filter)} order by trophies desc, created_at asc limit $1`, [limit])).map(toPlayer);
   }
 
-  async rankOf(trophies: number): Promise<number> {
-    const r = await this.rows('select count(*) as n from players where base is not null and banned_until = 0 and trophies > $1', [trophies]);
+  async rankOf(trophies: number, filter?: BoardFilter): Promise<number> {
+    const r = await this.rows(`select count(*) as n from players where base is not null and banned_until = 0 and trophies > $1${boardFilterSql(filter)}`, [trophies]);
     return 1 + num(r[0]?.n);
   }
 

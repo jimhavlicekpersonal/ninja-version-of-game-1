@@ -81,11 +81,15 @@ export class MemoryGrowth extends MemoryBase implements GrowthStore {
   async setInstallTz(install: string, tz: number) {
     this.installTzRows[install] = tz;
   }
-  async statsTouched(after: number, limit: number, upTo = Infinity) {
+  async statsHorizon() {
+    // Inserts here are never left uncommitted: the next number is the horizon.
+    return this.statsSeq + 1;
+  }
+  async statsTouched(after: number, limit: number, before: number) {
     const last = new Map<string, number>();
-    for (const r of this.statsRows) if (r.receivedAt > after && r.receivedAt <= upTo) last.set(r.install, Math.max(last.get(r.install) ?? 0, r.receivedAt));
+    for (const r of this.statsRows) if (r.seq > after && r.seq < before) last.set(r.install, Math.max(last.get(r.install) ?? 0, r.seq));
     const picked = [...last].sort((a, b) => a[1] - b[1]).slice(0, limit);
-    return { installs: picked.map(([i]) => i), maxReceived: picked.length ? picked[picked.length - 1][1] : after };
+    return { installs: picked.map(([i]) => i), maxSeq: picked.length ? picked[picked.length - 1][1] : after };
   }
   async statsEventsOf(installs: string[]) {
     const want = new Set(installs);

@@ -23,13 +23,12 @@ import { sanitizeName } from '../../src/gameplay/sim/social/names';
 import type { GameData, Temper } from '../../src/gameplay/sim/types';
 import { normalizeTemper, sameTemper, validTemper } from '../../src/gameplay/sim/battle/temper';
 import type { AttackResponse, AttackStartResponse, BattleSubmission, DefensesResponse, LeaderboardResponse, MatchResponse, PowerLeaderboardResponse, UploadBaseRequest } from '../../src/backend/net/protocol';
-import type { Player, Repo, Ticket } from '../repo';
+import type { BoardFilter, Player, Repo, Ticket } from '../repo';
 import type { ClientInfo, RulesEngine } from '../rules/registry';
 import { ResimBusyError, ResimTimeoutError, type ResimOutcome } from '../resim/resim';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 import { capBaseLoot, layoutReset } from './baseRules';
-import { ageBandOf } from './ageBand';
 import { fail, detailError, busyCode, english, msg } from './errors';
 
 export { capBaseLoot, layoutReset } from './baseRules';
@@ -265,10 +264,21 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   await ctx.board.set(me.id, me.trophies, me.createdAt);
 }
 
-/** Candidates whose stated band is not under 13 (only asked in `offline` mode: one lookup per candidate, at most 20). */
+/** Candidates whose stated band is not under 13 (only asked in `offline` mode: one query for at most 20). */
 async function withoutUnder13(repo: Repo, list: Player[]): Promise<Player[]> {
-  const bands = await Promise.all(list.map((p) => ageBandOf(repo, p.id)));
-  return list.filter((_, i) => bands[i] !== 'under13');
+  const young = await repo.under13Among(list.map((p) => p.id));
+  return list.filter((p) => !young.has(p.id));
+}
+
+/**
+ * Last gaps 2026-11-14: who the leaderboards leave out. In `UNDER13_MODE=offline` an under-13 player is not
+ * online at all, so neither the honor nor the Power Ranking lists them (database and memory queries filter by
+ * `player_age.band`; the Redis set is emptied of them at the statement and checked again on every read).
+ * `limited`/`families` keep them listed under their generated name (no id is served, so a board row is no way
+ * to find or contact them; friends.ts refuses them by name in every mode).
+ */
+export function boardFilter(ctx: ServerContext): BoardFilter {
+  return ctx.policy.under13Mode === 'offline' ? { hideUnder13: true } : {};
 }
 
 /** Find someone to attack: a real player if one fits the rules, otherwise a generated base of matched strength. */
@@ -752,7 +762,8 @@ async function powerBoard(ctx: ServerContext): Promise<{ top: Player[]; values: 
   const hit = powerBoards.get(ctx);
   const t = ctx.now();
   if (hit && t - hit.at < POWER_BOARD_TTL_MS && t >= hit.at) return hit;
-  const [top, values] = await Promise.all([ctx.repo.topByPower(100, def.powerBoardMinBattles, def.powerWeight), ctx.repo.powerValues(def.powerBoardMinBattles, def.powerWeight)]);
+  const filter = boardFilter(ctx);
+  const [top, values] = await Promise.all([ctx.repo.topByPower(100, def.powerBoardMinBattles, def.powerWeight, filter), ctx.repo.powerValues(def.powerBoardMinBattles, def.powerWeight, filter)]);
   const board = { at: t, top, values: values.sort((a, b) => b - a) };
   powerBoards.set(ctx, board);
   return board;
@@ -788,13 +799,21 @@ export async function powerLeaderboard(ctx: ServerContext, me: Player, limit: nu
 export async function leaderboard(ctx: ServerContext, me: Player, limit: number): Promise<LeaderboardResponse> {
   const n = Math.max(1, Math.min(100, Number(limit) || 50));
   // The board gives the order (a Redis sorted set at scale); names and Keeps come from the players.
-  const top = await ctx.repo.playersByIds((await ctx.board.top(n)).map((e) => e.id));
+  const filter = boardFilter(ctx);
+  let ids = (await ctx.board.top(n, filter)).map((e) => e.id);
+  if (filter.hideUnder13) {
+    // A Redis set filled before the mode changed may still hold an under-13 player: leave them out and drop them from the set.
+    const young = await ctx.repo.under13Among(ids);
+    for (const id of young) await ctx.board.remove(id);
+    ids = ids.filter((id) => !young.has(id));
+  }
+  const top = await ctx.repo.playersByIds(ids);
   const groveNames = new Map<string, string>();
   for (const p of top) {
     if (p.groveId && !groveNames.has(p.groveId)) groveNames.set(p.groveId, (await ctx.repo.getGrove(p.groveId))?.name ?? '');
   }
   return {
     players: top.map((p, i) => ({ rank: i + 1, name: p.name, trophies: p.trophies, hallLevel: p.hallLevel, grove: p.groveId ? groveNames.get(p.groveId) || null : null })),
-    me: me.base ? { rank: await ctx.board.rankOf(me.trophies), trophies: me.trophies } : null,
+    me: me.base ? { rank: await ctx.board.rankOf(me.trophies, filter), trophies: me.trophies } : null,
   };
 }

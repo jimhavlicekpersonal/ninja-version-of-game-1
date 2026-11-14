@@ -16,7 +16,7 @@
  * them reports the failure through `onError` (a metric and a throttled log
  * line: `redisErrorReporter`).
  */
-import type { Repo } from './repo';
+import type { BoardFilter, Repo } from './repo';
 import type { RateDecision, RateLimiter, RateLimits } from './rateLimit';
 import { DEFAULT_RATE_LIMITS, MemoryRateLimiter } from './rateLimit';
 import type { RedisCommander, RespValue } from './redis';
@@ -51,10 +51,14 @@ export interface Leaderboard {
   /** Note a ranked player's honor (players with a base). */
   set(playerId: string, trophies: number, createdAt: number): Promise<void>;
   remove(playerId: string): Promise<void>;
-  /** Best first; equal honor: the older account first. */
-  top(limit: number): Promise<{ id: string; trophies: number }[]>;
+  /**
+   * Best first; equal honor: the older account first. `filter` (last gaps 2026-11-14) applies to database reads;
+   * a Redis set never adds a hidden player (under-13 statements remove them, rebuilds use `rebuildFilter`), and
+   * the core checks the ids it gets back (`pvp.leaderboard`).
+   */
+  top(limit: number, filter?: BoardFilter): Promise<{ id: string; trophies: number }[]>;
   /** 1 + the number of ranked players with more honor. */
-  rankOf(trophies: number): Promise<number>;
+  rankOf(trophies: number, filter?: BoardFilter): Promise<number>;
 }
 
 /** The default: read straight from the database (fine for one instance and modest numbers of players). */
@@ -62,11 +66,11 @@ export class RepoLeaderboard implements Leaderboard {
   constructor(private readonly repo: Repo) {}
   async set(): Promise<void> {}
   async remove(): Promise<void> {}
-  async top(limit: number): Promise<{ id: string; trophies: number }[]> {
-    return (await this.repo.topPlayers(limit)).map((p) => ({ id: p.id, trophies: p.trophies }));
+  async top(limit: number, filter?: BoardFilter): Promise<{ id: string; trophies: number }[]> {
+    return (await this.repo.topPlayers(limit, filter)).map((p) => ({ id: p.id, trophies: p.trophies }));
   }
-  rankOf(trophies: number): Promise<number> {
-    return this.repo.rankOf(trophies);
+  rankOf(trophies: number, filter?: BoardFilter): Promise<number> {
+    return this.repo.rankOf(trophies, filter);
   }
 }
 
@@ -91,7 +95,7 @@ export class RedisLeaderboard implements Leaderboard {
   constructor(
     private readonly redis: RedisCommander,
     readonly key = 'tk:leaderboard',
-    private readonly fallback?: { repo: Repo; onError?: RedisErrorHandler },
+    private readonly fallback?: { repo: Repo; onError?: RedisErrorHandler; rebuildFilter?: BoardFilter },
   ) {}
 
   private failed(e: unknown): void {
@@ -111,7 +115,7 @@ export class RedisLeaderboard implements Leaderboard {
     this.rebuilding = (async () => {
       const tmp = `${this.key}:rebuild`;
       await this.redis.command('DEL', tmp);
-      const all = await repo.rankedPlayers();
+      const all = await repo.rankedPlayers(this.fallback?.rebuildFilter);
       for (let i = 0; i < all.length; i += BOARD_REBUILD_CHUNK) {
         const args: (string | number)[] = [];
         for (const p of all.slice(i, i + BOARD_REBUILD_CHUNK)) args.push(boardScore(p.trophies, p.createdAt), p.id);
@@ -145,7 +149,7 @@ export class RedisLeaderboard implements Leaderboard {
     }
   }
 
-  async top(limit: number): Promise<{ id: string; trophies: number }[]> {
+  async top(limit: number, filter?: BoardFilter): Promise<{ id: string; trophies: number }[]> {
     try {
       const r = (await this.redis.command('ZREVRANGE', this.key, 0, Math.max(0, limit - 1), 'WITHSCORES')) as string[];
       const out: { id: string; trophies: number }[] = [];
@@ -154,24 +158,24 @@ export class RedisLeaderboard implements Leaderboard {
       return out;
     } catch (e) {
       this.failed(e);
-      return new RepoLeaderboard(this.fallback!.repo).top(limit);
+      return new RepoLeaderboard(this.fallback!.repo).top(limit, filter);
     }
   }
 
-  async rankOf(trophies: number): Promise<number> {
+  async rankOf(trophies: number, filter?: BoardFilter): Promise<number> {
     try {
       // Everyone with more honor scores at least trophies + 1.
       return 1 + Number(await this.redis.command('ZCOUNT', this.key, Math.floor(trophies) + 1, '+inf'));
     } catch (e) {
       this.failed(e);
-      return new RepoLeaderboard(this.fallback!.repo).rankOf(trophies);
+      return new RepoLeaderboard(this.fallback!.repo).rankOf(trophies, filter);
     }
   }
 
   /** Fill the set from the database when it is missing (a new or flushed Redis). Returns how many players were added. */
   async rebuildIfMissing(repo: Repo): Promise<number> {
     if (Number(await this.redis.command('EXISTS', this.key)) > 0) return 0;
-    const all = await repo.rankedPlayers();
+    const all = await repo.rankedPlayers(this.fallback?.rebuildFilter);
     for (let i = 0; i < all.length; i += BOARD_REBUILD_CHUNK) {
       const args: (string | number)[] = [];
       for (const p of all.slice(i, i + BOARD_REBUILD_CHUNK)) args.push(boardScore(p.trophies, p.createdAt), p.id);

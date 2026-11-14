@@ -51,6 +51,7 @@ import type {
   PruneCutoffs,
   PruneResult,
   OpponentQuery,
+  BoardFilter,
   ReferralRow,
   SharedReplayRow,
   InstallSummaryRow,
@@ -65,9 +66,9 @@ export interface PlayerStore {
   getPlayer(id: string): Promise<Player | null>;
   updatePlayer(id: string, patch: PlayerPatch): Promise<void>;
   findOpponents(q: OpponentQuery): Promise<Player[]>;
-  topPlayers(limit: number): Promise<Player[]>;
+  topPlayers(limit: number, filter?: BoardFilter): Promise<Player[]>;
   /** 1 + number of players (with a base) who have more trophies. */
-  rankOf(trophies: number): Promise<number>;
+  rankOf(trophies: number, filter?: BoardFilter): Promise<number>;
   /** Another device's token for a player (signing in with a linked account). */
   addToken(playerId: string, tokenHash: string, at: number, label: string, provider?: string): Promise<void>;
   linksOf(playerId: string): Promise<IdentityLink[]>;
@@ -207,13 +208,15 @@ export interface PurchaseStore {
   /** Players by id, in the order asked (missing ones left out). */
   playersByIds(ids: string[]): Promise<Player[]>;
   /** The Power Ranking (step 31): players with a base and at least `minBattles` rated attacks, by attack rating + beta x (Keep - 1). */
-  topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]>;
+  topByPower(limit: number, minBattles: number, beta: number, filter?: BoardFilter): Promise<Player[]>;
   /** 1 + players on the Power Ranking above this power. */
-  powerRankOf(power: number, minBattles: number, beta: number): Promise<number>;
+  powerRankOf(power: number, minBattles: number, beta: number, filter?: BoardFilter): Promise<number>;
   /** Backend A20: every Power Ranking value (one scan, cached by the core for a minute). */
-  powerValues(minBattles: number, beta: number): Promise<number[]>;
+  powerValues(minBattles: number, beta: number, filter?: BoardFilter): Promise<number[]>;
   /** Every ranked player (with a base), to rebuild a leaderboard index. */
-  rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
+  rankedPlayers(filter?: BoardFilter): Promise<{ id: string; trophies: number; createdAt: number }[]>;
+  /** Which of these players stated the under-13 band (one query; leaderboards and matchmaking in `offline` mode). */
+  under13Among(ids: string[]): Promise<Set<string>>;
 }
 
 /** Shared play statistics (and other operations data). Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
@@ -278,6 +281,8 @@ export interface BattleStore {
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
   /** Third verification fixes 2026-11-14 (8c): the defender of this attacker's raid played with `seed` after `since`, if recorded. */
   attackDefenderBySeed(attackerId: string, seed: number, since: number): Promise<string | null>;
+  /** Last gaps 2026-11-14: whether a recorded raid on this defender since `since` had this seed (a shared defense replay). */
+  defendedBySeed(defenderId: string, seed: number, since: number): Promise<boolean>;
   recentTargets(attackerId: string, since: number): Promise<string[]>;
   /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
   prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
@@ -494,8 +499,14 @@ export interface GrowthStore {
   pruneSharedReplays(before: number): Promise<number>;
 
   setInstallTz(install: string, tz: number, at: number): Promise<void>;
-  /** Statistics ids with events received after `after` (and at or before `upTo`), oldest first, and the newest receipt time among them. */
-  statsTouched(after: number, limit: number, upTo?: number): Promise<{ installs: string[]; maxReceived: number }>;
+  /**
+   * Last gaps 2026-11-14: the commit-order position below which every statistics event is written for good (Postgres:
+   * the oldest running transaction's id, `pg_snapshot_xmin`; memory: the next insert's number). An event committed
+   * later always gets a position at or above it, so a watermark taken from it never skips one.
+   */
+  statsHorizon(): Promise<number>;
+  /** Statistics ids with events at positions in (`after`, `before`), by their newest position, and the newest position among them. */
+  statsTouched(after: number, limit: number, before: number): Promise<{ installs: string[]; maxSeq: number }>;
   statsEventsOf(installs: string[]): Promise<StatsEventRow[]>;
   installTzs(installs: string[]): Promise<Map<string, number>>;
   putInstallSummaries(rows: InstallSummaryRow[]): Promise<void>;

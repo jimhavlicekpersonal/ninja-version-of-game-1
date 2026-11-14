@@ -1,8 +1,8 @@
 /** Postgres purchases, refunds, push tokens and the power leaderboards (`PurchaseStore`). */
 import { STATE_NOTICES } from '../notices';
-import type { Player, PurchaseRow, PushToken } from '../types';
+import type { BoardFilter, Player, PurchaseRow, PushToken } from '../types';
 import type { PurchaseStore } from '../ports';
-import { num, toPlayer, toPurchase } from './rows';
+import { boardFilterSql, num, toPlayer, toPurchase } from './rows';
 import { PgBase } from './base';
 
 export class PgPurchases extends PgBase implements PurchaseStore {
@@ -116,21 +116,27 @@ export class PgPurchases extends PgBase implements PurchaseStore {
     return ids.map((id) => byId.get(id)).filter((p): p is Player => Boolean(p));
   }
 
-  async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
-    return (await this.rows('select * from players where base is not null and banned_until = 0 and attack_battles >= $2 order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1', [limit, minBattles, beta])).map(toPlayer);
+  async topByPower(limit: number, minBattles: number, beta: number, filter?: BoardFilter): Promise<Player[]> {
+    return (await this.rows(`select * from players where base is not null and banned_until = 0 and attack_battles >= $2${boardFilterSql(filter)} order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1`, [limit, minBattles, beta])).map(toPlayer);
   }
 
-  async powerValues(minBattles: number, beta: number): Promise<number[]> {
-    const r = await this.rows('select attack_rating + $2 * (greatest(hall_level, 1) - 1) as power from players where base is not null and banned_until = 0 and attack_battles >= $1', [minBattles, beta]);
+  async powerValues(minBattles: number, beta: number, filter?: BoardFilter): Promise<number[]> {
+    const r = await this.rows(`select attack_rating + $2 * (greatest(hall_level, 1) - 1) as power from players where base is not null and banned_until = 0 and attack_battles >= $1${boardFilterSql(filter)}`, [minBattles, beta]);
     return r.map((x) => Number(x.power));
   }
 
-  async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
-    const r = await this.rows('select count(*) as n from players where base is not null and banned_until = 0 and attack_battles >= $2 and attack_rating + $3 * (greatest(hall_level, 1) - 1) > $1', [power, minBattles, beta]);
+  async powerRankOf(power: number, minBattles: number, beta: number, filter?: BoardFilter): Promise<number> {
+    const r = await this.rows(`select count(*) as n from players where base is not null and banned_until = 0 and attack_battles >= $2 and attack_rating + $3 * (greatest(hall_level, 1) - 1) > $1${boardFilterSql(filter)}`, [power, minBattles, beta]);
     return 1 + num(r[0]?.n);
   }
 
-  async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
-    return (await this.rows('select id, trophies, created_at from players where base is not null and banned_until = 0')).map((r) => ({ id: String(r.id), trophies: num(r.trophies), createdAt: num(r.created_at) }));
+  async rankedPlayers(filter?: BoardFilter): Promise<{ id: string; trophies: number; createdAt: number }[]> {
+    return (await this.rows(`select id, trophies, created_at from players where base is not null and banned_until = 0${boardFilterSql(filter)}`)).map((r) => ({ id: String(r.id), trophies: num(r.trophies), createdAt: num(r.created_at) }));
+  }
+
+  async under13Among(ids: string[]): Promise<Set<string>> {
+    if (!ids.length) return new Set();
+    const r = await this.rows("select player_id from player_age where player_id = any($1) and band = 'under13'", [ids]);
+    return new Set(r.map((x) => String(x.player_id)));
   }
 }

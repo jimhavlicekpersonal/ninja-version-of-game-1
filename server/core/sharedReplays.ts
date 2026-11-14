@@ -18,6 +18,12 @@
  * player's attack record with the battle's seed) it labels the opponent a real player and keeps the defender's
  * id (never shown) so a defender who is under 18, chose "don't allow my base in shared replays", or deletes
  * their account is never in one (8c; `replay.base_private`, the same answer for each, so no age is revealed).
+ *
+ * Last gaps 2026-11-14: the label `player` needs that record (or a recorded raid on the sharer's own base with the
+ * seed, a shared defense). Without one the request's `player` becomes `practice` ("A practice battle."), the
+ * label that claims no real opponent; `generated` and `practice` requests keep theirs. Sharing is not refused, so
+ * replays older than the records stay shareable, but nobody is told a battle was against a real player when the
+ * server cannot show it was.
  */
 import { FRIEND_CODE_ALPHABET } from '../../src/backend/net/names';
 import { SHARE_CODE, SHARED_REPLAY_DAYS, SHARED_REPLAYS_PER_DAY, type ShareReplayRequest, type ShareReplayResponse, type SharedOpponent, type SharedReplayView } from '../../src/backend/net/growth';
@@ -126,7 +132,11 @@ export async function share(ctx: ServerContext, me: Player, body: Partial<ShareR
   const showName = body.showName === true && band === 'adult';
   // Honesty: a base the game generated is labelled so whatever the request says.
   const asked: SharedOpponent = body.opponent !== undefined && OPPONENTS.includes(body.opponent) ? body.opponent : 'player';
-  const opponent: SharedOpponent = base.practice ? 'practice' : base.rival || base.power !== undefined ? 'generated' : realDefender ? 'player' : asked;
+  // Last gaps 2026-11-14: "a real player's base" only when the server recorded that battle (this player's raid, or a
+  // raid on this player's own base, with the seed). Otherwise (older than the records, a forged seed, a duel) the
+  // claim cannot be checked, so it is shown as a practice battle: never more real than the server knows.
+  const recorded = defenderId !== null || (await g.defendedBySeed(me.id, s.seed as number, now - RAID_LOOKBACK_MS));
+  const opponent: SharedOpponent = base.practice ? 'practice' : base.rival || base.power !== undefined ? 'generated' : recorded ? 'player' : asked === 'player' ? 'practice' : asked;
   const expiresAt = now + SHARED_REPLAY_DAYS * DAY;
   const record = { at: now, rules, setup, deployments, ...(endTick !== undefined ? { endTick } : {}), result: { stars: result.stars, destruction: result.destruction }, sharerName: showName ? me.name : null, opponent };
   for (let i = 0; i < 4; i++) {

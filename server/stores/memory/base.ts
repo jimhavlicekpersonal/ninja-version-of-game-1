@@ -5,7 +5,7 @@
 import type { BaseLayout } from '../../../src/gameplay/sim/battle/types';
 import type { AgeBand } from '../../../src/gameplay/sim/age';
 import type { Player, DuelRecord, DuelTally, DuelChallenge, Squad, SquadMember, SquadInvite, GangWar, GangWarAttack, GangRelay, GangQueueEntry, FriendRequest, StaffAction, Ticket, AttackRecord, Grove, GroveMember, ChatRow, StatsDailyRow, Report, Block, TroopRequest, Donation, RaidPairing, RaidAttack, RaidClaim, VillageRow, LedgerEntry, CommandLogRow, IdentityLink, PlayerNotice, TokenRow, TokenRotation, PurchaseRow, PurchaseIntent, ImportHold, Complaint, PushToken, DeletionRequest } from '../types';
-import type { ComplianceRow, InstallSummaryRow, ReferralRow, SharedReplayRow } from '../types';
+import type { BoardFilter, ComplianceRow, InstallSummaryRow, ReferralRow, SharedReplayRow } from '../types';
 import type { Repo } from '../ports';
 
 export const clone = <T>(v: T): T => structuredClone(v);
@@ -65,7 +65,9 @@ export abstract class MemoryBase {
   commandRows: CommandLogRow[] = [];
   idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number; fingerprint: string | null }>();
   protected seq = 0;
-  statsRows: { install: string; day: number; name: string; at: number; props: Record<string, unknown>; build: string; arm: string; receivedAt: number }[] = [];
+  statsRows: { install: string; day: number; name: string; at: number; props: Record<string, unknown>; build: string; arm: string; receivedAt: number; seq: number }[] = [];
+  /** Last gaps 2026-11-14: the commit-order number of the newest statistics event (stats_events.txid). */
+  statsSeq = 0;
   statsDailyRows: StatsDailyRow[] = [];
   protected jobLeases = new Map<string, { holder: string; until: number }>();
   refundRows = new Map<string, { at: number; why: string }>();
@@ -80,6 +82,11 @@ export abstract class MemoryBase {
   installTzRows: Record<string, number> = {};
   installSummaryRows: Record<string, InstallSummaryRow> = {};
   watermarkRows: Record<string, number> = {};
+
+  /** Last gaps 2026-11-14: may this ranked player appear on a leaderboard read with `filter`? */
+  protected onBoard(p: Player, filter?: BoardFilter): boolean {
+    return !(filter?.hideUnder13 && this.ageRows.get(p.id)?.band === 'under13');
+  }
 
   /** This repo as the whole port (for calls into another store). */
   protected get repo(): Repo {

@@ -6,7 +6,8 @@ import { MemoryBase, clone } from './base';
 
 export class MemoryOps extends MemoryBase implements OpsStore {
   async addStatsEvents(install: string, build: string, arm: string, events: import('../../../src/backend/net/stats').StatsEvent[], receivedAt: number): Promise<number> {
-    for (const e of events) this.statsRows.push({ install, day: Math.floor(e.at / 86_400_000), name: e.name, at: e.at, props: clone(e.props), build, arm, receivedAt });
+    const seq = ++this.statsSeq;
+    for (const e of events) this.statsRows.push({ install, day: Math.floor(e.at / 86_400_000), name: e.name, at: e.at, props: clone(e.props), build, arm, receivedAt, seq });
     return events.length;
   }
   async deleteStats(install: string): Promise<number> {
