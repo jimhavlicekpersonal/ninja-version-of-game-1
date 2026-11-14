@@ -24,7 +24,7 @@
 | Defense (building) | ರಕ್ಷಣಾ ಕಟ್ಟಡ (ಕಿರಿದಾದ ಜಾಗದಲ್ಲಿ: ರಕ್ಷಣೆ) |
 | Shield | ಗುರಾಣಿ |
 | Honor / Power / League | ಗೌರವ / ಶಕ್ತಿ / ಲೀಗ್ |
-| Leagues | ಬಿದಿರು, ದೇವದಾರು, ಕಬ್ಬಿಣ, ಕರಿಗಾಜು, ಜೇಡ್, ಬಿರುಗಾಳಿ, ನೆರಳು, ಕಗೆ ಲೀಗ್ |
+| Leagues (Bamboo, Cedar, Iron, Obsidian, Ember, Storm, Shadow, Kage) | ಬಿದಿರು, ದೇವದಾರು, ಕಬ್ಬಿಣ, ಕರಿಗಾಜು, ಕೆಂಡ, ಬಿರುಗಾಳಿ, ನೆರಳು, ಕಗೆ ಲೀಗ್ |
 | Daily chest / streak / skip | ದೈನಂದಿನ ಪೆಟ್ಟಿಗೆ / ಸರಣಿ / ವಿನಾಯಿತಿ |
 | Clan Stipend | ಕುಲದ ಭತ್ಯೆ |
 | Looks | ರೂಪ |
