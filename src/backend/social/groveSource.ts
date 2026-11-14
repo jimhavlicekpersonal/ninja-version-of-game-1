@@ -34,6 +34,8 @@ export interface GroveMemberRow {
 
 export interface GroveChatRow {
   presetId?: number;
+  /** Compliance switches 2026-11-14: free text from another player, withheld from an under-13 reader. */
+  withheld?: true;
   id: string;
   /** Empty for system messages. */
   who: string;
@@ -469,7 +471,7 @@ export class RemoteGroveSource implements GroveSource {
       // Blocked players and removed messages disappear at once (the server also leaves them out from now on).
       chat: this.chatRows
         .filter((m) => !this.removed.has(m.id) && !(m.from && blocked.has(m.from.id)))
-        .map((m) => ({ id: m.id, who: m.from ? (m.from.id === meId ? 'You' : m.from.name) : '', presetId: m.presetId, fromId: m.from?.id ?? '', mine: m.from?.id === meId, text: m.text, at: m.at, kind: m.kind })),
+        .map((m) => ({ id: m.id, who: m.from ? (m.from.id === meId ? 'You' : m.from.name) : '', presetId: m.presetId, ...(m.withheld ? { withheld: true as const } : {}), fromId: m.from?.id ?? '', mine: m.from?.id === meId, text: m.text, at: m.at, kind: m.kind })),
       requests: this.reqs.filter((r) => !r.mine && !blocked.has(r.playerId)).map((r) => ({ id: r.id, name: r.name, size: r.size, filled: r.filled })),
       ask,
       raid,

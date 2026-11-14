@@ -11,6 +11,7 @@ import { troopLevelOf } from '../../gameplay/sim/research';
 import { role as canonicalRoleDef, warriorUnlockKeep } from '../../gameplay/sim/progression';
 import type { UiKit } from './uiKit';
 import { clear, h } from './dom';
+import { masterySection } from './contentPreviewUi';
 
 const MODEL = localizedData(CANONICAL_MODEL, 'progression');
 const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
@@ -52,6 +53,9 @@ export function openCodex(host: CodexHost): void {
     const unlockedCount = rows.filter((r) => r.u?.unlocked).length;
     const nextUp = rows.filter((r) => r.u && !r.u.unlocked).sort((a, b) => a.keep - b.keep || a.w.tier - b.w.tier)[0];
     body.append(h('p', { class: 'muted small' }, i18nText("ui.of_classes_unlocked_a_class_unlocks_wh_856ddcc6ae", { arg1: unlockedCount, arg2: WARRIORS.length })));
+    // Content batch 2026-11-14: Warrior Mastery, only while the data turns it on (preview).
+    const mastery = masterySection(host.c);
+    if (mastery) body.append(mastery);
     if (nextUp) body.append(h('p', { class: 'small' }, h('b', {}, i18nLabel('Next: ')), i18nText("ui.message_6aa36c72d4", { arg1: nextUp.w.name, arg2: nextUp.status.replace('Needs ', 'needs ') })));
     const tierSelect = h('select', { 'aria-label': i18nText("ui.filter_classes_by_tier_93298ce75c") }, h('option', { value: '0' }, i18nText("ui.all_tiers_ab6bb77da4")), ...MODEL.tiers.map((tier) => h('option', { value: String(tier.tier) }, tier.name)));
     tierSelect.value = String(tierFilter);

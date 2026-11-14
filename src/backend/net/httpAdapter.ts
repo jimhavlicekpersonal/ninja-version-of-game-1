@@ -433,7 +433,7 @@ export class HttpServerAdapter implements ServerPort {
   }
 
   /** Growth batch 2026-11-14: a call by route (`growth.ts` `GrowthRoutes`), used by `growthClient.ts`. */
-  call<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
+  call<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
     return this.req<T>(method, path, body);
   }
 

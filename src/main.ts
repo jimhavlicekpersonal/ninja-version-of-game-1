@@ -1,3 +1,5 @@
+import { termsGate, provideJadeValueSwitch } from './presentation/ui/complianceUi';
+import { checkSignificantUpdate, significantUpdateBuild } from './backend/platform/ageRegulatory';
 import { t as i18nText } from './presentation/ui/i18n';
 import { listText as i18nList, fmtNumber, initLanguage, labelText as i18nLabel, t } from './presentation/ui/i18n';
 import Phaser from 'phaser';
@@ -58,6 +60,8 @@ import { encodeExportCode, NewerSaveError, serialize, type SaveFile } from './ga
 
 declare const __APP_VERSION__: string;
 declare const __BUILD_TIME__: string;
+/** public/legal-config.js `termsEffective`, read at build time (vite.config.ts); '' while the terms are a draft. */
+declare const __TERMS_EFFECTIVE__: string;
 
 const DEBUG_OFFSET_KEY = 'tk.debugTimeOffsetMs';
 
@@ -222,11 +226,13 @@ async function boot(): Promise<void> {
   // purchases can reach a real village or a shared economy.
   const sandbox = isSandbox(location.search);
   // Crash reports (VITE_SENTRY_DSN builds only; Settings can switch them off; never from the sandbox).
+  // Compliance switches 2026-11-14 (C04): set once the village is loaded (below).
+  let crashBand: () => string | null = () => null;
   crashReporter = new CrashReporter({
     dsn: sandbox ? undefined : (import.meta.env.VITE_SENTRY_DSN as string | undefined),
     release: `kagemura@${__APP_VERSION__}`,
     environment: isNative() ? platform() : 'web',
-    enabled: () => prefs.get('crashReports'),
+    enabled: () => prefs.get('crashReports') && crashBand() !== 'under13',
     tags: { device: platformName() },
   });
   crashReporter.install();
@@ -576,6 +582,25 @@ async function boot(): Promise<void> {
     eventScheduleSource: () => eventSchedule?.source ?? 'built-in',
     statsTzNote: statsTz,
   });
+  // Compliance switches 2026-11-14 (net/compliance.ts, docs/SHIPPING.md 3l).
+  // C14: the terms of service screen, only while public/legal-config.js dates them (termsEffective, read at build time).
+  connection.terms = termsGate(__TERMS_EFFECTIVE__, hud, env.VITE_TERMS_URL?.trim() || './terms.html');
+  // C16: the approximate real-money value next to Jade prices in EU storefronts (off unless the build or server says so).
+  provideJadeValueSwitch(() => env.VITE_EU_JADE_VALUE === '1' || connection.hasFeature('eu-jade-value'));
+  // C04: no crash reports from an under-13 player.
+  crashBand = () => controller.state.profile.ageBand ?? null;
+  // C02: a minor's iPhone asks a parent to acknowledge a significant update (Declared Age Range; native code uncompiled).
+  if (!sandbox && isNative() && platform() === 'ios') {
+    let asked = false;
+    const askSignificant = () => {
+      if (asked || connection.status !== 'online') return;
+      const required = significantUpdateBuild(connection.significantUpdateBuild, env.VITE_SIGNIFICANT_UPDATE_BUILD);
+      if (!required) return;
+      asked = true;
+      void checkSignificantUpdate({ required, currentBuild: __APP_VERSION__, band: controller.state.profile.ageBand ?? null, kv: browserKeyValue, description: i18nText('significantUpdate.description') });
+    };
+    connection.subscribe(askSignificant);
+  }
 
   // Toasts raised before the first frame (interrupted raid, sandbox notice, load errors, purchases
   // delivered at start) wait for it: under the splash they would expire unseen.

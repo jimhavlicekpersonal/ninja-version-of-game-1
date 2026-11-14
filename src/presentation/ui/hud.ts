@@ -1,3 +1,5 @@
+import { heroPickerSection } from './contentPreviewUi';
+import { consumptionConsentBlock } from './complianceUi';
 import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText, fmtDecimal, fmtPercent } from './i18n';
@@ -748,6 +750,7 @@ export class Hud {
         const retry = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.connect_now_f5e732583f"));
         retry.addEventListener('click', () => {
           conn.askAgeAgain();
+          conn.askTermsAgain();
           void conn.sync().then(draw);
         });
         if (conn.status !== 'online') wrap.append(h('div', { class: 'actions' }, retry));
@@ -1019,6 +1022,8 @@ export class Hud {
       conn.server?.features.includes('sessions') ? h('div', {}, h('p', { class: 'muted small' }, i18nText("ui.lost_a_phone_or_signed_in_somewhere_yo_2e6f84a9c3")), h('div', { class: 'actions' }, others)) : null,
       conn.canSignOutDevice ? h('div', {}, h('p', { class: 'muted small' }, t('account.signOutDevice.note')), h('div', { class: 'actions' }, signOutHere)) : null,
       conn.server?.features.includes('notices') ? h('div', {}, h('label', { class: 'muted small' }, i18nText("ui.messages_from_our_moderators_71bfb2b01a")), noticesBox) : null,
+      // Compliance switches 2026-11-14 (A5): adults may let Apple be told about a purchase when asked about a refund.
+      consumptionConsentBlock(conn, (m, k) => this.toast(i18nMessage(m, true), k)),
     );
     details.addEventListener('toggle', () => {
       if (!details.open) return;
@@ -1222,7 +1227,7 @@ export class Hud {
     const dq = !busy && payableInProvisions(b.type, this.c.data) ? upgradeQuote(this.c.state, b.id, localizedData(this.c.data), now, 'dew') : null;
     // How many collectors are ready (the "Collect all" count) when this sheet is a collector's.
     const ready = buildingDef(this.c.data, b.type).produces ? this.readyCollectors().length : 0;
-    return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing, dq ? (dq.ok ? 'ok' : dq.code) : '-', b.temper ?? null, hallLevel(this.c.state, this.c.data), ready > 1 ? ready : 0]);
+    return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing, dq ? (dq.ok ? 'ok' : dq.code) : '-', b.temper ?? null, hallLevel(this.c.state, this.c.data), ready > 1 ? ready : 0, this.c.state.hero?.chosen ?? null]);
   }
 
   /** Update timers and collector amounts without replacing any buttons. */
@@ -1484,6 +1489,9 @@ export class Hud {
       );
     }
 
+    // Content batch 2026-11-14: the Hero Hall's hero picker, only while the data turns hero choice on (preview).
+    const heroPicker = level >= 1 ? heroPickerSection(this.c, b.type, () => this.renderSheet(), (m, k) => this.toast(m, k)) : null;
+    if (heroPicker) this.sheet.append(heroPicker);
     // Tempering (balance audit 2026-11-08): Kunai and Shuriken Towers, every one of a type at once.
     if (temperable(b.type, gd) && level >= 1) this.sheet.append(this.temperPanel(b.type));
 

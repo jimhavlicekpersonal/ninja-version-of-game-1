@@ -1,3 +1,4 @@
+import { ComplianceRoutes, under13ModeOf, type ComplianceView, type Under13Mode } from './compliance';
 import { deviceLocale, rememberServerMessage } from '../../../locales/runtime';
 /**
  * Online play: picks the server, keeps this device's player registered,
@@ -172,6 +173,13 @@ export class Connection {
    */
   ageGate: (() => Promise<AgeBand | null>) | null = null;
   private ageDeclined = false;
+  /**
+   * Compliance switches 2026-11-14 (C14): the terms of service to accept before online play, set by main.ts
+   * only while `public/legal-config.js` has a `termsEffective` date (null: nothing is asked or sent).
+   * `ask` shows the screen; true when accepted (then `accepted()` stays true on this device).
+   */
+  terms: { version: string; accepted(): boolean; ask(): Promise<boolean> } | null = null;
+  private termsDeclined = false;
   /** Moderation notices from the server (feature `notices`), newest first; read on connecting and from Settings. */
   notices: NoticeView[] = [];
 
@@ -267,7 +275,8 @@ export class Connection {
     const key = `tk.net.push:${this.url}`;
     const saved = this.kv.get(key);
     const prev = saved ? (JSON.parse(saved) as { token: string; sig: string; types: string[] }) : null;
-    if (!types.length) {
+    // Compliance switches 2026-11-14 (C04): no push token is registered for an under-13 player (the server refuses it too).
+    if (!types.length || this.ageBand === 'under13') {
       if (prev) {
         await this.port.deletePushToken(prev.token).catch(() => undefined);
         this.kv.set(key, null);
@@ -579,6 +588,70 @@ export class Connection {
   /** Ask the age question again (it was dismissed); the next sync shows it. */
   askAgeAgain(): void {
     this.ageDeclined = false;
+  }
+
+  /** The server's under-13 policy (hello feature `under13-<mode>`; `limited` for servers that announce none). */
+  get under13Mode(): Under13Mode {
+    return under13ModeOf(this.server?.features);
+  }
+
+  /** Under 13 on a server in `offline` mode: online play stays off and nothing is sent (compliance switches 2026-11-14). */
+  get under13Offline(): boolean {
+    return this.ageBand === 'under13' && Boolean(this.server) && this.under13Mode === 'offline';
+  }
+
+  /** The oldest build a parent must acknowledge as a significant update (hello `significantUpdateBuild`), if any. */
+  get significantUpdateBuild(): string | null {
+    return this.server?.significantUpdateBuild ?? null;
+  }
+
+  /** Whether the server announces a feature (for HUD switches outside the connection's own features). */
+  hasFeature(name: string): boolean {
+    return Boolean(this.server?.features.includes(name));
+  }
+
+  /** Terms acceptance asked again (Settings → Connect now after "Not now"). */
+  askTermsAgain(): void {
+    this.termsDeclined = false;
+  }
+
+  private async ensureTerms(): Promise<boolean> {
+    const t = this.terms;
+    if (!t || t.accepted()) return true;
+    if (this.termsDeclined) return false;
+    const ok = await t.ask().catch(() => false);
+    if (!ok) this.termsDeclined = true;
+    return ok;
+  }
+
+  /** The server records the accepted terms version once per account (feature `terms-acceptance`). */
+  private async syncTerms(port: ServerPort): Promise<void> {
+    const t = this.terms;
+    const caller = port as Partial<{ call<T>(m: 'PUT', p: string, b: unknown): Promise<T> }>;
+    if (!t || !t.accepted() || !this.server?.features.includes('terms-acceptance') || typeof caller.call !== 'function') return;
+    const key = `tk.terms.sent.${this.player?.id ?? ''}`;
+    if (this.kv.get(key) === t.version) return;
+    try {
+      const r = await caller.call<ComplianceView>('PUT', ComplianceRoutes.terms, { version: t.version });
+      if (r.termsVersion) this.kv.set(key, r.termsVersion);
+    } catch (e) {
+      this.log('Online play: could not send the terms acceptance', e);
+    }
+  }
+
+  /** Settings shows the Apple consumption consent switch (adults, feature `consumption-consent`). */
+  get canConsumptionConsent(): boolean {
+    return this.online && this.ageBand === 'adult' && Boolean(this.server?.features.includes('consumption-consent')) && typeof (this.port as Partial<{ call: unknown }> | null)?.call === 'function';
+  }
+
+  /** What the server recorded for this account (terms, consent). */
+  async compliance(): Promise<ComplianceView> {
+    return (this.port as unknown as { call<T>(m: 'GET', p: string): Promise<T> }).call<ComplianceView>('GET', ComplianceRoutes.compliance);
+  }
+
+  /** Switch the Apple consumption consent (stored on the server, off by default). */
+  async setConsumptionConsent(consent: boolean): Promise<ComplianceView> {
+    return (this.port as unknown as { call<T>(m: 'PUT', p: string, b: unknown): Promise<T> }).call<ComplianceView>('PUT', ComplianceRoutes.consumptionConsent, { consent });
   }
 
   /** Make the band stricter on the device (the game refuses anything else). */
@@ -971,9 +1044,24 @@ export class Connection {
           this.setStatus('offline', 'Online play starts once you tell us your age: Settings → Online play → Connect now.');
           return;
         }
+        // Compliance switches 2026-11-14 (UNDER13_MODE=offline): no registration, nothing sent.
+        if (this.under13Offline) {
+          this.setStatus('offline', 'Online play is not available for players under 13 on this server. Your village keeps working on this device, and nothing about you was sent.');
+          return;
+        }
+        // Compliance switches 2026-11-14 (C14): the terms of service, once, while legal-config.js dates them.
+        if (!(await this.ensureTerms())) {
+          this.setStatus('offline', 'Online play starts once you accept the terms of service: Settings → Online play → Connect now.');
+          return;
+        }
         if (!(await this.ensurePlayer(port))) return;
         await this.syncAge(port);
+        if (this.under13Offline) {
+          this.setStatus('offline', 'Online play is not available for players under 13 on this server. Your village keeps working on this device, and nothing about you was sent.');
+          return;
+        }
         await this.syncRules(port);
+        await this.syncTerms(port);
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
         // The real Grove replaces the bot Grove while playing online.
         if (g.state.grove.joined) g.dispatch({ type: 'leaveLocalGrove' });

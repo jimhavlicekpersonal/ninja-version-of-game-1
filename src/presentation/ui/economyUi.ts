@@ -22,6 +22,7 @@ import { Capacitor } from '@capacitor/core';
 
 export type { UiKit } from './uiKit';
 import type { UiKit } from './uiKit';
+import { jadeUnitPrice, jadeValueOn, jadeValueText } from './complianceUi';
 
 const usd = (n: number) => new Intl.NumberFormat(language().code, { style: 'currency', currency: 'USD' }).format(n);
 /** The device's language is Japanese (the purchase confirm then links the Japanese notices). */
@@ -150,7 +151,22 @@ export class EconomyUi {
     const pay = this.c.payments;
     if (!pay.storefront || !pay.available()) return Promise.resolve(null);
     this.storefrontCode ??= pay.storefront().catch(() => null);
+    void this.storefrontCode.then((c) => (this.storefrontKnown = c));
     return this.storefrontCode;
+  }
+  private storefrontKnown: string | null = null;
+
+  /**
+   * Compliance switches 2026-11-14 (EU CPC, audit C16): "about €0.42" beside a Jade price, from the cheapest
+   * Jade pack per Jade in this storefront, when switched on and the storefront is in the EU. Only the Store
+   * and the player's own spend confirm use it, never an offer that pops up.
+   */
+  private jadeAbout(jade: number): string | null {
+    if (!jadeValueOn() || this.c.payments.name === 'mock') return null;
+    const sp = this.storePrices;
+    const d = localizedData(this.c.data);
+    const unit = sp && typeof sp === 'object' ? jadeUnitPrice(d.store.packs.map((p) => ({ storeId: storeProductId(d, p.id), moonstones: p.moonstones })), sp) : null;
+    return jadeValueText(jade, unit, this.storefrontKnown);
   }
 
   /** Full purchase flow: age group, clear confirm step, provider, result. */
@@ -215,7 +231,9 @@ export class EconomyUi {
       if (go) this.openStore('moonstones');
       return;
     }
-    const ok = await this.kit.confirm(title, i18nText("ui.for_jade_e82ccb5ba3", { arg1: what, arg2: moonstones }), i18nText("ui.spend_f1b31dbc4d", { arg1: moonstones }), false, i18nText("ui.cancel_19766ed6cc"));
+    const about = this.jadeAbout(moonstones);
+    const text = i18nText("ui.for_jade_e82ccb5ba3", { arg1: what, arg2: moonstones });
+    const ok = await this.kit.confirm(title, about ? h('div', {}, h('p', {}, text), h('p', { class: 'muted small jade-about' }, about)) : text, i18nText("ui.spend_f1b31dbc4d", { arg1: moonstones }), false, i18nText("ui.cancel_19766ed6cc"));
     if (ok && !run()) this.kit.toast(i18nText("ui.that_did_not_work_try_again_d38eba7d01"), 'error');
   }
 
@@ -438,7 +456,8 @@ export class EconomyUi {
           void this.spendMoonstones(i18nText("ui.buy_this_look_1b89833db0"), i18nText("ui.purely_visual_19c28485fc", { arg1: skin.name }), skin.moonstones, () => this.c.dispatch({ type: 'buySkin', skin: skin.id }).ok).then(redraw);
         });
       }
-      grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, i18nText("ui.clan_keep_look_9be1099dbe")), action));
+      const about = !owned && !skin.passOnly && !skin.calendarOnly ? this.jadeAbout(skin.moonstones) : null;
+      grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, i18nText("ui.clan_keep_look_9be1099dbe")), action, about ? h('div', { class: 'muted small jade-about' }, about) : null));
     }
     return grid;
   }

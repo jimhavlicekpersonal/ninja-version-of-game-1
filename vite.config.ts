@@ -117,12 +117,26 @@ function phaserFlags(): Plugin {
   };
 }
 
+/**
+ * Compliance switches 2026-11-14 (C14): the terms of service's effective date from public/legal-config.js
+ * (`termsEffective`), so the game asks for acceptance only once the owner dates the terms ('' = draft).
+ */
+function termsEffective(): string {
+  try {
+    const m = /termsEffective:\s*'([^']*)'/.exec(readFileSync(fileURLToPath(new URL('./public/legal-config.js', import.meta.url)), 'utf8'));
+    return m && /^\d{4}-\d{2}-\d{2}$/.test(m[1]) ? m[1] : '';
+  } catch {
+    return '';
+  }
+}
+
 export default defineConfig(({ command, mode }) => ({
   // Relative paths so the same build works on GitHub Pages, any static host, and later inside Capacitor.
   base: './',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_TIME__: JSON.stringify(buildTime),
+    __TERMS_EFFECTIVE__: JSON.stringify(termsEffective()),
   },
   server: { port: 5173 },
   preview: { port: 4173 },

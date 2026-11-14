@@ -86,7 +86,9 @@ export function t(key: string, params?: Record<string, unknown>): string { retur
 export function labelText(value: string): string { return sharedLabel(value); }
 export function messageText(value: string, error = false): string { return sharedSource(value, deviceLocale(), catalogFor(deviceLocale()), error); }
 /** Authored chat remains literal. Only server-marked presets and owned lines localize. */
-export function chatText(m: { text: string; kind: string; presetId?: number }, computerAuthored = false): string {
+export function chatText(m: { text: string; kind: string; presetId?: number; withheld?: true }, computerAuthored = false): string {
+  // Compliance switches 2026-11-14 (under13-limited): the server withheld another player's free text.
+  if (m.withheld) return t('chat.presetOnly');
   if (m.presetId !== undefined && Number.isInteger(m.presetId) && PRESET_CHAT[m.presetId]) return labelText(PRESET_CHAT[m.presetId]);
   return m.kind !== 'chat' || computerAuthored ? messageText(m.text) : m.text;
 }
