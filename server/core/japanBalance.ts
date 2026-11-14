@@ -9,9 +9,13 @@
  * - paid Jade per purchase: a Jade pack's Jade, an offer's Jade contents, a Clan Stipend's Jade over all its
  *   payments (the Season Scroll holds no Jade). Jade an offer gave in place of resources that did not fit
  *   is not recorded per purchase, so it is not counted (an understatement, stated in `notes`);
- * - free Jade is spent first (terms §3): unused paid Jade = min(paid Jade, the Jade balance on the base date)
- *   for a server-held village (`ledger` up to the base date), and all paid Jade for a device-held village
- *   (its balance is unknown: conservative);
+ * - free Jade is spent first (terms §3). For a server-held village the figure is an UPPER BOUND, not a
+ *   free-first ledger walk: min(paid Jade delivered, the Jade balance on the base date) also counts free Jade
+ *   earned after the paid Jade was spent (the ledger does not tell paid from free Jade once mixed, and a moved
+ *   village's ledger does not start at zero). A device-held village counts all its paid Jade (balance unknown);
+ * - Clan Stipend Jade not yet delivered on the base date (payments still to claim: bought minus the
+ *   `command:claimStipend` ledger lines up to then) is outside the balance but owed: it is added in full
+ *   (`undeliveredStipendJade`; second verification 2026-11-14);
  * - yen value at the yen price the player paid per Jade (Apple's JPY price); purchases without a JPY price
  *   (Play does not send one) at the average of the priced ones, else the catalog USD price through
  *   `USD_RATES.JPY`; Jade with no way to value it is reported as `unpricedJade`.
@@ -39,7 +43,12 @@ export interface JapanBalanceReport {
   purchasers: number;
   purchases: number;
   paidJade: number;
+  /** An upper bound for server-held villages (see the module comment), all paid Jade for device-held ones. */
   unusedPaidJade: number;
+  /** True: `unusedPaidJade` and `unusedYen` are upper bounds, not exact free-first figures. */
+  upperBound: boolean;
+  /** Paid Clan Stipend Jade still to be delivered on the base date (included in `unusedPaidJade`). */
+  undeliveredStipendJade: number;
   /** Players whose balance came from the server's ledger; the rest count all their paid Jade. */
   serverHeldPlayers: number;
   deviceHeldPlayers: number;
@@ -75,6 +84,8 @@ function baseEnd(date: string): number {
 function twoMonthsAfter(date: string): string {
   return date.endsWith('-03-31') ? date.replace('-03-31', '-05-31') : date.replace('-09-30', '-11-30');
 }
+
+const isStipend = (ctx: ServerContext, productId: string): boolean => Boolean(ctx.data.store.stipend && productId === ctx.data.store.stipend.id);
 
 /** Jade a purchase of this product delivered as paid Jade (see the module comment). */
 function paidJadeOf(ctx: ServerContext, productId: string): number {
@@ -116,8 +127,10 @@ export async function japanBalanceReport(ctx: ServerContext, actor: string, rawD
   let valued = false;
   let unpricedJade = 0;
   let serverHeldPlayers = 0;
+  let undeliveredStipendJade = 0;
   for (const [playerId, list] of byPlayer) {
     let jade = 0;
+    let stipendJade = 0;
     let yen = 0;
     let pricedJade = 0;
     let fallbackYen = 0;
@@ -125,6 +138,7 @@ export async function japanBalanceReport(ctx: ServerContext, actor: string, rawD
     for (const p of list) {
       const j = paidJadeOf(ctx, p.productId);
       jade += j;
+      if (isStipend(ctx, p.productId)) stipendJade += j;
       const y = yenOf(p);
       if (y !== null) {
         yen += y;
@@ -136,7 +150,14 @@ export async function japanBalanceReport(ctx: ServerContext, actor: string, rawD
     }
     const balance = await ctx.repo.balanceAt(playerId, 'moonstones', baseAt);
     if (balance !== null) serverHeldPlayers++;
-    const unused = balance === null ? jade : Math.max(0, Math.min(jade, balance));
+    let unused = jade;
+    if (balance !== null) {
+      // Stipend Jade reaches the balance only as its payments are claimed; what is still to claim is owed in full.
+      const claimed = stipendJade > 0 ? Math.max(0, await ctx.repo.ledgerSumAt(playerId, 'moonstones', 'command:claimStipend', baseAt)) : 0;
+      const owed = Math.max(0, stipendJade - claimed);
+      undeliveredStipendJade += owed;
+      unused = Math.max(0, Math.min(jade - owed, balance)) + owed;
+    }
     paidJade += jade;
     unusedPaidJade += unused;
     const perJade = pricedJade > 0 ? yen / pricedJade : allPricedJade > 0 ? allYen / allPricedJade : fallbackJade > 0 ? fallbackYen / fallbackJade : null;
@@ -155,6 +176,8 @@ export async function japanBalanceReport(ctx: ServerContext, actor: string, rawD
     purchases: rows.length,
     paidJade,
     unusedPaidJade,
+    upperBound: true,
+    undeliveredStipendJade,
     serverHeldPlayers,
     deviceHeldPlayers: byPlayer.size - serverHeldPlayers,
     unusedYen: yenTotal,
@@ -164,7 +187,8 @@ export async function japanBalanceReport(ctx: ServerContext, actor: string, rawD
     depositDueYen: exceeds ? Math.ceil(yenTotal! / 2) : null,
     notifyBy: twoMonthsAfter(baseDate),
     notes: [
-      'Free Jade is counted as spent first; device-held villages count all their paid Jade (balance unknown).',
+      'Upper bound: free Jade is counted as spent first, but for server-held villages unused paid Jade is min(paid Jade delivered, the Jade balance on the base date), which also counts free Jade earned after paid Jade was spent. Device-held villages count all their paid Jade (balance unknown).',
+      'Clan Stipend Jade bought but not yet delivered on the base date is owed and counted in full (undeliveredStipendJade).',
       'Jade an offer gave in place of resources that did not fit is not counted (not recorded per purchase).',
       'Purchases from before storefronts were recorded (migration 0023) have no storefront and are not counted.',
       ...(unpricedJade ? ['Some Jade has no yen price: set USD_RATES with JPY or check the store reports.'] : []),

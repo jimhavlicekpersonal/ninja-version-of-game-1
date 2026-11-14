@@ -47,6 +47,11 @@ export class MemoryVillages extends MemoryBase implements VillageStore {
     for (const l of this.ledgerRows) if (l.playerId === playerId && l.resource === resource && l.at <= at && (!found || l.at >= found.at)) found = l;
     return found ? found.balance : null;
   }
+  async ledgerSumAt(playerId: string, resource: string, reason: string, at: number): Promise<number> {
+    let sum = 0;
+    for (const l of this.ledgerRows) if (l.playerId === playerId && l.resource === resource && l.reason === reason && l.at <= at) sum += l.delta;
+    return sum;
+  }
   async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
     return this.commandRows
       .filter((c) => c.playerId === playerId && c.seq > sinceSeq)

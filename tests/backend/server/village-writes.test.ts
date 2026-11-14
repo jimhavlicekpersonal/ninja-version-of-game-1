@@ -1,5 +1,5 @@
 /**
- * Backend A17 (2026-11-14 code-debt batch): server-held villages written in parts (migration 0038,
+ * Backend A17 (2026-11-14 code-debt batch): server-held villages written in parts (migration 0039,
  * server/stores/pg/villageParts.ts). Pure split/join checks always run; with TEST_DATABASE_URL the
  * Postgres checks show that an unchanged part is not written again, that both forms read the same village
  * and that switching VILLAGE_PARTS on or off converges, and the measurement prints what a model player's

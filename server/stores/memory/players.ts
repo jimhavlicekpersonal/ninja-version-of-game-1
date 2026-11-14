@@ -79,6 +79,9 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
   }
   async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;
+    // Growth batch 2026-11-14: referrals either way and the player's shared replays.
+    this.referralRows = this.referralRows.filter((x) => x.recruitId !== id && x.inviterId !== id);
+    this.sharedReplayRows = this.sharedReplayRows.filter((x) => x.ownerId !== id);
     for (const [k, t] of this.tickets) {
       if (t.attackerId === id) this.tickets.delete(k);
       else if (t.defenderId === id) t.defenderId = null;

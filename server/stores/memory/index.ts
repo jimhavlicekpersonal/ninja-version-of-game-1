@@ -10,11 +10,12 @@ import { MemoryVillages } from './villages';
 import { MemoryAlliances } from './alliances';
 import { MemoryFriends } from './friends';
 import { MemoryGangs } from './gangs';
+import { MemoryGrowth } from './growth';
 
 // The store classes' methods are copied onto MemoryRepo by composeStores (which refuses a name defined twice);
 // these merges give MemoryRepo their types, and `implements Repo` checks the result.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-export interface MemoryRepo extends MemoryPlayers, MemoryPurchases, MemoryOps, MemoryBattles, MemoryVillages, MemoryAlliances, MemoryFriends, MemoryGangs {}
+export interface MemoryRepo extends MemoryPlayers, MemoryPurchases, MemoryOps, MemoryBattles, MemoryVillages, MemoryAlliances, MemoryFriends, MemoryGangs, MemoryGrowth {}
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class MemoryRepo extends MemoryBase implements Repo {
@@ -81,4 +82,4 @@ export class MemoryRepo extends MemoryBase implements Repo {
   }
 }
 
-composeStores(MemoryRepo, [MemoryPlayers, MemoryPurchases, MemoryOps, MemoryBattles, MemoryVillages, MemoryAlliances, MemoryFriends, MemoryGangs]);
+composeStores(MemoryRepo, [MemoryPlayers, MemoryPurchases, MemoryOps, MemoryBattles, MemoryVillages, MemoryAlliances, MemoryFriends, MemoryGangs, MemoryGrowth]);

@@ -174,6 +174,9 @@ export class PgPlayers extends PgBase implements PlayerStore {
     await this.repo.transaction(async (tx) => {
       const q = (sql: string, vals: unknown[]) => dbOf(tx).query(sql, vals);
       await q('delete from tickets where attacker_id = $1', [id]);
+      // Growth batch 2026-11-14: referrals either way and the player's shared replays.
+      await q('delete from referrals where recruit_id = $1 or inviter_id = $1', [id]);
+      await q('delete from shared_replays where owner_id = $1', [id]);
       await q('update tickets set defender_id = null where defender_id = $1', [id]);
       await q('delete from attacks where defender_id = $1', [id]);
       await q(`update attacks set attacker_id = $2, record = record || jsonb_build_object('attackerId', $2::text, 'attackerName', $3::text) where attacker_id = $1`, [id, D.id, D.name]);

@@ -1,4 +1,4 @@
--- Migration 0038 (2026-11-14 code-debt batch, backend audit A17): parts of a server-held village kept in
+-- Migration 0039 (2026-11-14 code-debt batch, backend audit A17): parts of a server-held village kept in
 -- their own rows, so a command batch rewrites only what it changed. `villages.file` then holds the rest
 -- of the save file and lists its parts in `$parts`; each row here holds some top-level keys of
 -- `file.village` (`layout`: the buildings; `progress`: tasks, daily chest, pass, trials, research and the

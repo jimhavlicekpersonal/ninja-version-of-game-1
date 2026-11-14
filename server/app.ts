@@ -19,6 +19,7 @@ import { PromMetrics, type ServerSentry } from './observability';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
 import type { Player, Repo } from './repo';
 import { battleRoutes } from './routes/battles';
+import { growthRoutes, growthStaffRoutes } from './routes/growth';
 import { bearer, routeKit, type RateConfig } from './routes/kit';
 import { playerRoutes } from './routes/player';
 import { socialRoutes } from './routes/social';
@@ -499,6 +500,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   playerRoutes(kit);
   battleRoutes(kit);
   socialRoutes(kit);
+  growthRoutes(kit); // growth batch 2026-11-14: referrals, shared replays
 
   // Staff API: only with strong tokens, compared in constant time. Per-staff tokens (ADMIN_TOKENS) name
   // their holder in the staff log; the legacy shared ADMIN_TOKEN takes the name from x-staff-name.
@@ -534,6 +536,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     };
     const staff: StaffRoute = (method, url, spec, h) => kit.open(method, url, { ...spec, preValidation: staffGuard }, async (input) => h(actor(input.req), input));
     staffRoutes(staff, core, ({ req }) => ipEcho(req));
+    growthStaffRoutes(app, staff, core); // growth batch 2026-11-14: local days, funnel, /admin/stats
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
     app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));
   }

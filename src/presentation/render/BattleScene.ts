@@ -352,8 +352,10 @@ export class BattleScene extends Phaser.Scene {
     this.applyShot(from);
     const op: NonNullable<BattleScene['opening']> = { target, timer: null, tween: null };
     this.opening = op;
-    const finish = () => {
+    const finish = (pointer?: Phaser.Input.Pointer) => {
+      // The touch that skips the shot is only that: no deploy where it landed, no held repeat (second verification 2026-11-14).
       if (this.opening !== op) return;
+      if (pointer && typeof pointer.id === 'number') this.cam.swallow(pointer.id);
       op.timer?.remove();
       op.tween?.stop();
       this.opening = null;
@@ -373,7 +375,7 @@ export class BattleScene extends Phaser.Scene {
           // Zoom eases in log space so the glide feels even; the centre follows the zoom.
           this.applyShot({ zoom: from.zoom * Math.pow(t.zoom / from.zoom, k), x: from.x + (t.x - from.x) * k, y: from.y + (t.y - from.y) * k });
         },
-        onComplete: finish,
+        onComplete: () => finish(),
       });
     });
   }

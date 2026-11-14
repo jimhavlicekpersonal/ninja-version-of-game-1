@@ -55,6 +55,8 @@
  * - RESIM_WORKERS: re-simulation worker threads (step 57; default: CPU cores - 1,
  *   at least 1; 0 runs battles on the main thread). RESIM_QUEUE (default 200)
  *   battles may wait; more get 503 busy (the game retries).
+ * - Event schedule (growth batch 2026-11-14): EVENT_SCHEDULE_FILE, an `EventSchedule`
+ *   (src/backend/net/eventSchedule.ts) retiming the built-in events; refused at start if invalid.
  * - Balance bundles (step 76, docs/SHIPPING.md 3j): BALANCE_BUNDLE_FILE (a
  *   signed bundle made by tools/balance/bundle.mjs) and BALANCE_PUBLIC_KEY (the
  *   key games check it with). The server refuses to start with a bundle that
@@ -102,6 +104,7 @@ import { ARCHIVED_ENGINES } from './rules/archive';
 import { liveEngine, parseRetired, RulesRegistry } from './rules/registry';
 import { readFileSync } from 'node:fs';
 import { checkCohort, patchedData, verifyBundle, type BalanceBundle } from '../src/backend/net/balanceBundle';
+import { applyEventSchedule, checkEventSchedule, type EventSchedule } from '../src/backend/net/eventSchedule';
 import { SIM_RULES } from '../src/gameplay/sim/battle/battle';
 import type { GameData } from '../src/gameplay/sim/types';
 import { verifierFromEnv } from './identity/verify';
@@ -256,6 +259,16 @@ async function main(): Promise<void> {
     }
     for (const b of balanceCohorts) console.log(`Experiment arm ${b.id}: ${b.cohort!.experiment}:${b.cohort!.arm}, buckets ${b.cohort!.from}-${b.cohort!.to - 1}.`);
   }
+  // Growth batch 2026-11-14 (retention audit G10): the operators' event timing, played by the server and sent in
+  // /v1/hello; built-in events only, so a bad file stops the start like a bad balance bundle.
+  let eventSchedule: EventSchedule | null = null;
+  if (process.env.EVENT_SCHEDULE_FILE) {
+    const s = checkEventSchedule(JSON.parse(readFileSync(process.env.EVENT_SCHEDULE_FILE, 'utf8')), data.events);
+    if ('error' in s) throw new Error(`EVENT_SCHEDULE_FILE refused: ${s.error}.`);
+    eventSchedule = s;
+    data = { ...data, events: applyEventSchedule(data.events, s) };
+    console.log(`Event schedule ${s.id}: ${s.entries.length} events every ${s.periodDays} days.`);
+  }
   // Battle rules (step 73): today's, plus archived versions still in use by older games.
   const rules = new RulesRegistry(liveEngine(data), { archived: ARCHIVED_ENGINES.map((e) => e()), retired: parseRetired(process.env.RETIRED_RULES), minClientBuild: process.env.MIN_CLIENT_BUILD });
   // Re-simulation off the main thread (step 57): the same engines in each worker.
@@ -271,7 +284,7 @@ async function main(): Promise<void> {
     metrics.gauge('tk_resim_queue', () => [{ labels: {}, value: pool.queued }]);
     resim = pool;
   }
-  shared = { ...shared, payments, push, rules, balance, balanceCohorts, resim, policy: policyFromEnv(process.env) };
+  shared = { ...shared, payments, push, rules, balance, balanceCohorts, eventSchedule, resim, policy: policyFromEnv(process.env) };
   console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Re-simulation workers: ${workers || 'none (main thread)'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({

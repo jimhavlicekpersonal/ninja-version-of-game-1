@@ -276,9 +276,14 @@ export class HttpServerAdapter implements ServerPort {
   private async req<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
     let attempt = 0;
     for (;;) {
+      const used = this.tokens.get();
       try {
         return await this.once<T>(method, path, body);
       } catch (e) {
+        // Second verification 2026-11-14: sent with the old token while a rotation was adopted (`setToken` already
+        // cleared the waiting token): the refusal is about the old key only. Send it once more with today's key.
+        const current = this.tokens.get();
+        if (e instanceof ServerError && e.status === 401 && current && current !== used) return this.once<T>(method, path, body, current);
         // Backend A16: the old token was refused while a rotated one waits. The server saw the new token's first
         // use (its answer was lost), so the new one is the key now. A refused request changed nothing: send it again.
         const next = this.nextTokens.get();
@@ -425,6 +430,11 @@ export class HttpServerAdapter implements ServerPort {
 
   balance(): Promise<BalanceResponse> {
     return this.req('GET', Routes.balance);
+  }
+
+  /** Growth batch 2026-11-14: a call by route (`growth.ts` `GrowthRoutes`), used by `growthClient.ts`. */
+  call<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
+    return this.req<T>(method, path, body);
   }
 
   async hello(): Promise<HelloResponse> {

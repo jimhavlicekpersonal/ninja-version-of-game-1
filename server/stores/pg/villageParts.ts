@@ -1,6 +1,6 @@
 /**
  * Backend A17 (2026-11-14 code-debt batch): a server-held village stored in parts, so a command batch
- * rewrites only the parts it changed (migration 0038, `village_parts`). Measured with a model player
+ * rewrites only the parts it changed (migration 0039, `village_parts`). Measured with a model player
  * (tests/backend/server/village-writes.test.ts): most commands change resources, training, army or stats,
  * a collect or an upgrade the buildings, and the progress keys below change in about 3 % of commands.
  *

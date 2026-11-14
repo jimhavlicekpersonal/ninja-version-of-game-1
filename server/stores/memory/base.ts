@@ -5,6 +5,7 @@
 import type { BaseLayout } from '../../../src/gameplay/sim/battle/types';
 import type { AgeBand } from '../../../src/gameplay/sim/age';
 import type { Player, DuelRecord, DuelTally, DuelChallenge, Squad, SquadMember, SquadInvite, GangWar, GangWarAttack, GangRelay, GangQueueEntry, FriendRequest, StaffAction, Ticket, AttackRecord, Grove, GroveMember, ChatRow, StatsDailyRow, Report, Block, TroopRequest, Donation, RaidPairing, RaidAttack, RaidClaim, VillageRow, LedgerEntry, CommandLogRow, IdentityLink, PlayerNotice, TokenRow, TokenRotation, PurchaseRow, PurchaseIntent, ImportHold, Complaint, PushToken, DeletionRequest } from '../types';
+import type { InstallSummaryRow, ReferralRow, SharedReplayRow } from '../types';
 import type { Repo } from '../ports';
 
 export const clone = <T>(v: T): T => structuredClone(v);
@@ -66,6 +67,13 @@ export abstract class MemoryBase {
   statsDailyRows: StatsDailyRow[] = [];
   protected jobLeases = new Map<string, { holder: string; until: number }>();
   refundRows = new Map<string, { at: number; why: string }>();
+
+  // Growth batch 2026-11-14 (GrowthStore).
+  referralRows: ReferralRow[] = [];
+  sharedReplayRows: SharedReplayRow[] = [];
+  installTzRows: Record<string, number> = {};
+  installSummaryRows: Record<string, InstallSummaryRow> = {};
+  watermarkRows: Record<string, number> = {};
 
   /** This repo as the whole port (for calls into another store). */
   protected get repo(): Repo {

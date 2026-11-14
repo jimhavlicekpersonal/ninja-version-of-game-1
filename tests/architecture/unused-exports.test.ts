@@ -111,7 +111,6 @@ const ALLOWED = new Set<string>([
   'src/presentation/ui/hud.ts#STATS_EXPLAINER',
   'src/presentation/ui/i18n.ts#MessageRef',
   'src/presentation/ui/refusalText.ts#costWords',
-  'src/presentation/ui/reviewPrompt.ts#provideReviewHook',
   'src/presentation/ui/unlockCeremony.ts#CEREMONY_MS',
 ]);
 

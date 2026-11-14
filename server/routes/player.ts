@@ -119,6 +119,6 @@ export function playerRoutes({ open, player, core }: RouteKit): void {
 
   // Shared play statistics (report section 5 step 5): no token, and no request log line (it would hold the IP address).
   // Events stay objects here: the core keeps the shareable ones and counts the rest out.
-  open('POST', Routes.stats, { body: body(fields<StatsBatch>()({ install: string(), build: string(), arm: string(), events: array(object()) })), rate: 'stats', bodyLimit: BODY_LIMITS.base, logLevel: 'warn' }, async ({ body }) => core.postStats(body));
+  open('POST', Routes.stats, { body: body(fields<StatsBatch>()({ install: string(), build: string(), arm: string(), tz: number(), events: array(object()) })), rate: 'stats', bodyLimit: BODY_LIMITS.base, logLevel: 'warn' }, async ({ body }) => core.postStats(body));
   open('DELETE', Routes.stats, { query: query('install'), rate: 'stats', logLevel: 'warn' }, async ({ query }) => core.deleteStats(query.install));
 }

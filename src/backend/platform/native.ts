@@ -1,6 +1,6 @@
 import { sourceText } from '../../../locales/runtime';
 /** Native-only services for the iOS/Android app (Capacitor). */
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import type { Reminder } from '../../gameplay/sim/reminders';
 import type { ReminderService } from './reminders';
@@ -39,4 +39,16 @@ export class NativeReminders implements ReminderService {
     const pending = await LocalNotifications.getPending();
     if (pending.notifications.length) await LocalNotifications.cancel({ notifications: pending.notifications.map((n) => ({ id: n.id })) });
   }
+}
+
+/**
+ * Retention audit G26 (growth batch 2026-11-14): the stores' own review sheet through
+ * `@capacitor-community/in-app-review` 8 (SKStoreReviewController / Play In-App Review). Called only by
+ * `ui/reviewPrompt.ts`'s policy (after a win, rarely). Null on the web, and in an app whose native
+ * project has not been synced with the plugin yet (`npx cap sync` after `npm ci`; not compiled here).
+ */
+export function nativeReviewRequest(): (() => Promise<void>) | null {
+  if (!Capacitor.isNativePlatform() || !Capacitor.isPluginAvailable('InAppReview')) return null;
+  const plugin = registerPlugin<{ requestReview(): Promise<void> }>('InAppReview');
+  return () => plugin.requestReview();
 }

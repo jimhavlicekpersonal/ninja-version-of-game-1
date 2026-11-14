@@ -50,6 +50,10 @@ import type {
   PruneCutoffs,
   PruneResult,
   OpponentQuery,
+  ReferralRow,
+  SharedReplayRow,
+  InstallSummaryRow,
+  StatsEventRow,
 } from './types';
 
 /** Players, sessions, staff tools, account protections and deletion. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
@@ -439,15 +443,54 @@ export interface VillageStore {
   ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
   /** The balance of `resource` after the last ledger line at or before `at`; null when there is none (Japan C17 report). */
   balanceAt(playerId: string, resource: string, at: number): Promise<number | null>;
+  /** The sum of `resource` deltas of ledger lines with this `reason` at or before `at` (Japan C17: stipend Jade delivered). */
+  ledgerSumAt(playerId: string, resource: string, reason: string, at: number): Promise<number>;
   /** Oldest first, after `sinceSeq`. */
   commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]>;
+}
+
+/**
+ * Growth batch 2026-11-14: referrals (one row per recruit, both sides' reward times), shared replays (a
+ * re-simulated battle under a short code, 90 days or until deleted) and statistics summaries (time zone
+ * offsets, one summary per statistics id rebuilt by watermark). Part of `Repo`; account deletion
+ * (`deletePlayer`) removes a player's referrals either way and their shared replays.
+ */
+export interface GrowthStore {
+  addReferral(r: ReferralRow): Promise<boolean>;
+  referralOf(recruitId: string): Promise<ReferralRow | null>;
+  referralsBy(inviterId: string): Promise<ReferralRow[]>;
+  updateReferral(recruitId: string, patch: Partial<Pick<ReferralRow, 'qualifiedAt' | 'recruitRewardedAt' | 'inviterRewardedAt'>>): Promise<void>;
+  /** Inviter rewards paid since `since` (the monthly cap). */
+  inviterRewardsSince(inviterId: string, since: number): Promise<number>;
+
+  addSharedReplay(r: SharedReplayRow): Promise<boolean>;
+  /** The replay (counting a view when `view`), or null when missing or expired. */
+  getSharedReplay(id: string, now: number, view: boolean): Promise<SharedReplayRow | null>;
+  sharedReplaysOf(ownerId: string, since: number): Promise<SharedReplayRow[]>;
+  deleteSharedReplay(id: string, ownerId: string): Promise<boolean>;
+  pruneSharedReplays(before: number): Promise<number>;
+
+  setInstallTz(install: string, tz: number, at: number): Promise<void>;
+  /** Statistics ids with events received after `after`, oldest first, and the newest receipt time among them. */
+  statsTouched(after: number, limit: number): Promise<{ installs: string[]; maxReceived: number }>;
+  statsEventsOf(installs: string[]): Promise<StatsEventRow[]>;
+  installTzs(installs: string[]): Promise<Map<string, number>>;
+  putInstallSummaries(rows: InstallSummaryRow[]): Promise<void>;
+  /** Summaries whose first day (on that basis) is in [fromDay, toDay]. */
+  installSummaries(basis: 'utc' | 'local', fromDay: number, toDay: number): Promise<InstallSummaryRow[]>;
+  getWatermark(name: string): Promise<number>;
+  setWatermark(name: string, value: number): Promise<void>;
+  /** Sharing turned off: the id's summary and offset go with its events. */
+  deleteInstall(install: string): Promise<void>;
+  pruneInstalls(firstBefore: number): Promise<number>;
+
 }
 
 /**
  * Storage port of the server core: every aggregate store plus transactions and housekeeping. New methods go in
  * the aggregate they belong to; core modules can depend on the narrower store they need.
  */
-export interface Repo extends PlayerStore, PurchaseStore, OpsStore, BattleStore, SocialStore, VillageStore {
+export interface Repo extends PlayerStore, PurchaseStore, OpsStore, BattleStore, SocialStore, VillageStore, GrowthStore {
   // transactions, locks, periodic jobs and idempotent answers (cross-cutting)
   /**
    * Serialise a player's purchase intents (GLOBAL-004): inside a transaction,

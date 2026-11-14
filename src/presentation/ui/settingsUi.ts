@@ -143,6 +143,7 @@ export class SettingsUi {
         h('label', { class: 'toggle' }, statsToggle, i18nText("ui.share_play_statistics_off_until_you_tu_5b3ea7662c")),
         h('p', { class: 'muted small' }, statsExplainer()),
       );
+      if (this.deps.statsTzNote) body.append(h('p', { class: 'muted small' }, t('stats.tzNote')));
     }
 
     // Account: online play, age group and spending

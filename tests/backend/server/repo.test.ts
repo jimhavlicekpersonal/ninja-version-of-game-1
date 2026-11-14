@@ -175,6 +175,8 @@ for (const [label, make] of repoFactories) {
       expect(await repo.balanceAt('a', 'acorns', T + 5)).toBe(900);
       expect(await repo.balanceAt('a', 'acorns', T + 4)).toBeNull();
       expect(await repo.balanceAt('a', 'moonstones', T + 5)).toBeNull();
+      expect(await repo.ledgerSumAt('a', 'acorns', 'command:upgrade', T + 5)).toBe(-100);
+      expect(await repo.ledgerSumAt('a', 'acorns', 'command:upgrade', T + 4)).toBe(0);
       expect((await repo.commandsOf('a', 1, 10)).map((c) => [c.seq, c.ok, c.error])).toEqual([
         [2, true, null],
         [3, false, 'NOTHING_TO_COLLECT'],

@@ -132,6 +132,8 @@ export interface ConnectionOptions {
   /** The community rules version accepted on this device (0: none); sent to the server (report section 5 step 7). */
   rulesAccepted?: () => number;
   balance?: { offer(b: import('./balanceBundle').BalanceBundle | null, arms?: import('./balanceBundle').BalanceBundle[]): Promise<string> };
+  /** Growth batch 2026-11-14 (G10): the server's event schedule from hello (`EventScheduleLoader`). */
+  events?: { offer(raw: unknown): string };
   /** Where "Update Kagemura" sends the player (the App Store / Play listing); the web build reloads instead. */
   updateUrl?: string;
   log?: (msg: string, err?: unknown) => void;
@@ -346,7 +348,9 @@ export class Connection {
   }
   /** The sign-ins linked to this account (to offer importing that platform's friends). */
   async linkedProviders(): Promise<LinkProvider[]> {
-    return (await this.port_().links()).links.map((l) => l.provider);
+    const list = (await this.port_().links()).links.map((l) => l.provider);
+    if (list.length) this.kv.set(this.linkedKey, '1');
+    return list;
   }
   /** Step 61: which of these platform friends play Kagemura (ids read on the device, with the player's permission). */
   async platformFriends(provider: 'gamecenter' | 'playgames', ids: string[]): Promise<PlayerCard[]> {
@@ -558,6 +562,8 @@ export class Connection {
     for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'account_deleted' });
     this.saveOutbox([]);
     this.kv.set(NAME_KEY, null);
+    this.kv.set(this.signOutPendingKey, null);
+    this.kv.set(this.linkedKey, null);
     Connection.choose('off', this.kv);
     this.player = null;
     this.setStatus('off');
@@ -677,20 +683,35 @@ export class Connection {
    */
   async signInNonce(provider: LinkProvider): Promise<string | undefined> {
     if (provider !== 'apple' && provider !== 'google') return undefined;
+    if (!this.server?.features.includes('signin-nonce')) return undefined;
     const ready = this.nonceAhead;
     this.nonceAhead = null;
-    if (ready && ready.expiresAt - 60_000 > Date.now()) return ready.nonce;
-    return (await this.fetchNonce())?.nonce;
+    try {
+      if (ready && ready.expiresAt - 60_000 > Date.now()) return ready.nonce;
+      return (await this.fetchNonce())?.nonce;
+    } finally {
+      // Second verification 2026-11-14: every nonce is used once, so the next try (a cancelled or failed sign-in
+      // tapped again) needs a fresh one in hand, or Safari blocks the Apple popup that waited for the network.
+      this.prefetchSignInNonce();
+    }
   }
 
   /** Fetch a sign-in nonce ahead of the tap that needs it (see `signInNonce`). */
   prefetchSignInNonce(): void {
     if (this.nonceAhead && this.nonceAhead.expiresAt - 60_000 > Date.now()) return;
-    void this.fetchNonce().then((n) => {
-      // The device's own clock (the server's `expiresAt` is on the server's clock): a nonce lives 10 minutes there.
-      if (n) this.nonceAhead = { nonce: n.nonce, expiresAt: Date.now() + 9 * 60_000 };
-    });
+    if (this.nonceFetching) return;
+    this.nonceFetching = true;
+    void this.fetchNonce()
+      .then((n) => {
+        // The device's own clock (the server's `expiresAt` is on the server's clock): a nonce lives 10 minutes there.
+        if (n) this.nonceAhead = { nonce: n.nonce, expiresAt: Date.now() + 9 * 60_000 };
+      })
+      .finally(() => {
+        this.nonceFetching = false;
+      });
   }
+
+  private nonceFetching = false;
 
   private nonceAhead: { nonce: string; expiresAt: number } | null = null;
 
@@ -722,7 +743,36 @@ export class Connection {
     if (!this.server?.features.includes('session-control') || !port.signOutDevice) throw new Error('This server cannot sign out this device yet.');
     // Reports and actions waiting here belong to this account: send them while the token still works.
     await this.flush().catch(() => undefined);
-    await port.signOutDevice();
+    // Second verification 2026-11-14: the server may sign this device out and the answer still be lost. The mark
+    // makes the next 401 finish the sign-out here instead of quietly registering a new player (`ensurePlayer`).
+    this.kv.set(this.signOutPendingKey, '1');
+    try {
+      await port.signOutDevice();
+    } catch (e) {
+      // The key is refused already: an earlier sign-out landed though its answer was lost. Finish it here.
+      if (e instanceof ServerError && e.code === 'unauthorized') {
+        this.signedOutHere();
+        return;
+      }
+      // A refusal (409: the last key) changed nothing on the server; a lost answer may have signed it out.
+      if (e instanceof ServerError && !e.retryable) this.kv.set(this.signOutPendingKey, null);
+      throw e;
+    }
+    this.signedOutHere();
+  }
+
+  private get signOutPendingKey(): string {
+    return `tk.net.signOutPending:${this.url}`;
+  }
+
+  /** Set once this account had a sign-in linked here (link, sign-in, or a links answer listing one). */
+  private get linkedKey(): string {
+    return `tk.net.linked:${this.url}`;
+  }
+
+  /** Online play off on this device as after a sign-out: the account stays on the server for a linked sign-in. */
+  private signedOutHere(): void {
+    this.port?.forgetIdentity?.();
     this.stop();
     this.village?.reset();
     this.village?.stop();
@@ -730,6 +780,8 @@ export class Connection {
     for (const r of g.state.battleLog) if (r.settlement === 'pending' && r.ticket) g.dispatch({ type: 'settleOnlineAttack', ticket: r.ticket, rejected: 'signed_out' });
     this.saveOutbox([]);
     this.kv.set(`tk.net.rotatedAt:${this.url}`, null);
+    this.kv.set(this.signOutPendingKey, null);
+    this.kv.set(this.linkedKey, null);
     Connection.choose('off', this.kv);
     this.player = null;
     this.setStatus('off');
@@ -804,6 +856,7 @@ export class Connection {
   async link(provider: LinkProvider, credential: LinkCredential): Promise<void> {
     if (!this.port) throw new Error('No server configured.');
     await this.port.link(provider, credential);
+    this.kv.set(this.linkedKey, '1');
     this.emit();
   }
 
@@ -818,6 +871,8 @@ export class Connection {
     if (!this.port) throw new Error('No server configured.');
     await this.flush();
     await this.port.signIn(provider, credential, 'game');
+    this.kv.set(this.linkedKey, '1');
+    this.kv.set(this.signOutPendingKey, null);
     this.village?.reset();
     this.player = null;
     this.status = 'connecting';
@@ -909,12 +964,14 @@ export class Connection {
           const what = await this.o.balance.offer(offered?.bundle ?? null, offered?.cohorts ?? []);
           if (what === 'refused') this.log('Online play: the server offered a balance bundle this game refused');
         }
+        // Growth batch 2026-11-14 (G10): the event timing the server plays, before the village syncs.
+        if (this.o.events && this.o.events.offer(this.server.features.includes('event-schedule') ? this.server.events : undefined) === 'refused') this.log('Online play: the server sent an event schedule this game refused');
         // Re-audit: the age band is known before this device registers or goes online.
         if (!(await this.ensureAge())) {
           this.setStatus('offline', 'Online play starts once you tell us your age: Settings → Online play → Connect now.');
           return;
         }
-        await this.ensurePlayer(port);
+        if (!(await this.ensurePlayer(port))) return;
         await this.syncAge(port);
         await this.syncRules(port);
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
@@ -982,19 +1039,33 @@ export class Connection {
     }
   }
 
-  private async ensurePlayer(port: ServerPort): Promise<void> {
+  /** False when this device turned out to be signed out (online play is off then; nothing was registered). */
+  private async ensurePlayer(port: ServerPort): Promise<boolean> {
     if (port.hasIdentity()) {
       try {
         this.player = await port.me();
-        return;
+        // The token still works: a sign-out whose answer was lost never reached the server.
+        this.kv.set(this.signOutPendingKey, null);
+        return true;
       } catch (e) {
         if (!(e instanceof ServerError) || e.code !== 'unauthorized') throw e;
-        // The server forgot us (new database): start a new player there.
+        // Second verification 2026-11-14: a sign-out the server carried out (its answer lost), or a key revoked for
+        // an account with a linked sign-in (unlink, "sign out other devices"): this device is signed out. Registering
+        // would quietly hand the player a new, empty account; the linked one comes back through a sign-in.
+        if (this.kv.get(this.signOutPendingKey) || this.kv.get(this.linkedKey)) {
+          this.log('Online play: this device was signed out of its online account');
+          this.signedOutHere();
+          return false;
+        }
+        // An anonymous account the server forgot (new database): start a new player there.
       }
     }
     await port.register(this.name);
+    this.kv.set(this.linkedKey, null);
+    this.kv.set(this.signOutPendingKey, null);
     this.player = await port.me();
     this.kv.set(NAME_KEY, this.player.name);
+    return true;
   }
 
   /** Share the village layout so other players can attack it. */

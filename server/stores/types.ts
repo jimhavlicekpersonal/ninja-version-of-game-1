@@ -714,3 +714,54 @@ export interface OpponentQuery {
   /** Backend A19: the honor to search outward from (Postgres keeps the `limit` nearest); the middle of the window if absent. */
   pivot?: number;
 }
+
+// Growth batch 2026-11-14 (retention audit G13/G14, growth 1/3): referrals, shared replays, statistics summaries.
+
+export interface ReferralRow {
+  recruitId: string;
+  inviterId: string;
+  at: number;
+  /** When the server saw the recruit's server-held village at the needed Keep (null: not yet). */
+  qualifiedAt: number | null;
+  recruitRewardedAt: number | null;
+  inviterRewardedAt: number | null;
+}
+
+export interface SharedReplayRow {
+  id: string;
+  ownerId: string | null;
+  at: number;
+  expiresAt: number;
+  rules: number;
+  dataVersion: string;
+  /** `SharedReplayView` without `id`/`views` (protocol `growth.ts`). */
+  record: unknown;
+  views: number;
+}
+
+/** One statistics id's summary, by both day bases (UTC and the id's own UTC offset). */
+export interface InstallSummaryRow {
+  install: string;
+  arm: string;
+  firstAt: number;
+  /** Minutes east of UTC the id reported (null: never; then local days are UTC days). */
+  tz: number | null;
+  firstDayUtc: number;
+  firstDayLocal: number;
+  daysUtc: number[];
+  daysLocal: number[];
+  tutorialDone: boolean;
+  /** Highest tutorial step reached (0: none). */
+  tutorialMax: number;
+  firstRaidAt: number | null;
+  firstPurchaseAt: number | null;
+  updatedAt: number;
+}
+
+export interface StatsEventRow {
+  install: string;
+  name: string;
+  at: number;
+  props: Record<string, unknown>;
+  arm: string;
+}

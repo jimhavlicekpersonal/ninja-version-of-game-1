@@ -60,6 +60,11 @@ export interface ServerContext {
   /** Chat and chosen names need the current community rules accepted (report section 5 step 7); false only in tools. */
   requireRules?: boolean;
   balanceCohorts?: import('../../src/backend/net/balanceBundle').BalanceBundle[];
+  /**
+   * Growth batch 2026-11-14 (retention audit G10): the operators' event schedule (EVENT_SCHEDULE_FILE),
+   * already played by `data` and `rules`; `/v1/hello` sends it as `events`. Null: the built-in schedule.
+   */
+  eventSchedule?: import('../../src/backend/net/eventSchedule').EventSchedule | null;
   now(): number;
   /** Unique ids. */
   uuid(): string;

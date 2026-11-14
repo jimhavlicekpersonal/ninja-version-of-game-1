@@ -97,7 +97,7 @@ export function pgPoolSettings(env: Record<string, string | undefined>, opts: { 
 }
 
 /**
- * How the Postgres adapter writes (PgRepo `options`). VILLAGE_PARTS=1 (backend A17, migration 0038): write
+ * How the Postgres adapter writes (PgRepo `options`). VILLAGE_PARTS=1 (backend A17, migration 0039): write
  * server-held villages in parts, so a command batch rewrites only what it changed. Off by default: switch
  * it on once every instance runs a build that reads parts (this one and later), and switch it off again
  * (each village is then written whole at its next batch) before rolling back to an older build.

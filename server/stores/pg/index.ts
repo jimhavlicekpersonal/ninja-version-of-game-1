@@ -15,13 +15,14 @@ import { PgVillages } from './villages';
 import { PgAlliances } from './alliances';
 import { PgFriends } from './friends';
 import { PgGangs } from './gangs';
+import { PgGrowth } from './growth';
 
 let savepoints = 0;
 
 // The store classes' methods are copied onto PgRepo by composeStores (which refuses a name defined twice);
 // these merges give PgRepo their types, and `implements Repo` checks the result.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-export interface PgRepo extends PgPlayers, PgPurchases, PgOps, PgBattles, PgVillages, PgAlliances, PgFriends, PgGangs {}
+export interface PgRepo extends PgPlayers, PgPurchases, PgOps, PgBattles, PgVillages, PgAlliances, PgFriends, PgGangs, PgGrowth {}
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class PgRepo extends PgBase implements Repo {
@@ -135,4 +136,4 @@ export class PgRepo extends PgBase implements Repo {
   }
 }
 
-composeStores(PgRepo, [PgPlayers, PgPurchases, PgOps, PgBattles, PgVillages, PgAlliances, PgFriends, PgGangs]);
+composeStores(PgRepo, [PgPlayers, PgPurchases, PgOps, PgBattles, PgVillages, PgAlliances, PgFriends, PgGangs, PgGrowth]);
