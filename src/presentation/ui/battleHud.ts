@@ -20,7 +20,10 @@ import { clear, h, icon } from './dom';
 import { formatNumber } from './format';
 import { icons } from './icons';
 import { sound } from '../audio/sound';
-import { celebrate, countUp, reducedMotion, uiArt } from './feedback';
+import { celebrate, countUp, reducedMotion, removeWithExit, uiArt } from './feedback';
+import { layoutChevrons } from './chevronLayout';
+import { cardBadge } from './cardArt';
+import { noteBattleResult } from './reviewPrompt';
 
 export interface BattleHudDeps {
   root: HTMLElement;
@@ -94,6 +97,7 @@ export class BattleHud {
   private interval = 0;
   private finished = false;
   private lastStars = -1;
+  private lootSig = '';
   /** The map, once the scene is up: point positions for the chevrons, path highlight, refit. */
   private view: BattleView | null = null;
   private chevronsEl = h('div', { class: 'b-chevrons' });
@@ -112,10 +116,16 @@ export class BattleHud {
     const left = h(
       'div',
       { class: 'panel b-left' },
-      h('div', { class: 'b-name' }, h('bdi', {}, baseName), h('span', { class: 'level' }, i18nText("ui.lv_445f51ab9e", { arg1: this.s.setup.base.hallLevel }))),
+      h(
+        'button',
+        { class: 'b-name', type: 'button', 'aria-expanded': 'true', 'aria-controls': 'b-left-more', onclick: () => this.toggleCard() },
+        h('bdi', {}, baseName),
+        h('span', { class: 'level' }, i18nText("ui.lv_445f51ab9e", { arg1: this.s.setup.base.hallLevel })),
+        h('span', { class: 'b-caret', 'aria-hidden': 'true' }),
+      ),
       h(
         'div',
-        { class: 'muted small' },
+        { class: 'muted small b-more', id: 'b-left-more' },
         this.s.mode === 'replay'
           ? deps.replayOf?.kind === 'defense'
             ? i18nText("ui.replay_attacks_loot_taken_cfa170965c", { arg1: isolateName(deps.replayOf.opponentName) })
@@ -134,7 +144,7 @@ export class BattleHud {
       ),
       h(
         'div',
-        { class: 'b-row' },
+        { class: 'b-row b-more' },
         deps.grove || deps.practice || deps.special ? '' : deps.trial ? h('div', { class: 'small' }, deps.trial.firstClear ? i18nText("ui.first_clear_reward_c327c47a58") : i18nText("ui.reward_already_claimed_7d7dd827b4"), deps.trial.firstClear ? lootChips(deps.trial.reward) : '') : this.lootEl,
         this.s.mode !== 'replay' && !deps.grove && !deps.trial && !deps.special && this.s.setup.base.trophies !== undefined
           ? h(
@@ -146,6 +156,8 @@ export class BattleHud {
           : null,
       ),
     );
+    this.leftEl = left;
+    this.setCardOpen(BattleHud.cardOpenByDefault());
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
     this.coachEl.hidden = true;
     root.dataset.mode = this.s.mode;
@@ -159,6 +171,43 @@ export class BattleHud {
     }
     this.tick();
     this.interval = window.setInterval(() => this.tick(), 100);
+  }
+
+  private leftEl!: HTMLElement;
+
+  /**
+   * Art audit F4: on a narrow or short phone the opponent card took a fifth of the screen. It folds to one line (name
+   * and Keep level); a tap shows what can be won. The player's choice is remembered on the device.
+   */
+  static cardOpenByDefault(): boolean {
+    try {
+      const v = localStorage.getItem('tk.oppCard');
+      if (v === 'open' || v === 'closed') return v === 'open';
+    } catch {
+      /* storage blocked: decide by size */
+    }
+    return window.innerWidth > 400 && window.innerHeight > 480;
+  }
+
+  private setCardOpen(open: boolean): void {
+    this.leftEl.classList.toggle('collapsed', !open);
+    this.leftEl.querySelector('.b-name')?.setAttribute('aria-expanded', String(open));
+  }
+
+  private toggleCard(): void {
+    const open = this.leftEl.classList.contains('collapsed');
+    this.setCardOpen(open);
+    try {
+      localStorage.setItem('tk.oppCard', open ? 'open' : 'closed');
+    } catch {
+      /* this battle only */
+    }
+    // The free area changed: the toasts move and, before the first deploy, the camera frames the points again.
+    window.requestAnimationFrame(() => {
+      this.placeToasts();
+      this.chevronSig = '';
+      if (this.s.mode === 'scout' || !this.s.deployments.length) this.view?.fit();
+    });
   }
 
   destroy(): void {
@@ -224,8 +273,8 @@ export class BattleHud {
     const a = this.safeArea();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const L = a.left + 26;
-    const R = vw - a.right - 26;
+    const L = a.left + 36;
+    const R = vw - a.right - 36;
     const T = a.top + 22;
     const B = vh - a.bottom - 22;
     const cx = (L + R) / 2;
@@ -238,23 +287,25 @@ export class BattleHud {
       const k = Math.min(dx ? (dx > 0 ? R - cx : L - cx) / dx : Infinity, dy ? (dy > 0 ? B - cy : T - cy) / dy : Infinity, 1);
       return { e, x: Math.round(cx + dx * k), y: Math.round(cy + dy * k), deg: Math.round((Math.atan2(dy, dx) * 180) / Math.PI) };
     });
-    const sig = JSON.stringify(items.map((i) => [i.e.index, i.e.left, i.x, i.y, i.deg]));
+    // Art audit F8: points in the same direction share one chevron, and the rest are spread along their edge.
+    const laid = layoutChevrons(items.map((i) => ({ item: i, x: i.x, y: i.y })), { left: L, right: R, top: T, bottom: B });
+    const sig = JSON.stringify(laid.map((c) => [c.items.map((i) => [i.e.index, i.e.left]), c.x, c.y, c.items[0].deg]));
     if (sig === this.chevronSig) return;
     this.chevronSig = sig;
     this.chevronsEl.replaceChildren(
-      ...items.map(({ e, x, y, deg }) =>
+      ...laid.map(({ items: group, x, y }) =>
         h(
           'button',
           {
-            class: 'entry-chevron',
+            class: `entry-chevron${group.length > 1 ? ' merged' : ''}`,
             type: 'button',
             style: `left:${x}px;top:${y}px`,
-            'aria-label': t('battle.offscreen', { label: pointLabel(e.label), left: e.left }),
-            onclick: () => this.view?.showPoint(e.index),
+            'aria-label': i18nList(group.map(({ e }) => t('battle.offscreen', { label: pointLabel(e.label), left: e.left }))),
+            onclick: () => this.view?.showPoint(group[0].e.index),
           },
-          h('span', { class: 'chev-arrow', style: `transform:rotate(${deg}deg)`, 'aria-hidden': 'true' }, '➤'),
-          h('b', {}, pointLabel(e.label)),
-          h('span', { class: 'chev-left' }, String(e.left)),
+          h('span', { class: 'chev-arrow', style: `transform:rotate(${group[0].deg}deg)`, 'aria-hidden': 'true' }, '➤'),
+          h('b', {}, group.map(({ e }) => pointLabel(e.label)).join('·')),
+          h('span', { class: 'chev-left' }, String(group.reduce((a, { e }) => a + e.left, 0))),
         ),
       ),
     );
@@ -389,7 +440,8 @@ export class BattleHud {
           'aria-label': `${t('battle.pointAria', { label: pointLabel(p.label), defenses: p.defenses })}${p.antiAir ? i18nText("ui.message_eb55276313", { arg1: t('battle.antiAir') }) : ''}${p.splash ? i18nText("ui.message_eb55276313", { arg1: t('battle.splash') }) : ''}`,
         },
         h('b', {}, pointLabel(p.label)),
-        ` ${p.defenses}${p.antiAir ? i18nText("ui.aa_9b915ac88a") : ''}${p.splash ? i18nText("ui.splash_a2ac5c3472") : ''}`,
+        // Art audit F16: the words themselves ("anti-air", "splash"), never the jargon "AA" that only the label spelled out.
+        ` ${[String(p.defenses), p.antiAir ? t('battle.antiAir') : '', p.splash ? t('battle.splash') : ''].filter(Boolean).join(' · ')}`,
       );
       b.addEventListener('click', () => {
         this.pathChip = on ? null : p.label;
@@ -479,11 +531,13 @@ export class BattleHud {
     for (const [type, total] of [...hero, ...Object.entries(this.s.setup.army).sort(([a], [b]) => (a === 'saboteur' ? -1 : b === 'saboteur' ? 1 : 0))]) {
       if (total <= 0) continue;
       const left = this.s.sim.remaining[type] ?? 0;
-      const thumb = this.deps.troopThumb(type);
+      // Art audit F12: the warrior's badge reads at card size; the dark field sprite did not (the hero keeps its sprite).
+      const badge = cardBadge(type);
+      const thumb = badge ?? this.deps.troopThumb(type);
       const def = localizedData(this.s.data).troops[type] ?? localizedData(this.s.data).battle.heroes?.[type];
       const card = h(
         'button',
-        { class: `troop-card${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}${hero.length && type === hero[0][0] ? ' hero' : ''}`, type: 'button', 'aria-label': def?.name ?? type, 'data-type': type, title: def?.description ?? type },
+        { class: `troop-card${badge ? ' badge-art' : ''}${this.selected === type ? ' on' : ''}${left <= 0 ? ' empty' : ''}${hero.length && type === hero[0][0] ? ' hero' : ''}`, type: 'button', 'aria-label': def?.name ?? type, 'data-type': type, title: def?.description ?? type },
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('span', { class: 'troop-count' }, `×${left}`),
       );
@@ -522,8 +576,13 @@ export class BattleHud {
     const remaining: Cost = {};
     const all = totalLoot(this.s.setup.base);
     for (const k of Object.keys(all) as ResourceKind[]) remaining[k] = Math.max(0, (all[k] ?? 0) - (sim.loot[k] ?? 0));
-    clear(this.lootEl);
-    this.lootEl.append(lootChips(this.s.mode === 'replay' ? sim.loot : remaining));
+    // Audit M10: rebuilt only when a number changes (it was every 100 ms).
+    const shown = this.s.mode === 'replay' ? sim.loot : remaining;
+    const lootSig = RESOURCE_KINDS.map((k) => shown[k] ?? 0).join();
+    if (lootSig !== this.lootSig) {
+      this.lootSig = lootSig;
+      this.lootEl.replaceChildren(lootChips(shown));
+    }
     if (this.s.mode === 'live') {
       // Keep troop counts fresh without rebuilding on every tick.
       this.troopsEl.querySelectorAll<HTMLElement>('.troop-card').forEach((el) => {
@@ -622,7 +681,15 @@ export class BattleHud {
     );
     this.modal(title, body, [
       { label: t('battle.watchReplay'), onClick: () => this.deps.onReplay() },
-      { label: t('battle.returnHome'), primary: true, onClick: () => this.deps.onHome() },
+      {
+        label: t('battle.returnHome'),
+        primary: true,
+        onClick: () => {
+          // Retention audit G26: a real raid's win may be followed by the store's review sheet (rarely; reviewPrompt.ts).
+          if (!this.deps.grove && !this.deps.trial && !this.deps.practice && !this.deps.special && !this.deps.replayOf) noteBattleResult(r.stars > 0, !this.deps.coach);
+          this.deps.onHome();
+        },
+      },
     ], false);
   }
 
@@ -692,7 +759,7 @@ export class BattleHud {
 
   private modal(title: string, body: HTMLElement, buttons: { label: string; primary?: boolean; danger?: boolean; onClick: () => void }[], closable = true): () => void {
     const backdrop = h('div', { class: 'modal-backdrop' });
-    const close = () => backdrop.remove();
+    const close = () => removeWithExit(backdrop);
     const foot = h('div', { class: 'modal-foot' });
     for (const b of buttons) foot.append(h('button', { class: `btn${b.primary ? ' primary' : ''}${b.danger ? ' danger' : ''}`, type: 'button', onclick: b.onClick }, b.label));
     backdrop.append(

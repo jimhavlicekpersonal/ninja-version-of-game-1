@@ -4,6 +4,7 @@ import type { Analytics } from '../../backend/analytics/events';
 import type { GameController } from '../../gameplay/control/controller';
 import type { VillageState } from '../../gameplay/sim/types';
 import { trainingSkipQuote } from '../../gameplay/sim/village';
+import { chestReady } from '../../gameplay/sim/daily';
 import { buildingOnScreen, type ScreenRect } from '../render/anchors';
 import { clear, h, icon } from './dom';
 import { uiArt, type SenseiMood } from './feedback';
@@ -21,6 +22,10 @@ interface Step {
   done?: (s: VillageState, c: GameController) => boolean;
   button?: string | (() => string);
   mood?: SenseiMood;
+  /** A second line under the text, when it applies. */
+  extra?: (s: VillageState, c: GameController) => string;
+  /** Pressing the step's button also does this (after the step ends). */
+  after?: (c: GameController) => void;
 }
 
 const HALL = 'elder_toadstool';
@@ -94,8 +99,21 @@ const STEPS: Step[] = [
     done: (s) => s.battleLog.some((r) => r.kind === 'attack'),
     mood: 'stern',
   },
-  { id: 'end', text: () => t('tutorial.end'), button: () => t('tutorial.end.button'), mood: 'smile' },
+  {
+    id: 'end',
+    text: () => t('tutorial.end'),
+    button: () => t('tutorial.end.button'),
+    mood: 'smile',
+    // Retention audit G6: the last step points at the daily chest (and Finish opens it while it is ready).
+    targets: ['.side-rail .round-btn[data-id="daily"]'],
+    extra: (s, c) => (chestReady(s, c.now(), localizedData(c.data)) ? t('tutorial.end.daily') : ''),
+    after: (c) => {
+      if (chestReady(c.state, c.now(), localizedData(c.data))) document.querySelector<HTMLElement>('.side-rail .round-btn[data-id="daily"]:not([hidden])')?.click();
+    },
+  },
 ];
+
+const overlaps = (a0: number, a1: number, b0: number, b1: number) => a0 < b1 && b0 < a1;
 
 /** Guided first steps. Points at buttons and moves on when the player has done each thing. */
 export class Tutorial {
@@ -161,15 +179,19 @@ export class Tutorial {
     const actions = h('div', { class: 'tut-actions' }, i < STEPS.length - 1 ? skip : '');
     if (step.button) {
       const b = h('button', { class: 'btn primary', type: 'button' }, typeof step.button === 'function' ? step.button() : step.button);
-      b.addEventListener('click', () => this.go(i + 1));
+      b.addEventListener('click', () => {
+        this.go(i + 1);
+        step.after?.(this.c);
+      });
       actions.append(b);
     }
     this.text = h('p', {}, this.stepText(step));
+    const extra = step.extra?.(this.c.state, this.c);
     // Sensei Hoshi's portrait from the ART compartment when the composition root provided it (re-audit item 14).
     const face = h('div', { class: 'tut-face' });
     if (uiArt.senseiPortrait) face.innerHTML = uiArt.senseiPortrait(step.mood ?? 'calm');
     else face.append(icon(icons.toadstool));
-    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, actions));
+    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions));
   }
 
   private stepText(step: Step): string {
@@ -201,7 +223,7 @@ export class Tutorial {
       this.ring.hidden = true;
       return;
     }
-    this.place();
+    this.place(typeof step.mapTarget === 'function' ? step.mapTarget(this.c.state) : step.mapTarget);
     // Point at the first visible target, else at the building on the map.
     let r: ScreenRect | null = null;
     const targets = typeof step.targets === 'function' ? step.targets(this.c.state) : step.targets ?? [];
@@ -232,7 +254,7 @@ export class Tutorial {
    * Keep the bubble off what the player needs: at the bottom while a sheet or panel is open (the Build/Attack bar is
    * not needed then); otherwise under the top bar and its event line, and clear of the side rail.
    */
-  private place(): void {
+  private place(mapTarget?: string | null): void {
     const sheet = document.querySelector('#hud .sheet:not([hidden])');
     const low = Boolean(document.querySelector('.modal-backdrop')) || Boolean(sheet);
     this.bubble.classList.toggle('low', low);
@@ -250,11 +272,23 @@ export class Tutorial {
     const below = Math.max(0, ...rows.map((e) => e.getBoundingClientRect().bottom));
     const rail = document.querySelector('#hud .side-rail:not([hidden])')?.getBoundingClientRect();
     const vw = window.innerWidth;
-    const right = rail && rail.width ? vw - rail.left + 6 : 12;
-    st.top = `${Math.round(below + 8)}px`;
-    st.left = '12px';
+    // Clear of the rail on whichever side it is (right-to-left languages put it on the left).
+    const railLeft = Boolean(rail && rail.width && rail.left < vw / 2);
+    const right = rail && rail.width && !railLeft ? vw - rail.left + 6 : 12;
+    st.left = railLeft ? `${Math.round(rail!.right + 6)}px` : '12px';
     st.right = `${Math.round(right)}px`;
     st.width = 'auto';
     st.transform = 'none';
+    // Art audit F13: on a phone the bubble under the top bar covered the Keep on the very first frame. When it would
+    // cover the building this step is about (the Keep otherwise), it sits just above the bottom buttons instead.
+    const top = Math.round(below + 8);
+    st.top = `${top}px`;
+    const target = buildingOnScreen(mapTarget ?? HALL);
+    const height = this.bubble.getBoundingClientRect().height;
+    const bar = document.querySelector('#hud .hud-bottom:not([hidden])')?.getBoundingClientRect();
+    if (target && height && bar && overlaps(top, top + height, target.top, target.top + target.height)) {
+      const low = Math.round(bar.top - height - 10);
+      if (low > top && !overlaps(low, low + height, target.top, target.top + target.height)) st.top = `${low}px`;
+    }
   }
 }

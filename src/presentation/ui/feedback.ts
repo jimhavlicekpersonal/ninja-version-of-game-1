@@ -38,6 +38,27 @@ export function reducedMotion(): boolean {
   }
 }
 
+/** Longest exit animation (`.modal-backdrop.out` in styles.css): the element goes even if no animationend arrives. */
+export const EXIT_MS = 200;
+
+/**
+ * Remove a dialog backdrop with its exit motion (art audit F10: dialogs popped in but vanished in one frame). It is
+ * marked `.out` at once (no longer the top dialog, no taps); with reduced motion it goes immediately.
+ */
+export function removeWithExit(el: HTMLElement): void {
+  if (el.classList.contains('out')) return;
+  el.classList.add('out');
+  if (reducedMotion() || !el.isConnected) {
+    el.remove();
+    return;
+  }
+  const done = () => el.remove();
+  el.addEventListener('animationend', (e) => {
+    if (e.target === el) done();
+  });
+  window.setTimeout(done, EXIT_MS);
+}
+
 /** Sound and haptics for the big moments of a result screen. */
 export function celebrate(moment: 'star' | 'victory' | 'defeat' | 'perfect'): void {
   if (moment === 'star') {

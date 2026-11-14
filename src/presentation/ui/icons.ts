@@ -82,6 +82,13 @@ export const icons = {
       '<path d="M4.4 19.6l.8-.8M19.6 19.6l-.8-.8" stroke="#c8402f" stroke-width="1.2" stroke-linecap="round"/>',
     STEEL,
   ),
+  // News and messages (retention audit G17): a folded letter with a vermilion seal.
+  letter: svg(
+    `<rect x="3" y="6" width="18" height="13" rx="2" fill="url(#kg-washi)" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>` +
+      `<path d="M3.8 7l8.2 6.2L20.2 7" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>` +
+      '<circle cx="12" cy="13.4" r="2.6" fill="#c8402f" stroke="#7a2418" stroke-width=".9"/>',
+    WASHI,
+  ),
   scroll: svg(
     `<path d="M6 3.5h11a2.5 2.5 0 0 1 0 5H8v10a2.5 2.5 0 0 1-5 0V6a2.5 2.5 0 0 1 3-2.5z" fill="url(#kg-washi)" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>` +
       `<path d="M8 8.5h10v10a2.5 2.5 0 0 1-2.5 2.5h-10A2.5 2.5 0 0 0 8 18.5z" fill="#f4e2b8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>` +

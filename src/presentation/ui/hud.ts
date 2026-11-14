@@ -1,6 +1,6 @@
 import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
-import { t as i18nText, fmtDecimal } from './i18n';
+import { t as i18nText, fmtDecimal, fmtPercent } from './i18n';
 import { automaticLanguage, language, languageCoverage, languagePreference, languages, READY_COVERAGE, setLanguagePreference, useLanguage, t } from './i18n';
 import { Capacitor } from '@capacitor/core';
 import type { Analytics } from '../../backend/analytics/events';
@@ -19,7 +19,7 @@ import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { replayable } from '../../gameplay/sim/battle/battle';
 import { rematchable } from '../../gameplay/sim/rematch';
 import { stipendStatus } from '../../gameplay/sim/stipend';
-import { shieldHoursFor } from '../../gameplay/sim/defense';
+import { shieldHoursFor, storageLootCap } from '../../gameplay/sim/defense';
 import { leagueChest, leagueFor, nextLeague, seasonEndsAt } from '../../gameplay/sim/ranks';
 import { achievementViews } from '../../gameplay/sim/achievements';
 import { activeOffers } from '../../gameplay/sim/offers';
@@ -54,15 +54,19 @@ import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
-import { uiArt } from './feedback';
+import { removeWithExit, uiArt } from './feedback';
+import { statsExplainer } from './statsText';
+import { badgeIdFor, provideBadges } from './cardArt';
+import { toastMs } from './toastTime';
+import { parseAskRecord, shouldAskAge } from './askAgain';
+import { loadKnown, newUnlocks, saveKnown, showCeremony } from './unlockCeremony';
+import { markNoticeSeen, newsBody, seenNoticeKey, unseenNews, type NewsItem } from './newsUi';
 
 const MODEL = localizedData(CANONICAL_MODEL, 'progression');
 const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
 const roleDef = (id: Parameters<typeof canonicalRoleDef>[0]) => localizedData(canonicalRoleDef(id), `progression.roles.${id}`);
 
-/** What sharing play statistics means, in Settings and in the one-time question (main.ts). */
-export const STATS_EXPLAINER =
-  'Sends what you do in the game (sessions, tutorial steps, raids, upgrades, offers seen and purchases, with their numbers) under a random statistics id, never your name, Player ID, village, chat or IP address, so we can see where players get stuck. Turning it on also sends what this device recorded so far; turning it off deletes what was sent.';
+export { STATS_EXPLAINER, statsExplainer } from './statsText';
 
 export interface HudDeps {
   root: HTMLElement;
@@ -72,6 +76,8 @@ export interface HudDeps {
   store: SaveStore;
   /** Data URL of a building's art, for the Build menu. */
   thumbnail(type: string): string | null;
+  /** Data URL of a building at a level (sheet head and next-level preview, art F26); without it the sheet uses `thumbnail`. */
+  levelThumbnail?(type: string, level: number): string | null;
   /** Data URL of the Clan Keep at the player's level wearing a look (Store → Looks). */
   skinThumbnail?(skin: string): string | null;
   getFps(): number;
@@ -142,6 +148,8 @@ export class Hud {
   private shieldEl!: HTMLElement;
   private shieldBox!: HTMLElement;
   private netPill!: HTMLElement;
+  private newsBtn!: HTMLElement;
+  private newsBadge!: HTMLElement;
   private unlocksEl!: HTMLElement;
   private sheet!: HTMLElement;
   private placeBar!: HTMLElement;
@@ -182,6 +190,8 @@ export class Hud {
     this.c = deps.controller;
     this.bus = deps.bus;
     this.root = deps.root;
+    // Battle troop cards use the warrior badges (art audit F12; ui/cardArt.ts).
+    provideBadges((id) => this.deps.warriorIcon(id));
     // The low quality profile drops costly CSS (dialog blur) too (re-audit design item 10).
     document.documentElement.classList.toggle('q-low', quality().profile === 'low');
     try {
@@ -257,6 +267,7 @@ export class Hud {
     });
     this.deps.connection.subscribe(() => this.updateNet());
     this.deps.connection.subscribe(() => this.showNewNotices());
+    this.deps.connection.subscribe(() => this.tellRefused());
     this.updateNet();
     this.deps.groveSource.subscribe(() => this.refresh());
     this.c.onOffer((rule) => this.econ.showOffer(rule));
@@ -285,6 +296,27 @@ export class Hud {
       if (this.showFps) this.fpsEl.textContent = i18nText("ui.fps_1912a77d6b", { arg1: Math.round(this.deps.getFps()) });
     }, 500);
     this.refresh();
+    // Home-screen shortcuts (manifest `shortcuts`, retention audit G23): ./?open=daily|army|store|news.
+    const shortcut = new URLSearchParams(location.search).get('open');
+    if (shortcut) {
+      try {
+        const url = new URL(location.href);
+        url.searchParams.delete('open');
+        history.replaceState(history.state, '', url);
+      } catch {
+        /* keep the address as it is */
+      }
+      window.setTimeout(() => this.openShortcut(shortcut), 1500);
+    }
+  }
+
+  /** Open a panel named by a home-screen shortcut (after the tutorial; never during a battle). */
+  private openShortcut(name: string): void {
+    if (!this.c.state.tutorial.done || document.getElementById('battle-hud')?.hidden === false) return;
+    if (name === 'daily') this.daily.openDaily();
+    else if (name === 'army') this.openTraining();
+    else if (name === 'store') this.econ.openStore();
+    else if (name === 'news') this.openNews();
   }
 
   // ------------------------------------------------------------ skeleton
@@ -295,12 +327,15 @@ export class Hud {
       const amt = h('span', { class: 'res-amt' });
       const cap = h('span', { class: 'res-cap' });
       const fill = h('i');
-      top.append(h('div', { class: `res res-${k}`, title: RES_LABEL[k] }, icon(icons[k as 'acorns' | 'dew'], 'res-icon'), h('div', { class: 'res-body' }, amt, h('div', { class: 'res-bar' }, fill), cap)));
+      const pill = h('div', { class: `res res-${k}`, title: RES_LABEL[k] }, icon(icons[k as 'acorns' | 'dew'], 'res-icon'), h('div', { class: 'res-body' }, amt, h('div', { class: 'res-bar' }, fill), cap));
+      // On a touch screen the title never shows: a tap on a pill in debt explains it.
+      pill.addEventListener('click', () => this.explainDebt(k));
+      top.append(pill);
       this.resEls.set(k, { amt, bar: fill, cap });
     }
     const moonAmt = h('span', { class: 'res-amt' });
     const moonBtn = h('div', { class: 'res res-moonstones', title: i18nText("ui.jade_tap_for_the_store_92edb2dd88"), role: 'button' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt), h('span', { class: 'res-plus' }, '+'));
-    moonBtn.addEventListener('click', () => this.econ.openStore());
+    moonBtn.addEventListener('click', () => (this.c.state.resources.moonstones < 0 ? this.explainDebt('moonstones') : this.econ.openStore()));
     top.append(moonBtn);
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
     this.buildersEl = h('span', { class: 'res-amt' });
@@ -312,6 +347,11 @@ export class Hud {
     this.shieldEl = h('span', { class: 'res-amt' });
     this.shieldBox = h('div', { class: 'res res-shield', title: i18nText("ui.shield_no_raids_until_it_runs_out_66720696b4") }, icon(icons.shield, 'res-icon'), h('div', { class: 'res-body' }, this.shieldEl));
     top.append(this.shieldBox);
+    // Retention audit G17: News and messages.
+    this.newsBadge = h('span', { class: 'badge' });
+    this.newsBadge.hidden = true;
+    this.newsBtn = h('button', { class: 'res res-news', type: 'button', 'data-id': 'news', 'aria-label': t('news.title'), title: t('news.title'), onclick: () => this.openNews() }, icon(icons.letter, 'res-icon'), this.newsBadge);
+    top.append(this.newsBtn);
     this.netPill = h('button', { class: 'net-pill', type: 'button', title: i18nText("ui.online_play_17a5942b34"), onclick: () => this.openSettings(true) });
     this.netPill.hidden = !this.deps.connection.enabled;
     top.append(this.netPill);
@@ -398,6 +438,12 @@ export class Hud {
     this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
   }
 
+  /** A negative balance is a refund debt, repaid from future income. */
+  private explainDebt(k: ResourceKind): void {
+    const v = this.c.state.resources[k];
+    if (v < 0) this.toast(t('res.debt', { amount: formatNumber(-v), resource: RES_LABEL[k] }), 'info');
+  }
+
   // ------------------------------------------------------------ refresh
 
   private tutorialWasDone = false;
@@ -472,16 +518,25 @@ export class Hud {
     return askAgeBand({ c: this.c, modal: (...a) => this.modal(...a) }, why);
   }
 
-  /** The one-time age question after the tutorial (economy E02). "Not now" is not asked again on this device. */
+  /**
+   * The age question after the tutorial (economy E02). "Not now" brings it back rarely (askAgain.ts: three times in
+   * all, three days apart), never over another dialog or a battle; nothing is offered to an unknown age meanwhile.
+   */
   private async askAgeAfterTutorial(): Promise<void> {
     const KEY = 'tk.ageAskedAfterTutorial';
     const s = this.c.state;
     if (!s.tutorial.done || bandFromProfile(s.profile) || s.profile.under18 !== null) return;
+    const now = Date.now();
     try {
-      if (localStorage.getItem(KEY)) return;
-      // Never on top of another dialog (a result screen, the daily chest): try again shortly.
-      if (document.querySelector('.modal-root .modal')) return void window.setTimeout(() => this.askAgeAfterTutorial(), 15000);
-      localStorage.setItem(KEY, '1');
+      const rec = parseAskRecord(localStorage.getItem(KEY), now);
+      if (!shouldAskAge(rec, now)) {
+        // The legacy flag becomes a dated record, so the next start can tell when it was asked.
+        if (localStorage.getItem(KEY) === '1') localStorage.setItem(KEY, JSON.stringify(rec));
+        return;
+      }
+      // Never on top of another dialog (a result screen, the daily chest) or a battle: try again shortly.
+      if (document.querySelector('.modal-root .modal-backdrop:not(.out)') || document.getElementById('battle-hud')?.hidden === false) return void window.setTimeout(() => this.askAgeAfterTutorial(), 15000);
+      localStorage.setItem(KEY, JSON.stringify({ count: (rec?.count ?? 0) + 1, last: now }));
     } catch {
       return; // no storage: never nag on every start
     }
@@ -494,7 +549,18 @@ export class Hud {
     const gd = localizedData(this.c.data);
     const cap = capacity(s, gd);
     for (const [k, el] of this.resEls) {
-      el.amt.textContent = formatNumber(s.resources[k]);
+      const v = s.resources[k];
+      const pill = el.amt.closest<HTMLElement>('.res');
+      // A refunded purchase whose resources were already spent leaves a debt (a negative balance): say what it is.
+      pill?.classList.toggle('debt', v < 0);
+      if (v < 0) {
+        el.amt.textContent = t('res.owed', { amount: formatNumber(-v) });
+        pill?.setAttribute('title', t('res.debt', { amount: formatNumber(-v), resource: RES_LABEL[k] }));
+        if (el.cap) el.cap.textContent = '';
+        continue;
+      }
+      if (pill && k !== 'moonstones') pill.setAttribute('title', RES_LABEL[k]);
+      el.amt.textContent = formatNumber(v);
       if (el.cap) {
         el.cap.textContent = `/ ${formatCompact(cap[k])}`;
         el.bar.style.width = `${Math.min(100, (s.resources[k] / Math.max(1, cap[k])) * 100)}%`;
@@ -510,6 +576,33 @@ export class Hud {
     this.renderUnlockChip();
     this.renderObjective();
     this.renderSheet();
+    this.checkUnlocks();
+  }
+
+  /** Retention audit G22: a short ceremony for each warrior that became trainable (unlockCeremony.ts). */
+  private ceremonyBusy = false;
+  private checkUnlocks(): void {
+    const s = this.c.state;
+    if (this.ceremonyBusy || !s.tutorial.done) return;
+    const gd = localizedData(this.c.data);
+    const now = Object.keys(gd.troops).filter((id) => troopUnlock(s, id, gd).unlocked);
+    const known = loadKnown();
+    const added = newUnlocks(known, now);
+    if (!known || !added.length) {
+      if (!known || now.length !== known.length) saveKnown(now);
+      return;
+    }
+    // A calm moment only: never over a battle, a dialog or the tutorial bubble's raid.
+    if (document.getElementById('battle-hud')?.hidden === false || this.modalRoot.querySelector('.modal-backdrop:not(.out)')) return;
+    this.ceremonyBusy = true;
+    saveKnown(now);
+    const warriors = added.map((id) => {
+      const badge = badgeIdFor(id);
+      return { name: gd.troops[id]?.name ?? id, badge: badge ? this.deps.warriorIcon(badge) : this.deps.troopThumb(id) };
+    });
+    void showCeremony(this.modalRoot, warriors, () => this.openTraining()).then(() => {
+      this.ceremonyBusy = false;
+    });
   }
 
   /**
@@ -593,10 +686,16 @@ export class Hud {
     const live = raidPhase(this.c.now(), gd);
     if (this.deps.groveSource.kind === 'online') {
       const g = this.deps.groveSource.snapshot();
-      set('Alliance', g.joined ? (g.raid.phase === 'live' ? g.raid.attacksLeft : 0) + g.requests.length : g.loading ? 0 : 1);
+      set('Alliance', g.joined ? (g.raid.phase === 'live' ? g.raid.attacksLeft : 0) + g.requests.length : 0);
     } else {
-      set('Alliance', s.grove.joined ? (live.phase === 'live' ? attacksLeft(s, live.week, gd) : 0) + s.grove.requests.length : 1);
+      // Art audit F22: a badge only for something waiting (raid attacks, requests), never "join an Alliance".
+      set('Alliance', s.grove.joined ? (live.phase === 'live' ? attacksLeft(s, live.week, gd) : 0) + s.grove.requests.length : 0);
     }
+    // News sits in the top bar (the rail is full on a short phone); its badge counts only unseen notices.
+    const news = unseenNews({ serverNotice: this.deps.connection.server?.notice ?? null, notices: this.deps.connection.notices }, seenNoticeKey());
+    this.newsBadge.hidden = news <= 0;
+    this.newsBadge.textContent = String(news);
+    this.newsBtn.hidden = !(s.tutorial.done || hl >= 2);
     // Folded rail: the toggle carries the total of what its hidden buttons are waiting on.
     const tb = this.railToggle?.querySelector<HTMLElement>('.badge');
     if (tb) {
@@ -716,53 +815,7 @@ export class Hud {
             );
           });
           wrap.append(h('label', { class: 'muted small' }, i18nText("ui.your_name_in_online_play_b1f7873e6c")), h('div', { class: 'chat-input-row' }, name, save));
-          const board = h('div', { class: 'events' }, i18nText("ui.loading_ba3bbbe10d"));
-          // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
-          let which: 'honor' | 'power' = 'honor';
-          const hasPower = Boolean(conn.server?.features.includes('power-ranking'));
-          const tabs = h('div', { class: 'shop-tabs' });
-          const load = () => {
-            const port = conn.port;
-            if (!port) return;
-            board.textContent = i18nText("ui.loading_ba3bbbe10d");
-            clear(tabs);
-            if (hasPower) {
-              for (const [id, label] of [['honor', 'Honor'], ['power', 'Power']] as const) {
-                const b = h('button', { type: 'button', class: id === which ? 'on' : '' }, i18nLabel(label));
-                b.addEventListener('click', () => {
-                  which = id;
-                  load();
-                });
-                tabs.append(b);
-              }
-            }
-            const row = (rank: number, name: string, sub: string, value: string, chip: Node | null) =>
-              h('div', { class: `log-row${name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, i18nText("ui.message_59480bd082", { arg1: rank, arg2: isolateName(name) })), h('div', { class: 'muted small' }, i18nLabel(sub))), h('span', { class: 'chip' }, chip, value));
-            const fail = (e: Error) => {
-              board.textContent = i18nMessage(e.message, true);
-            };
-            if (which === 'power') {
-              void port.powerLeaderboard(30).then((lb) => {
-                clear(board);
-                board.append(h('p', { class: 'muted small' }, i18nText("ui.power_is_your_skill_as_an_attacker_plu_e58aae723f")));
-                for (const p of lb.players) board.append(row(p.rank, p.name, i18nText("ui.clan_keep_67aaca3532", { arg1: p.hallLevel, arg2: p.grove ? i18nText("ui.message_c4f174b2a5", { arg1: isolateName(p.grove) }) : '' }), String(p.power), null));
-                board.append(h('p', { class: 'muted small' }, lb.me ? i18nText("ui.you_are_number_with_power_3a4362c773", { arg1: lb.me.rank, arg2: lb.me.power }) : i18nText("ui.raid_real_players_a_few_times_to_get_o_398b18284f")));
-                if (!lb.players.length) board.append(i18nText("ui.nobody_is_on_it_yet_c17b839b29"));
-              }, fail);
-              return;
-            }
-            void port.leaderboard(30).then((lb) => {
-              clear(board);
-              for (const p of lb.players) board.append(row(p.rank, p.name, i18nText("ui.clan_keep_67aaca3532", { arg1: p.hallLevel, arg2: p.grove ? i18nText("ui.message_c4f174b2a5", { arg1: isolateName(p.grove) }) : '' }), String(p.trophies), icon(icons.leaf)));
-              if (lb.me) board.append(h('p', { class: 'muted small' }, i18nText("ui.you_are_number_9f4194bd6a", { arg1: lb.me.rank })));
-              if (!lb.players.length) board.append(i18nText("ui.nobody_is_ranked_yet_be93671617"));
-            }, fail);
-          };
-          const details = h('details', {}, h('summary', {}, i18nText("ui.leaderboard_31b4712158")), tabs, board);
-          details.addEventListener('toggle', () => {
-            if (details.open) load();
-          });
-          wrap.append(details);
+          wrap.append(this.leaderboardBlock(false));
           if (conn.canKeepVillage || conn.serverVillage) wrap.append(this.villageBlock());
           wrap.append(this.accountBlock());
         }
@@ -786,6 +839,59 @@ export class Hud {
     });
     window.setTimeout(() => obs.observe(document.body, { childList: true, subtree: true }), 0);
     return wrap;
+  }
+
+  /** Honor and Power ladders (Settings and, retention audit G15, the Honor panel from the top bar). */
+  private leaderboardBlock(open: boolean): HTMLElement {
+    const conn = this.deps.connection;
+    const board = h('div', { class: 'events' }, i18nText("ui.loading_ba3bbbe10d"));
+    // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
+    let which: 'honor' | 'power' = 'honor';
+    const hasPower = Boolean(conn.server?.features.includes('power-ranking'));
+    const tabs = h('div', { class: 'shop-tabs' });
+    const load = () => {
+      const port = conn.port;
+      if (!port) return;
+      board.textContent = i18nText("ui.loading_ba3bbbe10d");
+      clear(tabs);
+      if (hasPower) {
+        for (const [id, label] of [['honor', 'Honor'], ['power', 'Power']] as const) {
+          const b = h('button', { type: 'button', class: id === which ? 'on' : '' }, i18nLabel(label));
+          b.addEventListener('click', () => {
+            which = id;
+            load();
+          });
+          tabs.append(b);
+        }
+      }
+      const row = (rank: number, name: string, sub: string, value: string, chip: Node | null) =>
+        h('div', { class: `log-row${name === conn.player?.name ? ' current' : ''}` }, h('div', {}, h('b', {}, i18nText("ui.message_59480bd082", { arg1: rank, arg2: isolateName(name) })), h('div', { class: 'muted small' }, i18nLabel(sub))), h('span', { class: 'chip' }, chip, value));
+      const fail = (e: Error) => {
+        board.textContent = i18nMessage(e.message, true);
+      };
+      if (which === 'power') {
+        void port.powerLeaderboard(30).then((lb) => {
+          clear(board);
+          board.append(h('p', { class: 'muted small' }, i18nText("ui.power_is_your_skill_as_an_attacker_plu_e58aae723f")));
+          for (const p of lb.players) board.append(row(p.rank, p.name, i18nText("ui.clan_keep_67aaca3532", { arg1: p.hallLevel, arg2: p.grove ? i18nText("ui.message_c4f174b2a5", { arg1: isolateName(p.grove) }) : '' }), String(p.power), null));
+          board.append(h('p', { class: 'muted small' }, lb.me ? i18nText("ui.you_are_number_with_power_3a4362c773", { arg1: lb.me.rank, arg2: lb.me.power }) : i18nText("ui.raid_real_players_a_few_times_to_get_o_398b18284f")));
+          if (!lb.players.length) board.append(i18nText("ui.nobody_is_on_it_yet_c17b839b29"));
+        }, fail);
+        return;
+      }
+      void port.leaderboard(30).then((lb) => {
+        clear(board);
+        for (const p of lb.players) board.append(row(p.rank, p.name, i18nText("ui.clan_keep_67aaca3532", { arg1: p.hallLevel, arg2: p.grove ? i18nText("ui.message_c4f174b2a5", { arg1: isolateName(p.grove) }) : '' }), String(p.trophies), icon(icons.leaf)));
+        if (lb.me) board.append(h('p', { class: 'muted small' }, i18nText("ui.you_are_number_9f4194bd6a", { arg1: lb.me.rank })));
+        if (!lb.players.length) board.append(i18nText("ui.nobody_is_ranked_yet_be93671617"));
+      }, fail);
+    };
+    const details = h('details', { class: 'leaderboard' }, h('summary', {}, i18nText("ui.leaderboard_31b4712158")), tabs, board);
+    details.addEventListener('toggle', () => {
+      if (details.open) load();
+    });
+    if (open) details.open = true;
+    return details;
   }
 
   /** A ledger reason in words (the codes come from the server: command:<type>, attack:loot, …). */
@@ -830,6 +936,7 @@ export class Hud {
       box.append(
         h('p', { class: 'muted small' }, i18nText("ui.your_village_is_kept_on_the_server_eve_b6cdd1303f")),
         h('p', { class: 'small' }, sync.pending ? t('sync.pending', { n: sync.pending }) : i18nText("ui.everything_is_sent_5d346762da")),
+        sync.refused ? h('p', { class: 'note' }, t('sync.refused', { n: sync.refused })) : '',
       );
       const list = h('div', { class: 'events' }, i18nText("ui.loading_ba3bbbe10d"));
       const ledger = h('details', {}, h('summary', {}, i18nText("ui.recent_changes_f66a12ef4f")), list);
@@ -1052,6 +1159,33 @@ export class Hud {
     if (unread.length) void this.deps.connection.markNoticesRead(unread).catch(() => undefined);
   }
 
+  /** Retention audit G17: News and messages (newsUi.ts). */
+  openNews(): void {
+    const conn = this.deps.connection;
+    const env = conn.server?.environment;
+    const body = newsBody({
+      serverNotice: conn.server?.notice ?? null,
+      testServer: env && env !== 'production' ? env : null,
+      notices: conn.notices,
+      refused: conn.village?.refused ?? 0,
+      event: DailyUi.chipParts(this.c.now(), this.c).text,
+      recent: this.recentToasts,
+      online: conn.online,
+    });
+    markNoticeSeen(conn.server?.notice ?? null);
+    const unread = conn.notices.filter((n) => !n.read).map((n) => n.id);
+    if (unread.length) void conn.markNoticesRead(unread).catch(() => undefined);
+    this.modal(t('news.title'), body, [], 'normal', () => this.updateBadges());
+  }
+
+  /** GLOBAL-009: actions the server refused because the village changed elsewhere are told once, then listed in News. */
+  private refusedTold = 0;
+  private tellRefused(): void {
+    const n = this.deps.connection.village?.refused ?? 0;
+    if (n > this.refusedTold) this.toast(t('sync.refused', { n: n - this.refusedTold }), 'info');
+    this.refusedTold = n;
+  }
+
   private toldNotices = new Set<string>();
   /** A new moderation notice is shown once as a toast; all of them are in Settings → Online play → Account. */
   private showNewNotices(): void {
@@ -1131,7 +1265,9 @@ export class Hud {
     const missing = q && !q.ok && q.quote ? Object.keys(missingFor(this.c.state.resources, q.quote.cost)).join() : '';
     // Walls and traps also offer Provisions; towers show their temper (balance audit 2026-11-08).
     const dq = !busy && payableInProvisions(b.type, this.c.data) ? upgradeQuote(this.c.state, b.id, localizedData(this.c.data), now, 'dew') : null;
-    return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing, dq ? (dq.ok ? 'ok' : dq.code) : '-', b.temper ?? null, hallLevel(this.c.state, this.c.data)]);
+    // How many collectors are ready (the "Collect all" count) when this sheet is a collector's.
+    const ready = buildingDef(this.c.data, b.type).produces ? this.readyCollectors().length : 0;
+    return JSON.stringify([b.id, effectiveLevel(b, now), busy, q ? (q.ok ? 'ok' : q.code) : '-', missing, dq ? (dq.ok ? 'ok' : dq.code) : '-', b.temper ?? null, hallLevel(this.c.state, this.c.data), ready > 1 ? ready : 0]);
   }
 
   /** Update timers and collector amounts without replacing any buttons. */
@@ -1257,7 +1393,8 @@ export class Hud {
     const n = items.length + troops;
     this.unlocksEl.title = i18nText("ui.clan_keep_lv_unlocks_d1e66d048e", { arg1: level + 1, arg2: this.unlockSummary(items) });
     this.unlocksEl.setAttribute('aria-label', this.unlocksEl.title);
-    this.unlocksEl.append(icon(icons.toadstool), h('span', { class: 'unlock-text' }, h('b', {}, i18nText("ui.keep_lv_78a2d3d210", { arg1: level + 1 })), i18nText("ui.message_c2bc2bb606", { arg1: t('unlocks.chip', { n }) }), h('span', { 'aria-hidden': 'true' }, '▸')));
+    // Under 400 px the chip is the icon and this count (art audit F14: the top HUD took a third of a 320 px phone).
+    this.unlocksEl.append(icon(icons.toadstool), h('span', { class: 'unlock-count', 'aria-hidden': 'true' }, String(n)), h('span', { class: 'unlock-text' }, h('b', {}, i18nText("ui.keep_lv_78a2d3d210", { arg1: level + 1 })), i18nText("ui.message_c2bc2bb606", { arg1: t('unlocks.chip', { n }) }), h('span', { 'aria-hidden': 'true' }, '▸')));
   }
 
   private openUnlocks(): void {
@@ -1317,14 +1454,16 @@ export class Hud {
 
     const title = h('div', { class: 'sheet-title' }, h('h2', {}, def.name), h('span', { class: 'level' }, level >= 1 ? i18nText("ui.level_846c9348a9", { arg1: level }) : i18nText("ui.being_built_cae1e757ba")));
     const closeBtn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': i18nText("ui.close_7d9eb7acb1"), onclick: () => this.bus.emit('select', null) }, icon(icons.close));
-    this.sheet.append(h('div', { class: 'sheet-head' }, title, closeBtn));
+    // Art audit F26: a picture of what is being upgraded (the sheet covers the building on a phone).
+    const art = this.deps.levelThumbnail?.(b.type, Math.max(1, level)) ?? this.deps.thumbnail(b.type);
+    this.sheet.append(h('div', { class: 'sheet-head' }, art ? h('img', { class: 'sheet-thumb', src: art, alt: '' }) : null, title, closeBtn));
     this.sheet.append(h('p', { class: 'muted desc' }, def.description));
 
     // Stats
     const stats = h('div', { class: 'stats' });
     const ld = levelDef(gd, b.type, Math.max(1, level));
     if (def.category === 'collector' && def.produces && ld?.ratePerHour) {
-      stats.append(h('span', { class: 'chip' }, icon(icons[def.produces as 'acorns' | 'dew']), `${formatNumber(ld.ratePerHour)}/hour`));
+      stats.append(h('span', { class: 'chip' }, icon(icons[def.produces as 'acorns' | 'dew']), t('sheet.perHour', { n: formatNumber(ld.ratePerHour) })));
       stats.append(h('span', { class: 'chip' }, i18nText("ui.holds_55b8fb769a", { arg1: formatNumber(collectorCapacity(b, Math.max(1, level), gd)) })));
     }
     if (ld?.storage) {
@@ -1343,6 +1482,15 @@ export class Hud {
     }
     if (def.category === 'hedge' && ld) stats.append(h('span', { class: 'chip' }, i18nText("ui.hp_0c9cb32a1b", { arg1: formatNumber(ld.hp) })));
     if (stats.childElementCount) this.sheet.append(stats);
+    if (level >= 1 && !(b.upgrade && now < b.upgrade.endsAt)) {
+      const next = this.nextLevelRow(b, level);
+      if (next) this.sheet.append(next);
+    }
+    // Audit P8: the raid rules the player never saw (economy.raidableStoredFraction and the Keep's loot cap).
+    if (ld?.storage && Object.values(ld.storage).some((v) => (v ?? 0) > 0)) {
+      const keep = hallLevel(this.c.state, gd);
+      this.sheet.append(h('p', { class: 'muted small raid-rule' }, t('sheet.raidRule', { pct: fmtPercent(gd.economy.raidableStoredFraction * 100), cap: formatCompact(storageLootCap(keep, gd)), level: keep, collectors: fmtPercent(gd.economy.raidableUncollectedFraction * 100) })));
+    }
     // The Keep's sheet carries the unlock preview (the village screen only has a dismissible one-line chip).
     if (def.category === 'hall' && hallUnlocks(level, gd).length) {
       this.sheet.append(h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => this.openUnlocks() }, icon(icons.toadstool), i18nText("ui.what_keep_lv_unlocks_ced96de6b4", { arg1: level + 1 })));
@@ -1385,6 +1533,9 @@ export class Hud {
       actions.append(
         h('button', { class: 'btn collect', type: 'button', onclick: () => this.collect(b) }, icon(icons[def.produces as 'acorns' | 'dew']), i18nText("ui.collect_08a0c33f91")),
       );
+      // Retention audit G33: every collector with something in it, in one tap.
+      const ready = this.readyCollectors();
+      if (ready.length > 1) actions.append(h('button', { class: 'btn ghost collect-all', type: 'button', 'data-id': 'collect-all', onclick: () => this.collectAll() }, t('sheet.collectAll', { n: ready.length })));
     }
     if (b.upgrade && now < b.upgrade.endsAt) {
       const sq = skipQuote(this.c.state, b.id, now, gd);
@@ -1402,6 +1553,8 @@ export class Hud {
     } else if (def.category !== 'decor') {
       const uq = upgradeQuote(this.c.state, b.id, gd, now);
       actions.append(this.upgradeButton(b, uq));
+      // Audit P5: a collector produces nothing while it upgrades; the quote says so.
+      if (def.produces && level >= 1 && uq.quote) actions.append(h('p', { class: 'note collector-pause' }, t('sheet.collectorPause', { time: formatDuration(uq.quote.seconds * 1000) })));
       // Either-currency defences: walls and traps can also be paid in Provisions.
       if (payableInProvisions(b.type, gd)) {
         const dq = upgradeQuote(this.c.state, b.id, gd, now, 'dew');
@@ -1552,6 +1705,67 @@ export class Hud {
     wrap.append(row);
     if (!q.ok && !same) wrap.append(h('div', { class: 'note' }, i18nMessage(q.message)));
     return wrap;
+  }
+
+  /** What the next level changes (art audit F26): the new numbers, with how much each goes up. */
+  private nextLevelRow(b: Building, level: number): HTMLElement | null {
+    const gd = localizedData(this.c.data);
+    const def = buildingDef(gd, b.type);
+    const cur = levelDef(gd, b.type, level);
+    const nxt = levelDef(gd, b.type, level + 1);
+    if (!cur || !nxt) return null;
+    const chips: HTMLElement[] = [];
+    const chip = (text: string, from: number, to: number, ic?: string) => {
+      if (to === from) return;
+      chips.push(h('span', { class: 'chip up' }, ic ? icon(ic) : null, text, to > from ? h('small', {}, `+${formatNumber(to - from)}`) : null));
+    };
+    if (def.produces && cur.ratePerHour && nxt.ratePerHour) {
+      chip(t('sheet.perHour', { n: formatNumber(nxt.ratePerHour) }), cur.ratePerHour, nxt.ratePerHour, icons[def.produces as 'acorns' | 'dew']);
+      const a = collectorCapacity(b, level, gd);
+      const z = collectorCapacity(b, level + 1, gd);
+      chip(i18nText("ui.holds_55b8fb769a", { arg1: formatNumber(z) }), a, z);
+    }
+    for (const k of RESOURCE_KINDS) {
+      const a = cur.storage?.[k] ?? 0;
+      const z = nxt.storage?.[k] ?? 0;
+      if (z) chip(i18nText("ui.stores_62a5714eb2", { arg1: formatNumber(z) }), a, z, icons[k as 'acorns' | 'dew']);
+    }
+    if (nxt.housing) chip(i18nText("ui.houses_55ab67abd5", { arg1: nxt.housing }), cur.housing ?? 0, nxt.housing, icons.troops);
+    if (def.combat && cur.damage && nxt.damage) {
+      const dps = (d: number) => Math.round((d * gd.battle.ticksPerSecond) / def.combat!.fireIntervalTicks);
+      chip(i18nText("ui.damage_sec_0418e5cdfb", { arg1: dps(nxt.damage) }), dps(cur.damage), dps(nxt.damage));
+    }
+    if (nxt.hp && cur.hp) chip(i18nText("ui.hp_0c9cb32a1b", { arg1: formatNumber(nxt.hp) }), cur.hp, nxt.hp);
+    const nextArt = this.deps.levelThumbnail?.(b.type, level + 1) ?? null;
+    if (!chips.length && !nextArt) return null;
+    return h('div', { class: 'stats next-level' }, nextArt ? h('img', { class: 'sheet-thumb next', src: nextArt, alt: '' }) : null, h('span', { class: 'next-label' }, t('sheet.nextLevel', { level: level + 1 })), ...chips);
+  }
+
+  /** Collectors with at least one whole unit waiting. */
+  private readyCollectors(): Building[] {
+    const gd = localizedData(this.c.data);
+    const now = this.c.now();
+    return this.c.state.buildings.filter((v) => {
+      const d = buildingDef(gd, v.type);
+      return d.produces && effectiveLevel(v, now) >= 1 && Math.floor(collectorAmount(v, now, gd)) >= 1;
+    });
+  }
+
+  /** Retention audit G33: collect from every collector (one command each, as if tapped one by one), one toast. */
+  private collectAll(): void {
+    const got: Partial<Record<ResourceKind, number>> = {};
+    let problem: string | null = null;
+    for (const v of this.readyCollectors()) {
+      const r = this.c.dispatch({ type: 'collect', id: v.id });
+      if (!r.ok) {
+        if (r.code !== 'NOTHING_TO_COLLECT') problem = r.message;
+        continue;
+      }
+      for (const e of r.events) if (e.kind === 'collect') got[e.resource] = (got[e.resource] ?? 0) + e.amount;
+    }
+    const parts = (Object.entries(got) as [ResourceKind, number][]).filter(([, n]) => n > 0).map(([k, n]) => i18nText("ui.message_308af0994c", { arg1: formatNumber(n), arg2: RES_LABEL[k] }));
+    if (parts.length) this.toast(i18nList(parts), 'success');
+    if (problem) this.toast(i18nMessage(problem, true), 'info');
   }
 
   private collect(b: Building): void {
@@ -1876,6 +2090,10 @@ export class Hud {
       body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, i18nText("ui.honor_47034117c2", { arg1: l.min })), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
     }
     body.append(h('p', { class: 'muted small' }, i18nText("ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5")));
+    // Retention audit G15: the leaderboards from the main screen (they used to be only in Settings).
+    const conn = this.deps.connection;
+    if (conn.online && conn.player) body.insertBefore(this.leaderboardBlock(true), body.children[1] ?? null);
+    else body.append(h('p', { class: 'muted small' }, t('league.boardOnline')), h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.openSettings(true) }, i18nText("ui.online_play_17a5942b34"))));
     this.modal(i18nText("ui.honor_22ea092e76"), body, [], 'normal');
   }
 
@@ -2046,7 +2264,7 @@ export class Hud {
       statsToggle.addEventListener('change', () => void stats.set(statsToggle.checked));
       body.append(
         h('label', { class: 'toggle' }, statsToggle, i18nText("ui.share_play_statistics_off_until_you_tu_5b3ea7662c")),
-        h('p', { class: 'muted small' }, i18nLabel(STATS_EXPLAINER)),
+        h('p', { class: 'muted small' }, statsExplainer()),
       );
     }
 
@@ -2270,13 +2488,27 @@ export class Hud {
 
   // ------------------------------------------------------------ toasts and modals
 
+  /** Toasts shown this session, newest first (the News panel lists them). */
+  private recentToasts: NewsItem[] = [];
+
   toast(text: string, kind: 'info' | 'error' | 'success' = 'info'): void {
     if (kind === 'error') sound.play('error');
-    const t = h('div', { class: `toast ${kind}` }, i18nMessage(text));
-    this.toasts.append(t);
+    const shown = i18nMessage(text);
+    this.recentToasts.unshift({ at: Date.now(), text: shown, kind });
+    if (this.recentToasts.length > 20) this.recentToasts.length = 20;
+    const el = h('div', { class: `toast ${kind}` }, shown);
+    let gone = false;
+    const dismiss = () => {
+      if (gone) return;
+      gone = true;
+      el.classList.add('out');
+      window.setTimeout(() => el.remove(), 400);
+    };
+    // Audit M10: long messages stay long enough to read (toastTime.ts); a tap dismisses one sooner.
+    el.addEventListener('click', dismiss);
+    this.toasts.append(el);
     while (this.toasts.childElementCount > 3) this.toasts.firstElementChild?.remove();
-    window.setTimeout(() => t.classList.add('out'), 2600);
-    window.setTimeout(() => t.remove(), 3000);
+    window.setTimeout(dismiss, toastMs(shown, kind));
   }
 
   /** Shadow Trials: the endless practice ladder. Clearly a practice mode, not other players. */
@@ -2331,12 +2563,13 @@ export class Hud {
       if (closed) return;
       closed = true;
       sound.play('close');
-      backdrop.remove();
+      // Art audit F10: the dialog fades and shrinks away (at once with reduced motion).
+      removeWithExit(backdrop);
       document.removeEventListener('keydown', onKey);
       this.openModals.delete(close);
       onClose?.();
       // Back to the opener if it is still on screen, else into the dialog now on top.
-      const below = this.modalRoot.querySelector<HTMLElement>('.modal-backdrop:last-child .modal');
+      const below = [...this.modalRoot.querySelectorAll<HTMLElement>('.modal-backdrop:not(.out) .modal')].pop() ?? null;
       const target = opener && opener.isConnected && !opener.closest('[hidden]') ? opener : below;
       if (target && !document.querySelector('.modal-backdrop .modal:focus-within')) target.focus({ preventScroll: true });
     };
@@ -2347,7 +2580,7 @@ export class Hud {
       );
     const onKey = (e: KeyboardEvent) => {
       // Only the dialog on top answers (a confirm opened over Settings closes first).
-      if (backdrop !== this.modalRoot.lastElementChild) return;
+      if (backdrop !== [...this.modalRoot.querySelectorAll('.modal-backdrop:not(.out)')].pop()) return;
       if (e.key === 'Escape') close();
       else if (e.key === 'Tab') {
         const items = focusables();

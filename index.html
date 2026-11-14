@@ -11,6 +11,19 @@
     <meta name="apple-mobile-web-app-title" content="Kagemura" />
     <link rel="manifest" />
     <script>(function(d,w){var l=w.__kgLocale,code=l?l.code:'en';d.querySelector('link[rel="manifest"]').href=code==='en'?'./manifest.webmanifest':'./'+code+'/manifest.webmanifest';if(l&&l.boot&&l.boot['boot.description'])d.querySelector('meta[name="description"]').content=l.boot['boot.description'];})(document,window);</script>
+    <!-- Link previews (retention audit G23). No og:url: the address is the owner's choice (docs/SHIPPING.md); paths stay relative. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kagemura" />
+    <meta property="og:title" content="Kagemura: Ninja Clans" />
+    <meta property="og:description" content="Build a hidden mountain village, train ninja warriors, and raid rival strongholds with smoke and sabotage." />
+    <meta property="og:image" content="./icons/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="A pagoda before a red sun between snowy peaks" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Kagemura: Ninja Clans" />
+    <meta name="twitter:description" content="Build a hidden mountain village, train ninja warriors, and raid rival strongholds with smoke and sabotage." />
+    <meta name="twitter:image" content="./icons/icon-512.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>Kagemura: Ninja Clans</title>
@@ -27,14 +40,14 @@
       .boot-sub { font: 800 12px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; letter-spacing: 4px; text-transform: uppercase; color: #e9b44c; text-shadow: none; }
       .boot-status { margin-top: 22px; font: 500 14px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: rgba(247, 240, 225, .7); text-shadow: none; letter-spacing: .3px; }
       /* Session-long notices (main.ts showBanner): above the map and HUD layer, under dialogs. */
-      .tk-banner { position: fixed; z-index: 9; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 104px); max-width: 520px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-radius: 14px; background: #f7f0e1; color: #26303d; box-shadow: 0 6px 24px rgba(0, 0, 0, .35); font: 600 14px/1.35 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+      .tk-banner { position: fixed; z-index: 9; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 104px); max-width: 520px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-radius: 14px; background: #f7f0e1; color: #26303d; box-shadow: 0 6px 24px rgba(0, 0, 0, .35); font: 600 0.875rem/1.35 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
       .tk-banner span { flex: 1 1 220px; }
       /* Narrow portrait: keep clear of the right-hand rail (it sits above this banner). */
       @media (max-width: 600px) and (orientation: portrait) { .tk-banner { right: 76px; } .tk-banner span { flex-basis: 100%; } }
-      .tk-banner button { min-height: 40px; padding: 6px 14px; border: 0; border-radius: 10px; background: #26303d; color: #f7f0e1; font: 700 14px system-ui, -apple-system, sans-serif; cursor: pointer; }
+      .tk-banner button { min-height: 44px; padding: 6px 14px; border: 0; border-radius: 10px; background: #26303d; color: #f7f0e1; font: 700 0.875rem system-ui, -apple-system, sans-serif; cursor: pointer; }
       #boot .err { margin: 16px; }
       #boot .err p { margin: 0 0 8px; }
-      #boot .err .small { font-weight: 500; font-size: 13px; color: #5f6b78; word-break: break-word; }
+      #boot .err .small { font-weight: 500; font-size: 0.8125rem; color: #5f6b78; word-break: break-word; }
     </style>
   </head>
   <body>
@@ -43,7 +56,7 @@
     <div id="battle-hud" hidden></div>
     <div id="boot">
       <div class="boot-card">
-        <img class="boot-mark" src="./icons/icon-192.png" alt="" width="112" height="112" />
+        <img class="boot-mark" src="./icons/icon-192.png" srcset="./icons/icon-192.png 192w, ./icons/icon-336.png 336w" sizes="112px" alt="" width="112" height="112" />
         <div class="boot-title">Kagemura</div>
         <div class="boot-sub">Ninja Clans</div>
         <div class="boot-status"></div>
