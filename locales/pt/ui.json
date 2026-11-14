@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Novo guerreiro desbloqueado!} other {Novos guerreiros desbloqueados!}}" },
   "unlock.train": { "en": "Train", "text": "Treinar" },
   "unlock.later": { "en": "Later", "text": "Depois" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Seu primeiro baú diário está pronto: Concluir abre o baú." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Seu primeiro baú diário está pronto: Concluir abre o baú." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Não foi possível abrir. Verifique sua conexão e tente de novo." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Há uma versão mais nova de Kagemura. Recarregue para abrir isto." }
 }

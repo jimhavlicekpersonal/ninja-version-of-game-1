@@ -168,5 +168,7 @@
   "unlock.title": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}",
   "unlock.train": "Train",
   "unlock.later": "Later",
-  "tutorial.end.daily": "Your first daily chest is ready: Finish opens it."
+  "tutorial.end.daily": "Your first daily chest is ready: Finish opens it.",
+  "panel.loadFailed": "This could not open. Check your connection and try again.",
+  "panel.staleChunk": "A newer version of Kagemura is out. Reload to open this."
 }

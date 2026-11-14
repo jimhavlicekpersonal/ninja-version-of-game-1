@@ -25,7 +25,7 @@ describe('the play statistics explainer', () => {
   });
 
   it('is never passed raw to a dialog or paragraph', () => {
-    for (const file of ['src/main.ts', 'src/presentation/ui/hud.ts']) {
+    for (const file of ['src/main.ts', 'src/presentation/ui/hud.ts', 'src/presentation/ui/settingsUi.ts']) {
       const src = readFileSync(join(ROOT, file), 'utf8');
       // Only the re-export may name it; every display goes through statsExplainer().
       expect(src.replace(/export \{ STATS_EXPLAINER[^}]*\}/, '')).not.toMatch(/STATS_EXPLAINER/);

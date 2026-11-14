@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Nieuwe krijger vrijgespeeld!} other {Nieuwe krijgers vrijgespeeld!}}" },
   "unlock.train": { "en": "Train", "text": "Trainen" },
   "unlock.later": { "en": "Later", "text": "Straks" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Je eerste dagelijkse kist staat klaar: Voltooien opent hem." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Je eerste dagelijkse kist staat klaar: Voltooien opent hem." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Dit kon niet worden geopend. Controleer je verbinding en probeer het opnieuw." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Er is een nieuwere versie van Kagemura. Herlaad om dit te openen." }
 }

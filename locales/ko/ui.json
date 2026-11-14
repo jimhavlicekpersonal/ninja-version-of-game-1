@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, other {새 전사가 해금됐어요!}}" },
   "unlock.train": { "en": "Train", "text": "훈련" },
   "unlock.later": { "en": "Later", "text": "나중에" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "첫 일일 상자가 준비됐어요. 마치기를 누르면 열려요." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "첫 일일 상자가 준비됐어요. 마치기를 누르면 열려요." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "열 수 없습니다. 연결을 확인하고 다시 시도하세요." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura의 새 버전이 나왔습니다. 다시 불러온 뒤 여세요." }
 }

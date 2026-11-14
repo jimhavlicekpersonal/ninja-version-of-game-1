@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Nou guerrer desbloquejat!} other {Nous guerrers desbloquejats!}}" },
   "unlock.train": { "en": "Train", "text": "Entrena" },
   "unlock.later": { "en": "Later", "text": "Més tard" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "El teu primer cofre diari és a punt: Acaba l'obre." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "El teu primer cofre diari és a punt: Acaba l'obre." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "No s’ha pogut obrir. Comprova la connexió i torna-ho a provar." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Hi ha una versió més nova de Kagemura. Torna a carregar per obrir-ho." }
 }

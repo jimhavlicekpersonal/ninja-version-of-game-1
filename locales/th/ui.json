@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, other {ปลดล็อกนักรบใหม่แล้ว!}}" },
   "unlock.train": { "en": "Train", "text": "ฝึก" },
   "unlock.later": { "en": "Later", "text": "ไว้ทีหลัง" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "หีบรายวันใบแรกพร้อมแล้ว กด เสร็จสิ้น เพื่อเปิด" }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "หีบรายวันใบแรกพร้อมแล้ว กด เสร็จสิ้น เพื่อเปิด" },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "เปิดไม่ได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง" },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura มีเวอร์ชันใหม่แล้ว โหลดใหม่เพื่อเปิดส่วนนี้" }
 }

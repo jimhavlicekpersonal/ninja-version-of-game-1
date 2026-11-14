@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Neuer Krieger freigeschaltet!} other {Neue Krieger freigeschaltet!}}" },
   "unlock.train": { "en": "Train", "text": "Ausbilden" },
   "unlock.later": { "en": "Later", "text": "Später" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Deine erste Tagestruhe ist bereit: Fertig öffnet sie." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Deine erste Tagestruhe ist bereit: Fertig öffnet sie." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Das ließ sich nicht öffnen. Prüfe deine Verbindung und versuche es erneut." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Eine neuere Version von Kagemura ist da. Lade neu, um das zu öffnen." }
 }

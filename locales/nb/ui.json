@@ -168,5 +168,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Ny kriger låst opp!} other {Nye krigere låst opp!}}" },
   "unlock.train": { "en": "Train", "text": "Tren" },
   "unlock.later": { "en": "Later", "text": "Senere" },
-  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Den første daglige kisten din venter: Fullfør åpner den." }
+  "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Den første daglige kisten din venter: Fullfør åpner den." },
+  "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Dette kunne ikke åpnes. Sjekk tilkoblingen og prøv igjen." },
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "En nyere versjon av Kagemura er ute. Last inn på nytt for å åpne dette." }
 }
