@@ -285,6 +285,31 @@ describe('worldwide audit: several devices and storage failures', () => {
     expect((await a.port.getVillage())!.revision).toBe(before);
   });
 
+  it('GLOBAL-009 follow-up: refused actions are kept with what they were about and the server reason code', async () => {
+    const w = world();
+    const a = await setup(w);
+    await a.conn.village!.enable();
+    expect(placeCollector(a.controller, 'acorns').ok).toBe(true);
+    const placed = a.controller.state.buildings[a.controller.state.buildings.length - 1].type;
+    // The server refuses it (as when the village changed on another device first) and names the command.
+    const real = a.port.sendCommands.bind(a.port);
+    a.port.sendCommands = async (batch) => {
+      const r = await real(batch);
+      return { ...r, results: r.results.map((x) => ({ seq: x.seq, ok: false, error: 'NO_FREE_BUILDER', type: 'place', at: w.now() })) };
+    };
+    await a.conn.village!.flush();
+    expect(a.conn.village!.refused).toBe(1);
+    expect(a.conn.refusedActions).toEqual([{ at: expect.any(Number), type: 'place', code: 'NO_FREE_BUILDER', building: placed }]);
+  });
+
+  it('GLOBAL-009 follow-up: the server names refused commands (type and time) in its answer', async () => {
+    const w = world();
+    const a = await setup(w);
+    await a.conn.village!.enable();
+    const r = await a.port.sendCommands({ stateHash: '', device: 'dev-x', commands: [{ seq: 1, t: w.now(), command: { type: 'upgrade', id: 'no-such-building' } }] });
+    expect(r.results).toEqual([{ seq: 1, ok: false, error: 'NOT_FOUND', type: 'upgrade', at: expect.any(Number) }]);
+  });
+
   it('GLOBAL-010: a queue that cannot be stored is reported and sent at once', async () => {
     const kv = memoryKv();
     let full = false;

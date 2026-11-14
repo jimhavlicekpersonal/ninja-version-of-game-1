@@ -943,8 +943,14 @@ export interface CommandBatch {
 export interface CommandOutcome {
   seq: number;
   ok: boolean;
-  /** Why it was refused (a sim error code, NOT_ALLOWED, TOO_MANY_BATTLES). */
+  /** Why it was refused (a sim error code, NOT_ALLOWED, TOO_LARGE, TOO_MANY_BATTLES). */
   error?: string;
+  /**
+   * Refused commands only (2026-11-14, additive, GLOBAL-009): the command's type and the server time it was
+   * judged at, so a game that no longer holds the command can still name it. Older servers leave them out.
+   */
+  type?: string;
+  at?: number;
 }
 
 export interface CommandBatchResponse {
