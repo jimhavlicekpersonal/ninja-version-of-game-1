@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "id",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Sejumput Giok",
+      "description": "45 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Kantong Giok",
+      "description": "100 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Tas Giok",
+      "description": "280 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Kotak Giok",
+      "description": "600 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Peti Giok",
+      "description": "1300 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Brankas Giok",
+      "description": "3500 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Timbunan Naga Giok",
+      "description": "7500 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Gulungan Musim Premium",
+      "description": "Jalur premium musim ini",
+      "locale": "id"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Paket Pemula",
+      "description": "Giok dan sumber daya untuk pemimpin klan baru",
+      "locale": "id"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Paket Perajin",
+      "description": "Giok untuk Perajin Desa tambahan, plus sumber daya",
+      "locale": "id"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Perbekalan Perang",
+      "description": "Perbekalan dan Giok untuk Perang Aliansi",
+      "locale": "id"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Paket Pembangunan Ulang",
+      "description": "Giok dan sumber daya untuk membangun ulang",
+      "locale": "id"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Tunjangan Klan",
+      "description": "30 pembayaran harian, masing-masing 12 Giok",
+      "locale": "id"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Perayaan Benteng",
+      "description": "Sumber daya dan Giok untuk Benteng barumu",
+      "locale": "id"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ar",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "رشّة يشم",
+      "description": "45 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "كيس يشم صغير",
+      "description": "100 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "حقيبة يشم",
+      "description": "280 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "علبة يشم",
+      "description": "600 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "صندوق يشم",
+      "description": "1300 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "خزنة يشم",
+      "description": "3500 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "كنز التنين من اليشم",
+      "description": "7500 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "لفافة الموسم: البريميوم",
+      "description": "مسار البريميوم لهذا الموسم",
+      "locale": "ar"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "حزمة البداية",
+      "description": "يشم وموارد لقادة العشائر الجدد",
+      "locale": "ar"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "حزمة الحرفي",
+      "description": "يشم لتوظيف حرفي قرية إضافي، مع موارد",
+      "locale": "ar"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "مؤن الحرب",
+      "description": "مؤن ويشم لحرب التحالفات",
+      "locale": "ar"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "عدّة إعادة البناء",
+      "description": "يشم وموارد لإعادة البناء",
+      "locale": "ar"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "راتب العشيرة",
+      "description": "30 دفعة يومية، كل منها 12 يشم",
+      "locale": "ar"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "احتفال القلعة",
+      "description": "موارد ويشم احتفالًا بمستوى القلعة الجديد",
+      "locale": "ar"
+    }
+  ]
+}
