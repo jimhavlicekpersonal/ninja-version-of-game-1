@@ -21,6 +21,8 @@ export default tseslint.config(
       // Frozen battle-rules snapshots: verbatim copies of an old src/gameplay, never edited.
       'server/rules/v*/**',
       'docs/**',
+      // Agent and tool worktrees nested inside the checkout.
+      '.claude/**',
     ],
   },
   js.configs.recommended,
@@ -29,6 +31,8 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
+      // Pin the root so nested git worktrees (each with a tsconfig) never confuse the parser.
+      parserOptions: { tsconfigRootDir: import.meta.dirname },
       globals: { ...globals.browser, ...globals.node },
     },
     linterOptions: { reportUnusedDisableDirectives: 'error' },
