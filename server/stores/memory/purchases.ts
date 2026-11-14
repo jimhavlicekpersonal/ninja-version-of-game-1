@@ -100,4 +100,5 @@ export class MemoryPurchases extends MemoryBase implements PurchaseStore {
   }
   async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
     return [...this.players.values()].filter((p) => p.base && !p.bannedUntil).map((p) => ({ id: p.id, trophies: p.trophies, createdAt: p.createdAt }));
-  }}
+  }
+}

@@ -100,4 +100,5 @@ export class MemoryFriends extends MemoryBase {
   }
   async createSquad(s: Squad): Promise<void> {
     this.squadRows.set(s.id, clone(s));
-  }}
+  }
+}

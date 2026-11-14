@@ -150,4 +150,5 @@ export class PgGangs extends PgBase {
       [r.id, r.at, r.reporterId, r.kind, r.targetId, r.targetName, r.messageId, r.groveId, r.text, r.reason, r.note, r.status, r.resolvedAt, r.resolution],
     );
     return (res.rowCount ?? 0) > 0;
-  }}
+  }
+}

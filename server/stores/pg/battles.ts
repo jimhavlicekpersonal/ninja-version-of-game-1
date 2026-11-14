@@ -6,7 +6,6 @@ import { num, toTicket, toAttack, PUT_BASE } from './rows';
 import { PgBase } from './base';
 
 export class PgBattles extends PgBase implements BattleStore {
-
   async createTicket(t: Ticket): Promise<void> {
     // The base version and the ticket in one statement: retention never sees one without the other.
     await this.db.query(
@@ -114,4 +113,5 @@ export class PgBattles extends PgBase implements BattleStore {
     if (c.complaintsBefore !== undefined) await this.batchDelete('complaints', `status <> 'open' and resolved_at < $1`, [c.complaintsBefore], c);
     if (c.noncesBefore !== undefined) await this.batchDelete('auth_nonces', 'expires_at < $1', [c.noncesBefore], c);
     return { attacks, tickets, bases, reports, commands, idempotency: idem };
-  }}
+  }
+}

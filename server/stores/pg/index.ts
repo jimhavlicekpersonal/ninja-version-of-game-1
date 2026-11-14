@@ -25,7 +25,6 @@ export interface PgRepo extends PgPlayers, PgPurchases, PgOps, PgBattles, PgVill
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class PgRepo extends PgBase implements Repo {
-
   /**
    * Run `fn` in one transaction on one connection. Inside a transaction, a
    * nested one is a savepoint: if it throws, only its own writes are undone.
@@ -133,6 +132,7 @@ export class PgRepo extends PgBase implements Repo {
   async dropIdempotentScopes(scopes: string[]): Promise<number> {
     if (!scopes.length) return 0;
     return (await this.db.query('delete from idempotency_keys where scope = any($1::text[])', [scopes])).rowCount ?? 0;
-  }}
+  }
+}
 
 composeStores(PgRepo, [PgPlayers, PgPurchases, PgOps, PgBattles, PgVillages, PgAlliances, PgFriends, PgGangs]);

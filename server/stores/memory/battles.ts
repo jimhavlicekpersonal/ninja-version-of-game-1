@@ -118,4 +118,5 @@ export class MemoryBattles extends MemoryBase implements BattleStore {
       }
     }
     return { attacks: attacks - this.attacks.length, tickets, bases, reports: reports - this.reportRows.length, commands: commands - this.commandRows.length, idempotency };
-  }}
+  }
+}

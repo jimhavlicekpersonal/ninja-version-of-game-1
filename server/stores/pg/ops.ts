@@ -5,7 +5,6 @@ import { num, strOrNull } from './rows';
 import { PgBase, dbOf } from './base';
 
 export class PgOps extends PgBase implements OpsStore {
-
   async addStatsEvents(install: string, build: string, arm: string, events: import('../../../src/backend/net/stats').StatsEvent[], receivedAt: number): Promise<number> {
     if (!events.length) return 0;
     // One statement for the batch (at most STATS_MAX_BATCH rows): arrays unnested side by side.
@@ -139,4 +138,5 @@ export class PgOps extends PgBase implements OpsStore {
   async setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void> {
     if (under18 === null) await this.db.query('delete from player_age where player_id = $1', [playerId]);
     else await this.db.query('insert into player_age (player_id, under18, at) values ($1,$2,$3) on conflict (player_id) do update set under18 = excluded.under18, at = excluded.at', [playerId, under18, at]);
-  }}
+  }
+}

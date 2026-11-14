@@ -287,4 +287,5 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
     if (!r || r.status !== 'open') return false;
     Object.assign(r, { status, resolution, resolvedAt: at });
     return true;
-  }}
+  }
+}

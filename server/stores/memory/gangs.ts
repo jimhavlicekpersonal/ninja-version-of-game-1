@@ -140,4 +140,5 @@ export class MemoryGangs extends MemoryBase {
     if (this.reportRows.some((x) => x.status === 'open' && x.reporterId === r.reporterId && x.targetId === r.targetId && (x.messageId ?? '') === (r.messageId ?? ''))) return false;
     this.reportRows.push(clone(r));
     return true;
-  }}
+  }
+}

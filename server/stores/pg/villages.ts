@@ -5,7 +5,6 @@ import { num, toVillage, toLedger, toCommand } from './rows';
 import { PgBase, dbOf } from './base';
 
 export class PgVillages extends PgBase implements VillageStore {
-
   async getVillage(playerId: string, opts: { forUpdate?: boolean } = {}): Promise<VillageRow | null> {
     // A row lock only means something inside a transaction.
     const r = await this.rows(`select * from villages where player_id = $1${opts.forUpdate && this.client ? ' for update' : ''}`, [playerId]);
@@ -108,4 +107,5 @@ export class PgVillages extends PgBase implements VillageStore {
 
   async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
     return (await this.rows('select * from command_log where player_id = $1 and seq > $2 order by seq limit $3', [playerId, sinceSeq, limit])).map(toCommand);
-  }}
+  }
+}

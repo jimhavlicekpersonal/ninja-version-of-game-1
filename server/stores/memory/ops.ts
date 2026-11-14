@@ -95,4 +95,5 @@ export class MemoryOps extends MemoryBase implements OpsStore {
   async useIntent(id: string): Promise<void> {
     const i = this.intentRows.find((x) => x.id === id);
     if (i) i.used = true;
-  }}
+  }
+}

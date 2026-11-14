@@ -6,7 +6,6 @@ import { num, toPlayer, toPurchase } from './rows';
 import { PgBase } from './base';
 
 export class PgPurchases extends PgBase implements PurchaseStore {
-
   async addPurchase(p: PurchaseRow): Promise<boolean> {
     const r = await this.db.query(
       `insert into purchases (store, transaction_id, player_id, product_id, cents, at, environment, status, refunded_at, ref, held_on_server, storefront, currency, price_micros, device)
@@ -133,4 +132,5 @@ export class PgPurchases extends PgBase implements PurchaseStore {
 
   async rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]> {
     return (await this.rows('select id, trophies, created_at from players where base is not null and banned_until = 0')).map((r) => ({ id: String(r.id), trophies: num(r.trophies), createdAt: num(r.created_at) }));
-  }}
+  }
+}

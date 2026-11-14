@@ -162,4 +162,5 @@ export class MemoryAlliances extends MemoryBase {
   async getClaim(week: number, playerId: string): Promise<RaidClaim | null> {
     const c = this.claims.find((x) => x.week === week && x.playerId === playerId);
     return c ? clone(c) : null;
-  }}
+  }
+}

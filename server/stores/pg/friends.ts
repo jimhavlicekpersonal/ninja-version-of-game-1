@@ -98,4 +98,5 @@ export class PgFriends extends PgBase {
   // Gangs (roadmap step 63)
   async createSquad(s: Squad): Promise<void> {
     await this.db.query('insert into squads (id, name, created_at, rating) values ($1, $2, $3, $4)', [s.id, s.name, s.createdAt, s.rating ? JSON.stringify(s.rating) : null]);
-  }}
+  }
+}

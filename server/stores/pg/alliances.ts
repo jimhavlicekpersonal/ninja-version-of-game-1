@@ -4,7 +4,6 @@ import { num, toPlayer, toGrove, toSummary, toMember, toChat, toReport, toBlock,
 import { PgBase, dbOf } from './base';
 
 export class PgAlliances extends PgBase {
-
   // names and friends (roadmap step 59)
   async playerByNameKey(key: string): Promise<Player | null> {
     const r = await this.rows('select * from players where name_key = $1', [key]);
@@ -255,4 +254,5 @@ export class PgAlliances extends PgBase {
   async getClaim(week: number, playerId: string): Promise<RaidClaim | null> {
     const r = await this.rows('select * from raid_claims where week = $1 and player_id = $2', [week, playerId]);
     return r[0] ? toClaim(r[0]) : null;
-  }}
+  }
+}

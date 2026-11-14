@@ -53,4 +53,5 @@ export class MemoryVillages extends MemoryBase implements VillageStore {
       .sort((a, b) => a.seq - b.seq)
       .slice(0, limit)
       .map(clone);
-  }}
+  }
+}

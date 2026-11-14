@@ -78,6 +78,7 @@ export class MemoryRepo extends MemoryBase implements Repo {
     if (l && l.until > now && l.holder !== holder) return false;
     this.jobLeases.set(name, { holder, until: now + leaseMs });
     return true;
-  }}
+  }
+}
 
 composeStores(MemoryRepo, [MemoryPlayers, MemoryPurchases, MemoryOps, MemoryBattles, MemoryVillages, MemoryAlliances, MemoryFriends, MemoryGangs]);

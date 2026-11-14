@@ -8,7 +8,6 @@ import { type Row, num, strOrNull, toPlayer, isUniqueClash, toDeletion } from '.
 import { PgBase, dbOf } from './base';
 
 export class PgPlayers extends PgBase implements PlayerStore {
-
   async createPlayer(p: Player): Promise<void> {
     await this.db.query(
       `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until, name_key, free_renames)
@@ -400,4 +399,5 @@ export class PgPlayers extends PgBase implements PlayerStore {
   async resolveDeletionRequest(id: string, status: 'done' | 'rejected', resolution: string, at: number): Promise<boolean> {
     const r = await this.db.query(`update deletion_requests set status = $2, resolution = $3, resolved_at = $4 where id = $1 and status = 'open'`, [id, status, resolution, at]);
     return (r.rowCount ?? 0) > 0;
-  }}
+  }
+}
