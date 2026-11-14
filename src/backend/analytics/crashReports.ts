@@ -8,7 +8,7 @@
  */
 import { buildEnvelope, envelopeEndpoint, eventId, parseDsn, ReportThrottle, type SentryDsn } from './sentryEnvelope';
 
-export interface CrashReporterOptions {
+interface CrashReporterOptions {
   dsn: string | undefined;
   release: string;
   /** 'web' | 'ios' | 'android'. */

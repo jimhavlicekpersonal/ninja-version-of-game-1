@@ -16,17 +16,17 @@ import { cleanStatsEvent, STATS_MAX_BATCH, type StatsBatch, type StatsEvent } fr
 import type { KeyValue } from '../net/connection';
 import type { AnalyticsEvent } from './events';
 
-export type StatsChoice = 'unasked' | 'on' | 'off';
+type StatsChoice = 'unasked' | 'on' | 'off';
 
 const CHOICE = 'tk.stats.choice';
 const INSTALL = 'tk.stats.install';
 const FORGET = 'tk.stats.forget';
 /** How often a batch goes while playing. */
-export const FLUSH_MS = 5 * 60_000;
+const FLUSH_MS = 5 * 60_000;
 /** Events held while the server can't be reached (the oldest go first). */
-export const MAX_QUEUE = 2000;
+const MAX_QUEUE = 2000;
 /** Events recorded before the yes that are shared with it. */
-export const BACKLOG = 1000;
+const BACKLOG = 1000;
 
 export interface StatsTransport {
   send(batch: StatsBatch, opts?: { keepalive?: boolean }): Promise<void>;
@@ -59,7 +59,7 @@ function uuid(): string {
   return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
 }
 
-export interface StatsSharingOptions {
+interface StatsSharingOptions {
   kv: KeyValue;
   /** Null: this build has no server (nothing is ever asked or sent). */
   transport: StatsTransport | null;

@@ -15,7 +15,7 @@ export function isSandbox(search: string): boolean {
   return q.has('sandbox') || q.has('debug');
 }
 
-export type PaymentPath = 'storekit' | 'play' | 'mock' | 'unavailable';
+type PaymentPath = 'storekit' | 'play' | 'mock' | 'unavailable';
 
 export function paymentPath(platform: string, sandbox: boolean, playBilling = false): PaymentPath {
   if (sandbox) return 'mock';

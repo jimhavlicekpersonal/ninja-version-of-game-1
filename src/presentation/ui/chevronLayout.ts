@@ -3,18 +3,18 @@
  * points in the same direction drew "F 100" over "E 100". Points closer than `MERGE_PX` share one chevron; the rest
  * are spread along their edge so no two overlap.
  */
-export interface ChevronIn<T> {
+interface ChevronIn<T> {
   item: T;
   x: number;
   y: number;
 }
-export interface ChevronOut<T> {
+interface ChevronOut<T> {
   /** The points this chevron stands for (nearest first: a tap pans to `items[0]`). */
   items: T[];
   x: number;
   y: number;
 }
-export interface Bounds {
+interface Bounds {
   left: number;
   right: number;
   top: number;
@@ -22,7 +22,7 @@ export interface Bounds {
 }
 
 /** Chevrons whose anchors are closer than this become one. */
-export const MERGE_PX = 40;
+const MERGE_PX = 40;
 /** Centre-to-centre spacing along a left/right edge (chevrons are 44 px tall). */
 export const GAP_Y = 50;
 /** Spacing along a top/bottom edge (a chevron is about 64 px wide with its arrow, letter and count). */

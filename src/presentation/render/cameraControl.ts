@@ -5,7 +5,7 @@ const TAP_SLOP_CSS_PX = 10;
 const MAX_ZOOM = 2;
 const MIN_ZOOM = 0.3;
 
-export interface CameraControlOptions {
+interface CameraControlOptions {
   renderScale: number;
   onTap?: (worldX: number, worldY: number) => void;
   /** Called while a finger/mouse is held still (for repeated deploys). */

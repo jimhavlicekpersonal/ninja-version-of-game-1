@@ -22,7 +22,7 @@ import { icons } from './icons';
 import { ensureCommunityRules } from './communityRules';
 import { presetChatRow } from './ageScreen';
 
-export interface GroveUiDeps {
+interface GroveUiDeps {
   kit: UiKit;
   source: GroveSource;
   troopThumb(type: string): string | null;
@@ -32,7 +32,7 @@ export interface GroveUiDeps {
 type Tab = 'chat' | 'requests' | 'members' | 'raid';
 
 /** How the offline (bot) Alliance is labelled on every surface (project honesty rule). */
-export const COMPUTER_CLAN = 'Training Alliance (computer clan)';
+const COMPUTER_CLAN = 'Training Alliance (computer clan)';
 
 export const REASON_LABELS: Record<ReportReason, string> = {
   harassment: 'Bullying or harassment',

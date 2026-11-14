@@ -139,7 +139,7 @@ function cohortShapeOk(c: BalanceCohort): boolean {
  * replays offer timing, so an arm that changed costs, loot or timers would desync every village
  * in it. Prices, rewards and timers stay the same for everyone in an experiment.
  */
-export function isCohortPath(path: (string | number)[]): boolean {
+function isCohortPath(path: (string | number)[]): boolean {
   if (path[0] !== 'offers') return false;
   if (path.length === 2) return path[1] === 'durationHoursMin' || path[1] === 'durationHoursMax' || path[1] === 'maxPerSession';
   return path.length === 4 && path[1] === 'rules' && typeof path[2] === 'number' && (path[3] === 'durationHours' || path[3] === 'cooldownHours' || path[3] === 'minAccountHours');

@@ -15,7 +15,7 @@ export function registerServiceWorker(notify: (text: string) => void): void {
 }
 
 /** What `updateWebApp` found. */
-export type WebUpdateResult = 'reloading' | 'current' | 'timeout' | 'unavailable';
+type WebUpdateResult = 'reloading' | 'current' | 'timeout' | 'unavailable';
 
 /**
  * "Update Kagemura" on the web (client re-audit item 11): a bare reload could keep the same

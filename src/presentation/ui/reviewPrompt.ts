@@ -6,7 +6,7 @@
  * No native review plugin is installed, so `requestReview` does nothing until the composition root provides one
  * (`provideReviewHook`, e.g. a Capacitor in-app review plugin: owner/native work). On the web it is always a no-op.
  */
-export interface ReviewState {
+interface ReviewState {
   /** Wins counted on this device. */
   wins: number;
   /** When the sheet was last requested (ms), 0 = never. */

@@ -14,7 +14,7 @@ export interface NewsItem {
   kind: 'info' | 'error' | 'success';
 }
 
-export interface NewsSource {
+interface NewsSource {
   /** The operators' notice for everyone (server hello), if any. */
   serverNotice: string | null;
   /** The server is a test server (its environment name). */

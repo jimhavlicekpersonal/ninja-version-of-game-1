@@ -264,7 +264,7 @@ export function buildingScale(texture: Phaser.Textures.Texture, size: number): n
 }
 
 /** Logical (world-pixel) size of the island image. */
-export function groundSize(mapSize: number): { w: number; h: number } {
+function groundSize(mapSize: number): { w: number; h: number } {
   return { w: mapSize * TILE_W + GROUND_PAD * 2, h: mapSize * TILE_H + CLIFF + GROUND_PAD * 2 };
 }
 

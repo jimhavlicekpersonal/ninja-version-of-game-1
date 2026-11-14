@@ -1,5 +1,5 @@
 /** Small on/off preferences kept in localStorage (per device). */
-export type PrefKey = 'sessionReminder' | 'reminders' | 'crashReports';
+type PrefKey = 'sessionReminder' | 'reminders' | 'crashReports';
 type Key = PrefKey;
 /**
  * crashReports: send crash reports when the build has a Sentry DSN. Off until the player switches it on in Settings

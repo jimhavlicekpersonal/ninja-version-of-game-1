@@ -5,7 +5,7 @@
  * Until it is answered nothing changes: no offers for an unknown age, and the under-18 protections where the store's
  * signal or a purchase sets them.
  */
-export interface AskRecord {
+interface AskRecord {
   /** Times asked on this device. */
   count: number;
   /** When it was last asked (ms). */

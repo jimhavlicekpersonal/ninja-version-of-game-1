@@ -86,13 +86,13 @@ import {
 } from './protocol';
 
 /** Where this device keeps its player token for a server. */
-export interface TokenStore {
+interface TokenStore {
   get(): string | null;
   set(token: string | null): void;
 }
 
 /** localStorage, one token per server address (a token is never sent to a different server). */
-export function localTokenStore(serverUrl: string): TokenStore {
+function localTokenStore(serverUrl: string): TokenStore {
   const key = `tk.net.token:${serverUrl}`;
   return {
     get() {
@@ -118,7 +118,7 @@ export function memoryTokenStore(initial: string | null = null): TokenStore {
   return { get: () => t, set: (v) => (t = v) };
 }
 
-export interface HttpAdapterOptions {
+interface HttpAdapterOptions {
   tokens?: TokenStore;
   fetch?: typeof fetch;
   timeoutMs?: number;

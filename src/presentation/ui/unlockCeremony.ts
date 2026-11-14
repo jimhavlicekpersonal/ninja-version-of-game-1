@@ -38,7 +38,7 @@ export function saveKnown(ids: readonly string[]): void {
   }
 }
 
-export interface CeremonyWarrior {
+interface CeremonyWarrior {
   name: string;
   badge: string | null;
 }

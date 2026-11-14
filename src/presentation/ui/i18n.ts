@@ -4,7 +4,7 @@ import { matchLanguage } from '../../../locales/matcher.mjs';
 import languagesFile from '../../../locales/languages.json';
 import availabilityFile from '../../../locales/availability.json';
 import { ENGLISH, catalogFor, deviceLocale, format, installCatalog, labelText as sharedLabel, listFormat, numberText, setDeviceLocale, sourceText as sharedSource, translate } from '../../../locales/runtime';
-import type { Catalog, MessageRef } from '../../../locales/runtime';
+import type { Catalog } from '../../../locales/runtime';
 import { PRESET_CHAT } from '../../backend/net/protocol';
 export type { MessageRef } from '../../../locales/runtime';
 type Lang = { code: string; name: string; native: string; script: string; dir: 'ltr' | 'rtl'; alsoFor?: string[]; generatedNames?: 'noun-first' | 'noun-first-joined' | 'compound' };
@@ -90,7 +90,6 @@ export function chatText(m: { text: string; kind: string; presetId?: number }, c
   if (m.presetId !== undefined && Number.isInteger(m.presetId) && PRESET_CHAT[m.presetId]) return labelText(PRESET_CHAT[m.presetId]);
   return m.kind !== 'chat' || computerAuthored ? messageText(m.text) : m.text;
 }
-export function renderMessage(ref: MessageRef | undefined, fallback: string): string { return ref ? translate(ref.key, ref.params) : messageText(fallback); }
 export function formatMessage(msg: string, params?: Record<string, unknown>): string { return format(msg, params); }
 export function fmtNumber(n: number): string { return numberText(n, deviceLocale(), true); }
 /** A decimal for display (1,25 in German, 1.25 in English), never `toFixed`. */

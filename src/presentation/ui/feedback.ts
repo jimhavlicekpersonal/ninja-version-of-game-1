@@ -10,7 +10,7 @@ import { haptic, hapticsEnabled, setHapticsEnabled, sound, type HapticKind } fro
 export type { HapticKind };
 export type SenseiMood = 'calm' | 'smile' | 'stern' | 'surprised';
 
-export interface UiArtHooks {
+interface UiArtHooks {
   /** `audio/haptics.ts` `haptic` (rate-limited, respects the player's switch). */
   haptic(kind: HapticKind): void;
   /** `art/portraits.ts` `senseiPortrait`: an SVG string. */
@@ -39,7 +39,7 @@ export function reducedMotion(): boolean {
 }
 
 /** Longest exit animation (`.modal-backdrop.out` in styles.css): the element goes even if no animationend arrives. */
-export const EXIT_MS = 200;
+const EXIT_MS = 200;
 
 /**
  * Remove a dialog backdrop with its exit motion (art audit F10: dialogs popped in but vanished in one frame). It is

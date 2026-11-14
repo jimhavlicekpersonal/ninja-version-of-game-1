@@ -9,7 +9,7 @@
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 
-export interface PushDevice {
+interface PushDevice {
   token: string;
   platform: 'ios' | 'android';
 }

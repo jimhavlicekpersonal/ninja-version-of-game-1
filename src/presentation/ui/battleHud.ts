@@ -25,7 +25,7 @@ import { layoutChevrons } from './chevronLayout';
 import { cardBadge } from './cardArt';
 import { noteBattleResult } from './reviewPrompt';
 
-export interface BattleHudDeps {
+interface BattleHudDeps {
   root: HTMLElement;
   session: BattleSession;
   myTrophies: number;
