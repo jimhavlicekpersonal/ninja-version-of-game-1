@@ -20,7 +20,11 @@ Standart Türkçe (tr-TR), samimi ve sıcak; oyuncuya "sen" diye hitap edilir. S
 | Infiltration Points | Sızma Noktaları |
 | Raid / attack / raider | baskın / saldırı / baskıncı |
 | Warrior / Defense / Shield | savaşçı / savunma / kalkan |
-| Honor / Power / League | şeref / güç / Lig: Bambu, Sedir, Demir, Obsidyen, Yeşim, Fırtına, Gölge, Kage |
+| Honor / Power / League | şeref / güç / Lig: Bambu, Sedir, Demir, Obsidyen, Kor (Ember), Fırtına, Gölge, Kage |
+| Relay (Gang War) | bayrak (bayrak vuruşu) |
+| Gang Rating | Çete Puanı |
+| Rematch / Settle the score | rövanş / Hesaplaş |
+| simulated raider / computer rival | simüle baskıncı / bilgisayar rakibi |
 | Daily chest / streak / skip | günlük sandık / seri / atlama hakkı |
 | Clan Stipend | Klan Maaşı |
 | Looks | görünüm |
@@ -41,5 +45,7 @@ Japon adları Latin yazımıyla kalır (Kaito, Takeda, Gorō). İngilizce lakapl
 Çoğul: `Intl.PluralRules('tr')` one ve other verir; Türkçede sayıdan sonra isim tekil kalır, iki dal genelde aynıdır (`{n, plural, one {# savaşçı} other {# savaşçı}}`). Süreler: {d} g {h} sa, {h} sa {m} dk, {m} dk {s} sn.
 
 Üretilen adlar: varsayılan düzen (birinci parça, boşluk, ikinci parça), çünkü Türkçede niteleyen önce gelir. Birinci parçalar sıfat ya da yer adlarında yalın kullanılan isimlerdir (Demir, Kara, Sessiz, İkiz), ikinci parçalar iyelik eki almayan yalın isimlerdir (Tepe, Kaya, Kapı), Türk yer adlarındaki gibi (Demirkapı, Karakaya). `generatedNames` ayarı gerekmez.
+
+Hukuki sayfalar (gizlilik, koşullar, topluluk kuralları, destek, hesap silme) Türk hukuk metinlerindeki gibi resmî "siz" ile yazıldı; oyunun kendisi "sen" kullanır. Japonya'nın yasal sayfaları Türkçeye çevrildi (Japonya Belirli Ticari İşlemler Kanunu / Ödeme Hizmetleri Kanunu Kapsamında Bildirim); destek sayfası onlara Japonca başlıklarıyla bağlantı verir.
 
 Bu çeviri anadili Türkçe olan bir insan tarafından gözden geçirilmedi.
