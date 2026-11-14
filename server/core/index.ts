@@ -35,6 +35,15 @@ import * as villageImport from './villageImport';
 export type { ServerContext } from './context';
 export { ApiError } from './context';
 
+/** What a stricter age band takes away that age.ts cannot import itself (third verification fixes 2026-11-14). */
+const bandEffects: age.BandEffects = {
+  async leaveMemberships(ctx, me) {
+    // Quiet: the notice does not name the player (as on account deletion), and a war's roster lock does not hold them.
+    if (await ctx.repo.getMembership(me.id)) await groves.leaveGrove(ctx, me, { quiet: true });
+    if (await ctx.repo.squadOf(me.id)) await squads.leave(ctx, me, { quiet: true });
+  },
+};
+
 export function createCore(ctx: ServerContext) {
   return {
     ctx,
@@ -93,13 +102,16 @@ export function createCore(ctx: ServerContext) {
     unlink: links.unlink.bind(null, ctx),
     signIn: links.signIn.bind(null, ctx),
     /** Re-audit: account protections (age bands, deletion codes, notices, sessions, Sign in with Apple notifications). */
-    stateAge: age.stateAge.bind(null, ctx),
+    // Third verification fixes 2026-11-14: in UNDER13_MODE=offline an under-13 statement also leaves the Alliance and Gang.
+    stateAge: (me: Parameters<typeof age.stateAge>[1], body: Parameters<typeof age.stateAge>[2]) => age.stateAge(ctx, me, body, bandEffects),
     acceptRules: rules.acceptRules.bind(null, ctx),
     /** Compliance switches 2026-11-14 (routes in server/complianceRoutes.ts). */
     compliance: {
       view: compliance.complianceView.bind(null, ctx),
       acceptTerms: compliance.acceptTerms.bind(null, ctx),
       setConsumptionConsent: compliance.setConsumptionConsent.bind(null, ctx),
+      setReplayPrivacy: compliance.setReplayPrivacy.bind(null, ctx),
+      replayPrivacy: compliance.replayPrivacyView.bind(null, ctx),
       checkUnder13Online: compliance.checkUnder13Online.bind(null, ctx),
       under13Mode: () => compliance.under13Mode(ctx),
     },

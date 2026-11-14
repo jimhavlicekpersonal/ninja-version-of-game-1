@@ -7,7 +7,7 @@
  * the hello and this record (`allowedWhileUnder13Offline`). It is registered only in that mode, before the
  * other route modules (app.ts), so other servers pay nothing for it.
  */
-import { ComplianceRoutes, type ConsumptionConsentRequest, type TermsRequest } from '../../src/backend/net/compliance';
+import { ComplianceRoutes, type ConsumptionConsentRequest, type ReplayPrivacyRequest, type TermsRequest } from '../../src/backend/net/compliance';
 import { allowedWhileUnder13Offline } from '../core/compliance';
 import { bearer, type RouteKit } from './kit';
 import { body, boolean, fields, string } from './schema';
@@ -25,4 +25,6 @@ export function complianceRoutes({ app, player, core }: RouteKit): void {
   player('GET', ComplianceRoutes.compliance, {}, async (me) => c.view(me));
   player('PUT', ComplianceRoutes.terms, { body: body(fields<TermsRequest>()({ version: string({ maxLength: 10 }) })), rate: 'moderation' }, async (me, { body }) => c.acceptTerms(me, body));
   player('PUT', ComplianceRoutes.consumptionConsent, { body: body(fields<ConsumptionConsentRequest>()({ consent: boolean() })), rate: 'moderation' }, async (me, { body }) => c.setConsumptionConsent(me, body));
+  player('GET', ComplianceRoutes.replayPrivacy, {}, async (me) => c.replayPrivacy(me));
+  player('PUT', ComplianceRoutes.replayPrivacy, { body: body(fields<ReplayPrivacyRequest>()({ allowBase: boolean() })), rate: 'moderation' }, async (me, { body }) => c.setReplayPrivacy(me, body));
 }

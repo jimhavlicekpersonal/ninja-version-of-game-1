@@ -29,6 +29,7 @@ import { ResimBusyError, ResimTimeoutError, type ResimOutcome } from '../resim/r
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
 import { capBaseLoot, layoutReset } from './baseRules';
+import { ageBandOf } from './ageBand';
 import { fail, detailError, busyCode, english, msg } from './errors';
 
 export { capBaseLoot, layoutReset } from './baseRules';
@@ -264,6 +265,12 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   await ctx.board.set(me.id, me.trophies, me.createdAt);
 }
 
+/** Candidates whose stated band is not under 13 (only asked in `offline` mode: one lookup per candidate, at most 20). */
+async function withoutUnder13(repo: Repo, list: Player[]): Promise<Player[]> {
+  const bands = await Promise.all(list.map((p) => ageBandOf(repo, p.id)));
+  return list.filter((_, i) => bands[i] !== 'under13');
+}
+
 /** Find someone to attack: a real player if one fits the rules, otherwise a generated base of matched strength. */
 export async function match(ctx: ServerContext, me: Player, client?: ClientInfo): Promise<MatchResponse> {
   const t = ctx.now();
@@ -312,7 +319,9 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     const pivot = me.trophies + Math.round((pivotJitter(me.id, t, range) * 2 - 1) * Math.min(range, data.ranks.matchTrophyRange));
     const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20, pivot });
     const busy = await locks.lockedAmong(list.map((p) => p.id));
-    const free = list.filter((p) => !busy.has(p.id) && legalFor(p));
+    let free = list.filter((p) => !busy.has(p.id) && legalFor(p));
+    // Third verification fixes 2026-11-14 (UNDER13_MODE=offline): an under-13 player is not online, so nobody raids them.
+    if (ctx.policy.under13Mode === 'offline') free = await withoutUnder13(repo, free);
     // Step 29: after the Keep window and power floor, the base whose expected score is nearest the target
     // (ties from a random start); the first one whose lock we get is ours (two attackers can't both get one).
     const start = free.length ? Math.floor(ctx.random() * free.length) : 0;

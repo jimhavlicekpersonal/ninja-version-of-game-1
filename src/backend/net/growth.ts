@@ -6,7 +6,7 @@
  *   `REFERRAL_WINDOW_DAYS`; once the server holds the recruit's village at Keep `REFERRAL_KEEP` or
  *   above (no import held back, no device in common), each side may collect `REFERRAL_JADE` Jade
  *   once, into a village the server holds; an inviter collects at most `REFERRAL_MONTHLY_CAP` a
- *   month. Fixed, never random, never sold.
+ *   month. Fixed, never random, never sold. Adults only on both sides (third verification fixes 2026-11-14).
  * - Shared replays (`shared-replays`, G14): the player picks one of their replays and chooses to
  *   share it; the server re-simulates it under the battle rules it names (refused when it cannot
  *   check them), stores it under a short code for `SHARED_REPLAY_DAYS` days, and anyone can open it
@@ -37,6 +37,16 @@ export interface ReferralRequest {
   code: string;
   /** This device's command-queue id (`VillageSync.device`): a device the inviter also plays on is refused. */
   device?: string;
+  /**
+   * Third verification fixes 2026-11-14: this installation's stable id (`installId`, generated once and kept in
+   * device storage; never the statistics id). Older games do not send it.
+   */
+  install?: string;
+}
+
+/** POST /v1/referrals/claim (optional body; older games send none). */
+export interface ReferralClaimRequest {
+  install?: string;
 }
 
 /** GET /v1/referrals, and the answers to POST /v1/referrals and /claim. */
@@ -58,6 +68,12 @@ export interface ReferralView {
   monthlyCap: number;
   rewardedThisMonth: number;
   windowDays: number;
+  /**
+   * Third verification fixes 2026-11-14 (docs/DECISIONS.md): friend-invite rewards are for adults only. True when
+   * this player's age band is not adult (under 18 or not stated): nothing can be entered or collected here, and
+   * this player's code earns no reward. Absent from older servers.
+   */
+  adultsOnly?: boolean;
 }
 
 export type SharedOpponent = 'player' | 'generated' | 'practice';

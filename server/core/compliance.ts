@@ -11,12 +11,13 @@
  *   `answerConsumptionRequest` (only with `appleConsumptionResponse`, the App Store Server API key and the
  *   player's consent; otherwise nothing is sent).
  */
-import { ComplianceRoutes, validTermsVersion, WITHHELD_CHAT_TEXT, type ComplianceView, type Under13Mode } from '../../src/backend/net/compliance';
+import { ComplianceRoutes, validTermsVersion, WITHHELD_CHAT_TEXT, type ComplianceView, type ReplayPrivacyView, type Under13Mode } from '../../src/backend/net/compliance';
 import { presetChatId, type ChatView } from '../../src/backend/net/protocol';
 import { dollarsBucket, playTimeBucket, tenureBucket, type ConsumptionRequest } from '../payments/appleServerApi';
 import type { AppleTransaction } from '../payments/apple';
 import type { Player } from '../repo';
-import { ageBandOf } from './age';
+import { baseShareable } from './sharedReplays';
+import { ageBandOf } from './ageBand';
 import type { ServerContext } from './context';
 import { fail } from './errors';
 
@@ -33,6 +34,7 @@ export function complianceFeatures(ctx: ServerContext): string[] {
     'terms-acceptance',
     ...(ctx.policy.euJadeValue ? ['eu-jade-value'] : []),
     ...(consumptionAnswersOn(ctx) ? ['consumption-consent'] : []),
+    'replay-privacy',
   ];
 }
 
@@ -68,6 +70,23 @@ export function withholdForReader(messages: ChatView[], readerId: string): ChatV
 export async function complianceView(ctx: ServerContext, me: Player): Promise<ComplianceView> {
   const r = await ctx.repo.getCompliance(me.id);
   return { termsVersion: r?.termsVersion ?? null, consumptionConsent: r?.consumptionConsent ?? false };
+}
+
+/** GET /v1/me/replay-privacy. */
+export async function replayPrivacyView(ctx: ServerContext, me: Player): Promise<ReplayPrivacyView> {
+  return { baseInReplays: await baseShareable(ctx, me.id) };
+}
+
+/**
+ * PUT /v1/me/replay-privacy { allowBase } (third verification fixes 2026-11-14, 8c): anyone may turn it off (and the
+ * shared replays already made of their base are removed); only an adult may turn it back on.
+ */
+export async function setReplayPrivacy(ctx: ServerContext, me: Player, body: { allowBase?: unknown } | undefined): Promise<ReplayPrivacyView> {
+  if (typeof body?.allowBase !== 'boolean') throw fail(400, 'bad_request', 'consent.bad_value');
+  if (body.allowBase && (await ageBandOf(ctx.repo, me.id)) !== 'adult') throw fail(403, 'age_restricted', 'consent.not_adult');
+  await ctx.repo.setNoBaseInReplays(me.id, !body.allowBase);
+  if (!body.allowBase) await ctx.repo.deleteSharedReplaysOfDefender(me.id);
+  return replayPrivacyView(ctx, me);
 }
 
 /** PUT /v1/me/terms { version }: keep the newest effective date accepted. */

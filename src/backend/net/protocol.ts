@@ -1131,6 +1131,12 @@ export interface PurchaseIntentRequest {
    * refunds and Sandbox credit are counted per device as well as per account. Optional; older games omit it.
    */
   device?: string;
+  /**
+   * Third verification fixes 2026-11-14: this installation's stable id (`Connection.installId`, generated once and
+   * kept in device storage; a new village keeps it, unlike `device`). Kept on the intent instead of `device` when
+   * sent, so refunds on other accounts of the same phone are found. Optional; older games omit it.
+   */
+  install?: string;
 }
 export interface PurchaseIntentResponse {
   /** A UUID: Apple appAccountToken / Google obfuscatedAccountId. */
@@ -1286,5 +1292,5 @@ export interface RevokeOthersResponse {
 // re-exported here so the HUD reaches them through this contract file.
 export type { ReferralView, ShareReplayRequest, ShareReplayResponse, SharedOpponent, SharedReplayView } from './growth';
 export { parseShareCode, shareLink, SHARED_REPLAY_DAYS } from './growth';
-export type { ComplianceView, ConsumptionConsentRequest, TermsRequest, Under13Mode } from './compliance';
+export type { ComplianceView, ConsumptionConsentRequest, ReplayPrivacyRequest, ReplayPrivacyView, TermsRequest, Under13Mode } from './compliance';
 export { ComplianceRoutes, under13ModeOf, validTermsVersion, WITHHELD_CHAT_TEXT } from './compliance';

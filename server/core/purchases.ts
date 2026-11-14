@@ -93,6 +93,8 @@ async function devicesOf(ctx: ServerContext, me: Player, asking: string | null):
   const v = await ctx.repo.getVillage(me.id);
   for (const d of Object.keys(v?.deviceSeqs ?? {})) out.add(d);
   for (const p of await ctx.repo.purchasesOf(me.id, 100)) if (p.device) out.add(p.device);
+  // Third verification fixes 2026-11-14: the stable installation ids this player's game named.
+  for (const d of await ctx.repo.installsOf(me.id)) out.add(d);
   return [...out];
 }
 
@@ -117,14 +119,18 @@ export function countedCents(ctx: ServerContext, catalogUsd: number, currency: s
   return cents(catalogUsd);
 }
 
-export async function purchaseIntent(ctx: ServerContext, me: Player, body: { store?: unknown; productId?: unknown; under18?: unknown; device?: unknown } | undefined): Promise<PurchaseIntentResponse> {
+export async function purchaseIntent(ctx: ServerContext, me: Player, body: { store?: unknown; productId?: unknown; under18?: unknown; device?: unknown; install?: unknown } | undefined): Promise<PurchaseIntentResponse> {
   storeOf(ctx, body?.store);
   const product = productInfo(ctx.data, String(body?.productId ?? ''));
   if (!product) throw fail(400, 'bad_request', 'purchase.unavailable');
   const under18 = await ageGroupFor(ctx.repo, ctx, me.id, body?.under18);
   if (under18 === null) throw fail(403, 'purchase_refused', 'purchase.age_first');
   // Re-audit: buy, spend, refund, repeat. After several refunds, purchases pause until support has a look.
-  const device = deviceId(body?.device);
+  // Third verification fixes 2026-11-14: the stable installation id when the game sends one (it outlives a new
+  // village's queue id), else the queue id as before.
+  const install = deviceId(body?.install);
+  if (install) await ctx.repo.noteInstall(me.id, install, ctx.now());
+  const device = install ?? deviceId(body?.device);
   const refunds = await recentRefunds(ctx, me, await devicesOf(ctx, me, device));
   if (refunds >= REFUNDS_BEFORE_PAUSE) {
     ctx.metrics.count('tk_refused_total', { reason: 'refund_pause' });

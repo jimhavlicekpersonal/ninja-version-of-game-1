@@ -85,7 +85,7 @@ export function playerRoutes({ open, player, core }: RouteKit): void {
   player('GET', Routes.villageLedger, { query: query('limit') }, async (me, { query }) => core.ledger(me, query.limit));
 
   // Purchases (roadmap Phase 4): ask, redeem once, history; store notifications carry their own signatures.
-  player('POST', Routes.purchaseIntent, { body: body(fields<PurchaseIntentRequest>()({ store: string(), productId: string(), under18: nullable(boolean()), device: string() })), rate: 'purchase' }, async (me, { body }) => core.purchaseIntent(me, body));
+  player('POST', Routes.purchaseIntent, { body: body(fields<PurchaseIntentRequest>()({ store: string(), productId: string(), under18: nullable(boolean()), device: string(), install: string() })), rate: 'purchase' }, async (me, { body }) => core.purchaseIntent(me, body));
   player('POST', Routes.purchaseIntentRelease, { body: body(fields<IntentReleaseRequest>()({ accountToken: string(), outcome: string() })), rate: 'purchase' }, async (me, { body }) => core.releaseIntent(me, body));
   player('POST', Routes.purchases, { body: body(fields<RedeemRequest>()({ store: string(), storeProductId: string(), receipt: string() })), rate: 'purchase', bodyLimit: BODY_LIMITS.base }, async (me, { body }) => core.redeem(me, body));
   player('GET', Routes.purchases, { rate: 'purchase' }, async (me) => core.purchaseHistory(me));

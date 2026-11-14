@@ -25,6 +25,12 @@ export const ComplianceRoutes = {
   terms: '/v1/me/terms',
   /** PUT { consent }: share consumption information with Apple when asked about a refund (adults only). */
   consumptionConsent: '/v1/me/consumption-consent',
+  /**
+   * Third verification fixes 2026-11-14 (hello feature `replay-privacy`): GET, and PUT { allowBase }: whether this
+   * player's base may appear in other players' shared replays (`ReplayPrivacyView`). Adults only may allow it (the
+   * default for adults); a minor's base never appears.
+   */
+  replayPrivacy: '/v1/me/replay-privacy',
 } as const;
 
 export type Under13Mode = 'offline' | 'limited' | 'families';
@@ -68,10 +74,20 @@ export interface ConsumptionConsentRequest {
   consent: boolean;
 }
 
+export interface ReplayPrivacyRequest {
+  allowBase: boolean;
+}
+
 /** GET /v1/me/compliance and the answers to the two PUTs. */
 export interface ComplianceView {
   /** The terms version this account accepted (null: none recorded). */
   termsVersion: string | null;
   /** Whether Apple may be sent consumption information about this account's purchases. */
   consumptionConsent: boolean;
+}
+
+/** GET|PUT /v1/me/replay-privacy (third verification fixes 2026-11-14). */
+export interface ReplayPrivacyView {
+  /** Whether this player's base may appear in other players' shared replays (false for every minor or unstated band, and for an adult who turned it off). */
+  baseInReplays: boolean;
 }

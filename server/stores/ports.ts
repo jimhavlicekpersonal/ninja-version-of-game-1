@@ -108,6 +108,8 @@ export interface PlayerStore {
   getCompliance(playerId: string): Promise<ComplianceRow | null>;
   setTermsAccepted(playerId: string, version: string, at: number): Promise<void>;
   setConsumptionConsent(playerId: string, consent: boolean, at: number): Promise<void>;
+  /** Third verification fixes 2026-11-14 (8c): "don't allow my base in shared replays". */
+  setNoBaseInReplays(playerId: string, value: boolean): Promise<void>;
   /** A device token was used (at most about once a minute per player). */
   touchToken(tokenHash: string, at: number): Promise<void>;
   /** Sign out the devices a provider's sign-in made (unlink), except `except`; how many. */
@@ -274,6 +276,8 @@ export interface BattleStore {
   refundNotice(store: string, key: string): Promise<{ at: number; why: string } | null>;
   addAttack(a: AttackRecord): Promise<void>;
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
+  /** Third verification fixes 2026-11-14 (8c): the defender of this attacker's raid played with `seed` after `since`, if recorded. */
+  attackDefenderBySeed(attackerId: string, seed: number, since: number): Promise<string | null>;
   recentTargets(attackerId: string, since: number): Promise<string[]>;
   /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
   prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
@@ -464,20 +468,34 @@ export interface GrowthStore {
   addReferral(r: ReferralRow): Promise<boolean>;
   referralOf(recruitId: string): Promise<ReferralRow | null>;
   referralsBy(inviterId: string): Promise<ReferralRow[]>;
-  updateReferral(recruitId: string, patch: Partial<Pick<ReferralRow, 'qualifiedAt' | 'recruitRewardedAt' | 'inviterRewardedAt'>>): Promise<void>;
-  /** Inviter rewards paid since `since` (the monthly cap). */
+  /** Records the qualification time once (a set one is kept). */
+  updateReferral(recruitId: string, patch: Partial<Pick<ReferralRow, 'qualifiedAt'>>): Promise<void>;
+  /**
+   * Third verification fixes 2026-11-14: mark one side rewarded only if it was not (a conditional write; false when
+   * another request did it first). The inviter side also adds an anonymised `referral_rewards` row for the cap.
+   */
+  markReferralRewarded(recruitId: string, side: 'recruit' | 'inviter', at: number): Promise<boolean>;
+  /** Inviter rewards paid since `since` (the monthly cap), from the anonymised ledger that outlives a deleted recruit. */
   inviterRewardsSince(inviterId: string, since: number): Promise<number>;
+  /** A stable installation id the player's game sent (friend code, claim, purchase intent). */
+  noteInstall(playerId: string, install: string, at: number): Promise<void>;
+  installsOf(playerId: string): Promise<string[]>;
 
   addSharedReplay(r: SharedReplayRow): Promise<boolean>;
   /** The replay (counting a view when `view`), or null when missing or expired. */
   getSharedReplay(id: string, now: number, view: boolean): Promise<SharedReplayRow | null>;
   sharedReplaysOf(ownerId: string, since: number): Promise<SharedReplayRow[]>;
+  /** Shares this owner made since `since`, deleted ones included (the daily limit). */
+  sharedReplaysMadeSince(ownerId: string, since: number): Promise<number>;
+  /** Remove every shared replay of this defender's base (opt-out, a minor band). */
+  deleteSharedReplaysOfDefender(defenderId: string): Promise<number>;
   deleteSharedReplay(id: string, ownerId: string): Promise<boolean>;
+  /** Expired shared replays (and creation-log rows older than two days before `before`). */
   pruneSharedReplays(before: number): Promise<number>;
 
   setInstallTz(install: string, tz: number, at: number): Promise<void>;
-  /** Statistics ids with events received after `after`, oldest first, and the newest receipt time among them. */
-  statsTouched(after: number, limit: number): Promise<{ installs: string[]; maxReceived: number }>;
+  /** Statistics ids with events received after `after` (and at or before `upTo`), oldest first, and the newest receipt time among them. */
+  statsTouched(after: number, limit: number, upTo?: number): Promise<{ installs: string[]; maxReceived: number }>;
   statsEventsOf(installs: string[]): Promise<StatsEventRow[]>;
   installTzs(installs: string[]): Promise<Map<string, number>>;
   putInstallSummaries(rows: InstallSummaryRow[]): Promise<void>;

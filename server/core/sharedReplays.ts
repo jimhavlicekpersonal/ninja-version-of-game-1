@@ -11,13 +11,21 @@
  * when an adult asks for it. Under-13 accounts cannot share (no external sharing for them).
  * Anyone with the code may watch (`GET`, no token); the sharer may delete it; account deletion
  * removes the sharer's replays.
+ *
+ * Third verification fixes 2026-11-14: the daily limit counts shares made (`shared_replay_log`), so deleting
+ * one does not give it back (8a); only the battle fields the game knows are stored and served (`pickSetup`,
+ * `cleanDeployments`: anything else a request carries is dropped, 8b); when the server finds the raid (this
+ * player's attack record with the battle's seed) it labels the opponent a real player and keeps the defender's
+ * id (never shown) so a defender who is under 18, chose "don't allow my base in shared replays", or deletes
+ * their account is never in one (8c; `replay.base_private`, the same answer for each, so no age is revealed).
  */
 import { FRIEND_CODE_ALPHABET } from '../../src/backend/net/names';
 import { SHARE_CODE, SHARED_REPLAY_DAYS, SHARED_REPLAYS_PER_DAY, type ShareReplayRequest, type ShareReplayResponse, type SharedOpponent, type SharedReplayView } from '../../src/backend/net/growth';
-import type { BaseLayout, Deployment } from '../../src/gameplay/sim/battle/types';
-import type { Player } from '../repo';
+import type { BaseBuilding, BaseLayout, BattleSetup, Deployment } from '../../src/gameplay/sim/battle/types';
+import { DELETED_PLAYER, type Player } from '../repo';
 import { ResimBusyError } from '../resim/resim';
 import { HOUR, type ServerContext } from './context';
+import { ageBandOf } from './ageBand';
 import { busyCode, fail } from './errors';
 
 const DAY = 24 * HOUR;
@@ -44,10 +52,40 @@ function cleanDeployments(raw: unknown): Deployment[] | null {
   for (const d of raw as Record<string, unknown>[]) {
     if (!d || typeof d.troop !== 'string' || d.troop.length > 40) return null;
     for (const k of ['tick', 'x', 'y'] as const) if (typeof d[k] !== 'number' || !Number.isFinite(d[k])) return null;
-    out.push({ ...(d as unknown as Deployment) });
+    out.push({ tick: d.tick as number, troop: d.troop, x: d.x as number, y: d.y as number });
   }
   return out;
 }
+
+/** Copy only the listed keys that are present (8b: nothing else a request carries is stored or served). */
+function pick<T extends object>(raw: Record<string, unknown>, keys: readonly (keyof T & string)[]): Partial<T> {
+  const out: Record<string, unknown> = {};
+  for (const k of keys) if (raw[k] !== undefined) out[k] = raw[k];
+  return out as Partial<T>;
+}
+const BUILDING_KEYS = ['id', 'type', 'level', 'x', 'y', 'loot', 'upgrading', 'temper'] as const;
+const BASE_KEYS = ['hallLevel', 'trophies', 'practice', 'rival', 'trialTier', 'power', 'wallPower'] as const;
+const SETUP_KEYS = ['seed', 'army', 'infiltration', 'levels', 'reinforcements', 'startDamage', 'hero', 'mastery'] as const;
+
+/** The base as fought, without its name and with only the fields a battle reads. */
+export function pickBase(raw: Record<string, unknown>): BaseLayout {
+  const buildings = (raw.buildings as Record<string, unknown>[]).map((b) => pick<BaseBuilding>(b && typeof b === 'object' ? b : {}, BUILDING_KEYS) as BaseBuilding);
+  return { ...(pick<BaseLayout>(raw, BASE_KEYS) as BaseLayout), name: '', buildings };
+}
+
+/** The battle setup with only the fields a battle reads (and the cleaned base). */
+export function pickSetup(raw: Record<string, unknown>, base: BaseLayout): BattleSetup {
+  return { ...(pick<BattleSetup>(raw, SETUP_KEYS) as BattleSetup), base };
+}
+
+/** Whether a real defender's base may appear in a shared replay: adults who did not opt out. */
+export async function baseShareable(ctx: ServerContext, defenderId: string): Promise<boolean> {
+  if ((await ageBandOf(ctx.repo, defenderId)) !== 'adult') return false;
+  return (await ctx.repo.getCompliance(defenderId))?.noBaseInReplays !== true;
+}
+
+/** How far back the server looks for the raid a shared replay shows (attack records are kept 30 days). */
+const RAID_LOOKBACK_MS = 31 * DAY;
 
 /** POST /v1/replays/shared. */
 export async function share(ctx: ServerContext, me: Player, body: Partial<ShareReplayRequest> | undefined): Promise<ShareReplayResponse> {
@@ -55,7 +93,7 @@ export async function share(ctx: ServerContext, me: Player, body: Partial<ShareR
   if (band === 'under13') throw fail(403, 'age_restricted', 'replay.not_for_age');
   const g = ctx.repo;
   const now = ctx.now();
-  if ((await g.sharedReplaysOf(me.id, now - DAY)).length >= SHARED_REPLAYS_PER_DAY) throw fail(429, 'rate_limited', 'replay.too_many', { n: SHARED_REPLAYS_PER_DAY });
+  if ((await g.sharedReplaysMadeSince(me.id, now - DAY)) >= SHARED_REPLAYS_PER_DAY) throw fail(429, 'rate_limited', 'replay.too_many', { n: SHARED_REPLAYS_PER_DAY });
   if (!body || typeof body !== 'object' || !body.setup || typeof body.setup !== 'object') throw fail(400, 'bad_request', 'replay.bad');
   const rules = Number(body.rules);
   const engine = Number.isInteger(rules) ? ctx.rules.forTicket(rules, typeof body.dataVersion === 'string' ? body.dataVersion : undefined) : null;
@@ -65,13 +103,18 @@ export async function share(ctx: ServerContext, me: Player, body: Partial<ShareR
   const raw = body.setup.base as unknown as Record<string, unknown> | undefined;
   if (!raw || typeof raw !== 'object' || !Array.isArray(raw.buildings) || !raw.buildings.length || raw.buildings.length > 400) throw fail(400, 'bad_request', 'replay.bad');
   if (JSON.stringify(body).length > MAX_BYTES) throw fail(400, 'bad_request', 'replay.bad');
-  const base = { ...(raw as unknown as BaseLayout), name: '' };
+  const base = pickBase(raw);
   const deployments = cleanDeployments(body.deployments);
   if (!deployments) throw fail(400, 'bad_request', 'replay.bad');
   const s = body.setup;
   const army = s.army && typeof s.army === 'object' ? s.army : null;
   if (!army || Object.keys(army).length > 80 || !Number.isInteger(s.seed)) throw fail(400, 'bad_request', 'replay.bad');
-  const setup = { ...s, base };
+  const setup = pickSetup(s as unknown as Record<string, unknown>, base);
+  // 8c: a raid the server recorded names its real defender (kept, never shown): an under-18 defender's base, or one
+  // whose owner opted out, is never shared, whatever the request says the opponent was.
+  const defenderId = typeof s.seed === 'number' ? await g.attackDefenderBySeed(me.id, s.seed, now - RAID_LOOKBACK_MS) : null;
+  const realDefender = defenderId && defenderId !== DELETED_PLAYER.id ? defenderId : null;
+  if (realDefender && !(await baseShareable(ctx, realDefender))) throw fail(409, 'conflict', 'replay.base_private');
   const endTick = Number.isInteger(body.endTick) ? body.endTick : undefined;
   let result;
   try {
@@ -83,12 +126,12 @@ export async function share(ctx: ServerContext, me: Player, body: Partial<ShareR
   const showName = body.showName === true && band === 'adult';
   // Honesty: a base the game generated is labelled so whatever the request says.
   const asked: SharedOpponent = body.opponent !== undefined && OPPONENTS.includes(body.opponent) ? body.opponent : 'player';
-  const opponent: SharedOpponent = base.practice ? 'practice' : base.rival || (raw as { power?: unknown }).power !== undefined ? 'generated' : asked;
+  const opponent: SharedOpponent = base.practice ? 'practice' : base.rival || base.power !== undefined ? 'generated' : realDefender ? 'player' : asked;
   const expiresAt = now + SHARED_REPLAY_DAYS * DAY;
   const record = { at: now, rules, setup, deployments, ...(endTick !== undefined ? { endTick } : {}), result: { stars: result.stars, destruction: result.destruction }, sharerName: showName ? me.name : null, opponent };
   for (let i = 0; i < 4; i++) {
     const code = newCode(ctx);
-    if (await g.addSharedReplay({ id: code, ownerId: me.id, at: now, expiresAt, rules, dataVersion: engine.dataVersion, record, views: 0 })) {
+    if (await g.addSharedReplay({ id: code, ownerId: me.id, at: now, expiresAt, rules, dataVersion: engine.dataVersion, record, views: 0, defenderId: realDefender })) {
       ctx.metrics.count('tk_shared_replays_total', { what: 'shared' });
       return { code, expiresAt };
     }

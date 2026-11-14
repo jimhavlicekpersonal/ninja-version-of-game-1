@@ -497,6 +497,8 @@ describe('protocol contract', () => {
     const view = await g.referrals();
     expect(view).toMatchObject({ rewardJade: REFERRAL_JADE, keep: REFERRAL_KEEP, invitedBy: null, recruits: { waiting: 0, qualified: 0, rewarded: 0 } });
     expect(await errorOf(g.enterCode('KAGE-0000'))).toMatchObject({ status: 404, code: 'not_found' });
+    // Third verification fixes 2026-11-14: no age stated is not adult, so nothing can be entered (newer servers say so).
+    if (hello.features.includes('replay-privacy')) expect(view).toMatchObject({ adultsOnly: true, canEnterCode: false });
     const { setup, deployments } = (() => {
       const r = rush(5);
       return { setup: { seed: 7, base: generateOpponent(17, 1, data), army: r.army, infiltration: true }, deployments: r.deployments };
@@ -521,6 +523,12 @@ describe('protocol contract', () => {
     expect(await p.call('GET', ComplianceRoutes.compliance)).toEqual({ termsVersion: null, consumptionConsent: false });
     expect(await p.call('PUT', ComplianceRoutes.terms, { version: '2026-11-14' })).toMatchObject({ termsVersion: '2026-11-14' });
     expect(await errorOf(p.call('PUT', ComplianceRoutes.terms, { version: 'later' }))).toMatchObject({ status: 400, code: 'bad_request' });
+    // Third verification fixes 2026-11-14 (`replay-privacy`): no age stated, so the base is never in a shared replay.
+    if (hello.features.includes('replay-privacy')) {
+      expect(await p.call('GET', ComplianceRoutes.replayPrivacy)).toEqual({ baseInReplays: false });
+      expect(await errorOf(p.call('PUT', ComplianceRoutes.replayPrivacy, { allowBase: true }))).toMatchObject({ status: 403, code: 'age_restricted' });
+      expect(await p.call('PUT', ComplianceRoutes.replayPrivacy, { allowBase: false })).toEqual({ baseInReplays: false });
+    }
     // No age stated: the consent cannot be switched on.
     expect(await errorOf(p.call('PUT', ComplianceRoutes.consumptionConsent, { consent: true }))).toMatchObject({ status: 403, code: 'age_restricted' });
   });

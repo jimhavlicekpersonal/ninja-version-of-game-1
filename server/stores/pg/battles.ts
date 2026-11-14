@@ -73,6 +73,11 @@ export class PgBattles extends PgBase implements BattleStore {
     return r.map(toAttack).reverse();
   }
 
+  async attackDefenderBySeed(attackerId: string, seed: number, since: number): Promise<string | null> {
+    const r = await this.rows(`select defender_id from attacks where attacker_id = $1 and at > $3 and record->>'seed' = $2 order by at desc limit 1`, [attackerId, String(seed), since]);
+    return r[0] ? String(r[0].defender_id) : null;
+  }
+
   async recentTargets(attackerId: string, since: number): Promise<string[]> {
     return (await this.rows('select defender_id from attacks where attacker_id = $1 and at > $2', [attackerId, since])).map((x) => String(x.defender_id));
   }

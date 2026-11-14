@@ -175,8 +175,17 @@ export class PgPlayers extends PgBase implements PlayerStore {
       const q = (sql: string, vals: unknown[]) => dbOf(tx).query(sql, vals);
       await q('delete from tickets where attacker_id = $1', [id]);
       // Growth batch 2026-11-14: referrals either way and the player's shared replays.
-      await q('delete from referrals where recruit_id = $1 or inviter_id = $1', [id]);
-      await q('delete from shared_replays where owner_id = $1', [id]);
+      // Third verification fixes 2026-11-14: the inviter's anonymised reward ledger (it names only the inviter)
+      // outlives a deleted recruit, so deleting recruits does not reopen the monthly cap; the inviter's own rows go
+      // with the inviter. A recruit's own row stays when only the inviter is deleted (marked deleted), so the
+      // recruit cannot enter a second code and be paid twice. Installation ids, the share log and shared replays
+      // of the player's base go too.
+      await q('delete from referrals where recruit_id = $1', [id]);
+      await q('update referrals set inviter_id = $2 where inviter_id = $1', [id, D.id]);
+      await q('delete from referral_rewards where inviter_id = $1', [id]);
+      await q('delete from player_installs where player_id = $1', [id]);
+      await q('delete from shared_replay_log where owner_id = $1', [id]);
+      await q('delete from shared_replays where owner_id = $1 or defender_id = $1', [id]);
       // Compliance switches 2026-11-14: terms acceptance and consumption consent.
       await q('delete from player_compliance where player_id = $1', [id]);
       await q('update tickets set defender_id = null where defender_id = $1', [id]);
@@ -284,9 +293,15 @@ export class PgPlayers extends PgBase implements PlayerStore {
   }
 
   async getCompliance(playerId: string): Promise<ComplianceRow | null> {
-    const r = (await this.rows('select terms_version, terms_accepted_at, consumption_consent, consumption_consent_at from player_compliance where player_id = $1', [playerId]))[0];
+    const r = (await this.rows('select terms_version, terms_accepted_at, consumption_consent, consumption_consent_at, no_base_in_replays from player_compliance where player_id = $1', [playerId]))[0];
     if (!r) return null;
-    return { termsVersion: strOrNull(r.terms_version), termsAcceptedAt: r.terms_accepted_at === null ? null : num(r.terms_accepted_at), consumptionConsent: r.consumption_consent === true, consumptionConsentAt: r.consumption_consent_at === null ? null : num(r.consumption_consent_at) };
+    return {
+      termsVersion: strOrNull(r.terms_version),
+      termsAcceptedAt: r.terms_accepted_at === null ? null : num(r.terms_accepted_at),
+      consumptionConsent: r.consumption_consent === true,
+      consumptionConsentAt: r.consumption_consent_at === null ? null : num(r.consumption_consent_at),
+      noBaseInReplays: r.no_base_in_replays === true,
+    };
   }
 
   async setTermsAccepted(playerId: string, version: string, at: number): Promise<void> {
@@ -295,6 +310,10 @@ export class PgPlayers extends PgBase implements PlayerStore {
 
   async setConsumptionConsent(playerId: string, consent: boolean, at: number): Promise<void> {
     await this.db.query('insert into player_compliance (player_id, consumption_consent, consumption_consent_at) values ($1,$2,$3) on conflict (player_id) do update set consumption_consent = excluded.consumption_consent, consumption_consent_at = excluded.consumption_consent_at', [playerId, consent, at]);
+  }
+
+  async setNoBaseInReplays(playerId: string, value: boolean): Promise<void> {
+    await this.db.query('insert into player_compliance (player_id, no_base_in_replays) values ($1,$2) on conflict (player_id) do update set no_base_in_replays = excluded.no_base_in_replays', [playerId, value]);
   }
 
   async touchToken(tokenHash: string, at: number): Promise<void> {

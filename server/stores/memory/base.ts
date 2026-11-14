@@ -73,6 +73,10 @@ export abstract class MemoryBase {
   // Growth batch 2026-11-14 (GrowthStore).
   referralRows: ReferralRow[] = [];
   sharedReplayRows: SharedReplayRow[] = [];
+  /** Third verification fixes 2026-11-14 (migration 0041). */
+  referralRewardRows: { inviterId: string; at: number }[] = [];
+  installRows: { playerId: string; install: string; at: number }[] = [];
+  sharedReplayLogRows: { ownerId: string; at: number }[] = [];
   installTzRows: Record<string, number> = {};
   installSummaryRows: Record<string, InstallSummaryRow> = {};
   watermarkRows: Record<string, number> = {};

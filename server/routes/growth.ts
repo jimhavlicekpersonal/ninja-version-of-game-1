@@ -8,7 +8,7 @@
  * from the staff API (`/admin/v1/stats`, `/admin/v1/stats/local`, `/admin/v1/stats/funnel`). English only.
  */
 import type { FastifyInstance } from 'fastify';
-import { GrowthRoutes, type ReferralRequest, type ShareReplayRequest } from '../../src/backend/net/growth';
+import { GrowthRoutes, type ReferralClaimRequest, type ReferralRequest, type ShareReplayRequest } from '../../src/backend/net/growth';
 import { ADMIN_PAGE_CSP } from '../adminPage';
 import type { ServerCore } from '../core';
 import type { RouteKit } from './kit';
@@ -22,8 +22,8 @@ export function growthRoutes({ open, player, core }: RouteKit): void {
   const g = core.growth;
   const code = params('code');
   player('GET', GrowthRoutes.referrals, {}, async (me) => g.referrals(me));
-  player('POST', GrowthRoutes.referrals, { body: body(fields<ReferralRequest>()({ code: string(), device: string() })), rate: ['moderation', 'lookup'] }, async (me, { body }) => g.linkReferral(me, body));
-  player('POST', GrowthRoutes.referralClaim, { rate: 'moderation' }, async (me) => g.claimReferrals(me));
+  player('POST', GrowthRoutes.referrals, { body: body(fields<ReferralRequest>()({ code: string(), device: string(), install: string() })), rate: ['moderation', 'lookup'] }, async (me, { body }) => g.linkReferral(me, body));
+  player('POST', GrowthRoutes.referralClaim, { body: body(fields<ReferralClaimRequest>()({ install: string() })), rate: 'moderation' }, async (me, { body }) => g.claimReferrals(me, body));
   // Setup and deployments stay objects here: the core bounds them and re-simulates the battle.
   const shareBody = body(fields<ShareReplayRequest>()({ setup: object(), deployments: array(object()), endTick: number(), rules: number(), dataVersion: string(), opponent: string(), showName: boolean() }));
   player('POST', GrowthRoutes.sharedReplays, { body: shareBody, rate: 'battle', bodyLimit: SHARED_REPLAY_BODY_LIMIT }, async (me, { body, reply }) => reply.code(201).send(await g.shareReplay(me, body)));

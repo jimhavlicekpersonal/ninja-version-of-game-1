@@ -9,6 +9,8 @@ export interface ComplianceRow {
   termsAcceptedAt: number | null;
   consumptionConsent: boolean;
   consumptionConsentAt: number | null;
+  /** Third verification fixes 2026-11-14 (8c): the player asked that their base never appear in shared replays. */
+  noBaseInReplays?: boolean;
 }
 
 export interface Player {
@@ -745,6 +747,8 @@ export interface SharedReplayRow {
   /** `SharedReplayView` without `id`/`views` (protocol `growth.ts`). */
   record: unknown;
   views: number;
+  /** The real defender when the server found the raid (never shown; their opt-out, minor band or deletion removes the replay). */
+  defenderId?: string | null;
 }
 
 /** One statistics id's summary, by both day bases (UTC and the id's own UTC offset). */

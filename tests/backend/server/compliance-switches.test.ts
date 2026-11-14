@@ -212,7 +212,7 @@ describe('Apple CONSUMPTION_REQUEST', () => {
   it('with the switch and the adult player\'s consent: the information, signed, to the sandbox host', async () => {
     const { w, ann, t, fake } = await buyer(true);
     const me = (await w.repo.getPlayer(ann.id))!;
-    expect(await w.core.compliance.setConsumptionConsent(me, { consent: true })).toEqual({ termsVersion: null, consumptionConsent: true });
+    expect(await w.core.compliance.setConsumptionConsent(me, { consent: true })).toMatchObject({ termsVersion: null, consumptionConsent: true });
     await w.core.appleNotification(notification('CONSUMPTION_REQUEST', t.jws));
     expect(fake.sent).toHaveLength(1);
     const s = fake.sent[0];
@@ -225,6 +225,22 @@ describe('Apple CONSUMPTION_REQUEST', () => {
     await w.core.compliance.setConsumptionConsent(me, { consent: false });
     await w.core.appleNotification(notification('CONSUMPTION_REQUEST', t.jws));
     expect(fake.sent).toHaveLength(1);
+  });
+
+  it('re-checks the adult band when the request comes: consent given as an adult, then a minor band, sends nothing', async () => {
+    const { w, ann, t, fake } = await buyer(true);
+    await w.core.compliance.setConsumptionConsent((await w.repo.getPlayer(ann.id))!, { consent: true });
+    await ann.stateAge({ band: '13to17' });
+    // The stored consent is still on; the band at send time decides.
+    expect((await w.repo.getCompliance(ann.id))?.consumptionConsent).toBe(true);
+    await w.core.appleNotification(notification('CONSUMPTION_REQUEST', t.jws));
+    expect(fake.sent).toEqual([]);
+  });
+
+  it('a purchase intent keeps the stable installation id the game sent (third verification fixes)', async () => {
+    const { w, ann } = await buyer(false);
+    await ann.purchaseIntent({ store: 'apple', productId: 'moonstones_2', under18: false, device: 'queue-0001', install: 'install-buyer-1' });
+    expect(await w.repo.installsOf(ann.id)).toEqual(['install-buyer-1']);
   });
 
   it('a purchase this server never credited is not answered', async () => {

@@ -82,8 +82,16 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
   async deletePlayer(id: string, name: string, at: number): Promise<void> {
     const D = DELETED_PLAYER;
     // Growth batch 2026-11-14: referrals either way and the player's shared replays.
-    this.referralRows = this.referralRows.filter((x) => x.recruitId !== id && x.inviterId !== id);
-    this.sharedReplayRows = this.sharedReplayRows.filter((x) => x.ownerId !== id);
+    // Third verification fixes 2026-11-14: the inviter's anonymised reward ledger outlives a deleted recruit
+    // (it names only the inviter), so deleting recruits does not reopen the monthly cap; the inviter's own
+    // rows go with the inviter. A recruit's own row stays when only the inviter is deleted (marked deleted),
+    // so the recruit cannot enter a second code and be paid twice.
+    this.referralRows = this.referralRows.filter((x) => x.recruitId !== id);
+    for (const r of this.referralRows) if (r.inviterId === id) r.inviterId = D.id;
+    this.referralRewardRows = this.referralRewardRows.filter((x) => x.inviterId !== id);
+    this.installRows = this.installRows.filter((x) => x.playerId !== id);
+    this.sharedReplayLogRows = this.sharedReplayLogRows.filter((x) => x.ownerId !== id);
+    this.sharedReplayRows = this.sharedReplayRows.filter((x) => x.ownerId !== id && x.defenderId !== id);
     // Compliance switches 2026-11-14: terms acceptance and consumption consent.
     this.complianceRows.delete(id);
     for (const [k, t] of this.tickets) {
@@ -168,6 +176,9 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
   }
   async setConsumptionConsent(playerId: string, consent: boolean, at: number): Promise<void> {
     this.complianceRows.set(playerId, { ...(this.complianceRows.get(playerId) ?? NO_COMPLIANCE), consumptionConsent: consent, consumptionConsentAt: at });
+  }
+  async setNoBaseInReplays(playerId: string, value: boolean): Promise<void> {
+    this.complianceRows.set(playerId, { ...(this.complianceRows.get(playerId) ?? NO_COMPLIANCE), noBaseInReplays: value });
   }
   async touchToken(tokenHash: string, at: number): Promise<void> {
     const t = this.tokenRows.find((x) => x.tokenHash === tokenHash);

@@ -22,6 +22,7 @@ const toReplay = (r: Record<string, unknown>): SharedReplayRow => ({
   dataVersion: String(r.data_version),
   record: r.record,
   views: num(r.views),
+  defenderId: r.defender_id === null || r.defender_id === undefined ? null : String(r.defender_id),
 });
 const toInstallSummary = (r: Record<string, unknown>): InstallSummaryRow => ({
   install: String(r.install),
@@ -54,23 +55,48 @@ export class PgGrowth extends PgBase implements GrowthStore {
   async referralsBy(inviterId: string) {
     return (await this.db.query<Record<string, unknown>>('select * from referrals where inviter_id = $1 order by at', [inviterId])).rows.map(toReferral);
   }
-  async updateReferral(recruitId: string, patch: Partial<ReferralRow>) {
-    const cols: [string, unknown][] = [];
-    if (patch.qualifiedAt !== undefined) cols.push(['qualified_at', patch.qualifiedAt]);
-    if (patch.recruitRewardedAt !== undefined) cols.push(['recruit_rewarded_at', patch.recruitRewardedAt]);
-    if (patch.inviterRewardedAt !== undefined) cols.push(['inviter_rewarded_at', patch.inviterRewardedAt]);
-    if (!cols.length) return;
-    await this.db.query<Record<string, unknown>>(`update referrals set ${cols.map(([c], i) => `${c} = $${i + 2}`).join(', ')} where recruit_id = $1`, [recruitId, ...cols.map(([, v]) => v)]);
+  async updateReferral(recruitId: string, patch: Partial<Pick<ReferralRow, 'qualifiedAt'>>) {
+    if (patch.qualifiedAt === undefined) return;
+    await this.db.query<Record<string, unknown>>('update referrals set qualified_at = $2 where recruit_id = $1 and qualified_at is null', [recruitId, patch.qualifiedAt]);
+  }
+  async markReferralRewarded(recruitId: string, side: 'recruit' | 'inviter', at: number) {
+    // Third verification fixes 2026-11-14: a conditional write (only the first of parallel claims changes the row),
+    // and the inviter side's anonymised ledger row in the same statement.
+    if (side === 'recruit') {
+      const q = await this.db.query<Record<string, unknown>>('update referrals set recruit_rewarded_at = $2 where recruit_id = $1 and recruit_rewarded_at is null', [recruitId, at]);
+      return (q.rowCount ?? 0) > 0;
+    }
+    const q = await this.db.query<Record<string, unknown>>(
+      `with done as (update referrals set inviter_rewarded_at = $2 where recruit_id = $1 and inviter_rewarded_at is null returning inviter_id)
+       insert into referral_rewards (inviter_id, at) select inviter_id, $2 from done`,
+      [recruitId, at],
+    );
+    return (q.rowCount ?? 0) > 0;
   }
   async inviterRewardsSince(inviterId: string, since: number) {
-    return num((await this.db.query<Record<string, unknown>>('select count(*) as n from referrals where inviter_id = $1 and inviter_rewarded_at >= $2', [inviterId, since])).rows[0]?.n);
+    return num((await this.db.query<Record<string, unknown>>('select count(*) as n from referral_rewards where inviter_id = $1 and at >= $2', [inviterId, since])).rows[0]?.n);
+  }
+  async noteInstall(playerId: string, install: string, at: number) {
+    await this.db.query<Record<string, unknown>>('insert into player_installs (player_id, install, at) values ($1,$2,$3) on conflict do nothing', [playerId, install, at]);
+  }
+  async installsOf(playerId: string) {
+    return (await this.db.query<Record<string, unknown>>('select install from player_installs where player_id = $1', [playerId])).rows.map((r) => String(r.install));
   }
   async addSharedReplay(r: SharedReplayRow) {
     const q = await this.db.query<Record<string, unknown>>(
-      'insert into shared_replays (id, owner_id, at, expires_at, rules, data_version, record, views) values ($1,$2,$3,$4,$5,$6,$7,$8) on conflict do nothing',
-      [r.id, r.ownerId, r.at, r.expiresAt, r.rules, r.dataVersion, JSON.stringify(r.record), r.views],
+      `with made as (insert into shared_replays (id, owner_id, at, expires_at, rules, data_version, record, views, defender_id) values ($1,$2,$3,$4,$5,$6,$7,$8,$9) on conflict do nothing returning owner_id, at)
+       insert into shared_replay_log (owner_id, at) select owner_id, at from made where owner_id is not null`,
+      [r.id, r.ownerId, r.at, r.expiresAt, r.rules, r.dataVersion, JSON.stringify(r.record), r.views, r.defenderId ?? null],
     );
-    return (q.rowCount ?? 0) > 0;
+    // Without an owner no log row is written, so ask whether the replay landed.
+    if (r.ownerId) return (q.rowCount ?? 0) > 0;
+    return Boolean((await this.db.query<Record<string, unknown>>('select 1 from shared_replays where id = $1 and at = $2', [r.id, r.at])).rows[0]);
+  }
+  async sharedReplaysMadeSince(ownerId: string, since: number) {
+    return num((await this.db.query<Record<string, unknown>>('select count(*) as n from shared_replay_log where owner_id = $1 and at >= $2', [ownerId, since])).rows[0]?.n);
+  }
+  async deleteSharedReplaysOfDefender(defenderId: string) {
+    return (await this.db.query<Record<string, unknown>>('delete from shared_replays where defender_id = $1', [defenderId])).rowCount ?? 0;
   }
   async getSharedReplay(id: string, now: number, view: boolean) {
     const q = view
@@ -85,13 +111,16 @@ export class PgGrowth extends PgBase implements GrowthStore {
     return ((await this.db.query<Record<string, unknown>>('delete from shared_replays where id = $1 and owner_id = $2', [id, ownerId])).rowCount ?? 0) > 0;
   }
   async pruneSharedReplays(before: number) {
+    await this.db.query<Record<string, unknown>>('delete from shared_replay_log where at < $1', [before - 2 * 86_400_000]);
     return (await this.db.query<Record<string, unknown>>('delete from shared_replays where expires_at < $1', [before])).rowCount ?? 0;
   }
   async setInstallTz(install: string, tz: number, at: number) {
     await this.db.query<Record<string, unknown>>('insert into stats_install_tz (install, tz, at) values ($1,$2,$3) on conflict (install) do update set tz = excluded.tz, at = excluded.at', [install, tz, at]);
   }
-  async statsTouched(after: number, limit: number) {
-    const rows = (await this.db.query<Record<string, unknown>>('select install, max(received_at) as last from stats_events where received_at > $1 group by install order by last limit $2', [after, limit])).rows;
+  async statsTouched(after: number, limit: number, upTo?: number) {
+    const rows = (
+      await this.db.query<Record<string, unknown>>('select install, max(received_at) as last from stats_events where received_at > $1 and ($3::bigint is null or received_at <= $3) group by install order by last limit $2', [after, limit, upTo ?? null])
+    ).rows;
     return { installs: rows.map((r) => String(r.install)), maxReceived: rows.length ? num(rows[rows.length - 1].last) : after };
   }
   async statsEventsOf(installs: string[]) {

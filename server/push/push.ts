@@ -22,6 +22,7 @@ import { inQuietHours, localDay } from '../../src/gameplay/sim/reminders';
 import type { GameData } from '../../src/gameplay/sim/types';
 import type { Metrics } from '../observability';
 import { ServiceAccountAuth, type Fetch, type ServiceAccount } from '../payments/google';
+import { ageBandOf, dropPushTokens } from '../core/ageBand';
 import type { Repo } from '../repo';
 
 export interface PushMessage {
@@ -32,7 +33,7 @@ export interface PushMessage {
 }
 
 export type SendResult = 'sent' | 'invalid' | 'failed';
-export type PushOutcome = SendResult | 'off' | 'quiet' | 'limit';
+export type PushOutcome = SendResult | 'off' | 'quiet' | 'limit' | 'age';
 
 export interface PushTransport {
   readonly platforms: ('ios' | 'android')[];
@@ -69,6 +70,13 @@ export class ServerPush implements Pusher {
   async deliver(playerId: string, m: PushMessage): Promise<PushOutcome[]> {
     const now = this.o.now();
     const out: PushOutcome[] = [];
+    // Third verification fixes 2026-11-14: never to an under-13 band (whatever UNDER13_MODE says); a token kept from
+    // before the band was stated is removed here too.
+    if ((await ageBandOf(this.o.repo, playerId)) === 'under13') {
+      const n = await dropPushTokens(this.o.repo, playerId);
+      for (let i = 0; i < n; i++) this.o.metrics?.count('tk_push_total', { type: m.type, result: 'age' });
+      return Array.from({ length: n }, () => 'age' as const);
+    }
     for (const t of await this.o.repo.pushTokensOf(playerId)) {
       let r: PushOutcome;
       const day = localDay(now, t.tzOffsetMinutes);

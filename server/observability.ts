@@ -45,7 +45,7 @@ export const METRIC_HELP: Record<string, string> = {
   tk_event_loop_delay_ms: 'Event-loop delay in milliseconds over the last scrape interval, by quantile (re-simulation blocks the loop).',
   tk_purchases_total: 'Store purchases credited, by store and environment (Production, Sandbox, Test).',
   tk_refunds_total: 'Purchases refunded or revoked, by store and reason.',
-  tk_push_total: 'Server pushes, by type and result (sent, quiet, limit, off, invalid, failed).',
+  tk_push_total: 'Server pushes, by type and result (sent, quiet, limit, off, invalid, failed, age).',
   tk_age_bands_total: 'Age bands stated by games (re-audit), by band kept and whether it changed.',
   tk_notices_total: 'Moderation notices sent to players, by kind (report_outcome, moderation_action, account).',
   tk_apple_revocations_total: 'Sign in with Apple token revocations, by trigger (delete, unlink, notification) and result (ok, failed, skipped).',

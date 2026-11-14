@@ -24,6 +24,13 @@ export const WATERMARK = 'stats-rollup';
 const LAST_RUN = 'stats-rollup-run';
 /** Receipt times re-read before the watermark each run (writes landing in the same instant). */
 export const OVERLAP_MS = 60_000;
+/**
+ * Third verification fixes 2026-11-14 (8d): a run rolls only events received at least this long ago, and the
+ * watermark never passes `now − LAG_MS`. A receipt time is taken before its insert commits (and on whichever
+ * instance took the batch), so an event committed late with an earlier receipt time than events already read
+ * was skipped for good once the watermark had moved past it. Events wait at most one more hourly run.
+ */
+export const LAG_MS = 5 * 60_000;
 /** Statistics ids summarized per step, and steps per run (the rest waits for the next hour). */
 const BATCH = 500;
 const MAX_STEPS = 40;
@@ -78,7 +85,7 @@ export async function summarizeNew(ctx: ServerContext): Promise<{ installs: numb
   await g.setWatermark(LAST_RUN, ctx.now());
   let installs = 0;
   for (let step = 0; step < MAX_STEPS; step++) {
-    const touched = await g.statsTouched(after, BATCH);
+    const touched = await g.statsTouched(after, BATCH, ctx.now() - LAG_MS);
     const fresh = touched.maxReceived > wm;
     if (touched.installs.length) {
       const events = await g.statsEventsOf(touched.installs);

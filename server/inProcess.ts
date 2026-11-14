@@ -52,6 +52,8 @@ export class InProcessServerAdapter implements ServerPort {
       if (method === 'GET' && path === ComplianceRoutes.compliance) return c.view(me) as Promise<T>;
       if (method === 'PUT' && path === ComplianceRoutes.terms) return c.acceptTerms(me, b) as Promise<T>;
       if (method === 'PUT' && path === ComplianceRoutes.consumptionConsent) return c.setConsumptionConsent(me, b) as Promise<T>;
+      if (method === 'GET' && path === ComplianceRoutes.replayPrivacy) return c.replayPrivacy(me) as Promise<T>;
+      if (method === 'PUT' && path === ComplianceRoutes.replayPrivacy) return c.setReplayPrivacy(me, b) as Promise<T>;
       throw new ServerError(404, 'not_found', `No in-process route for ${method} ${path}.`);
     });
   }
