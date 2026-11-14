@@ -9,6 +9,7 @@ import { defaultData } from '../../src/gameplay/sim/data';
 import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import { checkLanguage, checkWorksheet, easternArabicDigits, missingPluralForms, targets } from '../../tools/i18n/lib.mjs';
 import { deletionPage } from '../../server/accountPage';
+import { complaintPage } from '../../server/complaintPage';
 import { notificationText } from '../../server/localization';
 
 const lang = targets().find(l => l.code === 'ar')!;
@@ -88,6 +89,7 @@ describe('the complete Arabic release catalog', () => {
     const form = deletionPage('ar');
     expect(form).toContain('<html lang="ar" dir="rtl">');
     expect(form).not.toContain('err.message;');
+    expect(complaintPage(undefined, 'ar')).toContain('<html lang="ar" dir="rtl">');
     expect(notificationText('Your army is ready', 'ar')).not.toBe('Your army is ready');
     expect(readFileSync(join(ROOT, 'public/legal.js'), 'utf8')).toContain("ar: 'لم يُنشر بعد'");
     expect(readFileSync(join(ROOT, 'ios/App/App/Info.plist'), 'utf8')).toContain('<string>ar</string>');

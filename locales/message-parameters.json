@@ -339,5 +339,67 @@
   },
   "ui.premium_active_builds_are_20_faster_5eb0f4e244": {
     "pct": "number"
+  },
+  "srv.detail": {
+    "detail": "detail"
+  },
+  "srv.village.says": {
+    "detail": "detail"
+  },
+  "srv.stats.refused": {
+    "detail": "detail"
+  },
+  "srv.import.unreadable": {
+    "detail": "detail"
+  },
+  "srv.import.refused": {
+    "detail": "detail"
+  },
+  "srv.pvp.fewer_troops": {
+    "warrior": "label"
+  },
+  "srv.name.cooldown": {
+    "date": "utc"
+  },
+  "srv.gang.found_cooldown": {
+    "date": "utc"
+  },
+  "srv.gang.join_cooldown": {
+    "date": "utc"
+  },
+  "srv.auth.banned": {
+    "until": "utc"
+  },
+  "srv.auth.banned_reason": {
+    "until": "utc",
+    "reason": "fragment"
+  },
+  "srv.chat.muted_hours": {
+    "until": "utc"
+  },
+  "srv.chat.muted_days": {
+    "until": "utc"
+  },
+  "srv.moderation.chat_paused": {
+    "until": "utc"
+  },
+  "srv.moderation.chat_paused_removed": {
+    "until": "utc"
+  },
+  "srv.moderation.chat_paused_removed_quote": {
+    "until": "utc"
+  },
+  "srv.moderation.suspended": {
+    "until": "utc",
+    "reason": "fragment"
+  },
+  "srv.moderation.renamed": {
+    "reason": "fragment"
+  },
+  "srv.moderation.reason": {
+    "reason": "fragment"
+  },
+  "srv.moderation.reason_note": {
+    "reason": "fragment"
   }
 }

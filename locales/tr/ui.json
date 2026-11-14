@@ -195,5 +195,6 @@
   "unlock.later": { "en": "Later", "text": "Sonra" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "İlk günlük sandığın hazır: Bitir'e basınca açılır." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Bu açılamadı. Bağlantını kontrol edip tekrar dene." },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura'nın yeni bir sürümü çıktı. Bunu açmak için yeniden yükle." }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura'nın yeni bir sürümü çıktı. Bunu açmak için yeniden yükle." },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "Bu telefon savaşları yavaş çizdi, bu yüzden Kagemura bir sonraki açılıştan itibaren daha hafif grafikler kullanacak. Bunu Ayarlar → Grafik bölümünden değiştirebilirsin." }
 }

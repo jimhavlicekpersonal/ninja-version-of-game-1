@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ru)
 
 # Russian translation
 
-Russian (`ru`, script `Cyrl`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Indonesian and Turkish (the first Cyrillic language). It is served to every `ru-*` device and covers every namespace (3,066 entries after the 10846c6 merge; 3,041 at activation), the six public pages and PWA manifest under `public/ru/`, the account-deletion form (`/account/delete?lang=ru`), server push text, iOS (`ru.lproj`) and Android (`values-ru`) resources, StoreKit fixtures (`ru`), and listing and product copy in `docs/store/ru/`. Terms: `locales/ru/TERMS.md`.
+Russian (`ru`, script `Cyrl`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Indonesian and Turkish (the first Cyrillic language). It is served to every `ru-*` device and covers every namespace (3,301 entries after the a1188d2 merge, including the server message codes and the complaint form; 3,041 at activation), the six public pages and PWA manifest under `public/ru/`, the account-deletion form (`/account/delete?lang=ru`), server push text, iOS (`ru.lproj`) and Android (`values-ru`) resources, StoreKit fixtures (`ru`), and listing and product copy in `docs/store/ru/`. Terms: `locales/ru/TERMS.md`.
 
 The translation is AI-written and validated by the repository checks below. **No native Russian speaker has reviewed it**, nor the legal pages.
 

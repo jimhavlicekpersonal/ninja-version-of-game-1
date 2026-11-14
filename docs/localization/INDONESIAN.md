@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.id)
 
 # Indonesian translation
 
-Indonesian (`id`, script `Latn`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Russian and Turkish. It is served to `id`, `id-ID`, the legacy code `in` that older Android and Java report, and Javanese (`jv`) and Sundanese (`su`) devices (`alsoFor`). It covers every namespace (3,066 entries after the 10846c6 merge; 3,041 at activation), the six public pages and PWA manifest under `public/id/`, the account-deletion form (`/account/delete?lang=id`), server push text, iOS (`id.lproj`) and Android resources, StoreKit fixtures (`id`), and listing and product copy in `docs/store/id/`. Terms: `locales/id/TERMS.md`.
+Indonesian (`id`, script `Latn`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Russian and Turkish. It is served to `id`, `id-ID`, the legacy code `in` that older Android and Java report, and Javanese (`jv`) and Sundanese (`su`) devices (`alsoFor`). It covers every namespace (3,301 entries after the a1188d2 merge, including the server message codes and the complaint form; 3,041 at activation), the six public pages and PWA manifest under `public/id/`, the account-deletion form (`/account/delete?lang=id`), server push text, iOS (`id.lproj`) and Android resources, StoreKit fixtures (`id`), and listing and product copy in `docs/store/id/`. Terms: `locales/id/TERMS.md`.
 
 The translation is AI-written and validated by the repository checks below. **No native Indonesian speaker has reviewed it**, nor the legal pages.
 

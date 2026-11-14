@@ -16,7 +16,8 @@
 import { bandChangeAllowed, isAgeBand, type AgeBand } from '../../src/gameplay/sim/age';
 import { presetChatId, type AgeRequest, type AgeResponse } from '../../src/backend/net/protocol';
 import type { Player, Repo } from '../repo';
-import { ApiError, type ServerContext } from './context';
+import { type ServerContext } from './context';
+import { fail } from './errors';
 
 /** The band a kept row stands for (an "under 18" from before bands counts as 13to17 here). */
 export function keptBand(row: { band: AgeBand | null; under18: boolean } | null): AgeBand | null {
@@ -32,7 +33,7 @@ export async function ageBandOf(repo: Repo, playerId: string): Promise<AgeBand |
 /** PUT /v1/me/age { band }: keep the stricter band; answer with the band now kept. */
 export async function stateAge(ctx: ServerContext, me: Player, body: AgeRequest | undefined): Promise<AgeResponse> {
   const asked = body?.band ?? null;
-  if (asked !== null && !isAgeBand(asked)) throw new ApiError(400, 'bad_request', 'band must be under13, 13to17, adult or null.');
+  if (asked !== null && !isAgeBand(asked)) throw fail(400, 'bad_request', 'age.bad_band');
   const row = await ctx.repo.getAgeBand(me.id);
   const before = keptBand(row);
   if (!asked) return { band: before };
@@ -51,5 +52,5 @@ export async function stateAge(ctx: ServerContext, me: Player, body: AgeRequest 
 export async function checkChatAllowed(ctx: ServerContext, me: Player, text: unknown): Promise<void> {
   if ((await ageBandOf(ctx.repo, me.id)) !== 'under13') return;
   if (typeof text === 'string' && presetChatId(text) >= 0) return;
-  throw new ApiError(403, 'age_restricted', 'Players under 13 chat with the ready-made phrases only.');
+  throw fail(403, 'age_restricted', 'age.under13_chat');
 }

@@ -10,6 +10,7 @@ import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import { SYSTEM_FONT_LANGS } from '../../src/presentation/render/fonts';
 import { checkLanguage, checkWorksheet, missingPluralForms, targets } from '../../tools/i18n/lib.mjs';
 import { deletionPage } from '../../server/accountPage';
+import { complaintPage } from '../../server/complaintPage';
 import { notificationText } from '../../server/localization';
 
 const lang = targets().find(l => l.code === 'ru')!;
@@ -91,6 +92,7 @@ describe('the complete Russian release catalog', () => {
     const form = deletionPage('ru');
     expect(form).toContain('<html lang="ru">');
     expect(form).not.toContain('err.message;');
+    expect(complaintPage(undefined, 'ru')).toContain('<html lang="ru">');
     expect(notificationText('Your army is ready', 'ru')).not.toBe('Your army is ready');
     expect(readFileSync(join(ROOT, 'public/legal.js'), 'utf8')).toContain("ru: 'ещё не опубликовано'");
     expect(readFileSync(join(ROOT, 'ios/App/App/Info.plist'), 'utf8')).toContain('<string>ru</string>');

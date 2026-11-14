@@ -7,10 +7,11 @@
 import { FRIEND_CODE_ALPHABET, NAME_HOLD_DAYS } from '../../src/backend/net/names';
 import type { DeletionCodeResponse, DeletionRequestBody, DeletionRequestResponse } from '../../src/backend/net/protocol';
 import { DELETED_PLAYER, type DeletionRequest, type Player } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
 import { leaveGrove } from './groves';
 import { revokeAppleTokens } from './links';
 import { leave as leaveSquad } from './squads';
+import { fail, staffError } from './errors';
 
 /**
  * Delete the caller's online account. Leaves their Alliance first (handing over leadership), without naming them.
@@ -71,7 +72,7 @@ const text = (v: unknown, max: number): string => String(v ?? '').replace(/\s+/g
 export async function requestDeletion(ctx: ServerContext, body: DeletionRequestBody | undefined): Promise<DeletionRequestResponse & { verified: boolean }> {
   const playerId = text(body?.playerId, 64);
   const name = text(body?.name, 40);
-  if (!playerId && !name) throw new ApiError(400, 'bad_request', 'Enter your Player ID (Settings → Online play → Account).');
+  if (!playerId && !name) throw fail(400, 'bad_request', 'account.enter_id');
   // The one-time code from Settings proves the request is the player's own (re-audit). It is used up.
   const code = normalizeDeletionCode(body?.code);
   let verified = false;
@@ -111,15 +112,15 @@ export async function deletionQueue(ctx: ServerContext, status: 'open' | 'all'):
  */
 export async function resolveDeletion(ctx: ServerContext, id: string, action: unknown, note: unknown): Promise<DeletionRequest> {
   const r = await ctx.repo.getDeletionRequest(String(id));
-  if (!r) throw new ApiError(404, 'not_found', 'No such deletion request.');
-  if (r.status !== 'open') throw new ApiError(409, 'conflict', 'That request was already handled.');
-  if (action !== 'delete' && action !== 'reject' && action !== 'override') throw new ApiError(400, 'bad_request', "action must be 'delete', 'reject' or 'override'");
+  if (!r) throw staffError(404, 'not_found', 'No such deletion request.');
+  if (r.status !== 'open') throw staffError(409, 'conflict', 'That request was already handled.');
+  if (action !== 'delete' && action !== 'reject' && action !== 'override') throw staffError(400, 'bad_request', "action must be 'delete', 'reject' or 'override'");
   let resolution = text(note, 500);
   if (action === 'delete' && !r.verified) {
-    throw new ApiError(409, 'conflict', "This request did not carry the player's deletion code, so it may not be theirs. Reject it, or use 'override' with a note saying how you checked the account is theirs.");
+    throw staffError(409, 'conflict', "This request did not carry the player's deletion code, so it may not be theirs. Reject it, or use 'override' with a note saying how you checked the account is theirs.");
   }
   if (action === 'override') {
-    if (resolution.length < 10) throw new ApiError(400, 'bad_request', 'An override needs a note (at least 10 characters) saying how ownership was checked.');
+    if (resolution.length < 10) throw staffError(400, 'bad_request', 'An override needs a note (at least 10 characters) saying how ownership was checked.');
     resolution = `Staff override: ${resolution}`;
   }
   if (action === 'delete' || action === 'override') {

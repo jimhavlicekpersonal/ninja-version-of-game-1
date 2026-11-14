@@ -10,6 +10,7 @@ import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import { SYSTEM_FONT_LANGS } from '../../src/presentation/render/fonts';
 import { checkLanguage, checkWorksheet, targets, turkishSuffixAfterPlaceholder } from '../../tools/i18n/lib.mjs';
 import { deletionPage } from '../../server/accountPage';
+import { complaintPage } from '../../server/complaintPage';
 import { notificationText } from '../../server/localization';
 
 const lang = targets().find(l => l.code === 'tr')!;
@@ -84,6 +85,7 @@ describe('the complete Turkish release catalog', () => {
     const form = deletionPage('tr');
     expect(form).toContain('<html lang="tr">');
     expect(form).not.toContain('err.message;');
+    expect(complaintPage(undefined, 'tr')).toContain('<html lang="tr">');
     expect(notificationText('Your army is ready', 'tr')).not.toBe('Your army is ready');
     expect(readFileSync(join(ROOT, 'public/legal.js'), 'utf8')).toContain("tr: 'henüz yayımlanmadı'");
     expect(readFileSync(join(ROOT, 'ios/App/App/Info.plist'), 'utf8')).toContain('<string>tr</string>');

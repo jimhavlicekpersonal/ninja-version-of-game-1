@@ -195,5 +195,6 @@
   "unlock.later": { "en": "Later", "text": "बाद में" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "आपका पहला रोज़ाना संदूक तैयार है: पूरा करें दबाने पर यह खुल जाएगा।" },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "यह खुल नहीं सका। अपना कनेक्शन जाँचें और फिर से कोशिश करें।" },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura का नया संस्करण आ गया है। इसे खोलने के लिए फिर से लोड करें।" }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura का नया संस्करण आ गया है। इसे खोलने के लिए फिर से लोड करें।" },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "इस फ़ोन पर लड़ाइयाँ धीमी चलीं, इसलिए अगली बार शुरू करने से Kagemura हल्के ग्राफ़िक्स इस्तेमाल करेगा। आप इसे सेटिंग्स → ग्राफ़िक्स में बदल सकते हैं।" }
 }

@@ -19,7 +19,8 @@
  * Each run is kept as a staff action (`jp-unused-balance`, numbers and server version), the record behind a
  * notification. It is an estimate for the owner and an accountant, not legal advice.
  */
-import { ApiError, type ServerContext } from './context';
+import type { ServerContext } from './context';
+import { staffError } from './errors';
 import { productInfo } from '../../src/gameplay/sim/monetization';
 import { PROTOCOL_VERSION } from '../../src/backend/net/protocol';
 import type { PurchaseRow } from '../repo';
@@ -86,9 +87,9 @@ const yenOf = (p: PurchaseRow): number | null => (p.currency?.toUpperCase() === 
 
 export async function japanBalanceReport(ctx: ServerContext, actor: string, rawDate: unknown): Promise<JapanBalanceReport> {
   const baseDate = rawDate === undefined || rawDate === '' ? latestBaseDate(ctx.now()) : String(rawDate);
-  if (!/^\d{4}-(03-31|09-30)$/.test(baseDate)) throw new ApiError(400, 'bad_request', 'The base date is 31 March or 30 September (YYYY-03-31 or YYYY-09-30).');
+  if (!/^\d{4}-(03-31|09-30)$/.test(baseDate)) throw staffError(400, 'bad_request', 'The base date is 31 March or 30 September (YYYY-03-31 or YYYY-09-30).');
   const baseAt = baseEnd(baseDate);
-  if (baseAt > ctx.now()) throw new ApiError(400, 'bad_request', 'That base date has not ended yet (JST).');
+  if (baseAt > ctx.now()) throw staffError(400, 'bad_request', 'That base date has not ended yet (JST).');
 
   const rows = (await ctx.repo.storefrontPurchases(JP_STOREFRONTS, baseAt)).filter(
     (p) => !NON_PRODUCTION.has(String(p.environment).toLowerCase()) && !(p.status === 'refunded' && (p.refundedAt ?? 0) <= baseAt),

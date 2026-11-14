@@ -18,7 +18,8 @@
 import { isolateName } from '../../src/gameplay/sim/social/names';
 import { REPORT_REASONS, type BlocksResponse, type NoticesResponse, type ReportReason, type ReportRequest, type ReportResponse } from '../../src/backend/net/protocol';
 import type { Player, PlayerNotice, Report } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
+import { fail, staffError, msg, utcDate, appeal, english, type ServerMessage } from './errors';
 
 /** Distinct reporters after which a message is hidden pending review. */
 export const HIDE_AFTER_REPORTS = 3;
@@ -32,7 +33,7 @@ const text = (v: unknown, max: number): string => String(v ?? '').replace(/\s+/g
 
 export async function report(ctx: ServerContext, me: Player, req: ReportRequest | undefined): Promise<ReportResponse> {
   const reason = req?.reason;
-  if (!reason || !REPORT_REASONS.includes(reason)) throw new ApiError(400, 'bad_request', 'Pick a reason for the report.');
+  if (!reason || !REPORT_REASONS.includes(reason)) throw fail(400, 'bad_request', 'report.pick_reason');
   const base = { id: ctx.uuid(), at: ctx.now(), reporterId: me.id, reason, note: text(req?.note, 500), status: 'open' as const, resolvedAt: null, resolution: null };
   let r: Report;
   if (req?.kind === 'chat') {
@@ -40,16 +41,16 @@ export async function report(ctx: ServerContext, me: Player, req: ReportRequest 
     const gang = await ctx.repo.squadOf(me.id);
     const c = req.messageId ? await ctx.repo.getChat(String(req.messageId)) : null;
     // Only messages the reporter can see: their own Alliance's or Gang's chat (step 63), written by a player.
-    if (!c || (c.groveId !== membership?.groveId && c.groveId !== gang?.squadId) || !c.playerId) throw new ApiError(404, 'not_found', 'That message is gone.');
-    if (c.playerId === me.id) throw new ApiError(400, 'bad_request', 'You cannot report your own message.');
+    if (!c || (c.groveId !== membership?.groveId && c.groveId !== gang?.squadId) || !c.playerId) throw fail(404, 'not_found', 'report.message_gone');
+    if (c.playerId === me.id) throw fail(400, 'bad_request', 'report.own_message');
     r = { ...base, kind: 'chat', targetId: c.playerId, targetName: c.name ?? '', messageId: c.id, groveId: c.groveId, text: c.text };
   } else if (req?.kind === 'player') {
     const p = req.playerId ? await ctx.repo.getPlayer(String(req.playerId)) : null;
-    if (!p) throw new ApiError(404, 'not_found', 'No such player.');
-    if (p.id === me.id) throw new ApiError(400, 'bad_request', 'You cannot report yourself.');
+    if (!p) throw fail(404, 'not_found', 'report.no_player');
+    if (p.id === me.id) throw fail(400, 'bad_request', 'report.self');
     r = { ...base, kind: 'player', targetId: p.id, targetName: p.name, messageId: null, groveId: null, text: null };
   } else {
-    throw new ApiError(400, 'bad_request', "kind must be 'chat' or 'player'");
+    throw fail(400, 'bad_request', 'report.bad_kind');
   }
   const fresh = await ctx.repo.addReport(r);
   if (fresh && r.messageId) {
@@ -62,11 +63,11 @@ export async function report(ctx: ServerContext, me: Player, req: ReportRequest 
 
 export async function block(ctx: ServerContext, me: Player, playerId: unknown): Promise<void> {
   const id = String(playerId ?? '');
-  if (!id || id === me.id) throw new ApiError(400, 'bad_request', 'You cannot block yourself.');
+  if (!id || id === me.id) throw fail(400, 'bad_request', 'block.self');
   const p = await ctx.repo.getPlayer(id);
-  if (!p) throw new ApiError(404, 'not_found', 'No such player.');
+  if (!p) throw fail(404, 'not_found', 'report.no_player');
   const list = await ctx.repo.blocksOf(me.id);
-  if (list.length >= MAX_BLOCKS && !list.some((b) => b.blockedId === id)) throw new ApiError(409, 'full', 'You have blocked as many players as you can. Unblock someone first.');
+  if (list.length >= MAX_BLOCKS && !list.some((b) => b.blockedId === id)) throw fail(409, 'full', 'block.full');
   await ctx.repo.addBlock({ playerId: me.id, blockedId: id, blockedName: p.name, at: ctx.now() });
   // A block ends a friendship and its requests either way (step 59).
   await ctx.repo.removeFriendship(me.id, id);
@@ -92,42 +93,44 @@ export function checkNotMuted(ctx: ServerContext, me: Player): void {
   const left = until - ctx.now();
   if (left <= 0) return;
   const hours = Math.ceil(left / HOUR);
-  const howLong = hours > 48 ? `${Math.ceil(hours / 24)} more days` : `${hours} more hour${hours === 1 ? '' : 's'}`;
-  throw new ApiError(403, 'muted', `A moderator paused your chat for ${howLong} (until ${new Date(until).toUTCString()})${me.muteReason ? `. Reason: ${me.muteReason}` : ''}. ${appealText(ctx)}`);
+  const first = hours > 48 ? msg('chat.muted_days', { days: Math.ceil(hours / 24), until: utcDate(until) }) : msg('chat.muted_hours', { hours, until: utcDate(until) });
+  throw fail(403, 'muted', first.key, first.params, { more: [...(me.muteReason ? [reasonMessage(me.muteReason)] : []), appeal(ctx)] });
 }
 
 // ------------------------------------------------------------------ notices (re-audit: EU DSA 16(5), 17)
 
 /** Words a player understands, for each report reason. */
-export const REASON_TEXT: Record<ReportReason, string> = {
-  harassment: 'harassment or bullying',
-  hate: 'hate speech',
-  sexual: 'sexual content',
-  spam: 'spam or scams',
-  cheating: 'cheating',
-  name: 'an inappropriate name',
-  other: 'breaking the community rules',
-};
+export const REASON_TEXT = Object.fromEntries(REPORT_REASONS.map((r) => [r, english([msg(`moderation.rule.${r}`)])])) as Record<ReportReason, string>;
 
-/** How to disagree with a decision. */
+/** How to disagree with a decision, in English (the notice and error texts use `appeal`, its code). */
 export function appealText(ctx: ServerContext): string {
-  const contact = ctx.account?.supportContact;
-  return contact
-    ? `If you think this was a mistake, write to ${contact} with your Player ID (Settings → Online play → Account) and we will look again.`
-    : 'If you think this was a mistake, contact support from Settings → Privacy and help with your Player ID, and we will look again.';
+  return english([appeal(ctx)]);
+}
+
+/**
+ * "Reason: …." for a stored reason (`REASON_TEXT` words, maybe with a moderator's note in brackets).
+ * The words become the game's own text in the player's language; the note stays as the moderator wrote it.
+ */
+export function reasonMessage(stored: string): ServerMessage {
+  for (const words of Object.values(REASON_TEXT)) {
+    if (stored === words) return msg('moderation.reason', { reason: words });
+    if (stored.startsWith(`${words} (`) && stored.endsWith(')')) return msg('moderation.reason_note', { reason: words, note: stored.slice(words.length + 2, -1) });
+  }
+  return msg('moderation.reason', { reason: stored });
 }
 
 /** Most notices kept per player (older ones are only listed, newest first, up to this many). */
 export const MAX_NOTICES = 50;
 
-export async function notify(ctx: ServerContext, playerId: string, kind: PlayerNotice['kind'], text: string): Promise<void> {
-  await ctx.repo.addNotice({ id: ctx.uuid(), playerId, at: ctx.now(), kind, text, read: false });
+/** A notice as codes (`core/errors.ts`); its English text is kept for older games. */
+export async function notify(ctx: ServerContext, playerId: string, kind: PlayerNotice['kind'], parts: ServerMessage[]): Promise<void> {
+  await ctx.repo.addNotice({ id: ctx.uuid(), playerId, at: ctx.now(), kind, text: english(parts), read: false, parts });
   ctx.metrics.count('tk_notices_total', { kind });
 }
 
 /** GET /v1/notices */
 export async function notices(ctx: ServerContext, me: Player): Promise<NoticesResponse> {
-  return { notices: (await ctx.repo.noticesOf(me.id, MAX_NOTICES)).map((n) => ({ id: n.id, at: n.at, kind: n.kind, text: n.text, read: n.read })) };
+  return { notices: (await ctx.repo.noticesOf(me.id, MAX_NOTICES)).map((n) => ({ id: n.id, at: n.at, kind: n.kind, text: n.text, read: n.read, ...(n.parts?.length ? { parts: n.parts } : {}) })) };
 }
 
 /** POST /v1/notices/read { ids } */
@@ -172,11 +175,11 @@ export type ModerationAction = 'dismiss' | 'remove_message' | 'mute';
  */
 export async function resolveReport(ctx: ServerContext, id: string, body: { action?: unknown; hours?: unknown; note?: unknown } | undefined): Promise<Report> {
   const r = await ctx.repo.getReport(String(id));
-  if (!r) throw new ApiError(404, 'not_found', 'No such report.');
-  if (r.status !== 'open') throw new ApiError(409, 'conflict', 'That report was already handled.');
+  if (!r) throw staffError(404, 'not_found', 'No such report.');
+  if (r.status !== 'open') throw staffError(409, 'conflict', 'That report was already handled.');
   const action = body?.action as ModerationAction;
-  if (action !== 'dismiss' && action !== 'remove_message' && action !== 'mute') throw new ApiError(400, 'bad_request', "action must be 'dismiss', 'remove_message' or 'mute'");
-  if (action === 'remove_message' && !r.messageId) throw new ApiError(400, 'bad_request', 'That report is about a player, not a message.');
+  if (action !== 'dismiss' && action !== 'remove_message' && action !== 'mute') throw staffError(400, 'bad_request', "action must be 'dismiss', 'remove_message' or 'mute'");
+  if (action === 'remove_message' && !r.messageId) throw staffError(400, 'bad_request', 'That report is about a player, not a message.');
   const t = ctx.now();
   const note = text(body?.note, 500);
   let resolution: string;
@@ -185,19 +188,19 @@ export async function resolveReport(ctx: ServerContext, id: string, body: { acti
   const counts = new Map<ReportReason, number>();
   for (const x of same) counts.set(x.reason, (counts.get(x.reason) ?? 0) + 1);
   const reason = REASON_TEXT[[...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? r.reason] ?? REASON_TEXT.other;
-  const why = `Reason: ${reason}${note ? ` (${note})` : ''}.`;
-  const quoted = r.text ? ` ("${r.text.length > 80 ? `${r.text.slice(0, 80)}…` : r.text}")` : '';
-  let outcome: string;
-  let toTarget: string | null = null;
+  const why = note ? msg('moderation.reason_note', { reason, note }) : msg('moderation.reason', { reason });
+  const quote = r.text ? (r.text.length > 80 ? `${r.text.slice(0, 80)}…` : r.text) : '';
+  let outcome: ServerMessage;
+  let toTarget: ServerMessage | null = null;
   if (action === 'dismiss') {
     if (r.messageId) await ctx.repo.setChatHidden(r.messageId, false);
     resolution = note || 'No action needed.';
-    outcome = 'we did not find a rule broken, so nothing was removed. Thank you for helping keep Kagemura friendly.';
+    outcome = msg('moderation.outcome_none');
   } else if (action === 'remove_message') {
     await ctx.repo.setChatHidden(r.messageId!, true);
     resolution = note || 'Message removed.';
-    outcome = 'the message was removed.';
-    toTarget = `A moderator removed your chat message${quoted}. ${why}`;
+    outcome = msg('moderation.outcome_removed');
+    toTarget = quote ? msg('moderation.message_removed_quote', { quote }) : msg('moderation.message_removed');
   } else {
     const hours = Math.max(1, Math.min(MAX_MUTE_HOURS, Math.floor(Number(body?.hours ?? 24)) || 24));
     const target = await ctx.repo.getPlayer(r.targetId);
@@ -205,14 +208,14 @@ export async function resolveReport(ctx: ServerContext, id: string, body: { acti
     if (target) await ctx.repo.updatePlayer(target.id, { mutedUntil: until, muteReason: `${reason}${note ? ` (${note})` : ''}`.slice(0, 300) });
     if (r.messageId) await ctx.repo.setChatHidden(r.messageId, true);
     resolution = note || `Chat muted for ${hours} hours${r.messageId ? '; message removed' : ''}.`;
-    outcome = `the player's chat was paused${r.messageId ? ' and the message removed' : ''}.`;
-    toTarget = `A moderator paused your chat until ${new Date(until).toUTCString()}${r.messageId ? ` and removed your message${quoted}` : ''}. ${why}`;
+    outcome = msg(r.messageId ? 'moderation.outcome_paused_removed' : 'moderation.outcome_paused');
+    toTarget = !r.messageId ? msg('moderation.chat_paused', { until: utcDate(until) }) : quote ? msg('moderation.chat_paused_removed_quote', { until: utcDate(until), quote }) : msg('moderation.chat_paused_removed', { until: utcDate(until) });
   }
   const status = action === 'dismiss' ? 'dismissed' : 'actioned';
   for (const x of same) await ctx.repo.resolveReport(x.id, status, resolution, t);
   // Statement of reasons to the affected player, outcome to each reporter (never naming the reporters).
-  if (toTarget) await notify(ctx, r.targetId, 'moderation_action', `${toTarget} ${appealText(ctx)}`);
-  const about = r.kind === 'chat' ? `a chat message by ${isolateName(r.targetName)}` : isolateName(r.targetName);
-  for (const reporter of new Set(same.map((x) => x.reporterId))) await notify(ctx, reporter, 'report_outcome', `Thanks, we reviewed your report about ${about}: ${outcome}`);
+  if (toTarget) await notify(ctx, r.targetId, 'moderation_action', [toTarget, why, appeal(ctx)]);
+  const about = msg(r.kind === 'chat' ? 'moderation.reviewed_message' : 'moderation.reviewed_player', { name: isolateName(r.targetName) });
+  for (const reporter of new Set(same.map((x) => x.reporterId))) await notify(ctx, reporter, 'report_outcome', [about, outcome]);
   return (await ctx.repo.getReport(r.id))!;
 }

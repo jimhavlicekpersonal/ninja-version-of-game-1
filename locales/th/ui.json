@@ -195,5 +195,6 @@
   "unlock.later": { "en": "Later", "text": "ไว้ทีหลัง" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "หีบรายวันใบแรกพร้อมแล้ว กด เสร็จสิ้น เพื่อเปิด" },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "เปิดไม่ได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง" },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura มีเวอร์ชันใหม่แล้ว โหลดใหม่เพื่อเปิดส่วนนี้" }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura มีเวอร์ชันใหม่แล้ว โหลดใหม่เพื่อเปิดส่วนนี้" },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "โทรศัพท์เครื่องนี้แสดงการรบได้ช้า Kagemura จึงจะใช้กราฟิกที่เบาลงตั้งแต่การเปิดครั้งถัดไป เปลี่ยนได้ใน ตั้งค่า → กราฟิก" }
 }

@@ -7,12 +7,13 @@ import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummary, GroveView, GrovesResponse, InboxResponse, MemberView, RequestView, RequestsResponse } from '../../src/backend/net/protocol';
 import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
 import { requireRules } from './rules';
-import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { HOUR, MIN, type ServerContext } from './context';
 import { chosenName } from './identity';
 import { blockedIds, checkNotMuted } from './moderation';
 import { checkChatAllowed, ageBandOf } from './age';
 import { maxReinforcementAt } from './pvp';
 import { applyServerResult } from './village';
+import { fail } from './errors';
 
 
 /** Longest chat message accepted (the game's input allows 160 characters). */
@@ -30,7 +31,7 @@ export function maxReinforcement(hall: number, ctx: ServerContext): number {
 async function requireGrove(ctx: ServerContext, me: Player): Promise<{ grove: Grove; role: MemberView['role']; xp: number; joinedAt: number }> {
   const m = await ctx.repo.getMembership(me.id);
   const grove = m ? await ctx.repo.getGrove(m.groveId) : null;
-  if (!m || !grove) throw new ApiError(404, 'not_in_grove', 'You are not in an Alliance.');
+  if (!m || !grove) throw fail(404, 'not_in_grove', 'alliance.not_member');
   return { grove, role: m.role, xp: m.xp, joinedAt: m.joinedAt };
 }
 
@@ -70,25 +71,25 @@ export async function listGroves(ctx: ServerContext, me: Player, query: string):
 
 export async function createGrove(ctx: ServerContext, me: Player, name: unknown): Promise<GroveView> {
   requireRules(ctx, me);
-  if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
+  if (await ctx.repo.getMembership(me.id)) throw fail(409, 'already_in_grove', 'alliance.leave_first');
   const clean = chosenName(name, ctx);
   const colors = ctx.data.social.colors;
   const grove: Grove = { id: ctx.uuid(), name: clean, color: colors[Math.floor(ctx.random() * colors.length)], createdAt: ctx.now() };
   await ctx.repo.createGrove(grove);
-  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Leader', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
+  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Leader', joinedAt: ctx.now(), xp: 0 }))) throw fail(409, 'already_in_grove', 'alliance.leave_first');
   await ctx.repo.updatePlayer(me.id, { groveId: grove.id });
   await system(ctx, grove.id, `${isolateName(me.name)} founded ${isolateName(grove.name)}!`);
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }
 
 export async function joinGrove(ctx: ServerContext, me: Player, id: string): Promise<GroveView> {
-  if (await ctx.repo.getMembership(me.id)) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
+  if (await ctx.repo.getMembership(me.id)) throw fail(409, 'already_in_grove', 'alliance.leave_first');
   const grove = await ctx.repo.getGrove(String(id));
-  if (!grove) throw new ApiError(404, 'not_found', 'That Alliance does not exist.');
+  if (!grove) throw fail(404, 'not_found', 'alliance.missing');
   const rows = await ctx.repo.members(grove.id);
-  if (!rows.length) throw new ApiError(404, 'not_found', 'That Alliance is empty.');
-  if (rows.length >= maxMembers(ctx)) throw new ApiError(409, 'full', 'That Alliance is full.');
-  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Member', joinedAt: ctx.now(), xp: 0 }))) throw new ApiError(409, 'already_in_grove', 'Leave your Alliance first.');
+  if (!rows.length) throw fail(404, 'not_found', 'alliance.empty');
+  if (rows.length >= maxMembers(ctx)) throw fail(409, 'full', 'alliance.full');
+  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Member', joinedAt: ctx.now(), xp: 0 }))) throw fail(409, 'already_in_grove', 'alliance.leave_first');
   await ctx.repo.updatePlayer(me.id, { groveId: grove.id });
   await system(ctx, grove.id, `${isolateName(me.name)} joined the Alliance. Say hello!`);
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
@@ -144,13 +145,13 @@ export async function postChat(ctx: ServerContext, me: Player, text: unknown): P
 export async function postChatIn(ctx: ServerContext, me: Player, scopeId: string, text: unknown): Promise<ChatView> {
   const grove = { id: scopeId };
   const raw = String(text ?? '').replace(/\s+/g, ' ').trim();
-  if (!raw) throw new ApiError(400, 'bad_request', 'Type a message first.');
-  if (raw.length > CHAT_MAX_CHARS) throw new ApiError(400, 'bad_request', `Keep messages under ${CHAT_MAX_CHARS} characters.`);
+  if (!raw) throw fail(400, 'bad_request', 'chat.empty');
+  if (raw.length > CHAT_MAX_CHARS) throw fail(400, 'bad_request', 'chat.too_long', { max: CHAT_MAX_CHARS });
   checkNotMuted(ctx, me);
   requireRules(ctx, me);
   // Under 13 (re-audit): the fixed phrases only, never free text.
   await checkChatAllowed(ctx, me, raw);
-  if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw new ApiError(429, 'cooldown', 'Slow down a little!');
+  if ((await ctx.repo.recentChatCount(me.id, ctx.now() - MIN)) >= ctx.data.social.chatPerMinute) throw fail(429, 'cooldown', 'chat.slow');
   // Chat is always filtered (also for players who are not under 18); the server's stronger contact check
   // (backend batch 2026-11-13, C25 / UK OSA) replaces a message that writes a link or contact around it.
   // Since 2026-11-14 the shared filterText replaces it already (the device does the same); enforceChat finds nothing more.
@@ -188,9 +189,9 @@ export async function requestTroopsIn(ctx: ServerContext, me: Player, scopeId: s
   const grove = { id: scopeId };
   const t = ctx.now();
   const last = await ctx.repo.lastRequestAt(me.id);
-  if (last && t < last + ctx.data.social.requestCooldownMinutes * MIN) throw new ApiError(429, 'cooldown', 'You can ask again soon.');
+  if (last && t < last + ctx.data.social.requestCooldownMinutes * MIN) throw fail(429, 'cooldown', 'alliance.ask_soon');
   const size = Math.min(Math.floor(Number(capacity) || 0), maxReinforcement(me.hallLevel, ctx));
-  if (size <= 0) throw new ApiError(400, 'bad_request', 'Build an Alliance Lodge with free space first.');
+  if (size <= 0) throw fail(400, 'bad_request', 'alliance.lodge_first');
   await ctx.repo.closeRequestsOf(me.id);
   const r: TroopRequest = { id: ctx.uuid(), groveId: grove.id, playerId: me.id, name: me.name, at: t, size, filled: 0, open: true };
   await ctx.repo.addRequest(r);
@@ -207,23 +208,23 @@ export async function donate(ctx: ServerContext, me: Player, requestId: string, 
 export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, requestId: string, req: DonateRequest, xpToAlliance: boolean): Promise<DonateResponse> {
   const grove = { id: scopeId };
   const r = await ctx.repo.getRequest(String(requestId));
-  if (!r || r.groveId !== grove.id || !r.open || ctx.now() - r.at > ctx.data.social.requestLifetimeHours * HOUR) throw new ApiError(404, 'not_found', 'That request is gone.');
-  if (r.playerId === me.id) throw new ApiError(400, 'bad_request', 'You cannot fill your own request.');
+  if (!r || r.groveId !== grove.id || !r.open || ctx.now() - r.at > ctx.data.social.requestLifetimeHours * HOUR) throw fail(404, 'not_found', 'alliance.request_gone');
+  if (r.playerId === me.id) throw fail(400, 'bad_request', 'alliance.own_request');
   const def = ctx.data.troops[req?.troop];
   const count = Math.floor(Number(req?.count) || 0);
   const level = Math.floor(Number(req?.level) || 1);
-  if (!def || count <= 0) throw new ApiError(400, 'bad_request', 'Pick a warrior to donate.');
-  if (me.hallLevel < (def.unlockKeep ?? 1) || level < 1 || level > Math.min(troopLevelCapAt(me.hallLevel, ctx.data, req!.troop), def.levels.length)) throw new ApiError(400, 'bad_request', 'bad troop level');
+  if (!def || count <= 0) throw fail(400, 'bad_request', 'alliance.pick_warrior');
+  if (me.hallLevel < (def.unlockKeep ?? 1) || level < 1 || level > Math.min(troopLevelCapAt(me.hallLevel, ctx.data, req!.troop), def.levels.length)) throw fail(400, 'bad_request', 'army.bad_level');
   const housing = def.housing * count;
   const xp = housing * ctx.data.social.xpPerHousing;
   const donationId = ctx.uuid();
   // One transaction: the request's room, the gift, and (roadmap step 23) server-held armies on both sides.
   const updated = await ctx.repo.transaction(async (tx) => {
     const filled = await tx.fillRequest(r.id, housing);
-    if (!filled) throw new ApiError(409, 'full', 'That request does not have room for those warriors.');
+    if (!filled) throw fail(409, 'full', 'alliance.request_full');
     // A donor whose village the server keeps gives warriors from that real army.
     const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'spendDonation', troop: req.troop, count, xp: xpToAlliance ? xp : 0 }, reason: 'donation:sent' }], donationId);
-    if (spent && !spent.ok) throw new ApiError(400, 'bad_request', 'Your army on the server does not have those warriors.');
+    if (spent && !spent.ok) throw fail(400, 'bad_request', 'village.army_short');
     if (xpToAlliance) {
       const mine = await tx.getMembership(me.id);
       await tx.updateMember(grove.id, me.id, { xp: (mine?.xp ?? 0) + xp });
@@ -245,6 +246,6 @@ export async function inbox(ctx: ServerContext, me: Player): Promise<InboxRespon
 }
 
 export async function ackInbox(ctx: ServerContext, me: Player, ids: unknown): Promise<void> {
-  if (!Array.isArray(ids)) throw new ApiError(400, 'bad_request', 'ids must be a list');
+  if (!Array.isArray(ids)) throw fail(400, 'bad_request', 'request.bad_ids');
   await ctx.repo.markDelivered(me.id, ids.map(String).slice(0, 200));
 }

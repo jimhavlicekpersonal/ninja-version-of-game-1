@@ -117,7 +117,8 @@ This is what the game expects from a multiplayer server. Our server in `server/`
   - `capacitor://localhost` (iOS app);
   - `https://localhost` (Android app);
   - or simply `*`, which is safe because no cookies are used.
-- **Errors:** an HTTP status plus `{ "error": ErrorCode, "message": "…" }`. The client shows `message` to players, so write it for players.
+- **Errors:** an HTTP status plus `{ "error": ErrorCode, "message": "…", "key"?: "…", "params"?: {…}, "more"?: [{ key, params? }] }` (`ErrorBody`). `message` is the English sentence, written for players; games before error codes show it (and match it against their text packs).
+- **Message codes (2026-11-14, no protocol bump: additive, every field optional for the game):** a player-facing refusal also names its message: `key` is a stable code (`pvp.opponent_gone`, `gang.max_members`, …; the catalog is the `srv.<key>` entries of `locales/en/messages.json`, typed as `MessageCode` in `server/core/errors.ts`), `params` its parameters (numbers, player names, dates as `toUTCString()` text, English labels or nested server English the game translates itself), and `more` the sentences that follow in order (a reason, how to appeal). `message` is exactly those parts rendered in English and joined by spaces, so it never changes for older games. The game renders `srv.<key>` in the player's language; a code it does not know (a newer server) or a body without `key` (an older server, or Fastify's own refusal of a malformed request, which has no code) falls back to `message`. The `error` codes below stay the machine-readable class a game acts on; `key` only says which sentence it is. Codes are never renamed or reused: a sentence whose meaning changes gets a new code. Staff-only answers (`/admin`, store webhooks) keep English and no `key`. Moderation notices carry the same as `NoticeView.parts` (migration 0037; older notices have none). Contract test: `tests/backend/contract/protocol.contract.test.ts` (identity); the catalog check is `tests/backend/server/error-codes.test.ts`.
 
   | code | status | meaning |
   |---|---|---|
@@ -202,7 +203,7 @@ Every battle report must also be checked:
 | `POST /v1/me/deletion-code` | | `{ code: "XXXXX-XXXXX", expiresAt }` (feature `deletion-codes`; one at a time, 30 days, only its hash is kept) |
 | `PUT /v1/me/rules` | `{ version }` | `{ version }`: the community rules version this account accepted (feature `rules-acceptance`, report section 5 step 7). Chat, creating an Alliance or Gang and renaming answer `403 rules_required` until it is the current `COMMUNITY_RULES_VERSION`. |
 | `PUT /v1/me/age` | `{ band: 'under13' \| '13to17' \| 'adult' \| null }` | `{ band }`: the strictest band the server keeps (feature `age-bands`) |
-| `GET /v1/notices` · `POST /v1/notices/read` | · `{ ids }` | `{ notices: [{ id, at, kind, text, read }] }` · `204` (feature `notices`) |
+| `GET /v1/notices` · `POST /v1/notices/read` | · `{ ids }` | `{ notices: [{ id, at, kind, text, read, parts? }] }` · `204` (feature `notices`; `parts`: the notice as message codes, see Errors) |
 | `POST /v1/sessions/revoke-others` | | `{ revoked }`: every other device token of this account is signed out (feature `sessions`) |
 | `POST /v1/webhooks/apple-signin` | `{ payload: JWT }` (Apple, no token) | `{ ok: true }`; `consent-revoked` unlinks Apple; `account-delete` (backend A29) unlinks Apple, signs out its devices, sends a notice and queues a verified deletion request for staff (deleted after review, not at once) |
 | `POST /v1/auth/nonce` | (no token) | `AuthNonceResponse` `{ nonce, expiresAt }` (feature `signin-nonce`, backend A15): usable once, 10 minutes |

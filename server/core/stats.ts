@@ -15,7 +15,8 @@
 import { cleanStatsBatch, INSTALL_ID } from '../../src/backend/net/stats';
 import type { StatsResponse } from '../../src/backend/net/protocol';
 import type { StatsDailyRow, StatsInstallSummary } from '../repo';
-import { ApiError, HOUR, type ServerContext } from './context';
+import { HOUR, type ServerContext } from './context';
+import { fail } from './errors';
 
 export const DAY_MS = 24 * HOUR;
 /** Raw shared events are kept this long (a year and a month: D30 of a year-old cohort, year-on-year). */
@@ -30,7 +31,7 @@ export const utcDay = (t: number) => Math.floor(t / DAY_MS);
 
 export async function postStats(ctx: ServerContext, body: unknown): Promise<StatsResponse> {
   const b = cleanStatsBatch(body);
-  if ('error' in b) throw new ApiError(400, 'bad_request', `Statistics refused: ${b.error}.`);
+  if ('error' in b) throw fail(400, 'bad_request', 'stats.refused', { detail: b.error });
   const now = ctx.now();
   // A wrong phone clock must not plant events years away; out of range means "when it arrived".
   const events = b.events.map((e) => ({ ...e, at: e.at < now - OLDEST_EVENT_MS || e.at > now + FUTURE_EVENT_MS ? now : e.at }));
@@ -40,7 +41,7 @@ export async function postStats(ctx: ServerContext, body: unknown): Promise<Stat
 }
 
 export async function deleteStats(ctx: ServerContext, install: unknown): Promise<{ deleted: number }> {
-  if (typeof install !== 'string' || !INSTALL_ID.test(install)) throw new ApiError(400, 'bad_request', 'Not a statistics id.');
+  if (typeof install !== 'string' || !INSTALL_ID.test(install)) throw fail(400, 'bad_request', 'stats.bad_id');
   return { deleted: await ctx.repo.deleteStats(install.toLowerCase()) };
 }
 

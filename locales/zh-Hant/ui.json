@@ -195,5 +195,6 @@
   "unlock.later": { "en": "Later", "text": "稍後" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "你的第一個每日寶箱已就緒：點「完成」就會打開它。" },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "無法開啟。請檢查網路連線後再試一次。" },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura 有新版本。請重新載入後再開啟。" }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura 有新版本。請重新載入後再開啟。" },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "這支手機繪製戰鬥的速度較慢，因此從下次啟動起，Kagemura 會使用較輕量的畫面。你可以在「設定 → 畫面」中變更。" }
 }

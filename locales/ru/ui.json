@@ -195,5 +195,6 @@
   "unlock.later": { "en": "Later", "text": "Позже" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Твой первый ежедневный сундук готов: «Завершить» откроет его." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Не удалось открыть. Проверь подключение и попробуй снова." },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Вышла новая версия Kagemura. Перезагрузи, чтобы открыть это." }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Вышла новая версия Kagemura. Перезагрузи, чтобы открыть это." },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "Этот телефон рисовал бои медленно, поэтому со следующего запуска Kagemura будет использовать облегчённую графику. Изменить это можно в разделе Настройки → Графика." }
 }

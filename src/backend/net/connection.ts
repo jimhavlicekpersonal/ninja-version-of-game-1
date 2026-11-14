@@ -1,4 +1,4 @@
-import { deviceLocale } from '../../../locales/runtime';
+import { deviceLocale, rememberServerMessage } from '../../../locales/runtime';
 /**
  * Online play: picks the server, keeps this device's player registered,
  * and brings server results into the village (real raids, donated troops,
@@ -639,6 +639,8 @@ export class Connection {
     if (!this.canNotices) return this.notices;
     try {
       this.notices = (await this.port!.notices!()).notices;
+      // Notices with codes (2026-11-14) show in the player's language wherever their text is displayed.
+      for (const n of this.notices) if (n.parts) rememberServerMessage(n.text, n.parts);
       this.emit();
     } catch (e) {
       this.log('Online play: could not read notices', e);

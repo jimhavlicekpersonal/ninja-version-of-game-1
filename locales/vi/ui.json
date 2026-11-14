@@ -195,5 +195,6 @@
   "unlock.later": { "en": "Later", "text": "Để sau" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Rương hằng ngày đầu tiên của bạn đã sẵn sàng: chọn Hoàn tất để mở." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Không mở được. Hãy kiểm tra kết nối rồi thử lại." },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Đã có phiên bản Kagemura mới hơn. Hãy tải lại để mở mục này." }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Đã có phiên bản Kagemura mới hơn. Hãy tải lại để mở mục này." },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "Điện thoại này hiển thị trận đánh chậm, nên Kagemura sẽ dùng đồ họa nhẹ hơn từ lần mở tới. Bạn có thể đổi trong Cài đặt → Đồ họa." }
 }

@@ -3,13 +3,13 @@ import { NAME_ERROR_TEXT, checkName } from '../../src/gameplay/sim/social/names'
 import { PROTOCOL_VERSION, type BalanceResponse, type HelloResponse, type PlayerView, type RegisterResponse } from '../../src/backend/net/protocol';
 import type { Player } from '../repo';
 import { requireRules } from './rules';
-import { ApiError, HOUR, MIN, type ServerContext } from './context';
+import { HOUR, MIN, type ServerContext } from './context';
 import { purchaseFeatures } from './purchases';
-import { appealText } from './moderation';
 import { changeName, nameChangeAt, nameForNewPlayer } from './names';
 import { NameTakenError } from '../repo';
 import { serverHasContact } from './contactFilter';
 import { confirmRotation } from './links';
+import { fail, detailError, utcDate, appeal } from './errors';
 
 /**
  * The oldest game this server serves (protocol 7: villages kept on the server,
@@ -32,9 +32,9 @@ export function balance(ctx: ServerContext): BalanceResponse {
 /** A name the player chose: refused with a reason when it can't be used (src/gameplay/sim/social/names.ts). */
 export function chosenName(raw: unknown, ctx: ServerContext): string {
   const c = checkName(raw);
-  if (c.error) throw new ApiError(400, 'bad_request', NAME_ERROR_TEXT[c.error]);
+  if (c.error) throw detailError(400, 'bad_request', NAME_ERROR_TEXT[c.error]);
   // Backend batch 2026-11-13 (C25): the server's stronger check on top of the shared filter.
-  if (hasContact(c.name) || serverHasContact(c.name)) throw new ApiError(400, 'bad_request', 'Names cannot hold links, phone numbers, addresses or messaging-app handles.');
+  if (hasContact(c.name) || serverHasContact(c.name)) throw fail(400, 'bad_request', 'name.contact');
   return censorText(c.name, ctx.data);
 }
 
@@ -76,12 +76,12 @@ export async function authenticate(ctx: ServerContext, token: string | undefined
   const hash = token ? await ctx.hash(token) : '';
   // Backend A16: a rotated token's first use confirms the rotation (links.ts).
   const p = hash ? ((await ctx.repo.playerByTokenHash(hash)) ?? (await confirmRotation(ctx, hash))) : null;
-  if (!p) throw new ApiError(401, 'unauthorized', 'Unknown or missing player token.');
+  if (!p) throw fail(401, 'unauthorized', 'auth.unknown_token');
   // Which device token this is (re-audit: unlink and "sign out other devices" keep this one).
   p.session = hash;
   const t = ctx.now();
   if (p.bannedUntil) {
-    if (p.bannedUntil > t) throw new ApiError(403, 'banned', `This account is suspended from online play until ${new Date(p.bannedUntil).toUTCString()}${p.banReason ? `: ${p.banReason}` : ''}. Your village on this device is not affected. ${appealText(ctx)}`);
+    if (p.bannedUntil > t) throw fail(403, 'banned', p.banReason ? 'auth.banned_reason' : 'auth.banned', { until: utcDate(p.bannedUntil), ...(p.banReason ? { reason: p.banReason } : {}) }, { more: [appeal(ctx)] });
     // The suspension is over: back on the ladders.
     await ctx.repo.updatePlayer(p.id, { bannedUntil: 0, banReason: null });
     if (p.base) await ctx.board.set(p.id, p.trophies, p.createdAt);

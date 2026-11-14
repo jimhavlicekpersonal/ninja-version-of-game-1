@@ -172,11 +172,63 @@ export function messageRef(text: string): MessageRef | undefined {
   }
   return undefined;
 }
+/**
+ * Server messages with codes (2026-11-14): `{ key, params }` parts whose text is `srv.<key>`, joined by
+ * `srv.join` (a translator can drop the space). The server renders the same parts in English.
+ */
+export function partsText(parts: readonly MessageRef[], code = device, pack = catalogFor(code), depth = 0): string {
+  let out: string | undefined;
+  for (const part of parts) {
+    const text = translate(`srv.${part.key}`, part.params ?? {}, code, pack, depth);
+    out = out === undefined ? text : translate('srv.join', { first: out, second: text }, code, pack, depth);
+  }
+  return out ?? '';
+}
+/** A code this build knows (`srv.<key>` in its English catalog). */
+export const knownMessage = (key: unknown): key is string => typeof key === 'string' && key !== 'join' && Object.hasOwn(ENGLISH, `srv.${key}`);
+/** Plain parameters only: strings and finite numbers (anything else from the wire is dropped). */
+function cleanParams(params: unknown): MessageParams | undefined {
+  if (!params || typeof params !== 'object' || Array.isArray(params)) return undefined;
+  const out: MessageParams = {};
+  for (const [k, v] of Object.entries(params as Record<string, unknown>)) {
+    if (/^[A-Za-z0-9_]{1,32}$/.test(k) && (typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v)))) out[k] = typeof v === 'string' ? v.slice(0, 2000) : v;
+  }
+  return out;
+}
+/** Parts from the wire, or undefined when any part's code is unknown to this build (then the English is matched as before). */
+export function messageParts(value: unknown): MessageRef[] | undefined {
+  if (!Array.isArray(value) || !value.length || value.length > 8) return undefined;
+  const out: MessageRef[] = [];
+  for (const p of value) {
+    if (!p || typeof p !== 'object' || !knownMessage((p as MessageRef).key)) return undefined;
+    const params = cleanParams((p as MessageRef).params);
+    out.push(params && Object.keys(params).length ? { key: (p as MessageRef).key, params } : { key: (p as MessageRef).key });
+  }
+  return out;
+}
+const remembered = new Map<string, MessageRef[]>();
+const REMEMBERED_MAX = 200;
+/**
+ * The server's English for a message it also sent as codes. Error texts travel through the game as plain
+ * strings (results, toasts), so the network layer remembers which codes each English text came with and
+ * `sourceText` prefers them; texts without codes (older servers) are pattern-matched as before.
+ */
+export function rememberServerMessage(text: string, parts: unknown): void {
+  const clean = messageParts(parts);
+  if (!text || !clean) return;
+  remembered.delete(text);
+  remembered.set(text, clean);
+  if (remembered.size > REMEMBERED_MAX) remembered.delete(remembered.keys().next().value!);
+}
+/** The codes remembered for this English text, if any. */
+export const rememberedParts = (text: string): MessageRef[] | undefined => remembered.get(text);
 /** Historical canonical wording is a compatibility input, not saved in the
  * reader's language. Unknown provider diagnostics get a localized fallback.
  */
 export function sourceText(text: string, code = device, pack = catalogFor(code), errorFallback = false, depth = 0): string {
   if (code === 'en') return text;
+  const parts = remembered.get(text);
+  if (parts) return partsText(parts, code, pack, depth);
   const ref = messageRef(text);
   if (ref) return translate(ref.key, ref.params, code, pack, depth);
   return errorFallback ? (pack['common.unknownError'] ?? ENGLISH['common.unknownError']) : text;

@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.tr)
 
 # Turkish translation
 
-Turkish (`tr`, script `Latn`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Indonesian and Russian. It is served to every `tr-*` device and covers every namespace (3,066 entries after the 10846c6 merge; 3,041 at activation), the six public pages and PWA manifest under `public/tr/`, the account-deletion form (`/account/delete?lang=tr`), server push text, iOS (`tr.lproj`) and Android (`values-tr`) resources, StoreKit fixtures (`tr`), and listing and product copy in `docs/store/tr/`. Terms: `locales/tr/TERMS.md`.
+Turkish (`tr`, script `Latn`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Indonesian and Russian. It is served to every `tr-*` device and covers every namespace (3,301 entries after the a1188d2 merge, including the server message codes and the complaint form; 3,041 at activation), the six public pages and PWA manifest under `public/tr/`, the account-deletion form (`/account/delete?lang=tr`), server push text, iOS (`tr.lproj`) and Android (`values-tr`) resources, StoreKit fixtures (`tr`), and listing and product copy in `docs/store/tr/`. Terms: `locales/tr/TERMS.md`.
 
 The translation is AI-written and validated by the repository checks below. **No native Turkish speaker has reviewed it**, nor the legal pages.
 
