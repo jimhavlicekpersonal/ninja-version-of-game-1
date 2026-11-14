@@ -36,5 +36,8 @@ export function thaiGenderedWords(text: string): string[];
 export function mainlandTerms(text: string): string[];
 export function vietnameseGendered(text: string): string[];
 export function oldStyleTones(text: string): string[];
+export function turkishSuffixAfterPlaceholder(text: string): boolean;
+export function easternArabicDigits(text: string): boolean;
+export function missingPluralForms(code: string, text: string): string[];
 export function checkWorksheet(lang: Language, ns: string, src: Record<string, string>, ws: unknown): { total: number; done: number; errors: string[]; warnings: string[]; translated: string[] };
 export function checkLanguage(lang: Language): { code: string; total: number; done: number; errors: string[]; warnings: string[] };

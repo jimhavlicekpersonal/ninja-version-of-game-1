@@ -227,6 +227,23 @@ export function vietnameseGendered(text) { return [...new Set(text.match(VI_GEND
 const VI_OLD_TONES = /(?<!q)(?:o[àáảãạ]|o[èéẻẽẹ]|u[ỳýỷỹỵ])(?!\p{L})/giu;
 export function oldStyleTones(text) { return [...new Set(text.normalize('NFC').match(VI_OLD_TONES) ?? [])]; }
 
+// Turkish case and possessive suffixes follow vowel harmony and the final consonant of the word they attach to
+// ({name}'in/'ın/'un, {n}'de/'da/'te); a placeholder's last sound is unknown, so no suffix may follow one.
+const TURKISH_SUFFIX = /(?:\}|#)['’]\p{L}/u;
+/** A suffix written onto a placeholder or plural number (`{name}'in`, `#'den`). */
+export function turkishSuffixAfterPlaceholder(text) { return TURKISH_SUFFIX.test(text); }
+// The game formats numbers itself with Western digits (locales/languages.json); Arabic-Indic digits in a string would mix two digit sets.
+export function easternArabicDigits(text) { return /[٠-٩۰-۹]/u.test(text); }
+// CLDR plural categories a counted noun needs in these languages: without them, Russian 2–4 and 5–20 and Arabic 3–10 and
+// 11–99 fall to `other`, which has the wrong noun form (# воина for 5, # محارب for 3).
+const NEEDED_PLURALS = { ru: ['one', 'few', 'many'], ar: ['few', 'many'] };
+/** Plural categories missing from an ICU plural in a language whose nouns change with the number. */
+export function missingPluralForms(code, text) {
+  const needed = NEEDED_PLURALS[code];
+  if (!needed || !/,\s*plural\s*,/.test(text)) return [];
+  return needed.filter(c => !new RegExp(`(?<![\\p{L}=])${c}\\s*\\{`, 'u').test(text));
+}
+
 const DENSE = new Set(['Hans', 'Hant', 'Jpan', 'Kore']);
 /** Share of letters (outside placeholders) written in the expected script. */
 export function scriptShare(texts, script) {
@@ -314,6 +331,9 @@ export function checkWorksheet(lang, ns, src, ws) {
     if (lang.script === 'Hant' && /妳/u.test(t)) errors.push(`${ns}: ${k} uses 妳; the player's gender is unknown (use 你)`);
     if (lang.code === 'vi' && vietnameseGendered(t).length) errors.push(`${ns}: ${k} uses ${vietnameseGendered(t).join(', ')}, which name a gender and an age; use bạn, người chơi, đối thủ or the name`);
     if (lang.code === 'vi' && oldStyleTones(t).length) errors.push(`${ns}: ${k} places the tone the old way (${oldStyleTones(t).join(', ')}); write the modern form (hòa, khỏe, thủy)`);
+    if (lang.code === 'tr' && turkishSuffixAfterPlaceholder(t)) errors.push(`${ns}: ${k} writes a suffix onto a placeholder; its form depends on the word, so use a colon, a noun after it ({n} savaşçı) or a postposition (ile, için)`);
+    if (lang.code === 'ar' && easternArabicDigits(t)) errors.push(`${ns}: ${k} uses Arabic-Indic digits; the game writes Western digits 0-9`);
+    if (missingPluralForms(lang.code, t).length) errors.push(`${ns}: ${k} has no ${missingPluralForms(lang.code, t).join(', ')} plural branch, so those counts get the wrong noun form`);
     if (lang.script === 'Kore' && notKoreanRuns(t, en).length) errors.push(`${ns}: ${k} uses Hanja or kana; Korean is written in Hangul only`);
     if (lang.script === 'Kore' && koreanParticleAfterPlaceholder(t)) errors.push(`${ns}: ${k} puts a particle that changes with the final sound (을/를, 이/가, 은/는, 과/와, 으로/로…) right after a placeholder; rephrase or use 의, 에, 도, 만 or a colon`);
     if (lang.script === 'Thai' && thaiGenderedWords(t).length) errors.push(`${ns}: ${k} uses ${thaiGenderedWords(t).join(' ')}, which mark the speaker's gender; Thai text in the game is gender-neutral`);
