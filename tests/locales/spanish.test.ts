@@ -17,11 +17,11 @@ describe('the complete Spanish release catalog', () => {
     expect(availability.es.ready).toBe(true);
     expect(Object.keys(spanish).sort()).toEqual(Object.keys(ENGLISH).sort());
     expect(Object.values(spanish).every(v => typeof v === 'string' && v.length > 0)).toBe(true);
-    expect(Object.entries(availability).filter(([,v])=>v.ready).map(([k])=>k).sort()).toEqual(['ca','da','de','en','es','fr','hi','id','it','ja','ko','ms','nb','nl','pt','ro','ru','sv','th','uk','vi','zh-Hans','zh-Hant']);
+    expect(Object.entries(availability).filter(([,v])=>v.ready).map(([k])=>k).sort()).toEqual(['ca','da','de','en','es','fr','ha','hi','id','it','ja','ko','ms','nb','nl','pl','pt','ro','ru','sv','sw','th','tr','uk','ur','vi','zh-Hans','zh-Hant']);
   });
   it('uses the first completed device preference, including Spanish regional tags', async () => {
     installCatalog('es', spanish);
-    expect(await initLanguage(['pl-PL','es-MX','en-US'])).toBe('es');
+    expect(await initLanguage(['ar-SA','es-MX','en-US'])).toBe('es');
     expect(translate('hud.attack')).toBe('Atacar');
     expect(translate('army.queued', {n:2})).toBe('Se añadieron 2 guerreros a la cola.');
   });
