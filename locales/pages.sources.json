@@ -1351,8 +1351,8 @@
   "pages.support.26": {
     "file": "public/support.html",
     "name": "support",
-    "start": 4739,
-    "end": 4756,
+    "start": 4905,
+    "end": 4922,
     "en": "Delete my account",
     "tokens": [],
     "kind": "html"
@@ -1360,8 +1360,8 @@
   "pages.support.27": {
     "file": "public/support.html",
     "name": "support",
-    "start": 4767,
-    "end": 5314,
+    "start": 4933,
+    "end": 5480,
     "en": "In the game: Settings → Online play → Account → {t0}Delete online account{t1}. Without the game: {t2}{t3}, with your Player ID or name and a {t4}deletion code{t5}: get one in Settings → Online play → Account while you still have the game (it works once, for 30 days). Without a code we first have to check the account is yours. Your village on the device goes when you uninstall the app or clear the site's data. Details are in the {t6}privacy policy{t7}.",
     "tokens": [
       "<b>",
@@ -1378,8 +1378,8 @@
   "pages.support.28": {
     "file": "public/support.html",
     "name": "support",
-    "start": 5344,
-    "end": 5601,
+    "start": 5510,
+    "end": 5767,
     "en": "Kagemura: Ninja Clans · {t0}Privacy policy{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9}",
     "tokens": [
       "<a href=\"./privacy.html\">",
@@ -1416,8 +1416,17 @@
   "pages.support.31": {
     "file": "public/support.html",
     "name": "support",
-    "start": 4906,
-    "end": 4935,
+    "start": 4825,
+    "end": 4882,
+    "en": "Report illegal or harmful content with the complaint form",
+    "tokens": [],
+    "kind": "attribute"
+  },
+  "pages.support.32": {
+    "file": "public/support.html",
+    "name": "support",
+    "start": 5072,
+    "end": 5101,
     "en": "web address not published yet",
     "tokens": [],
     "kind": "attribute"
@@ -3283,6 +3292,171 @@
     "start": 6213,
     "end": 6280,
     "en": ". Get a code in the game, or contact support with this reference.",
+    "tokens": [],
+    "kind": "script"
+  },
+  "pages.complaints.0": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 174,
+    "end": 207,
+    "en": "Report illegal content · Kagemura",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.1": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 739,
+    "end": 761,
+    "en": "Report illegal content",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.2": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 770,
+    "end": 1071,
+    "en": "Use this form to tell us about content in Kagemura: Ninja Clans that you believe is illegal or harmful: a player, Alliance or Gang name, or a chat message (EU Digital Services Act, UK Online Safety Act). In the game you can also report and block a player from the ⋯ menu next to their message or name.",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.3": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1093,
+    "end": 1162,
+    "en": "If someone is in danger, contact your local emergency services first.",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.4": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1197,
+    "end": 1240,
+    "en": "Other questions: {t0}{t1}",
+    "tokens": [
+      "<b data-contact-value>",
+      "</b>"
+    ],
+    "kind": "html"
+  },
+  "pages.complaints.5": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1266,
+    "end": 1283,
+    "en": "What is it about?",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.6": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1415,
+    "end": 1444,
+    "en": "Why is it illegal or harmful?",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.7": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1524,
+    "end": 1568,
+    "en": "Your email, if you want an answer (optional)",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.8": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1646,
+    "end": 1684,
+    "en": "Your Player ID, if you play (optional)",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.9": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1745,
+    "end": 1749,
+    "en": "Send",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.10": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1807,
+    "end": 1923,
+    "en": "We keep the complaint and the optional email address only to handle it, and delete them a year after it was handled.",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.complaints.11": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 1340,
+    "end": 1392,
+    "en": "A player name, Alliance or Gang name, or the message",
+    "tokens": [],
+    "kind": "attribute"
+  },
+  "pages.complaints.12": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 2162,
+    "end": 2244,
+    "en": "Say what the complaint is about (a player name, an Alliance or Gang, a message).",
+    "tokens": [],
+    "kind": "script"
+  },
+  "pages.complaints.13": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 2307,
+    "end": 2364,
+    "en": "Say why it is illegal or harmful (at least a sentence).",
+    "tokens": [],
+    "kind": "script"
+  },
+  "pages.complaints.14": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 2466,
+    "end": 2525,
+    "en": "The contact must be an email address (or leave it empty).",
+    "tokens": [],
+    "kind": "script"
+  },
+  "pages.complaints.15": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 2839,
+    "end": 2891,
+    "en": "Thank you. Your complaint was received (reference ",
+    "tokens": [],
+    "kind": "script"
+  },
+  "pages.complaints.16": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 2971,
+    "end": 3043,
+    "en": "The complaint could not be sent. Check what you entered and try again.",
+    "tokens": [],
+    "kind": "script"
+  },
+  "pages.complaints.17": {
+    "file": "server/complaintPage.ts",
+    "name": "complaints",
+    "start": 3079,
+    "end": 3150,
+    "en": "The complaint could not be sent. Check your connection and try again.",
     "tokens": [],
     "kind": "script"
   }

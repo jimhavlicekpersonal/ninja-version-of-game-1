@@ -13,7 +13,7 @@ import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../
 import { MIN_PROTOCOL } from './core/identity';
 import type { GameData } from '../src/gameplay/sim/types';
 import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
-import { COMPLAINT_PAGE_CSP, complaintPage } from './core/complaints';
+import { COMPLAINT_PAGE_CSP, complaintPage } from './complaintPage';
 import { ApiError, createCore, type ServerCore } from './core';
 import { bodyFor, errorBody, staffError, type MessageCode } from './core/errors';
 import { nodeContext, type SharedStores } from './nodeContext';
@@ -567,7 +567,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage(String((_req.query as {lang?: unknown})?.lang ?? 'en'))));
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
   // Complaints about illegal or harmful content (EU DSA art. 16, UK OSA): a form and its endpoint, no token.
-  app.get('/complaints', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', COMPLAINT_PAGE_CSP).header('Cache-Control', 'no-store').send(complaintPage(core.ctx.account?.supportContact)));
+  app.get('/complaints', async (req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', COMPLAINT_PAGE_CSP).header('Cache-Control', 'no-store').send(complaintPage(core.ctx.account?.supportContact, String((req.query as { lang?: unknown })?.lang ?? 'en'))));
   app.post(Routes.complaints, { ...rate('complaint'), logLevel: 'warn' }, async (req, reply) => reply.code(201).send(await core.submitComplaint(req.body)));
 
   // Shared play statistics (report section 5 step 5): no token, and no request log line (it would hold the IP address).

@@ -170,5 +170,6 @@
   "unlock.later": { "en": "Later", "text": "Mai târziu" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Primul tău cufăr zilnic e gata: Termină îl deschide." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Nu s-a putut deschide. Verifică-ți conexiunea și încearcă din nou." },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "A apărut o versiune mai nouă a Kagemura. Reîncarcă pentru a deschide asta." }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "A apărut o versiune mai nouă a Kagemura. Reîncarcă pentru a deschide asta." },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "" }
 }

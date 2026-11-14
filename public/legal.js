@@ -25,7 +25,7 @@
         var a = document.createElement('a');
         a.href = /^[^\s@]+@[^\s@]+$/.test(v) ? 'mailto:' + v : v;
         var lang = document.documentElement.lang;
-        if (key === 'deletionUrl' && lang && lang !== 'en' && UNSET[lang]) a.href += (a.href.indexOf('?') < 0 ? '?' : '&') + 'lang=' + encodeURIComponent(lang);
+        if ((key === 'deletionUrl' || key === 'complaintUrl') && lang && lang !== 'en' && UNSET[lang]) a.href += (a.href.indexOf('?') < 0 ? '?' : '&') + 'lang=' + encodeURIComponent(lang);
         a.textContent = el.getAttribute('data-label') || v;
         el.appendChild(a);
       } else {

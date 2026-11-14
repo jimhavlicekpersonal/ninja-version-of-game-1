@@ -170,5 +170,6 @@
   "unlock.later": { "en": "Later", "text": "Più tardi" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Il tuo primo forziere giornaliero è pronto: Fine lo apre." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Impossibile aprire. Controlla la connessione e riprova." },
-  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "È uscita una versione più recente di Kagemura. Ricarica per aprire questa schermata." }
+  "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "È uscita una versione più recente di Kagemura. Ricarica per aprire questa schermata." },
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "" }
 }
