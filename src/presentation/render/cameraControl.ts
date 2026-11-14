@@ -23,6 +23,8 @@ export class CameraControl {
   private glide = { vx: 0, vy: 0 };
   private wheel: { zoom: number; x: number; y: number } | null = null;
   private holdTimer = 0;
+  /** A pointer whose touch already did something else (it skipped the opening shot): ignored until it lifts. */
+  private swallowed: number | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -58,6 +60,16 @@ export class CameraControl {
     this.userZoom = Phaser.Math.Clamp(z, this.minZoom(), MAX_ZOOM);
     this.scene.cameras.main.setZoom(this.userZoom * this.opts.renderScale);
     this.opts.onZoom?.(this.userZoom);
+  }
+
+  /**
+   * Second verification 2026-11-14: the touch that skips the battle's opening shot must not also deploy (as a
+   * tap, or by being held). It is ignored, whichever listener ran first, until that pointer lifts.
+   */
+  swallow(pointerId: number): void {
+    this.swallowed = pointerId;
+    if (this.drag?.id === pointerId) this.drag = null;
+    this.holdTimer = 0;
   }
 
   /** Stop any glide or wheel zoom in progress (before the scene moves the camera itself). */
@@ -122,6 +134,7 @@ export class CameraControl {
       this.drag = null;
       return;
     }
+    if (p.id === this.swallowed) return;
     this.glide = { vx: 0, vy: 0 };
     this.holdTimer = 0;
     const t = this.scene.time.now;
@@ -148,6 +161,11 @@ export class CameraControl {
   }
 
   private up(p: Phaser.Input.Pointer): void {
+    if (p.id === this.swallowed) {
+      this.swallowed = null;
+      if (this.drag?.id === p.id) this.drag = null;
+      return;
+    }
     if (this.pinch) {
       if (this.scene.input.manager.pointers.filter((q) => q.isDown).length < 2) this.pinch = null;
       this.drag = null;
