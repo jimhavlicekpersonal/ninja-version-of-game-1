@@ -5,6 +5,7 @@
  * errors into protocol errors.
  */
 import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
+import { registerGrowthRoutes, registerGrowthStaffRoutes } from './growthRoutes';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { brotliCompress, constants as zlibConstants, gzip } from 'node:zlib';
@@ -633,6 +634,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.post(Routes.groveRaidTicket, rate('match'), authed(async (me, req) => core.raidTicket(me, body<{ target: number }>(req).target, client(req))));
   app.post(Routes.groveRaidAttacks, { ...rate('battle'), bodyLimit: BODY_LIMITS.battle }, authed(async (me, req) => core.raidAttack(me, req.body as never)));
   app.post(Routes.groveRaidClaim, authed(async (me, req) => core.claimRaid(me, body<{ week: number }>(req).week)));
+  registerGrowthRoutes(app, { core, authed, rate }); // growth batch 2026-11-14: referrals, shared replays
 
   // Staff API: only with strong tokens, compared in constant time. Per-staff tokens (ADMIN_TOKENS) name
   // their holder in the staff log; the legacy shared ADMIN_TOKEN takes the name from x-staff-name.
@@ -685,6 +687,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.get('/admin/v1/complaints', staff(async (req) => core.admin.complaintQueue(query(req).status === 'all' ? 'all' : 'open')));
     app.post('/admin/v1/complaints/:id', staff(async (req) => core.admin.resolveComplaint(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/stats', staff(async (req) => core.statsReport(query(req).days)));
+    registerGrowthStaffRoutes(app, { core, staff }); // growth batch 2026-11-14: local days, funnel, /admin/stats
     // Backend A31: what this server sees as the caller's address, to check TRUST_PROXY after a deploy.
     app.get('/admin/v1/ip', staff(async (req) => ipEcho(req)));
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));

@@ -30,7 +30,7 @@ COPY package.json package-lock.json ./
 # game, so its client packages (Phaser ~148 MB, Capacitor) are removed after the locked install (report section 5
 # step 10, quality 32); tests/backend/release-config.test.ts keeps this list in step with package.json.
 RUN npm ci --omit=dev --ignore-scripts \
-  && rm -rf node_modules/phaser node_modules/@capacitor node_modules/eventemitter3 node_modules/tslib \
+  && rm -rf node_modules/phaser node_modules/@capacitor node_modules/@capacitor-community node_modules/eventemitter3 node_modules/tslib \
   && npm cache clean --force
 COPY --from=build /app/dist-server ./dist-server
 ARG RELEASE=dev
