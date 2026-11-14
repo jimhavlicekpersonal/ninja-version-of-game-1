@@ -1,10 +1,11 @@
 import { heroFor } from './heroes';
+import { hallLevel } from './keep';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
 import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from './battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
-import { buildingDef, hallType, levelDef, maxDefinedLevel, troopLevel } from './data';
+import { buildingDef, levelDef, maxDefinedLevel, troopLevel } from './data';
 import { mixSeed } from './rng';
 import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies, type SeasonReward } from './ranks';
 import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
@@ -389,11 +390,7 @@ export function settleSeasons(s: VillageState, at: number, data: GameData): void
   }
 }
 
-export function hallLevel(state: VillageState, data: GameData): number {
-  const type = hallType(data);
-  const hall = state.buildings.find((b) => b.type === type);
-  return Math.max(1, hall?.level ?? 1);
-}
+export { hallLevel } from './keep';
 
 export function countOfType(state: VillageState, type: BuildingType): number {
   return state.buildings.filter((b) => b.type === type).length;

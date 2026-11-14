@@ -1,20 +1,11 @@
 /** Deterministic warrior mechanics. Numbers belong to troops.json/battle.json. */
-import type { BattleSim, SimBuilding, SimTroop } from './battle';
+import type { BattleSim, SimBuilding, SimTroop, WarriorEffect } from './state';
 import type { WarriorKit } from '../types';
 import { next } from '../rng';
 import { troopDef } from '../data';
 import { BLOCKED, distToRect, findPath, HEDGE } from './pathfind';
 
-export interface WarriorEffect {
-  kind: 'poison' | 'burn' | 'charge';
-  source: number;
-  target: number;
-  x: number;
-  y: number;
-  radius: number;
-  damage: number;
-  endsTick: number;
-}
+export type { WarriorEffect } from './state';
 
 interface Actions {
   damageBuilding(sim: BattleSim, index: number, amount: number): void;

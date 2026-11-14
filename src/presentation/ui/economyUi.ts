@@ -8,7 +8,6 @@ import { achievementViews } from '../../gameplay/sim/achievements';
 import { activeOffers, offerReturns, offerRule, offersAllowed } from '../../gameplay/sim/offers';
 import { bandFromProfile } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
-import type { AgeBand } from '../../gameplay/sim/age';
 import { canPurchase, productGrantsFor, productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import type { StorePrice } from '../../backend/payments/provider';
@@ -21,18 +20,8 @@ import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { Capacitor } from '@capacitor/core';
 
-export interface UiKit {
-  c: GameController;
-  modal(title: string, body: HTMLElement, buttons?: ({ label: string; primary?: boolean; danger?: boolean; onClick: () => void } | null | false | undefined)[], size?: 'normal' | 'wide', onClose?: () => void): () => void;
-  /** A plain message, or an element (the purchase confirm carries links). */
-  confirm(title: string, message: string | HTMLElement, confirmLabel: string, danger?: boolean, cancelLabel?: string): Promise<boolean>;
-  toast(text: string, kind?: 'info' | 'error' | 'success'): void;
-  closeAllModals(): void;
-  /** The age band from the store's signal, else the neutral screen (the HUD's `askAge`). */
-  askAge?(why: string): Promise<AgeBand | null>;
-  /** The Clan Keep wearing a look, as a data URL (only the Store's Looks use it). */
-  skinThumb?(skin: string): string | null;
-}
+export type { UiKit } from './uiKit';
+import type { UiKit } from './uiKit';
 
 const usd = (n: number) => new Intl.NumberFormat(language().code, { style: 'currency', currency: 'USD' }).format(n);
 /** The device's language is Japanese (the purchase confirm then links the Japanese notices). */
