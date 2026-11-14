@@ -3,7 +3,7 @@
  * requests and donations. All bot activity is generated from the grove seed
  * and the clock, so it is the same every time the save is loaded.
  */
-import { barracksLevel } from '../army';
+import { barracksLevel, takeFromArmy } from '../army';
 import { levelDef } from '../data';
 import { troopLevelOf } from '../research';
 import { createRng, int, mixSeed, next, pick } from '../rng';
@@ -279,8 +279,7 @@ export function donate(state: VillageState, requestId: string, troop: string, co
   const room = req.size - req.donated;
   const n = Math.min(count, Math.floor(room / def.housing));
   if (n <= 0) return { ok: false, message: 'That request is full.' };
-  state.army[troop] -= n;
-  if (state.army[troop] === 0) delete state.army[troop];
+  takeFromArmy(state, troop, n);
   req.donated += n * def.housing;
   const xp = n * def.housing * data.social.xpPerHousing;
   g.xp += xp;

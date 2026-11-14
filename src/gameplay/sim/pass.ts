@@ -86,11 +86,14 @@ export function passPremiumValue(state: VillageState, now: number, data: GameDat
     if (t.tier > reach) continue;
     const { skin, ...res } = t.premium;
     if (skin) skins.push(skin);
-    const scaled = scaleReward(res as Cost, keep, data);
+    // Tiers already unlocked pay at the Keep they unlocked at (balance audit CU-6, `pass.tierKeep`).
+    const at = state.pass.season === season && t.tier * p.pointsPerTier <= points ? state.pass.tierKeep?.[t.tier - 1] : undefined;
+    const tierKeep = typeof at === 'number' && at >= 1 ? Math.min(at, keep) : keep;
+    const scaled = scaleReward(res as Cost, tierKeep, data);
     for (const [k, v] of Object.entries(scaled) as [ResourceKind, number][]) {
       if (!(v > 0)) continue;
       if (k === 'moonstones') jade += v;
-      else resourceJade += topUpOne(v, data, keep);
+      else resourceJade += topUpOne(v, data, tierKeep);
     }
   }
   const pack = [...data.store.packs].sort((a, b) => Math.abs(a.usd - p.usd) - Math.abs(b.usd - p.usd))[0];
@@ -143,8 +146,8 @@ function hallOf(state: VillageState, data: GameData): number {
  * Whether a task can still be done in its period with what the village has:
  * enough obstacles left to clear, enough buildings with an upgrade that fits
  * in the period (walls don't count: they finish instantly and would make the
- * task a chore), enough research that fits. Raids, stars, collecting and the
- * endless Shadow Trials are always possible.
+ * task a chore), enough research that fits, Shadow Trial tiers within reach
+ * (economy E27). Raids, stars and collecting are always possible.
  */
 export function taskEligible(tpl: TaskTemplate, target: number, state: VillageState, data: GameData, periodDays: number): boolean {
   const hall = hallOf(state, data);
@@ -181,6 +184,20 @@ export function taskEligible(tpl: TaskTemplate, target: number, state: VillageSt
       let total = 0;
       for (let i = 0; i < target; i++) total += times[i];
       return total / lanes <= period;
+    }
+    case 'trialsCleared': {
+      // Economy E27: "clear 2 new Trial tiers" used to be offered forever, though from tier 60 each tier is 6%
+      // stronger and the weekly task became unreachable. The next `target` tiers must be at or below the Keep
+      // and within `taskMaxGrowth` of the end of the Keep ladder.
+      const cfg = data.trials;
+      const halls = data.hall.levels.length;
+      const best = Math.max(0, Math.floor(state.trials?.best ?? 0));
+      for (let t = best + 1; t <= best + target; t++) {
+        if (Math.min(halls, 1 + Math.floor((t - 1) / cfg.tiersPerHall)) > hall) return false;
+        const beyond = Math.max(0, t - halls * cfg.tiersPerHall);
+        if (cfg.taskMaxGrowth !== undefined && Math.pow(1 + cfg.powerGrowthPerTier, beyond) > cfg.taskMaxGrowth + 1e-9) return false;
+      }
+      return true;
     }
     case 'troopsTrained':
       return state.buildings.some((b) => b.level >= 1 && (data.buildings[b.type]?.levels[b.level - 1]?.housing ?? 0) > 0);

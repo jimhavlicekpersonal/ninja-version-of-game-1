@@ -131,6 +131,23 @@ describe('outcome gates: no composition dominates (audit F22, F23, F37)', () => 
     }
   });
 
+  // Balance audit 2026-11-08 Change-12 / FSR X2: the budget test checks inputs; this is the lower outcome gate
+  // per family. Every composition must reach FAMILY_FLOOR % destruction against same-Keep bases. Cells that
+  // fail today are listed in KNOWN_BELOW (measured 2026-11-13: support 27.2 % at Keep 7 and 22.0 % at Keep 8,
+  // siege 25.5 % at Keep 8). They are held to stay below the floor, so the test fails when one is fixed (then
+  // remove it from the list) and a new failure is never absorbed silently. The floor is not lowered for them.
+  const FAMILY_FLOOR = 30;
+  const KNOWN_BELOW = new Set(['support@7', 'support@8', 'siege@8']);
+  it(`every family reaches ${FAMILY_FLOOR}% destruction at every Keep (known gaps listed, not hidden)`, () => {
+    for (const keep of keeps) {
+      for (const c of COMPOSITIONS) {
+        const d = cell(c.id, keep).destruction;
+        if (KNOWN_BELOW.has(`${c.id}@${keep}`)) expect(d, `${c.id} @ Keep ${keep} now reaches the floor: remove it from KNOWN_BELOW`).toBeLessThan(FAMILY_FLOOR);
+        else expect(d, `${c.id} @ Keep ${keep}`).toBeGreaterThanOrEqual(FAMILY_FLOOR);
+      }
+    }
+  });
+
   it('a Shadow strike is competitive: within 20 points of the realistic mixes (design re-audit: it managed 38-55%)', () => {
     for (const keep of keeps) {
       const mixes = ['mixed', 'artillery', 'support_light', 'breach'].map((c) => cell(c, keep).destruction);

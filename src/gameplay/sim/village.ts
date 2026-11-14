@@ -1,7 +1,7 @@
 import { heroFor } from './heroes';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
-import { armyHousing, armyReadyAt, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
-import { runBattle, SIM_RULES } from './battle/battle';
+import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
+import { runBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from './battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
 import { MS_PER_SECOND } from './clock';
 import { buildingDef, hallType, levelDef, maxDefinedLevel, troopLevel } from './data';
@@ -25,8 +25,8 @@ import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove
 import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
 import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
-import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, subtractCost } from './resources';
-import type { Building, BuildingLimit, BuildingType, Cost, GameData, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, VillageState, PendingBattle } from './types';
+import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
+import type { Building, BuildingLimit, BuildingType, Cost, GameData, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, TopUpPaid, TrainingItem, VillageState, PendingBattle } from './types';
 import { normalizeTemper, sameTemper, temperable, temperDef, validTemper } from './battle/temper';
 import { carriedLoot, raidCarry, validStake } from './carry';
 import { RESOURCE_KINDS } from './types';
@@ -57,7 +57,12 @@ export type Command =
   /** Cancel or finish a running research (the oldest when `troop` is left out). */
   | { type: 'cancelResearch'; troop?: string }
   | { type: 'skipResearch'; troop?: string }
-  | { type: 'openDailyChest' }
+  /**
+   * `entropy` (economy E18, save v22): a random number from the device (GameController fills it in) that rolls the
+   * next chest's salt, so future chests cannot be read from the village seed. A server-held village's server should
+   * replace it with its own (docs/backend/REQUESTS.md).
+   */
+  | { type: 'openDailyChest'; entropy?: number }
   | { type: 'scout'; paid: boolean }
   /**
    * `known`: server only (roadmap step 22), the result it has just simulated
@@ -184,8 +189,10 @@ export type SimEvent =
   | { kind: 'move'; buildingType: BuildingType; id: string }
   | { kind: 'temper'; buildingType: BuildingType; temper: Temper; cost: Cost }
   | { kind: 'train_start'; troop: string; seconds: number; cost: Cost; count?: number }
-  | { kind: 'dismiss'; troop: string; count: number; refund: Cost }
-  | { kind: 'train_cancel'; troop: string; count?: number }
+  | { kind: 'dismiss'; troop: string; count: number; refund: Cost; overflow?: Cost }
+  | { kind: 'train_cancel'; troop: string; count?: number; refund?: Cost }
+  /** Quality 33: a real raid this build could not trace; its losses were not taken here (`reason` for logs). */
+  | { kind: 'defense_untraced'; id: string; lost: Cost; reason: string }
   /** A one-tap refill could not queue everything: how many are missing, and why. */
   | { kind: 'train_short'; missing: number; why: string }
   | { kind: 'research_start'; troop: string; toLevel: number; seconds: number; cost: Cost }
@@ -213,9 +220,16 @@ export type SimEvent =
   | { kind: 'raid_settled'; record: BattleRecord; outcome: 'confirmed' | 'rejected' }
   | { kind: 'reinforcements'; troops: { troop: string; count: number; fromName: string }[] };
 
+/**
+ * GUI request (report section 5 step 9): the numbers and ids in a refusal, so the interface can word it in the
+ * player's language from `code` + `params` instead of parsing `message` (kept, in English, for compatibility).
+ * Values are numbers, ids (troop, building type, resource kind) or a `Cost`.
+ */
+export type FailParams = Record<string, string | number | Cost>;
+
 export type CommandResult =
   | { ok: true; state: VillageState; events: SimEvent[] }
-  | { ok: false; code: ErrorCode; message: string };
+  | { ok: false; code: ErrorCode; message: string; params?: FailParams };
 
 export interface Quote {
   toLevel: number;
@@ -223,7 +237,7 @@ export interface Quote {
   seconds: number;
 }
 
-export type QuoteResult = { ok: true; quote: Quote } | { ok: false; code: ErrorCode; message: string; quote?: Quote };
+export type QuoteResult = { ok: true; quote: Quote } | { ok: false; code: ErrorCode; message: string; params?: FailParams; quote?: Quote };
 
 export interface FinishedUpgrade {
   id: string;
@@ -232,8 +246,8 @@ export interface FinishedUpgrade {
   at: number;
 }
 
-function fail(code: ErrorCode, message: string): { ok: false; code: ErrorCode; message: string } {
-  return { ok: false, code, message };
+function fail(code: ErrorCode, message: string, params?: FailParams): { ok: false; code: ErrorCode; message: string; params?: FailParams } {
+  return params ? { ok: false, code, message, params } : { ok: false, code, message };
 }
 
 // ---------- Village setup and queries ----------
@@ -479,13 +493,13 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
   if (have >= lim.count) {
     const need = hallLevelRequiredFor(data, type, (l) => l.count > have);
     return need
-      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} to build another ${def.name}.`), quote }
-      : { ...fail('LIMIT_REACHED', `Your Keep allows no more of these (${def.name}: ${have} of ${lim.count}).`), quote };
+      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} to build another ${def.name}.`, { keep: need, building: type }), quote }
+      : { ...fail('LIMIT_REACHED', `Your Keep allows no more of these (${def.name}: ${have} of ${lim.count}).`, { building: type, have, max: lim.count }), quote };
   }
   if (!canAfford(s.resources, cost)) {
     return cost.moonstones && s.resources.moonstones < cost.moonstones
-      ? { ...fail('NOT_ENOUGH_MOONSTONES', `Needs ${cost.moonstones} Jade.`), quote }
-      : { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`), quote };
+      ? { ...fail('NOT_ENOUGH_MOONSTONES', `Needs ${cost.moonstones} Jade.`, { jade: cost.moonstones }), quote }
+      : { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`, { cost, missing: missingFor(s.resources, cost) }), quote };
   }
   if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
     return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
@@ -512,10 +526,10 @@ export function upgradeQuote(state: VillageState, id: string, data: GameData, no
   if (next.level > lim.maxLevel) {
     const need = hallLevelRequiredFor(data, b.type, (l) => l.maxLevel >= next.level);
     return need
-      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} first.`), quote }
+      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} first.`, { keep: need, building: b.type }), quote }
       : { ...fail('MAX_LEVEL', `${def.name} is at its highest level.`), quote };
   }
-  if (!canAfford(s.resources, price)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(price, data)}).`), quote };
+  if (!canAfford(s.resources, price)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(price, data)}).`, { cost: price, missing: missingFor(s.resources, price) }), quote };
   if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
     return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
   }
@@ -593,7 +607,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       const at = s.armyPresets.findIndex((p) => p.name === name);
       if (at >= 0) s.armyPresets[at] = { name, army };
       else {
-        if (s.armyPresets.length >= data.economy.maxArmyPresets) return fail('LIMIT_REACHED', `You can keep ${data.economy.maxArmyPresets} saved armies. Delete one first.`);
+        if (s.armyPresets.length >= data.economy.maxArmyPresets) return fail('LIMIT_REACHED', `You can keep ${data.economy.maxArmyPresets} saved armies. Delete one first.`, { max: data.economy.maxArmyPresets });
         s.armyPresets.push({ name, army });
       }
       return { ok: true, state: s, events: [] };
@@ -613,7 +627,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'skipResearch':
       return skipResearch(s, cmd.troop, now, data);
     case 'openDailyChest':
-      return openDailyChest(s, now, data);
+      return openDailyChest(s, now, data, cmd.entropy);
     case 'scout':
       return scout(s, cmd.paid, data);
     case 'battleEnd':
@@ -712,13 +726,13 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'applyDefense': {
       // A real player's raid reported by the server.
       if (s.defenseLog.some((d) => d.id === cmd.record.id)) return { ok: true, state: s, events: [] };
-      applyDefenseLosses(s, cmd.record, cmd.lost, now, data, cmd.fallen);
+      const untraced = applyDefenseLosses(s, cmd.record, cmd.lost, now, data, cmd.fallen);
       s.trophies = Math.max(0, cmd.trophies);
       s.shieldUntil = Math.max(s.shieldUntil, cmd.shieldUntil);
       s.defenseLog.push(cmd.record);
       while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();
       s.net.defensesSince = Math.max(s.net.defensesSince, cmd.record.at);
-      return { ok: true, state: s, events: [] };
+      return { ok: true, state: s, events: untraced ? [{ kind: 'defense_untraced', id: cmd.record.id, lost: cmd.lost, reason: untraced.untraced }] : [] };
     }
     case 'netBind':
       bindPlayer(s, cmd.playerId);
@@ -757,7 +771,18 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       // Re-audit: no simulation here. An abandoned battle wins nothing, so it only has to spend the
       // warriors the player sent in: count the deployments (each warrior once, never more than the army
       // and the Lodge hold). Running the battle cost a server up to a second for a forged base.
-      spendTroops(s, deployedTroops(cmd.record.setup, cmd.record.deployments, data), cmd.record.setup);
+      const sent = deployedTroops(cmd.record.setup, cmd.record.deployments, data);
+      spendTroops(s, sent, cmd.record.setup);
+      // Economy E16: walking away from the scouted offline opponent after sending warriors in is a lost attack
+      // (honor, shield, and the opponent goes), as an online start without a report already is. It used to keep
+      // the opponent: drop one warrior, watch the defenses fire, abandon, then attack the same base for real.
+      const scouted = !cmd.record.ticket && s.scout && cmd.record.setup.seed === scoutBattleSeed(s.scout.seed);
+      if (scouted && foughtWithWarriors({ used: sent }, cmd.record.setup)) {
+        const opp = cmd.record.setup.base.trophies ?? s.trophies;
+        s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, opp, data));
+        s.shieldUntil = Math.min(s.shieldUntil, now);
+        s.scout = null;
+      }
       return { ok: true, state: s, events: [] };
     }
     case 'claimStipend': {
@@ -823,7 +848,7 @@ export function skipQuote(state: VillageState, id: string, now: number, data: Ga
 function skip(s: VillageState, id: string, now: number, data: GameData): CommandResult {
   const q = skipQuote(s, id, now, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
   s.resources.moonstones -= q.moonstones;
   const b = s.buildings.find((v) => v.id === id)!;
   const finishedAt = now;
@@ -850,7 +875,7 @@ export function researchSkipQuote(state: VillageState, now: number, data: GameDa
 function skipResearch(s: VillageState, troop: string | undefined, now: number, data: GameData): CommandResult {
   const q = researchSkipQuote(s, now, data, troop);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
   s.resources.moonstones -= q.moonstones;
   const a = activeResearch(s, troop)!;
   a.endsAt = now;
@@ -869,7 +894,7 @@ export function trainingSkipQuote(state: VillageState, now: number, data: GameDa
 function skipTraining(s: VillageState, now: number, data: GameData): CommandResult {
   const q = trainingSkipQuote(s, now, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
   s.resources.moonstones -= q.moonstones;
   const fits = queueFits(s, data);
   s.training.forEach((item, i) => {
@@ -947,14 +972,45 @@ function topUp(s: VillageState, action: TopUpAction, now: number, data: GameData
   if (!action || !['upgrade', 'place', 'train', 'research'].includes(action.type)) return fail('NOT_AVAILABLE', 'Jade can only buy what an upgrade, building, warrior or research is missing.');
   const q = topUpQuoteOn(s, action, now, data);
   if (!q) return fail('NOTHING_TO_SKIP', 'Nothing missing, or it would not fit in your storage.');
-  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`);
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
   s.resources.moonstones -= q.moonstones;
   for (const [k, v] of Object.entries(q.missing) as [ResourceKind, number][]) s.resources[k] += v;
   // The bought resources are spent in the same step; if the action fails, the whole command fails
   // and the village is left as it was (applyCommand works on a copy).
+  const before = { training: new Set(s.training), research: new Set(s.research.active) };
   const r = runCommand(s, action, now, data);
   if (!r.ok) return r;
+  noteTopUp(r.state, action, r.events, before, { cost: q.missing, jade: q.moonstones });
   return { ok: true, state: r.state, events: [{ kind: 'top_up', missing: q.missing, moonstones: q.moonstones }, ...r.events] };
+}
+
+/**
+ * Balance audit CU-3 (save v22): put what a top-up bought on the timers its action started, so a cancel gives
+ * that share back as Jade instead of as resources (top-up then cancel used to exchange Jade for Provisions at
+ * 100%). Several warriors share it evenly, the last one taking the remainder. Mutates.
+ */
+function noteTopUp(s: VillageState, action: TopUpAction, events: SimEvent[], before: { training: Set<TrainingItem>; research: Set<unknown> }, paid: TopUpPaid): void {
+  const holders: { topUp?: TopUpPaid; cost: Cost }[] = [];
+  if (action.type === 'train') holders.push(...s.training.filter((q) => !before.training.has(q)));
+  else if (action.type === 'research') holders.push(...s.research.active.filter((a) => !before.research.has(a)));
+  else {
+    const started = events.find((e) => e.kind === 'upgrade_start');
+    const b = started && 'id' in started ? s.buildings.find((x) => x.id === started.id) : undefined;
+    if (b?.upgrade) holders.push(b.upgrade);
+  }
+  // A finished-at-once action (a wall, a zero-second research) leaves nothing to cancel.
+  if (!holders.length) return;
+  const n = holders.length;
+  holders.forEach((h, i) => {
+    const last = i === n - 1;
+    const cost: Cost = {};
+    for (const [k, v] of Object.entries(paid.cost) as [ResourceKind, number][]) {
+      const each = last ? v - Math.floor(v / n) * (n - 1) : Math.floor(v / n);
+      if (each > 0) cost[k] = Math.min(each, h.cost[k] ?? 0);
+    }
+    const jade = last ? paid.jade - Math.floor(paid.jade / n) * (n - 1) : Math.floor(paid.jade / n);
+    h.topUp = { cost, jade };
+  });
 }
 
 function grantPurchase(s: VillageState, productId: string, transactionId: string, now: number, data: GameData, verified: boolean): CommandResult {
@@ -1105,8 +1161,8 @@ function buySkin(s: VillageState, id: string, data: GameData): CommandResult {
   if (s.cosmetics.owned.includes(id)) return fail('ALREADY_CLAIMED', 'You already own this look.');
   if (skin.passOnly) return fail('LOCKED', 'This look comes from the Season Scroll.');
   if (skin.calendarOnly) return fail('LOCKED', 'This look comes from the 28-day calendar.');
-  if (skin.minKeep && hallLevel(s, data) < skin.minKeep) return fail('LOCKED', `This look unlocks at Keep ${skin.minKeep}.`);
-  if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Jade.`);
+  if (skin.minKeep && hallLevel(s, data) < skin.minKeep) return fail('LOCKED', `This look unlocks at Keep ${skin.minKeep}.`, { keep: skin.minKeep });
+  if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Jade.`, { jade: skin.moonstones });
   s.resources.moonstones -= skin.moonstones;
   s.cosmetics.owned.push(id);
   s.cosmetics.hallSkin = id;
@@ -1206,7 +1262,18 @@ export function passTierReward(state: VillageState, tier: number, track: 'free' 
   const def = data.pass.tiers.find((t) => t.tier === tier);
   if (!def) return null;
   const { skin, ...res } = track === 'free' ? def.free : def.premium;
-  return { ...scaleReward(res, hallLevel(state, data), data), ...(skin ? { skin } : {}) };
+  return { ...scaleReward(res, passTierKeep(state, tier, data), data), ...(skin ? { skin } : {}) };
+}
+
+/**
+ * The Keep a Season Scroll tier's resources scale by (balance audit CU-6): the Keep when the tier unlocked
+ * (`pass.tierKeep`), never more than the Keep now; a tier not unlocked yet (or unlocked before save v22 without
+ * a record) uses the Keep now.
+ */
+export function passTierKeep(state: VillageState, tier: number, data: GameData): number {
+  const now = hallLevel(state, data);
+  const at = state.pass.tierKeep?.[tier - 1];
+  return tier <= unlockedTier(state, data) && typeof at === 'number' && at >= 1 ? Math.min(at, now) : now;
 }
 
 function claimTask(s: VillageState, id: string, kind: 'daily' | 'weekly', data: GameData): CommandResult {
@@ -1215,7 +1282,11 @@ function claimTask(s: VillageState, id: string, kind: 'daily' | 'weekly', data: 
   if (task.claimed) return fail('ALREADY_CLAIMED', 'Already claimed.');
   if (task.progress < task.target) return fail('NOT_READY', 'Not finished yet.');
   (kind === 'daily' ? s.tasks.dayClaimed : s.tasks.weekClaimed).push(id);
+  const tierBefore = unlockedTier(s, data);
   s.pass.points += task.points;
+  // Balance audit CU-6 (save v22): a tier's resources scale by the Keep it unlocked at, not the Keep at claim time.
+  const keep = hallLevel(s, data);
+  for (let t = tierBefore + 1; t <= unlockedTier(s, data); t++) (s.pass.tierKeep ??= [])[t - 1] = keep;
   return { ok: true, state: s, events: [{ kind: 'reward', source: `task:${id}`, grants: {} }] };
 }
 
@@ -1258,7 +1329,7 @@ function clearObstacle(s: VillageState, id: string, now: number, data: GameData)
   const def = buildingDef(data, b.type);
   if (def.category !== 'obstacle' || !def.clear) return fail('NOT_AVAILABLE', 'That cannot be cleared.');
   if (b.upgrade) return fail('BUSY', 'Already being cleared.');
-  if (!canAfford(s.resources, def.clear.cost)) return fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.clear.cost, data)}).`);
+  if (!canAfford(s.resources, def.clear.cost)) return fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.clear.cost, data)}).`, { cost: def.clear.cost, missing: missingFor(s.resources, def.clear.cost) });
   if (builderStatus(s, data, now).free < 1) return fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.');
   subtractCost(s.resources, def.clear.cost);
   b.upgrade = { toLevel: 0, startedAt: now, endsAt: now + def.clear.seconds * MS_PER_SECOND, cost: def.clear.cost };
@@ -1279,17 +1350,17 @@ export function trainQuoteOn(s: VillageState, troop: string, now: number, data: 
   const cost = discounted(troopLevel(data, troop, level).cost, eventEffect(now, data).trainingDiscount);
   const quote: Quote = { toLevel: level, cost, seconds: trainSecondsFor(s, troop, data) };
   if (hallLevel(s, data) < (def.unlockKeep ?? 1)) {
-    return { ...fail('LOCKED', `Needs a level ${def.unlockKeep} Clan Keep.`), quote };
+    return { ...fail('LOCKED', `Needs a level ${def.unlockKeep} Clan Keep.`, { keep: def.unlockKeep ?? 1, troop }), quote };
   }
   if (barracksLevel(s, data) < def.barracksLevel) {
-    return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Training Dojo.`), quote };
+    return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Training Dojo.`, { dojo: def.barracksLevel, troop }), quote };
   }
   const cap = housingCapacity(s, data);
   // The camps hold one army; the queue may train the next one ahead.
   if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > trainingQueueLimit(s, data)) {
     return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards and the next-army queue are full.' : 'Build a Squad Courtyard to house warriors.'), quote };
   }
-  if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`), quote };
+  if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`, { cost, missing: missingFor(s.resources, cost) }), quote };
   return { ok: true, quote };
 }
 
@@ -1369,10 +1440,12 @@ function trainArmy(s: VillageState, target: Record<string, number>, now: number,
 
 /** What dismissing `count` ready warriors would give back and how much camp space it frees (before storage caps). */
 export function dismissPreview(state: VillageState, troop: string, count: number, data: GameData): { refund: Cost; housing: number } {
-  const each = troopLevel(data, troop, troopLevelOf(state, troop)).cost;
+  // Balance audit CU-7: the price paid (from storage), never today's research level's price for a warrior trained
+  // at a lower level. Warriors trained before save v22 are untracked and refund at today's price.
+  const worth = armyValue(state, troop, count, troopLevel(data, troop, troopLevelOf(state, troop)).cost);
   const refund: Cost = {};
-  for (const [k, v] of Object.entries(each) as [ResourceKind, number][]) {
-    const r = Math.floor((v ?? 0) * count * data.economy.dismissRefundFraction);
+  for (const [k, v] of Object.entries(worth) as [ResourceKind, number][]) {
+    const r = Math.floor((v ?? 0) * data.economy.dismissRefundFraction);
     if (r > 0) refund[k] = r;
   }
   return { refund, housing: (data.troops[troop]?.housing ?? 0) * count };
@@ -1419,12 +1492,15 @@ function dismiss(s: VillageState, troop: string, count: number, now: number, dat
   const n = Math.floor(count);
   if (!data.troops[troop] || !(n > 0)) return fail('NOT_FOUND', 'Pick warriors to dismiss.');
   if ((s.army[troop] ?? 0) < n) return fail('NOT_AVAILABLE', 'You do not have that many ready.');
-  s.army[troop] -= n;
-  if (s.army[troop] === 0) delete s.army[troop];
-  const refund = positive(addCapped(s.resources, dismissPreview(s, troop, n, data).refund, capacity(s, data)));
+  const want = dismissPreview(s, troop, n, data).refund;
+  takeFromArmy(s, troop, n);
+  // Dismissing is how a player frees camp space, so a full storage does not stop it; what did not fit is
+  // reported (`overflow`), never silently dropped (CU-7). The Army panel shows the refund first (`dismissPreview`).
+  const refund = positive(addCapped(s.resources, want, capacity(s, data)));
+  const overflow = shortfall(want, refund);
   // Finished warriors waiting for camp room can walk in now.
   finishTraining(s, now, data);
-  return { ok: true, state: s, events: [{ kind: 'dismiss', troop, count: n, refund }] };
+  return { ok: true, state: s, events: [{ kind: 'dismiss', troop, count: n, refund, ...(hasAny(overflow) ? { overflow } : {}) }] };
 }
 
 /** A cost with a share taken off (limited-time events). */
@@ -1436,18 +1512,22 @@ function discounted(cost: Cost, share: number): Cost {
 }
 
 /** Open today's free chest. Never costs anything and cannot be reopened or rerolled. */
-function openDailyChest(s: VillageState, now: number, data: GameData): CommandResult {
+function openDailyChest(s: VillageState, now: number, data: GameData, entropy?: number): CommandResult {
   const day = dayIndex(now, data);
   if (s.daily.lastDay >= day) return fail('ALREADY_CLAIMED', "You've opened today's chest. A new one is ready at the start of the next day (UTC).");
   const st = streakAfterClaim(s.daily, day, data);
-  const outcome = chestOutcome(s.seed, day, data);
+  // Economy E18 (save v22): the draw also takes the salt the previous claim rolled with fresh entropy.
+  const salt = s.daily.salt ?? 0;
+  const outcome = chestOutcome((s.seed ^ salt) >>> 0, day, data);
   // A chest only reports what it really gave: anything that did not fit is listed separately.
   const jadeDue = streakJadeDue(s.daily, day, data);
   const { granted: grants, overflow } = grantReward(s, chestContents(outcome, hallLevel(s, data), st.step, data, jadeDue), data);
   const lost = hasAny(overflow) ? { overflow } : {};
   const sj = jadeDue ? streakJade(st.step, data) : 0;
   const history = [...s.daily.history, { day, outcome, step: st.step, grants, ...lost, ...(sj ? { streakJade: sj } : {}) }].slice(-data.daily.streak.historyDays);
-  s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history };
+  // Without entropy (an older game, the model player) the salt stays: the draw is the seed's, as before v22.
+  const nextSalt = Number.isFinite(entropy) ? mixSeed(salt, Math.floor(entropy!) >>> 0) : salt;
+  s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history, salt: nextSalt };
   return {
     ok: true,
     state: s,
@@ -1468,7 +1548,7 @@ export function researchStartQuoteOn(s: VillageState, troop: string, now: number
   const q = researchQuote(s, troop, hallLevel(s, data), data);
   const quote: Quote | undefined = q.toLevel !== undefined ? { toLevel: q.toLevel, cost: q.cost ?? {}, seconds: Math.round((q.seconds ?? 0) * buildTimeFactor(s, now, data)) } : undefined;
   if (!q.ok) return { ...fail(q.code, q.message), quote };
-  if (!canAfford(s.resources, q.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(q.cost, data)}).`), quote };
+  if (!canAfford(s.resources, q.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(q.cost, data)}).`, { cost: q.cost, missing: missingFor(s.resources, q.cost) }), quote };
   return { ok: true, quote: quote! };
 }
 
@@ -1485,20 +1565,59 @@ function research(s: VillageState, troop: string, now: number, data: GameData): 
 function cancelResearch(s: VillageState, troop: string | undefined, now: number, data: GameData): CommandResult {
   const a = activeResearch(s, troop);
   if (!a) return fail('NOT_UPGRADING', 'Nothing to cancel.');
+  const back = cancelRefund(s, [a], data.economy.cancelRefundFraction, data);
+  if (!back.ok) return back;
   s.research.active = s.research.active.filter((x) => x !== a);
-  const want: Cost = {};
-  for (const k of RESOURCE_KINDS) {
-    const r = Math.floor((a.cost[k] ?? 0) * data.economy.cancelRefundFraction);
-    if (r > 0) want[k] = r;
-  }
-  const refund = addCapped(s.resources, want, capacity(s, data));
+  const refund = payRefund(s, back.refund, data);
   void now;
   return { ok: true, state: s, events: [{ kind: 'research_cancel', troop: a.troop, toLevel: a.toLevel, refund }] };
 }
 
 /**
+ * What cancelling paid-for work gives back at `fraction` (balance audit CU-3, CU-7): the resources paid from
+ * storage, and the Jade a top-up spent on the rest (as Jade, never as resources). Refused, with the amounts,
+ * when the resources would not fit in storage: a cancel used to drop what did not fit without a word.
+ */
+function cancelRefund(s: VillageState, paid: { cost: Cost; topUp?: TopUpPaid }[], fraction: number, data: GameData): { ok: true; refund: Cost } | ReturnType<typeof fail> {
+  const refund: Cost = {};
+  let jade = 0;
+  for (const p of paid) {
+    for (const [k, v] of Object.entries(p.cost) as [ResourceKind, number][]) {
+      const own = (v ?? 0) - (p.topUp?.cost[k] ?? 0);
+      if (own > 0) refund[k] = (refund[k] ?? 0) + own;
+    }
+    jade += p.topUp?.jade ?? 0;
+  }
+  for (const k of Object.keys(refund) as ResourceKind[]) {
+    refund[k] = Math.floor(refund[k]! * fraction);
+    if (!(refund[k]! > 0)) delete refund[k];
+  }
+  const back = Math.floor(jade * fraction);
+  const lost = rewardOverflow(s, refund, data);
+  if (hasAny(lost)) {
+    // 'Storage is too full' is an existing translated line; the amounts travel in params for the interface to show.
+    return fail('STORAGE_FULL', 'Storage is too full', { refund, lost });
+  }
+  if (back > 0) refund.moonstones = back;
+  return { ok: true, refund };
+}
+
+/** Pay a refund `cancelRefund` checked (it fits). Jade given back no longer counts as spent. Mutates. */
+function payRefund(s: VillageState, refund: Cost, data: GameData): Cost {
+  const { moonstones = 0, ...res } = refund;
+  const added = positive(addCapped(s.resources, res, capacity(s, data)));
+  if (moonstones > 0) {
+    s.resources.moonstones += moonstones;
+    s.stats.moonstonesSpent = Math.max(0, s.stats.moonstonesSpent - moonstones);
+    added.moonstones = moonstones;
+  }
+  return added;
+}
+
+/**
  * Take warriors out of the queue, working back from `index` through a run of
- * the same type, with their full cost back (storage permitting). `troop` is the
+ * the same type, with what they cost from storage back (and a top-up's Jade as Jade; refused when it would not
+ * fit, `cancelRefund`). `troop` is the
  * type the player tapped: a warrior may have finished since the panel drew, which
  * shifts every index, and the wrong warrior must never be cancelled.
  */
@@ -1506,14 +1625,19 @@ function cancelTraining(s: VillageState, index: number, troop: string | undefine
   let at = troop !== undefined && s.training[index]?.troop !== troop ? s.training.map((q) => q.troop).lastIndexOf(troop) : index;
   const type = s.training[at]?.troop;
   if (type === undefined) return fail('NOT_FOUND', 'Nothing to cancel.');
-  const refund: Cost[] = [];
-  for (let left = Math.max(1, Math.floor(count)); left > 0 && s.training[at]?.troop === type; left--, at--) {
-    refund.push(s.training[at].cost);
-    s.training.splice(at, 1);
-  }
+  const items: TrainingItem[] = [];
+  for (let left = Math.max(1, Math.floor(count)), i = at; left > 0 && s.training[i]?.troop === type; left--, i--) items.push(s.training[i]);
+  const back = cancelRefund(s, items, 1, data);
+  if (!back.ok) return back;
+  s.training = s.training.filter((q) => !items.includes(q));
   retimeQueue(s.training, now);
-  addCapped(s.resources, sumCost(...refund), capacity(s, data));
-  return { ok: true, state: s, events: [{ kind: 'train_cancel', troop: type, count: refund.length }] };
+  const refund = payRefund(s, back.refund, data);
+  return { ok: true, state: s, events: [{ kind: 'train_cancel', troop: type, count: items.length, refund }] };
+}
+
+/** The battle seed of an offline raid on the opponent scouted with `scoutSeed` (the app builds the setup with it). */
+export function scoutBattleSeed(scoutSeed: number): number {
+  return mixSeed(scoutSeed, 0xba771e);
 }
 
 export function scoutFee(state: VillageState, data: GameData): number {
@@ -1530,7 +1654,7 @@ export function scoutFee(state: VillageState, data: GameData): number {
 function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
   if (!paid && s.scout) return { ok: true, state: s, events: [{ kind: 'scout', seed: s.scout.seed, fee: 0 }] };
   const fee = paid ? scoutFee(s, data) : 0;
-  if (s.resources.acorns < fee) return fail('NOT_ENOUGH_RESOURCES', `Next costs ${fee} coins.`);
+  if (s.resources.acorns < fee) return fail('NOT_ENOUGH_RESOURCES', `Next costs ${fee} coins.`, { cost: { acorns: fee } });
   s.resources.acorns -= fee;
   const seed = mixSeed(s.seed, s.nextSeed++);
   s.scout = { seed };
@@ -1564,19 +1688,30 @@ function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): 
  * do: loot a destroyed collector gave comes out of that collector, the rest out
  * of storage. Which buildings fell is re-simulated from the record (the server
  * ran the same battle). Never takes more than `lost`. Mutates.
+ *
+ * Quality 33: when the raid cannot be traced (a record under battle rules this build does not play, or a
+ * simulation that throws), nothing is taken and the reason is returned for an event. It used to swallow any
+ * exception and take the whole amount out of storage, so a bug or a rules mismatch silently cost the player
+ * resources that were partly still in the collectors. The server's own economy, where it holds the village,
+ * stays the truth either way.
  */
-function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, now: number, data: GameData, fallen?: { id: string; loot: Cost }[]): void {
+function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, now: number, data: GameData, fallen?: { id: string; loot: Cost }[]): { untraced: string } | null {
   const claims: { b: Building; k: ResourceKind; amount: number }[] = [];
-  try {
-    const down = fallen ?? runBattle(record.setup, record.deployments, data, record.endTick).sim.buildings.filter((b) => b.destroyed);
-    for (const sb of down) {
-      const vb = s.buildings.find((b) => b.id === sb.id);
-      const k = vb ? data.buildings[vb.type]?.produces : undefined;
-      if (!vb || !k || !vb.collector || !(sb.loot[k]! > 0)) continue;
-      claims.push({ b: vb, k, amount: sb.loot[k]! });
+  let down: { id: string; loot: Cost }[];
+  if (fallen) down = fallen;
+  else if (record.rules !== undefined && record.rules !== SIM_RULES && !SIM_RULES_COMPATIBLE.includes(record.rules)) return { untraced: `rules_${record.rules}` };
+  else {
+    try {
+      down = runBattle(record.setup, record.deployments, data, record.endTick).sim.buildings.filter((b) => b.destroyed);
+    } catch (e) {
+      return { untraced: e instanceof Error ? e.message.slice(0, 120) : 'simulation_failed' };
     }
-  } catch {
-    // A record this version cannot simulate: everything comes out of storage.
+  }
+  for (const sb of down) {
+    const vb = s.buildings.find((b) => b.id === sb.id);
+    const k = vb ? data.buildings[vb.type]?.produces : undefined;
+    if (!vb || !k || !vb.collector || !(sb.loot[k]! > 0)) continue;
+    claims.push({ b: vb, k, amount: sb.loot[k]! });
   }
   for (const [k, v0] of Object.entries(lost) as [ResourceKind, number][]) {
     let left = Math.max(0, Math.floor(v0 ?? 0));
@@ -1592,6 +1727,7 @@ function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, n
     // ledger audit A5) has nothing to take and is never wiped by a raid.
     s.resources[k] -= Math.max(0, Math.min(s.resources[k], left));
   }
+  return null;
 }
 
 /** League bonus for a won attack: the full bonus at 3 stars, a third per star. */
@@ -1743,7 +1879,7 @@ function logWarAttack(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' |
  */
 function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
-  if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`);
+  if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`, { tier: s.trials.best + 1 });
   const setup: BattleSetup = { ...rec.setup, base: trialBase(tier, data, trialVariant(s.trials, tier)) };
   const bad = checkBattleSetup(s, setup, data);
   if (bad) return fail('INVALID_BATTLE', bad);
@@ -1852,8 +1988,7 @@ function spendTroops(s: VillageState, used: Record<string, number>, setup?: Batt
       }
       n -= fromGrove;
     }
-    s.army[t] = Math.max(0, (s.army[t] ?? 0) - n);
-    if (s.army[t] === 0) delete s.army[t];
+    takeFromArmy(s, t, n);
   }
 }
 
@@ -1941,7 +2076,7 @@ export function temperQuote(state: VillageState, type: BuildingType, next: Tempe
   let coins = 0;
   for (const b of own) for (let l = 1; l <= b.level; l++) coins += levelDef(data, type, l)?.cost.acorns ?? 0;
   const cost: Cost = { acorns: Math.ceil(coins * def.retemperCostShare) };
-  if (!canAfford(state.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`), cost };
+  if (!canAfford(state.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`, { cost, missing: missingFor(state.resources, cost) }), cost };
   return { ok: true, cost };
 }
 
@@ -1992,6 +2127,8 @@ function cancel(s: VillageState, id: string, now: number, data: GameData): Comma
   if (!b) return fail('NOT_FOUND', 'Building not found.');
   if (!b.upgrade) return fail('NOT_UPGRADING', 'Nothing to cancel.');
   const { toLevel, cost } = b.upgrade;
+  const back = cancelRefund(s, [b.upgrade], data.economy.cancelRefundFraction, data);
+  if (!back.ok) return back;
   if (toLevel === 0) {
     b.upgrade = null;
   } else if (b.level < 1) {
@@ -2000,12 +2137,8 @@ function cancel(s: VillageState, id: string, now: number, data: GameData): Comma
     b.upgrade = null;
     if (b.collector) b.collector = { stored: b.collector.stored, accrueFrom: now };
   }
-  const refundWanted: Cost = {};
-  for (const k of RESOURCE_KINDS) {
-    const r = Math.floor((cost[k] ?? 0) * data.economy.cancelRefundFraction);
-    if (r > 0) refundWanted[k] = r;
-  }
-  const refund = addCapped(s.resources, refundWanted, capacity(s, data));
+  void cost;
+  const refund = payRefund(s, back.refund, data);
   return { ok: true, state: s, events: [{ kind: 'upgrade_cancel', buildingType: b.type, id, toLevel, refund }] };
 }
 
@@ -2021,7 +2154,7 @@ function collect(s: VillageState, id: string, now: number, data: GameData): Comm
     // Display names only (remnant audit 2026-11-06: this said "Your acorns storage is full", the internal id).
     const what = data.economy.resourceNames?.[resource] ?? resource;
     const store = Object.values(data.buildings).find((d) => d.category === 'storage' && (d.levels[0]?.storage?.[resource] ?? 0) > 0)?.name;
-    return fail('STORAGE_FULL', `No room for more ${what}. Upgrade your ${store ?? 'storage'} or build another.`);
+    return fail('STORAGE_FULL', `No room for more ${what}. Upgrade your ${store ?? 'storage'} or build another.`, { resource });
   }
   const take = Math.min(Math.floor(amount), room);
   // Limited-time event: collecting gives extra, as far as storage allows.

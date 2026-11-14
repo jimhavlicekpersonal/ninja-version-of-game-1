@@ -188,7 +188,7 @@ describe('save v20', () => {
     (file.village as VillageState).stipend = { left: 0, lastDay: 3, jade: SOLD };
     const out = migrate(structuredClone(file), data);
     expect(out.version).toBe(SAVE_VERSION);
-    expect(SAVE_VERSION).toBe(21);
+    expect(SAVE_VERSION).toBe(22);
     expect(out.village.stipend).toEqual({ left: 0, lastDay: 3, jade: 0 });
     // A running stipend keeps what it owes.
     (file.village as VillageState).stipend = { left: 4, lastDay: 3, jade: 48 };

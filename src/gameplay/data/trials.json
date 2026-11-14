@@ -1,5 +1,5 @@
 {
-  "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses Keep min(15, 1 + floor((t-1)/tiersPerHall)) (the last Keep level in hall.json); past it (tier 60), defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier.",
+  "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses Keep min(15, 1 + floor((t-1)/tiersPerHall)) (the last Keep level in hall.json); past it (tier 60), defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier. taskMaxGrowth (economy E27, 2026-11-13): a 'clear N Trial tiers' task is offered only while the next N tiers are at or below the player's Keep and their growth past tier 60 is at most this (1.1236 = the first two tiers past the Keep ladder); a judgement, not measured against players.",
   "tiersPerHall": 4,
   "powerGrowthPerTier": 0.06,
   "maxPower": 1000000000,
@@ -10,6 +10,7 @@
   "jadeReward": 5,
   "candidates": 5,
   "maxAlternates": 4,
+  "taskMaxGrowth": 1.1236,
   "layoutPower": { "kunai_ring": 1, "walled_keep": 1, "mortar_core": 0.94, "twin_gates": 1, "open_court": 1.08 },
   "modifiers": [
     { "id": "ironclad", "every": 5, "name": "Ironclad Walls", "description": "Walls have double HP.", "wallPower": 2 },

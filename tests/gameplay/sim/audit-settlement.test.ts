@@ -60,6 +60,34 @@ describe('F07: online raids take collector loot from the collector', () => {
     const r = applyCommand(s, { type: 'applyDefense', record, lost: { acorns: 500 }, trophies: 0, shieldUntil: 0 }, NOW, data);
     expect(r.ok && r.state.resources.acorns).toBe(0);
   });
+
+  // Quality 33: an untraceable raid used to swallow the error and take everything out of storage.
+  const untraceable = (rules: number | undefined, buildings: { id: string; type: string; level: number; x: number; y: number }[]): BattleRecord => ({
+    id: 'def-3', kind: 'defense', at: NOW, opponentName: 'Rival', ...(rules !== undefined ? { rules } : {}),
+    setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings }, army: {} }, deployments: [],
+    result: { stars: 0, destruction: 0, hallDestroyed: false, loot: { acorns: 500 }, used: {}, ticks: 1, endReason: 'time', hash: '0' },
+  });
+
+  it('a raid under battle rules this build does not play takes nothing, and says so', () => {
+    const s = village();
+    s.resources.acorns = 300;
+    const r = applyCommand(s, { type: 'applyDefense', record: untraceable(99, [{ id: 'h', type: 'elder_toadstool', level: 1, x: 30, y: 30 }]), lost: { acorns: 500 }, trophies: 0, shieldUntil: 0 }, NOW, data);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.state.resources.acorns).toBe(300);
+    expect(r.events).toEqual([{ kind: 'defense_untraced', id: 'def-3', lost: { acorns: 500 }, reason: 'rules_99' }]);
+    expect(r.state.defenseLog.some((d) => d.id === 'def-3')).toBe(true);
+  });
+
+  it('a raid whose simulation throws takes nothing, and says so', () => {
+    const s = village();
+    s.resources.acorns = 300;
+    const r = applyCommand(s, { type: 'applyDefense', record: untraceable(undefined, [{ id: 'q', type: 'no_such_building', level: 1, x: 30, y: 30 }]), lost: { acorns: 500 }, trophies: 0, shieldUntil: 0 }, NOW, data);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.state.resources.acorns).toBe(300);
+    expect(r.events[0]?.kind).toBe('defense_untraced');
+  });
 });
 
 describe('F08 / F17: timers and seasons settle while the game stays open', () => {

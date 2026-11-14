@@ -10,6 +10,7 @@ import { upcomingReminders } from '../../../src/gameplay/sim/reminders';
 import { deserialize, migrate, serialize, validateVillage } from '../../../src/gameplay/sim/save';
 import type { TrainingItem } from '../../../src/gameplay/sim/types';
 import { advance, applyCommand, trainingSkipQuote } from '../../../src/gameplay/sim/village';
+import { capacity } from '../../../src/gameplay/sim/resources';
 import { data, must, newGame } from './helpers';
 
 const SHINOBI = 'hedgehog_roller'; // housing 1, 20 s
@@ -22,7 +23,8 @@ function armyVillage(dojo = 1) {
   s = must(s, { type: 'place', buildingType: 'army_camp', x: 6, y: 2 }, g.clock.now());
   g.clock.advanceSeconds(22);
   s = advance(s, g.clock.now(), data).state;
-  s = { ...s, resources: { ...s.resources, dew: 100_000 }, buildings: s.buildings.map((b) => (b.type === 'burrow_barracks' ? { ...b, level: dojo } : b)) };
+  // As much as storage holds (a cancel's refund must fit, balance audit CU-7).
+  s = { ...s, resources: { ...s.resources, dew: capacity(s, data).dew }, buildings: s.buildings.map((b) => (b.type === 'burrow_barracks' ? { ...b, level: dojo } : b)) };
   expect(housingCapacity(s, data)).toBe(20);
   return { ...g, state: s };
 }
@@ -154,7 +156,7 @@ describe('cancelling from the queue', () => {
     const { state, clock } = armyVillage();
     const t0 = clock.now();
     let s = must(state, { type: 'train', troop: SHINOBI, count: 2 }, t0);
-    s = { ...s, training: [...s.training, { troop: ADEPT, startedAt: t0 + 40_000, endsAt: t0 + 65_000, cost: { dew: 50 } }] };
+    s = { ...s, training: [...s.training, { troop: ADEPT, startedAt: t0 + 40_000, endsAt: t0 + 65_000, cost: { dew: 20 } }] };
     // The panel drew the Adept at index 2; the first Shinobi finishes before the tap lands.
     const after = must(s, { type: 'cancelTraining', index: 2, troop: ADEPT }, t0 + 21_000);
     expect(after.training.map((q) => q.troop)).toEqual([SHINOBI]);

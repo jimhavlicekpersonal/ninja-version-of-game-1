@@ -10,7 +10,7 @@ import { baseProfile, dominantFamily, normalizeTemper, temperAxes, validTemper }
 import type { BaseLayout, BattleSetup } from '../../../src/gameplay/sim/battle/types';
 import { levelDef } from '../../../src/gameplay/sim/data';
 import { opponentForRank, rivalTempers } from '../../../src/gameplay/sim/matchmaking';
-import { migrate, serialize } from '../../../src/gameplay/sim/save';
+import { migrate, serialize, SAVE_VERSION } from '../../../src/gameplay/sim/save';
 import { economyHash } from '../../../src/gameplay/sim/serverEconomy';
 import type { Temper, VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, temperQuote } from '../../../src/gameplay/sim/village';
@@ -176,7 +176,7 @@ describe('saves', () => {
     file.village.buildings.push({ id: 'k9', type: 'acorn_cannon', level: 1, x: 2, y: 2, temper: { reach: 30 } });
     file.village.buildings.push({ id: 'k8', type: 'acorn_cannon', level: 1, x: 5, y: 2, temper: { watch: 4, reach: 0 } });
     const out = migrate(file, data);
-    expect(out.version).toBe(21);
+    expect(out.version).toBe(SAVE_VERSION);
     const bs = out.village.buildings;
     expect(bs.find((b) => b.id === 'k9')!.temper).toBeUndefined();
     expect(bs.find((b) => b.id === 'k8')!.temper).toEqual({ watch: 4 });

@@ -29,12 +29,14 @@ const at = (t: SimTroop, b: SimBuilding, radius: number) => !b.destroyed && dist
 
 /** Identical auras never stack; each ally receives the strongest active source. */
 export function auraStrength(sim: BattleSim, target: SimTroop, aura: WarriorKit['aura'], origin?: { x: number; y: number }): number {
+  // Quality 28: only the sources of this aura (none is the common case: return at once).
+  const sources = aura ? sim.auraSources[aura] : undefined;
+  if (!sources) return 0;
   let value = 0;
-  for (const index of sim.supportTroops) {
+  for (const index of sources) {
     const source = sim.troops[index];
     if (source.dead) continue;
     const kit = kitOf(sim, source);
-    if (kit.aura !== aura) continue;
     if (aura === 'splash' && origin && source.id !== target.id) {
       const behind = (target.x - source.x) * (origin.x - source.x) + (target.y - source.y) * (origin.y - source.y) < 0;
       if (!behind) continue;
@@ -81,7 +83,10 @@ function addCompanion(sim: BattleSim, parent: SimTroop, x: number, y: number, sh
 
 export function initializeWarrior(sim: BattleSim, t: SimTroop): void {
   const kit = kitOf(sim, t);
-  if (kit.aura) sim.supportTroops.push(t.id);
+  if (kit.aura) {
+    sim.supportTroops.push(t.id);
+    (sim.auraSources[kit.aura] ??= []).push(t.id);
+  }
   const offset = sim.data.battle.warriorRules.summonOffset;
   if (kit.summons) {
     const share = kit.summonShare ?? 0;

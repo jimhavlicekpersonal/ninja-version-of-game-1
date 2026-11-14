@@ -1367,6 +1367,11 @@ export class Hud {
     } else if (o.kind === 'save') {
       const need = (Object.entries(o.missing) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatCompact(v), arg2: RES_LABEL[k] })).join(' + ');
       [ic, text, action] = [icons.acorns, t('objective.save', { need, building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
+    } else if (o.kind === 'research') {
+      // Growth 7 follow-up (game-theory batch 2026-11-13): existing translated lines, so every ready language keeps them.
+      [ic, text, action] = [icons.star, t('research.lanesFree', { n: o.lanesFree }), () => this.openTraining()];
+    } else if (o.kind === 'train') {
+      [ic, text, action] = [icons.swords, t('battle.trainFirst'), () => this.openTraining()];
     } else if (o.kind === 'builders') {
       [ic, text] = [icons.clock, t('objective.builders', { time: formatDuration(o.freeAt - now) })];
     }

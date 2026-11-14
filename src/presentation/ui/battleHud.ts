@@ -346,7 +346,8 @@ export class BattleHud {
     this.scoutEl?.remove();
     this.scoutEl = null;
     if (this.s.mode !== 'scout') return;
-    const r = scoutReport(this.s.setup.base, localizedData(this.s.data));
+    // The simulation leaves out tips about warriors the player did not bring (docs/game-theory/REQUESTS.md, 2026-11-13).
+    const r = scoutReport(this.s.setup.base, localizedData(this.s.data), this.s.setup.army);
     const defenseCount = Object.values(r.defenses).reduce((a, b) => a + b, 0);
     const chips = Object.entries(r.defenses).map(([t, n]) => h('span', { class: 'chip' }, i18nText("ui.message_42a16430c0", { arg1: n, arg2: localizedData(this.s.data).buildings[t]?.name ?? t })));
     for (const [t, n] of Object.entries(r.counters)) if (!r.defenses[t]) chips.push(h('span', { class: 'chip' }, i18nText("ui.message_42a16430c0", { arg1: n, arg2: localizedData(this.s.data).buildings[t]?.name ?? t })));
@@ -362,7 +363,7 @@ export class BattleHud {
       r.profile.reach + r.profile.blast + r.profile.watch > 0
         ? h('p', { class: 'small temper-profile' }, t('scout.profile', { reach: fmtPercent(r.profile.reach * 100), blast: fmtPercent(r.profile.blast * 100), watch: fmtPercent(r.profile.watch * 100) }))
         : null,
-      ...this.armyTips(r.tips).map((t) => h('p', { class: 'small' }, ownedText(t))),
+      ...r.tips.map((t) => h('p', { class: 'small' }, ownedText(t))),
       this.deps.stakes && stakeOptions(this.s.data).length ? h('p', { class: 'small muted' }, t('stake.help')) : null,
       ...(() => {
         // Report section 5 step 8: who holds this outpost (a computer rival clan).
@@ -404,24 +405,6 @@ export class BattleHud {
     };
     // Always in view (one chip row); what a stake means is in the drawer.
     return [h('div', { class: 'chips stake-row', role: 'group', 'aria-label': t('stake.label') }, h('span', { class: 'muted small' }, t('stake.label')), chip(undefined, t('stake.none')), ...opts.map((n) => chip(n, t('stake.option', { stars: n, mult: mult(gd.raids.stakes!.byStars[String(n)]) }))))];
-  }
-
-  /**
-   * Scout tips that name warriors only when the player brings them: a tip built around a warrior they don't have is
-   * left out (the smoke advice stays, everyone has Smoke Bombs).
-   * TODO(GAME THEORY, docs/game-theory/REQUESTS.md): give `scoutReport` the army so the sim words the tips itself.
-   */
-  private armyTips(tips: string[]): string[] {
-    const army = this.s.setup.army;
-    const gd = this.s.data;
-    const names = Object.entries(gd.troops).map(([id, t]) => ({ id, name: t.name }));
-    return tips.flatMap((tip) => {
-      const named = names.filter((n) => new RegExp(`\\b${n.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\b`, 'i').test(tip));
-      if (!named.length || named.some((n) => (army[n.id] ?? 0) > 0)) return [tip];
-      // "Defenses cover each other: jam one with a Saboteur, and throw smoke…" without Saboteurs: keep the smoke half.
-      const smoke = tip.match(/^(.*?:)\s.*?(throw smoke .*)$/i);
-      return smoke ? [`${smoke[1]} ${smoke[2]}`] : [];
-    });
   }
 
   /** One chip per Infiltration Point: letter and how many defenses cover its path (tap: highlight the path). */

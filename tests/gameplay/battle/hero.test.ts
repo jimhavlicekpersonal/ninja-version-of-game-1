@@ -64,6 +64,25 @@ describe('the Shadow Captain', () => {
   }, 60_000);
 });
 
+describe('the Rally aura (balance audit RM-3)', () => {
+  // RM-3 measured Rally 30% vs 0% as no change in destruction. It is not a no-op: warriors within 4 tiles of a
+  // rallying hero deal 30% more (re-armed on each new target). It is small because few warriors stand that close
+  // to one hero; how big it should be is a design number (battle.json heroes.shadow_captain.kit), not a bug.
+  it('adds building damage over the same battles (Rally at 0% deals less)', () => {
+    const off = structuredClone(data);
+    (off.battle.heroes as Record<string, { kit: { strength: number } }>).shadow_captain.kit.strength = 0;
+    const dealt = (d: typeof data) => {
+      let sum = 0;
+      for (const keep of [7, 11, 15]) for (const seed of [1, 3]) {
+        const r = raid(keep, seed, true);
+        sum += runBattle(r.setup, r.deployments, d).sim.buildings.reduce((a, b) => a + (b.maxHp - Math.max(0, b.hp)), 0);
+      }
+      return sum;
+    };
+    expect(dealt(data)).toBeGreaterThan(dealt(off));
+  }, 60_000);
+});
+
 describe('the server checks the hero (report section 5 step 8)', () => {
   const at = (hallLevel: number) => ({ hallLevel }) as Player;
   const sub = (hero: unknown) => ({ ticket: 't', seed: 1, deployments: [], army: { saboteur: 1 }, hero }) as never;

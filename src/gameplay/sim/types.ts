@@ -16,6 +16,18 @@ export interface UpgradeTimer {
   endsAt: number;
   /** What was paid, so a cancel can refund part of it. */
   cost: Cost;
+  /** The share of `cost` bought with Jade in the same step (`topUp`, save v22): a cancel gives that share back as Jade. */
+  topUp?: TopUpPaid;
+}
+
+/**
+ * Balance audit CU-3 (save v22): the part of an action's cost a `topUp` bought with Jade. A cancel refunds
+ * `cost - topUp.cost` as resources and `topUp.jade` (at the same fraction) as Jade, so Jade never turns into
+ * resources sitting in storage (TOP_UP.md rule 1).
+ */
+export interface TopUpPaid {
+  cost: Cost;
+  jade: number;
 }
 
 export interface CollectorState {
@@ -104,6 +116,8 @@ export interface TrainingItem {
   startedAt: number;
   endsAt: number;
   cost: Cost;
+  /** Save v22: the share bought with Jade (`TopUpPaid`). */
+  topUp?: TopUpPaid;
 }
 
 /** One research in progress. */
@@ -113,6 +127,8 @@ export interface ActiveResearch {
   startedAt: number;
   endsAt: number;
   cost: Cost;
+  /** Save v22: the share bought with Jade (`TopUpPaid`). */
+  topUp?: TopUpPaid;
 }
 
 /**
@@ -135,6 +151,12 @@ export interface VillageState {
   nextId: number;
   /** Trained troops ready to attack, by troop type. */
   army: Record<string, number>;
+  /**
+   * Balance audit CU-7 (save v22): what `n` of the ready warriors of a type cost from storage (Jade top-ups left out),
+   * so dismissing refunds the price paid, not today's research level's price. Warriors trained before v22 are not
+   * tracked (`n` below the army count) and refund at today's price, as before.
+   */
+  armyPaid?: Record<string, { n: number; cost: Cost }>;
   /** Barracks queue; items finish one after another. */
   training: TrainingItem[];
   /** Troop levels and the research in progress. */
@@ -166,7 +188,11 @@ export interface VillageState {
    */
   profile: { under18: boolean | null; ageBand?: import('./age').AgeBand | null };
   offers: { active: ActiveOffer[]; lastShown: Record<string, number>; bought: string[] };
-  pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[] };
+  /**
+   * `tierKeep[t - 1]`: the Keep level when tier `t` unlocked (save v22, balance audit CU-6). A tier's resources scale
+   * by it, so claiming later, after a Keep upgrade, no longer multiplies them.
+   */
+  pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[]; tierKeep?: number[] };
   /** Task periods; `dayIds`/`weekIds` are the tasks chosen when the period began (absent on older saves until the next roll). */
   tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[]; dayTargets?: Record<string, number>; weekTargets?: Record<string, number> };
   cosmetics: { owned: string[]; hallSkin: string };
@@ -254,6 +280,11 @@ export interface DailyState {
   /** Recent chests, newest last. */
   /** `streakJade`: the streak step's own Jade in that chest (save v18). */
   history: { day: number; outcome: string; step: number; grants: Cost; overflow?: Cost; streakJade?: number }[];
+  /**
+   * Economy E18 (save v22): mixed into the next chest's draw and rolled with fresh entropy at every claim, so the
+   * outcomes of future days cannot be read from the village seed (re-creating a village to fish for a lucky one).
+   */
+  salt?: number;
 }
 
 export interface NetState {
@@ -1065,6 +1096,11 @@ export interface TrialsDef {
   layoutPower: Record<string, number>;
   /** Alternate fortresses a player may switch the next tier to (one per failed attempt). */
   maxAlternates: number;
+  /**
+   * Economy E27: a "clear N Trial tiers" task is offered only while the next N tiers are at or below the player's
+   * Keep and their growth past the last Keep (`powerGrowthPerTier` compounded) is at most this. Absent: no limit.
+   */
+  taskMaxGrowth?: number;
 }
 
 /** An attack that has started (troops deployed) but not been banked yet. */
