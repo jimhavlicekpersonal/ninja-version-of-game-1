@@ -7,7 +7,8 @@
  *   statistics id, so nothing here can be joined to an account.
  * - `deleteStats` forgets everything one statistics id sent (the player turned sharing off).
  * - `rollupStats` (hourly, leased: server/main.ts) rebuilds `stats_daily` for the last 40 install
- *   days: per install day and experiment arm, how many new installs, how many came back on day 1,
+ *   days (since the growth batch 2026-11-14 from per-id summaries updated incrementally, `statsLocal.ts`
+ *   `rollupIncremental`; this full re-read stays as `rollupStats` for tools and comparison): per install day and experiment arm, how many new installs, how many came back on day 1,
  *   7 and 30, finished the tutorial, fought a first raid within 7 days and paid within 7 days.
  * - `statsReport` is the staff view (`GET /admin/v1/stats`).
  * Events are kept STATS_RETENTION_DAYS, then pruned (`retention.ts`).
@@ -15,6 +16,7 @@
 import { cleanStatsBatch, INSTALL_ID } from '../../src/backend/net/stats';
 import type { StatsResponse } from '../../src/backend/net/protocol';
 import type { StatsDailyRow, StatsInstallSummary } from '../repo';
+import { growthOf } from '../growthRepo';
 import { HOUR, type ServerContext } from './context';
 import { fail } from './errors';
 
@@ -36,12 +38,15 @@ export async function postStats(ctx: ServerContext, body: unknown): Promise<Stat
   // A wrong phone clock must not plant events years away; out of range means "when it arrived".
   const events = b.events.map((e) => ({ ...e, at: e.at < now - OLDEST_EVENT_MS || e.at > now + FUTURE_EVENT_MS ? now : e.at }));
   if (events.length) await ctx.repo.addStatsEvents(b.install, b.build, b.arm ?? '', events, now);
+  // Growth batch 2026-11-14: the offset for local-day counting (statsLocal.ts), kept per statistics id.
+  if (events.length && b.tz !== undefined) await growthOf(ctx.repo).setInstallTz(b.install, b.tz, now);
   ctx.metrics.count('tk_stats_events_total', {}, events.length);
   return { accepted: events.length };
 }
 
 export async function deleteStats(ctx: ServerContext, install: unknown): Promise<{ deleted: number }> {
   if (typeof install !== 'string' || !INSTALL_ID.test(install)) throw fail(400, 'bad_request', 'stats.bad_id');
+  await growthOf(ctx.repo).deleteInstall(install.toLowerCase());
   return { deleted: await ctx.repo.deleteStats(install.toLowerCase()) };
 }
 

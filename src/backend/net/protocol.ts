@@ -281,6 +281,11 @@ export interface HelloResponse {
   minClientBuild?: string;
   /** Protocol 8: the server's live data version (for support and dashboards). */
   dataVersion?: string;
+  /**
+   * Growth batch 2026-11-14 (feature `event-schedule`, retention audit G10): the operators' timing for the
+   * built-in limited-time events (`eventSchedule.ts`), which the server also plays. Absent: the built-in schedule.
+   */
+  events?: import('./eventSchedule').EventSchedule;
 }
 
 /** GET /v1/balance (roadmap step 76): the operators' signed number changes, or null. */
@@ -1265,3 +1270,8 @@ export interface RevokeOthersResponse {
   /** How many other devices were signed out. */
   revoked: number;
 }
+
+// Growth batch 2026-11-14 (docs/PROTOCOL.md "Growth batch"): referrals and shared replays live in growth.ts;
+// re-exported here so the HUD reaches them through this contract file.
+export type { ReferralView, ShareReplayRequest, ShareReplayResponse, SharedOpponent, SharedReplayView } from './growth';
+export { parseShareCode, shareLink, SHARED_REPLAY_DAYS } from './growth';

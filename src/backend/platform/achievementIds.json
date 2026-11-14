@@ -1,0 +1,131 @@
+{
+  "$comment": "Retention audit G31 (growth batch 2026-11-14): platform achievement ids for each in-game achievement tier (index 0 = tier 1). Game Center ids are ours to choose: create them in App Store Connect with exactly these ids. Play Games ids are made by Play Console (CgkI…): paste them here when the owner creates the achievements. An empty id is never reported.",
+  "gameCenter": {
+    "green_thumb": [
+      "kagemura.green_thumb.1",
+      "kagemura.green_thumb.2",
+      "kagemura.green_thumb.3",
+      "kagemura.green_thumb.4",
+      "kagemura.green_thumb.5"
+    ],
+    "dew_gatherer": [
+      "kagemura.dew_gatherer.1",
+      "kagemura.dew_gatherer.2",
+      "kagemura.dew_gatherer.3",
+      "kagemura.dew_gatherer.4",
+      "kagemura.dew_gatherer.5"
+    ],
+    "raider": [
+      "kagemura.raider.1",
+      "kagemura.raider.2",
+      "kagemura.raider.3",
+      "kagemura.raider.4",
+      "kagemura.raider.5",
+      "kagemura.raider.6"
+    ],
+    "stargazer": [
+      "kagemura.stargazer.1",
+      "kagemura.stargazer.2",
+      "kagemura.stargazer.3",
+      "kagemura.stargazer.4",
+      "kagemura.stargazer.5",
+      "kagemura.stargazer.6"
+    ],
+    "busy_beaver": [
+      "kagemura.busy_beaver.1",
+      "kagemura.busy_beaver.2",
+      "kagemura.busy_beaver.3",
+      "kagemura.busy_beaver.4",
+      "kagemura.busy_beaver.5"
+    ],
+    "lumberjack": [
+      "kagemura.lumberjack.1",
+      "kagemura.lumberjack.2",
+      "kagemura.lumberjack.3"
+    ],
+    "elder": [
+      "kagemura.elder.1",
+      "kagemura.elder.2",
+      "kagemura.elder.3",
+      "kagemura.elder.4",
+      "kagemura.elder.5",
+      "kagemura.elder.6"
+    ],
+    "scholar": [
+      "kagemura.scholar.1",
+      "kagemura.scholar.2",
+      "kagemura.scholar.3",
+      "kagemura.scholar.4"
+    ],
+    "trial_walker": [
+      "kagemura.trial_walker.1",
+      "kagemura.trial_walker.2",
+      "kagemura.trial_walker.3",
+      "kagemura.trial_walker.4"
+    ]
+  },
+  "playGames": {
+    "green_thumb": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "dew_gatherer": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "raider": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "stargazer": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "busy_beaver": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "lumberjack": [
+      "",
+      "",
+      ""
+    ],
+    "elder": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "scholar": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "trial_walker": [
+      "",
+      "",
+      "",
+      ""
+    ]
+  }
+}

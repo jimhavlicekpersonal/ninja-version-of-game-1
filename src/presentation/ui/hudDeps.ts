@@ -72,4 +72,10 @@ export interface HudDeps {
    * `updateWebApp`, injected by the composition root because `pwa/` is not a backend contract file).
    */
   updateWebApp?(beforeReload: () => Promise<unknown>, note: (text: string) => void): Promise<'reloading' | 'current' | 'timeout' | 'unavailable'>;
+  /** Growth batch 2026-11-14: friend invites and shared replays (main.ts wraps `GrowthClient`). */
+  growth?: import('./growthUi').GrowthDeps;
+  /** Growth batch 2026-11-14 (G10): where the event schedule in force came from. */
+  eventScheduleSource?(): 'built-in' | 'server';
+  /** The build sends the UTC offset with shared statistics (VITE_STATS_TZ=1): Settings says so. */
+  statsTzNote?: boolean;
 }

@@ -132,6 +132,8 @@ export interface ConnectionOptions {
   /** The community rules version accepted on this device (0: none); sent to the server (report section 5 step 7). */
   rulesAccepted?: () => number;
   balance?: { offer(b: import('./balanceBundle').BalanceBundle | null, arms?: import('./balanceBundle').BalanceBundle[]): Promise<string> };
+  /** Growth batch 2026-11-14 (G10): the server's event schedule from hello (`EventScheduleLoader`). */
+  events?: { offer(raw: unknown): string };
   /** Where "Update Kagemura" sends the player (the App Store / Play listing); the web build reloads instead. */
   updateUrl?: string;
   log?: (msg: string, err?: unknown) => void;
@@ -962,6 +964,8 @@ export class Connection {
           const what = await this.o.balance.offer(offered?.bundle ?? null, offered?.cohorts ?? []);
           if (what === 'refused') this.log('Online play: the server offered a balance bundle this game refused');
         }
+        // Growth batch 2026-11-14 (G10): the event timing the server plays, before the village syncs.
+        if (this.o.events && this.o.events.offer(this.server.features.includes('event-schedule') ? this.server.events : undefined) === 'refused') this.log('Online play: the server sent an event schedule this game refused');
         // Re-audit: the age band is known before this device registers or goes online.
         if (!(await this.ensureAge())) {
           this.setStatus('offline', 'Online play starts once you tell us your age: Settings → Online play → Connect now.');

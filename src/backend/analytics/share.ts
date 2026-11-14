@@ -12,7 +12,7 @@
  * Batches go every `FLUSH_MS` while the game is open and when it is hidden; nothing is kept on
  * disk, so a few events can be lost when the app is killed (statistics, not a ledger).
  */
-import { cleanStatsEvent, STATS_MAX_BATCH, type StatsBatch, type StatsEvent } from '../net/stats';
+import { cleanStatsEvent, cleanTz, STATS_MAX_BATCH, type StatsBatch, type StatsEvent } from '../net/stats';
 import type { KeyValue } from '../net/connection';
 import type { AnalyticsEvent } from './events';
 
@@ -69,6 +69,10 @@ interface StatsSharingOptions {
   ageBand(): string | null;
   /** The experiment arm this session plays ("experiment:arm"), if any. */
   arm?(): string | undefined;
+  /** Send the device's UTC offset with each batch (growth batch 2026-11-14; off unless the build sets VITE_STATS_TZ=1). */
+  sendTz?: boolean;
+  /** Minutes east of UTC (tests); the device's own offset otherwise. */
+  tzOffset?(): number;
   /** The server lists `stats` in /v1/hello (unknown yet: false). */
   serverReady?(): boolean;
   /** What the device recorded so far, most recent first (`Analytics.recent`). */
@@ -160,7 +164,10 @@ export class StatsSharing {
       while (this.queue.length) {
         const events = this.queue.slice(0, opts?.keepalive ? 50 : STATS_MAX_BATCH);
         const arm = this.o.arm?.();
-        await this.o.transport.send({ install, build: this.o.build, ...(arm ? { arm } : {}), events }, opts);
+        // Growth batch 2026-11-14: the device's UTC offset (rounded to 15 minutes) so days count locally; only in
+        // builds that say so (`sendTz`, VITE_STATS_TZ=1), once the privacy policy lists it (docs/store/PRIVACY.md).
+        const tz = this.o.sendTz ? cleanTz(this.o.tzOffset ? this.o.tzOffset() : -new Date().getTimezoneOffset()) : undefined;
+        await this.o.transport.send({ install, build: this.o.build, ...(arm ? { arm } : {}), ...(tz !== undefined ? { tz } : {}), events }, opts);
         this.queue.splice(0, events.length);
       }
     } catch {

@@ -39,6 +39,8 @@ export interface SharedStores {
   balance?: import('../src/backend/net/balanceBundle').BalanceBundle | null;
   /** Experiment arms served next to it (report section 5 step 5; `checkCohort`). */
   balanceCohorts?: import('../src/backend/net/balanceBundle').BalanceBundle[];
+  /** The operators' event schedule (growth batch 2026-11-14); `data` must already play it (`applyEventSchedule`). */
+  eventSchedule?: import('../src/backend/net/eventSchedule').EventSchedule | null;
   /** SUPPORT_CONTACT and the Sign in with Apple key (re-audit: appeals, token revocation). */
   account?: import('./identity/appleTokens').AccountSettings;
   /** Policy knobs that differ from DEFAULT_POLICY (backend batch 2026-11-13; main.ts reads them from the environment). */
@@ -54,6 +56,7 @@ export function nodeContext(repo: Repo, data: GameData, now: () => number = () =
     resim: shared.resim ?? new InlineResimulator(),
     balance: shared.balance ?? null,
     balanceCohorts: shared.balanceCohorts ?? [],
+    eventSchedule: shared.eventSchedule ?? null,
     board: shared.board ?? new RepoLeaderboard(repo),
     locks: shared.locks ?? new TicketLocks(),
     metrics: shared.metrics ?? noMetrics,
