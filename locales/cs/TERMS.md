@@ -30,6 +30,12 @@ Spisovná čeština, přátelský tón, hráči tykáme (ty, tvůj, malým písm
 | Codex | Kodex |
 | Sensei Hoshi | Sensei Hoshi |
 | ninja | nindža |
+| Kunai Tower / Shuriken Tower / Sky Bow Tower / Firework Mortar | Věž s kunai / Věž se šurikeny / Věž nebeských luků / Ohňostrojový moždíř |
+| Stone Wall / Spike Pit / Caltrop Field / Bitter Smoke Brazier | Kamenná hradba / Jáma s bodci / Pole ježků / Ohniště hořkého dýmu |
+| Kite-Cutter Ballista / Longbow Yagura / Hawk Tamer | Balista na draky / Jagura s dlouhými luky / Krotitelka jestřábů |
+| Collect / Build / Upgrade / Finish now / Attack | Vybrat / Stavět / Vylepšit / Dokončit hned / Útok (tlačítko Zaútočit!) |
+| save code / Player ID / friend code / sandbox | kód uložené hry / ID hráče / kód přítele / pískoviště |
+| Looks / Pass (rail) / Reach / Blast / Watch | Vzhledy / Svitek / Dosah / Výbuch / Hlídka |
 | Shinobi / Oni Breaker / Kage League | Shinobi / Drtič oni / Liga Kage (odlišná od Stínové ligy) |
 
 Názvy budov, bojovníků a zdrojů píšeme s velkým písmenem jen na začátku (Klanová pevnost, Věž s kunai), jak je v češtině zvykem. Značky (Kagemura, App Store, Google Play, Game Center) beze změny. Japonská jména v běžném latinském přepisu (Kaito, Takeda).
