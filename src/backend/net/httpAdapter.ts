@@ -15,6 +15,7 @@ import {
   type DeletionCodeResponse,
   type NoticesResponse,
   type RevokeOthersResponse,
+  type AuthNonceResponse,
   ClientHeaders,
   PROTOCOL_VERSION,
   Routes,
@@ -92,8 +93,8 @@ interface TokenStore {
 }
 
 /** localStorage, one token per server address (a token is never sent to a different server). */
-function localTokenStore(serverUrl: string): TokenStore {
-  const key = `tk.net.token:${serverUrl}`;
+function localTokenStore(serverUrl: string, prefix = 'tk.net.token:'): TokenStore {
+  const key = `${prefix}${serverUrl}`;
   return {
     get() {
       try {
@@ -120,6 +121,11 @@ export function memoryTokenStore(initial: string | null = null): TokenStore {
 
 interface HttpAdapterOptions {
   tokens?: TokenStore;
+  /**
+   * A rotated token whose first use was not confirmed yet (backend A16). Kept apart from `tokens` (and under
+   * its own localStorage prefix, so `Connection.storedAccounts` never lists it) until a request succeeds with it.
+   */
+  nextTokens?: TokenStore;
   fetch?: typeof fetch;
   timeoutMs?: number;
   /** Extra attempts for GET requests that fail with a network or server error. */
@@ -156,6 +162,7 @@ export function normalizeServerUrl(raw: string): string {
 export class HttpServerAdapter implements ServerPort {
   readonly label: string;
   private readonly tokens: TokenStore;
+  private readonly nextTokens: TokenStore;
   private readonly fetchFn: typeof fetch;
   private readonly timeoutMs: number;
   private readonly retries: number;
@@ -170,6 +177,7 @@ export class HttpServerAdapter implements ServerPort {
     this.baseUrl = normalizeServerUrl(baseUrl);
     this.label = this.baseUrl;
     this.tokens = opts.tokens ?? localTokenStore(this.baseUrl);
+    this.nextTokens = opts.nextTokens ?? (opts.tokens ? memoryTokenStore() : localTokenStore(this.baseUrl, 'tk.net.tokenNext:'));
     this.fetchFn = opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
     this.timeoutMs = opts.timeoutMs ?? 15_000;
     this.retries = opts.retries ?? 2;
@@ -184,7 +192,13 @@ export class HttpServerAdapter implements ServerPort {
 
   /** Forget this device's player on this server (a new one is made on the next register). */
   forgetIdentity(): void {
-    this.tokens.set(null);
+    this.setToken(null);
+  }
+
+  /** A new identity on this device: any rotated token waiting for confirmation belongs to the old one. */
+  private setToken(token: string | null): void {
+    this.tokens.set(token);
+    this.nextTokens.set(null);
   }
 
   /**
@@ -196,7 +210,7 @@ export class HttpServerAdapter implements ServerPort {
    * rules in `req`: only reads are retried here, writes stay with their
    * tickets and the outbox, and each attempt carries its own Idempotency-Key.
    */
-  private async once<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async once<T>(method: string, path: string, body?: unknown, token = this.tokens.get()): Promise<T> {
     const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     let timer: ReturnType<typeof setTimeout> | undefined;
     // Rejects at the deadline even if a fetch or body stream ignores the abort signal.
@@ -207,14 +221,13 @@ export class HttpServerAdapter implements ServerPort {
       }, this.timeoutMs);
     });
     try {
-      return await Promise.race([this.exchange<T>(method, path, body, ctrl), deadline]);
+      return await Promise.race([this.exchange<T>(method, path, body, ctrl, token), deadline]);
     } finally {
       clearTimeout(timer);
     }
   }
 
-  private async exchange<T>(method: string, path: string, body: unknown, ctrl: AbortController | null): Promise<T> {
-    const token = this.tokens.get();
+  private async exchange<T>(method: string, path: string, body: unknown, ctrl: AbortController | null, token: string | null): Promise<T> {
     let res: Response;
     try {
       res = await this.fetchFn(`${this.baseUrl}${path}`, {
@@ -265,6 +278,19 @@ export class HttpServerAdapter implements ServerPort {
       try {
         return await this.once<T>(method, path, body);
       } catch (e) {
+        // Backend A16: the old token was refused while a rotated one waits. The server saw the new token's first
+        // use (its answer was lost), so the new one is the key now. A refused request changed nothing: send it again.
+        const next = this.nextTokens.get();
+        if (e instanceof ServerError && e.status === 401 && next && next !== this.tokens.get()) {
+          try {
+            const v = await this.once<T>(method, path, body, next);
+            this.setToken(next);
+            return v;
+          } catch (e2) {
+            if (e2 instanceof ServerError && e2.status === 401) this.nextTokens.set(null);
+            throw e2;
+          }
+        }
         // Only reads are retried here; writes are made safe by tickets and the outbox.
         // A rate limit is not retried at once: the caller tries again on its next round.
         if (method !== 'GET' || !(e instanceof ServerError) || !e.retryable || e.code === 'rate_limited' || attempt >= this.retries) throw e;
@@ -410,7 +436,7 @@ export class HttpServerAdapter implements ServerPort {
 
   async register(name: string): Promise<RegisterResponse> {
     const r = await this.req<RegisterResponse>('POST', Routes.players, { name });
-    this.tokens.set(r.token);
+    this.setToken(r.token);
     return r;
   }
 
@@ -436,13 +462,13 @@ export class HttpServerAdapter implements ServerPort {
 
   async signIn(provider: LinkProvider, credential: LinkCredential, device?: string): Promise<RegisterResponse> {
     const r = await this.req<RegisterResponse>('POST', Routes.sessions, { provider, credential, device });
-    this.tokens.set(r.token);
+    this.setToken(r.token);
     return r;
   }
 
   async deleteAccount(): Promise<void> {
     await this.req<void>('DELETE', Routes.me);
-    this.tokens.set(null);
+    this.setToken(null);
   }
 
   // ---------------------------------------------------------------- account protections (re-audit)
@@ -464,6 +490,40 @@ export class HttpServerAdapter implements ServerPort {
   }
   revokeOtherSessions(): Promise<RevokeOthersResponse> {
     return this.req('POST', Routes.sessionsRevokeOthers, {});
+  }
+
+  // ---------------------------------------------------------------- sign-in nonces and this device's token (A15, A16)
+
+  authNonce(): Promise<AuthNonceResponse> {
+    return this.req('POST', Routes.authNonce, {});
+  }
+
+  /** Sign out this device: the token is forgotten only after the server answered (a 409 keeps it). */
+  async signOutDevice(): Promise<void> {
+    await this.req<void>('DELETE', Routes.sessionsCurrent);
+    this.setToken(null);
+  }
+
+  /**
+   * Store and confirm (backend A16): the new token is kept aside, used at once for one request, and becomes
+   * this device's key only when that request was answered. Servers since 2026-11-14 swap on that first use,
+   * older ones at the rotation itself; either way the old token lapses. A confirmation lost on the network
+   * leaves the old token in use and the new one aside: if the server did swap, the next 401 switches to it
+   * (`req`); if not, the rotation lapses on the server and the old token keeps working.
+   */
+  async rotateToken(): Promise<boolean> {
+    const r = await this.req<RegisterResponse>('POST', Routes.sessionsRotate, {});
+    if (!r?.token) return false;
+    this.nextTokens.set(r.token);
+    try {
+      await this.once<PlayerView>('GET', Routes.me, undefined, r.token);
+    } catch (e) {
+      // A refused new token is useless: forget it. Anything else (network) keeps it aside for a later 401.
+      if (e instanceof ServerError && e.status === 401) this.nextTokens.set(null);
+      return false;
+    }
+    this.setToken(r.token);
+    return true;
   }
 
   // ---------------------------------------------------------------- PvP

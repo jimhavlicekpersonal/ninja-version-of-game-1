@@ -959,6 +959,7 @@ export class Hud {
       const port = conn.port;
       const source = this.deps.signIn;
       if (!port || !source) return;
+      conn.prefetchSignInNonce();
       void port.links().then(
         ({ providers, links }) => {
           clear(signIns);
@@ -970,7 +971,7 @@ export class Hud {
             const name = PROVIDER_NAMES[p];
             const act = h('button', { class: 'btn ghost', type: 'button' }, linked ? i18nText("ui.unlink_b90108da0b") : i18nText("ui.link_520c06d5d8", { arg1: name }));
             act.addEventListener('click', () => {
-              const run = linked ? port.unlink(p) : source.obtain(p).then((cred) => conn.link(p, cred));
+              const run = linked ? port.unlink(p) : conn.signInNonce(p).then((nonce) => source.obtain(p, nonce)).then((cred) => conn.link(p, cred));
               void run.then(
                 () => {
                   this.toast(linked ? i18nText("ui.unlinked_f820616007", { arg1: name }) : i18nText("ui.linked_sign_in_with_it_on_another_devi_b6d645bfe5", { arg1: name }), 'success');
@@ -1030,7 +1031,8 @@ export class Hud {
     );
     if (!ok) return;
     try {
-      await this.deps.connection.signIn(provider, await source.obtain(provider));
+      const nonce = await this.deps.connection.signInNonce(provider);
+      await this.deps.connection.signIn(provider, await source.obtain(provider, nonce));
       this.toast(i18nText("ui.signed_in_as_baa47e175d", { arg1: this.deps.connection.player?.name ?? 'your account' }), 'success');
       this.closeAllModals();
     } catch (e) {

@@ -58,6 +58,24 @@ describe('Android sign-in for account recovery (GLOBAL-008)', () => {
     expect(plugin('TkAuth').signIn).toHaveBeenCalledWith({ provider: 'google', serverClientId: 'web-123.apps.googleusercontent.com' });
   });
 
+  it('passes the server nonce to Credential Manager and returns it raw beside the token (backend A15)', async () => {
+    plugin('TkAuth').signIn = vi.fn(async () => ({ idToken: 'header.payload.sig' }));
+    const source = platformSignIn({ googleClientId: 'web-123' });
+    expect(await source.obtain('google', 'n-1')).toEqual({ idToken: 'header.payload.sig', nonce: 'n-1' });
+    expect(plugin('TkAuth').signIn).toHaveBeenCalledWith({ provider: 'google', serverClientId: 'web-123', nonce: 'n-1' });
+  });
+
+  it('gives native Sign in with Apple the SHA-256 hex of the nonce and the server the raw one', async () => {
+    cap.platform = 'ios';
+    plugin('TkAuth').signIn = vi.fn(async () => ({ idToken: 'apple-token' }));
+    const source = platformSignIn({});
+    expect(await source.obtain('apple', 'abc')).toEqual({ idToken: 'apple-token', nonce: 'abc' });
+    expect(plugin('TkAuth').signIn).toHaveBeenCalledWith({ provider: 'apple', nonce: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad' });
+    // Game Center takes no nonce.
+    await source.obtain('gamecenter', 'abc');
+    expect(plugin('TkAuth').signIn).toHaveBeenLastCalledWith({ provider: 'gamecenter' });
+  });
+
   it('refuses providers Android cannot give, without calling the plugin', async () => {
     plugin('TkAuth').signIn = vi.fn();
     await expect(platformSignIn({ googleClientId: 'web-123' }).obtain('apple')).rejects.toThrow(/Not available/);

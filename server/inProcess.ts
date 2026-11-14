@@ -73,6 +73,26 @@ export class InProcessServerAdapter implements ServerPort {
   revokeOtherSessions() {
     return this.authed((me) => this.core.revokeOtherSessions(me));
   }
+  // Backend A15/A16.
+  authNonce() {
+    return this.call(() => this.core.authNonce());
+  }
+  async signOutDevice() {
+    await this.authed((me) => this.core.signOutDevice(me));
+    this.token = null;
+  }
+  async rotateToken() {
+    const r = await this.authed((me) => this.core.rotateToken(me));
+    const old = this.token;
+    this.token = r.token;
+    try {
+      await this.authed((me) => this.core.me(me));
+      return true;
+    } catch (e) {
+      this.token = old;
+      throw e;
+    }
+  }
   rename(name: string) {
     return this.authed((me) => this.core.rename(me, name));
   }
