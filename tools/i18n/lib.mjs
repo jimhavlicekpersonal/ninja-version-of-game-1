@@ -244,7 +244,7 @@ export function scriptShare(texts, script) {
     // (Kagemura, App Store, IndexedDB) counts as one letter, not as one per letter.
     if (DENSE.has(script)) words = words.replace(/\p{Script=Latin}+/gu, 'L');
     for (const ch of words) {
-      if (!/\p{L}/u.test(ch)) continue;
+      if (!/[\p{L}\p{M}]/u.test(ch)) continue; // vowel signs (Indic, Thai, Ethiopic) are marks, not letters
       total++;
       if (re.test(ch)) hit++;
     }
