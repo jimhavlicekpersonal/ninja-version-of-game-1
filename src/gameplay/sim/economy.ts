@@ -60,7 +60,7 @@ export function topUpCost(missing: Cost, data: GameData, hallLevel?: number): nu
   return total;
 }
 
-/** Reward multiplier for the player's Elder Toadstool level (economy.json `rewardScaleByHall`). */
+/** Reward multiplier for the player's Keep level (economy.json `rewardScaleByHall`). */
 export function rewardScale(hallLevel: number, data: GameData): number {
   const t = data.economy.rewardScaleByHall;
   return t[Math.max(1, Math.min(t.length, hallLevel)) - 1] ?? 1;

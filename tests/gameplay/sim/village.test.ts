@@ -3,7 +3,7 @@ import { applyCommand, advance, builderStatus, hallLevel, upgradeQuote } from '.
 import { data, newGame, must, find } from './helpers';
 
 describe('new village', () => {
-  it('starts with a level 1 Elder Toadstool and 2 Beaver Builders', () => {
+  it('starts with a level 1 Keep and 2 Beaver Builders', () => {
     const { state, clock } = newGame();
     expect(hallLevel(state, data)).toBe(1);
     expect(find(state, 'beaver_lodge')).toHaveLength(2);
@@ -58,7 +58,7 @@ describe('building and upgrading', () => {
     if (!r.ok) expect(r.code).toBe('NOT_ENOUGH_RESOURCES');
   });
 
-  it('enforces the Elder Toadstool building count limit', () => {
+  it('enforces the Keep building count limit', () => {
     const { state, clock } = newGame({ dew: 1500 });
     const s = must(state, { type: 'place', buildingType: 'acorn_orchard', x: 2, y: 2 }, clock.now());
     clock.advanceSeconds(10);
@@ -70,7 +70,7 @@ describe('building and upgrading', () => {
     }
   });
 
-  it('enforces the Elder Toadstool level cap on upgrades', () => {
+  it('enforces the Keep level cap on upgrades', () => {
     const { state, clock } = newGame({ dew: 1500 });
     let s = must(state, { type: 'place', buildingType: 'acorn_orchard', x: 2, y: 2 }, clock.now());
     const id = find(s, 'acorn_orchard')[0].id;
@@ -82,7 +82,7 @@ describe('building and upgrading', () => {
     if (!q.ok) expect(q.code).toBe('HALL_LEVEL_TOO_LOW');
   });
 
-  it('upgrading the Elder Toadstool raises limits', () => {
+  it('upgrading the Keep raises limits', () => {
     const { state, clock } = newGame({ acorns: 1500 });
     const hall = find(state, 'elder_toadstool')[0];
     let s = must(state, { type: 'upgrade', id: hall.id }, clock.now());

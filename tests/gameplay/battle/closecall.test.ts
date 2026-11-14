@@ -16,7 +16,7 @@ describe('close calls', () => {
     expect(closeCalls(none, data)).toEqual([]);
   });
 
-  it('reports a nearly destroyed Elder Toadstool with its true remaining health', () => {
+  it('reports a nearly destroyed Keep with its true remaining health', () => {
     const deps = Array.from({ length: 10 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
     const full = runBattle({ seed: 1, base: hallOnly, army: { hedgehog_roller: 10 } }, deps, data);
     // Stop the same battle a few ticks before the hall falls.

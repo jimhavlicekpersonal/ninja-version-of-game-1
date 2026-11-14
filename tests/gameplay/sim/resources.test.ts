@@ -13,7 +13,7 @@ function withOrchard() {
 
 describe('storage', () => {
   const hallStore = data.buildings.elder_toadstool.levels[0].storage!.acorns!;
-  it('the Elder Toadstool provides base storage', () => {
+  it('the Keep provides base storage', () => {
     const { state } = newGame();
     expect(capacity(state, data).acorns).toBe(hallStore);
     expect(capacity(state, data).dew).toBe(hallStore);
@@ -59,7 +59,7 @@ describe('collectors', () => {
     const { clock, id } = g;
     const cap = capacity(g.state, data).acorns;
     const state = { ...g.state, resources: { ...g.state.resources, acorns: cap - 500 } };
-    clock.advanceHours(8); // 1600 acorns waiting, room for 500
+    clock.advanceHours(8); // 1600 Coins waiting, room for 500
     const s = must(state, { type: 'collect', id }, clock.now());
     expect(s.resources.acorns).toBe(cap);
     const left = collectorAmount(find(s, 'acorn_orchard')[0], clock.now(), data);

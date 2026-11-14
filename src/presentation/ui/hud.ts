@@ -1221,7 +1221,7 @@ export class Hud {
     return i18nText("ui.up_to_level_now_60f87e0a6f", { arg1: name, arg2: u.to, arg3: u.from });
   }
 
-  /** One short line, e.g. "+1 Acorn Orchard, +1 Dewdrop Well, higher levels for 4 buildings". */
+  /** One short line, e.g. "+1 Coin Mint, +1 Terraced Farm, higher levels for 4 buildings". */
   private unlockSummary(items: UnlockItem[]): string {
     const gd = localizedData(this.c.data);
     const parts: string[] = [];

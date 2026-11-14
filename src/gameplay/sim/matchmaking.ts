@@ -1,7 +1,7 @@
 /**
  * Matchmaking for generated opponents and bot raiders.
  *
- * Trophies decide how strong an opponent is, measured in Elder Toadstool
+ * Trophies decide how strong an opponent is, measured in Keep
  * levels ("strength"): hall h covers strength [h-1, h), and the fraction says
  * how close its buildings are to that hall's caps. Climbing therefore brings
  * tougher bases with more loot, and an opponent's trophies follow its
@@ -22,7 +22,7 @@ import { rivalFor } from './rivals';
 import { hallLevel } from './village';
 
 export interface MatchStrength {
-  /** Elder Toadstool level of the opponent. */
+  /** Keep level of the opponent. */
   hall: number;
   /** 0..1 inside that hall level (0 = just arrived, 1 = maxed). */
   bias: number;
@@ -40,7 +40,7 @@ export function strengthFor(trophies: number, data: GameData): number {
 
 /**
  * Strength of a matched opponent: near the player's trophies, but never more
- * than `hallsBelow` / `hallsAbove` Elder Toadstool levels away from the
+ * than `hallsBelow` / `hallsAbove` Keep levels away from the
  * player's own hall. Pass `mirror` for attackers matched against a defender.
  */
 export function matchStrength(rng: Rng, trophies: number, ownHall: number, data: GameData, mirror = false, floor = 0): MatchStrength {
@@ -219,7 +219,7 @@ export function rivalTempers(seed: number, hall: number, clanId: string | undefi
   return clanId ? def.rivals[clanId]?.tempers ?? null : null;
 }
 
-/** The Elder Toadstool levels a player at `ownHall` may be matched against. */
+/** The Keep levels a player at `ownHall` may be matched against. */
 export function hallWindow(ownHall: number, data: GameData): { min: number; max: number } {
   const mm = data.ranks.matchmaking;
   return { min: Math.max(1, ownHall - mm.hallsBelow), max: Math.min(maxHall(data), ownHall + mm.hallsAbove) };

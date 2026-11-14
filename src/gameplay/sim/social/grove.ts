@@ -18,7 +18,7 @@ export interface Member {
   /** Hours of the day (UTC) this member tends to be online. */
   onlineFrom: number;
   onlineHours: number;
-  /** Offset from the player's Elder Toadstool level. */
+  /** Offset from the player's Keep level. */
   hallOffset: number;
   trophyOffset: number;
 }

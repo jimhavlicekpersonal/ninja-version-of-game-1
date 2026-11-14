@@ -37,7 +37,7 @@ export function storageLootCap(hall: number, data: GameData): number {
  * The player's village as a battle base, with raidable loot on each building.
  * Storages give `raidableStoredFraction` of what is stored, but never more than
  * the hall level's storage loot cap; `lootScale` applies the attacker's
- * loot penalty when it has a higher Elder Toadstool.
+ * loot penalty when it has a higher Keep.
  */
 export function villageToBase(state: VillageState, t: number, data: GameData, name = 'Your village', lootScale = 1): BaseLayout {
   const e = data.economy;

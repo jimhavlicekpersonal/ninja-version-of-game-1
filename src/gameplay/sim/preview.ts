@@ -8,7 +8,7 @@ export interface UnlockItem {
   to: number;
 }
 
-/** What upgrading the Elder Toadstool from `level` to `level + 1` unlocks. */
+/** What upgrading the Keep from `level` to `level + 1` unlocks. */
 export function hallUnlocks(level: number, data: GameData): UnlockItem[] {
   const cur = data.hall.levels[level - 1];
   const next = data.hall.levels[level];
@@ -26,7 +26,7 @@ export function hallUnlocks(level: number, data: GameData): UnlockItem[] {
   return items;
 }
 
-/** The higher troop research cap the next Elder Toadstool level brings, if any. */
+/** The higher troop research cap the next Keep level brings, if any. */
 export function troopCapUnlock(level: number, data: GameData): { from: number; to: number } | null {
   const cur = data.hall.levels[level - 1];
   const next = data.hall.levels[level];

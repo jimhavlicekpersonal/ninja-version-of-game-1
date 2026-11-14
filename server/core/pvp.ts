@@ -1,6 +1,6 @@
 /**
  * Asynchronous PvP, following the game's matchmaking design
- * (src/sim/matchmaking.ts): opponents within one Elder Toadstool level of the
+ * (src/sim/matchmaking.ts): opponents within one Keep level of the
  * attacker, near their trophies; the loot penalty for hitting lower halls;
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */

@@ -44,7 +44,7 @@ export interface KeepRow {
   /** Share of raids won (one star or more). */
   won: number;
   destruction: number;
-  /** Acorns + Dew banked per raid. */
+  /** Coins + Provisions banked per raid. */
   loot: number;
   opponentKeep: number;
   strength: number;
@@ -53,7 +53,7 @@ export interface KeepRow {
   defenses: number;
   /** Share of them held (no star lost). */
   held: number;
-  /** Acorns + Dew taken per raid against the village. */
+  /** Coins + Provisions taken per raid against the village. */
   stolen: number;
   /** Average honor change per raid against the village. */
   defenseHonor: number;
@@ -67,7 +67,7 @@ export interface CampaignResult {
   days: number;
   byKeep: KeepRow[];
   defenses: number;
-  /** Over the whole campaign: Acorns + Dew banked from raids, taken by raids against the village, and paid for held raids. */
+  /** Over the whole campaign: Coins + Provisions banked from raids, taken by raids against the village, and paid for held raids. */
   totals: { looted: number; stolen: number; defenseRewards: number };
 }
 

@@ -8,7 +8,7 @@ import { activeHour, ModelPlayer, normalDays } from '../../../tools/balance/play
 const opts = { raidsPerSession: 2 };
 
 describe('progression pacing (model player)', () => {
-  it('a new player reaches Elder Toadstool 3 in about an hour of active play', () => {
+  it('a new player reaches Keep 3 in about an hour of active play', () => {
     const p = new ModelPlayer(data, opts);
     activeHour(p, 90, 2);
     const h3 = p.hallReachedAt[3];
@@ -18,7 +18,7 @@ describe('progression pacing (model player)', () => {
     expect(h3 * 60).toBeLessThanOrEqual(80);
   });
 
-  it('Elder Toadstool 6 takes about two weeks of normal play', { timeout: 120_000 }, () => {
+  it('Keep 6 takes about two weeks of normal play', { timeout: 120_000 }, () => {
     const p = new ModelPlayer(data, opts);
     activeHour(p, 60, 2);
     normalDays(p, 24);

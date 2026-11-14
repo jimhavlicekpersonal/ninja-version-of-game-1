@@ -61,7 +61,7 @@ export interface SeasonReward {
   overflow?: Cost;
 }
 
-/** A league's monthly chest for a player at this Elder Toadstool level. */
+/** A league's monthly chest for a player at this Keep level. */
 export function leagueChest(league: LeagueDef, hallLevel: number, data: GameData): Cost {
   return scaleReward(league.chest, hallLevel, data);
 }

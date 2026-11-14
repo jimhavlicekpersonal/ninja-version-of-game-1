@@ -396,7 +396,7 @@ export function countOfType(state: VillageState, type: BuildingType): number {
   return state.buildings.filter((b) => b.type === type).length;
 }
 
-/** How many of a building the current Elder Toadstool level allows, and the highest level. */
+/** How many of a building the current Keep level allows, and the highest level. */
 export function limitFor(state: VillageState, data: GameData, type: BuildingType, atHallLevel?: number): BuildingLimit {
   if (buildingDef(data, type).category === 'hall') {
     return { count: 1, maxLevel: Math.min(data.hall.levels.length, maxDefinedLevel(data, type)) };
@@ -405,7 +405,7 @@ export function limitFor(state: VillageState, data: GameData, type: BuildingType
   return data.hall.levels[level - 1]?.limits[type] ?? { count: 0, maxLevel: 0 };
 }
 
-/** The lowest Elder Toadstool level that allows the condition, or null if none does. */
+/** The lowest Keep level that allows the condition, or null if none does. */
 export function hallLevelRequiredFor(data: GameData, type: BuildingType, test: (l: BuildingLimit) => boolean): number | null {
   for (const hl of data.hall.levels) {
     const lim = hl.limits[type];
@@ -1644,7 +1644,7 @@ export function scoutFee(state: VillageState, data: GameData): number {
 
 /**
  * Find an opponent. The first look after each attack is free, and it stays the
- * same opponent until the player attacks it or pays the Acorn fee for "Next":
+ * same opponent until the player attacks it or pays the Coin fee for "Next":
  * leaving and pressing Attack again shows the same base, so rerolling always
  * costs the fee.
  */

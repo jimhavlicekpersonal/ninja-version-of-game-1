@@ -136,7 +136,7 @@ export function queueEndsAt(state: VillageState, now: number): number {
   return last ? Math.max(now, last.endsAt) : now;
 }
 
-/** Largest Army Camp housing possible at an Elder Toadstool level (every camp at its cap). */
+/** Largest Army Camp housing possible at a Keep level (every camp at its cap). */
 export function maxHousingAtHall(hallLevel: number, data: GameData): number {
   const levels = data.hall.levels;
   const lim = levels[Math.max(1, Math.min(levels.length, hallLevel)) - 1]?.limits.army_camp;

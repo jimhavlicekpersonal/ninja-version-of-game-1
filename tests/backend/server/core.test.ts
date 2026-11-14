@@ -47,7 +47,7 @@ for (const [label, makeRepo] of repoFactories) {
         expect(w.repo).toBeTruthy();
       });
 
-      it('only matches real players within one Elder Toadstool level, and not while shielded', async () => {
+      it('only matches real players within one Keep level, and not while shielded', async () => {
         const w = await W();
         const a = await w.player('Ann', baseAt(1));
         await w.player('Three', baseAt(3));
