@@ -564,6 +564,8 @@ export interface PurchaseRow {
   storefront?: string | null;
   currency?: string | null;
   priceMicros?: number | null;
+  /** The device that asked for it (its purchase intent's `device`; backend A5/A24), when known. */
+  device?: string | null;
 }
 
 /** Asked before paying: the age cap was checked, and the store purchase carries this id back (Apple appAccountToken, Google obfuscatedAccountId). */
@@ -580,6 +582,8 @@ export interface PurchaseIntent {
    * cancelled; longer while a store reports it pending (Ask to Buy).
    */
   holdUntil: number;
+  /** The device that asked (PurchaseIntentRequest.device; backend A5/A24), when the game sent one. */
+  device?: string | null;
 }
 
 /** What a village move held back because the server could not confirm where it came from (GLOBAL-002). */
@@ -593,6 +597,21 @@ export interface ImportHold {
   /** Purchase records in the village that this server never credited (ids as the village has them). */
   purchases: string[];
   status: 'held' | 'resolved';
+}
+
+/** A complaint about illegal or harmful content (EU DSA art. 16, UK OSA; core/complaints.ts). */
+export interface Complaint {
+  id: string;
+  at: number;
+  subject: string;
+  reason: string;
+  /** Where to answer (optional); deleted with the complaint. */
+  contact: string | null;
+  /** The complainant's own player id, if they gave it. */
+  playerId: string | null;
+  status: 'open' | 'done';
+  resolvedAt: number | null;
+  resolution: string | null;
 }
 
 /** A device that receives server push (roadmap step 40). */
@@ -645,6 +664,18 @@ export interface PruneCutoffs {
   resolvedReportsBefore?: number;
   /** Handled account-deletion requests resolved before this time are deleted (re-audit: they were kept for ever). */
   deletionRequestsBefore?: number;
+  /** Sign-in nonces that expired before this go (backend A15). */
+  noncesBefore?: number;
+  /** Handled complaints resolved before this go, with their contact address. */
+  complaintsBefore?: number;
+  /** Store notifications received before this go (backend A29: kept long enough to order late deliveries). */
+  storeNotificationsBefore?: number;
+  /**
+   * Backend A18: rows are deleted in batches of this many (each statement short, far under the statement
+   * timeout), until this wall-clock time (ms); whatever is left goes in the next run. Memory ignores both.
+   */
+  batchSize?: number;
+  deadline?: number;
   /** Command log lines before this time are deleted (the ledger is kept). */
   commandsBefore?: number;
   /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
@@ -674,6 +705,8 @@ export interface OpponentQuery {
    */
   lockedSince: number | null;
   limit: number;
+  /** Backend A19: the honor to search outward from (Postgres keeps the `limit` nearest); the middle of the window if absent. */
+  pivot?: number;
 }
 
 /** Players, sessions, staff tools, account protections and deletion. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
@@ -731,6 +764,21 @@ export interface PlayerStore {
   revokeOtherTokens(playerId: string, keepHash: string): Promise<number>;
   /** Delete extra device tokens last used (or made) before this time; how many. */
   pruneTokens(unusedBefore: number): Promise<number>;
+  /**
+   * Backend A23: ids of anonymous accounts last seen before `seenBefore` that nothing else holds: no
+   * purchase, no linked sign-in, not staff, not suspended, and no server-held village above `maxKeep`.
+   * Oldest first, at most `limit`.
+   */
+  dormantPlayers(seenBefore: number, maxKeep: number, limit: number): Promise<string[]>;
+  /**
+   * Backend A16: give the token `oldHash` of this player the hash `newHash` (rotation), whether it is the
+   * account's first token or another device's. False when the player holds no such token.
+   */
+  replaceToken(playerId: string, oldHash: string, newHash: string): Promise<boolean>;
+  /** Backend A15: a sign-in nonce the server issued, usable once until `expiresAt`. */
+  addNonce(nonce: string, expiresAt: number): Promise<void>;
+  /** Use a nonce up: true only the first time, before it expired. */
+  useNonce(nonce: string, now: number): Promise<boolean>;
   setLinkToken(provider: string, subject: string, refreshToken: string | null, clientId: string | null): Promise<void>;
   /** Links of this player that hold a refresh token. */
   linkTokensOf(playerId: string): Promise<{ provider: string; subject: string; refreshToken: string; clientId: string | null }[]>;
@@ -756,6 +804,20 @@ export interface PurchaseStore {
   setPurchaseStatus(store: string, transactionId: string, status: PurchaseRow['status'], at: number): Promise<boolean>;
   /** Cents of credited purchases since `since`, plus unused intents still holding at `now` (reserved by the age cap). */
   spentCents(playerId: string, since: number, now: number): Promise<number>;
+  /**
+   * Backend A5/A24: purchases since `since` (newest first, at most 500) of this player, of these devices
+   * (by the intent that asked), and of every player whose server-held village was played on one of them.
+   * A new free account on the same phone is the same buyer.
+   */
+  linkedPurchases(playerId: string, devices: string[], since: number): Promise<PurchaseRow[]>;
+  /** Backend A24: cents of Sandbox/test purchases (environment other than Production) credited since `since`, all players. */
+  testCentsSince(since: number): Promise<number>;
+  /**
+   * Backend A29: note a store notification (`id` unique per store). `duplicate`: seen before (skip it).
+   * `newerAt`: the latest signed time of another refund-state notification (REFUND, REVOKE,
+   * REFUND_REVERSED) for the same transaction, so an older one arriving late is not applied over it.
+   */
+  noteStoreNotification(n: { id: string; store: string; ref: string | null; type: string; signedAt: number; receivedAt: number }): Promise<{ duplicate: boolean; newerAt: number | null }>;
   // push (roadmap step 40)
   /** Adds or refreshes a device (a token that moved to another player now belongs to them). */
   putPushToken(t: Omit<PushToken, 'day' | 'sent'>): Promise<void>;
@@ -769,6 +831,8 @@ export interface PurchaseStore {
   topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]>;
   /** 1 + players on the Power Ranking above this power. */
   powerRankOf(power: number, minBattles: number, beta: number): Promise<number>;
+  /** Backend A20: every Power Ranking value (one scan, cached by the core for a minute). */
+  powerValues(minBattles: number, beta: number): Promise<number[]>;
   /** Every ranked player (with a base), to rebuild a leaderboard index. */
   rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
 }
@@ -796,6 +860,14 @@ export interface OpsStore {
   getAgeGroup(playerId: string): Promise<{ under18: boolean; at: number } | null>;
   setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void>;
   addImportHold(h: ImportHold): Promise<void>;
+  /** GLOBAL-002 staff release: mark a held import resolved (only from `held`); false when it was not held. */
+  resolveImportHold(id: string, playerId: string): Promise<boolean>;
+  // complaints (backend batch 2026-11-13)
+  addComplaint(c: Complaint): Promise<void>;
+  /** Oldest first. */
+  complaints(status: 'open' | 'all', limit: number): Promise<Complaint[]>;
+  /** False when it is not an open complaint. */
+  resolveComplaint(id: string, resolution: string, at: number): Promise<boolean>;
   /** Newest first. */
   importHoldsOf(playerId: string): Promise<ImportHold[]>;
 }
@@ -1028,9 +1100,14 @@ export interface Repo extends PlayerStore, PurchaseStore, OpsStore, BattleStore,
    */
   claimJob(name: string, holder: string, now: number, leaseMs: number): Promise<boolean>;
   /** The answer remembered for a write's Idempotency-Key (protocol 7), per caller. */
-  getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null>;
-  /** Remember it (the first answer wins). */
-  putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void>;
+  getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown; fingerprint: string | null } | null>;
+  /**
+   * Remember it (the first answer wins). `fingerprint` (backend A13): the method, route and body hash of the
+   * request it answered, so the same key on another route or with another body is refused instead of replayed.
+   */
+  putIdempotent(scope: string, key: string, status: number, body: unknown, at: number, fingerprint?: string | null): Promise<void>;
+  /** Forget every remembered answer of these callers (a signed-out or rotated token; backend A12/A16). */
+  dropIdempotentScopes(scopes: string[]): Promise<number>;
   /** Run `fn` atomically: what it writes through `tx` lands together, or not at all if it throws. */
   transaction<T>(fn: (tx: Repo) => Promise<T>): Promise<T>;
   /** Throws when the store cannot answer (readiness checks). */
@@ -1038,6 +1115,9 @@ export interface Repo extends PlayerStore, PurchaseStore, OpsStore, BattleStore,
 }
 
 const clone = <T>(v: T): T => structuredClone(v);
+
+/** Store notifications that set a purchase's refund state (backend A29: the latest by signed time wins). */
+export const STATE_NOTICES = new Set(['REFUND', 'REVOKE', 'REFUND_REVERSED']);
 
 /**
  * The Alliance notices that name a player (server/core/groves.ts writes them):
@@ -1097,18 +1177,21 @@ export class MemoryRepo implements Repo {
   gangClaimRows: { warId: string; playerId: string; outcome: string; at: number }[] = [];
   villageRows = new Map<string, VillageRow>();
   tokenRows: TokenRow[] = [];
+  nonceRows = new Map<string, number>();
   deletionCodeRows = new Map<string, { codeHash: string; createdAt: number; expiresAt: number }>();
   noticeRows: PlayerNotice[] = [];
   linkRows: IdentityLink[] = [];
   purchaseRows: PurchaseRow[] = [];
+  storeNoticeRows: { id: string; store: string; ref: string | null; type: string; signedAt: number; receivedAt: number }[] = [];
   staffRows: StaffAction[] = [];
   intentRows: PurchaseIntent[] = [];
   ageRows = new Map<string, { under18: boolean; at: number; band?: AgeBand | null }>();
   importHoldRows: ImportHold[] = [];
+  complaintRows: Complaint[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
   commandRows: CommandLogRow[] = [];
-  idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number }>();
+  idempotencyRows = new Map<string, { status: number; body: unknown; createdAt: number; fingerprint: string | null }>();
   private seq = 0;
   /** Transactions run one at a time (memory has no row locks). */
   private txChain: Promise<unknown> = Promise.resolve();
@@ -1143,13 +1226,19 @@ export class MemoryRepo implements Repo {
     }
   }
 
-  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown } | null> {
+  async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown; fingerprint: string | null } | null> {
     const r = this.idempotencyRows.get(`${scope}\u0000${key}`);
-    return r ? { status: r.status, body: clone(r.body) } : null;
+    return r ? { status: r.status, body: clone(r.body), fingerprint: r.fingerprint } : null;
   }
-  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number): Promise<void> {
+  async putIdempotent(scope: string, key: string, status: number, body: unknown, at: number, fingerprint: string | null = null): Promise<void> {
     const k = `${scope}\u0000${key}`;
-    if (!this.idempotencyRows.has(k)) this.idempotencyRows.set(k, { status, body: clone(body), createdAt: at });
+    if (!this.idempotencyRows.has(k)) this.idempotencyRows.set(k, { status, body: clone(body), createdAt: at, fingerprint });
+  }
+  async dropIdempotentScopes(scopes: string[]): Promise<number> {
+    const set = new Set(scopes);
+    let n = 0;
+    for (const k of [...this.idempotencyRows.keys()]) if (set.has(k.split('\u0000')[0])) n += Number(this.idempotencyRows.delete(k));
+    return n;
   }
   async getVillage(playerId: string): Promise<VillageRow | null> {
     const v = this.villageRows.get(playerId);
@@ -1274,6 +1363,24 @@ export class MemoryRepo implements Repo {
     const held = this.intentRows.filter((i) => i.playerId === playerId && !i.used && i.holdUntil > now).reduce((s, i) => s + i.cents, 0);
     return bought + held;
   }
+  async linkedPurchases(playerId: string, devices: string[], since: number): Promise<PurchaseRow[]> {
+    const devs = new Set(devices);
+    const shared = new Set([...this.villageRows.values()].filter((v) => Object.keys(v.deviceSeqs ?? {}).some((d) => devs.has(d))).map((v) => v.playerId));
+    return this.purchaseRows
+      .filter((p) => p.at >= since && (p.playerId === playerId || (p.device && devs.has(p.device)) || shared.has(p.playerId)))
+      .sort((a, b) => b.at - a.at)
+      .slice(0, 500)
+      .map(clone);
+  }
+  async testCentsSince(since: number): Promise<number> {
+    return this.purchaseRows.filter((p) => p.environment !== 'Production' && p.at >= since).reduce((s, p) => s + p.cents, 0);
+  }
+  async noteStoreNotification(n: { id: string; store: string; ref: string | null; type: string; signedAt: number; receivedAt: number }): Promise<{ duplicate: boolean; newerAt: number | null }> {
+    if (this.storeNoticeRows.some((x) => x.id === n.id)) return { duplicate: true, newerAt: null };
+    const others = n.ref ? this.storeNoticeRows.filter((x) => x.store === n.store && x.ref === n.ref && STATE_NOTICES.has(x.type)).map((x) => x.signedAt) : [];
+    this.storeNoticeRows.push({ ...n });
+    return { duplicate: false, newerAt: others.length ? Math.max(...others) : null };
+  }
   async lockPurchases(): Promise<void> {
     /* memory transactions already run one at a time */
   }
@@ -1344,6 +1451,24 @@ export class MemoryRepo implements Repo {
   async setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void> {
     if (under18 === null) this.ageRows.delete(playerId);
     else this.ageRows.set(playerId, { ...this.ageRows.get(playerId), under18, at });
+  }
+  async resolveImportHold(id: string, playerId: string): Promise<boolean> {
+    const h = this.importHoldRows.find((x) => x.id === id && x.playerId === playerId && x.status === 'held');
+    if (!h) return false;
+    h.status = 'resolved';
+    return true;
+  }
+  async addComplaint(c: Complaint): Promise<void> {
+    this.complaintRows.push(clone(c));
+  }
+  async complaints(status: 'open' | 'all', limit: number): Promise<Complaint[]> {
+    return this.complaintRows.filter((c) => status === 'all' || c.status === 'open').slice(0, limit).map(clone);
+  }
+  async resolveComplaint(id: string, resolution: string, at: number): Promise<boolean> {
+    const c = this.complaintRows.find((x) => x.id === id && x.status === 'open');
+    if (!c) return false;
+    Object.assign(c, { status: 'done', resolution, resolvedAt: at });
+    return true;
   }
   async addImportHold(h: ImportHold): Promise<void> {
     this.importHoldRows.push(clone(h));
@@ -1650,6 +1775,9 @@ export class MemoryRepo implements Repo {
       .slice(0, limit)
       .map(clone);
   }
+  async powerValues(minBattles: number, beta: number): Promise<number[]> {
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles).map((p) => this.powerOf(p, beta));
+  }
   async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
     return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power).length;
   }
@@ -1752,6 +1880,12 @@ export class MemoryRepo implements Repo {
     if (delBefore !== undefined) this.deletionRows = this.deletionRows.filter((r) => r.status === 'open' || (r.resolvedAt ?? 0) >= delBefore);
     const intentsBefore = c.intentsBefore;
     if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
+    const snBefore = c.storeNotificationsBefore;
+    if (snBefore !== undefined) this.storeNoticeRows = this.storeNoticeRows.filter((n) => n.receivedAt >= snBefore);
+    const complaintsBefore = c.complaintsBefore;
+    if (complaintsBefore !== undefined) this.complaintRows = this.complaintRows.filter((x) => x.status === 'open' || (x.resolvedAt ?? 0) >= complaintsBefore);
+    const noncesBefore = c.noncesBefore;
+    if (noncesBefore !== undefined) for (const [n, exp] of this.nonceRows) if (exp < noncesBefore) this.nonceRows.delete(n);
     let idempotency = 0;
     const idemBefore = c.idempotencyBefore;
     if (idemBefore !== undefined) {
@@ -1814,6 +1948,7 @@ export class MemoryRepo implements Repo {
     this.intentRows = this.intentRows.filter((i) => i.playerId !== id);
     this.ageRows.delete(id);
     this.importHoldRows = this.importHoldRows.filter((h) => h.playerId !== id);
+    for (const c of this.complaintRows) if (c.playerId === id) c.playerId = null;
     this.pushRows = this.pushRows.filter((t) => t.playerId !== id);
     // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
     for (const p of this.purchaseRows) if (p.playerId === id) p.playerId = D.id;
@@ -1858,6 +1993,42 @@ export class MemoryRepo implements Repo {
     }
     this.tokenRows = this.tokenRows.filter((t) => t.playerId !== playerId);
     return n;
+  }
+  async replaceToken(playerId: string, oldHash: string, newHash: string): Promise<boolean> {
+    const p = this.players.get(playerId);
+    if (!p) return false;
+    if (p.tokenHash === oldHash) {
+      p.tokenHash = newHash;
+      return true;
+    }
+    const t = this.tokenRows.find((x) => x.playerId === playerId && x.tokenHash === oldHash);
+    if (!t) return false;
+    t.tokenHash = newHash;
+    return true;
+  }
+  async dormantPlayers(seenBefore: number, maxKeep: number, limit: number): Promise<string[]> {
+    return [...this.players.values()]
+      .filter(
+        (p) =>
+          p.lastSeenAt < seenBefore &&
+          p.id !== DELETED_PLAYER.id &&
+          !p.staff &&
+          !(p.bannedUntil ?? 0) &&
+          !this.purchaseRows.some((x) => x.playerId === p.id) &&
+          !this.linkRows.some((l) => l.playerId === p.id) &&
+          (!this.villageRows.has(p.id) || p.hallLevel <= maxKeep),
+      )
+      .sort((a, b) => a.lastSeenAt - b.lastSeenAt)
+      .slice(0, limit)
+      .map((p) => p.id);
+  }
+  async addNonce(nonce: string, expiresAt: number): Promise<void> {
+    this.nonceRows.set(nonce, expiresAt);
+  }
+  async useNonce(nonce: string, now: number): Promise<boolean> {
+    const exp = this.nonceRows.get(nonce);
+    this.nonceRows.delete(nonce);
+    return exp !== undefined && exp > now;
   }
   async pruneTokens(unusedBefore: number): Promise<number> {
     const before = this.tokenRows.length;

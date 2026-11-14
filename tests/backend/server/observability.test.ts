@@ -131,11 +131,13 @@ describe('observability over HTTP', () => {
     expect((await (await setup({ metricsToken: undefined })).call('GET', '/metrics')).status).toBe(404);
   });
 
-  it('gives every answer a request id, keeping a well-formed one the caller sent', async () => {
+  it('gives every answer its own request id, echoing a well-formed one the caller sent separately (backend A33)', async () => {
     const s = await setup();
     const r = await s.call('GET', Routes.hello);
     expect(String(r.headers['x-request-id'])).toMatch(/^[0-9a-f-]{36}$/);
-    expect((await s.call('GET', Routes.hello, undefined, undefined, { 'x-request-id': 'trace-12345678' })).headers['x-request-id']).toBe('trace-12345678');
+    const traced = await s.call('GET', Routes.hello, undefined, undefined, { 'x-request-id': 'trace-12345678' });
+    expect(String(traced.headers['x-request-id'])).toMatch(/^[0-9a-f-]{36}$/);
+    expect(traced.headers['x-client-request-id']).toBe('trace-12345678');
     expect((await s.call('GET', Routes.hello, undefined, undefined, { 'x-request-id': 'bad id!' })).headers['x-request-id']).not.toBe('bad id!');
   });
 

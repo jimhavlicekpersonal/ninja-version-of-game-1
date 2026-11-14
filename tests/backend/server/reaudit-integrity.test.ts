@@ -20,7 +20,9 @@ import { baseAt, HOUR, world, startSeed } from './harness';
 const T = Date.UTC(2026, 3, 6, 12);
 const appleTxn = (productId: string, id: string, token: string | null, extra: Record<string, unknown> = {}) =>
   signJws({ transactionId: id, originalTransactionId: id, bundleId: TEST_BUNDLE, productId, purchaseDate: T, environment: 'Production', type: 'Consumable', ...(token ? { appAccountToken: token } : {}), ...extra });
-const notify = (type: string, inner: string) => ({ signedPayload: signJws({ notificationType: type, notificationUUID: `${type}-${inner.length}`, data: { bundleId: TEST_BUNDLE, environment: 'Production', signedTransactionInfo: inner } }) });
+// Each delivery its own UUID (backend A29: a repeated UUID is a repeated delivery and is skipped).
+let notices = 0;
+const notify = (type: string, inner: string) => ({ signedPayload: signJws({ notificationType: type, notificationUUID: `${type}-${++notices}`, data: { bundleId: TEST_BUNDLE, environment: 'Production', signedTransactionInfo: inner } }) });
 
 /** The strongest single-point rush for a known base and seed (what a modified client can search offline). */
 function best(m: { seed: number; base: Parameters<typeof runBattle>[0]['base'] }, n: number) {

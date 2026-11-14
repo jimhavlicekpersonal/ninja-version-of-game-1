@@ -4,19 +4,65 @@
  * signing in with it gives that device its own token for the same player
  * (and, with a village kept on the server, the same village).
  */
-import type { LinkProvider, LinksResponse, RegisterResponse, RevokeOthersResponse } from '../../src/backend/net/protocol';
+import { createHash } from 'node:crypto';
+import type { AuthNonceResponse, LinkProvider, LinksResponse, RegisterResponse, RevokeOthersResponse } from '../../src/backend/net/protocol';
 import { IdentityError, PROVIDERS, type Provider } from '../identity/verify';
 import type { Player } from '../repo';
 import { ApiError, type ServerContext } from './context';
+import { notify } from './moderation';
 
 async function check(ctx: ServerContext, provider: unknown, credential: unknown): Promise<{ provider: Provider; subject: string; audience?: string }> {
   if (!PROVIDERS.includes(provider as Provider)) throw new ApiError(400, 'bad_request', 'Unknown sign-in provider.');
+  let id;
   try {
-    return await ctx.identity.verify(provider as Provider, credential);
+    id = await ctx.identity.verify(provider as Provider, credential);
   } catch (e) {
     if (e instanceof IdentityError) throw new ApiError(400, 'bad_request', e.message);
     throw e;
   }
+  await checkNonce(ctx, id, credential);
+  return id;
+}
+
+/** How long a sign-in nonce can be used (the provider's own sheet, a slow network). */
+export const NONCE_TTL_MS = 10 * 60_000;
+
+/** POST /v1/auth/nonce (backend A15): a random one-time value for the provider to put in its ID token. */
+export async function issueNonce(ctx: ServerContext): Promise<AuthNonceResponse> {
+  const nonce = ctx.newToken();
+  const expiresAt = ctx.now() + NONCE_TTL_MS;
+  await ctx.repo.addNonce(nonce, expiresAt);
+  return { nonce, expiresAt };
+}
+
+/**
+ * Backend A15: an Apple or Google ID token is bound to a nonce the server issued, and the nonce is used up,
+ * so a token copied from a log, an SDK or a proxy cannot mint a device token again within its lifetime.
+ * The game sends the raw nonce next to the token; the token carries it as it is (Google, Apple on the web)
+ * or as its SHA-256 hex (Sign in with Apple native). Games from before this send none: accepted unless
+ * SIGNIN_NONCE_REQUIRED=1 (owner decision once every supported build sends one).
+ */
+async function checkNonce(ctx: ServerContext, id: { provider: Provider; nonce?: string }, credential: unknown): Promise<void> {
+  if (id.provider !== 'apple' && id.provider !== 'google') return;
+  const raw = (credential as { nonce?: unknown } | null)?.nonce;
+  if (raw === undefined || raw === null || raw === '') {
+    if (ctx.policy.signInNonceRequired) {
+      ctx.metrics.count('tk_signin_nonce_total', { result: 'missing' });
+      throw new ApiError(400, 'bad_request', 'This sign-in needs a newer version of Kagemura. Update the game and try again.');
+    }
+    ctx.metrics.count('tk_signin_nonce_total', { result: 'legacy' });
+    return;
+  }
+  const hashed = typeof raw === 'string' ? createHash('sha256').update(raw).digest('hex') : '';
+  if (typeof raw !== 'string' || !id.nonce || (id.nonce !== raw && id.nonce.toLowerCase() !== hashed)) {
+    ctx.metrics.count('tk_signin_nonce_total', { result: 'mismatch' });
+    throw new ApiError(400, 'bad_request', 'The sign-in does not match this request. Try again.');
+  }
+  if (!(await ctx.repo.useNonce(raw, ctx.now()))) {
+    ctx.metrics.count('tk_signin_nonce_total', { result: 'used' });
+    throw new ApiError(400, 'bad_request', 'This sign-in was already used or has expired. Try again.');
+  }
+  ctx.metrics.count('tk_signin_nonce_total', { result: 'ok' });
 }
 
 export async function links(ctx: ServerContext, me: Player): Promise<LinksResponse> {
@@ -55,13 +101,51 @@ export async function revokeOthers(ctx: ServerContext, me: Player): Promise<Revo
   return { revoked };
 }
 
-/** Extra device tokens not used for this long are deleted (retention.ts). The first device's token is the account itself and stays. */
+/**
+ * Extra device tokens not used for this long are deleted (retention.ts). The first device's token is the account itself and stays.
+ * Backend A16: SESSION_IDLE_DAYS (`ctx.policy.sessionIdleDays`) changes it; every use renews it (sliding expiry).
+ */
 export const TOKEN_UNUSED_DAYS = 400;
 
 export async function pruneTokens(ctx: ServerContext): Promise<number> {
-  const n = await ctx.repo.pruneTokens(ctx.now() - TOKEN_UNUSED_DAYS * 24 * 3_600_000);
+  const n = await ctx.repo.pruneTokens(ctx.now() - (ctx.policy.sessionIdleDays || TOKEN_UNUSED_DAYS) * 24 * 3_600_000);
   if (n) ctx.metrics.count('tk_sessions_revoked_total', { reason: 'prune' }, n);
   return n;
+}
+
+const scopeOf = (hash: string) => hash.slice(0, 32);
+
+/**
+ * DELETE /v1/sessions/current (backend A16): sign out this device. Its token stops working at once and the
+ * answers remembered for it go. The account's first token is the account itself for a player without a
+ * linked sign-in (an anonymous account has no other way back in), so it is refused there: link a
+ * sign-in first, or delete the account.
+ */
+export async function signOutDevice(ctx: ServerContext, me: Player): Promise<void> {
+  const hash = me.session;
+  if (!hash) throw new ApiError(400, 'bad_request', 'Sign in on this device first.');
+  if (hash === me.tokenHash && !(await ctx.repo.linksOf(me.id)).length) {
+    throw new ApiError(409, 'conflict', 'This device holds the only key to this account. Link Apple, Google or Game Center first (then you can sign back in), or delete the account.');
+  }
+  // A hash no token can have: the device's token no longer finds the player.
+  await ctx.repo.replaceToken(me.id, hash, `revoked:${ctx.uuid()}`);
+  await ctx.repo.dropIdempotentScopes([scopeOf(hash)]);
+  ctx.metrics.count('tk_sessions_revoked_total', { reason: 'current' });
+}
+
+/**
+ * POST /v1/sessions/rotate (backend A16): a new token for this device in place of the one it sent (the old
+ * one stops working). Games that support it rotate now and then, so a token copied from the device
+ * (localStorage on the web) stops being useful.
+ */
+export async function rotateToken(ctx: ServerContext, me: Player): Promise<RegisterResponse> {
+  const hash = me.session;
+  if (!hash) throw new ApiError(400, 'bad_request', 'Sign in on this device first.');
+  const token = ctx.newToken();
+  if (!(await ctx.repo.replaceToken(me.id, hash, await ctx.hash(token)))) throw new ApiError(401, 'unauthorized', 'Unknown or missing player token.');
+  await ctx.repo.dropIdempotentScopes([scopeOf(hash)]);
+  ctx.metrics.count('tk_sessions_revoked_total', { reason: 'rotate' });
+  return { playerId: me.id, token };
 }
 
 /** Sign in with Apple: exchange the one-time authorization code for a refresh token to revoke later (5.1.1(v)). */
@@ -103,7 +187,7 @@ export async function revokeAppleTokens(ctx: ServerContext, tokens: { provider: 
  * account is gone, so their game account is deleted. Email events are ignored
  * (no email is kept).
  */
-export async function appleSignInNotification(ctx: ServerContext, body: { payload?: unknown } | undefined, deleteAccount: (p: Player) => Promise<void>): Promise<void> {
+export async function appleSignInNotification(ctx: ServerContext, body: { payload?: unknown } | undefined): Promise<void> {
   const verify = ctx.identity.appleNotification;
   if (!verify) throw new ApiError(404, 'not_found', 'Sign in with Apple is not set up on this server.');
   let ev: { type: string; sub: string };
@@ -122,9 +206,19 @@ export async function appleSignInNotification(ctx: ServerContext, body: { payloa
     if (n) ctx.metrics.count('tk_sessions_revoked_total', { reason: 'unlink' }, n);
     ctx.log('info', 'Sign in with Apple: consent revoked, link removed', { playerId });
   } else if (ev.type === 'account-delete') {
+    // Backend A29: the Apple ID is gone, but the game account may also be reached through Google, Game
+    // Center or the first device's token. It is not deleted at once: the Apple link and its devices go now,
+    // the player gets a notice, and a verified deletion request waits in the staff queue (the same path and
+    // grace as a web request), so staff delete it unless the player answers that they still use it.
     const p = await ctx.repo.getPlayer(playerId);
-    if (p) await deleteAccount(p);
-    ctx.log('info', 'Sign in with Apple: Apple account deleted, game account deleted', { playerId });
+    if (!p) return;
+    await ctx.repo.removeLink(playerId, 'apple');
+    const n = await ctx.repo.revokeTokens(playerId, 'apple');
+    if (n) ctx.metrics.count('tk_sessions_revoked_total', { reason: 'unlink' }, n);
+    const at = ctx.now();
+    await ctx.repo.addDeletionRequest({ id: ctx.uuid(), at, playerId, name: p.name, contact: '', note: 'Sign in with Apple: the Apple account was deleted (server-to-server notification).', status: 'open', resolvedAt: null, resolution: null, verified: true });
+    await notify(ctx, playerId, 'account', 'The Apple account linked to this game account was deleted, so Sign in with Apple was removed. This game account will be deleted after a short review. If you still play it, contact support from Settings → Privacy and help.');
+    ctx.log('info', 'Sign in with Apple: Apple account deleted, deletion request queued for staff', { playerId });
   }
 }
 

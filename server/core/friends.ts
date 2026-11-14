@@ -159,7 +159,7 @@ async function findableBy(ctx: ServerContext, me: Player, p: Player, s: Social):
   return theirs.some((f) => s.friends.has(f.id));
 }
 
-/** A tie through play that lets a friend request by id through: they asked first, or the same Alliance or Gang. */
+/** A tie through play that lets a friend request by id through: they asked first, the same Alliance or Gang, or (backend A14) a duel between them. */
 async function relatedByPlay(ctx: ServerContext, me: Player, p: Player, s: Social): Promise<boolean> {
   if (s.incoming.some((r) => r.fromId === p.id)) return true;
   if (p.bannedUntil && p.bannedUntil > ctx.now()) return false;
@@ -167,7 +167,10 @@ async function relatedByPlay(ctx: ServerContext, me: Player, p: Player, s: Socia
   if ((await ageBandOf(ctx.repo, p.id)) === 'under13') return false;
   if (me.groveId && me.groveId === p.groveId) return true;
   const [mine, theirs] = await Promise.all([ctx.repo.squadOf(me.id), ctx.repo.squadOf(p.id)]);
-  return Boolean(mine && theirs && mine.squadId === theirs.squadId);
+  if (mine && theirs && mine.squadId === theirs.squadId) return true;
+  // Backend A14: duel partners (friends who dueled and later fell out of touch: an unfriend, a lost
+  // account) may ask again; the duel tallies keep who fought whom.
+  return (await ctx.repo.duelTallies(me.id)).some((d) => (d.attackerId === me.id && d.defenderId === p.id) || (d.attackerId === p.id && d.defenderId === me.id));
 }
 
 /** GET /v1/players/lookup?name= : exactly one player, or "No player with that name" (also when they hide). */

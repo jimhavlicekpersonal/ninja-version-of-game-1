@@ -399,6 +399,41 @@ describe('protocol contract', () => {
     expect(second).toEqual(first);
   });
 
+  it('backend batch 2026-11-13: reused idempotency keys, request ids, sign-in nonces, sessions, complaints', async () => {
+    const hello = await client().hello();
+    const tokens = memoryTokenStore();
+    const c = new HttpServerAdapter(url, { tokens, retryDelayMs: 200 });
+    await c.register(`Contract Batch ${tag}`);
+    const auth = { authorization: `Bearer ${tokens.get()}`, 'content-type': 'application/json', 'x-protocol': '7' };
+    const traced = await fetch(`${url}${Routes.hello}`, { headers: { 'x-request-id': 'contract-trace-1' } });
+    if (traced.headers.get('x-client-request-id') !== null) {
+      expect(traced.headers.get('x-client-request-id')).toBe('contract-trace-1');
+      expect(traced.headers.get('x-request-id')).not.toBe('contract-trace-1');
+    }
+    if (!hello.features.includes('session-control')) return;
+    const put = (findable: string) => fetch(`${url}${Routes.privacy}`, { method: 'PUT', headers: { ...auth, 'idempotency-key': `contract-mismatch-${tag}` }, body: JSON.stringify({ findable }) });
+    expect((await put('nobody')).status).toBe(200);
+    const mismatch = await put('everyone');
+    expect(mismatch.status).toBe(422);
+    expect((await mismatch.json()).error).toBe('idempotency_mismatch');
+    const nonceRes = await fetch(`${url}${Routes.authNonce}`, { method: 'POST' });
+    const nonce = await nonceRes.json();
+    expect(nonce, String(nonceRes.status)).toHaveProperty('nonce');
+    expect(typeof nonce.nonce).toBe('string');
+    expect(nonce.expiresAt).toBeGreaterThan(Date.now() - 60_000);
+    const bare = { authorization: auth.authorization, 'x-protocol': '7' };
+    const rotated = await (await fetch(`${url}${Routes.sessionsRotate}`, { method: 'POST', headers: bare })).json();
+    expect(typeof rotated.token).toBe('string');
+    expect((await fetch(`${url}${Routes.me}`, { headers: bare })).status).toBe(401);
+    // The only key of an account without a linked sign-in cannot sign itself out.
+    expect((await fetch(`${url}${Routes.sessionsCurrent}`, { method: 'DELETE', headers: { ...bare, authorization: `Bearer ${rotated.token}` } })).status).toBe(409);
+    if (hello.features.includes('complaints')) {
+      const r = await fetch(`${url}${Routes.complaints}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subject: `Contract ${tag}`, reason: 'A contract test complaint, please ignore.' }) });
+      expect(r.status).toBe(201);
+      expect(typeof (await r.json()).id).toBe('string');
+    }
+  });
+
   it('purchases and push: a store the server does not check is refused before paying; forged receipts are refused; push tokens are checked', async () => {
     const hello = await client().hello();
     const p = await player('Buyer');

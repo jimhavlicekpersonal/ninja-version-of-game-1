@@ -18,6 +18,11 @@ window.KAGEMURA_LEGAL = {
   supportEmail: '',
   /** The server's web deletion form, e.g. https://api.example.com/account/delete. */
   deletionUrl: '',
+  /**
+   * The server's complaint form for illegal or harmful content (EU DSA art. 16, UK Online Safety Act),
+   * e.g. https://api.example.com/complaints. support.html links it while set.
+   */
+  complaintUrl: '',
   /** EU representative under GDPR Art. 27 (name and address), if the publisher is outside the EU. */
   euRepresentative: '',
   /** UK representative under UK GDPR Art. 27 (name and address), if the publisher is outside the UK. */

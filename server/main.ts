@@ -9,6 +9,9 @@
  *   so rate limits see each player's IP instead of the proxy's; 'false' when
  *   players connect directly. Production requires it and refuses 'true'
  *   (which lets a client choose its IP through X-Forwarded-For);
+ * - RATE_LIMIT_INSTANCES: how many API instances run (default 1). Limits counted on one instance
+ *   (no REDIS_URL, or the fallback while Redis is down) are divided by it (backend A8). Keep it at the
+ *   usual instance count; autoscaling above it loosens limits only while Redis is down.
  * - RATE_LIMITS: optional JSON overriding rules of DEFAULT_RATE_LIMITS, e.g.
  *   {"register":{"limit":200,"windowMs":3600000}} on a staging server.
  * - ADMIN_TOKENS: per-staff tokens "name:token,name2:token2" (each token at
@@ -67,11 +70,19 @@
  *   after OUTBOUND_TIMEOUT_MS (10000), body included (server/outbound.ts).
  * - Periodic jobs (retention, voided purchases, Gang War reminders) run on one
  *   instance at a time, through leases in the database (server/jobs.ts).
+ * - Policy (backend batch 2026-11-13, server/config.ts policyFromEnv): SIGNIN_NONCE_REQUIRED=1
+ *   (Apple/Google sign-ins must carry a server nonce; off by default so older games sign in),
+ *   SESSION_IDLE_DAYS (400: another device's token unused this long is signed out),
+ *   DORMANT_ACCOUNT_DAYS (730; 0 = off) and DORMANT_MAX_KEEP (3): anonymous accounts never seen for
+ *   that long, with no purchase, link or staff role and no server-held village above that Keep, are
+ *   deleted; SANDBOX_CREDIT_DAILY_CAP_USD (production: Sandbox/test purchases credited per day on the
+ *   whole server); USD_RATES (JSON, USD per unit of a currency: local store prices count against the
+ *   under-18 cap and in revenue reports); GAMECENTER_CA_PEM (the CA that must sign Game Center keys).
  */
 import { randomUUID } from 'node:crypto';
 import { hostname } from 'node:os';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
-import { runLeased } from './jobs';
+import { runLeased, type StillHeld } from './jobs';
 import { OUTBOUND_TIMEOUT_MS, timedFetch } from './outbound';
 import { gracefulShutdown, SHUTDOWN_DEADLINE_MS, SHUTDOWN_DRAIN_MS } from './shutdown';
 import { availableParallelism } from 'node:os';
@@ -81,7 +92,7 @@ import { defaultData } from '../src/gameplay/sim/data';
 import { buildServer } from './app';
 import type { SharedStores } from './nodeContext';
 import { PgRepo } from './pgRepo';
-import { DEFAULT_RATE_LIMITS, type RateLimiter, type RateLimits } from './rateLimit';
+import { DEFAULT_RATE_LIMITS, MemoryRateLimiter, shareOf, type RateLimiter, type RateLimits } from './rateLimit';
 import { RedisClient } from './redis';
 import { MemoryRepo, type Repo } from './repo';
 import { RedisLeaderboard, RedisLocks, RedisRateLimiter, redisErrorReporter } from './shared';
@@ -94,7 +105,7 @@ import { SIM_RULES } from '../src/gameplay/sim/battle/battle';
 import type { GameData } from '../src/gameplay/sim/types';
 import { verifierFromEnv } from './identity/verify';
 import { accountFromEnv } from './identity/appleTokens';
-import { checkConfig, paymentsFromEnv, parseAdminTokens, parseTrustProxy, pgPoolSettings } from './config';
+import { checkConfig, paymentsFromEnv, parseAdminTokens, parseTrustProxy, pgPoolSettings, policyFromEnv } from './config';
 import { pushTransportFromEnv, ServerPush } from './push/push';
 import type { Fetch } from './payments/google';
 
@@ -146,6 +157,9 @@ async function main(): Promise<void> {
     console.warn('DATABASE_URL not set: using in-memory storage (data is lost on restart).');
     repo = new MemoryRepo();
   }
+  // Backend A8: how many API instances run behind the load balancer (default 1). Limits counted per
+  // instance (no Redis, or while Redis is down) are divided by it, so N instances do not allow N times as much.
+  const instances = Math.max(1, Math.floor(Number(process.env.RATE_LIMIT_INSTANCES)) || 1);
   const rateLimits = process.env.RATE_LIMITS ? (JSON.parse(process.env.RATE_LIMITS) as Partial<RateLimits>) : undefined;
   let shared: SharedStores | undefined;
   let rateLimiter: RateLimiter | undefined;
@@ -172,7 +186,11 @@ async function main(): Promise<void> {
       board.markStale();
     }
     shared = { board, locks: new RedisLocks(redis, undefined, onError) };
-    rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits }, undefined, onError);
+    // Backend A8: while Redis is down each instance counts on its own, so its share is the limit / instances.
+    rateLimiter = new RedisRateLimiter(redis, { ...DEFAULT_RATE_LIMITS, ...rateLimits }, undefined, onError, new MemoryRateLimiter(shareOf({ ...DEFAULT_RATE_LIMITS, ...rateLimits }, instances)));
+  } else if (instances > 1) {
+    // Several instances without Redis: each counts its share.
+    rateLimiter = new MemoryRateLimiter(shareOf({ ...DEFAULT_RATE_LIMITS, ...rateLimits }, instances));
   }
   // Every outbound call has a deadline, body included (report section 5 step 2, A10).
   const timed = timedFetch(globalThis.fetch, Number(process.env.OUTBOUND_TIMEOUT_MS) || OUTBOUND_TIMEOUT_MS);
@@ -238,7 +256,7 @@ async function main(): Promise<void> {
     metrics.gauge('tk_resim_queue', () => [{ labels: {}, value: pool.queued }]);
     resim = pool;
   }
-  shared = { ...shared, payments, push, rules, balance, balanceCohorts, resim };
+  shared = { ...shared, payments, push, rules, balance, balanceCohorts, resim, policy: policyFromEnv(process.env) };
   console.log(`Deployment: ${config.deploy}. Purchases: ${[payments.apple && 'App Store', payments.google && 'Google Play'].filter(Boolean).join(', ') || 'none'}. Push: ${transport ? transport.platforms.join(', ') : 'none'}. Re-simulation workers: ${workers || 'none (main thread)'}. Battle rules: ${rules.supportedRules().join(', ')}${rules.minClientBuild ? `; games from ${rules.minClientBuild}` : ''}.`);
   const level = (['debug', 'info', 'warn', 'error'] as const).find((l) => l === process.env.LOG_LEVEL) ?? 'info';
   const app = buildServer({
@@ -279,12 +297,14 @@ async function main(): Promise<void> {
   // Periodic jobs run on one instance at a time (report section 5 step 2, A21): each run claims its lease first.
   const holder = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
   const timers: ReturnType<typeof setInterval>[] = [];
-  const job = (name: string, everyMs: number, run: () => Promise<unknown>) => () =>
+  const job = (name: string, everyMs: number, run: (stillHeld: StillHeld) => Promise<unknown>) => () =>
     void runLeased(repo, holder, Date.now(), name, everyMs, run).catch((e) => app.log.error(e, `${name} failed`));
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.
-  const prune = job('retention', 3_600_000, () => app.core.prune().then((r) => app.log.info({ pruned: r }, 'retention')));
+  const prune = job('retention', 3_600_000, (held) => app.core.prune(held).then((r) => app.log.info({ pruned: r }, 'retention')));
+  // Dormant anonymous accounts (backend A23; DORMANT_ACCOUNT_DAYS, 0 = off): daily, a batch per run.
+  const dormant = job('dormant-accounts', 24 * 3_600_000, (held) => app.core.pruneDormant(held).then((n) => n && app.log.info({ deleted: n }, 'dormant accounts')));
   // Gang War pushes (step 68): battle day begins, 2 hours left. Every 5 minutes; each sent once per war.
-  const reminders = job('gang-war-reminders', 5 * 60_000, () => app.core.gangWarReminders());
+  const reminders = job('gang-war-reminders', 5 * 60_000, (held) => app.core.gangWarReminders(held));
   timers.push(setInterval(reminders, 5 * 60_000));
   // Google's Voided Purchases API (refunds that a notification missed): the last 3 days, hourly.
   const voided = job('voided-purchases', 3_600_000, () => app.core.pollVoided(Date.now() - 3 * 86_400_000).then((n) => n && app.log.info({ revoked: n }, 'voided purchases')));
@@ -294,10 +314,12 @@ async function main(): Promise<void> {
     prune();
     voided();
     statsRollup();
+    dormant();
     const hourly = setInterval(() => {
       prune();
       voided();
       statsRollup();
+      dormant(); // its lease is a day long: one instance runs it once a day
     }, 3_600_000);
     hourly.unref();
     timers.push(hourly);

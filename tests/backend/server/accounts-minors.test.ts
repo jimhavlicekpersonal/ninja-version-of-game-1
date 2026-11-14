@@ -298,6 +298,14 @@ for (const [label, makeRepo] of repoFactories) {
       await expect(w.core.appleSignInNotification({ payload: apple.forged('account-delete', 'apple-cat') })).rejects.toMatchObject({ code: 'bad_request' });
       expect(await w.repo.getPlayer(cat.id)).not.toBeNull();
       await w.core.appleSignInNotification({ payload: apple.notification('account-delete', 'apple-cat') });
+      // Backend A29: not deleted at once. The Apple link goes, a notice says why, and a verified request waits for staff.
+      expect(await w.repo.getPlayer(cat.id)).not.toBeNull();
+      expect((await cat.links()).links).toEqual([]);
+      const queued = (await w.core.admin.deletionQueue('open')).requests.filter((r) => r.playerId === cat.id);
+      expect(queued).toHaveLength(1);
+      expect(queued[0]).toMatchObject({ verified: true });
+      expect((await cat.notices()).notices.some((n) => /Apple account/.test(n.text))).toBe(true);
+      await w.core.admin.resolveDeletion(queued[0]!.id, 'delete', '');
       expect(await w.repo.getPlayer(cat.id)).toBeNull();
       await w.core.appleSignInNotification({ payload: apple.notification('email-disabled', 'apple-nobody') }); // ignored
     });

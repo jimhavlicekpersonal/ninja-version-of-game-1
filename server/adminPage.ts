@@ -96,13 +96,21 @@ function render(d) {
   const amount = el('input', { type: 'number', value: '0', style: 'width:8em' });
   const note = el('input', { placeholder: 'Why (ledger and staff log)' });
   const ageNote = el('input', { placeholder: 'What support checked' });
+  const newName = el('input', { placeholder: 'New name (empty: a generated one)' });
+  const renameReason = el('input', { placeholder: 'Reason (the player sees it)' });
   const which = el('select', {}, el('option', { value: 'both' }, 'both'), el('option', { value: 'attack' }, 'attack'), el('option', { value: 'base' }, 'base'));
   const act = (path, body) => async () => { try { render(await api('POST', '/admin/v1/players/' + encodeURIComponent(p.id) + path, body())); status('Done.', true); } catch (e) { status(e.message); } };
   box.append(el('section', {}, el('h3', {}, 'Actions'),
     el('div', { class: 'row' }, 'Suspend for', hours, 'hours', reason, el('button', { onclick: act('/ban', () => ({ hours: Number(hours.value), reason: reason.value })) }, 'Suspend'), el('button', { onclick: act('/ban', () => ({ hours: 0 })) }, 'Lift suspension')),
     el('div', { class: 'row' }, 'Give (or take, with a minus)', amount, resKind, note, el('button', { onclick: act('/adjust', () => ({ resources: { [resKind.value]: Number(amount.value) }, note: note.value })) }, 'Apply'), el('span', { class: 'muted' }, d.village ? '' : 'Village on the device: cannot be changed here.')),
+    el('div', { class: 'row' }, 'Offending name', newName, renameReason, el('button', { onclick: act('/rename', () => ({ name: newName.value, reason: renameReason.value })) }, 'Replace name')),
     el('div', { class: 'row' }, 'Reset ratings', which, el('button', { onclick: act('/reset-rating', () => ({ which: which.value })) }, 'Reset')),
     el('div', { class: 'row' }, 'Age group: ' + (d.ageGroup ? (d.ageGroup.under18 ? 'under 18' : '18 or older') + ' since ' + when(d.ageGroup.at) : 'not stated'), ageNote, el('button', { onclick: act('/reset-age', () => ({ note: ageNote.value })) }, 'Clear (after a support check)'))));
+  const holds = (d.importHolds || []).filter((h) => h.status === 'held');
+  if (holds.length) {
+    const holdNote = el('input', { placeholder: 'What support confirmed' });
+    box.append(el('section', {}, el('h3', {}, 'Held back when the village moved'), holdNote, table(holds, [['When', (h) => when(h.at)], ['Jade', (h) => h.jade], ['Season Scroll', (h) => (h.premium ? 'yes (restore by hand)' : '')], ['Unconfirmed purchases', (h) => h.purchases.length], ['', (h) => el('button', { onclick: act('/import-holds/' + encodeURIComponent(h.id) + '/release', () => ({ note: holdNote.value })) }, 'Release')]])));
+  }
   if (d.village) box.append(el('section', {}, el('h3', {}, 'Village on the server'), el('pre', {}, JSON.stringify({ revision: d.village.revision, at: when(d.village.at), resources: d.village.resources, army: d.village.army, buildings: d.village.buildings }, null, 1))));
   box.append(el('section', {}, el('h3', {}, 'Ledger'), table(d.ledger, [['When', (l) => when(l.at)], ['Resource', (l) => resName(l.resource)], ['Change', (l) => l.delta], ['Balance', (l) => l.balance], ['Why', (l) => l.reason]])));
   box.append(el('section', {}, el('h3', {}, 'Purchases'), table(d.purchases, [['When', (x) => when(x.at)], ['Store', (x) => x.store], ['Product', (x) => NAMES.products[x.productId] || x.productId], ['USD', (x) => (x.cents / 100).toFixed(2)], ['Env', (x) => x.environment], ['Status', (x) => x.status]])));
@@ -112,8 +120,11 @@ function render(d) {
 }
 $('queues').onclick = async () => {
   try {
-    const [reports, deletions] = await Promise.all([api('GET', '/admin/v1/reports'), api('GET', '/admin/v1/deletion-requests')]);
+    const [reports, deletions, complaints] = await Promise.all([api('GET', '/admin/v1/reports'), api('GET', '/admin/v1/deletion-requests'), api('GET', '/admin/v1/complaints')]);
+    const resolution = el('input', { placeholder: 'What was done (resolution)' });
+    const closeComplaint = (id) => async () => { try { await api('POST', '/admin/v1/complaints/' + encodeURIComponent(id), { resolution: resolution.value }); status('Done.', true); $('queues').click(); } catch (e) { status(e.message); } };
     $('detail').replaceChildren(
+      el('section', {}, el('h3', {}, 'Complaints (illegal or harmful content)'), resolution, table(complaints.complaints, [['When', (c) => when(c.at)], ['About', (c) => c.subject], ['Why', (c) => c.reason], ['Contact', (c) => c.contact || ''], ['', (c) => el('button', { onclick: closeComplaint(c.id) }, 'Close')]])),
       el('section', {}, el('h3', {}, 'Open reports'), table(reports.reports, [['When', (r) => when(r.at)], ['About', (r) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); show(r.targetId); } }, r.targetName || r.targetId)], ['Reason', (r) => r.reason], ['Text', (r) => r.text || ''], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Resolve with POST /admin/v1/reports/:id (dismiss, remove_message, mute).')),
       el('section', {}, el('h3', {}, 'Deletion requests'), table(deletions.requests, [['When', (r) => when(r.at)], ['Player', (r) => r.playerId || r.name], ['Verified', (r) => (r.verified ? 'yes (code)' : 'NO: check ownership')], ['Note', (r) => r.note], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Carry out with POST /admin/v1/deletion-requests/:id: delete (verified only), reject, or override with a note saying how ownership was checked.')));
   } catch (e) { status(e.message); }

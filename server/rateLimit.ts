@@ -50,6 +50,12 @@ export interface RateLimits {
   villageImport: RateRule;
   /** Shared play-statistics batches per IP address (no token: report section 5 step 5). */
   stats: RateRule;
+  /** Failed staff-token attempts per IP address (backend A28): guesses are visible and slowed. */
+  staffAuth: RateRule;
+  /** Sign-in nonces per IP address (backend A15). */
+  nonce: RateRule;
+  /** Compliance complaints (illegal content, UK OSA / EU DSA notices) per IP address, no token. */
+  complaint: RateRule;
 }
 
 const MIN = 60_000;
@@ -78,7 +84,24 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   villageImport: { limit: 60, windowMs: HOUR },
   // A sharing game sends a batch every few minutes while played; a carrier NAT pool holds thousands of them.
   stats: { limit: 3000, windowMs: HOUR },
+  // Staff tokens are ≥24 random characters: 10 wrong ones a minute from one address is already an attempt.
+  staffAuth: { limit: 10, windowMs: MIN },
+  // One per sign-in attempt; a carrier NAT pool signs in many players an hour.
+  nonce: { limit: 600, windowMs: HOUR },
+  complaint: { limit: 20, windowMs: HOUR },
 };
+
+/**
+ * Backend A8: each instance's share of the limits, for counters kept per instance (no Redis, or the
+ * fallback while Redis is down). With `instances` API instances behind the load balancer, every
+ * per-instance limit is divided by it (rounded up, never below 1), so N instances together still allow
+ * about the shared limit instead of N times it. RATE_LIMIT_INSTANCES (main.ts) says how many run.
+ */
+export function shareOf(limits: RateLimits, instances: number): RateLimits {
+  const n = Math.max(1, Math.floor(instances) || 1);
+  if (n === 1) return limits;
+  return Object.fromEntries(Object.entries(limits).map(([k, r]) => [k, { ...r, limit: Math.max(1, Math.ceil(r.limit / n)) }])) as unknown as RateLimits;
+}
 
 /**
  * The key per-IP rules count under: an IPv4 address as it is (also when it

@@ -142,6 +142,25 @@ describe('report section 5 step 7 (compliance C08): the StoreKit test configurat
   });
 });
 
+describe('backend batch 2026-11-13: image and CI hygiene (A26, A27)', () => {
+  it('the server image pins its base by digest, runs under tini and has a health check', () => {
+    const docker = read('Dockerfile');
+    expect(docker).toMatch(/ARG NODE_IMAGE=node:\d+\.\d+\.\d+-slim@sha256:[0-9a-f]{64}/);
+    expect(docker.match(/^FROM /gm)!.length).toBe(docker.match(/^FROM \$\{NODE_IMAGE\}/gm)!.length);
+    expect(docker).toContain('ENTRYPOINT ["/usr/bin/tini", "--"]');
+    expect(docker).toMatch(/HEALTHCHECK [^\n]*\\\n\s+CMD node -e "fetch\('http:\/\/127\.0\.0\.1:'/);
+  });
+
+  it('every workflow pins its actions by commit SHA and the build audits runtime packages', async () => {
+    const { readdirSync } = await import('node:fs');
+    const dir = new URL('../../.github/workflows/', import.meta.url);
+    for (const f of readdirSync(dir).filter((x) => x.endsWith('.yml'))) {
+      for (const m of read(`.github/workflows/${f}`).matchAll(/uses:\s*(\S+)/g)) expect(m[1], `${f}: ${m[1]}`).toMatch(/^[\w.-]+\/[\w.-]+@[0-9a-f]{40}$/);
+    }
+    expect(read('.github/workflows/deploy.yml')).toContain('npm audit --omit=dev --audit-level=high');
+  });
+});
+
 describe('report section 5 step 10 (quality 32): the server image carries only server packages', () => {
   it('every runtime dependency is either imported by the server bundle or removed in the Dockerfile', () => {
     const pkg = JSON.parse(read('package.json')) as { dependencies: Record<string, string> };
