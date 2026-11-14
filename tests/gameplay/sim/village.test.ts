@@ -60,7 +60,7 @@ describe('building and upgrading', () => {
 
   it('enforces the Elder Toadstool building count limit', () => {
     const { state, clock } = newGame({ dew: 1500 });
-    let s = must(state, { type: 'place', buildingType: 'acorn_orchard', x: 2, y: 2 }, clock.now());
+    const s = must(state, { type: 'place', buildingType: 'acorn_orchard', x: 2, y: 2 }, clock.now());
     clock.advanceSeconds(10);
     const r = applyCommand(s, { type: 'place', buildingType: 'acorn_orchard', x: 6, y: 2 }, clock.now(), data);
     expect(r.ok).toBe(false);

@@ -1619,7 +1619,7 @@ function payRefund(s: VillageState, refund: Cost, data: GameData): Cost {
  * shifts every index, and the wrong warrior must never be cancelled.
  */
 function cancelTraining(s: VillageState, index: number, troop: string | undefined, count: number, now: number, data: GameData): CommandResult {
-  let at = troop !== undefined && s.training[index]?.troop !== troop ? s.training.map((q) => q.troop).lastIndexOf(troop) : index;
+  const at = troop !== undefined && s.training[index]?.troop !== troop ? s.training.map((q) => q.troop).lastIndexOf(troop) : index;
   const type = s.training[at]?.troop;
   if (type === undefined) return fail('NOT_FOUND', 'Nothing to cancel.');
   const items: TrainingItem[] = [];

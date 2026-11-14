@@ -72,7 +72,7 @@ describe('messages', () => {
     await useLanguage('hi');
     expect(fmtNumber(5448274)).toBe('54,48,274');
     await useLanguage('ar');
-    expect(fmtNumber(5448274)).toMatch(/^[0-9٬,.  ]+$/);
+    expect(fmtNumber(5448274)).toMatch(/^[0-9\u066C,.\u00A0\u202F]+$/);
     await useLanguage('en');
     expect(fmtNumber(5448274)).toBe('5,448,274');
     expect(formatCompact(34_567)).toBe('34K');

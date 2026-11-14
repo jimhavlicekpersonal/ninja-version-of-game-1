@@ -14,6 +14,7 @@
     "preview": "vite preview",
     "preview:lan": "vite preview --host",
     "test": "vitest run",
+    "lint": "eslint .",
     "status": "node tools/status/write.mjs",
     "test:watch": "vitest",
     "test:contract": "vitest run tests/backend/contract",
@@ -46,6 +47,7 @@
     "rules:fixture": "node tools/release/rules-snapshot.mjs fixture",
     "rules:snapshot": "node tools/release/rules-snapshot.mjs snapshot",
     "i18n:build": "node tools/i18n/build.mjs",
+    "i18n:size": "npm run build && node tools/i18n/build.mjs --quiet --measure-dist",
     "pretest": "node tools/i18n/build.mjs --quiet",
     "pretypecheck": "node tools/i18n/build.mjs --quiet",
     "pretypecheck:server": "node tools/i18n/build.mjs --quiet",
@@ -67,9 +69,13 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
     "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
   }

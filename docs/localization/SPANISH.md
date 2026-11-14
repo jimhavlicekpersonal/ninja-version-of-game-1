@@ -54,7 +54,7 @@ unchanged values are recorded in `locales/es/REVIEW.json`; terminology is in
 
 ## Measured storage
 
-Exact byte counts and file lists are in [SPANISH_SIZE.json](SPANISH_SIZE.json).
+Exact byte counts and file lists are in [SPANISH_SIZE.json](SPANISH_SIZE.json). Builds and tests no longer rewrite it unless its text changes; `npm run i18n:size` refreshes the built-JavaScript measurement after a build.
 KB and MB below use decimal units. Worksheet metadata and repeated English source
 text are excluded from shipping language packs.
 

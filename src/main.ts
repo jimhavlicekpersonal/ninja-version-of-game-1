@@ -334,7 +334,7 @@ async function boot(): Promise<void> {
   let statsAsked = false;
   const askStats = () => {
     if (!stats?.shouldAsk || !connection.online) return;
-    let battle = false;
+    let battle: boolean;
     try {
       battle = Boolean(app?.inBattle);
     } catch {

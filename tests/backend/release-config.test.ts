@@ -13,10 +13,10 @@ const steps = (file: string, job: string): Step[] => {
   const lines = read(file).split('\n');
   const start = lines.findIndex((l) => l === `  ${job}:`);
   if (start < 0) throw new Error(`no job ${job} in ${file}`);
-  const end = lines.findIndex((l, i) => i > start && /^  [a-z][\w-]*:/.test(l));
+  const end = lines.findIndex((l, i) => i > start && /^ {2}[a-z][\w-]*:/.test(l));
   const body = lines.slice(start, end < 0 ? undefined : end).join('\n');
   return body
-    .split(/\n      - /)
+    .split(/\n {6}- /)
     .slice(1)
     .map((text) => ({ text, run: /(^|\n)\s*run: /.test(text) ? text : undefined }));
 };
