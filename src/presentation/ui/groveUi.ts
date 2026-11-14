@@ -1,6 +1,7 @@
 import { chatText, generatedName, labelText } from './i18n';
 import { messageText as i18nMessage } from './i18n';
 import { labelText as i18nLabel, displayData as localizedData } from './i18n';
+import { bannerLine } from './growthUi';
 import { t as i18nText } from './i18n';
 /**
  * The Grove screen. It renders a GroveSnapshot from a GroveSource, so the
@@ -92,6 +93,8 @@ export class GroveUi {
             // Honesty (re-audit design item 5): the offline Alliance is computer players, and says so everywhere.
             snap.kind === 'local' ? h('div', { class: 'chip bot-label' }, i18nLabel(COMPUTER_CLAN)) : null,
             h('div', { class: 'muted small' }, i18nText("ui.your_alliance_level_xp_4f21dec979", { arg1: snap.members.length, arg2: snap.kind === 'online' ? `/${snap.maxMembers}` : '', arg3: snap.kind === 'local' ? i18nText("ui.computer_members_f9bec49553") : i18nLabel('members'), arg4: snap.level, arg5: formatNumber(snap.xp), arg6: snap.kind === 'online' ? i18nText("ui.online_3103617e69") : '' })),
+            // Growth batch 2026-11-14 (G16): a cosmetic banner by Alliance level, no number changes.
+            bannerLine(snap.level),
           ),
         ),
       );

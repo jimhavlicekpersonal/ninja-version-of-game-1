@@ -64,9 +64,11 @@ describe('in-app review prompt policy (retention G26)', () => {
     expect(shouldAskForReview({ ...base, last: 1e12, asked: 1 }, 1e12 + REVIEW_GAP_DAYS * day, true, true)).toBe(true);
     expect(shouldAskForReview({ ...base, last: 1, asked: REVIEW_MAX_ASKS }, 1e13, true, true)).toBe(false);
   });
-  it('the web has no review hook (no native plugin is installed yet)', () => {
-    expect(src('src/main.ts')).not.toContain('provideReviewHook');
-    expect(src('package.json')).not.toMatch(/in-app-review|app-review/);
+  it('the review hook is the native plugin only (growth batch 2026-11-14): null on the web and without the synced plugin', () => {
+    expect(src('src/main.ts')).toContain('provideReviewHook(nativeReviewRequest())');
+    expect(src('package.json')).toMatch(/"@capacitor-community\/in-app-review": "\^8\./);
+    const native = src('src/backend/platform/native.ts');
+    expect(native).toMatch(/if \(!Capacitor\.isNativePlatform\(\) \|\| !Capacitor\.isPluginAvailable\('InAppReview'\)\) return null;/);
   });
 });
 

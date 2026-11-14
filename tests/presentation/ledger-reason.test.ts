@@ -7,7 +7,7 @@ import { PLAYER_COMMANDS } from '../../src/gameplay/sim/serverEconomy';
 import { ledgerReason } from '../../src/presentation/ui/ledgerReason';
 
 it('turns every ledger reason the server writes into words, never a code', () => {
-  const server = ['start', 'purchase:apple', 'purchase:google', 'refund:apple', 'refund:google', 'refund-reversed:apple', 'refund-reversed:google', 'staff:goodwill after outage', 'staff:age-reset', 'import', 'attack:loot', 'attack:loot:uploaded-base', 'attack:loot:generated-base', 'attack:troops', 'defense:loss', 'war:chest', 'war:troops', 'gangwar:chest', 'gangwar:troops', 'donation:sent', 'donation:received', 'purchase:unverified'];
+  const server = ['start', 'purchase:apple', 'purchase:google', 'refund:apple', 'refund:google', 'refund-reversed:apple', 'refund-reversed:google', 'staff:goodwill after outage', 'staff:age-reset', 'import', 'attack:loot', 'attack:loot:uploaded-base', 'attack:loot:generated-base', 'attack:troops', 'defense:loss', 'war:chest', 'war:troops', 'gangwar:chest', 'gangwar:troops', 'donation:sent', 'donation:received', 'purchase:unverified', 'referral:recruit', 'referral:inviter'];
   const commands = [...PLAYER_COMMANDS].map((c) => `command:${c}`);
   for (const code of [...server, ...commands, 'something:new']) {
     const words = ledgerReason(code);

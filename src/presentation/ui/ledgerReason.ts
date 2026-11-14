@@ -56,6 +56,8 @@ export function ledgerReason(code: string): string {
   if (code.startsWith('refund-reversed:')) return 'Refund reversed, purchase given back';
   if (code.startsWith('refund:')) return 'Refunded purchase taken back';
   if (code.startsWith('staff:')) return 'Support adjustment';
+  // Growth batch 2026-11-14 (G13): the fixed friend-invite reward.
+  if (code.startsWith('referral:')) return 'Friend invite reward';
   if (code.startsWith('attack:loot')) return 'Raid loot';
   if (code.startsWith('command:')) return 'Village action';
   return 'Other';
