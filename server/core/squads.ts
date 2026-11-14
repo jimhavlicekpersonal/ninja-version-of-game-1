@@ -15,6 +15,7 @@ import { isolateName } from '../../src/gameplay/sim/social/names';
  *   limits, mutes, blocks, reports, and gifts in the usual inbox.
  */
 import { filterText } from '../../src/gameplay/sim/social/grove';
+import { serverHasContact } from './contactFilter';
 import type { ChatResponse, ChatView, DonateRequest, DonateResponse, RequestsResponse, RequestView, SquadInviteView, SquadMemberView, SquadResponse, SquadView } from '../../src/backend/net/protocol';
 import type { Player, Squad, SquadMember } from '../repo';
 import { requireRules } from './rules';
@@ -43,7 +44,7 @@ export async function requireSquad(ctx: ServerContext, me: Player): Promise<{ sq
 function cleanSquadName(raw: unknown, ctx: ServerContext): string {
   const name = String(raw ?? '').replace(/\s+/g, ' ').trim();
   if (name.length < 3 || name.length > 24) throw new ApiError(400, 'bad_request', 'A Gang name has 3-24 characters.');
-  if (filterText(name, ctx.data) !== name || isReservedName(name)) throw new ApiError(400, 'bad_request', 'That Gang name is not allowed.');
+  if (filterText(name, ctx.data) !== name || serverHasContact(name) || isReservedName(name)) throw new ApiError(400, 'bad_request', 'That Gang name is not allowed.');
   return name;
 }
 

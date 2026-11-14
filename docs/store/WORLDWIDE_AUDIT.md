@@ -47,6 +47,8 @@ Closure: upgrade to a currently supported version, adapt the bridge and verify t
 
 ### GLOBAL-002 — Critical: unverified imported currency and premium — FIXED (db9b88e)
 
+2026-11-13 backend batch: sandbox test-store purchases now refuse an import even without `flags.sandbox`, and staff can release held Jade; a save with every sandbox trace removed is still accepted within the holds (closure record below).
+
 Reproduced: [`server/core/villageImport.ts`](../../server/core/villageImport.ts) accepted **20,000 Jade, premium pass enabled and zero purchase records**. Plausible-inventory limits do not establish provenance. Exported local state cannot prove paid value or legitimate competitive progression.
 
 Closure: establish a migration policy that protects legitimate offline progress while preventing invented currency/progression/premium from entering the competitive economy. Validate paid entitlements against trusted records; verify forged saves, sandbox-origin exports, repeated imports and legitimate purchased balances. Do not simply confiscate valid progress.
@@ -65,6 +67,8 @@ Closure: atomic cap check/reservation across devices and instances. Verify concu
 
 ### GLOBAL-005 — High: cancelled purchases retain cap reservations — FIXED (db9b88e)
 
+2026-11-13 backend batch: a receipt whose intent was released or lapsed is re-checked against the cap at redeem, so a modified client cannot free a hold and then pay (closure record below).
+
 `INTENT_HOLD_MS` in [`purchases.ts`](../../server/core/purchases.ts) is 30 minutes; cancellation in [`controller.ts`](../../src/gameplay/control/controller.ts) does not release it. Repeated cancellations can block allowed purchases. Delayed approvals need a policy beyond this window.
 
 Closure: securely resolve failed/cancelled intents without incorrectly releasing genuinely pending purchases. Verify abandonment, delayed approval, expiry and cross-device recovery.
@@ -76,6 +80,8 @@ Closure: securely resolve failed/cancelled intents without incorrectly releasing
 Closure: define truthful, appropriate spending protections and age-change behavior for intended markets; verify server enforcement. An under-18 $50 preference is not evidence of legal compliance.
 
 ### GLOBAL-007 — High: fixed USD displayed instead of store prices — OPEN (code fixed in db9b88e; real storefronts pending)
+
+2026-11-13 backend batch: the server counts Apple's reported local price with `USD_RATES` for the under-18 cap and purchase records (catalog USD otherwise); storefront verification stays open (closure record below).
 
 [`economyUi.ts`](../../src/presentation/ui/economyUi.ts) formats catalog dollar prices in cards/confirmation. Native plugins expose localized prices but the shop does not use them. Prices can disagree with store sheets, regional pricing, taxes or promotions. Confirmation also exposes internal resource IDs in grant text.
 
@@ -650,3 +656,45 @@ GAME THEORY session on the gameplay findings that code can close. Each item was 
 | Not fixed (design decisions) | open | Pack prices, the stipend rate, skip and top-up curves (E03, E05, CU-5), defense values and loot caps (DM-2, PS-1), timers and caps are design numbers this session did not change. | — | — |
 
 Verification: on `22db3f5` plus this record: `npm test` without Postgres or Redis (164 files: 163 passed, 1 skipped; 1,399 tests passed, 14 skipped), `npm run build`, `npm run typecheck:server`, `npm run server:build`, `npm run balance:campaign` (the four existing campaigns identical to the previous run; two new ones). `aura-cache.test.ts` was run against the code before the Quality 28 change and gave the same hash. No browser or device run; model-player outcomes are not observed play.
+
+
+### 2026-11-13 — backend batch (backend audit `docs/audit/areas/06-backend-server.md`, A1–A34; GLOBAL-002/005/007; C25; E14), commits `2378dde`, `74e93f9`, `ed8bf8f`, `37c2c0b`, `5d016ea`, `a19bee2`, `e228287` and this record's docs commit
+
+Each finding was revalidated against the code first. Already fixed before this batch (confirmed, not changed): A8 local fallback (now also divided per instance), A9 graceful shutdown, A10 outbound timeouts, A12 deletion purging idempotency rows and holding the name, A14 findability rules for requests by id, A21 one-instance leases. New tests run without Postgres or Redis; the `PgRepo` SQL is checked against a recording stand-in (`jobs-db.test.ts`) and runs for real only with `TEST_DATABASE_URL` (CI's Server release workflow). Verified: `npm test`, `npm run build`, `npm run typecheck:server`, `npm run server:build` (counts in the batch's final report). One real-worker timing assertion (`resim.test.ts`, main-thread gap under 150 ms) failed intermittently on this machine at load average 14 on 4 cores; its battle path is unchanged by this batch.
+
+| Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|
+| A3 battle commands simulated on the request thread under the row lock | fixed (`37c2c0b`) | `core/villageReplay.ts` replays a batch as a pure function; batches with battle commands run in the worker pool before the lock and are written only if the revision is unchanged (replayed again up to 3 times, then 409); refusals and the battle budget are decided once per command number | `village-replay.test.ts` (no transaction open during the replay, a racing write replays again, budget spent once, same answer as in place), `resim.test.ts` (bundled worker gives the main thread's result) | The per-player 6/min cap stays as a CPU budget; the pool's queue limit answers 503 under overload |
+| A32 re-sim timeouts not counted | fixed (`37c2c0b`) | `ResimTimeoutError` → `ResimTimedOut` (503 busy) counts in `burnAfterFailures`; a full queue still does not | `village-replay.test.ts` | — |
+| A7 limits per token | fixed (`2378dde`) | The limiter hook authenticates once and keys per player; junk/staff tokens by hash | `backend-batch.test.ts` (two device tokens share one budget) | One extra token lookup per authed request before the limit (the route reuses it) |
+| A8 per-instance fallback multiplies | fixed (`2378dde`) | `RATE_LIMIT_INSTANCES` divides per-instance counters (`shareOf`) for no-Redis and the Redis-down fallback | `backend-batch.test.ts` | Owner sets the count; autoscaling above it loosens limits while Redis is down |
+| A31 TRUST_PROXY hard to verify (and found broken) | fixed (`2378dde`) | `GET /admin/v1/ip`, `/metrics/ip`; **Fastify 5.12 treats a numeric `trustProxy` as "trust nobody"**, so `TRUST_PROXY=1` put every player on the load balancer's address (one shared IP bucket); hop counts now become a trust function | `backend-batch.test.ts` (one hop: the client's address is seen) | Verify on the real host after deploy (SHIPPING 3h) |
+| A13 idempotency scope | fixed (`2378dde`) | Lookup in a `preHandler` with a fingerprint (method, route pattern, body; migration 0031); reuse otherwise is `422 idempotency_mismatch` | `backend-batch.test.ts`, `server.test.ts`, contract test | Rows from older servers have no fingerprint and replay as before (a day) |
+| A12 village answers kept a day | fixed (`2378dde`, `74e93f9`) | Village answers stored without the file and re-read on replay; signed-out/rotated tokens drop their answers | `backend-batch.test.ts`, `backend-identity.test.ts` | — |
+| A28 staff token guessing invisible | fixed (`2378dde`) | `tk_staff_auth_failures_total`, `staffAuth` rule (10/min/IP then 429), alert `StaffAuthFailures` | `backend-batch.test.ts`, alert-name test | — |
+| A30 names and codes in logs | fixed (`2378dde`) | Request-log serializer with `redactUrl` (friend codes, `name`/`q`/`code`/`install`/`token`) | `backend-batch.test.ts` (log line) | Other fields a log shipper adds are the host's |
+| A33 client x-request-id trusted | fixed (`2378dde`) | Always the server's id; the client's echoed as `x-client-request-id` and logged | `backend-batch.test.ts`, `observability.test.ts` | — |
+| A15 sign-ins not nonce-bound; GC chain/dates | fixed on the server (`74e93f9`) | `POST /v1/auth/nonce` (migration 0032), nonce checked raw or SHA-256 and used once, future `iat` refused; Game Center certs in date, `O=Apple Inc.`, optional `GAMECENTER_CA_PEM` chain check | `backend-identity.test.ts` | **The game does not send nonces yet** (native `TkAuthPlugin`s, web sign-in and `Connection` need it; then `SIGNIN_NONCE_REQUIRED=1`); without `GAMECENTER_CA_PEM` the chain is not verified (the URL is pinned to Apple's host over HTTPS) |
+| A16 tokens never expire/rotate, no own sign-out | fixed on the server (`74e93f9`) | `DELETE /v1/sessions/current`, `POST /v1/sessions/rotate`, `SESSION_IDLE_DAYS` sliding idle expiry of other devices' tokens | `backend-identity.test.ts`, contract test | The account's first token never expires (it is an anonymous account's only key); the game does not call rotate/sign-out yet |
+| A29 Apple notifications: replay, ordering, instant delete | fixed (`74e93f9`, `ed8bf8f`) | `store_notifications` by `notificationUUID` with `signedDate`; older refund-state notices after newer ones are skipped; Sign in with Apple `account-delete` queues a verified deletion request + notice | `purchases-batch.test.ts`, `accounts-minors.test.ts` | Google RTDN is not deduplicated by message id (its handler is idempotent) |
+| A11 Google product not cross-checked | fixed (`ed8bf8f`) | Answer naming another `productId`, or a purchase state other than 0, refused | `purchases-batch.test.ts` | — |
+| GLOBAL-005 a modified client releases a hold then pays | fixed (`ed8bf8f`) | A receipt whose intent was released or lapsed is checked against the cap at redeem | `purchases-batch.test.ts` | The release route stays (honest cancels free the cap at once) |
+| A5 refund pause per free account | fixed (`ed8bf8f`) | Refunds counted per buyer: same account, same device by intent (`PurchaseIntentRequest.device`, migration 0033), accounts whose server village shares a device | `purchases-batch.test.ts` | A buyer on a new device with a device village and no intent device is still a new buyer; spend-then-refund of non-Jade resources still floors at zero (a game rule) |
+| A24 sandbox cap per free account | fixed (`ed8bf8f`) | Per buyer (devices as A5) plus `SANDBOX_CREDIT_DAILY_CAP_USD` for the whole server | `purchases-batch.test.ts` | Owner sets the daily cap |
+| GLOBAL-007 cap and records in USD only | partly fixed (`ed8bf8f`) | Apple's reported local price counts with `USD_RATES` (cap, history, refunds); catalog USD otherwise | `purchases-batch.test.ts` | Google's purchase API reports no price; rates are owner-maintained; store storefront verification still open |
+| A21 job outliving its lease | fixed (`5d016ea`) | `stillHeld`/`requireLease` before each commit; reminders mark the war before pushing | `jobs-db.test.ts` | A lease check is not a database fencing token: a write already in flight when the lease is lost can still land |
+| A23 anonymous accounts never pruned | fixed (`5d016ea`) | `pruneDormant` daily: `DORMANT_ACCOUNT_DAYS` 730 (0 = off), no purchase/link/staff/ban, no server village above `DORMANT_MAX_KEEP` 3 | `jobs-db.test.ts` | No in-game notice before deletion (the device village stays playable offline); privacy text is an owner step |
+| A18 unbatched retention | fixed (`5d016ea`) | ctid batches of 5,000 under a 10-minute budget; `tk_retention_*`, alert `RetentionStalled` | `jobs-db.test.ts` (recorded SQL) | Not measured on a large real table |
+| A17 write amplification | partly fixed (`5d016ea`) | One `unnest` INSERT each for ledger and log lines; unchanged raid base not rewritten | `jobs-db.test.ts` | The village is still one JSONB row rewritten per applied batch (compression or splitting is a larger change) |
+| A19 `order by random()` | fixed (`5d016ea`) | Two index walks from a pivot (`players_match_trophies_idx`, migration 0034 built concurrently) | `jobs-db.test.ts` | Not measured at scale; memory repo keeps its simple order |
+| A20 Power leaderboard scans | fixed (`5d016ea`) | Per-instance 60 s cache of the top 100 and all values; ranks by binary search | `jobs-db.test.ts` | Ranks may be a minute stale; honor rank without Redis is still `count(*)` |
+| A22 no CREATE INDEX CONCURRENTLY | fixed (`5d016ea`) | `-- migrate: no-transaction` header runs statements one by one | `jobs-db.test.ts` | Such files must be idempotent (a failure cannot roll back) |
+| A14 duel partners | fixed (`a19bee2`) | A duel tally between the two is a tie for a request by id | `moderation-batch.test.ts` | — |
+| C25 + UK OSA spellings, links | fixed on the server (`a19bee2`) | `core/contactFilter.ts` on a folded copy: names refused, chat message replaced | `moderation-batch.test.ts` | The shared filter (GAME THEORY) still misses these on the device: request filed in `docs/game-theory/REQUESTS.md` |
+| Staff rename of an offending name | done (`a19bee2`) | `POST /admin/v1/players/:id/rename` + staff page row | `moderation-batch.test.ts` | — |
+| Compliance complaints | done (`a19bee2`) | `POST /v1/complaints`, `GET /complaints`, staff queue (migration 0035); `support.html` links it when `complaintUrl` is set | `moderation-batch.test.ts`, contract test | The form is English only; the support page shows the bare link (adding label text needs a translation pass for every language) |
+| GLOBAL-002 sandbox flag removable; holds | partly fixed (`a19bee2`) | Sandbox test-store purchases refuse an import without the flag; staff release held Jade | `moderation-batch.test.ts` | A save with every sandbox trace removed is still accepted within the provenance holds and the account-age rule; a held premium Scroll is marked, not granted |
+| E14 online war chests without participation | fixed (`a19bee2`) | Chest listed and paid only with `chestMinAttacks` attacks | `core.test.ts`, `connection.test.ts` | — |
+| A26 Docker | fixed (`e228287`) | Base pinned by version and digest, tini, `HEALTHCHECK` | `release-config.test.ts` | Image not built here (no Docker) |
+| A27 CI | fixed (`e228287`) | Actions pinned by SHA (tags in comments), upload-artifact v7 everywhere, `npm audit --omit=dev --audit-level=high` (warning) | `release-config.test.ts` | Workflows not run here |
+| A1, A2, A4, A6, A25, A34 | not in this batch's scope | — | — | A1/A2/A4/A6 were addressed by the ledger audit (`1f559ef`), A25 earlier; A34's gaps shrink with the tests above |

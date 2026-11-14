@@ -3,6 +3,7 @@
  * database. server/app.ts puts it behind HTTP; server/inProcess.ts calls it
  * directly. A future server can reuse it with other adapters.
  */
+import * as complaints from './complaints';
 import * as account from './account';
 import * as age from './age';
 import * as admin from './admin';
@@ -77,7 +78,7 @@ export function createCore(ctx: ServerContext) {
     gangWarAttack: gangWars.warAttack.bind(null, ctx),
     gangWarClaim: gangWars.claim.bind(null, ctx),
     /** Every few minutes: battle-day and 2-hours-left pushes (step 68). */
-    gangWarReminders: () => gangWars.gangWarReminders(ctx),
+    gangWarReminders: (stillHeld?: import('../jobs').StillHeld) => gangWars.gangWarReminders(ctx, stillHeld),
     /** Start-up: give players from before unique names their name key (step 59). */
     migrateNames: () => names.migrateNames(ctx),
     links: links.links.bind(null, ctx),
@@ -91,7 +92,11 @@ export function createCore(ctx: ServerContext) {
     notices: moderation.notices.bind(null, ctx),
     markNoticesRead: moderation.markNoticesRead.bind(null, ctx),
     revokeOtherSessions: links.revokeOthers.bind(null, ctx),
-    appleSignInNotification: (body: { payload?: unknown } | undefined) => links.appleSignInNotification(ctx, body, (p) => account.deleteAccount(ctx, p)),
+    appleSignInNotification: (body: { payload?: unknown } | undefined) => links.appleSignInNotification(ctx, body),
+    authNonce: () => links.issueNonce(ctx),
+    submitComplaint: (body: unknown) => complaints.submitComplaint(ctx, body as never),
+    signOutDevice: links.signOutDevice.bind(null, ctx),
+    rotateToken: links.rotateToken.bind(null, ctx),
     /** Hourly with retention: extra device tokens unused for 400 days. */
     pruneTokens: () => links.pruneTokens(ctx),
     getVillage: village.getVillage.bind(null, ctx),
@@ -139,7 +144,8 @@ export function createCore(ctx: ServerContext) {
     raidAttack: groveRaid.raidAttack.bind(null, ctx),
     claimRaid: groveRaid.claimRaid.bind(null, ctx),
     /** Retention: old replays, tickets and unreferenced base versions. */
-    prune: () => retention.prune(ctx),
+    prune: (stillHeld?: import('../jobs').StillHeld) => retention.prune(ctx, stillHeld),
+    pruneDormant: (stillHeld?: import('../jobs').StillHeld) => retention.pruneDormant(ctx, stillHeld),
     /** Staff only (the admin API in server/app.ts). */
     admin: {
       deletionQueue: account.deletionQueue.bind(null, ctx),
@@ -153,6 +159,10 @@ export function createCore(ctx: ServerContext) {
       resetRating: admin.resetRating.bind(null, ctx),
       resetAge: admin.resetAge.bind(null, ctx),
       actions: admin.actions.bind(null, ctx),
+      rename: admin.rename.bind(null, ctx),
+      releaseImportHold: admin.releaseImportHold.bind(null, ctx),
+      complaintQueue: complaints.complaintQueue.bind(null, ctx),
+      resolveComplaint: complaints.resolveComplaint.bind(null, ctx),
     },
   };
 }

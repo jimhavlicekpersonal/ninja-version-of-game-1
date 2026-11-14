@@ -13,6 +13,7 @@ import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../
 import { MIN_PROTOCOL } from './core/identity';
 import type { GameData } from '../src/gameplay/sim/types';
 import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
+import { COMPLAINT_PAGE_CSP, complaintPage } from './core/complaints';
 import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext, type SharedStores } from './nodeContext';
 import { PromMetrics, type ServerSentry } from './observability';
@@ -30,6 +31,8 @@ export interface ServerOptions {
   corsOrigin?: string;
   /** Structured JSON logs (pino): true for 'info', or a level. Tokens are never logged. */
   logger?: boolean | 'debug' | 'info' | 'warn' | 'error';
+  /** Where log lines go (tests); stdout by default. */
+  logStream?: { write(line: string): void };
   /** Override for tests (deterministic opponent picks). */
   random?: () => number;
   /** Rate limits; any rule left out keeps its default (DEFAULT_RATE_LIMITS). */
@@ -96,6 +99,72 @@ export function pickEncoding(header: string | string[] | undefined): 'br' | 'gzi
 /** Route option: which extra rate rule the route counts against. */
 type RateConfig = { rate?: keyof RateLimits | (keyof RateLimits)[] };
 
+/** A caller's own request id, when it looks like one (backend A33: echoed and logged, never used as ours). */
+export function clientRequestId(h: unknown): string | null {
+  return typeof h === 'string' && /^[\w-]{8,64}$/.test(h) ? h : null;
+}
+
+/**
+ * Backend A30: a request URL as the log may keep it. Friend codes in the path and the values of query
+ * parameters that hold names, codes, search text or ids are replaced, so request logs (and whatever
+ * ships them) hold no player names or codes. Everything else is kept for debugging.
+ */
+export function redactUrl(url: string): string {
+  const q = url.indexOf('?');
+  let path = q < 0 ? url : url.slice(0, q);
+  path = path.replace(/^(\/v1\/players\/code\/)[^/?#]+/i, '$1[redacted]');
+  if (q < 0) return path;
+  const params = url
+    .slice(q + 1)
+    .split('&')
+    .map((kv) => {
+      const i = kv.indexOf('=');
+      const k = i < 0 ? kv : kv.slice(0, i);
+      return i >= 0 && /^(name|q|code|install|token|email|text)$/i.test(decodeSafe(k)) ? `${k}=[redacted]` : kv;
+    });
+  return `${path}?${params.join('&')}`;
+}
+
+function decodeSafe(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
+
+/** Backend A13: what one write was (method, route pattern, body), so a reused key cannot answer another request. */
+export function requestFingerprint(method: string, route: string, body: unknown): string {
+  let text: string;
+  try {
+    text = JSON.stringify(body ?? null) ?? 'null';
+  } catch {
+    text = String(body);
+  }
+  return createHash('sha256').update(`${method.toUpperCase()} ${route}\n${text}`).digest('hex').slice(0, 32);
+}
+
+/**
+ * Backend A12: routes whose answer holds the whole village (~290 KB). Their idempotent answer is kept
+ * without the village file, and a replay reads the village again (it may be newer by then; the game
+ * adopts whatever the server holds), so a day of remembered answers never keeps copies of the village.
+ */
+const VILLAGE_ANSWER_ROUTES = new Set([`POST ${Routes.village}`, `POST ${Routes.villageImport}`]);
+
+/**
+ * TRUST_PROXY as Fastify takes it. A hop count becomes a function that trusts that many proxies in front
+ * of the server (backend A31): Fastify 5.12 treats a plain number as "trust nobody" (fail closed), which
+ * silently put every player behind one load balancer on the balancer's own address, so all of them
+ * shared one IP rate-limit bucket. Addresses/CIDRs and booleans pass through.
+ */
+export function trustProxyOption(tp: boolean | number | string | undefined): boolean | string | ((addr: string, hop: number) => boolean) {
+  if (typeof tp === 'number') {
+    const hops = Math.max(0, Math.floor(tp));
+    return (_addr: string, hop: number) => hop < hops;
+  }
+  return tp ?? false;
+}
+
 function bearer(req: FastifyRequest): string | undefined {
   const h = req.headers.authorization ?? '';
   return h.startsWith('Bearer ') ? h.slice(7) : undefined;
@@ -108,14 +177,20 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Small bodies by default; base uploads and battle reports raise it per route.
   // (trustProxy is cast only to keep Fastify's overloads on the HTTP/1 server type; any of its forms works.)
   const fastify = Fastify({
-    logger: level ? { level, redact: { paths: ['req.headers.authorization', 'req.headers.cookie'], censor: '[redacted]' } } : false,
+    logger: level
+      ? {
+          level,
+          ...(opts.logStream ? { stream: opts.logStream } : {}),
+          redact: { paths: ['req.headers.authorization', 'req.headers.cookie'], censor: '[redacted]' },
+          // Backend A30: names, friend codes and search text never reach the request log (or a log shipper).
+          serializers: { req: (req: { method?: string; url?: string; hostname?: string; ip?: string; socket?: { remotePort?: number } }) => ({ method: req.method, url: redactUrl(req.url ?? ''), host: req.hostname, remoteAddress: req.ip, remotePort: req.socket?.remotePort }) },
+        }
+      : false,
     bodyLimit: BODY_LIMITS.default,
-    trustProxy: (opts.trustProxy ?? false) as boolean,
-    // A request id on every log line and answer; a caller's own x-request-id is kept when it looks like one.
-    genReqId: (req) => {
-      const h = req.headers['x-request-id'];
-      return typeof h === 'string' && /^[\w-]{8,64}$/.test(h) ? h : randomUUID();
-    },
+    trustProxy: trustProxyOption(opts.trustProxy) as boolean,
+    // Backend A33: the server always makes its own request id (a client cannot forge or collide log lines);
+    // a caller's own x-request-id is echoed back as x-client-request-id and logged beside it.
+    genReqId: () => randomUUID(),
   });
   // The same limiter serves the routes and the core's own limits (battle commands per minute).
   const limiter = opts.rateLimiter ?? new MemoryRateLimiter({ ...DEFAULT_RATE_LIMITS, ...opts.rateLimits });
@@ -142,8 +217,13 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     reply.header('Access-Control-Allow-Headers', `authorization, content-type, ${Object.values(ClientHeaders).join(', ')}`);
     reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     reply.header('Access-Control-Max-Age', '86400');
-    reply.header('Access-Control-Expose-Headers', 'retry-after, x-request-id');
+    reply.header('Access-Control-Expose-Headers', 'retry-after, x-request-id, x-client-request-id');
     reply.header('x-request-id', req.id);
+    const clientId = clientRequestId(req.headers['x-request-id']);
+    if (clientId) {
+      reply.header('x-client-request-id', clientId);
+      req.log = req.log.child({ clientReqId: clientId });
+    }
     // Over HTTPS (directly, or X-Forwarded-Proto from a trusted proxy): browsers keep to HTTPS (step 45).
     if (req.protocol === 'https') reply.header('Strict-Transport-Security', 'max-age=31536000');
     if (req.method === 'OPTIONS') return reply.code(204).send();
@@ -171,8 +251,11 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     if (req.method === 'GET' || req.method === 'OPTIONS' || typeof key !== 'string' || !token || key.length > 100) return null;
     return { scope: createHash('sha256').update(token).digest('hex').slice(0, 32), key };
   };
-  /** Players whose token the idempotency check already verified (the route reuses it). */
+  /** Players whose token a hook already verified (the route reuses it). */
   const verified = new WeakMap<FastifyRequest, Player>();
+  /** The request fingerprint of an idempotent write (backend A13), made once its body is parsed. */
+  const fingerprints = new WeakMap<FastifyRequest, string>();
+  const routeKey = (req: FastifyRequest) => `${req.method} ${req.routeOptions?.url ?? req.url.split('?')[0]}`;
   app.addHook('onSend', async (req, reply, payload) => {
     const id = idemScope(req);
     if (!id || !verified.has(req) || reply.getHeader('idempotent-replay') || reply.statusCode >= 300) return payload;
@@ -182,7 +265,12 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     } catch {
       return payload;
     }
-    await opts.repo.putIdempotent(id.scope, id.key, reply.statusCode, body, now());
+    // Backend A12: the village itself is never kept with the answer; a replay reads it again.
+    if (VILLAGE_ANSWER_ROUTES.has(routeKey(req)) && body && typeof body === 'object' && 'file' in body) {
+      const { file: _file, ...rest } = body as Record<string, unknown>;
+      body = { ...rest, $refetch: 'village' };
+    }
+    await opts.repo.putIdempotent(id.scope, id.key, reply.statusCode, body, now(), fingerprints.get(req) ?? null);
     return payload;
   });
 
@@ -211,15 +299,26 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     let d = await limiter.hit('ip', ip, t);
     if (!d.ok) return tooMany(reply, d, 'Too many requests from your network.', 'ip');
     const token = bearer(req);
-    // Keyed by a hash, so tokens never sit in the limiter (or a shared Redis) in the clear.
-    const who = token ? `t:${createHash('sha256').update(token).digest('hex').slice(0, 32)}` : ip;
+    // Backend A7: per-player limits count per player, not per token (a linked account can mint a token
+    // per sign-in). The token is checked here, once (the route reuses the player); a token that is not a
+    // player's (junk, a staff token, a suspended account) is counted by its hash, never in the clear.
+    let who = token ? `t:${createHash('sha256').update(token).digest('hex').slice(0, 32)}` : ip;
+    if (token && req.url.startsWith('/v1/') && req.url !== Routes.hello && req.url !== Routes.balance) {
+      try {
+        const me = await core.authenticate(token);
+        verified.set(req, me);
+        who = `p:${me.id}`;
+      } catch {
+        // the route answers 401 / 403 itself
+      }
+    }
     if (token) {
       d = await limiter.hit('player', who, t);
       if (!d.ok) return tooMany(reply, d, 'Too many requests.', 'player');
     }
     const rules = (req.routeOptions?.config as RateConfig | undefined)?.rate;
     for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
-      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' || rule === 'stats' ? ip : who, t);
+      d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' || rule === 'stats' || rule === 'nonce' || rule === 'complaint' ? ip : who, t);
       if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'Too many battle reports at once.' : rule === 'lookup' || rule === 'lookupDay' ? 'Too many player searches. Try again later.' : 'Slow down a little.', rule);
     }
   });
@@ -237,18 +336,41 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
 
   // Idempotent writes, looked up only after the rate limits and the token check (re-audit): junk tokens
   // never reach the idempotency table, and a banned or deleted player's token gets no stored answer back.
-  app.addHook('onRequest', async (req, reply) => {
+  // A preHandler (backend A13): the body is parsed by now, so the answer is replayed only to the same
+  // method, route and body; the same key with anything else is refused (422 idempotency_mismatch).
+  app.addHook('preHandler', async (req, reply) => {
     const id = idemScope(req);
     if (!id) return;
-    try {
-      verified.set(req, await core.authenticate(bearer(req)));
-    } catch {
-      return; // the route answers 401 / 403 itself
+    let me = verified.get(req);
+    if (!me) {
+      try {
+        me = await core.authenticate(bearer(req));
+        verified.set(req, me);
+      } catch {
+        return; // the route answers 401 / 403 itself
+      }
     }
+    const fingerprint = requestFingerprint(req.method, req.routeOptions?.url ?? req.url.split('?')[0]!, req.body);
+    fingerprints.set(req, fingerprint);
     const seen = await opts.repo.getIdempotent(id.scope, id.key);
     if (!seen) return;
+    if (seen.fingerprint && seen.fingerprint !== fingerprint) {
+      metrics.count('tk_errors_total', { code: 'idempotency_mismatch' });
+      const err: ErrorBody = { error: 'idempotency_mismatch', message: 'This Idempotency-Key was already used for a different request.' };
+      return reply.code(422).send(err);
+    }
     reply.header('idempotent-replay', 'true');
-    return reply.code(seen.status).send(seen.body ?? undefined);
+    let replay = seen.body;
+    if (replay && typeof replay === 'object' && (replay as Record<string, unknown>).$refetch === 'village') {
+      const { $refetch: _r, ...rest } = replay as Record<string, unknown>;
+      try {
+        replay = { ...(await core.getVillage(me)), ...rest };
+      } catch (e) {
+        if (e instanceof ApiError) return reply.code(e.status).send({ error: e.code, message: e.message } satisfies ErrorBody);
+        throw e;
+      }
+    }
+    return reply.code(seen.status).send(replay ?? undefined);
   });
 
   // Compression (re-audit): a village file is ~290 KB and ~5 KB gzipped, and many players are on slow,
@@ -337,7 +459,22 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
       if (!sameSecret(bearer(req), want)) return reply.code(401).send({ error: 'unauthorized', message: 'Metrics token required.' });
       return reply.type('text/plain; version=0.0.4').send(metrics.render());
     });
+    // Backend A31: the same address check for whoever holds the metrics token (a monitoring probe).
+    app.get('/metrics/ip', async (req, reply) => {
+      if (!sameSecret(bearer(req), want)) return reply.code(401).send({ error: 'unauthorized', message: 'Metrics token required.' });
+      return ipEcho(req);
+    });
   }
+  /** Backend A31: the caller's address as the rate limits see it, and the proxy chain it came through. */
+  const ipEcho = (req: FastifyRequest) => ({
+    ip: req.ip,
+    rateKey: ipKey(req.ip),
+    ips: req.ips ?? [req.ip],
+    forwardedFor: typeof req.headers['x-forwarded-for'] === 'string' ? req.headers['x-forwarded-for'] : null,
+    socket: req.socket.remoteAddress ?? null,
+    protocol: req.protocol,
+    trustProxy: opts.trustProxy ?? false,
+  });
   app.get(Routes.balance, async () => core.balance());
   app.get(Routes.hello, async () => ({ ...core.hello(), ...(opts.environment ? { environment: opts.environment } : {}), ...(opts.notice ? { notice: opts.notice } : {}) }));
 
@@ -372,6 +509,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.get(Routes.notices, authed(async (me) => core.notices(me)));
   app.post(Routes.noticesRead, authed(async (me, req) => core.markNoticesRead(me, body<{ ids: string[] }>(req).ids)));
   app.post(Routes.sessionsRevokeOthers, rate('moderation'), authed(async (me) => core.revokeOtherSessions(me)));
+  // Backend A15/A16: sign-in nonces, signing out this device, rotating its token.
+  app.post(Routes.authNonce, rate('nonce'), async () => core.authNonce());
+  app.delete(Routes.sessionsCurrent, rate('moderation'), authed(async (me) => core.signOutDevice(me)));
+  app.post(Routes.sessionsRotate, rate('moderation'), authed(async (me) => core.rotateToken(me)));
   app.post(Routes.appleSignInNotifications, { bodyLimit: BODY_LIMITS.base }, async (req) => {
     await core.appleSignInNotification(req.body as never);
     return { ok: true };
@@ -411,6 +552,9 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Account deletion without the game: the web page and its requests (no token).
   app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage(String((_req.query as {lang?: unknown})?.lang ?? 'en'))));
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
+  // Complaints about illegal or harmful content (EU DSA art. 16, UK OSA): a form and its endpoint, no token.
+  app.get('/complaints', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', COMPLAINT_PAGE_CSP).header('Cache-Control', 'no-store').send(complaintPage(core.ctx.account?.supportContact)));
+  app.post(Routes.complaints, { ...rate('complaint'), logLevel: 'warn' }, async (req, reply) => reply.code(201).send(await core.submitComplaint(req.body)));
 
   // Shared play statistics (report section 5 step 5): no token, and no request log line (it would hold the IP address).
   app.post(Routes.stats, { ...rate('stats'), bodyLimit: BODY_LIMITS.base, logLevel: 'warn' }, async (req) => core.postStats(req.body));
@@ -487,12 +631,19 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     for (const t of staffTokens) if (t.token.length < 24) throw new Error(t.named ? `ADMIN_TOKENS: the token for "${t.name}" must be at least 24 characters.` : 'ADMIN_TOKEN must be at least 24 characters.');
     const wants = staffTokens.map((t) => ({ name: t.name, named: t.named, hash: createHash('sha256').update(t.token).digest() }));
     const staffBy = new WeakMap<FastifyRequest, { name: string; named: boolean }>();
-    const staff = <T>(h: (req: FastifyRequest) => Promise<T>) => async (req: FastifyRequest) => {
+    const staff = <T>(h: (req: FastifyRequest) => Promise<T>) => async (req: FastifyRequest, reply: FastifyReply) => {
       const got = createHash('sha256').update(bearer(req) ?? '').digest();
       let who: { name: string; named: boolean } | null = null;
       // Every token is compared (no early exit), each in constant time.
       for (const w of wants) if (timingSafeEqual(got, w.hash) && !who) who = w;
-      if (!who) throw new ApiError(401, 'unauthorized', 'Staff token required.');
+      if (!who) {
+        // Backend A28: every failed staff token is counted (alert StaffAuthFailures) and limited per address.
+        metrics.count('tk_staff_auth_failures_total', { reason: bearer(req) ? 'wrong_token' : 'no_token' });
+        req.log.warn({ route: req.routeOptions?.url }, 'staff token refused');
+        const d = await limiter.hit('staffAuth', `ip:${ipKey(req.ip)}`, now());
+        if (!d.ok) return tooMany(reply, d, 'Too many wrong staff tokens.', 'staffAuth');
+        throw new ApiError(401, 'unauthorized', 'Staff token required.');
+      }
       staffBy.set(req, who);
       return h(req);
     };
@@ -512,7 +663,14 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/reset-age', staff(async (req) => core.admin.resetAge(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
+    // Backend batch 2026-11-13: replace an offending name, release a held import (GLOBAL-002), complaints.
+    app.post('/admin/v1/players/:id/rename', staff(async (req) => core.admin.rename(actor(req), param(req, 'id'), req.body as never)));
+    app.post('/admin/v1/players/:id/import-holds/:hold/release', staff(async (req) => core.admin.releaseImportHold(actor(req), param(req, 'id'), param(req, 'hold'), req.body as never)));
+    app.get('/admin/v1/complaints', staff(async (req) => core.admin.complaintQueue(query(req).status === 'all' ? 'all' : 'open')));
+    app.post('/admin/v1/complaints/:id', staff(async (req) => core.admin.resolveComplaint(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/stats', staff(async (req) => core.statsReport(query(req).days)));
+    // Backend A31: what this server sees as the caller's address, to check TRUST_PROXY after a deploy.
+    app.get('/admin/v1/ip', staff(async (req) => ipEcho(req)));
     app.get('/admin', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(adminPage()));
     app.get('/admin/app.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(adminScript()));
   }

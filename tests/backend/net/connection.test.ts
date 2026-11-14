@@ -165,6 +165,9 @@ describe('Connection', () => {
     await port.createGrove('Lonely Leaf');
     const week = w.intoRaid(1);
     await conn.sync();
+    // Ledger audit E14: only members who attacked in the war get its chest.
+    const t = await port.raidTicket(0);
+    await port.submitRaidAttack({ ticket: t.ticket, seed: t.seed, ...rush(20) });
     expect(game.state.grove.raidHistory).toHaveLength(0);
     w.setTime(w.raidEnd(week) + HOUR);
     const moon = game.state.resources.moonstones;

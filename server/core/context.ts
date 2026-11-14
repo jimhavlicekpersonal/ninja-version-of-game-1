@@ -9,8 +9,45 @@ import type { GoogleVerifier } from '../payments/google';
 import type { Pusher } from '../push/push';
 import type { RulesRegistry } from '../rules/registry';
 
+/**
+ * Server policy knobs (backend batch 2026-11-13). Each has a conservative default (`DEFAULT_POLICY`); the
+ * environment can change it (main.ts). Owner decisions sit here rather than in code.
+ */
+export interface ServerPolicy {
+  /** SIGNIN_NONCE_REQUIRED=1: refuse Apple/Google sign-ins without a server nonce (A15). Off: older games still sign in. */
+  signInNonceRequired: boolean;
+  /** SESSION_IDLE_DAYS: another device's token unused this long is signed out (A16; sliding: every use renews it). */
+  sessionIdleDays: number;
+  /**
+   * DORMANT_ACCOUNT_DAYS: anonymous accounts not seen this long (no purchase, no linked sign-in, not staff,
+   * no server-held village above Keep `dormantMaxKeep`) are deleted (A23). 0 turns it off.
+   */
+  dormantAccountDays: number;
+  /** DORMANT_MAX_KEEP: a server-held village above this Keep keeps its account (progress the device may not have). */
+  dormantMaxKeep: number;
+  /** SANDBOX_CREDIT_DAILY_CAP_USD: Sandbox/test purchases credited per UTC day on the whole server, on production (A24). */
+  sandboxDailyCapUsd: number | null;
+  /**
+   * USD_RATES: US dollars per unit of a currency ({"EUR":1.08,…}), for counting a store-reported local price
+   * against the under-18 cap and in revenue reports (GLOBAL-007). A currency without a rate counts at the
+   * catalog USD price, as before.
+   */
+  usdRates: Record<string, number>;
+}
+
+export const DEFAULT_POLICY: ServerPolicy = {
+  signInNonceRequired: false,
+  sessionIdleDays: 400,
+  dormantAccountDays: 730,
+  dormantMaxKeep: 3,
+  sandboxDailyCapUsd: null,
+  usdRates: { USD: 1 },
+};
+
 export interface ServerContext {
   repo: Repo;
+  /** Policy knobs (`DEFAULT_POLICY` unless the environment says otherwise). */
+  policy: ServerPolicy;
   /** Today's balance data (the live rules engine's). Battles use the engine of their ticket (`rules`). */
   data: GameData;
   /** Battle-rule versions this server can check (roadmap step 73). */

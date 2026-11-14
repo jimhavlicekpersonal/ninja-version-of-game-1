@@ -15,6 +15,9 @@ import { buildServer } from '../../../server/app';
 import { MemoryRepo } from '../../../server/repo';
 import { InlineResimulator, ResimBusyError, simulate, WorkerResimulator, type ResimJob, type ResimReply, type WorkerLike } from '../../../server/resim/resim';
 import { liveEngine } from '../../../server/rules/registry';
+import { replayVillage, type VillageReplayJob } from '../../../server/core/villageReplay';
+import { createNewVillage } from '../../../src/gameplay/sim/village';
+import { serialize } from '../../../src/gameplay/sim/save';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import type { BattleSetup, Deployment } from '../../../src/gameplay/sim/battle/types';
 import { botDeployments } from '../../../src/gameplay/sim/defense';
@@ -190,5 +193,26 @@ describe('real worker threads', () => {
       const { army, deployments } = rush(20);
       expect(got.result).toEqual(simulate(engine, { seed: got.seed, base: got.base, army, infiltration: true }, deployments, undefined).result);
     }
+  }, 60_000);
+
+  it('replay a village command batch exactly as the main thread does (backend A3)', async () => {
+    const pool = realPool(1);
+    const t = Date.UTC(2026, 10, 13);
+    const record = { at: t, opponentName: 'x', setup: { seed: 1, base: baseAt(1), army: { hedgehog_roller: 999 } }, deployments: [] };
+    const job: VillageReplayJob = {
+      file: serialize(createNewVillage(t, data), t),
+      at: t,
+      now: t + 60_000,
+      earliest: t - 3_600_000,
+      skewMs: 120_000,
+      steps: [
+        { seq: 1, clientAt: t + 1000, command: { type: 'abandonBattle', record } as never, error: null },
+        { seq: 2, clientAt: t + 2000, command: { type: 'collect', id: 'nothing' } as never, error: null },
+        { seq: 3, clientAt: t + 3000, command: { type: 'abandonBattle', record } as never, error: 'TOO_MANY_BATTLES' },
+      ],
+    };
+    const there = await pool.replayVillage(job, data);
+    const here = replayVillage(job, data);
+    expect({ ...there, ms: 0 }).toEqual({ ...here, ms: 0 });
   }, 60_000);
 });

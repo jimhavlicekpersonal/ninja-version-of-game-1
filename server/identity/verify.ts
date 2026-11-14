@@ -31,6 +31,8 @@ export interface VerifiedIdentity {
   subject: string;
   /** Apple/Google: the client id the ID token was issued to (Sign in with Apple token exchange uses it). */
   audience?: string;
+  /** Apple/Google: the token's `nonce` claim, if any (backend A15: checked against a server-issued nonce). */
+  nonce?: string;
 }
 
 export interface IdentityVerifier {
@@ -135,6 +137,8 @@ export class JwtVerifier {
       return claims;
     }
     if (typeof claims.exp !== 'number' || claims.exp < now - 60) throw new IdentityError('The sign-in has expired. Try again.');
+    // Backend A15: a token "issued" in the future is forged or from a broken clock.
+    if (claims.iat !== undefined && (typeof claims.iat !== 'number' || claims.iat > now + 300)) throw new IdentityError('The sign-in token has no valid time.');
     if (typeof claims.sub !== 'string' || !claims.sub) throw new IdentityError('The sign-in token has no account id.');
     return claims;
   }
@@ -192,7 +196,26 @@ async function readCapped(res: GcResponse, max: number): Promise<Buffer> {
 export class GameCenterVerifier {
   /** A small LRU cache of certificates by URL (Map keeps insertion order). */
   private certs = new Map<string, X509Certificate>();
-  constructor(private readonly o: { bundleIds: string[]; fetch: Fetch | GcFetch; now: () => number; maxAgeMs?: number }) {}
+  /** GAMECENTER_CA_PEM: the issuing CA's certificate, when set the key certificate must be signed by it (backend A15). */
+  private readonly ca: X509Certificate | null;
+  constructor(private readonly o: { bundleIds: string[]; fetch: Fetch | GcFetch; now: () => number; maxAgeMs?: number; caPem?: string }) {
+    this.ca = o.caPem ? new X509Certificate(o.caPem) : null;
+  }
+
+  /**
+   * Backend A15: the key certificate must be in date, issued to Apple, and (with GAMECENTER_CA_PEM) signed
+   * by that CA. The URL is already pinned to Apple's host over HTTPS, so this guards against a stale or
+   * substituted certificate rather than the transport.
+   */
+  private checkCert(cert: X509Certificate): void {
+    const now = this.o.now();
+    if (!(Date.parse(cert.validFrom) <= now && now <= Date.parse(cert.validTo))) throw new IdentityError('The Game Center key has expired.');
+    if (!/(^|\n|,\s*)O=Apple Inc\.?($|\n|,)/.test(cert.subject)) throw new IdentityError('The Game Center key is not Apple’s.');
+    if (this.ca) {
+      const caNow = Date.parse(this.ca.validFrom) <= now && now <= Date.parse(this.ca.validTo);
+      if (!caNow || !cert.checkIssued(this.ca) || !cert.verify(this.ca.publicKey)) throw new IdentityError('The Game Center key is not signed by Apple’s certificate authority.');
+    }
+  }
 
   private async cert(url: string): Promise<X509Certificate> {
     const hit = this.certs.get(url);
@@ -244,6 +267,7 @@ export class GameCenterVerifier {
     if (!keyUrl) throw new IdentityError('Untrusted Game Center key.');
     if (Math.abs(this.o.now() - Number(v.timestamp)) > (this.o.maxAgeMs ?? 10 * 60_000)) throw new IdentityError('The Game Center sign-in is too old. Try again.');
     const cert = await this.cert(keyUrl);
+    this.checkCert(cert);
     const ts = Buffer.alloc(8);
     ts.writeBigUInt64BE(BigInt(Math.floor(Number(v.timestamp))));
     const payload = Buffer.concat([Buffer.from(v.teamPlayerId, 'utf8'), Buffer.from(v.bundleId, 'utf8'), ts, Buffer.from(v.salt, 'base64')]);
@@ -276,7 +300,7 @@ export function verifierFromEnv(env: Record<string, string | undefined>, fetch: 
   const list = (v: string | undefined) => (v ?? '').split(',').map((s) => s.trim()).filter(Boolean);
   const apple = list(env.APPLE_CLIENT_IDS).length ? new JwtVerifier({ jwksUrl: 'https://appleid.apple.com/auth/keys', issuers: ['https://appleid.apple.com'], audiences: list(env.APPLE_CLIENT_IDS), fetch, now }) : null;
   const google = list(env.GOOGLE_CLIENT_IDS).length ? new JwtVerifier({ jwksUrl: 'https://www.googleapis.com/oauth2/v3/certs', issuers: ['https://accounts.google.com', 'accounts.google.com'], audiences: list(env.GOOGLE_CLIENT_IDS), fetch, now }) : null;
-  const gc = list(env.GAMECENTER_BUNDLE_IDS).length ? new GameCenterVerifier({ bundleIds: list(env.GAMECENTER_BUNDLE_IDS), fetch, now }) : null;
+  const gc = list(env.GAMECENTER_BUNDLE_IDS).length ? new GameCenterVerifier({ bundleIds: list(env.GAMECENTER_BUNDLE_IDS), fetch, now, ...(env.GAMECENTER_CA_PEM ? { caPem: env.GAMECENTER_CA_PEM.replace(/\\n/g, '\n') } : {}) }) : null;
   const pg = env.PLAYGAMES_CLIENT_ID && env.PLAYGAMES_CLIENT_SECRET ? new PlayGamesVerifier({ clientId: env.PLAYGAMES_CLIENT_ID, clientSecret: env.PLAYGAMES_CLIENT_SECRET, fetch }) : null;
   return combineVerifiers({ apple, google, gamecenter: gc, playgames: pg });
 }
@@ -309,7 +333,7 @@ export function combineVerifiers(v: { apple?: JwtVerifier | null; google?: JwtVe
           const claims = await j.verify((credential as { idToken?: unknown } | null)?.idToken);
           const aud = Array.isArray(claims.aud) ? String(claims.aud[0]) : String(claims.aud);
           // Apple: the client id the code was issued to (token exchange/revocation, appleTokens.ts).
-          return { provider, subject: String(claims.sub), ...(provider === 'apple' ? { audience: aud } : {}) };
+          return { provider, subject: String(claims.sub), ...(provider === 'apple' ? { audience: aud } : {}), ...(typeof claims.nonce === 'string' ? { nonce: claims.nonce } : {}) };
         }
         case 'gamecenter':
           if (!v.gamecenter) throw new IdentityError('Game Center is not set up on this server.');

@@ -2,6 +2,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { GameData } from '../src/gameplay/sim/types';
 import type { ServerContext } from './core';
+import { DEFAULT_POLICY } from './core/context';
 import type { Repo } from './repo';
 import { noIdentity, type IdentityVerifier } from './identity/verify';
 import { noMetrics, type Metrics } from './observability';
@@ -40,12 +41,15 @@ export interface SharedStores {
   balanceCohorts?: import('../src/backend/net/balanceBundle').BalanceBundle[];
   /** SUPPORT_CONTACT and the Sign in with Apple key (re-audit: appeals, token revocation). */
   account?: import('./identity/appleTokens').AccountSettings;
+  /** Policy knobs that differ from DEFAULT_POLICY (backend batch 2026-11-13; main.ts reads them from the environment). */
+  policy?: Partial<import('./core/context').ServerPolicy>;
 }
 
 export function nodeContext(repo: Repo, data: GameData, now: () => number = () => Date.now(), random: () => number = Math.random, shared: SharedStores = {}): ServerContext {
   const ctx: ServerContext = {
     repo,
     data,
+    policy: { ...DEFAULT_POLICY, ...shared.policy },
     rules: shared.rules ?? new RulesRegistry(liveEngine(data)),
     resim: shared.resim ?? new InlineResimulator(),
     balance: shared.balance ?? null,

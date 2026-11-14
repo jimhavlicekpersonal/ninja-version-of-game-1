@@ -12,9 +12,31 @@ export function leaseFor(everyMs: number): number {
   return Math.max(Math.floor(everyMs * 0.8), everyMs - 60_000);
 }
 
-/** Run `run` if this instance holds (or can take) the job's lease. Resolves whether it ran. */
-export async function runLeased(repo: Repo, holder: string, now: number, name: string, everyMs: number, run: () => Promise<unknown>): Promise<boolean> {
+/**
+ * Backend A21: a job checks its lease before each unit of work it commits (a war's reminder, a batch of
+ * deletions). `stillHeld` renews the lease for this holder, and answers false once another instance has
+ * taken it (this run outlived its lease: a long pause, a slow database), so the run stops instead of
+ * overlapping the new holder's.
+ */
+export type StillHeld = () => Promise<boolean>;
+
+/** Thrown inside a job when its lease was lost; `runLeased` stops the run quietly. */
+export class LeaseLost extends Error {}
+
+/** Run `run` if this instance holds (or can take) the job's lease. Resolves whether it ran (to the end). */
+export async function runLeased(repo: Repo, holder: string, now: number, name: string, everyMs: number, run: (stillHeld: StillHeld) => Promise<unknown>, clock: () => number = Date.now): Promise<boolean> {
   if (!(await repo.claimJob(name, holder, now, leaseFor(everyMs)))) return false;
-  await run();
+  const stillHeld: StillHeld = () => repo.claimJob(name, holder, clock(), leaseFor(everyMs));
+  try {
+    await run(stillHeld);
+  } catch (e) {
+    if (e instanceof LeaseLost) return false;
+    throw e;
+  }
   return true;
+}
+
+/** For jobs: throw LeaseLost unless the lease is still this instance's. */
+export async function requireLease(stillHeld: StillHeld | undefined): Promise<void> {
+  if (stillHeld && !(await stillHeld())) throw new LeaseLost('job lease taken by another instance');
 }

@@ -20,7 +20,10 @@
  *   double), the battle is run in place instead.
  */
 import type { BattleResult, BattleSetup, Deployment } from '../../src/gameplay/sim/battle/types';
+import type { GameData } from '../../src/gameplay/sim/types';
 import type { RulesEngine } from '../rules/registry';
+import { dataVersionOf } from '../../src/backend/net/dataVersion';
+import { replayVillage, type VillageReplayJob, type VillageReplayOutcome } from '../core/villageReplay';
 
 export interface FallenBuilding {
   id: string;
@@ -41,6 +44,12 @@ export interface ResimOutcome {
 
 export interface Resimulator {
   run(engine: RulesEngine, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): Promise<ResimOutcome>;
+  /**
+   * Backend A3: replay a command batch with battle commands on a server-held village (`replayVillage`,
+   * core/villageReplay.ts) off the request thread. `data` is the live data the worker already has; a pool
+   * whose workers were made with other data runs it in place.
+   */
+  replayVillage?(job: VillageReplayJob, data: GameData): Promise<VillageReplayOutcome>;
   /** Battles waiting for a worker right now (a gauge). */
   readonly queued: number;
   close(): Promise<void>;
@@ -64,11 +73,20 @@ export class InlineResimulator implements Resimulator {
   async run(engine: RulesEngine, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): Promise<ResimOutcome> {
     return { ...simulate(engine, setup, deployments, endTick), waitMs: 0 };
   }
+  async replayVillage(job: VillageReplayJob, data: GameData): Promise<VillageReplayOutcome> {
+    return replayVillage(job, data);
+  }
   async close(): Promise<void> {}
 }
 
 /** Thrown when the pool cannot take or finish a battle (answered 503 busy; the game retries). */
 export class ResimBusyError extends Error {}
+/**
+ * Backend A32: the battle ran past the pool's timeout and its worker was replaced. Still 503 busy for the
+ * game, but it counts against the ticket like a refusal (a setup that never finishes cannot be resubmitted
+ * for ever, each try costing a worker restart).
+ */
+export class ResimTimeoutError extends ResimBusyError {}
 
 /** What a worker thread looks like to the pool (node:worker_threads Worker, or a test double). */
 export interface WorkerLike {
@@ -89,13 +107,26 @@ export interface ResimJob {
   endTick?: number;
 }
 
-export type ResimReply = { id: number; ok: true; result: BattleResult; fallen: FallenBuilding[]; damage: Record<string, number>; ms: number; dataVersion: string; rules: number } | { id: number; ok: false; error: string };
+export type ResimReply =
+  | { id: number; ok: true; result: BattleResult; fallen: FallenBuilding[]; damage: Record<string, number>; ms: number; dataVersion: string; rules: number }
+  | { id: number; ok: true; village: VillageReplayOutcome; dataVersion: string }
+  | { id: number; ok: false; error: string };
+
+/** A village replay for a worker (backend A3). `dataVersion`: the data the caller replays with. */
+export interface VillageJob {
+  id: number;
+  kind: 'village';
+  dataVersion: string;
+  village: VillageReplayJob;
+}
 
 interface Pending {
-  job: ResimJob;
-  engine: RulesEngine;
+  job: ResimJob | VillageJob;
+  engine: RulesEngine | null;
+  /** For a village job: the caller's data, to replay in place if the worker's differs. */
+  data?: GameData;
   queuedAt: number;
-  resolve(o: ResimOutcome): void;
+  resolve(o: unknown): void;
   reject(e: Error): void;
 }
 
@@ -155,7 +186,17 @@ export class WorkerResimulator implements Resimulator {
     if (this.waiting.length >= this.maxQueue) return Promise.reject(new ResimBusyError('The server is busy checking battles. Your report will be sent again shortly.'));
     return new Promise<ResimOutcome>((resolve, reject) => {
       const job: ResimJob = { id: this.nextId++, rules: engine.rules, dataVersion: engine.dataVersion, setup, deployments, ...(endTick !== undefined ? { endTick } : {}) };
-      this.waiting.push({ job, engine, queuedAt: performance.now(), resolve, reject });
+      this.waiting.push({ job, engine, queuedAt: performance.now(), resolve: resolve as (o: unknown) => void, reject });
+      this.pump();
+    });
+  }
+
+  replayVillage(village: VillageReplayJob, data: GameData): Promise<VillageReplayOutcome> {
+    if (this.closed) return Promise.reject(new ResimBusyError('The server is shutting down.'));
+    if (this.waiting.length >= this.maxQueue) return Promise.reject(new ResimBusyError('The server is busy. Your progress will be sent again shortly.'));
+    return new Promise<VillageReplayOutcome>((resolve, reject) => {
+      const job: VillageJob = { id: this.nextId++, kind: 'village', dataVersion: dataVersionOf(data), village };
+      this.waiting.push({ job, engine: null, data, queuedAt: performance.now(), resolve: resolve as (o: unknown) => void, reject });
       this.pump();
     });
   }
@@ -166,7 +207,7 @@ export class WorkerResimulator implements Resimulator {
       const p = this.waiting.shift()!;
       slot.busy = p;
       slot.startedAt = performance.now();
-      slot.timer = setTimeout(() => this.replace(slot, `battle took over ${this.timeoutMs} ms`), this.timeoutMs);
+      slot.timer = setTimeout(() => this.replace(slot, `battle took over ${this.timeoutMs} ms`, true), this.timeoutMs);
       slot.timer.unref?.();
       slot.worker.postMessage(p.job);
     }
@@ -179,23 +220,28 @@ export class WorkerResimulator implements Resimulator {
     slot.timer = null;
     slot.busy = null;
     const waitMs = slot.startedAt - p.queuedAt;
+    const job = p.job;
     if (!msg.ok) p.reject(new Error(msg.error));
-    else if (msg.dataVersion !== p.engine.dataVersion || msg.rules !== p.engine.rules) {
+    else if ('kind' in job) {
+      // A village replay: the worker's data must be the caller's, else it is replayed here.
+      if (!('village' in msg) || msg.dataVersion !== job.dataVersion) p.resolve(replayVillage(job.village, p.data!));
+      else p.resolve(msg.village);
+    } else if (!('result' in msg) || msg.dataVersion !== p.engine!.dataVersion || msg.rules !== p.engine!.rules) {
       // The worker has no such engine (a test double): run it here.
-      p.resolve({ ...simulate(p.engine, p.job.setup, p.job.deployments, p.job.endTick), waitMs });
+      p.resolve({ ...simulate(p.engine!, job.setup, job.deployments, job.endTick), waitMs });
     } else p.resolve({ result: msg.result, fallen: msg.fallen, damage: msg.damage, ms: msg.ms, waitMs });
     this.pump();
   }
 
   /** Stop a stuck or broken worker, fail its battle, and start a fresh one in its place. */
-  private replace(slot: Slot, why: string): void {
+  private replace(slot: Slot, why: string, timedOut = false): void {
     const i = this.slots.indexOf(slot);
     if (i < 0) return;
     if (slot.timer) clearTimeout(slot.timer);
     const p = slot.busy;
     slot.busy = null;
     this.o.log?.('error', 'resim worker replaced', { why, job: p?.job.id });
-    if (p) p.reject(new ResimBusyError('The server could not check this battle right now. It will be sent again shortly.'));
+    if (p) p.reject(new (timedOut ? ResimTimeoutError : ResimBusyError)('The server could not check this battle right now. It will be sent again shortly.'));
     this.slots.splice(i, 1);
     void Promise.resolve(slot.worker.terminate()).catch(() => undefined);
     if (!this.closed) {

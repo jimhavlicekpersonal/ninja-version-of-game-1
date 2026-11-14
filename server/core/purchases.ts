@@ -21,7 +21,7 @@ import type { IntentReleaseResponse, PurchaseHistoryResponse, PurchaseIntentResp
 import { monthStart, productForStoreId, productInfo, storeProductId } from '../../src/gameplay/sim/monetization';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { PurchaseError } from '../payments/apple';
-import type { Player, PurchaseRow, Repo } from '../repo';
+import { STATE_NOTICES, type Player, type PurchaseRow, type Repo } from '../repo';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
 import { applyServerResult } from './village';
 import { notify } from './moderation';
@@ -77,15 +77,53 @@ export async function ageGroupFor(repo: Repo, ctx: ServerContext, playerId: stri
   return said;
 }
 
-export async function purchaseIntent(ctx: ServerContext, me: Player, body: { store?: unknown; productId?: unknown; under18?: unknown } | undefined): Promise<PurchaseIntentResponse> {
+/** A device id as the game sends it (CommandBatch.device, PurchaseIntentRequest.device); anything else is ignored. */
+export function deviceId(v: unknown): string | null {
+  return typeof v === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : null;
+}
+
+/**
+ * Backend A5/A24: the devices this player plays on, as the server knows them: the one asking now, the
+ * devices that sent commands to their server-held village, and those that asked for their recent purchases.
+ */
+async function devicesOf(ctx: ServerContext, me: Player, asking: string | null): Promise<string[]> {
+  const out = new Set<string>(asking ? [asking] : []);
+  const v = await ctx.repo.getVillage(me.id);
+  for (const d of Object.keys(v?.deviceSeqs ?? {})) out.add(d);
+  for (const p of await ctx.repo.purchasesOf(me.id, 100)) if (p.device) out.add(p.device);
+  return [...out];
+}
+
+/**
+ * Backend A5: refunds counted per buyer, not per free account. A refund on any account played on the same
+ * device (by its purchase intent, or the device ids of a server-held village) counts too, so a new account
+ * on the same phone does not start the count again.
+ */
+async function recentRefunds(ctx: ServerContext, me: Player, devices: string[]): Promise<number> {
+  const since = ctx.now() - REFUND_WINDOW_MS;
+  return (await ctx.repo.linkedPurchases(me.id, devices, since - REFUND_WINDOW_MS)).filter((p) => p.status === 'refunded' && (p.refundedAt ?? p.at) >= since).length;
+}
+
+/**
+ * GLOBAL-007: what a purchase counts in US cents (the under-18 cap, refund rates, revenue figures): the
+ * store's own local price converted with USD_RATES when the store reported a price and a rate is known,
+ * else the catalog USD price.
+ */
+export function countedCents(ctx: ServerContext, catalogUsd: number, currency: string | null | undefined, priceMicros: number | null | undefined): number {
+  const rate = currency ? ctx.policy.usdRates[currency.toUpperCase()] : undefined;
+  if (rate && typeof priceMicros === 'number' && priceMicros > 0) return Math.round((priceMicros / 1_000_000) * rate * 100);
+  return cents(catalogUsd);
+}
+
+export async function purchaseIntent(ctx: ServerContext, me: Player, body: { store?: unknown; productId?: unknown; under18?: unknown; device?: unknown } | undefined): Promise<PurchaseIntentResponse> {
   storeOf(ctx, body?.store);
   const product = productInfo(ctx.data, String(body?.productId ?? ''));
   if (!product) throw new ApiError(400, 'bad_request', 'That item is not available.');
   const under18 = await ageGroupFor(ctx.repo, ctx, me.id, body?.under18);
   if (under18 === null) throw new ApiError(403, 'purchase_refused', 'Please tell us your age group first.');
   // Re-audit: buy, spend, refund, repeat. After several refunds, purchases pause until support has a look.
-  const since = ctx.now() - REFUND_WINDOW_MS;
-  const refunds = (await ctx.repo.purchasesOf(me.id, 100)).filter((p) => p.status === 'refunded' && (p.refundedAt ?? p.at) >= since).length;
+  const device = deviceId(body?.device);
+  const refunds = await recentRefunds(ctx, me, await devicesOf(ctx, me, device));
   if (refunds >= REFUNDS_BEFORE_PAUSE) {
     ctx.metrics.count('tk_refused_total', { reason: 'refund_pause' });
     throw new ApiError(403, 'purchase_refused', 'Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.');
@@ -103,7 +141,7 @@ export async function purchaseIntent(ctx: ServerContext, me: Player, body: { sto
       }
     }
     const id = ctx.uuid().toLowerCase();
-    await tx.addIntent({ id, playerId: me.id, productId: product.id, cents: cents(product.usd), at: now, used: false, holdUntil: now + INTENT_HOLD_MS });
+    await tx.addIntent({ id, playerId: me.id, productId: product.id, cents: cents(product.usd), at: now, used: false, holdUntil: now + INTENT_HOLD_MS, device });
     return { accountToken: id, storeProductId: storeProductId(ctx.data, product.id) };
   });
 }
@@ -190,10 +228,10 @@ async function finish(ctx: ServerContext, c: Checked, held: boolean): Promise<vo
  * leaves room), Google Play refunds a purchase that is never acknowledged within 3 days, and an App
  * Store purchase can be refunded by Apple. Call inside the redeem transaction, after `lockPurchases`.
  */
-async function holdOverCap(tx: Repo, ctx: ServerContext, me: Player, usd: number, now: number): Promise<void> {
+async function holdOverCap(tx: Repo, ctx: ServerContext, me: Player, counted: number, now: number): Promise<void> {
   if (!(await ageGroupFor(tx, ctx, me.id, undefined))) return;
   const cap = cents(ctx.data.store.minorMonthlyCapUsd);
-  if ((await tx.spentCents(me.id, monthStart(now), now)) + cents(usd) <= cap) return;
+  if ((await tx.spentCents(me.id, monthStart(now), now)) + counted <= cap) return;
   ctx.metrics.count('tk_refused_total', { reason: 'minor_cap_at_redeem' });
   ctx.log('warn', 'purchase over the under-18 cap held at redeem', { player: me.id });
   const limit = (cap / 100).toFixed(2);
@@ -244,12 +282,19 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     return { ...out, heldOnServer: held };
   }
   const now = ctx.now();
+  const counted = countedCents(ctx, product.usd, c.currency, c.priceMicros);
+  // The intent this receipt names (its device: backend A5/A24).
+  const named = c.accountToken ? await ctx.repo.getIntent(c.accountToken) : null;
+  const device = named && named.playerId === me.id ? (named.device ?? null) : null;
   // Re-audit: Sandbox/test purchases cost nothing; on production only a small total is credited per player
   // (App Review needs purchases to work; public TestFlight must not mint Jade for the live ladder).
+  // Backend A24: per buyer (every free account on the same devices together), and per day for the whole server.
   const testCap = ctx.payments.testCreditCapUsd;
   if (testCap !== undefined && c.environment !== 'Production') {
-    const testSpent = (await ctx.repo.purchasesOf(me.id, 100)).filter((p) => p.environment !== 'Production').reduce((sum, p) => sum + p.cents, 0);
-    if (testSpent + cents(product.usd) > cents(testCap)) {
+    const testSpent = (await ctx.repo.linkedPurchases(me.id, await devicesOf(ctx, me, device), 0)).filter((p) => p.environment !== 'Production').reduce((sum, p) => sum + p.cents, 0);
+    const daily = ctx.policy.sandboxDailyCapUsd;
+    const today = daily !== null ? await ctx.repo.testCentsSince(now - (now % (24 * HOUR))) : 0;
+    if (testSpent + cents(product.usd) > cents(testCap) || (daily !== null && today + cents(product.usd) > cents(daily))) {
       ctx.metrics.count('tk_refused_total', { reason: 'test_purchase_cap' });
       throw new ApiError(403, 'purchase_refused', 'Test purchases are limited on the live server.');
     }
@@ -261,14 +306,17 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     await tx.lockPurchases(me.id);
     const intent = c.accountToken ? await tx.getIntent(c.accountToken) : null;
     if (intent && intent.playerId !== me.id) throw new ApiError(409, 'conflict', 'This purchase belongs to another player.');
-    if (!intent || intent.used) await holdOverCap(tx, ctx, me, product.usd, now);
+    // GLOBAL-005: an intent the game released (or whose hold ran out) reserves nothing any more, so the
+    // receipt counts now too: a modified game cannot free its hold, buy something else, then pay this one.
+    if (!intent || intent.used || intent.holdUntil <= now) await holdOverCap(tx, ctx, me, counted, now);
     const heldOnServer = Boolean(await tx.getVillage(me.id));
     const row: PurchaseRow = {
       store,
       transactionId: c.transactionId,
       playerId: me.id,
       productId: product.id,
-      cents: cents(product.usd),
+      // GLOBAL-007: the store's local price in USD when it is known, else the catalog price.
+      cents: counted,
       at: now,
       environment: c.environment,
       status: 'credited',
@@ -278,6 +326,7 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
       storefront: c.storefront,
       currency: c.currency,
       priceMicros: c.priceMicros,
+      device,
     };
     if (!(await tx.addPurchase(row))) {
       const again = await tx.getPurchase(store, c.transactionId);
@@ -363,6 +412,22 @@ export async function appleNotification(ctx: ServerContext, body: { signedPayloa
   }
   ctx.log('info', 'app store notification', { type: n.notificationType, subtype: n.subtype, id: n.notificationUUID, environment: n.environment });
   const t = n.transaction;
+  // Backend A29: each notification once, and refund state by Apple's signed time. Apple retries a delivery
+  // it thinks failed, and REFUND_REVERSED can arrive before the REFUND it reverses.
+  if (n.notificationUUID) {
+    const signedAt = n.signedDate ?? ctx.now();
+    const seen = await ctx.repo.noteStoreNotification({ id: `apple:${n.notificationUUID}`, store: 'apple', ref: t?.transactionId ?? null, type: n.notificationType, signedAt, receivedAt: ctx.now() });
+    if (seen.duplicate) {
+      ctx.metrics.count('tk_store_notifications_total', { store: 'apple', result: 'duplicate' });
+      return;
+    }
+    if (STATE_NOTICES.has(n.notificationType) && seen.newerAt !== null && seen.newerAt > signedAt) {
+      ctx.metrics.count('tk_store_notifications_total', { store: 'apple', result: 'out_of_order' });
+      ctx.log('warn', 'app store notification older than one already applied: skipped', { type: n.notificationType, transactionId: t?.transactionId ?? null });
+      return;
+    }
+    ctx.metrics.count('tk_store_notifications_total', { store: 'apple', result: 'applied' });
+  }
   if (n.notificationType === 'RESCIND_CONSENT') return rescindConsent(ctx, t);
   if (!t) return;
   if (n.notificationType === 'REFUND' || n.notificationType === 'REVOKE') {

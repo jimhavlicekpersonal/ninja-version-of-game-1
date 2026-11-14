@@ -231,7 +231,7 @@ export class Connection {
       return this.port;
     };
     return {
-      intent: async (s, productId, under18) => (await ready()).purchaseIntent({ store: s, productId, under18 }),
+      intent: async (s, productId, under18) => (await ready()).purchaseIntent({ store: s, productId, under18, ...(this.village?.device ? { device: this.village.device } : {}) }),
       redeem: async (r) => (await ready()).redeem({ store: r.store, storeProductId: r.storeProductId, receipt: r.receipt }),
       history: async () => (checks && this.port && this.online ? (await this.port.purchaseHistory()).purchases : []),
       release: async (accountToken, outcome) => {
