@@ -1110,6 +1110,8 @@ export interface VillageStore {
   ledgerOf(playerId: string, limit: number): Promise<LedgerEntry[]>;
   /** The balance of `resource` after the last ledger line at or before `at`; null when there is none (Japan C17 report). */
   balanceAt(playerId: string, resource: string, at: number): Promise<number | null>;
+  /** The sum of `resource` deltas of ledger lines with this `reason` at or before `at` (Japan C17: stipend Jade delivered). */
+  ledgerSumAt(playerId: string, resource: string, reason: string, at: number): Promise<number>;
   /** Oldest first, after `sinceSeq`. */
   commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]>;
 }
@@ -1323,6 +1325,11 @@ export class MemoryRepo implements Repo {
     let found: LedgerEntry | null = null;
     for (const l of this.ledgerRows) if (l.playerId === playerId && l.resource === resource && l.at <= at && (!found || l.at >= found.at)) found = l;
     return found ? found.balance : null;
+  }
+  async ledgerSumAt(playerId: string, resource: string, reason: string, at: number): Promise<number> {
+    let sum = 0;
+    for (const l of this.ledgerRows) if (l.playerId === playerId && l.resource === resource && l.reason === reason && l.at <= at) sum += l.delta;
+    return sum;
   }
   async commandsOf(playerId: string, sinceSeq: number, limit: number): Promise<CommandLogRow[]> {
     return this.commandRows
