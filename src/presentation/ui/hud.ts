@@ -245,8 +245,8 @@ export class Hud {
     }
   }
 
-  /** Open a panel named by a home-screen shortcut (after the tutorial; never during a battle). */
-  private openShortcut(name: string): void {
+  /** Open a panel named by a home-screen shortcut or an app link (after the tutorial; never during a battle). */
+  openShortcut(name: string): void {
     if (!this.c.state.tutorial.done || document.getElementById('battle-hud')?.hidden === false) return;
     if (name === 'daily') this.daily.openDaily();
     else if (name === 'army') this.openTraining();

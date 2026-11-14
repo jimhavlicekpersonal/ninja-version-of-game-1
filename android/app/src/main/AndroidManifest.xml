@@ -26,6 +26,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!--
+              TODO(owner, audit R09): Android App Links. Replace YOUR_DOMAIN with the domain that serves
+              /.well-known/assetlinks.json (template: tools/applinks/assetlinks.template.json; docs/SHIPPING.md 1c),
+              then uncomment. The game already routes ?friend= and ?open= from appUrlOpen (src/backend/platform/links.ts).
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="YOUR_DOMAIN" />
+            </intent-filter>
+            -->
+
         </activity>
 
         <provider

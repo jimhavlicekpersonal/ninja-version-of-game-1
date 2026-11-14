@@ -12,5 +12,14 @@
 	<string>production</string>
 	<key>com.apple.developer.declared-age-range</key>
 	<true/>
+	<!--
+	  TODO(owner, audit R09): Universal Links. Add the Associated Domains capability for the App ID, replace
+	  YOUR_DOMAIN with the domain serving /.well-known/apple-app-site-association (template:
+	  tools/applinks/apple-app-site-association.template.json; docs/SHIPPING.md 1c), then uncomment.
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:YOUR_DOMAIN</string>
+	</array>
+	-->
 </dict>
 </plist>
