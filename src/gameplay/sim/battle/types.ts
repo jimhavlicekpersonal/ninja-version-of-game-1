@@ -61,6 +61,12 @@ export interface BattleSetup {
    * deployable once like a warrior (no housing). Absent: no hero.
    */
   hero?: { id: string; level: number };
+  /**
+   * Warrior Mastery (content batch 2026-11-14, sim/mastery.ts): extra HP and damage per own warrior type
+   * (0.05 = +5%). Set only while `features.mastery` is on, which the shipped data leaves off; absent = none,
+   * so a live battle plays exactly as before.
+   */
+  mastery?: Record<string, number>;
 }
 
 /** Buildings being upgraded take no part in a battle: they don't fire, and their counter effect is off. */

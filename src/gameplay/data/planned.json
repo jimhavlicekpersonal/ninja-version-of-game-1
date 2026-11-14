@@ -1,0 +1,96 @@
+{
+  "$comment": "Content batch 2026-11-14: designed content that is implemented but NOT live. Nothing here reaches the shipped game: sim/plannedContent.ts `withPreview` merges it into a copy of the data only in the testing sandbox (?sandbox&preview / ?debug&preview) and in `npm run balance:preview`. Names and descriptions come from progression.json buildingCatalog and roster.json heroes (already translated), so this file has no player-visible text. Numbers are PROVISIONAL, derived from a comparable live building or warrior: building level L takes the reference building's stats at the reference's max level at the first Keep where this building reaches L (one reference level further for each extra level in the same Keep, growing x1.16 power / x1.45 cost past the reference's last level), times hpMult / damageMult / costMult; hall limits are `count` copies at the catalog's max level for each Keep (`buildingMaxLevelAt`). Effects are the catalog's effect plus `effect` below. Heroes follow the Shadow Captain's rule: level L = the role's tier-3 warrior at its research cap at Keep unlockKeep + L - 1, per housing, HP x hpPerHousing and damage x damagePerHousing. To make one live: move its generated definition into buildings.json / battle.json heroes and hall.json, set live in the catalog, run npm run rules:snapshot BEFORE bumping SIM_RULES (combat data changes the fingerprint), then the balance suite.",
+  "features": { "mastery": true, "heroChoice": true },
+  "buildings": {
+    "whirling_blade_tower": {
+      "$comment": "Kunai Tower's HP; each spin deals half a Kunai shot to every ground warrior in reach every second (0.4x a Kunai Tower's single-target DPS per warrior, more than a Kunai Tower from the third warrior on).",
+      "ref": "acorn_cannon", "hpMult": 1, "damageMult": 0.5, "costMult": 1, "size": 2, "count": 2,
+      "combat": { "targets": "ground", "range": 1.2, "fireIntervalTicks": 10, "projectile": "blade", "projectileSpeed": 1 }
+    },
+    "rain_barrel_tower": {
+      "$comment": "Shuriken Tower's HP, half its damage (a support tower that also shoots); range 5.",
+      "ref": "wasp_nest", "hpMult": 1, "damageMult": 0.5, "costMult": 1, "size": 2, "count": 1,
+      "combat": { "targets": "both", "range": 5, "fireIntervalTicks": 5, "projectile": "water", "projectileSpeed": 1.6 },
+      "effect": { "conductPct": 0.25, "troops": ["thunder_kite", "storm_sovereign"] }
+    },
+    "listening_jars": {
+      "$comment": "Priced and built like the Paper Lantern Line (the live utility trap of the same Keep and level span).",
+      "ref": "paper_lantern_line", "hpMult": 1, "costMult": 1, "size": 1, "count": 2,
+      "effect": { "troops": ["mole_digger", "mole_king"] }
+    },
+    "living_bamboo_wall": {
+      "$comment": "Stone Wall HP at double the price (it regrows 3% a second); 25 segments.",
+      "ref": "bramble_hedge", "hpMult": 1, "costMult": 2, "size": 1, "count": 25,
+      "effect": { "troops": ["wall_climber", "grapple_raider"] }
+    },
+    "straw_scarecrow": {
+      "$comment": "1.5x a Kunai Tower's HP (lots of health), no damage, burns at double damage.",
+      "ref": "acorn_cannon", "hpMult": 1.5, "costMult": 1, "size": 2, "count": 1,
+      "effect": { "troops": ["hound_handler", "boar_rider", "bear_warrior", "tiger_lord"], "birds": ["crane_glider"], "burnMultiplier": 2 }
+    },
+    "mirror_screen": {
+      "$comment": "1.5x a Kunai Tower's HP, no shot of its own; every third warrior projectile flies back at full damage.",
+      "ref": "acorn_cannon", "hpMult": 1.5, "costMult": 1, "size": 2, "count": 1,
+      "effect": { "reflectPct": 1 }
+    },
+    "sand_bucket_post": {
+      "$comment": "Built and priced like the Bitter Smoke Brazier (the live support counter).",
+      "ref": "bitter_incense_burner", "hpMult": 1, "costMult": 1, "size": 2, "count": 1
+    },
+    "discipline_banner": {
+      "ref": "bitter_incense_burner", "hpMult": 1, "costMult": 1, "size": 2, "count": 1
+    },
+    "spotter_perch": {
+      "ref": "bitter_incense_burner", "hpMult": 1, "costMult": 1, "size": 2, "count": 1,
+      "effect": { "troops": ["wind_step_assassin", "void_walker", "grapple_raider"] }
+    },
+    "steam_vent": {
+      "$comment": "Kunai Tower's HP; half a Kunai shot each second to every ground warrior within 2 tiles, hidden ones too.",
+      "ref": "acorn_cannon", "hpMult": 1, "damageMult": 0.5, "costMult": 1, "size": 2, "count": 1,
+      "combat": { "targets": "ground", "range": 2, "fireIntervalTicks": 10, "projectile": "steam", "projectileSpeed": 1 }
+    },
+    "sleep_dart_tower": {
+      "$comment": "Shuriken Tower's HP; darts at 0.3x its damage every 1.5 s (they barely scratch).",
+      "ref": "wasp_nest", "hpMult": 1, "damageMult": 0.3, "costMult": 1, "size": 2, "count": 1,
+      "combat": { "targets": "ground", "range": 7, "fireIntervalTicks": 15, "projectile": "dart", "projectileSpeed": 1.6 }
+    },
+    "rolling_log_chute": {
+      "$comment": "A Spike Pit's damage, along a 6-tile lane instead of a 1.6-tile circle.",
+      "ref": "thorn_snare", "hpMult": 1, "damageMult": 1, "costMult": 1, "size": 1, "count": 2,
+      "combat": { "targets": "ground", "range": 0.9, "fireIntervalTicks": 1, "projectile": "log", "projectileSpeed": 1 }
+    },
+    "moonlit_gravel": {
+      "ref": "paper_lantern_line", "hpMult": 1, "costMult": 1, "size": 2, "count": 1,
+      "effect": { "radius": 0.5, "troops": ["void_walker", "grapple_raider", "bomb_carrier"] }
+    },
+    "ink_seal_post": {
+      "ref": "bitter_incense_burner", "hpMult": 1, "costMult": 1, "size": 2, "count": 1
+    },
+    "lightning_rod_pagoda": {
+      "$comment": "Longbow Yagura's HP and price, no shot of its own; fires the absorbed lightning back once it holds half its HP.",
+      "ref": "longbow_yagura", "hpMult": 1, "costMult": 1, "size": 2, "count": 1,
+      "effect": { "capacity": 0.5, "returnPct": 1, "troops": ["thunder_kite", "storm_sovereign"] }
+    },
+    "hero_shrine": {
+      "$comment": "Hero Hall: built and priced like the Training Dojo. With heroChoice, the player picks one unlocked hero; the hero's level is capped by the Hall's.",
+      "ref": "burrow_barracks", "hpMult": 1, "costMult": 1, "size": 3, "count": 1
+    }
+  },
+  "heroes": {
+    "iron_matriarch": {
+      "$comment": "Guardian tier 3 (Bell Warden) per housing, HP x10, damage x3. Bulwark: 60% less defense fire from a 90-degree forward cone (coneCos = cos 45 deg) on warriors within 4 tiles for 6 s.",
+      "ref": "bell_warden", "hpPerHousing": 10, "damagePerHousing": 3,
+      "kit": { "heroAbility": "bulwark", "radius": 4, "strength": 0.6, "durationTicks": 60, "coneCos": 0.7071 }
+    },
+    "sky_admiral": {
+      "$comment": "Sky tier 3 (Lantern Balloon) per housing, HP x10, damage x3. Squall: every flyer 2 tiles forward and 50% less damage from defenses for 5 s.",
+      "ref": "lantern_balloon", "hpPerHousing": 10, "damagePerHousing": 3,
+      "kit": { "heroAbility": "squall", "pushTiles": 2, "strength": 0.5, "durationTicks": 50 }
+    },
+    "grand_sensei": {
+      "$comment": "Mystic tier 3 (Mist Weaver) per housing, HP x10, damage x3; fights (prefers any) so his first hit starts Inner Calm: 40% heal and one ward.",
+      "ref": "mist_weaver", "hpPerHousing": 10, "damagePerHousing": 3, "prefers": "any",
+      "kit": { "heroAbility": "inner_calm", "heal": 0.4 }
+    }
+  }
+}

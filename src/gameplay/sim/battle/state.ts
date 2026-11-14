@@ -19,6 +19,8 @@ export interface WarriorEffect {
   radius: number;
   damage: number;
   endsTick: number;
+  /** Rain Barrel Tower (non-live, content batch 2026-11-14): the tick a doused effect ends at the latest. */
+  douseEnd?: number;
 }
 
 /** The attackers' support a tempered base cuts (`troopCuts` by the profile); all zero untempered. */
@@ -61,6 +63,17 @@ export interface SimBuilding {
   repairedUntil: number;
   /** The same for a Hawk Tamer's slowing. */
   repairedSlowUntil: number;
+  // ---- Non-live counters (content batch 2026-11-14, previewCounters.ts); absent on every live building ----
+  /** Discipline Banner: this defense ignores taunts/decoys this tick (recomputed every tick). */
+  focused?: boolean;
+  /** Spotter's Perch covering this defense this tick (its building index). */
+  spotter?: number;
+  /** Sand Bucket Post: splash cut on this building this tick. */
+  smother?: number;
+  /** Bronze Mirror Screen: projectiles that hit it so far. */
+  reflectHits?: number;
+  /** Lightning Rod Tower: absorbed damage not yet fired back. */
+  charge?: number;
 }
 
 /** A Smoke Bomb cloud on the map. Active while tick < endsTick. */
@@ -117,6 +130,24 @@ export interface SimTroop {
   auraCut: number;
   /** Rally (heroes, SIM_RULES 5): the tick the source's rally ends; 0 = not rallying. */
   rallyUntil?: number;
+  // ---- Non-live content (content batch 2026-11-14); absent in every live battle ----
+  /** Stunned or asleep (Listening Jars, Moonlit Gravel, Sleep Dart Tower): does nothing while tick < stunnedUntil. */
+  stunnedUntil?: number;
+  /** Listening Jars forced this digger to the surface: it must break walls like anyone else. */
+  surfaced?: boolean;
+  /** Once-per-warrior counters already spent on this troop. */
+  jarred?: boolean;
+  graveled?: boolean;
+  slept?: boolean;
+  /** Ink Seal Post: fell sealed, can't be revived. */
+  sealed?: boolean;
+  /** Hero abilities: the hero's ability was used; Bulwark/Squall end ticks; Bulwark's facing; Inner Calm's ward. */
+  heroUsed?: boolean;
+  bulwarkUntil?: number;
+  bulwarkX?: number;
+  bulwarkY?: number;
+  squallUntil?: number;
+  calm?: boolean;
 }
 
 export interface SimProjectile {
@@ -207,4 +238,10 @@ export interface BattleSim {
   defenseView?: { hidden: Uint8Array; air: Uint8Array; shrouded: Uint8Array } | null;
   /** Donated troops of each type not yet deployed (they deploy first, at their donated level). */
   lodgeLeft: Record<string, number>;
+  /**
+   * Content batch 2026-11-14: the non-live counter kinds on this base (set by createBattle only when one is
+   * present, so a live battle never has it), and the index of a non-live hero whose ability is in play.
+   */
+  previewKinds?: Partial<Record<string, true>>;
+  heroIndex?: number;
 }

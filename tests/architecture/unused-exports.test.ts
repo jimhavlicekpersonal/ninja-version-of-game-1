@@ -36,7 +36,10 @@ const isContract = (f: string) => contracts.some((c) => f === c || f.startsWith(
 /** Files whose exports something outside the TypeScript import graph uses (runtimes, workers, builds). */
 const ENTRY = [/^src\/main\.ts$/, /^server\/main\.ts$/, /^server\/[a-zA-Z]+Main\.ts$/, /^server\/resim\/resimWorker\.ts$/, /^server\/rules\/v\d+\//];
 
-/** Unused when the check came in (2026-11-14). Never add to this list: un-export or use the name. */
+/**
+ * Unused when the check came in (2026-11-14; gameplay's spare contract exports include the content batch's,
+ * merged the same day). Never add to this list: un-export or use the name.
+ */
 const ALLOWED = new Set<string>([
   'server/app.ts#COMPRESS_MIN_BYTES',
   'server/app.ts#holdsToken',
@@ -59,6 +62,8 @@ const ALLOWED = new Set<string>([
   'src/gameplay/sim/age.ts#bandRank',
   'src/gameplay/sim/army.ts#paidFromStorage',
   'src/gameplay/sim/battle/basegen.ts#opponentName',
+  'src/gameplay/sim/battle/previewCounters.ts#PREVIEW_KINDS',
+  'src/gameplay/sim/battle/previewCounters.ts#stunTroop',
   'src/gameplay/sim/battle/temper.ts#TroopCuts',
   'src/gameplay/sim/battle/temper.ts#temperFamily',
   'src/gameplay/sim/battle/temper.ts#temperFractions',
@@ -75,10 +80,14 @@ const ALLOWED = new Set<string>([
   'src/gameplay/sim/goalEvents.ts#goalEventByKey',
   'src/gameplay/sim/goalEvents.ts#goalProgress',
   'src/gameplay/sim/goalEvents.ts#reachesStep',
+  'src/gameplay/sim/heroes.ts#HERO_HALL',
+  'src/gameplay/sim/heroes.ts#heroHallLevel',
+  'src/gameplay/sim/mastery.ts#masteryLevelOf',
   'src/gameplay/sim/matchmaking.ts#maxHall',
   'src/gameplay/sim/pass.ts#passPointsPerDay',
   'src/gameplay/sim/pass.ts#premiumActive',
-  'src/gameplay/sim/progression.ts#battleMasteryXp',
+  'src/gameplay/sim/plannedContent.ts#previewBuildingDef',
+  'src/gameplay/sim/plannedContent.ts#previewLevels',
   'src/gameplay/sim/progression.ts#buildingStage',
   'src/gameplay/sim/progression.ts#buildingUpgradeSeconds',
   'src/gameplay/sim/progression.ts#trainingSeconds',

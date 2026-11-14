@@ -37,6 +37,7 @@
     "docs:progression": "node tools/progression/generate.mjs",
     "balance:armies": "node tools/balance/generate.mjs",
     "balance:campaign": "node tools/balance/run-campaigns.mjs",
+    "balance:preview": "node tools/balance/preview.mjs",
     "i18n:extract": "node tools/i18n/i18n.mjs extract",
     "i18n:sync": "node tools/i18n/i18n.mjs sync",
     "i18n:status": "node tools/i18n/i18n.mjs status",

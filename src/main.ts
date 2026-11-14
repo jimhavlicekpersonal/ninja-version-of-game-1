@@ -50,6 +50,7 @@ import { senseiPortrait } from './presentation/art/portraits';
 import { chestSvg, revealChest } from './presentation/art/chest';
 import { OffsetClock, SystemClock } from './gameplay/sim/clock';
 import { defaultData } from './gameplay/sim/data';
+import { withPreview } from './gameplay/sim/plannedContent';
 import { Bus, type UiEvents } from './presentation/ui/bus';
 import { Hud, statsExplainer } from './presentation/ui/hud';
 import { acceptedRulesVersion, onCommunityRulesAccepted } from './presentation/ui/communityRules';
@@ -265,7 +266,11 @@ async function boot(): Promise<void> {
   // Growth batch 2026-11-14 (G10): the event timing the server sent last time (it plays the same), else built-in.
   const eventSchedule = sandbox ? null : new EventScheduleLoader(browserKeyValue, defaultData);
   eventSchedule?.applyCached();
-  const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: defaultData, payments, botRaids: !serverUrl, sandbox });
+  // Content batch 2026-11-14: `?sandbox&preview` (or `?debug&preview`) adds the designed but non-live buildings,
+  // heroes, Hero Hall and Warrior Mastery for playtesting (sim/plannedContent.ts). Only in the sandbox, which has
+  // its own save and never goes online; the public build always plays the shipped data.
+  const gameData = sandbox && params.has('preview') ? withPreview(defaultData) : defaultData;
+  const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: gameData, payments, botRaids: !serverUrl, sandbox });
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;

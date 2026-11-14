@@ -13,7 +13,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 22;
+export const SAVE_VERSION = 23;
 const EXPORT_PREFIX = 'TK1';
 
 // Values the save migrations fill in (quality Q20). They describe what each old format meant and never change.
@@ -234,6 +234,12 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
       const tiers = Math.min(data.pass.tiers.length, Math.floor((Number(pass.points) || 0) / data.pass.pointsPerTier));
       if (hall && Number.isInteger(hall.level) && hall.level >= 1 && tiers > 0) pass.tierKeep = Array.from({ length: tiers }, () => hall.level);
     }
+  }
+  if (out.version < 23 && v && typeof v === 'object') {
+    // v22 -> v23 (content batch 2026-11-14): Warrior Mastery EXP and the Hero Hall's chosen hero. Both start
+    // empty; the features that fill them are off in the shipped data, so nothing else changes.
+    if (!v.mastery || typeof v.mastery !== 'object' || Array.isArray(v.mastery)) v.mastery = {};
+    if (!v.hero || typeof v.hero !== 'object' || Array.isArray(v.hero)) v.hero = {};
   }
   repairTrainingQueue(v);
   if (data) repairTempers(v, data);
