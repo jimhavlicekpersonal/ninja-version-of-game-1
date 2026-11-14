@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ur)
 
 # Urdu translation
 
-Urdu (`ur`, script `Arab`, right to left) was released in commit `RELEASE_COMMIT`. It is served to `ur` and `ur-*` devices and covers every namespace (3,019 entries, 2,705 strings), the public pages and PWA manifest under `public/ur/`, and listing and integration copy in `docs/store/ur/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/ur/TERMS.md`; reviewed warnings: `locales/ur/REVIEW.json`.
+Urdu (`ur`, script `Arab`, right to left) was released in commit `d6ab7b8`. It is served to `ur` and `ur-*` devices and covers every namespace (3,019 entries, 2,705 strings), the public pages and PWA manifest under `public/ur/`, and listing and integration copy in `docs/store/ur/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/ur/TERMS.md`; reviewed warnings: `locales/ur/REVIEW.json`.
 
 The translation is AI-written and validated only by the repository checks below. **No native Urdu speaker has reviewed it**, nor the legal pages.
 

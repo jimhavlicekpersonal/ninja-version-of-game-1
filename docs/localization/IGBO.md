@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ig)
 
 # Igbo translation
 
-Igbo (`ig`, script `Latn`) was released in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries; 2,705 strings in the built pack), the public pages and PWA manifest under `public/ig/`, the account-deletion form (`/account/delete?lang=ig`), and the store copy and native/StoreKit text in `docs/store/ig/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/ig/TERMS.md`; reviewed warnings: `locales/ig/REVIEW.json`.
+Igbo (`ig`, script `Latn`) was released in commit `d6ab7b8`. It covers every namespace (3,022 entries; 2,705 strings in the built pack), the public pages and PWA manifest under `public/ig/`, the account-deletion form (`/account/delete?lang=ig`), and the store copy and native/StoreKit text in `docs/store/ig/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/ig/TERMS.md`; reviewed warnings: `locales/ig/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Igbo speaker has reviewed it**, nor the legal pages.
 

@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.fi)
 
 # Finnish translation
 
-Finnish (`fi`, script `Latn`) was released in commit `RELEASE_COMMIT`. It covers every namespace, the six public pages and PWA manifest under `public/fi/`, the account-deletion form (`/account/delete?lang=fi`), server push text, native and StoreKit text from `docs/store/fi/LOCALE.json`, and listing copy in `docs/store/fi/LISTING.md`. Terms: `locales/fi/TERMS.md`; reviewed warnings: `locales/fi/REVIEW.json`.
+Finnish (`fi`, script `Latn`) was released in commit `d6ab7b8`. It covers every namespace, the six public pages and PWA manifest under `public/fi/`, the account-deletion form (`/account/delete?lang=fi`), server push text, native and StoreKit text from `docs/store/fi/LOCALE.json`, and listing copy in `docs/store/fi/LISTING.md`. Terms: `locales/fi/TERMS.md`; reviewed warnings: `locales/fi/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks. **No native Finnish speaker has reviewed it**, nor the legal pages.
 

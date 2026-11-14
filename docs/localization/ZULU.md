@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.zu)
 
 # Zulu translation
 
-Zulu (`zu`, script `Latn`) was released in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries; 2,705 strings in the built pack), the public pages and PWA manifest under `public/zu/`, the account-deletion form (`/account/delete?lang=zu`), and the store copy and native/StoreKit text in `docs/store/zu/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/zu/TERMS.md`; reviewed warnings: `locales/zu/REVIEW.json`.
+Zulu (`zu`, script `Latn`) was released in commit `d6ab7b8`. It covers every namespace (3,022 entries; 2,705 strings in the built pack), the public pages and PWA manifest under `public/zu/`, the account-deletion form (`/account/delete?lang=zu`), and the store copy and native/StoreKit text in `docs/store/zu/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/zu/TERMS.md`; reviewed warnings: `locales/zu/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Zulu speaker has reviewed it**, nor the legal pages.
 

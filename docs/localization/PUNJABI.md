@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.pa)
 
 # Punjabi translation
 
-Punjabi (`pa`, script `Guru`, left to right) was released in commit `RELEASE_COMMIT`. It is served to `pa` and `pa-IN` devices and covers every namespace (`boot` 17, `ui` 152, `data` 669, `messages` 1,867, `pages` 314 = 3,019 entries), the six public pages and PWA manifest under `public/pa/`, the account-deletion form (`/account/delete?lang=pa`), and listing and product copy in `docs/store/pa/` (`LISTING.md`, `LOCALE.json`). Server push text, iOS/Android resources and StoreKit fixtures are part of the integration in `RELEASE_COMMIT`. Terms: `locales/pa/TERMS.md`; reviewed warnings: `locales/pa/REVIEW.json`. Shahmukhi (Pakistan, `pa-Arab`) is not covered.
+Punjabi (`pa`, script `Guru`, left to right) was released in commit `d6ab7b8`. It is served to `pa` and `pa-IN` devices and covers every namespace (`boot` 17, `ui` 152, `data` 669, `messages` 1,867, `pages` 314 = 3,019 entries), the six public pages and PWA manifest under `public/pa/`, the account-deletion form (`/account/delete?lang=pa`), and listing and product copy in `docs/store/pa/` (`LISTING.md`, `LOCALE.json`). Server push text, iOS/Android resources and StoreKit fixtures are part of the integration in `d6ab7b8`. Terms: `locales/pa/TERMS.md`; reviewed warnings: `locales/pa/REVIEW.json`. Shahmukhi (Pakistan, `pa-Arab`) is not covered.
 
 The translation is AI-written and validated by the repository checks below. **No native Punjabi speaker has reviewed it**, nor the legal pages.
 

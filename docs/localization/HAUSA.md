@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ha)
 
 # Hausa translation
 
-Hausa (`ha`, script `Latn`) covers every namespace (2,708 strings in `boot`, `data`, `messages`, `pages` and `ui`), the public pages and PWA manifest under `public/ha/`, and listing and product copy in `docs/store/ha/` (added in `RELEASE_COMMIT`). Terms: `locales/ha/TERMS.md`; reviewed warnings: `locales/ha/REVIEW.json` (110 English-identical entries reviewed). `locales/languages.json` marks it `appStore: false`: App Store Connect offers no Hausa listing language, so it ships as a Google Play listing and an in-game language.
+Hausa (`ha`, script `Latn`) covers every namespace (2,708 strings in `boot`, `data`, `messages`, `pages` and `ui`), the public pages and PWA manifest under `public/ha/`, and listing and product copy in `docs/store/ha/` (added in `d6ab7b8`). Terms: `locales/ha/TERMS.md`; reviewed warnings: `locales/ha/REVIEW.json` (110 English-identical entries reviewed). `locales/languages.json` marks it `appStore: false`: App Store Connect offers no Hausa listing language, so it ships as a Google Play listing and an in-game language.
 
 The translation is AI-written and validated by the repository checks below. **No native Hausa speaker has reviewed it**, nor the legal pages.
 

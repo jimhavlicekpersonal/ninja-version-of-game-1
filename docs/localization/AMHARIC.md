@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.am)
 
 # Amharic translation
 
-Amharic (`am`, script `Ethi`) was released in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries; 2,705 strings in the built pack), the public pages and PWA manifest under `public/am/`, the account-deletion form (`/account/delete?lang=am`), and the store copy and native/StoreKit text in `docs/store/am/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/am/TERMS.md`; reviewed warnings: `locales/am/REVIEW.json`.
+Amharic (`am`, script `Ethi`) was released in commit `d6ab7b8`. It covers every namespace (3,022 entries; 2,705 strings in the built pack), the public pages and PWA manifest under `public/am/`, the account-deletion form (`/account/delete?lang=am`), and the store copy and native/StoreKit text in `docs/store/am/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/am/TERMS.md`; reviewed warnings: `locales/am/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Amharic speaker has reviewed it**, nor the legal pages.
 

@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.mr)
 
 # Marathi translation
 
-Marathi (`mr`, script `Deva`, left to right) was released in commit `RELEASE_COMMIT`. It covers every namespace (3,019 entries in `npm run i18n:check -- mr`) and the six public pages and PWA manifest under `public/mr/`; the release commit wires up the account-deletion form (`/account/delete?lang=mr`), server push text, iOS and Android resources and StoreKit fixtures from `docs/store/mr/LOCALE.json`, next to the listing copy in `docs/store/mr/LISTING.md`. Terms: `locales/mr/TERMS.md`; reviewed warnings: `locales/mr/REVIEW.json`.
+Marathi (`mr`, script `Deva`, left to right) was released in commit `d6ab7b8`. It covers every namespace (3,019 entries in `npm run i18n:check -- mr`) and the six public pages and PWA manifest under `public/mr/`; the release commit wires up the account-deletion form (`/account/delete?lang=mr`), server push text, iOS and Android resources and StoreKit fixtures from `docs/store/mr/LOCALE.json`, next to the listing copy in `docs/store/mr/LISTING.md`. Terms: `locales/mr/TERMS.md`; reviewed warnings: `locales/mr/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Marathi speaker has reviewed it**, nor the legal pages.
 

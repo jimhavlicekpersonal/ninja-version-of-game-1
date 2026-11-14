@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.tr)
 
 # Turkish translation
 
-Turkish (`tr`, script `Latn`) is released in commit `RELEASE_COMMIT`. It is served to `tr` devices with any region (`tr-TR`, `tr-CY`). It covers every namespace (2,708 strings in the measured pack), the public pages and PWA manifest under `public/tr/`, the account-deletion form (`/account/delete?lang=tr`), and the store copy in `docs/store/tr/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/tr/TERMS.md`; reviewed warnings: `locales/tr/REVIEW.json`.
+Turkish (`tr`, script `Latn`) is released in commit `d6ab7b8`. It is served to `tr` devices with any region (`tr-TR`, `tr-CY`). It covers every namespace (2,708 strings in the measured pack), the public pages and PWA manifest under `public/tr/`, the account-deletion form (`/account/delete?lang=tr`), and the store copy in `docs/store/tr/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/tr/TERMS.md`; reviewed warnings: `locales/tr/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Turkish speaker has reviewed it**, nor the legal pages.
 

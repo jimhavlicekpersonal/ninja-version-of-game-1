@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.sw)
 
 # Swahili translation
 
-Swahili (`sw`, script `Latn`) covers every namespace (2,708 strings in `boot`, `data`, `messages`, `pages` and `ui`), the public pages and PWA manifest under `public/sw/`, and listing and product copy in `docs/store/sw/` (added in `RELEASE_COMMIT`). Terms: `locales/sw/TERMS.md`; reviewed warnings: `locales/sw/REVIEW.json` (100 English-identical entries reviewed). `locales/languages.json` marks it `appStore: false`: App Store Connect offers no Swahili listing language, so it ships as a Google Play listing and an in-game language.
+Swahili (`sw`, script `Latn`) covers every namespace (2,708 strings in `boot`, `data`, `messages`, `pages` and `ui`), the public pages and PWA manifest under `public/sw/`, and listing and product copy in `docs/store/sw/` (added in `d6ab7b8`). Terms: `locales/sw/TERMS.md`; reviewed warnings: `locales/sw/REVIEW.json` (100 English-identical entries reviewed). `locales/languages.json` marks it `appStore: false`: App Store Connect offers no Swahili listing language, so it ships as a Google Play listing and an in-game language.
 
 The translation is AI-written and validated by the repository checks below. **No native Swahili speaker has reviewed it**, nor the legal pages.
 

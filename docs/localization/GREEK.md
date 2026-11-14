@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.el)
 
 # Greek translation
 
-Greek (`el`, script `Grek`) was released in commit `RELEASE_COMMIT`. It is served to `el` and `el-*` devices and covers every namespace (3,019 entries, 2,705 strings), the public pages and PWA manifest under `public/el/`, and listing and integration copy in `docs/store/el/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/el/TERMS.md`; reviewed warnings: `locales/el/REVIEW.json`.
+Greek (`el`, script `Grek`) was released in commit `d6ab7b8`. It is served to `el` and `el-*` devices and covers every namespace (3,019 entries, 2,705 strings), the public pages and PWA manifest under `public/el/`, and listing and integration copy in `docs/store/el/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/el/TERMS.md`; reviewed warnings: `locales/el/REVIEW.json`.
 
 The translation is AI-written and validated only by the repository checks below. **No native Greek speaker has reviewed it**, nor the legal pages.
 

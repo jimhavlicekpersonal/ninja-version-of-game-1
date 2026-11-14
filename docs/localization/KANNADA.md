@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.kn)
 
 # Kannada translation
 
-Kannada (`kn`, script `Knda`, left to right) was released in commit `RELEASE_COMMIT`. It covers every namespace (3,019 entries in `npm run i18n:check -- kn`) and the six public pages and PWA manifest under `public/kn/`; the release commit wires up the account-deletion form (`/account/delete?lang=kn`), server push text, iOS and Android resources and StoreKit fixtures from `docs/store/kn/LOCALE.json`, next to the listing copy in `docs/store/kn/LISTING.md`. Terms: `locales/kn/TERMS.md`; reviewed warnings: `locales/kn/REVIEW.json`.
+Kannada (`kn`, script `Knda`, left to right) was released in commit `d6ab7b8`. It covers every namespace (3,019 entries in `npm run i18n:check -- kn`) and the six public pages and PWA manifest under `public/kn/`; the release commit wires up the account-deletion form (`/account/delete?lang=kn`), server push text, iOS and Android resources and StoreKit fixtures from `docs/store/kn/LOCALE.json`, next to the listing copy in `docs/store/kn/LISTING.md`. Terms: `locales/kn/TERMS.md`; reviewed warnings: `locales/kn/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Kannada speaker has reviewed it**, nor the legal pages.
 

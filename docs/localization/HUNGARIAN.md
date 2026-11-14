@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.hu)
 
 # Hungarian translation
 
-Hungarian (`hu`, script `Latn`) was released in commit `RELEASE_COMMIT`. It covers every namespace, the six public pages and PWA manifest under `public/hu/`, the account-deletion form (`/account/delete?lang=hu`), server push text, native and StoreKit text from `docs/store/hu/LOCALE.json`, and listing copy in `docs/store/hu/LISTING.md`. Terms: `locales/hu/TERMS.md`; reviewed warnings: `locales/hu/REVIEW.json`.
+Hungarian (`hu`, script `Latn`) was released in commit `d6ab7b8`. It covers every namespace, the six public pages and PWA manifest under `public/hu/`, the account-deletion form (`/account/delete?lang=hu`), server push text, native and StoreKit text from `docs/store/hu/LOCALE.json`, and listing copy in `docs/store/hu/LISTING.md`. Terms: `locales/hu/TERMS.md`; reviewed warnings: `locales/hu/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks. **No native Hungarian speaker has reviewed it**, nor the legal pages.
 

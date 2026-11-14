@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.hr)
 
 # Croatian translation
 
-Croatian (`hr`, script `Latn`) was released in commit `RELEASE_COMMIT`. It covers every namespace, the six public pages and PWA manifest under `public/hr/`, the account-deletion form (`/account/delete?lang=hr`), server push text, native and StoreKit text from `docs/store/hr/LOCALE.json`, and listing copy in `docs/store/hr/LISTING.md`. Terms: `locales/hr/TERMS.md`; reviewed warnings: `locales/hr/REVIEW.json`.
+Croatian (`hr`, script `Latn`) was released in commit `d6ab7b8`. It covers every namespace, the six public pages and PWA manifest under `public/hr/`, the account-deletion form (`/account/delete?lang=hr`), server push text, native and StoreKit text from `docs/store/hr/LOCALE.json`, and listing copy in `docs/store/hr/LISTING.md`. Terms: `locales/hr/TERMS.md`; reviewed warnings: `locales/hr/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks. **No native Croatian speaker has reviewed it**, nor the legal pages.
 

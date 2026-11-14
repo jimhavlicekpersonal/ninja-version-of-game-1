@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.uk)
 
 # Ukrainian translation
 
-Ukrainian (`uk`, script `Cyrl`) was released together with Russian and Polish in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries), the six public pages and PWA manifest under `public/uk/`, the account-deletion form (`/account/delete?lang=uk`), server push text, iOS (`uk.lproj`) and Android (`values-uk`) resources, StoreKit fixtures (`uk`), and listing and product copy in `docs/store/uk/`. Terms: `locales/uk/TERMS.md`; reviewed warnings: `locales/uk/REVIEW.json`.
+Ukrainian (`uk`, script `Cyrl`) was released together with Russian and Polish in commit `d6ab7b8`. It covers every namespace (3,022 entries), the six public pages and PWA manifest under `public/uk/`, the account-deletion form (`/account/delete?lang=uk`), server push text, iOS (`uk.lproj`) and Android (`values-uk`) resources, StoreKit fixtures (`uk`), and listing and product copy in `docs/store/uk/`. Terms: `locales/uk/TERMS.md`; reviewed warnings: `locales/uk/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Ukrainian speaker has reviewed it**, nor the legal pages.
 

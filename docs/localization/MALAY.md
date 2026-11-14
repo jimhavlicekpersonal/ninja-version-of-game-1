@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ms)
 
 # Malay translation
 
-Malay (`ms`, script `Latn`) is released in commit `RELEASE_COMMIT`. It is served to `ms` devices with any region (`ms-MY`, `ms-SG`, `ms-BN`). It covers every namespace (2,708 strings in the measured pack), the public pages and PWA manifest under `public/ms/`, the account-deletion form (`/account/delete?lang=ms`), and the store copy in `docs/store/ms/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/ms/TERMS.md`; reviewed warnings: `locales/ms/REVIEW.json`.
+Malay (`ms`, script `Latn`) is released in commit `d6ab7b8`. It is served to `ms` devices with any region (`ms-MY`, `ms-SG`, `ms-BN`). It covers every namespace (2,708 strings in the measured pack), the public pages and PWA manifest under `public/ms/`, the account-deletion form (`/account/delete?lang=ms`), and the store copy in `docs/store/ms/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/ms/TERMS.md`; reviewed warnings: `locales/ms/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Malay speaker has reviewed it**, nor the legal pages.
 

@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.sl)
 
 # Slovenian translation
 
-Slovenian (`sl`, script `Latn`) was released with Czech and Slovak in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries; 2,708 built strings), the six public pages and PWA manifest under `public/sl/`, and the store, native and server text in `docs/store/sl/` (`LOCALE.json`, `LISTING.md`), which the release integration wires into the account-deletion form (`/account/delete?lang=sl`), push text, iOS/Android resources and StoreKit fixtures. Terms: `locales/sl/TERMS.md`; reviewed warnings: `locales/sl/REVIEW.json`.
+Slovenian (`sl`, script `Latn`) was released with Czech and Slovak in commit `d6ab7b8`. It covers every namespace (3,022 entries; 2,708 built strings), the six public pages and PWA manifest under `public/sl/`, and the store, native and server text in `docs/store/sl/` (`LOCALE.json`, `LISTING.md`), which the release integration wires into the account-deletion form (`/account/delete?lang=sl`), push text, iOS/Android resources and StoreKit fixtures. Terms: `locales/sl/TERMS.md`; reviewed warnings: `locales/sl/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Slovenian speaker has reviewed it**, nor the legal pages.
 

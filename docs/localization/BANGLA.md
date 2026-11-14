@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.bn)
 
 # Bangla translation
 
-Bangla (`bn`, script `Beng`, left to right) was released in commit `RELEASE_COMMIT`. It is served to `bn`, `bn-BD` and `bn-IN` devices and covers every namespace (`boot` 17, `ui` 152, `data` 669, `messages` 1,867, `pages` 314 = 3,019 entries), the six public pages and PWA manifest under `public/bn/`, the account-deletion form (`/account/delete?lang=bn`), and listing and product copy in `docs/store/bn/` (`LISTING.md`, `LOCALE.json`). Server push text, iOS/Android resources and StoreKit fixtures are part of the integration in `RELEASE_COMMIT`. Terms: `locales/bn/TERMS.md`; reviewed warnings: `locales/bn/REVIEW.json`.
+Bangla (`bn`, script `Beng`, left to right) was released in commit `d6ab7b8`. It is served to `bn`, `bn-BD` and `bn-IN` devices and covers every namespace (`boot` 17, `ui` 152, `data` 669, `messages` 1,867, `pages` 314 = 3,019 entries), the six public pages and PWA manifest under `public/bn/`, the account-deletion form (`/account/delete?lang=bn`), and listing and product copy in `docs/store/bn/` (`LISTING.md`, `LOCALE.json`). Server push text, iOS/Android resources and StoreKit fixtures are part of the integration in `d6ab7b8`. Terms: `locales/bn/TERMS.md`; reviewed warnings: `locales/bn/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Bangla speaker has reviewed it**, nor the legal pages.
 

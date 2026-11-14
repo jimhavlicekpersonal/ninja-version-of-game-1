@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ta)
 
 # Tamil translation
 
-Tamil (`ta`, script `Taml`, left to right, wave 3) is complete in every namespace (`boot`, `ui`, `data`, `messages`, `pages`), with the six public pages and PWA manifest under `public/ta/` and listing and store-integration copy in `docs/store/ta/` (`LISTING.md`, `LOCALE.json`), added in `RELEASE_COMMIT`. Terms: `locales/ta/TERMS.md`; reviewed warnings: `locales/ta/REVIEW.json`.
+Tamil (`ta`, script `Taml`, left to right, wave 3) is complete in every namespace (`boot`, `ui`, `data`, `messages`, `pages`), with the six public pages and PWA manifest under `public/ta/` and listing and store-integration copy in `docs/store/ta/` (`LISTING.md`, `LOCALE.json`), added in `d6ab7b8`. Terms: `locales/ta/TERMS.md`; reviewed warnings: `locales/ta/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks. **No native Tamil speaker has reviewed it**, nor the legal pages.
 

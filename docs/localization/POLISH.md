@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.pl)
 
 # Polish translation
 
-Polish (`pl`, script `Latn`) was released together with Russian and Ukrainian in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries), the six public pages and PWA manifest under `public/pl/`, the account-deletion form (`/account/delete?lang=pl`), server push text, iOS (`pl.lproj`) and Android (`values-pl`) resources, StoreKit fixtures (`pl`), and listing and product copy in `docs/store/pl/`. Terms: `locales/pl/TERMS.md`; reviewed warnings: `locales/pl/REVIEW.json`.
+Polish (`pl`, script `Latn`) was released together with Russian and Ukrainian in commit `d6ab7b8`. It covers every namespace (3,022 entries), the six public pages and PWA manifest under `public/pl/`, the account-deletion form (`/account/delete?lang=pl`), server push text, iOS (`pl.lproj`) and Android (`values-pl`) resources, StoreKit fixtures (`pl`), and listing and product copy in `docs/store/pl/`. Terms: `locales/pl/TERMS.md`; reviewed warnings: `locales/pl/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Polish speaker has reviewed it**, nor the legal pages.
 

@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ml)
 
 # Malayalam translation
 
-Malayalam (`ml`, script `Mlym`, left to right, wave 3) is complete in every namespace (`boot`, `ui`, `data`, `messages`, `pages`), with the six public pages and PWA manifest under `public/ml/` and listing and store-integration copy in `docs/store/ml/` (`LISTING.md`, `LOCALE.json`), added in `RELEASE_COMMIT`. Terms: `locales/ml/TERMS.md`; reviewed warnings: `locales/ml/REVIEW.json`.
+Malayalam (`ml`, script `Mlym`, left to right, wave 3) is complete in every namespace (`boot`, `ui`, `data`, `messages`, `pages`), with the six public pages and PWA manifest under `public/ml/` and listing and store-integration copy in `docs/store/ml/` (`LISTING.md`, `LOCALE.json`), added in `d6ab7b8`. Terms: `locales/ml/TERMS.md`; reviewed warnings: `locales/ml/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks. **No native Malayalam speaker has reviewed it**, nor the legal pages.
 

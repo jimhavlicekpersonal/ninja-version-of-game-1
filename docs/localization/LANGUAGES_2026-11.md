@@ -7,7 +7,7 @@ status: implemented_in_repo_release_checks_remain
 
 # The 30 languages of 2026-11-14
 
-Every target language except Arabic was translated on 2026-11-13/14 and integrated in `RELEASE_COMMIT`: game text (all five namespaces, 3,022 entries each), the six public pages and manifest, the account-deletion form, server push text, the legal-page fallback, iOS `InfoPlist.strings` and `CFBundleLocalizations`, Android `values-<code>` and `locales_config.xml` (plus the legacy `values-iw` and `values-in` folders older Android devices use for Hebrew and Indonesian), store copy in `docs/store/<code>/` and one release test for all of them, `tests/locales/languages-2026-11.test.ts`.
+Every target language except Arabic was translated on 2026-11-13/14 and integrated in `d6ab7b8`: game text (all five namespaces, 3,022 entries each), the six public pages and manifest, the account-deletion form, server push text, the legal-page fallback, iOS `InfoPlist.strings` and `CFBundleLocalizations`, Android `values-<code>` and `locales_config.xml` (plus the legacy `values-iw` and `values-in` folders older Android devices use for Hebrew and Indonesian), store copy in `docs/store/<code>/` and one release test for all of them, `tests/locales/languages-2026-11.test.ts`.
 
 **Every translation is AI-written. No native speaker has reviewed any of them, the legal pages included.** Each language's `locales/<code>/REVIEW.json` says so (`humanNativeReview: false`) and lists the entries left identical to English; `locales/<code>/TERMS.md` records its term choices. Wave 3 (the Indic and African languages) is where machine translation is weakest and native review matters most.
 

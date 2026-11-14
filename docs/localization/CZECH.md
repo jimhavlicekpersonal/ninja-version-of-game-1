@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.cs)
 
 # Czech translation
 
-Czech (`cs`, script `Latn`) was released with Slovak and Slovenian in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries; 2,708 built strings), the six public pages and PWA manifest under `public/cs/`, and the store, native and server text in `docs/store/cs/` (`LOCALE.json`, `LISTING.md`), which the release integration wires into the account-deletion form (`/account/delete?lang=cs`), push text, iOS/Android resources and StoreKit fixtures. Terms: `locales/cs/TERMS.md`; reviewed warnings: `locales/cs/REVIEW.json`.
+Czech (`cs`, script `Latn`) was released with Slovak and Slovenian in commit `d6ab7b8`. It covers every namespace (3,022 entries; 2,708 built strings), the six public pages and PWA manifest under `public/cs/`, and the store, native and server text in `docs/store/cs/` (`LOCALE.json`, `LISTING.md`), which the release integration wires into the account-deletion form (`/account/delete?lang=cs`), push text, iOS/Android resources and StoreKit fixtures. Terms: `locales/cs/TERMS.md`; reviewed warnings: `locales/cs/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Czech speaker has reviewed it**, nor the legal pages.
 

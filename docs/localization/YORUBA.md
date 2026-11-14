@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.yo)
 
 # Yoruba translation
 
-Yoruba (`yo`, script `Latn`) covers every namespace (2,708 strings in `boot`, `data`, `messages`, `pages` and `ui`), the public pages and PWA manifest under `public/yo/`, and listing and product copy in `docs/store/yo/` (added in `RELEASE_COMMIT`). Terms: `locales/yo/TERMS.md`; reviewed warnings: `locales/yo/REVIEW.json` (67 English-identical entries reviewed). `locales/languages.json` marks it `appStore: false`: App Store Connect offers no Yoruba listing language, so it ships as a Google Play listing and an in-game language.
+Yoruba (`yo`, script `Latn`) covers every namespace (2,708 strings in `boot`, `data`, `messages`, `pages` and `ui`), the public pages and PWA manifest under `public/yo/`, and listing and product copy in `docs/store/yo/` (added in `d6ab7b8`). Terms: `locales/yo/TERMS.md`; reviewed warnings: `locales/yo/REVIEW.json` (67 English-identical entries reviewed). `locales/languages.json` marks it `appStore: false`: App Store Connect offers no Yoruba listing language, so it ships as a Google Play listing and an in-game language.
 
 The translation is AI-written and validated by the repository checks below. **No native Yoruba speaker has reviewed it**, nor the legal pages.
 

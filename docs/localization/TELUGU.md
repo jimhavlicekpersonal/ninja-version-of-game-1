@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.te)
 
 # Telugu translation
 
-Telugu (`te`, script `Telu`, left to right, wave 3) is complete in every namespace (`boot`, `ui`, `data`, `messages`, `pages`), with the six public pages and PWA manifest under `public/te/` and listing and store-integration copy in `docs/store/te/` (`LISTING.md`, `LOCALE.json`), added in `RELEASE_COMMIT`. Terms: `locales/te/TERMS.md`; reviewed warnings: `locales/te/REVIEW.json`.
+Telugu (`te`, script `Telu`, left to right, wave 3) is complete in every namespace (`boot`, `ui`, `data`, `messages`, `pages`), with the six public pages and PWA manifest under `public/te/` and listing and store-integration copy in `docs/store/te/` (`LISTING.md`, `LOCALE.json`), added in `d6ab7b8`. Terms: `locales/te/TERMS.md`; reviewed warnings: `locales/te/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks. **No native Telugu speaker has reviewed it**, nor the legal pages.
 

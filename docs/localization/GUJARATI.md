@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.gu)
 
 # Gujarati translation
 
-Gujarati (`gu`, script `Gujr`, left to right) was released in commit `RELEASE_COMMIT`. It covers every namespace (3,019 entries in `npm run i18n:check -- gu`) and the six public pages and PWA manifest under `public/gu/`; the release commit wires up the account-deletion form (`/account/delete?lang=gu`), server push text, iOS and Android resources and StoreKit fixtures from `docs/store/gu/LOCALE.json`, next to the listing copy in `docs/store/gu/LISTING.md`. Terms: `locales/gu/TERMS.md`; reviewed warnings: `locales/gu/REVIEW.json`.
+Gujarati (`gu`, script `Gujr`, left to right) was released in commit `d6ab7b8`. It covers every namespace (3,019 entries in `npm run i18n:check -- gu`) and the six public pages and PWA manifest under `public/gu/`; the release commit wires up the account-deletion form (`/account/delete?lang=gu`), server push text, iOS and Android resources and StoreKit fixtures from `docs/store/gu/LOCALE.json`, next to the listing copy in `docs/store/gu/LISTING.md`. Terms: `locales/gu/TERMS.md`; reviewed warnings: `locales/gu/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Gujarati speaker has reviewed it**, nor the legal pages.
 

@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.ru)
 
 # Russian translation
 
-Russian (`ru`, script `Cyrl`) was released together with Ukrainian and Polish in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries), the six public pages and PWA manifest under `public/ru/`, the account-deletion form (`/account/delete?lang=ru`), server push text, iOS (`ru.lproj`) and Android (`values-ru`) resources, StoreKit fixtures (`ru`), and listing and product copy in `docs/store/ru/`. Terms: `locales/ru/TERMS.md`; reviewed warnings: `locales/ru/REVIEW.json`.
+Russian (`ru`, script `Cyrl`) was released together with Ukrainian and Polish in commit `d6ab7b8`. It covers every namespace (3,022 entries), the six public pages and PWA manifest under `public/ru/`, the account-deletion form (`/account/delete?lang=ru`), server push text, iOS (`ru.lproj`) and Android (`values-ru`) resources, StoreKit fixtures (`ru`), and listing and product copy in `docs/store/ru/`. Terms: `locales/ru/TERMS.md`; reviewed warnings: `locales/ru/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Russian speaker has reviewed it**, nor the legal pages.
 

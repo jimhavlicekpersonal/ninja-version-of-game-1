@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.he)
 
 # Hebrew translation
 
-Hebrew (`he`, script `Hebr`, right to left) was released in commit `RELEASE_COMMIT`. It is served to `he`, `he-*` and the old code `iw` (an alias in `ui/i18n.ts`) and covers every namespace (3,019 entries, 2,705 strings), the public pages and PWA manifest under `public/he/`, and listing and integration copy in `docs/store/he/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/he/TERMS.md`; reviewed warnings: `locales/he/REVIEW.json`.
+Hebrew (`he`, script `Hebr`, right to left) was released in commit `d6ab7b8`. It is served to `he`, `he-*` and the old code `iw` (an alias in `ui/i18n.ts`) and covers every namespace (3,019 entries, 2,705 strings), the public pages and PWA manifest under `public/he/`, and listing and integration copy in `docs/store/he/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/he/TERMS.md`; reviewed warnings: `locales/he/REVIEW.json`.
 
 The translation is AI-written and validated only by the repository checks below. **No native Hebrew speaker has reviewed it**, nor the legal pages.
 

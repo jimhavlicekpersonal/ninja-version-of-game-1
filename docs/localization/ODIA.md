@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.or)
 
 # Odia translation
 
-Odia (`or`, script `Orya`, left to right) was released in commit `RELEASE_COMMIT`. It is served to `or` and `or-IN` devices and covers every namespace (`boot` 17, `ui` 152, `data` 669, `messages` 1,867, `pages` 314 = 3,019 entries), the six public pages and PWA manifest under `public/or/`, the account-deletion form (`/account/delete?lang=or`), and listing and product copy in `docs/store/or/` (`LISTING.md`, `LOCALE.json`). Server push text, iOS/Android resources and StoreKit fixtures are part of the integration in `RELEASE_COMMIT`. Terms: `locales/or/TERMS.md`; reviewed warnings: `locales/or/REVIEW.json`.
+Odia (`or`, script `Orya`, left to right) was released in commit `d6ab7b8`. It is served to `or` and `or-IN` devices and covers every namespace (`boot` 17, `ui` 152, `data` 669, `messages` 1,867, `pages` 314 = 3,019 entries), the six public pages and PWA manifest under `public/or/`, the account-deletion form (`/account/delete?lang=or`), and listing and product copy in `docs/store/or/` (`LISTING.md`, `LOCALE.json`). Server push text, iOS/Android resources and StoreKit fixtures are part of the integration in `d6ab7b8`. Terms: `locales/or/TERMS.md`; reviewed warnings: `locales/or/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Odia speaker has reviewed it**, nor the legal pages.
 

@@ -9,7 +9,7 @@ measurements: SPANISH_SIZE.json (measured.sk)
 
 # Slovak translation
 
-Slovak (`sk`, script `Latn`) was released with Czech and Slovenian in commit `RELEASE_COMMIT`. It covers every namespace (3,022 entries; 2,708 built strings), the six public pages and PWA manifest under `public/sk/`, and the store, native and server text in `docs/store/sk/` (`LOCALE.json`, `LISTING.md`), which the release integration wires into the account-deletion form (`/account/delete?lang=sk`), push text, iOS/Android resources and StoreKit fixtures. Terms: `locales/sk/TERMS.md`; reviewed warnings: `locales/sk/REVIEW.json`.
+Slovak (`sk`, script `Latn`) was released with Czech and Slovenian in commit `d6ab7b8`. It covers every namespace (3,022 entries; 2,708 built strings), the six public pages and PWA manifest under `public/sk/`, and the store, native and server text in `docs/store/sk/` (`LOCALE.json`, `LISTING.md`), which the release integration wires into the account-deletion form (`/account/delete?lang=sk`), push text, iOS/Android resources and StoreKit fixtures. Terms: `locales/sk/TERMS.md`; reviewed warnings: `locales/sk/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Slovak speaker has reviewed it**, nor the legal pages.
 
