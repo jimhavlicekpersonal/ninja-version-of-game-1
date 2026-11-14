@@ -11,7 +11,7 @@ import { GameController } from './gameplay/control/controller';
 import { openGameDb, reconnected } from './backend/persist/idb';
 import { IdbSaveStore, MemorySaveStore, SANDBOX_SAVE_KEY, SaveConflictError, type SaveStore } from './backend/persist/saveStore';
 import { registerServiceWorker, updateWebApp } from './backend/pwa/register';
-import { Keys, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, thumbnailDataUrl, trimTextureCaches, villageTexture } from './presentation/render/assets';
+import { Keys, buildingTexture, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, thumbnailDataUrl, trimTextureCaches, villageTexture } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
@@ -472,6 +472,11 @@ async function boot(): Promise<void> {
     analytics,
     store,
     thumbnail: (type) => thumbOf(buildingThumbKey(game.textures, type)),
+    // Art F26: the building sheet's head and its next-level picture, painted per level on first use.
+    levelThumbnail: (type, level) => {
+      const size = controller.data.buildings[type]?.size;
+      return size ? thumbOf(buildingTexture(game.textures, type, Math.max(1, level), size)) : null;
+    },
     // The Keep at the player's own level in each look (Store → Looks), painted on first use.
     skinThumbnail: (skin) => {
       const keep = controller.state.buildings.find((b) => controller.data.buildings[b.type]?.category === 'hall');
