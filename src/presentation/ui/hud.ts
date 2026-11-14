@@ -22,6 +22,7 @@ import { activeOffers } from '../../gameplay/sim/offers';
 import { currentTasks, unlockedTier } from '../../gameplay/sim/pass';
 import { ArmyUi } from './armyUi';
 import { costChips, RES_LABEL } from './chips';
+import { refusalText } from './refusalText';
 import { PROVIDER_NAMES, storeAgeSignal } from '../../backend/platform/auth';
 import type { AgeBand } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
@@ -931,6 +932,9 @@ export class Hud {
     getCode.addEventListener('click', () => void conn.deletionCode().then((c) => this.showDeletionCode(codeBox, c, webForm), (e: Error) => this.toast(i18nMessage(e.message, true), 'error')));
     const others = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.sign_out_other_devices_2e75111bfa"));
     others.addEventListener('click', () => void this.signOutOthers());
+    // Backend A16: sign out just this device (refused while it holds the account's last key).
+    const signOutHere = h('button', { class: 'btn ghost', type: 'button', 'data-id': 'sign-out-device' }, t('account.signOutDevice'));
+    signOutHere.addEventListener('click', () => void this.signOutDevice());
     const noticesBox = h('div', {});
     // Blocked players (blocked from Alliance chat or the member list), with Unblock.
     const blockedList = h('div', { class: 'events' });
@@ -1007,6 +1011,7 @@ export class Hud {
       conn.server?.features.includes('deletion-codes') ? h('div', { class: 'actions' }, getCode) : null,
       codeBox,
       conn.server?.features.includes('sessions') ? h('div', {}, h('p', { class: 'muted small' }, i18nText("ui.lost_a_phone_or_signed_in_somewhere_yo_2e6f84a9c3")), h('div', { class: 'actions' }, others)) : null,
+      conn.canSignOutDevice ? h('div', {}, h('p', { class: 'muted small' }, t('account.signOutDevice.note')), h('div', { class: 'actions' }, signOutHere)) : null,
       conn.server?.features.includes('notices') ? h('div', {}, h('label', { class: 'muted small' }, i18nText("ui.messages_from_our_moderators_71bfb2b01a")), noticesBox) : null,
     );
     details.addEventListener('toggle', () => {
@@ -1068,6 +1073,20 @@ export class Hud {
     }
   }
 
+  /** Backend A16: sign out this device after a confirm step; the server's 409 (last key) is explained, nothing changes. */
+  private async signOutDevice(): Promise<void> {
+    const ok = await this.confirm(t('account.signOutDevice.title'), t('account.signOutDevice.body'), t('account.signOutDevice.confirm'), true, i18nText("ui.cancel_19766ed6cc"));
+    if (!ok) return;
+    try {
+      await this.deps.connection.signOutDevice();
+      this.toast(t('account.signOutDevice.done'), 'success');
+      this.closeAllModals();
+    } catch (e) {
+      const lastKey = (e as { status?: number }).status === 409;
+      this.toast(lastKey ? t('account.signOutDevice.lastKey') : i18nMessage((e as Error).message, true), 'error');
+    }
+  }
+
   /** Moderation notices (re-audit, EU DSA): what was decided, why, and how to appeal. */
   private drawNotices(box: HTMLElement, list: import('../../backend/net/protocol').NoticeView[]): void {
     clear(box);
@@ -1089,6 +1108,7 @@ export class Hud {
       testServer: env && env !== 'production' ? env : null,
       notices: conn.notices,
       refused: conn.village?.refused ?? 0,
+      refusedList: conn.refusedActions.map((a) => ({ at: a.at, type: a.type, code: a.code, name: this.refusedSubject(a) })),
       event: DailyUi.chipParts(this.c.now(), this.c).text,
       recent: this.recentToasts,
       online: conn.online,
@@ -1097,6 +1117,14 @@ export class Hud {
     const unread = conn.notices.filter((n) => !n.read).map((n) => n.id);
     if (unread.length) void conn.markNoticesRead(unread).catch(() => undefined);
     this.modal(t('news.title'), body, [], 'normal', () => this.updateBadges());
+  }
+
+  /** The building or warrior a refused action was about, by its display name ('' when unknown). */
+  private refusedSubject(a: { building?: string; troop?: string }): string {
+    const gd = localizedData(this.c.data);
+    if (a.building) return gd.buildings[a.building]?.name ?? '';
+    if (a.troop) return gd.troops[a.troop]?.name ?? '';
+    return '';
   }
 
   /** GLOBAL-009: actions the server refused because the village changed elsewhere are told once, then listed in News. */
@@ -1705,7 +1733,7 @@ export class Hud {
     const ok = await this.confirm(i18nText("ui.cancel_8bda56c90a"), i18nText("ui.you_ll_get_back_of_what_you_paid_59199c43a7", { arg1: pct }), i18nText("ui.cancel_upgrade_fd0250ef15"), true);
     if (!ok) return;
     const r = this.c.dispatch({ type: 'cancel', id: b.id });
-    if (!r.ok) this.toast(i18nMessage(r.message, true), 'error');
+    if (!r.ok) this.toast(refusalText(r), 'error');
   }
 
   // ------------------------------------------------------------ shop

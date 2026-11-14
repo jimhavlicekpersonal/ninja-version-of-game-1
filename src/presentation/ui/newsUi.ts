@@ -1,7 +1,8 @@
 /**
  * News and messages (retention audit G17): one place for what the game and its operators said, with no new server
  * protocol. It lists the operators' notice (`/v1/hello` `notice`), the moderators' notices (`Connection.notices`), the
- * running or next event, actions the server refused (GLOBAL-009) and the messages this session showed as toasts.
+ * running or next event, actions the server refused (GLOBAL-009: the count and, since 2026-11-14, which ones and why) and
+ * the messages this session showed as toasts.
  * The rail badge counts only what is new and was not seen as it happened: an unread moderator notice or a new
  * operators' notice.
  */
@@ -22,11 +23,62 @@ interface NewsSource {
   notices: readonly { id: string; at: number; kind: string; text: string; read: boolean }[];
   /** Actions the server refused since this start (the village had changed elsewhere). */
   refused: number;
+  /**
+   * Which ones, newest last (`Connection.refusedActions`): the command type, the server's reason code and the
+   * display name of the building or warrior it was about ('' when unknown).
+   */
+  refusedList?: readonly RefusedRow[];
   /** The running or next event, in words. */
   event: string;
   /** Toasts this session, newest first. */
   recent: readonly NewsItem[];
   online: boolean;
+}
+
+export interface RefusedRow {
+  at: number;
+  type: string;
+  code: string;
+  name: string;
+}
+
+/** Command types News names on their own; anything else reads "An action in your village". */
+const NAMED_ACTIONS: Record<string, 'place' | 'upgrade' | 'cancel' | 'train' | 'research'> = {
+  place: 'place',
+  upgrade: 'upgrade',
+  temper: 'upgrade',
+  cancel: 'cancel',
+  train: 'train',
+  cancelTraining: 'train',
+  research: 'research',
+  cancelResearch: 'research',
+};
+
+/** Reason codes with their own plain-language sentence; the rest read as "the village had already changed". */
+const REASONS: Record<string, string> = {
+  NOT_ENOUGH_RESOURCES: 'resources',
+  NOT_ENOUGH_MOONSTONES: 'resources',
+  NO_FREE_BUILDER: 'builder',
+  MAX_LEVEL: 'maxLevel',
+  NOT_FOUND: 'gone',
+  BUSY: 'busy',
+  LIMIT_REACHED: 'limit',
+  LOCKED: 'locked',
+  HALL_LEVEL_TOO_LOW: 'locked',
+  STORAGE_FULL: 'storage',
+  ARMY_FULL: 'army',
+};
+
+/** What a refused action was, in words ("Upgrade Kunai Tower"). */
+export function refusedAction(row: Pick<RefusedRow, 'type' | 'name'>): string {
+  if (row.type === 'trainArmy') return t('news.refused.army');
+  const kind = NAMED_ACTIONS[row.type];
+  return kind && row.name ? t(`news.refused.${kind}`, { name: row.name }) : t('news.refused.other');
+}
+
+/** Why the server refused it, in plain language. */
+export function refusedReason(code: string): string {
+  return t(`news.reason.${REASONS[code] ?? 'changed'}`);
 }
 
 const SEEN_KEY = 'tk.newsSeen';
@@ -79,7 +131,14 @@ export function newsBody(src: NewsSource): HTMLElement {
     ...src.notices.slice(0, 10).map((n) => h('div', { class: `log-row notice${n.read ? '' : ' unread'}` }, h('div', {}, h('div', { class: 'muted small' }, dateText(n.at)), h('div', { dir: 'auto' }, messageText(n.text))))),
   );
   section(t('rail.Events'), h('p', {}, src.event));
-  section(t('news.village'), src.refused > 0 ? h('p', { class: 'note' }, t('sync.refused', { n: src.refused })) : null);
+  section(
+    t('news.village'),
+    src.refused > 0 ? h('p', { class: 'note' }, t('sync.refused', { n: src.refused })) : null,
+    // GLOBAL-009: which actions, newest first, with the reason in plain words.
+    ...[...(src.refusedList ?? [])].reverse().map((r) =>
+      h('div', { class: 'log-row news-refused', 'data-code': r.code }, h('div', {}, h('b', { dir: 'auto' }, refusedAction(r)), h('div', { class: 'muted small' }, refusedReason(r.code))), h('span', { class: 'muted small' }, dateText(r.at, { timeStyle: 'short' }))),
+    ),
+  );
   section(
     t('news.recent'),
     ...src.recent.slice(0, 20).map((m) => h('div', { class: `log-row news-${m.kind}` }, h('div', { dir: 'auto' }, m.text), h('span', { class: 'muted small' }, dateText(m.at, { timeStyle: 'short' })))),

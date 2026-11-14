@@ -20,6 +20,7 @@ import { troopUnlock, trainingSpeed } from '../../gameplay/sim/army';
 import { armyView, researchRow, researchTopUp, trainRow, type ArmyView, type BuildState, type QueueStack, type TrainRow } from '../../gameplay/sim/armyView';
 import { dismissPreview, hallLevel, lastAttackArmy, lodgeTroops, practiceArmy, researchSkipQuote, topUpQuote } from '../../gameplay/sim/village';
 import { costChips, RES_LABEL } from './chips';
+import { refusalText } from './refusalText';
 import { clear, h, icon } from './dom';
 import type { EconomyUi, UiKit } from './economyUi';
 import { formatDuration, formatNumber } from './format';
@@ -450,7 +451,7 @@ export class ArmyUi {
     const name = gd.troops[st.troop]?.name ?? st.troop;
     const cancel = (count: number) => {
       const r = c.dispatch({ type: 'cancelTraining', index: st.lastIndex, troop: st.troop, count });
-      if (!r.ok) this.d.kit.toast(i18nMessage(r.message, true), 'error');
+      if (!r.ok) this.d.kit.toast(refusalText(r), 'error');
       redraw();
     };
     const one = h('button', { class: 'btn ghost', type: 'button', 'aria-label': i18nText("ui.cancel_one_68bad9c098", { arg1: name }) }, '−1');
@@ -538,7 +539,7 @@ export class ArmyUi {
         void this.d.kit.confirm(i18nText("ui.cancel_research_a54ee5db99"), i18nText("ui.you_ll_get_back_of_what_you_paid_59199c43a7", { arg1: Math.round(gd.economy.cancelRefundFraction * 100) }), i18nText("ui.cancel_research_8c536089ad"), true).then((ok) => {
           if (!ok) return;
           const r = c.dispatch({ type: 'cancelResearch', troop: active.troop });
-          if (!r.ok) this.d.kit.toast(i18nMessage(r.message, true), 'error');
+          if (!r.ok) this.d.kit.toast(refusalText(r), 'error');
           redraw();
         });
       });
