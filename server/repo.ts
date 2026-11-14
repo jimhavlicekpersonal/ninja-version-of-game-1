@@ -653,6 +653,12 @@ export interface PruneCutoffs {
   noncesBefore?: number;
   /** Store notifications received before this go (backend A29: kept long enough to order late deliveries). */
   storeNotificationsBefore?: number;
+  /**
+   * Backend A18: rows are deleted in batches of this many (each statement short, far under the statement
+   * timeout), until this wall-clock time (ms); whatever is left goes in the next run. Memory ignores both.
+   */
+  batchSize?: number;
+  deadline?: number;
   /** Command log lines before this time are deleted (the ledger is kept). */
   commandsBefore?: number;
   /** Remembered answers to Idempotency-Keys from before this time are forgotten. */
@@ -682,6 +688,8 @@ export interface OpponentQuery {
    */
   lockedSince: number | null;
   limit: number;
+  /** Backend A19: the honor to search outward from (Postgres keeps the `limit` nearest); the middle of the window if absent. */
+  pivot?: number;
 }
 
 /** Players, sessions, staff tools, account protections and deletion. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
@@ -739,6 +747,12 @@ export interface PlayerStore {
   revokeOtherTokens(playerId: string, keepHash: string): Promise<number>;
   /** Delete extra device tokens last used (or made) before this time; how many. */
   pruneTokens(unusedBefore: number): Promise<number>;
+  /**
+   * Backend A23: ids of anonymous accounts last seen before `seenBefore` that nothing else holds: no
+   * purchase, no linked sign-in, not staff, not suspended, and no server-held village above `maxKeep`.
+   * Oldest first, at most `limit`.
+   */
+  dormantPlayers(seenBefore: number, maxKeep: number, limit: number): Promise<string[]>;
   /**
    * Backend A16: give the token `oldHash` of this player the hash `newHash` (rotation), whether it is the
    * account's first token or another device's. False when the player holds no such token.
@@ -800,6 +814,8 @@ export interface PurchaseStore {
   topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]>;
   /** 1 + players on the Power Ranking above this power. */
   powerRankOf(power: number, minBattles: number, beta: number): Promise<number>;
+  /** Backend A20: every Power Ranking value (one scan, cached by the core for a minute). */
+  powerValues(minBattles: number, beta: number): Promise<number[]>;
   /** Every ranked player (with a base), to rebuild a leaderboard index. */
   rankedPlayers(): Promise<{ id: string; trophies: number; createdAt: number }[]>;
 }
@@ -1715,6 +1731,9 @@ export class MemoryRepo implements Repo {
       .slice(0, limit)
       .map(clone);
   }
+  async powerValues(minBattles: number, beta: number): Promise<number[]> {
+    return [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles).map((p) => this.powerOf(p, beta));
+  }
   async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
     return 1 + [...this.players.values()].filter((p) => p.base && !p.bannedUntil && (p.ratings?.attack.battles ?? 0) >= minBattles && this.powerOf(p, beta) > power).length;
   }
@@ -1939,6 +1958,22 @@ export class MemoryRepo implements Repo {
     if (!t) return false;
     t.tokenHash = newHash;
     return true;
+  }
+  async dormantPlayers(seenBefore: number, maxKeep: number, limit: number): Promise<string[]> {
+    return [...this.players.values()]
+      .filter(
+        (p) =>
+          p.lastSeenAt < seenBefore &&
+          p.id !== DELETED_PLAYER.id &&
+          !p.staff &&
+          !(p.bannedUntil ?? 0) &&
+          !this.purchaseRows.some((x) => x.playerId === p.id) &&
+          !this.linkRows.some((l) => l.playerId === p.id) &&
+          (!this.villageRows.has(p.id) || p.hallLevel <= maxKeep),
+      )
+      .sort((a, b) => a.lastSeenAt - b.lastSeenAt)
+      .slice(0, limit)
+      .map((p) => p.id);
   }
   async addNonce(nonce: string, expiresAt: number): Promise<void> {
     this.nonceRows.set(nonce, expiresAt);

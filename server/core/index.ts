@@ -77,7 +77,7 @@ export function createCore(ctx: ServerContext) {
     gangWarAttack: gangWars.warAttack.bind(null, ctx),
     gangWarClaim: gangWars.claim.bind(null, ctx),
     /** Every few minutes: battle-day and 2-hours-left pushes (step 68). */
-    gangWarReminders: () => gangWars.gangWarReminders(ctx),
+    gangWarReminders: (stillHeld?: import('../jobs').StillHeld) => gangWars.gangWarReminders(ctx, stillHeld),
     /** Start-up: give players from before unique names their name key (step 59). */
     migrateNames: () => names.migrateNames(ctx),
     links: links.links.bind(null, ctx),
@@ -142,7 +142,8 @@ export function createCore(ctx: ServerContext) {
     raidAttack: groveRaid.raidAttack.bind(null, ctx),
     claimRaid: groveRaid.claimRaid.bind(null, ctx),
     /** Retention: old replays, tickets and unreferenced base versions. */
-    prune: () => retention.prune(ctx),
+    prune: (stillHeld?: import('../jobs').StillHeld) => retention.prune(ctx, stillHeld),
+    pruneDormant: (stillHeld?: import('../jobs').StillHeld) => retention.pruneDormant(ctx, stillHeld),
     /** Staff only (the admin API in server/app.ts). */
     admin: {
       deletionQueue: account.deletionQueue.bind(null, ctx),

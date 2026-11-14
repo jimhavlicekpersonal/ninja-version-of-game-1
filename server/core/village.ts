@@ -12,6 +12,7 @@
  * of the request that made them, and every resource change goes in the ledger.
  */
 import { capBaseLoot, layoutReset } from './pvp';
+import { contentHash } from '../contentHash';
 import { villageToBase } from '../../src/gameplay/sim/defense';
 import { deserialize, serialize, type SaveFile } from '../../src/gameplay/sim/save';
 import { BATTLE_COMMANDS, economyHash, PLAYER_COMMANDS } from '../../src/gameplay/sim/serverEconomy';
@@ -105,6 +106,8 @@ function view(row: VillageRow): VillageResponse {
 async function refreshBase(repo: Repo, ctx: ServerContext, me: { id: string; name: string }, state: VillageState, at: number): Promise<void> {
   const base = capBaseLoot(villageToBase(state, at, ctx.data, me.name), ctx.data);
   const player = await repo.getPlayer(me.id);
+  // Backend A17: most batches (a timer, an order) leave the raid base as it was: no second big row write.
+  if (player?.base && player.hallLevel === base.hallLevel && contentHash(player.base) === contentHash(base)) return;
   await repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), ...(player ? layoutReset(ctx, player, base) : {}) });
 }
 

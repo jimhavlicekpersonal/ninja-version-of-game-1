@@ -17,6 +17,7 @@
  *   scaled to their Keep (social.json gangWar.rewards). Honor never moves.
  * - Gang Rating (step 66): `rateTeams` once a war between two real Gangs ends.
  */
+import { requireLease, type StillHeld } from '../jobs';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import { newRating, rateTeams, type Rating } from '../../src/gameplay/sim/rating';
@@ -366,27 +367,33 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleSubmi
  * day begins, and when 2 hours are left (only those with attacks left). Each
  * once per war; players choose the type in Settings (gangWar).
  */
-export async function gangWarReminders(ctx: ServerContext): Promise<number> {
+export async function gangWarReminders(ctx: ServerContext, stillHeld?: StillHeld): Promise<number> {
   const t = ctx.now();
   let sent = 0;
   for (const w of await ctx.repo.activeWars(t, 500)) {
     const notified = { ...(w.notified ?? {}) };
-    const attacks = await ctx.repo.warAttacks(w.id);
-    const left = (id: string) => ctx.data.social.gangWar.attacksPerMember - attacks.filter((a) => a.attackerId === id).length;
-    if (!notified.battle && t >= w.prepEndsAt) {
-      notified.battle = true;
+    const battle = !notified.battle && t >= w.prepEndsAt;
+    const ending = !notified.ending && t >= w.endsAt - 2 * 3_600_000;
+    if (!battle && !ending) continue;
+    // Backend A21: still this instance's job, and the war marked before anything is pushed, so a run that
+    // outlived its lease never pushes the same reminder as the instance that took over.
+    await requireLease(stillHeld);
+    if (battle) notified.battle = true;
+    if (ending) notified.ending = true;
+    await ctx.repo.updateWar(w.id, { notified });
+    if (battle) {
       for (const side of [w.a, w.b]) if (!side.bot) notifyGang(ctx, side, 'The Gang War battle day has begun', `Attack ${(side === w.a ? w.b : w.a).name}: ${ctx.data.social.gangWar.attacksPerMember} attacks each. Relay strikes start from half your Gang's damage.`);
       sent++;
     }
-    if (!notified.ending && t >= w.endsAt - 2 * 3_600_000) {
-      notified.ending = true;
+    if (ending) {
+      const attacks = await ctx.repo.warAttacks(w.id);
+      const left = (id: string) => ctx.data.social.gangWar.attacksPerMember - attacks.filter((a) => a.attackerId === id).length;
       for (const side of [w.a, w.b]) {
         if (side.bot) continue;
         for (const e of side.roster) if (e.playerId && left(e.playerId) > 0) ctx.push.notify(e.playerId, { type: 'gangWar', title: '2 hours left in the Gang War', body: `You still have ${left(e.playerId)} attack${left(e.playerId) === 1 ? '' : 's'}.` });
       }
       sent++;
     }
-    if (notified.battle !== w.notified?.battle || notified.ending !== w.notified?.ending) await ctx.repo.updateWar(w.id, { notified });
   }
   return sent;
 }

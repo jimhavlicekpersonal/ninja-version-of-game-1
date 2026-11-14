@@ -4,6 +4,7 @@
  * attacker, near their trophies; the loot penalty for hitting lower halls;
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
+import { createHash } from 'node:crypto';
 import { heroAtKeep } from '../../src/gameplay/sim/heroes';
 import { rivalFor, rivalOutpostName } from '../../src/gameplay/sim/rivals';
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
@@ -346,7 +347,9 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   const locks = ctx.locks;
   for (const range of [data.ranks.matchTrophyRange, 200, 400, 1_000_000]) {
     // With external locks (Redis) the query skips its ticket scan; the lock is taken atomically below.
-    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20 });
+    // Backend A19: the search walks out from a pivot near the player's honor, moved a little per search.
+    const pivot = me.trophies + Math.round((pivotJitter(me.id, t, range) * 2 - 1) * Math.min(range, data.ranks.matchTrophyRange));
+    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20, pivot });
     const busy = await locks.lockedAmong(list.map((p) => p.id));
     const free = list.filter((p) => !busy.has(p.id) && legalFor(p));
     // Step 29: after the Keep window and power floor, the base whose expected score is nearest the target
@@ -775,16 +778,50 @@ export function layoutReset(ctx: ServerContext, me: Player, next: BaseLayout): {
 }
 
 /** Step 31: the Power Ranking, Attack Rating plus power (Keep), for players with enough rated attacks. */
+/** Backend A19: a number in [0, 1) from the player, the time and the window (no draw from ctx.random). */
+function pivotJitter(id: string, t: number, range: number): number {
+  return createHash('sha256').update(`${id}:${t}:${range}`).digest().readUInt32BE(0) / 2 ** 32;
+}
+
+/** Backend A20: how long the Power Ranking (top 100 and every value, for ranks) is reused. */
+export const POWER_BOARD_TTL_MS = 60_000;
+const powerBoards = new WeakMap<ServerContext, { at: number; top: Player[]; values: number[] }>();
+
+async function powerBoard(ctx: ServerContext): Promise<{ top: Player[]; values: number[] }> {
+  const def = ctx.data.ranks.rating;
+  const hit = powerBoards.get(ctx);
+  const t = ctx.now();
+  if (hit && t - hit.at < POWER_BOARD_TTL_MS && t >= hit.at) return hit;
+  const [top, values] = await Promise.all([ctx.repo.topByPower(100, def.powerBoardMinBattles, def.powerWeight), ctx.repo.powerValues(def.powerBoardMinBattles, def.powerWeight)]);
+  const board = { at: t, top, values: values.sort((a, b) => b - a) };
+  powerBoards.set(ctx, board);
+  return board;
+}
+
+/** 1 + values above `power` in a list sorted high to low. */
+function rankIn(values: number[], power: number): number {
+  let lo = 0;
+  let hi = values.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (values[mid]! > power) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo + 1;
+}
+
 export async function powerLeaderboard(ctx: ServerContext, me: Player, limit: number): Promise<PowerLeaderboardResponse> {
   const def = ctx.data.ranks.rating;
   const n = Math.max(1, Math.min(100, Number(limit) || 50));
-  const top = await ctx.repo.topByPower(n, def.powerBoardMinBattles, def.powerWeight);
+  // Backend A20: one scan a minute per instance instead of two per HUD open (the order is not indexable).
+  const board = await powerBoard(ctx);
+  const top = board.top.slice(0, n);
   const groveNames = new Map<string, string>();
   for (const p of top) if (p.groveId && !groveNames.has(p.groveId)) groveNames.set(p.groveId, (await ctx.repo.getGrove(p.groveId))?.name ?? '');
   const mine = me.ratings && me.ratings.attack.battles >= def.powerBoardMinBattles ? Math.round(powerRating(me.ratings.attack, me.hallLevel, def)) : null;
   return {
     players: top.map((p, i) => ({ rank: i + 1, name: p.name, power: Math.round(powerRating(ratingsOf(p, ctx.now(), ctx).attack, p.hallLevel, def)), hallLevel: p.hallLevel, grove: p.groveId ? groveNames.get(p.groveId) || null : null })),
-    me: mine === null ? null : { rank: await ctx.repo.powerRankOf(mine, def.powerBoardMinBattles, def.powerWeight), power: mine, battles: me.ratings!.attack.battles },
+    me: mine === null ? null : { rank: rankIn(board.values, mine), power: mine, battles: me.ratings!.attack.battles },
   };
 }
 

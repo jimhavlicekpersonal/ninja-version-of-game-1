@@ -96,3 +96,11 @@ groups:
         labels: { severity: warn }
         annotations:
           summary: 'More than 10 wrong staff tokens in 15 minutes: someone is guessing at /admin (check ADMIN_ALLOW_IPS and the request logs).'
+
+      # Backend A18: retention stopped (every run failing, or no instance holding the job).
+      - alert: RetentionStalled
+        expr: sum(increase(tk_retention_runs_total[26h])) == 0
+        for: 2h
+        labels: { severity: warn }
+        annotations:
+          summary: 'No retention run has finished for a day: replays, command logs and idempotency rows are piling up (check the retention job log lines).'

@@ -940,16 +940,25 @@ export class PgRepo implements Repo {
   }
 
   async findOpponents(q: OpponentQuery): Promise<Player[]> {
-    const r = await this.rows(
-      `select * from players p
-       where p.base is not null and p.banned_until = 0 and p.shield_until <= $1
+    // Backend A19: no `order by random()` over the whole window (it read and sorted every ranked player in
+    // the widest one). Two index walks from a pivot honor (players_match_trophies_idx, migration 0034), up
+    // and down, each stopping after `limit` players; the nearest to the pivot are kept. The core moves the
+    // pivot a little on each call, so repeated searches see different neighbours.
+    const pivot = Math.round(Math.min(q.maxTrophies, Math.max(q.minTrophies, q.pivot ?? (q.minTrophies + q.maxTrophies) / 2)));
+    const where = `p.base is not null and p.banned_until = 0 and p.shield_until <= $1
          and p.hall_level between $2 and $3 and p.trophies between $4 and $5
          and not (p.id = any($6::text[]))
-         and ($7::bigint is null or not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7))
-       order by random() limit $8`,
-      [q.now, q.minHall, q.maxHall, q.minTrophies, q.maxTrophies, q.excludeIds, q.lockedSince, q.limit],
+         and ($7::bigint is null or not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7))`;
+    const r = await this.rows(
+      `(select * from players p where ${where} and p.trophies >= $9 order by p.trophies asc limit $8)
+       union all
+       (select * from players p where ${where} and p.trophies < $9 order by p.trophies desc limit $8)`,
+      [q.now, q.minHall, q.maxHall, q.minTrophies, q.maxTrophies, q.excludeIds, q.lockedSince, q.limit, pivot],
     );
-    return r.map(toPlayer);
+    return r
+      .map(toPlayer)
+      .sort((a, b) => Math.abs(a.trophies - pivot) - Math.abs(b.trophies - pivot))
+      .slice(0, q.limit);
   }
 
   async topPlayers(limit: number): Promise<Player[]> {
@@ -970,6 +979,11 @@ export class PgRepo implements Repo {
 
   async topByPower(limit: number, minBattles: number, beta: number): Promise<Player[]> {
     return (await this.rows('select * from players where base is not null and banned_until = 0 and attack_battles >= $2 order by attack_rating + $3 * (greatest(hall_level, 1) - 1) desc, created_at asc limit $1', [limit, minBattles, beta])).map(toPlayer);
+  }
+
+  async powerValues(minBattles: number, beta: number): Promise<number[]> {
+    const r = await this.rows('select attack_rating + $2 * (greatest(hall_level, 1) - 1) as power from players where base is not null and banned_until = 0 and attack_battles >= $1', [minBattles, beta]);
+    return r.map((x) => Number(x.power));
   }
 
   async powerRankOf(power: number, minBattles: number, beta: number): Promise<number> {
@@ -1054,24 +1068,54 @@ export class PgRepo implements Repo {
     return (await this.rows('select defender_id from attacks where attacker_id = $1 and at > $2', [attackerId, since])).map((x) => String(x.defender_id));
   }
 
+  /**
+   * Backend A18: delete matching rows in short batches (by ctid), so no statement nears the statement
+   * timeout however much has piled up; stops at `deadline` (the rest goes next run). Returns rows deleted.
+   */
+  private async batchDelete(table: string, where: string, params: unknown[], c: PruneCutoffs): Promise<number> {
+    const size = Math.max(100, Math.floor(c.batchSize ?? 5000));
+    let total = 0;
+    for (;;) {
+      const r = await this.db.query(`delete from ${table} where ctid = any(array(select ctid from ${table} where ${where} limit ${size}))`, params);
+      const n = r.rowCount ?? 0;
+      total += n;
+      if (n < size || (c.deadline !== undefined && Date.now() > c.deadline)) return total;
+    }
+  }
+
   async prune(c: PruneCutoffs): Promise<PruneResult> {
-    const attacks = await this.db.query('delete from attacks where at < $1', [c.recordsBefore]);
-    const tickets = await this.db.query('delete from tickets where created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.ticketsBefore ?? c.staleBefore]);
+    const attacks = await this.batchDelete('attacks', 'at < $1', [c.recordsBefore], c);
+    const tickets = await this.batchDelete('tickets', 'created_at < $1 or (not used and expires_at < $2)', [c.recordsBefore, c.ticketsBefore ?? c.staleBefore], c);
     // last_used_at guards a base that a new ticket is referring to right now (its insert refreshes it).
-    const bases = await this.db.query(
-      `delete from base_versions b where b.last_used_at < $1
+    const bases = await this.batchDelete(
+      'base_versions b',
+      `b.last_used_at < $1
          and not exists (select 1 from tickets t where t.base_hash = b.hash)
          and not exists (select 1 from attacks a where a.base_hash = b.hash)`,
       [c.staleBefore],
+      c,
     );
-    const reports = c.resolvedReportsBefore === undefined ? null : await this.db.query(`delete from reports where status <> 'open' and resolved_at < $1`, [c.resolvedReportsBefore]);
-    const commands = c.commandsBefore === undefined ? null : await this.db.query('delete from command_log where at < $1', [c.commandsBefore]);
-    const idem = c.idempotencyBefore === undefined ? null : await this.db.query('delete from idempotency_keys where created_at < $1', [c.idempotencyBefore]);
-    if (c.intentsBefore !== undefined) await this.db.query('delete from purchase_intents where at < $1', [c.intentsBefore]);
-    if (c.deletionRequestsBefore !== undefined) await this.db.query(`delete from deletion_requests where status <> 'open' and resolved_at < $1`, [c.deletionRequestsBefore]);
-    if (c.storeNotificationsBefore !== undefined) await this.db.query('delete from store_notifications where received_at < $1', [c.storeNotificationsBefore]);
-    if (c.noncesBefore !== undefined) await this.db.query('delete from auth_nonces where expires_at < $1', [c.noncesBefore]);
-    return { attacks: attacks.rowCount ?? 0, tickets: tickets.rowCount ?? 0, bases: bases.rowCount ?? 0, reports: reports?.rowCount ?? 0, commands: commands?.rowCount ?? 0, idempotency: idem?.rowCount ?? 0 };
+    const reports = c.resolvedReportsBefore === undefined ? 0 : await this.batchDelete('reports', `status <> 'open' and resolved_at < $1`, [c.resolvedReportsBefore], c);
+    const commands = c.commandsBefore === undefined ? 0 : await this.batchDelete('command_log', 'at < $1', [c.commandsBefore], c);
+    const idem = c.idempotencyBefore === undefined ? 0 : await this.batchDelete('idempotency_keys', 'created_at < $1', [c.idempotencyBefore], c);
+    if (c.intentsBefore !== undefined) await this.batchDelete('purchase_intents', 'at < $1', [c.intentsBefore], c);
+    if (c.deletionRequestsBefore !== undefined) await this.batchDelete('deletion_requests', `status <> 'open' and resolved_at < $1`, [c.deletionRequestsBefore], c);
+    if (c.storeNotificationsBefore !== undefined) await this.batchDelete('store_notifications', 'received_at < $1', [c.storeNotificationsBefore], c);
+    if (c.noncesBefore !== undefined) await this.batchDelete('auth_nonces', 'expires_at < $1', [c.noncesBefore], c);
+    return { attacks, tickets, bases, reports, commands, idempotency: idem };
+  }
+
+  async dormantPlayers(seenBefore: number, maxKeep: number, limit: number): Promise<string[]> {
+    const r = await this.rows(
+      `select p.id from players p
+       where p.last_seen_at < $1 and not p.staff and coalesce(p.banned_until, 0) = 0 and p.id <> $4
+         and not exists (select 1 from purchases x where x.player_id = p.id)
+         and not exists (select 1 from identity_links l where l.player_id = p.id)
+         and (p.hall_level <= $2 or not exists (select 1 from villages v where v.player_id = p.id))
+       order by p.last_seen_at limit $3`,
+      [seenBefore, maxKeep, limit, DELETED_PLAYER.id],
+    );
+    return r.map((x) => String(x.id));
   }
 
   async getIdempotent(scope: string, key: string): Promise<{ status: number; body: unknown; fingerprint: string | null } | null> {
@@ -1317,14 +1361,21 @@ export class PgRepo implements Repo {
           [v.playerId, JSON.stringify(v.file), v.revision, v.seq, v.at, v.stateHash, v.updatedAt, expectedRevision, v.deviceSeqs ? JSON.stringify(v.deviceSeqs) : null],
         );
         if ((r.rowCount ?? 0) === 0) throw stale;
-        for (const l of ledger) {
-          await db.query('insert into ledger (player_id, at, resource, delta, balance, reason, ref) values ($1,$2,$3,$4,$5,$6,$7)', [l.playerId, l.at, l.resource, l.delta, l.balance, l.reason, l.ref]);
-        }
-        for (const c of commands) {
+        // Backend A17: one statement for all the ledger lines and one for all the log lines of a batch
+        // (they were one round trip per line: up to MAX_BATCH × resources inserts per command batch).
+        if (ledger.length) {
           await db.query(
-            `insert into command_log (player_id, seq, at, client_at, type, command, ok, error) values ($1,$2,$3,$4,$5,$6,$7,$8)
+            `insert into ledger (player_id, at, resource, delta, balance, reason, ref)
+             select * from unnest($1::text[], $2::bigint[], $3::text[], $4::bigint[], $5::bigint[], $6::text[], $7::text[])`,
+            [ledger.map((l) => l.playerId), ledger.map((l) => l.at), ledger.map((l) => l.resource), ledger.map((l) => l.delta), ledger.map((l) => l.balance), ledger.map((l) => l.reason), ledger.map((l) => l.ref)],
+          );
+        }
+        if (commands.length) {
+          await db.query(
+            `insert into command_log (player_id, seq, at, client_at, type, command, ok, error)
+             select p, s, a, ca, t, c::jsonb, o, e from unnest($1::text[], $2::bigint[], $3::bigint[], $4::bigint[], $5::text[], $6::text[], $7::boolean[], $8::text[]) as x(p, s, a, ca, t, c, o, e)
              on conflict (player_id, seq) do update set at = excluded.at, client_at = excluded.client_at, type = excluded.type, command = excluded.command, ok = excluded.ok, error = excluded.error`,
-            [c.playerId, c.seq, c.at, c.clientAt, c.type, JSON.stringify(c.command), c.ok, c.error],
+            [commands.map((c) => c.playerId), commands.map((c) => c.seq), commands.map((c) => c.at), commands.map((c) => c.clientAt), commands.map((c) => c.type), commands.map((c) => JSON.stringify(c.command)), commands.map((c) => c.ok), commands.map((c) => c.error)],
           );
         }
         return true;

@@ -82,7 +82,7 @@
 import { randomUUID } from 'node:crypto';
 import { hostname } from 'node:os';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
-import { runLeased } from './jobs';
+import { runLeased, type StillHeld } from './jobs';
 import { OUTBOUND_TIMEOUT_MS, timedFetch } from './outbound';
 import { gracefulShutdown, SHUTDOWN_DEADLINE_MS, SHUTDOWN_DRAIN_MS } from './shutdown';
 import { availableParallelism } from 'node:os';
@@ -297,12 +297,14 @@ async function main(): Promise<void> {
   // Periodic jobs run on one instance at a time (report section 5 step 2, A21): each run claims its lease first.
   const holder = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
   const timers: ReturnType<typeof setInterval>[] = [];
-  const job = (name: string, everyMs: number, run: () => Promise<unknown>) => () =>
+  const job = (name: string, everyMs: number, run: (stillHeld: StillHeld) => Promise<unknown>) => () =>
     void runLeased(repo, holder, Date.now(), name, everyMs, run).catch((e) => app.log.error(e, `${name} failed`));
   // Retention (30-day replays): hourly, starting at a random minute so instances spread out.
-  const prune = job('retention', 3_600_000, () => app.core.prune().then((r) => app.log.info({ pruned: r }, 'retention')));
+  const prune = job('retention', 3_600_000, (held) => app.core.prune(held).then((r) => app.log.info({ pruned: r }, 'retention')));
+  // Dormant anonymous accounts (backend A23; DORMANT_ACCOUNT_DAYS, 0 = off): daily, a batch per run.
+  const dormant = job('dormant-accounts', 24 * 3_600_000, (held) => app.core.pruneDormant(held).then((n) => n && app.log.info({ deleted: n }, 'dormant accounts')));
   // Gang War pushes (step 68): battle day begins, 2 hours left. Every 5 minutes; each sent once per war.
-  const reminders = job('gang-war-reminders', 5 * 60_000, () => app.core.gangWarReminders());
+  const reminders = job('gang-war-reminders', 5 * 60_000, (held) => app.core.gangWarReminders(held));
   timers.push(setInterval(reminders, 5 * 60_000));
   // Google's Voided Purchases API (refunds that a notification missed): the last 3 days, hourly.
   const voided = job('voided-purchases', 3_600_000, () => app.core.pollVoided(Date.now() - 3 * 86_400_000).then((n) => n && app.log.info({ revoked: n }, 'voided purchases')));
@@ -312,10 +314,12 @@ async function main(): Promise<void> {
     prune();
     voided();
     statsRollup();
+    dormant();
     const hourly = setInterval(() => {
       prune();
       voided();
       statsRollup();
+      dormant(); // its lease is a day long: one instance runs it once a day
     }, 3_600_000);
     hourly.unref();
     timers.push(hourly);

@@ -10,6 +10,14 @@
  * - A Postgres advisory lock lets only one runner work at a time, so two
  *   release jobs (or MIGRATE_ON_BOOT on several instances) cannot collide.
  * - Each file runs in its own transaction, together with its bookkeeping row.
+ * - Backend A22: a file whose first line is `-- migrate: no-transaction` runs
+ *   outside a transaction, one statement at a time (split on a `;` that ends a
+ *   line), so it can `create index concurrently` without locking writes. Its
+ *   statements must be safe to run again (`if not exists`): a failure part way
+ *   cannot be rolled back, and the next run starts the file over. Its
+ *   bookkeeping row is written after the last statement. Keep such files to
+ *   index builds; nothing in them may contain a `;` at the end of a line inside
+ *   a string or body.
  */
 import { createHash } from 'node:crypto';
 
@@ -51,6 +59,27 @@ export function loadMigrations(files: Record<string, string>): Migration[] {
     out.push({ version, name, sql, checksum: createHash('sha256').update(sql).digest('hex') });
   }
   return out.sort((a, b) => (a.version < b.version ? -1 : 1));
+}
+
+/** Backend A22: the header that runs a migration file outside a transaction. */
+export const NO_TRANSACTION_HEADER = '-- migrate: no-transaction';
+
+export function isNoTransaction(m: Pick<Migration, 'sql'>): boolean {
+  return m.sql.trimStart().split('\n', 1)[0]!.trim().toLowerCase() === NO_TRANSACTION_HEADER;
+}
+
+/** The statements of a no-transaction file: split on a `;` that ends a line, comments and blanks dropped. */
+export function splitStatements(sql: string): string[] {
+  return sql
+    .split(/;[ \t]*(?:\n|$)/)
+    .map((s) =>
+      s
+        .split('\n')
+        .filter((line) => !/^\s*--/.test(line))
+        .join('\n')
+        .trim(),
+    )
+    .filter(Boolean);
 }
 
 const BOOKKEEPING = `create table if not exists schema_migrations (
@@ -110,6 +139,17 @@ export async function runMigrations(pool: SqlPool, migrations: Migration[], now:
       for (const m of migrations) {
         if (applied.has(m.version)) continue;
         log(`Applying migration ${m.name}…`);
+        if (isNoTransaction(m)) {
+          // Backend A22: one statement at a time, outside a transaction (CREATE INDEX CONCURRENTLY).
+          try {
+            for (const stmt of splitStatements(m.sql)) await client.query(stmt);
+            await client.query('insert into schema_migrations (version, name, checksum, applied_at) values ($1, $2, $3, $4)', [m.version, m.name, m.checksum, now()]);
+          } catch (e) {
+            throw new Error(`Migration ${m.name} (no transaction) failed part way; its statements are idempotent, so fix the cause and run it again: ${(e as Error).message}`);
+          }
+          done.push(m.name);
+          continue;
+        }
         await client.query('begin');
         try {
           await client.query(m.sql);

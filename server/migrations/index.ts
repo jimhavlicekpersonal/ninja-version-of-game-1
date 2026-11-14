@@ -3,6 +3,7 @@ import m0030 from './0030_ticket_stake.sql?raw';
 import m0031 from './0031_idempotency_fingerprint.sql?raw';
 import m0032 from './0032_auth_nonces.sql?raw';
 import m0033 from './0033_purchase_identity.sql?raw';
+import m0034 from './0034_match_trophies_index.sql?raw';
 /**
  * Every migration, bundled into the server build (no files are read at run
  * time). Add each new file here: an explicit list, because a glob import would
@@ -73,4 +74,5 @@ export const migrations = loadMigrations({
   '0031_idempotency_fingerprint.sql': m0031,
   '0032_auth_nonces.sql': m0032,
   '0033_purchase_identity.sql': m0033,
+  '0034_match_trophies_index.sql': m0034,
 });
