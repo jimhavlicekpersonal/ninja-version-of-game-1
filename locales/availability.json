@@ -808,30 +808,31 @@
     }
   },
   "ig": {
-    "coverage": 0,
-    "ready": false,
-    "hash": "44136fa355b3678a",
-    "keys": 0,
+    "coverage": 1,
+    "ready": true,
+    "hash": "b308895766dfdec3",
+    "keys": 2708,
+    "path": "lang/ig-b308895766dfdec3.json",
     "namespaces": {
       "boot": {
         "total": 17,
-        "translated": 0
+        "translated": 17
       },
       "data": {
         "total": 669,
-        "translated": 0
+        "translated": 669
       },
       "messages": {
         "total": 1870,
-        "translated": 0
+        "translated": 1870
       },
       "pages": {
         "total": 314,
-        "translated": 0
+        "translated": 314
       },
       "ui": {
         "total": 152,
-        "translated": 0
+        "translated": 152
       }
     }
   },
