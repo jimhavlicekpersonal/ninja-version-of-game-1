@@ -834,7 +834,10 @@ export interface PurchaseStore {
   /**
    * Backend A5/A24: purchases since `since` (newest first, at most 500) of this player, of these devices
    * (by the intent that asked), and of every player whose server-held village was played on one of them.
-   * A new free account on the same phone is the same buyer.
+   * A new free account on the same phone is the same buyer. Device ids are chosen by the game (a random
+   * id per install), never verified: a modified client can send a fresh id to look like a new device, or
+   * another player's id (if it learned it) to share their count. The link only ever adds refunds or test
+   * spend to the count (stricter), so a forged id cannot loosen a limit below the account's own history.
    */
   linkedPurchases(playerId: string, devices: string[], since: number): Promise<PurchaseRow[]>;
   /** Backend A24: cents of Sandbox/test purchases (environment other than Production) credited since `since`, all players. */

@@ -277,6 +277,27 @@ for (const [label, make] of repoFactories) {
       expect(await repo.getClaim(3, 'a')).toMatchObject({ outcome: 'win' });
       expect(await repo.getClaim(4, 'a')).toBeNull();
     });
+
+    it('A5: linked purchases follow the player, the asking devices, and accounts whose server village shares a device', async () => {
+      await fresh();
+      for (const id of ['me', 'held', 'byDevice', 'stranger']) await repo.createPlayer(player(id));
+      // "held" plays a server-held village from device dev-shared (its command numbers name the device).
+      const v = { playerId: 'held', file: { v: 1 }, revision: 1, seq: 0, at: T, stateHash: 'x', createdAt: T, updatedAt: T };
+      expect(await repo.createVillage(v)).toBe(true);
+      expect(await repo.saveVillage({ ...v, revision: 2, deviceSeqs: { 'dev-shared': 3 } }, 1, [], [])).toBe(true);
+      const buy = (id: string, playerId: string, at: number, device: string | null = null) =>
+        repo.addPurchase({ store: 'apple', transactionId: id, playerId, productId: 'jade_s', cents: 99, at, environment: 'Production', status: 'refunded', refundedAt: at, ref: `r-${id}`, heldOnServer: false, device });
+      await buy('t-me', 'me', T + 1);
+      await buy('t-held', 'held', T + 2); // no device on the purchase itself: found through the village
+      await buy('t-dev', 'byDevice', T + 3, 'dev-other');
+      await buy('t-stranger', 'stranger', T + 4, 'dev-unrelated');
+      const ids = async (devices: string[], since = 0) => (await repo.linkedPurchases('me', devices, since)).map((p) => p.transactionId);
+      expect(await ids([])).toEqual(['t-me']);
+      expect(await ids(['dev-shared'])).toEqual(['t-held', 't-me']);
+      expect(await ids(['dev-other'])).toEqual(['t-dev', 't-me']);
+      expect(await ids(['dev-shared', 'dev-other'])).toEqual(['t-dev', 't-held', 't-me']);
+      expect(await ids(['dev-shared'], T + 2)).toEqual(['t-held']);
+    });
   });
 }
 
