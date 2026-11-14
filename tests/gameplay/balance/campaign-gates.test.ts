@@ -99,7 +99,7 @@ describe('policy dominance margins (balance audit 2026-11-08 Change-12, PS-1)', 
   });
 
   it('KNOWN FAILING (PS-1, open): skipping defense should cost at least 10% of the pace to Keep 12 against the defender', () => {
-    // The audit's target is rusher >= 1.1 x the defender's days to Keep 12. Measured 2026-11-13: rusher 52.6 days,
+    // The audit's target is rusher >= 1.1 x the defender's days to Keep 12. Measured 2026-11-13: rusher 51.2 days,
     // defender 51.4 (1.00x); the rusher plays exactly like the regular raider, who already never builds defenses
     // before Keep 12. Defense buys no progression (DM-2): a design change (raids.json held-raid reward, loot cap),
     // not a test change. Held here as a known failure: when the margin reaches 10%, this assertion fails and must
