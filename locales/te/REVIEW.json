@@ -1,0 +1,396 @@
+{
+  "language": "te",
+  "variant": "Standard modern Telugu (te-IN), friendly and respectful with మీరు, gender-neutral honorific plural verbs for players and {name}",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "ui",
+      "key": "text.period",
+      "text": ".",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "data",
+      "key": "social.chatLines.reply.7",
+      "text": ":)",
+      "reason": "emoticon"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "technical unit (frames per second), written fps in Telugu apps"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "a CSS class string the extractor captured; translating it would change no visible text"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_2d68ca8191",
+      "text": "{arg1} vs {arg2}",
+      "reason": "\"vs\" is the usual short form in Telugu sports and game text"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f130559f0e",
+      "text": "vs",
+      "reason": "\"vs\" is the usual short form in Telugu sports and game text"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f471e2dc90",
+      "text": "vs {arg1}",
+      "reason": "\"vs\" is the usual short form in Telugu sports and game text"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.a5331c078a",
+      "text": "Sign in with Apple",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    }
+  ],
+  "latinScriptReviewed": {
+    "reason": "Kagemura and Kagemura: Ninja Clans (the logo), Apple, Google, Game Center, Play Games, App Store, Google Play, Safari, Chrome, Sentry, and technical identifiers (IndexedDB, productId, APPLE_TEAM_ID, enum values such as delete, reject, everyone, under13) stay in Latin letters as the glossary requires; the Telugu words around them are complete.",
+    "entries": [
+      "boot: boot.failureTitle",
+      "boot: boot.unsupportedBody",
+      "boot: boot.realUnsupported",
+      "boot: boot.missing",
+      "boot: boot.realSlow",
+      "messages: server.action_must_be_delete_reject_or_overri_c210e90890",
+      "messages: server.action_must_be_dismiss_remove_message__dd711086db",
+      "messages: server.app_store_notification_6199f7d5e6",
+      "messages: server.app_store_purchases_are_not_set_up_on__3637ccd9d9",
+      "messages: server.band_must_be_under13_13to17_adult_or_n_1f387f3cc7",
+      "messages: server.commands_must_be_a_list_a7821d0e27",
+      "messages: server.findable_must_be_everyone_friends_of_f_f0a3ad42a4",
+      "messages: server.google_play_purchases_are_not_set_up_o_0abbc8e170",
+      "messages: server.kind_must_be_chat_or_player_c0b46dca1d",
+      "messages: server.provider_must_be_gamecenter_or_playgam_5b0afd8b2e",
+      "messages: server.sign_in_with_apple_a_refresh_token_cou_1da9966ac0",
+      "messages: server.sign_in_with_apple_apple_account_delet_cc14cd6845",
+      "messages: server.sign_in_with_apple_consent_revoked_lin_7fabcedfa8",
+      "messages: server.sign_in_with_apple_is_not_set_up_on_th_711f3305bb",
+      "messages: server.sign_in_with_apple_no_apple_team_id_ap_364837b310",
+      "messages: server.sign_in_with_apple_revocation_after_de_8df6723986",
+      "messages: server.sign_in_with_apple_revoking_a_refresh__cbe4d77626",
+      "messages: service.could_not_open_indexeddb_f2ebaea729",
+      "messages: service.google_sign_in_was_cancelled_a269b7298e",
+      "messages: service.indexeddb_could_not_be_reopened_6068af14eb",
+      "messages: service.indexeddb_did_not_answer_333a9912a5",
+      "messages: service.indexeddb_is_blocked_by_another_tab_82917d2922",
+      "messages: service.indexeddb_is_not_available_e0e14003f9",
+      "messages: service.mockpaymentprovider_sold_as_7987bdd8e4",
+      "messages: service.that_address_is_not_a_kagemura_ninja_c_156e05a9b5",
+      "messages: sim.ends_utc_5598bc85ac",
+      "messages: sim.that_doesn_t_look_like_a_kagemura_ninj_582b0d6d03",
+      "messages: ui.add_me_in_kagemura_4b94ebc055",
+      "messages: ui.be_my_friend_in_kagemura_1adcadc4c7",
+      "messages: ui.kagemura_ninja_clans_built_647b18e769",
+      "messages: ui.kagemura_staff_7a8dfa11fc",
+      "messages: ui.kagemura_support_af3c907500",
+      "messages: ui.leave_kagemura_0b798fad93",
+      "messages: ui.played_in_safari_before_1b168b5abe",
+      "messages: ui.qr_code_2c24d35a11",
+      "messages: ui.the_app_store_8768b638e4",
+      "messages: ui.update_kagemura_1a67e6e9e1",
+      "messages: native.missingProduct",
+      "messages: native.appStoreItem",
+      "messages: native.transaction",
+      "messages: native.appleToken",
+      "messages: native.appleCancelled",
+      "messages: native.gameCenterPermission",
+      "messages: native.gameCenterFriends",
+      "messages: native.gameCenterSignIn",
+      "messages: native.gameCenterIdentity",
+      "messages: native.billing",
+      "messages: native.playItem",
+      "messages: native.restore",
+      "messages: native.token",
+      "messages: native.finish",
+      "messages: native.androidSignIn",
+      "messages: native.googleToken",
+      "messages: native.googleFailed",
+      "messages: extra.f568fe4f80",
+      "messages: extra.dd459d8fb4",
+      "messages: extra.7d9e847788",
+      "messages: extra.6250ac86cc",
+      "messages: extra.5eb31240a4",
+      "messages: extra.b5c72037c7",
+      "messages: extra.457df2201c",
+      "messages: extra.8fef58779f",
+      "messages: extra.6a6eb7ab49",
+      "messages: extra.679579b5e4",
+      "messages: extra.d8b187e2a5",
+      "messages: extra.7bfd3f60a4",
+      "messages: extra.8b3f4e2bc4",
+      "messages: extra.afbe9bf754",
+      "messages: extra.2e94087994",
+      "messages: extra.894c5540ed",
+      "messages: extra.6542e7ebb9",
+      "messages: extra.eb24b3a09a",
+      "messages: extra.4be5bb572d",
+      "messages: extra.45cec126e4",
+      "messages: extra.8576365aaf",
+      "messages: extra.2f2c244f49",
+      "messages: extra.e42a63820f",
+      "messages: extra.f16d4fcdc4",
+      "messages: extra.fd8109533e",
+      "pages: pages.privacy.0",
+      "pages: pages.privacy.1",
+      "pages: pages.privacy.2",
+      "pages: pages.privacy.32",
+      "pages: pages.privacy.91",
+      "pages: pages.privacy.92",
+      "pages: pages.support.0",
+      "pages: pages.support.1",
+      "pages: pages.support.16",
+      "pages: pages.support.26",
+      "pages: pages.support.27",
+      "pages: pages.community.0",
+      "pages: pages.community.1",
+      "pages: pages.community.29",
+      "pages: pages.community.30",
+      "pages: pages.terms.0",
+      "pages: pages.terms.1",
+      "pages: pages.terms.2",
+      "pages: pages.terms.44",
+      "pages: pages.terms.48",
+      "pages: pages.terms.50",
+      "pages: pages.tokushoho.2",
+      "pages: pages.tokushoho.12",
+      "pages: pages.tokushoho.16",
+      "pages: pages.tokushoho.28",
+      "pages: pages.tokushoho.29",
+      "pages: pages.shikin-kessai.2",
+      "pages: pages.shikin-kessai.23",
+      "pages: pages.shikin-kessai.24",
+      "pages: pages.account.0",
+      "pages: pages.account.1"
+    ]
+  },
+  "lengthWarningsReviewed": {
+    "reason": "Japanese statutory page titles: the Japanese legal name is spelled out in Telugu (Notice under the Japanese Act on Specified Commercial Transactions / Payment Services Act), which is longer than the Japanese title; these are page titles, not buttons.",
+    "entries": [
+      "pages: pages.tokushoho.1",
+      "pages: pages.shikin-kessai.1"
+    ]
+  },
+  "notes": [
+    "Players and {name} take the honorific plural verb (చేరారు, గెలిచారు), which is gender-neutral; singular masculine/feminine verbs are never used for them. The fixed characters Akane, Yoru (she) and Gorō, the Shadow Captain (he) keep their genders.",
+    "No case suffix or postposition is attached directly to a placeholder or #: a colon, a separate word (వరకు, తర్వాత, క్రితం, గారికి) or a noun after the placeholder carries the grammar.",
+    "Plurals: one (1 only) and other (including 0), as Intl.PluralRules(\"te\") gives.",
+    "Generated names use the default order (first part, space, second part): Telugu puts the modifier before the noun (ఉరుము + శిఖరం = ఉరుము శిఖరం). No generatedNames setting is needed.",
+    "Japanese person names are transliterated into Telugu script (కైతో, తకేదా); Sensei Hoshi is గురువు హోషి.",
+    "The Japanese statutory pages are translated in full into Telugu, as in the Hindi and Vietnamese catalogs; links to them from the support page keep the Japanese titles.",
+    "ui.s_have_bced00a61e (\"s have\") is a plural fragment appended to \"Your purchase{arg1} been delivered\"; it is (లు), the usual Telugu way to mark an optional plural."
+  ]
+}
