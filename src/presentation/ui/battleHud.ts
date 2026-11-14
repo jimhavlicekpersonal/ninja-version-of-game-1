@@ -20,7 +20,7 @@ import { clear, h, icon } from './dom';
 import { formatNumber } from './format';
 import { icons } from './icons';
 import { sound } from '../audio/sound';
-import { celebrate, countUp, reducedMotion, uiArt } from './feedback';
+import { celebrate, countUp, reducedMotion, removeWithExit, uiArt } from './feedback';
 import { layoutChevrons } from './chevronLayout';
 import { cardBadge } from './cardArt';
 import { noteBattleResult } from './reviewPrompt';
@@ -273,8 +273,8 @@ export class BattleHud {
     const a = this.safeArea();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const L = a.left + 26;
-    const R = vw - a.right - 26;
+    const L = a.left + 36;
+    const R = vw - a.right - 36;
     const T = a.top + 22;
     const B = vh - a.bottom - 22;
     const cx = (L + R) / 2;
@@ -759,7 +759,7 @@ export class BattleHud {
 
   private modal(title: string, body: HTMLElement, buttons: { label: string; primary?: boolean; danger?: boolean; onClick: () => void }[], closable = true): () => void {
     const backdrop = h('div', { class: 'modal-backdrop' });
-    const close = () => backdrop.remove();
+    const close = () => removeWithExit(backdrop);
     const foot = h('div', { class: 'modal-foot' });
     for (const b of buttons) foot.append(h('button', { class: `btn${b.primary ? ' primary' : ''}${b.danger ? ' danger' : ''}`, type: 'button', onclick: b.onClick }, b.label));
     backdrop.append(
