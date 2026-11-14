@@ -310,7 +310,7 @@
   "pages.account.20": { "en": "Enter your Player ID (Settings → Online play → Account).", "text": "మీ ఆటగాడి ఐడి నమోదు చేయండి (సెట్టింగ్‌లు → ఆన్‌లైన్ ఆట → ఖాతా)." },
   "pages.account.21": { "en": "Sending…", "text": "పంపుతున్నాం…" },
   "pages.account.22": { "en": "The request did not go through. Try again later.", "text": "అభ్యర్థన జరగలేదు. తర్వాత మళ్లీ ప్రయత్నించండి." },
-  "pages.account.23": { "en": "Request received and confirmed with your code. Your reference: ", "text": "" },
-  "pages.account.24": { "en": "Request received, but without a valid deletion code we cannot confirm the account is yours. Your reference: ", "text": "" },
-  "pages.account.25": { "en": ". Get a code in the game, or contact support with this reference.", "text": "" }
+  "pages.account.23": { "en": "Request received and confirmed with your code. Your reference: ", "text": "అభ్యర్థన అందింది, మీ కోడ్‌తో నిర్ధారించబడింది. మీ రిఫరెన్స్: " },
+  "pages.account.24": { "en": "Request received, but without a valid deletion code we cannot confirm the account is yours. Your reference: ", "text": "అభ్యర్థన అందింది, కానీ సరైన తొలగింపు కోడ్ లేకుండా ఖాతా మీదేనని నిర్ధారించలేం. మీ రిఫరెన్స్: " },
+  "pages.account.25": { "en": ". Get a code in the game, or contact support with this reference.", "text": ". ఆటలో కోడ్ తీసుకోండి, లేదా ఈ రిఫరెన్స్‌తో సహాయ బృందాన్ని సంప్రదించండి." }
 }
