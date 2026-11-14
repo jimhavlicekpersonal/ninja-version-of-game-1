@@ -1,4 +1,5 @@
-import { heroFor } from './heroes';
+import { choosableHeroes, heroFor } from './heroes';
+import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
 import { hallLevel } from './keep';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
 import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
@@ -154,7 +155,13 @@ export type Command =
   /** An attack on the running goal event's bounty fortress (`eventKey`, sim/goalEvents.ts); the base is rebuilt, never taken from the client. */
   | { type: 'bountyEnd'; eventKey: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   /** Settle the score with a bot raider (`defenseId`, sim/rematch.ts); the raider's base is rebuilt from the defense record. */
-  | { type: 'rematchEnd'; defenseId: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> };
+  | { type: 'rematchEnd'; defenseId: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /**
+   * Hero Hall (content batch 2026-11-14, save v23): choose the hero who joins attacks (null = the automatic one).
+   * Only while `features.heroChoice` is on (off in the shipped data). Not in PLAYER_COMMANDS: a server-held
+   * village cannot send it until BACKEND adds it (docs/backend/REQUESTS.md).
+   */
+  | { type: 'chooseHero'; hero: string | null };
 
 /** The actions a top-up can pay for. */
 export type TopUpAction = Extract<Command, { type: 'upgrade' | 'place' | 'train' | 'research' }>;
@@ -292,6 +299,8 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     stipend: emptyStipend(),
     calendar: emptyCalendar(),
     goalEvent: null,
+    mastery: {},
+    hero: {},
   };
   for (const sb of data.economy.startingLayout) {
     const def = buildingDef(data, sb.type);
@@ -795,6 +804,22 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'setLocalTime': {
       const why = setLocalTime(s, cmd.minutes, now);
       if (why) return fail('NOT_AVAILABLE', why);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'chooseHero': {
+      if (!data.features?.heroChoice) return fail('NOT_AVAILABLE', 'Choosing a hero is not available yet.');
+      if (cmd.hero === null) {
+        s.hero = {};
+        return { ok: true, state: s, events: [] };
+      }
+      const def = data.battle.heroes?.[cmd.hero];
+      if (!def) return fail('NOT_FOUND', 'Unknown hero.');
+      if (!choosableHeroes(s, data).includes(cmd.hero)) {
+        return hallLevel(s, data) < def.unlockKeep
+          ? fail('LOCKED', `This hero joins from Keep ${def.unlockKeep}.`, { keep: def.unlockKeep, troop: cmd.hero })
+          : fail('NOT_AVAILABLE', 'Build a Hero Hall first.', { building: 'hero_shrine' });
+      }
+      s.hero = { chosen: cmd.hero };
       return { ok: true, state: s, events: [] };
     }
     case 'claimCalendar': {
@@ -1682,6 +1707,7 @@ function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): 
     if (!data.troops[t] || !r || !Number.isInteger(r.count) || r.count < 0 || r.count > (lodge[t]?.count ?? 0)) return 'More donated warriors than your Lodge holds.';
     if (r.count > 0 && r.level !== lodge[t].level) return 'Donated warrior levels do not match your Lodge.';
   }
+  if (!masteryMatches(s, setup, data)) return 'Warrior mastery does not match your village.';
   return null;
 }
 
@@ -1778,6 +1804,7 @@ function battleEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'k
   const stake = validStake(rec.stake, data) ? rec.stake : undefined;
   const carry = raidCarry(result, rec.setup, stake, data);
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data, carry);
+  awardMastery(s, result, rec.setup, data);
   const opp = rec.setup.base.trophies ?? s.trophies;
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
@@ -1840,6 +1867,7 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
   const carry = raidCarry(result, rec.setup, stake, data);
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data, carry);
+  awardMastery(s, result, rec.setup, data);
   rec.result = { ...result, loot: { ...result.loot } };
   rec.banked = banked;
   if (stake !== undefined) rec.stake = stake;
@@ -1887,6 +1915,7 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
   if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
+  awardMastery(s, result, setup, data);
   const cleared = result.stars >= data.trials.starsToClear;
   const firstClear = cleared && tier === nextTrialTier(s.trials.best);
   let reward: Cost = {};
@@ -2011,12 +2040,14 @@ export function lodgeTroops(state: VillageState): Record<string, { count: number
 }
 
 /** Everything a new battle setup needs about the attacker: troops, researched levels and donated troops. */
-export function battleLoadout(state: VillageState, data: GameData): Pick<BattleSetup, 'army' | 'levels' | 'reinforcements' | 'hero'> {
+export function battleLoadout(state: VillageState, data: GameData): Pick<BattleSetup, 'army' | 'levels' | 'reinforcements' | 'hero' | 'mastery'> {
   const levels: Record<string, number> = {};
   for (const t of Object.keys(data.troops)) levels[t] = troopLevelOf(state, t);
   // Report section 5 step 8: the clan hero joins every attack from his Keep (SIM_RULES 5).
   const hero = heroFor(state, data);
-  return { army: battleArmy(state), levels, reinforcements: lodgeTroops(state), ...(hero ? { hero } : {}) };
+  // Warrior Mastery (feature flag, off in the shipped data): only then does a setup carry mastery.
+  const mastery = masteryOn(data) ? masteryBonuses(state, data) : {};
+  return { army: battleArmy(state), levels, reinforcements: lodgeTroops(state), ...(hero ? { hero } : {}), ...(Object.keys(mastery).length ? { mastery } : {}) };
 }
 
 /** A Grove Raid attack: no loot or trophies, best stars per enemy base count. */
