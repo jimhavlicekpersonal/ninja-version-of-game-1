@@ -68,10 +68,6 @@
     "source": "Buy {arg1}"
   },
   {
-    "key": "ui.buy_64fe2149d3",
-    "source": "Buy & {arg1} {arg2} "
-  },
-  {
     "key": "ui.lv_445f51ab9e",
     "source": "Lv {arg1}"
   },
@@ -474,10 +470,6 @@
   {
     "key": "ui.clan_keep_2cf84349d4",
     "source": "Clan Keep {arg1}"
-  },
-  {
-    "key": "ui.league_b3ab5af9ac",
-    "source": "{arg1} league"
   },
   {
     "key": "ui.formerly_46029d3386",
@@ -1090,10 +1082,6 @@
   {
     "key": "ui.scout_tier_8fde370df8",
     "source": "Scout tier {arg1}"
-  },
-  {
-    "key": "ui.your_purchase_been_delivered_6f88dee143",
-    "source": "Your purchase{arg1} been delivered."
   },
   {
     "key": "ui.jade_9ff8af5a0c",

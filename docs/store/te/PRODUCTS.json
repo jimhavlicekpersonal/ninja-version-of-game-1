@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "te",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "చిటికెడు పచ్చలు",
+      "description": "45 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "పచ్చల సంచి",
+      "description": "100 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "పచ్చల మూట",
+      "description": "280 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "పచ్చల పెట్టె",
+      "description": "600 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "పచ్చల పేటిక",
+      "description": "1300 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "పచ్చల భాండాగారం",
+      "description": "3500 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "డ్రాగన్ పచ్చల నిధి",
+      "description": "7500 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "ప్రీమియం సీజన్ తాళపత్రం",
+      "description": "ఈ సీజన్ ప్రీమియం దారి",
+      "locale": "te"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "ప్రారంభ ప్యాక్",
+      "description": "కొత్త నాయకులకు పచ్చలు, వనరులు",
+      "locale": "te"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "శిల్పి కట్ట",
+      "description": "మరో శిల్పిని నియమించుకోవడానికి పచ్చలు, వనరులు",
+      "locale": "te"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "యుద్ధ సామగ్రి",
+      "description": "కూటమి యుద్ధానికి సరుకులు, పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "పునర్నిర్మాణ కిట్",
+      "description": "మళ్లీ నిర్మించడానికి పచ్చలు, వనరులు",
+      "locale": "te"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "వంశ భృతి",
+      "description": "రోజువారీ చెల్లింపులు: 30 × 12 పచ్చలు",
+      "locale": "te"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "కోట వేడుక",
+      "description": "మీ కొత్త కోట వేడుకకు వనరులు, పచ్చలు",
+      "locale": "te"
+    }
+  ]
+}

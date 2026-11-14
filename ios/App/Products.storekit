@@ -116,6 +116,71 @@
           "displayName": "Nhúm Ngọc Bích",
           "description": "45 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Sejumput Giok",
+          "description": "45 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Secubit Jed",
+          "description": "45 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Bir Tutam Yeşim",
+          "description": "45 Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Щепотка нефрита",
+          "description": "Нефрит: 45",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Дрібка Нефриту",
+          "description": "Нефрит: 45",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Szczypta Jadeitu",
+          "description": "Jadeit: 45",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Špetka nefritu",
+          "description": "45 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Štipka nefritu",
+          "description": "45 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Prstohvat žada",
+          "description": "Žad: 45",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Csipetnyi Jáde",
+          "description": "45 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Hyppysellinen Jadea",
+          "description": "Jadea 45",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Πρέζα Νεφρίτη",
+          "description": "45 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "קמצוץ ירקן",
+          "description": "45 ירקן",
+          "locale": "he"
         }
       ],
       "productID": "jade_pinch",
@@ -236,6 +301,71 @@
           "displayName": "Túi Nhỏ Ngọc Bích",
           "description": "100 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Kantong Giok",
+          "description": "100 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Uncang Jed",
+          "description": "100 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Bir Kese Yeşim",
+          "description": "100 Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Кошель нефрита",
+          "description": "Нефрит: 100",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Гаманець Нефриту",
+          "description": "Нефрит: 100",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Sakiewka Jadeitu",
+          "description": "Jadeit: 100",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Měšec nefritu",
+          "description": "100 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Mešec nefritu",
+          "description": "100 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Vrećica žada",
+          "description": "Žad: 100",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Erszénynyi Jáde",
+          "description": "100 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Kukkarollinen Jadea",
+          "description": "Jadea 100",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Πουγκί Νεφρίτη",
+          "description": "100 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "כיס ירקן",
+          "description": "100 ירקן",
+          "locale": "he"
         }
       ],
       "productID": "jade_pouch",
@@ -356,6 +486,71 @@
           "displayName": "Túi Ngọc Bích",
           "description": "280 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Tas Giok",
+          "description": "280 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Beg Jed",
+          "description": "280 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Bir Torba Yeşim",
+          "description": "280 Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Мешок нефрита",
+          "description": "Нефрит: 280",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Торба Нефриту",
+          "description": "Нефрит: 280",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Worek Jadeitu",
+          "description": "Jadeit: 280",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Vak nefritu",
+          "description": "280 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Vak nefritu",
+          "description": "280 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Torba žada",
+          "description": "Žad: 280",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Zsáknyi Jáde",
+          "description": "280 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Pussillinen Jadea",
+          "description": "Jadea 280",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Σακούλι Νεφρίτη",
+          "description": "280 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "שק ירקן",
+          "description": "280 ירקן",
+          "locale": "he"
         }
       ],
       "productID": "jade_bag",
@@ -476,6 +671,71 @@
           "displayName": "Hộp Ngọc Bích",
           "description": "600 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Kotak Giok",
+          "description": "600 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Kotak Jed",
+          "description": "600 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Bir Kutu Yeşim",
+          "description": "600 Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Ларец нефрита",
+          "description": "Нефрит: 600",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Скринька Нефриту",
+          "description": "Нефрит: 600",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Szkatuła Jadeitu",
+          "description": "Jadeit: 600",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Krabice nefritu",
+          "description": "600 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Krabica nefritu",
+          "description": "600 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Kutija žada",
+          "description": "Žad: 600",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Doboznyi Jáde",
+          "description": "600 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Laatikollinen Jadea",
+          "description": "Jadea 600",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Κουτί Νεφρίτη",
+          "description": "600 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "קופסת ירקן",
+          "description": "600 ירקן",
+          "locale": "he"
         }
       ],
       "productID": "jade_box",
@@ -596,6 +856,71 @@
           "displayName": "Rương Ngọc Bích",
           "description": "1300 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Peti Giok",
+          "description": "1300 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Peti Jed",
+          "description": "1300 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Bir Sandık Yeşim",
+          "description": "1300 Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Сундук нефрита",
+          "description": "Нефрит: 1300",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Скриня Нефриту",
+          "description": "Нефрит: 1300",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Skrzynia Jadeitu",
+          "description": "Jadeit: 1300",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Truhla nefritu",
+          "description": "1300 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Truhlica nefritu",
+          "description": "1300 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Škrinja žada",
+          "description": "Žad: 1300",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Ládányi Jáde",
+          "description": "1300 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Arkullinen Jadea",
+          "description": "Jadea 1300",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Σεντούκι Νεφρίτη",
+          "description": "1300 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "תיבת ירקן",
+          "description": "1300 ירקן",
+          "locale": "he"
         }
       ],
       "productID": "jade_chest",
@@ -716,6 +1041,71 @@
           "displayName": "Kho Ngọc Bích",
           "description": "3500 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Brankas Giok",
+          "description": "3500 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Bilik Kebal Jed",
+          "description": "3500 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Bir Mahzen Yeşim",
+          "description": "3500 Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Хранилище нефрита",
+          "description": "Нефрит: 3500",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Сховище Нефриту",
+          "description": "Нефрит: 3500",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Skarbiec Jadeitu",
+          "description": "Jadeit: 3500",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Trezor nefritu",
+          "description": "3500 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Trezor nefritu",
+          "description": "3500 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Trezor žada",
+          "description": "Žad: 3500",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Kincseskamrányi Jáde",
+          "description": "3500 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Holvillinen Jadea",
+          "description": "Jadea 3500",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Θησαυροφυλάκιο Νεφρίτη",
+          "description": "3500 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "כספת ירקן",
+          "description": "3500 ירקן",
+          "locale": "he"
         }
       ],
       "productID": "jade_vault",
@@ -836,6 +1226,71 @@
           "displayName": "Kho Báu Ngọc Bích Của Rồng",
           "description": "7500 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Timbunan Naga Giok",
+          "description": "7500 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Harta Naga Jed",
+          "description": "7500 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Ejder Hazinesi Yeşim",
+          "description": "7500 Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Драконья сокровищница нефрита",
+          "description": "Нефрит: 7500",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Драконів скарб Нефриту",
+          "description": "Нефрит: 7500",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Smoczy Skarb Jadeitu",
+          "description": "Jadeit: 7500",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Dračí poklad nefritu",
+          "description": "7500 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Dračí poklad nefritu",
+          "description": "7500 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Zmajevo blago žada",
+          "description": "Žad: 7500",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Sárkánykincsnyi Jáde",
+          "description": "7500 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Lohikäärmeen Jade-aarre",
+          "description": "Jadea 7500",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Θησαυρός Δράκου από Νεφρίτη",
+          "description": "7500 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "אוצר הדרקון של ירקן",
+          "description": "7500 ירקן",
+          "locale": "he"
         }
       ],
       "productID": "jade_hoard",
@@ -956,6 +1411,71 @@
           "displayName": "Cuộn Mùa Giải Cao Cấp",
           "description": "Nhánh cao cấp của mùa này",
           "locale": "vi"
+        },
+        {
+          "displayName": "Gulungan Musim Premium",
+          "description": "Jalur premium musim ini",
+          "locale": "id"
+        },
+        {
+          "displayName": "Skrol Musim Premium",
+          "description": "Laluan premium musim ini",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Premium Sezon Parşömeni",
+          "description": "Bu sezonun premium yolu",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Премиум-Свиток сезона",
+          "description": "Премиум-линия этого сезона",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Преміум-Сувій сезону",
+          "description": "Преміум-доріжка цього сезону",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Zwój Sezonu premium",
+          "description": "Ścieżka premium tego sezonu",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Sezónní svitek: prémiová cesta",
+          "description": "Prémiová cesta této sezóny",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Sezónny zvitok: prémiová cesta",
+          "description": "Prémiová cesta tejto sezóny",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Sezonski svitak (premium)",
+          "description": "Premium staza ove sezone",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Szezontekercs (prémium)",
+          "description": "A mostani szezon prémium sávja",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Premium-kausikäärö",
+          "description": "Tämän kauden premium-polku",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Premium Πάπυρος Σεζόν",
+          "description": "Η premium διαδρομή αυτής της σεζόν",
+          "locale": "el"
+        },
+        {
+          "displayName": "מגילת העונה בגרסת פרימיום",
+          "description": "מסלול הפרימיום של העונה הנוכחית",
+          "locale": "he"
         }
       ],
       "productID": "season_scroll",
@@ -1076,6 +1596,71 @@
           "displayName": "Gói Khởi Đầu",
           "description": "Ngọc Bích và tài nguyên cho thủ lĩnh mới",
           "locale": "vi"
+        },
+        {
+          "displayName": "Paket Pemula",
+          "description": "Giok dan sumber daya untuk pemimpin baru",
+          "locale": "id"
+        },
+        {
+          "displayName": "Pek Permulaan",
+          "description": "Jed dan sumber untuk ketua baharu",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Başlangıç Paketi",
+          "description": "Yeni liderler için Yeşim ve kaynaklar",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Стартовый набор",
+          "description": "Нефрит и ресурсы для новых глав кланов",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Стартовий набір",
+          "description": "Нефрит і ресурси для нових очільників клану",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Pakiet Startowy",
+          "description": "Jadeit i zasoby na start nowego klanu",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Startovní balíček",
+          "description": "Nefrit a zdroje pro nové hlavy klanu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Štartovací balík",
+          "description": "Nefrit a suroviny pre nové vedenie klanu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Početni paket",
+          "description": "Žad i resursi za nove vođe klana",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Kezdőcsomag",
+          "description": "Jáde és nyersanyagok új klánvezéreknek",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Aloituspaketti",
+          "description": "Jadea ja resursseja uusille klaanin johtajille",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Πακέτο Εκκίνησης",
+          "description": "Νεφρίτης και πόροι για νέες φατρίες",
+          "locale": "el"
+        },
+        {
+          "displayName": "חבילת פתיחה",
+          "description": "ירקן ומשאבים לשבטים חדשים",
+          "locale": "he"
         }
       ],
       "productID": "offer_starter",
@@ -1196,6 +1781,71 @@
           "displayName": "Gói Thợ Thủ Công",
           "description": "Ngọc Bích để thuê thêm Thợ Làng, kèm tài nguyên",
           "locale": "vi"
+        },
+        {
+          "displayName": "Bundel Perajin",
+          "description": "Giok untuk merekrut Perajin Desa lagi, plus sumber daya",
+          "locale": "id"
+        },
+        {
+          "displayName": "Berkas Tukang",
+          "description": "Jed untuk mengupah seorang lagi Tukang, serta sumber",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Zanaatkâr Paketi",
+          "description": "Bir Zanaatkâr daha tutmak için Yeşim ve kaynaklar",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Набор мастера",
+          "description": "Нефрит на ещё одного мастера деревни и ресурсы",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Набір майстра",
+          "description": "Нефрит, щоб найняти ще одного майстра, і ресурси",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Pakiet Rzemieślnika",
+          "description": "Jadeit na kolejnego Rzemieślnika i zasoby",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Balíček řemeslníka",
+          "description": "Nefrit na dalšího řemeslníka a k tomu zdroje",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Balík remeselníka",
+          "description": "Nefrit na ďalšieho Remeselníka a k tomu suroviny",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Majstorov paket",
+          "description": "Žad za još jednog seoskog majstora i resursi",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Mestercsomag",
+          "description": "Jáde egy újabb Mester felfogadására, plusz nyersanyagok",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Käsityöläisen nippu",
+          "description": "Jadea uuden käsityöläisen palkkaamiseen sekä resursseja",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Πακέτο Τεχνίτη",
+          "description": "Νεφρίτης για άλλον έναν Τεχνίτη, και πόροι",
+          "locale": "el"
+        },
+        {
+          "displayName": "חבילת האומן",
+          "description": "ירקן להעסקת אומן נוסף, ועוד משאבים",
+          "locale": "he"
         }
       ],
       "productID": "offer_builder",
@@ -1316,6 +1966,71 @@
           "displayName": "Tiếp Tế Chiến Tranh",
           "description": "Lương Thực và Ngọc Bích cho Liên Minh Chiến",
           "locale": "vi"
+        },
+        {
+          "displayName": "Pasokan Perang",
+          "description": "Perbekalan dan Giok untuk Perang Aliansi",
+          "locale": "id"
+        },
+        {
+          "displayName": "Bekalan Perang",
+          "description": "Bekalan dan Jed untuk Perang Perikatan",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Savaş Malzemesi",
+          "description": "İttifak Savaşı için Erzak ve Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Военные припасы",
+          "description": "Провизия и нефрит для войны альянсов",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Воєнні припаси",
+          "description": "Провіант і Нефрит для Війни альянсів",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Zapasy Wojenne",
+          "description": "Prowiant i Jadeit na Wojnę Sojuszy",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Válečné zásoby",
+          "description": "Proviant a nefrit pro Válku aliancí",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Vojnové zásoby",
+          "description": "Zásoby a Nefrit pre Vojnu aliancií",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Ratne zalihe",
+          "description": "Namirnice i žad za Rat saveza",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Hadi ellátmány",
+          "description": "Élelem és Jáde a Szövetségi háborúhoz",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Sotatarvikkeet",
+          "description": "Muonaa ja Jadea Liittosotaan",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Εφόδια Πολέμου",
+          "description": "Προμήθειες και Νεφρίτης για τον Πόλεμο Συμμαχιών",
+          "locale": "el"
+        },
+        {
+          "displayName": "ציוד למלחמה",
+          "description": "אספקה וירקן למלחמת בריתות",
+          "locale": "he"
         }
       ],
       "productID": "offer_war_prep",
@@ -1436,6 +2151,71 @@
           "displayName": "Bộ Tái Thiết",
           "description": "Ngọc Bích và tài nguyên để tái thiết",
           "locale": "vi"
+        },
+        {
+          "displayName": "Paket Pemulihan",
+          "description": "Giok dan sumber daya untuk membangun kembali",
+          "locale": "id"
+        },
+        {
+          "displayName": "Kit Bina Semula",
+          "description": "Jed dan sumber untuk membina semula",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Yeniden İnşa Seti",
+          "description": "Yeniden inşa etmek için Yeşim ve kaynaklar",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Набор восстановления",
+          "description": "Нефрит и ресурсы для восстановления",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Набір для відбудови",
+          "description": "Нефрит і ресурси для відбудови",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Zestaw Odbudowy",
+          "description": "Jadeit i zasoby na odbudowę",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Sada pro obnovu",
+          "description": "Nefrit a zdroje na obnovu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Súprava na obnovu",
+          "description": "Nefrit a suroviny na obnovu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Paket za obnovu",
+          "description": "Žad i resursi za obnovu",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Újjáépítő csomag",
+          "description": "Jáde és nyersanyagok az újjáépítéshez",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Jälleenrakennuspakkaus",
+          "description": "Jadea ja resursseja jälleenrakennukseen",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Σετ Ανοικοδόμησης",
+          "description": "Νεφρίτης και πόροι για ανοικοδόμηση",
+          "locale": "el"
+        },
+        {
+          "displayName": "ערכת שיקום",
+          "description": "ירקן ומשאבים לבנייה מחדש",
+          "locale": "he"
         }
       ],
       "productID": "offer_rebuild",
@@ -1556,6 +2336,71 @@
           "displayName": "Bổng Lộc Gia Tộc",
           "description": "30 lần nhận mỗi ngày, mỗi lần 12 Ngọc Bích",
           "locale": "vi"
+        },
+        {
+          "displayName": "Tunjangan Klan",
+          "description": "30 pembayaran harian sebesar 12 Giok",
+          "locale": "id"
+        },
+        {
+          "displayName": "Elaun Klan",
+          "description": "30 bayaran harian sebanyak 12 Jed",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Klan Maaşı",
+          "description": "12 Yeşimlik 30 günlük ödeme",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Жалованье клана",
+          "description": "Ежедневные выплаты нефрита: 30 × 12",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Платня клану",
+          "description": "Щоденні виплати Нефриту: 30 × 12",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Stypendium Klanu",
+          "description": "Codzienne wypłaty Jadeitu: 30 × 12",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Klanový žold",
+          "description": "Denní platby (30) po 12 nefritu",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Klanový žold",
+          "description": "Denné platby (30) po 12 Nefritu",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Klanska renta",
+          "description": "Dnevne isplate: 30. Žad po isplati: 12",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Klánjáradék",
+          "description": "30 napi kifizetés, egyenként 12 Jáde",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Klaanin apuraha",
+          "description": "Päivittäiset maksut: 30, kussakin Jadea 12",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Επίδομα Φατρίας",
+          "description": "Ημερήσιες πληρωμές: 30 × 12 Νεφρίτη",
+          "locale": "el"
+        },
+        {
+          "displayName": "קצבת השבט",
+          "description": "תשלומים יומיים: 30, 12 ירקן בכל תשלום",
+          "locale": "he"
         }
       ],
       "productID": "clan_stipend",
@@ -1676,6 +2521,71 @@
           "displayName": "Mừng Thành Mới",
           "description": "Tài nguyên và Ngọc Bích mừng Thành mới",
           "locale": "vi"
+        },
+        {
+          "displayName": "Perayaan Benteng",
+          "description": "Sumber daya dan Giok untuk merayakan Benteng barumu",
+          "locale": "id"
+        },
+        {
+          "displayName": "Sambutan Kubu",
+          "description": "Sumber dan Jed untuk meraikan Kubu baharu kamu",
+          "locale": "ms"
+        },
+        {
+          "displayName": "Kale Kutlaması",
+          "description": "Yeni Kaleni kutlamak için kaynaklar ve Yeşim",
+          "locale": "tr"
+        },
+        {
+          "displayName": "Праздник Замка",
+          "description": "Ресурсы и нефрит в честь нового уровня Замка",
+          "locale": "ru"
+        },
+        {
+          "displayName": "Свято Твердині",
+          "description": "Ресурси й Нефрит на честь нового рівня Твердині",
+          "locale": "uk"
+        },
+        {
+          "displayName": "Święto Twierdzy",
+          "description": "Zasoby i Jadeit na cześć nowego poziomu Twierdzy",
+          "locale": "pl"
+        },
+        {
+          "displayName": "Oslava Pevnosti",
+          "description": "Zdroje a nefrit na oslavu nové Pevnosti",
+          "locale": "cs"
+        },
+        {
+          "displayName": "Oslava Pevnosti",
+          "description": "Suroviny a Nefrit na oslavu novej Pevnosti",
+          "locale": "sk"
+        },
+        {
+          "displayName": "Proslava Utvrde",
+          "description": "Resursi i žad za proslavu nove Utvrde",
+          "locale": "hr"
+        },
+        {
+          "displayName": "Várünnep",
+          "description": "Nyersanyagok és Jáde az új Várad ünneplésére",
+          "locale": "hu"
+        },
+        {
+          "displayName": "Linnan juhla",
+          "description": "Resursseja ja Jadea uuden Linnasi juhlistamiseen",
+          "locale": "fi"
+        },
+        {
+          "displayName": "Γιορτή του Ακρόπυργου",
+          "description": "Πόροι και Νεφρίτης για τον νέο σου Ακρόπυργο",
+          "locale": "el"
+        },
+        {
+          "displayName": "חגיגת המצודה",
+          "description": "משאבים וירקן לחגיגת המצודה החדשה שלך",
+          "locale": "he"
         }
       ],
       "productID": "offer_keep",

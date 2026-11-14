@@ -1,0 +1,474 @@
+{
+  "language": "cs",
+  "variant": "Standard Czech (cs-CZ), friendly informal ty (lowercase), no gendered past tense or adjectives for the player or a {name}",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "ui",
+      "key": "text.period",
+      "text": ".",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.0",
+      "text": "Kaito",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.1",
+      "text": "Rin",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.2",
+      "text": "Sora",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.3",
+      "text": "Hana",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.4",
+      "text": "Ren",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.5",
+      "text": "Yuki",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.6",
+      "text": "Daichi",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.7",
+      "text": "Mei",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.8",
+      "text": "Takeshi",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.9",
+      "text": "Aiko",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.10",
+      "text": "Haru",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.11",
+      "text": "Kenji",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.12",
+      "text": "Nami",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.13",
+      "text": "Shin",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.14",
+      "text": "Tomo",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.15",
+      "text": "Kira",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.0",
+      "text": "Mori",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.1",
+      "text": "Takeda",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.2",
+      "text": "Kawamura",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.3",
+      "text": "Ishida",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.4",
+      "text": "Hayashi",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.5",
+      "text": "Sakamoto",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.6",
+      "text": "Okada",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.7",
+      "text": "Kimura",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.8",
+      "text": "Matsuda",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.9",
+      "text": "Ueda",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.10",
+      "text": "Nakano",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.11",
+      "text": "Fujita",
+      "reason": "Japanese name, written in its usual Latin spelling in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "progression.tiers.tier2.name",
+      "text": "Adept",
+      "reason": "Adept is the same word in Czech"
+    },
+    {
+      "namespace": "data",
+      "key": "roster.warriors.shinobi.name",
+      "text": "Shinobi",
+      "reason": "Shinobi is a Japanese word used as a name (glossary: transliterate, keep)"
+    },
+    {
+      "namespace": "data",
+      "key": "social.chatLines.reply.7",
+      "text": ":)",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "data",
+      "key": "troops.hedgehog_roller.name",
+      "text": "Shinobi",
+      "reason": "Shinobi is a Japanese word used as a name (glossary: transliterate, keep)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.281a37477f",
+      "text": "tank",
+      "reason": "tank is the usual Czech gaming term for a damage-soaking role"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.7e39068eb8",
+      "text": "Kage",
+      "reason": "Kage is a Japanese word used as a league name (glossary)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.chat_460b3a7da0",
+      "text": "Chat",
+      "reason": "Chat and online are the usual Czech words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.duel_15ea5c59d2",
+      "text": "Duel",
+      "reason": "Duel is the same word in Czech"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "fps is the usual unit abbreviation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.gang_2c426c370c",
+      "text": "Gang",
+      "reason": "Gang is the chosen Czech term (gang)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.ok_565339bc4d",
+      "text": "OK",
+      "reason": "OK is the usual Czech button label"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "CSS class string the extractor captured, must stay unchanged"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.online_3103617e69",
+      "text": " · online",
+      "reason": "Chat and online are the usual Czech words"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.test_7394a4113a",
+      "text": "{arg1} (test)",
+      "reason": "test is the same word in Czech"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.c3e839df60",
+      "text": "Online",
+      "reason": "Chat and online are the usual Czech words"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "store, platform or game brand, kept in Latin letters"
+    }
+  ],
+  "latinScriptReviewed": [],
+  "notes": [
+    "The player and {name} never take a gendered past-tense verb or adjective (postavil/postavila, připraven/připravena): present tense, imperative, impersonal forms or nouns instead.",
+    "Placeholders always stand in the nominative, after a colon or in apposition (Vylepšit: {building}, budova {building}); no case endings or prepositions that need a case are attached to them.",
+    "Plurals use all four Czech categories: one, few (2-4), many (fractions) and other (0, 5+).",
+    "Generated names are noun-first with a space (generatedNames: noun-first): second parts are nominative nouns (Vrchol, Průsmyk, Údolí), first parts genitive nouns that fit any gender (Hromu, Mlh, Železa): Průsmyk Hromu, Údolí Železa.",
+    "Czech letters (č ř š ž ě ů) are outside the bundled Latin-1 fonts, so Czech needs SYSTEM_FONT_LANGS and the styles.css lang rule (integration step; tests/locales/latin-fonts.test.ts fails for cs until then).",
+    "The Japanese statutory pages are translated into Czech; the support page links them with their Japanese titles.",
+    "Computer players’ generated names (Kaito Mori) are stored text and stay in Latin letters, as in every language."
+  ]
+}

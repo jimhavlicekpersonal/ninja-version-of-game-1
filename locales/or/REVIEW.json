@@ -1,0 +1,228 @@
+{
+  "language": "or",
+  "variant": "Standard written Odia (ଓଡ଼ିଆ), respectful ଆପଣ for the player; friendly ତୁମେ only in alliance bot chat",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "data",
+      "key": "social.chatLines.reply.7",
+      "text": ":)",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Store/platform brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Store/platform brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "Technical unit abbreviation used as-is in Odia games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Store/platform brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "Store/platform brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.hp_0c9cb32a1b",
+      "text": "{arg1} HP",
+      "reason": "Technical unit abbreviation used as-is in Odia games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "Placeholders, numbers and symbols only; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Store/platform brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Game name, kept in Latin letters (logo)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Game name, kept in Latin letters (logo)"
+    }
+  ],
+  "latinScriptReviewed": [],
+  "notes": [
+    "No case suffix (ର, ରେ, କୁ, ଙ୍କ) is attached directly to a name placeholder; a colon or a following noun carries it. Separate postposition words (ପରେ, ପାଇଁ, ପୂର୍ବେ) and the spaced locative ରେ after time/number placeholders are used where natural.",
+    "Odia verbs and pronouns carry no gender, so nothing agrees with the player or a {name}.",
+    "Generated names use the default setting (first part, space, second part): Odia puts the modifier before the noun (ବଜ୍ର + ଶୃଙ୍ଗ = ବଜ୍ର ଶୃଙ୍ଗ). First parts are invariant modifiers, second parts nouns.",
+    "Intl formats numbers for or in Latin digits, so digits inside text are Latin as well.",
+    "Sentences end with the danda (।); text.period is ।.",
+    "Japanese statutory pages (tokushoho, shikin-kessai) are translated into Odia with the English glosses dropped, as in the Bengali worksheet; the support page links them by their Japanese titles.",
+    "pages.tokushoho.1 is long relative to the Japanese source because the Odia title spells out the law name."
+  ]
+}

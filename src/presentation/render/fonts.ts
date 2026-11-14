@@ -19,7 +19,7 @@ const han = HAN_FONTS[typeof document === 'undefined' ? '' : document.documentEl
  * Latin-script languages with letters the bundled subsets lack (Romanian ă ș ț, Vietnamese ă ơ ư đ and stacked tone marks): their canvas text uses the system font
  * throughout, so a word never mixes two typefaces (styles.css has the same list for the HUD).
  */
-export const SYSTEM_FONT_LANGS: readonly string[] = ['ro', 'vi'];
+export const SYSTEM_FONT_LANGS: readonly string[] = ['ro', 'vi', 'tr', 'pl', 'ha', 'hr', 'cs', 'hu', 'sk', 'sl', 'yo', 'ig'];
 const systemOnly = typeof document !== 'undefined' && SYSTEM_FONT_LANGS.includes(document.documentElement.lang);
 /** Font stacks for canvas text, matching the HUD (src/presentation/ui/styles.css, fonts in ui/fonts). */
 export const BODY_FONT = han ? `${han}"Segoe UI", system-ui, -apple-system, Roboto, sans-serif` : systemOnly ? '"Segoe UI", system-ui, -apple-system, Roboto, sans-serif' : '"M PLUS 1", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif';

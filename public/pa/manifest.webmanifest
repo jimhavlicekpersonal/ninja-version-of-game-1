@@ -1,0 +1,40 @@
+{
+  "name": "Kagemura: Ninja Clans",
+  "short_name": "Kagemura",
+  "description": "ਨਿੰਜਾ ਕਬੀਲੇ ਦੀ ਅਗਵਾਈ ਕਰੋ: ਲੁਕਿਆ ਪਹਾੜੀ ਪਿੰਡ ਬਣਾਓ, ਯੋਧੇ ਸਿਖਾਓ, ਅਤੇ ਧੂੰਏਂ ਤੇ ਤੋੜਫੋੜ ਨਾਲ ਵਿਰੋਧੀ ਗੜ੍ਹਾਂ 'ਤੇ ਧਾਵਾ ਬੋਲੋ।",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#1f2a36",
+  "theme_color": "#1f2a36",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "lang": "pa"
+}

@@ -227,6 +227,10 @@ export function vietnameseGendered(text) { return [...new Set(text.match(VI_GEND
 const VI_OLD_TONES = /(?<!q)(?:o[àáảãạ]|o[èéẻẽẹ]|u[ỳýỷỹỵ])(?!\p{L})/giu;
 export function oldStyleTones(text) { return [...new Set(text.normalize('NFC').match(VI_OLD_TONES) ?? [])]; }
 
+// A letter or an apostrophe-suffix right after a placeholder or # (rich-text {tN} tokens excepted).
+const SUFFIXING = new Set(['tr', 'hu', 'fi']);
+export function suffixAfterPlaceholder(text) { return /(?:\{(?!t\d+\})[A-Za-z0-9_]+\}|#)(?:['’\-]\p{L}|[\p{L}--\p{Lu}])/v.test(text); }
+
 const DENSE = new Set(['Hans', 'Hant', 'Jpan', 'Kore']);
 /** Share of letters (outside placeholders) written in the expected script. */
 export function scriptShare(texts, script) {
@@ -240,7 +244,7 @@ export function scriptShare(texts, script) {
     // (Kagemura, App Store, IndexedDB) counts as one letter, not as one per letter.
     if (DENSE.has(script)) words = words.replace(/\p{Script=Latin}+/gu, 'L');
     for (const ch of words) {
-      if (!/\p{L}/u.test(ch)) continue;
+      if (!/[\p{L}\p{M}]/u.test(ch)) continue; // vowel signs (Indic, Thai, Ethiopic) are marks, not letters
       total++;
       if (re.test(ch)) hit++;
     }
@@ -314,6 +318,11 @@ export function checkWorksheet(lang, ns, src, ws) {
     if (lang.script === 'Hant' && /妳/u.test(t)) errors.push(`${ns}: ${k} uses 妳; the player's gender is unknown (use 你)`);
     if (lang.code === 'vi' && vietnameseGendered(t).length) errors.push(`${ns}: ${k} uses ${vietnameseGendered(t).join(', ')}, which name a gender and an age; use bạn, người chơi, đối thủ or the name`);
     if (lang.code === 'vi' && oldStyleTones(t).length) errors.push(`${ns}: ${k} places the tone the old way (${oldStyleTones(t).join(', ')}); write the modern form (hòa, khỏe, thủy)`);
+    // Ukrainian and Russian are separate translations; each refuses the other's own letters.
+    if (lang.code === 'uk' && /[ыэъёЫЭЪЁ]/u.test(t)) errors.push(`${ns}: ${k} uses ${t.match(/[ыэъёЫЭЪЁ]/u)[0]}, a Russian letter; write Ukrainian (translate from English, never from Russian)`);
+    if (lang.code === 'ru' && /[іїєґІЇЄҐ]/u.test(t)) errors.push(`${ns}: ${k} uses ${t.match(/[іїєґІЇЄҐ]/u)[0]}, a Ukrainian or Belarusian letter; write Russian`);
+    // Turkish, Hungarian and Finnish suffixes follow vowel harmony and the word's last sound, which the game cannot know.
+    if (SUFFIXING.has(lang.code) && suffixAfterPlaceholder(t)) errors.push(`${ns}: ${k} attaches a suffix to a placeholder or #; rephrase so the placeholder stands alone (a colon, or a noun after it carries the suffix)`);
     if (lang.script === 'Kore' && notKoreanRuns(t, en).length) errors.push(`${ns}: ${k} uses Hanja or kana; Korean is written in Hangul only`);
     if (lang.script === 'Kore' && koreanParticleAfterPlaceholder(t)) errors.push(`${ns}: ${k} puts a particle that changes with the final sound (을/를, 이/가, 은/는, 과/와, 으로/로…) right after a placeholder; rephrase or use 의, 에, 도, 만 or a colon`);
     if (lang.script === 'Thai' && thaiGenderedWords(t).length) errors.push(`${ns}: ${k} uses ${thaiGenderedWords(t).join(' ')}, which mark the speaker's gender; Thai text in the game is gender-neutral`);

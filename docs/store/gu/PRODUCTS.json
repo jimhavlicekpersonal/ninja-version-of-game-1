@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "gu",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "ચપટી જેડ",
+      "description": "45 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "જેડની થેલી",
+      "description": "100 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "જેડનો થેલો",
+      "description": "280 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "જેડની પેટી",
+      "description": "600 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "જેડનો પટારો",
+      "description": "1300 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "જેડની તિજોરી",
+      "description": "3500 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "જેડનો ડ્રેગન ખજાનો",
+      "description": "7500 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "પ્રીમિયમ સીઝન ઓળિયું",
+      "description": "આ સીઝનનો પ્રીમિયમ માર્ગ",
+      "locale": "gu"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "શરૂઆતી પૅક",
+      "description": "નવા કુળ નેતાઓ માટે જેડ અને સંસાધનો",
+      "locale": "gu"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "કારીગરનું બંડલ",
+      "description": "બીજો કારીગર રાખવા માટે જેડ, સાથે સંસાધનો",
+      "locale": "gu"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "યુદ્ધ પુરવઠો",
+      "description": "ગઠબંધન યુદ્ધ માટે રસદ અને જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "પુનર્નિર્માણ કિટ",
+      "description": "ફરી બાંધવા માટે જેડ અને સંસાધનો",
+      "locale": "gu"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "કુળ વેતન",
+      "description": "દૈનિક ચુકવણી: 30, દરેકમાં 12 જેડ",
+      "locale": "gu"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "કિલ્લા ઉત્સવ",
+      "description": "નવા કિલ્લાની ઉજવણી માટે સંસાધનો અને જેડ",
+      "locale": "gu"
+    }
+  ]
+}

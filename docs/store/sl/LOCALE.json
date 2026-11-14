@@ -1,0 +1,20 @@
+{
+  "language": "sl",
+  "iosFriendList": "Kagemura pokaže, kateri tvoji prijatelji v Game Centru prav tako igrajo, da jih lahko dodaš med prijatelje v igri.",
+  "legalUnset": "še ni objavljeno",
+  "accountFailure": "Zahteve ni bilo mogoče poslati. Preveri svoje podatke in povezavo ter poskusi znova.",
+  "storekit": {
+    "premiumPass": "Sezonski zvitek: premijska pot",
+    "jade": "{n} žada",
+    "stipend": "Dnevna plačila ({payments}) po {jade} žada",
+    "seasonTrack": "Premijska pot te sezone",
+    "short": {
+      "starter_pack": "Žad in viri za nove vodje klanov",
+      "builder_pack": "Žad za še enega vaškega mojstra in viri",
+      "war_prep_pack": "Živež in žad za vojno zavezništev",
+      "rebuild_pack": "Žad in viri za obnovo",
+      "keep_pack": "Viri in žad za praznovanje nove trdnjave"
+    },
+    "displayNames": {}
+  }
+}

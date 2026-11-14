@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "cs",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Špetka nefritu",
+      "description": "45 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Měšec nefritu",
+      "description": "100 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Vak nefritu",
+      "description": "280 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Krabice nefritu",
+      "description": "600 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Truhla nefritu",
+      "description": "1300 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Trezor nefritu",
+      "description": "3500 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Dračí poklad nefritu",
+      "description": "7500 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Sezónní svitek: prémiová cesta",
+      "description": "Prémiová cesta této sezóny",
+      "locale": "cs"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Startovní balíček",
+      "description": "Nefrit a zdroje pro nové hlavy klanu",
+      "locale": "cs"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Balíček řemeslníka",
+      "description": "Nefrit na dalšího řemeslníka a k tomu zdroje",
+      "locale": "cs"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Válečné zásoby",
+      "description": "Proviant a nefrit pro Válku aliancí",
+      "locale": "cs"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Sada pro obnovu",
+      "description": "Nefrit a zdroje na obnovu",
+      "locale": "cs"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klanový žold",
+      "description": "Denní platby (30) po 12 nefritu",
+      "locale": "cs"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Oslava Pevnosti",
+      "description": "Zdroje a nefrit na oslavu nové Pevnosti",
+      "locale": "cs"
+    }
+  ]
+}

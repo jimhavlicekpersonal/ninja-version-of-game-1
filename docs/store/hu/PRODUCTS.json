@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "hu",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Csipetnyi Jáde",
+      "description": "45 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Erszénynyi Jáde",
+      "description": "100 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Zsáknyi Jáde",
+      "description": "280 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Doboznyi Jáde",
+      "description": "600 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Ládányi Jáde",
+      "description": "1300 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Kincseskamrányi Jáde",
+      "description": "3500 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Sárkánykincsnyi Jáde",
+      "description": "7500 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Szezontekercs (prémium)",
+      "description": "A mostani szezon prémium sávja",
+      "locale": "hu"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Kezdőcsomag",
+      "description": "Jáde és nyersanyagok új klánvezéreknek",
+      "locale": "hu"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Mestercsomag",
+      "description": "Jáde egy újabb Mester felfogadására, plusz nyersanyagok",
+      "locale": "hu"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Hadi ellátmány",
+      "description": "Élelem és Jáde a Szövetségi háborúhoz",
+      "locale": "hu"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Újjáépítő csomag",
+      "description": "Jáde és nyersanyagok az újjáépítéshez",
+      "locale": "hu"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klánjáradék",
+      "description": "30 napi kifizetés, egyenként 12 Jáde",
+      "locale": "hu"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Várünnep",
+      "description": "Nyersanyagok és Jáde az új Várad ünneplésére",
+      "locale": "hu"
+    }
+  ]
+}

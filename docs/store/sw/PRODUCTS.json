@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "sw",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Chembe za Jade",
+      "description": "Jade 45",
+      "locale": "sw"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Mfuko wa Jade",
+      "description": "Jade 100",
+      "locale": "sw"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Begi la Jade",
+      "description": "Jade 280",
+      "locale": "sw"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Sanduku la Jade",
+      "description": "Jade 600",
+      "locale": "sw"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Kasha la Jade",
+      "description": "Jade 1300",
+      "locale": "sw"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Hazina ya Jade",
+      "description": "Jade 3500",
+      "locale": "sw"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Lundo la Joka la Jade",
+      "description": "Jade 7500",
+      "locale": "sw"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Gombo la Msimu la Kulipia",
+      "description": "Mstari wa kulipia wa msimu huu",
+      "locale": "sw"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Kifurushi cha Mwanzo",
+      "description": "Jade na rasilimali kwa viongozi wapya",
+      "locale": "sw"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Kifurushi cha Fundi",
+      "description": "Jade ya kuajiri Fundi mwingine, pamoja na rasilimali",
+      "locale": "sw"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Mahitaji ya Vita",
+      "description": "Chakula na Jade kwa Vita vya Muungano",
+      "locale": "sw"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kifaa cha Kujenga Upya",
+      "description": "Jade na rasilimali za kujenga upya",
+      "locale": "sw"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Posho ya Ukoo",
+      "description": "Malipo ya kila siku: 30, kila moja Jade 12",
+      "locale": "sw"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Sherehe ya Ngome",
+      "description": "Rasilimali na Jade kusherehekea Ngome yako mpya",
+      "locale": "sw"
+    }
+  ]
+}

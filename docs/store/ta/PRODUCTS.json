@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ta",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "சிட்டிகை பச்சைக்கல்",
+      "description": "45 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "பச்சைக்கல் பை",
+      "description": "100 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "பச்சைக்கல் மூட்டை",
+      "description": "280 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "பச்சைக்கல் பெட்டி",
+      "description": "600 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "பச்சைக்கல் பேழை",
+      "description": "1300 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "பச்சைக்கல் பெட்டகம்",
+      "description": "3500 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "டிராகனின் பச்சைக்கல் புதையல்",
+      "description": "7500 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "சிறப்புப் பருவச் சுருள்",
+      "description": "இந்தப் பருவத்தின் சிறப்புத் தடம்",
+      "locale": "ta"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "தொடக்கத் தொகுப்பு",
+      "description": "புதிய தலைவர்களுக்குப் பச்சைக்கல்லும் வளங்களும்",
+      "locale": "ta"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "கைவினைஞர் தொகுப்பு",
+      "description": "இன்னொரு கைவினைஞரை அமர்த்தப் பச்சைக்கல், கூடவே வளங்கள்",
+      "locale": "ta"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "போர்ப் பொருட்கள்",
+      "description": "கூட்டணிப் போருக்கு உணவும் பச்சைக்கல்லும்",
+      "locale": "ta"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "மறுகட்டுமானத் தொகுப்பு",
+      "description": "மீண்டும் கட்டப் பச்சைக்கல்லும் வளங்களும்",
+      "locale": "ta"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "குல உதவித்தொகை",
+      "description": "தினசரித் தவணைகள்: 30 × 12 பச்சைக்கல்",
+      "locale": "ta"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "கோட்டைக் கொண்டாட்டம்",
+      "description": "புதிய கோட்டையைக் கொண்டாட வளங்களும் பச்சைக்கல்லும்",
+      "locale": "ta"
+    }
+  ]
+}

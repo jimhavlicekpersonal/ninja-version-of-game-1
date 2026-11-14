@@ -1,0 +1,20 @@
+{
+  "language": "yo",
+  "iosFriendList": "Kagemura ń fi àwọn ọ̀rẹ́ Game Center rẹ tí wọ́n náà ń ṣe eré yìí hàn, kí o lè fi wọ́n kún àwọn ọ̀rẹ́ rẹ nínú eré.",
+  "legalUnset": "a kò tíì tẹ̀ ẹ́ jáde",
+  "accountFailure": "A kò lè fi ìbéèrè náà ránṣẹ́. Ṣàyẹ̀wò àwọn àlàyé rẹ àti ìsopọ̀ rẹ, kí o sì gbìyànjú lẹ́ẹ̀kan sí i.",
+  "storekit": {
+    "premiumPass": "Ìwé-àkájọ Àsìkò Àkànṣe",
+    "jade": "Jéèdì {n}",
+    "stipend": "Ìsanwó ojoojúmọ́: {payments}, ọ̀kọ̀ọ̀kan Jéèdì {jade}",
+    "seasonTrack": "Ọ̀nà ẹ̀bùn àkànṣe ti àsìkò yìí",
+    "short": {
+      "starter_pack": "Jéèdì àti ohun-ìní fún àwọn aṣáájú tuntun",
+      "builder_pack": "Jéèdì láti gba Oníṣẹ́-ọnà mìíràn, pẹ̀lú ohun-ìní",
+      "war_prep_pack": "Oúnjẹ àti Jéèdì fún Ogun Àjọṣepọ̀",
+      "rebuild_pack": "Jéèdì àti ohun-ìní láti tún kọ́lé",
+      "keep_pack": "Ohun-ìní àti Jéèdì fún ayẹyẹ Ilé Olódi tuntun rẹ"
+    },
+    "displayNames": {}
+  }
+}

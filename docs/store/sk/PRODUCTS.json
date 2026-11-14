@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "sk",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Štipka nefritu",
+      "description": "45 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Mešec nefritu",
+      "description": "100 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Vak nefritu",
+      "description": "280 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Krabica nefritu",
+      "description": "600 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Truhlica nefritu",
+      "description": "1300 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Trezor nefritu",
+      "description": "3500 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Dračí poklad nefritu",
+      "description": "7500 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Sezónny zvitok: prémiová cesta",
+      "description": "Prémiová cesta tejto sezóny",
+      "locale": "sk"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Štartovací balík",
+      "description": "Nefrit a suroviny pre nové vedenie klanu",
+      "locale": "sk"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Balík remeselníka",
+      "description": "Nefrit na ďalšieho Remeselníka a k tomu suroviny",
+      "locale": "sk"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Vojnové zásoby",
+      "description": "Zásoby a Nefrit pre Vojnu aliancií",
+      "locale": "sk"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Súprava na obnovu",
+      "description": "Nefrit a suroviny na obnovu",
+      "locale": "sk"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klanový žold",
+      "description": "Denné platby (30) po 12 Nefritu",
+      "locale": "sk"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Oslava Pevnosti",
+      "description": "Suroviny a Nefrit na oslavu novej Pevnosti",
+      "locale": "sk"
+    }
+  ]
+}

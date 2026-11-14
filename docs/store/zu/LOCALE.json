@@ -1,0 +1,20 @@
+{
+  "language": "zu",
+  "iosFriendList": "I-Kagemura ikhombisa ukuthi yibaphi abangane bakho be-Game Center abayidlalayo, ukuze ubengeze njengabangane emdlalweni.",
+  "legalUnset": "akukashicilelwa",
+  "accountFailure": "Isicelo asikwazanga ukuthunyelwa. Hlola imininingwane yakho nokuxhumana kwakho, bese uzama futhi.",
+  "storekit": {
+    "premiumPass": "Umqulu Wesizini okhethekile",
+    "jade": "Ijeyidi elingu-{n}",
+    "stipend": "Izinkokhelo zansuku zonke: {payments} × ijeyidi elingu-{jade}",
+    "seasonTrack": "Umzila okhethekile wale sizini",
+    "short": {
+      "starter_pack": "Ijeyidi nezinsiza zabaholi abasha",
+      "builder_pack": "Ijeyidi lokuqasha enye Ingcweti, nezinsiza",
+      "war_prep_pack": "Ukudla nejeyidi ukulungela Impi Yomfelandawonye",
+      "rebuild_pack": "Ijeyidi nezinsiza zokwakha kabusha",
+      "keep_pack": "Izinsiza nejeyidi zokugubha Inqaba yakho entsha"
+    },
+    "displayNames": {}
+  }
+}

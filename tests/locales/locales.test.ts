@@ -44,7 +44,7 @@ describe('locales', () => {
       for (const e of r.errors) failures.push(`${lang.code}: ${e}`);
     }
     expect(failures).toEqual([]);
-  });
+  }, 60_000); // checks every string of 50 worksheets; slow when the suite runs in parallel
 
   it('sync keeps translations, queues changed English with the old text as a hint, and drops removed keys', () => {
     const ws = { a: { en: 'Attack', text: 'Ataque' }, b: { en: 'Old text', text: 'Texto viejo' }, gone: { en: 'x', text: 'y' } };

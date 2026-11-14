@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "mr",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "चिमूटभर जेड",
+      "description": "45 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "जेडची थैली",
+      "description": "100 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "जेडची पिशवी",
+      "description": "280 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "जेडचा डबा",
+      "description": "600 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "जेडची पेटी",
+      "description": "1300 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "जेडची तिजोरी",
+      "description": "3500 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ड्रॅगनचा जेड खजिना",
+      "description": "7500 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "प्रीमियम सीझन स्क्रोल",
+      "description": "या सीझनचा प्रीमियम मार्ग",
+      "locale": "mr"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "सुरुवातीचा संच",
+      "description": "नव्या कुळप्रमुखांसाठी जेड आणि संसाधने",
+      "locale": "mr"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "कारागिराचा संच",
+      "description": "आणखी एक कारागीर नेमण्यासाठी जेड, आणि संसाधने",
+      "locale": "mr"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "युद्धसामग्री",
+      "description": "युती युद्धासाठी रसद आणि जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "पुनर्बांधणी संच",
+      "description": "पुन्हा उभारणीसाठी जेड आणि संसाधने",
+      "locale": "mr"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "कुळ भत्ता",
+      "description": "रोजचे हप्ते: 30, प्रत्येकी 12 जेड",
+      "locale": "mr"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "किल्ला उत्सव",
+      "description": "नव्या किल्ल्याच्या उत्सवासाठी संसाधने आणि जेड",
+      "locale": "mr"
+    }
+  ]
+}

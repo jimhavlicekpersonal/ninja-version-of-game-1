@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "he",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "קמצוץ ירקן",
+      "description": "45 ירקן",
+      "locale": "he"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "כיס ירקן",
+      "description": "100 ירקן",
+      "locale": "he"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "שק ירקן",
+      "description": "280 ירקן",
+      "locale": "he"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "קופסת ירקן",
+      "description": "600 ירקן",
+      "locale": "he"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "תיבת ירקן",
+      "description": "1300 ירקן",
+      "locale": "he"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "כספת ירקן",
+      "description": "3500 ירקן",
+      "locale": "he"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "אוצר הדרקון של ירקן",
+      "description": "7500 ירקן",
+      "locale": "he"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "מגילת העונה בגרסת פרימיום",
+      "description": "מסלול הפרימיום של העונה הנוכחית",
+      "locale": "he"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "חבילת פתיחה",
+      "description": "ירקן ומשאבים לשבטים חדשים",
+      "locale": "he"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "חבילת האומן",
+      "description": "ירקן להעסקת אומן נוסף, ועוד משאבים",
+      "locale": "he"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "ציוד למלחמה",
+      "description": "אספקה וירקן למלחמת בריתות",
+      "locale": "he"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "ערכת שיקום",
+      "description": "ירקן ומשאבים לבנייה מחדש",
+      "locale": "he"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "קצבת השבט",
+      "description": "תשלומים יומיים: 30, 12 ירקן בכל תשלום",
+      "locale": "he"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "חגיגת המצודה",
+      "description": "משאבים וירקן לחגיגת המצודה החדשה שלך",
+      "locale": "he"
+    }
+  ]
+}

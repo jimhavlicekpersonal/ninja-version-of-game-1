@@ -1024,26 +1024,6 @@
       }
     ]
   },
-  "ui.buy_64fe2149d3": {
-    "source": "Buy & {arg1} {arg2} ",
-    "group": "ui",
-    "parameters": [
-      {
-        "name": "arg1",
-        "expression": "ahead ? 'Next' : 'Fill'"
-      },
-      {
-        "name": "arg2",
-        "expression": "tu.count"
-      }
-    ],
-    "sources": [
-      {
-        "file": "src/presentation/ui/armyUi.ts",
-        "line": 342
-      }
-    ]
-  },
   "ui.buy_missing_provisions_afac263163": {
     "source": "Buy missing Provisions",
     "group": "ui",
@@ -2417,17 +2397,6 @@
       {
         "file": "src/presentation/ui/battleHud.ts",
         "line": 547
-      }
-    ]
-  },
-  "ui.on_slam_f7aa652317": {
-    "source": " on slam",
-    "group": "ui",
-    "parameters": [],
-    "sources": [
-      {
-        "file": "src/presentation/ui/battleHud.ts",
-        "line": 562
       }
     ]
   },
@@ -4957,22 +4926,6 @@
       {
         "file": "src/presentation/ui/hud.ts",
         "line": 1704
-      }
-    ]
-  },
-  "ui.league_b3ab5af9ac": {
-    "source": "{arg1} league",
-    "group": "ui",
-    "parameters": [
-      {
-        "name": "arg1",
-        "expression": "LEAGUE(p.league)"
-      }
-    ],
-    "sources": [
-      {
-        "file": "src/presentation/ui/friendsUi.ts",
-        "line": 269
       }
     ]
   },
@@ -12489,33 +12442,6 @@
       {
         "file": "src/main.ts",
         "line": 251
-      }
-    ]
-  },
-  "ui.your_purchase_been_delivered_6f88dee143": {
-    "source": "Your purchase{arg1} been delivered.",
-    "group": "ui",
-    "parameters": [
-      {
-        "name": "arg1",
-        "expression": "delivered === 1 ? ' has' : 's have'"
-      }
-    ],
-    "sources": [
-      {
-        "file": "src/main.ts",
-        "line": 269
-      }
-    ]
-  },
-  "ui.s_have_bced00a61e": {
-    "source": "s have",
-    "group": "ui",
-    "parameters": [],
-    "sources": [
-      {
-        "file": "src/main.ts",
-        "line": 269
       }
     ]
   },

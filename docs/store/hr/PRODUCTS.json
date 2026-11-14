@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "hr",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Prstohvat žada",
+      "description": "Žad: 45",
+      "locale": "hr"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Vrećica žada",
+      "description": "Žad: 100",
+      "locale": "hr"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Torba žada",
+      "description": "Žad: 280",
+      "locale": "hr"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Kutija žada",
+      "description": "Žad: 600",
+      "locale": "hr"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Škrinja žada",
+      "description": "Žad: 1300",
+      "locale": "hr"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Trezor žada",
+      "description": "Žad: 3500",
+      "locale": "hr"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Zmajevo blago žada",
+      "description": "Žad: 7500",
+      "locale": "hr"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Sezonski svitak (premium)",
+      "description": "Premium staza ove sezone",
+      "locale": "hr"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Početni paket",
+      "description": "Žad i resursi za nove vođe klana",
+      "locale": "hr"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Majstorov paket",
+      "description": "Žad za još jednog seoskog majstora i resursi",
+      "locale": "hr"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Ratne zalihe",
+      "description": "Namirnice i žad za Rat saveza",
+      "locale": "hr"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Paket za obnovu",
+      "description": "Žad i resursi za obnovu",
+      "locale": "hr"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klanska renta",
+      "description": "Dnevne isplate: 30. Žad po isplati: 12",
+      "locale": "hr"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Proslava Utvrde",
+      "description": "Resursi i žad za proslavu nove Utvrde",
+      "locale": "hr"
+    }
+  ]
+}
