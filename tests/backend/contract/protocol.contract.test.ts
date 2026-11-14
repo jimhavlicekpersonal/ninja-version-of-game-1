@@ -30,6 +30,7 @@ import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import { checkEventSchedule } from '../../../src/backend/net/eventSchedule';
 import { REFERRAL_JADE, REFERRAL_KEEP } from '../../../src/backend/net/growth';
 import { fetchSharedReplay, GrowthClient } from '../../../src/backend/net/growthClient';
+import { ComplianceRoutes, under13ModeOf } from '../../../src/backend/net/compliance';
 
 let url = process.env.CONTRACT_URL ?? '';
 let close: (() => Promise<void>) | null = null;
@@ -510,5 +511,17 @@ describe('protocol contract', () => {
     expect(v.setup.base.name).toBe('');
     expect(await g.deleteShare(code)).toEqual({ deleted: true });
     expect(await errorOf(fetchSharedReplay(url, code))).toMatchObject({ status: 404, code: 'not_found' });
+  });
+  it('compliance switches 2026-11-14: under-13 mode and terms in hello, the terms record, the consent refused below adult', async () => {
+    const hello = await client().hello();
+    expect(hello.features).toContain('terms-acceptance');
+    expect(['offline', 'limited', 'families']).toContain(under13ModeOf(hello.features));
+    expect(hello.features.some((f) => f.startsWith('under13-'))).toBe(true);
+    const p = await player('Reader');
+    expect(await p.call('GET', ComplianceRoutes.compliance)).toEqual({ termsVersion: null, consumptionConsent: false });
+    expect(await p.call('PUT', ComplianceRoutes.terms, { version: '2026-11-14' })).toMatchObject({ termsVersion: '2026-11-14' });
+    expect(await errorOf(p.call('PUT', ComplianceRoutes.terms, { version: 'later' }))).toMatchObject({ status: 400, code: 'bad_request' });
+    // No age stated: the consent cannot be switched on.
+    expect(await errorOf(p.call('PUT', ComplianceRoutes.consumptionConsent, { consent: true }))).toMatchObject({ status: 403, code: 'age_restricted' });
   });
 });
