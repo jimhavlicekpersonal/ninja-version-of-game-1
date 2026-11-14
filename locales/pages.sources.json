@@ -1330,17 +1330,38 @@
   "pages.support.24": {
     "file": "public/support.html",
     "name": "support",
-    "start": 4040,
-    "end": 4057,
-    "en": "Delete my account",
+    "start": 4056,
+    "end": 4096,
+    "en": "Complaints about safety or our decisions",
     "tokens": [],
     "kind": "html"
   },
   "pages.support.25": {
     "file": "public/support.html",
     "name": "support",
-    "start": 4068,
-    "end": 4615,
+    "start": 4107,
+    "end": 4727,
+    "en": "You can complain about illegal content, content harmful to children, a moderation decision (a removed message, a mute, a suspension, or a report we did not act on), the age group the game uses, or how we follow our online safety duties, including under the UK Online Safety Act. You do not need an account. Email us at the address above with the subject {t0}Online safety complaint{t1}, what happened and, if you play online, your Player ID. We confirm that we received it, someone who did not take the original decision looks at it, and we tell you the outcome. If we got it wrong, we restore the message or the account.",
+    "tokens": [
+      "<b>",
+      "</b>"
+    ],
+    "kind": "html"
+  },
+  "pages.support.26": {
+    "file": "public/support.html",
+    "name": "support",
+    "start": 4739,
+    "end": 4756,
+    "en": "Delete my account",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.support.27": {
+    "file": "public/support.html",
+    "name": "support",
+    "start": 4767,
+    "end": 5314,
     "en": "In the game: Settings → Online play → Account → {t0}Delete online account{t1}. Without the game: {t2}{t3}, with your Player ID or name and a {t4}deletion code{t5}: get one in Settings → Online play → Account while you still have the game (it works once, for 30 days). Without a code we first have to check the account is yours. Your village on the device goes when you uninstall the app or clear the site's data. Details are in the {t6}privacy policy{t7}.",
     "tokens": [
       "<b>",
@@ -1354,11 +1375,11 @@
     ],
     "kind": "html"
   },
-  "pages.support.26": {
+  "pages.support.28": {
     "file": "public/support.html",
     "name": "support",
-    "start": 4645,
-    "end": 4902,
+    "start": 5344,
+    "end": 5601,
     "en": "Kagemura: Ninja Clans · {t0}Privacy policy{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9}",
     "tokens": [
       "<a href=\"./privacy.html\">",
@@ -1374,7 +1395,7 @@
     ],
     "kind": "html"
   },
-  "pages.support.27": {
+  "pages.support.29": {
     "file": "public/support.html",
     "name": "support",
     "start": 398,
@@ -1383,7 +1404,7 @@
     "tokens": [],
     "kind": "attribute"
   },
-  "pages.support.28": {
+  "pages.support.30": {
     "file": "public/support.html",
     "name": "support",
     "start": 678,
@@ -1392,11 +1413,11 @@
     "tokens": [],
     "kind": "attribute"
   },
-  "pages.support.29": {
+  "pages.support.31": {
     "file": "public/support.html",
     "name": "support",
-    "start": 4207,
-    "end": 4236,
+    "start": 4906,
+    "end": 4935,
     "en": "web address not published yet",
     "tokens": [],
     "kind": "attribute"

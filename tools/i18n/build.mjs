@@ -10,6 +10,9 @@ import { checkLanguage, languages, namespaces, source, worksheet } from './lib.m
 import { LANGUAGE_ALIASES } from '../../locales/matcher.mjs';
 import { buildPages } from './pages.mjs';
 
+/** Manifest shortcut (`?open=…`) → the catalog key of its name. */
+const SHORTCUT_KEYS = { daily: 'rail.Daily', army: 'hud.army', store: 'rail.Store', news: 'news.title' };
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const shipKey = (ns, key) => ns === 'data' ? `data.${key}` : key;
 function builtSizes() {
@@ -98,7 +101,13 @@ export function buildLanguageAssets({ serverOnly = false } = {}) {
         buildPages(lang.code, serverOnly ? { names: ['account'], writePublic: false } : undefined);
         if (serverOnly) continue;
         const manifest = JSON.parse(readFileSync(join(ROOT, 'public/manifest.webmanifest'), 'utf8'));
-        writeFileSync(join(ROOT, `public/${lang.code}/manifest.webmanifest`), JSON.stringify({ ...manifest, lang: lang.code, description: pack['boot.pwaDescription'], id: '../', start_url: '../', scope: '../', icons: manifest.icons.map(i => ({ ...i, src: '../' + i.src })) }, null, 2) + '\n');
+        // Home-screen shortcuts (retention audit G23) carry their names in the language and point one folder up.
+        const shortcuts = (manifest.shortcuts ?? []).map(s => {
+          const key = SHORTCUT_KEYS[new URLSearchParams(s.url.split('?')[1] ?? '').get('open') ?? ''];
+          const name = key && pack[key] ? pack[key] : s.name;
+          return { ...s, name, short_name: name, url: '../' + s.url.replace(/^\.\//, ''), icons: (s.icons ?? []).map(i => ({ ...i, src: '../' + i.src })) };
+        });
+        writeFileSync(join(ROOT, `public/${lang.code}/manifest.webmanifest`), JSON.stringify({ ...manifest, lang: lang.code, description: pack['boot.pwaDescription'], id: '../', start_url: '../', scope: '../', icons: manifest.icons.map(i => ({ ...i, src: '../' + i.src })), ...(shortcuts.length ? { shortcuts } : {}) }, null, 2) + '\n');
       }
     }
   }
