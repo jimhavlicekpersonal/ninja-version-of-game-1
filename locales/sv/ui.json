@@ -171,5 +171,5 @@
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Din första dagliga kista väntar: Slutför öppnar den." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Det gick inte att öppna. Kontrollera anslutningen och försök igen." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "En nyare version av Kagemura finns. Ladda om för att öppna det här." },
-  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "" }
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "Den här telefonen visade striderna långsamt, så Kagemura använder lättare grafik från nästa start. Du kan ändra det i Inställningar → Grafik." }
 }

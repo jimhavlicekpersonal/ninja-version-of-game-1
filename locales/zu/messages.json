@@ -1889,7 +1889,7 @@
   "srv.rate.network": { "en": "Too many requests from your network. Try again in {seconds, plural, one {# second} other {# seconds}}.", "text": "" },
   "srv.rate.player": { "en": "Too many requests. Try again in {seconds, plural, one {# second} other {# seconds}}.", "text": "" },
   "srv.rate.battle": { "en": "Too many battle reports at once. Try again in {seconds, plural, one {# second} other {# seconds}}.", "text": "" },
-  "srv.rate.lookup": { "en": "Too many player searches. Try again later. Try again in {seconds, plural, one {# second} other {# seconds}}.", "text": "" },
+  "srv.rate.lookup": { "en": "Too many player searches. Try again in {seconds, plural, one {# second} other {# seconds}}.", "text": "" },
   "srv.rate.staff": { "en": "Too many wrong staff tokens. Try again in {seconds, plural, one {# second} other {# seconds}}.", "text": "" },
   "srv.rate.other": { "en": "Slow down a little. Try again in {seconds, plural, one {# second} other {# seconds}}.", "text": "" },
   "srv.busy.shutting_down": { "en": "The server is shutting down.", "text": "" },

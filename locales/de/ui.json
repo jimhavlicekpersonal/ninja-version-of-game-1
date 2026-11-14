@@ -171,5 +171,5 @@
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Deine erste Tagestruhe ist bereit: Fertig öffnet sie." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Das ließ sich nicht öffnen. Prüfe deine Verbindung und versuche es erneut." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Eine neuere Version von Kagemura ist da. Lade neu, um das zu öffnen." },
-  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "" }
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "Dieses Handy hat Kämpfe langsam dargestellt, daher nutzt Kagemura ab dem nächsten Start leichtere Grafik. Du kannst das unter Einstellungen → Grafik ändern." }
 }

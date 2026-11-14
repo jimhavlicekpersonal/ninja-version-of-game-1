@@ -171,5 +171,5 @@
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "你的第一个每日宝箱可以领取了：点“完成”就会打开它。" },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "无法打开。请检查网络连接后重试。" },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura 有新版本。请重新加载后再打开。" },
-  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "" }
+  "quality.slowBattles": { "en": "This phone drew battles slowly, so Kagemura will use lighter graphics from the next start. You can change it in Settings → Graphics.", "text": "这部手机绘制战斗较慢，因此从下次启动起，Kagemura 将使用更轻量的画面。你可以在“设置 → 画质”中更改。" }
 }
