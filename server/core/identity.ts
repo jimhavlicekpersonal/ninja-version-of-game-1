@@ -8,6 +8,7 @@ import { purchaseFeatures } from './purchases';
 import { appealText } from './moderation';
 import { changeName, nameChangeAt, nameForNewPlayer } from './names';
 import { NameTakenError } from '../repo';
+import { serverHasContact } from './contactFilter';
 
 /**
  * The oldest game this server serves (protocol 7: villages kept on the server,
@@ -19,7 +20,7 @@ export const MIN_PROTOCOL = 7;
 export const FEATURES = ['pvp', 'leaderboard', 'groves', 'grove-chat', 'donations', 'grove-raid'];
 
 export function hello(ctx: ServerContext): HelloResponse {
-  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', 'age-bands', 'deletion-codes', 'notices', 'sessions', 'attack-commit', 'seed-at-start', 'stats', 'rules-acceptance', 'tempering', 'stakes', 'signin-nonce', 'session-control', ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}) };
+  return { name: 'toadstool-kingdoms', protocol: PROTOCOL_VERSION, minProtocol: MIN_PROTOCOL, serverTime: ctx.now(), features: [...FEATURES, 'warriors-50', 'defense-counters', 'server-seed', 'account-deletion', 'reports', 'blocks', 'server-economy', 'village-import', 'links', 'power-ranking', 'rules-versions', 'friends', 'unique-names', 'platform-friends', 'duels', 'gangs', 'gang-wars', 'age-bands', 'deletion-codes', 'notices', 'sessions', 'attack-commit', 'seed-at-start', 'stats', 'rules-acceptance', 'tempering', 'stakes', 'signin-nonce', 'session-control', 'complaints', ...(ctx.balance ? ['balance-bundles'] : []), ...purchaseFeatures(ctx), ...(ctx.push.enabled ? ['push'] : [])], supportedRules: ctx.rules.supportedRules(), dataVersion: ctx.rules.live.dataVersion, ...(ctx.rules.minClientBuild ? { minClientBuild: ctx.rules.minClientBuild } : {}) };
 }
 
 /** GET /v1/balance (step 76): the signed number changes in force, for games with the same battle rules. */
@@ -31,7 +32,8 @@ export function balance(ctx: ServerContext): BalanceResponse {
 export function chosenName(raw: unknown, ctx: ServerContext): string {
   const c = checkName(raw);
   if (c.error) throw new ApiError(400, 'bad_request', NAME_ERROR_TEXT[c.error]);
-  if (hasContact(c.name)) throw new ApiError(400, 'bad_request', 'Names cannot hold links, phone numbers, addresses or messaging-app handles.');
+  // Backend batch 2026-11-13 (C25): the server's stronger check on top of the shared filter.
+  if (hasContact(c.name) || serverHasContact(c.name)) throw new ApiError(400, 'bad_request', 'Names cannot hold links, phone numbers, addresses or messaging-app handles.');
   return censorText(c.name, ctx.data);
 }
 

@@ -3,6 +3,7 @@
  * database. server/app.ts puts it behind HTTP; server/inProcess.ts calls it
  * directly. A future server can reuse it with other adapters.
  */
+import * as complaints from './complaints';
 import * as account from './account';
 import * as age from './age';
 import * as admin from './admin';
@@ -93,6 +94,7 @@ export function createCore(ctx: ServerContext) {
     revokeOtherSessions: links.revokeOthers.bind(null, ctx),
     appleSignInNotification: (body: { payload?: unknown } | undefined) => links.appleSignInNotification(ctx, body),
     authNonce: () => links.issueNonce(ctx),
+    submitComplaint: (body: unknown) => complaints.submitComplaint(ctx, body as never),
     signOutDevice: links.signOutDevice.bind(null, ctx),
     rotateToken: links.rotateToken.bind(null, ctx),
     /** Hourly with retention: extra device tokens unused for 400 days. */
@@ -157,6 +159,10 @@ export function createCore(ctx: ServerContext) {
       resetRating: admin.resetRating.bind(null, ctx),
       resetAge: admin.resetAge.bind(null, ctx),
       actions: admin.actions.bind(null, ctx),
+      rename: admin.rename.bind(null, ctx),
+      releaseImportHold: admin.releaseImportHold.bind(null, ctx),
+      complaintQueue: complaints.complaintQueue.bind(null, ctx),
+      resolveComplaint: complaints.resolveComplaint.bind(null, ctx),
     },
   };
 }

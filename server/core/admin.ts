@@ -8,7 +8,9 @@
 import { newRating } from '../../src/gameplay/sim/rating';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { RESOURCE_KINDS, type ResourceKind } from '../../src/gameplay/sim/types';
-import type { Player } from '../repo';
+import { NAME_HOLD_DAYS, nameKey } from '../../src/backend/net/names';
+import { DELETED_PLAYER, NameTakenError, type Player } from '../repo';
+import { nameFree, nameProblem, suggestNames } from './names';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { appealText, notify } from './moderation';
 import { applyServerResult } from './village';
@@ -65,7 +67,68 @@ export async function detail(ctx: ServerContext, id: string) {
     purchases: await ctx.repo.purchasesOf(p.id, 50),
     defenses: (await ctx.repo.defensesFor(p.id, now - 7 * 24 * HOUR, 20)).map((a) => ({ at: a.at, attacker: a.attackerName, stars: a.result.stars, destruction: a.result.destruction, honor: a.defenderTrophies })),
     staffActions: await ctx.repo.staffActions(p.id, 30),
+    importHolds: await ctx.repo.importHoldsOf(p.id),
   };
+}
+
+/**
+ * Backend batch 2026-11-13: staff replace an offending player name (community rules, UK OSA / EU DSA).
+ * With `name` it must pass the usual name rules and be free; without one the player gets a neutral
+ * generated name. The old name is held for NAME_HOLD_DAYS by nobody (neither they nor anyone else takes it
+ * back at once), the player gets a free rename to choose another, a notice with the reason and the appeal
+ * route, and the staff log a line.
+ */
+export async function rename(ctx: ServerContext, actor: string, id: string, body: { name?: unknown; reason?: unknown } | undefined) {
+  const p = await playerOr404(ctx, id);
+  const reason = text(body?.reason, 200);
+  if (!reason) throw new ApiError(400, 'bad_request', 'Give a reason: the player is told it.');
+  let name = text(body?.name, 40);
+  if (name) {
+    const problem = nameProblem(ctx, name);
+    if (problem) throw new ApiError(400, 'bad_request', problem);
+    if (!(await nameFree(ctx, nameKey(name), p.id))) throw new ApiError(409, 'name_taken', 'That name is taken.');
+  } else {
+    const [first] = await suggestNames(ctx, 'Shadow', p.id, 1);
+    if (!first) throw new ApiError(503, 'conflict', 'Could not find a free name. Try again.');
+    name = first;
+  }
+  const t = ctx.now();
+  try {
+    await ctx.repo.transaction(async (tx) => {
+      await tx.updatePlayer(p.id, { name, nameKey: nameKey(name), previousName: null, nameChangedAt: 0, freeRenames: (p.freeRenames ?? 0) + 1, updatedAt: t, ...(p.base ? { base: { ...p.base, name } } : {}) });
+      if (p.nameKey) await tx.holdName(p.nameKey, DELETED_PLAYER.id, t + NAME_HOLD_DAYS * 24 * HOUR);
+    });
+  } catch (e) {
+    if (e instanceof NameTakenError) throw new ApiError(409, 'name_taken', 'That name was just taken.');
+    throw e;
+  }
+  await notify(ctx, p.id, 'moderation_action', `Your name was changed by a moderator because it broke the community rules. Reason: ${reason}. You can choose a new name in Settings now. ${appealText(ctx)}`);
+  await audit(ctx, actor, 'rename', p.id, { from: p.name, to: name, reason });
+  return detail(ctx, p.id);
+}
+
+/**
+ * GLOBAL-002: release what a village move held back (`import_holds`) after support confirmed it (a store
+ * receipt, a purchase made before the account existed). The held Jade goes into the server-held village
+ * (ledger `staff:import-release`); a held premium Season Scroll cannot be granted from here and is only
+ * marked, so support tells the player how it is restored. The staff log keeps the note.
+ */
+export async function releaseImportHold(ctx: ServerContext, actor: string, id: string, holdId: string, body: { note?: unknown } | undefined) {
+  const p = await playerOr404(ctx, id);
+  const note = text(body?.note, 200);
+  if (!note) throw new ApiError(400, 'bad_request', 'Say what support confirmed (note): it goes in the staff log.');
+  const hold = (await ctx.repo.importHoldsOf(p.id)).find((h) => h.id === holdId);
+  if (!hold || hold.status !== 'held') throw new ApiError(404, 'not_found', 'No held import with that id for this player.');
+  await ctx.repo.transaction(async (tx) => {
+    if (!(await tx.resolveImportHold(hold.id, p.id))) throw new ApiError(409, 'conflict', 'That hold was already released.');
+    if (hold.jade > 0) {
+      const r = await applyServerResult(tx, ctx, p, [{ cmd: { type: 'staffAdjust', resources: { moonstones: hold.jade } }, reason: 'staff:import-release' }], `staff:${actor || 'staff'}`);
+      if (!r) throw new ApiError(404, 'no_village', 'This village is no longer kept on the server.');
+      if (!r.ok) throw new ApiError(400, 'bad_request', r.message);
+    }
+  });
+  await audit(ctx, actor, 'import-release', p.id, { hold: hold.id, jade: hold.jade, premium: hold.premium, purchases: hold.purchases.length, note });
+  return detail(ctx, p.id);
 }
 
 /** Give (positive) or take (negative) resources from a village kept on the server. */

@@ -599,6 +599,21 @@ export interface ImportHold {
   status: 'held' | 'resolved';
 }
 
+/** A complaint about illegal or harmful content (EU DSA art. 16, UK OSA; core/complaints.ts). */
+export interface Complaint {
+  id: string;
+  at: number;
+  subject: string;
+  reason: string;
+  /** Where to answer (optional); deleted with the complaint. */
+  contact: string | null;
+  /** The complainant's own player id, if they gave it. */
+  playerId: string | null;
+  status: 'open' | 'done';
+  resolvedAt: number | null;
+  resolution: string | null;
+}
+
 /** A device that receives server push (roadmap step 40). */
 export interface PushToken {
   locale?: string;
@@ -651,6 +666,8 @@ export interface PruneCutoffs {
   deletionRequestsBefore?: number;
   /** Sign-in nonces that expired before this go (backend A15). */
   noncesBefore?: number;
+  /** Handled complaints resolved before this go, with their contact address. */
+  complaintsBefore?: number;
   /** Store notifications received before this go (backend A29: kept long enough to order late deliveries). */
   storeNotificationsBefore?: number;
   /**
@@ -843,6 +860,14 @@ export interface OpsStore {
   getAgeGroup(playerId: string): Promise<{ under18: boolean; at: number } | null>;
   setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void>;
   addImportHold(h: ImportHold): Promise<void>;
+  /** GLOBAL-002 staff release: mark a held import resolved (only from `held`); false when it was not held. */
+  resolveImportHold(id: string, playerId: string): Promise<boolean>;
+  // complaints (backend batch 2026-11-13)
+  addComplaint(c: Complaint): Promise<void>;
+  /** Oldest first. */
+  complaints(status: 'open' | 'all', limit: number): Promise<Complaint[]>;
+  /** False when it is not an open complaint. */
+  resolveComplaint(id: string, resolution: string, at: number): Promise<boolean>;
   /** Newest first. */
   importHoldsOf(playerId: string): Promise<ImportHold[]>;
 }
@@ -1162,6 +1187,7 @@ export class MemoryRepo implements Repo {
   intentRows: PurchaseIntent[] = [];
   ageRows = new Map<string, { under18: boolean; at: number; band?: AgeBand | null }>();
   importHoldRows: ImportHold[] = [];
+  complaintRows: Complaint[] = [];
   pushRows: PushToken[] = [];
   ledgerRows: LedgerEntry[] = [];
   commandRows: CommandLogRow[] = [];
@@ -1425,6 +1451,24 @@ export class MemoryRepo implements Repo {
   async setAgeGroup(playerId: string, under18: boolean | null, at: number): Promise<void> {
     if (under18 === null) this.ageRows.delete(playerId);
     else this.ageRows.set(playerId, { ...this.ageRows.get(playerId), under18, at });
+  }
+  async resolveImportHold(id: string, playerId: string): Promise<boolean> {
+    const h = this.importHoldRows.find((x) => x.id === id && x.playerId === playerId && x.status === 'held');
+    if (!h) return false;
+    h.status = 'resolved';
+    return true;
+  }
+  async addComplaint(c: Complaint): Promise<void> {
+    this.complaintRows.push(clone(c));
+  }
+  async complaints(status: 'open' | 'all', limit: number): Promise<Complaint[]> {
+    return this.complaintRows.filter((c) => status === 'all' || c.status === 'open').slice(0, limit).map(clone);
+  }
+  async resolveComplaint(id: string, resolution: string, at: number): Promise<boolean> {
+    const c = this.complaintRows.find((x) => x.id === id && x.status === 'open');
+    if (!c) return false;
+    Object.assign(c, { status: 'done', resolution, resolvedAt: at });
+    return true;
   }
   async addImportHold(h: ImportHold): Promise<void> {
     this.importHoldRows.push(clone(h));
@@ -1838,6 +1882,8 @@ export class MemoryRepo implements Repo {
     if (intentsBefore !== undefined) this.intentRows = this.intentRows.filter((i) => i.at >= intentsBefore);
     const snBefore = c.storeNotificationsBefore;
     if (snBefore !== undefined) this.storeNoticeRows = this.storeNoticeRows.filter((n) => n.receivedAt >= snBefore);
+    const complaintsBefore = c.complaintsBefore;
+    if (complaintsBefore !== undefined) this.complaintRows = this.complaintRows.filter((x) => x.status === 'open' || (x.resolvedAt ?? 0) >= complaintsBefore);
     const noncesBefore = c.noncesBefore;
     if (noncesBefore !== undefined) for (const [n, exp] of this.nonceRows) if (exp < noncesBefore) this.nonceRows.delete(n);
     let idempotency = 0;
@@ -1902,6 +1948,7 @@ export class MemoryRepo implements Repo {
     this.intentRows = this.intentRows.filter((i) => i.playerId !== id);
     this.ageRows.delete(id);
     this.importHoldRows = this.importHoldRows.filter((h) => h.playerId !== id);
+    for (const c of this.complaintRows) if (c.playerId === id) c.playerId = null;
     this.pushRows = this.pushRows.filter((t) => t.playerId !== id);
     // Purchase records are financial records (refunds, tax): kept, no longer tied to the player.
     for (const p of this.purchaseRows) if (p.playerId === id) p.playerId = D.id;

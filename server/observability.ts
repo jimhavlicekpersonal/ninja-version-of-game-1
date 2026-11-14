@@ -48,6 +48,8 @@ export const METRIC_HELP: Record<string, string> = {
   tk_notices_total: 'Moderation notices sent to players, by kind (report_outcome, moderation_action, account).',
   tk_apple_revocations_total: 'Sign in with Apple token revocations, by trigger (delete, unlink, notification) and result (ok, failed, skipped).',
   tk_sessions_revoked_total: 'Device tokens signed out, by reason (unlink, others, prune, current, rotate, idle).',
+  tk_complaints_total: 'Complaints about illegal or harmful content received (EU DSA / UK OSA).',
+  tk_chat_contacts_removed_total: 'Chat messages replaced by the server contact check (links or contacts written around the shared filter; C25).',
   tk_retention_runs_total: 'Retention runs finished (alert RetentionStalled when none for a day; backend A18).',
   tk_retention_rows_total: 'Rows deleted by retention, by table (backend A18).',
   tk_dormant_accounts_deleted_total: 'Dormant anonymous accounts deleted (DORMANT_ACCOUNT_DAYS; backend A23).',

@@ -36,6 +36,7 @@ import type {
   PruneResult,
   PurchaseIntent,
   ImportHold,
+  Complaint,
   PurchaseRow,
   PushToken,
   RaidAttack,
@@ -582,6 +583,25 @@ export class PgRepo implements Repo {
     return r[0] ? { under18: Boolean(r[0].under18), at: num(r[0].at) } : null;
   }
 
+  async resolveImportHold(id: string, playerId: string): Promise<boolean> {
+    const r = await this.db.query(`update import_holds set status = 'resolved' where id = $1 and player_id = $2 and status = 'held'`, [id, playerId]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
+  async addComplaint(c: Complaint): Promise<void> {
+    await this.db.query('insert into complaints (id, at, subject, reason, contact, player_id, status, resolved_at, resolution) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)', [c.id, c.at, c.subject, c.reason, c.contact, c.playerId, c.status, c.resolvedAt, c.resolution]);
+  }
+
+  async complaints(status: 'open' | 'all', limit: number): Promise<Complaint[]> {
+    const r = await this.rows(`select * from complaints where ($1 = 'all' or status = 'open') order by at limit $2`, [status, limit]);
+    return r.map((x) => ({ id: String(x.id), at: num(x.at), subject: String(x.subject), reason: String(x.reason), contact: strOrNull(x.contact), playerId: strOrNull(x.player_id), status: String(x.status) as Complaint['status'], resolvedAt: x.resolved_at == null ? null : num(x.resolved_at), resolution: strOrNull(x.resolution) }));
+  }
+
+  async resolveComplaint(id: string, resolution: string, at: number): Promise<boolean> {
+    const r = await this.db.query(`update complaints set status = 'done', resolution = $2, resolved_at = $3 where id = $1 and status = 'open'`, [id, resolution, at]);
+    return (r.rowCount ?? 0) > 0;
+  }
+
   async addImportHold(h: ImportHold): Promise<void> {
     await this.db.query('insert into import_holds (id, player_id, at, jade, premium, purchases, status) values ($1,$2,$3,$4,$5,$6,$7)', [h.id, h.playerId, h.at, h.jade, h.premium, JSON.stringify(h.purchases), h.status]);
   }
@@ -1101,6 +1121,7 @@ export class PgRepo implements Repo {
     if (c.intentsBefore !== undefined) await this.batchDelete('purchase_intents', 'at < $1', [c.intentsBefore], c);
     if (c.deletionRequestsBefore !== undefined) await this.batchDelete('deletion_requests', `status <> 'open' and resolved_at < $1`, [c.deletionRequestsBefore], c);
     if (c.storeNotificationsBefore !== undefined) await this.batchDelete('store_notifications', 'received_at < $1', [c.storeNotificationsBefore], c);
+    if (c.complaintsBefore !== undefined) await this.batchDelete('complaints', `status <> 'open' and resolved_at < $1`, [c.complaintsBefore], c);
     if (c.noncesBefore !== undefined) await this.batchDelete('auth_nonces', 'expires_at < $1', [c.noncesBefore], c);
     return { attacks, tickets, bases, reports, commands, idempotency: idem };
   }
@@ -1175,6 +1196,8 @@ export class PgRepo implements Repo {
       await q('delete from friendships where a = $1 or b = $1', [id]);
       await q('delete from friend_requests where from_id = $1 or to_id = $1', [id]);
       await q('update name_holds set player_id = $2 where player_id = $1', [id, D.id]);
+      // A complaint the player sent stays (others may be named in it), without their id.
+      await q('update complaints set player_id = null where player_id = $1', [id]);
       // Stored idempotent answers (a village import's answer holds the whole village) go with the account.
       await q(
         `delete from idempotency_keys where scope in (

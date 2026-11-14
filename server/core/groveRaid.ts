@@ -159,6 +159,11 @@ function outcomeOf(s: { ours: number; theirs: number; ourDestruction?: number; t
   return a > b ? 'win' : a < b ? 'loss' : 'draw';
 }
 
+/** Ledger audit E14: did this member attack at least `chestMinAttacks` times in that week's war? */
+async function foughtIn(ctx: ServerContext, week: number, groveId: string, playerId: string): Promise<boolean> {
+  return (await ctx.repo.raidAttacks(week, groveId)).filter((a) => a.attackerId === playerId).length >= ctx.data.social.groveRaid.chestMinAttacks;
+}
+
 export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
   const { grove, joinedAt } = await requireGrove(ctx, me);
   const t = ctx.now();
@@ -170,7 +175,8 @@ export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
     if (w < 0 || raidWindow(w, ctx.data).end > t) continue;
     const claim = await ctx.repo.getClaim(w, me.id);
     if (claim) chests.push({ week: w, claimed: true });
-    else if (eligible(joinedAt, w, ctx) && (await ctx.repo.getPairing(w, grove.id))) chests.push({ week: w, claimed: false });
+    // Ledger audit E14: a chest waits only for a member who fought in that war.
+    else if (eligible(joinedAt, w, ctx) && (await ctx.repo.getPairing(w, grove.id)) && (await foughtIn(ctx, w, grove.id, me.id))) chests.push({ week: w, claimed: false });
   }
   const base: RaidView = { phase: ph.phase, week: ph.week, start: ph.start, end: ph.end, nextStart: ph.nextStart, eligible: ok, opponent: null, ours: 0, theirs: 0, enemyBaseStars: [], attacksLeft: 0, result: null, claimed: false, chests };
   const pairing = ph.phase === 'live' ? await ensurePairing(ctx, grove.id, ph.week) : await ctx.repo.getPairing(ph.week, grove.id);
@@ -266,6 +272,12 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
   if (!eligible(joinedAt, w, ctx)) throw new ApiError(404, 'not_found', 'You joined your Alliance after that Alliance War started.');
   const pairing = await ctx.repo.getPairing(w, grove.id);
   if (!pairing) throw new ApiError(404, 'not_found', 'Your Alliance did not take part in that Alliance War.');
+  // Ledger audit E14: online wars pay their chest only to members who fought in them (`chestMinAttacks`,
+  // the same rule the offline war uses), not to everyone on the roster.
+  if (!(await foughtIn(ctx, w, grove.id, me.id))) {
+    ctx.metrics.count('tk_refused_total', { reason: 'war_chest_without_attacks' });
+    throw new ApiError(409, 'conflict', `Only members who attacked in that Alliance War get its chest (at least ${ctx.data.social.groveRaid.chestMinAttacks}).`);
+  }
   const s = await scores(ctx, pairing, end);
   const outcome = outcomeOf(s);
   const fresh = await ctx.repo.transaction(async (tx) => {

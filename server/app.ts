@@ -13,6 +13,7 @@ import { ClientHeaders, Routes, type ErrorBody, type MyGroveResponse } from '../
 import { MIN_PROTOCOL } from './core/identity';
 import type { GameData } from '../src/gameplay/sim/types';
 import { DELETION_PAGE_CSP, deletionPage } from './accountPage';
+import { COMPLAINT_PAGE_CSP, complaintPage } from './core/complaints';
 import { ApiError, createCore, type ServerCore } from './core';
 import { nodeContext, type SharedStores } from './nodeContext';
 import { PromMetrics, type ServerSentry } from './observability';
@@ -551,6 +552,9 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Account deletion without the game: the web page and its requests (no token).
   app.get(Routes.deletionPage, async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', DELETION_PAGE_CSP).header('Cache-Control', 'no-store').send(deletionPage(String((_req.query as {lang?: unknown})?.lang ?? 'en'))));
   app.post(Routes.deletionRequests, rate('deletionRequest'), async (req, reply) => reply.code(202).send(await core.requestDeletion(req.body as never)));
+  // Complaints about illegal or harmful content (EU DSA art. 16, UK OSA): a form and its endpoint, no token.
+  app.get('/complaints', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', COMPLAINT_PAGE_CSP).header('Cache-Control', 'no-store').send(complaintPage(core.ctx.account?.supportContact)));
+  app.post(Routes.complaints, { ...rate('complaint'), logLevel: 'warn' }, async (req, reply) => reply.code(201).send(await core.submitComplaint(req.body)));
 
   // Shared play statistics (report section 5 step 5): no token, and no request log line (it would hold the IP address).
   app.post(Routes.stats, { ...rate('stats'), bodyLimit: BODY_LIMITS.base, logLevel: 'warn' }, async (req) => core.postStats(req.body));
@@ -659,6 +663,11 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     app.post('/admin/v1/players/:id/reset-rating', staff(async (req) => core.admin.resetRating(actor(req), param(req, 'id'), req.body as never)));
     app.post('/admin/v1/players/:id/reset-age', staff(async (req) => core.admin.resetAge(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/actions', staff(async () => core.admin.actions()));
+    // Backend batch 2026-11-13: replace an offending name, release a held import (GLOBAL-002), complaints.
+    app.post('/admin/v1/players/:id/rename', staff(async (req) => core.admin.rename(actor(req), param(req, 'id'), req.body as never)));
+    app.post('/admin/v1/players/:id/import-holds/:hold/release', staff(async (req) => core.admin.releaseImportHold(actor(req), param(req, 'id'), param(req, 'hold'), req.body as never)));
+    app.get('/admin/v1/complaints', staff(async (req) => core.admin.complaintQueue(query(req).status === 'all' ? 'all' : 'open')));
+    app.post('/admin/v1/complaints/:id', staff(async (req) => core.admin.resolveComplaint(actor(req), param(req, 'id'), req.body as never)));
     app.get('/admin/v1/stats', staff(async (req) => core.statsReport(query(req).days)));
     // Backend A31: what this server sees as the caller's address, to check TRUST_PROXY after a deploy.
     app.get('/admin/v1/ip', staff(async (req) => ipEcho(req)));

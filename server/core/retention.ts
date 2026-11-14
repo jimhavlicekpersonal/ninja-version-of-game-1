@@ -56,6 +56,8 @@ export async function prune(ctx: ServerContext, stillHeld?: StillHeld): Promise<
     deletionRequestsBefore: t - 365 * 24 * HOUR,
     // Sign-in nonces (backend A15) live minutes.
     noncesBefore: t,
+    // Handled complaints (EU DSA / UK OSA) a year after they were handled, with the contact address.
+    complaintsBefore: t - 365 * 24 * HOUR,
     // App Store notifications seen (backend A29): a year, far beyond Apple's retry window.
     storeNotificationsBefore: t - 365 * 24 * HOUR,
     // Backend A18: short batches, and at most RETENTION_BUDGET_MS of deleting per run.

@@ -157,6 +157,15 @@ export function importProblem(s: VillageState, now: number, data: GameData): str
   return null;
 }
 
+/**
+ * GLOBAL-002: does the village carry the testing sandbox's marks? The flag, or a purchase recorded by the
+ * sandbox's instant store (`MockPaymentProvider`: ids `mock:…` / `…:mock-…`).
+ */
+export function sandboxEvidence(s: VillageState): boolean {
+  if (s.flags.sandbox) return true;
+  return s.purchases.some((p) => typeof p.id === 'string' && /(^mock[:-])|(:mock-)/i.test(p.id));
+}
+
 /** POST /v1/village/import: the device's village becomes the server's (once). */
 export async function importVillage(ctx: ServerContext, me: Player, body: { file?: unknown } | undefined): Promise<VillageResponse> {
   if (await ctx.repo.getVillage(me.id)) throw new ApiError(409, 'conflict', 'Your village is already kept on the server.');
@@ -167,7 +176,10 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
     throw new ApiError(400, 'bad_request', `That village could not be read: ${(e as Error).message}`);
   }
   const t = ctx.now();
-  if (state.flags.sandbox) {
+  // GLOBAL-002: `flags.sandbox` is the game's own mark and a save code can be edited to drop it, so the
+  // server also looks for what the sandbox leaves behind (purchases of its instant test store). Removing
+  // every trace still leaves the provenance holds below and the account-age rule (A2).
+  if (sandboxEvidence(state)) {
     ctx.log('warn', 'village import refused', { player: me.id, problem: 'sandbox' });
     throw new ApiError(400, 'bad_request', 'This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).');
   }

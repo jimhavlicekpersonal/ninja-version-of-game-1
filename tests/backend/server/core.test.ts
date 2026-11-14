@@ -351,7 +351,9 @@ for (const [label, makeRepo] of repoFactories) {
         expect((await ann.claimRaid(week)).alreadyClaimed).toBe(true);
         expect((await ann.raid()).claimed).toBe(true);
         expect((await ann.raid()).chests).toEqual([{ week, claimed: true }]);
-        expect((await cat.claimRaid(week)).outcome).toBe(best > 0 ? 'loss' : 'draw');
+        // Ledger audit E14: Cat never attacked, so no chest waits and claiming is refused.
+        expect((await cat.raid()).chests).toEqual([]);
+        expect(await code(cat.claimRaid(week))).toBe('conflict');
       });
 
       it('gives a Grove with no free rival a bot Grove whose stars grow during the event', async () => {
@@ -384,7 +386,8 @@ for (const [label, makeRepo] of repoFactories) {
         w.setTime(w.raidEnd(week) + 1);
         expect((await eve.raid()).chests).toEqual([]);
         expect(await code(eve.claimRaid(week))).toBe('not_found');
-        expect((await ann.claimRaid(week)).alreadyClaimed).toBe(false);
+        // Ann did not attack either (E14): no chest for her.
+        expect(await code(ann.claimRaid(week))).toBe('conflict');
       });
     });
 

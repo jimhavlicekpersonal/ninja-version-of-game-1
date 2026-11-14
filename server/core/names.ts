@@ -20,6 +20,7 @@ import { nameWidth, sanitizeName } from '../../src/gameplay/sim/social/names';
 import { NameTakenError, type Player } from '../repo';
 import { ApiError, HOUR, type ServerContext } from './context';
 import { ageBandOf } from './age';
+import { serverHasContact } from './contactFilter';
 
 const DAY = 24 * HOUR;
 
@@ -29,7 +30,7 @@ export function nameProblem(ctx: ServerContext, name: string): string | null {
   if (shape) return shape;
   if (censorText(name, ctx.data) !== name) return 'That name is not allowed.';
   // Report section 5 step 7 (compliance C25): "add me on tg 1234567" fit in 24 units and passed.
-  if (hasContact(name)) return 'Names cannot hold links, phone numbers, addresses or messaging-app handles.';
+  if (hasContact(name) || serverHasContact(name)) return 'Names cannot hold links, phone numbers, addresses or messaging-app handles.';
   if (isReservedName(name)) return 'That name is reserved.';
   return null;
 }
