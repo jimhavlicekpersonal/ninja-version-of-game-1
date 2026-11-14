@@ -645,7 +645,7 @@
   "troops.bomb_carrier.name": { "en": "Bomb Carrier", "text": "બોમ્બ વાહક" },
   "troops.bomb_carrier.description": { "en": "Runs to the nearest wall or defense and explodes.", "text": "સૌથી નજીકની દીવાલ કે સંરક્ષણ સુધી દોડીને ફૂટે છે." },
   "troops.siege_bombardier.name": { "en": "Siege Bombardier", "text": "ઘેરાબંધી તોપચી" },
-  "troops.siege_bombardier.description": { "en": "Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; still inside a Kunai Tower's reach, and a Longbow Yagura hunts it.", "text": "" },
+  "troops.siege_bombardier.description": { "en": "Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; still inside a Kunai Tower's reach, and a Longbow Yagura hunts it.", "text": "5 ખાનાંની રેન્જવાળું તોપખાનું જે સંરક્ષણો પર ગોળા છોડે છે. દર 2.5 સેકન્ડે ગોળો છોડવા અટકે છે; છતાં કુનાઈ ટાવરની પહોંચમાં રહે છે, અને લાંબા ધનુષનો યાગુરા તેનો શિકાર કરે છે." },
   "troops.volcano_cannoneer.name": { "en": "Volcano Cannoneer", "text": "જ્વાળામુખી તોપચી" },
   "troops.volcano_cannoneer.description": { "en": "Huge splash that leaves burning ground.", "text": "પ્રચંડ છાંટો જે સળગતી જમીન છોડી જાય છે." },
   "troops.hound_handler.name": { "en": "Hound Handler", "text": "શિકારી કૂતરા પાલક" },
