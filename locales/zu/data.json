@@ -254,7 +254,7 @@
   "progression.buildingCatalog.mossy_statue.name": { "en": "Stone Sentinel Statue", "text": "Isithombe Somlindi Wetshe" },
   "progression.buildingCatalog.grove_lodge.name": { "en": "Alliance Lodge", "text": "Indlu Yomfelandawonye" },
   "progression.buildingCatalog.scroll_library.name": { "en": "Scroll Library", "text": "Umtapo Wemiqulu" },
-  "progression.buildingCatalog.scroll_library.description": { "en": "Moves warrior research out of the Training Dojo and studies mastery scrolls.", "text": "Ususa ucwaningo lwamaqhawe e-Idojo Lokuqeqesha futhi ufunde imiqulu yobungcweti." },
+  "progression.buildingCatalog.scroll_library.description": { "en": "Moves warrior research out of the Training Dojo and studies mastery scrolls.", "text": "Ususa ucwaningo lwamaqhawe eDojo Lokuqeqesha futhi ufunde imiqulu yobungcweti." },
   "progression.buildingCatalog.shadow_ink_well.name": { "en": "Shadow Ink Well", "text": "Umthombo Kayinki Wesithunzi" },
   "progression.buildingCatalog.shadow_ink_well.description": { "en": "Distils Shadow Ink, the third currency, used for Veteran-tier warriors and heroes.", "text": "Ucwenga uyinki wesithunzi, imali yesithathu, esetshenziselwa amaqhawe ezinga Longqondongqondo nompetha." },
   "progression.buildingCatalog.shadow_ink_vault.name": { "en": "Shadow Ink Vault", "text": "Igumbi Likayinki Wesithunzi" },
