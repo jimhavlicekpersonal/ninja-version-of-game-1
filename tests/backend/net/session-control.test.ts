@@ -294,19 +294,23 @@ describe('A15: sign-in nonces on the game side', () => {
     expect(ask).not.toHaveBeenCalled();
     const n = await conn.signInNonce('apple');
     expect(typeof n).toBe('string');
-    expect(ask).toHaveBeenCalledTimes(1);
-    // A nonce fetched ahead is used first (the provider's popup opens straight from the tap).
-    conn.prefetchSignInNonce();
-    await Promise.resolve();
-    await new Promise((r) => setTimeout(r, 0));
-    const ahead = await conn.signInNonce('google');
+    // Second verification 2026-11-14: the used nonce is replaced at once in the background, so a retry (the
+    // sign-in was cancelled or failed) opens the provider's popup straight from the tap.
     expect(ask).toHaveBeenCalledTimes(2);
+    await new Promise((r) => setTimeout(r, 0));
+    // A nonce fetched ahead is used first; a second prefetch while one is in hand asks nothing.
+    conn.prefetchSignInNonce();
+    expect(ask).toHaveBeenCalledTimes(2);
+    let asked = -1;
+    const ahead = await conn.signInNonce('google').then((v) => ((asked = ask.mock.calls.length), v));
+    expect(asked).toBe(3); // the nonce came from the one in hand; only the replacement was asked for
     expect(ahead).toBeTruthy();
     expect(ahead).not.toBe(n);
     // An older server without the feature: no nonce, the sign-in goes as before.
+    await new Promise((r) => setTimeout(r, 0));
     conn.server!.features = conn.server!.features.filter((f) => f !== 'signin-nonce');
     expect(await conn.signInNonce('apple')).toBeUndefined();
-    expect(ask).toHaveBeenCalledTimes(2);
+    expect(ask).toHaveBeenCalledTimes(3);
   });
 
   it('the hashed nonce a native Apple request carries is what the server accepts', async () => {

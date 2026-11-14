@@ -681,20 +681,35 @@ export class Connection {
    */
   async signInNonce(provider: LinkProvider): Promise<string | undefined> {
     if (provider !== 'apple' && provider !== 'google') return undefined;
+    if (!this.server?.features.includes('signin-nonce')) return undefined;
     const ready = this.nonceAhead;
     this.nonceAhead = null;
-    if (ready && ready.expiresAt - 60_000 > Date.now()) return ready.nonce;
-    return (await this.fetchNonce())?.nonce;
+    try {
+      if (ready && ready.expiresAt - 60_000 > Date.now()) return ready.nonce;
+      return (await this.fetchNonce())?.nonce;
+    } finally {
+      // Second verification 2026-11-14: every nonce is used once, so the next try (a cancelled or failed sign-in
+      // tapped again) needs a fresh one in hand, or Safari blocks the Apple popup that waited for the network.
+      this.prefetchSignInNonce();
+    }
   }
 
   /** Fetch a sign-in nonce ahead of the tap that needs it (see `signInNonce`). */
   prefetchSignInNonce(): void {
     if (this.nonceAhead && this.nonceAhead.expiresAt - 60_000 > Date.now()) return;
-    void this.fetchNonce().then((n) => {
-      // The device's own clock (the server's `expiresAt` is on the server's clock): a nonce lives 10 minutes there.
-      if (n) this.nonceAhead = { nonce: n.nonce, expiresAt: Date.now() + 9 * 60_000 };
-    });
+    if (this.nonceFetching) return;
+    this.nonceFetching = true;
+    void this.fetchNonce()
+      .then((n) => {
+        // The device's own clock (the server's `expiresAt` is on the server's clock): a nonce lives 10 minutes there.
+        if (n) this.nonceAhead = { nonce: n.nonce, expiresAt: Date.now() + 9 * 60_000 };
+      })
+      .finally(() => {
+        this.nonceFetching = false;
+      });
   }
+
+  private nonceFetching = false;
 
   private nonceAhead: { nonce: string; expiresAt: number } | null = null;
 
