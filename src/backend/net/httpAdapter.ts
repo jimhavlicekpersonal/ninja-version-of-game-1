@@ -427,6 +427,11 @@ export class HttpServerAdapter implements ServerPort {
     return this.req('GET', Routes.balance);
   }
 
+  /** Growth batch 2026-11-14: a call by route (`growth.ts` `GrowthRoutes`), used by `growthClient.ts`. */
+  call<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
+    return this.req<T>(method, path, body);
+  }
+
   async hello(): Promise<HelloResponse> {
     const h = await this.req<HelloResponse>('GET', Routes.hello);
     if (!h || h.name !== 'toadstool-kingdoms') throw new ServerError(0, 'version_mismatch', 'That address is not a Kagemura: Ninja Clans server.');

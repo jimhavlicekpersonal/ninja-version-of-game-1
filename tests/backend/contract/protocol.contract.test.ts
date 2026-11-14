@@ -26,6 +26,10 @@ import { botDeployments } from '../../../src/gameplay/sim/defense';
 import { pointAt } from '../../../src/gameplay/sim/battle/infiltration';
 import { createRng } from '../../../src/gameplay/sim/rng';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
+import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
+import { checkEventSchedule } from '../../../src/backend/net/eventSchedule';
+import { REFERRAL_JADE, REFERRAL_KEEP } from '../../../src/backend/net/growth';
+import { fetchSharedReplay, GrowthClient } from '../../../src/backend/net/growthClient';
 
 let url = process.env.CONTRACT_URL ?? '';
 let close: (() => Promise<void>) | null = null;
@@ -481,5 +485,30 @@ describe('protocol contract', () => {
     // Store notifications refuse unsigned payloads (404 where the store is not set up).
     const forged = await fetch(`${url}${Routes.appleNotifications}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ signedPayload: 'a.b.c' }) });
     expect([400, 404]).toContain(forged.status);
+  });
+
+  it('growth batch 2026-11-14: event schedule in hello, friend invites, shared replays by code without a token', async () => {
+    const hello = await client().hello();
+    expect(hello.features).toEqual(expect.arrayContaining(['event-schedule', 'referrals', 'shared-replays']));
+    if (hello.events) expect(checkEventSchedule(hello.events, data.events)).toEqual(hello.events);
+    const p = await player('Sharer');
+    const g = new GrowthClient({ online: true, server: hello, port: p });
+    const view = await g.referrals();
+    expect(view).toMatchObject({ rewardJade: REFERRAL_JADE, keep: REFERRAL_KEEP, invitedBy: null, recruits: { waiting: 0, qualified: 0, rewarded: 0 } });
+    expect(await errorOf(g.enterCode('KAGE-0000'))).toMatchObject({ status: 404, code: 'not_found' });
+    const { setup, deployments } = (() => {
+      const r = rush(5);
+      return { setup: { seed: 7, base: generateOpponent(17, 1, data), army: r.army, infiltration: true }, deployments: r.deployments };
+    })();
+    const local = runBattle(setup, deployments, data).result;
+    const { code, expiresAt } = await g.share({ setup, deployments, rules: SIM_RULES, opponent: 'player', showName: true });
+    expect(expiresAt).toBeGreaterThan(Date.now());
+    const v = await fetchSharedReplay(url, code);
+    // The server's own re-simulation, no names (the sharer stated no age), the base without its name.
+    expect(v.result).toEqual({ stars: local.stars, destruction: local.destruction });
+    expect(v.sharerName).toBeNull();
+    expect(v.setup.base.name).toBe('');
+    expect(await g.deleteShare(code)).toEqual({ deleted: true });
+    expect(await errorOf(fetchSharedReplay(url, code))).toMatchObject({ status: 404, code: 'not_found' });
   });
 });
