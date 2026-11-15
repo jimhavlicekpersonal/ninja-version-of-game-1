@@ -1,0 +1,20 @@
+{
+  "language": "hr",
+  "iosFriendList": "Kagemura prikazuje koji tvoji prijatelji iz Game Centera također igraju, pa ih možeš dodati za prijatelje u igri.",
+  "legalUnset": "još nije objavljeno",
+  "accountFailure": "Zahtjev nije moguće poslati. Provjeri svoje podatke i vezu pa pokušaj ponovno.",
+  "storekit": {
+    "premiumPass": "Sezonski svitak (premium)",
+    "jade": "Žad: {n}",
+    "stipend": "Dnevne isplate: {payments}. Žad po isplati: {jade}",
+    "seasonTrack": "Premium staza ove sezone",
+    "short": {
+      "starter_pack": "Žad i resursi za nove vođe klana",
+      "builder_pack": "Žad za još jednog seoskog majstora i resursi",
+      "war_prep_pack": "Namirnice i žad za Rat saveza",
+      "rebuild_pack": "Žad i resursi za obnovu",
+      "keep_pack": "Resursi i žad za proslavu nove Utvrde"
+    },
+    "displayNames": {}
+  }
+}

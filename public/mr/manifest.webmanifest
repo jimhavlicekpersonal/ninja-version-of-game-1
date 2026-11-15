@@ -1,0 +1,40 @@
+{
+  "name": "Kagemura: Ninja Clans",
+  "short_name": "Kagemura",
+  "description": "निंजा कुळाचे नेतृत्व करा: डोंगरात लपलेले गाव वसवा, योद्धे तयार करा आणि धूर व घातपाताने प्रतिस्पर्ध्यांच्या गढ्यांवर छापे घाला.",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#1f2a36",
+  "theme_color": "#1f2a36",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "lang": "mr"
+}

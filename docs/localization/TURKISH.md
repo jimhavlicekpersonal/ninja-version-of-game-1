@@ -2,48 +2,52 @@
 document_type: turkish_implementation
 schema_version: 1
 language: tr
-variant: Standard Turkish (tr-TR), sen in the game and siz in the legal pages; no suffix on a placeholder; system fonts
+variant: Standard Turkish (tr-TR), informal sen in the game, formal siz in legal pages, no suffix on a placeholder
 status: implemented_in_repo_release_checks_remain
 measurements: SPANISH_SIZE.json (measured.tr)
 ---
 
 # Turkish translation
 
-Turkish (`tr`, script `Latn`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Indonesian and Russian. It is served to every `tr-*` device and covers every namespace (3,301 entries after the a1188d2 merge, including the server message codes and the complaint form; 3,041 at activation), the six public pages and PWA manifest under `public/tr/`, the account-deletion form (`/account/delete?lang=tr`), server push text, iOS (`tr.lproj`) and Android (`values-tr`) resources, StoreKit fixtures (`tr`), and listing and product copy in `docs/store/tr/`. Terms: `locales/tr/TERMS.md`.
+Turkish (`tr`, script `Latn`) is released in commit `d6ab7b8`. It is served to `tr` devices with any region (`tr-TR`, `tr-CY`). It covers every namespace (2,708 strings in the measured pack), the public pages and PWA manifest under `public/tr/`, the account-deletion form (`/account/delete?lang=tr`), and the store copy in `docs/store/tr/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/tr/TERMS.md`; reviewed warnings: `locales/tr/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Turkish speaker has reviewed it**, nor the legal pages.
 
-## Translator's choices
-
-- **sen in the game, siz in the pages** (privacy, terms, community rules, support, account deletion, the Japanese notices), as Turkish software and legal text usually do. The store listing follows the game (sen); the account form's failure line uses siz like its page.
-- **No suffix on a placeholder.** Turkish case and possessive endings follow vowel harmony and the last consonant (`{name}'in/'ın/'un`), which the game cannot know. Phrases use a colon (`Yükselt: {building}`), a noun after the placeholder that carries the ending (`{n} savaşçı`), a postposition with no ending (`{name} ile`, `{time} sonra`) or an ordinal dot (`{level}. seviye`). The percent sign comes first (`%{pct}`).
-- Plural one/other with the noun singular after a number (`# savaşçı`).
-- **Generated names** keep the default order: adjectives that fit any noun (Sessiz, Kızıl, Gürleyen) and bare nouns (Zirve, Geçit), so no possessive suffix is needed (Gürleyen Zirve, İkiz Kılıç).
-
-## What integration added
+## What Turkish needed
 
 | Issue | Fix |
 |---|---|
-| The bundled Latin fonts cover Latin-1 and dotless ı, but not ğ, ş and İ, so those letters would be drawn in another typeface mid-word. | `tr` joins `SYSTEM_FONT_LANGS` (canvas text) and the system-font CSS rule with Romanian and Vietnamese; `latin-fonts.test.ts` required it. |
-| A placeholder suffix could slip in without a check failing. | `npm run i18n:check` fails on a suffix written onto a placeholder or plural number (`turkishSuffixAfterPlaceholder`); all entries pass. |
+| **Suffixes follow vowel harmony and the last sound,** which the game cannot know for `{name}`, `{building}` or a number (`{n}'den`, `{building}ı`). | `GLOSSARY.md` (Turkish, Hungarian and Finnish) and `TERMS.md`: a colon or a noun after the placeholder carries the suffix (`Köy: {name}`, `{name} adlı oyuncu`, `{n} savaşçıyı`). `suffixAfterPlaceholder` (`SUFFIXING` in `tools/i18n/lib.mjs`) makes `i18n:check` fail on a letter, apostrophe or hyphen suffix after a placeholder or `#`. |
+| **Percent sign comes first.** | `%{pct}` in Turkish text, unless `{pct}` already carries the sign. |
+| **Dotted and dotless i** (i/İ, ı/I) are separate letters. | Written as such in the catalogs; `<html lang="tr">` lets the browser case them correctly. |
+| **Generated names.** Turkish puts the modifier first. | Default order, no `generatedNames` setting: bare first parts (Demir, Kara, İkiz) and second parts with no possessive suffix (Tepe, Kaya, Kapı). |
 
-The page sets `<html lang="tr">`, so CSS uppercase maps i to İ correctly.
+## Fonts
+
+ğ ı ş İ Ş are outside the bundled fonts' Latin-1 subsets, so `tr` is in `SYSTEM_FONT_LANGS` (`render/fonts.ts`) and the `html:is([lang=…])` rule in `styles.css` and uses the device fonts throughout; `tests/locales/latin-fonts.test.ts` keeps this enforced.
+
+## Plurals and numbers
+
+`Intl.PluralRules('tr')` gives `one` and `other`, but the noun stays singular after a number, so both branches are usually the same (`{n, plural, one {# savaşçı} other {# savaşçı}}`). `Intl` writes 1.234.567,5. Times: {d} g {h} sa, {h} sa {m} dk, {m} dk {s} sn.
 
 ## Storage
 
-`npm run i18n:build` (`measured.tr`): 221,464 bytes UTF-8 (73,279 gzip, 62,288 Brotli) for 2,725 strings.
+`npm run i18n:build` (`measured.tr`): 219,911 bytes UTF-8 (72,807 gzip, 61,846 Brotli) for 2,708 strings.
 
 ## Validation
 
-- `npm run i18n:check -- tr`: no errors; warnings are entries identical to English (brands, Japanese names, Stake option) and Japanese statutory page lengths. There is no `REVIEW.json` for Turkish yet.
-- `tests/locales/turkish.test.ts`: catalog complete, NFC and ready; device choice; Turkish number grouping; singular noun after a number and no suffix on a placeholder (and the check catches one); Kage and Shadow League distinct; generated names; literal player chat and unchanged canonical data; the system font; pages, account form, push text, native resources and StoreKit.
-- Built client in Chromium (sandbox, Keep 10 village, `tr` locale) at 320×568: all 12 panels and their tabs, the village and the raid scout screen; no page errors, no horizontal page overflow, no element outside the viewport, no clipped button or heading, no placeholder or key left; the bottom bar fits. Emulation is not physical-device evidence.
+- `npm run i18n:check -- tr`: no errors; English-identical entries (Japanese names, Shinobi, brands, placeholder-only strings) reviewed in `REVIEW.json`; one length warning is the Japanese statutory title.
+- Store copy lengths checked with Node: subtitle 29/30, short description 67/80, keywords 88/100 bytes, StoreKit names and descriptions within 30/55 (the stipend reads `{jade} Yeşimlik {payments} günlük ödeme`, so no suffix follows a placeholder). No `displayNames` override was needed.
+- No Turkish-specific test file and no Chromium smoke run were made for this release; emulation would not be physical-device evidence anyway.
 
 ## Remaining before release
 
-1. Deploy the server (Turkish push catalog and account form) before or with the game.
-2. Native Turkish review of the game text, tutorial, purchase, safety and legal pages. Legal review under KVKK (Law 6698 on personal data), its cross-border transfer rules and VERBİS registration, and Turkey's consumer and distance-sales rules for the terms.
+1. Deploy the server (Turkish push text and account form) before or with the game.
+2. Native Turkish review of the game text, tutorial, purchase, safety and legal pages, and a Turkish-law review of the terms and privacy policy (KVKK, Law 6698 on personal data) and the consumer and distance-sales rules.
 3. Upload `docs/store/tr/` to App Store Connect and Google Play with Turkish screenshots (`npm run store:screenshots -- --language=tr`); age rating through the stores.
-4. Physical iOS and Android checks: language selection, `tr.lproj`/`values-tr` registration, ğ ş İ ı in the phones' system fonts and canvas labels, Turkish keyboard input in chat (dotted and dotless i), store purchase screens.
+4. Physical iOS and Android checks: system-font rendering of ğ ı ş İ on cheap Android phones, language selection, native resources, Turkish keyboard input in chat, store purchase screens.
 5. Turkish moderation coverage: the chat filter's word list is English only.
-6. Computer players' generated names (Kaito Mori) stay in Latin letters because they are stored text.
+
+## Notes from the parallel translation (2026-11-14)
+
+A parallel branch also activated this language (commit `ee21ee6`, with Arabic). The 2026-11-15 integration merge kept the translations above and their terms; the parallel translations remain only for keys this worksheet did not have yet (server message codes `srv.*`, the complaint form `pages.complaints.*`, interface text added after 2026-11-13), so those entries may use the parallel terms (see the note at the end of `locales/tr/TERMS.md`) until a review pass harmonises them. The parallel branch added `tests/locales/turkish.test.ts` (catalog, device choice, plurals, generated names, pages, native resources), now updated to these translations, and the checker rules `missingPluralForms` (Russian one/few/many) and, for Turkish, `turkishSuffixAfterPlaceholder` (the release check uses the broader `suffixAfterPlaceholder`).

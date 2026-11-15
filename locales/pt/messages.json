@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}: construa até {arg2} (agora {arg3})" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "Construção" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "Construídos {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "Comprar e {arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "Comprar {arg1}" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "Compre de novo quando receber todos" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "Comprar por {arg1}" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "Líder" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "Ranking" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "Agora quem lidera o Grupo é {arg1}." },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "Liga {arg1}" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "Baús de liga (conteúdo fixo)" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "Sair da Aliança" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "Sair" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "Não foi possível ler essa vila: {detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Esta vila não pode ir para o servidor: ela foi jogada no ambiente de testes (saltos no tempo e compras de teste)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Esta vila não pode ir para o servidor: {detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Uma vila com Fortaleza {keep} pode ir para o servidor quando esta conta online tiver {days} dias ({wait, plural, one {em # dia} other {em # dias}}). Até lá, ela fica neste aparelho: continue jogando, e o jogo tenta de novo todo dia." }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Uma vila com Fortaleza {keep} pode ir para o servidor quando esta conta online tiver {days} dias ({wait, plural, one {em # dia} other {em # dias}}). Até lá, ela fica neste aparelho: continue jogando, e o jogo tenta de novo todo dia." },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Comprar e Próximo {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Comprar e Encher {n} " }
 }

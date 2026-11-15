@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "pa",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "ਚੁਟਕੀ ਭਰ ਜੇਡ",
+      "description": "45 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "ਜੇਡ ਦੀ ਥੈਲੀ",
+      "description": "100 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "ਜੇਡ ਦਾ ਝੋਲਾ",
+      "description": "280 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "ਜੇਡ ਦਾ ਡੱਬਾ",
+      "description": "600 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "ਜੇਡ ਦਾ ਸੰਦੂਕ",
+      "description": "1300 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "ਜੇਡ ਦੀ ਤਿਜੋਰੀ",
+      "description": "3500 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ਜੇਡ ਦਾ ਅਜਗਰੀ ਖ਼ਜ਼ਾਨਾ",
+      "description": "7500 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "ਪ੍ਰੀਮੀਅਮ ਸੀਜ਼ਨ ਸਕ੍ਰੋਲ",
+      "description": "ਇਸ ਸੀਜ਼ਨ ਦਾ ਪ੍ਰੀਮੀਅਮ ਰਾਹ",
+      "locale": "pa"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "ਸ਼ੁਰੂਆਤੀ ਪੈਕ",
+      "description": "ਨਵੇਂ ਮੁਖੀਆਂ ਲਈ ਜੇਡ ਅਤੇ ਸਾਧਨ",
+      "locale": "pa"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "ਕਾਰੀਗਰ ਦਾ ਬੰਡਲ",
+      "description": "ਇੱਕ ਹੋਰ ਕਾਰੀਗਰ ਰੱਖਣ ਲਈ ਜੇਡ, ਨਾਲ ਸਾਧਨ",
+      "locale": "pa"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "ਜੰਗੀ ਸਾਮਾਨ",
+      "description": "ਗੱਠਜੋੜ ਜੰਗ ਲਈ ਰਸਦ ਅਤੇ ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "ਮੁੜ-ਉਸਾਰੀ ਕਿੱਟ",
+      "description": "ਮੁੜ-ਉਸਾਰੀ ਲਈ ਜੇਡ ਅਤੇ ਸਾਧਨ",
+      "locale": "pa"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "ਕਬੀਲਾ ਵਜ਼ੀਫ਼ਾ",
+      "description": "ਰੋਜ਼ਾਨਾ ਕਿਸ਼ਤਾਂ: 30, ਹਰ ਕਿਸ਼ਤ 12 ਜੇਡ",
+      "locale": "pa"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "ਕਿਲ੍ਹੇ ਦਾ ਜਸ਼ਨ",
+      "description": "ਨਵੇਂ ਕਿਲ੍ਹੇ ਦੇ ਜਸ਼ਨ ਲਈ ਸਾਧਨ ਅਤੇ ਜੇਡ",
+      "locale": "pa"
+    }
+  ]
+}

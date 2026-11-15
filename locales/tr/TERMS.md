@@ -1,48 +1,55 @@
-# Türkçe — terim kararları
+# Türkçe: seçilen terimler
 
-Oyun içinde samimi "sen"; hukuki sayfalarda (`pages`: gizlilik, şartlar, topluluk kuralları, destek, hesap silme, Japon bildirimleri) resmî "siz". Yer tutuculara (`{name}`, `{n}`, `{building}`…) hiçbir ek bitişik yazılmaz: iki nokta (`Yükselt: {building}`), son çekim eki alan bir isim (`{n} savaşçı`, `{arg1} binaydı`), ek almayan edat (`{arg1} ile`, `{arg1} için`, `{time} sonra`) veya sıra sayısı noktası (`{level}. seviye`) kullanılır. Yüzde işareti başa gelir (`%{pct}`). Türkçe çoğul kategorileri one/other; isim sayıdan sonra tekil kalır (`# savaşçı`).
+Standart Türkçe (tr-TR), samimi ve sıcak; oyuncuya "sen" diye hitap edilir. Sensei Hoshi "ben" der, oyuncuya "sen" der. Türkçede dilbilgisel cinsiyet yok, ama ekler yer tutuculara (`{name}`, `{building}`, `{n}`…) eklenemez: ünlü uyumu oyunun bilmediği sese bağlıdır. Bu yüzden yer tutucudan sonra ek yok; cümle iki nokta ile ya da yer tutucudan sonra eki taşıyan bir isimle kurulur (`Köy: {name}`, `{name} adlı oyuncu`, `{building} binasını`, `{n} savaşçıyı`). Yüzde işareti Türkçede sayıdan önce gelir (`%{pct}`), ama `{pct}` işareti zaten içeriyorsa dokunulmaz.
 
-| İngilizce | Türkçe |
+| English | Türkçe |
 |---|---|
-| Kagemura / Sensei Hoshi / Shinobi / Kage | değişmez (Latin harfleriyle) |
-| Clan Keep / Keep | Klan Kalesi / Kale |
-| Coins / Coin Mint | Sikke / Sikke Darphanesi |
-| Provisions / Terraced Farm | Erzak / Teras Tarlası |
-| Shadow Ink | Gölge Mürekkebi |
-| Jade | Yeşim |
-| Honor | Onur |
-| Leagues | Bambu, Sedir, Demir, Obsidyen, Kor (Ember), Fırtına, Gölge, Kage Ligi |
-| Warrior / troops | Savaşçı |
-| Training Dojo | Eğitim Dojosu |
-| Squad Courtyard / squad | Bölük Avlusu / bölük |
+| Clan Keep / Keep / Keep 7 | Klan Kalesi / Kale / Kale Sv. 7 (Sv. = seviye) |
+| Coin Mint / Terraced Farm | Sikke Darphanesi / Teras Tarlası |
+| Treasury / Provision Storehouse | Hazine / Erzak Ambarı |
+| Coins / Provisions / Shadow Ink / Jade | Sikke / Erzak / Gölge Mürekkebi / Yeşim |
+| Training Dojo / Squad Courtyard | Eğitim Dojosu (kısa: Dojo) / Bölük Avlusu |
+| Village Artisan / Artisan's Hut | Köy Zanaatkârı (kısa: Zanaatkâr) / Zanaatkâr Kulübesi |
 | Alliance / Alliance Lodge / Alliance War | İttifak / İttifak Konağı / İttifak Savaşı |
-| Gang / Gang War | Çete / Çete Savaşı |
-| Village Artisan | Köy Zanaatkârı |
-| Raid / raider / attack (button) | Baskın / akıncı / Saldır |
-| Shield | Kalkan |
-| Smoke Bomb | Duman Bombası |
-| Sabotage / Saboteur / jam | Sabotaj / Sabotajcı / kilitlemek |
-| Infiltration point | Sızma noktası |
-| Shadow Trials / tier | Gölge Sınavları / kademe |
-| Season Scroll / Pass (rail) / premium track | Sezon Parşömeni / Parşömen / premium yol |
-| Daily chest / streak | Günlük sandık / seri |
-| Clan Stipend | Klan Maaşı |
-| Relay (Gang War) | bayrak (bayrak vuruşu) |
-| Tempering: Reach / Blast / Watch | Su Verme: Menzil / Patlama / Gözcülük |
-| Stake | İddia |
-| Looks | Görünümler |
-| Upgrade / Build / Collect / Research | Yükselt / İnşa Et / Topla / Araştır(ma) |
-| Lv | Sv (Seviye) |
-| tiles | kare |
-| splash | alan hasarı |
-| Practice battle | Antrenman savaşı |
-| Settle the score | Hesaplaşma |
-| Generated / computer | Oluşturulmuş / bilgisayar |
+| Gang / Gang War / Gang leader | Çete / Çete Savaşı / çete lideri |
 | Friendly Duel | Dostluk Düellosu |
-| Codex | Kodeks |
-| Player ID / save code / deletion code | Oyuncu Kimliği / kayıt kodu / silme kodu |
-| Sandbox | test sanal alanı |
+| Shadow Trials / tier | Gölge Sınavları / kat (sınav), kademe (parşömen) |
+| Season Scroll / premium track / Pass (rail) | Sezon Parşömeni / premium yol / Parşömen |
+| Smoke Bomb / smoke | Duman Bombası / duman |
+| Saboteur / Sabotage / jam | Sabotajcı / Sabotaj / kilitlemek |
+| Infiltration Points | Sızma Noktaları |
+| Raid / attack / raider | baskın / saldırı / baskıncı |
+| Warrior / Defense / Shield | savaşçı / savunma / kalkan |
+| Honor / Power / League | şeref / güç / Lig: Bambu, Sedir, Demir, Obsidyen, Kor (Ember), Fırtına, Gölge, Kage |
+| Relay (Gang War) | bayrak (bayrak vuruşu) |
+| Gang Rating | Çete Puanı |
+| Rematch / Settle the score | rövanş / Hesaplaş |
+| simulated raider / computer rival | simüle baskıncı / bilgisayar rakibi |
+| Daily chest / streak / skip | günlük sandık / seri / atlama hakkı |
+| Clan Stipend | Klan Maaşı |
+| Looks | görünüm |
+| Tempering (Reach / Blast / Watch) | Tavlama (Menzil / Patlama / Nöbet) |
+| Stake | Bahis |
+| splash / anti-air | alan hasarı / hava savunması |
+| generated | bilgisayar üretimi |
+| Settings / Store / Online play | Ayarlar / Mağaza / Çevrim içi oyun |
+| Codex | Ansiklopedi |
+| Sensei Hoshi | Sensei Hoshi |
+| Shinobi / Oni Breaker / Kage League | Shinobi / Oni Kıran / Kage Ligi (Gölge Ligi'nden ayrı) |
+| Lv | Sv. |
 
-Japon kişi adları Hepburn yazımıyla korunur (Kaito, Takeshi, Hayashi). Oluşturulan yer ve İttifak adları varsayılan sırayla (ilk parça + boşluk + ikinci parça) birleşir; ilk parçalar her isme uyan sıfatlardır (Sessiz, Kızıl, Söğütlü, Gürleyen, Dağlı…), ikinci parçalar yalın isimlerdir (Zirve, Geçit, Turna, Gölge…), böylece iyelik eki gerekmez.
+Bina, savaşçı ve kaynak adlarında her kelime büyük harfle başlar (Eğitim Dojosu, Gölge Mürekkebi). Marka ve teknik adlar (Kagemura, App Store, Google Play, Game Center, Play Games, IndexedDB, Sentry) aynen kalır. "Sign in with Apple" = "Apple ile Giriş Yap".
 
-Japon yasal sayfa başlıkları (特定商取引法に基づく表記, 資金決済法に基づく表示) Türkçe metinde "Japon Belirli Ticari İşlemler Kanunu kapsamında bildirim" ve "Japon Ödeme Hizmetleri Kanunu kapsamında bildirim" olarak verilir; destek sayfasında Japonca bağlantı adları korunur. Çeviri hukuki inceleme yerine geçmez.
+Japon adları Latin yazımıyla kalır (Kaito, Takeda, Gorō). İngilizce lakaplar Türkçeye çevrilir.
+
+Çoğul: `Intl.PluralRules('tr')` one ve other verir; Türkçede sayıdan sonra isim tekil kalır, iki dal genelde aynıdır (`{n, plural, one {# savaşçı} other {# savaşçı}}`). Süreler: {d} g {h} sa, {h} sa {m} dk, {m} dk {s} sn.
+
+Üretilen adlar: varsayılan düzen (birinci parça, boşluk, ikinci parça), çünkü Türkçede niteleyen önce gelir. Birinci parçalar sıfat ya da yer adlarında yalın kullanılan isimlerdir (Demir, Kara, Sessiz, İkiz), ikinci parçalar iyelik eki almayan yalın isimlerdir (Tepe, Kaya, Kapı), Türk yer adlarındaki gibi (Demirkapı, Karakaya). `generatedNames` ayarı gerekmez.
+
+Hukuki sayfalar (gizlilik, koşullar, topluluk kuralları, destek, hesap silme) Türk hukuk metinlerindeki gibi resmî "siz" ile yazıldı; oyunun kendisi "sen" kullanır. Japonya'nın yasal sayfaları Türkçeye çevrildi (Japonya Belirli Ticari İşlemler Kanunu / Ödeme Hizmetleri Kanunu Kapsamında Bildirim); destek sayfası onlara Japonca başlıklarıyla bağlantı verir.
+
+Bu çeviri anadili Türkçe olan bir insan tarafından gözden geçirilmedi.
+
+## Notes from the parallel translation (2026-11-14)
+
+The 2026-11-15 integration merge kept these terms. A parallel branch translated the same language with its own terms; its translations survive only for the keys this worksheet did not yet have (server messages, the complaint and account pages, interface text added after 2026-11-13). Those entries may use the parallel terms and should be harmonised with this table in a review pass. The parallel term table is `locales/tr/TERMS.md` at commit 04b0552.

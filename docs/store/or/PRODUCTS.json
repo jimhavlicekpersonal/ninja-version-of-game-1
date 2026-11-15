@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "or",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "ଚିମୁଟାଏ ଜେଡ୍",
+      "description": "45 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "ଜେଡ୍ ଥଳି",
+      "description": "100 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "ଜେଡ୍ ବ୍ୟାଗ୍",
+      "description": "280 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "ଜେଡ୍ ବାକ୍ସ",
+      "description": "600 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "ଜେଡ୍ ସିନ୍ଦୁକ",
+      "description": "1300 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "ଜେଡ୍ ଭଣ୍ଡାର",
+      "description": "3500 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ଡ୍ରାଗନର ଜେଡ୍ ଖଜଣା",
+      "description": "7500 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "ପ୍ରିମିୟମ୍ ଋତୁ ପୋଥି",
+      "description": "ଏହି ଋତୁର ପ୍ରିମିୟମ୍ ପଥ",
+      "locale": "or"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "ଆରମ୍ଭ ପ୍ୟାକ୍",
+      "description": "ନୂଆ ନେତାଙ୍କ ପାଇଁ ଜେଡ୍ ଓ ସମ୍ବଳ",
+      "locale": "or"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "କାରିଗର ବଣ୍ଡଲ୍",
+      "description": "ଆଉ ଜଣେ କାରିଗର ନିଯୁକ୍ତି ପାଇଁ ଜେଡ୍, ସହ ସମ୍ବଳ",
+      "locale": "or"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "ଯୁଦ୍ଧ ରସଦ",
+      "description": "ମେଣ୍ଟ ଯୁଦ୍ଧ ପାଇଁ ରସଦ ଓ ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "ପୁନର୍ନିର୍ମାଣ କିଟ୍",
+      "description": "ପୁନର୍ନିର୍ମାଣ ପାଇଁ ଜେଡ୍ ଓ ସମ୍ବଳ",
+      "locale": "or"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "ଗୋଷ୍ଠୀ ଭତ୍ତା",
+      "description": "ଦୈନିକ ଦେୟ: 30ଟି, ପ୍ରତିଟିରେ 12 ଜେଡ୍",
+      "locale": "or"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "ଦୁର୍ଗ ଉତ୍ସବ",
+      "description": "ନୂଆ ଦୁର୍ଗର ଉତ୍ସବ ପାଇଁ ସମ୍ବଳ ଓ ଜେଡ୍",
+      "locale": "or"
+    }
+  ]
+}

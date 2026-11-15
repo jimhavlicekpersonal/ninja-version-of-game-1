@@ -29,8 +29,8 @@ describe('the complete Swedish release catalog', () => {
     // Intl groups Swedish thousands with a no-break space.
     expect(numberText(1234567, 'sv', true)).toBe('1\u00a0234\u00a0567');
     expect(sourceText('Not enough resources (needs 12,000 Coins and 2,400 Provisions).', 'sv', pack)).toBe('Inte tillräckligt med resurser (behövs: 12\u00a0000 Mynt och 2\u00a0400 Proviant).');
-    // Finnish is not ready yet, so a Finnish device that also lists Swedish gets its first completed preference.
-    expect(await initLanguage(['fi-FI', 'sv-FI'])).toBe('sv');
+    // Northern Sami is not a game language, so a Sami device in Finland that also lists Swedish gets its first completed preference.
+    expect(await initLanguage(['se-FI', 'sv-FI'])).toBe('sv');
   });
 
   it('uses its plural rules: one is only 1', () => {

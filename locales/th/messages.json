@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}: สร้างได้สูงสุด {arg2} (ตอนนี้ {arg3})" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "สิ่งก่อสร้าง" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "สร้างแล้ว {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "ซื้อ & {arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "ซื้อ {arg1}" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "ซื้อใหม่เมื่อรับครบแล้ว" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "ซื้อในราคา {arg1}" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "ผู้นำ" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "กระดานผู้นำ" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "ตอนนี้ {arg1} เป็นผู้นำก๊วน" },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "ลีก{arg1}" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "หีบลีก (ของข้างในตายตัว)" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "ออกจากพันธมิตร" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "ออก" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "อ่านหมู่บ้านนี้ไม่ได้: {detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "หมู่บ้านนี้ย้ายไปเซิร์ฟเวอร์ไม่ได้ เพราะเล่นในแซนด์บ็อกซ์ทดสอบ (ข้ามเวลาและซื้อทดสอบ)" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "หมู่บ้านนี้ย้ายไปเซิร์ฟเวอร์ไม่ได้: {detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "หมู่บ้านที่ป้อมระดับ {keep} ย้ายไปเซิร์ฟเวอร์ได้เมื่อบัญชีออนไลน์นี้มีอายุ {days} วัน (อีก {wait, plural, other {# วัน}}) ระหว่างนี้หมู่บ้านยังอยู่ในอุปกรณ์นี้ เล่นต่อได้เลย เกมจะลองใหม่ทุกวัน" }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "หมู่บ้านที่ป้อมระดับ {keep} ย้ายไปเซิร์ฟเวอร์ได้เมื่อบัญชีออนไลน์นี้มีอายุ {days} วัน (อีก {wait, plural, other {# วัน}}) ระหว่างนี้หมู่บ้านยังอยู่ในอุปกรณ์นี้ เล่นต่อได้เลย เกมจะลองใหม่ทุกวัน" },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "ซื้อ & ถัดไป {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "ซื้อ & เติม {n} " }
 }

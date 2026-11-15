@@ -1,0 +1,678 @@
+{
+  "language": "ha",
+  "variant": "Standard Hausa (Boko Latin script with the hooked letters ɓ ɗ ƙ ƴ), Nigeria and Niger; respectful plural ku for the player, no gendered ka/ki, no he/she pronouns for players or placeholders",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.0",
+      "text": "Kaito",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.1",
+      "text": "Rin",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.2",
+      "text": "Sora",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.3",
+      "text": "Hana",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.4",
+      "text": "Ren",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.5",
+      "text": "Yuki",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.6",
+      "text": "Daichi",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.7",
+      "text": "Mei",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.8",
+      "text": "Takeshi",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.9",
+      "text": "Aiko",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.10",
+      "text": "Haru",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.11",
+      "text": "Kenji",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.12",
+      "text": "Nami",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.13",
+      "text": "Shin",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.14",
+      "text": "Tomo",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.15",
+      "text": "Kira",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.0",
+      "text": "Mori",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.1",
+      "text": "Takeda",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.2",
+      "text": "Kawamura",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.3",
+      "text": "Ishida",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.4",
+      "text": "Hayashi",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.5",
+      "text": "Sakamoto",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.6",
+      "text": "Okada",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.7",
+      "text": "Kimura",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.8",
+      "text": "Matsuda",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.9",
+      "text": "Ueda",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.10",
+      "text": "Nakano",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.11",
+      "text": "Fujita",
+      "reason": "Japanese name, kept in its usual Latin spelling in Hausa"
+    },
+    {
+      "namespace": "data",
+      "key": "roster.warriors.shinobi.name",
+      "text": "Shinobi",
+      "reason": "Japanese word used as a proper name (glossary: transliterate; Latin spelling is already Hausa script)"
+    },
+    {
+      "namespace": "data",
+      "key": "troops.hedgehog_roller.name",
+      "text": "Shinobi",
+      "reason": "Japanese word used as a proper name (glossary: transliterate; Latin spelling is already Hausa script)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.7e39068eb8",
+      "text": "Kage",
+      "reason": "Japanese word used as a proper name (glossary: transliterate; Latin spelling is already Hausa script)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand name kept as it is"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand name kept as it is"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.adlam_46b7485555",
+      "text": "Adlam",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bamum_f172a8db88",
+      "text": "Bamum",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.batak_cb568479fd",
+      "text": "Batak",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bopomofo_98fa38f155",
+      "text": "Bopomofo",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.buhid_bf01f926b1",
+      "text": "Buhid",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.chakma_47143a0b98",
+      "text": "Chakma",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.cham_d63d110257",
+      "text": "Cham",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.cherokee_000e5e05a5",
+      "text": "Cherokee",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.devanagari_bc8e600721",
+      "text": "Devanagari",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.gujarati_aa1324f5df",
+      "text": "Gujarati",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.gurmukhi_28766224e2",
+      "text": "Gurmukhi",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hangul_5db6aaf978",
+      "text": "Hangul",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hanunoo_34539251fd",
+      "text": "Hanunoo",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hiragana_63a7a6c8a7",
+      "text": "Hiragana",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.kannada_4829406f52",
+      "text": "Kannada",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.katakana_ff92aee95a",
+      "text": "Katakana",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.khmer_08d72ec6a1",
+      "text": "Khmer",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lao_6d2138c6f2",
+      "text": "Lao",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lepcha_e418a0a6af",
+      "text": "Lepcha",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.limbu_543b10a96d",
+      "text": "Limbu",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lisu_3cc130feed",
+      "text": "Lisu",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.makasar_bc732d689b",
+      "text": "Makasar",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.malayalam_2247ef59ce",
+      "text": "Malayalam",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.miao_a1e0e59510",
+      "text": "Miao",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.mro_d3e6054d62",
+      "text": "Mro",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.myanmar_ba2039a4cf",
+      "text": "Myanmar",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.newa_8d897dbb59",
+      "text": "Newa",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.nko_8c076e437d",
+      "text": "Nko",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.oriya_7cad037e58",
+      "text": "Oriya",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.osage_ea699037c2",
+      "text": "Osage",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.rejang_54160d2075",
+      "text": "Rejang",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.saurashtra_d82e14c137",
+      "text": "Saurashtra",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.sinhala_0354f368e7",
+      "text": "Sinhala",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tagalog_605eac3030",
+      "text": "Tagalog",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tagbanwa_ab2498989d",
+      "text": "Tagbanwa",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tamil_135d78ac8f",
+      "text": "Tamil",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tangsa_7a4fd080f7",
+      "text": "Tangsa",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.telugu_a4504b3d0f",
+      "text": "Telugu",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.thaana_1b2045d95b",
+      "text": "Thaana",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.thai_ad705ee19c",
+      "text": "Thai",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tifinagh_25e03d7123",
+      "text": "Tifinagh",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.toto_b41419df9b",
+      "text": "Toto",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.vai_d0cfbdc71d",
+      "text": "Vai",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.wancho_71a2270d98",
+      "text": "Wancho",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.yi_caf1928d4e",
+      "text": "Yi",
+      "reason": "Name of a writing system, used unchanged in Hausa (no established Hausa name)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "Technical abbreviation (frames per second) used unchanged"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand name kept as it is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "Brand name kept as it is"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand name kept as it is"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.m",
+      "text": "{m}m",
+      "reason": "Minute abbreviation: minti (m) in Hausa as in English"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    }
+  ],
+  "latinScriptReviewed": [],
+  "notes": [
+    "The player is addressed with the respectful plural ku (kuna, kun, -ku); singular ka/ki would state a gender. Buttons use the ungendered bare imperative (Gina, Inganta, Karɓa).",
+    "No ya/ta (he/she) for a player or a placeholder: rephrased with nouns, impersonal an-sentences or a colon (Nasara: {arg1}, Hari daga {arg1}). Fixed characters (Akane, Yoru, Gorō, the heroes) may take ya/ta.",
+    "Hooked letters ɓ ɗ ƙ ƴ throughout (ƴan wasa, not 'yan wasa).",
+    "Generated names should use generatedNames: noun-first. Second parts carry the genitive linker of their own head noun (Kololuwar, Ƙofar, Kwarin), first parts are plain nouns (Tsawa, Ƙarfe, Hazo): Kololuwar Tsawa, Ƙofar Ƙarfe. With the default order they would read backwards.",
+    "Hausa letters ɓ ɗ ƙ ƴ are outside Latin-1, so Hausa needs the system font stack (SYSTEM_FONT_LANGS) at integration.",
+    "Japanese statutory pages (tokushoho, shikin-kessai) are fully translated into Hausa, following the Vietnamese pattern; the support page links them by their Japanese titles.",
+    "ui.s_have_bced00a61e (\"s have\") is an English plural fragment; ui.your_purchase_been_delivered uses {arg1, select, other {...}} so the fragment is not shown in Hausa."
+  ]
+}

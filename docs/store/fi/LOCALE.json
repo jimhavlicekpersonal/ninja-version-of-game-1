@@ -1,0 +1,20 @@
+{
+  "language": "fi",
+  "iosFriendList": "Kagemura näyttää, ketkä Game Center -ystävistäsi pelaavat myös, joten voit lisätä heidät ystäviksi pelissä.",
+  "legalUnset": "ei vielä julkaistu",
+  "accountFailure": "Pyyntöä ei voitu lähettää. Tarkista tietosi ja yhteytesi ja yritä uudelleen.",
+  "storekit": {
+    "premiumPass": "Premium-kausikäärö",
+    "jade": "Jadea {n}",
+    "stipend": "Päivittäiset maksut: {payments}, kussakin Jadea {jade}",
+    "seasonTrack": "Tämän kauden premium-polku",
+    "short": {
+      "starter_pack": "Jadea ja resursseja uusille klaanin johtajille",
+      "builder_pack": "Jadea uuden käsityöläisen palkkaamiseen sekä resursseja",
+      "war_prep_pack": "Muonaa ja Jadea Liittosotaan",
+      "rebuild_pack": "Jadea ja resursseja jälleenrakennukseen",
+      "keep_pack": "Resursseja ja Jadea uuden Linnasi juhlistamiseen"
+    },
+    "displayNames": {}
+  }
+}

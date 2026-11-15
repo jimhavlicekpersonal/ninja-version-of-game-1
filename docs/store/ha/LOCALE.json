@@ -1,0 +1,20 @@
+{
+  "language": "ha",
+  "iosFriendList": "Kagemura na nuna waɗanne daga cikin abokanku na Game Center ke buga wasan, don ku ƙara su a matsayin abokai a cikin wasan.",
+  "legalUnset": "ba a wallafa ba tukuna",
+  "accountFailure": "Ba a iya aika buƙatar ba. Ku duba bayananku da haɗin intanet ɗinku, sannan ku sake gwadawa.",
+  "storekit": {
+    "premiumPass": "Takardar Kaka ta Musamman",
+    "jade": "Jed {n}",
+    "stipend": "Biyan yau da kullum: {payments}, kowanne Jed {jade}",
+    "seasonTrack": "Layin musamman na wannan kaka",
+    "short": {
+      "starter_pack": "Jed da albarkatu don sababbin shugabanni",
+      "builder_pack": "Jed don ɗaukar wani Magini, da albarkatu",
+      "war_prep_pack": "Guzuri da Jed don Yaƙin Ƙawance",
+      "rebuild_pack": "Jed da albarkatu don sake gini",
+      "keep_pack": "Albarkatu da Jed don murnar sabuwar Fadarku"
+    },
+    "displayNames": {}
+  }
+}

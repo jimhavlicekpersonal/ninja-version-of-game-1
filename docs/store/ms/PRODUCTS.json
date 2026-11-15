@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "ms",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Secubit Jed",
+      "description": "45 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Uncang Jed",
+      "description": "100 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Beg Jed",
+      "description": "280 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Kotak Jed",
+      "description": "600 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Peti Jed",
+      "description": "1300 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Bilik Kebal Jed",
+      "description": "3500 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Harta Naga Jed",
+      "description": "7500 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Skrol Musim Premium",
+      "description": "Laluan premium musim ini",
+      "locale": "ms"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Pek Permulaan",
+      "description": "Jed dan sumber untuk ketua baharu",
+      "locale": "ms"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Berkas Tukang",
+      "description": "Jed untuk mengupah seorang lagi Tukang, serta sumber",
+      "locale": "ms"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Bekalan Perang",
+      "description": "Bekalan dan Jed untuk Perang Perikatan",
+      "locale": "ms"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Kit Bina Semula",
+      "description": "Jed dan sumber untuk membina semula",
+      "locale": "ms"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Elaun Klan",
+      "description": "30 bayaran harian sebanyak 12 Jed",
+      "locale": "ms"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Sambutan Kubu",
+      "description": "Sumber dan Jed untuk meraikan Kubu baharu kamu",
+      "locale": "ms"
+    }
+  ]
+}

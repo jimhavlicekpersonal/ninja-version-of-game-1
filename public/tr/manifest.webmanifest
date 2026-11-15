@@ -1,7 +1,7 @@
 {
   "name": "Kagemura: Ninja Clans",
   "short_name": "Kagemura",
-  "description": "Bir ninja klanına liderlik et: gizli bir dağ köyü kur, savaşçılar eğit, rakip kalelere duman ve sabotajla baskın düzenle.",
+  "description": "Bir ninja klanına liderlik et: gizli bir dağ köyü kur, savaşçılar eğit ve rakip kalelere duman ve sabotajla baskın düzenle.",
   "id": "../",
   "start_url": "../",
   "scope": "../",

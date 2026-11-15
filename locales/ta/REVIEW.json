@@ -1,0 +1,215 @@
+{
+  "language": "ta",
+  "variant": "Standard written Tamil (readable in India and Sri Lanka), friendly and respectful with நீங்கள் and -ங்கள் imperatives in sentences, short imperative buttons as in Google and Apple Tamil interfaces",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "Only placeholders and symbols (stars and multiplier)"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Store or platform brand name, kept in Latin letters as on Tamil devices"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Store or platform brand name, kept in Latin letters as on Tamil devices"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "Technical unit (frames per second) kept as written in Tamil interfaces"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Store or platform brand name, kept in Latin letters as on Tamil devices"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "Store or platform brand name, kept in Latin letters as on Tamil devices"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "Only placeholders, punctuation or symbols; nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Store or platform brand name, kept in Latin letters as on Tamil devices"
+    }
+  ],
+  "latinScriptReviewed": [],
+  "notes": [
+    "No case suffix or postposition is attached to a placeholder or #: a colon or a carrier noun is used instead ({building} கட்டடத்தை, நிலை {level}).",
+    "Plural categories follow Intl.PluralRules(\"ta\"): one for 1 only, other for 0 and everything else.",
+    "Generated names use the default setting (first part, space, second part): Tamil puts the modifier before the noun (இடி + சிகரம் = இடி சிகரம்); no sandhi consonant or இன் is added to any part.",
+    "Brand and technical names (Kagemura, App Store, Google Play, Game Center, Play Games, IndexedDB, Sentry) stay in Latin letters; the checker's \"mostly uses a different script\" warnings on those strings come from Latin brand names next to Tamil words whose vowel signs are not counted as letters.",
+    "The Japanese statutory pages are translated in full into Tamil; their titles are long (length warnings) because the Japanese legal titles are spelled out.",
+    "Computer players' generated names are stored text and stay as generated, as in every language."
+  ]
+}

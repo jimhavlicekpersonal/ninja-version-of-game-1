@@ -2,48 +2,54 @@
 document_type: indonesian_implementation
 schema_version: 1
 language: id
-variant: Friendly standard Indonesian (id-ID) with kamu, also in the legal pages; Javanese and Sundanese devices get it too
+variant: Standard Indonesian (id-ID), friendly with kamu (-mu), aku for Sensei Hoshi, nothing attached to a placeholder
 status: implemented_in_repo_release_checks_remain
 measurements: SPANISH_SIZE.json (measured.id)
 ---
 
 # Indonesian translation
 
-Indonesian (`id`, script `Latn`) was activated on 2026-11-14 in commit `ee21ee6` (layout and font fixes `9c351cf`, checks `d995636`, store copy `1ee11cb`) together with Arabic, Russian and Turkish. It is served to `id`, `id-ID`, the legacy code `in` that older Android and Java report, and Javanese (`jv`) and Sundanese (`su`) devices (`alsoFor`). It covers every namespace (3,301 entries after the a1188d2 merge, including the server message codes and the complaint form; 3,041 at activation), the six public pages and PWA manifest under `public/id/`, the account-deletion form (`/account/delete?lang=id`), server push text, iOS (`id.lproj`) and Android resources, StoreKit fixtures (`id`), and listing and product copy in `docs/store/id/`. Terms: `locales/id/TERMS.md`.
+Indonesian (`id`, script `Latn`) is released in commit `d6ab7b8`. It is served to `id`, `id-ID`, the legacy Android/Java code `in` (`LANGUAGE_ALIASES`), and Javanese (`jv`) and Sundanese (`su`) devices through `alsoFor`. It covers every namespace (2,708 strings in the measured pack), the public pages and PWA manifest under `public/id/`, the account-deletion form (`/account/delete?lang=id`), and the store copy in `docs/store/id/` (`LISTING.md`, `LOCALE.json`). Terms: `locales/id/TERMS.md`; reviewed warnings: `locales/id/REVIEW.json`.
 
 The translation is AI-written and validated by the repository checks below. **No native Indonesian speaker has reviewed it**, nor the legal pages.
 
-## Translator's choices
+## What Indonesian needed
 
-- **kamu everywhere, also in the legal pages** (for consistency with the game; Indonesian legal and store text often uses the formal Anda). Sensei Hoshi says aku; bot chat may be casual (nggak, makasih). This is an open question for the native and legal review: the privacy policy, terms and account-deletion pages may read better with Anda.
-- Indonesian has no grammatical gender; another player or a `{name}` is referred to by name, pemain itu or lawan.
-- Plural has only `other`; nouns are not doubled after a number (`{n} prajurit`).
-- **Generated names** are noun-first (`generatedNames: "noun-first"`): Puncak + Guntur = Puncak Guntur.
-
-## What integration added
-
-| Issue | Fix |
+| Issue | Rule |
 |---|---|
-| Android resolves Indonesian resources under the legacy ISO 639 code `in` (as it does `iw` for Hebrew); a `values-id` folder would not be picked on most devices. | Android strings are in `values-in`; `locales_config.xml` lists the BCP 47 tag `id`, which Android maps itself. The web client already aliased `in` to `id`. |
-| `generatedNames` was not set. | `"noun-first"` in `languages.json`; the language note now records the translator's rules. |
+| **Enclitics on placeholders.** Indonesian attaches -nya, -mu, -ku to words; on `{name}` or a number that reads badly and cannot be checked. | `TERMS.md`: nothing attached to a placeholder (`desa {name}`, never `{name}-nya`). Possessives attach only to fixed words (desamu, prajuritmu). |
+| **No grammatical gender, but register.** | The player is *kamu*; other players are their name, *lawan* or *pemain itu* (neutral *dia* allowed). |
+| **Keep vs. fortress.** Both would naturally be *benteng*. | *Benteng* is only the Clan Keep; Shadow Trials fortresses are *kubu*. Kage League (*Liga Kage*) stays distinct from the Shadow League (*Liga Bayangan*). |
+| **Generated names.** Indonesian puts the modifier after the noun. | `generatedNames: "noun-first"` in `languages.json`: Puncak + Guntur = Puncak Guntur, Gerbang Besi, Bilah Kembar. |
 
-Indonesian needed nothing else from the code: its letters are all in the bundled Latin fonts (`latin-fonts.test.ts` keeps it out of `SYSTEM_FONT_LANGS`), and `Intl` gives the plural, dot-grouped numbers (1.234.567) and Indonesian dates.
+No language-specific checker rule was added; `npm run i18n:check -- id` applies the shared rules (placeholders, ICU, NFC, script share, length).
+
+## Fonts
+
+Indonesian uses only ASCII letters (plus the ō of Japanese names, which English already uses), so it keeps the bundled Latin-1 fonts; `tests/locales/latin-fonts.test.ts` covers it.
+
+## Plurals and numbers
+
+`Intl.PluralRules('id')` gives only `other`; the number comes before an unchanged noun ({n} prajurit, {n} bangunan). `Intl` writes 1.234.567,5. Short times: {d}h {h}j, {h}j {m}m, {m}m {s}d.
 
 ## Storage
 
-`npm run i18n:build` (`measured.id`): 217,288 bytes UTF-8 (70,019 gzip, 59,590 Brotli) for 2,725 strings.
+`npm run i18n:build` (`measured.id`): 216,201 bytes UTF-8 (69,834 gzip, 59,398 Brotli) for 2,708 strings.
 
 ## Validation
 
-- `npm run i18n:check -- id`: no errors; warnings are entries identical to English (brands, Japanese names, Shinobi, Kage, premium). There is no `REVIEW.json` for Indonesian yet.
-- `tests/locales/indonesian.test.ts`: catalog complete and ready; device choice including `in`, `jv` and `su`; dot-grouped numbers; plural `other`; no formal Anda anywhere (game or pages); Kage and Shadow League distinct; noun-first generated names; literal player chat and unchanged canonical data; no system-font rule needed; pages, account form, push text, native resources (`values-in`) and StoreKit.
-- Built client in Chromium (sandbox, Keep 10 village, `id` locale) at 320×568: all 12 panels and their tabs, the village and the raid scout screen; no page errors, no horizontal page overflow, no element outside the viewport, no clipped button or heading, no placeholder or key left; the bottom bar fits. Emulation is not physical-device evidence.
+- `npm run i18n:check -- id`: no errors; English-identical entries (Japanese names, Shinobi, brands, placeholder-only strings) reviewed in `REVIEW.json`.
+- Store copy lengths checked with Node: subtitle 28/30, short description 69/80, keywords 89/100 bytes, StoreKit names and descriptions within 30/55. No `displayNames` override was needed.
+- No Indonesian-specific test file and no Chromium smoke run were made for this release; emulation would not be physical-device evidence anyway.
 
 ## Remaining before release
 
-1. Deploy the server (Indonesian push catalog and account form) before or with the game.
-2. Native Indonesian review of the game text, tutorial, purchase, safety and legal pages, and a decision on kamu versus Anda in the legal pages. Legal review under Indonesia's Personal Data Protection Law (UU PDP 27/2022) and its electronic-system operator registration (PSE, Kominfo/Komdigi), which foreign games sold in Indonesia may need.
-3. Upload `docs/store/id/` to App Store Connect and Google Play with Indonesian screenshots (`npm run store:screenshots -- --language=id`); age rating through the stores (and Indonesia's IGRS game rating).
-4. Physical iOS and Android checks: language selection, `id.lproj` and `values-in` registration on old and new Android versions, store purchase screens.
+1. Deploy the server (Indonesian push text and account form) before or with the game.
+2. Native Indonesian review of the game text, tutorial, purchase, safety and legal pages, and an Indonesian-law review of the terms and privacy policy (Personal Data Protection Law 27/2022) and of the electronic-system-operator (PSE) registration Indonesia requires of online services.
+3. Upload `docs/store/id/` to App Store Connect and Google Play with Indonesian screenshots (`npm run store:screenshots -- --language=id`); age rating through the stores.
+4. Physical iOS and Android checks: language selection (including `in-ID` and Javanese/Sundanese devices), native resources, store purchase screens.
 5. Indonesian moderation coverage: the chat filter's word list is English only.
-6. Computer players' generated names (Kaito Mori) stay in Latin letters because they are stored text.
+
+## Notes from the parallel translation (2026-11-14)
+
+A parallel branch also activated this language (commit `ee21ee6`, with Arabic). The 2026-11-15 integration merge kept the translations above and their terms; the parallel translations remain only for keys this worksheet did not have yet (server message codes `srv.*`, the complaint form `pages.complaints.*`, interface text added after 2026-11-13), so those entries may use the parallel terms (see the note at the end of `locales/id/TERMS.md`) until a review pass harmonises them. The parallel branch added `tests/locales/indonesian.test.ts` (catalog, device choice, plurals, generated names, pages, native resources), now updated to these translations, and the checker rules `missingPluralForms` (Russian one/few/many) and, for Turkish, `turkishSuffixAfterPlaceholder` (the release check uses the broader `suffixAfterPlaceholder`).

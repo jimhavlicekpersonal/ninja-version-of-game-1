@@ -1,0 +1,20 @@
+{
+  "language": "ms",
+  "iosFriendList": "Kagemura menunjukkan rakan Game Center kamu yang turut bermain, supaya kamu boleh menambah mereka sebagai rakan dalam permainan.",
+  "legalUnset": "belum diterbitkan",
+  "accountFailure": "Permintaan tidak dapat dihantar. Semak butiran dan sambungan kamu, kemudian cuba lagi.",
+  "storekit": {
+    "premiumPass": "Skrol Musim Premium",
+    "jade": "{n} Jed",
+    "stipend": "{payments} bayaran harian sebanyak {jade} Jed",
+    "seasonTrack": "Laluan premium musim ini",
+    "short": {
+      "starter_pack": "Jed dan sumber untuk ketua baharu",
+      "builder_pack": "Jed untuk mengupah seorang lagi Tukang, serta sumber",
+      "war_prep_pack": "Bekalan dan Jed untuk Perang Perikatan",
+      "rebuild_pack": "Jed dan sumber untuk membina semula",
+      "keep_pack": "Sumber dan Jed untuk meraikan Kubu baharu kamu"
+    },
+    "displayNames": {}
+  }
+}

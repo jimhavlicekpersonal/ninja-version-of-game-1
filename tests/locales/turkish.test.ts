@@ -36,8 +36,8 @@ describe('the complete Turkish release catalog', () => {
 
   it('keeps the noun singular after a number and puts no suffix on a placeholder', () => {
     expect(translate('army.readyN', { n: 3 }, 'tr', pack)).toBe('Saldırıya hazır · 3 savaşçı');
-    expect(translate('stipend.left', { n: 1 }, 'tr', pack)).toBe('Kalan ödeme: 1');
-    expect(translate('time.hm', { h: 2, m: 5 }, 'tr', pack)).toBe('2sa 5dk');
+    expect(translate('stipend.left', { n: 1 }, 'tr', pack)).toBe('1 ödeme kaldı');
+    expect(translate('time.hm', { h: 2, m: 5 }, 'tr', pack)).toBe('2 sa 5 dk');
     for (const [key, text] of Object.entries(pack)) expect(turkishSuffixAfterPlaceholder(text), key).toBe(false);
     expect(turkishSuffixAfterPlaceholder("{name}'in köyü")).toBe(true);
     expect(turkishSuffixAfterPlaceholder('Köy: {name}')).toBe(false);
@@ -51,7 +51,7 @@ describe('the complete Turkish release catalog', () => {
 
   it('writes generated names in the default order, adjective first', async () => {
     installCatalog('tr', pack); await useLanguage('tr');
-    expect(generatedName('Thunder Peak')).toBe('Gürleyen Zirve');
+    expect(generatedName('Thunder Peak')).toBe('Yıldırım Tepe');
     expect(generatedName('Iron Gate')).toBe('Demir Kapı');
     expect(generatedName('Twin Blade', 'grove')).toBe('İkiz Kılıç');
   });

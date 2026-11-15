@@ -1,0 +1,20 @@
+{
+  "language": "sw",
+  "iosFriendList": "Kagemura huonyesha ni marafiki zako gani wa Game Center wanaocheza pia, ili uweze kuwaongeza kama marafiki ndani ya mchezo.",
+  "legalUnset": "bado haijachapishwa",
+  "accountFailure": "Ombi halikuweza kutumwa. Angalia taarifa zako na muunganisho wako, kisha ujaribu tena.",
+  "storekit": {
+    "premiumPass": "Gombo la Msimu la Kulipia",
+    "jade": "Jade {n}",
+    "stipend": "Malipo ya kila siku: {payments}, kila moja Jade {jade}",
+    "seasonTrack": "Mstari wa kulipia wa msimu huu",
+    "short": {
+      "starter_pack": "Jade na rasilimali kwa viongozi wapya",
+      "builder_pack": "Jade ya kuajiri Fundi mwingine, pamoja na rasilimali",
+      "war_prep_pack": "Chakula na Jade kwa Vita vya Muungano",
+      "rebuild_pack": "Jade na rasilimali za kujenga upya",
+      "keep_pack": "Rasilimali na Jade kusherehekea Ngome yako mpya"
+    },
+    "displayNames": {}
+  }
+}

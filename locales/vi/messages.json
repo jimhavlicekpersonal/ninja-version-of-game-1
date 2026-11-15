@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}: xây tối đa {arg2} (hiện có {arg3})" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "Công trình" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "Đã xây {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "Mua & {arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "Mua {arg1}" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "Mua lại khi đã nhận hết" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "Mua với giá {arg1}" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "Thủ lĩnh" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "Bảng xếp hạng" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "Giờ {arg1} dẫn dắt Băng." },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "Giải {arg1}" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "Rương giải đấu (nội dung cố định)" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "Rời Liên Minh" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "Rời" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "Không đọc được ngôi làng đó: {detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Ngôi làng này không chuyển lên máy chủ được: nó đã được chơi trong hộp cát thử nghiệm (tua thời gian và mua thử)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ngôi làng này không chuyển lên máy chủ được: {detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Ngôi làng ở Thành {keep} có thể chuyển lên máy chủ khi tài khoản trực tuyến này được {days} ngày (còn {wait, plural, other {# ngày}}). Trong lúc đó làng vẫn ở trên thiết bị này: cứ chơi tiếp, trò chơi sẽ thử lại mỗi ngày." }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Ngôi làng ở Thành {keep} có thể chuyển lên máy chủ khi tài khoản trực tuyến này được {days} ngày (còn {wait, plural, other {# ngày}}). Trong lúc đó làng vẫn ở trên thiết bị này: cứ chơi tiếp, trò chơi sẽ thử lại mỗi ngày." },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Mua & Tiếp {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Mua & Bổ sung {n} " }
 }

@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}: 최대 {arg2}개까지 건설(현재 {arg3}개)" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "건물" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "건설 {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "구매 & {arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "{arg1} 구매" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "모두 받은 뒤 다시 구매" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "{arg1}에 구매" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "리더" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "순위표" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "이제 {arg1} 님이 무리를 이끌어요." },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "{arg1} 리그" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "리그 상자(고정 내용물)" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "동맹 떠나기" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "떠나기" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "그 마을을 읽을 수 없었어요: {detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "이 마을은 서버로 옮길 수 없어요. 테스트 샌드박스(시간 건너뛰기와 테스트 구매)에서 플레이했기 때문이에요." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "이 마을은 서버로 옮길 수 없어요: {detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "본성 {keep} 마을은 이 온라인 계정이 생긴 지 {days}일이 지나면 서버로 옮길 수 있어요({wait, plural, other {#일 후}}). 그동안은 이 기기에 남아 있어요. 계속 플레이하면 게임이 매일 다시 시도해요." }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "본성 {keep} 마을은 이 온라인 계정이 생긴 지 {days}일이 지나면 서버로 옮길 수 있어요({wait, plural, other {#일 후}}). 그동안은 이 기기에 남아 있어요. 계속 플레이하면 게임이 매일 다시 시도해요." },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "구매 & 다음 {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "구매 & 채우기 {n} " }
 }

@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}：最多可建 {arg2} 座（当前 {arg3}）" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "建筑" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "已建 {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "购买并{arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "购买{arg1}" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "全部领取后可再次购买" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "以 {arg1} 购买" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "首领" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "排行榜" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "{arg1}现在是帮主了。" },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "{arg1}联赛" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "联赛宝箱（内容固定）" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "退出同盟" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "退出" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "无法读取该村庄：{detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "此村庄无法迁移到服务器：它曾在测试沙盒中游玩过（跳过时间和测试购买）。" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "此村庄无法迁移到服务器：{detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "天守阁 {keep} 级的村庄需要在此在线账号注册满 {days} 天后（{wait, plural, other {还需 # 天}}）才能迁移到服务器。在此期间村庄仍保存在此设备上：继续玩吧，游戏每天都会重试。" }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "天守阁 {keep} 级的村庄需要在此在线账号注册满 {days} 天后（{wait, plural, other {还需 # 天}}）才能迁移到服务器。在此期间村庄仍保存在此设备上：继续玩吧，游戏每天都会重试。" },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "购买并下一批 {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "购买并补满 {n} " }
 }

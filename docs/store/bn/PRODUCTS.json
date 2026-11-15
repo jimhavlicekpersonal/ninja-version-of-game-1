@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "bn",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "এক চিমটি জেড",
+      "description": "45 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "জেডের থলি",
+      "description": "100 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "জেডের ব্যাগ",
+      "description": "280 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "জেডের বাক্স",
+      "description": "600 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "জেডের সিন্দুক",
+      "description": "1300 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "জেডের ভল্ট",
+      "description": "3500 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "ড্রাগনের জেড-ভান্ডার",
+      "description": "7500 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "প্রিমিয়াম মৌসুমি পুঁথি",
+      "description": "এই মৌসুমের প্রিমিয়াম পথ",
+      "locale": "bn"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "শুরুর প্যাক",
+      "description": "নতুন নেতাদের জন্য জেড ও সম্পদ",
+      "locale": "bn"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "কারিগরের বান্ডেল",
+      "description": "আরেকজন কারিগর রাখার মতো জেড, সঙ্গে সম্পদ",
+      "locale": "bn"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "যুদ্ধের রসদ",
+      "description": "জোট যুদ্ধের জন্য রসদ ও জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "পুনর্গঠনের কিট",
+      "description": "আবার গড়ে তোলার জন্য জেড ও সম্পদ",
+      "locale": "bn"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "গোষ্ঠী ভাতা",
+      "description": "দৈনিক কিস্তি: 30টি, প্রতিটিতে 12 জেড",
+      "locale": "bn"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "দুর্গ উদ্‌যাপন",
+      "description": "নতুন দুর্গ উদযাপনের জন্য সম্পদ ও জেড",
+      "locale": "bn"
+    }
+  ]
+}

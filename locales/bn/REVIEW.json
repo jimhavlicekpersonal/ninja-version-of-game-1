@@ -1,0 +1,871 @@
+{
+  "language": "bn",
+  "variant": "Standard colloquial Bangla (Bangladesh and West Bengal) in Bengali script, respectful আপনি for the player, gender-neutral",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "brand or product name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "brand or product name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "only placeholders and line breaks"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "placeholder with a technical unit (fps, HP) used as-is in Bangla games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "brand or product name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "brand or product name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.hp_0c9cb32a1b",
+      "text": "{arg1} HP",
+      "reason": "placeholder with a technical unit (fps, HP) used as-is in Bangla games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "CSS class names extracted by mistake, not visible text"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "brand or product name, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "brand or product name, kept in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "brand or product name, kept in Latin letters"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
+    }
+  ],
+  "latinScriptReviewed": [
+    {
+      "namespace": "boot",
+      "key": "boot.failureTitle",
+      "text": "Kagemura লোড করা যায়নি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "boot",
+      "key": "boot.unsupportedBody",
+      "text": "আপনার ব্রাউজার বা Android System WebView আপডেট করে আবার চেষ্টা করুন। আপনার সেভ করা গ্রাম এই ডিভাইসেই থাকবে।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "boot",
+      "key": "boot.realUnsupported",
+      "text": "Kagemura চালাতে আরও নতুন ব্রাউজার দরকার",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "boot",
+      "key": "boot.missing",
+      "text": "এই ব্রাউজারে নেই: {detail}। আপনার ফোন (iOS 15 বা পরের) অথবা ব্রাউজার (2021 বা পরের Chrome, Safari, Edge বা Firefox) আপডেট করে আবার Kagemura খুলুন।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "boot",
+      "key": "boot.realSlow",
+      "text": "Kagemura লোড হতে অনেক সময় নিচ্ছে",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_delete_reject_or_overri_c210e90890",
+      "text": "action হতে হবে 'delete', 'reject' বা 'override'",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_dismiss_remove_message__dd711086db",
+      "text": "action হতে হবে 'dismiss', 'remove_message' বা 'mute'",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.app_store_notification_6199f7d5e6",
+      "text": "App Store বিজ্ঞপ্তি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.app_store_purchases_are_not_set_up_on__3637ccd9d9",
+      "text": "এই সার্ভারে App Store কেনাকাটা চালু করা নেই।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.band_must_be_under13_13to17_adult_or_n_1f387f3cc7",
+      "text": "band হতে হবে under13, 13to17, adult বা null।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.commands_must_be_a_list_a7821d0e27",
+      "text": "commands একটি তালিকা হতে হবে",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.findable_must_be_everyone_friends_of_f_f0a3ad42a4",
+      "text": "findable হতে হবে everyone, friends_of_friends বা nobody।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.google_play_purchases_are_not_set_up_o_0abbc8e170",
+      "text": "এই সার্ভারে Google Play কেনাকাটা চালু করা নেই।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.hours_must_be_0_lift_to_87600_7b06c236b8",
+      "text": "hours হতে হবে 0 (তুলে নেওয়া) থেকে 87600।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.kind_must_be_chat_or_player_c0b46dca1d",
+      "text": "kind হতে হবে 'chat' বা 'player'",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.provider_must_be_gamecenter_or_playgam_5b0afd8b2e",
+      "text": "provider হতে হবে gamecenter বা playgames।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.sign_in_with_apple_no_apple_team_id_ap_364837b310",
+      "text": "Apple দিয়ে সাইন ইন: APPLE_TEAM_ID/APPLE_KEY_ID/APPLE_PRIVATE_KEY নেই, অনুমোদন কোড বিনিময় করা হয়নি (পরে বাতিল করার কিছু নেই)",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.could_not_open_indexeddb_f2ebaea729",
+      "text": "IndexedDB খোলা যায়নি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.google_sign_in_was_cancelled_a269b7298e",
+      "text": "Google সাইন-ইন বাতিল হয়েছে।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_could_not_be_reopened_6068af14eb",
+      "text": "IndexedDB আবার খোলা যায়নি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_did_not_answer_333a9912a5",
+      "text": "IndexedDB সাড়া দেয়নি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_is_blocked_by_another_tab_82917d2922",
+      "text": "অন্য একটি ট্যাব IndexedDB আটকে রেখেছে",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_is_not_available_e0e14003f9",
+      "text": "IndexedDB পাওয়া যাচ্ছে না",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.mockpaymentprovider_sold_as_7987bdd8e4",
+      "text": "[MockPaymentProvider] বিক্রি হয়েছে {arg1} (${arg2}), হিসেবে {arg3}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.that_address_is_not_a_kagemura_ninja_c_156e05a9b5",
+      "text": "ওই ঠিকানাটি Kagemura: Ninja Clans-এর সার্ভার নয়।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.ends_utc_5598bc85ac",
+      "text": "{arg1} শেষ হবে: {arg2} UTC।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.that_doesn_t_look_like_a_kagemura_ninj_582b0d6d03",
+      "text": "এটি Kagemura: Ninja Clans-এর সেভ কোড বলে মনে হচ্ছে না।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.add_me_in_kagemura_4b94ebc055",
+      "text": "Kagemura-তে আমাকে যোগ করুন: {arg1}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.be_my_friend_in_kagemura_1adcadc4c7",
+      "text": "Kagemura-তে আমার বন্ধু হোন",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_ninja_clans_built_647b18e769",
+      "text": "Kagemura: Ninja Clans {arg1} · তৈরি {arg2}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_staff_7a8dfa11fc",
+      "text": "Kagemura কর্মী",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_support_af3c907500",
+      "text": "Kagemura সাপোর্ট",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.leave_kagemura_0b798fad93",
+      "text": "Kagemura ছেড়ে যাবে?",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.played_in_safari_before_1b168b5abe",
+      "text": "আগে Safari-তে খেলেছেন?",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.qr_code_2c24d35a11",
+      "text": "QR কোড",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.the_app_store_8768b638e4",
+      "text": "App Store",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.update_kagemura_1a67e6e9e1",
+      "text": "Kagemura আপডেট করুন",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.missingProduct",
+      "text": "productId নেই",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.appStoreItem",
+      "text": "এই জিনিসটি এখনও App Store-এ পাওয়া যায় না।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.transaction",
+      "text": "transactionId নেই",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterPermission",
+      "text": "Kagemura হয়তো আপনার Game Center বন্ধুদের দেখতে পায় না। সেটিংস অ্যাপে এটি চালু করতে পারেন (Game Center → বন্ধু তালিকা)।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterFriends",
+      "text": "Game Center আপনার বন্ধুদের তথ্য দেয়নি: {detail}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterSignIn",
+      "text": "Game Center সাইন-ইন শেষ হয়নি: {detail}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.gameCenterIdentity",
+      "text": "Game Center আপনার পরিচয় নিশ্চিত করতে পারেনি।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.billing",
+      "text": "Google Play Billing পাওয়া যাচ্ছে না: {detail}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.playItem",
+      "text": "এখানে এই জিনিসটি Google Play-তে পাওয়া যায় না।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.restore",
+      "text": "Google Play-এর কাছে কেনাকাটার তথ্য চাওয়া যায়নি: {detail}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.token",
+      "text": "purchaseToken নেই",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.finish",
+      "text": "Google Play-তে কেনাকাটা শেষ করা যায়নি: {detail}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.androidSignIn",
+      "text": "এই সাইন-ইন Android-এ পাওয়া যায় না।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.googleToken",
+      "text": "Google সাইন-ইন কোনো টোকেন দেয়নি।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.googleFailed",
+      "text": "Google সাইন-ইন কাজ করেনি{detail}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.f568fe4f80",
+      "text": "এটি Google Play-এর কেনাকাটা নয়।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.dd459d8fb4",
+      "text": "Google Play এই কেনাকাটা চেনে না।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.7d9e847788",
+      "text": "এটি App Store-এর রসিদ নয়।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.6250ac86cc",
+      "text": "অসমর্থিত App Store রসিদ।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.5eb31240a4",
+      "text": "App Store রসিদের সার্টিফিকেট ভাঙা।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.b5c72037c7",
+      "text": "App Store রসিদটি Apple-এর স্বাক্ষর করা নয়।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.457df2201c",
+      "text": "App Store রসিদের সার্টিফিকেটের মেয়াদ ফুরিয়েছে।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.8fef58779f",
+      "text": "App Store রসিদটি আসল নয়।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.6a6eb7ab49",
+      "text": "App Store রসিদটি অন্য অ্যাপের।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.679579b5e4",
+      "text": "App Store রসিদে কোনো লেনদেন নেই।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.d8b187e2a5",
+      "text": "Game Center কী খুব বড়।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.7bfd3f60a4",
+      "text": "Game Center কী লোড হতে খুব বেশি সময় নিয়েছে।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.8b3f4e2bc4",
+      "text": "Game Center কী লোড করা যায়নি।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.afbe9bf754",
+      "text": "Game Center কী পড়া যায়নি।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.2e94087994",
+      "text": "অসম্পূর্ণ Game Center সাইন-ইন।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.894c5540ed",
+      "text": "Game Center সাইন-ইনটি অন্য অ্যাপের।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.6542e7ebb9",
+      "text": "অবিশ্বস্ত Game Center কী।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.eb24b3a09a",
+      "text": "Game Center সাইন-ইনটি খুব পুরোনো। আবার চেষ্টা করুন।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.4be5bb572d",
+      "text": "Game Center সাইন-ইনটি আসল নয়।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.45cec126e4",
+      "text": "Play Games সাইন-ইন নেই।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.8576365aaf",
+      "text": "Play Games সাইন-ইন গ্রহণ করেনি।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.2f2c244f49",
+      "text": "Play Games আপনার পরিচয় জানায়নি।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.a5331c078a",
+      "text": "Apple দিয়ে সাইন ইন",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.e42a63820f",
+      "text": "Google সাইন-ইন",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.f16d4fcdc4",
+      "text": "এই সার্ভারে Game Center চালু করা নেই।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.fd8109533e",
+      "text": "এই সার্ভারে Play Games চালু করা নেই।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.0",
+      "text": "Kagemura গোপনীয়তা নীতি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.1",
+      "text": "Kagemura গোপনীয়তা নীতি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.2",
+      "text": "Kagemura: Ninja Clans · সর্বশেষ হালনাগাদ {t0}{t1}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.91",
+      "text": "Kagemura: Ninja Clans · {t0}সাপোর্ট{t1} · {t2}কমিউনিটির নিয়ম{t3} · {t4}পরিষেবার শর্তাবলি{t5}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.92",
+      "text": "Kagemura পাতা",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.0",
+      "text": "Kagemura সাপোর্ট",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.1",
+      "text": "Kagemura সাপোর্ট",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.16",
+      "text": "জেডের কোনো নগদ মূল্য নেই এবং এর মেয়াদ ফুরোয় না; {t0}পরিষেবার শর্তাবলি{t1} দেখুন। জাপানের খেলোয়াড়দের জন্য: {t2}特定商取引法に基づく表記{t3} · {t4}資金決済法に基づく表示{t5}।",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.26",
+      "text": "Kagemura: Ninja Clans · {t0}গোপনীয়তা নীতি{t1} · {t2}কমিউনিটির নিয়ম{t3} · {t4}পরিষেবার শর্তাবলি{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.27",
+      "text": "Kagemura পাতা",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.0",
+      "text": "Kagemura কমিউনিটির নিয়ম",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.1",
+      "text": "Kagemura কমিউনিটির নিয়ম",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.29",
+      "text": "Kagemura: Ninja Clans · {t0}গোপনীয়তা নীতি{t1} · {t2}সাপোর্ট{t3}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.30",
+      "text": "Kagemura পাতা",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.0",
+      "text": "Kagemura পরিষেবার শর্তাবলি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.1",
+      "text": "Kagemura পরিষেবার শর্তাবলি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.2",
+      "text": "Kagemura: Ninja Clans · কার্যকর হয়েছে {t0}{t1} থেকে",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.44",
+      "text": "১২. App Store ও Google Play",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.48",
+      "text": "Kagemura: Ninja Clans · {t0}গোপনীয়তা নীতি{t1} · {t2}কমিউনিটির নিয়ম{t3} · {t4}সাপোর্ট{t5}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.50",
+      "text": "Kagemura পাতা",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.2",
+      "text": "Kagemura: Ninja Clans · জাপানের নির্দিষ্ট বাণিজ্যিক লেনদেন আইনের অধীনে বিজ্ঞপ্তি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.12",
+      "text": "প্রতিটি পণ্যের কেনার পর্দায় (App Store বা Google Play-এর কেনা নিশ্চিত করার পর্দায়) দেখানো দাম, করসহ।{t0}{t1}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.16",
+      "text": "App Store বা Google Play-এর দেওয়া পেমেন্টের উপায়।{t0}{t1}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.28",
+      "text": "Kagemura: Ninja Clans · {t0}পেমেন্ট পরিষেবা আইনের অধীনে বিজ্ঞপ্তি{t1} · {t2}শর্তাবলি{t3} · {t4}গোপনীয়তা{t5} · {t6}সাপোর্ট{t7}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.29",
+      "text": "Kagemura পাতা",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.shikin-kessai.2",
+      "text": "Kagemura: Ninja Clans · জাপানের পেমেন্ট পরিষেবা আইনের (অগ্রিম পেমেন্ট মাধ্যম) অধীনে বিজ্ঞপ্তি",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.shikin-kessai.23",
+      "text": "Kagemura: Ninja Clans · {t0}বাণিজ্যিক লেনদেন আইনের অধীনে বিজ্ঞপ্তি{t1} · {t2}শর্তাবলি{t3} · {t4}গোপনীয়তা{t5} · {t6}সাপোর্ট{t7}",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.shikin-kessai.24",
+      "text": "Kagemura পাতা",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.0",
+      "text": "Kagemura অ্যাকাউন্ট মুছে ফেলুন",
+      "reason": "short Bangla text around brand names, technical identifiers or placeholders (Kagemura, App Store, Game Center, API field names) that stay in Latin letters"
+    }
+  ],
+  "notes": [
+    "The player is addressed with respectful আপনি and polite imperatives (করুন, দিন), per the GLOSSARY Indic section; the friendly bot chat lines between clanmates (social.chatLines.*) use তুমি.",
+    "No case suffix or postposition (-এর, -এ, -কে, -তে) is attached to a placeholder; colons or a following noun carry them. Number classifiers টি/জন follow number placeholders; they do not change with the number.",
+    "Plural: one covers 0 and 1 in bn; both branches read correctly for any count.",
+    "Generated names: default setting (first part, space, second part), modifier before noun: বজ্র + শৃঙ্গ = বজ্র শৃঙ্গ.",
+    "Numbers inside sentences use Bengali digits, matching Intl bn number formatting; version numbers and statute article numbers stay in Latin digits.",
+    "Japanese statutory page titles are translated in their own pages and kept in Japanese in the support-page links; length warnings on those titles are expected.",
+    "ui.s_have_bced00a61e (\"s have\") is a stale fragment for ui.your_purchase_been_delivered_6f88dee143; it is translated as the plural marker গুলো so the sentence reads আপনার কেনাকাটাগুলো পৌঁছে গেছে।"
+  ]
+}

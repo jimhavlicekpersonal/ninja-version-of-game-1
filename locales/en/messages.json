@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": "{arg1}: build up to {arg2} (now {arg3})",
   "ui.building_87c5912f2c": "Building",
   "ui.built_999a0a5aa8": "Built {arg1}/{arg2}",
-  "ui.buy_64fe2149d3": "Buy & {arg1} {arg2} ",
   "ui.buy_a95681848f": "Buy {arg1}",
   "ui.buy_again_when_all_are_claimed_9a1fff1183": "Buy again when all are claimed",
   "ui.buy_for_95b444e01e": "Buy for {arg1}",
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": "Leader",
   "ui.leaderboard_31b4712158": "Leaderboard",
   "ui.leads_the_gang_now_be1c0f505a": "{arg1} leads the Gang now.",
-  "ui.league_b3ab5af9ac": "{arg1} league",
   "ui.league_chests_fixed_contents_82950a94cd": "League chests (fixed contents)",
   "ui.leave_alliance_ed18efd046": "Leave Alliance",
   "ui.leave_fc6e4a408d": "Leave",
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": "That village could not be read: {detail}",
   "srv.import.sandbox": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).",
   "srv.import.refused": "This village cannot move to the server: {detail}",
-  "srv.import.too_new": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day."
+  "srv.import.too_new": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.",
+  "common.buyNext": "Buy & Next {n} ",
+  "common.buyFill": "Buy & Fill {n} "
 }

@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}: bygg opptil {arg2} (nå {arg3})" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "Bygning" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "Bygd {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "Kjøp & {arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "Kjøp {arg1}" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "Kjøp igjen når alt er hentet" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "Kjøp for {arg1}" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "Leder" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "Toppliste" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "{arg1} leder nå Gjengen." },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "Liga: {arg1}" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "Ligakister (fast innhold)" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "Forlat Alliansen" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "Forlat" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "Den landsbyen kunne ikke leses: {detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Denne landsbyen kan ikke flytte til serveren: den ble spilt i testsandkassen (tidshopp og testkjøp)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Denne landsbyen kan ikke flytte til serveren: {detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "En landsby med Borg {keep} kan flytte til serveren når denne nettkontoen er {days} dager gammel (om {wait, plural, one {# dag} other {# dager}}). Inntil da blir den på denne enheten: fortsett å spille, spillet prøver igjen hver dag." }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "En landsby med Borg {keep} kan flytte til serveren når denne nettkontoen er {days} dager gammel (om {wait, plural, one {# dag} other {# dager}}). Inntil da blir den på denne enheten: fortsett å spille, spillet prøver igjen hver dag." },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Kjøp & Neste {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kjøp & Fyll {n} " }
 }

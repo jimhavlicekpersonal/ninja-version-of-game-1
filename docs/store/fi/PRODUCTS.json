@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "fi",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Hyppysellinen Jadea",
+      "description": "Jadea 45",
+      "locale": "fi"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Kukkarollinen Jadea",
+      "description": "Jadea 100",
+      "locale": "fi"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Pussillinen Jadea",
+      "description": "Jadea 280",
+      "locale": "fi"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Laatikollinen Jadea",
+      "description": "Jadea 600",
+      "locale": "fi"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Arkullinen Jadea",
+      "description": "Jadea 1300",
+      "locale": "fi"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Holvillinen Jadea",
+      "description": "Jadea 3500",
+      "locale": "fi"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Lohikäärmeen Jade-aarre",
+      "description": "Jadea 7500",
+      "locale": "fi"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Premium-kausikäärö",
+      "description": "Tämän kauden premium-polku",
+      "locale": "fi"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Aloituspaketti",
+      "description": "Jadea ja resursseja uusille klaanin johtajille",
+      "locale": "fi"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Käsityöläisen nippu",
+      "description": "Jadea uuden käsityöläisen palkkaamiseen sekä resursseja",
+      "locale": "fi"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Sotatarvikkeet",
+      "description": "Muonaa ja Jadea Liittosotaan",
+      "locale": "fi"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Jälleenrakennuspakkaus",
+      "description": "Jadea ja resursseja jälleenrakennukseen",
+      "locale": "fi"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Klaanin apuraha",
+      "description": "Päivittäiset maksut: 30, kussakin Jadea 12",
+      "locale": "fi"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Linnan juhla",
+      "description": "Resursseja ja Jadea uuden Linnasi juhlistamiseen",
+      "locale": "fi"
+    }
+  ]
+}

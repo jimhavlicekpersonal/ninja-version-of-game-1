@@ -1,0 +1,20 @@
+{
+  "language": "ig",
+  "iosFriendList": "Kagemura na-egosi ndị enyi gị na Game Center na-egwukwa ya, ka i wee tinye ha dịka ndị enyi n'egwuregwu ahụ.",
+  "legalUnset": "ebipụtabeghị",
+  "accountFailure": "Enweghị ike iziga arịrịọ ahụ. Lelee nkọwa gị na njikọ gị, wee nwaa ọzọ.",
+  "storekit": {
+    "premiumPass": "Mpịakọta Oge pụrụ iche",
+    "jade": "Jed {n}",
+    "stipend": "Ụgwọ kwa ụbọchị: ugboro {payments}, Jed {jade} n'otu n'otu",
+    "seasonTrack": "Ụzọ pụrụ iche nke oge a",
+    "short": {
+      "starter_pack": "Jed na akụ maka ndị ndú ọhụrụ",
+      "builder_pack": "Jed iji were onye ọrụaka ọzọ, na akụ",
+      "war_prep_pack": "Nri na Jed maka Agha Njikọ",
+      "rebuild_pack": "Jed na akụ iji wughachi",
+      "keep_pack": "Akụ na Jed iji mee mmemme Obi ọhụrụ gị"
+    },
+    "displayNames": {}
+  }
+}

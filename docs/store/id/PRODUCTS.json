@@ -53,37 +53,37 @@
     {
       "productId": "offer_starter",
       "displayName": "Paket Pemula",
-      "description": "Giok dan sumber daya untuk pemimpin klan baru",
+      "description": "Giok dan sumber daya untuk pemimpin baru",
       "locale": "id"
     },
     {
       "productId": "offer_builder",
-      "displayName": "Paket Perajin",
-      "description": "Giok untuk Perajin Desa tambahan, plus sumber daya",
+      "displayName": "Bundel Perajin",
+      "description": "Giok untuk merekrut Perajin Desa lagi, plus sumber daya",
       "locale": "id"
     },
     {
       "productId": "offer_war_prep",
-      "displayName": "Perbekalan Perang",
+      "displayName": "Pasokan Perang",
       "description": "Perbekalan dan Giok untuk Perang Aliansi",
       "locale": "id"
     },
     {
       "productId": "offer_rebuild",
-      "displayName": "Paket Pembangunan Ulang",
-      "description": "Giok dan sumber daya untuk membangun ulang",
+      "displayName": "Paket Pemulihan",
+      "description": "Giok dan sumber daya untuk membangun kembali",
       "locale": "id"
     },
     {
       "productId": "clan_stipend",
       "displayName": "Tunjangan Klan",
-      "description": "30 pembayaran harian, masing-masing 12 Giok",
+      "description": "30 pembayaran harian sebesar 12 Giok",
       "locale": "id"
     },
     {
       "productId": "offer_keep",
       "displayName": "Perayaan Benteng",
-      "description": "Sumber daya dan Giok untuk Benteng barumu",
+      "description": "Sumber daya dan Giok untuk merayakan Benteng barumu",
       "locale": "id"
     }
   ]

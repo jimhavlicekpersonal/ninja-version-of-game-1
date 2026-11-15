@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}: حتى {arg2} (حاليًا {arg3})" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "مبنى" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "المبني {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "شراء و{arg1} {arg2}" },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "شراء {arg1}" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "الشراء مجددًا بعد استلام الكل" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "الشراء مقابل {arg1}" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "القائد" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "لوحة الصدارة" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "قيادة العصابة الآن بيد {arg1}." },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "دوري {arg1}" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "صناديق الدوري (محتويات ثابتة)" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "مغادرة التحالف" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "مغادرة" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "تعذّرت قراءة هذه القرية: {detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "لا يمكن نقل هذه القرية إلى الخادم: لُعبت في بيئة الاختبار (تخطي الوقت ومشتريات تجريبية)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "لا يمكن نقل هذه القرية إلى الخادم: {detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "يمكن نقل قرية بمستوى قلعة {keep} إلى الخادم بعد أن يبلغ عمر هذا الحساب عبر الإنترنت {days} يومًا (المتبقي: {wait, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}). تبقى القرية على هذا الجهاز في الأثناء: يمكن مواصلة اللعب، وستحاول اللعبة مجددًا كل يوم." }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "يمكن نقل قرية بمستوى قلعة {keep} إلى الخادم بعد أن يبلغ عمر هذا الحساب عبر الإنترنت {days} يومًا (المتبقي: {wait, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}). تبقى القرية على هذا الجهاز في الأثناء: يمكن مواصلة اللعب، وستحاول اللعبة مجددًا كل يوم." },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "شراء وتجهيز التالي {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "شراء وملء {n} " }
 }

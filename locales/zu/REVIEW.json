@@ -1,0 +1,659 @@
+{
+  "language": "zu",
+  "variant": "Standard isiZulu (South Africa), friendly informal singular address (wena), no noun-class prefix or concord attached to a name/building placeholder",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "ui",
+      "key": "time.dh",
+      "text": "{d}d {h}h",
+      "reason": "Compact time units d/h/m/s: international unit symbols, the form isiZulu apps use in tight labels"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.d",
+      "text": "{d}d",
+      "reason": "Compact time units d/h/m/s: international unit symbols, the form isiZulu apps use in tight labels"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.hm",
+      "text": "{h}h {m}m",
+      "reason": "Compact time units d/h/m/s: international unit symbols, the form isiZulu apps use in tight labels"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.h",
+      "text": "{h}h",
+      "reason": "Compact time units d/h/m/s: international unit symbols, the form isiZulu apps use in tight labels"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.ms",
+      "text": "{m}m {s}s",
+      "reason": "Compact time units d/h/m/s: international unit symbols, the form isiZulu apps use in tight labels"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.m",
+      "text": "{m}m",
+      "reason": "Compact time units d/h/m/s: international unit symbols, the form isiZulu apps use in tight labels"
+    },
+    {
+      "namespace": "ui",
+      "key": "time.s",
+      "text": "{s}s",
+      "reason": "Compact time units d/h/m/s: international unit symbols, the form isiZulu apps use in tight labels"
+    },
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "Only placeholders and symbols"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.0",
+      "text": "Kaito",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.1",
+      "text": "Rin",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.2",
+      "text": "Sora",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.3",
+      "text": "Hana",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.4",
+      "text": "Ren",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.5",
+      "text": "Yuki",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.6",
+      "text": "Daichi",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.7",
+      "text": "Mei",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.8",
+      "text": "Takeshi",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.9",
+      "text": "Aiko",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.10",
+      "text": "Haru",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.11",
+      "text": "Kenji",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.12",
+      "text": "Nami",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.13",
+      "text": "Shin",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.14",
+      "text": "Tomo",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerFirst.15",
+      "text": "Kira",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.0",
+      "text": "Mori",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.1",
+      "text": "Takeda",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.2",
+      "text": "Kawamura",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.3",
+      "text": "Ishida",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.4",
+      "text": "Hayashi",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.5",
+      "text": "Sakamoto",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.6",
+      "text": "Okada",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.7",
+      "text": "Kimura",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.8",
+      "text": "Matsuda",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.9",
+      "text": "Ueda",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.10",
+      "text": "Nakano",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "names.playerSecond.11",
+      "text": "Fujita",
+      "reason": "Japanese name, kept in its usual Latin spelling (glossary)"
+    },
+    {
+      "namespace": "data",
+      "key": "roster.warriors.shinobi.name",
+      "text": "Shinobi",
+      "reason": "Shinobi is a Japanese word used as a name; transliterated per the glossary (Latin script)"
+    },
+    {
+      "namespace": "data",
+      "key": "troops.hedgehog_roller.name",
+      "text": "Shinobi",
+      "reason": "Shinobi is a Japanese word used as a name; transliterated per the glossary (Latin script)"
+    },
+    {
+      "namespace": "messages",
+      "key": "label.7e39068eb8",
+      "text": "Kage",
+      "reason": "Kage is a Japanese name (Kage League), kept per the glossary"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand name"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand name"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.adlam_46b7485555",
+      "text": "Adlam",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bamum_f172a8db88",
+      "text": "Bamum",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.batak_cb568479fd",
+      "text": "Batak",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.bopomofo_98fa38f155",
+      "text": "Bopomofo",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.buhid_bf01f926b1",
+      "text": "Buhid",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.chakma_47143a0b98",
+      "text": "Chakma",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.cham_d63d110257",
+      "text": "Cham",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.hanunoo_34539251fd",
+      "text": "Hanunoo",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lepcha_e418a0a6af",
+      "text": "Lepcha",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.limbu_543b10a96d",
+      "text": "Limbu",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.lisu_3cc130feed",
+      "text": "Lisu",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.makasar_bc732d689b",
+      "text": "Makasar",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.miao_a1e0e59510",
+      "text": "Miao",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.mro_d3e6054d62",
+      "text": "Mro",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.newa_8d897dbb59",
+      "text": "Newa",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.nko_8c076e437d",
+      "text": "Nko",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.osage_ea699037c2",
+      "text": "Osage",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.rejang_54160d2075",
+      "text": "Rejang",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.saurashtra_d82e14c137",
+      "text": "Saurashtra",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tagbanwa_ab2498989d",
+      "text": "Tagbanwa",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tangsa_7a4fd080f7",
+      "text": "Tangsa",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.thaana_1b2045d95b",
+      "text": "Thaana",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.tifinagh_25e03d7123",
+      "text": "Tifinagh",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.toto_b41419df9b",
+      "text": "Toto",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.vai_d0cfbdc71d",
+      "text": "Vai",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.wancho_71a2270d98",
+      "text": "Wancho",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.yi_caf1928d4e",
+      "text": "Yi",
+      "reason": "Name of a writing system with no established isiZulu name; kept as the international name"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.aa_9b915ac88a",
+      "text": " · AA",
+      "reason": "Technical abbreviation (fps, HP, AA, vs) used as is in isiZulu games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} fps",
+      "reason": "Technical abbreviation (fps, HP, AA, vs) used as is in isiZulu games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "Brand name"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "Brand name"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.hp_0c9cb32a1b",
+      "text": "{arg1} HP",
+      "reason": "Technical abbreviation (fps, HP, AA, vs) used as is in isiZulu games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "Only placeholders and punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "Extracted from a CSS class string in battleHud.ts (star big on slam), not player-visible text; translating it could break styling"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "Brand name"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.s_have_bced00a61e",
+      "text": "s have",
+      "reason": "English plural fragment with no current caller in src; nothing isiZulu to write for it"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_2d68ca8191",
+      "text": "{arg1} vs {arg2}",
+      "reason": "Technical abbreviation (fps, HP, AA, vs) used as is in isiZulu games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f130559f0e",
+      "text": "vs",
+      "reason": "Technical abbreviation (fps, HP, AA, vs) used as is in isiZulu games"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.vs_f471e2dc90",
+      "text": "vs {arg1}",
+      "reason": "Technical abbreviation (fps, HP, AA, vs) used as is in isiZulu games"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Game title Kagemura: Ninja Clans (logo name)"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.account.2",
+      "text": "Kagemura: Ninja Clans",
+      "reason": "Game title Kagemura: Ninja Clans (logo name)"
+    }
+  ],
+  "latinScriptReviewed": [],
+  "notes": [
+    "isiZulu has no grammatical gender, but noun-class prefixes and concords depend on the noun: nothing is attached to {name}/{building}/{troop}; a colon, an impersonal ku- verb or an apposition noun (isakhiwo {building}) is used instead. Personal-name subjects take the fixed class-1a concord u-.",
+    "Counts use the concord of the known counted noun with the copula ngu- before the number (amaqhawe angu-#, izinkanyezi ezingu-#), the usual isiZulu software convention.",
+    "Plural categories per Intl.PluralRules(zu): one (0 and 1) and other.",
+    "Generated names are noun-first with a space (generatedNames: noun-first; integration setting not yet set in languages.json): every second part (names.placeSecond, social.groveNames.second) is a class-9 noun, and every first part is a class-9 qualifier (possessive ya-/ye-/yo- or relative e-), so all pairs agree: Intaba yeNdudumo, Inqaba Ebomvu, Ingwe Ecashile.",
+    "Japanese statutory pages (tokushoho, shikin-kessai) are translated fully into isiZulu, following the Vietnamese pattern; the support page links them by their Japanese titles. Draft notices kept; not a lawyer review.",
+    "Term choices are in TERMS.md. No native isiZulu speaker has reviewed this translation."
+  ]
+}

@@ -52,14 +52,14 @@ describe('the complete Russian release catalog', () => {
 
   it('keeps Kage League distinct from Shadow League', () => {
     expect(pack['data.ranks.leagues.kage.name']).toBe('Лига Каге');
-    expect(pack['data.ranks.leagues.shadow.name']).toBe('Теневая лига');
+    expect(pack['data.ranks.leagues.shadow.name']).toBe('Лига Тени');
   });
 
-  it('writes generated names adjective first, both parts agreeing', async () => {
+  it('writes generated names noun first, with a genitive noun that agrees with nothing', async () => {
     installCatalog('ru', pack); await useLanguage('ru');
-    expect(generatedName('Thunder Peak')).toBe('Громовой пик');
-    expect(generatedName('Iron Gate')).toBe('Железный кордон');
-    expect(generatedName('Twin Blade', 'grove')).toBe('Двойной клинок');
+    expect(generatedName('Thunder Peak')).toBe('Пик Грома');
+    expect(generatedName('Iron Gate')).toBe('Врата Железа');
+    expect(generatedName('Twin Blade', 'grove')).toBe('Клинок Близнецов');
   });
 
   it('translates owned text, keeps authored chat and leaves canonical data alone', async () => {
@@ -69,7 +69,7 @@ describe('the complete Russian release catalog', () => {
     expect(sourceText(`${name} wants to be friends`, 'ru', pack)).toContain(name);
     expect(chatText({ kind: 'chat', text: 'Hello!' })).toBe('Hello!');
     expect(chatText({ kind: 'chat', text: 'Hello!', presetId: 0 })).not.toBe('Hello!');
-    expect(displayData(defaultData).buildings.elder_toadstool.name).toBe('Цитадель клана');
+    expect(displayData(defaultData).buildings.elder_toadstool.name).toBe('Замок клана');
     expect(JSON.stringify(defaultData)).toBe(before);
     expect(JSON.stringify(generateOpponent(2026, 8, defaultData))).toBe(base);
   });
@@ -94,7 +94,7 @@ describe('the complete Russian release catalog', () => {
     expect(form).not.toContain('err.message;');
     expect(complaintPage(undefined, 'ru')).toContain('<html lang="ru">');
     expect(notificationText('Your army is ready', 'ru')).not.toBe('Your army is ready');
-    expect(readFileSync(join(ROOT, 'public/legal.js'), 'utf8')).toContain("ru: 'ещё не опубликовано'");
+    expect(readFileSync(join(ROOT, 'public/legal.js'), 'utf8')).toContain("ru: 'пока не опубликовано'");
     expect(readFileSync(join(ROOT, 'ios/App/App/Info.plist'), 'utf8')).toContain('<string>ru</string>');
     expect(readFileSync(join(ROOT, 'ios/App/App/ru.lproj/InfoPlist.strings'), 'utf8')).toContain('"CFBundleDisplayName" = "Kagemura";');
     expect(readFileSync(join(ROOT, 'ios/App/App.xcodeproj/project.pbxproj'), 'utf8')).toMatch(/\bru,\n/);

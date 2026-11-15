@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}: {arg2} तक बनाएँ (अभी {arg3})" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "इमारत" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "बने हुए {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "ख़रीदें और {arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "{arg1} ख़रीदें" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "सब लेने के बाद फिर ख़रीदें" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "{arg1} में ख़रीदें" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "नेता" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "लीडरबोर्ड" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "अब टोली की अगुवाई {arg1} के हाथ में है।" },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "{arg1} लीग" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "लीग संदूक (तय सामग्री)" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "गठबंधन छोड़ें" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "छोड़ें" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "वह गाँव पढ़ा नहीं जा सका: {detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "यह गाँव सर्वर पर नहीं जा सकता: इसे टेस्टिंग सैंडबॉक्स में खेला गया था (समय की छलाँग और टेस्ट ख़रीदारी)।" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "यह गाँव सर्वर पर नहीं जा सकता: {detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "किला {keep} वाला गाँव सर्वर पर तब जा सकता है जब यह ऑनलाइन खाता {days} दिन पुराना हो जाए ({wait, plural, one {# दिन में} other {# दिन में}})। तब तक यह इसी डिवाइस पर रहता है: खेलते रहें, गेम हर दिन फिर से कोशिश करता है।" }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "किला {keep} वाला गाँव सर्वर पर तब जा सकता है जब यह ऑनलाइन खाता {days} दिन पुराना हो जाए ({wait, plural, one {# दिन में} other {# दिन में}})। तब तक यह इसी डिवाइस पर रहता है: खेलते रहें, गेम हर दिन फिर से कोशिश करता है।" },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "ख़रीदें और अगला {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "ख़रीदें और भरें {n} " }
 }

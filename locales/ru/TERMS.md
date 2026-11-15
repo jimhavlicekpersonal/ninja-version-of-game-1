@@ -1,51 +1,46 @@
 # Русский: выбранные термины
 
-Обращение на «ты» везде, включая юридические страницы (родителям в тексте — «вы»). Без рода игрока: нет прошедшего времени и кратких прилагательных при «ты» («Ты уже атаковал» → «Твоя атака уже была»); действия других игроков — в настоящем времени (`{arg1} вступает в альянс`), подстановки — после двоеточия или в именительном падеже (`Построено: {arg1}`, `{building}: улучши до ур. {level}`). Счётные фразы с простым `{n}` — через двоеточие (`Собери монеты: {n}`); в ICU-плюралах ветки one/few/many/other.
+Обращение к игроку на «ты», дружелюбно. Пол игрока и любого `{name}` неизвестен: никаких глаголов прошедшего времени и кратких прилагательных, согласованных с игроком или `{name}` («ты построил(а)», «{name} напал»). Используем настоящее/будущее время, безличные и страдательные обороты («Пропущен # день», «Набег: {name}», «от игрока {name}»). Плейсхолдеры не склоняются: `{building}`, `{troop}`, `{name}` стоят в именительном падеже после двоеточия или в приложении («Улучшить: {building}», «игрок {name}», «здание {building}»). Склонения чисел через ICU: one / few / many / other (other = дробные, родительный ед. ч.).
 
 | English | Русский |
 |---|---|
-| Kagemura / Kagemura: Ninja Clans | без изменений (латиница) |
-| Sensei Hoshi | сэнсэй Хоси (Поливанов) |
-| Shinobi / oni / Kage | синоби / они / Каге |
-| Clan Keep / Keep / Keep 7 | Цитадель клана / Цитадель / Цитадель 7 |
-| Coins / Coin Mint | монеты / Монетный двор |
-| Provisions / Terraced Farm / Provision Storehouse | провизия (без мн. ч.) / Террасное поле / Склад провизии |
-| Treasury | Казна |
-| Shadow Ink | теневая тушь |
-| Jade | нефрит («{n} нефрита») |
-| Honor | честь («честь: {n}») |
-| Leagues | Бамбуковая, Кедровая, Железная, Обсидиановая, Огненная (Ember), Штормовая, Теневая лига; Лига Каге |
-| Warrior / troops | воин / воины |
-| Training Dojo | Додзё |
-| Squad Courtyard | Двор отрядов |
-| Alliance / Alliance Lodge / Alliance War | альянс / Зал альянса / война альянсов |
-| Gang / Gang War / relay | банда / война банд / эстафета |
-| Village Artisan / Artisan's Hut | мастер деревни / Хижина мастера |
+| Clan Keep / Keep / Keep 7 | Замок клана / Замок / Замок 7 (ур. 7) |
+| Coin Mint / Terraced Farm | Монетный двор / Террасная ферма |
+| Treasury / Provision Storehouse | Казна / Склад провизии |
+| Coins / Provisions / Shadow Ink / Jade | Монеты / Провизия / Теневые чернила / Нефрит |
+| Training Dojo / Squad Courtyard | Тренировочное додзё (коротко: Додзё) / Двор отрядов |
+| Village Artisan / Artisan's Hut | Мастер деревни (мастер) / Хижина мастера |
+| Alliance / Alliance Lodge / Alliance War | Альянс / Дом альянса / Война альянсов |
+| Gang / Gang War / Gang leader | Банда / Война банд / главарь банды |
+| Friendly Duel / duel layout | Дружеский поединок / расстановка для поединков |
+| Shadow Trials / tier | Испытания Тени / ступень |
+| Season Scroll / premium track / Pass (rail) | Свиток сезона / премиум-линия / Свиток |
+| Smoke Bomb / smoke | Дымовая бомба / дым |
+| Saboteur / Sabotage / jam | Диверсант / Диверсия / выводить из строя |
+| Infiltration Points | Точки проникновения |
 | Raid / attack / raider | набег / атака / налётчик |
-| Defense (building) / defenses (count) | оборона / укрепление (# укрепление, укрепления, укреплений) |
-| Shield | щит |
-| Smoke Bomb | Дымовая бомба |
-| Saboteur / Sabotage / jam | диверсант / диверсия / вывести из строя |
-| Infiltration Points | точки проникновения |
-| Shadow Trials / tier | Теневые испытания / уровень |
-| Season Scroll / premium track / Pass (rail) | Свиток сезона / премиальная дорожка / Свиток |
-| Daily chest / streak / skip | ежедневный сундук / серия / заморозка |
+| Warrior / Defense / Shield | воин / оборонительное сооружение, при счёте укрепление (оборона) / щит |
+| Honor / Power / League | честь / сила / Лиги: Бамбуковая, Кедровая, Железная, Обсидиановая, Лига Углей, Лига Бури, Лига Тени, Лига Каге |
+| Daily chest / streak / skip | ежедневный сундук / серия / пропуск |
 | Clan Stipend | Жалованье клана |
-| Look(s) | облик(и) |
-| Tempering / Reach / Blast / Watch | закалка / Дальность / Взрыв / Бдительность |
-| Stake | ставка |
-| Upgrade / Lv / Research | улучшить, улучшение / ур. / исследование |
+| Looks | облики |
+| Tempering (Reach / Blast / Watch) | Закалка (Дальность / Залп / Дозор) |
+| Stake | Ставка |
 | splash / anti-air | урон по площади / ПВО |
-| tile / space | клетка / место |
-| Kite (Kite Raider) | (воздушный) змей (Налётчик на змее) |
-| generated / simulated raider | сгенерированный / смоделированный налётчик |
-| Friendly Duel / duel layout | дружеская дуэль / дуэльная расстановка |
-| Settle the score | свести счёты |
-| Player ID / friend code / save code | ID игрока / код друга / код сохранения |
-| Sign in with Apple / Play Games | Вход с Apple / Play Игры |
-| staff / moderators | персонал / модераторы |
-| Deleted player | Удалённый игрок |
+| generated | созданный компьютером |
+| Settings / Store / Online play / Sign-ins | Настройки / Магазин / Игра онлайн / Способы входа |
+| Privacy and help / moderators / support | Конфиденциальность и помощь / модераторы / поддержка |
+| Codex | Кодекс |
+| Sensei Hoshi | Сэнсэй Хоси |
+| Shinobi / Oni Breaker / Kage League | Синоби / Крушитель Они / Лига Каге (отлична от Лиги Тени) |
+| Level (Lv) | уровень (ур.) |
 
-Генерируемые названия (по умолчанию: первая часть, пробел, вторая): первые части — прилагательные мужского рода (Тихий, Громовой), вторые — существительные мужского рода со строчной буквы (пик, перевал, журавль, клинок), поэтому все пары согласуются («Громовой перевал», «Тихий журавль»). Японские имена — по Поливанову (Кайто, Такэси, Кэндзи, Исида, Фудзита).
+Названия зданий, воинов и ресурсов пишем с заглавной только первое слово (Монетный двор, Теневые чернила), как в русских играх; собственные имена (Каге, Синоби, Хоси) с заглавной. Бренды и технические имена (Kagemura, App Store, Google Play, Game Center, Play Games, IndexedDB, Sentry) латиницей.
 
-Японские правовые страницы переведены по образцу немецкого: русский текст вместо пары японский–английский, токены сохранены. Перевод не проверен носителем языка или юристом.
+Японские имена транскрибируются по системе Поливанова (Кайто, Такэда, Хоси, Синоби). Сгенерированные названия: `noun-first` — существительное, пробел, определение в родительном падеже (Пик + Грома = Пик Грома, Клинок Рассвета), чтобы ничего не согласовывалось по роду.
+
+Время: {d} д {h} ч, {h} ч {m} мин, {m} мин {s} с. Перевод не проверен носителем языка.
+
+## Notes from the parallel translation (2026-11-14)
+
+The 2026-11-15 integration merge kept these terms. A parallel branch translated the same language with its own terms; its translations survive only for the keys this worksheet did not yet have (server messages, the complaint and account pages, interface text added after 2026-11-13). Those entries may use the parallel terms and should be harmonised with this table in a review pass. The parallel term table is `locales/ru/TERMS.md` at commit 04b0552.

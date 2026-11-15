@@ -1,0 +1,20 @@
+{
+  "language": "am",
+  "iosFriendList": "Kagemura ከGame Center ጓደኞችዎ መካከል ጨዋታውን የሚጫወቱትን ያሳያል፤ በዚህም በጨዋታው ውስጥ እንደ ጓደኛ ሊያክሏቸው ይችላሉ።",
+  "legalUnset": "ገና አልታተመም",
+  "accountFailure": "ጥያቄው ሊላክ አልቻለም። ዝርዝሮችዎንና ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ።",
+  "storekit": {
+    "premiumPass": "ፕሪሚየም የወቅት ጥቅልል",
+    "jade": "{n} ጄድ",
+    "stipend": "ዕለታዊ ክፍያዎች፦ {payments} × {jade} ጄድ",
+    "seasonTrack": "የዚህ ወቅት ፕሪሚየም መስመር",
+    "short": {
+      "starter_pack": "ለአዲስ መሪዎች ጄድና ሀብቶች",
+      "builder_pack": "ሌላ ባለሙያ ለመቅጠር ጄድ፣ ከሀብቶች ጋር",
+      "war_prep_pack": "ለኅብረት ጦርነት ስንቅና ጄድ",
+      "rebuild_pack": "እንደገና ለመገንባት ጄድና ሀብቶች",
+      "keep_pack": "አዲሱን ምሽግዎን ለማክበር ሀብቶችና ጄድ"
+    },
+    "displayNames": {}
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "am",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "ቁንጥጫ ጄድ",
+      "description": "45 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "የጄድ ከረጢት",
+      "description": "100 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "የጄድ ቦርሳ",
+      "description": "280 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "የጄድ ሣጥን",
+      "description": "600 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "የጄድ ሳንዱቅ",
+      "description": "1300 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "የጄድ ካዝና",
+      "description": "3500 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "የዘንዶ የጄድ ክምችት",
+      "description": "7500 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "ፕሪሚየም የወቅት ጥቅልል",
+      "description": "የዚህ ወቅት ፕሪሚየም መስመር",
+      "locale": "am"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "የጀማሪ ጥቅል",
+      "description": "ለአዲስ መሪዎች ጄድና ሀብቶች",
+      "locale": "am"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "የባለሙያ ጥቅል",
+      "description": "ሌላ ባለሙያ ለመቅጠር ጄድ፣ ከሀብቶች ጋር",
+      "locale": "am"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "የጦርነት አቅርቦቶች",
+      "description": "ለኅብረት ጦርነት ስንቅና ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "የመልሶ ግንባታ ኪት",
+      "description": "እንደገና ለመገንባት ጄድና ሀብቶች",
+      "locale": "am"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "የጎሳ ድጎማ",
+      "description": "ዕለታዊ ክፍያዎች፦ 30 × 12 ጄድ",
+      "locale": "am"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "የምሽግ ክብረ በዓል",
+      "description": "አዲሱን ምሽግዎን ለማክበር ሀብቶችና ጄድ",
+      "locale": "am"
+    }
+  ]
+}

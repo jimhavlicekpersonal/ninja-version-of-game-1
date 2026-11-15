@@ -1,0 +1,90 @@
+{
+  "status": "prepared_not_uploaded",
+  "language": "zu",
+  "products": [
+    {
+      "productId": "jade_pinch",
+      "displayName": "Ijeyidi Elincane",
+      "description": "Ijeyidi elingu-45",
+      "locale": "zu"
+    },
+    {
+      "productId": "jade_pouch",
+      "displayName": "Isikhwanyana Sejeyidi",
+      "description": "Ijeyidi elingu-100",
+      "locale": "zu"
+    },
+    {
+      "productId": "jade_bag",
+      "displayName": "Isikhwama Sejeyidi",
+      "description": "Ijeyidi elingu-280",
+      "locale": "zu"
+    },
+    {
+      "productId": "jade_box",
+      "displayName": "Ibhokisi Lejeyidi",
+      "description": "Ijeyidi elingu-600",
+      "locale": "zu"
+    },
+    {
+      "productId": "jade_chest",
+      "displayName": "Isifuba Sejeyidi",
+      "description": "Ijeyidi elingu-1300",
+      "locale": "zu"
+    },
+    {
+      "productId": "jade_vault",
+      "displayName": "Igumbi Lejeyidi",
+      "description": "Ijeyidi elingu-3500",
+      "locale": "zu"
+    },
+    {
+      "productId": "jade_hoard",
+      "displayName": "Ingcebo Kadrako Yejeyidi",
+      "description": "Ijeyidi elingu-7500",
+      "locale": "zu"
+    },
+    {
+      "productId": "season_scroll",
+      "displayName": "Umqulu Wesizini okhethekile",
+      "description": "Umzila okhethekile wale sizini",
+      "locale": "zu"
+    },
+    {
+      "productId": "offer_starter",
+      "displayName": "Iphakethe Lokuqala",
+      "description": "Ijeyidi nezinsiza zabaholi abasha",
+      "locale": "zu"
+    },
+    {
+      "productId": "offer_builder",
+      "displayName": "Inqwaba Yengcweti",
+      "description": "Ijeyidi lokuqasha enye Ingcweti, nezinsiza",
+      "locale": "zu"
+    },
+    {
+      "productId": "offer_war_prep",
+      "displayName": "Izimpahla Zempi",
+      "description": "Ukudla nejeyidi ukulungela Impi Yomfelandawonye",
+      "locale": "zu"
+    },
+    {
+      "productId": "offer_rebuild",
+      "displayName": "Iphakethe Lokwakha Kabusha",
+      "description": "Ijeyidi nezinsiza zokwakha kabusha",
+      "locale": "zu"
+    },
+    {
+      "productId": "clan_stipend",
+      "displayName": "Iholo Lesizwe",
+      "description": "Izinkokhelo zansuku zonke: 30 × ijeyidi elingu-12",
+      "locale": "zu"
+    },
+    {
+      "productId": "offer_keep",
+      "displayName": "Umgubho Wenqaba",
+      "description": "Izinsiza nejeyidi zokugubha Inqaba yakho entsha",
+      "locale": "zu"
+    }
+  ]
+}

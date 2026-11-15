@@ -1,0 +1,566 @@
+{
+  "language": "he",
+  "variant": "Modern Standard Hebrew (he-IL), no niqqud, gender-neutral address: plural imperatives in instructions, action nouns on buttons, unpointed -ך/שלך possessives in the game UI, second-person plural in the legal pages",
+  "reviewedBy": "AI translation and repository validation",
+  "humanNativeReview": false,
+  "identicalEnglishReviewed": [
+    {
+      "namespace": "ui",
+      "key": "stake.option",
+      "text": "{stars}★ ×{mult}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "ui",
+      "key": "text.period",
+      "text": ".",
+      "reason": "the full stop the game appends; Hebrew uses the same mark"
+    },
+    {
+      "namespace": "data",
+      "key": "social.chatLines.reply.7",
+      "text": ":)",
+      "reason": "emoticon"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.message_3f861f6106",
+      "text": "{arg1}\n{arg2}\n{arg3}\n",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "sim.message_a30af56805",
+      "text": "{arg1} · {arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.game_center_ddbb5729df",
+      "text": "Game Center",
+      "reason": "store, platform or brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.google_play_027b168468",
+      "text": "Google Play",
+      "reason": "store, platform or brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_00055f19bd",
+      "text": "★ {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_14677cb26f",
+      "text": "{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_308af0994c",
+      "text": "+{arg1} {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_35d1a6271d",
+      "text": "× {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_3730dc16f8",
+      "text": "{arg1} – {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_42a16430c0",
+      "text": "{arg1}× {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_463d2c3dd0",
+      "text": ": {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_59480bd082",
+      "text": "{arg1}. {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_5b4e0f8bf8",
+      "text": "{arg1}{arg2} {arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_6aa36c72d4",
+      "text": "{arg1} ({arg2}).",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_784772efcd",
+      "text": "{arg1}★ {arg2}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_81627edc88",
+      "text": "{arg1}★ {arg2}% — {arg3}★ {arg4}%",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c2bc2bb606",
+      "text": " · {arg1} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_c4f174b2a5",
+      "text": " · {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cc812bb47e",
+      "text": " {arg1} · {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_cf83918ca6",
+      "text": "{arg1} ×{arg2} ",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_d2599d42d8",
+      "text": "{arg1}: {arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_eb55276313",
+      "text": ", {arg1}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_f9da5dafaf",
+      "text": " {arg1} · +{arg2} / −{arg3}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.message_fb705db4f9",
+      "text": "{arg1} ×{arg2}",
+      "reason": "only placeholders, symbols or units"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.on_slam_f7aa652317",
+      "text": " on slam",
+      "reason": "CSS class string or English fragment the extractor captured; not shown as Hebrew text (no i18n call uses it in src)"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.play_games_05503d1e76",
+      "text": "Play Games",
+      "reason": "store, platform or brand name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.s_have_bced00a61e",
+      "text": "s have",
+      "reason": "CSS class string or English fragment the extractor captured; not shown as Hebrew text (no i18n call uses it in src)"
+    }
+  ],
+  "latinScriptReviewed": [
+    {
+      "namespace": "ui",
+      "key": "unlocks.chip",
+      "text": "{n, plural, one {פתיחה אחת} two {# פתיחות} other {# פתיחות}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "sync.pending",
+      "text": "{n, plural, one {פעולה אחת ממתינה לשליחה.} two {# פעולות ממתינות לשליחה.} other {# פעולות ממתינות לשליחה.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "sessions.signedOut",
+      "text": "{n, plural, one {בוצעה יציאה ממכשיר אחר אחד.} two {בוצעה יציאה מ־# מכשירים אחרים.} other {בוצעה יציאה מ־# מכשירים אחרים.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "battle.scoutSummary",
+      "text": "{points, plural, one {נקודה אחת} two {# נקודות} other {# נקודות}} · {defenses, plural, one {מבנה הגנה אחד} two {# מבני הגנה} other {# מבני הגנה}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "battle.defensesOnly",
+      "text": "{defenses, plural, one {מבנה הגנה אחד} two {# מבני הגנה} other {# מבני הגנה}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "daily.missed",
+      "text": "{n, plural, one {פספסת יום אחד בלי דילוג, ולכן הרצף שלך חזר צעד אחד אחורה.} two {פספסת # ימים בלי דילוג, ולכן הרצף שלך חזר # צעדים אחורה.} other {פספסת # ימים בלי דילוג, ולכן הרצף שלך חזר # צעדים אחורה.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "store.restored",
+      "text": "{n, plural, one {שוחזרה רכישה אחת.} two {שוחזרו # רכישות.} other {שוחזרו # רכישות.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "stipend.left",
+      "text": "{n, plural, one {נותר תשלום אחד} two {נותרו # תשלומים} other {נותרו # תשלומים}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "pass.endsInDays",
+      "text": "{n, plural, one {העונה מסתיימת בעוד יום אחד} two {העונה מסתיימת בעוד יומיים} other {העונה מסתיימת בעוד # ימים}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "spend.summary",
+      "text": "{n, plural, one {רכישה אחת} two {# רכישות} other {# רכישות}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "army.readyN",
+      "text": "{n, plural, one {מוכנים להתקפה · לוחם אחד} two {מוכנים להתקפה · # לוחמים} other {מוכנים להתקפה · # לוחמים}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "army.finishedN",
+      "text": "{n, plural, one {לוחם אחד מוכן} two {# לוחמים מוכנים} other {# לוחמים מוכנים}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "army.queued",
+      "text": "{n, plural, one {לוחם אחד נוסף לתור.} two {# לוחמים נוספו לתור.} other {# לוחמים נוספו לתור.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "research.lanesFree",
+      "text": "{n, plural, one {מסלול מחקר אחד פנוי.} two {# מסלולי מחקר פנויים.} other {# מסלולי מחקר פנויים.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "stipend.leftDaily",
+      "text": "{n, plural, one {נותר תשלום אחד, אחד ביום. יום שפוספס לעולם לא אובד.} two {נותרו # תשלומים, אחד ביום. יום שפוספס לעולם לא אובד.} other {נותרו # תשלומים, אחד ביום. יום שפוספס לעולם לא אובד.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "war.attacksLeft",
+      "text": "{n, plural, one {נותרה התקפה אחת.} two {נותרו # התקפות.} other {נותרו # התקפות.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "unlocks.capped",
+      "text": "{n, plural, one {רמות גבוהות יותר למבנה אחד} two {רמות גבוהות יותר ל־# מבנים} other {רמות גבוהות יותר ל־# מבנים}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "purchase.refunded",
+      "text": "{n, plural, one {החנות החזירה כסף על רכישה, ולכן מה שהיא נתנה נלקח בחזרה. מה שכבר הוצא מופיע כיתרה שלילית שההכנסות שלך יחזירו.} two {החנות החזירה כסף על # רכישות, ולכן מה שהן נתנו נלקח בחזרה. מה שכבר הוצא מופיע כיתרה שלילית שההכנסות שלך יחזירו.} other {החנות החזירה כסף על # רכישות, ולכן מה שהן נתנו נלקח בחזרה. מה שכבר הוצא מופיע כיתרה שלילית שההכנסות שלך יחזירו.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "purchase.reinstated",
+      "text": "{n, plural, one {החזר כספי בוטל: הרכישה שלך חזרה.} two {# החזרים כספיים בוטלו: הרכישות שלך חזרו.} other {# החזרים כספיים בוטלו: הרכישות שלך חזרו.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "ui",
+      "key": "temper.left",
+      "text": "{n, plural, one {נותרה נקודה אחת} two {נותרו # נקודות} other {נותרו # נקודות}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_delete_reject_or_overri_c210e90890",
+      "text": "action חייב להיות 'delete', 'reject' או 'override'",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.action_must_be_dismiss_remove_message__dd711086db",
+      "text": "action חייב להיות 'dismiss', 'remove_message' או 'mute'",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.app_store_notification_6199f7d5e6",
+      "text": "התראת App Store",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.band_must_be_under13_13to17_adult_or_n_1f387f3cc7",
+      "text": "band חייב להיות under13, 13to17, adult או null.",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.findable_must_be_everyone_friends_of_f_f0a3ad42a4",
+      "text": "findable חייב להיות everyone, friends_of_friends או nobody.",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.kind_must_be_chat_or_player_c0b46dca1d",
+      "text": "kind חייב להיות 'chat' או 'player'",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.more_hour_30c79f3a88",
+      "text": "{arg1, plural, one {עוד שעה אחת} two {עוד שעתיים} other {עוד # שעות}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.provider_must_be_gamecenter_or_playgam_5b0afd8b2e",
+      "text": "provider חייב להיות gamecenter או playgames.",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "server.you_still_have_attack_b26363a12b",
+      "text": "{arg1, plural, one {נותרה לך עוד התקפה אחת.} two {נותרו לך עוד # התקפות.} other {נותרו לך עוד # התקפות.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_did_not_answer_333a9912a5",
+      "text": "IndexedDB לא ענה",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.indexeddb_is_not_available_e0e14003f9",
+      "text": "IndexedDB אינו זמין",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.mockpaymentprovider_sold_as_7987bdd8e4",
+      "text": "[MockPaymentProvider] נמכר {arg1} (${arg2}) בתור {arg3}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "service.service_worker_registration_failed_def1c08bdf",
+      "text": "רישום ה־Service Worker נכשל",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.duel_recorded_against_win_in_duel_ad5ab60385",
+      "text": "הדו־קרב נרשם. מול {arg1}: {arg2, plural, one {ניצחון אחד} two {# ניצחונות} other {# ניצחונות}} ב־{arg4, plural, one {דו־קרב אחד} two {# דו־קרבות} other {# דו־קרבות}}.",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.fps_1912a77d6b",
+      "text": "{arg1} FPS",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_staff_7a8dfa11fc",
+      "text": "צוות Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.kagemura_support_af3c907500",
+      "text": "תמיכת Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.leave_kagemura_0b798fad93",
+      "text": "לצאת מ־Kagemura?",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.the_app_store_8768b638e4",
+      "text": "App Store",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "ui.update_kagemura_1a67e6e9e1",
+      "text": "עדכון Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.missingProduct",
+      "text": "חסר productId",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.transaction",
+      "text": "חסר transactionId",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.billing",
+      "text": "Google Play Billing אינו זמין: {detail}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "native.token",
+      "text": "חסר purchaseToken",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "extra.f568fe4f80",
+      "text": "זו לא רכישת Google Play.",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "messages",
+      "key": "common.purchasesRecovered",
+      "text": "{n, plural, one {הרכישה שלך נמסרה.} two {# הרכישות שלך נמסרו.} other {# הרכישות שלך נמסרו.}}",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.privacy.92",
+      "text": "דפי Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.0",
+      "text": "תמיכת Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.1",
+      "text": "תמיכת Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.support.27",
+      "text": "דפי Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.community.30",
+      "text": "דפי Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.44",
+      "text": "12. App Store ו־Google Play",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.terms.50",
+      "text": "דפי Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.tokushoho.29",
+      "text": "דפי Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    },
+    {
+      "namespace": "pages",
+      "key": "pages.shikin-kessai.24",
+      "text": "דפי Kagemura",
+      "reason": "mostly brand names (Kagemura, App Store, Game Center, Sentry), API field names or code values that stay in Latin letters; the Hebrew words around them are translated"
+    }
+  ],
+  "notes": [
+    "No masculine or feminine singular \"you\": no present-tense participles or future forms for the player (אתה בונה / תבני); past second-person forms are written unpointed (בנית, פספסת), which do not mark gender.",
+    "Nothing agrees in gender with {name}, {building}, {troop} or another player: event lines put the placeholder after a colon (פשיטה על הכפר שלך: {arg1}, הבנייה הושלמה: {arg1}), and verbs about other players are passive or nominal.",
+    "No Hebrew prefix letter (ב, ה, ו, כ, ל, מ, ש) is attached to a name placeholder; number placeholders take a prefix only with a maqaf (ב־{n}), as Hebrew writes prefixes before digits.",
+    "Plural categories follow Intl.PluralRules(\"he\"): one, two, other; every plural has all three branches.",
+    "Generated names should use generatedNames \"noun-first\": second parts are nouns in construct state (פסגת, עמק, מסכת), first parts definite nouns (הרעם, הערפל, חצות), so פסגת + הרעם = פסגת הרעם. No adjectives, so nothing has to agree in gender.",
+    "Japanese names are transliterated into Hebrew letters (קאיטו, טאקדה, גורו); Sensei Hoshi is סנסאי הושי, Kage League ליגת קאגה (distinct from ליגת הצל).",
+    "The Japanese statutory pages are translated into Hebrew (as in vi), with the English duplicate spans left empty; the support page links them by their Japanese titles.",
+    "No direction marks: the game sets dir=\"rtl\". Hebrew is not yet activated (integration step: generatedNames, compiled catalog, release test, native resources)."
+  ]
+}

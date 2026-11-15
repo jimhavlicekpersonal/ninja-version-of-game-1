@@ -5,55 +5,55 @@
     {
       "productId": "jade_pinch",
       "displayName": "Щепотка нефрита",
-      "description": "45 нефрита",
+      "description": "Нефрит: 45",
       "locale": "ru"
     },
     {
       "productId": "jade_pouch",
       "displayName": "Кошель нефрита",
-      "description": "100 нефрита",
+      "description": "Нефрит: 100",
       "locale": "ru"
     },
     {
       "productId": "jade_bag",
       "displayName": "Мешок нефрита",
-      "description": "280 нефрита",
+      "description": "Нефрит: 280",
       "locale": "ru"
     },
     {
       "productId": "jade_box",
       "displayName": "Ларец нефрита",
-      "description": "600 нефрита",
+      "description": "Нефрит: 600",
       "locale": "ru"
     },
     {
       "productId": "jade_chest",
       "displayName": "Сундук нефрита",
-      "description": "1300 нефрита",
+      "description": "Нефрит: 1300",
       "locale": "ru"
     },
     {
       "productId": "jade_vault",
-      "displayName": "Сокровищница нефрита",
-      "description": "3500 нефрита",
+      "displayName": "Хранилище нефрита",
+      "description": "Нефрит: 3500",
       "locale": "ru"
     },
     {
       "productId": "jade_hoard",
-      "displayName": "Драконьи запасы нефрита",
-      "description": "7500 нефрита",
+      "displayName": "Драконья сокровищница нефрита",
+      "description": "Нефрит: 7500",
       "locale": "ru"
     },
     {
       "productId": "season_scroll",
-      "displayName": "Свиток сезона: премиум",
-      "description": "Премиальная дорожка этого сезона",
+      "displayName": "Премиум-Свиток сезона",
+      "description": "Премиум-линия этого сезона",
       "locale": "ru"
     },
     {
       "productId": "offer_starter",
       "displayName": "Стартовый набор",
-      "description": "Нефрит и ресурсы для новых глав клана",
+      "description": "Нефрит и ресурсы для новых глав кланов",
       "locale": "ru"
     },
     {
@@ -77,13 +77,13 @@
     {
       "productId": "clan_stipend",
       "displayName": "Жалованье клана",
-      "description": "30 ежедневных выплат по 12 нефрита",
+      "description": "Ежедневные выплаты нефрита: 30 × 12",
       "locale": "ru"
     },
     {
       "productId": "offer_keep",
-      "displayName": "Праздник Цитадели",
-      "description": "Ресурсы и нефрит в честь нового уровня Цитадели",
+      "displayName": "Праздник Замка",
+      "description": "Ресурсы и нефрит в честь нового уровня Замка",
       "locale": "ru"
     }
   ]

@@ -56,7 +56,7 @@ describe('the complete Indonesian release catalog', () => {
     installCatalog('id', pack); await useLanguage('id');
     expect(generatedName('Thunder Peak')).toBe('Puncak Guntur');
     expect(generatedName('Iron Gate')).toBe('Gerbang Besi');
-    expect(generatedName('Twin Blade', 'grove')).toBe('Pedang Kembar');
+    expect(generatedName('Twin Blade', 'grove')).toBe('Bilah Kembar');
   });
 
   it('translates owned text, keeps authored chat and leaves canonical data alone', async () => {

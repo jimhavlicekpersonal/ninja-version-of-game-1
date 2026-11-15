@@ -796,7 +796,6 @@
   "ui.build_up_to_now_e9422097ce": { "en": "{arg1}: build up to {arg2} (now {arg3})", "text": "{arg1}：最大{arg2}まで建設可能（現在{arg3}）" },
   "ui.building_87c5912f2c": { "en": "Building", "text": "建物" },
   "ui.built_999a0a5aa8": { "en": "Built {arg1}/{arg2}", "text": "建設済み {arg1}/{arg2}" },
-  "ui.buy_64fe2149d3": { "en": "Buy & {arg1} {arg2} ", "text": "購入して{arg1} {arg2} " },
   "ui.buy_a95681848f": { "en": "Buy {arg1}", "text": "{arg1}を購入" },
   "ui.buy_again_when_all_are_claimed_9a1fff1183": { "en": "Buy again when all are claimed", "text": "すべて受け取ったら再購入できます" },
   "ui.buy_for_95b444e01e": { "en": "Buy for {arg1}", "text": "{arg1}で購入" },
@@ -1089,7 +1088,6 @@
   "ui.leader_3f53871b08": { "en": "Leader", "text": "リーダー" },
   "ui.leaderboard_31b4712158": { "en": "Leaderboard", "text": "ランキング" },
   "ui.leads_the_gang_now_be1c0f505a": { "en": "{arg1} leads the Gang now.", "text": "{arg1}が徒党を率いることになりました。" },
-  "ui.league_b3ab5af9ac": { "en": "{arg1} league", "text": "{arg1}リーグ" },
   "ui.league_chests_fixed_contents_82950a94cd": { "en": "League chests (fixed contents)", "text": "リーグ宝箱（中身固定）" },
   "ui.leave_alliance_ed18efd046": { "en": "Leave Alliance", "text": "同盟を抜ける" },
   "ui.leave_fc6e4a408d": { "en": "Leave", "text": "抜ける" },
@@ -2100,5 +2098,7 @@
   "srv.import.unreadable": { "en": "That village could not be read: {detail}", "text": "その村を読み取れませんでした：{detail}" },
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "この村はサーバーへ移行できません。テスト用サンドボックス（時間スキップとテスト購入）でプレイされた村です。" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "この村はサーバーへ移行できません：{detail}" },
-  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "天守閣Lv.{keep}の村は、このオンラインアカウントの作成から{days}日たつとサーバーへ移行できます（{wait, plural, other {あと#日}}）。それまではこの端末に残ります。プレイを続ければ、ゲームが毎日再試行します。" }
+  "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "天守閣Lv.{keep}の村は、このオンラインアカウントの作成から{days}日たつとサーバーへ移行できます（{wait, plural, other {あと#日}}）。それまではこの端末に残ります。プレイを続ければ、ゲームが毎日再試行します。" },
+  "common.buyNext": { "en": "Buy & Next {n} ", "text": "購入して次へ {n} " },
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "購入して補充 {n} " }
 }

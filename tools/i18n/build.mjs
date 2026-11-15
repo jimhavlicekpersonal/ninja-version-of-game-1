@@ -123,6 +123,11 @@ export function buildLanguageAssets({ serverOnly = false } = {}) {
       }
     }
   }
+  // server/accountPage.ts and complaintPage.ts import every listed language's pages; one that is not complete yet
+  // (a parallel merge can add keys before its translator catches up) gets an empty file and so the English form.
+  for (const lang of languages().languages) {
+    if (lang.code !== 'en' && !available[lang.code]?.ready) writeFileSync(join(compiledDir, `pages-${lang.code}.json`), '{}');
+  }
   // The server image needs runtime catalogs and its account form, without
   // depending on client public assets, native projects or measurement docs.
   if (serverOnly) return { available, report };

@@ -1,0 +1,40 @@
+{
+  "name": "Kagemura: Ninja Clans",
+  "short_name": "Kagemura",
+  "description": "ଏକ ନିଞ୍ଜା ଗୋଷ୍ଠୀର ନେତୃତ୍ୱ ନିଅନ୍ତୁ: ପାହାଡ଼ରେ ଲୁଚି ରହିଥିବା ଗାଁ ଗଢ଼ନ୍ତୁ, ଯୋଦ୍ଧାଙ୍କୁ ପ୍ରଶିକ୍ଷଣ ଦିଅନ୍ତୁ ଓ ଧୂଆଁ ଏବଂ ଅନ୍ତର୍ଘାତ ସହ ପ୍ରତିଦ୍ୱନ୍ଦ୍ୱୀ ଦୁର୍ଗ ଉପରେ ଚଢ଼ାଉ କରନ୍ତୁ।",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#1f2a36",
+  "theme_color": "#1f2a36",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "../icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "lang": "or"
+}
