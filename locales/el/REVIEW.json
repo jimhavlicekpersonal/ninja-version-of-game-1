@@ -255,6 +255,18 @@
       "key": "pages.support.5",
       "text": "Email: {t0}{t1}",
       "reason": "word used as is in Greek interfaces (OK, Premium, online, fps, email)"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.join",
+      "text": "{first} {second}",
+      "reason": "only placeholders, symbols or punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.detail",
+      "text": "{detail}",
+      "reason": "only placeholders, symbols or punctuation"
     }
   ],
   "latinScriptReviewed": [],
