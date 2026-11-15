@@ -195,6 +195,18 @@
       "key": "ui.play_games_05503d1e76",
       "text": "Play Games",
       "reason": "brand/platform name, kept in Latin letters"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.join",
+      "text": "{first} {second}",
+      "reason": "only placeholders, symbols or punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.detail",
+      "text": "{detail}",
+      "reason": "only placeholders, symbols or punctuation"
     }
   ],
   "latinScriptReviewed": [],
