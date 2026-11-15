@@ -603,6 +603,18 @@
       "key": "ui.play_games_05503d1e76",
       "text": "Play Games",
       "reason": "Platform brand name"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.join",
+      "text": "{first} {second}",
+      "reason": "Placeholder-only server message: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.detail",
+      "text": "{detail}",
+      "reason": "Placeholder-only server message: nothing to translate"
     }
   ],
   "latinScriptReviewed": [],
