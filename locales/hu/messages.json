@@ -1590,7 +1590,7 @@
   "ui.warriors_56148a7f40": { "en": "Warriors: {arg1}", "text": "Harcosok: {arg1}" },
   "ui.warriors_at_a_time_29a1f7a91f": { "en": "{arg1} warriors at a time", "text": "egyszerre {arg1} harcost" },
   "ui.warriors_need_two_buildings_the_dojo_t_be7a3ece47": { "en": "Warriors need two buildings: the Dojo trains them and the Courtyard houses them.", "text": "A harcosoknak két épület kell: a Dódzsó kiképzi, az Udvar elszállásolja őket." },
-  "ui.watch_a71e757324": { "en": "Watch", "text": "Őrség" },
+  "ui.watch_a71e757324": { "en": "Watch", "text": "Megtekintés" },
   "ui.we_keep_only_an_age_group_on_this_devi_f95aafec8d": { "en": "We keep only an age group on this device and our server, never your date of birth. Please answer honestly: our support team can correct a mistake.", "text": "Ezen az eszközön és a szerverünkön csak a korcsoportot tároljuk, a születési dátumodat sosem. Kérjük, válaszolj őszintén: az ügyfélszolgálatunk kijavíthatja a tévedést." },
   "ui.welcome_back_346181d6c9": { "en": "Welcome back!", "text": "Üdv újra!" },
   "ui.what_is_shared_742745a508": { "en": "What is shared", "text": "Mit osztunk meg" },

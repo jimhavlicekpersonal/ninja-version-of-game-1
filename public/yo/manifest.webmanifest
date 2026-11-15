@@ -36,5 +36,55 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "Ojoojúmọ́",
+      "short_name": "Ojoojúmọ́",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ọmọ ogun",
+      "short_name": "Ọmọ ogun",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ọjà",
+      "short_name": "Ọjà",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ìròyìn àti ọ̀rọ̀",
+      "short_name": "Ìròyìn àti ọ̀rọ̀",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "lang": "yo"
 }

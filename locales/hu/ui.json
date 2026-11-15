@@ -234,7 +234,7 @@
   "growth.viewer.generated": { "en": "Against a generated base (made by the computer).", "text": "Gépi bázis ellen (a számítógép készítette)." },
   "growth.viewer.practice": { "en": "A practice battle.", "text": "Gyakorló csata." },
   "growth.viewer.result": { "en": "Result: {stars}★, {pct} destroyed", "text": "Eredmény: {stars}★, rombolás: {pct}" },
-  "growth.viewer.watch": { "en": "Watch", "text": "Őrség" },
+  "growth.viewer.watch": { "en": "Watch", "text": "Megtekintés" },
   "growth.viewer.failed": { "en": "This shared replay could not be opened.", "text": "Ezt a megosztott visszajátszást nem sikerült megnyitni." },
   "growth.viewer.older": { "en": "This replay was recorded under other battle rules, so this version of the game cannot show it.", "text": "Ezt a visszajátszást más csataszabályok szerint rögzítették, ezért a játék ezen verziója nem tudja megjeleníteni." },
   "alliance.banner.plain": { "en": "Plain banner", "text": "Egyszerű zászló" },

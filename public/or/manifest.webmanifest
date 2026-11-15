@@ -36,5 +36,55 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "ଦୈନିକ",
+      "short_name": "ଦୈନିକ",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ସେନା",
+      "short_name": "ସେନା",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ଷ୍ଟୋର୍",
+      "short_name": "ଷ୍ଟୋର୍",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ସମ୍ବାଦ ଓ ବାର୍ତ୍ତା",
+      "short_name": "ସମ୍ବାଦ ଓ ବାର୍ତ୍ତା",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "lang": "or"
 }

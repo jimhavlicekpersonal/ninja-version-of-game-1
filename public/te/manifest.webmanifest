@@ -36,5 +36,55 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "రోజువారీ",
+      "short_name": "రోజువారీ",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "సైన్యం",
+      "short_name": "సైన్యం",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "స్టోర్",
+      "short_name": "స్టోర్",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "వార్తలు మరియు సందేశాలు",
+      "short_name": "వార్తలు మరియు సందేశాలు",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "lang": "te"
 }

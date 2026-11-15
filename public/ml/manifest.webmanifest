@@ -36,5 +36,55 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "ദിവസേന",
+      "short_name": "ദിവസേന",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "സേന",
+      "short_name": "സേന",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "സ്റ്റോർ",
+      "short_name": "സ്റ്റോർ",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "വാർത്തകളും സന്ദേശങ്ങളും",
+      "short_name": "വാർത്തകളും സന്ദേശങ്ങളും",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "lang": "ml"
 }

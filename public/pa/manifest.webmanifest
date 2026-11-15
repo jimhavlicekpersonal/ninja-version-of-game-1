@@ -36,5 +36,55 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "ਰੋਜ਼ਾਨਾ",
+      "short_name": "ਰੋਜ਼ਾਨਾ",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ਫ਼ੌਜ",
+      "short_name": "ਫ਼ੌਜ",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ਸਟੋਰ",
+      "short_name": "ਸਟੋਰ",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ਖ਼ਬਰਾਂ ਅਤੇ ਸੁਨੇਹੇ",
+      "short_name": "ਖ਼ਬਰਾਂ ਅਤੇ ਸੁਨੇਹੇ",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "lang": "pa"
 }

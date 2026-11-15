@@ -234,7 +234,7 @@
   "growth.viewer.generated": { "en": "Against a generated base (made by the computer).", "text": "Tietokoneen luomaa tukikohtaa vastaan." },
   "growth.viewer.practice": { "en": "A practice battle.", "text": "Harjoitustaistelu." },
   "growth.viewer.result": { "en": "Result: {stars}★, {pct} destroyed", "text": "Tulos: {stars}★, tuhottu {pct}" },
-  "growth.viewer.watch": { "en": "Watch", "text": "Vartio" },
+  "growth.viewer.watch": { "en": "Watch", "text": "Katso" },
   "growth.viewer.failed": { "en": "This shared replay could not be opened.", "text": "Tätä jaettua uusintaa ei voitu avata." },
   "growth.viewer.older": { "en": "This replay was recorded under other battle rules, so this version of the game cannot show it.", "text": "Tämä uusinta tallennettiin eri taistelusäännöillä, joten tämä pelin versio ei voi näyttää sitä." },
   "alliance.banner.plain": { "en": "Plain banner", "text": "Tavallinen lippu" },

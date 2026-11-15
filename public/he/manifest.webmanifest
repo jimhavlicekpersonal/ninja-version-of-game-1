@@ -36,5 +36,56 @@
       "purpose": "maskable"
     }
   ],
-  "lang": "he"
+  "shortcuts": [
+    {
+      "name": "יומי",
+      "short_name": "יומי",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "צבא",
+      "short_name": "צבא",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "חנות",
+      "short_name": "חנות",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "חדשות והודעות",
+      "short_name": "חדשות והודעות",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "lang": "he",
+  "dir": "rtl"
 }

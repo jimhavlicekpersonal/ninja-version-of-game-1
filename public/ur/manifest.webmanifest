@@ -36,5 +36,56 @@
       "purpose": "maskable"
     }
   ],
-  "lang": "ur"
+  "shortcuts": [
+    {
+      "name": "روزانہ",
+      "short_name": "روزانہ",
+      "url": "../?open=daily",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "فوج",
+      "short_name": "فوج",
+      "url": "../?open=army",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "دکان",
+      "short_name": "دکان",
+      "url": "../?open=store",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "خبریں اور پیغامات",
+      "short_name": "خبریں اور پیغامات",
+      "url": "../?open=news",
+      "icons": [
+        {
+          "src": "../icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "lang": "ur",
+  "dir": "rtl"
 }

@@ -110,7 +110,10 @@ describe('privacy defaults and declarations (GLOBAL-019)', () => {
     expect(en).toContain('The ids kept for your account are deleted with it');
     const pages = JSON.parse(read('locales/en/pages.json')) as Record<string, string>;
     const key = Object.keys(pages).find((k) => k.startsWith('pages.privacy.') && pages[k]!.includes('random installation id'))!;
-    for (const code of ['es', 'pt', 'fr', 'de', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'hi', 'vi', 'th', 'it', 'nl', 'ro', 'sv', 'ca', 'da', 'nb', 'ar', 'id', 'ru', 'tr']) {
+    const languages = JSON.parse(read('locales/languages.json')) as { code: string }[] | { languages: { code: string }[] };
+    const codes = (Array.isArray(languages) ? languages : languages.languages).map((l) => l.code).filter((c) => c !== 'en');
+    expect(codes.length).toBe(49);
+    for (const code of codes) {
       const ws = JSON.parse(read(`locales/${code}/pages.json`)) as Record<string, { en: string; text: string }>;
       expect(ws[key]!.en, code).toBe(pages[key]);
       expect(ws[key]!.text.length, code).toBeGreaterThan(pages[key]!.length / 3);
