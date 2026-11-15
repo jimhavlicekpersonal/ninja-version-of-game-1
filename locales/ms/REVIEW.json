@@ -783,6 +783,18 @@
       "key": "pages.account.2",
       "text": "Kagemura: Ninja Clans",
       "reason": "Game name and subtitle (logo), kept as is"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.join",
+      "text": "{first} {second}",
+      "reason": "Placeholder-only server message: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.detail",
+      "text": "{detail}",
+      "reason": "Placeholder-only server message: nothing to translate"
     }
   ],
   "latinScriptReviewed": [],
