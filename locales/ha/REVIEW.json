@@ -663,6 +663,18 @@
       "key": "stake.option",
       "text": "{stars}★ ×{mult}",
       "reason": "Only placeholders, numbers and symbols: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.join",
+      "text": "{first} {second}",
+      "reason": "Placeholder-only server message: nothing to translate"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.detail",
+      "text": "{detail}",
+      "reason": "Placeholder-only server message: nothing to translate"
     }
   ],
   "latinScriptReviewed": [],
