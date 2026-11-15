@@ -219,6 +219,18 @@
       "key": "ui.s_have_bced00a61e",
       "text": "s have",
       "reason": "CSS class string or English fragment the extractor captured; not shown as Hebrew text (no i18n call uses it in src)"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.join",
+      "text": "{first} {second}",
+      "reason": "only placeholders, symbols or punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.detail",
+      "text": "{detail}",
+      "reason": "only placeholders, symbols or punctuation"
     }
   ],
   "latinScriptReviewed": [

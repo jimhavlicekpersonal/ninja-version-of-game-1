@@ -213,6 +213,18 @@
       "key": "pages.account.2",
       "text": "Kagemura: Ninja Clans",
       "reason": "Game name, kept in Latin letters (logo)"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.join",
+      "text": "{first} {second}",
+      "reason": "only placeholders, symbols or punctuation"
+    },
+    {
+      "namespace": "messages",
+      "key": "srv.detail",
+      "text": "{detail}",
+      "reason": "only placeholders, symbols or punctuation"
     }
   ],
   "latinScriptReviewed": [],
