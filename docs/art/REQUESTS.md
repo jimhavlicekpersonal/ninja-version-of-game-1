@@ -16,3 +16,20 @@ All of these are exported from contract files (`compartments.json`), so `ui/` ma
 | Battle result | (no change needed) | `BattleScene` now shows a star slam per star (`fx.ts` `starSlam`, sound `starSlam`, haptic `success`) and a "100%" banner in the scene; the DOM result count-up stays with the GUI. New sounds you may use: `sound.play('starSlam' \| 'collapse' \| 'perfect')`. |
 
 Contract note for INTEGRATION: `art/chest.ts`, `art/portraits.ts` and `audio/haptics.ts` are re-exported through `art/ninja.ts` and `audio/sound.ts`; listing them as contracts in `compartments.json` would let `ui/` import them directly.
+
+## From game theory, 2026-11-15: squad orders (ask to the GUI session)
+
+The raid session can now send the rest of the army in as one order instead of one tap per warrior. The logic is in
+the gameplay lane and tested (`tests/gameplay/control/squad.test.ts`); nothing on screen uses it yet.
+
+| What | Import | Where it goes |
+|---|---|---|
+| Give a squad order | `session.orderSquad({ point, formation, order })` on `BattleSession`; types `SquadOrder`, `Formation` (`together`, `pincer`, `file`), `WaveOrder` (`tanks`, `rush`, `reserve`) are re-exported from `control/battleSession.ts`. Returns how many warriors were ordered in; 0 when the raid has no Infiltration Points or is not live. | `battleHud.ts`: a formation picker and a wave-order picker (three choices each, remembered between raids), then a tap on an Infiltration Point sends the squad. Hand placement stays as it is. |
+| Hold the rest | `session.holdSquad()`, `session.squadWaiting` | a "Hold" button while `squadWaiting > 0`, with the count |
+| Text | six option names, two picker titles, "Hold", and one line each explaining the choices | through `t()` with English in `locales/en/ui.json` |
+
+Why: on 80 lab raids at Keep 12, formation was worth about 7 points of destruction and wave order about 6 on top of
+the entry point, and today only a player who hand-places every warrior can reach them (`docs/game-theory/rules10`).
+Squad orders are recorded as ordinary deployments on their ticks, so replays and the server check are unchanged.
+The hero and abilities are not part of a squad order; they stay hand-placed.
+

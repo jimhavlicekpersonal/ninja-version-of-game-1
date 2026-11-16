@@ -2,6 +2,9 @@ import { createBattle, deploy, deploymentsByTick, end, result, step, type Battle
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from '../sim/battle/types';
 import { createRng } from '../sim/rng';
 import type { GameData } from '../sim/types';
+import { squadPlan, type SquadOrder, type SquadStep } from './squadPlan';
+
+export type { Formation, SquadOrder, WaveOrder } from './squadPlan';
 
 export type BattleMode = 'scout' | 'live' | 'replay';
 
@@ -12,6 +15,7 @@ export type BattleMode = 'scout' | 'live' | 'replay';
 export class BattleSession {
   readonly sim: BattleSim;
   readonly deployments: Deployment[] = [];
+  private squad: SquadStep[] = [];
   readonly msPerTick: number;
   speed = 1;
   /** Events from every tick since the renderer last drained them. */
@@ -79,7 +83,8 @@ export class BattleSession {
         }
         step(this.sim, this.replayDeps.get(this.sim.tick));
       } else {
-        // (live deployments were applied directly by tryDeploy)
+        // (live deployments were applied directly by tryDeploy; a squad order's due steps go in the same way)
+        this.deploySquad();
         step(this.sim);
       }
       for (const e of this.sim.events) this.pending.push(e);
@@ -91,6 +96,37 @@ export class BattleSession {
   /** 0..1 progress into the next tick, for smooth rendering. */
   alpha(): number {
     return this.sim.ended ? 1 : Math.min(1, this.acc / this.msPerTick);
+  }
+
+  /**
+   * Give a squad order: the rest of the army goes in on the plan's ticks (see `squadPlan`). Returns how many
+   * warriors were ordered in. A new order replaces what is still waiting; `holdSquad` cancels it.
+   */
+  orderSquad(order: SquadOrder): number {
+    if (this.mode !== 'live' || this.sim.ended) return 0;
+    this.squad = squadPlan(this.sim, order).map((s) => ({ ...s, delay: this.sim.tick + s.delay }));
+    const ordered = this.squad.length;
+    this.deploySquad();
+    return ordered;
+  }
+
+  /** Stop sending the waiting part of a squad order; warriors already on the field stay. */
+  holdSquad(): void {
+    this.squad = [];
+  }
+
+  /** Warriors of a squad order still waiting to go in. */
+  get squadWaiting(): number {
+    return this.squad.length;
+  }
+
+  private deploySquad(): void {
+    if (this.squad.length === 0) return;
+    const due = this.squad.filter((s) => s.delay <= this.sim.tick);
+    if (due.length === 0) return;
+    this.squad = this.squad.filter((s) => s.delay > this.sim.tick);
+    // A step the battle refuses (cover used up by hand placement, the warrior already placed) is dropped.
+    for (const s of due) this.tryDeploy(s.troop, s.x, s.y);
   }
 
   tryDeploy(troop: string, x: number, y: number): boolean {
