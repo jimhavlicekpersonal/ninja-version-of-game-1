@@ -165,7 +165,8 @@ change only where a work item names the number.
 
 1. **The deterministic fixed-step battle simulator** (`src/gameplay/sim/battle/battle.ts`: `SIM_RULES`, `stateHash`,
    `runBattle`): seed plus deployments, 10 ticks a second, only + − × ÷ and √, replayed by the server in worker
-   threads, identical on three JavaScript engines when measured on 2026-11-16 (`publish.md` 1c).
+   threads, identical on three runtimes (two V8 versions under Node 22 and 24, and JavaScriptCore under Bun) when measured on
+   2026-11-16 (`publish.md` 1c).
 2. **Versioned battle rules with archived, digested snapshots** (`server/rules/v*/`, `manifest.json`,
    `tools/release/rules-snapshot.mjs`, `check-server-rules.mjs`) and the server-first release gate.
 3. **Abilities as deployments** (`isAbility`, `useAbility`): Smoke, squad orders, replays and the server check all
@@ -213,7 +214,8 @@ change only where a work item names the number.
 20. **Loot provenance and bounded loss**: loot leaves the building that held it, 20% of storage under a per-Keep
     cap, a debt is never deepened, and the first three raids on a new village are softened.
 21. **Declared stakes, the diversity carry and the paid Next with clans that differ in loot**: the structure of each
-    stays. Phase 2 changes the stake multipliers only.
+    stays. Phase 2 changes the stake multipliers (P2-08), the Keep the Next fee is priced by (P2-11) and adds the
+    one-role exemption to the carry (P2-15), nothing else.
 
 ### 2.4 Economy and monetization
 
@@ -307,16 +309,22 @@ the rule too, even though no hash sees it.
 
 All combat changes of this pass ship under **one** bump, in Phase 4, in this order:
 
-1. Finish and measure every combat change on a scratch copy or behind data values that are not yet set, so the live
-   fingerprint is still the old one.
-2. `npm run rules:snapshot` while `SIM_RULES` is still the current value. This archives today's rules for the
-   server (`server/rules/v<N>/`, `archive.ts`, `manifest.json`) and records the fixture. It refuses to run twice for
-   one version.
+1. Finish and measure every combat change on a scratch copy of `src/gameplay`, or behind data values that are not
+   yet set. The fingerprint hashes data only, so an unchanged fingerprint does not prove unchanged behaviour: code
+   that changes a live battle stays on the scratch copy until after the snapshot.
+2. `npm run rules:snapshot` while `SIM_RULES` is still the current value. This copies the working tree's
+   `src/gameplay/sim` and `src/gameplay/data` to `server/rules/v<N>/` as rules N, lists it in `archive.ts`, fixes its
+   digest in `manifest.json` for good and records the fixture. It refuses to run twice for one version. Immediately
+   before it, with nothing bumped, run `rules-version.test.ts`, `aura-cache.test.ts`, `relay.test.ts` and
+   `tests/backend/server/rules-versions.test.ts` and confirm the old pins still pass: what you snapshot must still
+   be rules N. Phase 1 to 3 changes are part of it, which is correct (they change no battle).
 3. Bump `SIM_RULES`. Set `SIM_RULES_COMPATIBLE` to the versions the new code still plays exactly. If a battle with
    none of the new content can differ from the old rules in any way (it can, as soon as a live warrior's behaviour
    changes), the list is empty.
-4. Apply the data changes. Update the fingerprint and rules number in `rules-version.test.ts` to the values the new
-   code produces. Re-pin `tests/gameplay/battle/aura-cache.test.ts` from the new code.
+4. Merge the combat code and apply the data changes. Update the fingerprint and rules number in
+   `rules-version.test.ts` to the values the new code produces. Re-pin `tests/gameplay/battle/aura-cache.test.ts`
+   from the new code. Update `tests/gameplay/battle/relay.test.ts` (the rules number, the compatible list and its
+   table of which old records still replay) and the version history comment above `SIM_RULES` in `battle.ts`.
 5. `npm run rules:fixture` for the new version.
 6. `npm run balance:armies`, `npm run balance:campaign`, `npm run test:slow`, `npm run docs:progression`,
    `npm run status`, then the full checks.
@@ -339,6 +347,12 @@ newer server village, so bumps are grouped and a field is added only when the fe
 
 - This pass makes **one** bump (current version plus one). Introduce it in the first work item that needs stored
   state, and add every later field of this pass to the same migration step.
+- A migration step runs only for files below the new version. A village saved at the new version by an early build
+  of this branch never runs it again, so a field added to the step in a later phase would never reach that village.
+  Two consequences. Until the pass's last stored field has landed, no build of this branch is released and no server
+  holds villages written by it: say so in the ledger and in each phase's closure record. And every field added
+  after the commit that made the bump is also defaulted on every load (beside `repairTrainingQueue`), with a test
+  that loads a new-version file written without it.
 - A field that only a not-yet-live feature would write is not added. Code reads it as optional with a default.
 - The migration never drops progress. Every new field gets a test in the save tests that loads a file of the
   previous version and checks the migrated value.
@@ -360,12 +374,16 @@ newer server village, so bumps are grouped and a field is added only when the fe
 
 `tools/balance/campaign.ts` hashes the played data (`buildings`, `hall`, `economy`, `troops`, `battle`, `ranks`,
 `raids`, `pass`, `daily`, `events`, `trials`, text removed), the rules number, five source files
-(`tools/balance/playerModel.ts`, `matchmaking.ts`, `basegen.ts`, `defense.ts`, `offline.ts`) and the campaign list.
-Any change to one of them makes `tests/gameplay/balance/campaign-gates.test.ts` fail until you run
+(`tools/balance/playerModel.ts`, `src/gameplay/sim/matchmaking.ts`, `src/gameplay/sim/battle/basegen.ts`,
+`src/gameplay/sim/defense.ts`, `src/gameplay/sim/offline.ts`) and the campaign list. Any change to one of them, even
+a comment in one of the five files, makes `tests/gameplay/balance/campaign-gates.test.ts` fail until you run
 `npm run balance:campaign` and commit the regenerated `docs/game-theory/CAMPAIGN.md` and `campaign.json`.
 
 - The campaigns take several minutes. Batch: finish a phase's data changes, then run once. While iterating, use the
   focused harnesses in section 4, which answer in seconds.
+- Between the first such change of a phase and that run, the test "campaign results are current" in
+  `campaign-gates.test.ts` fails. That one assertion may be carried inside a phase. Every other test in the file
+  must stay green against the last generated results, and the phase ends with the run.
 - After the run, read the gates. If one fails, the change is wrong or the work item explicitly re-states that gate.
 - `achievements.json`, `cosmetics.json`, `store.json`, `offers.json`, `social.json` and `notifications.json` are not
   played and do not need the run.
@@ -384,11 +402,16 @@ languages incomplete until it is translated.
 - Names in any script go through `sim/social/names.ts`.
 - Keep a running list of new and changed keys in the ledger, with what each is for. Translation is done once per
   phase, at its end, by the procedure in section 13, so wording can still change while you build the phase.
-- Inside a phase the language-readiness tests fail as soon as one English string is added
-  (`tests/locales/*.test.ts` assert `ready` for every language) and the status file's ready list goes stale. Those
-  are the only failures you may carry, and only inside a phase. After every `npm test` in that state, confirm the
-  failing files are exactly `tests/locales/*` and `tests/architecture/status.test.ts`; anything else is a real
-  failure. **Every phase ends fully green with all 50 languages complete.**
+- Run `npm run i18n:sync` after adding any English key, interface keys included, so every worksheet at least holds
+  the key. If an English page changed (`public/*.html`, the server's account and complaint pages), run
+  `node tools/i18n/pages.mjs extract` first: until then every npm pre-hook (`test`, `build`, `typecheck`) stops with
+  "Untranslated or stale page".
+- Inside a phase three things fail as soon as one English string is added: the language-readiness tests
+  (`tests/locales/*.test.ts` assert `ready` for every language), `tests/presentation/i18n.test.ts` (it needs at
+  least one complete language) and the status file's ready list (`tests/architecture/status.test.ts`). Those, and
+  the one assertion named in 3.4, are the only failures you may carry, and only inside a phase. After every
+  `npm test` in that state, confirm the failing files are exactly those; anything else is a real failure. **Every
+  phase ends fully green with all 50 languages complete.**
 - Prefer designs that need few strings. A number, an icon that already exists and an existing label beat a new
   sentence. Each work item below says roughly how many strings it should need.
 
@@ -418,6 +441,8 @@ daily player on 2026-11-16, `economy.md` 1) and keep the added amount small and 
 | Anything in the combat fingerprint or `sim/battle/` | the procedure in 3.1 |
 | Roster or progression data | plus `npm run docs:progression` |
 | Game-data text | plus `npm run i18n:extract && npm run i18n:sync`, `npm run i18n:check` |
+| Interface or server-message text | plus `npm run i18n:sync`, `npm run i18n:check` |
+| A public page or the server's account or complaint page | plus `node tools/i18n/pages.mjs extract`, then `npm run i18n:sync` |
 | A number in the status table | plus `npm run status` |
 | Native config, plugins | plus `npm run build && npx cap sync`, and commit what it regenerates |
 
@@ -439,8 +464,8 @@ it, model-player outcomes are not observed retention or revenue.
 
 ## 4. The measurement toolkit
 
-Every harness below was run on 2026-11-16 and its output is kept next to it. They import the repository's real
-simulator. They hard-code the checkout path `/home/user/ninja-version-of-game-1`; if yours differs, replace it with
+Every harness below was run on 2026-11-16. Saved outputs (`*.out`, `*.txt`) exist for some of them; produce your
+own "before" for the rest. They import the repository's real simulator. They hard-code the checkout path `/home/user/ninja-version-of-game-1`; if yours differs, replace it with
 `sed` or run from a symlink. Scripts that need a scratch folder read `SCRATCH` (default `/tmp/kagemura-understand`;
 create it).
 
@@ -467,7 +492,7 @@ Two ways to run TypeScript against the simulator without a build:
 | `pacing/keeptable.cjs`, `maxout.cjs`, `research.cjs` | Unlocks per Keep, builder-days per Keep and type, research lane-days |
 | `economy/econ1.cjs`, `econ2.cjs`, `econ3.cjs` | Production against costs per Keep, free Jade per month, skip and top-up curves and the proposed re-curve |
 | `retention/r1.mjs`, `r2.mjs`, `r3.mjs` | Task repetition, reward value by Keep, the Scroll rollover and look reproductions, Trial battles past tier 60 |
-| `combat/common.ts` with `t1.ts` to `t14.ts` | Entry-point spread, hero and Rally, Smoke, army panel by temper profile, every warrior's marginal and kit value, formations, scouting-metric correlation, candidate fixes |
+| `combat/common.ts` with `t1.ts` to `t14.ts` (there is no `t4` or `t6`) | Entry-point spread, hero and Rally, Smoke (`t3.ts`, `t13.ts`), army panel by temper profile, every warrior's marginal and kit value (`t7.ts`), formations, scouting-metric correlation, candidate fixes (`t10.ts`). The combat scripts take `REPO=<path>`: the candidate-fix variants of `t10.ts` set flags that only a patched copy of `src/gameplay` reads, and silently return the live numbers against the real one |
 | `publish/det.ts` | A hash of generated bases, bot deployments and results for 48 raids, for cross-engine comparison |
 | `exploits/repro1.xpl.ts` to `repro4.xpl.ts` | Reproductions of XPL-01 to XPL-06, XPL-09 and XPL-10. Run from the repository root: `npx vitest run --config docs/audit/understand-2026-11-16/scripts/exploits/vitest.config.mts repro1` |
 | `exploits/matched.xpl.ts`, `matched2.xpl.ts`, `iso/` | The matched-raid test row by row: determinism, sensitivity to the Keep's slack, process isolation (XPL-07) |
@@ -578,8 +603,10 @@ the pass's one `SAVE_VERSION` bump (3.2).
   a look already owned. New `passOnly` looks in `cosmetics.json` are two colours and a name each; no artist is
   needed. `passTierReward` resolves the season's look or the Jade; `passPremiumValue` leaves out a look the player
   owns; the Store and Scroll panels show the look of this season.
-- Also: `docs/store/LISTING.md` claims "one Scroll-only look" and a test pins it. Update the claim and its test
-  together.
+- Also: `docs/store/LISTING.md` names the one look (the Lantern Festival Keep look) in the store description and
+  in its claims table, and `docs/store/<code>/LISTING.md` carry the translated description. No test pins it. Reword
+  them to a Keep look that changes each season, and add a test that the claims-table row matches `pass.json`
+  `seasonSkins`.
 - Tests: twelve seasons give the list in order; an owner gets `repeatJade`; the estimate never lists an owned look.
 - Strings: one name per new look.
 
@@ -587,12 +614,13 @@ the pass's one `SAVE_VERSION` bump (3.2).
 - Why: measured. A player who does everything earns 471 points a day and reaches tier 30 on day 19 of 30; 36% of
   earnable points have no tier. `claimTask` still adds points and shows "+100".
 - Change: `pass.json` `bonus: { everyPoints, reward, maxPerSeason }`, resources only, Keep-scaled, no Jade (starting
-  value: every 300 points, 6,000 Coins and 6,000 Provisions at scale 1, at most 17 a season). `claimTask` pays each
+  value: every 300 points, 3,000 Coins and 3,000 Provisions at scale 1, at most 17 a season). `claimTask` pays each
   newly crossed bonus through the normal grant path and reports it in its reward event. No new state: the count is
   `floor((points − tiers × pointsPerTier) / everyPoints)`. A "Bonus" row in the Scroll panel.
 - Do not add the bonus to `passPremiumValue`.
 - Done when: a task claimed after tier 30 always pays something visible, and a full season's bonus total is at most
-  one raid's loot at that Keep (measure with `scripts/retention/r1.mjs`).
+  the free track's own supply total at that Keep, which is two to five raids' loot (measure with
+  `scripts/retention/r1.mjs`; the retention report's 6,000 and 6,000 would slightly exceed it).
 - Strings: about 2.
 
 **P1-04 (ECO-05) The Artisan's Bundle is offered when it cannot do what it says.**
@@ -605,10 +633,12 @@ the pass's one `SAVE_VERSION` bump (3.2).
 - Why: reproduced. The estimate prices supplies as top-ups, the worst rate in the game, and assumes every task is
   done every day: 18,176 Jade shown for $4.99 at Keep 15, where $99.99 buys 7,500.
 - Keep (protected item 33): the estimate counts only tiers this player can still reach.
-- Change, after P3-11 re-curves top-ups: value the Jade tiers as Jade and the supplies at the re-curved top-up
-  price, and scale the reachable-tier count by the player's own task completion over the last 14 days (never above
-  100%, a new player uses a data default). Add a guard: if the estimate still exceeds six times the Jade of the
-  same-price pack, show the Jade and list the supplies by amount instead of converting them.
+- Change, in two steps. In this phase: value the Jade tiers as Jade; scale the reachable-tier count by the player's
+  own pace this season, from state that already exists (`pass.points` against the days elapsed and
+  `passPointsPerDay`; never above 100%; a data default in a season's first days), so no save field is needed; and
+  add a guard: if the estimate exceeds six times the Jade of the same-price pack, show the Jade and list the
+  supplies by amount instead of converting them. After P3-08 re-curves top-ups: re-check the supplies' price and the
+  guard, and keep the item open in the ledger until then.
 - Test: the guard at Keeps 3, 5, 10 and 15; a player who completes half the tasks sees about half the tiers counted.
 
 **P1-06 (RET-06, PAC-05) The "endless" Trials end near tier 65 to 72, one achievement cannot be finished, and the
@@ -661,11 +691,12 @@ exist, leave it and record why.
 
 ### Exploits: do these first (P1-11 to P1-22)
 
-`exploits.md` reproduced each of these against today's simulator; the scripts are in `scripts/exploits/`. Three are
-critical: on a server-held village they mint resources and Jade at the battle-command rate, with no army. For each
-one, turn the reproduction into a failing test, fix the cause inside the shared simulator (protected item 53: one
-`applyCommand`, never a client-only check), and add a server test that the replay refuses the same input. None
-changes a battle rule, so none needs a rules bump.
+`exploits.md` reproduced P1-11 to P1-16, P1-18 and P1-19 against today's simulator (the scripts are in
+`scripts/exploits/`). P1-17, P1-20 and P1-21 were read in code, and P1-22 was read in code by the built-not-live
+report. Three are critical: on a server-held village they mint resources and Jade at the battle-command rate, with
+no army. For each one, turn the reproduction into a failing test (or write the failing test from the description),
+fix the cause inside the shared simulator (protected item 53: one `applyCommand`, never a client-only check), and
+add a server test that the replay refuses the same input. None changes a battle rule, so none needs a rules bump.
 
 **P1-11 (XPL-01, critical) Battle commands trust the client's setup.**
 - Why: `trialEnd`, `bountyEnd` and `rematchEnd` rebuild the base and keep every other field the client sent.
@@ -689,10 +720,10 @@ changes a battle rule, so none needs a rules bump.
 
 **P1-13 (XPL-03, critical) The server import takes liabilities it never looks at, and two loops the attacker
 sizes.**
-- Why: a forged save with 500 Jade on hand passed the import checks and two ordinary commands left 280,500 Jade:
-  a stipend with a forged balance, and a timer with a forged top-up share that `cancel` refunds. A `season` set
-  3,000 months back paid 3,000 league chests; 3,000,000 forged seasons made one command run 9.1 seconds inside the
-  row lock. The offline war's `settledWeek` loop has the same shape. For honest players the same loop pays a league
+- Why: a forged save with 500 Jade on hand passed the import checks, and ordinary commands then left 280,500 Jade:
+  150,000 from a stipend with a forged balance, 100,000 from a timer with a forged top-up share that `cancel`
+  refunds, and 30,000 from 3,000 league chests paid by a `season` set 3,000 months back. 3,000,000 forged seasons
+  made one command run 9.1 seconds inside the row lock. The offline war's `settledWeek` loop has the same shape. For honest players the same loop pays a league
   chest for every month away, played or not.
 - Change: cap the season catch-up with a data value (as the war already has `settleWeeksMax`); bound `season` and
   `settledWeek` in `validateVillage`; in the import, zero the stipend unless a credited stipend purchase covers it,
@@ -730,7 +761,7 @@ action in Coins and the action then pays Provisions, so the bought Coins stay in
 quote. This protects item 22.
 
 **P1-19 (XPL-10) Twelve hours of backdating is a daily free skip.** After 12 quiet hours a modified client dates
-`upgrade`, `research` and `train` 12 hours back (about 650 Jade of skips a day with five artisans). The window
+`upgrade`, `research` and `train` 12 hours back (about 650 Jade of skips a day with five artisans and two research lanes). The window
 exists so real offline play can sync. Bound it by the device's previous authenticated contact, or use a shorter
 bound for commands that start timers. It is a backend decision: choose the conservative one, and record it in
 `docs/backend/REQUESTS.md` and `docs/PROTOCOL.md`.
@@ -1148,8 +1179,10 @@ would still need, and drop `kit.breachRadius` (measured to do nothing) when you 
 **Use the model's own levers.** `tests/gameplay/balance/progression-model.test.ts` pins live warrior data to the
 power-budget model. Change a warrior's strength through the model (`roster.json` `dpsScale` with the matching live
 damage, a role's budget through `tools/progression/rolecut.mjs`, and if you need a health tax add that lever to the
-model rather than hand-editing `troops.json`). The six original warriors keep their stats through level 5, as
-`src/gameplay/CLAUDE.md` requires.
+model rather than hand-editing `troops.json`). The six original warriors (`hedgehog_roller`, `frog_lobber`,
+`beetle_brute`, `owl_bomber`, `mole_digger`, `saboteur`) keep their stats through level 5, as
+`src/gameplay/CLAUDE.md` requires (the Kite Raider already carries the air-role cut). No test checks this and
+`rolecut.mjs` scales a whole role, so compare their first five levels before and after any role-wide change.
 
 **P4-01 (CMB-01) Support warriors never attack, so all five support kits are worth less than nothing.**
 - Why: reproduced. A support warrior that has reached its ally returns before the attack code and never strikes
@@ -1160,9 +1193,14 @@ model rather than hand-editing `troops.json`). The six original warriors keep th
   at a data-set share of its damage: `battle.json` `warriorRules.supportStrike`, starting value 0.5.
 - Measured on a scratch copy at 0.5: the support family reaches 38.3 / 34.7 / 44.3 at Keeps 7 / 8 / 15 (from 27.2 /
   22.0 / 37.8). At 1.0 it overshoots badly (Keep 10 support from 49.5 to 91.2). Do not ship 1.0.
-- Done when: `support@7` and `support@8` leave `KNOWN_BELOW`; every army-lab upper gate still holds, including the
-  light-support mixes at Keeps 6 and 10 (they sat at 86 to 92 before the change: watch them); and with
+- Done when: `support@7` and `support@8` leave `KNOWN_BELOW`; every army-lab upper gate still holds; the
+  light-support mix at Keeps 6 and 10 stays under 92% with at most 60% three stars; and with
   `scripts/combat/t7.ts` no support warrior is worth more with its kit removed, at Keeps 8 and 15.
+- Two warnings. No army-lab gate covers the light-support mix at Keeps 6 and 10 today: add those cells to the
+  outcome gate before the bump. And at 0.5 the investigator measured 92.7% (67% three stars) and 91.3% (67%) there,
+  so 0.5 as measured does not pass: tune the share, or the aura numbers, until it does. The last clause was not
+  measured at 0.5 either. If a support kit still measures negative, raise that warrior's aura numbers (its `kit` in
+  `troops.json`) rather than the strike share, and list any kit still below the gate the `KNOWN_BELOW` way.
 
 **P4-02 (CMB-05) The Shadow Captain's Rally changes nothing, and its text contradicts the code.**
 - Why: measured over 20 battles a cell: live against Rally strength 0 is −0.7 / −1.0 / +4.1 at Keeps 7 / 10 / 15.
@@ -1173,9 +1211,10 @@ model rather than hand-editing `troops.json`). The six original warriors keep th
   - A: a whole-squad radius at 30%, re-arming as today: 80.5 / 85.3 / 81.5 (no hero: 70.4 / 81.0 / 74.0).
   - B: `kit.oncePerBattle` with a 15-second, 50% burst across the field: 82.8 / 85.0 / 77.8.
 - Prefer B: it matches what the text has promised in 50 languages, and it makes when the hero goes in a decision.
-  Ship B if, over 20 battles a cell at Keeps 7, 10 and 15, Rally against strength 0 is worth at least 4 points and
-  sending the hero with the main squad beats sending him first by at least 4. If B fails the second test and A
-  passes the first, ship A and change the text to describe the re-arm.
+  Ship B if, over 20 battles a cell, Rally against strength 0 is worth at least 4 points on the mean of Keeps 7, 10
+  and 15 and is not negative at any of them (the report's cells give B +7.9 / +3.8 / +5.9 and A +5.6 / +4.1 /
+  +9.6), and sending the hero with the main squad beats sending him first by at least 4. If B fails either test
+  and A passes the first, ship A and change the text to describe the re-arm.
 - Either way the description's numbers change: update `battle.json`, `roster.json` and close the REQUESTS entry.
   Strings: 2 changed.
 - This decision sets the baseline every planned hero is measured against (P4-10). Make it first. If the bump is
@@ -1185,8 +1224,9 @@ model rather than hand-editing `troops.json`). The six original warriors keep th
 - Change: `battle.json` `abilities.smoke_bomb.radius` 3 → 4. Measured with a scripted policy: +6.2 at Keep 10 and
   +7.8 at Keep 15. The description names the 8 seconds and not the radius, so no text changes. (Twelve seconds
   measures better still but would change the text in 50 languages for 1 to 3 points; leave it.)
-- Done when: `scripts/combat/t3.ts` shows +5 to +12 at Keeps 10 and 15, and `tests/gameplay/battle/tactics.test.ts`
-  passes with its limits intact (no stacking, the 2-tile floor).
+- Done when: `scripts/combat/t13.ts` (which produced the radius-4 numbers; its throw policy groups warriors within
+  the cloud's own radius) shows +5 to +12 at Keeps 10 and 15, `t3.ts` agrees in sign, and
+  `tests/gameplay/battle/tactics.test.ts` passes unchanged (the charge count, the 2-tile floor, the expiry).
 
 **P4-04 (CMB-06) The siege family is too slow to matter.**
 - Why: `siege@8` is 25.5% against a 30% floor. On a scratch copy, raising all four wall and breach warriors from
@@ -1196,26 +1236,27 @@ model rather than hand-editing `troops.json`). The six original warriors keep th
   gates on all six layouts; the investigator did not.
 - Done when: `siege@8` leaves `KNOWN_BELOW` and no gate at Keeps 4 and 6 fails.
 
-**P4-05 (CMB-04) Newer tiers are worse than older ones, a dozen kits measure zero, and five warriors have an
-ability name with no ability behind it.**
+**P4-05 (CMB-04) Newer tiers are worse than older ones, and a dozen kits measure zero.**
 - Why (`scripts/combat/t7.ts`, Keep 15, 20% of an army): Thousand Needle (tier 5) scores 73.4, below every older
-  thrower (77.1 to 88.0), and has no kit behind "Needle Rain". Volcano Cannoneer (tier 5 siege) 64.5 is below Ram
-  Crew (tier 1) 68.7. Sage of Clouds (tier 5) is below Herbalist. Shuriken Storm's Fan Throw is exactly 0.0 at both
-  Keeps because its radius is measured from the target's centre. Wall Climber, Grapple Raider, Crane Glider,
-  Thousand Needle and Siege Bombardier show an ability name and have no `kit`.
+  thrower (77.1 to 88.0). Volcano Cannoneer (tier 5 siege) 64.5 is below Ram Crew (tier 1) 68.7. Sage of Clouds
+  (tier 5) is below Herbalist. Shuriken Storm's Fan Throw is exactly 0.0 at both Keeps because its radius is
+  measured from the target's centre. Ten more kits measure within one point of zero.
+- A correction to the combat report: Wall Climber, Grapple Raider, Crane Glider, Thousand Needle and Siege
+  Bombardier do not have "an ability name with nothing behind it". They carry an empty `kit`, and what their cards
+  name is their stat line (range, speed, wall bypass, target preference), described truthfully. No card changes for
+  that reason. They are in scope only as weak warriors at Keep 15 (57.5 to 73.4 against a mix that scores 79.8).
+  All 50 warriors keep a unique ability id and name (`roster-abilities.test.ts`).
 - Change, in this order of certainty:
   1. Shuriken Storm `kit.radius` 1.5 → 2.5 (measured +2 to +2.5 for ranged armies at Keep 8).
-  2. Thousand Needle: lift its 0.6 `dpsScale` toward 0.8, or give it the kit its card names. Measure both.
+  2. Thousand Needle: lift its 0.6 `dpsScale` toward 0.8, or give it a kit effect. Measure both.
   3. Tier-5 siege and mystic: a second effect or the stats that put each above the tier below in its slot. P4-01
      may already fix the mystic; measure before adding anything.
-  4. For each of the five warriors with no kit: either build the ability the card names, cheaply and through the
-     existing data-driven kit code, or change the card to say what the warrior is. An ability name with nothing
-     behind it is not allowed to remain.
+  4. For a kit that still measures zero, change its numbers through the existing data-driven kit code. Add a kit
+     effect to an empty-kit warrior only where the measurement calls for it.
 - Add two lab gates in `army-lab.test.ts`, with today's failures listed the `KNOWN_BELOW` way so the list can only
-  shrink: every kit is worth at least +2 points at its unlock Keep or at Keep 15; and at Keep 15 no warrior scores
-  below the previous tier in its own role and slot.
-- Strings: only for cards that change. Each is a data string in 49 languages; choose "build the ability" where it
-  is cheap.
+  shrink: every non-empty kit is worth at least +2 points at its unlock Keep or at Keep 15; and at Keep 15 no
+  warrior scores below the previous tier in its own role and slot.
+- Strings: only if a card's text must change because its numbers did. Each is a data string in 49 languages.
 
 **P4-06 (CMB-03) Two single-warrior armies three-star most Keep 15 bases, and one fixed mix is never wrong.**
 - Why: 180 Eclipse Ninjas score 90 to 95 on three of four temper profiles, 90 Dragon Kite Crews 89 to 96 on three
@@ -1224,7 +1265,11 @@ ability name with no ability behind it.**
   searched mix is best against every profile.
 - Change:
   - `battle.json` `temper.offers.counterShare` 0.5 → about 0.75, so pressing past the answering profile stops being
-    cheap. Measure the Next spread again (`next_offers.ts`): Next must stay a fair choice.
+    cheap. Measure it with a new script: for each family, pass ten recent armies of that family to
+    `opponentForRank` and report, over 400 seeds at Keeps 9, 12 and 15, the share of offers that carry the answering
+    temper and the expected number of Next presses and Coins to reach one that does not, at 0.5 and at 0.75.
+    (`next_offers.ts` passes no recent armies and measures loot only; it cannot see this change.) Next must stay a
+    fair choice.
   - Dragon Kite Crew: `dpsScale` 0.85 with the matching live damage (measured: 73%, three stars 43%).
   - Eclipse Ninja: trimming damage does not work (at 0.65 it still scores 82%). Its strength is arriving unseen at
     full health. Trim health through the model, or let a defense see a hidden warrior inside the Smoke floor of 2
@@ -1239,8 +1284,10 @@ ability name with no ability behind it.**
   their scouting tips exist). Add a per-layout level-bias offset table so the gap between the easiest and the
   hardest is about 15 points or less; put it in `raids.json` or `ranks.json`, not in `battle.json`. Re-derive
   `trials.json` `layoutPower` from the same measurement. Leave `rematch.ts` as it is.
-- This changes which base a seed generates, so it must ride the rules bump: a ticket issued before the change is
-  rebuilt by the archived engine only because the rules number differs.
+- A ticket carries the base it was issued with and a battle record keeps its setup, so no replay breaks. Ship it
+  with the bump anyway, so that builds on the old rules keep getting bases from the archived `matchmaking.ts`: run
+  `rules:snapshot` before `opponentForRank` changes. `matchmaking.ts` is a hashed campaign source, so the campaign
+  is re-run, and the server is deployed first.
 - Done when: over 20 battles a layout at Keeps 8, 12 and 15 with the raid bots' mix, the gap is 15 points or less,
   and the matched-raid and campaign gates pass.
 
@@ -1249,7 +1296,7 @@ where the time budget allows, or gate on the mean of two adjacent Keeps. Do this
 new pins are steadier than the old.
 
 **P4-09 (PAC-07) Players who field their newest warriors lose most raids from Keep 8.** The casual explorer wins 18
-to 40% at Keeps 8 to 14 and is gated only at 0.1 stars. After P4-01, P4-04 and P4-05, re-run the campaign and raise
+to 58% at Keeps 8 to 14 (under half at every Keep but 10) and is gated only at 0.1 stars a Keep and 0.3 on average. After P4-01, P4-04 and P4-05, re-run the campaign and raise
 that gate to what the run gives, with 0.9 stars as the target. If it is still under 0.9, record the number and the
 warriors responsible; do not paper over it with matchmaking.
 
@@ -1276,19 +1323,21 @@ instead of a guess. Do these, in order:
 1. **Type and test the hooks (BNL-10).** Declare the Rules 10 keys that stay in `src/gameplay/sim/types.ts`, add
    one unit test per hook (absent plays identically; present has the effect), remove `kit.breachRadius`, and
    correct `rules10/README.md` (a balance bundle cannot switch on keys that do not exist in shipped data).
-2. **Make the preview decide things (BNL-12).** In `tools/balance/preview.ts`: six layouts × five seeds, a paired
-   standard error, events counted for the building under test only, heroes sent first and sent last. Regenerate
-   `PREVIEW_BALANCE.md`.
+2. **Make the preview decide things (BNL-12).** In `tools/balance/preview.mjs` (the layouts and seeds) and
+   `tools/balance/preview.ts`: six layouts × five seeds, a paired standard error, events counted for the building
+   under test only, heroes sent first and sent last. Regenerate `PREVIEW_BALANCE.md`.
 3. **Write the go-live gate as a slow test** under `tests/gameplay/planned/`: a counter may be marked live only if
    its effect is −3 points or better against the armies it is meant to beat at two of three Keeps on 30 bases; a
    hero only if its own family beats the Captain by 5 or more at its three Keeps and the raid mix stays within 3.
-   The gate lists today's failures the `KNOWN_BELOW` way.
+   The gate lists today's failures the `KNOWN_BELOW` way. Add its path to `SLOW_TESTS` in `tests/slow.ts`, so
+   `npm run test:slow` runs it and `npm test` does not.
 4. **Fix what is wrong whether or not anything ships**: the Hall cap trap (BNL-11: one rule for both paths); the
    English that does not match the code (BNL-13; these are data strings in 50 languages, so fix them once, now);
    the Lightning Rod's event flood (at most one `absorbed` event per rod per second; events never enter the result
    hash).
-5. **Retune toward the gate** in `planned.json` and the catalog: the three hero kits (the report gives starting
-   values), the five working counters re-priced so a first wave adds no more than about a quarter to the live
+5. **Retune toward the gate** in `planned.json` and the catalog: the three hero kits (starting values for the Sky
+   Admiral and the Iron Matriarch are in `structured/built-not-live.json`, BNL-03; the Grand Sensei has none and
+   needs its own search), the five working counters re-priced so a first wave adds no more than about a quarter to the live
    defense budget, first levels capped at one day of building.
 6. **Only if an item passes the gate and time remains, make it live under this bump**, heroes before counters,
    because Keeps 9, 11 and 13 are exactly where the late game has nothing new. Going live means all of: the
@@ -1296,9 +1345,11 @@ instead of a guess. Do these, in order:
    `src/gameplay/CLAUDE.md`); the server side (BNL-06: `checkArmy` reading the hero from the server-held village,
    `chooseHero` in `PLAYER_COMMANDS`, a hello feature, `docs/PROTOCOL.md`, contract tests); battle callouts for
    every new event kind (BNL-09); a painter for any new building (the generic one is not shippable); and every
-   balance artefact re-run. A lower-risk first step for counters is to let the five that work appear only in Trial
-   and Bounty fortresses (a separate list read by `trialBase` and `bountyBase`), so players meet new puzzles before
-   anyone can build them.
+   balance artefact re-run. A lower-risk first step for counters is to let those that pass the gate appear only in
+   Trial and Bounty fortresses (a separate list read by `trialBase` and `bountyBase`), so players meet new puzzles
+   before anyone can build them. On today's numbers only the Steam Vent and the Whirling Blade Tower pass; the
+   other three of the five fail until retuned, and the generator cannot place a Living Bamboo Wall without new
+   base-generation code.
 
 P4-02's Rally decision sets the baseline every other hero is measured against. Make it before step 5.
 
@@ -1338,6 +1389,22 @@ changes and run the campaign once at the end of the phase.
   and a name; `GoalLadderStep.reward` gains a look).
 - Keep (protected item 31): start and end come only from the schedule. Reword the panel line that says "repeats
   every two weeks".
+- Three things the change must not break:
+  - Changing the period renumbers every occurrence key (`<id>#<period number>`), and a stored key from the old
+    numbering could match a later occurrence of the new one. Give the goal entries of the new loop new ids, and
+    either carry a running Bounty's claimed steps forward in the save migration or accept one extra ladder for a
+    player in mid-Bounty and record it.
+  - Goal progress is one slot today (`VillageState.goalEvent`), reset whenever the key differs, and
+    `activeGoalEvent` returns only the earliest running goal event. With a second goal entry, the Gauntlet (P5-02)
+    and festivals, two goal windows can overlap, and alternating attacks between them would reset the claimed
+    steps and pay a ladder again. Either make the progress a map by occurrence key (part of the one save bump,
+    with a migration test) and let `bountyEnd` take any running goal event by its key, or guarantee in data that
+    no two goal windows ever overlap and test that over 365 days. Add a test that alternating attacks between two
+    goal events never pays a step twice.
+  - `applyEventSchedule` in `src/backend/net/eventSchedule.ts` rebuilds `data.events` from the epoch, the period
+    and the schedule only. Whenever an operator's schedule is in force, on the server or in the game, any new field
+    (`dated`, and `contracts` if P5-03 puts it there) would be dropped silently. Make it carry every non-timing
+    field through unchanged, with a test.
 - Check the festival names and dates with care: they must be culturally neutral or clearly Japanese-inspired in the
   game's own fiction, never a real religious observance. Add them to the list for the owner's cultural review.
 - Done when: over the next 365 days a player meets at least twelve distinct event names, no two consecutive weeks
@@ -1348,8 +1415,10 @@ changes and run the campaign once at the end of the phase.
 **P5-02 (retention opportunity 1) The weekly Gauntlet: one shared challenge fortress.**
 - A second goal-event kind whose fortress is seeded from the occurrence key and the Keep only, never the village,
   so every player at the same Keep attacks the same base that week. It carries Trial-style modifiers (`power`,
-  `wallPower`) and a rival clan's tempers, and pays a star ladder once per week. It reuses `bountyEnd`, the ladder
-  code and the Events panel as they are.
+  `wallPower`) and a rival clan's tempers, and pays a star ladder once per week. It reuses the ladder code and the
+  Events panel, but not unchanged: `bountyEnd` refuses any goal whose kind is not `bounty` and always rebuilds the
+  fortress from the village seed, and the panel's `goalEventView` does the same. Add a kind branch in both (the
+  base from the occurrence key and the Keep), and settle the single-slot question of P5-01 first.
 - Honesty (3.6): it is labelled a generated fortress, and "everyone at your Keep fights this base this week" must be
   literally true. Add a test that two villages with different seeds at one Keep get the identical base for one
   occurrence, and different bases for the next.
@@ -1358,10 +1427,11 @@ changes and run the campaign once at the end of the phase.
 - Strings: about 4.
 
 **P5-03 (RET-11) Raids have no rotating context: the daily contract.**
-- One contract a day, the same for everyone, a pure function of the day from `events.json` `contracts[]`. It
-  changes only what a won raid carries home, in `bankRaidLoot`, never the battle. Starting set: more loot from one
-  rival clan's outposts; declared stakes pay more today; the diversity share counts double; three-star raids carry
-  a little more; a first raid of the day with a role the player has not used this week carries more.
+- One contract a day, the same for everyone, a pure function of the day from data (`contracts[]` in `events.json`,
+  with the `applyEventSchedule` fix of P5-01, or in `raids.json`). It changes only what a won raid carries home, in
+  `bankRaidLoot`, never the battle, and it needs no stored state. Starting set: more loot from one rival clan's
+  outposts; declared stakes pay more today; the diversity share counts double; three-star raids carry a little
+  more.
 - Bound it: with the contract, an event bonus, a stake and the diversity carry all at their best, a raid carries at
   most 2.2 times its plain loot. Add that as a test over the data.
 - The server settles online raids with the same simulator code, so the contract must be computed from the raid's
@@ -1370,7 +1440,7 @@ changes and run the campaign once at the end of the phase.
   contract only when its normal raid already satisfies it).
 - Strings: a short line per contract, 5 to 7.
 
-**P5-04 (RET-05, second half) Tasks: 15 templates over 9 counters.**
+**P5-04 (RET-05, second half) Tasks: 15 templates over 10 counters.**
 - Add about eight templates. On stats that exist: a Trial tier (daily, one), a donation, a rematch won. On new
   stats counted in `afterCommand` and `bountyEnd` (part of the one save bump): three-star raids, stakes won, Bounty
   or Gauntlet steps, the daily drill (P3-07), and, once Phase 2 is in, stars denied on defense. Each gets its
@@ -1390,12 +1460,12 @@ changes and run the campaign once at the end of the phase.
 - Strings: a name and a line each, about 24.
 
 **P5-06 (RET-09, RET-13) A collection layer: earnable looks.**
-- A dozen two-colour looks that are granted and never sold: the first season finished in Obsidian, Storm and Kage
+- Fifteen two-colour looks that are granted and never sold: the first season finished in Obsidian, Storm and Kage
   (in `rollSeasons`); Trial tiers 20, 40 and 60 (in `trialEnd`); calendar cycles 2 to 6 (`calendar.skins[]`, so each
   cycle's day 28 gives the next look instead of 40 Jade); lifetime chest milestones at 30, 100, 200 and 365 chests
   opened, which a missed day cannot touch (a new stat, paid in `openDailyChest`).
 - A "looks collected: N of M" count where looks are shown.
-- Strings: a name per look, about 14.
+- Strings: a name per look (15) and the count line.
 
 **P5-07 (BNL-02) Warrior Mastery, as ranks with no stat bonus.**
 - Why not the bonus: as tuned, mastery is not a long chase. One three-star raid with a one-type army gives +10%
@@ -1410,7 +1480,18 @@ changes and run the campaign once at the end of the phase.
 - Fix before anyone can earn: experience is paid for any replayed Trial tier, cleared or not (tier 1 is a farm).
   Pay it for raids and for the first clear of a tier only. Decide once whether Alliance War, Gang War, Bounty and
   rematch battles pay (today they do not) and make the result screen agree.
-- The save field exists since v23 and the Codex panel's strings are translated; count any new ones.
+- This changes pinned tests on purpose, and this item authorises it. `masteryBonus` reads `progression.json`
+  directly, so a zero cap also removes the bonus under the preview that the planned-content tests exercise.
+  Rewrite the mastery case in `tests/gameplay/balance/progression-model.test.ts` and the three Warrior Mastery
+  cases in `tests/gameplay/planned/progression.test.ts` to the ranks contract (experience grows without end, the
+  rank comes from the level curve, `masteryBonuses` returns nothing and no setup carries mastery). Remove `mastery`
+  from the features `planned.json` lists as off, and fix the "features off" line the status generator prints from
+  those keys; then `npm run status` and `npm run docs:progression`. If you would rather keep the stat bonus
+  playable in the preview, move the cap and the rate into `GameData` (`planned.json`) first instead of zeroing
+  `progression.json`.
+- The save field exists since v23. Of the four translated Codex strings, the row that reads "Level N · +X health
+  and damage" must not be shown for ranks (it would promise a bonus that does not exist): add a rank row. Count
+  two new strings, the rank row and the experience line on the result screen.
 - Record as open, with what it needs: the stat bonus (a retuned curve, a cap near +15%, a place in
   `attackerStrength` or a limit to generated bases and Trials, a mastered campaign policy with a gate, the server
   truth of BNL-06, the curve moved inside `GameData` so it is versioned, and a rules bump because archived engines
