@@ -268,7 +268,15 @@ export function botArmy(hall: number, bias: number, data: GameData): Record<stri
  * its first Kunai Tower usually holds its first defense instead of losing three stars at once.
  */
 export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotAttacker {
-  const st = matchStrength(rng, state.trophies, hallLevel(state, data), data, true);
+  let st = matchStrength(rng, state.trophies, hallLevel(state, data), data, true);
+  // Rules 9 (lab): `raids.raiderMatch {lo, hi}` — bot raiders come from the defender's Keep (a strength drawn
+  // between Keep+lo and Keep+hi), not from its honor, so a better defence holds more instead of meeting stronger raiders.
+  const rm = (data.raids as { raiderMatch?: { lo: number; hi: number } }).raiderMatch;
+  if (rm) {
+    const own = hallLevel(state, data) - 1;
+    const sv = Math.max(0, Math.min(maxHall(data) - 1e-6, own + rm.lo + next(rng) * (rm.hi - rm.lo)));
+    st = { hall: Math.floor(sv) + 1, bias: sv - Math.floor(sv), trophies: Math.round(sv * data.ranks.matchmaking.trophiesPerHall) };
+  }
   const cap = troopLevelCapAt(st.hall, data);
   const soft = data.raids.newPlayerRaids;
   const softened = Boolean(soft && (state.stats?.defensesFaced ?? 0) < soft.count);

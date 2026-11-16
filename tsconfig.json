@@ -16,5 +16,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "tests", "tools"]
+  "include": ["src", "tests", "tools"],
+  "exclude": ["tools/balance/lab"]
 }

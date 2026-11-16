@@ -108,6 +108,16 @@ export function applyTemper(b: SimBuilding, t: Temper | undefined, data: GameDat
     slow += (ad.fireSlow ?? 0) * f[a];
     if (ad.preferFarAt !== undefined && f[a] >= ad.preferFarAt) preferFar = ad.prefersBeyond ?? null;
   }
+  // Rules 8 (lab): a tuned tower hunts one class of warrior. Its bonus grows faster than the points spent
+  // (points share to the power `convexity`), so committing a tower beats blending it.
+  const gamma = temperDef(data)?.convexity ?? 1;
+  const versus: Record<string, number> = {};
+  for (const a of TEMPER_AXES) {
+    const ad = def[a] as { versus?: { cls: string; bonus: number } } | undefined;
+    if (!ad?.versus || f[a] <= 0) continue;
+    versus[ad.versus.cls] = (versus[ad.versus.cls] ?? 0) + ad.versus.bonus * Math.pow(f[a], gamma);
+  }
+  if (Object.keys(versus).length) (b as SimBuilding & { versus?: Record<string, number> }).versus = versus;
   b.combat = {
     ...b.combat,
     range: b.combat.range + range,
@@ -123,7 +133,7 @@ export function applyBaseWide(buildings: SimBuilding[], profile: TemperProfile, 
   const def = temperDef(data);
   if (!def) return;
   for (const a of TEMPER_AXES) {
-    const w = profile[a];
+    const w = Math.pow(profile[a], def.convexity ?? 1); // rules 8 (lab): base-wide effects are convex too
     const byType = def.baseWide[a];
     if (!byType || w <= 0) continue;
     for (const b of buildings) {
@@ -188,7 +198,7 @@ export function troopCuts(profile: TemperProfile, data: GameData): TroopCuts {
   if (!def) return out;
   for (const a of TEMPER_AXES) {
     const c = def[a];
-    const w = profile[a];
+    const w = Math.pow(profile[a], temperDef(data)?.convexity ?? 1);
     if (!c || w <= 0) continue;
     out.heal += (c.heal ?? 0) * w;
     out.aura += (c.aura ?? 0) * w;

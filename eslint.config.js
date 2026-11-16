@@ -10,6 +10,8 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     ignores: [
+      // The balance lab (docs/game-theory/rules10): research scripts run with plain Node, not part of the build.
+      'tools/balance/lab/**',
       'dist/**',
       'dist-server/**',
       'coverage/**',

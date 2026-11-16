@@ -1,0 +1,165 @@
+{
+ "summary_fixed": "<b>What got fixed.</b> Flyers now have two tunings that slow them instead of one that kills them: against Watch / Reach / the rest they score 56 / 57 / 79 at Keep 12 (were 39 / 65 / 74). The gap between the best and worst army closed at all three Keeps (28 / 19 / 18 to 18 / 11 / 14 points at Keeps 9 / 12 / 15). Layouts are within 14 points everywhere (were up to 23). Against Walled Keep, siege now scores at or above its own average at Keeps 12 and 15. The player who builds no defences is no longer the fastest: Keep 15 on day 110, against 105 for a regular player and 108 for a medium defender.",
+ "summary_not": "<b>What did not.</b> Infiltrators still flip on a 10% change in strength, and five attempts to smooth that failed. Healers with guardians are the weakest army at all three Keeps. The search still finds armies stronger than anything in the tuned set: beast 17%, shadow 68%, saboteur 15% averages 80 at Keep 9 and shadows + guardians + siege 81 at Keep 15, where the best standard army averages 71 and 71. The new breach rule made siege a strong partner and I did not get it back under control. Rules 10 is also hard on a careless raider: 0.7 stars a raid at Keep 12 with a random entry, where today's game gives 1.5. The seven in-between Keeps have one or two tuning rounds each and no independent check. Four of my own earlier readings were wrong; section 1.",
+ "strong": {
+  "9": [
+   "beast 17%, shadow 68%, saboteur 15%",
+   80.125
+  ],
+  "12": [
+   "blade 5%, siege 55%, guardian 20%, shadow 8%, saboteur 12%",
+   70.10416666666667
+  ],
+  "15": [
+   "shadows + guardians + siege",
+   81.0
+  ]
+ },
+ "dv": {
+  "9": 6.007873180421427,
+  "12": 3.3028292298452726,
+  "15": 6.340657841778096
+ },
+ "v_all": {
+  "9": 67.50787318042143,
+  "12": 61.30282922984527,
+  "15": 65.6406578417781
+ },
+ "items": [
+  [
+   "1. Flyers best on half of all bases",
+   "Reach now sharpens Sky Bows too; Watch's boost cut by a third; flyers re-tuned.",
+   "Against Watch / Reach / the other two: Keep 9: 67 / 60 / 70 ; Keep 12: 56 / 57 / 79 ; Keep 15: 48 / 56 / 69. Best answer on 33% / 33% / 17% of bases (Rules 9 on the same fresh bases: 42% / 21% / 46%).",
+   "Partly fixed: the hard counter is gone, but flyers are still the best answer on a third of bases at Keeps 9 and 12."
+  ],
+  [
+   "2. Beasts + shadows hole",
+   "That army is now a ceiling in the tuner. Searched all three Keeps, then let the defender respond to what the search found.",
+   "Beasts + shadows now averages 63 at Keep 12 (best standard army 69). But the search found others: strongest 80 / 70 / 81 at Keeps 9 / 12 / 15. With every found army allowed, the game's value rises 6.0 / 3.3 / 6.3 points.",
+   "That hole is closed. Not fixed at Keeps 9 and 15: new ones opened."
+  ],
+  [
+   "3. Keep 9 army gap",
+   "Tuned against tuned bases with new bases every round; search-found armies held down, not pulled up; stronger Mist Weaver veil; Bomb Carrier stops dying on walls.",
+   "Gap 28 \u2192 18. Weakest: healers + guardians 54 (was healers + guardians 51).",
+   "Partly fixed: healers + guardians hold it open."
+  ],
+  [
+   "4. Siege has no job",
+   "Walls have 4\u00d7 health. Every siege warrior breaches: 4 to 5\u00d7 damage to walls, and the walls around the one it breaks fall too.",
+   "Siege against Walled Keep (its own average): Keep 9: 50 (67) \u2192 58 (65) ; Keep 12: 66 (70) \u2192 75 (67) ; Keep 15: 51 (57) \u2192 66 (65).",
+   "Fixed at 12 and 15; not at 9"
+  ],
+  [
+   "5. Rushing is fastest",
+   "Garrison crew: two defence builds at a time need no Village Artisan. Model player now hires artisans like a real one.",
+   "Keep 15, day, today \u2192 Rules 10: no defences 89 \u2192 110; regular 93 \u2192 105; medium defender 148 \u2192 108; full defender 161 \u2192 136.",
+   "Fixed for normal play. Heavy defence still costs time."
+  ],
+  [
+   "6. Store, prices, revenue",
+   "Re-ran the campaign suite under Rules 10 with three runs per player, a competent raider, and the full battle rules.",
+   "Regular player reaches Keep 15 on day 105 (today 93). Time, not loot, is what the store can sell; section 6.",
+   "Re-run. Revenue cannot be forecast from a model."
+  ],
+  [
+   "7. Keep 15 layouts",
+   "Handicap table re-fitted against tuned bases.",
+   "Gap 16 \u2192 6.",
+   "Fixed"
+  ],
+  [
+   "8. Stealth and infiltrator cliffs",
+   "Re-measured with four times the raids; five smoothing attempts on infiltrators.",
+   "Shadows: no cliff (12; v4's reading was noise). Infiltrators: 24 points per 10%.",
+   "Shadows were never broken. Infiltrators not fixed."
+  ],
+  [
+   "9. Keeps 6, 7, 8, 10, 11, 13, 14",
+   "Same tuner, against tuned bases.",
+   "Keeps 7, 10 and 13 (two rounds): gap 43 / 29 / 29 at the start, 17 / 20 / 10 on the tuner's estimate. Keeps 6, 8, 11 and 14 had one round and were not re-measured.",
+   "Partly fixed: one or two rounds, no independent check."
+  ],
+  [
+   "10. Reward size, loot by stars on attack, honor",
+   "Reward share cut to 0.15. Loot by stars tried on the player's own raids. Honor tracked week by week.",
+   "Rewards are 39M of 1132M raided for the regular player. Attack-side rule needs raid loot scaled 1.7\u00d7 to hold pace. Honor stays between 2,700 and 5,300 for every player type.",
+   "Reward fixed. Honor fine. Attack-side rule not adopted."
+  ]
+ ],
+ "time_bound": "Under today's rules the model player has 60% of everything it raids taken back and still reaches Keep 15 on day 89. I raised what a three-star raid can take by half and made the stars table steeper: the undefended player lost 65% and reached Keep 15 on day 91. No change. A player who picks the best of six entries gets there on day 86 instead of 92; matchmaking hands a better raider harder bases and absorbs the rest. What moves the date is builders: the same player with two Village Artisans takes 113 days and with four takes 89. All the defences together cost 247 builder-days; the Keep itself costs 36. So at today's income, loot protection alone was never going to make a defender faster, and v4's \"defence pays back in 8 days\" was true in Coins and beside the point. The real price of defence is builder time. Loot only starts to count when raids pay less, which is what the full Rules 10 does to a careless raider (section 6).",
+ "scorecard_note": "Both rule sets are scored on the same 48 bases per Keep, none of them used in tuning. The four probe armies and the five search-found armies are left out of the gap rows and reported in their own row. Rules 10 is a little harder overall. The bots' mix has the best average at Keep 15 (71) but is the best answer on only 3 of 24 base types there: it is the safe pick, not the right one.",
+ "search_note": "v4 scored a search army against the defender's mix as it stood. That mix sits on four or five bases, so some army always beats it by 15 points; it was the wrong test. The table lets the defender respond and re-solves the game. At Keep 15 the first search found shadows + guardians + siege averaging 80. I put it in the tuner as a ceiling and ran two more rounds; it still averages 81. The tuner cannot pull it down without pulling down the standard shadow, siege and guardian armies with it, because the strength is in the combination: siege now opens the walls and shadows walk through. The lever I did not get to is the breach itself (radius, or wall health).",
+ "keeps_note": "Keeps 9, 12 and 15 are confirmed on fresh bases in section 2. For the other seven the \"gap now\" is the tuner's own filtered estimate after one or two rounds, taken before its last step; treat it as a direction, not a result. Keeps 6, 8, 11 and 14 had a single round. Each round is about three minutes on two cores, so finishing them is cheap.",
+ "crew": "Two defence or trap builds at a time are done by the garrison and need no Village Artisan. Before this, every defence upgrade was builder time taken from everything else, which is why the player who built none was fastest. With the crew the regular player reaches Keep 15 on day 91 against 89 for the player with no defences, loses 2.4 stars a raid at Keep 12 instead of 3, and has 48% of its loot raided away instead of 59%. Skipping defences no longer buys anything. Under the full Rules 10, where a careless raider earns less and loot gets tight, the order flips: no defences day 110, regular 105, medium defender 108. The figures in this paragraph are the crew and raid rules alone, on today's battle rules, to show what the crew itself does. Building heavily still costs time, by choice: day 102 for the player who waits for every defence to be within three levels of its cap, day 130 within one level. With a crew of one instead of two those three players finish on days 91, 126 and 140, and the regular player's loss goes back up to 55%.",
+ "rejected": [
+  [
+   "Raise the stakes: a three-star raid takes 1.5\u00d7 as much, steeper stars table",
+   "Undefended player loses 65% of its loot (was 59%) and reaches Keep 15 on day 91 (was 89).",
+   "No effect on pace. Dropped."
+  ],
+  [
+   "Loot by stars on the player's own raids",
+   "Regular player's Keep 15 moves from day 91 to 112. With all raid loot scaled 1.7\u00d7 to compensate: day 93, but the medium defender came out at 120 (was 102).",
+   "Needs a loot rescale and showed nothing the model can measure. Left out. Worth a playtest, because it pays skill."
+  ],
+  [
+   "Garrison crew of one",
+   "Regular day 91, medium defender 126, full defender 140.",
+   "Works as the free tier if the second slot is sold."
+  ]
+ ],
+ "store": [
+  "<b>Time is the product.</b> The third and fourth Village Artisan cut Keep 15 from day 113 to day 89. The model buys both with Jade it starts with or earns (500 to start; the huts cost 250 and 500) and ends with about 363 left, short of the 1,000 for the fifth. So the first two huts will rarely be paid for. The fifth is the real purchase, and the Artisan's Bundle ($4.99, 650 Jade) does not cover it.",
+  "<b>Coin top-ups are weak value, before and after.</b> A player who loses 63% of its loot is not slowed by it, so buying Coins buys almost nothing. Under Rules 10 the regular player keeps more (48% lost), which makes top-ups worth less still.",
+  "<b>The Season Scroll is priced far below everything else that sells time.</b> Its +20% build speed over a 30-day season with four artisans working is up to 24 artisan-days. At the skip price (180 Jade for a day) that is about 4,300 Jade, roughly $60 of Jade, for $4.99. Either the Scroll is the intended anchor and skips are a trap for the impatient, or skips are priced about ten times too high to be used.",
+  "<b>What Rules 10 changes.</b> The garrison crew takes defence work off the artisans, so a player needs fewer of them; selling the second garrison slot replaces that. Defence rewards are a new source of Coins: 39M for the regular player and 134M for the full defender over a campaign, against roughly 1132M raided. At a share of 0.15 that is too small to move pace.",
+  "<b>Pace under the full rules.</b> The regular player reaches Keep 15 on day 105 with a random entry and on day 92 picking the best entry (today: 93 and 86). The one-visit-a-day player reaches Keep 9 on day 98 and Keep 12 on day 147 (today 100 and 155). I cannot forecast revenue from this. The model does not want things, get bored or quit."
+ ],
+ "open": [
+  [
+   "Infiltrators",
+   "24 points for a 10% change in strength. Five fixes tried, none worked. It needs a different kit, not different numbers."
+  ],
+  [
+   "Healers + guardians",
+   "Weakest showcase army at Keeps 9 / 12 / 15: 54 / 58 / 59. Support warriors add too little at a 30% share; raising their strength only makes a massed army of them too strong."
+  ],
+  [
+   "Shadow mixes at Keeps 9 and 15",
+   "beast 17%, shadow 68%, saboteur 15% averages 80 at Keep 9; shadows + guardians + siege 81 at Keep 15. Best standard army: 71 and 71. First lever to try: a smaller breach."
+  ],
+  [
+   "Difficulty",
+   "Tuned for a raider who picks a good entry. A random entry now averages 0.7 stars at Keep 12 (today 1.5); the best of six, 1.1. If that is too hard, raise every warrior's strength: the overall multiplier is 0.8 and each 0.1 is worth 8 to 10 points."
+  ],
+  [
+   "Siege at Keep 9",
+   "Against Walled Keep: 58 (its average 65)."
+  ],
+  [
+   "Keeps 6, 7, 8, 10, 11, 13, 14",
+   "One or two tuning rounds, the tuner's own estimate only, not searched."
+  ],
+  [
+   "Heavy defenders",
+   "Day 136 to Keep 15 against 105 for a regular player. If full defence should cost less, give the garrison a third slot or shorten defence build times."
+  ],
+  [
+   "Formation, wave order, smoke",
+   "Still worth about 14 points on top of entry choice, still not in the tuning, still no squad screen."
+  ],
+  [
+   "Loot by stars on attack",
+   "Pays skill, needs raid loot scaled about 1.7\u00d7. Not adopted; playtest it."
+  ],
+  [
+   "Garrison crew",
+   "Needs a screen, a name and a decision on whether the second slot is sold."
+  ],
+  [
+   "Revenue and people",
+   "No forecast is possible from a model, and nobody has played any of this."
+  ]
+ ]
+}

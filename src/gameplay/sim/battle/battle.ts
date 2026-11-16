@@ -117,7 +117,8 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     const kind: SimBuilding['kind'] =
       def.category === 'hall' ? 'hall' : def.category === 'defense' ? 'defense' : def.category === 'hedge' ? 'hedge' : def.category === 'trap' ? 'trap' : 'other';
     // Shadow Trials scale defenses (and walls) beyond the normal level caps.
-    const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? setup.base.wallPower ?? 1 : 1;
+    // Rules 10 (lab): `battle.wallHp` multiplies every wall's health, so a closed wall is worth breaching.
+    const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? (setup.base.wallPower ?? 1) * ((data.battle as { wallHp?: number }).wallHp ?? 1) : 1;
     const hp = mult === 1 ? ld.hp : ld.hp * mult;
     // A building being upgraded neither fires nor runs its counter effect (one downtime rule for both).
     const active = activeInBattle(bb);
@@ -150,6 +151,23 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
   setup.base.buildings.forEach((bb, i) => applyTemper(buildings[i], bb.temper, data));
   const profile = baseProfile(setup.base, data);
   applyBaseWide(buildings, profile, data);
+  // Rules 9 (lab): towers need room. Each other defence within `radius` tiles slows a defence's fire by `slow`
+  // (up to `max`), so packing every tower round the Keep is no longer free (data: battle.crowding, absent = off).
+  const crowd = (data.battle as { crowding?: { radius: number; slow: number; max: number } }).crowding;
+  if (crowd) {
+    const defs = buildings.filter((x) => x.kind === 'defense' && x.combat);
+    for (const x of defs) {
+      let near = 0;
+      for (const o of defs) {
+        if (o === x) continue;
+        const dx = Math.max(o.x - (x.x + x.size), x.x - (o.x + o.size), 0);
+        const dy = Math.max(o.y - (x.y + x.size), x.y - (o.y + o.size), 0);
+        if (Math.sqrt(dx * dx + dy * dy) <= crowd.radius) near++;
+      }
+      const pen = Math.min(crowd.max, crowd.slow * near);
+      if (pen > 0 && x.combat) x.combat = { ...x.combat, fireIntervalTicks: Math.max(1, Math.round(x.combat.fireIntervalTicks * (1 + pen))) };
+    }
+  }
   // Relay assaults (step 64): damage an earlier strike already did.
   const lostHp = setup.startDamage ?? {};
   for (const b of buildings) {
@@ -641,7 +659,7 @@ function stepDefense(sim: BattleSim, bi: number): void {
   }
   sim.projectiles.push({
     id: sim.nextProjectile++, kind: c.projectile, fromX: cx, fromY: cy, toX, toY, total: travel, left: travel,
-    damage: c.damage, splash: c.splashRadius ?? 0, targetTroop: c.splashRadius ? -1 : b.targetTroop, targetBuilding: -1,
+    damage: c.damage * shotSpread(sim), splash: c.splashRadius ?? 0, targetTroop: c.splashRadius ? -1 : b.targetTroop, targetBuilding: -1,
     hitsAir: c.targets !== 'ground', hitsGround: c.targets !== 'air', arc: Boolean(c.splashRadius), sourceBuilding: bi,
   });
   sim.events.push({ k: 'fire', building: bi });
@@ -687,6 +705,22 @@ function stepTraps(sim: BattleSim): void {
   });
 }
 
+/**
+ * Rules 8 (lab): each defence shot varies by up to +-`battle.damageSpread` (seeded, so replays match). It blurs
+ * the one-shot breakpoints that make a 3% stat change swing a raid by 30 points. 0 or absent = off (no RNG drawn).
+ */
+function shotSpread(sim: BattleSim): number {
+  const spread = (sim.data.battle as { damageSpread?: number }).damageSpread ?? 0;
+  return spread > 0 ? 1 + spread * (next(sim.rng) * 2 - 1) : 1;
+}
+/** Rules 8 (lab): a tuned tower's shot does more to the class of warrior it hunts. */
+function versusMult(sim: BattleSim, p: SimProjectile, t: SimTroop): number {
+  if (p.sourceBuilding === undefined) return 1;
+  const v = (sim.buildings[p.sourceBuilding] as SimBuilding & { versus?: Record<string, number> }).versus;
+  if (!v) return 1;
+  const cls = (troopDef(sim.data, t.type) as { cls?: string }).cls;
+  return cls && v[cls] ? 1 + v[cls] : 1;
+}
 function stepProjectiles(sim: BattleSim): void {
   const keep: SimProjectile[] = [];
   for (const p of sim.projectiles) {
@@ -707,13 +741,13 @@ function stepProjectiles(sim: BattleSim): void {
     } else if (p.splash > 0) {
       sim.troops.forEach((t, ti) => {
         if (t.dead || (airborne(sim, t) ? !p.hitsAir : !p.hitsGround)) return;
-        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, sim.heroIndex !== undefined ? p.damage * heroShield(sim, t, p.fromX, p.fromY) : p.damage, true, { x: p.fromX, y: p.fromY });
+        if (dist(p.toX, p.toY, t.x, t.y) <= p.splash) damageTroop(sim, ti, (sim.heroIndex !== undefined ? p.damage * heroShield(sim, t, p.fromX, p.fromY) : p.damage) * versusMult(sim, p, t), true, { x: p.fromX, y: p.fromY });
       });
       sim.events.push({ k: 'hit', x: p.toX, y: p.toY, kind: p.kind, splash: p.splash });
     } else if (p.targetTroop >= 0) {
       const t = sim.troops[p.targetTroop];
       if (!t.dead) {
-        damageTroop(sim, p.targetTroop, sim.heroIndex !== undefined ? p.damage * heroShield(sim, t, p.fromX, p.fromY) : p.damage);
+        damageTroop(sim, p.targetTroop, (sim.heroIndex !== undefined ? p.damage * heroShield(sim, t, p.fromX, p.fromY) : p.damage) * versusMult(sim, p, t));
         if (p.sourceBuilding !== undefined) groundFlyer(sim, p.sourceBuilding, p.targetTroop);
         if (p.sourceBuilding !== undefined && sim.previewKinds?.sleep) sleepHit(sim, p.sourceBuilding, t);
         sim.events.push({ k: 'hit', x: t.x, y: t.y, kind: p.kind, splash: 0 });

@@ -1,0 +1,106 @@
+keep,troop_id,name,hp_and_damage_multiplier_at_this_keeps_research_cap
+6,beetle_brute,Armored Guardian,0.781
+6,crane_glider,Crane Glider,0.968
+6,drum_monk,Drum Monk,0.807
+6,fire_monk,Fire Monk,0.741
+6,frog_lobber,Kunai Adept,0.76
+6,hawk_tamer,Hawk Tamer,0.817
+6,hedgehog_roller,Shinobi,0.754
+6,iron_monk,Iron Monk,0.728
+6,mirage_twin,Mirage Twin,0.61
+6,mole_digger,Tunnel Runner,0.786
+6,owl_bomber,Kite Raider,0.786
+6,shuriken_storm,Shuriken Storm,0.486
+6,trap_breaker,Trap Breaker,0.782
+6,twin_fang_dancer,Twin-Fang Dancer,0.693
+6,wall_climber,Wall Climber,1.278
+7,bell_warden,Bell Warden,1.253
+7,blowgun_hunter,Blowgun Hunter,0.641
+7,crane_glider,Crane Glider,0.921
+7,drum_monk,Drum Monk,1.728
+7,fire_monk,Fire Monk,1.081
+7,gearbreaker,Gearbreaker,0.973
+7,hawk_tamer,Hawk Tamer,1.371
+7,mirage_twin,Mirage Twin,0.828
+7,wall_climber,Wall Climber,1.709
+7,wind_step_assassin,Wind-Step Assassin,0.6
+8,bell_warden,Bell Warden,1.156
+8,blowgun_hunter,Blowgun Hunter,0.594
+8,fire_monk,Fire Monk,1.06
+8,gearbreaker,Gearbreaker,0.892
+8,grapple_raider,Grapple Raider,0.729
+8,hawk_tamer,Hawk Tamer,1.223
+8,lantern_balloon,Lantern Balloon,0.937
+8,mirage_twin,Mirage Twin,0.831
+8,mist_weaver,Mist Weaver,1.599
+8,wind_step_assassin,Wind-Step Assassin,0.681
+9,bell_warden,Bell Warden,0.998
+9,blowgun_hunter,Blowgun Hunter,0.424
+9,boar_rider,Boar Rider,0.87
+9,bomb_carrier,Bomb Carrier,1.643
+9,gearbreaker,Gearbreaker,0.944
+9,grapple_raider,Grapple Raider,0.623
+9,lantern_balloon,Lantern Balloon,1.074
+9,mist_weaver,Mist Weaver,1.208
+9,night_blade,Night Blade,0.67
+9,wind_step_assassin,Wind-Step Assassin,0.598
+10,boar_rider,Boar Rider,0.914
+10,bomb_carrier,Bomb Carrier,1.433
+10,chain_sickle_reaper,Chain-Sickle Reaper,0.428
+10,fuse_master,Fuse Master,1.01
+10,grapple_raider,Grapple Raider,1.06
+10,lantern_balloon,Lantern Balloon,1.12
+10,mist_weaver,Mist Weaver,1.038
+10,moonblade_master,Moonblade Master,0.706
+10,mountain_shield,Mountain Shield,0.822
+10,night_blade,Night Blade,0.72
+11,boar_rider,Boar Rider,0.838
+11,bomb_carrier,Bomb Carrier,1.173
+11,chain_sickle_reaper,Chain-Sickle Reaper,0.453
+11,fuse_master,Fuse Master,1.072
+11,mole_king,Burrow Ambusher,0.892
+11,moonblade_master,Moonblade Master,0.723
+11,mountain_shield,Mountain Shield,0.813
+11,night_blade,Night Blade,0.806
+11,spirit_caller,Spirit Caller,1.299
+11,thunder_kite,Thunder Kite,1.075
+12,bear_warrior,Bear Warrior,0.818
+12,chain_sickle_reaper,Chain-Sickle Reaper,0.426
+12,fuse_master,Fuse Master,1.014
+12,mole_king,Burrow Ambusher,0.893
+12,moonblade_master,Moonblade Master,0.813
+12,mountain_shield,Mountain Shield,0.846
+12,siege_bombardier,Siege Bombardier,0.67
+12,spirit_caller,Spirit Caller,1.155
+12,thunder_kite,Thunder Kite,1.217
+12,void_walker,Void Walker,0.713
+13,bear_warrior,Bear Warrior,0.778
+13,ghost_engineer,Ghost Engineer,0.958
+13,mole_king,Burrow Ambusher,0.65
+13,oni_breaker,Oni Breaker,0.806
+13,siege_bombardier,Siege Bombardier,0.652
+13,spirit_caller,Spirit Caller,1.631
+13,storm_sovereign,Storm Sovereign,0.602
+13,thousand_needle,Thousand Needle,0.502
+13,thunder_kite,Thunder Kite,1.042
+13,void_walker,Void Walker,0.689
+14,bear_warrior,Bear Warrior,0.835
+14,dragon_kite_armada,Dragon Kite Crew,0.943
+14,ghost_engineer,Ghost Engineer,0.834
+14,oni_breaker,Oni Breaker,0.793
+14,phantom_gate,Wall Phantom,0.854
+14,sage_of_clouds,Sage of Clouds,0.838
+14,siege_bombardier,Siege Bombardier,0.57
+14,storm_sovereign,Storm Sovereign,0.612
+14,thousand_needle,Thousand Needle,0.571
+14,void_walker,Void Walker,0.68
+15,dragon_kite_armada,Dragon Kite Crew,0.845
+15,eclipse_ninja,Eclipse Ninja,0.523
+15,ghost_engineer,Ghost Engineer,0.959
+15,oni_breaker,Oni Breaker,0.855
+15,phantom_gate,Wall Phantom,0.815
+15,sage_of_clouds,Sage of Clouds,0.922
+15,storm_sovereign,Storm Sovereign,0.575
+15,thousand_needle,Thousand Needle,0.459
+15,tiger_lord,Tiger Lord,0.852
+15,volcano_cannoneer,Volcano Cannoneer,0.854

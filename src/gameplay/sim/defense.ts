@@ -9,6 +9,7 @@ import type { InfiltrationPlan } from './battle/infiltration';
 import { MS_PER_HOUR } from './clock';
 import { buildingDef, levelDef, troopDef, troopLevel } from './data';
 import { attackerFor, lootPenalty } from './matchmaking';
+import { generateOpponent } from './battle/basegen';
 import { defenseHonorLoss, lossTrophies, winTrophies } from './ranks';
 import { capacity, collectorAmount } from './resources';
 import { createRng, int, mixSeed, next, pick, type Rng } from './rng';
@@ -178,6 +179,21 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   const attacker = attackerFor(rng, s, data);
   // Exhausted stores: raids lost in the last day leave less for this one.
   const base = villageToBase(s, t, data, 'Your village', lootPenalty(attacker.hall, hallLevel(s, data), data) * exhaustionFactor(s.defenseLog, t, data));
+  // Lab only (`raids.labAutoLayout`): the model player cannot design a base, so its buildings are placed on a
+  // generated layout for its Keep (own levels, own loot, own ids; no walls unless `labWalls`).
+  const lab = data.raids as { labAutoLayout?: boolean; labWalls?: boolean };
+  if (lab.labAutoLayout) {
+    const gen = generateOpponent(mixSeed(s.seed ?? 1, 0x1ab0), base.hallLevel, data, { levelBias: 0.5 });
+    const pool: Record<string, BaseBuilding[]> = {};
+    for (const b of base.buildings) (pool[b.type] ??= []).push(b);
+    const placed: BaseBuilding[] = [];
+    for (const g of gen.buildings) {
+      const own = pool[g.type]?.shift();
+      if (own) placed.push({ ...own, x: g.x, y: g.y });
+      else if (lab.labWalls && buildingDef(data, g.type).category === 'hedge') placed.push({ ...g, loot: {} });
+    }
+    base.buildings = placed;
+  }
   const attackerTrophies = attacker.trophies;
   const army = attacker.army;
   const setup = { seed: (next(rng) * 4294967296) >>> 0, base, army, levels: attacker.levels, infiltration: true };
@@ -187,11 +203,16 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   const { result, sim } = runBattle(setup, deployments, data);
   const fromStorage: Cost = {};
   const fromCollectors: Cost = {};
+  // Rules 9 (lab): `raids.carryByStars` — a raider carries home only this share of what it broke open,
+  // by the stars it won, so every star a defence denies keeps loot in the village.
+  const carryTable = (data.raids as { carryByStars?: number[] }).carryByStars;
+  const carry = carryTable ? (carryTable[result.stars] ?? 1) : 1;
   sim.buildings.forEach((sb) => {
     if (!sb.destroyed) return;
     const vb = s.buildings.find((b) => b.id === sb.id);
     if (!vb) return;
-    for (const [k, v] of Object.entries(sb.loot) as [ResourceKind, number][]) {
+    for (const [k, v0] of Object.entries(sb.loot) as [ResourceKind, number][]) {
+      const v = v0 * carry;
       if (!v) continue;
       const def = buildingDef(data, vb.type);
       if (def.produces === k && vb.collector) {
@@ -217,10 +238,11 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   s.stats.defensesFaced = (s.stats.defensesFaced ?? 0) + 1;
   // A held defense (no star lost) pays a little, and counts (save v16).
   let defenseReward: Cost = {};
-  if (result.stars === 0) {
-    s.stats.defensesWon = (s.stats.defensesWon ?? 0) + 1;
-    defenseReward = defenseWinReward(s, data);
-  }
+  if (result.stars === 0) s.stats.defensesWon = (s.stats.defensesWon ?? 0) + 1;
+  // Rules 9 (lab): with `raids.defenseWin.perStar`, every star the base denies pays a third of the reward,
+  // so each defence upgrade earns something instead of nothing until the raid is held outright.
+  const perStar = (data.raids.defenseWin as { perStar?: boolean } | undefined)?.perStar === true;
+  if (result.stars === 0 || (perStar && result.stars < 3)) defenseReward = defenseWinReward(s, data, perStar ? (3 - result.stars) / 3 : 1);
   const record: BattleRecord = {
     id: `d${s.nextSeed++}`,
     at: t,
@@ -245,15 +267,16 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
  * What holding off a bot raid pays (`raids.defenseWin`): a share of the Keep's lowest generated
  * raid loot in Coins and Provisions, as far as storage has room. Mutates; returns what was added.
  */
-function defenseWinReward(s: VillageState, data: GameData): Cost {
-  const share = data.raids.defenseWin?.shareOfRaidLoot ?? 0;
+function defenseWinReward(s: VillageState, data: GameData, part = 1): Cost {
+  const share = (data.raids.defenseWin?.shareOfRaidLoot ?? 0) * part;
   const hl = hallLevel(s, data);
   const amount = Math.floor((data.battle.generatedLootByHall[hl - 1]?.min ?? 0) * share);
   if (amount <= 0) return {};
   const cap = capacity(s, data);
   const out: Cost = {};
   for (const k of ['acorns', 'dew'] as const) {
-    const add = Math.max(0, Math.min(amount, cap[k] - s.resources[k]));
+    const uncapped = (data.raids.defenseWin as { uncapped?: boolean } | undefined)?.uncapped === true;
+    const add = uncapped ? amount : Math.max(0, Math.min(amount, cap[k] - s.resources[k]));
     if (add > 0) {
       s.resources[k] += add;
       out[k] = add;

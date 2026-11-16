@@ -97,6 +97,8 @@ export interface TemperBaseWideDef {
 export type TemperFamily = 'ranged' | 'air' | 'ground';
 
 export interface TemperDef {
+  /** Built, not live (Rules 10): the exponent on an axis's weight for class hunting and base-wide effects. Absent = 1. */
+  convexity?: number;
   unlockKeep: number;
   steps: number;
   retemperCostShare: number;
@@ -569,6 +571,8 @@ export interface WarriorKit {
   chargeMultiplier?: number;
   stunTicks?: number;
   wallMultiplier?: number;
+  /** Built, not live (Rules 10): when this warrior brings a wall down, the walls within this many tiles fall with it. */
+  breachRadius?: number;
   openWalls?: boolean;
   /** 'rally' (heroes, report section 5 step 8): allies near the source deal `strength` more damage for `durationTicks` after its first hit. */
   aura?: 'heal' | 'haste' | 'veil' | 'resist' | 'splash' | 'taunt' | 'rally';

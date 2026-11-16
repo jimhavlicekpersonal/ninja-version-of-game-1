@@ -36,7 +36,7 @@ import { armyHousing, barracksLevel, housingCapacity, queueHousing, troopUnlock 
 import { newestInFamily, type Family } from './armyLab';
 import { currentTasks, unlockedTier } from '../../src/gameplay/sim/pass';
 import { nextTrialTier, trialBase, trialVariant } from '../../src/gameplay/sim/trials';
-import { createBattle } from '../../src/gameplay/sim/battle/battle';
+import { createBattle, runBattle } from '../../src/gameplay/sim/battle/battle';
 import { totalLoot } from '../../src/gameplay/sim/battle/basegen';
 import { FakeClock } from '../../src/gameplay/sim/clock';
 import { buildingDef, levelDef } from '../../src/gameplay/sim/data';
@@ -55,7 +55,15 @@ export interface ModelOptions {
   raidsPerSession: number;
   /** Max paid "Next" presses per raid. */
   maxNext?: number;
-  policy?: 'raider' | 'defender' | 'explorer' | 'rusher' | 'sandbagger';
+  policy?: 'raider' | 'defender' | 'explorer' | 'rusher' | 'sandbagger' | 'fortress';
+  /** Fortress: every defence is built and within this many levels of its cap before the Keep goes up. */
+  fortressGap?: number;
+  /** Hire another Village Artisan whenever the Jade is there (a real player's first purchase). */
+  hireBuilders?: boolean;
+  /** 'entry': try the six ways in with the bots' formation and keep the best (a competent raider). */
+  pilot?: 'entry';
+  /** Replicate number: reseeds the village so the same policy plays a different run. */
+  rep?: number;
   /** 'sandbagger': never research past attackerStrength = Keep - this (balance audit PS, default 1.4). */
   sandbagMargin?: number;
   /** Also play Shadow Trials and claim tasks and pass tiers. */
@@ -95,6 +103,7 @@ export class ModelPlayer {
 
   constructor(private readonly data: GameData, private readonly opts: ModelOptions) {
     this.state = createNewVillage(this.clock.now(), data);
+    if (opts.rep) { this.state.seed = mixSeed(this.state.seed, opts.rep); this.state.nextSeed = mixSeed(this.state.nextSeed, opts.rep + 77); }
     this.t0 = this.clock.now();
     this.hallReachedAt[1] = 0;
   }
@@ -162,16 +171,32 @@ export class ModelPlayer {
     const d = this.data;
     for (let guard = 0; guard < 40; guard++) {
       const now = this.clock.now();
-      if (builderStatus(this.state, d, now).free < 1) return;
+      if (this.opts.hireBuilders) {
+        const have = countOfType(this.state, 'beaver_lodge');
+        const price = d.economy.builderHutCosts[have - 2];
+        if (price !== undefined && have < limitFor(this.state, d, 'beaver_lodge').count && (this.state.resources.moonstones ?? 0) >= price) {
+          const spot = findFreeSpot(this.state, d, 'beaver_lodge', 20, 20);
+          if (spot && this.run({ type: 'place', buildingType: 'beaver_lodge', x: spot.x, y: spot.y })) continue;
+        }
+      }
+      if (builderStatus(this.state, d, now).free < 1 && builderStatus(this.state, d, now, 'acorn_cannon').free < 1) return;
       const hall = this.state.buildings.find((b) => b.type === 'elder_toadstool')!;
-      if (!hall.upgrade && this.run({ type: 'upgrade', id: hall.id })) continue;
+      const FORT = ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle', ...COUNTER_BUILDINGS];
+      const fortress = this.opts.policy === 'fortress';
+      const gap = this.opts.fortressGap ?? 1;
+      const fortReady = !fortress || FORT.every((t) => {
+        const lim = limitFor(this.state, d, t);
+        if (buildingDef(d, t).inShop && countOfType(this.state, t) < lim.count) return false;
+        return this.state.buildings.every((b) => b.type !== t || b.level >= lim.maxLevel - gap);
+      });
+      if (fortReady && !hall.upgrade && this.run({ type: 'upgrade', id: hall.id })) continue;
       const need = this.hallCost();
       const cap = capacity(this.state, d);
       const res = this.state.resources as Record<string, number>;
       const capR = cap as Record<string, number>;
       const hallSoon = Object.keys(need).length > 0 && Object.entries(need).every(([k, v]) => res[k] >= v * 0.6 && capR[k] >= v);
       // Keep the last free builder for the Keep when it is nearly affordable.
-      if (hallSoon && builderStatus(this.state, d, now).free <= 1) return;
+      if (fortReady && hallSoon && builderStatus(this.state, d, now).free <= 1) return;
       const costOf = (cmd: Command): Record<string, number> => {
         if (cmd.type === 'place') return (d.buildings[cmd.buildingType].levels[0].cost ?? {}) as Record<string, number>;
         if (cmd.type === 'upgrade') {
@@ -198,7 +223,8 @@ export class ModelPlayer {
       for (const t of ['army_camp', 'burrow_barracks']) consider(t, 1);
       for (const t of ['acorn_orchard', 'dewdrop_well']) consider(t, 2);
       const defender = this.opts.policy === 'defender';
-      if (this.opts.policy !== 'rusher') for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle']) consider(t, defender ? 2.6 : 4);
+      if (fortress) for (const t of FORT) consider(t, fortReady ? 2.6 : 0.5);
+      if (this.opts.policy !== 'rusher' && !fortress) for (const t of ['acorn_cannon', 'wasp_nest', 'pinecone_catapult', 'firefly_tower', 'thorn_snare', 'sap_puddle']) consider(t, defender ? 2.6 : 4);
       if (defender) for (const t of COUNTER_BUILDINGS) consider(t, 2.5);
       options.sort((a, b) => a.prio - b.prio);
       let did = false;
@@ -307,7 +333,16 @@ export class ModelPlayer {
       const levels = troopLevels(this.state, d);
       const setup = { seed: mixSeed(seed, 0xba771e), base, army, levels, infiltration: true };
       const probe = createBattle(setup, d);
-      const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(seed), d, levels, probe.entry);
+      let deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(seed), d, levels, probe.entry);
+      if (this.opts.pilot === 'entry' && probe.entry) {
+        let bestD = -1;
+        for (let f = 0; f < probe.entry.points.length; f++) {
+          const plan = entryPlan(probe, army, levels, d, f);
+          const r = runBattle(setup, plan, d).result;
+          const score = r.destruction + r.stars * 0.01;
+          if (score > bestD) { bestD = score; deployments = plan; }
+        }
+      }
       const before = this.state.resources.acorns + this.state.resources.dew;
       const res = applyCommand(this.state, { type: 'battleEnd', record: { at: this.clock.now(), opponentName: base.name, setup, deployments } }, this.clock.now(), d);
       if (!res.ok) throw new Error(`battleEnd failed: ${res.message}`);
@@ -405,4 +440,32 @@ export function casualDays(p: ModelPlayer, days: number, onDay?: (day: number) =
     p.away(dayStart(p.clock.now()) + 86_400_000 - p.clock.now());
     onDay?.(day + 1);
   }
+}
+
+
+/** One way in: everyone through entry point `focus` and its two neighbours, toughest first (the lab's 'cluster / tanks' plan). */
+function entryPlan(sim: ReturnType<typeof createBattle>, arm: Record<string, number>, levels: Record<string, number>, d: GameData, focus: number): { tick: number; troop: string; x: number; y: number }[] {
+  const entry = sim.entry!;
+  const P = entry.points; const np = P.length; const size = sim.grid.size; const cx = size / 2, cy = size / 2;
+  const ang = P.map((p, i) => ({ i, a: Math.atan2(p.y - cy, p.x - cx) })).sort((x, y) => x.a - y.a).map((x) => x.i);
+  const at = (k: number) => ang[((k % np) + np) % np];
+  const grp = [at(focus), at(focus + 1), at(focus - 1)];
+  const tough = (t: string) => d.troops[t].levels[(levels[t] ?? 1) - 1].hp / d.troops[t].housing;
+  const order = Object.keys(arm).filter((t) => arm[t] > 0).sort((a, b) => tough(b) - tough(a) || (a < b ? -1 : 1));
+  const used = P.map((p) => p.used);
+  const out: { tick: number; troop: string; x: number; y: number }[] = []; let tick = 0;
+  for (const troop of order) {
+    const h = d.troops[troop].housing;
+    for (let k = 0; k < arm[troop]; k++) {
+      const fits = (i: number) => used[i] + h <= entry.cover;
+      let pick = -1;
+      for (const i of grp) if (fits(i) && (pick < 0 || used[i] < used[pick])) pick = i;
+      if (pick < 0) { const near = [...Array(np).keys()].sort((x, y) => Math.hypot(P[x].x - P[grp[0]].x, P[x].y - P[grp[0]].y) - Math.hypot(P[y].x - P[grp[0]].x, P[y].y - P[grp[0]].y)); pick = near.find(fits) ?? -1; }
+      if (pick < 0) break;
+      used[pick] += h;
+      out.push({ tick: tick + Math.floor(k / 2), troop, x: Math.floor(P[pick].x), y: Math.floor(P[pick].y) });
+    }
+    tick += Math.ceil(arm[troop] / 2) + 10;
+  }
+  return out;
 }

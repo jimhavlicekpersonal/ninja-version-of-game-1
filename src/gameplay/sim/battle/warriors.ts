@@ -351,6 +351,15 @@ export function resolveWarriorHit(sim: BattleSim, t: SimTroop, bi: number, damag
     if (kit.burnTicks) effect(sim, { ...base, kind: 'burn', damage: t.damage * (kit.burnFraction ?? 0), endsTick: sim.tick + kit.burnTicks });
     if (sim.previewKinds) previewHit(sim, t, bi, damage, actions);
     else actions.damageBuilding(sim, bi, damage);
+    // Rules 10 (lab): a siege warrior's breach. When it brings a wall down, the walls within `breachRadius`
+    // fall with it, so the opening is wide enough for the whole army.
+    if (kit.breachRadius && target.kind === 'hedge' && target.destroyed) {
+      sim.buildings.forEach((b, i) => {
+        if (b.destroyed || b.kind !== 'hedge' || distance(cx, cy, b.x + b.size / 2, b.y + b.size / 2) > (kit.breachRadius ?? 0)) return;
+        actions.damageBuilding(sim, i, b.hp + 1);
+      });
+      sim.events.push({ k: 'ability', troop: t.id, what: 'breach' });
+    }
   }
   let hits = 0;
   sim.buildings.forEach((b, i) => {

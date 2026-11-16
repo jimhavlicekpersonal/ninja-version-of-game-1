@@ -423,14 +423,22 @@ export function hallLevelRequiredFor(data: GameData, type: BuildingType, test: (
   return null;
 }
 
-export function builderStatus(state: VillageState, data: GameData, now: number): { total: number; busy: number; free: number } {
+export function builderStatus(state: VillageState, data: GameData, now: number, forType?: string): { total: number; busy: number; free: number } {
+  // Rules 10 (lab): `economy.garrisonCrew` — that many defence or trap builds at a time are done by the garrison
+  // and take no Village Artisan, so fortifying the village does not stop the rest of it from growing.
+  const crew = (data.economy as { garrisonCrew?: number }).garrisonCrew ?? 0;
+  const garrison = (type: string) => crew > 0 && (buildingDef(data, type).category === 'defense' || buildingDef(data, type).category === 'trap');
   let total = 0;
   let busy = 0;
+  let onCrew = 0;
   for (const b of state.buildings) {
     if (buildingDef(data, b.type).category === 'builder' && effectiveLevel(b, now) >= 1) total++;
-    if (b.upgrade && b.upgrade.endsAt > now) busy++;
+    if (b.upgrade && b.upgrade.endsAt > now) { if (garrison(b.type)) onCrew++; else busy++; }
   }
-  return { total, busy, free: Math.max(0, total - busy) };
+  busy += Math.max(0, onCrew - crew);
+  let free = Math.max(0, total - busy);
+  if (forType && garrison(forType) && onCrew < crew) free = Math.max(free, 1);
+  return { total, busy, free };
 }
 
 /** 5448274 → "5,448,274" (no locale: the sim is the same everywhere; the text layer will localise it). */
@@ -507,7 +515,7 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
       ? { ...fail('NOT_ENOUGH_MOONSTONES', `Needs ${cost.moonstones} Jade.`, { jade: cost.moonstones }), quote }
       : { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`, { cost, missing: missingFor(s.resources, cost) }), quote };
   }
-  if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
+  if (quote.seconds > 0 && builderStatus(s, data, now, type).free < 1) {
     return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
   }
   return { ok: true, quote };
@@ -536,7 +544,7 @@ export function upgradeQuote(state: VillageState, id: string, data: GameData, no
       : { ...fail('MAX_LEVEL', `${def.name} is at its highest level.`), quote };
   }
   if (!canAfford(s.resources, price)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(price, data)}).`, { cost: price, missing: missingFor(s.resources, price) }), quote };
-  if (quote.seconds > 0 && builderStatus(s, data, now).free < 1) {
+  if (quote.seconds > 0 && builderStatus(s, data, now, b.type).free < 1) {
     return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
   }
   return { ok: true, quote };
@@ -1837,6 +1845,10 @@ export function foughtWithWarriors(result: Pick<BattleResult, 'used'>, setup: Pi
  */
 function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: GameData, carry = 1): { banked: Cost; overflow: Cost; bonus: Cost; eventBonus: Cost } {
   const cap = capacity(s, data);
+  // Rules 10 (lab): `raids.attackCarryByStars` — the same rule as on defence: you carry home a share of what you
+  // broke open, by the stars you won.
+  const byStars = (data.raids as { attackCarryByStars?: number[] }).attackCarryByStars;
+  if (byStars) carry *= byStars[result.stars] ?? 1;
   const loot = carriedLoot(result.loot, carry);
   const fromBattle = addCapped(s.resources, loot, cap);
   const bonusWanted = leagueWinBonus(s.trophies, result.stars, data);
